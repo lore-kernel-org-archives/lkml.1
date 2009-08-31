@@ -1,127 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751427AbZHaLC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZHaLDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751427AbZHaLC4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 07:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZHaLCz
+	id S1751584AbZHaLDS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 07:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751249AbZHaLDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 07:02:55 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44812 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbZHaLCz (ORCPT
+	Mon, 31 Aug 2009 07:03:17 -0400
+Received: from mail-qy0-f179.google.com ([209.85.221.179]:57250 "EHLO
+	mail-qy0-f179.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751105AbZHaLDQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 07:02:55 -0400
-Date: Mon, 31 Aug 2009 16:32:52 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 3/5] memcg: unmap, truncate, invalidate uncharege
-	in batch
-Message-ID: <20090831110252.GH4770@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090828132015.10a42e40.kamezawa.hiroyu@jp.fujitsu.com> <20090828132542.37d712ba.kamezawa.hiroyu@jp.fujitsu.com>
+	Mon, 31 Aug 2009 07:03:16 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090828132542.37d712ba.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090830191325.45cf1e69@pedra.chehab.org>
+References: <20090730200714.5a7ab8a6@pedra.chehab.org>
+	 <37219a840907310825n51d5a6bar79ea1f31dd889327@mail.gmail.com>
+	 <20090801014053.7f53da83@pedra.chehab.org>
+	 <303a8ee30908011103n3c12258icd2bfd1305b419d3@mail.gmail.com>
+	 <20090811140128.211d4d11@caramujo.chehab.org>
+	 <37219a840908111457o4b6abc64n52291f044b56782d@mail.gmail.com>
+	 <37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
+	 <303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
+	 <20090830191325.45cf1e69@pedra.chehab.org>
+Date: Mon, 31 Aug 2009 07:03:18 -0400
+Message-ID: <303a8ee30908310403x73d067rd58d01fbd4fde299@mail.gmail.com>
+Subject: Re: [PULL] http://kernellabs.com/hg/~mkrufky/sms1xxx
+From: Michael Krufky <mkrufky@kernellabs.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-08-28 13:25:42]:
-
-> 
-> We can do batched uncharge when
-> 	- invalidate/truncte file
-> 	- unmap range of pages.
-> 
-> This means we don't do "batched" uncharge in memory reclaim path.
-> I think it's reasonable.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  mm/memory.c   |    2 ++
->  mm/truncate.c |    6 ++++++
->  2 files changed, 8 insertions(+)
-> 
-> Index: mmotm-2.6.31-Aug27/mm/memory.c
-> ===================================================================
-> --- mmotm-2.6.31-Aug27.orig/mm/memory.c
-> +++ mmotm-2.6.31-Aug27/mm/memory.c
-> @@ -909,6 +909,7 @@ static unsigned long unmap_page_range(st
->  		details = NULL;
-> 
->  	BUG_ON(addr >= end);
-> +	mem_cgroup_uncharge_batch_start();
->  	tlb_start_vma(tlb, vma);
->  	pgd = pgd_offset(vma->vm_mm, addr);
->  	do {
-> @@ -921,6 +922,7 @@ static unsigned long unmap_page_range(st
->  						zap_work, details);
->  	} while (pgd++, addr = next, (addr != end && *zap_work > 0));
->  	tlb_end_vma(tlb, vma);
-> +	mem_cgroup_uncharge_batch_end();
-> 
->  	return addr;
->  }
-> Index: mmotm-2.6.31-Aug27/mm/truncate.c
-> ===================================================================
-> --- mmotm-2.6.31-Aug27.orig/mm/truncate.c
-> +++ mmotm-2.6.31-Aug27/mm/truncate.c
-> @@ -272,6 +272,7 @@ void truncate_inode_pages_range(struct a
->  			pagevec_release(&pvec);
->  			break;
->  		}
-> +		mem_cgroup_uncharge_batch_start();
->  		for (i = 0; i < pagevec_count(&pvec); i++) {
->  			struct page *page = pvec.pages[i];
-> 
-> @@ -286,6 +287,7 @@ void truncate_inode_pages_range(struct a
->  			unlock_page(page);
->  		}
->  		pagevec_release(&pvec);
-> +		mem_cgroup_uncharge_batch_end();
->  	}
->  }
->  EXPORT_SYMBOL(truncate_inode_pages_range);
-> @@ -327,6 +329,7 @@ unsigned long invalidate_mapping_pages(s
->  	pagevec_init(&pvec, 0);
->  	while (next <= end &&
->  			pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
-> +		mem_cgroup_uncharge_batch_start();
->  		for (i = 0; i < pagevec_count(&pvec); i++) {
->  			struct page *page = pvec.pages[i];
->  			pgoff_t index;
-> @@ -354,6 +357,7 @@ unsigned long invalidate_mapping_pages(s
->  				break;
->  		}
->  		pagevec_release(&pvec);
-> +		mem_cgroup_uncharge_batch_end();
->  		cond_resched();
->  	}
->  	return ret;
-> @@ -428,6 +432,7 @@ int invalidate_inode_pages2_range(struct
->  	while (next <= end && !wrapped &&
->  		pagevec_lookup(&pvec, mapping, next,
->  			min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1)) {
-> +		mem_cgroup_uncharge_batch_start();
->  		for (i = 0; i < pagevec_count(&pvec); i++) {
->  			struct page *page = pvec.pages[i];
->  			pgoff_t page_index;
-> @@ -477,6 +482,7 @@ int invalidate_inode_pages2_range(struct
->  			unlock_page(page);
->  		}
->  		pagevec_release(&pvec);
-> +		mem_cgroup_uncharge_batch_end();
->  		cond_resched();
->  	}
->  	return ret;
+On Sun, Aug 30, 2009 at 6:13 PM, Mauro Carvalho
+Chehab<mchehab@infradead.org> wrote:
+> Em Sun, 30 Aug 2009 08:53:35 -0400
+> Michael Krufky <mkrufky@kernellabs.com> escreveu:
 >
+>> Mauro,
+>>
+>> On Mon, Aug 24, 2009 at 4:32 PM, Michael Krufky<mkrufky@kernellabs.com> wrote:
+>> > Mauro,
+>> >
+>> > Would you please send the final GPIO fix to Linus to fix the
+>> > regression on the Hauppauge devices.  2.6.31 is in -rc7 now, and I
+>> > would hate for this regression to not yet be solved before the kernel
+>> > is released.
+>> >
+>> > I apologize for nagging -- I just prefer for fixes to be merged
+>> > upstream *before* a kernel release.
+>> >
+>> > Thank you.
+>> >
+>> > Just as a reminder, the changeset that is still waiting for upstream merge is:
+>> >
+>> > *       sms1xxx: restore GPIO functionality for all Hauppauge devices
+>>
+>> Just another reminder -- this is cutting it very close now.
+>>
+>> I repeat, that this is a feature that worked in previous kernels but
+>> is broken in 2.6.31.
+>>
+>> I feel very concerned, considering that I posted a regression fix over
+>> six weeks ago and it still has not made it into Linus' kernel tree.
+>
+> Part of the time were spent trying to reach Siano for their comments. This were
+> added on my queue on Aug, 19, after our unsuccessful trial of contacting them.
+>
+> Unfortunately, I had a bad time having to rebase my -git trees, removing some
+> patches there in order to fix a conflict related to arch patches sent via
+> my tree.
+>
+> You don't need to worry since they'll be send in time for 2.6.31.
+>
+>> I understand that you are a busy man -- Would it be easier for you if
+>> I sent this patch to Linus, myself?
+>
+> I'm currently merging the pending patches on my tree. I should be sending a
+> pull request upstream by the end of the day or tomorrow.
+>
+> If you just send it directly, you'll break my tree, and cause troubles on the
+> upstream request for some other patches for 2.6.31
 
-This looks good to me
- 
+Mauro,
 
--- 
-	Balbir
+I see the GPIO fix in your git tree now -- Thanks for merging it.
+
+However, I also see this changeset:
+
+http://git.kernel.org/?p=linux/kernel/git/mchehab/linux-2.6.git;a=commitdiff;h=31e0ad693fb4e1d1be19dbe1c4f5a1ab9978e810
+
+I believe that it is way too late in 2.6.31 to merge a changeset like
+this -- Please revert that and if there is actually a Kconfig change
+required, merge a more minimal change for 2.6.31 and hold off this
+huge, risky change for the next merge window.
+
+There is not enough time to fix this, if this changeset causes
+additional breakage.
+
+Thank you,
+
+Mike Krufky
