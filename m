@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750969AbZHaHIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751046AbZHaHOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750969AbZHaHIo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 03:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750855AbZHaHIo
+	id S1751046AbZHaHOe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 03:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750833AbZHaHOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 03:08:44 -0400
-Received: from www.tglx.de ([62.245.132.106]:38809 "EHLO www.tglx.de"
+	Mon, 31 Aug 2009 03:14:34 -0400
+Received: from mga14.intel.com ([143.182.124.37]:41424 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbZHaHIn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 03:08:43 -0400
-Date: Mon, 31 Aug 2009 09:08:26 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ashwin Chaugule <ashwinc@codeaurora.org>
-cc: linux-kernel@vger.kernel.org, mingo@redhat.com
-Subject: Re: [RFC] [PATCH 1/1] hrtimers: Cache next hrtimer
-In-Reply-To: <4A9B4ECB.7070506@codeaurora.org>
-Message-ID: <alpine.LFD.2.00.0908310854020.19335@localhost.localdomain>
-References: <4A96FFE9.6060105@codeaurora.org> <4A970103.7010804@codeaurora.org> <alpine.LFD.2.00.0908280045200.2888@localhost.localdomain> <4A971245.5070507@codeaurora.org> <alpine.LFD.2.00.0908280111260.2888@localhost.localdomain> <4A9771AA.2090004@codeaurora.org>
- <alpine.LFD.2.00.0908281308380.2888@localhost.localdomain> <4A98070D.1050308@codeaurora.org> <alpine.LFD.2.00.0908282005410.19335@localhost.localdomain> <4A9A1701.2070703@codeaurora.org> <alpine.LFD.2.00.0908301016230.19335@localhost.localdomain>
- <4A9B4ECB.7070506@codeaurora.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1750778AbZHaHOd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 03:14:33 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="182254776"
+Date: Mon, 31 Aug 2009 15:14:25 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Josh Triplett <josh@joshtriplett.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH] pagemap: export KPF_HWPOISON
+Message-ID: <20090831071425.GA26634@localhost>
+References: <20090808173900.GA21009@feather> <20090812065107.GA16363@localhost> <20090831135720.5E53.A69D9226@jp.fujitsu.com> <20090831065659.GA18039@localhost>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090831065659.GA18039@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009, Ashwin Chaugule wrote:
-> Thomas Gleixner wrote:
-> 
-> >   That's not hard to fix by allowing the reprogramming to skip when the
-> > new expiry time is the same as the old one.
-> > 
-> > I think that allowing the reprogram to skip is catching more cases
-> > than the cached pointer. If the cached pointer is the one which gets
-> > removed we might still reprogram with the same expiry value.
-> >   
-> Um. Wouldn't the cached pointer point to the first (oldest) hrtimer in the
-> series of timers with the same expires value ? Then it would be the last
-> hrtimer to be removed. I'm walking through the rbtree now to confirm this.
-> 
-> > Can you please try the delta patch on top of the last one I sent ?
-> >   
-> This looks very good ! Our results are almost similar now. However, I think
-> that with this new
-> patch we're still arming the timer needlessly at least once. This is the
-> case when we're trying to remove the first (oldest) hrtimer with
-> timer->expires = cpu->expires_next, but we forgo the reprogramming, when we
-> really shouldn't. At this point, with the current scheme of things, we will
-> needlessly wakeup and simply correct the expires_next value by
-> traversing up the rbtree, to the parent node.
+This flag indicates a hardware detected memory corruption on the page.
+Any future access of the page data may bring down the machine.
 
-That only happens, when that timer is the last one in both trees. Then
-the resulting reprogramming value is KTIME_MAX and we skip the
-reprogramming. That's easy to fix by removing the KTIME_MAX check.
+CC: Andi Kleen <andi@firstfloor.org>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ Documentation/vm/pagemap.txt |    4 ++++
+ fs/proc/page.c               |    5 +++++
+ tools/vm/page-types.c        |    2 ++
+ 3 files changed, 11 insertions(+)
+
+--- linux-mm.orig/fs/proc/page.c	2009-08-31 13:58:19.000000000 +0800
++++ linux-mm/fs/proc/page.c	2009-08-31 14:59:08.000000000 +0800
+@@ -94,6 +94,7 @@ static const struct file_operations proc
+ #define KPF_COMPOUND_TAIL	16
+ #define KPF_HUGE		17
+ #define KPF_UNEVICTABLE		18
++#define KPF_HWPOISON		19
+ #define KPF_NOPAGE		20
  
-> If we knew in advance that this to-be-removed timer, was the oldest hrtimer
-> of the series, then we could force reprogram, such that we wake up only when
-> the parent node timer is really going to expire. This may make a noticeable
-> difference in power for some devices. 
->
-> Another question is, what happens when base->first of REALTIME and MONOTONIC
-> both have the same expires ?
-
-The skip_equal check covers both. We find out which timer of the two
-bases is expiring next and compare the result against
-cpu_base->expires_next. If both are identical we skip.
-
-Thanks,
-
-	tglx
-
+ #define KPF_KSM			21
+@@ -180,6 +181,10 @@ static u64 get_uflags(struct page *page)
+ 	u |= kpf_copy_bit(k, KPF_UNEVICTABLE,	PG_unevictable);
+ 	u |= kpf_copy_bit(k, KPF_MLOCKED,	PG_mlocked);
+ 
++#ifdef CONFIG_MEMORY_FAILURE
++	u |= kpf_copy_bit(k, KPF_HWPOISON,	PG_hwpoison);
++#endif
++
+ #ifdef CONFIG_IA64_UNCACHED_ALLOCATOR
+ 	u |= kpf_copy_bit(k, KPF_UNCACHED,	PG_uncached);
+ #endif
+--- linux-mm.orig/tools/vm/page-types.c	2009-08-31 13:58:19.000000000 +0800
++++ linux-mm/tools/vm/page-types.c	2009-08-31 14:59:08.000000000 +0800
+@@ -47,6 +47,7 @@
+ #define KPF_COMPOUND_TAIL	16
+ #define KPF_HUGE		17
+ #define KPF_UNEVICTABLE		18
++#define KPF_HWPOISON		19
+ #define KPF_NOPAGE		20
+ 
+ /* [32-] kernel hacking assistances */
+@@ -94,6 +95,7 @@ static char *page_flag_names[] = {
+ 	[KPF_COMPOUND_TAIL]	= "T:compound_tail",
+ 	[KPF_HUGE]		= "G:huge",
+ 	[KPF_UNEVICTABLE]	= "u:unevictable",
++	[KPF_HWPOISON]		= "X:hwpoison",
+ 	[KPF_NOPAGE]		= "n:nopage",
+ 
+ 	[KPF_RESERVED]		= "r:reserved",
+--- linux-mm.orig/Documentation/vm/pagemap.txt	2009-08-31 13:58:19.000000000 +0800
++++ linux-mm/Documentation/vm/pagemap.txt	2009-08-31 14:59:08.000000000 +0800
+@@ -57,6 +57,7 @@ There are three components to pagemap:
+     16. COMPOUND_TAIL
+     16. HUGE
+     18. UNEVICTABLE
++    19. HWPOISON
+     20. NOPAGE
+ 
+ Short descriptions to the page flags:
+@@ -86,6 +87,9 @@ Short descriptions to the page flags:
+ 17. HUGE
+     this is an integral part of a HugeTLB page
+ 
++19. HWPOISON
++    hardware detected memory corruption on this page: don't touch the data!
++
+ 20. NOPAGE
+     no page frame exists at the requested address
+ 
