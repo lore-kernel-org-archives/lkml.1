@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZHaBKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754036AbZHaBTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbZHaBKi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 30 Aug 2009 21:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZHaBKi
+	id S1754036AbZHaBTr (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 30 Aug 2009 21:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZHaBTq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 30 Aug 2009 21:10:38 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63438 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751582AbZHaBKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 30 Aug 2009 21:10:37 -0400
-Message-ID: <4A9B22BF.6010707@cn.fujitsu.com>
-Date: Mon, 31 Aug 2009 09:09:19 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [RFC] IO scheduler based IO controller V9
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Sun, 30 Aug 2009 21:19:46 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60746 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751721AbZHaBTp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 30 Aug 2009 21:19:45 -0400
+Date: Mon, 31 Aug 2009 11:19:35 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: i2c tree build failure
+Message-Id: <20090831111935.5059565b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__31_Aug_2009_11_19_35_+1000_nUlOpoz6lYl43u.F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> Hi All,
-> 
-> Here is the V9 of the IO controller patches generated on top of 2.6.31-rc7.
-> 
-> For ease of patching, a consolidated patch is available here.
-> 
-> http://people.redhat.com/~vgoyal/io-controller/io-scheduler-based-io-controller-v9.patch
-> 
-> Changes from V8
-> ===============
-> - Implemented bdi like congestion semantics for io group also. Now once an
->   io group gets congested, we don't clear the congestion flag until number
->   of requests goes below nr_congestion_off.
-> 
->   This helps in getting rid of Buffered write performance regression we
->   were observing with io controller patches.
-> 
->   Gui, can you please test it and see if this version is better in terms
->   of your buffered write tests.
+--Signature=_Mon__31_Aug_2009_11_19_35_+1000_nUlOpoz6lYl43u.F
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ok, will do.
+Hi Jean,
 
--- 
-Regards
-Gui Jianfeng
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
+drivers/i2c/i2c-core.c:234: warning: initialization from incompatible point=
+er type
+drivers/i2c/i2c-core.c:537: warning: initialization from incompatible point=
+er type
+drivers/i2c/i2c-core.c: In function 'i2c_register_adapter':
+drivers/i2c/i2c-core.c:603: error: implicit declaration of function 'class_=
+compat_create_link'
+drivers/i2c/i2c-core.c: In function 'i2c_del_adapter':
+drivers/i2c/i2c-core.c:789: error: implicit declaration of function 'class_=
+compat_remove_link'
+drivers/i2c/i2c-core.c: In function 'i2c_init':
+drivers/i2c/i2c-core.c:999: error: implicit declaration of function 'class_=
+compat_register'
+drivers/i2c/i2c-core.c:999: warning: assignment makes pointer from integer =
+without a cast
+drivers/i2c/i2c-core.c:1012: error: implicit declaration of function 'class=
+_compat_unregister'
+
+I have used the i2c tree from next-20090828 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__31_Aug_2009_11_19_35_+1000_nUlOpoz6lYl43u.F
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqbJScACgkQjjKRsyhoI8wMYgCffKxWeBabN6LfRYlF6CU8NnNR
+mjQAnjG4tjWKjvCR3Na4zUNHQFNu2RAS
+=OBgn
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__31_Aug_2009_11_19_35_+1000_nUlOpoz6lYl43u.F--
