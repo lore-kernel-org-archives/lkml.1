@@ -1,63 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZHaJII@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZHaJJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753357AbZHaJII (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 05:08:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbZHaJIH
+	id S1753390AbZHaJJm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 05:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753142AbZHaJJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 05:08:07 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50055 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751732AbZHaJIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 05:08:06 -0400
-Message-ID: <4A9B92A0.7020009@cn.fujitsu.com>
-Date: Mon, 31 Aug 2009 17:06:40 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 31 Aug 2009 05:09:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49126 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752408AbZHaJJl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 05:09:41 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Guillaume Chazarain <guichaz@gmail.com>
+Subject: Re: [PATCH 1/3] taskstats-fork: Add a new taskstats command to get notification on fork/clone
+Date: Mon, 31 Aug 2009 14:41:28 +0530
+User-Agent: KMail/1.12.0 (Linux/2.6.27.29-0.1-default; KDE/4.3.0; x86_64; ; )
+Cc: balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       procps-feedback@lists.sf.net, Albert Cahalan <albert@users.sf.net>
+References: <200907211031.48294.knikanth@suse.de> <200907211154.42563.knikanth@suse.de> <3d8471ca0908301252j15cb33b1j913921bd8fc6704c@mail.gmail.com>
+In-Reply-To: <3d8471ca0908301252j15cb33b1j913921bd8fc6704c@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] tracing/filters: Defer pred allocation
-References: <4A9B8EA5.6020700@cn.fujitsu.com> <20090831085908.GA656@elte.hu>
-In-Reply-To: <20090831085908.GA656@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200908311441.28354.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> 
->> init_preds() allocates about 5392 bytes of memory (on x86_32) for
->> a TRACE_EVENT. With my config, at system boot total memory occupied
->> is:
->>
->> 	5392 * (642 + 15) == 3459KB
->>
->> 642 == cat available_events | wc -l
->> 15 == number of dirs in events/ftrace
->>
->> That's quite a lot, so we'd better defer memory allocation util
->> it's needed, that's when filter is used.
->>
->> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> Applied, thanks!
-> 
->> tracing/kprobe needs rebase after this patch..
-> 
-> You mean with many probes registered it has a lot of memory 
+On Monday 31 August 2009 01:22:22 Guillaume Chazarain wrote:
+> On Tue, Jul 21, 2009 at 8:24 AM, Nikanth Karthikesan<knikanth@suse.de> 
+wrote:
+> > Ah.. proc-events was the exact thing, I was looking for! Thanks.
+>
+> AFAICT proc-events can only be used by root, so that makes it
+> unsuitable for *top.
+>
+> Anyway, iotop will always have to iterate over all threads to query
+> their taskstats and other attributes, so the O(nr_threads) complexity
+> is unavoidable.
+>
 
-I think so, if filter is used.
+If it would simply iterate over all the current threads, the complexity would 
+be O(nr_threads). But while iterating through all the current threads, it 
+checks whether it is a new thread or a known thread, so that it can calculate 
+the delta values. This is what I optimized by using taskstats-fork, which 
+could be optimized using proc-events. 
 
-> footprint? Instead of a rebase a merge of tracing/core into 
-> tracing/kprobes would be less intrusive.
-> 
-
-Yeah, I meant this patch conflicts with some patches in
-tracing/kprobe. :)
-
+Thanks
+Nikanth
