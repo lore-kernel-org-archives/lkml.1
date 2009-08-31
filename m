@@ -1,525 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752020AbZHaIJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbZHaIL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752020AbZHaIJT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 04:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751947AbZHaIJS
+	id S1751947AbZHaIL1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 04:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZHaILZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 04:09:18 -0400
-Received: from mga11.intel.com ([192.55.52.93]:45523 "EHLO mga11.intel.com"
+	Mon, 31 Aug 2009 04:11:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48942 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751854AbZHaIJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 04:09:11 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,304,1249282800"; 
-   d="scan'208";a="488882549"
-Subject: [PATCH V5 2/2] introduce ACPI ALS device driver
-From: Zhang Rui <rui.zhang@intel.com>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Pavel Machek <pavel@ucw.cz>,
-       "Zhang, Rui" <rui.zhang@intel.com>
-Content-Type: text/plain
-Date: Mon, 31 Aug 2009 16:07:10 +0800
-Message-Id: <1251706030.3483.161.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	id S1751819AbZHaILX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 04:11:23 -0400
+Message-ID: <4A9B8583.9050601@kernel.org>
+Date: Mon, 31 Aug 2009 17:10:43 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Ric Wheeler <rwheeler@redhat.com>
+CC: Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>,
+       Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <004e01ca25e4$c11a54e0$434efea0$@ca>    <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name>    <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com>
+In-Reply-To: <4A970154.2020507@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 31 Aug 2009 08:10:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ric Wheeler wrote:
+> On 08/27/2009 05:22 PM, Andrei Tanas wrote:
+>> Hello,
+>>
+>> This is about the same problem that I wrote two days ago (md gets an
+>> error
+>> while writing superblock and fails a hard drive).
+>>
+>> I've tried to figure out what's really going on, and as far as I can
+>> tell,
+>> the disk doesn't really fail (as confirmed by multiple tests), it
+>> times out
+>> trying to execute ATA_CMD_FLUSH_EXT ("at2.00 cmd ea..." in the log)
+>> command. The reason for this I believe is that md_super_write queues the
+>> write comand with BIO_RW_SYNCIO flag.
+>> As I wrote before, with 32MB cache it is conceivable that it will take
+>> the
+>> drive longer than 30 seconds (defined by SD_TIMEOUT in scsi/sd.h) to
+>> flush
+>> its buffers.
+>>
+>> Changing safe_mode_delay to more conservative 2 seconds should definitely
+>> help, but is it really necessary to write the superblock synchronously
+>> when
+>> array changes status from active to active-idle?
+>>
+>> [90307.328266] ata2.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+>> frozen
+>> [90307.328275] ata2.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+>> [90307.328277]          res 40/00:01:01:4f:c2/00:00:00:00:00/00 Emask 0x4
+>> (timeout)
+>> [90307.328280] ata2.00: status: { DRDY }
+>> [90307.328288] ata2: hard resetting link
+>> [90313.218511] ata2: link is slow to respond, please be patient (ready=0)
+>> [90317.377711] ata2: SRST failed (errno=-16)
+>> [90317.377720] ata2: hard resetting link
+>> [90318.251720] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>> [90318.338026] ata2.00: configured for UDMA/133
+>> [90318.338062] ata2: EH complete
+>> [90318.370625] end_request: I/O error, dev sdb, sector 1953519935
+>> [90318.370632] md: super_written gets error=-5, uptodate=0
+>>
+>>    
+> 
+> 30 seconds is a very long time for a drive to respond, but I think that
+> your explanation fits the facts pretty well...
 
-ACPI spec defines ACPI Ambient Light Sensor device (hid ACPI0008),
-which provides a standard interface by which the OS may query properties
-of the ambient light environment the system is currently operating in,
-as well as the ability to detect meaningful changes in these values when
-the environment changes.
+Even with 32MB cache, 30secs should be more than enough.  It's not
+like the drive is gonna do random write on those.  It's likely to make
+only very few number of strokes over the platter and it really
+shouldn't take very long.  I'm yet to see an actual case where a
+properly functioning drive timed out flush because the flush itself
+took long enough.
 
-This patch introduces the ACPI ALS device driver.
+> The drive might take a longer time like this when doing error handling
+> (sector remapping, etc), but then I would expect to see your remapped
+> sector count grow.
 
-Signed-off-by: Zhang Rui <rui.zhang@intel.com>
----
- Documentation/acpi/debug.txt |    1 
- MAINTAINERS                  |    7 
- drivers/acpi/Kconfig         |    9 +
- drivers/acpi/Makefile        |    1 
- drivers/acpi/als.c           |  383 +++++++++++++++++++++++++++++++++++++++++++
- drivers/acpi/debug.c         |    1 
- include/acpi/acpi_drivers.h  |    1 
- 7 files changed, 403 insertions(+)
+Yes, this is a possibility and according to the spec, libata EH should
+be retrying flushes a few times before giving up but I'm not sure
+whether keeping retrying for several minutes is a good idea either.
+Is it?
 
-Index: linux-2.6/drivers/acpi/als.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/acpi/als.c
-@@ -0,0 +1,383 @@
-+/*
-+ *  als.c - ACPI Ambient Light Sensor Driver
-+ *
-+ *  Copyright (C) 2009 Intel Corp
-+ *  Copyright (C) 2009 Zhang Rui <rui.zhang@intel.com>
-+ *
-+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; version 2 of the License.
-+ *
-+ *  This program is distributed in the hope that it will be useful, but
-+ *  WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-+ *  General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License along
-+ *  with this program; if not, write to the Free Software Foundation, Inc.,
-+ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
-+ *
-+ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
-+#include <linux/als_sys.h>
-+#include <acpi/acpi_bus.h>
-+#include <acpi/acpi_drivers.h>
-+
-+#define ACPI_ALS_CLASS			"als"
-+#define ACPI_ALS_DEVICE_NAME		"Ambient Light Sensor"
-+#define ACPI_ALS_NOTIFY_ILLUMINANCE	0x80
-+#define ACPI_ALS_NOTIFY_COLOR_TEMP	0x81
-+#define ACPI_ALS_NOTIFY_RESPONSE	0x82
-+
-+#define _COMPONENT		ACPI_ALS_COMPONENT
-+ACPI_MODULE_NAME("als");
-+
-+MODULE_AUTHOR("Zhang Rui");
-+MODULE_DESCRIPTION("ACPI Ambient Light Sensor Driver");
-+MODULE_LICENSE("GPL");
-+
-+static int acpi_als_add(struct acpi_device *device);
-+static int acpi_als_remove(struct acpi_device *device, int type);
-+static void acpi_als_notify(struct acpi_device *device, u32 event);
-+
-+static const struct acpi_device_id als_device_ids[] = {
-+	{"ACPI0008", 0},
-+	{"", 0},
-+};
-+
-+MODULE_DEVICE_TABLE(acpi, als_device_ids);
-+
-+static struct acpi_driver acpi_als_driver = {
-+	.name = "als",
-+	.class = ACPI_ALS_CLASS,
-+	.ids = als_device_ids,
-+	.ops = {
-+		.add = acpi_als_add,
-+		.remove = acpi_als_remove,
-+		.notify = acpi_als_notify,
-+		},
-+};
-+
-+struct acpi_als {
-+	struct acpi_device *device;
-+	struct als_device *als_sys;
-+	int illuminance;
-+	int chromaticity;
-+	int temperature;
-+	int polling;
-+	int count;
-+	struct als_mapping *mappings;
-+};
-+
-+#define ALS_INVALID_VALUE_LOW		0
-+#define ALS_INVALID_VALUE_HIGH		-1
-+
-+/* --------------------------------------------------------------------------
-+		Ambient Light Sensor device Management
-+   -------------------------------------------------------------------------- */
-+
-+/*
-+ * acpi_als_get_illuminance - get the current ambient light illuminance
-+ */
-+static int acpi_als_get_illuminance(struct acpi_als *als)
-+{
-+	acpi_status status;
-+	unsigned long long illuminance;
-+
-+	status =
-+	    acpi_evaluate_integer(als->device->handle, "_ALI", NULL,
-+				  &illuminance);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_EXCEPTION((AE_INFO, status,
-+				"Error reading ALS illuminance"));
-+		als->illuminance = ALS_INVALID_VALUE_LOW;
-+		return -ENODEV;
-+	}
-+	als->illuminance = illuminance;
-+	return 0;
-+}
-+
-+/*
-+ * acpi_als_get_color_chromaticity - get the ambient light color chromaticity
-+ */
-+static int acpi_als_get_color_chromaticity(struct acpi_als *als)
-+{
-+	acpi_status status;
-+	unsigned long long chromaticity;
-+
-+	status =
-+	    acpi_evaluate_integer(als->device->handle, "_ALC", NULL,
-+				  &chromaticity);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "_ALC not available\n"));
-+		return -ENODEV;
-+	}
-+	als->chromaticity = chromaticity;
-+	return 0;
-+}
-+
-+/*
-+ * acpi_als_get_color_temperature - get the ambient light color temperature
-+ */
-+static int acpi_als_get_color_temperature(struct acpi_als *als)
-+{
-+	acpi_status status;
-+	unsigned long long temperature;
-+
-+	status =
-+	    acpi_evaluate_integer(als->device->handle, "_ALT", NULL,
-+				  &temperature);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "_ALT not available\n"));
-+		return -ENODEV;
-+	}
-+	als->temperature = temperature;
-+	return 0;
-+}
-+
-+/*
-+ * acpi_als_get_mappings - get the ALS illuminance mappings
-+ *
-+ * Return a package of ALS illuminance to display adjustment mappings
-+ * that can be used by OS to calibrate its ambient light policy
-+ * for a given sensor configuration.
-+ */
-+static int acpi_als_get_mappings(struct acpi_als *als)
-+{
-+	int result = 0;
-+	acpi_status status;
-+	struct acpi_buffer buffer = { ACPI_ALLOCATE_BUFFER, NULL };
-+	union acpi_object *alr;
-+	int i, j;
-+
-+	/* Free the old mappings */
-+	kfree(als->mappings);
-+	als->mappings = NULL;
-+
-+	status =
-+	    acpi_evaluate_object(als->device->handle, "_ALR", NULL, &buffer);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_EXCEPTION((AE_INFO, status, "Error reading ALS mappings"));
-+		return -ENODEV;
-+	}
-+
-+	alr = buffer.pointer;
-+	if (!alr || (alr->type != ACPI_TYPE_PACKAGE)) {
-+		printk(KERN_ERR PREFIX "Invalid _ALR data\n");
-+		result = -EFAULT;
-+		goto end;
-+	}
-+
-+	ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Found %d illuminance mappings\n",
-+			  alr->package.count));
-+
-+	als->count = alr->package.count;
-+
-+	if (!als->count)
-+		return 0;
-+
-+	als->mappings =
-+	    kmalloc(sizeof(struct als_mapping) * als->count, GFP_KERNEL);
-+	if (!als->mappings) {
-+		result = -ENOMEM;
-+		goto end;
-+	}
-+
-+	for (i = 0, j = 0; i < als->count; i++) {
-+		struct als_mapping *mapping = &(als->mappings[j]);
-+		union acpi_object *element = &(alr->package.elements[i]);
-+
-+		if (element->type != ACPI_TYPE_PACKAGE)
-+			continue;
-+
-+		if (element->package.count != 2)
-+			continue;
-+
-+		if (element->package.elements[0].type != ACPI_TYPE_INTEGER ||
-+		    element->package.elements[1].type != ACPI_TYPE_INTEGER)
-+			continue;
-+
-+		mapping->adjustment =
-+		    element->package.elements[0].integer.value;
-+		mapping->illuminance =
-+		    element->package.elements[1].integer.value;
-+		j++;
-+
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "Mapping [%d]: "
-+				  "adjuestment [%d] illuminance[%d]\n",
-+				  i, mapping->adjustment,
-+				  mapping->illuminance));
-+	}
-+
-+end:
-+	kfree(buffer.pointer);
-+	return result;
-+}
-+
-+/*
-+ * acpi_als_get_polling - get a recommended polling frequency
-+ * 			  for the Ambient Light Sensor device
-+ */
-+static int acpi_als_get_polling(struct acpi_als *als)
-+{
-+	acpi_status status;
-+	unsigned long long polling;
-+
-+	status =
-+	    acpi_evaluate_integer(als->device->handle, "_ALP", NULL, &polling);
-+	if (ACPI_FAILURE(status)) {
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO, "_ALP not available\n"));
-+		return -ENODEV;
-+	}
-+
-+	als->polling = polling;
-+	return 0;
-+}
-+
-+/*------------------------------------------------------------------------
-+ *                                ALS sysfs I/F
-+ *------------------------------------------------------------------------ */
-+
-+static int get_illuminance(struct als_device *als_sys, int *illuminance)
-+{
-+	struct acpi_als *als = als_sys->devdata;
-+	int result;
-+
-+	result = acpi_als_get_illuminance(als);
-+	if (!result)
-+		*illuminance = als->illuminance;
-+	return result;
-+}
-+
-+static int update_mappings(struct als_device *als_sys)
-+{
-+	struct acpi_als *als = als_sys->devdata;
-+	int result;
-+
-+	result = acpi_als_get_mappings(als);
-+	if (result)
-+		return result;
-+
-+	als_sys->mappings = als->mappings;
-+	als_sys->count = als->count;
-+
-+	return 0;
-+}
-+
-+struct als_device_ops acpi_als_ops = {
-+	.get_illuminance = get_illuminance,
-+	.update_mappings = update_mappings,
-+};
-+
-+/* --------------------------------------------------------------------------
-+				 Driver Model
-+   -------------------------------------------------------------------------- */
-+
-+static void acpi_als_notify(struct acpi_device *device, u32 event)
-+{
-+	struct acpi_als *als = acpi_driver_data(device);
-+
-+	if (!als)
-+		return;
-+
-+	switch (event) {
-+	case ACPI_ALS_NOTIFY_ILLUMINANCE:
-+		acpi_als_get_illuminance(als);
-+		break;
-+	case ACPI_ALS_NOTIFY_COLOR_TEMP:
-+		acpi_als_get_color_temperature(als);
-+		acpi_als_get_color_chromaticity(als);
-+		break;
-+	case ACPI_ALS_NOTIFY_RESPONSE:
-+		update_mappings(als->als_sys);
-+		break;
-+	default:
-+		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
-+				  "Unsupported event [0x%x]\n", event));
-+	}
-+	acpi_bus_generate_proc_event(device, event, (u32) als->illuminance);
-+	acpi_bus_generate_netlink_event(device->pnp.device_class,
-+					dev_name(&device->dev), event,
-+					(u32) als->illuminance);
-+}
-+
-+static int acpi_als_add(struct acpi_device *device)
-+{
-+	int result;
-+	struct acpi_als *als;
-+
-+	als = kzalloc(sizeof(struct acpi_als), GFP_KERNEL);
-+	if (!als)
-+		return -ENOMEM;
-+
-+	als->device = device;
-+	strcpy(acpi_device_name(device), ACPI_ALS_DEVICE_NAME);
-+	strcpy(acpi_device_class(device), ACPI_ALS_CLASS);
-+	device->driver_data = als;
-+
-+	result = acpi_als_get_illuminance(als);
-+	if (result)
-+		goto err;
-+
-+	result = acpi_als_get_mappings(als);
-+	if (result)
-+		goto err;
-+
-+	acpi_als_get_color_temperature(als);
-+	acpi_als_get_color_chromaticity(als);
-+	acpi_als_get_polling(als);
-+
-+	als->als_sys = als_device_register(&acpi_als_ops, "acpi_als", als);
-+	if (IS_ERR(als->als_sys)) {
-+		result = PTR_ERR(als->als_sys);
-+		als->als_sys = NULL;
-+		goto err;
-+	}
-+
-+	result = sysfs_create_link(&als->als_sys->device.kobj,
-+				&device->dev.kobj, "device");
-+	if (result) {
-+		printk(KERN_ERR PREFIX "Create sysfs link\n");
-+		goto err;
-+	}
-+
-+	return 0;
-+
-+err:
-+	if (als->als_sys)
-+		als_device_unregister(als->als_sys);
-+	kfree(als->mappings);
-+	kfree(als);
-+	return result;
-+}
-+
-+static int acpi_als_remove(struct acpi_device *device, int type)
-+{
-+	struct acpi_als *als = acpi_driver_data(device);
-+
-+	sysfs_remove_link(&als->als_sys->device.kobj, "device");
-+	als_device_unregister(als->als_sys);
-+	kfree(als->mappings);
-+	kfree(als);
-+	return 0;
-+}
-+
-+static int __init acpi_als_init(void)
-+{
-+	return acpi_bus_register_driver(&acpi_als_driver);
-+}
-+
-+static void __exit acpi_als_exit(void)
-+{
-+	acpi_bus_unregister_driver(&acpi_als_driver);
-+}
-+
-+module_init(acpi_als_init);
-+module_exit(acpi_als_exit);
-Index: linux-2.6/drivers/acpi/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/acpi/Kconfig
-+++ linux-2.6/drivers/acpi/Kconfig
-@@ -333,4 +333,13 @@ config ACPI_SBS
- 	  To compile this driver as a module, choose M here:
- 	  the modules will be called sbs and sbshc.
- 
-+config ACPI_ALS
-+	tristate "Ambient Light Sensor driver"
-+	select ALS
-+	help
-+	  This driver supports the ACPI Ambient Light Sensor.
-+
-+	  To compile this driver as a module, choose M here:
-+	  the module will be called als.
-+
- endif	# ACPI
-Index: linux-2.6/drivers/acpi/Makefile
-===================================================================
---- linux-2.6.orig/drivers/acpi/Makefile
-+++ linux-2.6/drivers/acpi/Makefile
-@@ -56,6 +56,7 @@ obj-$(CONFIG_ACPI_HOTPLUG_MEMORY) += acp
- obj-$(CONFIG_ACPI_BATTERY)	+= battery.o
- obj-$(CONFIG_ACPI_SBS)		+= sbshc.o
- obj-$(CONFIG_ACPI_SBS)		+= sbs.o
-+obj-$(CONFIG_ACPI_ALS)		+= als.o
- 
- # processor has its own "processor." module_param namespace
- processor-y			:= processor_core.o processor_throttling.o
-Index: linux-2.6/Documentation/acpi/debug.txt
-===================================================================
---- linux-2.6.orig/Documentation/acpi/debug.txt
-+++ linux-2.6/Documentation/acpi/debug.txt
-@@ -63,6 +63,7 @@ shows the supported mask values, current
-     ACPI_MEMORY_DEVICE_COMPONENT    0x08000000
-     ACPI_VIDEO_COMPONENT            0x10000000
-     ACPI_PROCESSOR_COMPONENT        0x20000000
-+    ACPI_ALS_COMPONENT              0x40000000
- 
- debug_level
- -----------
-Index: linux-2.6/drivers/acpi/debug.c
-===================================================================
---- linux-2.6.orig/drivers/acpi/debug.c
-+++ linux-2.6/drivers/acpi/debug.c
-@@ -53,6 +53,7 @@ static const struct acpi_dlayer acpi_deb
- 	ACPI_DEBUG_INIT(ACPI_MEMORY_DEVICE_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_VIDEO_COMPONENT),
- 	ACPI_DEBUG_INIT(ACPI_PROCESSOR_COMPONENT),
-+	ACPI_DEBUG_INIT(ACPI_ALS_COMPONENT),
- };
- 
- static const struct acpi_dlevel acpi_debug_levels[] = {
-Index: linux-2.6/include/acpi/acpi_drivers.h
-===================================================================
---- linux-2.6.orig/include/acpi/acpi_drivers.h
-+++ linux-2.6/include/acpi/acpi_drivers.h
-@@ -49,6 +49,7 @@
- #define ACPI_MEMORY_DEVICE_COMPONENT	0x08000000
- #define ACPI_VIDEO_COMPONENT		0x10000000
- #define ACPI_PROCESSOR_COMPONENT	0x20000000
-+#define ACPI_ALS_COMPONENT		0x40000000
- 
- /*
-  * _HID definitions
-Index: linux-2.6/MAINTAINERS
-===================================================================
---- linux-2.6.orig/MAINTAINERS
-+++ linux-2.6/MAINTAINERS
-@@ -234,6 +234,13 @@ F:	drivers/acpi/
- F:	drivers/pnp/pnpacpi/
- F:	include/linux/acpi.h
- 
-+ACPI AMBIENT LIGHT SENSOR DRIVER
-+M:	Zhang Rui <rui.zhang@intel.com>
-+L:	linux-acpi@vger.kernel.org
-+W:	http://www.lesswatts.org/projects/acpi/
-+S:	Supported
-+F:	drivers/acpi/als.c
-+
- ACPI BATTERY DRIVERS
- M:	Alexey Starikovskiy <astarikovskiy@suse.de>
- L:	linux-acpi@vger.kernel.org
+Thanks.
 
-
+-- 
+tejun
