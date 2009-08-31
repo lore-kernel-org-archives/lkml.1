@@ -1,64 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753775AbZHaSAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZHaSAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753775AbZHaSAW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 14:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZHaSAV
+	id S1753930AbZHaSAk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 14:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753887AbZHaSAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 14:00:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18503 "EHLO mx1.redhat.com"
+	Mon, 31 Aug 2009 14:00:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:38249 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbZHaSAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 14:00:20 -0400
-Message-ID: <4A9C0FE2.8020607@redhat.com>
-Date: Mon, 31 Aug 2009 14:01:06 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-CC: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
- 	document conditions when reliable operation is possible)
-References: <20090824212518.GF29763@elf.ucw.cz> <4A947682.2010204@redhat.com>	 <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com>	 <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com>	 <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu>	 <20090830075135.GA1874@ucw.cz> <20090830152023.GB23828@mit.edu> <4807377b0908311049id9a2167r937bc8447c2b3546@mail.gmail.com>
-In-Reply-To: <4807377b0908311049id9a2167r937bc8447c2b3546@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1753884AbZHaSAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 14:00:39 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: James Bottomley <James.Bottomley@suse.de>
+To: akataria@vmware.com
+Cc: Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>
+In-Reply-To: <1251739735.16169.20.camel@ank32.eng.vmware.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
+Content-Type: text/plain
+Date: Mon, 31 Aug 2009 18:00:24 +0000
+Message-Id: <1251741624.18828.83.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/31/2009 01:49 PM, Jesse Brandeburg wrote:
-> On Sun, Aug 30, 2009 at 8:20 AM, Theodore Tso<tytso@mit.edu>  wrote:
->> So we *do* have the warning light; the problem is that just as some
->> people may not realize that "check brakes" means, "YOU COULD DIE",
->> some people may not realize that "hard drive failure; RAID array
->> degraded" could mean, "YOU COULD LOSE DATA".
->>
->> Fortunately, for software RAID, this is easily solved; if you are so
->> concerned, why don't you submit a patch to mdadm adjusting the e-mail
->> sent to the system administrator when the array is in a degraded
->> state, such that it states, "YOU COULD LOSE DATA".  I would gently
->> suggest to you this would be ***far*** more effective that a patch to
->> kernel documentation.
->
-> In the case of a degraded array, could the kernel be more proactive
-> (or maybe even mdadm) and have the filesystem remount itself withOUT
-> journalling enabled?  This seems on the surface to be possible, but I
-> don't know the internal particulars that might prevent/allow it.
+On Mon, 2009-08-31 at 10:28 -0700, Alok Kataria wrote:
+> VMware PVSCSI driver - v2.
 
-This a misconception - with or without journalling, you are open to a second 
-failure during a RAID rebuild.
+OK, so the first thing that springs to mind is that we already have one
+of these things: the ibmvscsi ... is there no way we can share code
+between this and the other PV drivers?
 
-Also note that by default, ext3 does not mount with barriers turned on.
+> Changelog (v2-v1)
+> - use PCI_VDEVICE instead of PCI_DEVICE.
+> - use list_first_entry
+> - use parenthesis for every sizeof usage
+> - get rid of all #ifdef for CONFIG_PCI_MSI
+> - use PVSCSI_MEM_SPACE_SIZE while checking for MMIO resource len.
+> - use kcalloc instead of kmalloc.
+> - replaced a couple of scmd_printk usage with dev_dbg
+> - use dev_info and pr_info at couple of places.
+> - add a comment to pvscsi_map_context
+> - Add entry in MAINTAINERS.
+> 
+> Patch applies on top of 2.6.31-rc8.
+> --
+> 
+> SCSI driver for VMware's virtual HBA.
+> 
+> From: Alok N Kataria <akataria@vmware.com>
+> 
+> This is a driver for VMware's paravirtualized SCSI device,
+> which should improve disk performance for guests running
+> under control of VMware hypervisors that support such devices.
+> 
+> Signed-off-by: Alok N Kataria <akataria@vmware.com>
+> ---
+> 
+>  MAINTAINERS           |    7 
+>  drivers/scsi/Kconfig  |    8 
+>  drivers/scsi/Makefile |    1 
+>  drivers/scsi/pvscsi.c | 1391 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  drivers/scsi/pvscsi.h |  395 ++++++++++++++
+>  5 files changed, 1802 insertions(+), 0 deletions(-)
+>  create mode 100644 drivers/scsi/pvscsi.c
+>  create mode 100644 drivers/scsi/pvscsi.h
+> 
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index 60299a9..952fe93 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -5491,6 +5491,13 @@ S:	Maintained
+>  F:	drivers/vlynq/vlynq.c
+>  F:	include/linux/vlynq.h
+>  
+> +VMware PVSCSI driver
+> +M:	Alok Kataria <akataria@vmware.com>
+> +L:	linux-scsi@vger.kernel.org
+> +S:	Maintained
+> +F:	drivers/scsi/pvscsi.c
+> +F:	drivers/scsi/pvscsi.h
+> +
+>  VOLTAGE AND CURRENT REGULATOR FRAMEWORK
+>  M:	Liam Girdwood <lrg@slimlogic.co.uk>
+>  M:	Mark Brown <broonie@opensource.wolfsonmicro.com>
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index 9c23122..8a47981 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -620,6 +620,14 @@ config SCSI_FLASHPOINT
+>  	  substantial, so users of MultiMaster Host Adapters may not
+>  	  wish to include it.
+>  
+> +config VMWARE_PVSCSI
+> +	tristate "VMware PVSCSI driver support"
+> +	depends on PCI && SCSI && X86
 
-Even if you mount with barriers, MD5 does not handle barriers, so you stand to 
-lose a lot of data if you have a power outage.
+This is a PCI emulation driver ... it shouldn't be x86 only.
 
-Ric
+> +	help
+> +	  This driver supports VMware's para virtualized SCSI HBA.
+> +	  To compile this driver as a module, choose M here: the
+> +	  module will be called pvscsi.
+> +
+>  config LIBFC
+>  	tristate "LibFC module"
+>  	select SCSI_FC_ATTRS
+> diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
+> index 25429ea..27fd013 100644
+> --- a/drivers/scsi/Makefile
+> +++ b/drivers/scsi/Makefile
+> @@ -130,6 +130,7 @@ obj-$(CONFIG_SCSI_MVSAS)	+= mvsas/
+>  obj-$(CONFIG_PS3_ROM)		+= ps3rom.o
+>  obj-$(CONFIG_SCSI_CXGB3_ISCSI)	+= libiscsi.o libiscsi_tcp.o cxgb3i/
+>  obj-$(CONFIG_SCSI_BNX2_ISCSI)	+= libiscsi.o bnx2i/
+> +obj-$(CONFIG_VMWARE_PVSCSI)	+= pvscsi.o
+>  
+>  obj-$(CONFIG_ARM)		+= arm/
+>  
+> diff --git a/drivers/scsi/pvscsi.c b/drivers/scsi/pvscsi.c
+> new file mode 100644
+> index 0000000..fc85a3a
+> --- /dev/null
+> +++ b/drivers/scsi/pvscsi.c
+[...]
+> +static int __devinit pvscsi_allocate_sg(struct pvscsi_adapter *adapter)
+> +{
+> +	struct pvscsi_ctx *ctx;
+> +	int i;
+> +
+> +	ctx = adapter->cmd_map;
+> +	BUILD_BUG_ON(sizeof(struct pvscsi_sg_list) > PAGE_SIZE);
+> +
+> +	for (i = 0; i < adapter->req_depth; ++i, ++ctx) {
+> +		ctx->sgl = pci_alloc_consistent(adapter->dev, PAGE_SIZE,
+> +						&ctx->sglPA);
+
+Why do you need coherent memory for the sg list?  Surely the use pattern
+of an SG list is that it follows a predefined ownership model between
+the driver and the virtual device, thus not really requiring coherent
+memory?
+
+> +		BUG_ON(ctx->sglPA & ~PAGE_MASK);
+> +		if (!ctx->sgl) {
+> +			for (; i >= 0; --i, --ctx) {
+> +				pci_free_consistent(adapter->dev, PAGE_SIZE,
+> +						    ctx->sgl, ctx->sglPA);
+> +				ctx->sgl = NULL;
+> +				ctx->sglPA = 0;
+> +			}
+> +			return -ENOMEM;
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+
+James
+
 
