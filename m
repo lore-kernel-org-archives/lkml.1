@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754527AbZHaUC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbZHaUDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754527AbZHaUC4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 16:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754213AbZHaUC4
+	id S1754589AbZHaUDm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 16:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbZHaUDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 16:02:56 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:32866 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752884AbZHaUCz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 16:02:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=h2acZZzn2ZPmFB/b9rGiDNqYN2qzFBujHzrSVYFRsLJ/eQdT+NvSXyIbugwz8Uvc6x
-         QPq7751k4qX32BTQ8KzX2ULti2itLSY+IPdyE9m0+aj+Y0TKaBakr+RrqCgh72oKlrsh
-         luqV9g2FFSEMH2JIU51/KghD3qb73azDsPscw=
-MIME-Version: 1.0
-In-Reply-To: <20090831194753.GH5631@tuxdriver.com>
-References: <tnxtyzr7vcl.fsf@pc1117.cambridge.arm.com> <43e72e890908281450k78cc1a2fmd4fd033ae0f4176f@mail.gmail.com> 
-	<43e72e890908281509o44930348w581b865107ea3e98@mail.gmail.com> 
-	<43e72e890908310123w5d361ed5tff58a7663044bdcd@mail.gmail.com> 
-	<43e72e890908311050s320d0ceen312a0d3d9e4fbc76@mail.gmail.com> 
-	<43e72e890908311137k78ac439bs4edf376d07343a32@mail.gmail.com> 
-	<43e72e890908311230u28b0642ep7a6bfd9dab82318a@mail.gmail.com> 
-	<20090831193345.GG5631@tuxdriver.com> <43e72e890908311243u50b9323fveda9feaaa4d8efdb@mail.gmail.com> 
-	<20090831194753.GH5631@tuxdriver.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 31 Aug 2009 13:02:37 -0700
-Message-ID: <43e72e890908311302s58743978wd8950f167a871cfb@mail.gmail.com>
-Subject: Re: memleaks, acpi + ext4 + tty
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Mon, 31 Aug 2009 16:03:42 -0400
+Received: from xenotime.net ([72.52.64.118]:52474 "HELO xenotime.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752470AbZHaUDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 16:03:41 -0400
+Date: Mon, 31 Aug 2009 13:03:42 -0700
+From: Randy Dunlap <rdunlap@xenotime.net>
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       Mike Miller <mike.miller@hp.com>, iss_storagedev@hp.com
+Subject: Re: [PATCH] cciss: fix schedule_timeout() parameters
+Message-Id: <20090831130342.a5f3d821.rdunlap@xenotime.net>
+In-Reply-To: <4A9C156D.5080701@gmail.com>
+References: <4A9ADECE.7050900@xenotime.net>
+	<4A9C156D.5080701@gmail.com>
+Organization: YPO4
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 12:47 PM, John W.
-Linville<linville@tuxdriver.com> wrote:
-> On Mon, Aug 31, 2009 at 12:43:01PM -0700, Luis R. Rodriguez wrote:
->> On Mon, Aug 31, 2009 at 12:33 PM, John W.
->> Linville<linville@tuxdriver.com> wrote:
->
->> > My guess is that the culprit is between
->> > v2.6.31-rc8 and whatever is at the head of linux-2.6-allstable.
->>
->> But the issue is *not* in linux-2.6-allstable, it is only present on
->> wireless-testing, and I went as far back as merge-2009-08-28. I was
->> using whatever tag was available prior to you moving to rc8, and that
->> worked.
->
-> OK, then I can only guess that something went wrong in your bisection
-> (e.g. dirty build, something not marked properly, etc).
+On Mon, 31 Aug 2009 20:24:45 +0200 Marcin Slusarz wrote:
 
-Well so remember I did a clean git clone of wireless-testing and the
-issue was still there, but I determined just now it seems rc8 from
-Linus does indeed also have the issue. For some reason the issue was
-not present on hpa's rc8 on linux-2.6-allstable. Will double check on
-that again.
+> Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > 
+> > Change schedule_timeout() parameter to not be specific to HZ=1000.
+> > 
+> > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > Cc: Mike Miller <mike.miller@hp.com>
+> > Cc: iss_storagedev@hp.com
+> > ---
+> >  drivers/block/cciss.c |    5 +++--
+> >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > 
+> > --- lnx-2631-rc7.orig/drivers/block/cciss.c
+> > +++ lnx-2631-rc7/drivers/block/cciss.c
+> > @@ -36,6 +36,7 @@
+> >  #include <linux/proc_fs.h>
+> >  #include <linux/seq_file.h>
+> >  #include <linux/init.h>
+> > +#include <linux/jiffies.h>
+> >  #include <linux/hdreg.h>
+> >  #include <linux/spinlock.h>
+> >  #include <linux/compat.h>
+> > @@ -3489,7 +3490,7 @@ static int __devinit cciss_pci_init(ctlr
+> >  		if (scratchpad == CCISS_FIRMWARE_READY)
+> >  			break;
+> >  		set_current_state(TASK_INTERRUPTIBLE);
+> > -		schedule_timeout(HZ / 10);	/* wait 100ms */
+> > +		schedule_timeout(msecs_to_jiffies(100));	/* wait 100ms */
+> >  	}
+> >  	if (scratchpad != CCISS_FIRMWARE_READY) {
+> >  		printk(KERN_WARNING "cciss: Board not ready.  Timed out.\n");
+> > @@ -3615,7 +3616,7 @@ static int __devinit cciss_pci_init(ctlr
+> >  			break;
+> >  		/* delay and try again */
+> >  		set_current_state(TASK_INTERRUPTIBLE);
+> > -		schedule_timeout(10);
+> > +		schedule_timeout(msecs_to_jiffies(1));
+> 
+> shouldn't it be msecs_to_jiffies(10)?
 
->  That, or
-> different .config files between your linux-2.6-allstable build and
-> the merge-2009-08-28 build of wireless-testing?
+Hm, thanks, that's a good observation -- and possibly correct.
 
-I ensured to diff configs them between builds :T
 
-  Luis
+The reason that I used (1) was that I looked at the loop:
+
+	for (i = 0; i < MAX_CONFIG_WAIT; i++) {
+		if (!(readl(c->vaddr + SA5_DOORBELL) & CFGTBL_ChangeReq))
+			break;
+		/* delay and try again */
+		set_current_state(TASK_INTERRUPTIBLE);
+		schedule_timeout(msecs_to_jiffies(1));
+	}
+
+and this:
+/* How long to wait (in milliseconds) for board to go into simple mode */
+#define MAX_CONFIG_WAIT 30000
+
+and then I tried to make the loop run for a max. of 30000 milliseconds.
+
+Mike M., any comments here?
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
