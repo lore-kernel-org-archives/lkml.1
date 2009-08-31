@@ -1,69 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752128AbZHaXpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752218AbZHaXsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752128AbZHaXpi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 19:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZHaXph
+	id S1752218AbZHaXsZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 19:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZHaXsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 19:45:37 -0400
-Received: from rtr.ca ([76.10.145.34]:33052 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750988AbZHaXpg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 19:45:36 -0400
-Message-ID: <4A9C60A1.50303@rtr.ca>
-Date: Mon, 31 Aug 2009 19:45:37 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Mark Lord <mlord@pobox.com>
-Cc: Tejun Heo <tj@kernel.org>, Ric Wheeler <rwheeler@redhat.com>,
-       Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <004e01ca25e4$c11a54e0$434efea0$@ca> <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name> <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BC033.9000909@pobox.com>
-In-Reply-To: <4A9BC033.9000909@pobox.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 31 Aug 2009 19:48:25 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:56764 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751556AbZHaXsY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 19:48:24 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 1 Sep 2009 08:46:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       lizf@cn.fujitsu.com, nishimura@mxp.nes.nec.co.jp, menage@google.com,
+       linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 0/4] memcg: add support for hwpoison testing
+Message-Id: <20090901084626.ac4c8879.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090831102640.092092954@intel.com>
+References: <20090831102640.092092954@intel.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Tejun Heo wrote:
->> Ric Wheeler wrote:
-> ..
->>> The drive might take a longer time like this when doing error handling
->>> (sector remapping, etc), but then I would expect to see your remapped
->>> sector count grow.
->>
->> Yes, this is a possibility and according to the spec, libata EH should
->> be retrying flushes a few times before giving up but I'm not sure
->> whether keeping retrying for several minutes is a good idea either.
->> Is it?
-> ..
-> 
-> Libata will retry only when the FLUSH returns an error,
-> and the next FLUSH will continue after the point where
-> the first attempt failed.
-> 
-> But if the drive can still auto-relocate sectors, then the
-> first FLUSH won't actually fail.. it will simply take longer
-> than normal.
-> 
-> A couple of those, and we're into the tens of seconds range
-> for time.
-> 
-> Still, it would be good to actually produce an error like that
-> to examine under controlled circumstances.
-> 
-> Hmm.. I had a drive here that gave symptoms like that.
-> Eventually, I discovered that drive had run out of relocatable
-> sectors, too.  Mmm.. I'll see if I can get it back (loaned it out)
-> and perhaps we can recreate this specific scenario on it..
-..
+On Mon, 31 Aug 2009 18:26:40 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-I checked today, and that drive is no longer available.
+> Hi all,
+> 
+> In hardware poison testing, we want to inject hwpoison errors to pages
+> of a collection of selected tasks, so that random tasks (eg. init) won't
+> be killed in stress tests and lead to test failure.
+> 
+> Memory cgroup provides an ideal tool for tracking and testing these target
+> process pages. All we have to do is to
+> - export the memory cgroup id via cgroupfs
+> - export two functions/structs for hwpoison_inject.c
+> 
+> This might be an unexpected usage of memory cgroup. The last patch and this
+> script demonstrates how the exported interfaces are to be used to limit the
+> scope of hwpoison injection.
+> 
+> 	test -d /cgroup/hwpoison && rmdir /cgroup/hwpoison
+> 	mkdir /cgroup/hwpoison
+> 
+> 	usemem -m 100 -s 100 &   # eat 100MB and sleep 100s
+> 	echo `pidof usemem` > /cgroup/hwpoison/tasks
+> 
+> ==>     memcg_id=$(</cgroup/hwpoison/memory.id)
+> ==>     echo $memcg_id > /debug/hwpoison/corrupt-filter-memcg
+> 
+> 	# hwpoison all pfn
+> 	pfn=0
+> 	while true
+> 	do      
+> 		let pfn=pfn+1
+> 		echo $pfn > /debug/hwpoison/corrupt-pfn
+> 		if [ $? -ne 0 ]; then
+> 			break
+> 		fi
+> 	done
+> 
 
--ml
+I don't like this.
+
+1. plz put all under CONFIG_DEBUG_HWPOISON or some
+2. plz don't export memcg's id. you can do it without it.
+3. If I was you, just adds following file
+
+	memory.hwpoison_test
+   Then, if you allow test
+	#echo 1 >	memory.hwpoison_test
+
+4. I can't understand why you need this. I wonder you can get pfn via
+   /proc/<pid>/????. And this may insert HWPOISON to page-cache of shared
+   library and "unexpected" process will be poisoned.
+
+Thanks,
+-Kame
+
+> Comments are welcome, thanks!
+> 
+> Cheers,
+> Fengguang
+> -- 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
