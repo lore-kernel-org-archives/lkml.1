@@ -1,142 +1,374 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZHaTnS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754570AbZHaTm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZHaTnS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 15:43:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZHaTnR
+	id S1754570AbZHaTm6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 15:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754507AbZHaTm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 15:43:17 -0400
-Received: from mga01.intel.com ([192.55.52.88]:35270 "EHLO mga01.intel.com"
+	Mon, 31 Aug 2009 15:42:57 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35112 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752854AbZHaTnQ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 15:43:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,307,1249282800"; 
-   d="scan'208";a="489090736"
-From: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
-To: "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
-CC: "Wu, Fengguang" <fengguang.wu@intel.com>, Rik van Riel <riel@redhat.com>,
-       Avi Kivity <avi@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mel Gorman <mel@csn.ul.ie>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>
-Date: Mon, 31 Aug 2009 12:43:07 -0700
-Subject: RE: [RFC] respect the referenced bit of KVM guest pages?
-Thread-Topic: [RFC] respect the referenced bit of KVM guest pages?
-Thread-Index: AcoijLeuFH1es+LlR+aUeqAHGWdDTwH5gsBQ
-Message-ID: <9EECC02A4CC333418C00A85D21E8932601841832F9@azsmsx502.amr.corp.intel.com>
-References: <4A7AAE07.1010202@redhat.com>
- <20090806102057.GQ23385@random.random> <20090806105932.GA1569@localhost>
- <4A7AC201.4010202@redhat.com> <20090806130631.GB6162@localhost>
- <4A7AD79E.4020604@redhat.com> <20090816032822.GB6888@localhost>
- <4A878377.70502@redhat.com> <20090816045522.GA13740@localhost>
- <9EECC02A4CC333418C00A85D21E89326B6611F25@azsmsx502.amr.corp.intel.com>
- <20090821182439.GN29572@balbir.in.ibm.com>
-In-Reply-To: <20090821182439.GN29572@balbir.in.ibm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	id S1753911AbZHaTld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 15:41:33 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 3/7] writeback: get rid of pdflush completely
+Date: Mon, 31 Aug 2009 21:41:29 +0200
+Message-Id: <1251747693-32354-4-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.6.4.1.207.g68ea
+In-Reply-To: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com>
+References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What do the stats for / from within kvm look like?
+It is now unused, so kill it off.
 
-Interesting - what they look like is inactive_anon is always zero.  Details below - I took the host numbers at the same time and they are similar to what I reported before.
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ fs/fs-writeback.c         |    5 +
+ include/linux/writeback.h |   12 --
+ mm/Makefile               |    2 +-
+ mm/pdflush.c              |  269 ---------------------------------------------
+ 4 files changed, 6 insertions(+), 282 deletions(-)
+ delete mode 100644 mm/pdflush.c
 
-					Jeff
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 561babe..4ee0401 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -30,6 +30,11 @@
+ #define inode_to_bdi(inode)	((inode)->i_mapping->backing_dev_info)
+ 
+ /*
++ * We don't actually have pdflush, but this one is exported though /proc...
++ */
++int nr_pdflush_threads;
++
++/*
+  * Work items for the bdi_writeback threads
+  */
+ struct bdi_work {
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index a2cb35f..34c59f9 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -14,17 +14,6 @@ extern struct list_head inode_in_use;
+ extern struct list_head inode_unused;
+ 
+ /*
+- * Yes, writeback.h requires sched.h
+- * No, sched.h is not included from here.
+- */
+-static inline int task_is_pdflush(struct task_struct *task)
+-{
+-	return task->flags & PF_FLUSHER;
+-}
+-
+-#define current_is_pdflush()	task_is_pdflush(current)
+-
+-/*
+  * fs/fs-writeback.c
+  */
+ enum writeback_sync_modes {
+@@ -154,7 +143,6 @@ balance_dirty_pages_ratelimited(struct address_space *mapping)
+ typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
+ 				void *data);
+ 
+-int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
+ int generic_writepages(struct address_space *mapping,
+ 		       struct writeback_control *wbc);
+ int write_cache_pages(struct address_space *mapping,
+diff --git a/mm/Makefile b/mm/Makefile
+index 5e0bd64..147a7a7 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -8,7 +8,7 @@ mmu-$(CONFIG_MMU)	:= fremap.o highmem.o madvise.o memory.o mincore.o \
+ 			   vmalloc.o
+ 
+ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
+-			   maccess.o page_alloc.o page-writeback.o pdflush.o \
++			   maccess.o page_alloc.o page-writeback.o \
+ 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
+ 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
+ 			   page_isolation.o mm_init.o $(mmu-y)
+diff --git a/mm/pdflush.c b/mm/pdflush.c
+deleted file mode 100644
+index 235ac44..0000000
+--- a/mm/pdflush.c
++++ /dev/null
+@@ -1,269 +0,0 @@
+-/*
+- * mm/pdflush.c - worker threads for writing back filesystem data
+- *
+- * Copyright (C) 2002, Linus Torvalds.
+- *
+- * 09Apr2002	Andrew Morton
+- *		Initial version
+- * 29Feb2004	kaos@sgi.com
+- *		Move worker thread creation to kthread to avoid chewing
+- *		up stack space with nested calls to kernel_thread.
+- */
+-
+-#include <linux/sched.h>
+-#include <linux/list.h>
+-#include <linux/signal.h>
+-#include <linux/spinlock.h>
+-#include <linux/gfp.h>
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/fs.h>		/* Needed by writeback.h	  */
+-#include <linux/writeback.h>	/* Prototypes pdflush_operation() */
+-#include <linux/kthread.h>
+-#include <linux/cpuset.h>
+-#include <linux/freezer.h>
+-
+-
+-/*
+- * Minimum and maximum number of pdflush instances
+- */
+-#define MIN_PDFLUSH_THREADS	2
+-#define MAX_PDFLUSH_THREADS	8
+-
+-static void start_one_pdflush_thread(void);
+-
+-
+-/*
+- * The pdflush threads are worker threads for writing back dirty data.
+- * Ideally, we'd like one thread per active disk spindle.  But the disk
+- * topology is very hard to divine at this level.   Instead, we take
+- * care in various places to prevent more than one pdflush thread from
+- * performing writeback against a single filesystem.  pdflush threads
+- * have the PF_FLUSHER flag set in current->flags to aid in this.
+- */
+-
+-/*
+- * All the pdflush threads.  Protected by pdflush_lock
+- */
+-static LIST_HEAD(pdflush_list);
+-static DEFINE_SPINLOCK(pdflush_lock);
+-
+-/*
+- * The count of currently-running pdflush threads.  Protected
+- * by pdflush_lock.
+- *
+- * Readable by sysctl, but not writable.  Published to userspace at
+- * /proc/sys/vm/nr_pdflush_threads.
+- */
+-int nr_pdflush_threads = 0;
+-
+-/*
+- * The time at which the pdflush thread pool last went empty
+- */
+-static unsigned long last_empty_jifs;
+-
+-/*
+- * The pdflush thread.
+- *
+- * Thread pool management algorithm:
+- * 
+- * - The minimum and maximum number of pdflush instances are bound
+- *   by MIN_PDFLUSH_THREADS and MAX_PDFLUSH_THREADS.
+- * 
+- * - If there have been no idle pdflush instances for 1 second, create
+- *   a new one.
+- * 
+- * - If the least-recently-went-to-sleep pdflush thread has been asleep
+- *   for more than one second, terminate a thread.
+- */
+-
+-/*
+- * A structure for passing work to a pdflush thread.  Also for passing
+- * state information between pdflush threads.  Protected by pdflush_lock.
+- */
+-struct pdflush_work {
+-	struct task_struct *who;	/* The thread */
+-	void (*fn)(unsigned long);	/* A callback function */
+-	unsigned long arg0;		/* An argument to the callback */
+-	struct list_head list;		/* On pdflush_list, when idle */
+-	unsigned long when_i_went_to_sleep;
+-};
+-
+-static int __pdflush(struct pdflush_work *my_work)
+-{
+-	current->flags |= PF_FLUSHER | PF_SWAPWRITE;
+-	set_freezable();
+-	my_work->fn = NULL;
+-	my_work->who = current;
+-	INIT_LIST_HEAD(&my_work->list);
+-
+-	spin_lock_irq(&pdflush_lock);
+-	for ( ; ; ) {
+-		struct pdflush_work *pdf;
+-
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		list_move(&my_work->list, &pdflush_list);
+-		my_work->when_i_went_to_sleep = jiffies;
+-		spin_unlock_irq(&pdflush_lock);
+-		schedule();
+-		try_to_freeze();
+-		spin_lock_irq(&pdflush_lock);
+-		if (!list_empty(&my_work->list)) {
+-			/*
+-			 * Someone woke us up, but without removing our control
+-			 * structure from the global list.  swsusp will do this
+-			 * in try_to_freeze()->refrigerator().  Handle it.
+-			 */
+-			my_work->fn = NULL;
+-			continue;
+-		}
+-		if (my_work->fn == NULL) {
+-			printk("pdflush: bogus wakeup\n");
+-			continue;
+-		}
+-		spin_unlock_irq(&pdflush_lock);
+-
+-		(*my_work->fn)(my_work->arg0);
+-
+-		spin_lock_irq(&pdflush_lock);
+-
+-		/*
+-		 * Thread creation: For how long have there been zero
+-		 * available threads?
+-		 *
+-		 * To throttle creation, we reset last_empty_jifs.
+-		 */
+-		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
+-			if (list_empty(&pdflush_list)) {
+-				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS) {
+-					last_empty_jifs = jiffies;
+-					nr_pdflush_threads++;
+-					spin_unlock_irq(&pdflush_lock);
+-					start_one_pdflush_thread();
+-					spin_lock_irq(&pdflush_lock);
+-				}
+-			}
+-		}
+-
+-		my_work->fn = NULL;
+-
+-		/*
+-		 * Thread destruction: For how long has the sleepiest
+-		 * thread slept?
+-		 */
+-		if (list_empty(&pdflush_list))
+-			continue;
+-		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
+-			continue;
+-		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
+-		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
+-			/* Limit exit rate */
+-			pdf->when_i_went_to_sleep = jiffies;
+-			break;					/* exeunt */
+-		}
+-	}
+-	nr_pdflush_threads--;
+-	spin_unlock_irq(&pdflush_lock);
+-	return 0;
+-}
+-
+-/*
+- * Of course, my_work wants to be just a local in __pdflush().  It is
+- * separated out in this manner to hopefully prevent the compiler from
+- * performing unfortunate optimisations against the auto variables.  Because
+- * these are visible to other tasks and CPUs.  (No problem has actually
+- * been observed.  This is just paranoia).
+- */
+-static int pdflush(void *dummy)
+-{
+-	struct pdflush_work my_work;
+-	cpumask_var_t cpus_allowed;
+-
+-	/*
+-	 * Since the caller doesn't even check kthread_run() worked, let's not
+-	 * freak out too much if this fails.
+-	 */
+-	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {
+-		printk(KERN_WARNING "pdflush failed to allocate cpumask\n");
+-		return 0;
+-	}
+-
+-	/*
+-	 * pdflush can spend a lot of time doing encryption via dm-crypt.  We
+-	 * don't want to do that at keventd's priority.
+-	 */
+-	set_user_nice(current, 0);
+-
+-	/*
+-	 * Some configs put our parent kthread in a limited cpuset,
+-	 * which kthread() overrides, forcing cpus_allowed == cpu_all_mask.
+-	 * Our needs are more modest - cut back to our cpusets cpus_allowed.
+-	 * This is needed as pdflush's are dynamically created and destroyed.
+-	 * The boottime pdflush's are easily placed w/o these 2 lines.
+-	 */
+-	cpuset_cpus_allowed(current, cpus_allowed);
+-	set_cpus_allowed_ptr(current, cpus_allowed);
+-	free_cpumask_var(cpus_allowed);
+-
+-	return __pdflush(&my_work);
+-}
+-
+-/*
+- * Attempt to wake up a pdflush thread, and get it to do some work for you.
+- * Returns zero if it indeed managed to find a worker thread, and passed your
+- * payload to it.
+- */
+-int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
+-{
+-	unsigned long flags;
+-	int ret = 0;
+-
+-	BUG_ON(fn == NULL);	/* Hard to diagnose if it's deferred */
+-
+-	spin_lock_irqsave(&pdflush_lock, flags);
+-	if (list_empty(&pdflush_list)) {
+-		ret = -1;
+-	} else {
+-		struct pdflush_work *pdf;
+-
+-		pdf = list_entry(pdflush_list.next, struct pdflush_work, list);
+-		list_del_init(&pdf->list);
+-		if (list_empty(&pdflush_list))
+-			last_empty_jifs = jiffies;
+-		pdf->fn = fn;
+-		pdf->arg0 = arg0;
+-		wake_up_process(pdf->who);
+-	}
+-	spin_unlock_irqrestore(&pdflush_lock, flags);
+-
+-	return ret;
+-}
+-
+-static void start_one_pdflush_thread(void)
+-{
+-	struct task_struct *k;
+-
+-	k = kthread_run(pdflush, NULL, "pdflush");
+-	if (unlikely(IS_ERR(k))) {
+-		spin_lock_irq(&pdflush_lock);
+-		nr_pdflush_threads--;
+-		spin_unlock_irq(&pdflush_lock);
+-	}
+-}
+-
+-static int __init pdflush_init(void)
+-{
+-	int i;
+-
+-	/*
+-	 * Pre-set nr_pdflush_threads...  If we fail to create,
+-	 * the count will be decremented.
+-	 */
+-	nr_pdflush_threads = MIN_PDFLUSH_THREADS;
+-
+-	for (i = 0; i < MIN_PDFLUSH_THREADS; i++)
+-		start_one_pdflush_thread();
+-	return 0;
+-}
+-
+-module_init(pdflush_init);
+-- 
+1.6.4.1.207.g68ea
 
-The fields are inactive_anon, active_anon, inactive_file, active_file - shortly after the data started being collected, I started firefox and an editor thingy.  The data continues as far into the shutdown as it could.
-
-0 10858 13516 3279
-0 10872 13516 3286
-0 10867 13513 3286
-0 11455 13268 3552
-0 13068 12871 3949
-0 13281 12810 4012
-0 13701 12719 4103
-0 14133 12631 4191
-0 10878 11742 5087
-0 10878 11741 5085
-0 10878 11741 5085
-0 10877 11741 5085
-0 10877 11741 5085
-0 10878 11741 5085
-0 10878 11741 5085
-0 10877 11741 5085
-0 10905 11741 5085
-0 11118 11776 5106
-0 11594 14541 5169
-0 11084 15314 5248
-0 12022 15686 5300
-0 12813 16379 5608
-0 13614 16744 5915
-0 14230 16849 5936
-0 14461 16943 5953
-0 14706 17412 5967
-0 15574 17445 6011
-0 15623 17459 6011
-0 15596 17461 6015
-0 15941 17523 6048
-0 16508 17684 6048
-0 17095 18154 6056
-0 18635 18175 6056
-0 18867 18195 6060
-0 18972 18195 6060
-0 18975 18185 6073
-0 19220 18234 6073
-0 19809 18276 6076
-0 19571 18276 6076
-0 19567 18276 6076
-0 19588 18276 6076
-0 19588 18276 6076
-0 19588 18276 6076
-0 19589 18276 6076
-0 19603 18276 6076
-0 19607 18277 6077
-0 19600 18277 6077
-0 19034 18235 6119
-0 19041 18235 6119
-0 19040 18233 6121
-0 19040 18233 6121
-0 18724 18240 6121
-0 11674 16376 7977
-0 11674 16376 7977
-0 11673 16376 7977
-0 11708 16376 7977
-0 11703 16374 7979
-0 11703 16374 7979
-0 11702 16374 7979
-0 11702 16374 7979
-0 11716 16374 7979
-0 11716 16374 7979
-0 11718 16374 7979
-0 11711 16374 7979
-0 11811 16413 7986
-0 11811 16413 7986
-0 11897 16413 7986
-0 12247 16434 7986
-0 12495 16457 7990
-0 12495 16457 7990
-0 12491 16457 7990
-0 12491 16457 7990
-0 12737 16457 7990
-0 11844 16457 7990
-0 10969 16436 8011
-0 9586 16140 8328
-0 9209 16253 8333
-0 8467 16120 8550
-0 7857 16504 8592
-0 7215 16467 8681
-0 7194 16481 8723
-0 7155 16475 8730
