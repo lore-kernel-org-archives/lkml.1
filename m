@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbZHaEp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753020AbZHaEp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752718AbZHaEp0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 00:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZHaEpY
+	id S1753020AbZHaEp1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 00:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZHaEp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 00:45:24 -0400
-Received: from mail-ew0-f228.google.com ([209.85.219.228]:48405 "EHLO
-	mail-ew0-f228.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751918AbZHaEpX (ORCPT
+	Mon, 31 Aug 2009 00:45:26 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:38646 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbZHaEpZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 00:45:23 -0400
+	Mon, 31 Aug 2009 00:45:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=jM7frZ6RNnHLhzeQwdtNNIASzX2Qn4hb/E+UMZPG3zhZfnJKTeQ/DhlWyuj9wFNLo2
-         NatPpY5xvFgmTrnb2uwpB6SAps8C2hwApVyGKxSmih3csmnh7pd+ChoQM7abLTPWwfsi
-         gMHIo1D3/5cGgRwSc8e80IoaGsTn46oDXZs2o=
+        b=cu+LjhLkh9JpWAki6TIzui4UgiF2MdWZidUx+BMyc71KUCBltbK2Pgm2IqtbjfUsh+
+         BQumGXcy+hIRRIMBBnE3iyGGWLwFrjQLHnYmpUbYOslOSDVdmfVuUkONGpJZv7at1XXB
+         8NGCKs+CgUd98Cz+d1bIj1UXJI6a6Y/3pWRkA=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 2/4] perf tools: Resolve idle thread cmdline for perf trace
-Date: Mon, 31 Aug 2009 06:45:19 +0200
-Message-Id: <1251693921-6579-2-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 3/4] perf tools: Unify swapper tasks naming
+Date: Mon, 31 Aug 2009 06:45:20 +0200
+Message-Id: <1251693921-6579-3-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
 In-Reply-To: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
 References: <1251682323-10395-1-git-send-email-fweisbec@gmail.com>
@@ -32,39 +32,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The cmd-trace tool used the cmdline file and resolved the idle thread
-using a hardcoded check for the 0 task pid.
+In perf tools, we hardcode the pid 0 cmdline resolving to "idle"
+because the init task is not included in the COMM events.
 
-Now we have a centralized way to do that from perf using
-register_idle_thread() API.
+But the idle tasks secondary cpus are resolved into their "init"
+name through the COMM events.
+We have then such strange result in perf report (ditto with trace):
 
-Before:
-	:0-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
-	:0-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
+    19.66%       init    [kernel]          [k] acpi_idle_enter_c1
+    17.32%       [idle]  [kernel]          [k] acpi_idle_enter_c1
 
-After:
-	[idle]-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
-	[idle]-0     [000]     0.000000: irq_handler_entry: irq=0 handler=name
+It's then better to unify the swapper tasks into a single init name.
 
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Peter Zijlstra <peterz@infradead.org>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/builtin-trace.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ tools/perf/util/thread.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
-index dd3c2e7..8247fd0 100644
---- a/tools/perf/builtin-trace.c
-+++ b/tools/perf/builtin-trace.c
-@@ -164,6 +164,7 @@ static int __cmd_trace(void)
- 	char *buf;
+diff --git a/tools/perf/util/thread.c b/tools/perf/util/thread.c
+index 3acd37f..7635928 100644
+--- a/tools/perf/util/thread.c
++++ b/tools/perf/util/thread.c
+@@ -85,7 +85,7 @@ register_idle_thread(struct rb_root *threads, struct thread **last_match)
+ {
+ 	struct thread *thread = threads__findnew(0, threads, last_match);
  
- 	trace_report();
-+	register_idle_thread(&threads, &last_match);
- 
- 	input = open(input_name, O_RDONLY);
- 	if (input < 0) {
+-	if (!thread || thread__set_comm(thread, "[idle]")) {
++	if (!thread || thread__set_comm(thread, "[init]")) {
+ 		fprintf(stderr, "problem inserting idle task.\n");
+ 		exit(-1);
+ 	}
 -- 
 1.6.2.3
 
