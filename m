@@ -1,48 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753287AbZIAIjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZIAIi3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753287AbZIAIjL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZIAIjK
+	id S1753226AbZIAIi3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:38:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZIAIi2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:39:10 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57562 "EHLO mx1.suse.de"
+	Tue, 1 Sep 2009 04:38:28 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:59399 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752819AbZIAIjJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:39:09 -0400
-From: "NeilBrown" <neilb@suse.de>
-To: "George Spelvin" <linux@horizon.com>
-Date: Tue, 1 Sep 2009 18:36:22 +1000 (EST)
-Message-ID: <4a2c5faeb04cab59af9ba6ab512c9916.squirrel@neil.brown.name>
-In-Reply-To: <20090901005629.3932.qmail@science.horizon.com>
-References: <20090901005629.3932.qmail@science.horizon.com>
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-Cc: david@lang.hm, pavel@ucw.cz, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux@horizon.com
-User-Agent: SquirrelMail/1.4.15
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	id S1751676AbZIAIi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:38:28 -0400
+Date: Tue, 1 Sep 2009 18:38:22 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alasdair G Kergon <agk@redhat.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: block tree build failure
+Message-Id: <20090901183822.ed60f577.sfr@canb.auug.org.au>
+In-Reply-To: <20090901081324.GS12579@kernel.dk>
+References: <20090901145949.58610c23.sfr@canb.auug.org.au>
+	<20090901153038.807f5586.sfr@canb.auug.org.au>
+	<20090901053807.GJ12579@kernel.dk>
+	<20090901081324.GS12579@kernel.dk>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, September 1, 2009 10:56 am, George Spelvin wrote:
-> The fact that the ZFS decelopers observed drives writing the data to the
-> wrong location emphasizes the importance of keeping the checksum with
-> the pointer.  An embedded checksum, no matter how good, can't tell you if
-> the data is stale; you need a way to distinguish versions in the pointer.
+--Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I would disagree with that.
-If the embedded checksum is a function of both the data and the address
-of the data (in whatever address space seems most appropriate) then it can
-still verify that the data found with the checksum is the data that was
-expected.
-And storing the checksum with the data (where it is practical) means
-index blocks can be more dense so on average fewer accesses to storage
-are needed.
+Hi Jens,
 
-NeilBrown
+On Tue, 1 Sep 2009 10:13:25 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> This is resolved now.
 
+Thanks.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqc3X4ACgkQjjKRsyhoI8xQbQCfeHRwp39zwmUFyxHwBE6tfS1W
+7QsAnRGlCI/78JmBME9n4m6K6dTvZfbm
+=57uA
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx--
