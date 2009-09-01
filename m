@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbZIANsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZIANtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754838AbZIANsM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZIANsK
+	id S1754857AbZIANtQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZIANtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:48:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51009 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754815AbZIANsI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:48:08 -0400
-Date: Tue, 1 Sep 2009 10:47:31 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Michael Krufky <mkrufky@kernellabs.com>
-Cc: linux-media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PULL] http://kernellabs.com/hg/~mkrufky/sms1xxx
-Message-ID: <20090901104731.5f119d53@pedra.chehab.org>
-In-Reply-To: <303a8ee30908310403x73d067rd58d01fbd4fde299@mail.gmail.com>
-References: <20090730200714.5a7ab8a6@pedra.chehab.org>
-	<37219a840907310825n51d5a6bar79ea1f31dd889327@mail.gmail.com>
-	<20090801014053.7f53da83@pedra.chehab.org>
-	<303a8ee30908011103n3c12258icd2bfd1305b419d3@mail.gmail.com>
-	<20090811140128.211d4d11@caramujo.chehab.org>
-	<37219a840908111457o4b6abc64n52291f044b56782d@mail.gmail.com>
-	<37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
-	<303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
-	<20090830191325.45cf1e69@pedra.chehab.org>
-	<303a8ee30908310403x73d067rd58d01fbd4fde299@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 1 Sep 2009 09:49:15 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:49698 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754768AbZIANtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:49:14 -0400
+Message-ID: <4A9D25F3.2030207@redhat.com>
+Date: Tue, 01 Sep 2009 09:47:31 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: Mark Lord <liml@rtr.ca>, Andrei Tanas <andrei@tanas.ca>,
+       Mark Lord <mlord@pobox.com>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <004e01ca25e4$c11a54e0$434efea0$@ca> <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name> <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BC033.9000909@pobox.com> <4A9C60A1.50303@rtr.ca> <640f6103c45b6cba6f84f887bde227e4@localhost> <4A9D1E7D.1050104@rtr.ca> <4A9D2204.1000608@kernel.org>
+In-Reply-To: <4A9D2204.1000608@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Mon, 31 Aug 2009 07:03:18 -0400
-Michael Krufky <mkrufky@kernellabs.com> escreveu:
+On 09/01/2009 09:30 AM, Tejun Heo wrote:
+> Hello,
+>
+> Mark Lord wrote:
+>>> Mine errored out again with exactly the same symptoms, this time after
+>>> only
+>>> few days and with the "tunable" set to 2 sec. I got a warranty
+>>> replacement
+>>> but haven't shipped this one yet. Let me know if you want it.
+>> ..
+>>
+>> Not me.  But perhaps Tejun ?
+>
+> I think you're much more qualified than me on the subject. :-)
+>
+> Anyone else?  Ric, are you interested with playing the drive?
+>
 
-> I see the GPIO fix in your git tree now -- Thanks for merging it.
-> 
-> However, I also see this changeset:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/mchehab/linux-2.6.git;a=commitdiff;h=31e0ad693fb4e1d1be19dbe1c4f5a1ab9978e810
-> 
-> I believe that it is way too late in 2.6.31 to merge a changeset like
-> this -- Please revert that and if there is actually a Kconfig change
-> required, merge a more minimal change for 2.6.31 and hold off this
-> huge, risky change for the next merge window.
-> 
-> There is not enough time to fix this, if this changeset causes
-> additional breakage.
+No thanks....
 
-This is just Kbuild changes, and it is there at linux-next for some time,
-where for sure people already tried to do several different building tests.
-Among some cosmetics, it removes a dead symbol (DVB_SIANO_SMS1XXX_SMS_IDS).
+I would suggest that Andrei install the new drive and watch it for a few days to 
+make sure that it does not fail in the same way. If it does, you might want to 
+look at the power supply/cables/etc?
 
-It is very bad to expose to the user a config option that configs nothing.
+ric
 
-Anyway, Linus already merged the pull request. If you eventually find a bug on
-it, please ping me for us to send a fix.
-
-Cheers,
-Mauro
