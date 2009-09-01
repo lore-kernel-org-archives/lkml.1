@@ -1,77 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZIAOXo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbZIAO0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754959AbZIAOXo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:23:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZIAOXo
+	id S1754980AbZIAO0n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbZIAO0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:23:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35245 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754921AbZIAOXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:23:43 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-From: James Bottomley <James.Bottomley@suse.de>
-To: akataria@vmware.com
-Cc: Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dtor@vmware.com>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>,
-       Bhavesh Davda <bhavesh@vmware.com>
-In-Reply-To: <1251755593.16169.51.camel@ank32.eng.vmware.com>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
-	 <1251741624.18828.83.camel@mulgrave.site>
-	 <1251755593.16169.51.camel@ank32.eng.vmware.com>
-Content-Type: text/plain
-Date: Tue, 01 Sep 2009 09:23:32 -0500
-Message-Id: <1251815012.3864.55.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Sep 2009 10:26:43 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47747 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754955AbZIAO0m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 10:26:42 -0400
+Date: Tue, 1 Sep 2009 15:25:49 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: venki kaps <venkiece2005@gmail.com>, Nicolas Pitre <nico@cam.org>,
+       "sagar.abhishek@gmail.com" <sagar.abhishek@gmail.com>,
+       "jkenisto@us.ibm.com" <jkenisto@us.ibm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "prasanna@in.ibm.com" <prasanna@in.ibm.com>
+Subject: Re: ARM + jprobes/kretprobes SEGV/hangs/OOPS in 2.6.29 kernel
+Message-ID: <20090901142549.GA21501@flint.arm.linux.org.uk>
+References: <6d53329e0908250342g2cfb73f6v90f73c283c0d391c@mail.gmail.com> <alpine.LFD.2.00.0908251333410.6044@xanadu.home> <6d53329e0908302227l63420351m1005d0c76346e2ec@mail.gmail.com> <6d53329e0908310311v55ef3909na0cbec756e63ccab@mail.gmail.com> <6d53329e0908312355y7bd2038ds6ba8efe671d98bc9@mail.gmail.com> <tnxocpu7osx.fsf@pc1117.cambridge.arm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tnxocpu7osx.fsf@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-31 at 14:53 -0700, Alok Kataria wrote:
-> Hi James, 
+On Tue, Sep 01, 2009 at 02:54:54PM +0100, Catalin Marinas wrote:
+> venki kaps <venkiece2005@gmail.com> wrote:
+> > I have found the exact problem with respect to ARM jprobes.
+> >
+> > The problem with configure i.e, CONFIG_ARM_UNWIND = y; is enabled.
 > 
-> Thanks for your comments. 
-> 
-> On Mon, 2009-08-31 at 11:00 -0700, James Bottomley wrote:
-> > On Mon, 2009-08-31 at 10:28 -0700, Alok Kataria wrote:
-> > > VMware PVSCSI driver - v2.
-> > 
-> > OK, so the first thing that springs to mind is that we already have one
-> > of these things: the ibmvscsi ... is there no way we can share code
-> > between this and the other PV drivers?
-> 
-> I took a quick look at the ibmvscsi driver, and there are lot of
-> differences between the two, mainly the ABI that is shared between the
-> hypervisor and driver differ.
+> I haven't followed the kprobes implementation for ARM but does it make
+> any assumptions about the existence of a frame pointer on the stack?
+> Enabling stack unwinding automatically disables the framepointer.
 
-Well, that's pretty abstractable, surely?  However, there is an
-interesting question of what the best hypervisor interface actually is.
+If it uses CALLER_ADDRESSx() then it won't work with unwinding enabled.
+See 5613/1 (which is pending in the devel branch.)
 
->  Also the ibmvscsi driver seems to offer a
-> lot of other features as well, like the SRP. 
-
-SRP is the protocol transfer abstraction.  It's just a way of packaging
-up SCSI commands for transfer over a DMA protocol (OK, so it was
-envisaged that the DMA protocol would be RDMA, but a hypervisor
-interface is also a DMA protocol).
-
-> The pvscsi driver is a simple SCSI adapter driver and is basically no
-> different than any other SCSI driver written for a particular HBA.
-
-Well, it is really ... hopefully all the hypervisor interfaces won't
-decide to be completely incompatible, so there's a good chance of code
-sharing between them.
-
-James
-
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
