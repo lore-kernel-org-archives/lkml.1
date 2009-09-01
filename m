@@ -1,118 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbZIAQIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbZIAQIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754963AbZIAQIO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 12:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753860AbZIAQIN
+	id S1755003AbZIAQIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 12:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbZIAQIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 12:08:13 -0400
-Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:64359 "EHLO
-	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752789AbZIAQIM (ORCPT
+	Tue, 1 Sep 2009 12:08:47 -0400
+Received: from mail-yw0-f188.google.com ([209.85.211.188]:55617 "EHLO
+	mail-yw0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753007AbZIAQIq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 12:08:12 -0400
-X-Mail-Handler: MailHop Outbound by DynDNS
-X-Originating-IP: 72.249.23.125
-X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
-X-MHO-User: U2FsdGVkX19wopkrRBVFxIX6ugZ8E/U/
-Date: Tue, 1 Sep 2009 09:08:02 -0700
-From: Tony Lindgren <tony@atomide.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Hiremath, Vaibhav" <hvaibhav@ti.com>,
-       "Syed Mohammed, Khasim" <khasim@ti.com>,
-       Steve Sakoman <sakoman@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org Mailing List" 
-	<linux-omap@vger.kernel.org>,
-       Tomi Valkeinen <tomi.valkeinen@nokia.com>
-Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
-Message-ID: <20090901160801.GB14646@atomide.com>
-References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com> <4A9B96A7.5040005@gmail.com> <5e088bd90908310720p290ba68dwd6106a778fd7c740@mail.gmail.com> <0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com> <19F8576C6E063C45BE387C64729E73940436A4A9B6@dbde02.ent.ti.com> <20090831155518.GC16876@atomide.com> <4A9CC8DB.2050803@gmail.com>
+	Tue, 1 Sep 2009 12:08:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XTTKvZNPCWFxE4rD17ixFXtoqXbZEoGgtoKGTb1Xu9htEZWMf6+wiNL6bauk/CYpF3
+         vS1/UVEegL/itPQ3OnJBxde/sti2RONAVo+mi8ywtv3zbY5Ax5jt0oV3LRFgDhp9vEeO
+         hRaBSkPJ0RPeJZko6tiBQw5xzM510C0Rq5CE8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9CC8DB.2050803@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1251815012.3864.55.camel@mulgrave.site>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
+	 <1251741624.18828.83.camel@mulgrave.site>
+	 <1251755593.16169.51.camel@ank32.eng.vmware.com>
+	 <1251815012.3864.55.camel@mulgrave.site>
+Date: Tue, 1 Sep 2009 09:08:48 -0700
+Message-ID: <35f686220909010908k24f0164nc09b1158b6841ff3@mail.gmail.com>
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: Alok Kataria <alokkataria1@gmail.com>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: akataria@vmware.com, Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>,
+       Bhavesh Davda <bhavesh@vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Artem Bityutskiy <dedekind1@gmail.com> [090901 00:11]:
-> On 08/31/2009 06:55 PM, Tony Lindgren wrote:
->> * Hiremath, Vaibhav<hvaibhav@ti.com>  [090831 07:44]:
->>>
->>>> -----Original Message-----
->>>> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
->>>> owner@vger.kernel.org] On Behalf Of Syed Mohammed, Khasim
->>>> Sent: Monday, August 31, 2009 8:11 PM
->>>> To: Steve Sakoman; Artem Bityutskiy; linux-kernel@vger.kernel.org;
->>>> linux-omap@vger.kernel.org Mailing List
->>>> Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen
->>>> Subject: RE: [PATCH 00/18] OMAP: DSS2: Intro
->>>>
->>>>
->>>>
->>>>> -----Original Message-----
->>>>> From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-
->>>> owner@vger.kernel.org] On Behalf Of Steve
->>>>> Sakoman
->>>>> Sent: Monday, August 31, 2009 7:50 PM
->>>>> To: Artem Bityutskiy
->>>>> Cc: Andrew Morton; Tony Lindgren; Tomi Valkeinen; linux-
->>>> kernel@vger.kernel.org; linux-
->>>>> omap@vger.kernel.org Mailing List
->>>>> Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
->>>>>
->>>>> On Mon, Aug 31, 2009 at 2:23 AM, Artem
->>>> Bityutskiy<dedekind1@gmail.com>  wrote:
->>>>>
->>>>>> We are using DSS2 in Nokia for about a year already. N900 is
->>>> using this
->>>>>> code, for example. Other (non-Nokia) projects are using DSS2 as
->>>> well.
->>>>>> The code was public for long time and was sent several times for
->>>> review.
->>>>>>
->>>>>> In any case,
->>>>>>
->>>>>> Tested-by: Artem Bityutskiy<artem.bityutskiy@nokia.com>
->>>>>
->>>>> Gumstix has also been shipping with DSS2 on their Overo product
->>>> for
->>>>> many months now.
->>>>>
->>>>> Tested-by: Steve Sakoman<steve@sakoman.com>
->>>>
->>>> If there is a concern on OMAP2 support, I can confirm that there is
->>>> no difference between OMAP2 and OMAP3 Display Subsystem from
->>>> Register level. So what ever works on OMAP3 DSS2 should straight
->>>> away work for OMAP2 as well.
->>>>
->>>> I agree with rest of the folks here, we should get DSS2 merged in
->>>> mainline. It is being extensively used on all OMAP3 platforms.
->>>>
->>> [Hiremath, Vaibhav] I am also agreeing with the point that we should merge the DSS2; it's now almost year we have migrated to DSS2. Most of our customers are based out of it.
+Hi James,
+
+On Tue, Sep 1, 2009 at 7:23 AM, James Bottomley<James.Bottomley@suse.de> wrote:
+> On Mon, 2009-08-31 at 14:53 -0700, Alok Kataria wrote:
+>> Hi James,
 >>
->> Yeh I agree this should get merged.
+>> Thanks for your comments.
 >>
->> I think it's best to merge this via the fb list and I've acked the
->> patches that I'm concerned with already.
+>> On Mon, 2009-08-31 at 11:00 -0700, James Bottomley wrote:
+>> > On Mon, 2009-08-31 at 10:28 -0700, Alok Kataria wrote:
+>> > > VMware PVSCSI driver - v2.
+>> >
+>> > OK, so the first thing that springs to mind is that we already have one
+>> > of these things: the ibmvscsi ... is there no way we can share code
+>> > between this and the other PV drivers?
+>>
+>> I took a quick look at the ibmvscsi driver, and there are lot of
+>> differences between the two, mainly the ABI that is shared between the
+>> hypervisor and driver differ.
 >
-> This would be a good suggestion if the fb list was alive, but it is not.
-> Do you have a specific name of a maintainer?
-
-Bummer, I don't know who should ack this then.
-
-> Andrew,
+> Well, that's pretty abstractable, surely?  However, there is an
+> interesting question of what the best hypervisor interface actually is.
 >
-> could you please help with merging this piece of (well written) code?
-> Could you give your blessing to include it into linux-next now, and
-> merge this during the next merge window?
+>>  Also the ibmvscsi driver seems to offer a
+>> lot of other features as well, like the SRP.
+>
+> SRP is the protocol transfer abstraction.  It's just a way of packaging
+> up SCSI commands for transfer over a DMA protocol (OK, so it was
+> envisaged that the DMA protocol would be RDMA, but a hypervisor
+> interface is also a DMA protocol).
+>
+>> The pvscsi driver is a simple SCSI adapter driver and is basically no
+>> different than any other SCSI driver written for a particular HBA.
+>
+> Well, it is really ... hopefully all the hypervisor interfaces won't
+> decide to be completely incompatible, so there's a good chance of code
+> sharing between them.
 
-Alternatively I can also pile it into the omap for-next branch if
-Andrew prefers that.
+Well, going by that theory every SCSI driver can share some code with
+any other SCSI driver, In short we can come up with an low level SCSI
+driver interface which every SCSI driver can make use of, to reduce
+code duplicity.  We don't do that, and the reason being, that its a
+device and we shouldn't expect every device to share common features
+or design decisions.
 
-It would be nice to get some fb people to ack the drivers/video/omap/
-parts of the patch series though.
+We already virtualize storage at the lowest (read device) level to
+avoid duplicating stuff in a guest operating system.
+If this was say a block level virtaulizing scheme sharing would be
+more eminent, but given that we are a device its better to keep things
+separate and IMHO, it might be an overkill to design a new pv-driver
+or some such layer for every device that you virtualize.
 
-Tony 
+Thanks,
+Alok
+
+
+
+>
+> James
+>
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
