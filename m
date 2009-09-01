@@ -1,160 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752666AbZIABhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZIABlJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752666AbZIABhx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 21:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752653AbZIABhv
+	id S1752713AbZIABlJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 21:41:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZIABlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 21:37:51 -0400
-Received: from mail-pz0-f175.google.com ([209.85.222.175]:59000 "EHLO
-	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752634AbZIABhr (ORCPT
+	Mon, 31 Aug 2009 21:41:08 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58472 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752386AbZIABlH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 21:37:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=bJwhlDJgwfiFGE3+ghS754meWa4kBvj6ll0fbTHzJOO8f/jdprsQrBIlg9xya9nuYM
-         DqIp0J/fCToTaeS+13jyfTas89imJzkx6Bd0eC1+K88iytskNQyxL93qNgM5fVq0GIK7
-         r1wktEgBgLGW87ZEI1hmff3UeRVo9h10b2QpA=
-Date: Mon, 31 Aug 2009 18:37:46 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Georgi Chorbadzhiyski <gf@unixsol.org>
-Cc: Henk Vergonet <henk.vergonet@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, usbb2k-api-dev@nongnu.org
-Subject: Re: input: Phone buttons in USB handsets/phones
-References: <4A9AE758.2060106@unixsol.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9AE758.2060106@unixsol.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090901021024.EC446526EA5@mailhub.coreip.homeip.net>
+	Mon, 31 Aug 2009 21:41:07 -0400
+Subject: Re: [PATCH resend] tracing/events: convert NAPI's tracepoint via
+ TRACE_EVENT
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A9C73A4.20003@cn.fujitsu.com>
+References: <4A9B6AA7.5020508@cn.fujitsu.com>
+	 <alpine.DEB.2.00.0908311402150.13931@gandalf.stny.rr.com>
+	 <4A9C73A4.20003@cn.fujitsu.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 31 Aug 2009 21:41:06 -0400
+Message-Id: <1251769266.20350.10.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Aug 30, 2009 at 11:55:52PM +0300, Georgi Chorbadzhiyski wrote:
-> Hi guys, I'm patching yealink.c to support p4k phone and
-> I'm wondering what to do about the extra buttons that are
-> found the phone [1] but are not defined as KEY_xxxxxx in
-> input.h?
+On Tue, 2009-09-01 at 09:06 +0800, Xiao Guangrong wrote:
 > 
-> For example the phone that I'm working with have these
-> buttons that do not have matching definitions in input.h:
+> Steven Rostedt wrote:
+> > On Mon, 31 Aug 2009, Xiao Guangrong wrote:
+> > 
+> >> - Convert NAPI's tracepoint via TRACE_EVENT macro, the output information
+> >>   like below:
+> >>
+> >>    sshd-2503  [000]    71.920846: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
+> >>    sshd-2503  [000]    72.020291: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
+> >>    sshd-2503  [000]    72.020418: napi_poll: ifname=eth0 state=NAPI_STATE_SCHED weigth=16 poll=pcnet32_poll
+> >>
+> >> - Remove the "DECLARE_TRACE" definiens in include/trace/define_trace.h,
+> >>   because TRACE_EVENT not use it
+> > 
+> > The above really needs to be in a separate patch, since it is a tracing 
+> > infrastructure change.
+> > 
 > 
->   FLASH
->   REDIAL
-
-There is nothing thst stops us from adding more KEY_* definitons to
-input.h as long as it is shown that will be used by drivers and
-applications.
-
->   SPEAKER
-
-This should probably be a switch, not a key.
-
-
+> Hi Steven,
 > 
-> for testing purposes I mapped them to f, r and s
-> but that's probably not what should be done.
+> We can't break this patch into two patches, because it's has redefined 'DECLARE_TRACE'
+> in include/trace/define_trace.h, like below:
 > 
-> So what to do about them?
+> 1: if we remove 'DECLARE_TRACE' first, then NAPI's tracepoint can't define tracepoint
+>    (it's a NAPI tracepoint's bug,
+>     see my previous patch: http://marc.info/?l=linux-kernel&m=125118032931716&w=2)
 > 
-> [1]: http://www.von-phone.com/prodimages/P4K-functions.jpg
+> 2: if we convert NAPI's tracepoint first, it can't include more TRACE_EVENT .h files in
+>    one .c file, the compiler will complain with variables redefined:
 > 
-> Right now mapping looks like this:
+> include/trace/events/napi.h:15: error: redefinition of ‘__tpstrtab_napi_poll’
+> include/trace/events/napi.h:15: error: previous definition of ‘__tpstrtab_napi_poll’ was here
+> include/trace/events/napi.h:15: error: redefinition of ‘__tracepoint_napi_poll’
+> include/trace/events/napi.h:15: error: previous definition of ‘__tracepoint_napi_poll’ was here
+> In file included from include/trace/ftrace.h:644,
 > 
-> +
-> +/*
-> + * USB-P4K button layout:
-> + *
-> + *        IN   up    OUT
-> + *      VOL+           DEL
-> + *       VOL- down   DIAL
-> + *
-> + *       1      2      3
-> + *       4      5      6
-> + *       7      8      9
-> + *       *      0      #
-> + *
-> + *    HELP     (S)    SEND
-> + *      FLASH       REDIAL
-> + *
-> + * The "up" and "down" keys, are one big key
-> + * The (S) is one big green key with speaker picture on it
-> + */
-> +static int map_p4k_to_key(int scancode)
-> +{
-> +	switch(scancode) {			/* phone key:	*/
-> +	case 0x34: return KEY_LEFT;		/*   IN		*/
-> +	case 0x32: return KEY_UP;		/*   up		*/
-> +	case 0x10: return KEY_RIGHT;		/*   OUT	*/
-> +	case 0x30: return KEY_DOWN;		/*   down	*/
-> +	case 0x31: return KEY_VOLUMEUP;		/*   VOL+	*/
-> +	case 0x40: return KEY_VOLUMEDOWN;	/*   VOL-	*/
-> +	case 0x33: return KEY_BACKSPACE;	/*   DEL	*/
-> +	case 0x00: return KEY_ENTER;		/*   DIAL	*/
-> +	case 0x21: return KEY_1;		/*   1		*/
-> +	case 0x11: return KEY_2;		/*   2 		*/
-> +	case 0x01: return KEY_3;		/*   3		*/
-> +	case 0x22: return KEY_4;		/*   4		*/
-> +	case 0x12: return KEY_5;		/*   5		*/
-> +	case 0x02: return KEY_6;		/*   6		*/
-> +	case 0x23: return KEY_7;		/*   7		*/
-> +	case 0x13: return KEY_8;		/*   8		*/
-> +	case 0x03: return KEY_9;		/*   9		*/
-> +	case 0x24: return KEY_KPASTERISK; 	/*   *		*/
-> +	case 0x14: return KEY_0;		/*   0		*/
-> +	case 0x04: return KEY_LEFTSHIFT |
-> +			  KEY_3 << 8;		/*   #		*/
-> +	case 0x05: return KEY_HELP; 		/*   HELP	*/
-> +	case 0x15: return KEY_F;   		/*   FLASH	*/
-> +	case 0x20: return KEY_S;  		/*   SPEAKER	*/
-> +	case 0x25: return KEY_SEND; 		/*   SEND	*/
-> +	case 0x44: return KEY_R;    		/*   REDIAL	*/
-> +	}
-> +	return -EINVAL;
-> +}
-> 
-> A related question - cm109 driver uses KEY_NUMERIC_xxx constants
-> but since yealink is an older driver (merged in 2.6.14-rc1) it
-> returns KEY_0..KEY_9, KPASTERISK and a hack to return #.
-> 
-> Is it a good idea to make yealink return KEY_NUMERIC_xxxx codes
-> since they are specially designed for numeric keypads (phones).
-> 
+> So, I think we do better fix this bug early, then other people can go on his work on ftrace.
 
-It would be great but I am concerned about breaking existing users;
-I will gladly accept the patch that would add module option causing
-yealink to start using KEY_NUMERIC_* and also allowing changing keymap
-from userspace.
+Ah, I missed the dependency there. That needs to be commented in the
+change log. That is, to comment that a dependency exists.
 
-> On one hand this will unify somehow codes returned by cm109
-> (supports at least 5 different usb phone models) and yealink
-> (lots of nice usb phones) but on the other hand support for
-> KEY_NUMERIC_xxx should be added to every application that
-> right now is working fine with yealink driver (but not cm109).
-> Right now returning normal 1,2,3,etc makes testing the driver
-> a lot easier. Just plug the phone and enter some numbers.
-> In this case KEY_NUMERIC_xxxx codes are PITA.
-> 
+Luckily, none of the DECLARE_TRACE users used the CREATE_TRACEPOINT way
+of creating the trace points. Of course using DECLARE_TRACE directly is
+now deprecated, but this change would have broken it if it was used,
+because the define_trace.h was also written for that in mind. But since
+we never converted any of the old users to do so, this wont break
+anything.
 
-Just fix your keymaps. It should be done just once.
+OK, you have have Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-> So I'm a bit stuck at what to do, should I patch yealink
-> to return NUMERIC_xxx codes
+-- Steve
 
-Patch yealink (but keep compatibility by default), advise application
-users to switch to new keymap style.
 
-> or switch cm109 to returning
-> KEY_1..KEY_9, KEY_ASTERISK, etc?
-
-No, because then it will not work for French users (or anyone whose
-default keymap has digits in _upper_ register). That was the reson for
-introducing KEY_NUMERIC_* (KEY_1 & are are affected by keymap and shift
-state, KEY_KP1 & co. are affected by numlock state).
-
--- 
-Dmitry
