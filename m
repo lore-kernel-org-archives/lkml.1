@@ -1,49 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZIASir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZIASjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbZIASir (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 14:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751543AbZIASiq
+	id S1755186AbZIASjV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 14:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZIASjV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 14:38:46 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:51325 "EHLO
+	Tue, 1 Sep 2009 14:39:21 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51354 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbZIASip (ORCPT
+	with ESMTP id S1754939AbZIASjU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 14:38:45 -0400
-Date: Tue, 1 Sep 2009 14:38:37 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Alok Kataria <akataria@vmware.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Roland Dreier <rdreier@cisco.com>, Dmitry Torokhov <dtor@vmware.com>,
-       Matthew Wilcox <matthew@wil.cx>, Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-Message-ID: <20090901183837.GA22551@infradead.org>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com> <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org> <200909010933.50571.dtor@vmware.com> <1251823925.3864.216.camel@mulgrave.site> <adaocpuo9vs.fsf@cisco.com> <1251826804.12482.47.camel@mulgrave.site> <1251827676.16169.152.camel@ank32.eng.vmware.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251827676.16169.152.camel@ank32.eng.vmware.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 1 Sep 2009 14:39:20 -0400
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_pages
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       tytso@mit.edu, akpm@linux-foundation.org, jack@suse.cz
+In-Reply-To: <1251803946-9243-9-git-send-email-jens.axboe@oracle.com>
+References: <1251803946-9243-1-git-send-email-jens.axboe@oracle.com>
+	 <1251803946-9243-9-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 20:38:55 +0200
+Message-Id: <1251830335.8502.17.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 05:54:36PM +0000, Alok Kataria wrote:
-> Also note that, the way all these things are implemented for each of the
-> hypervisor devices will differ and getting every hv-vendor to agree on a
-> common set of things is not very attractive proposition ( atleast, this
-> I can say from my past experiences).
+On Tue, 2009-09-01 at 13:19 +0200, Jens Axboe wrote:
 
-virtio is shared by three or four hypervisors depending on how you
-count it, with others under development.
+> Originally, MAX_WRITEBACK_PAGES was hard-coded to 1024 because of a
+> concern of not holding I_SYNC for too long.  (At least, that was the
+> comment previously.)  This doesn't make sense now because the only
+> time we wait for I_SYNC is if we are calling sync or fsync, and in
+> that case we need to write out all of the data anyway.  Previously
+> there may have been other code paths that waited on I_SYNC, but not
+> any more.
+> 
+> According to Christoph, the current writeback size is way too small,
+> and XFS had a hack that bumped out nr_to_write to four times the value
+> sent by the VM to be able to saturate medium-sized RAID arrays.  This
+> value was also problematic for ext4 as well, as it caused large files
+> to be come interleaved on disk by in 8 megabyte chunks (we bumped up
+> the nr_to_write by a factor of two).
+> 
+> So, in this patch, we make the MAX_WRITEBACK_PAGES a tunable, and
+> change the default to be 32768 blocks.
+
+Do we really need a tunable for this?
+
+I guess we need a limit to avoid it writing out everything, but can't we
+have something automagic?
 
