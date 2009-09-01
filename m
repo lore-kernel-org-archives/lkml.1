@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZIAA4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZIABH2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbZIAA4a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 20:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZIAA4a
+	id S1752641AbZIABH2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 21:07:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZIABH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 20:56:30 -0400
-Received: from science.horizon.com ([71.41.210.146]:28980 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752557AbZIAA43 (ORCPT
+	Mon, 31 Aug 2009 21:07:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57946 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751815AbZIABH1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 20:56:29 -0400
-Date: 31 Aug 2009 20:56:29 -0400
-Message-ID: <20090901005629.3932.qmail@science.horizon.com>
-From: "George Spelvin" <linux@horizon.com>
-To: david@lang.hm, pavel@ucw.cz
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-Cc: linux-doc@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux@horizon.com
-In-Reply-To: <alpine.DEB.2.00.0908310844230.6822@asgard.lang.hm>
+	Mon, 31 Aug 2009 21:07:27 -0400
+Message-ID: <4A9C73A4.20003@cn.fujitsu.com>
+Date: Tue, 01 Sep 2009 09:06:44 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Neil Horman <nhorman@tuxdriver.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Wei Yongjun <yjwei@cn.fujitsu.com>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH resend] tracing/events: convert NAPI's tracepoint via
+ TRACE_EVENT
+References: <4A9B6AA7.5020508@cn.fujitsu.com> <alpine.DEB.2.00.0908311402150.13931@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0908311402150.13931@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From david@lang.hm Mon Aug 31 15:46:19 2009
-Date: Mon, 31 Aug 2009 08:45:38 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Pavel Machek <pavel@ucw.cz>
-cc: George Spelvin <linux@horizon.com>, linux-doc@vger.kernel.org,
-        linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-In-Reply-To: <20090831105645.GD1353@ucw.cz>
-References: <20090831005426.13607.qmail@science.horizon.com> <20090831105645.GD1353@ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 
->>> That's one thing I really like about ZFS: its policy of "don't trust
->>> the disks."  If nothing else, simply telling you "your disks f*ed up,
->>> and I caught them doing it", instead of the usual mysterious corruption
->>> detected three months later, is tremendoudly useful information.
->>
->> The more I learn about storage, the more I like idea of zfs. Given the
->> subtle issues between filesystem and raid layer, integrating them just
->> makes sense.
+
+Steven Rostedt wrote:
+> On Mon, 31 Aug 2009, Xiao Guangrong wrote:
 > 
-> Note that all that zfs does is tell you that you already lost data (and 
-> then only if the checksumming algorithm would be invalid on a blank block 
-> being returned), it doesn't protect your data.
+>> - Convert NAPI's tracepoint via TRACE_EVENT macro, the output information
+>>   like below:
+>>
+>>    sshd-2503  [000]    71.920846: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
+>>    sshd-2503  [000]    72.020291: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
+>>    sshd-2503  [000]    72.020418: napi_poll: ifname=eth0 state=NAPI_STATE_SCHED weigth=16 poll=pcnet32_poll
+>>
+>> - Remove the "DECLARE_TRACE" definiens in include/trace/define_trace.h,
+>>   because TRACE_EVENT not use it
+> 
+> The above really needs to be in a separate patch, since it is a tracing 
+> infrastructure change.
+> 
 
-Obviously, there are limits, but it does provide useful protection:
-- You know where the missing data is.
-- The error isn't amplified by believing corrupted metadata
-- I seem to recall that ZFS does replicate metadata.
-- Corrupted replicas can be "scrubbed" and rewritten from uncorrupted ones.
-- If you have some storage redundancy, it can try different mirrors
-  to get the data back.
+Hi Steven,
 
-In particular, on a RAID-5 system, ZFS tries dropping out each data disk
-in turn to see if the correct data can be reconstructed from the others
-+ parity.
+We can't break this patch into two patches, because it's has redefined 'DECLARE_TRACE'
+in include/trace/define_trace.h, like below:
 
-One of ZFS's big performance problems is that currently it only checksums
-the entire RAID stripe, so it always has to read every drive, and doesn't
-get RAID's IOPS advantage.  But that's fairly straightforward to fix.
-(It's something of a problem for RAID-5 in general, because reads want
-larger chunk sizes to increase the chance that a single read can be
-satisfied by one disk, while writes want small chunks so that you can
-do whole-stripe writes.)
+1: if we remove 'DECLARE_TRACE' first, then NAPI's tracepoint can't define tracepoint
+   (it's a NAPI tracepoint's bug,
+    see my previous patch: http://marc.info/?l=linux-kernel&m=125118032931716&w=2)
 
-The fact that the ZFS decelopers observed drives writing the data to the
-wrong location emphasizes the importance of keeping the checksum with
-the pointer.  An embedded checksum, no matter how good, can't tell you if
-the data is stale; you need a way to distinguish versions in the pointer.
+2: if we convert NAPI's tracepoint first, it can't include more TRACE_EVENT .h files in
+   one .c file, the compiler will complain with variables redefined:
+
+include/trace/events/napi.h:15: error: redefinition of ‘__tpstrtab_napi_poll’
+include/trace/events/napi.h:15: error: previous definition of ‘__tpstrtab_napi_poll’ was here
+include/trace/events/napi.h:15: error: redefinition of ‘__tracepoint_napi_poll’
+include/trace/events/napi.h:15: error: previous definition of ‘__tracepoint_napi_poll’ was here
+In file included from include/trace/ftrace.h:644,
+
+So, I think we do better fix this bug early, then other people can go on his work on ftrace.
+
+Hi Neil,
+
+How do you think about this patch, can you give me some comments?
+
+
+Thanks,
+Xiao
+
