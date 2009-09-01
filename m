@@ -1,187 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753195AbZIAIA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbZIAIGQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753195AbZIAIA1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752837AbZIAIA0
+	id S1753115AbZIAIGQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:06:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZIAIGP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:00:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58182 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752580AbZIAIA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:00:26 -0400
-Message-ID: <4A9CD54B.1000206@cn.fujitsu.com>
-Date: Tue, 01 Sep 2009 16:03:23 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Tue, 1 Sep 2009 04:06:15 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53454 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752079AbZIAIGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:06:13 -0400
+Date: Tue, 1 Sep 2009 10:06:15 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
+Message-ID: <20090901080615.GQ12579@kernel.dk>
+References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com> <20090901040114.GI23535@mit.edu> <20090901062943.GL12579@kernel.dk> <20090901072416.GO12579@kernel.dk> <20090901074624.GP12579@kernel.dk>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Re: [PATCH 2/3] ftrace: add tracepoint for xtime
-References: <alpine.DEB.2.00.0907272218480.30108@gandalf.stny.rr.com> <4A89213C.5090109@cn.fujitsu.com> <20090818215620.A63C.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0908181454090.727@gandalf.stny.rr.com> <4A939CDF.2000407@cn.fujitsu.com> <4A939D4A.1020706@cn.fujitsu.com> <alpine.DEB.2.00.0908252237220.12897@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908252237220.12897@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901074624.GP12579@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Thomas
-
-I done this patchset to add walltime display for ftrace.
-I think it will make ftrace more convenient to use.
-
-To make it work, I rebased a patch from Xiao Guangrong to add tracepoint
-into xtime, so I can use this feture for my code.
-
-Could you have a look at this patch?
-
-Thanks
-Zhaolei
-
-
-Steven Rostedt wrote:
-> Thomas,
+On Tue, Sep 01 2009, Jens Axboe wrote:
+> On Tue, Sep 01 2009, Jens Axboe wrote:
+> > On Tue, Sep 01 2009, Jens Axboe wrote:
+> > > On Tue, Sep 01 2009, Theodore Tso wrote:
+> > > > On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
+> > > > > 
+> > > > > Here's the 15th version of the writeback patches.
+> > > > 
+> > > > The test-bdi branch of ext4.git tree is a combination of the patches I
+> > > > plan to push once the merge window opens, plus v15 per-bdi patches.
+> > > > On the ext4 call I've recruited some ext4 developers to do some
+> > > > testing and benchmarking *before* the merge window opens.
+> > > 
+> > > Great, thanks a lot for that!
+> > > 
+> > > > I've found something potentially wrong with the writeback.  It was
+> > > > careful to sync the disk before shutting down the system, and I got
+> > > > the following error.   
+> > > > 
+> > > > [  660.499155] ext4_da_writepages: jbd2_start: 32768 pages, ino 41; err -30
+> > > > [  660.505664] Pid: 1848, comm: flush-8:0 Not tainted 2.6.31-rc8-01474-geef6bd0 #362
+> > > > [  660.512402] Call Trace:
+> > > > [  660.514982]  [<c064412f>] ? printk+0x14/0x16
+> > > > [  660.518851]  [<c023ac4a>] ext4_da_writepages+0x213/0x40e
+> > > > [  660.523356]  [<c023aa37>] ? ext4_da_writepages+0x0/0x40e
+> > > > [  660.528383]  [<c01b65a8>] do_writepages+0x28/0x39
+> > > > [  660.533534]  [<c01f1e07>] writeback_single_inode+0x15c/0x346
+> > > > [  660.538401]  [<c0165b23>] ? down_read_trylock+0x3e/0x48
+> > > > [  660.542921]  [<c01f2892>] generic_sync_wb_inodes+0x2ab/0x37b
+> > > > [  660.547805]  [<c01f2a2a>] wb_writeback+0xc8/0xfa
+> > > > [  660.551975]  [<c01f2abb>] wb_do_writeback+0x5f/0x118
+> > > > [  660.556333]  [<c01f2b95>] bdi_writeback_task+0x21/0x92
+> > > > [  660.560838]  [<c01c0f5d>] bdi_start_fn+0x63/0xb2
+> > > > [  660.565647]  [<c01c0efa>] ? bdi_start_fn+0x0/0xb2
+> > > > [  660.569710]  [<c0162363>] kthread+0x73/0x78
+> > > > [  660.573528]  [<c01622f0>] ? kthread+0x0/0x78
+> > > > [  660.577355]  [<c011e6f3>] kernel_thread_helper+0x7/0x10
+> > > > 
+> > > > ... and a very similar failure for inode 354
+> > > > 
+> > > > [  660.582215] ext4_da_writepages: jbd2_start: 32768 pages, ino 354; err -30
+> > > > 
+> > > > Inode 41 is /var/lib/urandom/random-seed, and inode 354 is
+> > > > /var/run/syslogd.pid.
+> > > > 
+> > > > The failure occurs if I build w/o the ext4 "next" patches, and the
+> > > > failure does not happen if I take build v2.6.31-rc8 without per-bdi
+> > > > patches (with or without the ext4 patches).  At a guess it looks like
+> > > > the bdi threads are trying to write out the dirty files that were
+> > > > written in the shutdown scripts, *after* the file system has been made
+> > > > read-only in preparation for unmounting the file system in question.
+> > > 
+> > > OK, that's definitely something that I will look into today. It isn't
+> > > necessarily a writeback bug, but it does rather smell like it.
+> > 
+> > I can reproduce, looks like it's not getting the sync on ro remount. Fix
+> > should be included shortly :-)
 > 
-> This patch touches time keeping work. Can I get your ACK on it, or if it 
-> belongs to someone else, could you tell me who I need.
+> I see what is going on now... From the remount sync path, it's hitting:
 > 
-> Thanks,
+>         if (!down_read_trylock(&inode->i_sb->s_umount)) {
+>                 requeue_io(inode);
+>                 continue;
+>         }
 > 
-> -- Steve
+> in generic_sync_wb_inodes(), so it's not actually getting writing out
+> the dirty inodes for the remount.
 > 
+> do_remount()
+>         down_write(&sb->s_umount);
+>         do_remount_sb();
+>         sync_filesystem(sb);
+>                 __sync_filesystem(sb, 0);
+>                 __sync_filesystem(sb, 1);
+>                         sync_inodes_sb(sb, 1);
+>                                 sync_sb_inodes(wbc);
+>                                         generic_sync_sb_inodes();
 > 
-> On Tue, 25 Aug 2009, Zhaolei wrote:
-> 
->> From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
->>
->> This patch can trace current xtime and wall_to_monotonic. Then user can
->> use ctime() to convert them to wall time which is easier to be understood,
->> especially for flight-recorder which need to get trace event from a kernel
->> dump file.
->>
->> Example of ftrace output:
->>           <idle>-0     [000] 20118.489849: gtod_update_xtime: xtime=1243265589.999999824 wall_to_monotonic=3051713268.744158739
->>            <...>-4020  [001] 20118.489855: sys_open(filename: bf9e66e0, flags: 98800, mode: bf9e66e0)
->>            <...>-4020  [001] 20118.489873: sys_open -> 0xffffffec
->>
->> ctime(1243265590) = date:Mon May 25 11:33:10 2009
->> So we can realize the task with pid 4020 open a file at
->> Mon May 25 11:33:10 2009
->>
->> Changelog:
->> v1->v2: Rebased by Zhao Lei <zhaolei@cn.fujitsu.com>
->>
->> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
->> ---
->>  include/trace/events/xtime.h |   38 ++++++++++++++++++++++++++++++++++++++
->>  kernel/time/ntp.c            |    4 ++++
->>  kernel/time/timekeeping.c    |    6 ++++++
->>  3 files changed, 48 insertions(+), 0 deletions(-)
->>  create mode 100644 include/trace/events/xtime.h
->>
->> diff --git a/include/trace/events/xtime.h b/include/trace/events/xtime.h
->> new file mode 100644
->> index 0000000..398e679
->> --- /dev/null
->> +++ b/include/trace/events/xtime.h
->> @@ -0,0 +1,38 @@
->> +#undef TRACE_SYSTEM
->> +#define TRACE_SYSTEM xtime
->> +
->> +#if !defined(_TRACE_XTIME_H) || defined(TRACE_HEADER_MULTI_READ)
->> +#define _TRACE_XTIME_H
->> +
->> +#include <linux/time.h>
->> +#include <linux/tracepoint.h>
->> +
->> +TRACE_EVENT(gtod_update_xtime,
->> +
->> +	TP_PROTO(struct timespec *xtime, struct timespec *wall_to_monotonic),
->> +
->> +	TP_ARGS(xtime, wall_to_monotonic),
->> +
->> +	TP_STRUCT__entry(
->> +		__field(	long,	xtime_sec		)
->> +		__field(	long,	xtime_nsec		)
->> +		__field(	long,	wall_to_monotonic_sec	)
->> +		__field(	long,	wall_to_monotonic_nsec	)
->> +	),
->> +
->> +	TP_fast_assign(
->> +		__entry->xtime_sec		= xtime->tv_sec;
->> +		__entry->xtime_nsec		= xtime->tv_nsec;
->> +		__entry->wall_to_monotonic_sec	= wall_to_monotonic->tv_sec;
->> +		__entry->wall_to_monotonic_nsec	= wall_to_monotonic->tv_nsec;
->> +	),
->> +
->> +	TP_printk("xtime=%ld.%09ld wall_to_monotonic=%ld.%09ld",
->> +		  __entry->xtime_sec, __entry->xtime_nsec,
->> +		  __entry->wall_to_monotonic_sec, __entry->wall_to_monotonic_nsec)
->> +);
->> +
->> +#endif /* _TRACE_XTIME_H */
->> +
->> +/* This part must be outside protection */
->> +#include <trace/define_trace.h>
->> diff --git a/kernel/time/ntp.c b/kernel/time/ntp.c
->> index 4800f93..fc2f13a 100644
->> --- a/kernel/time/ntp.c
->> +++ b/kernel/time/ntp.c
->> @@ -15,6 +15,8 @@
->>  #include <linux/time.h>
->>  #include <linux/mm.h>
->>  
->> +#include <trace/events/xtime.h>
->> +
->>  /*
->>   * NTP timekeeping variables:
->>   */
->> @@ -218,6 +220,8 @@ static enum hrtimer_restart ntp_leap_second(struct hrtimer *timer)
->>  		break;
->>  	}
->>  
->> +	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
->> +
->>  	write_sequnlock(&xtime_lock);
->>  
->>  	return res;
->> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
->> index 03cbeb3..2e57a87 100644
->> --- a/kernel/time/timekeeping.c
->> +++ b/kernel/time/timekeeping.c
->> @@ -20,6 +20,9 @@
->>  #include <linux/tick.h>
->>  #include <linux/stop_machine.h>
->>  
->> +#define CREATE_TRACE_POINTS
->> +#include <trace/events/xtime.h>
->> +
->>  /* Structure holding internal timekeeping values. */
->>  struct timekeeper {
->>  	/* Current clocksource used for timekeeping. */
->> @@ -338,6 +341,8 @@ int do_settimeofday(struct timespec *tv)
->>  
->>  	update_vsyscall(&xtime, timekeeper.clock);
->>  
->> +	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
->> +
->>  	write_sequnlock_irqrestore(&xtime_lock, flags);
->>  
->>  	/* signal hrtimers about time change */
->> @@ -811,6 +816,7 @@ void update_wall_time(void)
->>  
->>  	/* check to see if there is a new clocksource to use */
->>  	update_vsyscall(&xtime, timekeeper.clock);
->> +	trace_gtod_update_xtime(&xtime, &wall_to_monotonic);
->>  }
->>  
->>  /**
->> -- 
->> 1.5.5.3
->>
->>
+> Jan, any ideas on how best to get around that?
+
+How about something like this? I wish there was a better solution,
+though.
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 5430d4e..9703136 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -550,20 +550,11 @@ static void generic_sync_wb_inodes(struct bdi_writeback *wb,
+ 		 */
+ 		if (inode_dirtied_after(inode, start))
+ 			break;
+-		/*
+-		 * If this fs is currently being u/remounted, leave the
+-		 * inode alone
+-		 */
+-		if (!down_read_trylock(&inode->i_sb->s_umount)) {
+-			requeue_io(inode);
+-			continue;
+-		}
+ 
+ 		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
+ 		__iget(inode);
+ 		pages_skipped = wbc->pages_skipped;
+ 		writeback_single_inode(inode, wbc);
+-		up_read(&inode->i_sb->s_umount);
+ 		if (wbc->pages_skipped != pages_skipped) {
+ 			/*
+ 			 * writeback is not making progress due to locked
+@@ -987,7 +978,7 @@ EXPORT_SYMBOL(__mark_inode_dirty);
+  * on the writer throttling path, and we get decent balancing between many
+  * throttled threads: we don't want them all piling up on inode_sync_wait.
+  */
+-void generic_sync_sb_inodes(struct writeback_control *wbc)
++static void __generic_sync_sb_inodes(struct writeback_control *wbc)
+ {
+ 	if (wbc->bdi)
+ 		bdi_start_writeback(wbc);
+@@ -1039,6 +1030,25 @@ void generic_sync_sb_inodes(struct writeback_control *wbc)
+ 	}
+ 
+ }
++
++void generic_sync_sb_inodes(struct writeback_control *wbc)
++{
++	struct super_block *sb = wbc->sb;
++
++	if (sb) {
++		spin_lock(&sb_lock);
++		sb->s_count++;
++		spin_unlock(&sb_lock);
++	}
++
++	__generic_sync_sb_inodes(wbc);
++
++	if (sb) {
++		spin_lock(&sb_lock);
++		__put_super_and_need_restart(sb);
++		spin_unlock(&sb_lock);
++	}
++}
+ EXPORT_SYMBOL_GPL(generic_sync_sb_inodes);
+ 
+ static void sync_sb_inodes(struct writeback_control *wbc)
+
+-- 
+Jens Axboe
 
