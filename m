@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754857AbZIANtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZIANsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754857AbZIANtQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZIANtP
+	id S1754822AbZIANsF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZIANsF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:49:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:49698 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754768AbZIANtO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:49:14 -0400
-Message-ID: <4A9D25F3.2030207@redhat.com>
-Date: Tue, 01 Sep 2009 09:47:31 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Tue, 1 Sep 2009 09:48:05 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40583 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754812AbZIANsD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:48:03 -0400
+Date: Tue, 1 Sep 2009 14:47:51 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] AB3100 regulator support v2
+Message-ID: <20090901134751.GR19719@n2100.arm.linux.org.uk>
+References: <1251667749-31276-1-git-send-email-linus.walleij@stericsson.com>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: Mark Lord <liml@rtr.ca>, Andrei Tanas <andrei@tanas.ca>,
-       Mark Lord <mlord@pobox.com>, NeilBrown <neilb@suse.de>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <004e01ca25e4$c11a54e0$434efea0$@ca> <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name> <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BC033.9000909@pobox.com> <4A9C60A1.50303@rtr.ca> <640f6103c45b6cba6f84f887bde227e4@localhost> <4A9D1E7D.1050104@rtr.ca> <4A9D2204.1000608@kernel.org>
-In-Reply-To: <4A9D2204.1000608@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251667749-31276-1-git-send-email-linus.walleij@stericsson.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/01/2009 09:30 AM, Tejun Heo wrote:
-> Hello,
->
-> Mark Lord wrote:
->>> Mine errored out again with exactly the same symptoms, this time after
->>> only
->>> few days and with the "tunable" set to 2 sec. I got a warranty
->>> replacement
->>> but haven't shipped this one yet. Let me know if you want it.
->> ..
->>
->> Not me.  But perhaps Tejun ?
->
-> I think you're much more qualified than me on the subject. :-)
->
-> Anyone else?  Ric, are you interested with playing the drive?
->
+On Sun, Aug 30, 2009 at 11:29:09PM +0200, Linus Walleij wrote:
+> This adds support for the regulators found in the AB3100
+> Mixed-Signal IC.
 
-No thanks....
+Not sure why I was cc'd on this, but only one comment from me...
 
-I would suggest that Andrei install the new drive and watch it for a few days to 
-make sure that it does not fail in the same way. If it does, you might want to 
-look at the power supply/cables/etc?
+> +/* Preset (hardware defined) voltages for these regulators */
+> +#define LDO_A_VOLTAGE 2750000
+> +#define LDO_C_VOLTAGE 2650000
+> +#define LDO_D_VOLTAGE 2650000
+> +
+> +int ldo_e_buck_typ_voltages[] = {
+> +	1800000,
+> +	1400000,
+> +	1300000,
+> +	1200000,
+> +	1100000,
+> +	1050000,
+> +	900000,
+> +};
+> +
+> +int ldo_f_typ_voltages[] = {
+> +	1800000,
+> +	1400000,
+> +	1300000,
+> +	1200000,
+> +	1100000,
+> +	1050000,
+> +	2500000,
+> +	2650000,
+> +};
+> +
+> +int ldo_g_typ_voltages[] = {
+> +	2850000,
+> +	2750000,
+> +	1800000,
+> +	1500000,
+> +};
+> +
+> +int ldo_h_typ_voltages[] = {
+> +	2750000,
+> +	1800000,
+> +	1500000,
+> +	1200000,
+> +};
+> +
+> +int ldo_k_typ_voltages[] = {
+> +	2750000,
+> +	1800000,
+> +};
 
-ric
-
+Is there a reason for these to be globally visible?
