@@ -1,87 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752912AbZIAHYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZIAHY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752912AbZIAHYQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 03:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZIAHYP
+	id S1753001AbZIAHY6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 03:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZIAHY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 03:24:15 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:33494 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751105AbZIAHYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 03:24:14 -0400
-Date: Tue, 1 Sep 2009 09:24:16 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
-Message-ID: <20090901072416.GO12579@kernel.dk>
-References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com> <20090901040114.GI23535@mit.edu> <20090901062943.GL12579@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901062943.GL12579@kernel.dk>
+	Tue, 1 Sep 2009 03:24:57 -0400
+Received: from mail-pz0-f175.google.com ([209.85.222.175]:35613 "EHLO
+	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751178AbZIAHY4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 03:24:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=c1uNpaUV3VMRIy17TwqOOd5Od8PeDg4kFtc67uGYPwl2Ct69uZK3atLOIQFuXbmVlU
+         Q2T/5VbVDz904bNtAaOJ/sw83uZYpi7NxVLi79dj4J0eGQJzVnobbQLZ8abvfPfRc3mx
+         6wNl+cJYqk1Z1mBThlz0AL17cmv60/CURcBUc=
+Date: Tue, 1 Sep 2009 16:24:19 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH mmotm] Fix NUMA accounting in numastat.txt
+Message-Id: <20090901162419.a4a6c80e.minchan.kim@barrios-desktop>
+In-Reply-To: <20090901161721.f104c476.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090901135321.f0da4715.minchan.kim@barrios-desktop>
+	<20090901161721.f104c476.kamezawa.hiroyu@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01 2009, Jens Axboe wrote:
-> On Tue, Sep 01 2009, Theodore Tso wrote:
-> > On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
-> > > 
-> > > Here's the 15th version of the writeback patches.
-> > 
-> > The test-bdi branch of ext4.git tree is a combination of the patches I
-> > plan to push once the merge window opens, plus v15 per-bdi patches.
-> > On the ext4 call I've recruited some ext4 developers to do some
-> > testing and benchmarking *before* the merge window opens.
-> 
-> Great, thanks a lot for that!
-> 
-> > I've found something potentially wrong with the writeback.  It was
-> > careful to sync the disk before shutting down the system, and I got
-> > the following error.   
-> > 
-> > [  660.499155] ext4_da_writepages: jbd2_start: 32768 pages, ino 41; err -30
-> > [  660.505664] Pid: 1848, comm: flush-8:0 Not tainted 2.6.31-rc8-01474-geef6bd0 #362
-> > [  660.512402] Call Trace:
-> > [  660.514982]  [<c064412f>] ? printk+0x14/0x16
-> > [  660.518851]  [<c023ac4a>] ext4_da_writepages+0x213/0x40e
-> > [  660.523356]  [<c023aa37>] ? ext4_da_writepages+0x0/0x40e
-> > [  660.528383]  [<c01b65a8>] do_writepages+0x28/0x39
-> > [  660.533534]  [<c01f1e07>] writeback_single_inode+0x15c/0x346
-> > [  660.538401]  [<c0165b23>] ? down_read_trylock+0x3e/0x48
-> > [  660.542921]  [<c01f2892>] generic_sync_wb_inodes+0x2ab/0x37b
-> > [  660.547805]  [<c01f2a2a>] wb_writeback+0xc8/0xfa
-> > [  660.551975]  [<c01f2abb>] wb_do_writeback+0x5f/0x118
-> > [  660.556333]  [<c01f2b95>] bdi_writeback_task+0x21/0x92
-> > [  660.560838]  [<c01c0f5d>] bdi_start_fn+0x63/0xb2
-> > [  660.565647]  [<c01c0efa>] ? bdi_start_fn+0x0/0xb2
-> > [  660.569710]  [<c0162363>] kthread+0x73/0x78
-> > [  660.573528]  [<c01622f0>] ? kthread+0x0/0x78
-> > [  660.577355]  [<c011e6f3>] kernel_thread_helper+0x7/0x10
-> > 
-> > ... and a very similar failure for inode 354
-> > 
-> > [  660.582215] ext4_da_writepages: jbd2_start: 32768 pages, ino 354; err -30
-> > 
-> > Inode 41 is /var/lib/urandom/random-seed, and inode 354 is
-> > /var/run/syslogd.pid.
-> > 
-> > The failure occurs if I build w/o the ext4 "next" patches, and the
-> > failure does not happen if I take build v2.6.31-rc8 without per-bdi
-> > patches (with or without the ext4 patches).  At a guess it looks like
-> > the bdi threads are trying to write out the dirty files that were
-> > written in the shutdown scripts, *after* the file system has been made
-> > read-only in preparation for unmounting the file system in question.
-> 
-> OK, that's definitely something that I will look into today. It isn't
-> necessarily a writeback bug, but it does rather smell like it.
+Hi, Kame.
 
-I can reproduce, looks like it's not getting the sync on ro remount. Fix
-should be included shortly :-)
+On Tue, 1 Sep 2009 16:17:21 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Tue, 1 Sep 2009 13:53:21 +0900
+> Minchan Kim <minchan.kim@gmail.com> wrote:
+> 
+> > 
+> > In Documentation/numastat.txt, it confused me.
+> > For example, there are nodes [0,1] in system.
+> > 
+> > barrios:~$ cat /proc/zoneinfo | egrep 'numa|zone'
+> > Node 0, zone	DMA
+> > 	numa_hit	33226
+> > 	numa_miss	1739
+> > 	numa_foreign	27978
+> > 	..
+> > 	..
+> > Node 1, zone	DMA
+> > 	numa_hit	307
+> > 	numa_miss	46900
+> > 	numa_foreign	0
+> > 
+> > 1) In node 0,  NUMA_MISS means it wanted to allocate page
+> > in node 1 but ended up with page in node 0
+> > 
+> > 2) In node 0, NUMA_FOREIGN means it wanted to allocate page
+> > in node 0 but ended up with page from Node 1.
+> > 
+> > But now, numastat explains it oppositely about (MISS, FOREIGN).
+> > Let's fix up with viewpoint of zone. 
+> > 
+> 
+> I'm confused....documentation is really bad ?
+> Implementation isn't ?
+
+At that time, I though of it. 
+But I knew code is right since zone_stat_item said follwing as. 
+NUMA_MISS is rather unclear but NUMA_FOREIGN is clear, I think.
+
+        NUMA_MISS,              /* allocated in non intended node */
+        NUMA_FOREIGN,           /* was intended here, hit elsewhere */
+
+Also I am worry about legacy tools related to NUMA but I don't know it.
+Code change will break them.
+
+> Hmm, this function ?
+> ==
+> void zone_statistics(struct zone *preferred_zone, struct zone *z)
+> {
+>         if (z->zone_pgdat == preferred_zone->zone_pgdat) {
+>                 __inc_zone_state(z, NUMA_HIT);
+>         } else {
+>                 __inc_zone_state(z, NUMA_MISS);
+>                 __inc_zone_state(preferred_zone, NUMA_FOREIGN);
+>         }
+>         if (z->node == numa_node_id())
+>                 __inc_zone_state(z, NUMA_LOCAL);
+>         else
+>                 __inc_zone_state(z, NUMA_OTHER);
+> }
+> ==
+> I wonder
+> ==
+> void zone_statistics(struct zone *preferred_zone, struct zone *z)
+> {
+>         if (z->zone_pgdat == preferred_zone->zone_pgdat) {
+>                 __inc_zone_state(z, NUMA_HIT);
+>         } else {
+>                 __inc_zone_state(preferred_zone, NUMA_MISS);
+>                 __inc_zone_state(z, NUMA_FOREIGN);
+>         }
+>         if (z->node == numa_node_id())
+>                 __inc_zone_state(z, NUMA_LOCAL);
+>         else
+>                 __inc_zone_state(z, NUMA_OTHER);
+> }
+> ==
+> Is correct fix ....
+> 
+> Thanks,
+> -Kame
+> 
+> 
+> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+> > ---
+> >  Documentation/numastat.txt |    8 ++++----
+> >  1 files changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/Documentation/numastat.txt b/Documentation/numastat.txt
+> > index 80133ac..9fcc9a6 100644
+> > --- a/Documentation/numastat.txt
+> > +++ b/Documentation/numastat.txt
+> > @@ -7,10 +7,10 @@ All units are pages. Hugepages have separate counters.
+> > 
+> >  numa_hit			A process wanted to allocate memory from this node,
+> >  					and succeeded.
+> > -numa_miss			A process wanted to allocate memory from this node,
+> > -					but ended up with memory from another.
+> > -numa_foreign		A process wanted to allocate on another node,
+> > -				    but ended up with memory from this one.
+> > +numa_miss			A process wanted to allocate memory from another node,
+> > +					but ended up with memory from this node.
+> > +numa_foreign		A process wanted to allocate on this node,
+> > +				    but ended up with memory from another one.
+> >  local_node			A process ran on this node and got memory from it.
+> >  other_node			A process ran on this node and got memory from another node.
+> >  interleave_hit 		Interleaving wanted to allocate from this node
+> > --
+> > 1.5.4.3
+> > 
+> > 
+> > 
+> > -- 
+> > Kind regards,
+> > Minchan Kim
+> > 
+> > --
+> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> > the body to majordomo@kvack.org.  For more info on Linux MM,
+> > see: http://www.linux-mm.org/ .
+> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> > 
+> 
+
 
 -- 
-Jens Axboe
-
+Kind regards,
+Minchan Kim
