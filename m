@@ -1,100 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZIAGrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752797AbZIAGt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbZIAGrL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 02:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZIAGrK
+	id S1752797AbZIAGt4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 02:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZIAGtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 02:47:10 -0400
-Received: from mga03.intel.com ([143.182.124.21]:11746 "EHLO mga03.intel.com"
+	Tue, 1 Sep 2009 02:49:55 -0400
+Received: from mga09.intel.com ([134.134.136.24]:34944 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbZIAGrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 02:47:10 -0400
+	id S1751781AbZIAGty (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 02:49:54 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182667746"
-Date: Tue, 1 Sep 2009 14:46:52 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 0/4] memcg: add support for hwpoison testing
-Message-ID: <20090901064652.GA20342@localhost>
-References: <20090831102640.092092954@intel.com> <20090901084626.ac4c8879.kamezawa.hiroyu@jp.fujitsu.com> <20090901022514.GA11974@localhost> <20090901113214.60e7ae32.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901113214.60e7ae32.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-IronPort-AV: E=Sophos;i="4.44,311,1249282800"; 
+   d="scan'208";a="444468756"
+Subject: Re: [PATCH V5 0/2] Ambient Light Sensor support
+From: Zhang Rui <rui.zhang@intel.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Len Brown <lenb@kernel.org>, linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20090901070129.F402D526EA5@mailhub.coreip.homeip.net>
+References: <1251706025.3483.159.camel@rzhang-dt>
+	 <alpine.LFD.2.00.0908311303340.19451@localhost.localdomain>
+	 <20090901070129.F402D526EA5@mailhub.coreip.homeip.net>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 14:47:47 +0800
+Message-Id: <1251787667.3483.197.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 10:32:14AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Tue, 1 Sep 2009 10:25:14 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 4. I can't understand why you need this. I wonder you can get pfn via
-> > >    /proc/<pid>/????. And this may insert HWPOISON to page-cache of shared
-> > >    library and "unexpected" process will be poisoned.
+On Tue, 2009-09-01 at 14:28 +0800, Dmitry Torokhov wrote:
+> On Mon, Aug 31, 2009 at 01:04:35PM -0400, Len Brown wrote:
+> > I put this in the acpi test tree, with the expectation
+> > that it will have at least one minor revision update
+> > before going upstream.
 > > 
-> > Sorry I should have explained this. It's mainly for correctness.
-> > When a user space tool queries the task PFNs in /proc/pid/pagemap and
-> > then send to /debug/hwpoison/corrupt-pfn, there is a racy window that
-> > the page could be reclaimed and allocated by some one else. It would
-> > be awkward to try to pin the pages in user space. So we need the
-> > guarantees provided by /debug/hwpoison/corrupt-filter-memcg, which
-> > will be checked inside the page lock with elevated reference count.
+> > thanks,
+> > Len Brown, Intel Open Source Technology Center
 > > 
 > 
-> memcg never holds refcnt for a page and the kernel::vmscan.c can reclaim
-> any pages under memcg whithout checking anything related to memcg.
-> *And*, your code has no "pin" code.
-> This patch sed does no jobs for your concern.
-
-We grabbed page here, which is not in the scope of this patchset:
-
-        static int try_memory_failure(unsigned long pfn)
-        {      
-                struct page *p;
-                int res = -EINVAL;
-
-                if (!pfn_valid(pfn))
-                        return res;
-
-                p = pfn_to_page(pfn);
-                if (!get_page_unless_zero(compound_head(p)))
-                        return res;
-
-                lock_page_nosync(compound_head(p));
-
-                if (hwpoison_filter(p))
-                        goto out;
-
-                res = __memory_failure(pfn, 18,
-                                       MEMORY_FAILURE_FLAG_COUNTED |
-                                       MEMORY_FAILURE_FLAG_LOCKED);
-        out:
-                unlock_page(p);
-                return res;
-        }
-
-> I recommend you to add
->   /debug/hwpoizon/pin-pfn
+> Breaks build here...
 > 
-> Then,
-> 	echo pfn > /debug/hwpoizon/pin-pfn
->         # add pfn for hwpoison debug's watch list. and elevate refcnt
-> 	check 'pfn' is still used.
->  	echo pfn > /debug/hwpoison/corrupt-pfn
-> 	# check 'watch list' and make it corrupt and release refcnt.
-> or some.
+that's weird.
+I didn't encounter this problem in my test.
 
-Looks like a good alternative. At least no more memcg dependency..
+could you please send your kernel config file?
 
-Cheers,
-Fengguang
+thanks,
+rui
+
