@@ -1,34 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZIALWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZIALYf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754027AbZIALWu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 07:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZIALWt
+	id S1754141AbZIALYf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 07:24:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZIALYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 07:22:49 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55682 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753989AbZIALWs (ORCPT
+	Tue, 1 Sep 2009 07:24:33 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:39401 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754097AbZIALYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 07:22:48 -0400
-Date: Tue, 1 Sep 2009 12:22:40 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Wan ZongShun <mcuos.com@gmail.com>
-Cc: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 3/3] ARM: Add nuc960 paltform files to w90x900
-	platform
-Message-ID: <20090901112240.GD19719@n2100.arm.linux.org.uk>
-References: <4A8A8BFE.1000709@gmail.com>
+	Tue, 1 Sep 2009 07:24:31 -0400
+X-Trace: 251820111/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.89.98/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.89.98
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArcEAC+hnEpPRVli/2dsb2JhbACBU9l/hBsF
+X-IronPort-AV: E=Sophos;i="4.44,311,1249254000"; 
+   d="scan'208";a="251820111"
+Date: Tue, 1 Sep 2009 12:23:57 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, hannes@cmpxchg.org
+Subject: Re: [mmotm][BUG] free is bigger than presnet Re: mmotm 2009-08-27-16-51
+ uploaded
+In-Reply-To: <Pine.LNX.4.64.0909011158080.17324@sister.anvils>
+Message-ID: <Pine.LNX.4.64.0909011217440.18858@sister.anvils>
+References: <200908272355.n7RNtghC019990@imap1.linux-foundation.org>
+ <20090901180032.55f7b8ca.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0909011031140.13740@sister.anvils>
+ <20090901185013.c86bd937.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090901191018.19a69696.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0909011158080.17324@sister.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A8A8BFE.1000709@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 07:09:50PM +0800, Wan ZongShun wrote:
-> Add nuc960 paltform files to w90x900 platform.
+On Tue, 1 Sep 2009, Hugh Dickins wrote:
+> On Tue, 1 Sep 2009, KAMEZAWA Hiroyuki wrote:
+> > 
+> > Sorry again, at continuing tests...thre are still..
+> > 
+> > MemTotal:       24421124 kB
+> > MemFree:        25158956 kB
+> > Buffers:            2264 kB
+> > Cached:            34936 kB
+> > SwapCached:         5140 kB
+> > 
+> > I wonder I miss something..
+> 
+> I've not been looking at /proc/meminfo: I'll do some stuff and see
+> if it goes wrong for me too, will let you know if so.
 
-Ok.
+Well, I've not yet noticed unbelievable MemFree, but my Active(anon)
+(and Active) is bigger than my MemTotal and rising each iteration.
+
+Probably not directly related to your case, and probably related to
+my tmpfs or loop use: but I'd better pursue the anomaly I can so
+easily reproduce, than worry about the anomaly you can reproduce.
+
+Good luck with yours!
+Hugh
