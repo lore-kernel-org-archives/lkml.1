@@ -1,61 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753169AbZIAHdJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbZIAHe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753169AbZIAHdJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 03:33:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZIAHdI
+	id S1753119AbZIAHe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 03:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZIAHe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 03:33:08 -0400
-Received: from smtp1.it.da.ut.ee ([193.40.5.66]:58190 "EHLO smtp1.it.da.ut.ee"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752944AbZIAHdH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 03:33:07 -0400
-Date: Tue, 1 Sep 2009 10:33:08 +0300 (EEST)
-From: Meelis Roos <mroos@linux.ee>
-To: Tejun Heo <tj@kernel.org>
-cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: boot panic after oops from sysfs_new_dirent
-In-Reply-To: <4A9CCD92.4090909@kernel.org>
-Message-ID: <Pine.SOC.4.64.0909011032350.10835@math.ut.ee>
-References: <Pine.SOC.4.64.0908311646150.20934@math.ut.ee>
- <20090831.142215.111904849.davem@davemloft.net> <Pine.SOC.4.64.0909011003460.10184@math.ut.ee>
- <4A9CC9E9.2070609@kernel.org> <4A9CCD92.4090909@kernel.org>
+	Tue, 1 Sep 2009 03:34:26 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:44067 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036AbZIAHeZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 03:34:25 -0400
+Message-ID: <4A9CCE7C.3060702@in.ibm.com>
+Date: Tue, 01 Sep 2009 13:04:20 +0530
+From: Suzuki Poulose <suzuki@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: akpm@linux-foundation.org
+CC: lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Fix compat_sys_utimensat
+References: <4A97A7FD.1000202@in.ibm.com>
+In-Reply-To: <4A97A7FD.1000202@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ummm.... one more question.  Is cpu0 missing?  Can you please post the
-> output of "cat /proc/cpuinfo"?
-
-Yes, there's no CPU numbered 0, the numbers come from hardware slots on 
-backplane.
-
-cpu             : TI UltraSparc II  (BlackBird)
-fpu             : UltraSparc II integrated FPU
-pmu             : ultra12
-prom            : OBP 3.2.29 2001/06/18 17:28
-type            : sun4u
-ncpus probed    : 6
-ncpus active    : 6
-D$ parity tl1   : 0
-I$ parity tl1   : 0
-Cpu6ClkTck      : 000000000ec82e00
-Cpu7ClkTck      : 000000000ec82e00
-Cpu10ClkTck     : 000000000ec82e00
-Cpu11ClkTck     : 000000000ec82e00
-Cpu14ClkTck     : 000000000ec82e00
-Cpu15ClkTck     : 000000000ec82e00
-MMU Type        : Spitfire
-State:
-CPU6:           online
-CPU7:           online
-CPU10:          online
-CPU11:          online
-CPU14:          online
-CPU15:          online
+Suzuki Poulose wrote:
+> 
+> Hi,
+> 
+> The compat_utimensat syscall does not ignore tv_sec field when tv_nsec 
+> is set to UTIME_OMIT/UTIME_NOW and returns -EINVAL.
 
 
--- 
-Meelis Roos (mroos@linux.ee)
+
+mjs22lp5:~ # cat utimensat-test.c
+#define _GNU_SOURCE
+#define _ATFILE_SOURCE
+#include <stdio.h>
+#include <fcntl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <stdlib.h>
+
+main(int argc, char *argv[])
+{
+	struct timespec ts[2];
+	struct timespec *tsp;
+	
+	if (argc < 2) {
+		fprintf(stderr, "Usage : %s filename\n", argv[0]);
+		exit (-1);
+	}
+	
+	ts[0].tv_nsec = ts[1].tv_nsec = UTIME_NOW;
+	ts[0].tv_sec = ts[1].tv_sec = 1;
+
+	tsp = ts;
+	
+	if (utimensat(AT_FDCWD, argv[1],tsp,0) == -1)
+		perror("utimensat");
+	else
+		fprintf(stdout, "utimensat success\n");
+	return 0;
+}
+mjs22lp5:~ # cc -m64 utimensat-test.c -o utimensat_test64
+mjs22lp5:~ # cc -m32 utimensat-test.c -o utimensat_test32
+mjs22lp5:~ # ./utimensat_test32 /tmp/utimensat_test
+utimensat: Invalid argument
+mjs22lp5:~ # ./utimensat_test64 /tmp/utimensat_test
+utimensat success
+mjs22lp5:~ # uname -r
+2.6.31-rc8
+
+> 
+> This problem was revealed with the utimensat_tests from LTP.
+> 
+> The utimensat() syscall works fine.
+> 
+> Attaching a patch for the issue. The patch has been tested and verified 
+> to fix the issue.
+
+With the patch :
+
+mjs22lp5:~ # ./utimensat_test64 /tmp/utimensat_test
+utimensat success
+mjs22lp5:~ # ./utimensat_test32 /tmp/utimensat_test
+utimensat success
+mjs22lp5:~ # uname -r
+2.6.31-rc8utimensat
+
+
+> 
+> Please apply.
+> 
+> Thanks,
+> 
+> Suzuki
+> 
+
