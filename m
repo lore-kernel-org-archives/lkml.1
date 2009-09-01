@@ -1,77 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbZIAG2y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZIAG3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751978AbZIAG2y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 02:28:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZIAG2x
+	id S1752643AbZIAG3n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 02:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751379AbZIAG3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 02:28:53 -0400
-Received: from mail-px0-f204.google.com ([209.85.216.204]:45653 "EHLO
-	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750885AbZIAG2w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 02:28:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=SX3FbciSqzQldEfmxgpxAmxkyrekQLCGw4erIqVLWe0BPDFmft3A3S8YSdPVW03FSD
-         3BTRoIstCDDdLNSPfdJ3sXk+E6wxagkdVU6bDNAX5wIWsBpcNPG2zKxXjOKvEg7JfCH7
-         ZZsp6ZRoZww5Jm05U46MW3H2c4vUvDHOJkpr0=
-Date: Mon, 31 Aug 2009 23:28:49 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Len Brown <lenb@kernel.org>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH V5 0/2] Ambient Light Sensor support
-References: <1251706025.3483.159.camel@rzhang-dt> <alpine.LFD.2.00.0908311303340.19451@localhost.localdomain>
+	Tue, 1 Sep 2009 02:29:42 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41953 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105AbZIAG3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 02:29:41 -0400
+Date: Tue, 1 Sep 2009 08:29:43 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
+Message-ID: <20090901062943.GL12579@kernel.dk>
+References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com> <20090901040114.GI23535@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0908311303340.19451@localhost.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090901070129.F402D526EA5@mailhub.coreip.homeip.net>
+In-Reply-To: <20090901040114.GI23535@mit.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 01:04:35PM -0400, Len Brown wrote:
-> I put this in the acpi test tree, with the expectation
-> that it will have at least one minor revision update
-> before going upstream.
+On Tue, Sep 01 2009, Theodore Tso wrote:
+> On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
+> > 
+> > Here's the 15th version of the writeback patches.
 > 
-> thanks,
-> Len Brown, Intel Open Source Technology Center
-> 
+> The test-bdi branch of ext4.git tree is a combination of the patches I
+> plan to push once the merge window opens, plus v15 per-bdi patches.
+> On the ext4 call I've recruited some ext4 developers to do some
+> testing and benchmarking *before* the merge window opens.
 
-Breaks build here...
+Great, thanks a lot for that!
+
+> I've found something potentially wrong with the writeback.  It was
+> careful to sync the disk before shutting down the system, and I got
+> the following error.   
+> 
+> [  660.499155] ext4_da_writepages: jbd2_start: 32768 pages, ino 41; err -30
+> [  660.505664] Pid: 1848, comm: flush-8:0 Not tainted 2.6.31-rc8-01474-geef6bd0 #362
+> [  660.512402] Call Trace:
+> [  660.514982]  [<c064412f>] ? printk+0x14/0x16
+> [  660.518851]  [<c023ac4a>] ext4_da_writepages+0x213/0x40e
+> [  660.523356]  [<c023aa37>] ? ext4_da_writepages+0x0/0x40e
+> [  660.528383]  [<c01b65a8>] do_writepages+0x28/0x39
+> [  660.533534]  [<c01f1e07>] writeback_single_inode+0x15c/0x346
+> [  660.538401]  [<c0165b23>] ? down_read_trylock+0x3e/0x48
+> [  660.542921]  [<c01f2892>] generic_sync_wb_inodes+0x2ab/0x37b
+> [  660.547805]  [<c01f2a2a>] wb_writeback+0xc8/0xfa
+> [  660.551975]  [<c01f2abb>] wb_do_writeback+0x5f/0x118
+> [  660.556333]  [<c01f2b95>] bdi_writeback_task+0x21/0x92
+> [  660.560838]  [<c01c0f5d>] bdi_start_fn+0x63/0xb2
+> [  660.565647]  [<c01c0efa>] ? bdi_start_fn+0x0/0xb2
+> [  660.569710]  [<c0162363>] kthread+0x73/0x78
+> [  660.573528]  [<c01622f0>] ? kthread+0x0/0x78
+> [  660.577355]  [<c011e6f3>] kernel_thread_helper+0x7/0x10
+> 
+> ... and a very similar failure for inode 354
+> 
+> [  660.582215] ext4_da_writepages: jbd2_start: 32768 pages, ino 354; err -30
+> 
+> Inode 41 is /var/lib/urandom/random-seed, and inode 354 is
+> /var/run/syslogd.pid.
+> 
+> The failure occurs if I build w/o the ext4 "next" patches, and the
+> failure does not happen if I take build v2.6.31-rc8 without per-bdi
+> patches (with or without the ext4 patches).  At a guess it looks like
+> the bdi threads are trying to write out the dirty files that were
+> written in the shutdown scripts, *after* the file system has been made
+> read-only in preparation for unmounting the file system in question.
+
+OK, that's definitely something that I will look into today. It isn't
+necessarily a writeback bug, but it does rather smell like it.
 
 -- 
-Dmitry
+Jens Axboe
 
-ACPI: als - fix compile errors
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-PREFIX was undefined causing compiler to barf.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/acpi/als.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/acpi/als.c b/drivers/acpi/als.c
-index 6743ba7..51583a8 100644
---- a/drivers/acpi/als.c
-+++ b/drivers/acpi/als.c
-@@ -30,6 +30,8 @@
- #include <acpi/acpi_bus.h>
- #include <acpi/acpi_drivers.h>
- 
-+#define PREFIX "ACPI: "
-+
- #define ACPI_ALS_CLASS			"als"
- #define ACPI_ALS_DEVICE_NAME		"Ambient Light Sensor"
- #define ACPI_ALS_NOTIFY_ILLUMINANCE	0x80
