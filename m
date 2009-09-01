@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752312AbZIAD0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752408AbZIAD2d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752312AbZIAD0Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 23:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZIAD0Y
+	id S1752408AbZIAD2d (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 23:28:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZIAD2d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 23:26:24 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:30569
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751279AbZIAD0Y (ORCPT
+	Mon, 31 Aug 2009 23:28:33 -0400
+Received: from mail-gx0-f205.google.com ([209.85.217.205]:58356 "EHLO
+	mail-gx0-f205.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbZIAD2c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 23:26:24 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAK8wnEp8qSQS/2dsb2JhbADZOYQaBYFVYQ
-X-IronPort-AV: E=Sophos;i="4.44,309,1249228800"; 
-   d="scan'208";a="576268707"
-From: Ian Kent <raven@themaw.net>
-Subject: [PATCH] autofs4 - fix missed case when changing to use struct path
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: autofs mailing list <autofs@linux.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ZenIV.linux.org.uk>, aaron@merfinllc.com,
-       stefan@farestam.net
-Date: Tue, 01 Sep 2009 11:26:22 +0800
-Message-ID: <20090901032622.27252.19646.stgit@zeus.themaw.net>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 31 Aug 2009 23:28:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=r9BSyfNGuDte3zlDUjDxNG7gbS2pFHyJHJsQVvvUiPhgLPYMGfmJalwyICXPFd7Iiy
+         PFdpsqo8TqD9Z9jampkinU3WMIi3xt1ox4WGm84PiIyc2E4d0ED9IJqAowH5zrvdl6t9
+         vmxubcCtTwlCxu2YxUXMydA1vazUHWEcvhv64=
+Subject: Re: [PATCH] tracing/filters: Defer pred allocation
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A9B8EA5.6020700@cn.fujitsu.com>
+References: <4A9B8EA5.6020700@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Mon, 31 Aug 2009 22:28:32 -0500
+Message-Id: <1251775712.6800.2.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In the recent change by Al Viro that changes verious subsystems
-to use "struct path" one case was missed in the autofs4 module
-which causes mounts to no longer expire.
+On Mon, 2009-08-31 at 16:49 +0800, Li Zefan wrote:
+> init_preds() allocates about 5392 bytes of memory (on x86_32) for
+> a TRACE_EVENT. With my config, at system boot total memory occupied
+> is:
+> 
+> 	5392 * (642 + 15) == 3459KB
+> 
+> 642 == cat available_events | wc -l
+> 15 == number of dirs in events/ftrace
+> 
+> That's quite a lot, so we'd better defer memory allocation util
+> it's needed, that's when filter is used.
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Signed-off-by: Ian Kent <raven@themaw.net>
----
+Other than the leak mentioned by Frederic, it looks good to me.
 
- fs/autofs4/expire.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Acked-by: Tom Zanussi <tzanussi@gmail.com>
 
-diff --git a/fs/autofs4/expire.c b/fs/autofs4/expire.c
-index aa39ae8..3da18d4 100644
---- a/fs/autofs4/expire.c
-+++ b/fs/autofs4/expire.c
-@@ -77,7 +77,7 @@ static int autofs4_mount_busy(struct vfsmount *mnt, struct dentry *dentry)
- 	}
- 
- 	/* Update the expiry counter if fs is busy */
--	if (!may_umount_tree(mnt)) {
-+	if (!may_umount_tree(path.mnt)) {
- 		struct autofs_info *ino = autofs4_dentry_ino(top);
- 		ino->last_used = jiffies;
- 		goto done;
 
