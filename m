@@ -1,98 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZIAILY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753225AbZIAINY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbZIAILY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZIAILW
+	id S1753225AbZIAINY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZIAINX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:11:22 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:59868 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbZIAILU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:11:20 -0400
-Date: Tue, 1 Sep 2009 10:11:15 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
-Message-ID: <20090901081114.GA9942@elf.ucw.cz>
-References: <1251789947.3483.215.camel@rzhang-dt>
+	Tue, 1 Sep 2009 04:13:23 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:34548 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbZIAINX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:13:23 -0400
+Date: Tue, 1 Sep 2009 10:13:25 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Alasdair G Kergon <agk@redhat.com>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-next: block tree build failure
+Message-ID: <20090901081324.GS12579@kernel.dk>
+References: <20090901145949.58610c23.sfr@canb.auug.org.au> <20090901153038.807f5586.sfr@canb.auug.org.au> <20090901053807.GJ12579@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251789947.3483.215.camel@rzhang-dt>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090901053807.GJ12579@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> Introduce ALS sysfs class.
+On Tue, Sep 01 2009, Jens Axboe wrote:
+> On Tue, Sep 01 2009, Stephen Rothwell wrote:
+> > Hi Alasdair,
+> > 
+> > On Tue, 1 Sep 2009 14:59:49 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > >
+> > > I have used the version of the block tree from next-20090831 for today.
+> > 
+> > Which means that I have had to use yesterday's version of the
+> > device-mapper tree as well (since it is based on the block tree).
 > 
-> ALS sysfs class provides a standard sysfs interface for
-> Ambient Light Sensor devices.
-> 
-> please read Documentation/ABI/testing/sysfs-class-als for
-> detailed sysfs designs.
+> Ah darn, sorry about that. I'll get that updated in about an hours time
+> and do a full compile.
 
-Thanks for fixing the interface!
-
-> +static ssize_t
-> +illuminance_show(struct device *dev, struct device_attribute *attr, char *buf)
-> +{
-> +	struct als_device *als = to_als_device(dev);
-> +	int illuminance;
-> +	int result;
-> +
-> +	result = als->ops->get_illuminance(als, &illuminance);
-> +	if (result)
-> +		return result;
-> +
-> +	if (!illuminance)
-> +		return sprintf(buf, "Illuminance below the supported range\n");
-> +	else if (illuminance == -1)
-> +		return sprintf(buf, "Illuminance above the supported range\n");
-> +	else if (illuminance < -1)
-> +		return -ERANGE;
-> +	else
-> +		return sprintf(buf, "%d\n", illuminance);
-> +}
-
-that's nor particulary clean. One value per file and all that. Could
-we simply return errnos in _all_ the error cases? (Docs would suggest
-this contains integer so string is definitely unexpected).
-
-
-> +static ssize_t
-> +adjustment_show(struct device *dev, struct device_attribute *attr, char *buf)
-> +{
-> +	struct als_device *als = to_als_device(dev);
-> +	int illuminance, adjustment;
-> +	int result;
-> +
-> +	result = als->ops->get_illuminance(als, &illuminance);
-> +	if (result)
-> +		return result;
-> +
-> +	if (illuminance < 0 && illuminance != -1)
-> +		return sprintf(buf, "Current illuminance invalid\n");
-> +
-> +	result = als_get_adjustment(als, illuminance, &adjustment);
-> +	if (result)
-> +		return result;
-> +
-> +	return sprintf(buf, "%d%%\n", adjustment);
-> +}
-
-You should not return strings... and in this case it is not clear how
-the code works. You fill the buf, but then return...? Better stick to
-integers.
-								Pavel
+This is resolved now.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jens Axboe
+
