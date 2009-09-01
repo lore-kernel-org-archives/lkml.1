@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZIAIlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZIAIkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbZIAIlp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZIAIlo
+	id S1753293AbZIAIkC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZIAIkB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:41:44 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29628 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751400AbZIAIln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:41:43 -0400
+	Tue, 1 Sep 2009 04:40:01 -0400
+Received: from mga05.intel.com ([192.55.52.89]:48093 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753007AbZIAIkA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:40:00 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,311,1249282800"; 
-   d="scan'208";a="546605991"
-Subject: Re: [PATCH V6 2/2] introduce ACPI ALS device driver
-From: Zhang Rui <rui.zhang@intel.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>
-In-Reply-To: <20090901081342.GB9942@elf.ucw.cz>
-References: <1251789956.3483.216.camel@rzhang-dt>
-	 <20090901081342.GB9942@elf.ucw.cz>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 01 Sep 2009 16:39:36 +0800
-Message-Id: <1251794376.3483.238.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+   d="scan'208";a="722797830"
+Date: Tue, 1 Sep 2009 10:42:04 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       linux-kernel@vger.kernel.org,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       rtc-linux@googlegroups.com
+Subject: Re: [rtc-linux] [PATCH] AB3100 RTC support v4
+Message-ID: <20090901084203.GA4277@sortiz.org>
+References: <1251668944-32222-1-git-send-email-linus.walleij@stericsson.com>
+ <63386a3d0909010026x72cd4adcyc86927fbf4966c24@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <63386a3d0909010026x72cd4adcyc86927fbf4966c24@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-01 at 16:13 +0800, Pavel Machek wrote:
-> Hi!
-> 
-> > ACPI spec defines ACPI Ambient Light Sensor device (hid ACPI0008),
-> > which provides a standard interface by which the OS may query properties
-> > of the ambient light environment the system is currently operating in,
-> > as well as the ability to detect meaningful changes in these values when
-> > the environment changes.
-> 
-> > +struct acpi_als {
-> > +	struct acpi_device *device;
-> > +	struct als_device *als_sys;
-> > +	int illuminance;
-> > +	int chromaticity;
-> > +	int temperature;
-> > +	int polling;
-> > +	int count;
-> > +	struct als_mapping *mappings;
-> > +};
-> 
-> chromaticity is write-only variable.
+Hi Linus,
 
->  I believe you can drop it and
-> associted code.
+On Tue, Sep 01, 2009 at 09:26:29AM +0200, Linus Walleij wrote:
+> 2009/8/30 Linus Walleij <linus.walleij@stericsson.com>:
 > 
-> temperature ditto. Drop from this version?
+> > This adds support for the RTC found inside the AB3100 Mixed Signal chip.
+> > The symbols used for communicating with the chip is found in the
+> > mfd/ab3100-core.c driver that also provides the platform device.
+> >
+> > Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> > Acked-by: Alessandro Zummo <alessandro.zummo@towertech.it>
+> > Cc: Samuel Ortiz <sameo@linux.intel.com>
+> > ---
+> > Changelog v3->v4
+> > - Remove error message that will be given by the RTC core anyway.
+> > - Suggest to push this through Sam's MFD tree if it's OK with Sam.
 > 
-> polling ditto. Drop from this version?
-> 
-﻿color temperature, chromaticity and polling are three optional features
-defined in the ACPI spec, which are not supported yet in the ACPI ALS
-driver right now.
+> No further comments on this it seems, Sam can you pick it into the
+> MFD tree or shall I send it en route to akpm?
+It's already queued on my local tree, will push it today.
 
-I think it's okay to add the code first and then generate some
-incremental patches to enable these features once we found such kind of
-platforms.
-
-thanks,
-rui
+Cheers,
+Samuel.
 
 
-> Thanks,
-> 									Pavel
+> Linus
 
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
