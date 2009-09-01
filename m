@@ -1,47 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZIAWMI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755256AbZIAWLC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755267AbZIAWMI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 18:12:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbZIAWMH
+	id S1755256AbZIAWLC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 18:11:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZIAWLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 18:12:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:57053 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755231AbZIAWMG (ORCPT
+	Tue, 1 Sep 2009 18:11:01 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:35011 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755223AbZIAWLA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 18:12:06 -0400
-Message-ID: <4A9D9BEE.1010203@zytor.com>
-Date: Tue, 01 Sep 2009 15:10:54 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 1 Sep 2009 18:11:00 -0400
+Date: Tue, 1 Sep 2009 23:10:58 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Linus Walleij <linus.ml.walleij@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2] AB3100 regulator support v2
+Message-ID: <20090901221057.GA20242@sirena.org.uk>
+References: <1251667749-31276-1-git-send-email-linus.walleij@stericsson.com> <1251722641.4254.46.camel@finisterre.sirena.org.uk> <63386a3d0908310716x1a33a8fdpddedbaf24648216f@mail.gmail.com> <20090901135123.GS19719@n2100.arm.linux.org.uk> <63386a3d0909011505oed88151i95df1e97cf131c36@mail.gmail.com>
 MIME-Version: 1.0
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-CC: "John W. Linville" <linville@tuxdriver.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       linux-wireless <linux-wireless@vger.kernel.org>
-Subject: Re: memleaks, acpi + ext4 + tty
-References: <43e72e890908272225w79ec5bf6kc7ef1160e5a088ae@mail.gmail.com> 	<43e72e890908280952j410293fbm47b4b9d566e26c14@mail.gmail.com> 	<43e72e890908281450k78cc1a2fmd4fd033ae0f4176f@mail.gmail.com> 	<43e72e890908281509o44930348w581b865107ea3e98@mail.gmail.com> 	<43e72e890908310123w5d361ed5tff58a7663044bdcd@mail.gmail.com> 	<43e72e890908311050s320d0ceen312a0d3d9e4fbc76@mail.gmail.com> 	<43e72e890908311137k78ac439bs4edf376d07343a32@mail.gmail.com> 	<43e72e890908311230u28b0642ep7a6bfd9dab82318a@mail.gmail.com> 	<20090831193345.GG5631@tuxdriver.com> <43e72e890908311243u50b9323fveda9feaaa4d8efdb@mail.gmail.com> <43e72e890908311258y45565a9fo1e739992c00b650@mail.gmail.com>
-In-Reply-To: <43e72e890908311258y45565a9fo1e739992c00b650@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <63386a3d0909011505oed88151i95df1e97cf131c36@mail.gmail.com>
+X-Cookie: To do nothing is to be nothing.
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08/31/2009 12:58 PM, Luis R. Rodriguez wrote:
-> 
-> Good news is Linus' rc8 tag *has the same issue* so the reason why
-> wireless-testing has it is rc8 *does indeed have it*.
-> 
-> So Peter, if there is something extra or missing from
-> linux-2.6-allstable head it certainly fixed my issues, will have to
-> try a new respin of it to ensure it wasn't a fluke. Odd thing too
-> though is even my distribution kernel (karmic rc8 generic) works fine.
-> 
+On Wed, Sep 02, 2009 at 12:05:10AM +0200, Linus Walleij wrote:
 
-linux-2.6-allstable head is == linus.
+> But generally speaking the AB3100 can be used on top of any
+> i2c adapter and a bunch of them actually use
+> wait_for_completion_interruptible_timeout();
+> and wait_event_interruptible_timeout(); for example.
 
-	-hpa
+There was some discussion of this on the I2C list and a decision that it
+was sensible to move away from doing that since it was being found to
+cause more problems than it solved - the FSL driver is the one I
+remember actually doing so.
+
+> One of them being i2c/buses/i2c-imx.c actually, Mark does
+> this mean you actually have the risk of being kill -9:ed in the
+> middle of a regulator operation for the WM drivers, for
+> example
+
+Yes.  Pretty much any embedded I2C driver could cause issues for the
+Wolfson drivers - there's a whole bunch of audio CODECs that are very
+widely deployed.
+
+> In the general sense perhaps this doesn't happen so much,
+
+Yes, it's fairly rare which is the main reason it's not being chased
+after particularly actively.
