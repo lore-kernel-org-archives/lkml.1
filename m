@@ -1,66 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZIANHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZIANIl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZIANHP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZIANHO
+	id S1754617AbZIANIl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:08:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbZIANIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:07:14 -0400
-Received: from tanas.ca ([206.248.136.31]:39537 "EHLO tanas.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754430AbZIANHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:07:13 -0400
+	Tue, 1 Sep 2009 09:08:41 -0400
+Received: from smtpfb1-g21.free.fr ([212.27.42.9]:41976 "EHLO
+	smtpfb1-g21.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754340AbZIANIk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:08:40 -0400
+From: Jim Meyering <jim@meyering.net>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: make getdents/readdir POSIX compliant wrt mount-point dirent.d_ino
+Date: Tue, 01 Sep 2009 15:07:23 +0200
+Message-ID: <87y6oyhkz8.fsf@meyering.net>
 MIME-Version: 1.0
-Date: Tue, 01 Sep 2009 09:07:11 -0400
-From: Andrei Tanas <andrei@tanas.ca>
-To: Mark Lord <liml@rtr.ca>
-Cc: Mark Lord <mlord@pobox.com>, Tejun Heo <tj@kernel.org>,
-       Ric Wheeler <rwheeler@redhat.com>, NeilBrown <neilb@suse.de>,
-       <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: Re: MD/RAID time out writing superblock
-In-Reply-To: <4A9C60A1.50303@rtr.ca>
-References: <004e01ca25e4$c11a54e0$434efea0$@ca> <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name> <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BC033.9000909@pobox.com> <4A9C60A1.50303@rtr.ca>
-Message-ID: <640f6103c45b6cba6f84f887bde227e4@localhost>
-User-Agent: RoundCube Webmail/0.2.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>> The drive might take a longer time like this when doing error handling
->>>> (sector remapping, etc), but then I would expect to see your remapped
->>>> sector count grow.
->>>
->>> Yes, this is a possibility and according to the spec, libata EH should
->>> be retrying flushes a few times before giving up but I'm not sure
->>> whether keeping retrying for several minutes is a good idea either.
->>> Is it?
->> ..
->> 
->> Libata will retry only when the FLUSH returns an error,
->> and the next FLUSH will continue after the point where
->> the first attempt failed.
->> 
->> But if the drive can still auto-relocate sectors, then the
->> first FLUSH won't actually fail.. it will simply take longer
->> than normal.
->> 
->> A couple of those, and we're into the tens of seconds range
->> for time.
->> 
->> Still, it would be good to actually produce an error like that
->> to examine under controlled circumstances.
->> 
->> Hmm.. I had a drive here that gave symptoms like that.
->> Eventually, I discovered that drive had run out of relocatable
->> sectors, too.  Mmm.. I'll see if I can get it back (loaned it out)
->> and perhaps we can recreate this specific scenario on it..
-> ..
-> 
-> I checked today, and that drive is no longer available.
+Currently, on all unix and linux-based systems the dirent.d_ino of a mount
+point (as read from its parent directory) fails to match the stat-returned
+st_ino value for that same entry.  That is contrary to POSIX 2008.
 
-Mine errored out again with exactly the same symptoms, this time after only
-few days and with the "tunable" set to 2 sec. I got a warranty replacement
-but haven't shipped this one yet. Let me know if you want it.
+I'm bringing this up today because I've just had to disable an
+optimization in coreutils ls -i:
+
+  http://thread.gmane.org/gmane.comp.gnu.coreutils.bugs/17887
+
+Normally, work-arounds in coreutils penalize non-linux, or old-linux
+kernels, but this is the first that has penalized *all* unix/linux-based
+systems.  Ironically, the sole system that can still take advanatage
+of the optimization is Cygwin.
+
+I'm hoping that Linux can catch up before too long.
+
+------------------------
+The POSIX readdir spec says this:
+
+    The structure dirent defined in the <dirent.h> header describes a
+    directory entry. The value of the structure's d_ino member shall be set
+    to the file serial number of the file named by the d_name member.
+
+The description for sys/stat.h makes the connection between
+"file serial number" and the stat.st_ino member:
+
+    The <sys/stat.h> header shall define the stat structure, which shall
+    include at least the following members:
+    ...
+        ino_t st_ino                File serial number.
+------------------------
+
+The current linux/unix readdir behavior makes it so ls -i cannot perform
+the optimization of printing only readdir-returned inode numbers, and
+instead must incur the cost of actually stat'ing each entry in order to
+be assured that it prints valid inode numbers.
+
+If you have gnu coreutils 6.0 or newer (but not built from today's
+git repository) tools on your system, you can demonstrate the mismatch
+with the following shell code: [if not, use the C program in
+ <http://thread.gmane.org/gmane.comp.gnu.coreutils.bugs/14020>]
+
+#!/bin/sh
+mount_points=$(df --local -P 2>&1 | sed -n 's,.*[0-9]% \(/.\),\1,p')
+
+# Given e.g., /dev/shm, produce the list of GNU ls options that
+# let us list just that entry using readdir data from its parent:
+# ls -i -I '[^s]*' -I 's[^h]*' -I 'sh[^m]*' -I 'shm?*' -I '.?*' \
+# -I '?' -I '??' /dev
+ls_ignore_options()
+{
+  name=$1
+  opts="-I '.?*' -I '$name?*'"
+  while :; do
+    glob=$(echo "$name"|sed 's/\(.*\)\(.\)$/\1[^\2]*/')
+    opts="$opts -I '$glob'"
+    name=$(echo "$name"|sed 's/.$//')
+    test -z "$name" && break
+    glob=$(echo "$name"|sed 's/./?/g')
+    opts="$opts -I '$glob'"
+  done
+  echo "$opts"
+}
+
+inode_via_readdir()
+{
+  mount_point=$1
+  base=$(basename $mount_point)
+  case $base in
+    .*) skip_test_ 'mount point component starts with "."' ;;
+    *[*?]*) skip_test_ 'mount point component contains "?" or "*"' ;;
+  esac
+  opts=$(ls_ignore_options "$base")
+  parent_dir=$(dirname $mount_point)
+  eval "ls -i $opts $parent_dir" | sed 's/ .*//'
+}
+
+first_failure=1
+for dir in $mount_points; do
+  readdir_inode=$(inode_via_readdir $dir)
+  stat_inode=$(env stat --format=%i $dir)
+  if test "$readdir_inode" != "$stat_inode"; then
+    test $first_failure = 1 \
+      && printf '%8s %8s %-20s\n' st_ino d_ino mount-point
+    printf '%8d %8d %-20s\n' $stat_inode $readdir_inode $dir
+    first_failure=0
+  fi
+done
+#--------------------------------------------------------------
+
+For example, here's the result of running it on one
+of my systems:
+
+  st_ino    d_ino mount-point
+    3508    36850 /lib/init/rw
+     824   376097 /dev
+    6237     3532 /dev/shm
+       2     8177 /boot
+       2    12265 /full
+       2   147197 /h
+       2   298428 /f
+       2   310689 /usr
+       2    73585 /var
+    6992   253457 /t
+       2   327041 /b
+       2     4113 /d
+       2   302521 /x
+       2    53378 /media/sdd1
+
+The d_ino number is what ls -i $parent_dir would print,
+before today's fix, while the st_ino value is the correct inode
+number for that directory.
