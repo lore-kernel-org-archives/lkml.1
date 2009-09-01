@@ -1,182 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZIAOOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbZIAOSE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZIAOOS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbZIAOOR
+	id S1754911AbZIAOSE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:18:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbZIAOSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:14:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:53404 "EHLO mx1.redhat.com"
+	Tue, 1 Sep 2009 10:18:03 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41453 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754360AbZIAOOQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:14:16 -0400
-Date: Tue, 1 Sep 2009 10:11:42 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: nauman@google.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
-	track async bios.
-Message-ID: <20090901141142.GA13709@redhat.com>
-References: <4A9C09BE.4060404@redhat.com> <20090831185640.GF3758@redhat.com> <e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com> <20090901.160004.226800357.ryov@valinux.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090901.160004.226800357.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754596AbZIAOSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 10:18:01 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: James Bottomley <James.Bottomley@suse.de>
+To: Bart Van Assche <bvanassche@acm.org>
+Cc: akataria@vmware.com, Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>, linux-scsi@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>
+In-Reply-To: <e2e108260909010412p41fae86ckb6df5cd8a81e3c37@mail.gmail.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
+	 <1251741624.18828.83.camel@mulgrave.site>
+	 <e2e108260909010412p41fae86ckb6df5cd8a81e3c37@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 09:17:53 -0500
+Message-Id: <1251814673.3864.44.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 04:00:04PM +0900, Ryo Tsuruta wrote:
-> Hi,
+On Tue, 2009-09-01 at 13:12 +0200, Bart Van Assche wrote:
+> On Mon, Aug 31, 2009 at 8:00 PM, James Bottomley
+> <James.Bottomley@suse.de> wrote:
+> >
+> > On Mon, 2009-08-31 at 10:28 -0700, Alok Kataria wrote:
+> > > VMware PVSCSI driver - v2.
+> >
+> > OK, so the first thing that springs to mind is that we already have one
+> > of these things: the ibmvscsi ... is there no way we can share code
+> > between this and the other PV drivers?
 > 
-> > > Hi Rik,
-> > >
-> > > Thanks for reviewing the patches. I wanted to have better understanding of
-> > > where all does it help to associate a bio to the group of process who
-> > > created/owned the page. Hence few thoughts.
-> > >
-> > > When a bio is submitted to IO scheduler, it needs to determine the group
-> > > bio belongs to and group which should be charged to. There seem to be two
-> > > methods.
-> > >
-> > > - Attribute the bio to cgroup submitting process belongs to.
-> > > - For async requests, track the original owner hence cgroup of the page
-> > >  and charge that group for the bio.
-> > >
-> > > One can think of pros/cons of both the approaches.
-> > >
-> > > - The primary use case of tracking async context seems be that if a
-> > >  process T1 in group G1 mmaps a big file and then another process T2 in
-> > >  group G2, asks for memory and triggers reclaim and generates writes of
-> > >  the file pages mapped by T1, then these writes should not be charged to
-> > >  T2, hence blkio_cgroup pages.
-> > >
-> > >  But the flip side of this might be that group G2 is a low weight group
-> > >  and probably too busy also right now, which will delay the write out
-> > >  and possibly T2 will wait longer for memory to be allocated.
+> Good question. But shouldn't the ibmvscsi driver be refactored before
+> considering sharing ibmvscsi code with other paravirtualized drivers ?
+
+Not really, that would make it a chicken and egg problem.  The question
+was meant to direct attention to the issue of whether we should share
+code for PV drivers or not. I think the answer to this one is yes; the
+next thing is how to do it.
+
+The one thing I'm not really keen on having is half a dozen totally
+different virtual SCSI drivers for our half a dozen virtualisation
+solutions.  Apart from the coding waste, each will have new and
+different bugs and a much smaller pool of users to find them.
+
+The IBM vscsi operates slightly differently from the way newer PV
+drivers may be expected to operate, but the SRP abstraction does look
+like a reasonable one for a PV driver.
+
+> A quote from the ibmvscsi.c source code:
 > 
-> In order to avoid this wait, dm-ioband issues IO which has a page with
-> PG_Reclaim as early as possible.
+>  * TODO: This is currently pretty tied to the IBM i/pSeries hypervisor
+>  * interfaces.  It would be really nice to abstract this above an RDMA
+>  * layer.
 > 
+> Splitting the ibmvscsi.c driver in an SRP initiator and an RDMA driver
+> would make the following possible:
+> - Reuse the existing SRP initiator (ib_srp). Currently there are two
+> SRP initiators present in the Linux kernel -- one that uses the RDMA
+> verbs API (ib_srp) and one that only works with IBM's i/pSeries
+> hypervisor (ibmvscsi).
+> - Reuse the ib_ipoib kernel module to provide an IP stack on top of
+> the new RDMA driver instead of having to maintain a separate network
+> driver for this hardware (ibmveth).
 
-So in above case IO is still charged to G2 but you keep a track if page is
-PG_Reclaim then releae the this bio before other bios queued up in the
-group?
+So the RDMA piece is what I'm not sure about.  For a protocol
+abstraction, SRP makes a lot of sense.  For a hypervisor interface, it's
+not really clear that RDMA is the best way to go.  In fact, some more
+minimal DMA ring implementation seems to be the way most hypervisors are
+set up, but it's still possible to run a nice SRP abstraction over them.
 
-> > > - At one point of time Andrew mentioned that buffered writes are generally a
-> > >  big problem and one needs to map these to owner's group. Though I am not
-> > >  very sure what specific problem he was referring to. Can we attribute
-> > >  buffered writes to pdflush threads and move all pdflush threads in a
-> > >  cgroup to limit system wide write out activity?
-> 
-> I think that buffered writes also should be controlled per cgroup as
-> well as synchronous writes.
-> 
+> More information about the architecture the ibmvscsi and the ibmveth
+> drivers have been developed for can be found in the following paper:
+> D. Boutcher and D. Engebretsen, Linux Virtualization on IBM POWER5
+> Systems, Proceedings of the Linux Symposium, Vol. 1, July 2004, pp.
+> 113-120 (http://www.kernel.org/doc/mirror/ols2004v1.pdf).
 
-But it is hard to achieve fairness for buffered writes becase we don't
-create complete parallel IO paths and not necessarily higher weight
-process dispatches more buffered writes to IO scheduler. (Due to page
-cache buffered write logic).
+The other piece of this is that it's not clear that SCSI is actually the
+best layer for this abstration.  For a simple, fast storage interface,
+nbd is probably the easiest abstraction to do (the disadvantage being
+the lack of ioctl support, so it really only does storage).
 
-So in some cases we might see buffered write fairness and in other cases
-not. For example, run two dd processes in two groups doing buffered writes
-and it is hard to achieve fairness between these.
+James
 
-That's why the idea that if we can't ensure Buffered write vs Buffered
-write fairness in all the cases, then does it make sense to attribute
-buffered writes to pdflush and put pdflush threads into a separate group
-to limit system wide write out activity. 
 
-> > > - Somebody also gave an example where there is a memory hogging process and
-> > >  possibly pushes out some processes to swap. It does not sound fair to
-> > >  charge those proccess for that swap writeout. These processes never
-> > >  requested swap IO.
-> 
-> I think that swap writeouts should be charged to the memory hogging
-> process, because the process consumes more resources and it should get
-> a penalty.
-> 
-
-A process requesting memory gets IO penalty? IMHO, swapping is a kernel 
-mechanism and kernel's way of providing extended RAM. If we want to solve
-the issue of memory hogging by a process then right way to solve is to use
-memory controller and not by charging the process for IO activity.
-Instead, proabably a more suitable way is to charge swap activity to root
-group (where by default all the kernel related activity goes).   
-
-> > > - If there are multiple buffered writers in the system, then those writers
-> > >  can also be forced to writeout some pages to disk before they are
-> > >  allowed to dirty more pages. As per the page cache design, any writer
-> > >  can pick any inode and start writing out pages. So it can happen a
-> > >  weight group task is writting out pages dirtied by a lower weight group
-> > >  task. If, async bio is mapped to owner's group, it might happen that
-> > >  higher weight group task might be made to sleep on lower weight group
-> > >  task because request descriptors are all consumed up.
-> 
-> As mentioned above, in dm-ioband, the bio is charged to the page owner
-> and issued immediately.
-
-But you are doing it only for selected pages and not for all buffered
-writes?
-
-> 
-> > > It looks like there does not seem to be a clean way which covers all the
-> > > cases without issues. I am just trying to think, what is a simple way
-> > > which covers most of the cases. Can we just stick to using submitting task
-> > > context to determine a bio's group (as cfq does). Which can result in
-> > > following.
-> > >
-> > > - Less code and reduced complexity.
-> > >
-> > > - Buffered writes will be charged to pdflush and its group. If one wish to
-> > >  limit buffered write activity for pdflush, one can move all the pdflush
-> > >  threads into a group and assign desired weight. Writes submitted in
-> > >  process context will continue to be charged to that process irrespective
-> > >  of the fact who dirtied that page.
-> > 
-> > What if we wanted to control buffered write activity per group? If a
-> > group keeps dirtying pages, we wouldn't want it to dominate the disk
-> > IO capacity at the expense of other cgroups (by dominating the writes
-> > sent down by pdflush).
-> 
-> Yes, I think that is true.
-> 
-
-But anyway we are not able to gurantee this isolation in all the cases.
-Again I go back to example of two dd threads doing buffered writes in two
-groups.
-
-I don't mind keeping it. Just wanted to make sure that we agree and
-understand that keeping it does not mean that we get buffered write vs
-buffered write isolation/fairness in all the cases.
-
-> > > - swap activity will be charged to kswapd and its group. If swap writes
-> > >  are coming from process context, it gets charged to process and its
-> > >  group.
-> > >
-> > > - If one is worried about the case of one process being charged for write
-> > >  out of file mapped by another process during reclaim, then we can
-> > >  probably make use of memory controller and mount memory controller and
-> > >  io controller together on same hierarchy. I am told that with memory
-> > >  controller, group's memory will be reclaimed by the process requesting
-> > >  more memory. If that's the case, then IO will automatically be charged
-> > >  to right group if we use submitting task context.
-> > >
-> > > I just wanted to bring this point forward for more discussions to know
-> > > what is the right thing to do? Use bio tracking or not.
-> 
-> Thanks for bringing it forward.
-> 
-
-Thanks
-Vivek
