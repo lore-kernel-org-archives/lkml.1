@@ -1,49 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbZIAO0n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbZIAO0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754980AbZIAO0n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:26:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754964AbZIAO0n
+	id S1755015AbZIAO0u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZIAO0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:26:43 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47747 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754955AbZIAO0m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:26:42 -0400
-Date: Tue, 1 Sep 2009 15:25:49 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: venki kaps <venkiece2005@gmail.com>, Nicolas Pitre <nico@cam.org>,
-       "sagar.abhishek@gmail.com" <sagar.abhishek@gmail.com>,
-       "jkenisto@us.ibm.com" <jkenisto@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "prasanna@in.ibm.com" <prasanna@in.ibm.com>
-Subject: Re: ARM + jprobes/kretprobes SEGV/hangs/OOPS in 2.6.29 kernel
-Message-ID: <20090901142549.GA21501@flint.arm.linux.org.uk>
-References: <6d53329e0908250342g2cfb73f6v90f73c283c0d391c@mail.gmail.com> <alpine.LFD.2.00.0908251333410.6044@xanadu.home> <6d53329e0908302227l63420351m1005d0c76346e2ec@mail.gmail.com> <6d53329e0908310311v55ef3909na0cbec756e63ccab@mail.gmail.com> <6d53329e0908312355y7bd2038ds6ba8efe671d98bc9@mail.gmail.com> <tnxocpu7osx.fsf@pc1117.cambridge.arm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tnxocpu7osx.fsf@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 1 Sep 2009 10:26:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41868 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754990AbZIAO0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 10:26:47 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: James Bottomley <James.Bottomley@suse.de>
+To: akataria@vmware.com
+Cc: Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>,
+       Bhavesh Davda <bhavesh@vmware.com>
+In-Reply-To: <1251755593.16169.51.camel@ank32.eng.vmware.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
+	 <1251741624.18828.83.camel@mulgrave.site>
+	 <1251755593.16169.51.camel@ank32.eng.vmware.com>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 09:26:39 -0500
+Message-Id: <1251815199.3864.62.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 02:54:54PM +0100, Catalin Marinas wrote:
-> venki kaps <venkiece2005@gmail.com> wrote:
-> > I have found the exact problem with respect to ARM jprobes.
-> >
-> > The problem with configure i.e, CONFIG_ARM_UNWIND = y; is enabled.
+On Mon, 2009-08-31 at 14:53 -0700, Alok Kataria wrote:
+> > > diff --git a/drivers/scsi/pvscsi.c b/drivers/scsi/pvscsi.c
+> > > new file mode 100644
+> > > index 0000000..fc85a3a
+> > > --- /dev/null
+> > > +++ b/drivers/scsi/pvscsi.c
+> > [...]
+> > > +static int __devinit pvscsi_allocate_sg(struct pvscsi_adapter *adapter)
+> > > +{
+> > > +	struct pvscsi_ctx *ctx;
+> > > +	int i;
+> > > +
+> > > +	ctx = adapter->cmd_map;
+> > > +	BUILD_BUG_ON(sizeof(struct pvscsi_sg_list) > PAGE_SIZE);
+> > > +
+> > > +	for (i = 0; i < adapter->req_depth; ++i, ++ctx) {
+> > > +		ctx->sgl = pci_alloc_consistent(adapter->dev, PAGE_SIZE,
+> > > +						&ctx->sglPA);
+> > 
+> > Why do you need coherent memory for the sg list?  Surely the use pattern
+> > of an SG list is that it follows a predefined ownership model between
+> > the driver and the virtual device, thus not really requiring coherent
+> > memory?
 > 
-> I haven't followed the kprobes implementation for ARM but does it make
-> any assumptions about the existence of a frame pointer on the stack?
-> Enabling stack unwinding automatically disables the framepointer.
+> The SG list needs to be accessed by the hypervisor too, and we need the
+> physical address to access it from the hypervisor. We do that using the
+> sglPA field right now, which the pci_.. interface returns.  Do you think
+> something else should be used for that purpose ? 
 
-If it uses CALLER_ADDRESSx() then it won't work with unwinding enabled.
-See 5613/1 (which is pending in the devel branch.)
+The hypervisor is part of the OS coherency domain ... coherent memory is
+designed to be a mailbox access between a device and driver, which I
+believe the hypervisor doesn't need.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+If all you're looking for is a way to map a page of memory to a physical
+address, won't dma_map_single() do that for you?  Or, actually, in this
+case virt_to_page() might be a better way.
+
+James
+
+
