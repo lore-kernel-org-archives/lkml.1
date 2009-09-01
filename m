@@ -1,67 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZIAN2q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZIANb2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbZIAN2q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:28:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZIAN2q
+	id S1754762AbZIANb2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:31:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754628AbZIANb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:28:46 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:39324 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754345AbZIAN2p (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:28:45 -0400
-Date: Tue, 1 Sep 2009 14:28:24 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Steven Walter <stevenrwalter@gmail.com>
-Cc: David Xiao <dxiao@broadcom.com>,
-       Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090901132824.GN19719@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <20090806114619.GW2080@trinity.fluff.org> <200908061506.23874.laurent.pinchart@ideasonboard.com> <1249584374.29182.20.camel@david-laptop> <20090806222543.GG31579@n2100.arm.linux.org.uk> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com>
+	Tue, 1 Sep 2009 09:31:27 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45077 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754426AbZIANb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:31:27 -0400
+Message-ID: <4A9D2204.1000608@kernel.org>
+Date: Tue, 01 Sep 2009 22:30:44 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mark Lord <liml@rtr.ca>
+CC: Andrei Tanas <andrei@tanas.ca>, Mark Lord <mlord@pobox.com>,
+       Ric Wheeler <rwheeler@redhat.com>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <004e01ca25e4$c11a54e0$434efea0$@ca> <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name> <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BC033.9000909@pobox.com> <4A9C60A1.50303@rtr.ca> <640f6103c45b6cba6f84f887bde227e4@localhost> <4A9D1E7D.1050104@rtr.ca>
+In-Reply-To: <4A9D1E7D.1050104@rtr.ca>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 01 Sep 2009 13:30:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 08:53:29AM -0400, Steven Walter wrote:
-> On Thu, Aug 6, 2009 at 6:25 PM, Russell King - ARM
-> Linux<linux@arm.linux.org.uk> wrote:
-> [...]
-> > As far as userspace DMA coherency, the only way you could do it with
-> > current kernel APIs is by using get_user_pages(), creating a scatterlist
-> > from those, and then passing it to dma_map_sg().  While the device has
-> > ownership of the SG, userspace must _not_ touch the buffer until after
-> > DMA has completed.
-> [...]
+Hello,
+
+Mark Lord wrote:
+>> Mine errored out again with exactly the same symptoms, this time after
+>> only
+>> few days and with the "tunable" set to 2 sec. I got a warranty
+>> replacement
+>> but haven't shipped this one yet. Let me know if you want it.
+> ..
 > 
-> Would that work on a processor with VIVT caches?  It seems not.  In
-> particular, dma_map_page uses page_address to get a virtual address to
-> pass to map_single().  map_single() in turn uses this address to
-> perform cache maintenance.  Since page_address() returns the kernel
-> virtual address, I don't see how any cache-lines for the userspace
-> virtual address would get invalidated (for the DMA_FROM_DEVICE case).
+> Not me.  But perhaps Tejun ?
 
-You are correct.
+I think you're much more qualified than me on the subject. :-)
 
-> If that's true, then what is the correct way to allow DMA to/from a
-> userspace buffer with a VIVT cache?  If not true, what am I missing?
+Anyone else?  Ric, are you interested with playing the drive?
 
-I don't think you read what I said (but I've also forgotten what I did
-say).
-
-To put it simply, the kernel does not support DMA direct from userspace
-pages.  Solutions which have been proposed in the past only work with a
-sub-set of conditions (such as the one above only works with VIPT
-caches.)
+-- 
+tejun
