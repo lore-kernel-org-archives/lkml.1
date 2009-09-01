@@ -1,47 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZIALyN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZIALzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZIALyN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 07:54:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754082AbZIALyM
+	id S1754156AbZIALzg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 07:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZIALzg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 07:54:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:33014 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753990AbZIALyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 07:54:11 -0400
-Message-ID: <4A9D0B5F.9030108@redhat.com>
-Date: Tue, 01 Sep 2009 13:54:07 +0200
-From: Milan Broz <mbroz@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090812)
+	Tue, 1 Sep 2009 07:55:36 -0400
+Received: from mtagate4.de.ibm.com ([195.212.17.164]:41000 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753007AbZIALzf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 07:55:35 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       OF-General <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>
+Subject: [PATCH] IB/ehca: Fix CQE flags reporting
+User-Agent: KMail/1.9.1
+Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
+       Christoph Raisch <raisch@de.ibm.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       Alexander Schmidt <alexschm@de.ibm.com>
+References: <200806061835.43802.fenkes@de.ibm.com> <48499C11.7030504@gmail.com>
+In-Reply-To: <48499C11.7030504@gmail.com>
 MIME-Version: 1.0
-To: "Mario 'BitKoenig' Holbe" <Mario.Holbe@TU-Ilmenau.DE>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Regression: device-mapper cannot open devices with identical
- uuids anymore
-References: <20090831115245.GA23044@darkside.12.kls.lan>
-In-Reply-To: <20090831115245.GA23044@darkside.12.kls.lan>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+X-Length: 2361
+Date: Tue, 1 Sep 2009 13:55:33 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909011355.34319.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mario 'BitKoenig' Holbe wrote:
-> Hello,
-> 
-> somewhere between 2.6.26 and 2.6.30 device-mapper stopped being able to
-> open multiple devices with the same UUID:
+Was reporting CQE flags in the wrong bit positions, causing consumers to
+miss incoming immediate data.
 
-This is not related to kernel at all.
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
 
-cryptsetup since 1.0.7 just started to set UUID for device and kernel 
-device-mapper never allowed device with the same UUID.
+Please review and queue for 2.6.32 if you think it's okay. Thanks!
+  Joachim
 
-See http://code.google.com/p/cryptsetup/issues/detail?id=34
-(also for workaround, next version will have --disable-uuid option)
+ drivers/infiniband/hw/ehca/ehca_reqs.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-Milan
---
-mbroz@redhat.com
+diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
+index 5a3d96f..8fd88cd 100644
+--- a/drivers/infiniband/hw/ehca/ehca_reqs.c
++++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
+@@ -786,7 +786,11 @@ repoll:
+ 	wc->slid = cqe->rlid;
+ 	wc->dlid_path_bits = cqe->dlid;
+ 	wc->src_qp = cqe->remote_qp_number;
+-	wc->wc_flags = cqe->w_completion_flags;
++	/*
++	 * HW has "Immed data present" and "GRH present" in bits 6 and 5.
++	 * SW defines those in bits 1 and 0, so we can just shift and mask.
++	 */
++	wc->wc_flags = (cqe->w_completion_flags >> 5) & 3;
+ 	wc->ex.imm_data = cpu_to_be32(cqe->immediate_data);
+ 	wc->sl = cqe->service_level;
+ 
+-- 
+1.6.0.4
+
+
+
 
