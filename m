@@ -1,59 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZIAQGg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZIAQFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754749AbZIAQGg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 12:06:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZIAQGf
+	id S1754067AbZIAQFY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 12:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZIAQFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 12:06:35 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38753 "EHLO mx1.redhat.com"
+	Tue, 1 Sep 2009 12:05:24 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:39219 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750715AbZIAQGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 12:06:35 -0400
-Date: Tue, 1 Sep 2009 18:00:44 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: arjan@infradead.org, jeremy@goop.org, mschmidt@redhat.com,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tj@kernel.org, tglx@linutronix.de,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [PATCH] kthreads: Fix startup synchronization boot crash
-Message-ID: <20090901160043.GA6708@redhat.com>
-References: <20090829182718.10f566b1@leela> <tip-23386d63bbb3199cf247313ec088878d72debcfd@git.kernel.org> <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu> <20090901133709.GA24041@redhat.com> <20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com> <20090901155427.GA18078@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901155427.GA18078@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751462AbZIAQFW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 12:05:22 -0400
+Date: Tue, 1 Sep 2009 09:05:18 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+Cc: "mst@redhat.com" <mst@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
+Subject: Re: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
+Message-ID: <20090901090518.1193e412@nehalam>
+In-Reply-To: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com>
+References: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/01, Ingo Molnar wrote:
->
-> * Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > But I must admit, now I don't understand what happens,
-> >
-> > 	The modification of that variable is protected by the BKL, but
-> > 	the _ordering_ of the initial task (which becomes the idle
-> > 	thread of CPU0) and the init task (which is spawned by the
-> > 	initial task) is not synchronized.
-> >
-> > 	So we can occasionally end up init running sooner than
-> > 	rest_init()
-> >
-> > How? rest_init() can't be preempted and it holds BKL. And
-> > kernel_init() takes BKL before anything else. Confused...
->
-> it cannot be preempted but it can schedule anywhere - and the BKL
-> will be dropped silently.
->
-> This is one of the biggest dangers of the BKL
+On Tue, 1 Sep 2009 14:58:19 +0800
+"Xin, Xiaohui" <xiaohui.xin@intel.com> wrote:
 
-Yes I see. But rest_init() runs under preempt_disable(). If it was
-rescheduled, schedule_debug() should complain. No?
+>               [RFC] Virtual Machine Device Queues (VMDq) support on KVM
+> 
+> Network adapter with VMDq technology presents multiple pairs of tx/rx queues,
+> and renders network L2 sorting mechanism based on MAC addresses and VLAN tags
+> for each tx/rx queue pair. Here we present a generic framework, in which network
+> traffic to/from a tx/rx queue pair can be directed from/to a KVM guest without
+> any software copy.
+> 
+> Actually this framework can apply to traditional network adapters which have
+> just one tx/rx queue pair. And applications using the same user/kernel interface
+> can utilize this framework to send/receive network traffic directly thru a tx/rx
+> queue pair in a network adapter.
+> 
+> We use virtio-net architecture to illustrate the framework.
+> 
+> 
+> |--------------------|     pop               add_buf    |----------------|
+> |    Qemu process    |  <---------    TX   <----------  | Guest Kernel   |
+> |                    |  --------->         ---------->  |                |
+> |    Virtio-net      |     push              get_buf    |                |
+> |  (Backend service) |  --------->    RX   ---------->  |  Virtio-net    |
+> |                    |  <---------         <----------  |    driver      |
+> |                    |     push              get_buf    |                |
+> |--------------------|                                  |----------------|
+>                    |
+>                    |
+>                    | AIO (read & write) combined with Direct I/O
+>                    |   (which substitute synced file operations)
+> |-----------------------------------------------------------------------|
+> |     Host kernel  | read: copy-less with directly mapped user          |
+> |                  |       space to kernel, payload directly DMAed      |
+> |                  |       into user space                              |
+> |                  | write: copy-less with directly mapped user         |
+> |                  |       space to kernel, payload directly hooked     |
+> |                  |       to a skb                                     |
+> |                  |                                                    |
+> |  (a likely       |                                                    |
+> |   queue pair     |                                                    |
+> |   instance)      |                                                    |
+> |      |           |                                                    |
+> | NIC driver <-->  TUN/TAP driver                                       |
+> |-----------------------------------------------------------------------|
+>        |
+>        |
+>    traditional adapter or a tx/rx queue pair
+> 
+> The basic idea is to utilize the kernel Asynchronous I/O combined with Direct
+> I/O to implements copy-less TUN/TAP device. AIO and Direct I/O is not new to
+> kernel, we still can see it in SCSI tape driver.
+> 
+> With traditional file operations, a copying of payload contents from/to the
+> kernel DMA address to/from a user buffer is needed. That's what the copying we
+> want to save.
+> 
+> The proposed framework is like this:
+> A TUN/TAP device is bound to a traditional NIC adapter or a tx/rx queue pair in
+> host side. KVM virto-net Backend service, the user space program submits
+> asynchronous read/write I/O requests to the host kernel through TUN/TAP device.
+> The requests are corresponding to the vqueue elements include both transmission
+> & receive. They can be queued in one AIO request and later, the completion will
+> be notified through the underlying packets tx/rx processing of the rx/tx queue
+> pair.
+> 
+> Detailed path:
+> 
+> To guest Virtio-net driver, packets receive corresponding to asynchronous read
+> I/O requests of Backend service.
+> 
+> 1) Guest Virtio-net driver provides header and payload address through the
+> receive vqueue to Virtio-net backend service.
+> 
+> 2) Virtio-net backend service encapsulates multiple vqueue elements into
+> multiple AIO control blocks and composes them into one AIO read request.
+> 
+> 3) Virtio-net backend service uses io_submit() syscall to pass the request to
+> the TUN/TAP device.
+> 
+> 4) Virtio-net backend service uses io_getevents() syscall to check the
+> completion of the request.
+> 
+> 5) The TUN/TAP driver receives packets from the queue pair of NIC, and prepares
+> for Direct I/O.
+>    A modified NIC driver may render a skb which header is allocated in host
+> kernel, but the payload buffer is directly mapped from user space buffer which
+> are rendered through the AIO request by the Backend service. get_user_pages()
+> may do this. For one AIO read request, the TUN/TAP driver maintains a list for
+> the directly mapped buffers, and a NIC driver tries to get the buffers as
+> payload buffer to compose the new skbs. Of course, if getting the buffers
+> fails, then kernel allocated buffers are used.
+> 
+> 6) Modern NIC cards now mostly have the header split feature. The NIC queue
+> pair then may directly DMA the payload into the user spaces mapped payload
+> buffers.
+> Thus a zero-copy for payload is implemented in packet receiving.
+> 
+> 7) The TUN/TAP driver manually copy the host header to space user mapped.
+> 
+> 8) aio_complete() to notify the Virtio-net backend service for io_getevents().
+> 
+> 
+> To guest Virtio-net driver, packets send corresponding to asynchronous write
+> I/O requests of backend. The path is similar to packet receive.
+> 
+> 1) Guest Virtio-net driver provides header and payload address filled with
+> contents through the transmit vqueue to Virtio-net backed service.
+> 
+> 2) Virtio-net backend service encapsulates the vqueue elements into multiple
+> AIO control blocks and composes them into one AIO write request.
+> 
+> 3) Virtio-net backend service uses the io_submit() syscall to pass the
+> requests to the TUN/TAP device.
+> 
+> 4) Virtio-net backend service uses io_getevents() syscall to check the request
+> completion.
+> 
+> 5) The TUN/TAP driver gets the write requests and allocates skbs for it. The
+> header contents are copied into the skb header. The directly mapped user space
+> buffer is easily hooked into skb. Thus a zero copy for payload is implemented
+> in packet sending.
+> 
+> 6) aio_complete() to notify the Virtio-net backend service for io_getevents().
+> 
+> The proposed framework is described as above.
+> 
+> Consider the modifications to the kernel and qemu:
+> 
+> To kernel:
+> 1) The TUN/TAP driver may be modified a lot to implement AIO device operations
+> and to implement directly user space mapping into kernel. Code to maintain the
+> directly mapped user buffers should be in. It's just a modification for driver.
+> 
+> 2) The NIC driver may be modified to compose skb differently and slightly data
+> structure change to add user directly mapped buffer pointer.
+> Here, maybe it's better for a NIC driver to present an interface for an rx/tx
+> queue pair instance which will also apply to traditional hardware, the kernel
+> interface should not be changed to make the other components happy.
+> The abstraction is useful, though it is not needed immediately here.
+> 
+> 3) The skb shared info structure may be modified a little to contain the user
+> directly mapped info.
+> 
+> To Qemu:
+> 1) The Virtio-net backend service may be modified to handle AIO read/write
+> requests from the vqueues.
+> 2) Maybe a separate pthread to handle the AIO request triggering is needed.
+> 
+> Any comments are appreciated here.
 
-Oleg.
+* Code is easier to review than bullet points.
 
+* Direct I/O has to be safe when page is shared by multiple threads,
+  and has to be non-blocking since network I/O can take indeterminately
+  long (think big queue's, tunneling, ...)
+
+* In the past attempts at Direct I/O on network have always had SMP
+  TLB issues. The page has to be flipped or marked as COW on all CPU's
+  and the cost of the Inter Processor Interrupt to steal the page has
+  been slower than copying
+
+
+
+-- 
