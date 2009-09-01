@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751999AbZIAC57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752118AbZIADNi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751999AbZIAC57 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 22:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZIAC56
+	id S1752118AbZIADNi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 23:13:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZIADNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 22:57:58 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36989 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751712AbZIAC55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 22:57:57 -0400
-Date: Tue, 1 Sep 2009 12:57:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>
-Subject: linux-next: acpi tree build failure
-Message-Id: <20090901125748.fb33b2ea.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__1_Sep_2009_12_57_48_+1000_1hmTRUJT0WWTHGxn"
+	Mon, 31 Aug 2009 23:13:38 -0400
+Received: from wolverine02.qualcomm.com ([199.106.114.251]:59626 "EHLO
+	wolverine02.qualcomm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751312AbZIADNh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 23:13:37 -0400
+X-IronPort-AV: E=McAfee;i="5300,2777,5726"; a="22926138"
+Message-ID: <4A9C9163.50907@codeaurora.org>
+Date: Mon, 31 Aug 2009 23:13:39 -0400
+From: Ashwin Chaugule <ashwinc@codeaurora.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: linux-kernel@vger.kernel.org, mingo@redhat.com
+Subject: Re: [RFC] [PATCH 1/1] hrtimers: Cache next hrtimer
+References: <4A96FFE9.6060105@codeaurora.org> <4A970103.7010804@codeaurora.org> <alpine.LFD.2.00.0908280045200.2888@localhost.localdomain> <4A971245.5070507@codeaurora.org> <alpine.LFD.2.00.0908280111260.2888@localhost.localdomain> <4A9771AA.2090004@codeaurora.org> <alpine.LFD.2.00.0908281308380.2888@localhost.localdomain> <4A98070D.1050308@codeaurora.org> <alpine.LFD.2.00.0908282005410.19335@localhost.localdomain> <4A9A1701.2070703@codeaurora.org> <alpine.LFD.2.00.0908301016230.19335@localhost.localdomain> <4A9B4ECB.7070506@codeaurora.org> <alpine.LFD.2.00.0908310854020.19335@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0908310854020.19335@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__1_Sep_2009_12_57_48_+1000_1hmTRUJT0WWTHGxn
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Thomas Gleixner wrote:
 
-Hi Len,
+>> This looks very good ! Our results are almost similar now. However, I think
+>> that with this new
+>> patch we're still arming the timer needlessly at least once. This is the
+>> case when we're trying to remove the first (oldest) hrtimer with
+>> timer->expires = cpu->expires_next, but we forgo the reprogramming, when we
+>> really shouldn't. At this point, with the current scheme of things, we will
+>> needlessly wakeup and simply correct the expires_next value by
+>> traversing up the rbtree, to the parent node.
+>>     
+>
+> That only happens, when that timer is the last one in both trees. Then
+> the resulting reprogramming value is KTIME_MAX and we skip the
+> reprogramming. That's easy to fix by removing the KTIME_MAX check.
+>  
+>   
+Hmm. Agreed. I'll fix this and send a patch in the next few days. Otherwise, I think all else looks good.
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-drivers/acpi/als.c: In function 'acpi_als_get_mappings':
-drivers/acpi/als.c:173: error: expected ')' before 'PREFIX'
-drivers/acpi/als.c: In function 'acpi_als_add':
-drivers/acpi/als.c:347: error: expected ')' before 'PREFIX'
-
-I have used the version of the acpi tree from next-20090831 for today.
---=20
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Ashwin
 
---Signature=_Tue__1_Sep_2009_12_57_48_+1000_1hmTRUJT0WWTHGxn
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqcjawACgkQjjKRsyhoI8zBQACgo46m8eVRyIlmkLJ5JYfbQB9T
-BCMAn0HJo1Yv5ZVg0qy3SCWmG80z5lpk
-=qtgq
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_Sep_2009_12_57_48_+1000_1hmTRUJT0WWTHGxn--
