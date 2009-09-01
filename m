@@ -1,94 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZIARZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753584AbZIBEOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbZIARZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 13:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZIARZ6
+	id S1753584AbZIBEOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 00:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZIBEOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 13:25:58 -0400
-Received: from cantor.suse.de ([195.135.220.2]:47340 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753721AbZIARZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 13:25:58 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-From: James Bottomley <James.Bottomley@suse.de>
-To: akataria@vmware.com
-Cc: Dmitry Torokhov <dtor@vmware.com>, Matthew Wilcox <matthew@wil.cx>,
-       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>
-In-Reply-To: <1251824374.16169.128.camel@ank32.eng.vmware.com>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
-	 <200909010933.50571.dtor@vmware.com>
-	 <1251823925.3864.216.camel@mulgrave.site>
-	 <1251824374.16169.128.camel@ank32.eng.vmware.com>
-Content-Type: text/plain
-Date: Tue, 01 Sep 2009 12:25:49 -0500
-Message-Id: <1251825949.12482.34.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 00:14:34 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:55010 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752664AbZIBEOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 00:14:34 -0400
+Date: Tue, 1 Sep 2009 22:58:25 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20090901172825.GA6780@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090901113704.GG7599@linux.vnet.ibm.com>
+ <20090901113840.GH7599@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090901113840.GH7599@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-01 at 09:59 -0700, Alok Kataria wrote:
-> On Tue, 2009-09-01 at 09:52 -0700, James Bottomley wrote:
-> > On Tue, 2009-09-01 at 09:33 -0700, Dmitry Torokhov wrote:
-> > > On Tuesday 01 September 2009 09:16:51 am Matthew Wilcox wrote:
-> > > > On Tue, Sep 01, 2009 at 09:12:43AM -0700, Roland Dreier wrote:
-> > > > > I'm not really sure we should be trying to force drivers to share just
-> > > > > because they are paravirtualized -- if there is real commonality, then
-> > > > > sure put it in common code, but different hypervisors are probably as
-> > > > > different as different hardware.
-> > > > 
-> > > > I really disagree.  This kind of virtualised drivers are pretty much
-> > > > communication protocols, and not hardware.  As such, why design a new one?
-> > > > If there's an infelicity in the ibmvscsi protocol, it makes sense to
-> > > > design a new one.  But being different for the sake of being different
-> > > > is just a way to generate a huge amount of make-work.
-> > > > 
-> > > 
-> > > The same thing can be said about pretty much anything. We don't have
-> > > single SCSI, network, etc driver handling every devices in their
-> > > respective class, I don't see why it would be different here.
-> > > A hypervisor presents the same interface to the guest OS (whether
-> > > it is Linux, Solaris or another OS) much like a piece of silicone
-> > > does and it may very well be different form other hypervisors.
-> > 
-> > Nobody said you had to have the exact same driver for every hypervisor.
-> > What people are suggesting is that we look at commonalities in the
-> > interfaces both from a control plane point of view (transport class) and
-> > from a code sharing point of view (libscsivirt).  However, all the
-> > hypervisor interfaces I've seen are basically DMA rings ... they really
-> > do seem to be very similar across hypervisors, so it does seem there
-> > could be a lot of shared commonality.  I'm not going to insist on RDMA
-> > emulation, but perhaps you lot should agree on what a guest to
-> > hypervisor DMA interface looks like.
+* Arun R B <arun@linux.vnet.ibm.com> [2009-09-01 17:08:40]:
+
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
 > 
-> Which is this other hypervisor driver that you are talking about,
-> ibmvscsi is using RDMA emulation and I don't think you mean that. 
+> Cleanup drivers/cpuidle/cpuidle.c
+> 
+> Cpuidle maintains a pm_idle_old void pointer because, currently in x86
+> there is no clean way of registering and unregistering a idle function.
+>
+> So remove pm_idle_old and leave the responsibility of maintaining the
+> list of registered idle loops to the architecture specific code. If the
+> architecture registers cpuidle_idle_call as its idle loop, only then
+> this loop is called.
+> 
 
-lguest uses the sg_ring abstraction.  Xen and KVM were certainly looking
-at this too.
+It sounds as if there is a side-effect of this
+patch on x86 (am I reading it incorrectly), which can be fixed, but
+it will need a patch or so to get back the old behaviour on x86.
+ 
+> Also remove unwanted functions cpuidle_[un]install_idle_handler,
+> cpuidle_kick_cpus()
+>
+> Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+> ---
+>  drivers/cpuidle/cpuidle.c  |   51 +++++++++++++++------------------------------
+>  drivers/cpuidle/governor.c |    3 --
+>  2 files changed, 17 insertions(+), 37 deletions(-)
+> 
+> Index: linux.trees.git/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
+> +++ linux.trees.git/drivers/cpuidle/cpuidle.c
+> @@ -24,9 +24,14 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+> 
+>  DEFINE_MUTEX(cpuidle_lock);
+>  LIST_HEAD(cpuidle_detected_devices);
+> -static void (*pm_idle_old)(void);
+> 
+>  static int enabled_devices;
+> +static int idle_function_registered;
+> +
+> +struct idle_function_desc cpuidle_idle_desc = {
+> +	.name           =       "cpuidle_loop",
+> +	.idle_func      =       cpuidle_idle_call,
+> +};
+> 
+>  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
+>  static void cpuidle_kick_cpus(void)
+> @@ -54,13 +59,10 @@ static void cpuidle_idle_call(void)
+> 
+>  	/* check if the device is ready */
+>  	if (!dev || !dev->enabled) {
+> -		if (pm_idle_old)
+> -			pm_idle_old();
+> -		else
+>  #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+> -			default_idle();
+> +		default_idle();
+>  #else
+> -			local_irq_enable();
+> +		local_irq_enable();
+>  #endif
+>  		return;
+>  	}
+> @@ -94,35 +96,11 @@ static void cpuidle_idle_call(void)
+>  }
+> 
+>  /**
+> - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+> - */
+> -void cpuidle_install_idle_handler(void)
+> -{
+> -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> -		/* Make sure all changes finished before we switch to new idle */
+> -		smp_wmb();
+> -		pm_idle = cpuidle_idle_call;
+> -	}
+> -}
+> -
+> -/**
+> - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
+> - */
+> -void cpuidle_uninstall_idle_handler(void)
+> -{
+> -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> -		pm_idle = pm_idle_old;
+> -		cpuidle_kick_cpus();
+> -	}
+> -}
+> -
+> -/**
+>   * cpuidle_pause_and_lock - temporarily disables CPUIDLE
+>   */
+>  void cpuidle_pause_and_lock(void)
+>  {
+>  	mutex_lock(&cpuidle_lock);
+> -	cpuidle_uninstall_idle_handler();
+>  }
+> 
+>  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+> @@ -132,7 +110,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
+>   */
+>  void cpuidle_resume_and_unlock(void)
+>  {
+> -	cpuidle_install_idle_handler();
+>  	mutex_unlock(&cpuidle_lock);
+>  }
+> 
 
-> And anyways how large is the DMA code that we are worrying about here ?
-> Only about 300-400 LOC ? I don't think we might want to over-design for
-> such small gains.
-
-So even if you have different DMA code, the remaining thousand or so
-lines would be in common.  That's a worthwhile improvement.
-
-The benefit to users would be a common control plane and interface from
-the transport class, plus common code means more testers regardless of
-virtualisation technology chosen.
-
-James
+What does this mean for users of cpuidle_pause_and_lock/unlock?
+Should we be calling register/unregister_idle_function here?
 
 
+> @@ -287,6 +264,12 @@ static int __cpuidle_register_device(str
+>  	return 0;
+>  }
+> 
+> +static void register_cpuidle_idle_function(void)
+> +{
+> +	register_idle_function(&cpuidle_idle_desc);
+> +
+> +	idle_function_registered = 1;
+
+Use booleans if possible, unless you intend to extend the meaning of
+registered someday.
+
+> +}
+>  /**
+>   * cpuidle_register_device - registers a CPU's idle PM feature
+>   * @dev: the cpu
+> @@ -303,7 +286,9 @@ int cpuidle_register_device(struct cpuid
+>  	}
+> 
+>  	cpuidle_enable_device(dev);
+> -	cpuidle_install_idle_handler();
+> +
+> +	if (!idle_function_registered)
+> +		register_cpuidle_idle_function();
+> 
+>  	mutex_unlock(&cpuidle_lock);
+> 
+> @@ -382,8 +367,6 @@ static int __init cpuidle_init(void)
+>  {
+>  	int ret;
+> 
+> -	pm_idle_old = pm_idle;
+> -
+>  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+>  	if (ret)
+>  		return ret;
+> Index: linux.trees.git/drivers/cpuidle/governor.c
+> ===================================================================
+> --- linux.trees.git.orig/drivers/cpuidle/governor.c
+> +++ linux.trees.git/drivers/cpuidle/governor.c
+> @@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
+>  	if (gov == cpuidle_curr_governor)
+>  		return 0;
+> 
+> -	cpuidle_uninstall_idle_handler();
+> -
+>  	if (cpuidle_curr_governor) {
+>  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+>  			cpuidle_disable_device(dev);
+> @@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
+>  			return -EINVAL;
+>  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+>  			cpuidle_enable_device(dev);
+> -		cpuidle_install_idle_handler();
+>  		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
+>  	}
+> 
+
+-- 
+	Balbir
