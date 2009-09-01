@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754734AbZIANPx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754722AbZIANPm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754734AbZIANPx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:15:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZIANPv
+	id S1754722AbZIANPm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:15:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754707AbZIANPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:15:51 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41313 "EHLO mx2.mail.elte.hu"
+	Tue, 1 Sep 2009 09:15:42 -0400
+Received: from rtr.ca ([76.10.145.34]:51705 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754707AbZIANPt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:15:49 -0400
-Date: Tue, 1 Sep 2009 15:14:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: arjan@infradead.org, jeremy@goop.org, mschmidt@redhat.com,
-       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tj@kernel.org, tglx@linutronix.de,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [PATCH] kthreads: Fix startup synchronization boot crash
-Message-ID: <20090901131440.GA29783@elte.hu>
-References: <20090829182718.10f566b1@leela> <tip-23386d63bbb3199cf247313ec088878d72debcfd@git.kernel.org> <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com>
+	id S1754703AbZIANPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:15:41 -0400
+Message-ID: <4A9D1E7D.1050104@rtr.ca>
+Date: Tue, 01 Sep 2009 09:15:41 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901130436.GA22514@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrei Tanas <andrei@tanas.ca>
+Cc: Mark Lord <mlord@pobox.com>, Tejun Heo <tj@kernel.org>,
+       Ric Wheeler <rwheeler@redhat.com>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, Jeff Garzik <jgarzik@redhat.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <004e01ca25e4$c11a54e0$434efea0$@ca> <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name> <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BC033.9000909@pobox.com> <4A9C60A1.50303@rtr.ca> <640f6103c45b6cba6f84f887bde227e4@localhost>
+In-Reply-To: <640f6103c45b6cba6f84f887bde227e4@localhost>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Oleg Nesterov <oleg@redhat.com> wrote:
-
-> On 09/01, Ingo Molnar wrote:
-> >
-> > In fact i dont see any proper serialization here: there appears to
-> > be a race between the initial task and the init task (which are not
-> > one and the same). The race is possibly timing dependent as well,
-> > hence the (in hindsight, false) dependency on the stackprotector
-> > commit.
+Andrei Tanas wrote:
+>>>>> The drive might take a longer time like this when doing error handling
+>>>>> (sector remapping, etc), but then I would expect to see your remapped
+>>>>> sector count grow.
+>>>> Yes, this is a possibility and according to the spec, libata EH should
+>>>> be retrying flushes a few times before giving up but I'm not sure
+>>>> whether keeping retrying for several minutes is a good idea either.
+>>>> Is it?
+>>> ..
+>>>
+>>> Libata will retry only when the FLUSH returns an error,
+>>> and the next FLUSH will continue after the point where
+>>> the first attempt failed.
+>>>
+>>> But if the drive can still auto-relocate sectors, then the
+>>> first FLUSH won't actually fail.. it will simply take longer
+>>> than normal.
+>>>
+>>> A couple of those, and we're into the tens of seconds range
+>>> for time.
+>>>
+>>> Still, it would be good to actually produce an error like that
+>>> to examine under controlled circumstances.
+>>>
+>>> Hmm.. I had a drive here that gave symptoms like that.
+>>> Eventually, I discovered that drive had run out of relocatable
+>>> sectors, too.  Mmm.. I'll see if I can get it back (loaned it out)
+>>> and perhaps we can recreate this specific scenario on it..
+>> ..
+>>
+>> I checked today, and that drive is no longer available.
 > 
-> Yes, this looks racy, and I think this was always racy.
-> 
-> > I think the bug was introduced
-> > via:
-> >
-> >   cdd140b: kthreads: simplify the startup synchronization
-> 
-> Cough ;) No, I don't think this patch introduced this bug. With or 
-> without this patch, kthread_create() assumes kthreadd_task != 
-> NULL, otherwise wake_up_process(kthreadd_task) is obviously can 
-> crash.
+> Mine errored out again with exactly the same symptoms, this time after only
+> few days and with the "tunable" set to 2 sec. I got a warranty replacement
+> but haven't shipped this one yet. Let me know if you want it.
+..
 
-yeah - was just a guess.
-
-> >  static DEFINE_SPINLOCK(kthread_create_lock);
-> >  static LIST_HEAD(kthread_create_list);
-> > +
-> >  struct task_struct *kthreadd_task;
-> > +DECLARE_COMPLETION(kthreadd_task_init_done);
-> >
-> >  struct kthread_create_info
-> >  {
-> > @@ -129,6 +131,9 @@ struct task_struct *kthread_create(int (*threadfn)(void *data),
-> >  	list_add_tail(&create.list, &kthread_create_list);
-> >  	spin_unlock(&kthread_create_lock);
-> >
-> > +	if (unlikely(!kthreadd_task))
-> > +		wait_for_completion(&kthreadd_task_init_done);
-> > +
-> 
-> Yes, this should work. But I _think_ we can make the better fix...
-> 
-> I'll try to make the patch soon. Afaics we don't need 
-> kthreadd_task_init_done.
-
-ok.
-
-	Ingo
+Not me.  But perhaps Tejun ?
