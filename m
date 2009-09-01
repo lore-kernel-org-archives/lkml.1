@@ -1,124 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZIAPGe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbZIASmH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754101AbZIAPGe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 11:06:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZIAPGd
+	id S1753144AbZIASmH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 14:42:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbZIASmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 11:06:33 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:54806 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753837AbZIAPGa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 11:06:30 -0400
-Date: Tue, 1 Sep 2009 14:42:29 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Roland Dreier <rdreier@cisco.com>
-cc: Thomas Gleixner <tglx@linutronix.de>,
-       Gregory Haskins <ghaskins@novell.com>, Rik van Riel <riel@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, raz ben yehuda <raziebe@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu,
-       peterz@infradead.org, maximlevitsky@gmail.com, efault@gmx.de,
-       wiseman@macs.biu.ac.il, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: RFC: THE OFFLINE SCHEDULER
-In-Reply-To: <adavdk3q3nk.fsf@cisco.com>
-Message-ID: <alpine.DEB.1.10.0909011440210.12112@V090114053VZO-1>
-References: <1251282598.3514.20.camel@raz> <alpine.DEB.1.10.0908260943090.9924@gentwo.org> <1251297910.1791.22.camel@maxim-laptop> <1251322663.3882.48.camel@raz> <4A96B997.1070001@nortel.com> <alpine.DEB.1.10.0908271257270.17470@gentwo.org>
- <alpine.LFD.2.00.0908272242500.2888@localhost.localdomain> <4A97071F.5070804@novell.com> <4A973DAE.4020508@redhat.com> <4A975025.8030500@novell.com> <4A975CC4.1090208@novell.com> <alpine.LFD.2.00.0908281218560.2888@localhost.localdomain>
- <alpine.DEB.1.10.0908281446520.7317@gentwo.org> <alpine.LFD.2.00.0908282100040.19335@localhost.localdomain> <alpine.DEB.1.10.0908281551450.17784@gentwo.org> <alpine.LFD.2.00.0908282158100.19335@localhost.localdomain> <alpine.DEB.1.10.0908281619520.15573@gentwo.org>
- <alpine.LFD.2.00.0908282231260.19335@localhost.localdomain> <alpine.DEB.1.10.0908311517410.26046@V090114053VZO-1> <adavdk3q3nk.fsf@cisco.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 1 Sep 2009 14:42:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58244 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750718AbZIASmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 14:42:05 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+Date: Tue, 1 Sep 2009 20:42:59 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19099.52899.620345.326521@pilspetsen.it.uu.se> <19100.31254.666066.755541@pilspetsen.it.uu.se>
+In-Reply-To: <19100.31254.666066.755541@pilspetsen.it.uu.se>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909012042.59856.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009, Roland Dreier wrote:
+On Tuesday 01 September 2009, Mikael Pettersson wrote:
+> Mikael Pettersson writes:
+>  > Rafael J. Wysocki writes:
+>  >  > On Saturday 29 August 2009, Mikael Pettersson wrote:
+>  >  > > Mikael Pettersson writes:
+>  >  > >  > Rafael J. Wysocki writes:
+>  >  > >  >  > On Thursday 27 August 2009, Mikael Pettersson wrote:
+>  >  > >  >  > > On Tue, 25 Aug 2009 22:34:53 +0200 (CEST), Rafael J. Wysocki wrote:
+>  >  > >  >  > > > The following bug entry is on the current list of known regressions
+>  >  > >  >  > > > from 2.6.30.  Please verify if it still should be listed and let me know
+>  >  > >  >  > > > (either way).
+>  >  > >  >  > > > 
+>  >  > >  >  > > > 
+>  >  > >  >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
+>  >  > >  >  > > > Subject		: pty regressed again, breaking expect and gcc's testsuite
+>  >  > >  >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+>  >  > >  >  > > > Date		: 2009-08-14 23:41 (12 days old)
+>  >  > >  >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
+>  >  > >  >  > > 
+>  >  > >  >  > > Not fixed. With 2.6.31-rc7 I'm still seeing repeatable testsuite
+>  >  > >  >  > > failures on powerpc64. Reverting to 2.6.30 makes the failures go away.
+>  >  > >  >  > 
+>  >  > >  >  > Thanks for the update.
+>  >  > >  >  > 
+>  >  > >  >  > I guess 2.6.31-rc8 doesn't make any difference, does it?
+>  >  > >  > 
+>  >  > >  > I've scheduled a number of gcc bootstraps and testsuite runs
+>  >  > >  > with -rc8 on x86, powerpc64, and arm. I'll post an update in
+>  >  > >  > a day or so.
+>  >  > > 
+>  >  > > 2.6.31-rc8 results in bogus testsuite failures on all three platforms.
+>  >  > 
+>  >  > That may be a result of the known inotify borkage in -rc8 that has been fixed
+>  >  > in the current Linus' tree.
+>  > 
+>  > No, it's the same old semi-random pty breakage. My kernels are built
+>  > without inotify.
+>  > 
+>  > A bisection has identified Alan's
+>  > 
+>  > pty: Rework the pty layer to use the normal buffering logic
+>  > d945cb9cce20ac7143c2de8d88b187f62db99bdc 
+>  > 
+>  > as the culprit. This patch introduces a massive number of bogus
+>  > failures in the gcc testsuite. Subsequent pty/tty patches do fix
+>  > most of those failures, but clearly not all.
+> 
+> Starting with 2.6.31-rc8 and reverting
+> 
+> 85dfd81dc57e8183a277ddd7a56aa65c96f3f487 pty: fix data loss when stopped (^S/^Q)
+> d945cb9cce20ac7143c2de8d88b187f62db99bdc pty: Rework the pty layer to use the normal buffering logic
+> 
+> in that order gives me a kernel that works on both x86 and powerpc64.
+> 
+> So the bug is definitely limited to the pty buffering logic change.
 
->
->  > Some devices now have per cpu threads. See f.e. Mellanox IB drivers. Maybe
->  > there is a way to restrict that.
->
-> AFAIK the Mellanox drivers just create a single-threaded workqueue.
+Thanks a lot for this information, adding somme CCs to the list.
 
-Ok then these per cpu irqs are there to support something different? There
-are per cpu irqs here. Seems to be hardware supported?
-
-  62:      13824          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-0
-  63:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-1
-  64:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-2
-  65:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-3
-  66:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-4
-  67:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-5
-  68:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-6
-  69:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-7
-  70:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-8
-  71:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-9
-  72:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-10
-  73:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-11
-  74:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-12
-  75:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-13
-  76:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-14
-  77:          0          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-comp-15
-  78:       3225          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      mlx4-async
-  79:       1832          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-0
-  80:       5546          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-1
-  81:       2604          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-2
-  82:        124          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-3
-  83:     743126          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-4
-  84:        857          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-5
-  85:        321          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-6
-  86:       2296          0          0          0          0          0
-0          0          0          0          0          0          0
-0          0          0  IR-PCI-MSI-edge      eth0-7
-
+Best,
+Rafael
