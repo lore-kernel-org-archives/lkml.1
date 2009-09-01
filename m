@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753661AbZIAKMN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753586AbZIAKUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753661AbZIAKMN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 06:12:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZIAKMM
+	id S1753586AbZIAKUs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 06:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZIAKUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 06:12:12 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53389 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751105AbZIAKML (ORCPT
+	Tue, 1 Sep 2009 06:20:47 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:51551 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbZIAKUr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 06:12:11 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 1 Sep 2009 19:10:18 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       hannes@cmpxchg.org
-Subject: Re: [mmotm][BUG] free is bigger than presnet Re: mmotm
- 2009-08-27-16-51 uploaded
-Message-Id: <20090901191018.19a69696.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090901185013.c86bd937.kamezawa.hiroyu@jp.fujitsu.com>
-References: <200908272355.n7RNtghC019990@imap1.linux-foundation.org>
-	<20090901180032.55f7b8ca.kamezawa.hiroyu@jp.fujitsu.com>
-	<Pine.LNX.4.64.0909011031140.13740@sister.anvils>
-	<20090901185013.c86bd937.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Sep 2009 06:20:47 -0400
+Date: Tue, 1 Sep 2009 19:20:43 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: page allocator regression on nommu
+Message-ID: <20090901102042.GA15680@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mel Gorman <mel@csn.ul.ie>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Dave Hansen <dave@linux.vnet.ibm.com>,
+	Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+References: <20090831074842.GA28091@linux-sh.org> <20090831103056.GA29627@csn.ul.ie> <20090831104315.GB30264@linux-sh.org> <20090831105952.GC29627@csn.ul.ie> <20090901004627.GA531@linux-sh.org> <20090901100356.GA27393@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901100356.GA27393@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Sep 2009 18:50:13 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-
-> On Tue, 1 Sep 2009 10:33:31 +0100 (BST)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+On Tue, Sep 01, 2009 at 11:03:56AM +0100, Mel Gorman wrote:
+> On Tue, Sep 01, 2009 at 09:46:27AM +0900, Paul Mundt wrote:
+> > > What is the output of the following debug patch?
+> > > 
+> > 
+> > ...
+> > Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)
+> > ------------[ cut here ]------------
+> > Badness at mm/page_alloc.c:1046
+> > 
 > 
-> > On Tue, 1 Sep 2009, KAMEZAWA Hiroyuki wrote:
-> > > 
-> > > I'm not digggin so much but /proc/meminfo corrupted.
-> > > 
-> > > [kamezawa@bluextal cgroup]$ cat /proc/meminfo
-> > > MemTotal:       24421124 kB
-> > > MemFree:        38314388 kB
-> > 
-> > If that's without my fix to shrink_active_list(), I'd try again with.
-> > Hugh
-> > 
-> Thank you very much. I missed this patch.
-> It's fixed.
+> Ok, it looks like ownership was not being taken properly and the first
+> patch was incomplete. Please try
+> 
+That did the trick, everything looks back to normal now. :-)
 
-Sorry again, at continuing tests...thre are still..
-
-MemTotal:       24421124 kB
-MemFree:        25158956 kB
-Buffers:            2264 kB
-Cached:            34936 kB
-SwapCached:         5140 kB
-
-I wonder I miss something..
-
-Thanks,
--Kame
-
+Tested-by: Paul Mundt <lethal@linux-sh.org>
