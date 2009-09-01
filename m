@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZIAHLx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZIAGrL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752947AbZIAHLx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 03:11:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZIAHLx
+	id S1752750AbZIAGrL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 02:47:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751676AbZIAGrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 03:11:53 -0400
-Received: from 124-219-29-227.vdslpro.static.apol.com.tw ([124.219.29.227]:59043
-	"EHLO mswedge2.sunplus.com" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752583AbZIAHLw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 03:11:52 -0400
-X-Greylist: delayed 1106 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Sep 2009 03:11:52 EDT
-In-Reply-To: <200908310956.33802.arnd@arndb.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
+	Tue, 1 Sep 2009 02:47:10 -0400
+Received: from mga03.intel.com ([143.182.124.21]:11746 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009AbZIAGrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 02:47:10 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="182667746"
+Date: Tue, 1 Sep 2009 14:46:52 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "menage@google.com" <menage@google.com>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 0/4] memcg: add support for hwpoison testing
+Message-ID: <20090901064652.GA20342@localhost>
+References: <20090831102640.092092954@intel.com> <20090901084626.ac4c8879.kamezawa.hiroyu@jp.fujitsu.com> <20090901022514.GA11974@localhost> <20090901113214.60e7ae32.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Subject: Re: [GIT PULL, v4] S+core architecture (arch/score) support
-X-Mailer: Lotus Notes Release 7.0.3 September 26, 2007
-Message-ID: <OF4CFE082A.22292F01-ON48257624.0024EFF9-48257624.0025CD0B@sunplusct.com>
-From: liqin.chen@sunplusct.com
-Date: Tue, 1 Sep 2009 14:45:28 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/09/01 ?? 02:45:30,
-	Serialize complete at 2009/09/01 ?? 02:45:30
-Content-Type: text/plain; charset="GB2312"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901113214.60e7ae32.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n817C916031764
 
-Arnd Bergmann <arnd@arndb.de> Ğ´ÓÚ 2009-08-31 17:56:33:
-
-> On Monday 31 August 2009 07:48:33 liqin.chen@sunplusct.com wrote:
-> > Arnd Bergmann <arnd@arndb.de> Ğ´ÓÚ 2009-08-27 22:00:37:
+On Tue, Sep 01, 2009 at 10:32:14AM +0800, KAMEZAWA Hiroyuki wrote:
+> On Tue, 1 Sep 2009 10:25:14 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > 4. I can't understand why you need this. I wonder you can get pfn via
+> > >    /proc/<pid>/????. And this may insert HWPOISON to page-cache of shared
+> > >    library and "unexpected" process will be poisoned.
+> > 
+> > Sorry I should have explained this. It's mainly for correctness.
+> > When a user space tool queries the task PFNs in /proc/pid/pagemap and
+> > then send to /debug/hwpoison/corrupt-pfn, there is a racy window that
+> > the page could be reclaimed and allocated by some one else. It would
+> > be awkward to try to pin the pages in user space. So we need the
+> > guarantees provided by /debug/hwpoison/corrupt-filter-memcg, which
+> > will be checked inside the page lock with elevated reference count.
+> > 
 > 
-> __NR_ipc definitely should not be defined, it is a multiplexer
-> for other system calls that have their own number, e.g. msgctl
-> and semop. Look at e.g. how parisc does it in glibc.
+> memcg never holds refcnt for a page and the kernel::vmscan.c can reclaim
+> any pages under memcg whithout checking anything related to memcg.
+> *And*, your code has no "pin" code.
+> This patch sed does no jobs for your concern.
+
+We grabbed page here, which is not in the scope of this patchset:
+
+        static int try_memory_failure(unsigned long pfn)
+        {      
+                struct page *p;
+                int res = -EINVAL;
+
+                if (!pfn_valid(pfn))
+                        return res;
+
+                p = pfn_to_page(pfn);
+                if (!get_page_unless_zero(compound_head(p)))
+                        return res;
+
+                lock_page_nosync(compound_head(p));
+
+                if (hwpoison_filter(p))
+                        goto out;
+
+                res = __memory_failure(pfn, 18,
+                                       MEMORY_FAILURE_FLAG_COUNTED |
+                                       MEMORY_FAILURE_FLAG_LOCKED);
+        out:
+                unlock_page(p);
+                return res;
+        }
+
+> I recommend you to add
+>   /debug/hwpoizon/pin-pfn
 > 
+> Then,
+> 	echo pfn > /debug/hwpoizon/pin-pfn
+>         # add pfn for hwpoison debug's watch list. and elevate refcnt
+> 	check 'pfn' is still used.
+>  	echo pfn > /debug/hwpoison/corrupt-pfn
+> 	# check 'watch list' and make it corrupt and release refcnt.
+> or some.
 
-Ok, we do it as parisc does
+Looks like a good alternative. At least no more memcg dependency..
 
-> 
-> Do you have a patch against the glibc git tree for score so I can look
-> at what needs to be done? None of the changes should be specific to
-> score after all, ideally it should all work without any glibc changes,
-> though I realize that we are not there yet.
-> 
-
-I will send the patch to you soon.
-
-liqin
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Cheers,
+Fengguang
