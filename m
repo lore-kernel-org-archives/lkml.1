@@ -1,93 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZIAAqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752543AbZIAAqc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbZIAAqt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 20:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZIAAqs
+	id S1752543AbZIAAqc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 20:46:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752442AbZIAAqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 20:46:48 -0400
-Received: from mga03.intel.com ([143.182.124.21]:65039 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752442AbZIAAqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 20:46:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182581808"
-Subject: Re: [PATCH 2/6] thermal: sysfs-api.txt - document passive
-	attribute for thermal zones
-From: Zhang Rui <rui.zhang@intel.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Thomas, Sujith" <sujith.thomas@intel.com>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-In-Reply-To: <200908311320.00632.elendil@planet.nl>
-References: <1251303445-25317-1-git-send-email-elendil@planet.nl>
-	 <1251303445-25317-3-git-send-email-elendil@planet.nl>
-	 <1251706691.3483.169.camel@rzhang-dt>
-	 <200908311320.00632.elendil@planet.nl>
-Content-Type: text/plain
-Date: Tue, 01 Sep 2009 08:44:42 +0800
-Message-Id: <1251765882.3483.193.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Mon, 31 Aug 2009 20:46:31 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:44862 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751851AbZIAAqa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 20:46:30 -0400
+Date: Tue, 1 Sep 2009 09:46:27 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: page allocator regression on nommu
+Message-ID: <20090901004627.GA531@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Mel Gorman <mel@csn.ul.ie>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Dave Hansen <dave@linux.vnet.ibm.com>,
+	Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+References: <20090831074842.GA28091@linux-sh.org> <20090831103056.GA29627@csn.ul.ie> <20090831104315.GB30264@linux-sh.org> <20090831105952.GC29627@csn.ul.ie>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090831105952.GC29627@csn.ul.ie>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-31 at 19:19 +0800, Frans Pop wrote:
-> On Monday 31 August 2009, Zhang Rui wrote:
-> > > +passive
-> > > +	Attribute is only present for zones which do not have a passive
-> > > +	cooling policy (_PSV) defined in ACPI.
-> >
-> > We should not involve any platform specific stuff in this
-> > documentation. how about "Attribute is only present for zones in which
-> > the passive cooling policy is not supported by native thermal driver"
-> [...]
-> > > -If the processor is listed in _PSL method, and the fan is listed in
-> > > _AL0 -method, the sys I/F structure will be built like this:
-> > > +If the processor is listed in _PSL method, the fan is listed in _AL0
-> > > +method, and the zone has a _PSV method, the sys I/F structure will
-> > > be +built like this:
-> >
-> > For an ACPI thermal zone, supporting passive cooling means that both
-> > _PSL and _PSV are available.
-> > so I don't think we need to change this. :)
+On Mon, Aug 31, 2009 at 11:59:52AM +0100, Mel Gorman wrote:
+> On Mon, Aug 31, 2009 at 07:43:15PM +0900, Paul Mundt wrote:
+> > On Mon, Aug 31, 2009 at 11:30:56AM +0100, Mel Gorman wrote:
+> > > On Mon, Aug 31, 2009 at 04:48:43PM +0900, Paul Mundt wrote:
+> > > > Hi Mel,
+> > > > 
+> > > > It seems we've managed to trigger a fairly interesting conflict between
+> > > > the anti-fragmentation disabling code and the nommu region rbtree. I've
+> > > > bisected it down to:
+> > > > 
+> > > > commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e
+> > > > Author: Mel Gorman <mel@csn.ul.ie>
+> > > > Date:   Tue Jun 16 15:31:58 2009 -0700
+> > > > 
+> > > >     page allocator: move check for disabled anti-fragmentation out of fastpath
+> > > > 
+> > > >     On low-memory systems, anti-fragmentation gets disabled as there is
+> > > >     nothing it can do and it would just incur overhead shuffling pages between
+> > > >     lists constantly.  Currently the check is made in the free page fast path
+> > > >     for every page.  This patch moves it to a slow path.  On machines with low
+> > > >     memory, there will be small amount of additional overhead as pages get
+> > > >     shuffled between lists but it should quickly settle.
+> > > > 
+> > > > which causes death on unpacking initramfs on my nommu board. With this
+> > > > reverted, everything works as expected. Note that this blows up with all of
+> > > > SLOB/SLUB/SLAB.
+> > > > 
+> > > > I'll continue debugging it, and can post my .config if it will be helpful, but
+> > > > hopefully you have some suggestions on what to try :-)
+> > > > 
+> > > 
+> > > Based on the output you have given me, it would appear the real
+> > > underlying cause is that fragmentation caused the allocation to fail.
+> > > The following patch might fix the problem.
+> > >
+> > Unfortunately this has no impact, the same issue occurs.
+> > 
 > 
-> OK. Updated patch below.
+> What is the output of the following debug patch?
 > 
-> 
-> From: Frans Pop <elendil@planet.nl>
-> Subject: thermal: sysfs-api.txt - document passive attribute for thermal zones
-> 
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> Cc: Zhang Rui <rui.zhang@intel.com>
-> Cc: Sujith Thomas <sujith.thomas@intel.com>
-> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
-> 
-Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-thanks,
-rui
-> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
-> index 895337f..a87dc27 100644
-> --- a/Documentation/thermal/sysfs-api.txt
-> +++ b/Documentation/thermal/sysfs-api.txt
-> @@ -199,6 +199,15 @@ cdev[0-*]_trip_point
->  	point.
->  	RO, Optional
->  
-> +passive
-> +	Attribute is only present for zones in which the passive cooling
-> +	policy is not supported by native thermal driver. Default is zero
-> +	and can be set to a temperature (in millidegrees) to enable a
-> +	passive trip point for the zone. Activation is done by polling
-> +	with an interval of 1 second.
-> +	Unit: millidegrees Celsius
-> +	RW, Optional
-> +
->  *****************************
->  * Cooling device attributes *
->  *****************************
+...
+Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)
+------------[ cut here ]------------
+Badness at mm/page_alloc.c:1046
 
+Pid : 0, Comm:          swapper
+CPU : 0                 Not tainted  (2.6.31-rc7 #2864)
+
+PC is at free_hot_cold_page+0xa0/0x150
+PR is at free_hot_cold_page+0x7e/0x150
+PC  : 0c039804 SP  : 0c0f5fa0 SR  : 400000f0
+R0  : 00000002 R1  : 00000001 R2  : 0c20eb20 R3  : 0c000000
+R4  : 00000002 R5  : 00000024 R6  : 00000002 R7  : 0c079260
+R8  : 0c103000 R9  : 0c21c360 R10 : 0c102fec R11 : ffffffff
+R12 : 00000000 R13 : 0000d000 R14 : 00000000
+MACH: 00000008 MACL: 0000000d GBR : 00000000 PR  : 0c0397e2
+
+Call trace:
+ [<0c1093a2>] free_all_bootmem_core+0xda/0x1bc
+ [<0c106da2>] mem_init+0x22/0xe0
+ [<0c0112dc>] printk+0x0/0x24
+ [<0c108f5c>] __alloc_bootmem+0x0/0xc
+ [<0c104480>] start_kernel+0xe8/0x4b8
+ [<0c00201c>] _stext+0x1c/0x28
+ [<0c002000>] _stext+0x0/0x28
+
+Code:
+  0c0397fe:  negc      r11, r1
+  0c039800:  tst       r1, r1
+  0c039802:  bt        0c039810
+->0c039804:  trapa     #62
+  0c039806:  tst       r1, r1
+  0c039808:  bt        0c039810
+  0c03980a:  mov       #1, r2
+  0c03980c:  mov.l     0c0398ac <free_hot_cold_page+0x148/0x150>, r1  ! 0c20e9dc <0xc20e9dc>
+  0c03980e:  mov.l     r2, @r1
+...
