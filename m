@@ -1,46 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbZIAOSc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754959AbZIAOXo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932094AbZIAOSc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:18:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932086AbZIAOSb
+	id S1754959AbZIAOXo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:23:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZIAOXo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:18:31 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38502 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932082AbZIAOS3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:18:29 -0400
-Date: Tue, 1 Sep 2009 15:18:12 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-Cc: Steven Walter <stevenrwalter@gmail.com>, David Xiao <dxiao@broadcom.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090901141812.GT19719@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk> <200909011543.48439.laurent.pinchart@ideasonboard.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909011543.48439.laurent.pinchart@ideasonboard.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 1 Sep 2009 10:23:44 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35245 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754921AbZIAOXn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 10:23:43 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: James Bottomley <James.Bottomley@suse.de>
+To: akataria@vmware.com
+Cc: Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dmitry Torokhov <dtor@vmware.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>,
+       Bhavesh Davda <bhavesh@vmware.com>
+In-Reply-To: <1251755593.16169.51.camel@ank32.eng.vmware.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
+	 <1251741624.18828.83.camel@mulgrave.site>
+	 <1251755593.16169.51.camel@ank32.eng.vmware.com>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 09:23:32 -0500
+Message-Id: <1251815012.3864.55.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 03:43:48PM +0200, Laurent Pinchart wrote:
-> I might be missing something obvious, but I fail to see how VIVT caches
-> could work at all with multiple mappings. If a kernel-allocated buffer
-> is DMA'ed to, we certainly want to invalidate all cache lines that store
-> buffer data. As the cache doesn't care about physical addresses we thus
-> need to invalidate all virtual mappings for the buffer. If the buffer is
-> mmap'ed in userspace I don't see how that would be done.
+On Mon, 2009-08-31 at 14:53 -0700, Alok Kataria wrote:
+> Hi James, 
+> 
+> Thanks for your comments. 
+> 
+> On Mon, 2009-08-31 at 11:00 -0700, James Bottomley wrote:
+> > On Mon, 2009-08-31 at 10:28 -0700, Alok Kataria wrote:
+> > > VMware PVSCSI driver - v2.
+> > 
+> > OK, so the first thing that springs to mind is that we already have one
+> > of these things: the ibmvscsi ... is there no way we can share code
+> > between this and the other PV drivers?
+> 
+> I took a quick look at the ibmvscsi driver, and there are lot of
+> differences between the two, mainly the ABI that is shared between the
+> hypervisor and driver differ.
 
-You need to ask MM gurus about that.  I don't touch the Linux MM very
-often so tend to keep forgetting how it works.  However, it does work
-for shared mappings of files on CPUs with VIVT caches.
+Well, that's pretty abstractable, surely?  However, there is an
+interesting question of what the best hypervisor interface actually is.
+
+>  Also the ibmvscsi driver seems to offer a
+> lot of other features as well, like the SRP. 
+
+SRP is the protocol transfer abstraction.  It's just a way of packaging
+up SCSI commands for transfer over a DMA protocol (OK, so it was
+envisaged that the DMA protocol would be RDMA, but a hypervisor
+interface is also a DMA protocol).
+
+> The pvscsi driver is a simple SCSI adapter driver and is basically no
+> different than any other SCSI driver written for a particular HBA.
+
+Well, it is really ... hopefully all the hypervisor interfaces won't
+decide to be completely incompatible, so there's a good chance of code
+sharing between them.
+
+James
+
+
