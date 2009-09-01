@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbZIAGUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751978AbZIAG2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752358AbZIAGUX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 02:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZIAGUW
+	id S1751978AbZIAG2y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 02:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751091AbZIAG2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 02:20:22 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:50296 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751379AbZIAGUV (ORCPT
+	Tue, 1 Sep 2009 02:28:53 -0400
+Received: from mail-px0-f204.google.com ([209.85.216.204]:45653 "EHLO
+	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750885AbZIAG2w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 02:20:21 -0400
+	Tue, 1 Sep 2009 02:28:52 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=D2y/qYZlVK3Y/txCbYHiHUZHSgydFjSHljfOdmgzJ/9PiTiKAk1tVfM/r8PQz8/8QV
-         EBYWXPAIHspwWZj0SmhAAlEzdFl6ueHnOXUpe65JDT7tDEJ52lAlI3EzKA1TRKgj1ztn
-         8EPKx9vOzajGQZ4XmK4y9FwAZPHlR4LjUspIo=
-Message-ID: <4A9CBD22.1050401@gmail.com>
-Date: Tue, 01 Sep 2009 08:20:18 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.5 Thunderbird/3.0b3
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:message-id;
+        b=SX3FbciSqzQldEfmxgpxAmxkyrekQLCGw4erIqVLWe0BPDFmft3A3S8YSdPVW03FSD
+         3BTRoIstCDDdLNSPfdJ3sXk+E6wxagkdVU6bDNAX5wIWsBpcNPG2zKxXjOKvEg7JfCH7
+         ZZsp6ZRoZww5Jm05U46MW3H2c4vUvDHOJkpr0=
+Date: Mon, 31 Aug 2009 23:28:49 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>, linux-acpi <linux-acpi@vger.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V5 0/2] Ambient Light Sensor support
+References: <1251706025.3483.159.camel@rzhang-dt> <alpine.LFD.2.00.0908311303340.19451@localhost.localdomain>
 MIME-Version: 1.0
-To: James Morris <jmorris@namei.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, mingo@redhat.com,
-       oleg@redhat.com, linux-kernel@vger.kernel.org,
-       Stephen Smalley <sds@tycho.nsa.gov>, Eric Paris <eparis@parisplace.org>,
-       David Howells <dhowells@redhat.com>,
-       linux-security-module@vger.kernel.org,
-       Frank Mayhar <fmayhar@google.com>
-Subject: Re: [PATCH 1/6] SECURITY: selinux, fix update_rlimit_cpu parameter
-References: <1251744974-29398-1-git-send-email-jirislaby@gmail.com> <alpine.LRH.2.00.0909010811320.22374@tundra.namei.org>
-In-Reply-To: <alpine.LRH.2.00.0909010811320.22374@tundra.namei.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0908311303340.19451@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090901070129.F402D526EA5@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/01/2009 12:22 AM, James Morris wrote:
-> On Mon, 31 Aug 2009, Jiri Slaby wrote:
+On Mon, Aug 31, 2009 at 01:04:35PM -0400, Len Brown wrote:
+> I put this in the acpi test tree, with the expectation
+> that it will have at least one minor revision update
+> before going upstream.
 > 
-> [added lsm list]
+> thanks,
+> Len Brown, Intel Open Source Technology Center
 > 
->> diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
->> index cf41988..496e626 100644
->> --- a/security/selinux/hooks.c
->> +++ b/security/selinux/hooks.c
->> @@ -2360,7 +2360,7 @@ static void selinux_bprm_committing_creds(struct linux_binprm *bprm)
->>  			initrlim = init_task.signal->rlim + i;
->>  			rlim->rlim_cur = min(rlim->rlim_max, initrlim->rlim_cur);
->>  		}
->> -		update_rlimit_cpu(rlim->rlim_cur);
->> +		update_rlimit_cpu(current->signal->rlim[RLIMIT_CPU].rlim_cur);
-> 
-> This doesn't look correct to me: the original code determines 
-> rlim->rlim_cur and then updates current to that.  With your change, this 
-> value is not used.
 
-No, the for loop is to alter all limits according to the init limits.
+Breaks build here...
 
-update_rlimit_cpu is called for RLIMIT_CPU to annotate scheduler about
-CPU time changes (if any).
+-- 
+Dmitry
 
-BTW this was introduced by f06febc96ba8e0af80bcc3eaec0a109e88275fac
-(timers: fix itimer/many thread hang).
+ACPI: als - fix compile errors
+
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+
+PREFIX was undefined causing compiler to barf.
+
+Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+---
+
+ drivers/acpi/als.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/acpi/als.c b/drivers/acpi/als.c
+index 6743ba7..51583a8 100644
+--- a/drivers/acpi/als.c
++++ b/drivers/acpi/als.c
+@@ -30,6 +30,8 @@
+ #include <acpi/acpi_bus.h>
+ #include <acpi/acpi_drivers.h>
+ 
++#define PREFIX "ACPI: "
++
+ #define ACPI_ALS_CLASS			"als"
+ #define ACPI_ALS_DEVICE_NAME		"Ambient Light Sensor"
+ #define ACPI_ALS_NOTIFY_ILLUMINANCE	0x80
