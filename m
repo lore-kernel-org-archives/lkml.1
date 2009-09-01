@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752527AbZIAAoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbZIAAov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752527AbZIAAoj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 20:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZIAAoj
+	id S1752573AbZIAAov (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 20:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZIAAou
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 20:44:39 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:11369 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752445AbZIAAoi (ORCPT
+	Mon, 31 Aug 2009 20:44:50 -0400
+Received: from smtpauth05.prod.mesa1.secureserver.net ([64.202.165.99]:43114
+	"HELO smtpauth05.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752472AbZIAAou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 20:44:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=lIPuOsp5syHAveytZKSYLXf5iObwuVPqCjPB/juM5FN1VdMi0CAgVn9chJd5yLLdlI
-         X09dmHH0IviOb5EzzLfWd2lDSQ2FS2QyfZ1rGSvfT8P5Rw20VkhuCbKcC2Ap8DpHHeEt
-         L2T4zDR9YAuV6ehUnqU3TAuFp+Etek1hbIWRY=
-Date: Mon, 31 Aug 2009 17:44:31 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: Is adding requeue_delayed_work() a good idea
-References: <adazl9uw3w1.fsf@cisco.com> <20090821115547.GA6901@redhat.com> <adaab1sx29p.fsf@cisco.com> <20090824180112.GC16202@redhat.com> <ada4orwvrx7.fsf@cisco.com> <20090825093906.GA3020@redhat.com> <ada7hwqto0z.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <ada7hwqto0z.fsf@cisco.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090901011714.4F6B6526EA5@mailhub.coreip.homeip.net>
+	Mon, 31 Aug 2009 20:44:50 -0400
+Date: Tue, 1 Sep 2009 12:44:40 +1200
+From: Kelly Bowa <kb@tuxedu.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: WARNING: at arch/x86/kernel/smp.c:117
+ native_smp_send_reschedule+0x51/0x60()
+Message-ID: <20090901124440.36246c6e@tuxedu.org>
+In-Reply-To: <20090831204349.GE12579@kernel.dk>
+References: <20090831204349.GE12579@kernel.dk>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i586-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Aug 26, 2009 at 11:42:36AM -0700, Roland Dreier wrote:
+On Mon, 31 Aug 2009 22:43:49 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> Hi,
 > 
->  > OK, in this case I think we have a simple solution,
->  > 
->  > 	// like cancel_delayed_work, but uses del_timer().
->  > 	// this means, if it returns 0 the timer function may be
->  > 	// running and the queueing is in progress. The caller
->  > 	// can't rely on flush_workqueue/etc
->  > 	static inline int __cancel_delayed_work(struct delayed_work *work)
->  > 	{
->  > 		int ret;
->  > 
->  > 		ret = del_timer(&work->timer);
->  > 		if (ret)
->  > 			work_clear_pending(&work->work);
->  > 		return ret;
->  > 	}
->  > 
->  > Now, you can do
->  > 
->  > 	spin_lock_irqsave(&mydata_lock);
->  > 	new_timeout = add_item_to_timeout_list();
->  > 
->  > 	__cancel_delayed_work(&process_timeout_list_work);
->  > 	queue_delayed_work(wq, &process_timeout_list_work, new_timeout);
->  > 
->  > 	spin_unlock_irqsave(&mydata_lock);
->  > 
->  > If queue_delayed_work() fails, this means that WORK_STRUCT_PENDING is set,
->  > dwork->work is already queued or the queueing is in progress. In both
->  > cases it will run "soon" as if we just called queue_work(&dwork->work).
+> I get this on every reboot/kexec/halt:
 > 
-> This looks like it would work well.  If we can get this into 2.6.32 then
-> I will drop my patch and switch to this approach instead.
+> WARNING: at arch/x86/kernel/smp.c:117
+> native_smp_send_reschedule+0x51/0x60() Modules linked in: raid0
+> md_mod loop hid_apple usbhid mptsas mptscsih mptbase
+> scsi_transport_sas ehci_hcd uhci_hcd usbcore nls_base igb sg sr_mod
+> cdrom Pid: 6998, comm: halt Not tainted 2.6.31-rc8 #105
+> Call Trace:
+>  <IRQ>  [<ffffffff81023d38>] ? lapic_next_event+0x18/0x20
+>  [<ffffffff810233e1>] ? native_smp_send_reschedule+0x51/0x60
+>  [<ffffffff8104e7e8>] warn_slowpath_common+0x78/0xd0
+>  [<ffffffff8104e84f>] warn_slowpath_null+0xf/0x20
+>  [<ffffffff810233e1>] native_smp_send_reschedule+0x51/0x60
+>  [<ffffffff81037ae8>] resched_task+0x68/0x80
+>  [<ffffffff81041165>] resched_cpu+0x75/0x90
+>  [<ffffffff8104a1db>] scheduler_tick+0x25b/0x290
+>  [<ffffffff8105b8b6>] update_process_times+0x56/0x70
+>  [<ffffffff81076cb6>] tick_sched_timer+0x66/0xc0
+>  [<ffffffff81076c50>] ? tick_sched_timer+0x0/0xc0
+>  [<ffffffff8106c351>] __run_hrtimer+0x51/0xc0
+>  [<ffffffff8106d0a5>] hrtimer_interrupt+0xd5/0x1c0
+>  [<ffffffff81024938>] smp_apic_timer_interrupt+0x68/0xa0
+>  [<ffffffff8100ca23>] apic_timer_interrupt+0x13/0x20
+>  <EOI>  [<ffffffff81028ffb>] ? x2apic_send_IPI_allbutself+0x9b/0xb0
+>  [<ffffffff810234ac>] ? native_smp_send_stop+0x4c/0x90
+>  [<ffffffff81022dfe>] ? native_machine_shutdown+0x5e/0x90
+>  [<ffffffff81022a66>] ? native_machine_power_off+0x26/0x30
+>  [<ffffffff81022a7a>] ? machine_power_off+0xa/0x10
+>  [<ffffffff810619d4>] ? kernel_power_off+0x34/0x40
+>  [<ffffffff81061cba>] ? sys_reboot+0x13a/0x210
+>  [<ffffffff8105e83e>] ? group_send_sig_info+0x6e/0x90
+>  [<ffffffff8105e8b0>] ? kill_pid_info+0x50/0xa0
+>  [<ffffffff8105eb95>] ? sys_kill+0xa5/0x200
+>  [<ffffffff8106d289>] ? up_read+0x9/0x10
+>  [<ffffffff8102ede9>] ? do_page_fault+0x1a9/0x310
+>  [<ffffffff8100bf6b>] ? system_call_fastpath+0x16/0x1b
 > 
->  > But this assumes nobody else does queue_delayed_work(dwork, HUGE_DELAY) in
->  > parallel, otherwise we can lose the race and another caller can setup
->  > HUGE_DELAY timeout.
-> 
-> In my case this is fine -- all uses of queue_delayed_work() are
-> synchronized with the same lock.  So any place that tries to shorten the
-> timeout will succeed.
 > 
 
-I can add the necessary locking in my case - I think it is actually needed
-there even without this particular change.
+Hi Jens,
+
+Are you running rc-8. This seems to be a rescheduling issue.
 
 -- 
-Dmitry
+Thanks,
+kb
