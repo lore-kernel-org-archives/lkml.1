@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbZIAWKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755267AbZIAWMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932067AbZIAWKD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 18:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZIAWKD
+	id S1755267AbZIAWMI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 18:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbZIAWMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 18:10:03 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:63023 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755201AbZIAWKB (ORCPT
+	Tue, 1 Sep 2009 18:12:07 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57053 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755231AbZIAWMG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 18:10:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=DEhsxhuvhnSsm5isroS9QDutTfPFzi/GA7wF4S/lUIydwq4n9Xd9zUTxMxF0gxkAWW
-         PmO1CYqoc4HUJhmhfSvcVCUjShBczBevEf7v1XxTkkG8cMPf3E8j7aoQ7HuZwr9czY5X
-         BFoafQs0bUAkCb5eTIoJl9apKwiJ9NkKy3LBg=
+	Tue, 1 Sep 2009 18:12:06 -0400
+Message-ID: <4A9D9BEE.1010203@zytor.com>
+Date: Tue, 01 Sep 2009 15:10:54 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <63386a3d0909011505oed88151i95df1e97cf131c36@mail.gmail.com>
-References: <1251667749-31276-1-git-send-email-linus.walleij@stericsson.com>
-	 <1251722641.4254.46.camel@finisterre.sirena.org.uk>
-	 <63386a3d0908310716x1a33a8fdpddedbaf24648216f@mail.gmail.com>
-	 <20090901135123.GS19719@n2100.arm.linux.org.uk>
-	 <63386a3d0909011505oed88151i95df1e97cf131c36@mail.gmail.com>
-Date: Wed, 2 Sep 2009 00:10:03 +0200
-Message-ID: <63386a3d0909011510s42c5fc38j753aa0219f678d3a@mail.gmail.com>
-Subject: Re: [PATCH 1/2] AB3100 regulator support v2
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: "John W. Linville" <linville@tuxdriver.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       "H. Peter Anvin" <hpa@kernel.org>, linux-kernel@vger.kernel.org,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-wireless <linux-wireless@vger.kernel.org>
+Subject: Re: memleaks, acpi + ext4 + tty
+References: <43e72e890908272225w79ec5bf6kc7ef1160e5a088ae@mail.gmail.com> 	<43e72e890908280952j410293fbm47b4b9d566e26c14@mail.gmail.com> 	<43e72e890908281450k78cc1a2fmd4fd033ae0f4176f@mail.gmail.com> 	<43e72e890908281509o44930348w581b865107ea3e98@mail.gmail.com> 	<43e72e890908310123w5d361ed5tff58a7663044bdcd@mail.gmail.com> 	<43e72e890908311050s320d0ceen312a0d3d9e4fbc76@mail.gmail.com> 	<43e72e890908311137k78ac439bs4edf376d07343a32@mail.gmail.com> 	<43e72e890908311230u28b0642ep7a6bfd9dab82318a@mail.gmail.com> 	<20090831193345.GG5631@tuxdriver.com> <43e72e890908311243u50b9323fveda9feaaa4d8efdb@mail.gmail.com> <43e72e890908311258y45565a9fo1e739992c00b650@mail.gmail.com>
+In-Reply-To: <43e72e890908311258y45565a9fo1e739992c00b650@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/2 Linus Walleij <linus.ml.walleij@gmail.com>:
+On 08/31/2009 12:58 PM, Luis R. Rodriguez wrote:
+> 
+> Good news is Linus' rc8 tag *has the same issue* so the reason why
+> wireless-testing has it is rc8 *does indeed have it*.
+> 
+> So Peter, if there is something extra or missing from
+> linux-2.6-allstable head it certainly fixed my issues, will have to
+> try a new respin of it to ensure it wasn't a fluke. Odd thing too
+> though is even my distribution kernel (karmic rc8 generic) works fine.
+> 
 
-[SIGKILL]
-> In the general sense perhaps this doesn't happen so much,
-> what we've seen is system shut down, here some code get
-> interrupted by signals, so atleast the shut down path should be
-> protected I guess, I will do that in the U300 board setup
-> pm_poweroff() hook then, which calls down the
-> regulator/ab3100/i2c chain so all that is secured.
+linux-2.6-allstable head is == linus.
 
-Or rather, I already do (I forgot about adding in that code!)
-
-+ */
-+void u300_pm_poweroff(void)
-+{
-+       sigset_t old, all;
-+
-+       sigfillset(&all);
-+       if (!sigprocmask(SIG_BLOCK, &all, &old)) {
-+               /* Disable LDO D to shut down the system */
-+               if (main_power_15)
-+                       regulator_disable(main_power_15);
-+               else
-+                       pr_err("regulator not available to shut down system\n");
-+               (void) sigprocmask(SIG_SETMASK, &old, NULL);
-+       }
-+       return;
-+}
-
-Linus Walleij
+	-hpa
