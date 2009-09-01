@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754156AbZIALzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbZIAL4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754156AbZIALzg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 07:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZIALzg
+	id S1754255AbZIAL4D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 07:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754199AbZIAL4A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 07:55:36 -0400
-Received: from mtagate4.de.ibm.com ([195.212.17.164]:41000 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753007AbZIALzf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 07:55:35 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       OF-General <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>, OF-EWG <ewg@lists.openfabrics.org>
-Subject: [PATCH] IB/ehca: Fix CQE flags reporting
-User-Agent: KMail/1.9.1
-Cc: Stefan Roscher <stefan.roscher@de.ibm.com>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       Alexander Schmidt <alexschm@de.ibm.com>
-References: <200806061835.43802.fenkes@de.ibm.com> <48499C11.7030504@gmail.com>
-In-Reply-To: <48499C11.7030504@gmail.com>
+	Tue, 1 Sep 2009 07:56:00 -0400
+Received: from thunk.org ([69.25.196.29]:46753 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753885AbZIALz7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 07:55:59 -0400
+Date: Tue, 1 Sep 2009 07:55:51 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 1/8] writeback: move super_block argument to struct
+	writeback_control
+Message-ID: <20090901115551.GA727@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+	david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+	jack@suse.cz
+References: <1251803946-9243-1-git-send-email-jens.axboe@oracle.com> <1251803946-9243-2-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-X-Length: 2361
-Date: Tue, 1 Sep 2009 13:55:33 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909011355.34319.fenkes@de.ibm.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1251803946-9243-2-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Was reporting CQE flags in the wrong bit positions, causing consumers to
-miss incoming immediate data.
+On Tue, Sep 01, 2009 at 01:18:59PM +0200, Jens Axboe wrote:
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/ubifs/super.c                 |    3 ++-
+>  include/linux/fs.h               |    3 +--
+>
+> diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+> @@ -462,7 +463,7 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
+>  	 * the user be able to get more accurate results of 'statfs()' after
+>  	 * they synchronize the file system.
+>  	 */
+> -	generic_sync_sb_inodes(sb, &wbc);
+> +	generic_sync_sb_inodes(&wbc);
+>  
+>  	/*
+>  	 * Synchronize write buffers, because 'ubifs_run_commit()' does not
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+I just tried compiling per-bdi v15 against the latest git HEAD, and
+the compilation failed:
 
-Please review and queue for 2.6.32 if you think it's okay. Thanks!
-  Joachim
+fs/ubifs/super.c: In function ‘ubifs_sync_fs’:
+fs/ubifs/super.c:465: warning: passing argument 1 of ‘generic_sync_sb_inodes’ from incompatible pointer type
+fs/ubifs/super.c:465: error: too many arguments to function ‘generic_sync_sb_inodes’
 
- drivers/infiniband/hw/ehca/ehca_reqs.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+Looks like the latest version of fs/ubifs/super.c added a call to
+generic_sync_sb_inodes that needs to be fixed up.  Line 465:
 
-diff --git a/drivers/infiniband/hw/ehca/ehca_reqs.c b/drivers/infiniband/hw/ehca/ehca_reqs.c
-index 5a3d96f..8fd88cd 100644
---- a/drivers/infiniband/hw/ehca/ehca_reqs.c
-+++ b/drivers/infiniband/hw/ehca/ehca_reqs.c
-@@ -786,7 +786,11 @@ repoll:
- 	wc->slid = cqe->rlid;
- 	wc->dlid_path_bits = cqe->dlid;
- 	wc->src_qp = cqe->remote_qp_number;
--	wc->wc_flags = cqe->w_completion_flags;
-+	/*
-+	 * HW has "Immed data present" and "GRH present" in bits 6 and 5.
-+	 * SW defines those in bits 1 and 0, so we can just shift and mask.
-+	 */
-+	wc->wc_flags = (cqe->w_completion_flags >> 5) & 3;
- 	wc->ex.imm_data = cpu_to_be32(cqe->immediate_data);
- 	wc->sl = cqe->service_level;
- 
--- 
-1.6.0.4
+	generic_sync_sb_inodes(sb, &wbc);
 
-
-
-
+						- Ted
