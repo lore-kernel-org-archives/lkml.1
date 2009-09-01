@@ -1,146 +1,388 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZIAJYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZIAJYM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753543AbZIAJYR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 05:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZIAJYP
+	id S1753500AbZIAJYM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 05:24:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZIAJYL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 05:24:15 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:40618 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753208AbZIAJYO (ORCPT
+	Tue, 1 Sep 2009 05:24:11 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:58053 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753346AbZIAJYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 05:24:14 -0400
-X-Trace: 252423620/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.4.130/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.4.130
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAEuFnEpPRQSC/2dsb2JhbACBU9oghBoFgVU
-X-IronPort-AV: E=Sophos;i="4.44,311,1249254000"; 
-   d="scan'208";a="252423620"
-Date: Tue, 1 Sep 2009 10:23:39 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nitin Gupta <ngupta@vflare.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Rik van Riel <riel@redhat.com>,
-       Karel Zak <kzak@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH] swap: Fix swap size in case of block devices
-In-Reply-To: <d760cf2d0909010011g75a918c0hedd4b2571afc054c@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0909011011140.12934@sister.anvils>
-References: <200908302149.10981.ngupta@vflare.org> 
- <Pine.LNX.4.64.0908311151190.16326@sister.anvils>  <4A9C06B2.3040009@vflare.org>
-  <Pine.LNX.4.64.0908311959460.13560@sister.anvils>
- <d760cf2d0909010011g75a918c0hedd4b2571afc054c@mail.gmail.com>
+	Tue, 1 Sep 2009 05:24:10 -0400
+Date: Tue, 1 Sep 2009 14:54:07 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix fake numa on ppc
+Message-ID: <20090901092407.GC4076@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+References: <20090901050316.GA4076@in.ibm.com> <20090901055753.GB5563@balbir.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-790592257-1251797019=:12934"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901055753.GB5563@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Hi Balbir,
 
---8323584-790592257-1251797019=:12934
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-
-On Tue, 1 Sep 2009, Nitin Gupta wrote:
-> On Tue, Sep 1, 2009 at 12:56 AM, Hugh Dickins<hugh.dickins@tiscali.co.uk>=
- wrote:
-> > On Mon, 31 Aug 2009, Nitin Gupta wrote:
-> >> For block devices, setup_swap_extents() leaves p->pages untouched.
-> >> For regular files, it sets p->pages
-> >> =C2=A0 =C2=A0 =C2=A0 =3D=3D total usable swap pages (including header =
-page) - 1;
+On Tue, Sep 01, 2009 at 11:27:53AM +0530, Balbir Singh wrote:
+> * Ankita Garg <ankita@in.ibm.com> [2009-09-01 10:33:16]:
+> 
+> > Hello,
+> > 
+> > Below is a patch to fix a couple of issues with fake numa node creation
+> > on ppc:
+> > 
+> > 1) Presently, fake nodes could be created such that real numa node
+> > boundaries are not respected. So a node could have lmbs that belong to
+> > different real nodes.
+> > 
+> > 2) The cpu association is broken. On a JS22 blade for example, which is
+> > a 2-node numa machine, I get the following:
+> > 
+> > # cat /proc/cmdline
+> > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+> > # cat /sys/devices/system/node/node0/cpulist
+> > 0-3
+> > # cat /sys/devices/system/node/node1/cpulist
+> > 4-7
+> > # cat /sys/devices/system/node/node4/cpulist
+> > 
+> > #
+> > 
+> > So, though the cpus 4-7 should have been associated with node4, they
+> > still belong to node1. The patch works by recording a real numa node
+> > boundary and incrementing the fake node count. At the same time, a
+> > mapping is stored from the real numa node to the first fake node that
+> > gets created on it.
 > >
-> > I think you're overlooking the "page < sis->max" condition
-> > in setup_swap_extents()'s loop. =C2=A0So at the end of the loop,
-> > if no pages were lost to fragmentation, we have
+> 
+> Some details on how you tested it and results before and after would
+> be nice. Please see git commit 1daa6d08d1257aa61f376c3cc4795660877fb9e3
+> for example
+> 
+>
+
+Thanks for the quick review of the patch. Here is some information on
+the testing:
+
+Tested the patch with the following commandlines:
+numa=fake=2G,4G,6G,8G,10G,12G,14G,16G
+numa=fake=3G,6G,10G,16G
+numa=fake=4G
+numa=fake=
+
+For testing if the fake nodes respect the real node boundaries, I added
+some debug printks in the node creation path. Without the patch, for the
+commandline numa=fake=2G,4G,6G,8G,10G,12G,14G,16G, this is what I got:
+
+fake id: 1 nid: 0
+fake id: 1 nid: 0
+...
+fake id: 2 nid: 0
+fake id: 2 nid: 0
+...
+fake id: 2 nid: 0
+created new fake_node with id 3
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+...
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+fake id: 3 nid: 1
+fake id: 3 nid: 1
+...
+created new fake_node with id 4
+fake id: 4 nid: 1
+fake id: 4 nid: 1
+...
+
+and so on. So, fake node 3 encompasses real node 0 & 1. Also,
+
+# cat /sys/devices/system/node/node3/meminfo
+Node 0 MemTotal:        2097152 kB
+...
+# # cat /sys/devices/system/node/node4/meminfo
+Node 0 MemTotal:        2097152 kB
+...
+
+
+With the patch, I get:
+
+fake id: 1 nid: 0
+fake id: 1 nid: 0
+...
+fake id: 2 nid: 0
+fake id: 2 nid: 0
+...
+fake id: 2 nid: 0
+created new fake_node with id 3
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+...
+fake id: 3 nid: 0
+fake id: 3 nid: 0
+created new fake_node with id 4
+fake id: 4 nid: 1
+fake id: 4 nid: 1
+...
+
+and so on. With the patch, the fake node sizes are slightly different
+from that specified by the user.
+
+# cat /sys/devices/system/node/node3/meminfo
+Node 3 MemTotal:        1638400 kB
+...
+# cat /sys/devices/system/node/node4/meminfo
+Node 4 MemTotal:         458752 kB
+...
+
+CPU association was tested as mentioned in the previous mail:
+
+Without the patch,
+
+# cat /proc/cmdline
+root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+# cat /sys/devices/system/node/node0/cpulist
+0-3
+# cat /sys/devices/system/node/node1/cpulist
+4-7
+# cat /sys/devices/system/node/node4/cpulist
+
+#
+
+With the patch,
+
+# cat /proc/cmdline
+root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+# cat /sys/devices/system/node/node0/cpulist
+0-3
+# cat /sys/devices/system/node/node1/cpulist
+
+# cat /sys/devices/system/node/node4/cpulist
+4-7
+
+> > 
+> > Signed-off-by: Ankita Garg <ankita@in.ibm.com>
+> > 
+> > Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > ===================================================================
+> > --- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
+> > +++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+> > @@ -26,6 +26,11 @@
+> >  #include <asm/smp.h>
+> > 
+> >  static int numa_enabled = 1;
+> > +static int fake_enabled = 1;
+> > +
+> > +/* The array maps a real numa node to the first fake node that gets
+> > +created on it */
+> 
+> Coding style is broken
+> 
+
+Fixed.
+
+> > +int fake_numa_node_mapping[MAX_NUMNODES];
+> > 
+> >  static char *cmdline __initdata;
+> > 
+> > @@ -49,14 +54,24 @@ static int __cpuinit fake_numa_create_ne
+> >  	unsigned long long mem;
+> >  	char *p = cmdline;
+> >  	static unsigned int fake_nid;
+> > +	static unsigned int orig_nid = 0;
+> 
+> Should we call this prev_nid?
+> 
+
+Yes, makes sense.
+> >  	static unsigned long long curr_boundary;
+> > 
+> >  	/*
+> >  	 * Modify node id, iff we started creating NUMA nodes
+> >  	 * We want to continue from where we left of the last time
+> >  	 */
+> > -	if (fake_nid)
+> > +	if (fake_nid) {
+> > +		if (orig_nid != *nid) {
+> 
+> OK, so this is called when the real NUMA node changes - comments would
+> be nice
+>
+
+Thanks, have added the comment.
+ 
+> > +			fake_nid++;
+> > +			fake_numa_node_mapping[*nid] = fake_nid;
+> > +			orig_nid = *nid;
+> > +			*nid = fake_nid;
+> > +			return 0;
+> > +		}
+> >  		*nid = fake_nid;
+> > +	}
+> > +
+> >  	/*
+> >  	 * In case there are no more arguments to parse, the
+> >  	 * node_id should be the same as the last fake node id
+> > @@ -440,7 +455,7 @@ static int of_drconf_to_nid_single(struc
+> >   */
+> >  static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+> >  {
+> > -	int nid = 0;
+> > +	int nid = 0, new_nid;
+> >  	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
+> > 
+> >  	if (!cpu) {
+> > @@ -450,8 +465,15 @@ static int __cpuinit numa_setup_cpu(unsi
+> > 
+> >  	nid = of_node_to_nid_single(cpu);
+> > 
+> > +	if (fake_enabled && nid) {
+> > +		new_nid = fake_numa_node_mapping[nid];
+> > +		if (new_nid > 0)
+> > +			nid = new_nid;
+> > +	}
+> > +
+> >  	if (nid < 0 || !node_online(nid))
+> >  		nid = any_online_node(NODE_MASK_ALL);
+> > +
+> >  out:
+> >  	map_cpu_to_node(lcpu, nid);
+> > 
+> > @@ -1005,8 +1027,11 @@ static int __init early_numa(char *p)
+> >  		numa_debug = 1;
+> > 
+> >  	p = strstr(p, "fake=");
+> > -	if (p)
+> > +	if (p) {
+> >  		cmdline = p + strlen("fake=");
+> > +		if (numa_enabled)
+> > +			fake_enabled = 1;
+> 
+> Have you tried passing just numa=fake= without any commandline?
+> That should enable fake_enabled, but I wonder if that negatively
+> impacts numa_setup_cpu(). I wonder if you should look at cmdline
+> to decide on fake_enabled.
+>
+
+fake_enabled does get set even for numa=fake=. However, it does not
+impact numa_setup_cpu, since fake_numa_node_mapping array would have no
+mapping stored and there is a condition there already to check for the
+value of the mapping. I confirmed this by booting with the above
+parameter as well.
+
+> > +	}
+> > 
+> >  	return 0;
+> >  }
 > >
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0sis->max =3D pag=
-e_no; =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* no change */
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0sis->pages =3D p=
-age_no - 1; =C2=A0 =C2=A0 =C2=A0 /* no change */
-> >
->=20
-> Oh, I missed this loop condition. The variable naming is so bad, I
-> find it very hard to follow this part of code.
->=20
-> Still, if there is even a single page in swap file that is not usable
-> (i.e. non-contiguous on disk) -- which is what usually happens for swap
-> files of any practical size -- setup_swap_extents() gives correct value
-> in sis->pages =3D=3D total usable pages (including header) - 1;
->=20
-> However, if all the file pages are usable, it gives off-by-one error, as
-> you noted.
+> 
+> Overall, I think this is the right thing to do, we need to move in
+> this direction. 
+> 
 
-Right, I see your point now: when the regular file is fragmented thus,
-setup_swap_extents() would allow it to use the final page of the file,
-which would otherwise be (erroneously) disallowed.
+Heres the updated patch:
 
-But I would reword your "what usually happens" to "what happens in
-the general case": perhaps I'm wrong, but I think that usually these
-days people are creating swap files on filesystems with 4kB block
-size, where there's no issue of intra-page fragmentation lowering
-that page count (but there may still be inter-page fragmentation
-to make swapping to the file less efficient than to a partition).
+Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
 
->=20
-> > Yes, I'd dislike that discrepancy between regular files and block
-> > devices, if I could see it.  Though I'd probably still be cautious
-> > about the disk partitions.
->=20
-> > dd if=3D/dev/zero of=3D/swap bs=3D200k        # says 204800 bytes (205k=
-B)
-> > mkswap /swap                            # says size =3D 196 KiB
-> > swapon /swap                            # dmesg says Adding 192k swap
->=20
-> > which is what I've come to expect from the off-by-one,
-> > even on regular files.
->=20
-> In general, its not correct to compare size repored by mkswap and
-> swapon like this. The size reported by mkswap includes pages which
-> are not contiguous on disk. While, kernel considers only
-> PAGE_SIZE-length, PAGE_SIZE-aligned contiguous run of blocks. So, size
-> reported by mkswap and swapon can vary wildly. For e.g.:
->=20
-> (on mtdram with ext2 fs)
-> dd if=3D/dev/zero of=3Dswap.dd bs=3D1M count=3D10
-> mkswap swap.dd # says size =3D 10236 KiB
-> swapon swap.dd # says Adding 10112k swap
+Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+===================================================================
+--- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
++++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
+@@ -26,6 +26,13 @@
+ #include <asm/smp.h>
+ 
+ static int numa_enabled = 1;
++static int fake_enabled = 1;
++
++/*
++ * The array maps a real numa node to the first fake node that gets
++ * created on it
++ */
++int fake_numa_node_mapping[MAX_NUMNODES];
+ 
+ static char *cmdline __initdata;
+ 
+@@ -49,14 +56,29 @@ static int __cpuinit fake_numa_create_ne
+ 	unsigned long long mem;
+ 	char *p = cmdline;
+ 	static unsigned int fake_nid;
++	static unsigned int prev_nid = 0;
+ 	static unsigned long long curr_boundary;
+ 
+ 	/*
+ 	 * Modify node id, iff we started creating NUMA nodes
+ 	 * We want to continue from where we left of the last time
+ 	 */
+-	if (fake_nid)
++	if (fake_nid) {
++		/*
++		 * Moved over to the next real numa node, increment fake
++		 * node number and store the mapping of the real node to
++		 * the fake node
++		 */
++		if (prev_nid != *nid) {
++			fake_nid++;
++			fake_numa_node_mapping[*nid] = fake_nid;
++			prev_nid = *nid;
++			*nid = fake_nid;
++			return 0;
++		}
+ 		*nid = fake_nid;
++	}
++
+ 	/*
+ 	 * In case there are no more arguments to parse, the
+ 	 * node_id should be the same as the last fake node id
+@@ -440,7 +462,7 @@ static int of_drconf_to_nid_single(struc
+  */
+ static int __cpuinit numa_setup_cpu(unsigned long lcpu)
+ {
+-	int nid = 0;
++	int nid = 0, new_nid;
+ 	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
+ 
+ 	if (!cpu) {
+@@ -450,8 +472,15 @@ static int __cpuinit numa_setup_cpu(unsi
+ 
+ 	nid = of_node_to_nid_single(cpu);
+ 
++	if (fake_enabled && nid) {
++		new_nid = fake_numa_node_mapping[nid];
++		if (new_nid > 0)
++			nid = new_nid;
++	}
++
+ 	if (nid < 0 || !node_online(nid))
+ 		nid = any_online_node(NODE_MASK_ALL);
++
+ out:
+ 	map_cpu_to_node(lcpu, nid);
+ 
+@@ -1005,8 +1034,12 @@ static int __init early_numa(char *p)
+ 		numa_debug = 1;
+ 
+ 	p = strstr(p, "fake=");
+-	if (p)
++	if (p) {
+ 		cmdline = p + strlen("fake=");
++		if (numa_enabled) {
++			fake_enabled = 1;
++		}
++	}
+ 
+ 	return 0;
+ }
 
-If the filesystem has block size 1kB or 2kB, yes.
-
->=20
-> =3D=3D=3D=3D
->=20
-> So, to summarize:
->=20
-> 1. mkswap always behaves correctly: It sets number of pages in swap file
-> minus one as 'last_page' in swap header (since this is a 0-based index).
-> This same value (total pages - 1) is printed out as size since it knows
-> that first page is swap header.
->=20
-> 2. swapon() for block devices: off-by-one error causing last swap page
-> to remain unused.
->=20
-> 3. swapon() for regular files:
->   3.1 off-by-one error if every swap page in this file is usable i.e.
->       every PAGE_SIZE-length, PAGE_SIZE-aligned chunk is contiguous on
->       disk.
->   3.2 correct size value if there is at least one swap page which is
->       unusable -- which is expected from swap file of any practical
->       size.
->=20
->=20
-> I will go through swap code again to find other possible off-by-one
-> errors. The revised patch will fix these inconsistencies.
-
-Thanks.
-
-Hugh
---8323584-790592257-1251797019=:12934--
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
