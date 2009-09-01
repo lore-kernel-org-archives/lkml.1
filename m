@@ -1,63 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754948AbZIAQy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZIAQ4Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754948AbZIAQy0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 12:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZIAQyZ
+	id S1755019AbZIAQ4Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 12:56:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZIAQ4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 12:54:25 -0400
-Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:17530 "EHLO
-	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753176AbZIAQyY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 12:54:24 -0400
-X-Trace: 255563197/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.32.72/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.32.72
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ArcEAIfunEpPRSBI/2dsb2JhbACBU9s5hBsFgVc
-X-IronPort-AV: E=Sophos;i="4.44,313,1249254000"; 
-   d="scan'208";a="255563197"
-Date: Tue, 1 Sep 2009 17:53:48 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-cc: Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       Steven Walter <stevenrwalter@gmail.com>,
-       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
-       Robin Holt <holt@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-media@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
- get_user_pages() enough to prevent pages from being swapped out ?")
-In-Reply-To: <20090901141812.GT19719@n2100.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0909011747080.5078@sister.anvils>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
- <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com>
- <20090901132824.GN19719@n2100.arm.linux.org.uk>
- <200909011543.48439.laurent.pinchart@ideasonboard.com>
- <20090901141812.GT19719@n2100.arm.linux.org.uk>
+	Tue, 1 Sep 2009 12:56:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55440 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752582AbZIAQ4Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 12:56:24 -0400
+Message-ID: <4A9D5206.5010603@kernel.org>
+Date: Tue, 01 Sep 2009 09:55:34 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: Re: [PATCH] x86/PCI: initialize PCI bus node numbers early
+References: <20090710104419.0032be7b@jbarnes-g45> <20090901135358.GA31282@elte.hu>
+In-Reply-To: <20090901135358.GA31282@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Sep 2009, Russell King - ARM Linux wrote:
-> On Tue, Sep 01, 2009 at 03:43:48PM +0200, Laurent Pinchart wrote:
-> > I might be missing something obvious, but I fail to see how VIVT caches
-> > could work at all with multiple mappings. If a kernel-allocated buffer
-> > is DMA'ed to, we certainly want to invalidate all cache lines that store
-> > buffer data. As the cache doesn't care about physical addresses we thus
-> > need to invalidate all virtual mappings for the buffer. If the buffer is
-> > mmap'ed in userspace I don't see how that would be done.
+Ingo Molnar wrote:
+> * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 > 
-> You need to ask MM gurus about that.  I don't touch the Linux MM very
-> often so tend to keep forgetting how it works.  However, it does work
-> for shared mappings of files on CPUs with VIVT caches.
+>> The current mp_bus_to_node array is initialized only by AMD specific
+>> code, since AMD platforms have registers that can be used for
+>> determining mode numbers.  On new Intel platforms it's necessary to
+>> initialize this array as well though, otherwise all PCI node numbers
+>> will be 0, when in fact they should be -1 (indicating that I/O isn't
+>> tied to any particular node).
+>>
+>> So move the mp_bus_to_node code into the common PCI code, and
+>> initialize it early with a default value of -1.  This may be overridden
+>> later by arch code (e.g. the AMD code).
+>>
+>> With this change, PCI consistent memory and other node specific
+>> allocations (e.g. skbuff allocs) should occur on the "current" node.
+>> If, for performance reasons, applications want to be bound to specific
+>> nodes, they should open their devices only after being pinned to the
+>> CPU where they'll run, for maximum locality.
+>>
+>> Any thoughts here Yinghai or Jesse?
+>>
+>>
+>>  include/asm/pci.h |    2 +
+>>  kernel/setup.c    |    2 +
+>>  pci/amd_bus.c     |   61 +-----------------------------------------
+>>  pci/common.c      |   77 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>>  4 files changed, 83 insertions(+), 59 deletions(-)
+> 
+> FYI, this commit:
+> 
+>   acccaba: x86/PCI: initialize PCI bus node numbers early
+> 
+> caused a boot crash in -tip testing:
+> 
 
-I believe arch/arm/mm/flush.c __flush_dcache_aliases() is what does it.
+looks like the patch change default 0 in 32bit to -1 ...
 
-Hugh
+YH
