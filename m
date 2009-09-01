@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754641AbZIAUJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZIANoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754641AbZIAUJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 16:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZIAUJS
+	id S1754803AbZIANoY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZIANoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 16:09:18 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50187 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752080AbZIAUJS (ORCPT
+	Tue, 1 Sep 2009 09:44:24 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:48819 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754757AbZIANoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 16:09:18 -0400
-Date: Tue, 1 Sep 2009 15:41:44 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
-Message-ID: <20090901134144.GA2028@ucw.cz>
-References: <1251789947.3483.215.camel@rzhang-dt> <1251793844.3483.228.camel@rzhang-dt> <20090901084306.GD9942@elf.ucw.cz> <200909012047.00606.rjw@sisk.pl>
+	Tue, 1 Sep 2009 09:44:23 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
+Date: Tue, 1 Sep 2009 15:43:48 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.30.3; KDE/4.3.0; x86_64; ; )
+Cc: Steven Walter <stevenrwalter@gmail.com>, David Xiao <dxiao@broadcom.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "v4l2_linux" <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk>
+In-Reply-To: <20090901132824.GN19719@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909012047.00606.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909011543.48439.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tuesday 01 September 2009 15:28:24 Russell King - ARM Linux wrote:
+> On Tue, Aug 25, 2009 at 08:53:29AM -0400, Steven Walter wrote:
+> > On Thu, Aug 6, 2009 at 6:25 PM, Russell King - ARM
+> > Linux<linux@arm.linux.org.uk> wrote:
+> > [...]
+> >
+> > > As far as userspace DMA coherency, the only way you could do it with
+> > > current kernel APIs is by using get_user_pages(), creating a
+> > > scatterlist from those, and then passing it to dma_map_sg().  While the
+> > > device has ownership of the SG, userspace must _not_ touch the buffer
+> > > until after DMA has completed.
+> >
+> > [...]
+> >
+> > Would that work on a processor with VIVT caches?  It seems not.  In
+> > particular, dma_map_page uses page_address to get a virtual address to
+> > pass to map_single().  map_single() in turn uses this address to
+> > perform cache maintenance.  Since page_address() returns the kernel
+> > virtual address, I don't see how any cache-lines for the userspace
+> > virtual address would get invalidated (for the DMA_FROM_DEVICE case).
+>
+> You are correct.
+>
+> > If that's true, then what is the correct way to allow DMA to/from a
+> > userspace buffer with a VIVT cache?  If not true, what am I missing?
+>
+> I don't think you read what I said (but I've also forgotten what I did
+> say).
+>
+> To put it simply, the kernel does not support DMA direct from userspace
+> pages.  Solutions which have been proposed in the past only work with a
+> sub-set of conditions (such as the one above only works with VIPT
+> caches.)
 
-> > > IMO, 0 and -1 are not errors. they just suggest that the Ambient Light
-> > > illuminance is beyond the device support range, while the device is
-> > > still working normally.
-> > > what about exporting these values (0 and -1) to user space directly?
-> > 
-> > Returning 0 for "below" range and 99999999 for "above" range would be
-> > nice, yes. 
-> 
-> Why not 0 and "all ones" or 0 and -1.
-> 
-> Is there anything wrong with -1 in particular?
+I might be missing something obvious, but I fail to see how VIVT caches could 
+work at all with multiple mappings. If a kernel-allocated buffer is DMA'ed to, 
+we certainly want to invalidate all cache lines that store buffer data. As the 
+cache doesn't care about physical addresses we thus need to invalidate all 
+virtual mappings for the buffer. If the buffer is mmap'ed in userspace I don't 
+see how that would be done.
 
-Normal people expect -1 to be less than 123, and output is in ascii. If
-you make it ((unsigned) ~0) I guess that becomes acceptable.
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Laurent Pinchart
