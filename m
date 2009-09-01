@@ -1,114 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754853AbZIAO6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbZIAPDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754853AbZIAO6v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754578AbZIAO6u
+	id S1754903AbZIAPDP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 11:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZIAPDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:58:50 -0400
-Received: from mga11.intel.com ([192.55.52.93]:13531 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754513AbZIAO6s convert rfc822-to-8bit (ORCPT
+	Tue, 1 Sep 2009 11:03:14 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:37113 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754559AbZIAPDN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:58:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,312,1249282800"; 
-   d="scan'208";a="489438560"
-From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
-To: Arnd Bergmann <arnd@arndb.de>
-CC: "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
-Date: Tue, 1 Sep 2009 22:58:44 +0800
-Subject: RE: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-Thread-Topic: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-Thread-Index: AcoqT0ccVCX0gBkkQU+2Dw5Bu9YM1gAxNQkw
-Message-ID: <C85CEDA13AB1CF4D9D597824A86D2B9006AEC02EC0@PDSMSX501.ccr.corp.intel.com>
-References: <E88DD564E9DC5446A76B2B47C3BCCA150219600F9B@pdsmsx503.ccr.corp.intel.com>
- <C85CEDA13AB1CF4D9D597824A86D2B9006AEB944B8@PDSMSX501.ccr.corp.intel.com>
- <200908311723.34067.arnd@arndb.de>
-In-Reply-To: <200908311723.34067.arnd@arndb.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Sep 2009 11:03:13 -0400
 MIME-Version: 1.0
+In-Reply-To: <20090901104731.5f119d53@pedra.chehab.org>
+References: <20090730200714.5a7ab8a6@pedra.chehab.org>
+	 <20090801014053.7f53da83@pedra.chehab.org>
+	 <303a8ee30908011103n3c12258icd2bfd1305b419d3@mail.gmail.com>
+	 <20090811140128.211d4d11@caramujo.chehab.org>
+	 <37219a840908111457o4b6abc64n52291f044b56782d@mail.gmail.com>
+	 <37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
+	 <303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
+	 <20090830191325.45cf1e69@pedra.chehab.org>
+	 <303a8ee30908310403x73d067rd58d01fbd4fde299@mail.gmail.com>
+	 <20090901104731.5f119d53@pedra.chehab.org>
+Date: Tue, 1 Sep 2009 11:03:14 -0400
+Message-ID: <303a8ee30909010803r69f18fa0n8d40f164cf51607f@mail.gmail.com>
+Subject: Re: [PULL] http://kernellabs.com/hg/~mkrufky/sms1xxx
+From: Michael Krufky <mkrufky@kernellabs.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->I don't think we should do that with the tun/tap driver. By design, tun/tap is a way to interact >with the
->networking stack as if coming from a device. The only way this connects to an external >adapter is through
->a bridge or through IP routing, which means that it does not correspond to a specific NIC.
->I have worked on a driver I called 'macvtap' in lack of a better name, to add a new tap >frontend to
->the 'macvlan' driver. Since macvlan lets you add slaves to a single NIC device, this gives you >a direct
->connection between one or multiple tap devices to an external NIC, which works a lot better >than when
->you have a bridge inbetween. There is also work underway to add a bridging capability to >macvlan, so
->you can communicate directly between guests like you can do with a bridge.
->Michael's vhost_net can plug into the same macvlan infrastructure, so the work is >complementary.
+On Tue, Sep 1, 2009 at 9:47 AM, Mauro Carvalho
+Chehab<mchehab@infradead.org> wrote:
+> Em Mon, 31 Aug 2009 07:03:18 -0400
+> Michael Krufky <mkrufky@kernellabs.com> escreveu:
+>
+>> I see the GPIO fix in your git tree now -- Thanks for merging it.
+>>
+>> However, I also see this changeset:
+>>
+>> http://git.kernel.org/?p=linux/kernel/git/mchehab/linux-2.6.git;a=commitdiff;h=31e0ad693fb4e1d1be19dbe1c4f5a1ab9978e810
+>>
+>> I believe that it is way too late in 2.6.31 to merge a changeset like
+>> this -- Please revert that and if there is actually a Kconfig change
+>> required, merge a more minimal change for 2.6.31 and hold off this
+>> huge, risky change for the next merge window.
+>>
+>> There is not enough time to fix this, if this changeset causes
+>> additional breakage.
+>
+> This is just Kbuild changes, and it is there at linux-next for some time,
+> where for sure people already tried to do several different building tests.
+> Among some cosmetics, it removes a dead symbol (DVB_SIANO_SMS1XXX_SMS_IDS).
+>
+> It is very bad to expose to the user a config option that configs nothing.
+>
+> Anyway, Linus already merged the pull request. If you eventually find a bug on
+> it, please ping me for us to send a fix.
+>
+> Cheers,
+> Mauro
+>
 
-We use TUN/TAP device to implement the prototype, and agree that it's not the only
-choice here. We'd compare the two if possible.
-And what we cares more about is the modification in the kernel like the net_dev and 
-skb structures' modifications, thanks.
+The Kconfig symbol names were changed, the target object has changed,
+the module filename has changed.
 
-Thanks
-Xiaohui
+A submenu was added, the USB support is not enabled by default.
 
------Original Message-----
-From: Arnd Bergmann [mailto:arnd@arndb.de] 
-Sent: Monday, August 31, 2009 11:24 PM
-To: Xin, Xiaohui
-Cc: mst@redhat.com; netdev@vger.kernel.org; virtualization@lists.linux-foundation.org; kvm@vger.kernel.org; linux-kernel@vger.kernel.org; mingo@elte.hu; linux-mm@kvack.org; akpm@linux-foundation.org; hpa@zytor.com; gregory.haskins@gmail.com
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+None of the above fixed any bug, it just makes unnecessary changes
+that are inappropriate this late in a kernel development cycle.
 
-On Monday 31 August 2009, Xin, Xiaohui wrote:
-> 
-> Hi, Michael
-> That's a great job. We are now working on support VMDq on KVM, and since the VMDq hardware presents L2 sorting
-> based on MAC addresses and VLAN tags, our target is to implement a zero copy solution using VMDq.
+If a bug needed to be fixed, it would have been as simple as adding
+the new object file for smssdio.o , and the old
+DVB_SIANO_SMS1XXX_SMS_IDS section could have been removed without
+changing everything.
 
-I'm also interested in helping there, please include me in the discussions.
+I think this is ridiculous to slip in at the last moment, but I would
+have had no complaints seeing this in the next merge window.
 
-> We stared
-> from the virtio-net architecture. What we want to proposal is to use AIO combined with direct I/O:
-> 1) Modify virtio-net Backend service in Qemu to submit aio requests composed from virtqueue.
+What is the point of a "merge window" if you let people make such
+changes as this right before a kernel is released.
 
-right, that sounds useful.
+Maybe it all works, maybe it doesnt.  I know I personally am not going
+to test this before September fifth, the day Linus plans to release
+2.6.31. ..  And even if I do find a problem, how should I know that
+the powers that be will act on a regression fix in a timely manner?
 
-> 2) Modify TUN/TAP device to support aio operations and the user space buffer directly mapping into the host kernel.
-> 3) Let a TUN/TAP device binds to single rx/tx queue from the NIC.
+Apologies to the users of this driver -- I am not interested anymore.
+My time is better spend working on my own code.
 
-I don't think we should do that with the tun/tap driver. By design, tun/tap is a way to interact with the
-networking stack as if coming from a device. The only way this connects to an external adapter is through
-a bridge or through IP routing, which means that it does not correspond to a specific NIC.
+On the bright side, I have some really interesting stuff coming.  I
+will be posting some RFC's this week that will help to alleviate some
+long-standing problems within the media subsystems.  I won't stress
+over Siano's driver any longer -- this gives me more time to focus on
+the really cool fun stuff :-)
 
-I have worked on a driver I called 'macvtap' in lack of a better name, to add a new tap frontend to
-the 'macvlan' driver. Since macvlan lets you add slaves to a single NIC device, this gives you a direct
-connection between one or multiple tap devices to an external NIC, which works a lot better than when
-you have a bridge inbetween. There is also work underway to add a bridging capability to macvlan, so
-you can communicate directly between guests like you can do with a bridge.
+If the kernel's support for this driver becomes broken again, users
+can just use the driver that I have posted on kernellabs.com
 
-Michael's vhost_net can plug into the same macvlan infrastructure, so the work is complementary.
+Cheers,
 
-> 4) Modify the net_dev and skb structure to permit allocated skb to use user space directly mapped payload
-> buffer address rather then kernel allocated.
-
-yes.
-
-> As zero copy is also your goal, we are interested in what's in your mind, and would like to collaborate with you if possible.
-> BTW, we will send our VMDq write-up very soon.
-
-Ok, cool.
-
-	Arnd <><
+Mike
