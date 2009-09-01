@@ -1,87 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZIAIuS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZIAIAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753374AbZIAIuS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:50:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753297AbZIAIuS
+	id S1753229AbZIAIAg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZIAIAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:50:18 -0400
-Received: from mga14.intel.com ([143.182.124.37]:54449 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753178AbZIAIuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:50:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182702705"
-Date: Tue, 1 Sep 2009 16:00:15 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Josh Triplett <josh@joshtriplett.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Chris Wright <chrisw@redhat.com>, Izik Eidus <ieidus@redhat.com>
-Subject: [PATCH -v2] pagemap: document KPF_KSM and show it in page-types
-Message-ID: <20090901080015.GC1446@localhost>
-References: <20090808173900.GA21009@feather> <20090812065107.GA16363@localhost> <20090831135720.5E53.A69D9226@jp.fujitsu.com> <20090831065659.GA18039@localhost> <20090831071425.GA26634@localhost> <20090831071702.GB26634@localhost> <20090831083911.715b630b.randy.dunlap@oracle.com>
+	Tue, 1 Sep 2009 04:00:35 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58319 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753205AbZIAIAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:00:35 -0400
+Message-ID: <4A9CD4C3.9000800@cn.fujitsu.com>
+Date: Tue, 01 Sep 2009 16:01:07 +0800
+From: Shan Wei <shanwei@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090608)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090831083911.715b630b.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH]cfq: fix the log message after dispatched a request
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It indicates to the system admin that processes mapping such pages may be
-eating less physical memory than the reported numbers by legacy tools.
+The blktrace tools can show process id when cfq dispatched a request,
+using cfq_log_cfqq() instead of cfq_log().
 
-CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Izik Eidus <ieidus@redhat.com>
-Acked-by: Chris Wright <chrisw@redhat.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+
+Signed-off-by: Shan Wei <shanwei@cn.fujitsu.com>
 ---
- Documentation/vm/pagemap.txt |    4 ++++
- tools/vm/page-types.c        |    2 ++
- 2 files changed, 6 insertions(+)
+ block/cfq-iosched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
---- linux-mm.orig/Documentation/vm/pagemap.txt	2009-08-31 15:02:55.000000000 +0800
-+++ linux-mm/Documentation/vm/pagemap.txt	2009-09-01 15:54:36.000000000 +0800
-@@ -59,6 +59,7 @@ There are three components to pagemap:
-     18. UNEVICTABLE
-     19. HWPOISON
-     20. NOPAGE
-+    21. KSM
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index fd7080e..150c9dd 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -1362,7 +1362,7 @@ static int cfq_dispatch_requests(struct request_queue *q, int force)
+ 		cfq_slice_expired(cfqd, 0);
+ 	}
  
- Short descriptions to the page flags:
+-	cfq_log(cfqd, "dispatched a request");
++	cfq_log_cfqq(cfqd, cfqq, "dispatched a request");
+ 	return 1;
+ }
  
-@@ -93,6 +94,9 @@ Short descriptions to the page flags:
- 20. NOPAGE
-     no page frame exists at the requested address
+-- 
+1.6.0.4
  
-+21. KSM
-+    identical memory pages dynamically shared between one or more processes
-+
-     [IO related page flags]
-  1. ERROR     IO error occurred
-  3. UPTODATE  page has up-to-date data
---- linux-mm.orig/tools/vm/page-types.c	2009-08-31 15:00:24.000000000 +0800
-+++ linux-mm/tools/vm/page-types.c	2009-09-01 15:54:16.000000000 +0800
-@@ -49,6 +49,7 @@
- #define KPF_UNEVICTABLE		18
- #define KPF_HWPOISON		19
- #define KPF_NOPAGE		20
-+#define KPF_KSM			21
- 
- /* [32-] kernel hacking assistances */
- #define KPF_RESERVED		32
-@@ -97,6 +98,7 @@ static char *page_flag_names[] = {
- 	[KPF_UNEVICTABLE]	= "u:unevictable",
- 	[KPF_HWPOISON]		= "X:hwpoison",
- 	[KPF_NOPAGE]		= "n:nopage",
-+	[KPF_KSM]		= "x:ksm",
- 
- 	[KPF_RESERVED]		= "r:reserved",
- 	[KPF_MLOCKED]		= "m:mlocked",
