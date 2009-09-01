@@ -1,48 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbZIANzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZIAN7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754870AbZIANzX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754819AbZIANzW
+	id S1754881AbZIAN7F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbZIAN7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:55:22 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:37203 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754758AbZIANzW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:55:22 -0400
-To: venki kaps <venkiece2005@gmail.com>
-Cc: Nicolas Pitre <nico@cam.org>,
-       "sagar.abhishek\@gmail.com" <sagar.abhishek@gmail.com>,
-       "jkenisto\@us.ibm.com" <jkenisto@us.ibm.com>,
-       "rmk+kernel\@arm.linux.org.uk" <rmk+kernel@arm.linux.org.uk>,
-       "linux-kernel\@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "prasanna\@in.ibm.com" <prasanna@in.ibm.com>
-Subject: Re: ARM + jprobes/kretprobes SEGV/hangs/OOPS in 2.6.29 kernel
-References: <6d53329e0908250342g2cfb73f6v90f73c283c0d391c@mail.gmail.com>
-	<alpine.LFD.2.00.0908251333410.6044@xanadu.home>
-	<6d53329e0908302227l63420351m1005d0c76346e2ec@mail.gmail.com>
-	<6d53329e0908310311v55ef3909na0cbec756e63ccab@mail.gmail.com>
-	<6d53329e0908312355y7bd2038ds6ba8efe671d98bc9@mail.gmail.com>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Tue, 01 Sep 2009 14:54:54 +0100
-In-Reply-To: <6d53329e0908312355y7bd2038ds6ba8efe671d98bc9@mail.gmail.com> (venki kaps's message of "Tue\, 1 Sep 2009 12\:25\:37 +0530")
-Message-ID: <tnxocpu7osx.fsf@pc1117.cambridge.arm.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Tue, 1 Sep 2009 09:59:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56045 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754805AbZIAN7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:59:01 -0400
+Date: Tue, 1 Sep 2009 13:58:07 GMT
+From: tip-bot for Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: mingo@redhat.com, torvalds@linux-foundation.org, a.p.zijlstra@chello.nl,
+       schwidefsky@de.ibm.com, ehrhardt@linux.vnet.ibm.com, arnd@arndb.de,
+       akpm@linux-foundation.org, heiko.carstens@de.ibm.com,
+       zippel@linux-m68k.org, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, paulus@samba.org, horsth@linux.vnet.ibm.com,
+       davem@davemloft.net, benh@kernel.crashing.org, geert@linux-m68k.org,
+       linux-arch@vger.kernel.org, mingo@elte.hu, nickpiggin@yahoo.com.au
+Reply-To: mingo@redhat.com, a.p.zijlstra@chello.nl,
+       torvalds@linux-foundation.org, schwidefsky@de.ibm.com,
+       ehrhardt@linux.vnet.ibm.com, arnd@arndb.de, akpm@linux-foundation.org,
+       heiko.carstens@de.ibm.com, tglx@linutronix.de, zippel@linux-m68k.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com, paulus@samba.org,
+       horsth@linux.vnet.ibm.com, davem@davemloft.net,
+       benh@kernel.crashing.org, geert@linux-m68k.org,
+       linux-arch@vger.kernel.org, nickpiggin@yahoo.com.au, mingo@elte.hu
+In-Reply-To: <20090831124416.998821502@de.ibm.com>
+References: <20090831124416.998821502@de.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/locking] locking, m68k/asm-offsets: Rename signal defines
+Message-ID: <tip-96910b6dc8a4fdb75e69f09f47b62d41743d36ba@git.kernel.org>
+Git-Commit-ID: 96910b6dc8a4fdb75e69f09f47b62d41743d36ba
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 01 Sep 2009 13:54:56.0981 (UTC) FILETIME=[CA292850:01CA2B0B]
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 01 Sep 2009 13:58:09 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-venki kaps <venkiece2005@gmail.com> wrote:
-> I have found the exact problem with respect to ARM jprobes.
->
-> The problem with configure i.e, CONFIG_ARM_UNWIND = y; is enabled.
+Commit-ID:  96910b6dc8a4fdb75e69f09f47b62d41743d36ba
+Gitweb:     http://git.kernel.org/tip/96910b6dc8a4fdb75e69f09f47b62d41743d36ba
+Author:     Heiko Carstens <heiko.carstens@de.ibm.com>
+AuthorDate: Mon, 31 Aug 2009 14:43:34 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 1 Sep 2009 09:38:03 +0200
 
-I haven't followed the kprobes implementation for ARM but does it make
-any assumptions about the existence of a frame pointer on the stack?
-Enabling stack unwinding automatically disables the framepointer.
+locking, m68k/asm-offsets: Rename signal defines
 
--- 
-Catalin
+In order to be able to use asm-offsets.h in C files the
+existing namespace conflicts must be solved first. In
+asm-offsets.h there are defines for signal constants, so they
+can be used in assembler files.
+
+Unfortunately the existing defines use a 1:1 mapping for the
+macro names which results in name space conflicts if the header
+file would also be used in C files. So rename the created
+defines and add an "L" prefix to each one since that has
+already been done for the SIGTRAP define in entry_mm.
+
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Horst Hartmann <horsth@linux.vnet.ibm.com>
+Cc: Christian Ehrhardt <ehrhardt@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+Cc: <linux-arch@vger.kernel.org>
+LKML-Reference: <20090831124416.998821502@de.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/m68k/include/asm/entry_mm.h |    1 -
+ arch/m68k/kernel/asm-offsets.c   |    8 ++++----
+ arch/m68k/math-emu/fp_entry.S    |    8 ++++----
+ 3 files changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/arch/m68k/include/asm/entry_mm.h b/arch/m68k/include/asm/entry_mm.h
+index 4fcfc28..4741258 100644
+--- a/arch/m68k/include/asm/entry_mm.h
++++ b/arch/m68k/include/asm/entry_mm.h
+@@ -46,7 +46,6 @@
+ #define curptr a2
+ 
+ LFLUSH_I_AND_D = 0x00000808
+-LSIGTRAP = 5
+ 
+ /* process bits for task_struct.ptrace */
+ PT_TRACESYS_OFF = 3
+diff --git a/arch/m68k/kernel/asm-offsets.c b/arch/m68k/kernel/asm-offsets.c
+index 25d6b72..73e5e58 100644
+--- a/arch/m68k/kernel/asm-offsets.c
++++ b/arch/m68k/kernel/asm-offsets.c
+@@ -89,10 +89,10 @@ int main(void)
+ 	DEFINE(FONT_DESC_PREF, offsetof(struct font_desc, pref));
+ 
+ 	/* signal defines */
+-	DEFINE(SIGSEGV, SIGSEGV);
+-	DEFINE(SEGV_MAPERR, SEGV_MAPERR);
+-	DEFINE(SIGTRAP, SIGTRAP);
+-	DEFINE(TRAP_TRACE, TRAP_TRACE);
++	DEFINE(LSIGSEGV, SIGSEGV);
++	DEFINE(LSEGV_MAPERR, SEGV_MAPERR);
++	DEFINE(LSIGTRAP, SIGTRAP);
++	DEFINE(LTRAP_TRACE, TRAP_TRACE);
+ 
+ 	/* offsets into the custom struct */
+ 	DEFINE(CUSTOMBASE, &amiga_custom);
+diff --git a/arch/m68k/math-emu/fp_entry.S b/arch/m68k/math-emu/fp_entry.S
+index 916c6f3..a3fe1f3 100644
+--- a/arch/m68k/math-emu/fp_entry.S
++++ b/arch/m68k/math-emu/fp_entry.S
+@@ -85,8 +85,8 @@ fp_err_ua2:
+ fp_err_ua1:
+ 	addq.l	#4,%sp
+ 	move.l	%a0,-(%sp)
+-	pea	SEGV_MAPERR
+-	pea	SIGSEGV
++	pea	LSEGV_MAPERR
++	pea	LSIGSEGV
+ 	jsr	fpemu_signal
+ 	add.w	#12,%sp
+ 	jra	ret_from_exception
+@@ -96,8 +96,8 @@ fp_err_ua1:
+ 	| it does not really belong here, but...
+ fp_sendtrace060:
+ 	move.l	(FPS_PC,%sp),-(%sp)
+-	pea	TRAP_TRACE
+-	pea	SIGTRAP
++	pea	LTRAP_TRACE
++	pea	LSIGTRAP
+ 	jsr	fpemu_signal
+ 	add.w	#12,%sp
+ 	jra	ret_from_exception
