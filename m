@@ -1,78 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754803AbZIANoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZIANrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754803AbZIANoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754766AbZIANoY
+	id S1754809AbZIANrf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZIANre
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:44:24 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:48819 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754757AbZIANoX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:44:23 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is get_user_pages() enough to prevent pages from being swapped out ?")
-Date: Tue, 1 Sep 2009 15:43:48 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.30.3; KDE/4.3.0; x86_64; ; )
-Cc: Steven Walter <stevenrwalter@gmail.com>, David Xiao <dxiao@broadcom.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "v4l2_linux" <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk>
-In-Reply-To: <20090901132824.GN19719@n2100.arm.linux.org.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909011543.48439.laurent.pinchart@ideasonboard.com>
+	Tue, 1 Sep 2009 09:47:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18604 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754541AbZIANrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:47:33 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090831102642.GA30264@linux-sh.org>
+References: <20090831102642.GA30264@linux-sh.org> <20090831074842.GA28091@linux-sh.org> <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: dhowells@redhat.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Mel Gorman <mel@csn.ul.ie>, Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: page allocator regression on nommu
+Date: Tue, 01 Sep 2009 14:46:45 +0100
+Message-ID: <12589.1251812805@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 September 2009 15:28:24 Russell King - ARM Linux wrote:
-> On Tue, Aug 25, 2009 at 08:53:29AM -0400, Steven Walter wrote:
-> > On Thu, Aug 6, 2009 at 6:25 PM, Russell King - ARM
-> > Linux<linux@arm.linux.org.uk> wrote:
-> > [...]
-> >
-> > > As far as userspace DMA coherency, the only way you could do it with
-> > > current kernel APIs is by using get_user_pages(), creating a
-> > > scatterlist from those, and then passing it to dma_map_sg().  While the
-> > > device has ownership of the SG, userspace must _not_ touch the buffer
-> > > until after DMA has completed.
-> >
-> > [...]
-> >
-> > Would that work on a processor with VIVT caches?  It seems not.  In
-> > particular, dma_map_page uses page_address to get a virtual address to
-> > pass to map_single().  map_single() in turn uses this address to
-> > perform cache maintenance.  Since page_address() returns the kernel
-> > virtual address, I don't see how any cache-lines for the userspace
-> > virtual address would get invalidated (for the DMA_FROM_DEVICE case).
->
-> You are correct.
->
-> > If that's true, then what is the correct way to allow DMA to/from a
-> > userspace buffer with a VIVT cache?  If not true, what am I missing?
->
-> I don't think you read what I said (but I've also forgotten what I did
-> say).
->
-> To put it simply, the kernel does not support DMA direct from userspace
-> pages.  Solutions which have been proposed in the past only work with a
-> sub-set of conditions (such as the one above only works with VIPT
-> caches.)
+Paul Mundt <lethal@linux-sh.org> wrote:
 
-I might be missing something obvious, but I fail to see how VIVT caches could 
-work at all with multiple mappings. If a kernel-allocated buffer is DMA'ed to, 
-we certainly want to invalidate all cache lines that store buffer data. As the 
-cache doesn't care about physical addresses we thus need to invalidate all 
-virtual mappings for the buffer. If the buffer is mmap'ed in userspace I don't 
-see how that would be done.
+> Yeah, that looks a bit suspect. __put_nommu_region() is safe to be called
+> without a call to add_nommu_region(), but we happen to trip over the
+> BUG_ON() in this case because we've never made a single addition to the
+> region tree.
+> 
+> We probably ought to just up_write() and return if nommu_region_tree ==
+> RB_ROOT, which is what I'll do unless David objects.
 
--- 
-Laurent Pinchart
+I think that's the wrong thing to do.  I think we're better moving the call to
+add_nommu_region() to above the "/* set up the mapping */" comment.  We hold
+the region semaphore at this point, so the fact that it winds up in the tree
+briefly won't cause a race, and it means __put_nommu_region() can be used with
+impunity to correctly clean up.
+
+See attached patch.
+
+David
+---
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] NOMMU: Fix error handling in do_mmap_pgoff()
+
+Fix the error handling in do_mmap_pgoff().  If do_mmap_shared_file() or
+do_mmap_private() fail, we jump to the error_put_region label at which point we
+cann __put_nommu_region() on the region - but we haven't yet added the region
+to the tree, and so __put_nommu_region() may BUG because the region tree is
+empty or it may corrupt the region tree.
+
+To get around this, we can afford to add the region to the region tree before
+calling do_mmap_shared_file() or do_mmap_private() as we keep nommu_region_sem
+write-locked, so no-one can race with us by seeing a transient region.
+
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ mm/nommu.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+
+diff --git a/mm/nommu.c b/mm/nommu.c
+index 7466c7a..aabe86c 100644
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -1347,6 +1347,7 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 	}
+ 
+ 	vma->vm_region = region;
++	add_nommu_region(region);
+ 
+ 	/* set up the mapping */
+ 	if (file && vma->vm_flags & VM_SHARED)
+@@ -1356,8 +1357,6 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 	if (ret < 0)
+ 		goto error_put_region;
+ 
+-	add_nommu_region(region);
+-
+ 	/* okay... we have a mapping; now we have to register it */
+ 	result = vma->vm_start;
+ 
+
