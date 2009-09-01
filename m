@@ -1,79 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbZIAO0u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZIAO1Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755015AbZIAO0u (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:26:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754999AbZIAO0s
+	id S1755045AbZIAO1Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:27:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754974AbZIAO1Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:26:48 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41868 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754990AbZIAO0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:26:47 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-From: James Bottomley <James.Bottomley@suse.de>
-To: akataria@vmware.com
-Cc: Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
+	Tue, 1 Sep 2009 10:27:24 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:57299 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754975AbZIAO1V (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 10:27:21 -0400
+Date: Tue, 1 Sep 2009 23:27:17 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: David Howells <dhowells@redhat.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dave Hansen <dave@linux.vnet.ibm.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Torokhov <dtor@vmware.com>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>,
-       Bhavesh Davda <bhavesh@vmware.com>
-In-Reply-To: <1251755593.16169.51.camel@ank32.eng.vmware.com>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	 <1251739735.16169.20.camel@ank32.eng.vmware.com>
-	 <1251741624.18828.83.camel@mulgrave.site>
-	 <1251755593.16169.51.camel@ank32.eng.vmware.com>
-Content-Type: text/plain
-Date: Tue, 01 Sep 2009 09:26:39 -0500
-Message-Id: <1251815199.3864.62.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: page allocator regression on nommu
+Message-ID: <20090901142716.GA16759@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	David Howells <dhowells@redhat.com>,
+	Pekka Enberg <penberg@cs.helsinki.fi>, Mel Gorman <mel@csn.ul.ie>,
+	Christoph Lameter <cl@linux-foundation.org>,
+	KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <nickpiggin@yahoo.com.au>,
+	Dave Hansen <dave@linux.vnet.ibm.com>,
+	Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org
+References: <20090831102642.GA30264@linux-sh.org> <20090831074842.GA28091@linux-sh.org> <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com> <12589.1251812805@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <12589.1251812805@redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-08-31 at 14:53 -0700, Alok Kataria wrote:
-> > > diff --git a/drivers/scsi/pvscsi.c b/drivers/scsi/pvscsi.c
-> > > new file mode 100644
-> > > index 0000000..fc85a3a
-> > > --- /dev/null
-> > > +++ b/drivers/scsi/pvscsi.c
-> > [...]
-> > > +static int __devinit pvscsi_allocate_sg(struct pvscsi_adapter *adapter)
-> > > +{
-> > > +	struct pvscsi_ctx *ctx;
-> > > +	int i;
-> > > +
-> > > +	ctx = adapter->cmd_map;
-> > > +	BUILD_BUG_ON(sizeof(struct pvscsi_sg_list) > PAGE_SIZE);
-> > > +
-> > > +	for (i = 0; i < adapter->req_depth; ++i, ++ctx) {
-> > > +		ctx->sgl = pci_alloc_consistent(adapter->dev, PAGE_SIZE,
-> > > +						&ctx->sglPA);
-> > 
-> > Why do you need coherent memory for the sg list?  Surely the use pattern
-> > of an SG list is that it follows a predefined ownership model between
-> > the driver and the virtual device, thus not really requiring coherent
-> > memory?
+On Tue, Sep 01, 2009 at 02:46:45PM +0100, David Howells wrote:
+> Paul Mundt <lethal@linux-sh.org> wrote:
 > 
-> The SG list needs to be accessed by the hypervisor too, and we need the
-> physical address to access it from the hypervisor. We do that using the
-> sglPA field right now, which the pci_.. interface returns.  Do you think
-> something else should be used for that purpose ? 
+> > Yeah, that looks a bit suspect. __put_nommu_region() is safe to be called
+> > without a call to add_nommu_region(), but we happen to trip over the
+> > BUG_ON() in this case because we've never made a single addition to the
+> > region tree.
+> > 
+> > We probably ought to just up_write() and return if nommu_region_tree ==
+> > RB_ROOT, which is what I'll do unless David objects.
+> 
+> I think that's the wrong thing to do.  I think we're better moving the call to
+> add_nommu_region() to above the "/* set up the mapping */" comment.  We hold
+> the region semaphore at this point, so the fact that it winds up in the tree
+> briefly won't cause a race, and it means __put_nommu_region() can be used with
+> impunity to correctly clean up.
+> 
+[snip]
 
-The hypervisor is part of the OS coherency domain ... coherent memory is
-designed to be a mailbox access between a device and driver, which I
-believe the hypervisor doesn't need.
+> From: David Howells <dhowells@redhat.com>
+> Subject: [PATCH] NOMMU: Fix error handling in do_mmap_pgoff()
+> 
+> Fix the error handling in do_mmap_pgoff().  If do_mmap_shared_file() or
+> do_mmap_private() fail, we jump to the error_put_region label at which point we
+> cann __put_nommu_region() on the region - but we haven't yet added the region
+> to the tree, and so __put_nommu_region() may BUG because the region tree is
+> empty or it may corrupt the region tree.
+> 
+> To get around this, we can afford to add the region to the region tree before
+> calling do_mmap_shared_file() or do_mmap_private() as we keep nommu_region_sem
+> write-locked, so no-one can race with us by seeing a transient region.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-If all you're looking for is a way to map a page of memory to a physical
-address, won't dma_map_single() do that for you?  Or, actually, in this
-case virt_to_page() might be a better way.
+Agreed, that does look cleaner. After playing around with it a bit, I concede
+that the BUG_ON() is definitely worth preserving. :-)
 
-James
-
-
+Acked-by: Paul Mundt <lethal@linux-sh.org>
