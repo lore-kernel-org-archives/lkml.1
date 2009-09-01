@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753083AbZIATgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZIATl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753083AbZIATgm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 15:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751729AbZIATgm
+	id S1753824AbZIATl6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 15:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZIATl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 15:36:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48466 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbZIATgl (ORCPT
+	Tue, 1 Sep 2009 15:41:58 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:39535 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbZIATl5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 15:36:41 -0400
-Date: Tue, 1 Sep 2009 16:36:04 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Michael Krufky <mkrufky@kernellabs.com>
-Cc: linux-media <linux-media@vger.kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PULL] http://kernellabs.com/hg/~mkrufky/sms1xxx
-Message-ID: <20090901163604.04599211@pedra.chehab.org>
-In-Reply-To: <303a8ee30909010803r69f18fa0n8d40f164cf51607f@mail.gmail.com>
-References: <20090730200714.5a7ab8a6@pedra.chehab.org>
-	<20090801014053.7f53da83@pedra.chehab.org>
-	<303a8ee30908011103n3c12258icd2bfd1305b419d3@mail.gmail.com>
-	<20090811140128.211d4d11@caramujo.chehab.org>
-	<37219a840908111457o4b6abc64n52291f044b56782d@mail.gmail.com>
-	<37219a840908241332w2e2d45d8kd6406de3e60d1317@mail.gmail.com>
-	<303a8ee30908300553s6d81a2cdn43145de51298afd5@mail.gmail.com>
-	<20090830191325.45cf1e69@pedra.chehab.org>
-	<303a8ee30908310403x73d067rd58d01fbd4fde299@mail.gmail.com>
-	<20090901104731.5f119d53@pedra.chehab.org>
-	<303a8ee30909010803r69f18fa0n8d40f164cf51607f@mail.gmail.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 1 Sep 2009 15:41:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=x3Zn2afBSEOLe/JvVbeqsNb1tnZYXfmWepr1DJa87qrgXC7RUXa075nUM5swaqZ7B9
+         E7fcoxKVaS+b4zcNLAbzkvp9LmsayIbQXe3iVqLEl6TysbrOMK7pyY7rT4VhazCw7tUS
+         23EIGdul/hTjLwl6hbcuLXyX8o+wFD0fOyhoc=
+Date: Tue, 1 Sep 2009 23:41:54 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Rakib Mullick <rakib.mullick@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>
+Subject: Re: [Question] x86,APIC: In apicdef.h dfr,svr,...... shouldn't be
+	const?
+Message-ID: <20090901194154.GB19964@lenovo>
+References: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com> <aa79d98a0909010143t27096d25n1ee36651f8487b52@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aa79d98a0909010143t27096d25n1ee36651f8487b52@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 1 Sep 2009 11:03:14 -0400
-Michael Krufky <mkrufky@kernellabs.com> escreveu:
+[Cyrill Gorcunov - Tue, Sep 01, 2009 at 12:43:06PM +0400]
+| On 9/1/09, Rakib Mullick <rakib.mullick@gmail.com> wrote:
+| > Hello guys, Intel System programmers guide says - dfr, svr, esr - this
+| > registers should be readonly. So shouldn't they use const? Or is it
+| > anything else?
+| 
+| Hi Rakib, i dont have sources under my hands at moment, but iirc there
+| were situations we nees to poke esr register.
+| 
+| >
+| > And apicdef.h also contains a style problem, checkpatch warns about
+| > following style:
+| >
+| >               u32	spurious_vector	:  8
+| >
+| > Check patch wants as:
+| >
+| >                          u32	spurious_vector:8
+| >
+| > Shouldn't this issues be fixed?
+| >
+| > Thanks,
+| > --
+| 
+| i dont see reason why not ;)
+| though i wonder why we need this structure at all. We may have
+| extended amd entries.
+| Yinghai cced.
+| 
 
-> The Kconfig symbol names were changed, the target object has changed,
-> the module filename has changed.
-> 
-> A submenu was added, the USB support is not enabled by default.
-> 
-> None of the above fixed any bug, it just makes unnecessary changes
-> that are inappropriate this late in a kernel development cycle.
+Ingo, Yinghai, Suresh,
 
-None of the above breaks anything, and enabling a driver by default is not good
-anyway.
+is there any particular reason we keep apicdef.h:struct local_apic at all?
 
-> If a bug needed to be fixed, it would have been as simple as adding
-> the new object file for smssdio.o , and the old
-> DVB_SIANO_SMS1XXX_SMS_IDS section could have been removed without
-> changing everything.
-> 
-> I think this is ridiculous to slip in at the last moment, but I would
-> have had no complaints seeing this in the next merge window.
-> 
-> What is the point of a "merge window" if you let people make such
-> changes as this right before a kernel is released.
+Was there some plan on this structure usage in future? If take into
+account amd extended registers this structure doesn't cover all
+possible cases. And at moment we do poke apic registers via APIC_
+macros mostly and it seems that is the more convenient
+and flexible approach. The only thing I may imagine where we
+could (possibly) use it in future is suspend/resume cases.
 
-The patch is a bug fix and it is even older than your LED fix. The first
-version were submitted before the previous merge window, and you asked for some
-changes that were done accordingly. 
+But perhaps I miss something?
 
-Since the entire Siano driver suffered major changes at the last merge window,
-this patch needs to be available together with the remaining series of the
-Siano series of patches, to reflect the changes that happened inside the
-driver, and the inclusion of the SDIO driver.
-
-
-
-Cheers,
-Mauro
+	-- Cyrill
