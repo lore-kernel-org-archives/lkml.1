@@ -1,388 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZIAJYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753521AbZIAJ0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753500AbZIAJYM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 05:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZIAJYL
+	id S1753521AbZIAJ0r (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 05:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbZIAJ0q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 05:24:11 -0400
-Received: from e23smtp04.au.ibm.com ([202.81.31.146]:58053 "EHLO
-	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753346AbZIAJYK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 05:24:10 -0400
-Date: Tue, 1 Sep 2009 14:54:07 +0530
-From: Ankita Garg <ankita@in.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH] Fix fake numa on ppc
-Message-ID: <20090901092407.GC4076@in.ibm.com>
-Reply-To: Ankita Garg <ankita@in.ibm.com>
-References: <20090901050316.GA4076@in.ibm.com> <20090901055753.GB5563@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901055753.GB5563@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 1 Sep 2009 05:26:46 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:49750 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751105AbZIAJ0q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 05:26:46 -0400
+Subject: Re: [PATCH 1/2] kmemleak: Inform kmemleak about kernel stack
+	allocation
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@redhat.com>
+In-Reply-To: <20090831084546.GE15619@elte.hu>
+References: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com>
+	 <20090827170253.27901.33997.stgit@pc1117.cambridge.arm.com>
+	 <20090829132954.GB24123@elte.hu>
+	 <1251556083.5518.2.camel@pc1117.cambridge.arm.com>
+	 <20090831084546.GE15619@elte.hu>
+Content-Type: text/plain; charset=utf-8
+Organization: ARM Ltd
+Date: Tue, 01 Sep 2009 10:25:14 +0100
+Message-Id: <1251797114.10349.28.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 01 Sep 2009 09:25:15.0454 (UTC) FILETIME=[1D3815E0:01CA2AE6]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir,
-
-On Tue, Sep 01, 2009 at 11:27:53AM +0530, Balbir Singh wrote:
-> * Ankita Garg <ankita@in.ibm.com> [2009-09-01 10:33:16]:
+On Mon, 2009-08-31 at 10:45 +0200, Ingo Molnar wrote:
+> * Catalin Marinas <catalin.marinas@arm.com> wrote:
 > 
-> > Hello,
+> > On Sat, 2009-08-29 at 15:29 +0200, Ingo Molnar wrote:
+> > > * Catalin Marinas <catalin.marinas@arm.com> wrote:
+[...]
+> > > > diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
+> > > > index fad7d40..f26432a 100644
+> > > > --- a/arch/x86/include/asm/thread_info.h
+> > > > +++ b/arch/x86/include/asm/thread_info.h
+> > > > @@ -162,7 +162,12 @@ struct thread_info {
+> > > >  #define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
+> > > >  
+> > > >  #define alloc_thread_info(tsk)						\
+> > > > -	((struct thread_info *)__get_free_pages(THREAD_FLAGS, THREAD_ORDER))
+> > > > +({									\
+> > > > +	struct thread_info *ti = (struct thread_info *)			\
+> > > > +		__get_free_pages(THREAD_FLAGS, THREAD_ORDER);		\
+> > > > +	kmemleak_alloc(ti, THREAD_SIZE, 1, THREAD_FLAGS);		\
+> > > > +	ti;								\
+> > > > +})
+> > > 
+> > > Sidenote:this used to be a trivial wrapper to gfp so it was 
+> > > borderline OK as a CPP macro - now it's a non-trivial CPP wrapper 
+> > > macro which is not OK. Mind converting it to an inline function?
 > > 
-> > Below is a patch to fix a couple of issues with fake numa node creation
-> > on ppc:
-> > 
-> > 1) Presently, fake nodes could be created such that real numa node
-> > boundaries are not respected. So a node could have lmbs that belong to
-> > different real nodes.
-> > 
-> > 2) The cpu association is broken. On a JS22 blade for example, which is
-> > a 2-node numa machine, I get the following:
-> > 
-> > # cat /proc/cmdline
-> > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-> > # cat /sys/devices/system/node/node0/cpulist
-> > 0-3
-> > # cat /sys/devices/system/node/node1/cpulist
-> > 4-7
-> > # cat /sys/devices/system/node/node4/cpulist
-> > 
-> > #
-> > 
-> > So, though the cpus 4-7 should have been associated with node4, they
-> > still belong to node1. The patch works by recording a real numa node
-> > boundary and incrementing the fake node count. At the same time, a
-> > mapping is stored from the real numa node to the first fake node that
-> > gets created on it.
-> >
+> > I tried this first but got compilation errors in files that didn't 
+> > even call this function. To make it workable, thread_info.h would 
+> > need to include additional headers. If that's acceptable, I can 
+> > post an updated patch.
 > 
-> Some details on how you tested it and results before and after would
-> be nice. Please see git commit 1daa6d08d1257aa61f376c3cc4795660877fb9e3
-> for example
-> 
->
+> I havent tried the patch myself, but by your description those build 
+> problems seem to be pre-existing include file dependency problems 
+> that should be tracked down and resolved - instead of widening them 
+> by adding even more hidden dependencies via CPP macros.
 
-Thanks for the quick review of the patch. Here is some information on
-the testing:
+I tried to move to an inline function and linux/gfp.h is needed for
+__get_free_pages() and GFP_* macros. This leads to some complicated
+circular dependencies like below:
 
-Tested the patch with the following commandlines:
-numa=fake=2G,4G,6G,8G,10G,12G,14G,16G
-numa=fake=3G,6G,10G,16G
-numa=fake=4G
-numa=fake=
+  CC      arch/x86/kernel/asm-offsets.s
+In file included from /work/Linux/2.6/linux-2.6-arm/include/linux/mmzone.h:9,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/gfp.h:4,
+                 from /work/Linux/2.6/linux-2.6-arm/arch/x86/include/asm/thread_info.h:22,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/thread_info.h:56,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/preempt.h:9,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/spinlock.h:50,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/seqlock.h:29,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/time.h:8,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/stat.h:60,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/module.h:10,
+                 from /work/Linux/2.6/linux-2.6-arm/include/linux/crypto.h:21,
+                 from /work/Linux/2.6/linux-2.6-arm/arch/x86/kernel/asm-offsets_32.c:7,
+                 from /work/Linux/2.6/linux-2.6-arm/arch/x86/kernel/asm-offsets.c:2:
+include/linux/wait.h|51| error: expected specifier-qualifier-list before ‘spinlock_t’
 
-For testing if the fake nodes respect the real node boundaries, I added
-some debug printks in the node creation path. Without the patch, for the
-commandline numa=fake=2G,4G,6G,8G,10G,12G,14G,16G, this is what I got:
-
-fake id: 1 nid: 0
-fake id: 1 nid: 0
-...
-fake id: 2 nid: 0
-fake id: 2 nid: 0
-...
-fake id: 2 nid: 0
-created new fake_node with id 3
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-...
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-fake id: 3 nid: 1
-fake id: 3 nid: 1
-...
-created new fake_node with id 4
-fake id: 4 nid: 1
-fake id: 4 nid: 1
-...
-
-and so on. So, fake node 3 encompasses real node 0 & 1. Also,
-
-# cat /sys/devices/system/node/node3/meminfo
-Node 0 MemTotal:        2097152 kB
-...
-# # cat /sys/devices/system/node/node4/meminfo
-Node 0 MemTotal:        2097152 kB
-...
+The linux/mmzone.h file normally includes linux/spinlock.h but the
+reverse is also true when the latter includes the former via
+thread_info.h and gfp.h. Because of the (correct) guards in the header
+files, the spinlock_t definition is no longer available in mmzone.h.
 
 
-With the patch, I get:
+Anyway, what I'd like with this patch is to reduce the latency caused by
+holding the tasklist_lock while scanning the stacks and also allow
+rescheduling. If you have 500 threads in a system with 8K stacks,
+kmemleak would need to scan about 4MB of stacks. While I think I can use
+rcu_read_lock/unlock around do_each_thread..while_each_thread,
+scheduling still isn't possible.
 
-fake id: 1 nid: 0
-fake id: 1 nid: 0
-...
-fake id: 2 nid: 0
-fake id: 2 nid: 0
-...
-fake id: 2 nid: 0
-created new fake_node with id 3
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-...
-fake id: 3 nid: 0
-fake id: 3 nid: 0
-created new fake_node with id 4
-fake id: 4 nid: 1
-fake id: 4 nid: 1
-...
+An alternative would be to traverse the tasks list for every stack
+scanned. This traversing should be negligible compared to a stack
+scanning time (looking up pointers in the prio tree).
 
-and so on. With the patch, the fake node sizes are slightly different
-from that specified by the user.
+Any opinion/suggestion here?
 
-# cat /sys/devices/system/node/node3/meminfo
-Node 3 MemTotal:        1638400 kB
-...
-# cat /sys/devices/system/node/node4/meminfo
-Node 4 MemTotal:         458752 kB
-...
-
-CPU association was tested as mentioned in the previous mail:
-
-Without the patch,
-
-# cat /proc/cmdline
-root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-# cat /sys/devices/system/node/node0/cpulist
-0-3
-# cat /sys/devices/system/node/node1/cpulist
-4-7
-# cat /sys/devices/system/node/node4/cpulist
-
-#
-
-With the patch,
-
-# cat /proc/cmdline
-root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-# cat /sys/devices/system/node/node0/cpulist
-0-3
-# cat /sys/devices/system/node/node1/cpulist
-
-# cat /sys/devices/system/node/node4/cpulist
-4-7
-
-> > 
-> > Signed-off-by: Ankita Garg <ankita@in.ibm.com>
-> > 
-> > Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-> > ===================================================================
-> > --- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
-> > +++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-> > @@ -26,6 +26,11 @@
-> >  #include <asm/smp.h>
-> > 
-> >  static int numa_enabled = 1;
-> > +static int fake_enabled = 1;
-> > +
-> > +/* The array maps a real numa node to the first fake node that gets
-> > +created on it */
-> 
-> Coding style is broken
-> 
-
-Fixed.
-
-> > +int fake_numa_node_mapping[MAX_NUMNODES];
-> > 
-> >  static char *cmdline __initdata;
-> > 
-> > @@ -49,14 +54,24 @@ static int __cpuinit fake_numa_create_ne
-> >  	unsigned long long mem;
-> >  	char *p = cmdline;
-> >  	static unsigned int fake_nid;
-> > +	static unsigned int orig_nid = 0;
-> 
-> Should we call this prev_nid?
-> 
-
-Yes, makes sense.
-> >  	static unsigned long long curr_boundary;
-> > 
-> >  	/*
-> >  	 * Modify node id, iff we started creating NUMA nodes
-> >  	 * We want to continue from where we left of the last time
-> >  	 */
-> > -	if (fake_nid)
-> > +	if (fake_nid) {
-> > +		if (orig_nid != *nid) {
-> 
-> OK, so this is called when the real NUMA node changes - comments would
-> be nice
->
-
-Thanks, have added the comment.
- 
-> > +			fake_nid++;
-> > +			fake_numa_node_mapping[*nid] = fake_nid;
-> > +			orig_nid = *nid;
-> > +			*nid = fake_nid;
-> > +			return 0;
-> > +		}
-> >  		*nid = fake_nid;
-> > +	}
-> > +
-> >  	/*
-> >  	 * In case there are no more arguments to parse, the
-> >  	 * node_id should be the same as the last fake node id
-> > @@ -440,7 +455,7 @@ static int of_drconf_to_nid_single(struc
-> >   */
-> >  static int __cpuinit numa_setup_cpu(unsigned long lcpu)
-> >  {
-> > -	int nid = 0;
-> > +	int nid = 0, new_nid;
-> >  	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
-> > 
-> >  	if (!cpu) {
-> > @@ -450,8 +465,15 @@ static int __cpuinit numa_setup_cpu(unsi
-> > 
-> >  	nid = of_node_to_nid_single(cpu);
-> > 
-> > +	if (fake_enabled && nid) {
-> > +		new_nid = fake_numa_node_mapping[nid];
-> > +		if (new_nid > 0)
-> > +			nid = new_nid;
-> > +	}
-> > +
-> >  	if (nid < 0 || !node_online(nid))
-> >  		nid = any_online_node(NODE_MASK_ALL);
-> > +
-> >  out:
-> >  	map_cpu_to_node(lcpu, nid);
-> > 
-> > @@ -1005,8 +1027,11 @@ static int __init early_numa(char *p)
-> >  		numa_debug = 1;
-> > 
-> >  	p = strstr(p, "fake=");
-> > -	if (p)
-> > +	if (p) {
-> >  		cmdline = p + strlen("fake=");
-> > +		if (numa_enabled)
-> > +			fake_enabled = 1;
-> 
-> Have you tried passing just numa=fake= without any commandline?
-> That should enable fake_enabled, but I wonder if that negatively
-> impacts numa_setup_cpu(). I wonder if you should look at cmdline
-> to decide on fake_enabled.
->
-
-fake_enabled does get set even for numa=fake=. However, it does not
-impact numa_setup_cpu, since fake_numa_node_mapping array would have no
-mapping stored and there is a condition there already to check for the
-value of the mapping. I confirmed this by booting with the above
-parameter as well.
-
-> > +	}
-> > 
-> >  	return 0;
-> >  }
-> >
-> 
-> Overall, I think this is the right thing to do, we need to move in
-> this direction. 
-> 
-
-Heres the updated patch:
-
-Signed-off-by: Ankita Garg <ankita@in.ibm.com> 
-
-Index: linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-===================================================================
---- linux-2.6.31-rc5.orig/arch/powerpc/mm/numa.c
-+++ linux-2.6.31-rc5/arch/powerpc/mm/numa.c
-@@ -26,6 +26,13 @@
- #include <asm/smp.h>
- 
- static int numa_enabled = 1;
-+static int fake_enabled = 1;
-+
-+/*
-+ * The array maps a real numa node to the first fake node that gets
-+ * created on it
-+ */
-+int fake_numa_node_mapping[MAX_NUMNODES];
- 
- static char *cmdline __initdata;
- 
-@@ -49,14 +56,29 @@ static int __cpuinit fake_numa_create_ne
- 	unsigned long long mem;
- 	char *p = cmdline;
- 	static unsigned int fake_nid;
-+	static unsigned int prev_nid = 0;
- 	static unsigned long long curr_boundary;
- 
- 	/*
- 	 * Modify node id, iff we started creating NUMA nodes
- 	 * We want to continue from where we left of the last time
- 	 */
--	if (fake_nid)
-+	if (fake_nid) {
-+		/*
-+		 * Moved over to the next real numa node, increment fake
-+		 * node number and store the mapping of the real node to
-+		 * the fake node
-+		 */
-+		if (prev_nid != *nid) {
-+			fake_nid++;
-+			fake_numa_node_mapping[*nid] = fake_nid;
-+			prev_nid = *nid;
-+			*nid = fake_nid;
-+			return 0;
-+		}
- 		*nid = fake_nid;
-+	}
-+
- 	/*
- 	 * In case there are no more arguments to parse, the
- 	 * node_id should be the same as the last fake node id
-@@ -440,7 +462,7 @@ static int of_drconf_to_nid_single(struc
-  */
- static int __cpuinit numa_setup_cpu(unsigned long lcpu)
- {
--	int nid = 0;
-+	int nid = 0, new_nid;
- 	struct device_node *cpu = of_get_cpu_node(lcpu, NULL);
- 
- 	if (!cpu) {
-@@ -450,8 +472,15 @@ static int __cpuinit numa_setup_cpu(unsi
- 
- 	nid = of_node_to_nid_single(cpu);
- 
-+	if (fake_enabled && nid) {
-+		new_nid = fake_numa_node_mapping[nid];
-+		if (new_nid > 0)
-+			nid = new_nid;
-+	}
-+
- 	if (nid < 0 || !node_online(nid))
- 		nid = any_online_node(NODE_MASK_ALL);
-+
- out:
- 	map_cpu_to_node(lcpu, nid);
- 
-@@ -1005,8 +1034,12 @@ static int __init early_numa(char *p)
- 		numa_debug = 1;
- 
- 	p = strstr(p, "fake=");
--	if (p)
-+	if (p) {
- 		cmdline = p + strlen("fake=");
-+		if (numa_enabled) {
-+			fake_enabled = 1;
-+		}
-+	}
- 
- 	return 0;
- }
+Thanks.
 
 -- 
-Regards,
-Ankita Garg (ankita@in.ibm.com)
-Linux Technology Center
-IBM India Systems & Technology Labs, 
-Bangalore, India   
+Catalin
+
