@@ -1,120 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753716AbZIAKXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753676AbZIAK2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753716AbZIAKXZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 06:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZIAKXZ
+	id S1753676AbZIAK2S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 06:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZIAK2R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 06:23:25 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41397 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753351AbZIAKXY (ORCPT
+	Tue, 1 Sep 2009 06:28:17 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:29482 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753007AbZIAK2R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 06:23:24 -0400
-Date: Tue, 1 Sep 2009 11:23:24 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Linus Walleij <linus.walleij@stericsson.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       Russell King <linux@arm.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] AB3100 regulator support v2
-Message-ID: <20090901102324.GA21165@rakim.wolfsonmicro.main>
-References: <1251667749-31276-1-git-send-email-linus.walleij@stericsson.com>
- <1251722641.4254.46.camel@finisterre.sirena.org.uk>
- <63386a3d0908310716x1a33a8fdpddedbaf24648216f@mail.gmail.com>
+	Tue, 1 Sep 2009 06:28:17 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=Mv5P-v-zDEQA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
+ a=mlwxIoYv1GO3lwxsMxkA:9 a=ITg9bddxJzN7Yo2kZmYA:7
+ a=GuCi48ebBPiTjBVo_G6uPtDpWiEA:4 a=U62fhAwekXMA:10
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: linux-kernel@vger.kernel.org
+Subject: Re: sata exception frozen timeout?
+Date: Tue, 1 Sep 2009 04:28:18 -0600
+User-Agent: KMail/1.12.90 (Linux/2.6.31-rc5; KDE/4.3.64; x86_64; svn-1004284; 2009-07-29)
+References: <200909010316.58715.tfjellstrom@shaw.ca>
+In-Reply-To: <200909010316.58715.tfjellstrom@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <63386a3d0908310716x1a33a8fdpddedbaf24648216f@mail.gmail.com>
-X-Cookie: To be is to program.
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200909010428.18403.tfjellstrom@shaw.ca>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 04:16:15PM +0200, Linus Walleij wrote:
-> 2009/8/31 Mark Brown <broonie@opensource.wolfsonmicro.com>:
+On Tue September 1 2009, Thomas Fjellstrom wrote:
+> I've recently started seeing the following messages from a new WD Green
+> drive, not long after I had to RMA a Seagate drive for a strange (but
+> different) error. Highlights from my dmesg include:
+>
+> [59634.792101] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+> frozen
+> [59634.792121] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> [59634.792125]          res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4
+> (timeout)
+> [59634.792133] ata6.00: status: { DRDY }
+> [59634.792145] ata6: hard resetting link
+> [59635.277695] ata6: softreset failed (device not ready)
+> [59635.277705] ata6: failed due to HW bug, retry pmp=0
+> [59635.441570] ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> [59635.454030] ata6.00: configured for UDMA/133
+> [59635.454068] ata6: EH complete
+> ...
+> [59713.792224] ata6.00: NCQ disabled due to excessive errors
+> [59713.792236] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+> frozen
+> [59713.792254] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> [59713.792257]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
+> (timeout)
+> [59713.792264] ata6.00: status: { DRDY }
+> ...
+> [63484.781764] ata6: hard resetting link
+> [63485.264204] ata6: softreset failed (device not ready)
+> [63485.264214] ata6: failed due to HW bug, retry pmp=0
+> [63485.428205] ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+> [63485.440499] ata6.00: configured for UDMA/100
+> [63485.440536] ata6: EH complete
+> [63493.780182] ata6.00: limiting speed to UDMA/33:PIO4
+> [63493.780194] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+> frozen
+> [63493.780211] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> [63493.780214]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
+> (timeout)
+> [63493.780221] ata6.00: status: { DRDY }
+> ...
+> [99318.070669] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> [99318.070679] ata6.00: irq_stat 0x40000001
+> [99318.070698] ata6.00: cmd 25/00:00:30:bd:01/00:01:1b:00:00/e0 tag 0 dma
+> 131072 in
+> [99318.070701]          res 41/04:ef:30:bd:01/00:00:1b:00:00/e0 Emask 0x1
+> (device error)
+> [99318.070709] ata6.00: status: { DRDY ERR }
+> [99318.070714] ata6.00: error: { ABRT }
+> [99318.082588] ata6.00: configured for UDMA/33
+> [99318.082612] ata6: EH complete
+> ...
+> [99339.780358] ata6: hard resetting link
+> [99349.785096] ata6: softreset failed (device not ready)
+> [99349.785108] ata6: hard resetting link
+> [99359.789033] ata6: softreset failed (device not ready)
+> [99359.789045] ata6: hard resetting link
+> [99370.352916] ata6: link is slow to respond, please be patient (ready=0)
+> ..
+> [99400.016925] ata6: softreset failed (device not ready)
+> [99400.016936] ata6: reset failed, giving up
+> [99400.016942] ata6.00: disabled
+> [99400.016986] ata6: EH complete
+> [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
+> [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> driverbyte=DRIVER_OK
+> [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
+> [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> driverbyte=DRIVER_OK
+> [99400.017035] end_request: I/O error, dev sdf, sector 453099568
+> [99400.017045] Buffer I/O error on device md1, logical block 113274390
+> [99400.017058] Buffer I/O error on device md1, logical block 113274391
+> [99400.017064] Buffer I/O error on device md1, logical block 113274392
+> [99400.017070] Buffer I/O error on device md1, logical block 113274393
+> [99400.017076] Buffer I/O error on device md1, logical block 113274394
+> [99400.017082] Buffer I/O error on device md1, logical block 113274395
+> [99400.017088] Buffer I/O error on device md1, logical block 113274396
+> [99400.017094] Buffer I/O error on device md1, logical block 113274397
+> [99400.017100] Buffer I/O error on device md1, logical block 113274398
+> [99400.017106] Buffer I/O error on device md1, logical block 113274399
+> [99400.017115] sd 5:0:0:0: [sdf] Unhandled error code
+> [99400.017123] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> driverbyte=DRIVER_OK
+> [99400.017133] end_request: I/O error, dev sdf, sector 453099824
+> [99400.017310] sd 5:0:0:0: [sdf] Unhandled error code
+> [99400.017315] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> driverbyte=DRIVER_OK
+> [99400.017322] end_request: I/O error, dev sdf, sector 453099568
+> [99400.017383] program smartctl is using a deprecated SCSI ioctl, please
+> convert it to SG_IO
+> [99400.017456] program smartctl is using a deprecated SCSI ioctl, please
+> convert it to SG_IO
+> [99400.018822] sd 5:0:0:0: [sdf] Unhandled error code
+> [99400.018829] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> driverbyte=DRIVER_OK
+> [99400.018838] end_request: I/O error, dev sdf, sector 453099568
+>
+> and a bunch more end_request errors. This happens fairly reliably after a
+> day or so of being online. I try and start to play some music or watch a
+> video off the array (2xWD Green on md raid0) and it fails. The file system
+> is mostly read only right now (that is I don't write to it) so I haven't
+> manged to loose any data that I know of, and the fs seems to be fine. A
+> reboot fixes the errors and the disk and fs work fine for a day or two
+> before these errors show up again.
+>
+> I'm currently running 2.6.31-rc5 from kernel.org. What would cause these
+> errors?
 
-> >> +     err = ab3100_get_register_interruptible(abreg->ab3100, abreg->regreg,
-> >> +                                             &regval);
+It's now happened again after only 30 minutes or so. I'm trying with an older 
+kernel (debian's 2.6.30-6 from sid) now. So far so good.
 
-> > I did query last time if having these operations be interruptible is a
-> > good idea - I can't see it helping robustness, it's not something that
-> > other drivers are doing and it'd complicate things for all API users to
-> > add handling for the error. I don't recall any discussion of the
-> > thinking here?
-
-> I recently renamed all the ab3100 accessor functions to *_interruptible
-> to reflect the fact that the accessor mutex on ab3100 uses
-> mutex_lock_interruptible() so this suffix should propagate so it is
-> clear that stuff like -ERESTARTSYS can be returned.
-> So the above errorcheck is probably bogus.
-
-Oh, there's no noninterruptible version?  With the naming it looked like
-there was.
-
-> That said, I think the regulator paths are entirely in-kernel and
-> under such circumstances that signals from userspace are blocked
-> anyway. The problem is that the ab3100 is accessed by complex
-
-The regulator API doesn't give any guarantees that signals can't be
-delivered.
-
-> userspace programs and I2C is sometimes slow so there is a need
-> for being able to interrupt it, but I *could* go in and use an
-
-While I2C isn't fast for the sorts of access regulators tend to do it's
-not so slow as to make this critical.
-
-> uniterruptable mutex if you prefer that, I'll ask around here if
-> we should do this. Can the function name stand as it is for the time being?
-
-> >> +static int ab3100_get_voltage_regulator_external(struct regulator_dev *reg)
-> >> +{
-
-> > Hrm.  I suspect that you either want to add some platform data to
-> > specify the voltage as a plain number or just have boards use the
-> > regulator supply mechanism with a fixed voltage regulator supplied by
-> > this one if they need to specify the voltage of the supply.
-
-> I was designing for it to be controllable but not controllable by the
-> AB3100 driver, perhaps it is a regulator somewhere else here,
-> defined in the board data. But I went for a fixed int member
-> voltage setting for the time being, we can discuss that stuff later
-> when I have some practical use for it.
-
-I've got the same sort of external switch on the WM831x.  What I did
-there was just not have the voltage at all.  The regulator API supports
-chaining of regulators so one regulator is the supply for another so
-what a board could do is set things up so that the switch on the PMIC is
-the supply for an external regulator.  There's already a standard driver
-for simple fixed voltage regulators and if the regulator is more complex
-and supports variable voltages then it can use its normal driver.
-
-> If this sequence is a dependency graph of regulators that need to
-> have deps in all strange directions you get a directed graph
-> http://en.wikipedia.org/wiki/Directed_graph
-> Or you could limit yourself to a directed acyclic graph
-> http://en.wikipedia.org/wiki/Directed_acyclic_graph
-> in either case it's rather a delicate computational problem
-> but I guess you're after a simple linear sequence here, like
-> switch on A, B, C, D ... N in a special order?
-
-The power sequencing provided by hardware designers is normally a simple
-linear sequence of things to do to bring the system power up - normally
-you'd bring some supplies up, wait for a given time period then bring
-some more up and so on.  Sometimes there will be some handshaking
-involved (waiting for "I've started" signals from components).  
-
-> In my case it's actually not the switching-on or of that is
-> the problem, it's more of putting some magic numbers
-> into some registers in a special order (well, any order
-> actually except for one register that is special).
-
-> I'll see if I can think of something more elegant to
-> make this more appealing, like tagging each default
-> register value with a sequence number or so.
-
-Are the magic numbers controlling things other than the settings that
-are exposed through the regulator API?
+-- 
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
