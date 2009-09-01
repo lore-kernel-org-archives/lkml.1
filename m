@@ -1,78 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754866AbZIAPzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754749AbZIAQGg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754866AbZIAPzy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 11:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754799AbZIAPzy
+	id S1754749AbZIAQGg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 12:06:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZIAQGf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 11:55:54 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44740 "EHLO mx1.suse.de"
+	Tue, 1 Sep 2009 12:06:35 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38753 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754779AbZIAPzx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 11:55:53 -0400
-Date: Tue, 1 Sep 2009 17:55:54 +0200
-From: Jan Kara <jack@suse.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: reiserfs-devel@vger.kernel.org, jeffm@suse.com,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] reiserfs: Truncate blocks not used by a write
-Message-ID: <20090901155554.GD8242@duck.novell.com>
+	id S1750715AbZIAQGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 12:06:35 -0400
+Date: Tue, 1 Sep 2009 18:00:44 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: arjan@infradead.org, jeremy@goop.org, mschmidt@redhat.com,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tj@kernel.org, tglx@linutronix.de,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [PATCH] kthreads: Fix startup synchronization boot crash
+Message-ID: <20090901160043.GA6708@redhat.com>
+References: <20090829182718.10f566b1@leela> <tip-23386d63bbb3199cf247313ec088878d72debcfd@git.kernel.org> <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu> <20090901133709.GA24041@redhat.com> <20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com> <20090901155427.GA18078@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090901155427.GA18078@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It can happen that write does not use all the blocks allocated in write_begin
-either because of some filesystem error (like ENOSPC) or because page with
-data to write has been removed from memory. We truncate these blocks so that
-we don't have dangling blocks beyond i_size. 
+On 09/01, Ingo Molnar wrote:
+>
+> * Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > But I must admit, now I don't understand what happens,
+> >
+> > 	The modification of that variable is protected by the BKL, but
+> > 	the _ordering_ of the initial task (which becomes the idle
+> > 	thread of CPU0) and the init task (which is spawned by the
+> > 	initial task) is not synchronized.
+> >
+> > 	So we can occasionally end up init running sooner than
+> > 	rest_init()
+> >
+> > How? rest_init() can't be preempted and it holds BKL. And
+> > kernel_init() takes BKL before anything else. Confused...
+>
+> it cannot be preempted but it can schedule anywhere - and the BKL
+> will be dropped silently.
+>
+> This is one of the biggest dangers of the BKL
 
-Signed-off-by: Jan Kara <jack@suse.cz>
----
+Yes I see. But rest_init() runs under preempt_disable(). If it was
+rescheduled, schedule_debug() should complain. No?
 
-Andrew, would you merge the patch please? Thanks.
+Oleg.
 
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.27-SLE11_BRANCH/fs/reiserfs/inode.c linux-2.6.27-SLE11_BRANCH-1-reiserfs_corruption//fs/reiserfs/inode.c
---- linux-2.6.27-SLE11_BRANCH/fs/reiserfs/inode.c	2009-06-02 17:14:29.000000000 +0200
-+++ linux-2.6.27-SLE11_BRANCH-1-reiserfs_corruption//fs/reiserfs/inode.c	2009-06-24 14:39:44.000000000 +0200
-@@ -2606,6 +2610,8 @@ static int reiserfs_write_begin(struct f
- 	if (ret) {
- 		unlock_page(page);
- 		page_cache_release(page);
-+		/* Truncate allocated blocks */
-+		vmtruncate(inode, inode->i_size);
- 	}
- 	return ret;
- }
-@@ -2698,8 +2705,7 @@ static int reiserfs_write_end(struct fil
- 	 ** transaction tracking stuff when the size changes.  So, we have
- 	 ** to do the i_size updates here.
- 	 */
--	pos += copied;
--	if (pos > inode->i_size) {
-+	if (pos + copied > inode->i_size) {
- 		struct reiserfs_transaction_handle myth;
- 		reiserfs_write_lock(inode->i_sb);
- 		/* If the file have grown beyond the border where it
-@@ -2717,7 +2723,7 @@ static int reiserfs_write_end(struct fil
- 			goto journal_error;
- 		}
- 		reiserfs_update_inode_transaction(inode);
--		inode->i_size = pos;
-+		inode->i_size = pos + copied;
- 		/*
- 		 * this will just nest into our transaction.  It's important
- 		 * to use mark_inode_dirty so the inode gets pushed around on the
-@@ -2744,6 +2750,10 @@ static int reiserfs_write_end(struct fil
-       out:
- 	unlock_page(page);
- 	page_cache_release(page);
-+
-+	if (pos + len > inode->i_size)
-+		vmtruncate(inode, inode->i_size);
-+
- 	return ret == 0 ? copied : ret;
- 
-       journal_error:
