@@ -1,116 +1,297 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753078AbZIAJC3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZIAJGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753078AbZIAJC3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 05:02:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZIAJC2
+	id S1753296AbZIAJGr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 05:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZIAJGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 05:02:28 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58028 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbZIAJC2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 05:02:28 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 1 Sep 2009 18:00:32 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [mmotm][BUG] free is bigger than presnet Re: mmotm 2009-08-27-16-51
- uploaded
-Message-Id: <20090901180032.55f7b8ca.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200908272355.n7RNtghC019990@imap1.linux-foundation.org>
-References: <200908272355.n7RNtghC019990@imap1.linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 1 Sep 2009 05:06:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8156 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751975AbZIAJGp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 05:06:45 -0400
+Subject: Re: [PATCH 2/7] block: use blkdev_issue_discard in
+ blk_ioctl_discard
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, liml@rtr.ca, jens.axboe@oracle.com,
+       matthew@wil.cx, dwmw2@infradead.org
+In-Reply-To: <20090829231121.385741993@bombadil.infradead.org>
+References: <20090829230332.017137693@bombadil.infradead.org>
+	 <20090829231121.385741993@bombadil.infradead.org>
+Content-Type: text/plain
+Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
+ 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
+ Street, Windsor, Berkshire, SL4 ITE
+Date: Tue, 01 Sep 2009 10:06:25 +0100
+Message-Id: <1251795985.6052.86.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 27 Aug 2009 16:55:42 -0700
-akpm@linux-foundation.org wrote:
+Hi,
 
-> The mm-of-the-moment snapshot 2009-08-27-16-51 has been uploaded to
+For the GFS2 bits:
+
+Acked-by: Steven Whitehouse <swhiteho@redhat.com>
+
+Steve.
+
+On Sat, 2009-08-29 at 19:03 -0400, Christoph Hellwig wrote:
+> plain text document attachment (discard-unify-code)
+> blk_ioctl_discard duplicates large amounts of code from blkdev_issue_discard,
+> the only difference between the two is that blkdev_issue_discard needs to
+> send a barrier discard request and blk_ioctl_discard a non-barrier one,
+> and blk_ioctl_discard needs to wait on the request.  To facilitates this
+> add a flags argument to blkdev_issue_discard to control both aspects of the
+> behaviour.  This will be very useful later on for using the waiting
+> funcitonality for other callers.
 > 
->    http://userweb.kernel.org/~akpm/mmotm/
+> Based on an earlier patch from Matthew Wilcox <matthew@wil.cx>.
 > 
-> and will soon be available at
 > 
->    git://git.zen-sources.org/zen/mmotm.git
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
 > 
-> It contains the following patches against 2.6.31-rc7:
+> Index: linux-2.6/block/blk-barrier.c
+> ===================================================================
+> --- linux-2.6.orig/block/blk-barrier.c	2009-08-29 16:49:43.067370900 -0300
+> +++ linux-2.6/block/blk-barrier.c	2009-08-29 17:43:30.407344330 -0300
+> @@ -348,6 +348,9 @@ static void blkdev_discard_end_io(struct
+>  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+>  	}
+>  
+> +	if (bio->bi_private)
+> +		complete(bio->bi_private);
+> +
+>  	bio_put(bio);
+>  }
+>  
+> @@ -357,21 +360,20 @@ static void blkdev_discard_end_io(struct
+>   * @sector:	start sector
+>   * @nr_sects:	number of sectors to discard
+>   * @gfp_mask:	memory allocation flags (for bio_alloc)
+> + * @flags:	DISCARD_FL_* flags to control behaviour
+>   *
+>   * Description:
+> - *    Issue a discard request for the sectors in question. Does not wait.
+> + *    Issue a discard request for the sectors in question.
+>   */
+> -int blkdev_issue_discard(struct block_device *bdev,
+> -			 sector_t sector, sector_t nr_sects, gfp_t gfp_mask)
+> +int blkdev_issue_discard(struct block_device *bdev, sector_t sector,
+> +		sector_t nr_sects, gfp_t gfp_mask, int flags)
+>  {
+> -	struct request_queue *q;
+> -	struct bio *bio;
+> +	DECLARE_COMPLETION_ONSTACK(wait);
+> +	struct request_queue *q = bdev_get_queue(bdev);
+> +	int type = flags & DISCARD_FL_BARRIER ?
+> +		DISCARD_BARRIER : DISCARD_NOBARRIER;
+>  	int ret = 0;
+>  
+> -	if (bdev->bd_disk == NULL)
+> -		return -ENXIO;
+> -
+> -	q = bdev_get_queue(bdev);
+>  	if (!q)
+>  		return -ENXIO;
+>  
+> @@ -379,12 +381,14 @@ int blkdev_issue_discard(struct block_de
+>  		return -EOPNOTSUPP;
+>  
+>  	while (nr_sects && !ret) {
+> -		bio = bio_alloc(gfp_mask, 0);
+> +		struct bio *bio = bio_alloc(gfp_mask, 0);
+>  		if (!bio)
+>  			return -ENOMEM;
+>  
+>  		bio->bi_end_io = blkdev_discard_end_io;
+>  		bio->bi_bdev = bdev;
+> +		if (flags & DISCARD_FL_WAIT)
+> +			bio->bi_private = &wait;
+>  
+>  		bio->bi_sector = sector;
+>  
+> @@ -396,10 +400,13 @@ int blkdev_issue_discard(struct block_de
+>  			bio->bi_size = nr_sects << 9;
+>  			nr_sects = 0;
+>  		}
+> +
+>  		bio_get(bio);
+> -		submit_bio(DISCARD_BARRIER, bio);
+> +		submit_bio(type, bio);
+> +
+> +		if (flags & DISCARD_FL_WAIT)
+> +			wait_for_completion(&wait);
+>  
+> -		/* Check if it failed immediately */
+>  		if (bio_flagged(bio, BIO_EOPNOTSUPP))
+>  			ret = -EOPNOTSUPP;
+>  		else if (!bio_flagged(bio, BIO_UPTODATE))
+> Index: linux-2.6/block/ioctl.c
+> ===================================================================
+> --- linux-2.6.orig/block/ioctl.c	2009-08-29 16:49:43.075370172 -0300
+> +++ linux-2.6/block/ioctl.c	2009-08-29 16:49:52.743341374 -0300
+> @@ -112,22 +112,9 @@ static int blkdev_reread_part(struct blo
+>  	return res;
+>  }
+>  
+> -static void blk_ioc_discard_endio(struct bio *bio, int err)
+> -{
+> -	if (err) {
+> -		if (err == -EOPNOTSUPP)
+> -			set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
+> -		clear_bit(BIO_UPTODATE, &bio->bi_flags);
+> -	}
+> -	complete(bio->bi_private);
+> -}
+> -
+>  static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
+>  			     uint64_t len)
+>  {
+> -	struct request_queue *q = bdev_get_queue(bdev);
+> -	int ret = 0;
+> -
+>  	if (start & 511)
+>  		return -EINVAL;
+>  	if (len & 511)
+> @@ -137,40 +124,8 @@ static int blk_ioctl_discard(struct bloc
+>  
+>  	if (start + len > (bdev->bd_inode->i_size >> 9))
+>  		return -EINVAL;
+> -
+> -	if (!q->prepare_discard_fn)
+> -		return -EOPNOTSUPP;
+> -
+> -	while (len && !ret) {
+> -		DECLARE_COMPLETION_ONSTACK(wait);
+> -		struct bio *bio;
+> -
+> -		bio = bio_alloc(GFP_KERNEL, 0);
+> -
+> -		bio->bi_end_io = blk_ioc_discard_endio;
+> -		bio->bi_bdev = bdev;
+> -		bio->bi_private = &wait;
+> -		bio->bi_sector = start;
+> -
+> -		if (len > queue_max_hw_sectors(q)) {
+> -			bio->bi_size = queue_max_hw_sectors(q) << 9;
+> -			len -= queue_max_hw_sectors(q);
+> -			start += queue_max_hw_sectors(q);
+> -		} else {
+> -			bio->bi_size = len << 9;
+> -			len = 0;
+> -		}
+> -		submit_bio(DISCARD_NOBARRIER, bio);
+> -
+> -		wait_for_completion(&wait);
+> -
+> -		if (bio_flagged(bio, BIO_EOPNOTSUPP))
+> -			ret = -EOPNOTSUPP;
+> -		else if (!bio_flagged(bio, BIO_UPTODATE))
+> -			ret = -EIO;
+> -		bio_put(bio);
+> -	}
+> -	return ret;
+> +	return blkdev_issue_discard(bdev, start, len, GFP_KERNEL,
+> +				    DISCARD_FL_WAIT);
+>  }
+>  
+>  static int put_ushort(unsigned long arg, unsigned short val)
+> Index: linux-2.6/fs/btrfs/extent-tree.c
+> ===================================================================
+> --- linux-2.6.orig/fs/btrfs/extent-tree.c	2009-08-29 16:49:43.079341766 -0300
+> +++ linux-2.6/fs/btrfs/extent-tree.c	2009-08-29 16:49:52.743341374 -0300
+> @@ -1511,7 +1511,8 @@ static int remove_extent_backref(struct 
+>  static void btrfs_issue_discard(struct block_device *bdev,
+>  				u64 start, u64 len)
+>  {
+> -	blkdev_issue_discard(bdev, start >> 9, len >> 9, GFP_KERNEL);
+> +	blkdev_issue_discard(bdev, start >> 9, len >> 9, GFP_KERNEL,
+> +			     DISCARD_FL_BARRIER);
+>  }
+>  #endif
+>  
+> Index: linux-2.6/fs/gfs2/rgrp.c
+> ===================================================================
+> --- linux-2.6.orig/fs/gfs2/rgrp.c	2009-08-29 16:49:43.139342340 -0300
+> +++ linux-2.6/fs/gfs2/rgrp.c	2009-08-29 16:49:52.747373241 -0300
+> @@ -857,7 +857,8 @@ static void gfs2_rgrp_send_discards(stru
+>  					goto start_new_extent;
+>  				if ((start + nr_sects) != blk) {
+>  					rv = blkdev_issue_discard(bdev, start,
+> -							    nr_sects, GFP_NOFS);
+> +							    nr_sects, GFP_NOFS,
+> +							    DISCARD_FL_BARRIER);
+>  					if (rv)
+>  						goto fail;
+>  					nr_sects = 0;
+> @@ -871,7 +872,8 @@ start_new_extent:
+>  		}
+>  	}
+>  	if (nr_sects) {
+> -		rv = blkdev_issue_discard(bdev, start, nr_sects, GFP_NOFS);
+> +		rv = blkdev_issue_discard(bdev, start, nr_sects, GFP_NOFS,
+> +					 DISCARD_FL_BARRIER);
+>  		if (rv)
+>  			goto fail;
+>  	}
+> Index: linux-2.6/include/linux/blkdev.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/blkdev.h	2009-08-29 16:49:43.147343148 -0300
+> +++ linux-2.6/include/linux/blkdev.h	2009-08-29 17:43:19.767342397 -0300
+> @@ -977,15 +977,18 @@ static inline struct request *blk_map_qu
+>  }
+>  
+>  extern int blkdev_issue_flush(struct block_device *, sector_t *);
+> -extern int blkdev_issue_discard(struct block_device *,
+> -				sector_t sector, sector_t nr_sects, gfp_t);
+> +#define DISCARD_FL_WAIT		0x01	/* wait for completion */
+> +#define DISCARD_FL_BARRIER	0x02	/* issue DISCARD_BARRIER request */
+> +extern int blkdev_issue_discard(struct block_device *, sector_t sector,
+> +		sector_t nr_sects, gfp_t, int flags);
+>  
+>  static inline int sb_issue_discard(struct super_block *sb,
+>  				   sector_t block, sector_t nr_blocks)
+>  {
+>  	block <<= (sb->s_blocksize_bits - 9);
+>  	nr_blocks <<= (sb->s_blocksize_bits - 9);
+> -	return blkdev_issue_discard(sb->s_bdev, block, nr_blocks, GFP_KERNEL);
+> +	return blkdev_issue_discard(sb->s_bdev, block, nr_blocks, GFP_KERNEL,
+> +				    DISCARD_FL_BARRIER);
+>  }
+>  
+>  extern int blk_verify_command(unsigned char *cmd, fmode_t has_write_perm);
+> Index: linux-2.6/mm/swapfile.c
+> ===================================================================
+> --- linux-2.6.orig/mm/swapfile.c	2009-08-29 16:49:43.151342120 -0300
+> +++ linux-2.6/mm/swapfile.c	2009-08-29 16:49:52.755377749 -0300
+> @@ -161,7 +161,8 @@ static int discard_swap(struct swap_info
+>  		}
+>  
+>  		err = blkdev_issue_discard(si->bdev, start_block,
+> -						nr_blocks, GFP_KERNEL);
+> +						nr_blocks, GFP_KERNEL,
+> +						DISCARD_FL_BARRIER);
+>  		if (err)
+>  			break;
+>  
+> @@ -200,7 +201,8 @@ static void discard_swap_cluster(struct 
+>  			start_block <<= PAGE_SHIFT - 9;
+>  			nr_blocks <<= PAGE_SHIFT - 9;
+>  			if (blkdev_issue_discard(si->bdev, start_block,
+> -							nr_blocks, GFP_NOIO))
+> +							nr_blocks, GFP_NOIO,
+> +							DISCARD_FL_BARRIER))
+>  				break;
+>  		}
+>  
 > 
-
-I'm not digggin so much but /proc/meminfo corrupted.
-
-[kamezawa@bluextal cgroup]$ cat /proc/meminfo
-MemTotal:       24421124 kB
-MemFree:        38314388 kB
-
-Wow ;)
-On x86-64 8cpu box + 24G memory.
-(config is NUMA but the system itself is not NUMA.)
-
-At boot time and for a while, It seems to be no trouble.
-
-I used this.
-
-== malloc.c
-
-#include <stdio.h>
-
-#define MSIZE (1024 * 1024 * 8)
-
-int main(int argc, char *argv[])
-{
-        char **c;
-        long size;
-        int array_size, i;
-
-        size = atoi(argv[1]);
-        size *= 1024 * 1024;
-
-        array_size =  size/MSIZE + 1;
-        c= malloc(sizeof(void *) * array_size);
-
-        for (i = 0; i < array_size; i++) {
-                c[i] = malloc(MSIZE);
-                memset(c[i], 0, MSIZE);
-        }
-        while (1) {
-                for (i = 0; i < array_size; i++) {
-                        memset(c[i], 0, MSIZE);
-                        sleep(2);
-                }
-                sleep(10);
-        }
-        return;
-}
-==
-# malloc 23000
-# malloc 1000
-and run hackbench 20.
-
-OOM Kill message says free exceeds present ;(
-==
-Sep  1 18:01:17 localhost kernel: [ 3012.503440] active_anon:5461242 inactive_anon:473226 isolated_anon:384
-Sep  1 18:01:17 localhost kernel: [ 3012.503440]  active_file:133 inactive_file:664 isolated_file:0
-Sep  1 18:01:17 localhost kernel: [ 3012.503440]  unevictable:0 dirty:0 writeback:73 unstable:0 buffer:283
-Sep  1 18:01:17 localhost kernel: [ 3012.503440]  free:9454041 slab_reclaimable:5144 slab_unreclaimable:10564
-Sep  1 18:01:17 localhost kernel: [ 3012.503440]  mapped:7019 shmem:0 pagetables:22572 bounce:0
-Sep  1 18:01:17 localhost kernel: [ 3012.503440] Node 0 DMA free:15788kB min:12kB low:12kB high:16kB active_anon:0kB inactive_anon:0kB active_file:0kB inactive_file:0kB unevictable:0kB isolated(anon):0kB isolated(file):0kB present:15016kB mlocked:0kB dirty:0kB writeback:0kB mapped:0kB shmem:0kB slab_reclaimable:0kB slab_unreclaimable:0kB kernel_stack:0kB pagetables:0kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:0 all_unreclaimable? no
-Sep  1 18:01:17 localhost kernel: [ 3012.503440] lowmem_reserve[]: 0 2951 23909 23909
-Sep  1 18:01:17 localhost kernel: [ 3012.503440] Node 0 DMA32 free:11729908kB min:2440kB low:3048kB high:3660kB active_anon:1866292kB inactive_anon:466548kB active_file:140kB inactive_file:1588kB unevictable:0kB isolated(anon):256kB isolated(file):0kB present:3022624kB mlocked:0kB dirty:0kB writeback:292kB mapped:8kB shmem:0kB slab_reclaimable:2724kB slab_unreclaimable:10124kB kernel_stack:4504kB pagetables:21536kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:227 all_unreclaimable? no
-Sep  1 18:01:17 localhost kernel: [ 3012.503440] lowmem_reserve[]: 0 0 20958 20958
-Sep  1 18:01:17 localhost kernel: [ 3012.503440] Node 0 Normal free:26071392kB min:17340kB low:21672kB high:26008kB active_anon:19978676kB inactive_anon:1426356kB active_file:392kB inactive_file:1068kB unevictable:0kB isolated(anon):1280kB isolated(file):0kB present:21460992kB mlocked:0kB dirty:0kB writeback:0kB mapped:28068kB shmem:0kB slab_reclaimable:17852kB slab_unreclaimable:32132kB kernel_stack:3672kB pagetables:68752kB unstable:0kB bounce:0kB writeback_tmp:0kB pages_scanned:3840 all_unreclaimable? no
-
-==
-
-I'll dig more but does anyone have hints ?
-
-
-Thanks,
--Kame
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux
 
