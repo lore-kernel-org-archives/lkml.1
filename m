@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbZIAOoY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZIAOyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbZIAOoY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:44:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZIAOoX
+	id S1754711AbZIAOyl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZIAOyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:44:23 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:41294 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752145AbZIAOoX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:44:23 -0400
-Subject: Re: ARM + jprobes/kretprobes SEGV/hangs/OOPS in 2.6.29 kernel
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: venki kaps <venkiece2005@gmail.com>, Nicolas Pitre <nico@cam.org>,
-       "sagar.abhishek@gmail.com" <sagar.abhishek@gmail.com>,
-       "jkenisto@us.ibm.com" <jkenisto@us.ibm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "prasanna@in.ibm.com" <prasanna@in.ibm.com>
-In-Reply-To: <20090901142549.GA21501@flint.arm.linux.org.uk>
-References: <6d53329e0908250342g2cfb73f6v90f73c283c0d391c@mail.gmail.com>
-	 <alpine.LFD.2.00.0908251333410.6044@xanadu.home>
-	 <6d53329e0908302227l63420351m1005d0c76346e2ec@mail.gmail.com>
-	 <6d53329e0908310311v55ef3909na0cbec756e63ccab@mail.gmail.com>
-	 <6d53329e0908312355y7bd2038ds6ba8efe671d98bc9@mail.gmail.com>
-	 <tnxocpu7osx.fsf@pc1117.cambridge.arm.com>
-	 <20090901142549.GA21501@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 01 Sep 2009 15:43:59 +0100
-Message-Id: <1251816239.10349.66.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 1 Sep 2009 10:54:41 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754542AbZIAOyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 10:54:40 -0400
+Message-ID: <4A9D3576.70801@redhat.com>
+Date: Tue, 01 Sep 2009 10:53:42 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Ryo Tsuruta <ryov@valinux.co.jp>, nauman@google.com,
+       linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
+ track async bios.
+References: <4A9C09BE.4060404@redhat.com> <20090831185640.GF3758@redhat.com> <e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com> <20090901.160004.226800357.ryov@valinux.co.jp> <20090901141142.GA13709@redhat.com>
+In-Reply-To: <20090901141142.GA13709@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 01 Sep 2009 14:43:59.0990 (UTC) FILETIME=[A454B160:01CA2B12]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-01 at 15:25 +0100, Russell King wrote:
-> On Tue, Sep 01, 2009 at 02:54:54PM +0100, Catalin Marinas wrote:
-> > venki kaps <venkiece2005@gmail.com> wrote:
-> > > I have found the exact problem with respect to ARM jprobes.
-> > >
-> > > The problem with configure i.e, CONFIG_ARM_UNWIND = y; is enabled.
-> > 
-> > I haven't followed the kprobes implementation for ARM but does it make
-> > any assumptions about the existence of a frame pointer on the stack?
-> > Enabling stack unwinding automatically disables the framepointer.
-> 
-> If it uses CALLER_ADDRESSx() then it won't work with unwinding enabled.
-> See 5613/1 (which is pending in the devel branch.)
+Vivek Goyal wrote:
+> On Tue, Sep 01, 2009 at 04:00:04PM +0900, Ryo Tsuruta wrote:
 
-In addition to that, when CONFIG_FRAME_POINTER is disabled, the lr
-register isn't always saved on the stack by the called function. I'm not
-sure whether kretprobe_trampoline is aware of this.
+>> I think that swap writeouts should be charged to the memory hogging
+>> process, because the process consumes more resources and it should get
+>> a penalty.
+> 
+> A process requesting memory gets IO penalty? 
+
+There is no easy answer here.
+
+On the one hand, you want to charge the process that uses
+the resources.
+
+On the other hand, if a lower resource use / higher priority
+process tries to free up some of those resources, it should
+not have its IO requests penalized (and get slowed down)
+because of something the first process did...
 
 -- 
-Catalin
-
+All rights reversed.
