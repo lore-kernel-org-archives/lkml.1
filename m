@@ -1,176 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZIAPFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZIAPNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753887AbZIAPFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 11:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbZIAPFW
+	id S1754050AbZIAPNz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 11:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZIAPNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 11:05:22 -0400
-Received: from mail-pz0-f191.google.com ([209.85.222.191]:43339 "EHLO
-	mail-pz0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752817AbZIAPFV (ORCPT
+	Tue, 1 Sep 2009 11:13:54 -0400
+Received: from mail-px0-f204.google.com ([209.85.216.204]:36173 "EHLO
+	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753246AbZIAPNy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 11:05:21 -0400
+	Tue, 1 Sep 2009 11:13:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=wbsFurJA60F5rn8rEy8WjQk3sJtvclszE01FrDGWMKO4+q8Koq5mcZLQlf78HzzV3c
-         ADIqwC90LanZNSsFSY57ThXiK67mVDjpnRdySLXbYqJANS9Vnl0LZinuEHstbmFU8mtB
-         KkTVGbJJfMy4O/85jGAfrRQPJ1pEkYp3cfKZs=
-Date: Tue, 1 Sep 2009 23:08:48 +0800
+        b=beoiw2uNgRpJcMPUZ6dYauEyG9K7FromwJYqY9T+YDbBQH3motR4JFE8PqhOq3S5cN
+         b9zxcU6jjuE0GeufJljGgipTUlb9f+PNvXoXfOhPLWMgngNraI7CJoiXHOERS/XtJ0/v
+         AnAHQAxb5QuC3zwTdEGoLlU1PIjDNgPjqRrRE=
+Date: Tue, 1 Sep 2009 23:17:20 +0800
 From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, arjan@infradead.org, jeremy@goop.org,
-       mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tj@kernel.org, tglx@linutronix.de,
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Yinghai Lu <yinghai@kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [PATCH] kthreads: Fix startup synchronization boot crash
-Message-ID: <20090901150848.GB5394@hack>
-References: <20090829182718.10f566b1@leela> <tip-23386d63bbb3199cf247313ec088878d72debcfd@git.kernel.org> <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu> <20090901133709.GA24041@redhat.com>
+       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH] x86: introduce parse_early_param_alone() to parse
+	param early (Was Re: linux-next: reservetop fix disables mem= )
+Message-ID: <20090901151720.GC5394@hack>
+References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org> <4A948C4A.8040004@cn.fujitsu.com> <4A9CD362.9010906@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090901133709.GA24041@redhat.com>
+In-Reply-To: <4A9CD362.9010906@cn.fujitsu.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 03:37:09PM +0200, Oleg Nesterov wrote:
->On 09/01, Ingo Molnar wrote:
->>
->> * Oleg Nesterov <oleg@redhat.com> wrote:
->>
->> > Yes, this should work. But I _think_ we can make the better fix...
->> >
->> > I'll try to make the patch soon. Afaics we don't need
->> > kthreadd_task_init_done.
->>
->> ok.
+On Tue, Sep 01, 2009 at 03:55:14PM +0800, Xiao Guangrong wrote:
+>Hi Ingo,
 >
->Just in case, the patch is ready. I need to re-check my thinking
->and test it somehow...
+>I find the broken patch is still in -tip tree:
 >
->- remove kthreadd_task initialization from rest_init()
+>Commit-ID:  8126dec32738421afa362114337331337b4be17f
+>Gitweb:     http://git.kernel.org/tip/8126dec32738421afa362114337331337b4be17f
+>Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>AuthorDate: Thu, 20 Aug 2009 20:23:11 +0800
+>Committer:  Ingo Molnar <mingo@elte.hu>
+>CommitDate: Fri, 21 Aug 2009 16:40:30 +0200
 >
->- change kthreadd() to initialize kthreadd_task = current
+>x86: Fix system crash when loading with "reservetop" parameter
 >
->- change the main loop in kthreadd() to take kthread_create_lock
->  before the first schedule() (just shift schedule() down)
-
-
-This is the only part that I can't understand, why moving it down?
-
-
+>So, this patch is base on it.
+>---------------------------------------------
+>Subject: [RFC][PATCH] x86: introduce parse_early_param_alone() to parse param before parse_early_param()
 >
->This way, if kthreadd_task needs the wakeup, kthread_create()
->must see kthreadd_task != NULL after unlock(kthread_create_lock).
+>Sometimes, we should parse specific boot parameter alone before
+>parse_early_param(), such as "reservetop" and "early_ioremap_debug",
+>like below:
 >
->If kthread_create() sees kthreadd_task == NULL we can just sleep
->on create.done, kthreadd() must notice the new request before
->it calls schedule().
+>> The main problem is that can't parse 'reservetop' and 'mem'/'memmap'
+>> parameters at the same time, because we should parse 'mem'/'memmap'
+>> after e820 map detected, and it might use early_memremap() during
+>> e820 map detecting, so we should call early_ioremap_init() before it,
+>> 'reservetop' parameter can change 'FIXADDR_TOP', so we parse
+>> 'reservetop' first,
+>> 
+>> like below sequences:
+>>   ......
+>>   ___parse 'reservetop'___  ->
+>>   early_ioremap_init()	  ->
+>>   setup_memory_map(); /* might call early_memremap()*/  ->
+>>   parse_setup_data(); /* might call early_memremap()*/  ->
+>>   e820_reserve_setup_data();	->
+>>   ___parse 'mem'/'memmap' and other parameters___
+>>   ......
+>> 
+>> (the same as 'early_ioremap_debug' parameter)
+>> 
+>> So, I'm afraid that we need separate parse 'reservetop'/
+>> 'early_ioremap_debug' parameters early
+>> 
 >
->Note that with this change it is possible to use kthread_create()
->at any time, but the caller will sleep until rest_init() creates
->kthreadd.
+>This patch introduce a new api named parse_early_param_alone() to
+>do this.
 >
-
-
-What a nice patch!
-
-Thanks!
-
->Oleg.
+>Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>---
+> arch/x86/kernel/setup.c |   33 ++++++++++++++++++------------
+> include/linux/init.h    |    1 +
+> init/main.c             |   50 +++++++++++++++++++++++++++++++++++++++++++++++
+> 3 files changed, 71 insertions(+), 13 deletions(-)
 >
-> init/main.c      |    5 +----
-> kernel/kthread.c |   30 ++++++++++++++++++------------
-> 2 files changed, 19 insertions(+), 16 deletions(-)
->
->
->--- a/init/main.c
->+++ b/init/main.c
->@@ -449,12 +449,9 @@ static void __init setup_command_line(ch
-> static noinline void __init_refok rest_init(void)
-> 	__releases(kernel_lock)
-> {
->-	int pid;
->-
-> 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
-> 	numa_default_policy();
->-	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
->-	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
->+	kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
-> 	unlock_kernel();
+>diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+>index 83ea092..f241c12 100644
+>--- a/arch/x86/kernel/setup.c
+>+++ b/arch/x86/kernel/setup.c
+>@@ -696,10 +696,28 @@ void __init setup_arch(char **cmdline_p)
+> 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+> #endif
 > 
-> 	/*
->--- a/kernel/kthread.c
->+++ b/kernel/kthread.c
->@@ -128,8 +128,14 @@ struct task_struct *kthread_create(int (
-> 	spin_lock(&kthread_create_lock);
-> 	list_add_tail(&create.list, &kthread_create_list);
-> 	spin_unlock(&kthread_create_lock);
->-
->-	wake_up_process(kthreadd_task);
->+	/*
->+	 * If kthreadd was not created yet, kthreadd() must see the result
->+	 * of list_add_tail() later, it takes kthread_create_lock before the
->+	 * first schedule(). If kthreadd() locked kthread_create_lock at
->+	 * least once, we must see kthreadd_task != NULL.
->+	 */
->+	if (likely(kthreadd_task))
->+		wake_up_process(kthreadd_task);
-> 	wait_for_completion(&create.done);
-> 
-> 	if (!IS_ERR(create.result)) {
->@@ -216,23 +222,18 @@ EXPORT_SYMBOL(kthread_stop);
-> 
-> int kthreadd(void *unused)
-> {
->-	struct task_struct *tsk = current;
->+	kthreadd_task = current;
-> 
-> 	/* Setup a clean context for our children to inherit. */
->-	set_task_comm(tsk, "kthreadd");
->-	ignore_signals(tsk);
->-	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
->-	set_cpus_allowed_ptr(tsk, cpu_all_mask);
->+	set_task_comm(kthreadd_task, "kthreadd");
->+	ignore_signals(kthreadd_task);
->+	set_user_nice(kthreadd_task, KTHREAD_NICE_LEVEL);
->+	set_cpus_allowed_ptr(kthreadd_task, cpu_all_mask);
-> 	set_mems_allowed(node_possible_map);
-> 
-> 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
-> 
-> 	for (;;) {
->-		set_current_state(TASK_INTERRUPTIBLE);
->-		if (list_empty(&kthread_create_list))
->-			schedule();
->-		__set_current_state(TASK_RUNNING);
->-
-> 		spin_lock(&kthread_create_lock);
-> 		while (!list_empty(&kthread_create_list)) {
-> 			struct kthread_create_info *create;
->@@ -247,6 +248,11 @@ int kthreadd(void *unused)
-> 			spin_lock(&kthread_create_lock);
-> 		}
-> 		spin_unlock(&kthread_create_lock);
->+
->+		set_current_state(TASK_INTERRUPTIBLE);
->+		if (list_empty(&kthread_create_list))
->+			schedule();
->+		__set_current_state(TASK_RUNNING);
-> 	}
-> 
-> 	return 0;
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
+>+#ifdef CONFIG_CMDLINE_BOOL
+>+#ifdef CONFIG_CMDLINE_OVERRIDE
+>+	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+>+#else
+>+	if (builtin_cmdline[0]) {
+>+		/* append boot loader cmdline to builtin */
+>+		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
+>+		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+>+		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+>+	}
+>+#endif
+>+#endif
+
+
+This seems ugly.
+
+CMDLINE_OVERRIDE depends on CMDLINE_BOOL, right? So the outer #ifdef
+can be removed. :)
+
 
 -- 
 Live like a child, think like the god.
