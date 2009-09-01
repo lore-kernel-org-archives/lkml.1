@@ -1,174 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753115AbZIAIGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753234AbZIAIGj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753115AbZIAIGQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752719AbZIAIGP
+	id S1753234AbZIAIGj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:06:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753191AbZIAIGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:06:15 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53454 "EHLO kernel.dk"
+	Tue, 1 Sep 2009 04:06:39 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53460 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752079AbZIAIGN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:06:13 -0400
-Date: Tue, 1 Sep 2009 10:06:15 +0200
+	id S1753183AbZIAIGi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:06:38 -0400
+Date: Tue, 1 Sep 2009 10:06:40 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
-Message-ID: <20090901080615.GQ12579@kernel.dk>
-References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com> <20090901040114.GI23535@mit.edu> <20090901062943.GL12579@kernel.dk> <20090901072416.GO12579@kernel.dk> <20090901074624.GP12579@kernel.dk>
+To: Shan Wei <shanwei@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]cfq: fix the log message after dispatched a request
+Message-ID: <20090901080640.GR12579@kernel.dk>
+References: <4A9CD4C3.9000800@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090901074624.GP12579@kernel.dk>
+In-Reply-To: <4A9CD4C3.9000800@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01 2009, Jens Axboe wrote:
-> On Tue, Sep 01 2009, Jens Axboe wrote:
-> > On Tue, Sep 01 2009, Jens Axboe wrote:
-> > > On Tue, Sep 01 2009, Theodore Tso wrote:
-> > > > On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
-> > > > > 
-> > > > > Here's the 15th version of the writeback patches.
-> > > > 
-> > > > The test-bdi branch of ext4.git tree is a combination of the patches I
-> > > > plan to push once the merge window opens, plus v15 per-bdi patches.
-> > > > On the ext4 call I've recruited some ext4 developers to do some
-> > > > testing and benchmarking *before* the merge window opens.
-> > > 
-> > > Great, thanks a lot for that!
-> > > 
-> > > > I've found something potentially wrong with the writeback.  It was
-> > > > careful to sync the disk before shutting down the system, and I got
-> > > > the following error.   
-> > > > 
-> > > > [  660.499155] ext4_da_writepages: jbd2_start: 32768 pages, ino 41; err -30
-> > > > [  660.505664] Pid: 1848, comm: flush-8:0 Not tainted 2.6.31-rc8-01474-geef6bd0 #362
-> > > > [  660.512402] Call Trace:
-> > > > [  660.514982]  [<c064412f>] ? printk+0x14/0x16
-> > > > [  660.518851]  [<c023ac4a>] ext4_da_writepages+0x213/0x40e
-> > > > [  660.523356]  [<c023aa37>] ? ext4_da_writepages+0x0/0x40e
-> > > > [  660.528383]  [<c01b65a8>] do_writepages+0x28/0x39
-> > > > [  660.533534]  [<c01f1e07>] writeback_single_inode+0x15c/0x346
-> > > > [  660.538401]  [<c0165b23>] ? down_read_trylock+0x3e/0x48
-> > > > [  660.542921]  [<c01f2892>] generic_sync_wb_inodes+0x2ab/0x37b
-> > > > [  660.547805]  [<c01f2a2a>] wb_writeback+0xc8/0xfa
-> > > > [  660.551975]  [<c01f2abb>] wb_do_writeback+0x5f/0x118
-> > > > [  660.556333]  [<c01f2b95>] bdi_writeback_task+0x21/0x92
-> > > > [  660.560838]  [<c01c0f5d>] bdi_start_fn+0x63/0xb2
-> > > > [  660.565647]  [<c01c0efa>] ? bdi_start_fn+0x0/0xb2
-> > > > [  660.569710]  [<c0162363>] kthread+0x73/0x78
-> > > > [  660.573528]  [<c01622f0>] ? kthread+0x0/0x78
-> > > > [  660.577355]  [<c011e6f3>] kernel_thread_helper+0x7/0x10
-> > > > 
-> > > > ... and a very similar failure for inode 354
-> > > > 
-> > > > [  660.582215] ext4_da_writepages: jbd2_start: 32768 pages, ino 354; err -30
-> > > > 
-> > > > Inode 41 is /var/lib/urandom/random-seed, and inode 354 is
-> > > > /var/run/syslogd.pid.
-> > > > 
-> > > > The failure occurs if I build w/o the ext4 "next" patches, and the
-> > > > failure does not happen if I take build v2.6.31-rc8 without per-bdi
-> > > > patches (with or without the ext4 patches).  At a guess it looks like
-> > > > the bdi threads are trying to write out the dirty files that were
-> > > > written in the shutdown scripts, *after* the file system has been made
-> > > > read-only in preparation for unmounting the file system in question.
-> > > 
-> > > OK, that's definitely something that I will look into today. It isn't
-> > > necessarily a writeback bug, but it does rather smell like it.
-> > 
-> > I can reproduce, looks like it's not getting the sync on ro remount. Fix
-> > should be included shortly :-)
-> 
-> I see what is going on now... From the remount sync path, it's hitting:
-> 
->         if (!down_read_trylock(&inode->i_sb->s_umount)) {
->                 requeue_io(inode);
->                 continue;
->         }
-> 
-> in generic_sync_wb_inodes(), so it's not actually getting writing out
-> the dirty inodes for the remount.
-> 
-> do_remount()
->         down_write(&sb->s_umount);
->         do_remount_sb();
->         sync_filesystem(sb);
->                 __sync_filesystem(sb, 0);
->                 __sync_filesystem(sb, 1);
->                         sync_inodes_sb(sb, 1);
->                                 sync_sb_inodes(wbc);
->                                         generic_sync_sb_inodes();
-> 
-> Jan, any ideas on how best to get around that?
+On Tue, Sep 01 2009, Shan Wei wrote:
+> The blktrace tools can show process id when cfq dispatched a request,
+> using cfq_log_cfqq() instead of cfq_log().
 
-How about something like this? I wish there was a better solution,
-though.
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 5430d4e..9703136 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -550,20 +550,11 @@ static void generic_sync_wb_inodes(struct bdi_writeback *wb,
- 		 */
- 		if (inode_dirtied_after(inode, start))
- 			break;
--		/*
--		 * If this fs is currently being u/remounted, leave the
--		 * inode alone
--		 */
--		if (!down_read_trylock(&inode->i_sb->s_umount)) {
--			requeue_io(inode);
--			continue;
--		}
- 
- 		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
- 		__iget(inode);
- 		pages_skipped = wbc->pages_skipped;
- 		writeback_single_inode(inode, wbc);
--		up_read(&inode->i_sb->s_umount);
- 		if (wbc->pages_skipped != pages_skipped) {
- 			/*
- 			 * writeback is not making progress due to locked
-@@ -987,7 +978,7 @@ EXPORT_SYMBOL(__mark_inode_dirty);
-  * on the writer throttling path, and we get decent balancing between many
-  * throttled threads: we don't want them all piling up on inode_sync_wait.
-  */
--void generic_sync_sb_inodes(struct writeback_control *wbc)
-+static void __generic_sync_sb_inodes(struct writeback_control *wbc)
- {
- 	if (wbc->bdi)
- 		bdi_start_writeback(wbc);
-@@ -1039,6 +1030,25 @@ void generic_sync_sb_inodes(struct writeback_control *wbc)
- 	}
- 
- }
-+
-+void generic_sync_sb_inodes(struct writeback_control *wbc)
-+{
-+	struct super_block *sb = wbc->sb;
-+
-+	if (sb) {
-+		spin_lock(&sb_lock);
-+		sb->s_count++;
-+		spin_unlock(&sb_lock);
-+	}
-+
-+	__generic_sync_sb_inodes(wbc);
-+
-+	if (sb) {
-+		spin_lock(&sb_lock);
-+		__put_super_and_need_restart(sb);
-+		spin_unlock(&sb_lock);
-+	}
-+}
- EXPORT_SYMBOL_GPL(generic_sync_sb_inodes);
- 
- static void sync_sb_inodes(struct writeback_control *wbc)
+Thanks, queued for 2.6.32.
 
 -- 
 Jens Axboe
