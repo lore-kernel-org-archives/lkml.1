@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753226AbZIAIi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZIAIlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753226AbZIAIi3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZIAIi2
+	id S1753276AbZIAIlp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZIAIlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:38:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59399 "EHLO smtps.tip.net.au"
+	Tue, 1 Sep 2009 04:41:44 -0400
+Received: from mga09.intel.com ([134.134.136.24]:29628 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751676AbZIAIi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:38:28 -0400
-Date: Tue, 1 Sep 2009 18:38:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Alasdair G Kergon <agk@redhat.com>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: block tree build failure
-Message-Id: <20090901183822.ed60f577.sfr@canb.auug.org.au>
-In-Reply-To: <20090901081324.GS12579@kernel.dk>
-References: <20090901145949.58610c23.sfr@canb.auug.org.au>
-	<20090901153038.807f5586.sfr@canb.auug.org.au>
-	<20090901053807.GJ12579@kernel.dk>
-	<20090901081324.GS12579@kernel.dk>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	id S1751400AbZIAIln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:41:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,311,1249282800"; 
+   d="scan'208";a="546605991"
+Subject: Re: [PATCH V6 2/2] introduce ACPI ALS device driver
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>
+In-Reply-To: <20090901081342.GB9942@elf.ucw.cz>
+References: <1251789956.3483.216.camel@rzhang-dt>
+	 <20090901081342.GB9942@elf.ucw.cz>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 01 Sep 2009 16:39:36 +0800
+Message-Id: <1251794376.3483.238.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx"
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-09-01 at 16:13 +0800, Pavel Machek wrote:
+> Hi!
+> 
+> > ACPI spec defines ACPI Ambient Light Sensor device (hid ACPI0008),
+> > which provides a standard interface by which the OS may query properties
+> > of the ambient light environment the system is currently operating in,
+> > as well as the ability to detect meaningful changes in these values when
+> > the environment changes.
+> 
+> > +struct acpi_als {
+> > +	struct acpi_device *device;
+> > +	struct als_device *als_sys;
+> > +	int illuminance;
+> > +	int chromaticity;
+> > +	int temperature;
+> > +	int polling;
+> > +	int count;
+> > +	struct als_mapping *mappings;
+> > +};
+> 
+> chromaticity is write-only variable.
 
-Hi Jens,
+>  I believe you can drop it and
+> associted code.
+> 
+> temperature ditto. Drop from this version?
+> 
+> polling ditto. Drop from this version?
+> 
+﻿color temperature, chromaticity and polling are three optional features
+defined in the ACPI spec, which are not supported yet in the ACPI ALS
+driver right now.
 
-On Tue, 1 Sep 2009 10:13:25 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> This is resolved now.
+I think it's okay to add the code first and then generate some
+incremental patches to enable these features once we found such kind of
+platforms.
 
-Thanks.
+thanks,
+rui
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx
-Content-Type: application/pgp-signature
+> Thanks,
+> 									Pavel
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqc3X4ACgkQjjKRsyhoI8xQbQCfeHRwp39zwmUFyxHwBE6tfS1W
-7QsAnRGlCI/78JmBME9n4m6K6dTvZfbm
-=57uA
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_Sep_2009_18_38_22_+1000_KuCkK7Pr8ALERIwx--
