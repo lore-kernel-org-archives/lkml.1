@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZIALAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZIALBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753787AbZIALAG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 07:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZIALAF
+	id S1753839AbZIALBI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 07:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753648AbZIALBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 07:00:05 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41787 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753426AbZIALAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 07:00:04 -0400
-Date: Tue, 1 Sep 2009 12:00:06 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Paul Mundt <lethal@linux-sh.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       David Howells <dhowells@redhat.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] page-allocator: Always change pageblock ownership when
-	anti-fragmentation is disabled
-Message-ID: <20090901110005.GB27393@csn.ul.ie>
+	Tue, 1 Sep 2009 07:01:07 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:28461 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753507AbZIALBG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 07:01:06 -0400
+X-Trace: 251809174/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.89.98/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.89.98
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArcEAI6bnEpPRVli/2dsb2JhbACBU9lUhBsF
+X-IronPort-AV: E=Sophos;i="4.44,311,1249254000"; 
+   d="scan'208";a="251809174"
+Date: Tue, 1 Sep 2009 12:00:32 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, hannes@cmpxchg.org
+Subject: Re: [mmotm][BUG] free is bigger than presnet Re: mmotm 2009-08-27-16-51
+ uploaded
+In-Reply-To: <20090901191018.19a69696.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0909011158080.17324@sister.anvils>
+References: <200908272355.n7RNtghC019990@imap1.linux-foundation.org>
+ <20090901180032.55f7b8ca.kamezawa.hiroyu@jp.fujitsu.com>
+ <Pine.LNX.4.64.0909011031140.13740@sister.anvils>
+ <20090901185013.c86bd937.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090901191018.19a69696.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On low-memory systems, anti-fragmentation gets disabled as fragmentation
-cannot be avoided on a sufficiently large boundary to be worthwhile.
-Once disabled, there is a period of time when all the pageblocks are marked
-MOVABLE and the expectation is that they get marked UNMOVABLE at each call
-to __rmqueue_fallback().
+On Tue, 1 Sep 2009, KAMEZAWA Hiroyuki wrote:
+> 
+> Sorry again, at continuing tests...thre are still..
+> 
+> MemTotal:       24421124 kB
+> MemFree:        25158956 kB
+> Buffers:            2264 kB
+> Cached:            34936 kB
+> SwapCached:         5140 kB
+> 
+> I wonder I miss something..
 
-However, when MAX_ORDER is large the pageblocks do not change ownership
-because the normal criteria are not met. This has the effect of prematurely
-breaking up too many large contiguous blocks. This is most serious on NOMMU
-systems which depend on high-order allocations to boot. This patch causes
-pageblocks to change ownership on every fallback when anti-fragmentation is
-disabled. This prevents the large blocks being prematurely broken up.
+I've not been looking at /proc/meminfo: I'll do some stuff and see
+if it goes wrong for me too, will let you know if so.
 
-This is a fix to commit 49255c619fbd482d704289b5eb2795f8e3b7ff2e [page
-allocator: move check for disabled anti-fragmentation out of fastpath]
-and the problem affects 2.6.31-rc8.
-
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Tested-by: Paul Mundt <lethal@linux-sh.org>
---- 
- mm/page_alloc.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index d052abb..41eb651 100644
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -817,13 +817,15 @@ __rmqueue_fallback(struct zone *zone, int order, int start_migratetype)
- 			 * agressive about taking ownership of free pages
- 			 */
- 			if (unlikely(current_order >= (pageblock_order >> 1)) ||
--					start_migratetype == MIGRATE_RECLAIMABLE) {
-+					start_migratetype == MIGRATE_RECLAIMABLE ||
-+					page_group_by_mobility_disabled) {
- 				unsigned long pages;
- 				pages = move_freepages_block(zone, page,
- 								start_migratetype);
- 
- 				/* Claim the whole block if over half of it is free */
--				if (pages >= (1 << (pageblock_order-1)))
-+				if (pages >= (1 << (pageblock_order-1)) ||
-+						page_group_by_mobility_disabled)
- 					set_pageblock_migratetype(page,
- 								start_migratetype);
- 
+Hugh
