@@ -1,105 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754438AbZIAPYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZIAP0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754438AbZIAPYe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 11:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbZIAPYd
+	id S1754541AbZIAP0M (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 11:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbZIAP0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 11:24:33 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:62444 "EHLO mx1.redhat.com"
+	Tue, 1 Sep 2009 11:26:11 -0400
+Received: from mail.lang.hm ([64.81.33.126]:36034 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753116AbZIAPYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 11:24:33 -0400
-Date: Tue, 1 Sep 2009 17:19:26 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, arjan@infradead.org, jeremy@goop.org,
-       mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tj@kernel.org, tglx@linutronix.de,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [PATCH] kthreads: Fix startup synchronization boot crash
-Message-ID: <20090901151926.GA32484@redhat.com>
-References: <20090829182718.10f566b1@leela> <tip-23386d63bbb3199cf247313ec088878d72debcfd@git.kernel.org> <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu> <20090901133709.GA24041@redhat.com> <20090901150848.GB5394@hack>
+	id S1754340AbZIAP0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 11:26:10 -0400
+Date: Tue, 1 Sep 2009 08:25:55 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: NeilBrown <neilb@suse.de>
+cc: George Spelvin <linux@horizon.com>, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@ucw.cz
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+In-Reply-To: <e57f474f060bf2a16437b16aac23fabd.squirrel@neil.brown.name>
+Message-ID: <alpine.DEB.2.00.0909010825000.6822@asgard.lang.hm>
+References: <20090901111803.11027.qmail@science.horizon.com> <e57f474f060bf2a16437b16aac23fabd.squirrel@neil.brown.name>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090901150848.GB5394@hack>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/01, Américo Wang wrote:
+On Tue, 1 Sep 2009, NeilBrown wrote:
+
+> On Tue, September 1, 2009 9:18 pm, George Spelvin wrote:
+>>>> An embedded checksum, no matter how good, can't tell you if
+>>>> the data is stale; you need a way to distinguish versions in the
+>>>> pointer.
+>>
+>>> I would disagree with that.
+>>> If the embedded checksum is a function of both the data and the address
+>>> of the data (in whatever address space seems most appropriate) then it
+>>> can
+>>> still verify that the data found with the checksum is the data that was
+>>> expected.
+>>> And storing the checksum with the data (where it is practical) means
+>>> index blocks can be more dense so on average fewer accesses to storage
+>>> are needed.
+>>
+>> I must not have been clear.  Originally, block 100 has contents version 1.
+>> This includes a correctly computed checksum.
+>>
+>> Then you write version 2 of the data there.  But there's a bit error in
+>> the address and the write goes to block 256+100 = 356.  So block
+>> 100 still has the version 1 contents, complete with valid checksum.
+>> (Yes, block 356 is now corrupted, but perhaps it's not even allocated.)
+>>
+>> Then we go to read block 100, find a valid checksum, and return incorrect
+>> data.  Namely, version 1 data, when we expact and want version 2.
+>>
+>> Basically, the pointer has to say which *version* of the data it points
+>> to,
+>> not just the block address.  Otherwise, it can't detect a missing write.
 >
-> On Tue, Sep 01, 2009 at 03:37:09PM +0200, Oleg Nesterov wrote:
-> >On 09/01, Ingo Molnar wrote:
-> >>
-> >> * Oleg Nesterov <oleg@redhat.com> wrote:
-> >>
-> >> > Yes, this should work. But I _think_ we can make the better fix...
-> >> >
-> >> > I'll try to make the patch soon. Afaics we don't need
-> >> > kthreadd_task_init_done.
-> >>
-> >> ok.
-> >
-> >Just in case, the patch is ready. I need to re-check my thinking
-> >and test it somehow...
-> >
-> >- remove kthreadd_task initialization from rest_init()
-> >
-> >- change kthreadd() to initialize kthreadd_task = current
-> >
-> >- change the main loop in kthreadd() to take kthread_create_lock
-> >  before the first schedule() (just shift schedule() down)
->
-> This is the only part that I can't understand, why moving it down?
+> Agreed.  I think the minimum is that the index block must be changed in
+> some way whenever data that it points to is changed.  Exactly how
+> depends very much of other details of the filesystem layout.
+> For a copy-on-write filesystem where changed data is always written
+> to a new location, this is very easy to achieve as the 'physical'
+> address can probably be used as a version identifier in some way.
+> For write-in-place you would need the version information
+> to be more explicit as you say, whether a small version number
+> or a larger hash of the data.
 
-This way kthreadd() always takes kthread_create_lock before it
-schedules.
+but then don't you have to update the version on the index (and therefor 
+the pointer to that directory), on up to the point where you update the 
+root?
 
-IOW. Before the patch, kthreadd() does
-
-	for (;;) {
-		if (list_empty(kthread_create_list))
-			schedule();
-
-		lock(kthread_create_lock);
-		while (!list_empty(&kthread_create_list))
-			... create kthreads ...
-		unlock(kthread_create_lock);
-	}
-
-This means kthread_create() can't do
-
-	if (!kthreadd_task)
-		wake_up_process(kthreadd_task);
-
-we can read kthreadd_task before kthreadd() sets kthreadd_task = current,
-and it is possible that kthreadd() has already checked list_empty() == T.
-
-But if we shift schedule() down, so that kthreadd() does
-
-	for (;;) {
-		lock(kthread_create_lock);
-		while (!list_empty(&kthread_create_list))
-			... create kthreads ...
-		unlock(kthread_create_lock);
-
-		if (list_empty(kthread_create_list))
-			schedule();
-	}
-
-Then we can rely on kthread_create_lock: either kthreadd must see the
-addition to create_list, or kthreadd() must see kthreadd_task != NULL.
-
-Because both checks, !kthreadd_task and list_empty(), are done after
-lock+unlock of the same lock. The 2nd task which takes the lock must
-see the changes which were done by the 1st task which locked this lock.
-
-Do you see any holes?
-
-Oleg.
-
+David Lang
