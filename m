@@ -1,199 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751308AbZIAP7L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZIAUFw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751308AbZIAP7L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 11:59:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZIAP7J
+	id S1754350AbZIAUFw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 16:05:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbZIAUFw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 11:59:09 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:45218 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750718AbZIAP7I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 11:59:08 -0400
-Date: Tue, 1 Sep 2009 15:56:56 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Josh Triplett <josh@joshtriplett.org>
-cc: linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
-       Tim Pepper <lnxninja@linux.vnet.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>, Jamey Sharp <jamey@minilop.net>
-Subject: Re: [RFC PATCH] Turn off the tick even when not idle
-In-Reply-To: <20090901154327.GA10024@feather>
-Message-ID: <alpine.DEB.1.10.0909011554590.12112@V090114053VZO-1>
-References: <20090901154327.GA10024@feather>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 1 Sep 2009 16:05:52 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:49197 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751102AbZIAUFv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 16:05:51 -0400
+Message-ID: <4A9D7F66.7030503@redhat.com>
+Date: Tue, 01 Sep 2009 16:09:10 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; BOUNDARY=IS0zKkzwUGydFO0o
-Content-ID: <alpine.DEB.1.10.0909011554591.12112@V090114053VZO-1>
-Content-Disposition: INLINE
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH -tip tracing/kprobes 3/6] kprobes/x86: Fix to add 	__kprobes
+ to in-kernel fault handing functions
+References: <20090827152539.GE6058@nowhere> <20090827172311.8246.92725.stgit@localhost.localdomain> <20090830005355.GB387@nowhere> <4A99E8CB.1040600@redhat.com> <20090830160939.GA6131@nowhere> <4A9B4AEE.1000307@redhat.com>
+In-Reply-To: <4A9B4AEE.1000307@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+>> BTW, after your patchset:
+>>
+>> TEST    posttest
+>>    Building modules, stage 2.
+>> Error: c0101038:	2e a1 f8 b0 9e c0    	mov    %cs:0xc09eb0f8,%eax
+>> Error: objdump says 6 bytes, but insn_get_length() says 10 (attr:40000)
+>> make[1]: *** [posttest] Erreur 2
+>> make: *** [bzImage] Erreur 2
+>> make: *** Attente des tâches non terminées....
+>>    MODPOST 4 modules
+>>
+>>
+>> I'm cross compiling from 64 to 32 using:
+>>
+>> make ARCH=x86
+>>
+>> I've attached my config.
+>
+> Hmm, if you can, could you tell me the output of kernel build with V=1?
+> I'd like to know whether posttest passed $(CONFIG_64BIT) or not.
+>
+> Thank you,
+>
+>>
+>> Thanks.
+>
 
---IS0zKkzwUGydFO0o
-Content-Type: TEXT/PLAIN; CHARSET=US-ASCII
-Content-ID: <alpine.DEB.1.10.0909011554592.12112@V090114053VZO-1>
-Content-Disposition: INLINE
+Here is my result of 'make ARCH=x86' with your config-32 on x86-64.
+---
+   TEST    posttest
+Succeed: decoded and checked 1735629 instructions
+---
 
-On Tue, 1 Sep 2009, Josh Triplett wrote:
+And also, I've tested test_get_len manually.
 
-> Please, give this patch a try and let me know what you think.
+$ echo -e 'c0101038:\t2e a1 f8 b0 9e c0\t   mov    %cs:0xc09eb0f8,%eax' | arch/x86/tools/test_get_len
+Succeed: decoded and checked 1 instructions
 
-Looks quite good. The PNG shows more deterministic run time behavior.
+$ echo -e 'c0101038:\t2e a1 f8 b0 9e c0\t   mov    %cs:0xc09eb0f8,%eax' | arch/x86/tools/test_get_len y
+Error: c0101038:        2e a1 f8 b0 9e c0          mov    %cs:0xc09eb0f8,%eax
+Error: objdump says 6 bytes, but insn_get_length() says 10 (attr:40000)
 
-> I'd like to work towards a patch which really can kill off the timer
-> tick, making the kernel entirely event-driven and removing the polling
-> that occurs in the timer tick.  I've reviewed everything the timer tick
-> does, and every last bit of it could occur using an event-driven
-> approach.
+So, I assume that CONFIG_64BIT=y in your test environment. (I'm not sure why...)
 
-Good idea. Thought so for a long time. Thanks for working on it. Many of
-the events can be deferred if nothing is happening in the system.
-vm statistics, data expiration from caches etc. Not sure what to do about
-the per cpu threads generated by various kernel subsystems though.
+Thank you,
 
---IS0zKkzwUGydFO0o
-Content-Type: IMAGE/PNG; CHARSET=US-ASCII
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.1.10.0909011554593.12112@V090114053VZO-1>
-Content-Description: 
-Content-Disposition: ATTACHMENT; FILENAME=nohz-hack.png
+-- 
+Masami Hiramatsu
 
-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
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
---IS0zKkzwUGydFO0o--
+e-mail: mhiramat@redhat.com
+
