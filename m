@@ -1,80 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbZIAAov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZIAAqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752573AbZIAAov (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 20:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZIAAou
+	id S1752595AbZIAAqt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 20:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZIAAqs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 20:44:50 -0400
-Received: from smtpauth05.prod.mesa1.secureserver.net ([64.202.165.99]:43114
-	"HELO smtpauth05.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752472AbZIAAou (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 20:44:50 -0400
-Date: Tue, 1 Sep 2009 12:44:40 +1200
-From: Kelly Bowa <kb@tuxedu.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: WARNING: at arch/x86/kernel/smp.c:117
- native_smp_send_reschedule+0x51/0x60()
-Message-ID: <20090901124440.36246c6e@tuxedu.org>
-In-Reply-To: <20090831204349.GE12579@kernel.dk>
-References: <20090831204349.GE12579@kernel.dk>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i586-redhat-linux-gnu)
+	Mon, 31 Aug 2009 20:46:48 -0400
+Received: from mga03.intel.com ([143.182.124.21]:65039 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752442AbZIAAqr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 20:46:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="182581808"
+Subject: Re: [PATCH 2/6] thermal: sysfs-api.txt - document passive
+	attribute for thermal zones
+From: Zhang Rui <rui.zhang@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Thomas, Sujith" <sujith.thomas@intel.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+In-Reply-To: <200908311320.00632.elendil@planet.nl>
+References: <1251303445-25317-1-git-send-email-elendil@planet.nl>
+	 <1251303445-25317-3-git-send-email-elendil@planet.nl>
+	 <1251706691.3483.169.camel@rzhang-dt>
+	 <200908311320.00632.elendil@planet.nl>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 08:44:42 +0800
+Message-Id: <1251765882.3483.193.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009 22:43:49 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> Hi,
+On Mon, 2009-08-31 at 19:19 +0800, Frans Pop wrote:
+> On Monday 31 August 2009, Zhang Rui wrote:
+> > > +passive
+> > > +	Attribute is only present for zones which do not have a passive
+> > > +	cooling policy (_PSV) defined in ACPI.
+> >
+> > We should not involve any platform specific stuff in this
+> > documentation. how about "Attribute is only present for zones in which
+> > the passive cooling policy is not supported by native thermal driver"
+> [...]
+> > > -If the processor is listed in _PSL method, and the fan is listed in
+> > > _AL0 -method, the sys I/F structure will be built like this:
+> > > +If the processor is listed in _PSL method, the fan is listed in _AL0
+> > > +method, and the zone has a _PSV method, the sys I/F structure will
+> > > be +built like this:
+> >
+> > For an ACPI thermal zone, supporting passive cooling means that both
+> > _PSL and _PSV are available.
+> > so I don't think we need to change this. :)
 > 
-> I get this on every reboot/kexec/halt:
-> 
-> WARNING: at arch/x86/kernel/smp.c:117
-> native_smp_send_reschedule+0x51/0x60() Modules linked in: raid0
-> md_mod loop hid_apple usbhid mptsas mptscsih mptbase
-> scsi_transport_sas ehci_hcd uhci_hcd usbcore nls_base igb sg sr_mod
-> cdrom Pid: 6998, comm: halt Not tainted 2.6.31-rc8 #105
-> Call Trace:
->  <IRQ>  [<ffffffff81023d38>] ? lapic_next_event+0x18/0x20
->  [<ffffffff810233e1>] ? native_smp_send_reschedule+0x51/0x60
->  [<ffffffff8104e7e8>] warn_slowpath_common+0x78/0xd0
->  [<ffffffff8104e84f>] warn_slowpath_null+0xf/0x20
->  [<ffffffff810233e1>] native_smp_send_reschedule+0x51/0x60
->  [<ffffffff81037ae8>] resched_task+0x68/0x80
->  [<ffffffff81041165>] resched_cpu+0x75/0x90
->  [<ffffffff8104a1db>] scheduler_tick+0x25b/0x290
->  [<ffffffff8105b8b6>] update_process_times+0x56/0x70
->  [<ffffffff81076cb6>] tick_sched_timer+0x66/0xc0
->  [<ffffffff81076c50>] ? tick_sched_timer+0x0/0xc0
->  [<ffffffff8106c351>] __run_hrtimer+0x51/0xc0
->  [<ffffffff8106d0a5>] hrtimer_interrupt+0xd5/0x1c0
->  [<ffffffff81024938>] smp_apic_timer_interrupt+0x68/0xa0
->  [<ffffffff8100ca23>] apic_timer_interrupt+0x13/0x20
->  <EOI>  [<ffffffff81028ffb>] ? x2apic_send_IPI_allbutself+0x9b/0xb0
->  [<ffffffff810234ac>] ? native_smp_send_stop+0x4c/0x90
->  [<ffffffff81022dfe>] ? native_machine_shutdown+0x5e/0x90
->  [<ffffffff81022a66>] ? native_machine_power_off+0x26/0x30
->  [<ffffffff81022a7a>] ? machine_power_off+0xa/0x10
->  [<ffffffff810619d4>] ? kernel_power_off+0x34/0x40
->  [<ffffffff81061cba>] ? sys_reboot+0x13a/0x210
->  [<ffffffff8105e83e>] ? group_send_sig_info+0x6e/0x90
->  [<ffffffff8105e8b0>] ? kill_pid_info+0x50/0xa0
->  [<ffffffff8105eb95>] ? sys_kill+0xa5/0x200
->  [<ffffffff8106d289>] ? up_read+0x9/0x10
->  [<ffffffff8102ede9>] ? do_page_fault+0x1a9/0x310
->  [<ffffffff8100bf6b>] ? system_call_fastpath+0x16/0x1b
+> OK. Updated patch below.
 > 
 > 
+> From: Frans Pop <elendil@planet.nl>
+> Subject: thermal: sysfs-api.txt - document passive attribute for thermal zones
+> 
+> Signed-off-by: Frans Pop <elendil@planet.nl>
+> Cc: Zhang Rui <rui.zhang@intel.com>
+> Cc: Sujith Thomas <sujith.thomas@intel.com>
+> Cc: Matthew Garrett <mjg59@srcf.ucam.org>
+> 
+Acked-by: Zhang Rui <rui.zhang@intel.com>
 
-Hi Jens,
+thanks,
+rui
+> diff --git a/Documentation/thermal/sysfs-api.txt b/Documentation/thermal/sysfs-api.txt
+> index 895337f..a87dc27 100644
+> --- a/Documentation/thermal/sysfs-api.txt
+> +++ b/Documentation/thermal/sysfs-api.txt
+> @@ -199,6 +199,15 @@ cdev[0-*]_trip_point
+>  	point.
+>  	RO, Optional
+>  
+> +passive
+> +	Attribute is only present for zones in which the passive cooling
+> +	policy is not supported by native thermal driver. Default is zero
+> +	and can be set to a temperature (in millidegrees) to enable a
+> +	passive trip point for the zone. Activation is done by polling
+> +	with an interval of 1 second.
+> +	Unit: millidegrees Celsius
+> +	RW, Optional
+> +
+>  *****************************
+>  * Cooling device attributes *
+>  *****************************
 
-Are you running rc-8. This seems to be a rescheduling issue.
-
--- 
-Thanks,
-kb
