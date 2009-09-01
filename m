@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbZIAEx5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZIAE74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752198AbZIAEx5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 00:53:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZIAEx5
+	id S1752676AbZIAE74 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 00:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZIAE74
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 00:53:57 -0400
-Received: from wa-out-1112.google.com ([209.85.146.181]:29560 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbZIAEx4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 00:53:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=uQz+JF4hdGQZQIO1WE8p76X8S68Mvkta8fwhQKRVaZqiz+VktSrJBesi+QtguE0k34
-         kGAInaZ/rI0VA1uvBae0vCZpyKwcovcC7RPtC3hwVnSJhtZzDUPXbovw5HZP2ddY7ips
-         2+2Sbi6DF6w8Azw0IzGJ57XZRiM3Z9qvLep8A=
-Date: Tue, 1 Sep 2009 13:53:21 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH mmotm] Fix NUMA accounting in numastat.txt
-Message-Id: <20090901135321.f0da4715.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 1 Sep 2009 00:59:56 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55087 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751105AbZIAE7z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 00:59:55 -0400
+Date: Tue, 1 Sep 2009 14:59:49 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: block tree build failure
+Message-Id: <20090901145949.58610c23.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__1_Sep_2009_14_59_49_+1000_DXM84W4B5dk9oATB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__1_Sep_2009_14_59_49_+1000_DXM84W4B5dk9oATB
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-In Documentation/numastat.txt, it confused me.
-For example, there are nodes [0,1] in system.
+Hi Jens,
 
-barrios:~$ cat /proc/zoneinfo | egrep 'numa|zone'
-Node 0, zone	DMA
-	numa_hit	33226
-	numa_miss	1739
-	numa_foreign	27978
-	..
-	..
-Node 1, zone	DMA
-	numa_hit	307
-	numa_miss	46900
-	numa_foreign	0
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-1) In node 0,  NUMA_MISS means it wanted to allocate page
-in node 1 but ended up with page in node 0
+fs/ubifs/budget.c: In function 'shrink_liability':
+fs/ubifs/budget.c:74: warning: passing argument 1 of 'generic_sync_sb_inode=
+s' from incompatible pointer type
+include/linux/fs.h:2085: note: expected 'struct writeback_control *' but ar=
+gument is of type 'struct super_block *'
+fs/ubifs/budget.c:74: error: too many arguments to function 'generic_sync_s=
+b_inodes'
+fs/ubifs/budget.c:86: warning: passing argument 1 of 'generic_sync_sb_inode=
+s' from incompatible pointer type
+include/linux/fs.h:2085: note: expected 'struct writeback_control *' but ar=
+gument is of type 'struct super_block *'
+fs/ubifs/budget.c:86: error: too many arguments to function 'generic_sync_s=
+b_inodes'
 
-2) In node 0, NUMA_FOREIGN means it wanted to allocate page
-in node 0 but ended up with page from Node 1.
+Caused by commit 2fa24dd6ef3c67be20fde192f67fe519ea8a4b91 ("writeback:
+switch to per-bdi threads for flushing data").
 
-But now, numastat explains it oppositely about (MISS, FOREIGN).
-Let's fix up with viewpoint of zone. 
+I have used the version of the block tree from next-20090831 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
----
- Documentation/numastat.txt |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+--Signature=_Tue__1_Sep_2009_14_59_49_+1000_DXM84W4B5dk9oATB
+Content-Type: application/pgp-signature
 
-diff --git a/Documentation/numastat.txt b/Documentation/numastat.txt
-index 80133ac..9fcc9a6 100644
---- a/Documentation/numastat.txt
-+++ b/Documentation/numastat.txt
-@@ -7,10 +7,10 @@ All units are pages. Hugepages have separate counters.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
- numa_hit			A process wanted to allocate memory from this node,
- 					and succeeded.
--numa_miss			A process wanted to allocate memory from this node,
--					but ended up with memory from another.
--numa_foreign		A process wanted to allocate on another node,
--				    but ended up with memory from this one.
-+numa_miss			A process wanted to allocate memory from another node,
-+					but ended up with memory from this node.
-+numa_foreign		A process wanted to allocate on this node,
-+				    but ended up with memory from another one.
- local_node			A process ran on this node and got memory from it.
- other_node			A process ran on this node and got memory from another node.
- interleave_hit 		Interleaving wanted to allocate from this node
---
-1.5.4.3
+iEYEARECAAYFAkqcqkUACgkQjjKRsyhoI8yjNACfdO838YFpU8wszVavYhM3OWp+
+ytUAnA5l1P6Man2+Qt2DhHKSzgQV5Pdc
+=N4La
+-----END PGP SIGNATURE-----
 
-
-
--- 
-Kind regards,
-Minchan Kim
+--Signature=_Tue__1_Sep_2009_14_59_49_+1000_DXM84W4B5dk9oATB--
