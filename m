@@ -1,69 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755233AbZIAVvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZIAVzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755233AbZIAVvc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 17:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbZIAVvb
+	id S1755238AbZIAVzg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 17:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755220AbZIAVzf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 17:51:31 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39836 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755116AbZIAVva (ORCPT
+	Tue, 1 Sep 2009 17:55:35 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:43607 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbZIAVze convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 17:51:30 -0400
-Date: Tue, 1 Sep 2009 17:51:30 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       tytso@mit.edu, akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 1/8] writeback: move super_block argument to struct
-	writeback_control
-Message-ID: <20090901215130.GA24397@infradead.org>
-References: <1251803946-9243-1-git-send-email-jens.axboe@oracle.com> <1251803946-9243-2-git-send-email-jens.axboe@oracle.com>
+	Tue, 1 Sep 2009 17:55:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rrFlaZkOhqMcR92uHD3ara4xJY06vpy+OzMekEdBJAKhOvyI/aBJIu7KWSr6glU8hl
+         ywZOaFUCphV/y58r0vf9DlqSQTbr6iivEJOFgUosEkLplxcZQaDzxoZQP49BHrZkquzr
+         0nJc4LcFKmJias3PLbqWEZweljhR8jHzkDjEI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251803946-9243-2-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090901134751.GR19719@n2100.arm.linux.org.uk>
+References: <1251667749-31276-1-git-send-email-linus.walleij@stericsson.com>
+	 <20090901134751.GR19719@n2100.arm.linux.org.uk>
+Date: Tue, 1 Sep 2009 23:55:35 +0200
+Message-ID: <63386a3d0909011455l62c19863rc8caedeae54cf4c5@mail.gmail.com>
+Subject: Re: [PATCH 1/2] AB3100 regulator support v2
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 01:18:59PM +0200, Jens Axboe wrote:
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> ---
->  drivers/staging/pohmelfs/inode.c |    3 ++-
->  fs/fs-writeback.c                |   14 +++++++-------
->  fs/ubifs/budget.c                |    5 +++--
->  fs/ubifs/super.c                 |    3 ++-
->  include/linux/fs.h               |    3 +--
->  include/linux/writeback.h        |    2 ++
+2009/9/1 Russell King - ARM Linux <linux@arm.linux.org.uk>:
+> On Sun, Aug 30, 2009 at 11:29:09PM +0200, Linus Walleij wrote:
+>> This adds support for the regulators found in the AB3100
+>> Mixed-Signal IC.
+>
+> Not sure why I was cc'd on this, but only one comment from me...
 
-I think we need better calling conventions here.  Currently this whole
-area is on crack, we have from highest to lowest layer:
+For the boardinfo part mainly and for something fun to do when
+you're back from your vacation... (welcome back!)
 
+>> +/* Preset (hardware defined) voltages for these regulators */
+>> +#define LDO_A_VOLTAGE 2750000
+>> +#define LDO_C_VOLTAGE 2650000
+>> +#define LDO_D_VOLTAGE 2650000
+>> +
+>> +int ldo_e_buck_typ_voltages[] = {
+>> +     1800000,
+>> +     1400000,
+>> +     1300000,
+>> +     1200000,
+>> +     1100000,
+>> +     1050000,
+>> +     900000,
+>> +};
+>> +
+>> +int ldo_f_typ_voltages[] = {
+>> +     1800000,
+>> +     1400000,
+>> +     1300000,
+>> +     1200000,
+>> +     1100000,
+>> +     1050000,
+>> +     2500000,
+>> +     2650000,
+>> +};
+>> +
+>> +int ldo_g_typ_voltages[] = {
+>> +     2850000,
+>> +     2750000,
+>> +     1800000,
+>> +     1500000,
+>> +};
+>> +
+>> +int ldo_h_typ_voltages[] = {
+>> +     2750000,
+>> +     1800000,
+>> +     1500000,
+>> +     1200000,
+>> +};
+>> +
+>> +int ldo_k_typ_voltages[] = {
+>> +     2750000,
+>> +     1800000,
+>> +};
+>
+> Is there a reason for these to be globally visible?
 
- - sync_inodes_sb - does two totally different things based on the
-   wait flag.  If the wait flag is set does a WB_SYNC_ALL writeout
-   of all pages.  If not does a WB_SYNC_NONE based on some whacky
-   heuristics despite actually wanting to write out everything.
- - sync_sb_inodes - toally useless wrapper.  Introduces because reiser4
-   eventually wanted to hook in there, but that needs some major
-   rethinking before it can happen.
- - generic_sync_inodes_sb - used to implement both cases of
-   sync_inodes_sb, plus:
+No. Fixed it and also even made them const * const.
 
-    - UBIFS budgeting writeouts, in either blocking or non-blocking
-      way
-    - UBIFS sync use that is gone in -next because we fixed sync
-    - a complete crackpot usage in pohmelfs, which we fortunately can
-      simply ignore because it's in -staging.
+Thanks!
 
-
-So instead of exporting generic_sync_sb_inodes which now takes just
-a wbc we should just export two helpers to either data integrity sync
-and SB or do a SYNC_NONE on it, both taking no other parameter than
-the superblock.
-
+Linus Walleij
