@@ -1,109 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754461AbZIAMa5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754475AbZIAMia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754461AbZIAMa5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 08:30:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZIAMa4
+	id S1754475AbZIAMia (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 08:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754376AbZIAMi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 08:30:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60776 "EHLO hera.kernel.org"
+	Tue, 1 Sep 2009 08:38:29 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58747 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753837AbZIAMaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 08:30:55 -0400
-Message-ID: <4A9D13F0.7010504@kernel.org>
-Date: Tue, 01 Sep 2009 21:30:40 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1754067AbZIAMi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 08:38:28 -0400
+From: "NeilBrown" <neilb@suse.de>
+To: "George Spelvin" <linux@horizon.com>
+Date: Tue, 1 Sep 2009 22:35:40 +1000 (EST)
+Message-ID: <e57f474f060bf2a16437b16aac23fabd.squirrel@neil.brown.name>
+In-Reply-To: <20090901111803.11027.qmail@science.horizon.com>
+References: <20090901111803.11027.qmail@science.horizon.com>
+Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
+Cc: linux@horizon.com, david@lang.hm, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, pavel@ucw.cz
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-To: Meelis Roos <mroos@linux.ee>
-CC: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: [PATCH] percpu: don't assume existence of cpu0
-References: <Pine.SOC.4.64.0908311646150.20934@math.ut.ee> <20090831.142215.111904849.davem@davemloft.net> <Pine.SOC.4.64.0909011003460.10184@math.ut.ee> <4A9CC9E9.2070609@kernel.org> <4A9CCD92.4090909@kernel.org> <Pine.SOC.4.64.0909011032350.10835@math.ut.ee> <4A9CD41C.8060604@kernel.org> <Pine.SOC.4.64.0909011437270.20321@math.ut.ee>
-In-Reply-To: <Pine.SOC.4.64.0909011437270.20321@math.ut.ee>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 01 Sep 2009 12:30:55 +0000 (UTC)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-percpu incorrectly assumed that cpu0 was always there which led to the
-following warning and eventual oops on sparc machines w/o cpu0.
+On Tue, September 1, 2009 9:18 pm, George Spelvin wrote:
+>>> An embedded checksum, no matter how good, can't tell you if
+>>> the data is stale; you need a way to distinguish versions in the
+>>> pointer.
+>
+>> I would disagree with that.
+>> If the embedded checksum is a function of both the data and the address
+>> of the data (in whatever address space seems most appropriate) then it
+>> can
+>> still verify that the data found with the checksum is the data that was
+>> expected.
+>> And storing the checksum with the data (where it is practical) means
+>> index blocks can be more dense so on average fewer accesses to storage
+>> are needed.
+>
+> I must not have been clear.  Originally, block 100 has contents version 1.
+> This includes a correctly computed checksum.
+>
+> Then you write version 2 of the data there.  But there's a bit error in
+> the address and the write goes to block 256+100 = 356.  So block
+> 100 still has the version 1 contents, complete with valid checksum.
+> (Yes, block 356 is now corrupted, but perhaps it's not even allocated.)
+>
+> Then we go to read block 100, find a valid checksum, and return incorrect
+> data.  Namely, version 1 data, when we expact and want version 2.
+>
+> Basically, the pointer has to say which *version* of the data it points
+> to,
+> not just the block address.  Otherwise, it can't detect a missing write.
 
-  WARNING: at mm/percpu.c:651 pcpu_map+0xdc/0x100()
-  Modules linked in:
-  Call Trace:
-    [000000000045eb70] warn_slowpath_common+0x50/0xa0
-    [000000000045ebdc] warn_slowpath_null+0x1c/0x40
-    [00000000004d493c] pcpu_map+0xdc/0x100
-    [00000000004d59a4] pcpu_alloc+0x3e4/0x4e0
-    [00000000004d5af8] __alloc_percpu+0x18/0x40
-    [00000000005b112c] __percpu_counter_init+0x4c/0xc0
-  ...
-  Unable to handle kernel NULL pointer dereference
-  ...
-   I7: <sysfs_new_dirent+0x30/0x120>
-   Disabling lock debugging due to kernel taint
-   Caller[000000000053c1b0]: sysfs_new_dirent+0x30/0x120
-   Caller[000000000053c7a4]: create_dir+0x24/0xc0
-   Caller[000000000053c870]: sysfs_create_dir+0x30/0x80
-   Caller[00000000005990e8]: kobject_add_internal+0xc8/0x200
-  ...
-   Kernel panic - not syncing: Attempted to kill the idle task!
+Agreed.  I think the minimum is that the index block must be changed in
+some way whenever data that it points to is changed.  Exactly how
+depends very much of other details of the filesystem layout.
+For a copy-on-write filesystem where changed data is always written
+to a new location, this is very easy to achieve as the 'physical'
+address can probably be used as a version identifier in some way.
+For write-in-place you would need the version information
+to be more explicit as you say, whether a small version number
+or a larger hash of the data.
 
-This patch fixes the problem by backporting parts from devel branch to
-make percpu core not depend on the existence of cpu0.
+>
+> If density is a big issue, then including a small version field is a
+> possibility.
+>
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Meelis Roos <mroos@linux.ee>
-Cc: David Miller <davem@davemloft.net>
----
-Meelis Roos wrote:
->> Aha...  Does the following patch fix the problem?
-> 
-> Yes, yesterdays 2.6.31-rc8-git plus this patch seems to work fine, no 
-> warnings/oopses/panics. It is happily churning on debian unstable 
-> upgrade now.
 
-Good to hear.  Will forward to Linus right away.  Thanks.
-
- mm/percpu.c |   15 ++++++++++++++-
- 1 files changed, 14 insertions(+), 1 deletions(-)
-
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 5fe3784..3311c89 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -197,7 +197,12 @@ static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk,
- static bool pcpu_chunk_page_occupied(struct pcpu_chunk *chunk,
- 				     int page_idx)
- {
--	return *pcpu_chunk_pagep(chunk, 0, page_idx) != NULL;
-+	/*
-+	 * Any possible cpu id can be used here, so there's no need to
-+	 * worry about preemption or cpu hotplug.
-+	 */
-+	return *pcpu_chunk_pagep(chunk, raw_smp_processor_id(),
-+				 page_idx) != NULL;
- }
-
- /* set the pointer to a chunk in a page struct */
-@@ -297,6 +302,14 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
- 		return pcpu_first_chunk;
- 	}
-
-+	/*
-+	 * The address is relative to unit0 which might be unused and
-+	 * thus unmapped.  Offset the address to the unit space of the
-+	 * current processor before looking it up in the vmalloc
-+	 * space.  Note that any possible cpu id can be used here, so
-+	 * there's no need to worry about preemption or cpu hotplug.
-+	 */
-+	addr += raw_smp_processor_id() * pcpu_unit_size;
- 	return pcpu_get_page_chunk(vmalloc_to_page(addr));
- }
-
--- 
-1.6.0.2
+NeilBrown
 
