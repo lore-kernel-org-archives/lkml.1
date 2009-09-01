@@ -1,64 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753344AbZIARZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZIARZ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753344AbZIARZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 13:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZIARZM
+	id S1754174AbZIARZ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 13:25:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753854AbZIARZ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 13:25:12 -0400
-Received: from sj-iport-3.cisco.com ([171.71.176.72]:3083 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750985AbZIARZL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 13:25:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAF/1nEqrR7MV/2dsb2JhbADEM4hBAZAZBYItgW4
-X-IronPort-AV: E=Sophos;i="4.44,313,1249257600"; 
-   d="scan'208";a="186929168"
-From: Roland Dreier <rdreier@cisco.com>
-To: James Bottomley <James.Bottomley@suse.de>
+	Tue, 1 Sep 2009 13:25:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47340 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753721AbZIARZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 13:25:58 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: James Bottomley <James.Bottomley@suse.de>
+To: akataria@vmware.com
 Cc: Dmitry Torokhov <dtor@vmware.com>, Matthew Wilcox <matthew@wil.cx>,
-       Bart Van Assche <bvanassche@acm.org>,
-       Alok Kataria <akataria@vmware.com>,
+       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
        Robert Love <robert.w.love@intel.com>,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi\@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Rolf Eike Beer <eike-kernel@sf-tec.de>,
        Maxime Austruy <maustruy@vmware.com>
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+In-Reply-To: <1251824374.16169.128.camel@ank32.eng.vmware.com>
 References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	<adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
-	<200909010933.50571.dtor@vmware.com>
-	<1251823925.3864.216.camel@mulgrave.site>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 01 Sep 2009 10:25:11 -0700
-In-Reply-To: <1251823925.3864.216.camel@mulgrave.site> (James Bottomley's
-	message of "Tue, 01 Sep 2009 11:52:05 -0500")
-Message-ID: <adaocpuo9vs.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 01 Sep 2009 17:25:12.0183 (UTC) FILETIME=[29683870:01CA2B29]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
+	 <200909010933.50571.dtor@vmware.com>
+	 <1251823925.3864.216.camel@mulgrave.site>
+	 <1251824374.16169.128.camel@ank32.eng.vmware.com>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 12:25:49 -0500
+Message-Id: <1251825949.12482.34.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-09-01 at 09:59 -0700, Alok Kataria wrote:
+> On Tue, 2009-09-01 at 09:52 -0700, James Bottomley wrote:
+> > On Tue, 2009-09-01 at 09:33 -0700, Dmitry Torokhov wrote:
+> > > On Tuesday 01 September 2009 09:16:51 am Matthew Wilcox wrote:
+> > > > On Tue, Sep 01, 2009 at 09:12:43AM -0700, Roland Dreier wrote:
+> > > > > I'm not really sure we should be trying to force drivers to share just
+> > > > > because they are paravirtualized -- if there is real commonality, then
+> > > > > sure put it in common code, but different hypervisors are probably as
+> > > > > different as different hardware.
+> > > > 
+> > > > I really disagree.  This kind of virtualised drivers are pretty much
+> > > > communication protocols, and not hardware.  As such, why design a new one?
+> > > > If there's an infelicity in the ibmvscsi protocol, it makes sense to
+> > > > design a new one.  But being different for the sake of being different
+> > > > is just a way to generate a huge amount of make-work.
+> > > > 
+> > > 
+> > > The same thing can be said about pretty much anything. We don't have
+> > > single SCSI, network, etc driver handling every devices in their
+> > > respective class, I don't see why it would be different here.
+> > > A hypervisor presents the same interface to the guest OS (whether
+> > > it is Linux, Solaris or another OS) much like a piece of silicone
+> > > does and it may very well be different form other hypervisors.
+> > 
+> > Nobody said you had to have the exact same driver for every hypervisor.
+> > What people are suggesting is that we look at commonalities in the
+> > interfaces both from a control plane point of view (transport class) and
+> > from a code sharing point of view (libscsivirt).  However, all the
+> > hypervisor interfaces I've seen are basically DMA rings ... they really
+> > do seem to be very similar across hypervisors, so it does seem there
+> > could be a lot of shared commonality.  I'm not going to insist on RDMA
+> > emulation, but perhaps you lot should agree on what a guest to
+> > hypervisor DMA interface looks like.
+> 
+> Which is this other hypervisor driver that you are talking about,
+> ibmvscsi is using RDMA emulation and I don't think you mean that. 
 
- > Nobody said you had to have the exact same driver for every hypervisor.
- > What people are suggesting is that we look at commonalities in the
- > interfaces both from a control plane point of view (transport class) and
- > from a code sharing point of view (libscsivirt).  However, all the
- > hypervisor interfaces I've seen are basically DMA rings ...
+lguest uses the sg_ring abstraction.  Xen and KVM were certainly looking
+at this too.
 
-I don't think that's anything special about hypervisors though -- pretty
-much all modern device interfaces are basically DMA rings, aren't they?
-I'm definitely in favor of common code to handle commonality but on the
-other hand I don't see what's so special about virtual devices vs. real
-HW devices.  One the one side we have VMware's closed hypervisor code
-and on the other side we have vendor XYZ's closed RTL and firmware code.
+> And anyways how large is the DMA code that we are worrying about here ?
+> Only about 300-400 LOC ? I don't think we might want to over-design for
+> such small gains.
 
- - R.
+So even if you have different DMA code, the remaining thousand or so
+lines would be in common.  That's a worthwhile improvement.
+
+The benefit to users would be a common control plane and interface from
+the transport class, plus common code means more testers regardless of
+virtualisation technology chosen.
+
+James
+
+
