@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZIARAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754568AbZIARKN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbZIARAI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 13:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755184AbZIARAG
+	id S1754568AbZIARKN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 13:10:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751178AbZIARKN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 13:00:06 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:42593 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754772AbZIARAF (ORCPT
+	Tue, 1 Sep 2009 13:10:13 -0400
+Received: from outbound-mail-16.bluehost.com ([69.89.20.231]:57065 "HELO
+	outbound-mail-16.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750885AbZIARKM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 13:00:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=KCes2ylM0V6xTWczlkfnnu43yuNhaZPolJE1iazHBZcqqNTDRYA/ByCbag4QfdK7i/
-         Xn6qADoWjbQYGb28ogkOxPaKuk+GxMfEhPqBmriNMbiYQCnwbLNFjyNPuoAuHxNBtMo/
-         8r2BY7jsfs/q3We9FGVn/0vSMWfHJtvDZ9aDc=
-MIME-Version: 1.0
-In-Reply-To: <20090831182754.GA3620@infradead.org>
-References: <4A9B759B.7020401@msgid.tls.msk.ru>
-	 <20090831123010.GA2368@infradead.org>
-	 <64bb37e0908311114t4a3cefc3v8ea5092e1558c578@mail.gmail.com>
-	 <20090831182754.GA3620@infradead.org>
-Date: Tue, 1 Sep 2009 19:00:05 +0200
-Message-ID: <64bb37e0909011000l78a0aef0wf4c53252c14af75e@mail.gmail.com>
-Subject: Re: xfs compat_ioctl?
-From: Torsten Kaiser <just.for.lkml@googlemail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 1 Sep 2009 13:10:12 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=PaQB0gu3001TmbEJbnYfD05XYxQ4Ui/O9rOTm8D7sezTiOrGmNfnBvqSERjzBCTqfNL3ucZrYoXcJC2y/R5TVY7+hkW9P/9oMzv+y94F+L4tcycfE4nZTU4xC6OGbVBV;
+Date: Tue, 1 Sep 2009 10:09:51 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: Re: [PATCH] x86/PCI: initialize PCI bus node numbers early
+Message-ID: <20090901100951.6bf5f7e0@jbarnes-g45>
+In-Reply-To: <4A9D5206.5010603@kernel.org>
+References: <20090710104419.0032be7b@jbarnes-g45>
+	<20090901135358.GA31282@elte.hu>
+	<4A9D5206.5010603@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 8:27 PM, Christoph Hellwig<hch@infradead.org> wrote:
-> I think you are right, the constant used is incorrect.  Does the small
-> patch below fix it for you?
+On Tue, 01 Sep 2009 09:55:34 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
 
-Yes, after adding this patch, xfs_fsr works.
+> Ingo Molnar wrote:
+> > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > 
+> >> The current mp_bus_to_node array is initialized only by AMD
+> >> specific code, since AMD platforms have registers that can be used
+> >> for determining mode numbers.  On new Intel platforms it's
+> >> necessary to initialize this array as well though, otherwise all
+> >> PCI node numbers will be 0, when in fact they should be -1
+> >> (indicating that I/O isn't tied to any particular node).
+> >>
+> >> So move the mp_bus_to_node code into the common PCI code, and
+> >> initialize it early with a default value of -1.  This may be
+> >> overridden later by arch code (e.g. the AMD code).
+> >>
+> >> With this change, PCI consistent memory and other node specific
+> >> allocations (e.g. skbuff allocs) should occur on the "current"
+> >> node. If, for performance reasons, applications want to be bound
+> >> to specific nodes, they should open their devices only after being
+> >> pinned to the CPU where they'll run, for maximum locality.
+> >>
+> >> Any thoughts here Yinghai or Jesse?
+> >>
+> >>
+> >>  include/asm/pci.h |    2 +
+> >>  kernel/setup.c    |    2 +
+> >>  pci/amd_bus.c     |   61
+> >> +----------------------------------------- pci/common.c      |
+> >> 77 ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 4 files
+> >> changed, 83 insertions(+), 59 deletions(-)
+> > 
+> > FYI, this commit:
+> > 
+> >   acccaba: x86/PCI: initialize PCI bus node numbers early
+> > 
+> > caused a boot crash in -tip testing:
+> > 
+> 
+> looks like the patch change default 0 in 32bit to -1 ...
 
-> Index: linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c
-> ===================================================================
-> --- linux-2.6.orig/fs/xfs/linux-2.6/xfs_ioctl32.c       2009-08-31 15:25:06.093044591 -0300
-> +++ linux-2.6/fs/xfs/linux-2.6/xfs_ioctl32.c    2009-08-31 15:25:10.856544216 -0300
-> @@ -619,7 +619,7 @@ xfs_file_compat_ioctl(
->        case XFS_IOC_GETVERSION_32:
->                cmd = _NATIVE_IOC(cmd, long);
->                return xfs_file_ioctl(filp, cmd, p);
-> -       case XFS_IOC_SWAPEXT: {
-> +       case XFS_IOC_SWAPEXT_32: {
->                struct xfs_swapext        sxp;
->                struct compat_xfs_swapext __user *sxu = arg;
->
->
+Yeah, that's the idea.  We want the node to be "don't care" on
+platforms that don't have a specific bridge to node mapping.  Not sure
+why it fails in the mrst tree though..
+
+Looks like we're taking an amd specific path in the backtrace, maybe
+with the reshuffling of things we're calling one of the amd routines
+before the real node numbers have been set up and they can't handle -1?
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
