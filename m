@@ -1,71 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754334AbZIAOeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754941AbZIAOfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754334AbZIAOeS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751279AbZIAOeR
+	id S1754941AbZIAOfv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZIAOfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:34:17 -0400
-Received: from mail-gx0-f226.google.com ([209.85.217.226]:43817 "EHLO
-	mail-gx0-f226.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751256AbZIAOeQ convert rfc822-to-8bit (ORCPT
+	Tue, 1 Sep 2009 10:35:51 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:13772 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751485AbZIAOfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:34:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=sk2D5ieoZElodVDdS21+8Fmr+zo+eN+nto6Zouczf88ZHdBJ8rt1pFwVhzMesws0Ou
-         Tehvkd5uWSeMtah7RbHHJZylT6HIuCFMPJh6kwT7T8DVo6CeeVx3VE/+ihvSosBpjv0w
-         4rVrEF854J4BT+0y74NGSm3dSYpfSjk0uJQ6A=
-MIME-Version: 1.0
-In-Reply-To: <e5d736f9-f805-41b4-83d3-2ef65bcb519a@d23g2000vbm.googlegroups.com>
-References: <cWOyL-3Ys-15@gated-at.bofh.it> <e5d736f9-f805-41b4-83d3-2ef65bcb519a@d23g2000vbm.googlegroups.com>
-From: Fernando Silveira <fsilveira@gmail.com>
-Date: Tue, 1 Sep 2009 11:33:55 -0300
-Message-ID: <6afc6d4a0909010733p3904f4fakcc170194a475da6a@mail.gmail.com>
-Subject: Re: I/O and pdflush
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Sep 2009 10:35:50 -0400
+X-SourceIP: 213.93.53.227
+Subject: RE: [discuss] BTS overflow handling, was: [PATCH] perf_counter:
+ Fix a race on perf_counter_ctx
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77EC46CF2A6@irsmsx504.ger.corp.intel.com>
+References: <20090808120315.GA14086@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
+	 <20090810134608.GA8295@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7725@irsmsx504.ger.corp.intel.com>
+	 <1250600348.7583.280.camel@twins> <1250600385.7583.281.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7775@irsmsx504.ger.corp.intel.com>
+	 <1250602664.7583.293.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB77C8@irsmsx504.ger.corp.intel.com>
+	 <20090818140022.GB13013@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB77FF@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC465EFC5@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC465F989@irsmsx504.ger.corp.intel.com>
+	 <1251810046.7547.13.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC46CF212@irsmsx504.ger.corp.intel.com>
+	 <1251813197.7547.27.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC46CF2A6@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 16:35:45 +0200
+Message-Id: <1251815745.7547.33.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 18:57, Daniel J Blueman<daniel.blueman@gmail.com> wrote:
-> On Jul 11, 6:30 pm, Fernando Silveira <fsilve...@gmail.com> wrote:
->> The problem is that after some time of data writing at 70MB/s, it
->> eventually falls down to about 25MB/s and does not get up again until
->> a loooong time has passed (from 1 to 30 minutes). This happens much
->> more often when "vm.dirty_*" settings are default (30 secs to expire,
->> 5 secs for writeback, 10% and 40% for background and normal ratio),
->> and when I set them to 1 second or even 0, the problem happens much
->> less often and the sticking period of 25MB/s is much lower.
-> [snip]
->
-> Generally, this sounds symptomatic of the (now well-documented)
-> internal block management of the SSD delaying writes significantly
-> over long use periods - the output from eg 'vmstat 3' will show all
-> the time spent in I/O wait of course.
->
-> In your case, the OCZ Core v2 SSD uses the famed JMicron JMF602 which
-> chokes up with outstanding write requests, destroying latency and
-> throughput with it. OCZ won't be releasing newer firmware for the Core
-> v2, so one last-ditch option is to install the newer stock (non-OCZ
-> validated, thus invalidating the warranty) JMicron firmware, which
-> alleviates this somewhat. I've found this successful, though it's
-> tricky to find!
+On Tue, 2009-09-01 at 15:27 +0100, Metzger, Markus T wrote:
 
-Thanks, I'll keep that in mind. If no other safer solution else helps,
-I'll update the JMicron.
+> >> >> I do need 3 buffers of 2048 entries = 3x48 pages per cpu, though.
+> >> >
+> >> >And those pages have to be contiguous too, right? That's an order-6
+> >> >alloc, painful.
+> >>
+> >>
+> >> According to an earlier discussion with Roland, they don't have to.
+> >> They still need to be locked, though.
+> >> According to some other discussion with Andrew and Ingo, I still use
+> >> kmalloc to allocate those buffers.
+> >
+> >Section 18.18.5 of book 3B says the DS buffer base is a linear address.
+> >This suggests each buffer does need contiguous pages.
+> >
+> >48 contiguous pages constitutes an order-6 allocation (64 pages), which
+> >is unreliable at best.
+> 
+> Roland argued that this means virtually contiguous, not physically.
 
-> One other idea is to ensure the filesystem starts on an (at least)
-> 128KB boundary, so as to submit complete erase blocks (usually 128KB).
+Sure it does, but either you use the linear kernel map, or use vmap.
 
-I don't use any kind of filesystem, just plain sequential data dump. I
-can change the block size for each write(2), but I'm already using a
-huge one: 4MB. I tried lower and higher values before but it seems
-that the 70~80MB/s rate is only reached with blocks of 1MB or bigger.
+vmap doesn't sound like very good idea.
 
--- 
-Fernando Silveira <fsilveira@gmail.com>
+> >> When I use schedule_work() instead, how would I ensure that the work is done
+> >> before the traced (or tracing) task is rescheduled?
+> >
+> >No, basically the only thing left is softirqs, which can be preempted by
+> >hardirqs, but that's a horrid hack too, esp since processing the BTS
+> >outside of the handler will basically result in the BTS tracing its own
+> >processing, generating even more data to process.
+> 
+> I would have disabled perf on that cpu; it won't work, otherwise,
+> since the draining code alone would generate more trace than fits into
+> a buffer. I would need to disable preemption, though.
+> 
+> Are you saying that schedule_work() won't work? It will quite likely be very
+> lossy, but why won't it work at all?
+> 
+> How would that softirq approach work? Could you point me to some reference
+> code?
+
+Look at the tasklet stuff I guess. Look at tasklet_hi_schedule() and co.
+
