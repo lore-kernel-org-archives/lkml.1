@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbZIAW3o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752626AbZIASg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932070AbZIAW3o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 18:29:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZIAW3n
+	id S1752626AbZIASg4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 14:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZIASgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 18:29:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56805 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754022AbZIAW3m (ORCPT
+	Tue, 1 Sep 2009 14:36:55 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:56866 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751256AbZIASgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 18:29:42 -0400
-Date: Tue, 1 Sep 2009 15:29:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: rdreier@cisco.com, oleg@redhat.com, linux-kernel@vger.kernel.org,
-       stefanr@s5r6.in-berlin.de
-Subject: Re: [PATCH 1/1] introduce __cancel_delayed_work()
-Message-Id: <20090901152924.d9c24ab9.akpm@linux-foundation.org>
-In-Reply-To: <20090901171316.41FAB526EA5@mailhub.coreip.homeip.net>
-References: <adazl9uw3w1.fsf@cisco.com>
-	<20090828180015.GB19326@redhat.com>
-	<ada1vmqpry7.fsf@cisco.com>
-	<20090901171316.41FAB526EA5@mailhub.coreip.homeip.net>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 1 Sep 2009 14:36:55 -0400
+Date: Tue, 1 Sep 2009 18:35:34 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Josh Triplett <josh@joshtriplett.org>
+cc: linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
+       Tim Pepper <lnxninja@linux.vnet.ibm.com>,
+       Paul McKenney <paulmck@linux.vnet.ibm.com>,
+       John Stultz <johnstul@us.ibm.com>, Jamey Sharp <jamey@minilop.net>
+Subject: Re: [RFC PATCH] Turn off the tick even when not idle
+In-Reply-To: <20090901180825.GA3621@josh-work.beaverton.ibm.com>
+Message-ID: <alpine.DEB.1.10.0909011831530.25607@V090114053VZO-1>
+References: <20090901154327.GA10024@feather> <alpine.DEB.1.10.0909011554590.12112@V090114053VZO-1> <20090901180825.GA3621@josh-work.beaverton.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Sep 2009 09:40:33 -0700
-Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
+On Tue, 1 Sep 2009, Josh Triplett wrote:
 
-> > Andrew -- how do you want to handle this?  This seems to be useful for
-> > the bug with IB that Oleg linked to, as well as by Dmitry in input, so
-> > I'm not sure what the best way to merge all this into 2.6.32 is.
-> > 
-> > I could take Oleg's patch and the corresponding fix to
-> > drivers/infiniband through my tree, and merge as early I as I see Linus
-> > open 2.6.32.  That leaves Dmitry to wait on it (and possibly causes
-> > problems in -next with tree ordering) though.  But I don't see any way
-> > to get the number of cross-tree dependencies below 1... (unless maybe
-> > Dmitry can take the identical workqueue patch into his tree and trust
-> > git to sort it out?)
-> 
-> I wonder if Linus would not just take it in 31 - it is a completely
-> new function with no current users (but users will surely follow) so
-> introducing regression is highly unlikely... That would resolve all
-> inter-tree dependencies.
-> 
-> Otherwise we'll have to leave our fate in the hands of git ;)
+> Thanks; exactly what I hoped to demonstrate.  Actually making the timer
+> interrupt go away will require finding a more appropriate place to run
+> all the code that otherwise polls periodically, but this patch lets us
+> cheat and see the result before that happens. :)
 
-I'll try to sneak it into 2.6.31 once Linus returns, but it'll need
-good timing.
+Well not necessarily. Since the process is not doing system calls some of
+the checks can be skipped. In order to bring about a quiet state for the
+VM one could fold the vm counters and dump the queues. Then maintenance is
+unnecessary as long as no system activity occurs on a processor.
 
-Or someone else can merge it into their tree, in which case I'll
-promptly forget about it ;)
+> I ran the benchmark at realtime priority, and affinitized to a single
+> CPU.  I used ftrace to confirm that after the initial program setup
+> (shared library loads, memory allocation, etc), no code runs in the
+> kernel during the number-crunching; this makes sense, since I ran at
+> higher priority than all the random affinitized kernel threads, and I
+> pushed everything else (tasks and interrupts) onto another CPU.
+
+Interesting.
+
+> Long-term I'd like to solve the problem of those kernel threads, but
+> realtime priority can mitigate those.  The new interrupt threading bits
+> may help with other interrupts and avoid the need to set interrupt
+> affinity.  The timer interrupt, though, represents the one and only
+> thing I can't mitigate, hence why I'd like to make it go away.
+
+Well it would be best if we can guarantee that there is no system activity
+starting. What you have done is analyze all the causes for your particular
+situation and mitigated them. Not everyone is a specialist able to figure
+out these causes.
+
