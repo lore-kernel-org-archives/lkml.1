@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZIALjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754236AbZIALkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbZIALjq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 07:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZIALjp
+	id S1754236AbZIALkl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 07:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbZIALkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 07:39:45 -0400
-Received: from e28smtp02.in.ibm.com ([59.145.155.2]:56332 "EHLO
-	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753557AbZIALjo (ORCPT
+	Tue, 1 Sep 2009 07:40:41 -0400
+Received: from e28smtp01.in.ibm.com ([59.145.155.1]:44162 "EHLO
+	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754059AbZIALkk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 07:39:44 -0400
-Date: Tue, 1 Sep 2009 17:09:41 +0530
+	Tue, 1 Sep 2009 07:40:40 -0400
+Date: Tue, 1 Sep 2009 17:10:36 +0530
 From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 To: Joel Schopp <jschopp@austin.ibm.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
@@ -21,9 +21,9 @@ To: Joel Schopp <jschopp@austin.ibm.com>,
        Gautham R Shenoy <ego@in.ibm.com>,
        Arun Bharadwaj <arun@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [v4 PATCH 2/5]: cpuidle: Implement routines to register and
-	unregister idle function.
-Message-ID: <20090901113941.GI7599@linux.vnet.ibm.com>
+Subject: [v4 PATCH 3/5]: pSeries: Incorporate registering of idle loop for
+	pSeries.
+Message-ID: <20090901114036.GJ7599@linux.vnet.ibm.com>
 Reply-To: arun@linux.vnet.ibm.com
 References: <20090901113704.GG7599@linux.vnet.ibm.com>
 MIME-Version: 1.0
@@ -37,101 +37,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
 
-Implement a LIFO based approach for registering arch dependent
-idle routines.
-
-This is a prototype for pseries, needs to be extended
-for other platforms.
+Platform needs to register its idle function via register_idle_function()
+in order to provide a clean way of handling the ppc_md.power_save
 
 Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/idle.c |    5 +++++
- drivers/cpuidle/cpuidle.c  |   37 +++++++++++++++++++++++++++++++++++++
- include/linux/pm.h         |   10 ++++++++++
- 3 files changed, 52 insertions(+)
+ arch/powerpc/platforms/pseries/setup.c |   13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-Index: linux.trees.git/arch/powerpc/kernel/idle.c
+Index: linux.trees.git/arch/powerpc/platforms/pseries/setup.c
 ===================================================================
---- linux.trees.git.orig/arch/powerpc/kernel/idle.c
-+++ linux.trees.git/arch/powerpc/kernel/idle.c
-@@ -46,6 +46,11 @@ static int __init powersave_off(char *ar
- }
- __setup("powersave=off", powersave_off);
+--- linux.trees.git.orig/arch/powerpc/platforms/pseries/setup.c
++++ linux.trees.git/arch/powerpc/platforms/pseries/setup.c
+@@ -280,6 +280,8 @@ static struct notifier_block pci_dn_reco
  
-+void set_arch_idle(void (*idle)(void))
-+{
-+	ppc_md.power_save = idle;
-+}
+ static void __init pSeries_setup_arch(void)
+ {
++	struct idle_function_desc pseries_idle_desc;
 +
- /*
-  * The body of the idle task.
-  */
-Index: linux.trees.git/include/linux/pm.h
-===================================================================
---- linux.trees.git.orig/include/linux/pm.h
-+++ linux.trees.git/include/linux/pm.h
-@@ -30,6 +30,16 @@ extern void (*pm_idle)(void);
- extern void (*pm_power_off)(void);
- extern void (*pm_power_off_prepare)(void);
+ 	/* Discover PIC type and setup ppc_md accordingly */
+ 	pseries_discover_pic();
  
-+struct idle_function_desc {
-+	char			*name;
-+	void			(*idle_func)(void);
-+	struct list_head	idle_list;
-+};
-+
-+extern void set_arch_idle(void (*idle)(void));
-+extern void register_idle_function(struct idle_function_desc *desc);
-+extern void unregister_idle_function(struct idle_function_desc *desc);
-+
- /*
-  * Device power management
-  */
-Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-+++ linux.trees.git/drivers/cpuidle/cpuidle.c
-@@ -44,6 +44,43 @@ static void cpuidle_kick_cpus(void)
- static void cpuidle_kick_cpus(void) {}
- #endif
- 
-+LIST_HEAD(idle_function_list);
-+static DEFINE_MUTEX(idle_list_mutex);
-+
-+void register_idle_function(struct idle_function_desc *desc)
-+{
-+	mutex_lock(&idle_list_mutex);
-+
-+	list_add(&desc->idle_list, &idle_function_list);
-+	set_arch_idle(desc->idle_func);
-+	cpuidle_kick_cpus();
-+
-+	mutex_unlock(&idle_list_mutex);
-+}
-+
-+void unregister_idle_function(struct idle_function_desc *desc)
-+{
-+	struct list_head *pos;
-+	struct idle_function_desc *temp_desc;
-+
-+	mutex_lock(&idle_list_mutex);
-+	WARN_ON_ONCE(list_empty(&desc->idle_list) || desc != NULL);
-+
-+	list_for_each(pos, &idle_function_list) {
-+		temp_desc = container_of(pos, struct idle_function_desc,
-+					idle_list);
-+		if (temp_desc == desc) {
-+			list_del(&temp_desc->idle_list);
-+			/* Re-using temp_desc here */
-+			temp_desc = list_first_entry(&idle_function_list,
-+					struct idle_function_desc, idle_list);
-+			set_arch_idle(temp_desc->idle_func);
-+			cpuidle_kick_cpus();
-+		}
-+	}
-+	mutex_unlock(&idle_list_mutex);
-+}
-+
- static int __cpuidle_register_device(struct cpuidle_device *dev);
- 
- /**
+@@ -305,10 +307,17 @@ static void __init pSeries_setup_arch(vo
+ 		vpa_init(boot_cpuid);
+ 		if (get_lppaca()->shared_proc) {
+ 			printk(KERN_DEBUG "Using shared processor idle loop\n");
+-			ppc_md.power_save = pseries_shared_idle_sleep;
++			//snprintf(pseries_idle_desc.name, 16, "shared_loop");
++			pseries_idle_desc.name = "shared_loop";
++			pseries_idle_desc.idle_func = pseries_shared_idle_sleep;
++			register_idle_function(&pseries_idle_desc);
+ 		} else {
+ 			printk(KERN_DEBUG "Using dedicated idle loop\n");
+-			ppc_md.power_save = pseries_dedicated_idle_sleep;
++			//snprintf(pseries_idle_desc.name, 16, "dedicated_loop");
++			pseries_idle_desc.name = "dedicated_loop";
++			pseries_idle_desc.idle_func =
++						pseries_dedicated_idle_sleep;
++			register_idle_function(&pseries_idle_desc);
+ 		}
+ 	} else {
+ 		printk(KERN_DEBUG "Using default idle loop\n");
