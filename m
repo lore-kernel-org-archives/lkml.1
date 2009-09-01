@@ -1,102 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753119AbZIAHe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022AbZIAHq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753119AbZIAHe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 03:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZIAHe0
+	id S1753022AbZIAHq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 03:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZIAHqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 03:34:26 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:44067 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753036AbZIAHeZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 03:34:25 -0400
-Message-ID: <4A9CCE7C.3060702@in.ibm.com>
-Date: Tue, 01 Sep 2009 13:04:20 +0530
-From: Suzuki Poulose <suzuki@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 1 Sep 2009 03:46:23 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46226 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751009AbZIAHqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 03:46:22 -0400
+Date: Tue, 1 Sep 2009 09:46:24 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz, linux-ext4@vger.kernel.org
+Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
+Message-ID: <20090901074624.GP12579@kernel.dk>
+References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com> <20090901040114.GI23535@mit.edu> <20090901062943.GL12579@kernel.dk> <20090901072416.GO12579@kernel.dk>
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Fix compat_sys_utimensat
-References: <4A97A7FD.1000202@in.ibm.com>
-In-Reply-To: <4A97A7FD.1000202@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901072416.GO12579@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suzuki Poulose wrote:
+On Tue, Sep 01 2009, Jens Axboe wrote:
+> On Tue, Sep 01 2009, Jens Axboe wrote:
+> > On Tue, Sep 01 2009, Theodore Tso wrote:
+> > > On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
+> > > > 
+> > > > Here's the 15th version of the writeback patches.
+> > > 
+> > > The test-bdi branch of ext4.git tree is a combination of the patches I
+> > > plan to push once the merge window opens, plus v15 per-bdi patches.
+> > > On the ext4 call I've recruited some ext4 developers to do some
+> > > testing and benchmarking *before* the merge window opens.
+> > 
+> > Great, thanks a lot for that!
+> > 
+> > > I've found something potentially wrong with the writeback.  It was
+> > > careful to sync the disk before shutting down the system, and I got
+> > > the following error.   
+> > > 
+> > > [  660.499155] ext4_da_writepages: jbd2_start: 32768 pages, ino 41; err -30
+> > > [  660.505664] Pid: 1848, comm: flush-8:0 Not tainted 2.6.31-rc8-01474-geef6bd0 #362
+> > > [  660.512402] Call Trace:
+> > > [  660.514982]  [<c064412f>] ? printk+0x14/0x16
+> > > [  660.518851]  [<c023ac4a>] ext4_da_writepages+0x213/0x40e
+> > > [  660.523356]  [<c023aa37>] ? ext4_da_writepages+0x0/0x40e
+> > > [  660.528383]  [<c01b65a8>] do_writepages+0x28/0x39
+> > > [  660.533534]  [<c01f1e07>] writeback_single_inode+0x15c/0x346
+> > > [  660.538401]  [<c0165b23>] ? down_read_trylock+0x3e/0x48
+> > > [  660.542921]  [<c01f2892>] generic_sync_wb_inodes+0x2ab/0x37b
+> > > [  660.547805]  [<c01f2a2a>] wb_writeback+0xc8/0xfa
+> > > [  660.551975]  [<c01f2abb>] wb_do_writeback+0x5f/0x118
+> > > [  660.556333]  [<c01f2b95>] bdi_writeback_task+0x21/0x92
+> > > [  660.560838]  [<c01c0f5d>] bdi_start_fn+0x63/0xb2
+> > > [  660.565647]  [<c01c0efa>] ? bdi_start_fn+0x0/0xb2
+> > > [  660.569710]  [<c0162363>] kthread+0x73/0x78
+> > > [  660.573528]  [<c01622f0>] ? kthread+0x0/0x78
+> > > [  660.577355]  [<c011e6f3>] kernel_thread_helper+0x7/0x10
+> > > 
+> > > ... and a very similar failure for inode 354
+> > > 
+> > > [  660.582215] ext4_da_writepages: jbd2_start: 32768 pages, ino 354; err -30
+> > > 
+> > > Inode 41 is /var/lib/urandom/random-seed, and inode 354 is
+> > > /var/run/syslogd.pid.
+> > > 
+> > > The failure occurs if I build w/o the ext4 "next" patches, and the
+> > > failure does not happen if I take build v2.6.31-rc8 without per-bdi
+> > > patches (with or without the ext4 patches).  At a guess it looks like
+> > > the bdi threads are trying to write out the dirty files that were
+> > > written in the shutdown scripts, *after* the file system has been made
+> > > read-only in preparation for unmounting the file system in question.
+> > 
+> > OK, that's definitely something that I will look into today. It isn't
+> > necessarily a writeback bug, but it does rather smell like it.
 > 
-> Hi,
-> 
-> The compat_utimensat syscall does not ignore tv_sec field when tv_nsec 
-> is set to UTIME_OMIT/UTIME_NOW and returns -EINVAL.
+> I can reproduce, looks like it's not getting the sync on ro remount. Fix
+> should be included shortly :-)
 
+I see what is going on now... From the remount sync path, it's hitting:
 
+        if (!down_read_trylock(&inode->i_sb->s_umount)) {
+                requeue_io(inode);
+                continue;
+        }
 
-mjs22lp5:~ # cat utimensat-test.c
-#define _GNU_SOURCE
-#define _ATFILE_SOURCE
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <stdlib.h>
+in generic_sync_wb_inodes(), so it's not actually getting writing out
+the dirty inodes for the remount.
 
-main(int argc, char *argv[])
-{
-	struct timespec ts[2];
-	struct timespec *tsp;
-	
-	if (argc < 2) {
-		fprintf(stderr, "Usage : %s filename\n", argv[0]);
-		exit (-1);
-	}
-	
-	ts[0].tv_nsec = ts[1].tv_nsec = UTIME_NOW;
-	ts[0].tv_sec = ts[1].tv_sec = 1;
+do_remount()
+        down_write(&sb->s_umount);
+        do_remount_sb();
+        sync_filesystem(sb);
+                __sync_filesystem(sb, 0);
+                __sync_filesystem(sb, 1);
+                        sync_inodes_sb(sb, 1);
+                                sync_sb_inodes(wbc);
+                                        generic_sync_sb_inodes();
 
-	tsp = ts;
-	
-	if (utimensat(AT_FDCWD, argv[1],tsp,0) == -1)
-		perror("utimensat");
-	else
-		fprintf(stdout, "utimensat success\n");
-	return 0;
-}
-mjs22lp5:~ # cc -m64 utimensat-test.c -o utimensat_test64
-mjs22lp5:~ # cc -m32 utimensat-test.c -o utimensat_test32
-mjs22lp5:~ # ./utimensat_test32 /tmp/utimensat_test
-utimensat: Invalid argument
-mjs22lp5:~ # ./utimensat_test64 /tmp/utimensat_test
-utimensat success
-mjs22lp5:~ # uname -r
-2.6.31-rc8
+Jan, any ideas on how best to get around that?
 
-> 
-> This problem was revealed with the utimensat_tests from LTP.
-> 
-> The utimensat() syscall works fine.
-> 
-> Attaching a patch for the issue. The patch has been tested and verified 
-> to fix the issue.
-
-With the patch :
-
-mjs22lp5:~ # ./utimensat_test64 /tmp/utimensat_test
-utimensat success
-mjs22lp5:~ # ./utimensat_test32 /tmp/utimensat_test
-utimensat success
-mjs22lp5:~ # uname -r
-2.6.31-rc8utimensat
-
-
-> 
-> Please apply.
-> 
-> Thanks,
-> 
-> Suzuki
-> 
+-- 
+Jens Axboe
 
