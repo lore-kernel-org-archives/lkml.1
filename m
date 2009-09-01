@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZIABeo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752611AbZIABho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752559AbZIABeo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 21:34:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZIABen
+	id S1752611AbZIABho (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 21:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752065AbZIABho
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 21:34:43 -0400
-Received: from fanny.its.uu.se ([130.238.4.241]:54688 "EHLO fanny.its.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751091AbZIABem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 21:34:42 -0400
+	Mon, 31 Aug 2009 21:37:44 -0400
+Received: from mail-pz0-f175.google.com ([209.85.222.175]:59000 "EHLO
+	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751971AbZIABhn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 21:37:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:references:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent:message-id;
+        b=Wv/JlBVN7l3S8fD06mO8uUCeKXCr+KMT2ZSHdImh/DhWugJUWofpmmob70Wf+HconD
+         oMtPLpx5zWeSgkc1yKiw+xcSA0R8jWX9+r1h42hX+n2+6jR314L2Ywn5IWQFoQqTWs9V
+         LqYl6zQMkftVfuz8JaMSstsCpsK3GspSnZmco=
+Date: Mon, 31 Aug 2009 18:37:38 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Georgi Chorbadzhiyski <gf@unixsol.org>
+Cc: Daniel Gimpelevich <daniel@gimpelevich.san-francisco.ca.us>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] input: Add support for Rotronic silver/white handset
+	in cm109 driver
+References: <4A9ACD69.5030501@unixsol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19100.31254.666066.755541@pilspetsen.it.uu.se>
-Date: Tue, 1 Sep 2009 03:34:14 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
-In-Reply-To: <19099.52899.620345.326521@pilspetsen.it.uu.se>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	<19096.15539.205951.931871@pilspetsen.it.uu.se>
-	<19097.14413.89047.384281@pilspetsen.it.uu.se>
-	<200908292101.38800.rjw@sisk.pl>
-	<19099.52899.620345.326521@pilspetsen.it.uu.se>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+In-Reply-To: <4A9ACD69.5030501@unixsol.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <20090901021017.26A96526EA5@mailhub.coreip.homeip.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson writes:
- > Rafael J. Wysocki writes:
- >  > On Saturday 29 August 2009, Mikael Pettersson wrote:
- >  > > Mikael Pettersson writes:
- >  > >  > Rafael J. Wysocki writes:
- >  > >  >  > On Thursday 27 August 2009, Mikael Pettersson wrote:
- >  > >  >  > > On Tue, 25 Aug 2009 22:34:53 +0200 (CEST), Rafael J. Wysocki wrote:
- >  > >  >  > > > The following bug entry is on the current list of known regressions
- >  > >  >  > > > from 2.6.30.  Please verify if it still should be listed and let me know
- >  > >  >  > > > (either way).
- >  > >  >  > > > 
- >  > >  >  > > > 
- >  > >  >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
- >  > >  >  > > > Subject		: pty regressed again, breaking expect and gcc's testsuite
- >  > >  >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
- >  > >  >  > > > Date		: 2009-08-14 23:41 (12 days old)
- >  > >  >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
- >  > >  >  > > 
- >  > >  >  > > Not fixed. With 2.6.31-rc7 I'm still seeing repeatable testsuite
- >  > >  >  > > failures on powerpc64. Reverting to 2.6.30 makes the failures go away.
- >  > >  >  > 
- >  > >  >  > Thanks for the update.
- >  > >  >  > 
- >  > >  >  > I guess 2.6.31-rc8 doesn't make any difference, does it?
- >  > >  > 
- >  > >  > I've scheduled a number of gcc bootstraps and testsuite runs
- >  > >  > with -rc8 on x86, powerpc64, and arm. I'll post an update in
- >  > >  > a day or so.
- >  > > 
- >  > > 2.6.31-rc8 results in bogus testsuite failures on all three platforms.
- >  > 
- >  > That may be a result of the known inotify borkage in -rc8 that has been fixed
- >  > in the current Linus' tree.
- > 
- > No, it's the same old semi-random pty breakage. My kernels are built
- > without inotify.
- > 
- > A bisection has identified Alan's
- > 
- > pty: Rework the pty layer to use the normal buffering logic
- > d945cb9cce20ac7143c2de8d88b187f62db99bdc 
- > 
- > as the culprit. This patch introduces a massive number of bogus
- > failures in the gcc testsuite. Subsequent pty/tty patches do fix
- > most of those failures, but clearly not all.
+Hi Georgi,
 
-Starting with 2.6.31-rc8 and reverting
+On Sun, Aug 30, 2009 at 10:05:13PM +0300, Georgi Chorbadzhiyski wrote:
+> The following patch adds support for yet another keymap in
+> cm109 driver. Rotronic silver/white is USB "Skype" handset
+> sold in Bulgaria and Serbia (according to Google). With this
+> cheap stuff a picture is the only way to identify what you've
+> got, so here is one:
+>    http://www.reset.bg/catalog/images/skyphoneusbbelihcek.jpg
+> 
 
-85dfd81dc57e8183a277ddd7a56aa65c96f3f487 pty: fix data loss when stopped (^S/^Q)
-d945cb9cce20ac7143c2de8d88b187f62db99bdc pty: Rework the pty layer to use the normal buffering logic
+While there is nothing wrong with the patch I am hesitant to apply it.
+Any chance we could push it onto HAL or maybe have your application to
+load appropriate keymap? I know we can't do it automatically because
+vendor and product IDs are the same for all these devices... It's just
+putting every keymap into the kernel is not sustainable.
 
-in that order gives me a kernel that works on both x86 and powerpc64.
-
-So the bug is definitely limited to the pty buffering logic change.
+-- 
+Dmitry
