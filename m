@@ -1,196 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbZIAG7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752864AbZIAHAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752856AbZIAG7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 02:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbZIAG7V
+	id S1752864AbZIAHAE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 03:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZIAHAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 02:59:21 -0400
-Received: from mga14.intel.com ([143.182.124.37]:15866 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752013AbZIAG7T convert rfc822-to-8bit (ORCPT
+	Tue, 1 Sep 2009 03:00:03 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:48604 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752786AbZIAHAC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 02:59:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182670809"
-From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
-To: "mst@redhat.com" <mst@redhat.com>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "virtualization@lists.linux-foundation.org" 
-	<virtualization@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
-Date: Tue, 1 Sep 2009 14:58:19 +0800
-Subject: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
-Thread-Topic: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
-Thread-Index: Acoq0ZZBzTHUHSc5TJ2FcwRbnd9RJw==
-Message-ID: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 1 Sep 2009 03:00:02 -0400
+Date: Tue, 01 Sep 2009 16:00:04 +0900 (JST)
+Message-Id: <20090901.160004.226800357.ryov@valinux.co.jp>
+To: nauman@google.com
+Cc: vgoyal@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
+ track async bios.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com>
+References: <4A9C09BE.4060404@redhat.com>
+	<20090831185640.GF3758@redhat.com>
+	<e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-              [RFC] Virtual Machine Device Queues (VMDq) support on KVM
+Hi,
 
-Network adapter with VMDq technology presents multiple pairs of tx/rx queues,
-and renders network L2 sorting mechanism based on MAC addresses and VLAN tags
-for each tx/rx queue pair. Here we present a generic framework, in which network
-traffic to/from a tx/rx queue pair can be directed from/to a KVM guest without
-any software copy.
+> > Hi Rik,
+> >
+> > Thanks for reviewing the patches. I wanted to have better understanding of
+> > where all does it help to associate a bio to the group of process who
+> > created/owned the page. Hence few thoughts.
+> >
+> > When a bio is submitted to IO scheduler, it needs to determine the group
+> > bio belongs to and group which should be charged to. There seem to be two
+> > methods.
+> >
+> > - Attribute the bio to cgroup submitting process belongs to.
+> > - For async requests, track the original owner hence cgroup of the page
+> >  and charge that group for the bio.
+> >
+> > One can think of pros/cons of both the approaches.
+> >
+> > - The primary use case of tracking async context seems be that if a
+> >  process T1 in group G1 mmaps a big file and then another process T2 in
+> >  group G2, asks for memory and triggers reclaim and generates writes of
+> >  the file pages mapped by T1, then these writes should not be charged to
+> >  T2, hence blkio_cgroup pages.
+> >
+> >  But the flip side of this might be that group G2 is a low weight group
+> >  and probably too busy also right now, which will delay the write out
+> >  and possibly T2 will wait longer for memory to be allocated.
 
-Actually this framework can apply to traditional network adapters which have
-just one tx/rx queue pair. And applications using the same user/kernel interface
-can utilize this framework to send/receive network traffic directly thru a tx/rx
-queue pair in a network adapter.
+In order to avoid this wait, dm-ioband issues IO which has a page with
+PG_Reclaim as early as possible.
 
-We use virtio-net architecture to illustrate the framework.
+> > - At one point of time Andrew mentioned that buffered writes are generally a
+> >  big problem and one needs to map these to owner's group. Though I am not
+> >  very sure what specific problem he was referring to. Can we attribute
+> >  buffered writes to pdflush threads and move all pdflush threads in a
+> >  cgroup to limit system wide write out activity?
 
+I think that buffered writes also should be controlled per cgroup as
+well as synchronous writes.
 
-|--------------------|     pop               add_buf    |----------------|
-|    Qemu process    |  <---------    TX   <----------  | Guest Kernel   |
-|                    |  --------->         ---------->  |                |
-|    Virtio-net      |     push              get_buf    |                |
-|  (Backend service) |  --------->    RX   ---------->  |  Virtio-net    |
-|                    |  <---------         <----------  |    driver      |
-|                    |     push              get_buf    |                |
-|--------------------|                                  |----------------|
-                   |
-                   |
-                   | AIO (read & write) combined with Direct I/O
-                   |   (which substitute synced file operations)
-|-----------------------------------------------------------------------|
-|     Host kernel  | read: copy-less with directly mapped user          |
-|                  |       space to kernel, payload directly DMAed      |
-|                  |       into user space                              |
-|                  | write: copy-less with directly mapped user         |
-|                  |       space to kernel, payload directly hooked     |
-|                  |       to a skb                                     |
-|                  |                                                    |
-|  (a likely       |                                                    |
-|   queue pair     |                                                    |
-|   instance)      |                                                    |
-|      |           |                                                    |
-| NIC driver <-->  TUN/TAP driver                                       |
-|-----------------------------------------------------------------------|
-       |
-       |
-   traditional adapter or a tx/rx queue pair
+> > - Somebody also gave an example where there is a memory hogging process and
+> >  possibly pushes out some processes to swap. It does not sound fair to
+> >  charge those proccess for that swap writeout. These processes never
+> >  requested swap IO.
 
-The basic idea is to utilize the kernel Asynchronous I/O combined with Direct
-I/O to implements copy-less TUN/TAP device. AIO and Direct I/O is not new to
-kernel, we still can see it in SCSI tape driver.
+I think that swap writeouts should be charged to the memory hogging
+process, because the process consumes more resources and it should get
+a penalty.
 
-With traditional file operations, a copying of payload contents from/to the
-kernel DMA address to/from a user buffer is needed. That's what the copying we
-want to save.
+> > - If there are multiple buffered writers in the system, then those writers
+> >  can also be forced to writeout some pages to disk before they are
+> >  allowed to dirty more pages. As per the page cache design, any writer
+> >  can pick any inode and start writing out pages. So it can happen a
+> >  weight group task is writting out pages dirtied by a lower weight group
+> >  task. If, async bio is mapped to owner's group, it might happen that
+> >  higher weight group task might be made to sleep on lower weight group
+> >  task because request descriptors are all consumed up.
 
-The proposed framework is like this:
-A TUN/TAP device is bound to a traditional NIC adapter or a tx/rx queue pair in
-host side. KVM virto-net Backend service, the user space program submits
-asynchronous read/write I/O requests to the host kernel through TUN/TAP device.
-The requests are corresponding to the vqueue elements include both transmission
-& receive. They can be queued in one AIO request and later, the completion will
-be notified through the underlying packets tx/rx processing of the rx/tx queue
-pair.
+As mentioned above, in dm-ioband, the bio is charged to the page owner
+and issued immediately.
 
-Detailed path:
+> > It looks like there does not seem to be a clean way which covers all the
+> > cases without issues. I am just trying to think, what is a simple way
+> > which covers most of the cases. Can we just stick to using submitting task
+> > context to determine a bio's group (as cfq does). Which can result in
+> > following.
+> >
+> > - Less code and reduced complexity.
+> >
+> > - Buffered writes will be charged to pdflush and its group. If one wish to
+> >  limit buffered write activity for pdflush, one can move all the pdflush
+> >  threads into a group and assign desired weight. Writes submitted in
+> >  process context will continue to be charged to that process irrespective
+> >  of the fact who dirtied that page.
+> 
+> What if we wanted to control buffered write activity per group? If a
+> group keeps dirtying pages, we wouldn't want it to dominate the disk
+> IO capacity at the expense of other cgroups (by dominating the writes
+> sent down by pdflush).
 
-To guest Virtio-net driver, packets receive corresponding to asynchronous read
-I/O requests of Backend service.
+Yes, I think that is true.
 
-1) Guest Virtio-net driver provides header and payload address through the
-receive vqueue to Virtio-net backend service.
+> > - swap activity will be charged to kswapd and its group. If swap writes
+> >  are coming from process context, it gets charged to process and its
+> >  group.
+> >
+> > - If one is worried about the case of one process being charged for write
+> >  out of file mapped by another process during reclaim, then we can
+> >  probably make use of memory controller and mount memory controller and
+> >  io controller together on same hierarchy. I am told that with memory
+> >  controller, group's memory will be reclaimed by the process requesting
+> >  more memory. If that's the case, then IO will automatically be charged
+> >  to right group if we use submitting task context.
+> >
+> > I just wanted to bring this point forward for more discussions to know
+> > what is the right thing to do? Use bio tracking or not.
 
-2) Virtio-net backend service encapsulates multiple vqueue elements into
-multiple AIO control blocks and composes them into one AIO read request.
+Thanks for bringing it forward.
 
-3) Virtio-net backend service uses io_submit() syscall to pass the request to
-the TUN/TAP device.
-
-4) Virtio-net backend service uses io_getevents() syscall to check the
-completion of the request.
-
-5) The TUN/TAP driver receives packets from the queue pair of NIC, and prepares
-for Direct I/O.
-   A modified NIC driver may render a skb which header is allocated in host
-kernel, but the payload buffer is directly mapped from user space buffer which
-are rendered through the AIO request by the Backend service. get_user_pages()
-may do this. For one AIO read request, the TUN/TAP driver maintains a list for
-the directly mapped buffers, and a NIC driver tries to get the buffers as
-payload buffer to compose the new skbs. Of course, if getting the buffers
-fails, then kernel allocated buffers are used.
-
-6) Modern NIC cards now mostly have the header split feature. The NIC queue
-pair then may directly DMA the payload into the user spaces mapped payload
-buffers.
-Thus a zero-copy for payload is implemented in packet receiving.
-
-7) The TUN/TAP driver manually copy the host header to space user mapped.
-
-8) aio_complete() to notify the Virtio-net backend service for io_getevents().
-
-
-To guest Virtio-net driver, packets send corresponding to asynchronous write
-I/O requests of backend. The path is similar to packet receive.
-
-1) Guest Virtio-net driver provides header and payload address filled with
-contents through the transmit vqueue to Virtio-net backed service.
-
-2) Virtio-net backend service encapsulates the vqueue elements into multiple
-AIO control blocks and composes them into one AIO write request.
-
-3) Virtio-net backend service uses the io_submit() syscall to pass the
-requests to the TUN/TAP device.
-
-4) Virtio-net backend service uses io_getevents() syscall to check the request
-completion.
-
-5) The TUN/TAP driver gets the write requests and allocates skbs for it. The
-header contents are copied into the skb header. The directly mapped user space
-buffer is easily hooked into skb. Thus a zero copy for payload is implemented
-in packet sending.
-
-6) aio_complete() to notify the Virtio-net backend service for io_getevents().
-
-The proposed framework is described as above.
-
-Consider the modifications to the kernel and qemu:
-
-To kernel:
-1) The TUN/TAP driver may be modified a lot to implement AIO device operations
-and to implement directly user space mapping into kernel. Code to maintain the
-directly mapped user buffers should be in. It's just a modification for driver.
-
-2) The NIC driver may be modified to compose skb differently and slightly data
-structure change to add user directly mapped buffer pointer.
-Here, maybe it's better for a NIC driver to present an interface for an rx/tx
-queue pair instance which will also apply to traditional hardware, the kernel
-interface should not be changed to make the other components happy.
-The abstraction is useful, though it is not needed immediately here.
-
-3) The skb shared info structure may be modified a little to contain the user
-directly mapped info.
-
-To Qemu:
-1) The Virtio-net backend service may be modified to handle AIO read/write
-requests from the vqueues.
-2) Maybe a separate pthread to handle the AIO request triggering is needed.
-
-Any comments are appreciated here.
-
-
-Thanks
-Xiaohui
-
+Thanks,
+Ryo Tsuruta
