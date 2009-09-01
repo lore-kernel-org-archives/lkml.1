@@ -1,84 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752651AbZIAEBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbZIAEx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752651AbZIAEBi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 00:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751579AbZIAEBh
+	id S1752198AbZIAEx5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 00:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751105AbZIAEx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 00:01:37 -0400
-Received: from thunk.org ([69.25.196.29]:49717 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750732AbZIAEBg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 00:01:36 -0400
-Date: Tue, 1 Sep 2009 00:01:14 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
-Message-ID: <20090901040114.GI23535@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-	david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-	jack@suse.cz, linux-ext4@vger.kernel.org
-References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Tue, 1 Sep 2009 00:53:57 -0400
+Received: from wa-out-1112.google.com ([209.85.146.181]:29560 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751091AbZIAEx4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 00:53:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=uQz+JF4hdGQZQIO1WE8p76X8S68Mvkta8fwhQKRVaZqiz+VktSrJBesi+QtguE0k34
+         kGAInaZ/rI0VA1uvBae0vCZpyKwcovcC7RPtC3hwVnSJhtZzDUPXbovw5HZP2ddY7ips
+         2+2Sbi6DF6w8Azw0IzGJ57XZRiM3Z9qvLep8A=
+Date: Tue, 1 Sep 2009 13:53:21 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH mmotm] Fix NUMA accounting in numastat.txt
+Message-Id: <20090901135321.f0da4715.minchan.kim@barrios-desktop>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
-> 
-> Here's the 15th version of the writeback patches.
 
-The test-bdi branch of ext4.git tree is a combination of the patches I
-plan to push once the merge window opens, plus v15 per-bdi patches.
-On the ext4 call I've recruited some ext4 developers to do some
-testing and benchmarking *before* the merge window opens.
+In Documentation/numastat.txt, it confused me.
+For example, there are nodes [0,1] in system.
 
-I've found something potentially wrong with the writeback.  It was
-careful to sync the disk before shutting down the system, and I got
-the following error.   
+barrios:~$ cat /proc/zoneinfo | egrep 'numa|zone'
+Node 0, zone	DMA
+	numa_hit	33226
+	numa_miss	1739
+	numa_foreign	27978
+	..
+	..
+Node 1, zone	DMA
+	numa_hit	307
+	numa_miss	46900
+	numa_foreign	0
 
-[  660.499155] ext4_da_writepages: jbd2_start: 32768 pages, ino 41; err -30
-[  660.505664] Pid: 1848, comm: flush-8:0 Not tainted 2.6.31-rc8-01474-geef6bd0 #362
-[  660.512402] Call Trace:
-[  660.514982]  [<c064412f>] ? printk+0x14/0x16
-[  660.518851]  [<c023ac4a>] ext4_da_writepages+0x213/0x40e
-[  660.523356]  [<c023aa37>] ? ext4_da_writepages+0x0/0x40e
-[  660.528383]  [<c01b65a8>] do_writepages+0x28/0x39
-[  660.533534]  [<c01f1e07>] writeback_single_inode+0x15c/0x346
-[  660.538401]  [<c0165b23>] ? down_read_trylock+0x3e/0x48
-[  660.542921]  [<c01f2892>] generic_sync_wb_inodes+0x2ab/0x37b
-[  660.547805]  [<c01f2a2a>] wb_writeback+0xc8/0xfa
-[  660.551975]  [<c01f2abb>] wb_do_writeback+0x5f/0x118
-[  660.556333]  [<c01f2b95>] bdi_writeback_task+0x21/0x92
-[  660.560838]  [<c01c0f5d>] bdi_start_fn+0x63/0xb2
-[  660.565647]  [<c01c0efa>] ? bdi_start_fn+0x0/0xb2
-[  660.569710]  [<c0162363>] kthread+0x73/0x78
-[  660.573528]  [<c01622f0>] ? kthread+0x0/0x78
-[  660.577355]  [<c011e6f3>] kernel_thread_helper+0x7/0x10
+1) In node 0,  NUMA_MISS means it wanted to allocate page
+in node 1 but ended up with page in node 0
 
-... and a very similar failure for inode 354
+2) In node 0, NUMA_FOREIGN means it wanted to allocate page
+in node 0 but ended up with page from Node 1.
 
-[  660.582215] ext4_da_writepages: jbd2_start: 32768 pages, ino 354; err -30
+But now, numastat explains it oppositely about (MISS, FOREIGN).
+Let's fix up with viewpoint of zone. 
 
-Inode 41 is /var/lib/urandom/random-seed, and inode 354 is
-/var/run/syslogd.pid.
+Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+---
+ Documentation/numastat.txt |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-The failure occurs if I build w/o the ext4 "next" patches, and the
-failure does not happen if I take build v2.6.31-rc8 without per-bdi
-patches (with or without the ext4 patches).  At a guess it looks like
-the bdi threads are trying to write out the dirty files that were
-written in the shutdown scripts, *after* the file system has been made
-read-only in preparation for unmounting the file system in question.
+diff --git a/Documentation/numastat.txt b/Documentation/numastat.txt
+index 80133ac..9fcc9a6 100644
+--- a/Documentation/numastat.txt
++++ b/Documentation/numastat.txt
+@@ -7,10 +7,10 @@ All units are pages. Hugepages have separate counters.
 
-	     		     		    	 - Ted
+ numa_hit			A process wanted to allocate memory from this node,
+ 					and succeeded.
+-numa_miss			A process wanted to allocate memory from this node,
+-					but ended up with memory from another.
+-numa_foreign		A process wanted to allocate on another node,
+-				    but ended up with memory from this one.
++numa_miss			A process wanted to allocate memory from another node,
++					but ended up with memory from this node.
++numa_foreign		A process wanted to allocate on this node,
++				    but ended up with memory from another one.
+ local_node			A process ran on this node and got memory from it.
+ other_node			A process ran on this node and got memory from another node.
+ interleave_hit 		Interleaving wanted to allocate from this node
+--
+1.5.4.3
+
+
+
+-- 
+Kind regards,
+Minchan Kim
