@@ -1,73 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZIAWQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755285AbZIAWWO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbZIAWQh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 18:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZIAWQh
+	id S1755285AbZIAWWO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 18:22:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755236AbZIAWWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 18:16:37 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:54517 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755258AbZIAWQg (ORCPT
+	Tue, 1 Sep 2009 18:22:14 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:44641 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752543AbZIAWWN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 18:16:36 -0400
+	Tue, 1 Sep 2009 18:22:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hZNGc5QB8AY3dbYLgVoPUfSj/TP+rMUhooIxWCSz4QnmrXBbPwpPkR0J5JEXRbPzeU
-         MMqtqymxB4yFT/upS9AfjHgxi0DwUIAThbCAIxB74sWqQTcJC5qUn/toIBbDs8u/5tqN
-         wGWqZdZd2/wR3MkTy25MGghZe5NFEb4ghiD3E=
-Date: Wed, 2 Sep 2009 00:16:34 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Reiserfs <reiserfs-devel@vger.kernel.org>
-Subject: Re: [PATCH 0/4] kill-the-bkl/reiserfs: fix some lock dependency
-	inversions
-Message-ID: <20090901221631.GA6108@nowhere>
-References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com> <20090826201330.GA18761@orion>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Qpdg5fCLYf+yoUTQge4fHzzwhL/svifuidT5vkzBaJGgLOunMmkkrkSVyRf5+64mTr
+         UHfoHEVQUY5JAB2cLTKpThvsTE35XD/zMG/63P/sUm1F698LpP63xoiXYU+jMkYhGzhK
+         O8qoZsxdFycv62mB8FWpAs7KUTl/mUVQg6FQo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826201330.GA18761@orion>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0907301801240.17818@localhost.localdomain>
+References: <alpine.LFD.2.00.0905211430220.4390@localhost.localdomain>
+	 <alpine.LFD.2.00.0907301801240.17818@localhost.localdomain>
+Date: Wed, 2 Sep 2009 00:22:14 +0200
+Message-ID: <63386a3d0909011522m7a175d3eyb3bbe8a29a5fd104@mail.gmail.com>
+Subject: Re: Montreal Linux Power Management Mini-Summit, July 13, 2009 - 
+	Meeting Notes
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Linux Power Management List <linux-pm@lists.osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Aug 27, 2009 at 12:13:30AM +0400, Alexander Beregalov wrote:
-> On Tue, Aug 25, 2009 at 04:32:46AM +0200, Frederic Weisbecker wrote:
-> > Hi,
-> > 
-> > This small set fixes some lock dependency inversions found in reiserfs
-> > xattr and mmap paths.
-> > I guess there are still some of them that I'll have to hunt, especially one
-> > reported by Laurent Riffard and another one introduced by the reiserfs_readdir
-> > path optimization (though I'm not sure about the latter, I have yet to find a
-> > way to reproduce it properly).
-> > 
-> > As usual, these patches can be found at:
-> > 
-> > git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git \
-> > 	reiserfs/kill-bkl
-> 
-> Hi,
-> possible circular locking dependency detected
-> 
-> Is it false positive?
+2009/7/31 Len Brown <lenb@kernel.org>:
 
+> A Linux Power Management "mini-summit" was held on July 13th, 2009 -
+> on the first day of the Montreal Linux Symposium.
+> (...)
 
+> SH running cpufreq on top of clock framework
+>        cpufreq has notifiers, clock framework does not
 
-No, this confirms a real one, also the worst because it has been
-introduced by a nice optimization (in term of result of throughput)
-that I'll probably need to revert.
+Hm! Paul can you elaborate on what that was about.
 
-reiserfs_readdir() has a reiserfs_write_lock -> mm->mmap_sem
-dependency.
-But reiserfs_readpage() has a mm->mmap_sem -> reiserfs_write_lock
-dependency.
+I've felt a need for clock notifiers and we've cheated by using
+CPUfreq because it so happens that the clocking in system-wide
+and whenever the CPU freq change so may the other clocks.
 
-I'll send a fix soon. Thanks a lot for this report Alexander!
+But if I put code into a PrimeCell MMC/SPI/I2C driver or whatever and
+use CPUfreq that's very unelegant, and for other platforms where
+the CPU freq don't change when this particular device clk freq
+change plain misleading.
 
-Frederic.
+A clk pre/postchange notifier pair would really help and would
+make for elegant drivers that can handle clock freq transitions.
 
+Has anyone poked at this?
+
+Linus Walleij
