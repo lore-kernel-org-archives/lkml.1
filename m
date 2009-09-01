@@ -1,62 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZIAInH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753322AbZIAInR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753264AbZIAInH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:43:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZIAInG
+	id S1753322AbZIAInR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbZIAInP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:43:06 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:17459 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753044AbZIAInE (ORCPT
+	Tue, 1 Sep 2009 04:43:15 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56175 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753298AbZIAInM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:43:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=rPMWngLd3cYP6k83cFDfJGuI2HVyZbAXkwsgjywn5lvfeM7g1s6YNwyli7rk5twveQ
-         72yvF3n15CT2Hun/Tr8YSGx359hJYcOW9Z0voNCq6wApDYZyx5/oWp2ZDkaAPv7djH2O
-         vqxuEBylt+bolk5mA7+OH2jZgN0Fg8Ui2UDwM=
+	Tue, 1 Sep 2009 04:43:12 -0400
+Date: Tue, 1 Sep 2009 10:43:06 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
+Message-ID: <20090901084306.GD9942@elf.ucw.cz>
+References: <1251789947.3483.215.camel@rzhang-dt> <20090901081114.GA9942@elf.ucw.cz> <1251793844.3483.228.camel@rzhang-dt>
 MIME-Version: 1.0
-In-Reply-To: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com>
-References: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com>
-Date: Tue, 1 Sep 2009 12:43:06 +0400
-Message-ID: <aa79d98a0909010143t27096d25n1ee36651f8487b52@mail.gmail.com>
-Subject: Re: [Question] x86,APIC: In apicdef.h dfr,svr,...... shouldn't be 
-	const?
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251793844.3483.228.camel@rzhang-dt>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/1/09, Rakib Mullick <rakib.mullick@gmail.com> wrote:
-> Hello guys, Intel System programmers guide says - dfr, svr, esr - this
-> registers should be readonly. So shouldn't they use const? Or is it
-> anything else?
+On Tue 2009-09-01 16:30:44, Zhang Rui wrote:
+> On Tue, 2009-09-01 at 16:11 +0800, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > Introduce ALS sysfs class.
+> > > 
+> > > ALS sysfs class provides a standard sysfs interface for
+> > > Ambient Light Sensor devices.
+> > > 
+> > > please read Documentation/ABI/testing/sysfs-class-als for
+> > > detailed sysfs designs.
+> > 
+> > Thanks for fixing the interface!
+> > 
+> > > +static ssize_t
+> > > +illuminance_show(struct device *dev, struct device_attribute *attr, char *buf)
+> > > +{
+> > > +	struct als_device *als = to_als_device(dev);
+> > > +	int illuminance;
+> > > +	int result;
+> > > +
+> > > +	result = als->ops->get_illuminance(als, &illuminance);
+> > > +	if (result)
+> > > +		return result;
+> > > +
+> > > +	if (!illuminance)
+> > > +		return sprintf(buf, "Illuminance below the supported range\n");
+> > > +	else if (illuminance == -1)
+> > > +		return sprintf(buf, "Illuminance above the supported range\n");
+> > > +	else if (illuminance < -1)
+> > > +		return -ERANGE;
+> > > +	else
+> > > +		return sprintf(buf, "%d\n", illuminance);
+> > > +}
+> > 
+> > that's nor particulary clean. One value per file and all that. Could
+> > we simply return errnos in _all_ the error cases? (Docs would suggest
+> > this contains integer so string is definitely unexpected).
+> > 
+> IMO, 0 and -1 are not errors. they just suggest that the Ambient Light
+> illuminance is beyond the device support range, while the device is
+> still working normally.
+> what about exporting these values (0 and -1) to user space directly?
 
-Hi Rakib, i dont have sources under my hands at moment, but iirc there
-were situations we nees to poke esr register.
+Returning 0 for "below" range and 99999999 for "above" range would be
+nice, yes. 
 
->
-> And apicdef.h also contains a style problem, checkpatch warns about
-> following style:
->
->               u32	spurious_vector	:  8
->
-> Check patch wants as:
->
->                          u32	spurious_vector:8
->
-> Shouldn't this issues be fixed?
->
-> Thanks,
-> --
+> > 
+> > > +static ssize_t
+> > > +adjustment_show(struct device *dev, struct device_attribute *attr, char *buf)
+> > > +{
+> > > +	struct als_device *als = to_als_device(dev);
+> > > +	int illuminance, adjustment;
+> > > +	int result;
+> > > +
+> > > +	result = als->ops->get_illuminance(als, &illuminance);
+> > > +	if (result)
+> > > +		return result;
+> > > +
+> > > +	if (illuminance < 0 && illuminance != -1)
+> > > +		return sprintf(buf, "Current illuminance invalid\n");
+> > > +
+> > > +	result = als_get_adjustment(als, illuminance, &adjustment);
+> > > +	if (result)
+> > > +		return result;
+> > > +
+> > > +	return sprintf(buf, "%d%%\n", adjustment);
+> > > +}
+> > 
+> > You should not return strings... and in this case it is not clear how
+> > the code works. You fill the buf, but then return...? 
+> 
+> As the adjustment is a percentage value, I added a '%' postfix so that
+> users won't be confused.
+> yes, it's okay to just export the integer, e.g. "100" instead of "100%".
 
-i dont see reason why not ;)
-though i wonder why we need this structure at all. We may have
-extended amd entries.
-Yinghai cced.
+The "%" postfix is okay, but returning "Current illuminance invalid"
+is ugly. Better return -EINVAL or -EIO or something.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
