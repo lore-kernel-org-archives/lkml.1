@@ -1,70 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755120AbZIAU1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZIAUbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755120AbZIAU1x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 16:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZIAU1x
+	id S1754965AbZIAUbG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 16:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZIAUbF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 16:27:53 -0400
-Received: from THUNK.ORG ([69.25.196.29]:59103 "EHLO thunker.thunk.org"
+	Tue, 1 Sep 2009 16:31:05 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41569 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754053AbZIAU1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 16:27:52 -0400
-Date: Tue, 1 Sep 2009 16:27:47 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, akpm@linux-foundation.org,
-       jack@suse.cz
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_pages
-Message-ID: <20090901202747.GC6996@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Christoph Hellwig <hch@infradead.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-	david@fromorbit.com, akpm@linux-foundation.org, jack@suse.cz
-References: <1251803946-9243-1-git-send-email-jens.axboe@oracle.com> <1251803946-9243-9-git-send-email-jens.axboe@oracle.com> <1251830335.8502.17.camel@laptop> <20090901184455.GA27294@infradead.org>
+	id S1752819AbZIAUbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 16:31:03 -0400
+Date: Tue, 1 Sep 2009 22:31:05 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: WARNING: at arch/x86/kernel/smp.c:117
+	native_smp_send_reschedule+0x51/0x60()
+Message-ID: <20090901203105.GH12579@kernel.dk>
+References: <20090831204349.GE12579@kernel.dk> <20090901143942.GA5394@hack>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090901184455.GA27294@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090901143942.GA5394@hack>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 02:44:55PM -0400, Christoph Hellwig wrote:
-> On Tue, Sep 01, 2009 at 08:38:55PM +0200, Peter Zijlstra wrote:
-> > Do we really need a tunable for this?
+On Tue, Sep 01 2009, Américo Wang wrote:
+> On Mon, Aug 31, 2009 at 10:43:49PM +0200, Jens Axboe wrote:
+> >Hi,
+> >
+> >I get this on every reboot/kexec/halt:
+> >
+> >WARNING: at arch/x86/kernel/smp.c:117 native_smp_send_reschedule+0x51/0x60()
+> >Modules linked in: raid0 md_mod loop hid_apple usbhid mptsas mptscsih
+> >mptbase scsi_transport_sas ehci_hcd uhci_hcd usbcore nls_base igb sg
+> >sr_mod cdrom
+> >Pid: 6998, comm: halt Not tainted 2.6.31-rc8 #105
+> >Call Trace:
+> > <IRQ>  [<ffffffff81023d38>] ? lapic_next_event+0x18/0x20
+> > [<ffffffff810233e1>] ? native_smp_send_reschedule+0x51/0x60
+> > [<ffffffff8104e7e8>] warn_slowpath_common+0x78/0xd0
+> > [<ffffffff8104e84f>] warn_slowpath_null+0xf/0x20
+> > [<ffffffff810233e1>] native_smp_send_reschedule+0x51/0x60
+> > [<ffffffff81037ae8>] resched_task+0x68/0x80
+> > [<ffffffff81041165>] resched_cpu+0x75/0x90
+> > [<ffffffff8104a1db>] scheduler_tick+0x25b/0x290
+> > [<ffffffff8105b8b6>] update_process_times+0x56/0x70
+> > [<ffffffff81076cb6>] tick_sched_timer+0x66/0xc0
+> > [<ffffffff81076c50>] ? tick_sched_timer+0x0/0xc0
+> > [<ffffffff8106c351>] __run_hrtimer+0x51/0xc0
+> > [<ffffffff8106d0a5>] hrtimer_interrupt+0xd5/0x1c0
+> > [<ffffffff81024938>] smp_apic_timer_interrupt+0x68/0xa0
+> > [<ffffffff8100ca23>] apic_timer_interrupt+0x13/0x20
+> > <EOI>  [<ffffffff81028ffb>] ? x2apic_send_IPI_allbutself+0x9b/0xb0
+> > [<ffffffff810234ac>] ? native_smp_send_stop+0x4c/0x90
+> > [<ffffffff81022dfe>] ? native_machine_shutdown+0x5e/0x90
+> > [<ffffffff81022a66>] ? native_machine_power_off+0x26/0x30
+> > [<ffffffff81022a7a>] ? machine_power_off+0xa/0x10
+> > [<ffffffff810619d4>] ? kernel_power_off+0x34/0x40
+> > [<ffffffff81061cba>] ? sys_reboot+0x13a/0x210
+> > [<ffffffff8105e83e>] ? group_send_sig_info+0x6e/0x90
+> > [<ffffffff8105e8b0>] ? kill_pid_info+0x50/0xa0
+> > [<ffffffff8105eb95>] ? sys_kill+0xa5/0x200
+> > [<ffffffff8106d289>] ? up_read+0x9/0x10
+> > [<ffffffff8102ede9>] ? do_page_fault+0x1a9/0x310
+> > [<ffffffff8100bf6b>] ? system_call_fastpath+0x16/0x1b
+> >
 > 
-> It will make increasing it in the field a lot easier.  And having deal
-> with really large systems I have the fear that there are I/O topologies
-> outhere for which every "reasonable" value is too low.
+> Hmm, maybe some race condition happens...
 > 
-> > I guess we need a limit to avoid it writing out everything, but can't we
-> > have something automagic?
+> Add Ingo into Cc:.
 > 
-> Some automatic adjustment would be nice.  But finding the right auto
-> tuning will be an interesting exercise.
+> Your .config and dmesg are appreciated.
 
-The fact that limit is on a per-inode basis is part of the problem.
-Right now, we are only writing out X pages per inode, so depending on
-whether we have one really gargantuan inode that needs writout, or ten
-big inodes which are dirty, or million small inodes, the fact that we
-are imposing a limit based the number of pages in a single inode that
-we will write out seems like the wrong design choice.
+I'll send in the .config tomorrow when the box is up again, but
+unfortunately I cannot post a full dmesg from this box. If there's
+anything specific you want to look, I can post that. Otherwise I'll
+probably try poking at this a bit, when some idle time appears.
 
-So perhaps the best argument for not making this be a tunable is that
-in the long run, we will need to put in a better algorithm for
-controlling how much writeback we want to do before we start
-saturating RAID arrays, and in that new algorithm this tunable may no
-longer make sense.  Fine; at that point, we can make it go away.  For
-now, though, it seems to be the best way to tweak what is going on,
-since I doubt we'll be able to come up with one magic number that will
-satisfy everyone.
+-- 
+Jens Axboe
 
-						- Ted
