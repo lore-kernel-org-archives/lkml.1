@@ -1,124 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZIATn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbZIATrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753911AbZIATn5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 15:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZIATn4
+	id S1753962AbZIATrQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 15:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZIATrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 15:43:56 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:9804 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbZIATnz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 15:43:55 -0400
-From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
-To: Randy Dunlap <rdunlap@xenotime.net>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       ISS StorageDev <iss_storagedev@hp.com>
-Date: Tue, 1 Sep 2009 19:43:17 +0000
-Subject: RE: [PATCH] cciss: fix schedule_timeout() parameters
-Thread-Topic: [PATCH] cciss: fix schedule_timeout() parameters
-Thread-Index: AcoqdiejUhcZCQOcS3yLBAvk9XXCAwAxXu4Q
-Message-ID: <0F5B06BAB751E047AB5C87D1F77A77886952DFA043@GVW0547EXC.americas.hpqcorp.net>
-References: <4A9ADECE.7050900@xenotime.net>	<4A9C156D.5080701@gmail.com>
- <20090831130342.a5f3d821.rdunlap@xenotime.net>
-In-Reply-To: <20090831130342.a5f3d821.rdunlap@xenotime.net>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Sep 2009 15:47:15 -0400
+Received: from claw.goop.org ([74.207.240.146]:46520 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752014AbZIATrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 15:47:15 -0400
+Message-ID: <4A9D7A44.2000800@goop.org>
+Date: Tue, 01 Sep 2009 12:47:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Arnd Hannemann <hannemann@nets.rwth-aachen.de>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [Bug #14062] Failure to boot as xen guest
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <_yaHeGjHEzG.A.qRG.usGlKB@chimera>
+In-Reply-To: <_yaHeGjHEzG.A.qRG.usGlKB@chimera>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On 08/25/09 13:34, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>   
 
-> -----Original Message-----
-> From: Randy Dunlap [mailto:rdunlap@xenotime.net] 
-> Sent: Monday, August 31, 2009 3:04 PM
-> To: Marcin Slusarz
-> Cc: lkml; akpm; Miller, Mike (OS Dev); ISS StorageDev
-> Subject: Re: [PATCH] cciss: fix schedule_timeout() parameters
-> 
-> On Mon, 31 Aug 2009 20:24:45 +0200 Marcin Slusarz wrote:
-> 
-> > Randy Dunlap wrote:
-> > > From: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > > Change schedule_timeout() parameter to not be specific to HZ=1000.
-> > > 
-> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > > Cc: Mike Miller <mike.miller@hp.com>
-> > > Cc: iss_storagedev@hp.com
-> > > ---
-> > >  drivers/block/cciss.c |    5 +++--
-> > >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > > 
-> > > --- lnx-2631-rc7.orig/drivers/block/cciss.c
-> > > +++ lnx-2631-rc7/drivers/block/cciss.c
-> > > @@ -36,6 +36,7 @@
-> > >  #include <linux/proc_fs.h>
-> > >  #include <linux/seq_file.h>
-> > >  #include <linux/init.h>
-> > > +#include <linux/jiffies.h>
-> > >  #include <linux/hdreg.h>
-> > >  #include <linux/spinlock.h>
-> > >  #include <linux/compat.h>
-> > > @@ -3489,7 +3490,7 @@ static int __devinit cciss_pci_init(ctlr
-> > >  		if (scratchpad == CCISS_FIRMWARE_READY)
-> > >  			break;
-> > >  		set_current_state(TASK_INTERRUPTIBLE);
-> > > -		schedule_timeout(HZ / 10);	/* wait 100ms */
-> > > +		schedule_timeout(msecs_to_jiffies(100));	
-> /* wait 100ms */
-> > >  	}
-> > >  	if (scratchpad != CCISS_FIRMWARE_READY) {
-> > >  		printk(KERN_WARNING "cciss: Board not ready.  
-> Timed out.\n"); @@ 
-> > > -3615,7 +3616,7 @@ static int __devinit cciss_pci_init(ctlr
-> > >  			break;
-> > >  		/* delay and try again */
-> > >  		set_current_state(TASK_INTERRUPTIBLE);
-> > > -		schedule_timeout(10);
-> > > +		schedule_timeout(msecs_to_jiffies(1));
-> > 
-> > shouldn't it be msecs_to_jiffies(10)?
-> 
-> Hm, thanks, that's a good observation -- and possibly correct.
-> 
-> 
-> The reason that I used (1) was that I looked at the loop:
-> 
-> 	for (i = 0; i < MAX_CONFIG_WAIT; i++) {
-> 		if (!(readl(c->vaddr + SA5_DOORBELL) & 
-> CFGTBL_ChangeReq))
-> 			break;
-> 		/* delay and try again */
-> 		set_current_state(TASK_INTERRUPTIBLE);
-> 		schedule_timeout(msecs_to_jiffies(1));
-> 	}
-> 
-> and this:
-> /* How long to wait (in milliseconds) for board to go into 
-> simple mode */ #define MAX_CONFIG_WAIT 30000
-> 
-> and then I tried to make the loop run for a max. of 30000 
-> milliseconds.
-> 
-> Mike M., any comments here?
+I think this is fixed by d560bc61.
 
-Sorry to take so long to respond. I've been playing around with msecs_to_jiffies figuring out what it means to me. :) 1 is the correct value. If we loop 30000 times with a value of 10 it takes 5 minutes. I can't think of anything that would take that much time. 
+    J
 
--- mikem
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14062
+> Subject		: Failure to boot as xen guest
+> Submitter	: Arnd Hannemann <hannemann@nets.rwth-aachen.de>
+> Date		: 2009-08-25 15:48 (1 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=83b519e8b9572c319c8e0c615ee5dd7272856090
+> References	: http://marc.info/?l=linux-kernel&m=125121534229538&w=4
+> Handled-By	: Jeremy Fitzhardinge <jeremy@goop.org>
+> Patch		: http://patchwork.kernel.org/patch/43799/
+>
+>
+>   
 
-> 
-> 
-> ---
-> ~Randy
-> *** Remember to use Documentation/SubmitChecklist when 
-> testing your code ***
-> 
