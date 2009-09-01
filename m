@@ -1,34 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZIANwL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbZIARyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZIANwL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:52:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754758AbZIANwK
+	id S1754117AbZIARyf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 13:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751483AbZIARye
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:52:10 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:33611 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754817AbZIANwK (ORCPT
+	Tue, 1 Sep 2009 13:54:34 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:47170 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751395AbZIARyd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:52:10 -0400
-Date: Tue, 1 Sep 2009 13:50:41 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Wu Fengguang <fengguang.wu@intel.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Josh Triplett <josh@joshtriplett.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	Tue, 1 Sep 2009 13:54:33 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Roland Dreier <rdreier@cisco.com>, Dmitry Torokhov <dtor@vmware.com>,
+       Matthew Wilcox <matthew@wil.cx>, Bart Van Assche <bvanassche@acm.org>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] page-types: move from Documentation/vm/ to tools/vm/
-In-Reply-To: <20090831065659.GA18039@localhost>
-Message-ID: <alpine.DEB.1.10.0909011348560.5290@V090114053VZO-1>
-References: <20090808173900.GA21009@feather> <20090812065107.GA16363@localhost> <20090831135720.5E53.A69D9226@jp.fujitsu.com> <20090831065659.GA18039@localhost>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>
+In-Reply-To: <1251826804.12482.47.camel@mulgrave.site>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
+	 <200909010933.50571.dtor@vmware.com>
+	 <1251823925.3864.216.camel@mulgrave.site>  <adaocpuo9vs.fsf@cisco.com>
+	 <1251826804.12482.47.camel@mulgrave.site>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 01 Sep 2009 17:54:36 +0000
+Message-Id: <1251827676.16169.152.camel@ank32.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Sure move the slab tools too.
+On Tue, 2009-09-01 at 10:40 -0700, James Bottomley wrote:
+> On Tue, 2009-09-01 at 10:25 -0700, Roland Dreier wrote:
+> > > Nobody said you had to have the exact same driver for every hypervisor.
+> >  > What people are suggesting is that we look at commonalities in the
+> >  > interfaces both from a control plane point of view (transport class) and
+> >  > from a code sharing point of view (libscsivirt).  However, all the
+> >  > hypervisor interfaces I've seen are basically DMA rings ...
+> > 
+> > I don't think that's anything special about hypervisors though -- pretty
+> > much all modern device interfaces are basically DMA rings, aren't they?
+> > I'm definitely in favor of common code to handle commonality but on the
+> > other hand I don't see what's so special about virtual devices vs. real
+> > HW devices.  One the one side we have VMware's closed hypervisor code
+> > and on the other side we have vendor XYZ's closed RTL and firmware code.
+> 
+> But the main difference between actual hardware and hypervisors is the
+> fact that to set up a DMA transfer you have to poke registers on the
+> card, set up a mailbox and manage queues of commands to the card.  For a
+> hypervisor, sending a DMA transaction is a hypercall.
+
+Not really, it depends on how you see it, VMware exports different IO
+registers too which need to be bit banged to start some IO. So starting
+an IO is not just a hypercall but a series of commands. Look at
+pvscsi_kick_io, also the driver and the hypervisor code share the
+request rings and completion rings which is quite similar to how a
+command-queue is managed for a card. 
+
+Also note that, the way all these things are implemented for each of the
+hypervisor devices will differ and getting every hv-vendor to agree on a
+common set of things is not very attractive proposition ( atleast, this
+I can say from my past experiences).
+
+
+> 
+> Now for most physical drivers, take for example FCP ones, we have a
+> common control plane interface (fc transport class), we're evolving a
+> frame handling library (libfc) so all the drivers really have are
+> specific codes to bit bang the hardware.  Some of the libfc handling is
+> actually done in intelligent offload firmware on the HBAs, so some will
+> use more or less of the libfc handling (same is true for SAS and
+> libsas).  When there's no actual hardware to be bit banged, and no real
+> firmware offload, it does make one wonder what would be left unique to
+> the driver.
+> 
+> James
+> 
+
+Alok
+
