@@ -1,110 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022AbZIAHq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbZIAHzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753022AbZIAHq0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 03:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752817AbZIAHqX
+	id S1753002AbZIAHzx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 03:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752013AbZIAHzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 03:46:23 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46226 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751009AbZIAHqW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 03:46:22 -0400
-Date: Tue, 1 Sep 2009 09:46:24 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Theodore Tso <tytso@mit.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v15
-Message-ID: <20090901074624.GP12579@kernel.dk>
-References: <1251747693-32354-1-git-send-email-jens.axboe@oracle.com> <20090901040114.GI23535@mit.edu> <20090901062943.GL12579@kernel.dk> <20090901072416.GO12579@kernel.dk>
+	Tue, 1 Sep 2009 03:55:52 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63119 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751676AbZIAHzw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 03:55:52 -0400
+Message-ID: <4A9CD362.9010906@cn.fujitsu.com>
+Date: Tue, 01 Sep 2009 15:55:14 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901072416.GO12579@kernel.dk>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>, Yinghai Lu <yinghai@kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [RFC][PATCH] x86: introduce parse_early_param_alone() to parse param
+ early (Was Re: linux-next: reservetop fix disables mem= )
+References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org> <4A948C4A.8040004@cn.fujitsu.com>
+In-Reply-To: <4A948C4A.8040004@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01 2009, Jens Axboe wrote:
-> On Tue, Sep 01 2009, Jens Axboe wrote:
-> > On Tue, Sep 01 2009, Theodore Tso wrote:
-> > > On Mon, Aug 31, 2009 at 09:41:26PM +0200, Jens Axboe wrote:
-> > > > 
-> > > > Here's the 15th version of the writeback patches.
-> > > 
-> > > The test-bdi branch of ext4.git tree is a combination of the patches I
-> > > plan to push once the merge window opens, plus v15 per-bdi patches.
-> > > On the ext4 call I've recruited some ext4 developers to do some
-> > > testing and benchmarking *before* the merge window opens.
-> > 
-> > Great, thanks a lot for that!
-> > 
-> > > I've found something potentially wrong with the writeback.  It was
-> > > careful to sync the disk before shutting down the system, and I got
-> > > the following error.   
-> > > 
-> > > [  660.499155] ext4_da_writepages: jbd2_start: 32768 pages, ino 41; err -30
-> > > [  660.505664] Pid: 1848, comm: flush-8:0 Not tainted 2.6.31-rc8-01474-geef6bd0 #362
-> > > [  660.512402] Call Trace:
-> > > [  660.514982]  [<c064412f>] ? printk+0x14/0x16
-> > > [  660.518851]  [<c023ac4a>] ext4_da_writepages+0x213/0x40e
-> > > [  660.523356]  [<c023aa37>] ? ext4_da_writepages+0x0/0x40e
-> > > [  660.528383]  [<c01b65a8>] do_writepages+0x28/0x39
-> > > [  660.533534]  [<c01f1e07>] writeback_single_inode+0x15c/0x346
-> > > [  660.538401]  [<c0165b23>] ? down_read_trylock+0x3e/0x48
-> > > [  660.542921]  [<c01f2892>] generic_sync_wb_inodes+0x2ab/0x37b
-> > > [  660.547805]  [<c01f2a2a>] wb_writeback+0xc8/0xfa
-> > > [  660.551975]  [<c01f2abb>] wb_do_writeback+0x5f/0x118
-> > > [  660.556333]  [<c01f2b95>] bdi_writeback_task+0x21/0x92
-> > > [  660.560838]  [<c01c0f5d>] bdi_start_fn+0x63/0xb2
-> > > [  660.565647]  [<c01c0efa>] ? bdi_start_fn+0x0/0xb2
-> > > [  660.569710]  [<c0162363>] kthread+0x73/0x78
-> > > [  660.573528]  [<c01622f0>] ? kthread+0x0/0x78
-> > > [  660.577355]  [<c011e6f3>] kernel_thread_helper+0x7/0x10
-> > > 
-> > > ... and a very similar failure for inode 354
-> > > 
-> > > [  660.582215] ext4_da_writepages: jbd2_start: 32768 pages, ino 354; err -30
-> > > 
-> > > Inode 41 is /var/lib/urandom/random-seed, and inode 354 is
-> > > /var/run/syslogd.pid.
-> > > 
-> > > The failure occurs if I build w/o the ext4 "next" patches, and the
-> > > failure does not happen if I take build v2.6.31-rc8 without per-bdi
-> > > patches (with or without the ext4 patches).  At a guess it looks like
-> > > the bdi threads are trying to write out the dirty files that were
-> > > written in the shutdown scripts, *after* the file system has been made
-> > > read-only in preparation for unmounting the file system in question.
-> > 
-> > OK, that's definitely something that I will look into today. It isn't
-> > necessarily a writeback bug, but it does rather smell like it.
+Hi Ingo,
+
+I find the broken patch is still in -tip tree:
+
+Commit-ID:  8126dec32738421afa362114337331337b4be17f
+Gitweb:     http://git.kernel.org/tip/8126dec32738421afa362114337331337b4be17f
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Thu, 20 Aug 2009 20:23:11 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 21 Aug 2009 16:40:30 +0200
+
+x86: Fix system crash when loading with "reservetop" parameter
+
+So, this patch is base on it.
+---------------------------------------------
+Subject: [RFC][PATCH] x86: introduce parse_early_param_alone() to parse param before parse_early_param()
+
+Sometimes, we should parse specific boot parameter alone before
+parse_early_param(), such as "reservetop" and "early_ioremap_debug",
+like below:
+
+> The main problem is that can't parse 'reservetop' and 'mem'/'memmap'
+> parameters at the same time, because we should parse 'mem'/'memmap'
+> after e820 map detected, and it might use early_memremap() during
+> e820 map detecting, so we should call early_ioremap_init() before it,
+> 'reservetop' parameter can change 'FIXADDR_TOP', so we parse
+> 'reservetop' first,
 > 
-> I can reproduce, looks like it's not getting the sync on ro remount. Fix
-> should be included shortly :-)
+> like below sequences:
+>   ......
+>   ___parse 'reservetop'___  ->
+>   early_ioremap_init()	  ->
+>   setup_memory_map(); /* might call early_memremap()*/  ->
+>   parse_setup_data(); /* might call early_memremap()*/  ->
+>   e820_reserve_setup_data();	->
+>   ___parse 'mem'/'memmap' and other parameters___
+>   ......
+> 
+> (the same as 'early_ioremap_debug' parameter)
+> 
+> So, I'm afraid that we need separate parse 'reservetop'/
+> 'early_ioremap_debug' parameters early
+> 
 
-I see what is going on now... From the remount sync path, it's hitting:
+This patch introduce a new api named parse_early_param_alone() to
+do this.
 
-        if (!down_read_trylock(&inode->i_sb->s_umount)) {
-                requeue_io(inode);
-                continue;
-        }
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+---
+ arch/x86/kernel/setup.c |   33 ++++++++++++++++++------------
+ include/linux/init.h    |    1 +
+ init/main.c             |   50 +++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 71 insertions(+), 13 deletions(-)
 
-in generic_sync_wb_inodes(), so it's not actually getting writing out
-the dirty inodes for the remount.
-
-do_remount()
-        down_write(&sb->s_umount);
-        do_remount_sb();
-        sync_filesystem(sb);
-                __sync_filesystem(sb, 0);
-                __sync_filesystem(sb, 1);
-                        sync_inodes_sb(sb, 1);
-                                sync_sb_inodes(wbc);
-                                        generic_sync_sb_inodes();
-
-Jan, any ideas on how best to get around that?
-
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 83ea092..f241c12 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -696,10 +696,28 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Command line: %s\n", boot_command_line);
+ #endif
+ 
++#ifdef CONFIG_CMDLINE_BOOL
++#ifdef CONFIG_CMDLINE_OVERRIDE
++	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
++#else
++	if (builtin_cmdline[0]) {
++		/* append boot loader cmdline to builtin */
++		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
++		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
++		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
++	}
++#endif
++#endif
++
+ 	strlcpy(command_line, boot_command_line, COMMAND_LINE_SIZE);
+ 	*cmdline_p = command_line;
+ 
+-	parse_early_param();
++	/*
++	 * We should parse "reservetop" and "early_ioremap_debug" before
++	 * early_ioremap_init().
++	 */
++	parse_early_param_alone("reservetop");
++	parse_early_param_alone("early_ioremap_debug");
+ 
+ 	/* VMI may relocate the fixmap; do this before touching ioremap area */
+ 	vmi_init();
+@@ -770,18 +788,7 @@ void __init setup_arch(char **cmdline_p)
+ 	bss_resource.start = virt_to_phys(&__bss_start);
+ 	bss_resource.end = virt_to_phys(&__bss_stop)-1;
+ 
+-#ifdef CONFIG_CMDLINE_BOOL
+-#ifdef CONFIG_CMDLINE_OVERRIDE
+-	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+-#else
+-	if (builtin_cmdline[0]) {
+-		/* append boot loader cmdline to builtin */
+-		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
+-		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
+-		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
+-	}
+-#endif
+-#endif
++	parse_early_param();
+ 
+ #ifdef CONFIG_X86_64
+ 	check_efer();
+diff --git a/include/linux/init.h b/include/linux/init.h
+index b30f694..4e0082a 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -242,6 +242,7 @@ struct obs_kernel_param {
+ 	__setup_param(str, fn, fn, 1)
+ 
+ /* Relies on boot_command_line being set */
++void __init parse_early_param_alone(char * param);
+ void __init parse_early_param(void);
+ void __init parse_early_options(char *cmdline);
+ #endif /* __ASSEMBLY__ */
+diff --git a/init/main.c b/init/main.c
+index 0ec75ce..d7d155b 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -477,6 +477,11 @@ static int __init do_early_param(char *param, char *val)
+ 	struct obs_kernel_param *p;
+ 
+ 	for (p = __setup_start; p < __setup_end; p++) {
++
++		/* Skip it if it has been parsed in do_early_param_alone() */
++		if (unlikely(p->early == -1))
++			continue;
++
+ 		if ((p->early && strcmp(param, p->str) == 0) ||
+ 		    (strcmp(param, "console") == 0 &&
+ 		     strcmp(p->str, "earlycon") == 0)
+@@ -490,6 +495,51 @@ static int __init do_early_param(char *param, char *val)
+ 	return 0;
+ }
+ 
++static char *alone_param __initdata;
++
++static int __init do_early_param_alone(char *param, char *val)
++{
++	struct obs_kernel_param *p;
++
++	BUG_ON(!alone_param);
++
++	if (strcmp(param, alone_param))
++		return 0;
++
++	for (p = __setup_start; p < __setup_end; p++) {
++		if (p->early && strcmp(param, p->str) == 0) {
++
++			WARN(p->early != 1, "%s is not a early param or "
++			     "it has been parsed\n", p->str);
++
++			if (p->setup_func(val) != 0)
++				printk(KERN_WARNING
++				       "Malformed early option '%s'\n", param);
++			/*
++			 * Set p->early to -1 to avoid parse_early_param()
++			 * and obsolete_checksetup() parse it again.
++			 */
++			p->early = -1;
++		}
++	}
++	/* We accept everything at this stage. */
++	return 0;
++}
++
++/*
++ * Parse specific boot parameter alone before parse_early_param().
++ * Note: only early params can do this.
++ */
++void __init parse_early_param_alone(char *param)
++{
++       static __initdata char tmp_cmdline[COMMAND_LINE_SIZE];
++
++       alone_param = param;
++       strlcpy(tmp_cmdline, boot_command_line, COMMAND_LINE_SIZE);
++       parse_args("early param alone", tmp_cmdline, NULL, 0,
++		  do_early_param_alone);
++}
++
+ void __init parse_early_options(char *cmdline)
+ {
+ 	parse_args("early options", cmdline, NULL, 0, do_early_param);
 -- 
-Jens Axboe
+1.6.1.2
+
 
