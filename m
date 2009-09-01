@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755148AbZIASIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755193AbZIASJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755148AbZIASIE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 14:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbZIASID
+	id S1755193AbZIASJE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 14:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZIASJD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 14:08:03 -0400
-Received: from relay1-v.mail.gandi.net ([217.70.178.75]:60267 "EHLO
-	relay1-v.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754996AbZIASIB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 14:08:01 -0400
-X-Greylist: delayed 8659 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Sep 2009 14:08:01 EDT
-Date: Tue, 1 Sep 2009 11:08:26 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
-       Tim Pepper <lnxninja@linux.vnet.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>, Jamey Sharp <jamey@minilop.net>
-Subject: Re: [RFC PATCH] Turn off the tick even when not idle
-Message-ID: <20090901180825.GA3621@josh-work.beaverton.ibm.com>
-References: <20090901154327.GA10024@feather>
- <alpine.DEB.1.10.0909011554590.12112@V090114053VZO-1>
+	Tue, 1 Sep 2009 14:09:03 -0400
+Received: from mms3.broadcom.com ([216.31.210.19]:3786 "EHLO MMS3.broadcom.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752597AbZIASJB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 14:09:01 -0400
+X-Server-Uuid: B55A25B1-5D7D-41F8-BC53-C57E7AD3C201
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was
+ "Is get_user_pages() enough to prevent pages from being swapped out ?")
+From: "David Xiao" <dxiao@broadcom.com>
+To: "Russell King - ARM Linux" <linux@arm.linux.org.uk>
+cc: "Laurent Pinchart" <laurent.pinchart@ideasonboard.com>,
+       "Steven Walter" <stevenrwalter@gmail.com>,
+       "Ben Dooks" <ben-linux@fluff.org>,
+       "Hugh Dickins" <hugh.dickins@tiscali.co.uk>,
+       "Robin Holt" <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <20090901133110.GO19719@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
+ <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com>
+ <1251237768.8877.26.camel@david-laptop>
+ <200908260117.27180.laurent.pinchart@ideasonboard.com>
+ <1251307331.9535.16.camel@david-laptop>
+ <20090901133110.GO19719@n2100.arm.linux.org.uk>
+Date: Tue, 1 Sep 2009 11:08:51 -0700
+Message-ID: <1251828531.3641.25.camel@david-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0909011554590.12112@V090114053VZO-1>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Mailer: Evolution 2.26.1
+X-WSS-ID: 6683BCBF600102050102-01-01
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 03:56:56PM -0400, Christoph Lameter wrote:
-> On Tue, 1 Sep 2009, Josh Triplett wrote:
+On Tue, 2009-09-01 at 06:31 -0700, Russell King - ARM Linux wrote:
+> On Wed, Aug 26, 2009 at 10:22:11AM -0700, David Xiao wrote:
+> > Sorry for the confusion, page_address() indeed only returns kernel
+> > virtual address; and in order to support VIVT cache maintenance for the
+> > user space mappings, the dma_map_sg/dma_map_page() functions or even the
+> > struct scatterlist do seem to have to be modified to pass in virtual
+> > address, I think.
 > 
-> > Please, give this patch a try and let me know what you think.
+> That's the wrong answer.  When DMA happens (and therefore these functions
+> are called) the userspace context could already have been switched away,
+> which means that any userspace address information is useless.
 > 
-> Looks quite good. The PNG shows more deterministic run time behavior.
+The dma_map_sg/page() needs to be set up before starting DMA operations.
 
-Thanks; exactly what I hoped to demonstrate.  Actually making the timer
-interrupt go away will require finding a more appropriate place to run
-all the code that otherwise polls periodically, but this patch lets us
-cheat and see the result before that happens. :)
+If the context switch happens before/when DMA occurs, that is okay since
+in the case of VIVT cache all the necessary cache lines will be
+invalidated/flushed  anyway with every context switch. 
 
-> > I'd like to work towards a patch which really can kill off the timer
-> > tick, making the kernel entirely event-driven and removing the polling
-> > that occurs in the timer tick.  I've reviewed everything the timer tick
-> > does, and every last bit of it could occur using an event-driven
-> > approach.
+My understanding is that there are basically two issues associated with
+VIVT cache in an OS environment:
+1. address space change. When a context switch happens, if the new
+address space is overlapping with the old one, as ARM linux does, all
+the related cache lines have to be invalidated/flushed, unless something
+like ASID used together with VIVT cache.
+
+2. cache-line aliasing in the same address space. 
+In the user space DMA case, we are assuming that these physical pages
+are only mapped twice, once in user space and once in kernel
+direct-mapping. 
+I went through the kernel code path and think the kernel direct-mapping
+was already flushed/invalidated before the pages were handed over to the
+user space; therefore, the proposal is to record the user space virtual
+address and do the proper cache maintenance operations.
+ 
+> Adding support to the existing DMA API functions so they can be used for
+> userspace mapped pages is simply the wrong approach - most users of those
+> functions are not concerned with userspace mapped pages at all, and adding
+> that burden onto all those users is clearly sub-optimal.
 > 
-> Good idea. Thought so for a long time. Thanks for working on it. Many of
-> the events can be deferred if nothing is happening in the system.
-> vm statistics, data expiration from caches etc. Not sure what to do about
-> the per cpu threads generated by various kernel subsystems though.
 
-I ran the benchmark at realtime priority, and affinitized to a single
-CPU.  I used ftrace to confirm that after the initial program setup
-(shared library loads, memory allocation, etc), no code runs in the
-kernel during the number-crunching; this makes sense, since I ran at
-higher priority than all the random affinitized kernel threads, and I
-pushed everything else (tasks and interrupts) onto another CPU.
+The kernel is already addressing the mmap() file case by putting the
+mapping field into the struct page and etc; and I personally do not
+think it is too much of a change for the user space DMA case, if we
+agree the application/request is valid of course.
 
-Long-term I'd like to solve the problem of those kernel threads, but
-realtime priority can mitigate those.  The new interrupt threading bits
-may help with other interrupts and avoid the need to set interrupt
-affinity.  The timer interrupt, though, represents the one and only
-thing I can't mitigate, hence why I'd like to make it go away.
+David
 
-- Josh Triplett
+
