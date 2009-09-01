@@ -1,68 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbZIAIui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753153AbZIAH7w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753443AbZIAIui (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZIAIuh
+	id S1753153AbZIAH7w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 03:59:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZIAH7v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:50:37 -0400
-Received: from mga14.intel.com ([143.182.124.37]:43213 "EHLO mga14.intel.com"
+	Tue, 1 Sep 2009 03:59:51 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38013 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753409AbZIAIuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:50:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182702897"
-Date: Tue, 1 Sep 2009 15:58:50 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Wright <chrisw@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Josh Triplett <josh@joshtriplett.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Izik Eidus <ieidus@redhat.com>
-Subject: Re: [PATCH] pagemap: document KPF_KSM and show it in page-types
-Message-ID: <20090901075850.GB1446@localhost>
-References: <20090808173900.GA21009@feather> <20090812065107.GA16363@localhost> <20090831135720.5E53.A69D9226@jp.fujitsu.com> <20090831065659.GA18039@localhost> <20090831071425.GA26634@localhost> <20090831071702.GB26634@localhost> <20090831164151.GB22649@x200.localdomain>
+	id S1751781AbZIAH7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 03:59:50 -0400
+Message-ID: <4A9CD443.6030603@redhat.com>
+Date: Tue, 01 Sep 2009 09:58:59 +0200
+From: Ivan Vecera <ivecera@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090831164151.GB22649@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+CC: Francois Romieu <romieu@fr.zoreil.com>, marty <marty@goodoldmarty.com>,
+       linux-hotplug@vger.kernel.org, netdev <netdev@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: r8189 mac address changes persist across reboot (was: duplicate
+ MAC 	addresses)
+References: <9b2b86520908230314q37d07da6mbde9dc48ad5a17ce@mail.gmail.com>
+In-Reply-To: <9b2b86520908230314q37d07da6mbde9dc48ad5a17ce@mail.gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 12:41:51AM +0800, Chris Wright wrote:
-> * Wu Fengguang (fengguang.wu@intel.com) wrote:
-> > It indicates to the system admin that processes mapping such pages may be
-> > eating less physical memory than the reported numbers by legacy tools.
-> > 
-> > CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> > CC: Chris Wright <chrisw@redhat.com>
-> > CC: Izik Eidus <ieidus@redhat.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+Alan Jenkins napsal(a):
+> On 8/23/09, marty <marty@goodoldmarty.com> wrote:
+>> Greg KH wrote:
+>>>> On Tue, Aug 18, 2009 at 04:27:04PM -0400, marty wrote:
+>>>>>> I got trouble...
+>>>>>> (duplicate MAC addresses)
+>>>> That's a bug in your hardware, have you asked your manufacturer to
+>>>> resolve this for you?  That violates the ethernet spec...
+>> I have resolved that problem as of today. I found this was caused
+>> by the software I had been using. If a hardware issue remains, it is moot.
+>>
+>> The bonding driver/utilities normally sets the bond address to the MAC of
+>> the
+>> first NIC. But it also set the MAC of the slave (eth3) to the MAC of the
+>> first
+>> NIC. This persists through reboots so that is how my MACs got duplicated.
+>>
+>> Resetting the MAC corrected those problems and everything works fine now.
+>>
+>> Marty B.
 > 
-> Acked-by: Chris Wright <chrisw@redhat.com>
-
-Thanks.
-
-> > --- linux-mm.orig/tools/vm/page-types.c	2009-08-31 15:00:24.000000000 +0800
-> > +++ linux-mm/tools/vm/page-types.c	2009-08-31 15:02:10.000000000 +0800
-> > @@ -49,6 +49,7 @@
-> >  #define KPF_UNEVICTABLE		18
-> >  #define KPF_HWPOISON		19
-> >  #define KPF_NOPAGE		20
-> > +#define KPF_KSM			21
+> Hmm.  <Documentation/networking/bonding.txt>
 > 
-> Doesn't this highlight the trouble w/ maintaining two copies of same info?
+> "To restore your slaves' MAC addresses, you need to detach them
+> from the bond (`ifenslave -d bond0 eth0'). The bonding driver will
+> then restore the MAC addresses that the slaves had before they were
+> enslaved."
+> 
+> In which case one would hope that a clean shutdown would restore the
+> MAC addresses in the same way as ifenslave -d.
+> 
+> I found that snippet via Google, which pointed me to the 2.4 version
+> of the same document [1].  It suggests that your hardware or driver is
+> a little unusual.
+> 
+> "To restore your slaves' MAC addresses, you need to detach them
+> from the bond (`ifenslave -d bond0 eth0'), set them down
+> (`ifconfig eth0 down'), unload the drivers (`rmmod 3c59x', for
+> example) and reload them to get the MAC addresses from their
+> eeproms."
+> 
+> So other drivers would not have this problem, because they always
+> reset the MAC address at load time.  That would explain why the the
+> kernel doesn't bother resetting the MAC addresses on shutdown.
+> 
+> Looking at r8169.c confirms this.  It doesn't appear to initialize the
+> MAC address register from elsewhere; it just uses the current value.
+> It will also report this initial value as the "permanent" MAC address,
+> which your report suggests is wrong.  I think your problem is a bug in
+> r8169.
+> 
+> Francois, I found a datasheet for the 8139; it was claimed to be
+> similar and it does indeed appear so.  The datasheet suggests that the
+> driver needs to provoke "auto-load" from the EEPROM at load time.
+> Could you please have a look at fixing this, so that MAC address
+> changes do not persist over a reboot?
+> 
+Using auto-loading method is not possible for all new Realtek products
+(mainly for PCI-E chipsets). I asked the Realtek engineers and this
+is the answer:
+Q: Is it possible to use HW register at offset 50h to reload the MAC
+   address from EEPROM or somewhere else? I mean the usage of Auto-load
+   mode (bits EEM1=0 and EEM0=1 in 50h HW reg).
+A: Current new LANs don't load mac address throught autoload command.
+   You need to read it out from external eeprom or internal efuse then
+   put it back to ID0~ID5.
 
-Yes, I even had patch to move these numbers to page-flags.h.
-however given that we have to update the flag name strings anyway,
-this is not a big extra burden?
+So you need to read the MAC address from the EEPROM and then write it into
+ID0-ID5 registers. I already created the patch that initializes the MAC
+address from EEPROM but there were some issues with this patch so it was
+reverted. Mikael reported that the MAC address from its adapter (on Thecus
+n2100) is read only partly (first 3 bytes were correct but the rest were
+zeros). Later we found that the MAC address is correct and there are really
+3 correct bytes + 3 zeros in EEPROM. The Thecus n2100 system probably uses
+only these 3 bytes and the remaining 3 bytes fills in by itself (they are
+probably stored somewhere in the firmware).
 
-Thanks,
-Fengguang
+I have tested my patch with several different realtek NICs without any
+problem but what should we do with embedded system like the n2100 that
+initializes the MAC in other way.
 
+There are 2 possibilities:
+1) There could be an additional module param to enable/disable the MAC
+   initialization
+2) The MAC address read from EEPROM will be checked against the current
+   MAC address in ID0-5 registers. And the current MAC will be replaced
+   by the one from EEPROM only if the first 3 bytes (OUI part) are
+   different.
+
+Francois, what do you think about it?
+
+Regards,
+Ivan
