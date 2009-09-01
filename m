@@ -1,92 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753404AbZIAIu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753270AbZIAIc6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753404AbZIAIu0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753382AbZIAIuY
+	id S1753270AbZIAIc6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:32:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbZIAIc5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:50:24 -0400
-Received: from mga14.intel.com ([143.182.124.37]:54449 "EHLO mga14.intel.com"
+	Tue, 1 Sep 2009 04:32:57 -0400
+Received: from mga11.intel.com ([192.55.52.93]:43192 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753379AbZIAIuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:50:21 -0400
+	id S1751676AbZIAIc4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:32:56 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="182702861"
-Date: Tue, 1 Sep 2009 16:14:58 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Fernando Silveira <fsilveira@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: I/O and pdflush
-Message-ID: <20090901081458.GD1446@localhost>
-References: <6afc6d4a0907111027w76234c8fv11ab77864515fdb0@mail.gmail.com> <20090712080410.GA8512@localhost> <6afc6d4a0908281448s537aa315jcb79b27453cf4279@mail.gmail.com> <20090829101247.GA20786@localhost> <20090829102126.GA22409@localhost> <6afc6d4a0908310624j47f9d8c7h47d98ecd95811883@mail.gmail.com> <20090831140006.GA23668@localhost> <20090831140113.GA24005@localhost> <20090831140713.GA24185@localhost> <6afc6d4a0908310733l6426e21fu11d826f6ffa6a2af@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <6afc6d4a0908310733l6426e21fu11d826f6ffa6a2af@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-IronPort-AV: E=Sophos;i="4.44,311,1249282800"; 
+   d="scan'208";a="489321514"
+Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
+From: Zhang Rui <rui.zhang@intel.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <20090901081114.GA9942@elf.ucw.cz>
+References: <1251789947.3483.215.camel@rzhang-dt>
+	 <20090901081114.GA9942@elf.ucw.cz>
+Content-Type: text/plain
+Date: Tue, 01 Sep 2009 16:30:44 +0800
+Message-Id: <1251793844.3483.228.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 31, 2009 at 10:33:43PM +0800, Fernando Silveira wrote:
-> On Mon, Aug 31, 2009 at 11:07, Wu Fengguang<fengguang.wu@intel.com> wrote:
-> > On Mon, Aug 31, 2009 at 10:01:13PM +0800, Wu Fengguang wrote:
-> >> On Mon, Aug 31, 2009 at 10:00:06PM +0800, Wu Fengguang wrote:
-> >> > Hi Fernando,
-> >> >
-> >> > What's your SSD's IO parameters? Ie. output of this command:
-> >> >
-> >> >         grep -r . /sys/block/sda/queue/
-> >> >
-> >> > Please replace 'sda' with your SSD device name.
-> >>
-> >> Oh I guess it's sdc:
-> >>
-> >>          grep -r . /sys/block/sdc/queue/
+On Tue, 2009-09-01 at 16:11 +0800, Pavel Machek wrote:
+> Hi!
 > 
-> Here is it:
+> > Introduce ALS sysfs class.
+> > 
+> > ALS sysfs class provides a standard sysfs interface for
+> > Ambient Light Sensor devices.
+> > 
+> > please read Documentation/ABI/testing/sysfs-class-als for
+> > detailed sysfs designs.
 > 
-> # grep -r . /sys/block/sdc/queue/
-> /sys/block/sdc/queue/nr_requests:128
-> /sys/block/sdc/queue/read_ahead_kb:128
-> /sys/block/sdc/queue/max_hw_sectors_kb:128
-> /sys/block/sdc/queue/max_sectors_kb:128
-> /sys/block/sdc/queue/scheduler:noop anticipatory [deadline] cfq
-> /sys/block/sdc/queue/hw_sector_size:512
-> /sys/block/sdc/queue/rotational:0
-> /sys/block/sdc/queue/nomerges:0
-> /sys/block/sdc/queue/rq_affinity:0
-> /sys/block/sdc/queue/iostats:1
-> /sys/block/sdc/queue/iosched/read_expire:500
-> /sys/block/sdc/queue/iosched/write_expire:5000
-> /sys/block/sdc/queue/iosched/writes_starved:2
-> /sys/block/sdc/queue/iosched/front_merges:1
-> /sys/block/sdc/queue/iosched/fifo_batch:16
-> #
+> Thanks for fixing the interface!
 > 
-> These are probably default settings.
+> > +static ssize_t
+> > +illuminance_show(struct device *dev, struct device_attribute *attr, char *buf)
+> > +{
+> > +	struct als_device *als = to_als_device(dev);
+> > +	int illuminance;
+> > +	int result;
+> > +
+> > +	result = als->ops->get_illuminance(als, &illuminance);
+> > +	if (result)
+> > +		return result;
+> > +
+> > +	if (!illuminance)
+> > +		return sprintf(buf, "Illuminance below the supported range\n");
+> > +	else if (illuminance == -1)
+> > +		return sprintf(buf, "Illuminance above the supported range\n");
+> > +	else if (illuminance < -1)
+> > +		return -ERANGE;
+> > +	else
+> > +		return sprintf(buf, "%d\n", illuminance);
+> > +}
 > 
-> > BTW, would you run "iostat -x 1 5" (which will run 5 seconds) when
-> > doing I/O in ideal throughput, and when in 25MB/s thoughput state?
+> that's nor particulary clean. One value per file and all that. Could
+> we simply return errnos in _all_ the error cases? (Docs would suggest
+> this contains integer so string is definitely unexpected).
 > 
-> Both files are attached (25mbps = 25MB/s, 80mbps = 80MB/s).
+IMO, 0 and -1 are not errors. they just suggest that the Ambient Light
+illuminance is beyond the device support range, while the device is
+still working normally.
+what about exporting these values (0 and -1) to user space directly?
 
-The iostat reported IO size is 64kb, which is half of max_sectors_kb=128.
-It is strange why the optimal 128kb IO size is not reached in both cases:
+> 
+> > +static ssize_t
+> > +adjustment_show(struct device *dev, struct device_attribute *attr, char *buf)
+> > +{
+> > +	struct als_device *als = to_als_device(dev);
+> > +	int illuminance, adjustment;
+> > +	int result;
+> > +
+> > +	result = als->ops->get_illuminance(als, &illuminance);
+> > +	if (result)
+> > +		return result;
+> > +
+> > +	if (illuminance < 0 && illuminance != -1)
+> > +		return sprintf(buf, "Current illuminance invalid\n");
+> > +
+> > +	result = als_get_adjustment(als, illuminance, &adjustment);
+> > +	if (result)
+> > +		return result;
+> > +
+> > +	return sprintf(buf, "%d%%\n", adjustment);
+> > +}
+> 
+> You should not return strings... and in this case it is not clear how
+> the code works. You fill the buf, but then return...? 
 
-        Device:         rrqm/s   wrqm/s     r/s     w/s    rsec/s   wsec/s  avgrq-sz avgqu-sz   await  svctm  %util
-case 1: sdc               0.00 69088.00     0.00  552.00     0.00 70656.00    128.00   142.75  386.39   1.81 100.10
-case 2: sdc               0.00 153504.00    0.00 1200.00     0.00 153600.00   128.00   138.35  115.76   0.83 100.10
+As the adjustment is a percentage value, I added a '%' postfix so that
+users won't be confused.
+yes, it's okay to just export the integer, e.g. "100" instead of "100%".
 
-Fernando, could you try increasing these deadline parameters by 10
-times?
+thanks,
+rui
 
-        echo 160   > /sys/block/sdc/queue/iosched/fifo_batch
-        echo 50000 > /sys/block/sdc/queue/iosched/write_expire
-
-And try cfq iosched if that still fails? The iostat outputs would be
-enough during the tests.
-
-Thanks,
-Fengguang
