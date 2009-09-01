@@ -1,344 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZIAGzh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752856AbZIAG7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752839AbZIAGzh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 02:55:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZIAGzh
+	id S1752856AbZIAG7V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 02:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752829AbZIAG7V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 02:55:37 -0400
-Received: from mail-qy0-f181.google.com ([209.85.221.181]:42363 "EHLO
-	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751781AbZIAGzf convert rfc822-to-8bit (ORCPT
+	Tue, 1 Sep 2009 02:59:21 -0400
+Received: from mga14.intel.com ([143.182.124.37]:15866 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752013AbZIAG7T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 02:55:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bBVFwu5B5Rq6qLsbaA1sjWmTnbiMJXtlmNW2QToA3UX0Ru0Ou1rZ7u7cV6eYSME5R5
-         8QqYnX9abDjCJRTMjvrow0QFZLuJWUQeQydBW4xC1BKWFGyts507nF4OpRJHlOJ6b3XW
-         nhpb4p2+j6WACoPRSxli2A/RhV16JHF9nl1Fk=
-MIME-Version: 1.0
-In-Reply-To: <6d53329e0908310311v55ef3909na0cbec756e63ccab@mail.gmail.com>
-References: <6d53329e0908250342g2cfb73f6v90f73c283c0d391c@mail.gmail.com>
-	 <alpine.LFD.2.00.0908251333410.6044@xanadu.home>
-	 <6d53329e0908302227l63420351m1005d0c76346e2ec@mail.gmail.com>
-	 <6d53329e0908310311v55ef3909na0cbec756e63ccab@mail.gmail.com>
-Date: Tue, 1 Sep 2009 12:25:37 +0530
-Message-ID: <6d53329e0908312355y7bd2038ds6ba8efe671d98bc9@mail.gmail.com>
-Subject: Re: ARM + jprobes/kretprobes SEGV/hangs/OOPS in 2.6.29 kernel
-From: venki kaps <venkiece2005@gmail.com>
-To: Nicolas Pitre <nico@cam.org>
-Cc: "sagar.abhishek@gmail.com" <sagar.abhishek@gmail.com>,
-       "jkenisto@us.ibm.com" <jkenisto@us.ibm.com>,
-       "rmk+kernel@arm.linux.org.uk" <rmk+kernel@arm.linux.org.uk>,
+	Tue, 1 Sep 2009 02:59:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="182670809"
+From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+To: "mst@redhat.com" <mst@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "prasanna@in.ibm.com" <prasanna@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
+Date: Tue, 1 Sep 2009 14:58:19 +0800
+Subject: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
+Thread-Topic: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
+Thread-Index: Acoq0ZZBzTHUHSc5TJ2FcwRbnd9RJw==
+Message-ID: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+              [RFC] Virtual Machine Device Queues (VMDq) support on KVM
 
-I have found the exact problem with respect to ARM jprobes.
+Network adapter with VMDq technology presents multiple pairs of tx/rx queues,
+and renders network L2 sorting mechanism based on MAC addresses and VLAN tags
+for each tx/rx queue pair. Here we present a generic framework, in which network
+traffic to/from a tx/rx queue pair can be directed from/to a KVM guest without
+any software copy.
 
-The problem with configure i.e, CONFIG_ARM_UNWIND = y; is enabled.
+Actually this framework can apply to traditional network adapters which have
+just one tx/rx queue pair. And applications using the same user/kernel interface
+can utilize this framework to send/receive network traffic directly thru a tx/rx
+queue pair in a network adapter.
 
-Due to  the stack unwinding, the jprobe is not able to return since
-Where jprobe starts getting 'system call"  is when you have exceptions
-or setjmp/longjmp
-which simply unwinding the stack without returning.
-
-After disabling (CONFIG_ARM_UNWIND = n;), all probes are working fine.
-
-The dump_stack() is also not an issue after the above change. Please ignore the
-previous mail.
-
-Finally there are no issues with ARM kprobes,jprobes and return probes
-But 'CONFIG_ARM_UNWIND' should be disabled for jprobes testing.
+We use virtio-net architecture to illustrate the framework.
 
 
-Best regards,
-Venkappa
+|--------------------|     pop               add_buf    |----------------|
+|    Qemu process    |  <---------    TX   <----------  | Guest Kernel   |
+|                    |  --------->         ---------->  |                |
+|    Virtio-net      |     push              get_buf    |                |
+|  (Backend service) |  --------->    RX   ---------->  |  Virtio-net    |
+|                    |  <---------         <----------  |    driver      |
+|                    |     push              get_buf    |                |
+|--------------------|                                  |----------------|
+                   |
+                   |
+                   | AIO (read & write) combined with Direct I/O
+                   |   (which substitute synced file operations)
+|-----------------------------------------------------------------------|
+|     Host kernel  | read: copy-less with directly mapped user          |
+|                  |       space to kernel, payload directly DMAed      |
+|                  |       into user space                              |
+|                  | write: copy-less with directly mapped user         |
+|                  |       space to kernel, payload directly hooked     |
+|                  |       to a skb                                     |
+|                  |                                                    |
+|  (a likely       |                                                    |
+|   queue pair     |                                                    |
+|   instance)      |                                                    |
+|      |           |                                                    |
+| NIC driver <-->  TUN/TAP driver                                       |
+|-----------------------------------------------------------------------|
+       |
+       |
+   traditional adapter or a tx/rx queue pair
+
+The basic idea is to utilize the kernel Asynchronous I/O combined with Direct
+I/O to implements copy-less TUN/TAP device. AIO and Direct I/O is not new to
+kernel, we still can see it in SCSI tape driver.
+
+With traditional file operations, a copying of payload contents from/to the
+kernel DMA address to/from a user buffer is needed. That's what the copying we
+want to save.
+
+The proposed framework is like this:
+A TUN/TAP device is bound to a traditional NIC adapter or a tx/rx queue pair in
+host side. KVM virto-net Backend service, the user space program submits
+asynchronous read/write I/O requests to the host kernel through TUN/TAP device.
+The requests are corresponding to the vqueue elements include both transmission
+& receive. They can be queued in one AIO request and later, the completion will
+be notified through the underlying packets tx/rx processing of the rx/tx queue
+pair.
+
+Detailed path:
+
+To guest Virtio-net driver, packets receive corresponding to asynchronous read
+I/O requests of Backend service.
+
+1) Guest Virtio-net driver provides header and payload address through the
+receive vqueue to Virtio-net backend service.
+
+2) Virtio-net backend service encapsulates multiple vqueue elements into
+multiple AIO control blocks and composes them into one AIO read request.
+
+3) Virtio-net backend service uses io_submit() syscall to pass the request to
+the TUN/TAP device.
+
+4) Virtio-net backend service uses io_getevents() syscall to check the
+completion of the request.
+
+5) The TUN/TAP driver receives packets from the queue pair of NIC, and prepares
+for Direct I/O.
+   A modified NIC driver may render a skb which header is allocated in host
+kernel, but the payload buffer is directly mapped from user space buffer which
+are rendered through the AIO request by the Backend service. get_user_pages()
+may do this. For one AIO read request, the TUN/TAP driver maintains a list for
+the directly mapped buffers, and a NIC driver tries to get the buffers as
+payload buffer to compose the new skbs. Of course, if getting the buffers
+fails, then kernel allocated buffers are used.
+
+6) Modern NIC cards now mostly have the header split feature. The NIC queue
+pair then may directly DMA the payload into the user spaces mapped payload
+buffers.
+Thus a zero-copy for payload is implemented in packet receiving.
+
+7) The TUN/TAP driver manually copy the host header to space user mapped.
+
+8) aio_complete() to notify the Virtio-net backend service for io_getevents().
 
 
+To guest Virtio-net driver, packets send corresponding to asynchronous write
+I/O requests of backend. The path is similar to packet receive.
+
+1) Guest Virtio-net driver provides header and payload address filled with
+contents through the transmit vqueue to Virtio-net backed service.
+
+2) Virtio-net backend service encapsulates the vqueue elements into multiple
+AIO control blocks and composes them into one AIO write request.
+
+3) Virtio-net backend service uses the io_submit() syscall to pass the
+requests to the TUN/TAP device.
+
+4) Virtio-net backend service uses io_getevents() syscall to check the request
+completion.
+
+5) The TUN/TAP driver gets the write requests and allocates skbs for it. The
+header contents are copied into the skb header. The directly mapped user space
+buffer is easily hooked into skb. Thus a zero copy for payload is implemented
+in packet sending.
+
+6) aio_complete() to notify the Virtio-net backend service for io_getevents().
+
+The proposed framework is described as above.
+
+Consider the modifications to the kernel and qemu:
+
+To kernel:
+1) The TUN/TAP driver may be modified a lot to implement AIO device operations
+and to implement directly user space mapping into kernel. Code to maintain the
+directly mapped user buffers should be in. It's just a modification for driver.
+
+2) The NIC driver may be modified to compose skb differently and slightly data
+structure change to add user directly mapped buffer pointer.
+Here, maybe it's better for a NIC driver to present an interface for an rx/tx
+queue pair instance which will also apply to traditional hardware, the kernel
+interface should not be changed to make the other components happy.
+The abstraction is useful, though it is not needed immediately here.
+
+3) The skb shared info structure may be modified a little to contain the user
+directly mapped info.
+
+To Qemu:
+1) The Virtio-net backend service may be modified to handle AIO read/write
+requests from the vqueues.
+2) Maybe a separate pthread to handle the AIO request triggering is needed.
+
+Any comments are appreciated here.
 
 
-On Mon, Aug 31, 2009 at 3:41 PM, venki kaps<venkiece2005@gmail.com> wrote:
-> Hi,
->
-> After dump_stack change, most of the system calls
-> (do_fork,do_execve,do_gettimeofday,
-> sys_gettimeofday,sys_open,sys_close, sys_read,sys_write) are working
-> fine with kprobes
-> and kretprobes.
->
-> But in jprobes, still 'SEGV,sysetm hangs,OOPS' will be getting for 'do_execve,
-> do_gettimeofday,sys_gettimeofday,sys_close, sys_read,sys_write' system calls.
->
->  I have surprised with jprobes which are working well for
-> 'do_fork,sys_open' system calls.
->
-> Best Regards,
-> Venkappa
->
-> On Mon, Aug 31, 2009 at 10:57 AM, venki kaps<venkiece2005@gmail.com> wrote:
->> Hi,
->>
->> I have further investigated with respect to this issue and found the
->> problem with
->> 'dump_stack()' which calls in my sample kprobe,kretprobe and jprobe
->> modules to get
->> the stack dump.
->>
->> Here it is giving sample example module which covers all the probes.
->>
->> Sample module test program:
->> ---------------------------
->> #include <linux/module.h>
->> #include <linux/init.h>
->> #include <linux/kprobes.h>
->>
->> static int k_count1 = 0;
->> static int k_count2 = 0;
->> static int k_count3 = 0;
->> static int k_count4 = 0;
->>
->> /* Proxy routine having the same arguments as actual sys_open() routine */
->> long jsys_open(unsigned int fd, char __user * buf, size_t count)
->> {
->>        printk("%s %d, Proxy sys_open, arguments are %d, %d\n",
->> __FILE__, __LINE__, fd, count);
->>        printk("%s %d, Stack_dump :\n", __FILE__, __LINE__);
->>        dump_stack();
->>        /* Always end with a call to jprobe_return(). */
->>        k_count1++;
->>        jprobe_return();
->>        /* NOTREACHED */
->>        return 0;
->> }
->>
->> static struct jprobe my_jprobe = {
->>        .entry = JPROBE_ENTRY(jsys_open)
->> };
->>
->> static const char *probed_func = "sys_open";
->>
->> /* Return-probe handler: Log the return value from the probed function. */
->> static int ret_handler(struct kretprobe_instance *ri, struct pt_regs *regs)
->> {
->>        int retval = regs_return_value(regs);
->>
->>        printk("%s %d, %s returns %d\n", __FILE__, __LINE__,
->> probed_func, retval);
->>        printk("%s %d, Stack_dump :\n", __FILE__, __LINE__);
->>        dump_stack();
->>        k_count2++;
->>        return 0;
->> }
->>
->> static struct kretprobe my_kretprobe = {
->>        .handler = ret_handler,
->>        /* Probe up to 20 instances concurrently. */
->>        .maxactive = 20
->> };
->>
->> static struct kprobe k_001_kpr;
->>
->> static int k_001_before_hook(struct kprobe *k_001_kpr, struct pt_regs *p)
->> {
->>        printk("%s %d\nStack dump for the kprobe pre handler for
->> instruction at %p\n", __FILE__, __LINE__, k_001_kpr->addr);
->>        dump_stack();
->>        k_count3++;
->>        return 0;
->> }
->>
->> void k_001_after_hook(struct kprobe *k_001_kpr, struct pt_regs *p,
->> unsigned long flags)
->> {
->>        printk("%s %d\nStack dump for the kprobe post handler at
->> %p\n", __FILE__, __LINE__, k_001_kpr->addr);
->>        dump_stack();
->>        printk("%s %d, The Registers are:\n", __FILE__, __LINE__);
->>        k_count4++;
->> }
->>
->>
->> static int __init k_001_init_probe(void)
->> {
->>        int ret;
->>        int retj;
->>        printk("%s %d\nInserting the kprobe for sys_open\n", __FILE__,
->> __LINE__);
->>
->>        /* Registering a kprobe */
->>        k_001_kpr.pre_handler = (kprobe_pre_handler_t) k_001_before_hook;
->>        k_001_kpr.post_handler = (kprobe_post_handler_t) k_001_after_hook;
->>        k_001_kpr.symbol_name = "sys_open", __FILE__, __LINE__;
->>        if (register_kprobe(&k_001_kpr) < 0) {
->>                printk("%s %dk-001.c:register_kprobe is failed\n",
->> __FILE__, __LINE__);
->>                return -1;
->>        }
->>        printk("%s %d, register_kprobe is successful\n", __FILE__, __LINE__);
->>
->>        printk("%s %d, Inserting the kretprobe for sys_open\n",
->> __FILE__, __LINE__);
->>        my_kretprobe.kp.symbol_name = (char *)probed_func;
->>
->>        if ((ret = register_kretprobe(&my_kretprobe)) < 0) {
->>                printk("%s %d, register_kretprobe failed, returned
->> %d\n", __FILE__, __LINE__, ret);
->>                return -1;
->>        }
->>        printk("%s %d, Planted return probe for sys_open at %p\n",
->> __FILE__, __LINE__, my_kretprobe.kp.addr);
->>
->>        my_jprobe.kp.symbol_name = "sys_open";
->>
->>        if ((retj = register_jprobe(&my_jprobe)) < 0) {
->>                printk("%s %d,register_jprobe failed, returned %d\n",
->> __FILE__, __LINE__, ret);
->>                return -1;
->>        }
->>        printk("%s %d,Planted jprobe at %p, handler addr %p\n",
->> __FILE__, __LINE__, my_jprobe.kp.addr, my_jprobe.entry);
->>
->>        return 0;
->> }
->>
->> static void __exit k_001_exit_probe(void)
->> {
->>        unregister_kprobe(&k_001_kpr);
->>        printk("%s %d\nkprobe unregistered from sys_open \n",
->> __FILE__, __LINE__);
->>
->>        unregister_kretprobe(&my_kretprobe);
->>        printk("%s %dkretprobe unregistered\n", __FILE__, __LINE__);
->>        /* nmissed > 0 suggests that maxactive was set too low. */
->>        printk("%s %dMissed probing %d instances of %s\n", __FILE__,
->> __LINE__, my_kretprobe.nmissed, probed_func);
->>
->>        unregister_jprobe(&my_jprobe);
->>        printk("%s %d,jprobe unregistered\n", __FILE__, __LINE__);
->>
->>        if (k_count1 > 0 && k_count2 > 0 && k_count3 > 0 && k_count4 > 0)
->>                printk("TEST PASS");
->>        else
->>                printk("TEST FAIL");
->> }
->>
->> module_init(k_001_init_probe);
->> module_exit(k_001_exit_probe);
->>
->> MODULE_DESCRIPTION("Kprobes test module");
->> MODULE_LICENSE("GPL");
->>
->> I have tested the above program and got result as system hang.
->>
->> Disable dump_stack:
->> ------------------------------
->> I have disabled dump_stack(ARM specific) in the above program
->> and did not notice any problem.
->>
->> After disabling the dump_stack(), all the probes are working
->> fine for 'do_fork,sys_open and sys_close system calls.
->>
->> ARM dump_stack implementation has been changed in 2.6.29 kernel:
->> ----------------------------------------------------------------------------------------------------
->> I have found in 2.6.29 kernel the current ARM dump_stack implementation
->> has been changed.Due to that change the kprobes,jprobes and kretprobes
->> are failing for 'do_fork,sys_open and sys_close' system calls.
->>
->> Current dump_stack implementation:
->>
->> Location: arch/arm/kernel/traps.c
->>
->> void dump_stack(void)
->> {
->>        dump_backtrace(NULL, NULL);
->> }
->>
->>
->> I have just reverted back the above source to old kernel implementation.
->>
->> Index: b/arch/arm/kernel/traps.c
->> ===================================================================
->> --- a/arch/arm/kernel/traps.c
->> +++ b/arch/arm/kernel/traps.c
->> @@ -202,7 +202,11 @@ static void dump_backtrace(struct pt_reg
->>
->>  void dump_stack(void)
->>  {
->> +#if 0
->>        dump_backtrace(NULL, NULL);
->> +#else
->> +       __backtrace();
->> +#endif
->>  }
->>
->>  EXPORT_SYMBOL(dump_stack);
->>
->>
->> After the above change,All probes are working fine with
->> enabling of dump_stack() in my sample modules.
->>
->> I have some queries with repect to the above changes.
->>
->> Queries:
->> ========
->> 1) Revert back the old kernel implementation might not be a good solution.
->>        I anticipate it needs to be fixed in 2.6.29 kernel implementations.
->>        Am i right/wrong.
->>
->> 2) Shall i avoid by calling dump_stack() in my sample test modules?
->>
->> 3) Only do_fork, sys_open and sys_close system calls are working fine with
->>        dump_stack() but still 'SEGV,sysetm hangs' for do_execve,do_gettimeofday,
->>        sys_gettimeofday,sys_read,sys_write, etc system calls.
->>
->> I have been further investigating with respect to the above issues
->> Meanwhile could you please provide the inputs with respect to the above queries?
->>
->> Thanks in advance.
->>
->> Best regards,
->> Venkappa
->>
->>
->> On Tue, Aug 25, 2009 at 11:07 PM, Nicolas Pitre<nico@cam.org> wrote:
->>> On Tue, 25 Aug 2009, venki kaps wrote:
->>>
->>>> Hi,
->>>>
->>>> I have been tracing kernel system call information using
->>>> the Kprobes/jprobes/kretprobes implementation in the 2.6.29 kernel on
->>>> ARM architecture.
->>>> Although the mainline kprobe/jprobe/kretprobe examples are working
->>>> fine (do_fork),
->>>> I have been facing some issues while running my own jprobe/kretprobe tests.
->>>>
->>> [...]
->>>>
->>>> Query:
->>>> =====
->>>>       - Are there any limitations for jptobes/kretporbes in mainline kernel for ARM?
->>>
->>> No limitation in particular that I know of.
->>>
->>>>       - Why it works for only do_fork and why not for others
->>>> (do_execve/sys_open/sys_close/sys_read/sys_write)?
->>>
->>> I don't know.  Will try to have a look.
->>>
->>>>       - Is it required any additional setup to achieve this?
->>>
->>> Not supposed to need anything special.
->>>
->>>
->>> Nicolas
->>>
->>
->
+Thanks
+Xiaohui
+
