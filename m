@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932079AbZIAOSO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932094AbZIAOSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932079AbZIAOSO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 10:18:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932067AbZIAOSL
+	id S932094AbZIAOSc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 10:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932086AbZIAOSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 10:18:11 -0400
-Received: from tanas.ca ([206.248.136.31]:60187 "EHLO tanas.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932066AbZIAOSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 10:18:09 -0400
+	Tue, 1 Sep 2009 10:18:31 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:38502 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932082AbZIAOS3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 10:18:29 -0400
+Date: Tue, 1 Sep 2009 15:18:12 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Steven Walter <stevenrwalter@gmail.com>, David Xiao <dxiao@broadcom.com>,
+       Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
+	get_user_pages() enough to prevent pages from being swapped out ?")
+Message-ID: <20090901141812.GT19719@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk> <200909011543.48439.laurent.pinchart@ideasonboard.com>
 MIME-Version: 1.0
-Date: Tue, 01 Sep 2009 10:18:06 -0400
-From: Andrei Tanas <andrei@tanas.ca>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Tejun Heo <tj@kernel.org>, Mark Lord <liml@rtr.ca>,
-       Mark Lord <mlord@pobox.com>, NeilBrown <neilb@suse.de>,
-       <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       <linux-scsi@vger.kernel.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: Re: MD/RAID time out writing superblock
-In-Reply-To: <4A9D25F3.2030207@redhat.com>
-References: <004e01ca25e4$c11a54e0$434efea0$@ca> <9cfb6af689a7010df166fdebb1ef516b.squirrel@neil.brown.name> <4A948A82.4080901@redhat.com> <b585ed9f13649050bbc984869d081315.squirrel@neil.brown.name> <4A94905F.7050705@redhat.com> <005101ca25f4$09006830$1b013890$@ca> <4A94A0E6.4020401@redhat.com> <005401ca25ff$9ac91cc0$d05b5640$@ca> <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BC033.9000909@pobox.com> <4A9C60A1.50303@rtr.ca> <640f6103c45b6cba6f84f887bde227e4@localhost> <4A9D1E7D.1050104@rtr.ca> <4A9D2204.1000608@kernel.org> <4A9D25F3.2030207@redhat.com>
-Message-ID: <419cca21f9440d50bf6c95716ffc5402@localhost>
-User-Agent: RoundCube Webmail/0.2.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909011543.48439.laurent.pinchart@ideasonboard.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 Sep 2009 09:47:31 -0400, Ric Wheeler <rwheeler@redhat.com>
-wrote:
->>>> Mine errored out again with exactly the same symptoms, this time after
->>>> only
->>>> few days and with the "tunable" set to 2 sec. I got a warranty
->>>> replacement
->>>> but haven't shipped this one yet. Let me know if you want it.
->>> ..
->>>
->>> Not me.  But perhaps Tejun ?
->>
->> I think you're much more qualified than me on the subject. :-)
->>
->> Anyone else?  Ric, are you interested with playing the drive?
-> 
-> No thanks....
-> 
-> I would suggest that Andrei install the new drive and watch it for a few
-> days to 
-> make sure that it does not fail in the same way. If it does, you might
-want
-> to look at the power supply/cables/etc?
+On Tue, Sep 01, 2009 at 03:43:48PM +0200, Laurent Pinchart wrote:
+> I might be missing something obvious, but I fail to see how VIVT caches
+> could work at all with multiple mappings. If a kernel-allocated buffer
+> is DMA'ed to, we certainly want to invalidate all cache lines that store
+> buffer data. As the cache doesn't care about physical addresses we thus
+> need to invalidate all virtual mappings for the buffer. If the buffer is
+> mmap'ed in userspace I don't see how that would be done.
 
-The drive is the second member of RAID1 array, as far as I understand, both
-drives should be experiencing very similar access patterns, and they are
-the same model with the same firmware, and manufactured on the same day,
-but only one of them showed these symptoms, so there must be something
-"special" about it.
-By now I think that MD made the right "decision" failing the drive and
-removing it from the array, so I guess let's leave it at that.
-
-Andrei.
+You need to ask MM gurus about that.  I don't touch the Linux MM very
+often so tend to keep forgetting how it works.  However, it does work
+for shared mappings of files on CPUs with VIVT caches.
