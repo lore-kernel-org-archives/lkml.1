@@ -1,74 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbZIAH6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbZIAIui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752959AbZIAH6Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 03:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752061AbZIAH6X
+	id S1753443AbZIAIui (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753415AbZIAIuh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 03:58:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47438 "EHLO hera.kernel.org"
+	Tue, 1 Sep 2009 04:50:37 -0400
+Received: from mga14.intel.com ([143.182.124.37]:43213 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751937AbZIAH6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 03:58:23 -0400
-Message-ID: <4A9CD41C.8060604@kernel.org>
-Date: Tue, 01 Sep 2009 16:58:20 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1753409AbZIAIuf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 04:50:35 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="182702897"
+Date: Tue, 1 Sep 2009 15:58:50 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Chris Wright <chrisw@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Josh Triplett <josh@joshtriplett.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Izik Eidus <ieidus@redhat.com>
+Subject: Re: [PATCH] pagemap: document KPF_KSM and show it in page-types
+Message-ID: <20090901075850.GB1446@localhost>
+References: <20090808173900.GA21009@feather> <20090812065107.GA16363@localhost> <20090831135720.5E53.A69D9226@jp.fujitsu.com> <20090831065659.GA18039@localhost> <20090831071425.GA26634@localhost> <20090831071702.GB26634@localhost> <20090831164151.GB22649@x200.localdomain>
 MIME-Version: 1.0
-To: Meelis Roos <mroos@linux.ee>
-CC: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: boot panic after oops from sysfs_new_dirent
-References: <Pine.SOC.4.64.0908311646150.20934@math.ut.ee> <20090831.142215.111904849.davem@davemloft.net> <Pine.SOC.4.64.0909011003460.10184@math.ut.ee> <4A9CC9E9.2070609@kernel.org> <4A9CCD92.4090909@kernel.org> <Pine.SOC.4.64.0909011032350.10835@math.ut.ee>
-In-Reply-To: <Pine.SOC.4.64.0909011032350.10835@math.ut.ee>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 01 Sep 2009 07:58:23 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090831164151.GB22649@x200.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Meelis Roos wrote:
->> Ummm.... one more question.  Is cpu0 missing?  Can you please post the
->> output of "cat /proc/cpuinfo"?
+On Tue, Sep 01, 2009 at 12:41:51AM +0800, Chris Wright wrote:
+> * Wu Fengguang (fengguang.wu@intel.com) wrote:
+> > It indicates to the system admin that processes mapping such pages may be
+> > eating less physical memory than the reported numbers by legacy tools.
+> > 
+> > CC: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> > CC: Chris Wright <chrisw@redhat.com>
+> > CC: Izik Eidus <ieidus@redhat.com>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 > 
-> Yes, there's no CPU numbered 0, the numbers come from hardware slots on 
-> backplane.
+> Acked-by: Chris Wright <chrisw@redhat.com>
 
-Aha...  Does the following patch fix the problem?
+Thanks.
 
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 5fe3784..3311c89 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -197,7 +197,12 @@ static unsigned long pcpu_chunk_addr(struct pcpu_chunk *chunk,
- static bool pcpu_chunk_page_occupied(struct pcpu_chunk *chunk,
- 				     int page_idx)
- {
--	return *pcpu_chunk_pagep(chunk, 0, page_idx) != NULL;
-+	/*
-+	 * Any possible cpu id can be used here, so there's no need to
-+	 * worry about preemption or cpu hotplug.
-+	 */
-+	return *pcpu_chunk_pagep(chunk, raw_smp_processor_id(),
-+				 page_idx) != NULL;
- }
+> > --- linux-mm.orig/tools/vm/page-types.c	2009-08-31 15:00:24.000000000 +0800
+> > +++ linux-mm/tools/vm/page-types.c	2009-08-31 15:02:10.000000000 +0800
+> > @@ -49,6 +49,7 @@
+> >  #define KPF_UNEVICTABLE		18
+> >  #define KPF_HWPOISON		19
+> >  #define KPF_NOPAGE		20
+> > +#define KPF_KSM			21
+> 
+> Doesn't this highlight the trouble w/ maintaining two copies of same info?
 
- /* set the pointer to a chunk in a page struct */
-@@ -297,6 +302,14 @@ static struct pcpu_chunk *pcpu_chunk_addr_search(void *addr)
- 		return pcpu_first_chunk;
- 	}
+Yes, I even had patch to move these numbers to page-flags.h.
+however given that we have to update the flag name strings anyway,
+this is not a big extra burden?
 
-+	/*
-+	 * The address is relative to unit0 which might be unused and
-+	 * thus unmapped.  Offset the address to the unit space of the
-+	 * current processor before looking it up in the vmalloc
-+	 * space.  Note that any possible cpu id can be used here, so
-+	 * there's no need to worry about preemption or cpu hotplug.
-+	 */
-+	addr += raw_smp_processor_id() * pcpu_unit_size;
- 	return pcpu_get_page_chunk(vmalloc_to_page(addr));
- }
+Thanks,
+Fengguang
 
--- 
-tejun
