@@ -1,92 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753144AbZIASmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753063AbZIASo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753144AbZIASmH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 14:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750935AbZIASmG
+	id S1753063AbZIASo5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 14:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752640AbZIASo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 14:42:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58244 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750718AbZIASmF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 14:42:05 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
-Date: Tue, 1 Sep 2009 20:42:59 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19099.52899.620345.326521@pilspetsen.it.uu.se> <19100.31254.666066.755541@pilspetsen.it.uu.se>
-In-Reply-To: <19100.31254.666066.755541@pilspetsen.it.uu.se>
+	Tue, 1 Sep 2009 14:44:56 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:54143 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751848AbZIASoy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 14:44:54 -0400
+Date: Tue, 1 Sep 2009 14:44:55 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_pages
+Message-ID: <20090901184455.GA27294@infradead.org>
+References: <1251803946-9243-1-git-send-email-jens.axboe@oracle.com> <1251803946-9243-9-git-send-email-jens.axboe@oracle.com> <1251830335.8502.17.camel@laptop>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909012042.59856.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251830335.8502.17.camel@laptop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 01 September 2009, Mikael Pettersson wrote:
-> Mikael Pettersson writes:
->  > Rafael J. Wysocki writes:
->  >  > On Saturday 29 August 2009, Mikael Pettersson wrote:
->  >  > > Mikael Pettersson writes:
->  >  > >  > Rafael J. Wysocki writes:
->  >  > >  >  > On Thursday 27 August 2009, Mikael Pettersson wrote:
->  >  > >  >  > > On Tue, 25 Aug 2009 22:34:53 +0200 (CEST), Rafael J. Wysocki wrote:
->  >  > >  >  > > > The following bug entry is on the current list of known regressions
->  >  > >  >  > > > from 2.6.30.  Please verify if it still should be listed and let me know
->  >  > >  >  > > > (either way).
->  >  > >  >  > > > 
->  >  > >  >  > > > 
->  >  > >  >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
->  >  > >  >  > > > Subject		: pty regressed again, breaking expect and gcc's testsuite
->  >  > >  >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
->  >  > >  >  > > > Date		: 2009-08-14 23:41 (12 days old)
->  >  > >  >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
->  >  > >  >  > > 
->  >  > >  >  > > Not fixed. With 2.6.31-rc7 I'm still seeing repeatable testsuite
->  >  > >  >  > > failures on powerpc64. Reverting to 2.6.30 makes the failures go away.
->  >  > >  >  > 
->  >  > >  >  > Thanks for the update.
->  >  > >  >  > 
->  >  > >  >  > I guess 2.6.31-rc8 doesn't make any difference, does it?
->  >  > >  > 
->  >  > >  > I've scheduled a number of gcc bootstraps and testsuite runs
->  >  > >  > with -rc8 on x86, powerpc64, and arm. I'll post an update in
->  >  > >  > a day or so.
->  >  > > 
->  >  > > 2.6.31-rc8 results in bogus testsuite failures on all three platforms.
->  >  > 
->  >  > That may be a result of the known inotify borkage in -rc8 that has been fixed
->  >  > in the current Linus' tree.
->  > 
->  > No, it's the same old semi-random pty breakage. My kernels are built
->  > without inotify.
->  > 
->  > A bisection has identified Alan's
->  > 
->  > pty: Rework the pty layer to use the normal buffering logic
->  > d945cb9cce20ac7143c2de8d88b187f62db99bdc 
->  > 
->  > as the culprit. This patch introduces a massive number of bogus
->  > failures in the gcc testsuite. Subsequent pty/tty patches do fix
->  > most of those failures, but clearly not all.
-> 
-> Starting with 2.6.31-rc8 and reverting
-> 
-> 85dfd81dc57e8183a277ddd7a56aa65c96f3f487 pty: fix data loss when stopped (^S/^Q)
-> d945cb9cce20ac7143c2de8d88b187f62db99bdc pty: Rework the pty layer to use the normal buffering logic
-> 
-> in that order gives me a kernel that works on both x86 and powerpc64.
-> 
-> So the bug is definitely limited to the pty buffering logic change.
+On Tue, Sep 01, 2009 at 08:38:55PM +0200, Peter Zijlstra wrote:
+> Do we really need a tunable for this?
 
-Thanks a lot for this information, adding somme CCs to the list.
+It will make increasing it in the field a lot easier.  And having deal
+with really large systems I have the fear that there are I/O topologies
+outhere for which every "reasonable" value is too low.
 
-Best,
-Rafael
+> I guess we need a limit to avoid it writing out everything, but can't we
+> have something automagic?
+
+Some automatic adjustment would be nice.  But finding the right auto
+tuning will be an interesting exercise.
+
