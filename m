@@ -1,49 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZIANgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbZIANmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754786AbZIANgi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 09:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZIANgh
+	id S1754792AbZIANmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 09:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754753AbZIANmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 09:36:37 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9133 "EHLO mx1.redhat.com"
+	Tue, 1 Sep 2009 09:42:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:3012 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754706AbZIANgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 09:36:36 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com>
-References: <84144f020908310308i48790f78g5a7d73a60ea854f8@mail.gmail.com> <20090831074842.GA28091@linux-sh.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: dhowells@redhat.com, Paul Mundt <lethal@linux-sh.org>,
-       Mel Gorman <mel@csn.ul.ie>, Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Dave Hansen <dave@linux.vnet.ibm.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+	id S1754746AbZIANmN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 09:42:13 -0400
+Date: Tue, 1 Sep 2009 15:37:09 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: arjan@infradead.org, jeremy@goop.org, mschmidt@redhat.com,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tj@kernel.org, tglx@linutronix.de,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: page allocator regression on nommu
-Date: Tue, 01 Sep 2009 14:35:47 +0100
-Message-ID: <6126.1251812147@redhat.com>
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [PATCH] kthreads: Fix startup synchronization boot crash
+Message-ID: <20090901133709.GA24041@redhat.com>
+References: <20090829182718.10f566b1@leela> <tip-23386d63bbb3199cf247313ec088878d72debcfd@git.kernel.org> <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901131440.GA29783@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+On 09/01, Ingo Molnar wrote:
+>
+> * Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > Yes, this should work. But I _think_ we can make the better fix...
+> >
+> > I'll try to make the patch soon. Afaics we don't need
+> > kthreadd_task_init_done.
+>
+> ok.
 
-> This looks to be a bug in nommu do_mmap_pgoff() error handling. I
-> guess we shouldn't call __put_nommu_region() if add_nommu_region()
-> hasn't been called?
+Just in case, the patch is ready. I need to re-check my thinking
+and test it somehow...
 
-We should to make sure the region gets cleaned up properly.  However, it will
-go wrong if do_mmap_shared_file() or do_mmap_private() fail.  We should
-perhaps call add_nommu_region() before doing the "set up the mapping" chunk -
-we hold the region semaphore, so it shouldn't hurt anyone if we then have to
-remove it again.
+- remove kthreadd_task initialization from rest_init()
 
-David
+- change kthreadd() to initialize kthreadd_task = current
+
+- change the main loop in kthreadd() to take kthread_create_lock
+  before the first schedule() (just shift schedule() down)
+
+This way, if kthreadd_task needs the wakeup, kthread_create()
+must see kthreadd_task != NULL after unlock(kthread_create_lock).
+
+If kthread_create() sees kthreadd_task == NULL we can just sleep
+on create.done, kthreadd() must notice the new request before
+it calls schedule().
+
+Note that with this change it is possible to use kthread_create()
+at any time, but the caller will sleep until rest_init() creates
+kthreadd.
+
+Oleg.
+
+ init/main.c      |    5 +----
+ kernel/kthread.c |   30 ++++++++++++++++++------------
+ 2 files changed, 19 insertions(+), 16 deletions(-)
+
+
+--- a/init/main.c
++++ b/init/main.c
+@@ -449,12 +449,9 @@ static void __init setup_command_line(ch
+ static noinline void __init_refok rest_init(void)
+ 	__releases(kernel_lock)
+ {
+-	int pid;
+-
+ 	kernel_thread(kernel_init, NULL, CLONE_FS | CLONE_SIGHAND);
+ 	numa_default_policy();
+-	pid = kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+-	kthreadd_task = find_task_by_pid_ns(pid, &init_pid_ns);
++	kernel_thread(kthreadd, NULL, CLONE_FS | CLONE_FILES);
+ 	unlock_kernel();
+ 
+ 	/*
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -128,8 +128,14 @@ struct task_struct *kthread_create(int (
+ 	spin_lock(&kthread_create_lock);
+ 	list_add_tail(&create.list, &kthread_create_list);
+ 	spin_unlock(&kthread_create_lock);
+-
+-	wake_up_process(kthreadd_task);
++	/*
++	 * If kthreadd was not created yet, kthreadd() must see the result
++	 * of list_add_tail() later, it takes kthread_create_lock before the
++	 * first schedule(). If kthreadd() locked kthread_create_lock at
++	 * least once, we must see kthreadd_task != NULL.
++	 */
++	if (likely(kthreadd_task))
++		wake_up_process(kthreadd_task);
+ 	wait_for_completion(&create.done);
+ 
+ 	if (!IS_ERR(create.result)) {
+@@ -216,23 +222,18 @@ EXPORT_SYMBOL(kthread_stop);
+ 
+ int kthreadd(void *unused)
+ {
+-	struct task_struct *tsk = current;
++	kthreadd_task = current;
+ 
+ 	/* Setup a clean context for our children to inherit. */
+-	set_task_comm(tsk, "kthreadd");
+-	ignore_signals(tsk);
+-	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
+-	set_cpus_allowed_ptr(tsk, cpu_all_mask);
++	set_task_comm(kthreadd_task, "kthreadd");
++	ignore_signals(kthreadd_task);
++	set_user_nice(kthreadd_task, KTHREAD_NICE_LEVEL);
++	set_cpus_allowed_ptr(kthreadd_task, cpu_all_mask);
+ 	set_mems_allowed(node_possible_map);
+ 
+ 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+ 
+ 	for (;;) {
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		if (list_empty(&kthread_create_list))
+-			schedule();
+-		__set_current_state(TASK_RUNNING);
+-
+ 		spin_lock(&kthread_create_lock);
+ 		while (!list_empty(&kthread_create_list)) {
+ 			struct kthread_create_info *create;
+@@ -247,6 +248,11 @@ int kthreadd(void *unused)
+ 			spin_lock(&kthread_create_lock);
+ 		}
+ 		spin_unlock(&kthread_create_lock);
++
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (list_empty(&kthread_create_list))
++			schedule();
++		__set_current_state(TASK_RUNNING);
+ 	}
+ 
+ 	return 0;
+
