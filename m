@@ -1,65 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZIAIkC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZIAInH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753293AbZIAIkC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 04:40:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZIAIkB
+	id S1753264AbZIAInH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 04:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZIAInG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 04:40:01 -0400
-Received: from mga05.intel.com ([192.55.52.89]:48093 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753007AbZIAIkA (ORCPT
+	Tue, 1 Sep 2009 04:43:06 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:17459 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753044AbZIAInE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 04:40:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,311,1249282800"; 
-   d="scan'208";a="722797830"
-Date: Tue, 1 Sep 2009 10:42:04 +0200
-From: Samuel Ortiz <sameo@linux.intel.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       linux-kernel@vger.kernel.org,
-       Linus Walleij <linus.walleij@stericsson.com>,
-       rtc-linux@googlegroups.com
-Subject: Re: [rtc-linux] [PATCH] AB3100 RTC support v4
-Message-ID: <20090901084203.GA4277@sortiz.org>
-References: <1251668944-32222-1-git-send-email-linus.walleij@stericsson.com>
- <63386a3d0909010026x72cd4adcyc86927fbf4966c24@mail.gmail.com>
+	Tue, 1 Sep 2009 04:43:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=rPMWngLd3cYP6k83cFDfJGuI2HVyZbAXkwsgjywn5lvfeM7g1s6YNwyli7rk5twveQ
+         72yvF3n15CT2Hun/Tr8YSGx359hJYcOW9Z0voNCq6wApDYZyx5/oWp2ZDkaAPv7djH2O
+         vqxuEBylt+bolk5mA7+OH2jZgN0Fg8Ui2UDwM=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <63386a3d0909010026x72cd4adcyc86927fbf4966c24@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com>
+References: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com>
+Date: Tue, 1 Sep 2009 12:43:06 +0400
+Message-ID: <aa79d98a0909010143t27096d25n1ee36651f8487b52@mail.gmail.com>
+Subject: Re: [Question] x86,APIC: In apicdef.h dfr,svr,...... shouldn't be 
+	const?
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On 9/1/09, Rakib Mullick <rakib.mullick@gmail.com> wrote:
+> Hello guys, Intel System programmers guide says - dfr, svr, esr - this
+> registers should be readonly. So shouldn't they use const? Or is it
+> anything else?
 
-On Tue, Sep 01, 2009 at 09:26:29AM +0200, Linus Walleij wrote:
-> 2009/8/30 Linus Walleij <linus.walleij@stericsson.com>:
-> 
-> > This adds support for the RTC found inside the AB3100 Mixed Signal chip.
-> > The symbols used for communicating with the chip is found in the
-> > mfd/ab3100-core.c driver that also provides the platform device.
-> >
-> > Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
-> > Acked-by: Alessandro Zummo <alessandro.zummo@towertech.it>
-> > Cc: Samuel Ortiz <sameo@linux.intel.com>
-> > ---
-> > Changelog v3->v4
-> > - Remove error message that will be given by the RTC core anyway.
-> > - Suggest to push this through Sam's MFD tree if it's OK with Sam.
-> 
-> No further comments on this it seems, Sam can you pick it into the
-> MFD tree or shall I send it en route to akpm?
-It's already queued on my local tree, will push it today.
+Hi Rakib, i dont have sources under my hands at moment, but iirc there
+were situations we nees to poke esr register.
 
-Cheers,
-Samuel.
+>
+> And apicdef.h also contains a style problem, checkpatch warns about
+> following style:
+>
+>               u32	spurious_vector	:  8
+>
+> Check patch wants as:
+>
+>                          u32	spurious_vector:8
+>
+> Shouldn't this issues be fixed?
+>
+> Thanks,
+> --
 
-
-> Linus
-
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+i dont see reason why not ;)
+though i wonder why we need this structure at all. We may have
+extended amd entries.
+Yinghai cced.
