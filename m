@@ -1,80 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZIABH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752559AbZIABeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbZIABH2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 31 Aug 2009 21:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZIABH1
+	id S1752559AbZIABeo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 31 Aug 2009 21:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751971AbZIABen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 31 Aug 2009 21:07:27 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57946 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751815AbZIABH1 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 31 Aug 2009 21:07:27 -0400
-Message-ID: <4A9C73A4.20003@cn.fujitsu.com>
-Date: Tue, 01 Sep 2009 09:06:44 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Mon, 31 Aug 2009 21:34:43 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:54688 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751091AbZIABem (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 31 Aug 2009 21:34:42 -0400
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Neil Horman <nhorman@tuxdriver.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Wei Yongjun <yjwei@cn.fujitsu.com>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH resend] tracing/events: convert NAPI's tracepoint via
- TRACE_EVENT
-References: <4A9B6AA7.5020508@cn.fujitsu.com> <alpine.DEB.2.00.0908311402150.13931@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0908311402150.13931@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19100.31254.666066.755541@pilspetsen.it.uu.se>
+Date: Tue, 1 Sep 2009 03:34:14 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+In-Reply-To: <19099.52899.620345.326521@pilspetsen.it.uu.se>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19096.15539.205951.931871@pilspetsen.it.uu.se>
+	<19097.14413.89047.384281@pilspetsen.it.uu.se>
+	<200908292101.38800.rjw@sisk.pl>
+	<19099.52899.620345.326521@pilspetsen.it.uu.se>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mikael Pettersson writes:
+ > Rafael J. Wysocki writes:
+ >  > On Saturday 29 August 2009, Mikael Pettersson wrote:
+ >  > > Mikael Pettersson writes:
+ >  > >  > Rafael J. Wysocki writes:
+ >  > >  >  > On Thursday 27 August 2009, Mikael Pettersson wrote:
+ >  > >  >  > > On Tue, 25 Aug 2009 22:34:53 +0200 (CEST), Rafael J. Wysocki wrote:
+ >  > >  >  > > > The following bug entry is on the current list of known regressions
+ >  > >  >  > > > from 2.6.30.  Please verify if it still should be listed and let me know
+ >  > >  >  > > > (either way).
+ >  > >  >  > > > 
+ >  > >  >  > > > 
+ >  > >  >  > > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14015
+ >  > >  >  > > > Subject		: pty regressed again, breaking expect and gcc's testsuite
+ >  > >  >  > > > Submitter	: Mikael Pettersson <mikpe@it.uu.se>
+ >  > >  >  > > > Date		: 2009-08-14 23:41 (12 days old)
+ >  > >  >  > > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125029329805643&w=3D4
+ >  > >  >  > > 
+ >  > >  >  > > Not fixed. With 2.6.31-rc7 I'm still seeing repeatable testsuite
+ >  > >  >  > > failures on powerpc64. Reverting to 2.6.30 makes the failures go away.
+ >  > >  >  > 
+ >  > >  >  > Thanks for the update.
+ >  > >  >  > 
+ >  > >  >  > I guess 2.6.31-rc8 doesn't make any difference, does it?
+ >  > >  > 
+ >  > >  > I've scheduled a number of gcc bootstraps and testsuite runs
+ >  > >  > with -rc8 on x86, powerpc64, and arm. I'll post an update in
+ >  > >  > a day or so.
+ >  > > 
+ >  > > 2.6.31-rc8 results in bogus testsuite failures on all three platforms.
+ >  > 
+ >  > That may be a result of the known inotify borkage in -rc8 that has been fixed
+ >  > in the current Linus' tree.
+ > 
+ > No, it's the same old semi-random pty breakage. My kernels are built
+ > without inotify.
+ > 
+ > A bisection has identified Alan's
+ > 
+ > pty: Rework the pty layer to use the normal buffering logic
+ > d945cb9cce20ac7143c2de8d88b187f62db99bdc 
+ > 
+ > as the culprit. This patch introduces a massive number of bogus
+ > failures in the gcc testsuite. Subsequent pty/tty patches do fix
+ > most of those failures, but clearly not all.
 
+Starting with 2.6.31-rc8 and reverting
 
-Steven Rostedt wrote:
-> On Mon, 31 Aug 2009, Xiao Guangrong wrote:
-> 
->> - Convert NAPI's tracepoint via TRACE_EVENT macro, the output information
->>   like below:
->>
->>    sshd-2503  [000]    71.920846: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
->>    sshd-2503  [000]    72.020291: napi_poll: ifname=eth0 state=0 weigth=16 poll=pcnet32_poll
->>    sshd-2503  [000]    72.020418: napi_poll: ifname=eth0 state=NAPI_STATE_SCHED weigth=16 poll=pcnet32_poll
->>
->> - Remove the "DECLARE_TRACE" definiens in include/trace/define_trace.h,
->>   because TRACE_EVENT not use it
-> 
-> The above really needs to be in a separate patch, since it is a tracing 
-> infrastructure change.
-> 
+85dfd81dc57e8183a277ddd7a56aa65c96f3f487 pty: fix data loss when stopped (^S/^Q)
+d945cb9cce20ac7143c2de8d88b187f62db99bdc pty: Rework the pty layer to use the normal buffering logic
 
-Hi Steven,
+in that order gives me a kernel that works on both x86 and powerpc64.
 
-We can't break this patch into two patches, because it's has redefined 'DECLARE_TRACE'
-in include/trace/define_trace.h, like below:
-
-1: if we remove 'DECLARE_TRACE' first, then NAPI's tracepoint can't define tracepoint
-   (it's a NAPI tracepoint's bug,
-    see my previous patch: http://marc.info/?l=linux-kernel&m=125118032931716&w=2)
-
-2: if we convert NAPI's tracepoint first, it can't include more TRACE_EVENT .h files in
-   one .c file, the compiler will complain with variables redefined:
-
-include/trace/events/napi.h:15: error: redefinition of ‘__tpstrtab_napi_poll’
-include/trace/events/napi.h:15: error: previous definition of ‘__tpstrtab_napi_poll’ was here
-include/trace/events/napi.h:15: error: redefinition of ‘__tracepoint_napi_poll’
-include/trace/events/napi.h:15: error: previous definition of ‘__tracepoint_napi_poll’ was here
-In file included from include/trace/ftrace.h:644,
-
-So, I think we do better fix this bug early, then other people can go on his work on ftrace.
-
-Hi Neil,
-
-How do you think about this patch, can you give me some comments?
-
-
-Thanks,
-Xiao
-
+So the bug is definitely limited to the pty buffering logic change.
