@@ -1,82 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753824AbZIATl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753911AbZIATn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753824AbZIATl6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 15:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752597AbZIATl6
+	id S1753911AbZIATn5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 15:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752767AbZIATn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 15:41:58 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:39535 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752055AbZIATl5 (ORCPT
+	Tue, 1 Sep 2009 15:43:56 -0400
+Received: from g1t0027.austin.hp.com ([15.216.28.34]:9804 "EHLO
+	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752597AbZIATnz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 15:41:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=x3Zn2afBSEOLe/JvVbeqsNb1tnZYXfmWepr1DJa87qrgXC7RUXa075nUM5swaqZ7B9
-         E7fcoxKVaS+b4zcNLAbzkvp9LmsayIbQXe3iVqLEl6TysbrOMK7pyY7rT4VhazCw7tUS
-         23EIGdul/hTjLwl6hbcuLXyX8o+wFD0fOyhoc=
-Date: Tue, 1 Sep 2009 23:41:54 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Rakib Mullick <rakib.mullick@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: [Question] x86,APIC: In apicdef.h dfr,svr,...... shouldn't be
-	const?
-Message-ID: <20090901194154.GB19964@lenovo>
-References: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com> <aa79d98a0909010143t27096d25n1ee36651f8487b52@mail.gmail.com>
+	Tue, 1 Sep 2009 15:43:55 -0400
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: Randy Dunlap <rdunlap@xenotime.net>,
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+CC: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
+       ISS StorageDev <iss_storagedev@hp.com>
+Date: Tue, 1 Sep 2009 19:43:17 +0000
+Subject: RE: [PATCH] cciss: fix schedule_timeout() parameters
+Thread-Topic: [PATCH] cciss: fix schedule_timeout() parameters
+Thread-Index: AcoqdiejUhcZCQOcS3yLBAvk9XXCAwAxXu4Q
+Message-ID: <0F5B06BAB751E047AB5C87D1F77A77886952DFA043@GVW0547EXC.americas.hpqcorp.net>
+References: <4A9ADECE.7050900@xenotime.net>	<4A9C156D.5080701@gmail.com>
+ <20090831130342.a5f3d821.rdunlap@xenotime.net>
+In-Reply-To: <20090831130342.a5f3d821.rdunlap@xenotime.net>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aa79d98a0909010143t27096d25n1ee36651f8487b52@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Tue, Sep 01, 2009 at 12:43:06PM +0400]
-| On 9/1/09, Rakib Mullick <rakib.mullick@gmail.com> wrote:
-| > Hello guys, Intel System programmers guide says - dfr, svr, esr - this
-| > registers should be readonly. So shouldn't they use const? Or is it
-| > anything else?
-| 
-| Hi Rakib, i dont have sources under my hands at moment, but iirc there
-| were situations we nees to poke esr register.
-| 
-| >
-| > And apicdef.h also contains a style problem, checkpatch warns about
-| > following style:
-| >
-| >               u32	spurious_vector	:  8
-| >
-| > Check patch wants as:
-| >
-| >                          u32	spurious_vector:8
-| >
-| > Shouldn't this issues be fixed?
-| >
-| > Thanks,
-| > --
-| 
-| i dont see reason why not ;)
-| though i wonder why we need this structure at all. We may have
-| extended amd entries.
-| Yinghai cced.
-| 
+ 
 
-Ingo, Yinghai, Suresh,
+> -----Original Message-----
+> From: Randy Dunlap [mailto:rdunlap@xenotime.net] 
+> Sent: Monday, August 31, 2009 3:04 PM
+> To: Marcin Slusarz
+> Cc: lkml; akpm; Miller, Mike (OS Dev); ISS StorageDev
+> Subject: Re: [PATCH] cciss: fix schedule_timeout() parameters
+> 
+> On Mon, 31 Aug 2009 20:24:45 +0200 Marcin Slusarz wrote:
+> 
+> > Randy Dunlap wrote:
+> > > From: Randy Dunlap <randy.dunlap@oracle.com>
+> > > 
+> > > Change schedule_timeout() parameter to not be specific to HZ=1000.
+> > > 
+> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+> > > Cc: Mike Miller <mike.miller@hp.com>
+> > > Cc: iss_storagedev@hp.com
+> > > ---
+> > >  drivers/block/cciss.c |    5 +++--
+> > >  1 file changed, 3 insertions(+), 2 deletions(-)
+> > > 
+> > > --- lnx-2631-rc7.orig/drivers/block/cciss.c
+> > > +++ lnx-2631-rc7/drivers/block/cciss.c
+> > > @@ -36,6 +36,7 @@
+> > >  #include <linux/proc_fs.h>
+> > >  #include <linux/seq_file.h>
+> > >  #include <linux/init.h>
+> > > +#include <linux/jiffies.h>
+> > >  #include <linux/hdreg.h>
+> > >  #include <linux/spinlock.h>
+> > >  #include <linux/compat.h>
+> > > @@ -3489,7 +3490,7 @@ static int __devinit cciss_pci_init(ctlr
+> > >  		if (scratchpad == CCISS_FIRMWARE_READY)
+> > >  			break;
+> > >  		set_current_state(TASK_INTERRUPTIBLE);
+> > > -		schedule_timeout(HZ / 10);	/* wait 100ms */
+> > > +		schedule_timeout(msecs_to_jiffies(100));	
+> /* wait 100ms */
+> > >  	}
+> > >  	if (scratchpad != CCISS_FIRMWARE_READY) {
+> > >  		printk(KERN_WARNING "cciss: Board not ready.  
+> Timed out.\n"); @@ 
+> > > -3615,7 +3616,7 @@ static int __devinit cciss_pci_init(ctlr
+> > >  			break;
+> > >  		/* delay and try again */
+> > >  		set_current_state(TASK_INTERRUPTIBLE);
+> > > -		schedule_timeout(10);
+> > > +		schedule_timeout(msecs_to_jiffies(1));
+> > 
+> > shouldn't it be msecs_to_jiffies(10)?
+> 
+> Hm, thanks, that's a good observation -- and possibly correct.
+> 
+> 
+> The reason that I used (1) was that I looked at the loop:
+> 
+> 	for (i = 0; i < MAX_CONFIG_WAIT; i++) {
+> 		if (!(readl(c->vaddr + SA5_DOORBELL) & 
+> CFGTBL_ChangeReq))
+> 			break;
+> 		/* delay and try again */
+> 		set_current_state(TASK_INTERRUPTIBLE);
+> 		schedule_timeout(msecs_to_jiffies(1));
+> 	}
+> 
+> and this:
+> /* How long to wait (in milliseconds) for board to go into 
+> simple mode */ #define MAX_CONFIG_WAIT 30000
+> 
+> and then I tried to make the loop run for a max. of 30000 
+> milliseconds.
+> 
+> Mike M., any comments here?
 
-is there any particular reason we keep apicdef.h:struct local_apic at all?
+Sorry to take so long to respond. I've been playing around with msecs_to_jiffies figuring out what it means to me. :) 1 is the correct value. If we loop 30000 times with a value of 10 it takes 5 minutes. I can't think of anything that would take that much time. 
 
-Was there some plan on this structure usage in future? If take into
-account amd extended registers this structure doesn't cover all
-possible cases. And at moment we do poke apic registers via APIC_
-macros mostly and it seems that is the more convenient
-and flexible approach. The only thing I may imagine where we
-could (possibly) use it in future is suspend/resume cases.
+-- mikem
 
-But perhaps I miss something?
-
-	-- Cyrill
+> 
+> 
+> ---
+> ~Randy
+> *** Remember to use Documentation/SubmitChecklist when 
+> testing your code ***
+> 
