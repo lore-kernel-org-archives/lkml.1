@@ -1,169 +1,411 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZIAHY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753067AbZIAH2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753001AbZIAHY6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 03:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751309AbZIAHY5
+	id S1753067AbZIAH2B (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 03:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752852AbZIAH2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 03:24:57 -0400
-Received: from mail-pz0-f175.google.com ([209.85.222.175]:35613 "EHLO
-	mail-pz0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751178AbZIAHY4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 03:24:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=c1uNpaUV3VMRIy17TwqOOd5Od8PeDg4kFtc67uGYPwl2Ct69uZK3atLOIQFuXbmVlU
-         Q2T/5VbVDz904bNtAaOJ/sw83uZYpi7NxVLi79dj4J0eGQJzVnobbQLZ8abvfPfRc3mx
-         6wNl+cJYqk1Z1mBThlz0AL17cmv60/CURcBUc=
-Date: Tue, 1 Sep 2009 16:24:19 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH mmotm] Fix NUMA accounting in numastat.txt
-Message-Id: <20090901162419.a4a6c80e.minchan.kim@barrios-desktop>
-In-Reply-To: <20090901161721.f104c476.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090901135321.f0da4715.minchan.kim@barrios-desktop>
-	<20090901161721.f104c476.kamezawa.hiroyu@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Tue, 1 Sep 2009 03:28:01 -0400
+Received: from mga11.intel.com ([192.55.52.93]:43268 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752819AbZIAH2A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 03:28:00 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,311,1249282800"; 
+   d="scan'208";a="722782441"
+Subject: [PATCH V6 1/2] introduce ALS sysfs class
+From: Zhang Rui <rui.zhang@intel.com>
+To: Len Brown <lenb@kernel.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Pavel Machek <pavel@ucw.cz>, "Zhang, Rui" <rui.zhang@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 01 Sep 2009 15:25:47 +0800
+Message-Id: <1251789947.3483.215.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Kame.
 
-On Tue, 1 Sep 2009 16:17:21 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Introduce ALS sysfs class.
 
-> On Tue, 1 Sep 2009 13:53:21 +0900
-> Minchan Kim <minchan.kim@gmail.com> wrote:
-> 
-> > 
-> > In Documentation/numastat.txt, it confused me.
-> > For example, there are nodes [0,1] in system.
-> > 
-> > barrios:~$ cat /proc/zoneinfo | egrep 'numa|zone'
-> > Node 0, zone	DMA
-> > 	numa_hit	33226
-> > 	numa_miss	1739
-> > 	numa_foreign	27978
-> > 	..
-> > 	..
-> > Node 1, zone	DMA
-> > 	numa_hit	307
-> > 	numa_miss	46900
-> > 	numa_foreign	0
-> > 
-> > 1) In node 0,  NUMA_MISS means it wanted to allocate page
-> > in node 1 but ended up with page in node 0
-> > 
-> > 2) In node 0, NUMA_FOREIGN means it wanted to allocate page
-> > in node 0 but ended up with page from Node 1.
-> > 
-> > But now, numastat explains it oppositely about (MISS, FOREIGN).
-> > Let's fix up with viewpoint of zone. 
-> > 
-> 
-> I'm confused....documentation is really bad ?
-> Implementation isn't ?
+ALS sysfs class provides a standard sysfs interface for
+Ambient Light Sensor devices.
 
-At that time, I though of it. 
-But I knew code is right since zone_stat_item said follwing as. 
-NUMA_MISS is rather unclear but NUMA_FOREIGN is clear, I think.
+please read Documentation/ABI/testing/sysfs-class-als for
+detailed sysfs designs.
 
-        NUMA_MISS,              /* allocated in non intended node */
-        NUMA_FOREIGN,           /* was intended here, hit elsewhere */
+﻿CC: Pavel Machek <pavel@ucw.cz>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+---
+ Documentation/ABI/testing/sysfs-class-als |   23 +++
+ MAINTAINERS                               |    6 
+ drivers/Kconfig                           |    2 
+ drivers/Makefile                          |    1 
+ drivers/als/Kconfig                       |   10 +
+ drivers/als/Makefile                      |    5 
+ drivers/als/als_sys.c                     |  200 ++++++++++++++++++++++++++++++
+ include/linux/als_sys.h                   |   51 +++++++
+ 8 files changed, 298 insertions(+)
 
-Also I am worry about legacy tools related to NUMA but I don't know it.
-Code change will break them.
+Index: linux-2.6/drivers/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/Kconfig
++++ linux-2.6/drivers/Kconfig
+@@ -62,6 +62,8 @@ source "drivers/power/Kconfig"
+ 
+ source "drivers/hwmon/Kconfig"
+ 
++source "drivers/als/Kconfig"
++
+ source "drivers/thermal/Kconfig"
+ 
+ source "drivers/watchdog/Kconfig"
+Index: linux-2.6/drivers/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/Makefile
++++ linux-2.6/drivers/Makefile
+@@ -76,6 +76,7 @@ obj-$(CONFIG_PPS)		+= pps/
+ obj-$(CONFIG_W1)		+= w1/
+ obj-$(CONFIG_POWER_SUPPLY)	+= power/
+ obj-$(CONFIG_HWMON)		+= hwmon/
++obj-$(CONFIG_ALS)		+= als/
+ obj-$(CONFIG_THERMAL)		+= thermal/
+ obj-$(CONFIG_WATCHDOG)		+= watchdog/
+ obj-$(CONFIG_PHONE)		+= telephony/
+Index: linux-2.6/drivers/als/Kconfig
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/als/Kconfig
+@@ -0,0 +1,10 @@
++#
++# Ambient Light Sensor sysfs device configuration
++#
++
++menuconfig ALS
++	tristate "Ambient Light Sensor sysfs device"
++	help
++	  This framework provides a generic sysfs interface for
++	  Ambient Light Sensor devices.
++	  If you want this support, you should say Y or M here.
+Index: linux-2.6/drivers/als/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/als/Makefile
+@@ -0,0 +1,5 @@
++#
++# Makefile for Ambient Light Sensor device drivers.
++#
++
++obj-$(CONFIG_ALS)		+= als_sys.o
+Index: linux-2.6/drivers/als/als_sys.c
+===================================================================
+--- /dev/null
++++ linux-2.6/drivers/als/als_sys.c
+@@ -0,0 +1,200 @@
++/*
++ *  als_sys.c - Ambient Light Sensor Sysfs support.
++ *
++ *  Copyright (C) 2009 Intel Corp
++ *  Copyright (C) 2009 Zhang Rui <rui.zhang@intel.com>
++ *
++ *  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#include <linux/module.h>
++#include <linux/device.h>
++#include <linux/err.h>
++#include <linux/als_sys.h>
++
++MODULE_AUTHOR("Zhang Rui");
++MODULE_DESCRIPTION("Ambient Light Sensor sysfs support");
++MODULE_LICENSE("GPL");
++
++static int als_get_adjustment(struct als_device *, int, int *);
++
++/* sys I/F for Ambient Light Sensor */
++
++#define to_als_device(dev) container_of(dev, struct als_device, device)
++
++static ssize_t
++illuminance_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct als_device *als = to_als_device(dev);
++	int illuminance;
++	int result;
++
++	result = als->ops->get_illuminance(als, &illuminance);
++	if (result)
++		return result;
++
++	if (!illuminance)
++		return sprintf(buf, "Illuminance below the supported range\n");
++	else if (illuminance == -1)
++		return sprintf(buf, "Illuminance above the supported range\n");
++	else if (illuminance < -1)
++		return -ERANGE;
++	else
++		return sprintf(buf, "%d\n", illuminance);
++}
++
++static ssize_t
++adjustment_show(struct device *dev, struct device_attribute *attr, char *buf)
++{
++	struct als_device *als = to_als_device(dev);
++	int illuminance, adjustment;
++	int result;
++
++	result = als->ops->get_illuminance(als, &illuminance);
++	if (result)
++		return result;
++
++	if (illuminance < 0 && illuminance != -1)
++		return sprintf(buf, "Current illuminance invalid\n");
++
++	result = als_get_adjustment(als, illuminance, &adjustment);
++	if (result)
++		return result;
++
++	return sprintf(buf, "%d%%\n", adjustment);
++}
++
++static struct device_attribute als_attrs[] = {
++	__ATTR(illuminance, 0444, illuminance_show, NULL),
++	__ATTR(display_adjustment, 0444, adjustment_show, NULL),
++	__ATTR_NULL,
++};
++
++static void als_release(struct device *dev)
++{
++	struct als_device *als = to_als_device(dev);
++
++	kfree(als);
++}
++
++static struct class als_class = {
++	.name = "als",
++	.dev_release = als_release,
++	.dev_attrs = als_attrs,
++};
++
++static int als_get_adjustment(struct als_device *als, int illuminance,
++			      int *adjustment)
++{
++	int lux_high, lux_low, adj_high, adj_low;
++	int i;
++
++	if (!als->mappings)
++		return -EINVAL;
++
++	if (illuminance == -1
++	    || illuminance > als->mappings[als->count - 1].illuminance)
++		illuminance = als->mappings[als->count - 1].illuminance;
++	else if (illuminance < als->mappings[0].illuminance)
++		illuminance = als->mappings[0].illuminance;
++
++	for (i = 0; i < als->count; i++) {
++		if (illuminance == als->mappings[i].illuminance) {
++			*adjustment = als->mappings[i].adjustment;
++			return 0;
++		}
++
++		if (illuminance > als->mappings[i].illuminance)
++			continue;
++
++		lux_high = als->mappings[i].illuminance;
++		lux_low = als->mappings[i - 1].illuminance;
++		adj_high = als->mappings[i].adjustment;
++		adj_low = als->mappings[i - 1].adjustment;
++
++		*adjustment =
++		    ((adj_high - adj_low) * (illuminance - lux_low)) /
++			(lux_high - lux_low) + adj_low;
++		return 0;
++	}
++	return -EINVAL;
++}
++
++/**
++ * als_device_register - register a new Ambient Light Sensor class device
++ * @ops:	standard ALS devices callbacks.
++ * @devdata:	device private data.
++ */
++struct als_device *als_device_register(struct als_device_ops *ops,
++				       char *name, void *devdata)
++{
++	struct als_device *als;
++	int result = -ENOMEM;
++
++	if (!ops || !ops->get_illuminance || !name)
++		return ERR_PTR(-EINVAL);
++
++	als = kzalloc(sizeof(struct als_device), GFP_KERNEL);
++	if (!als)
++		return ERR_PTR(-ENOMEM);
++
++	als->ops = ops;
++	als->device.class = &als_class;
++	dev_set_name(&als->device, name);
++	dev_set_drvdata(&als->device, devdata);
++	result = device_register(&als->device);
++	if (result)
++		goto err;
++
++	if (ops->update_mappings) {
++		result = ops->update_mappings(als);
++		if (result) {
++			device_unregister(&als->device);
++			goto err;
++		}
++	}
++	return als;
++
++err:
++	kfree(als);
++	return ERR_PTR(result);
++}
++EXPORT_SYMBOL(als_device_register);
++
++/**
++ * als_device_unregister - removes the registered ALS device
++ * @als:	the ALS device to remove.
++ */
++void als_device_unregister(struct als_device *als)
++{
++	device_unregister(&als->device);
++}
++EXPORT_SYMBOL(als_device_unregister);
++
++static int __init als_init(void)
++{
++	return class_register(&als_class);
++}
++
++static void __exit als_exit(void)
++{
++	class_unregister(&als_class);
++}
++
++subsys_initcall(als_init);
++module_exit(als_exit);
+Index: linux-2.6/include/linux/als_sys.h
+===================================================================
+--- /dev/null
++++ linux-2.6/include/linux/als_sys.h
+@@ -0,0 +1,51 @@
++/*
++ *  als.h
++ *
++ *  Copyright (C) 2009  Intel Corp
++ *  Copyright (C) 2009  Zhang Rui <rui.zhang@intel.com>
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful, but
++ *  WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ *  General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License along
++ *  with this program; if not, write to the Free Software Foundation, Inc.,
++ *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
++ *
++ * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
++ */
++
++#ifndef __ALS_SYS_H__
++#define __ALS_SYS_H__
++
++#include <linux/device.h>
++
++struct als_device;
++
++struct als_device_ops {
++	int (*get_illuminance) (struct als_device *, int *);
++	int (*update_mappings) (struct als_device *);
++};
++
++struct als_mapping {
++	int illuminance;
++	int adjustment;
++};
++
++struct als_device {
++	struct device device;
++	struct als_device_ops *ops;
++	int count;
++	struct als_mapping *mappings;
++};
++
++struct als_device *als_device_register(struct als_device_ops *, char *, void *);
++void als_device_unregister(struct als_device *);
++
++#endif /* __ALS_SYS_H__ */
+Index: linux-2.6/Documentation/ABI/testing/sysfs-class-als
+===================================================================
+--- /dev/null
++++ linux-2.6/Documentation/ABI/testing/sysfs-class-als
+@@ -0,0 +1,23 @@
++What:		/sys/class/als/.../illuminance
++Date:		Aug. 2009
++KernelVersion:	2.6.32
++Contact:	Zhang Rui <rui.zhang@intel.com>
++Description:	Current Ambient Light Illuminance reported by
++		native ALS driver
++		Unit: lux (lumens per square meter)
++		RO
++
++What:		/sys/class/als/.../display_adjustment
++Date:		Aug. 2009
++KernelVersion:	2.6.32
++Contact:	Zhang Rui <rui.zhang@intel.com>
++Description:	a relative percentages in order to simplify the means
++		by which these adjustments are applied in lieu of
++		changes to the user’s display brightness preference.
++		A value of 100% is used to indicate no display
++		brightness adjustment.
++		Values less than 100% indicate a negative adjustment
++		(dimming); values greater than 100% indicate a positive
++		adjustment (brightening).
++		RO
++
+Index: linux-2.6/MAINTAINERS
+===================================================================
+--- linux-2.6.orig/MAINTAINERS
++++ linux-2.6/MAINTAINERS
+@@ -399,6 +399,12 @@ S:	Maintained for 2.4; PCI support for 2
+ L:	linux-alpha@vger.kernel.org
+ F:	arch/alpha/
+ 
++AMBIENT LIGHT SENSOR
++M:	Zhang Rui <rui.zhang@intel.com>
++S:	Supported
++F:	include/linux/als_sys.h
++F:	drivers/als/
++
+ AMD GEODE CS5536 USB DEVICE CONTROLLER DRIVER
+ M:	Thomas Dahlmann <dahlmann.thomas@arcor.de>
+ L:	linux-geode@lists.infradead.org (moderated for non-subscribers)
 
-> Hmm, this function ?
-> ==
-> void zone_statistics(struct zone *preferred_zone, struct zone *z)
-> {
->         if (z->zone_pgdat == preferred_zone->zone_pgdat) {
->                 __inc_zone_state(z, NUMA_HIT);
->         } else {
->                 __inc_zone_state(z, NUMA_MISS);
->                 __inc_zone_state(preferred_zone, NUMA_FOREIGN);
->         }
->         if (z->node == numa_node_id())
->                 __inc_zone_state(z, NUMA_LOCAL);
->         else
->                 __inc_zone_state(z, NUMA_OTHER);
-> }
-> ==
-> I wonder
-> ==
-> void zone_statistics(struct zone *preferred_zone, struct zone *z)
-> {
->         if (z->zone_pgdat == preferred_zone->zone_pgdat) {
->                 __inc_zone_state(z, NUMA_HIT);
->         } else {
->                 __inc_zone_state(preferred_zone, NUMA_MISS);
->                 __inc_zone_state(z, NUMA_FOREIGN);
->         }
->         if (z->node == numa_node_id())
->                 __inc_zone_state(z, NUMA_LOCAL);
->         else
->                 __inc_zone_state(z, NUMA_OTHER);
-> }
-> ==
-> Is correct fix ....
-> 
-> Thanks,
-> -Kame
-> 
-> 
-> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> > ---
-> >  Documentation/numastat.txt |    8 ++++----
-> >  1 files changed, 4 insertions(+), 4 deletions(-)
-> > 
-> > diff --git a/Documentation/numastat.txt b/Documentation/numastat.txt
-> > index 80133ac..9fcc9a6 100644
-> > --- a/Documentation/numastat.txt
-> > +++ b/Documentation/numastat.txt
-> > @@ -7,10 +7,10 @@ All units are pages. Hugepages have separate counters.
-> > 
-> >  numa_hit			A process wanted to allocate memory from this node,
-> >  					and succeeded.
-> > -numa_miss			A process wanted to allocate memory from this node,
-> > -					but ended up with memory from another.
-> > -numa_foreign		A process wanted to allocate on another node,
-> > -				    but ended up with memory from this one.
-> > +numa_miss			A process wanted to allocate memory from another node,
-> > +					but ended up with memory from this node.
-> > +numa_foreign		A process wanted to allocate on this node,
-> > +				    but ended up with memory from another one.
-> >  local_node			A process ran on this node and got memory from it.
-> >  other_node			A process ran on this node and got memory from another node.
-> >  interleave_hit 		Interleaving wanted to allocate from this node
-> > --
-> > 1.5.4.3
-> > 
-> > 
-> > 
-> > -- 
-> > Kind regards,
-> > Minchan Kim
-> > 
-> > --
-> > To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> > the body to majordomo@kvack.org.  For more info on Linux MM,
-> > see: http://www.linux-mm.org/ .
-> > Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-> > 
-> 
 
-
--- 
-Kind regards,
-Minchan Kim
