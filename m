@@ -1,38 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755247AbZIAWGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932067AbZIAWKD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755247AbZIAWGW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 18:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZIAWGV
+	id S932067AbZIAWKD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 18:10:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZIAWKD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 18:06:21 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:42271 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752527AbZIAWGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 18:06:21 -0400
-Date: Tue, 01 Sep 2009 17:06:12 -0500
-To: torvalds@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, xfs@oss.sgi.com, akpm@linux-foundation.org
-Subject: [GIT PULL] XFS update for 2.6.31
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Tue, 1 Sep 2009 18:10:03 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:63023 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755201AbZIAWKB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 18:10:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=DEhsxhuvhnSsm5isroS9QDutTfPFzi/GA7wF4S/lUIydwq4n9Xd9zUTxMxF0gxkAWW
+         PmO1CYqoc4HUJhmhfSvcVCUjShBczBevEf7v1XxTkkG8cMPf3E8j7aoQ7HuZwr9czY5X
+         BFoafQs0bUAkCb5eTIoJl9apKwiJ9NkKy3LBg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090901220612.BED9AA23CA70@attica.americas.sgi.com>
-From: felixb@sgi.com (Felix Blyakher)
+In-Reply-To: <63386a3d0909011505oed88151i95df1e97cf131c36@mail.gmail.com>
+References: <1251667749-31276-1-git-send-email-linus.walleij@stericsson.com>
+	 <1251722641.4254.46.camel@finisterre.sirena.org.uk>
+	 <63386a3d0908310716x1a33a8fdpddedbaf24648216f@mail.gmail.com>
+	 <20090901135123.GS19719@n2100.arm.linux.org.uk>
+	 <63386a3d0909011505oed88151i95df1e97cf131c36@mail.gmail.com>
+Date: Wed, 2 Sep 2009 00:10:03 +0200
+Message-ID: <63386a3d0909011510s42c5fc38j753aa0219f678d3a@mail.gmail.com>
+Subject: Re: [PATCH 1/2] AB3100 regulator support v2
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Linus Walleij <linus.walleij@stericsson.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 37d0892c5a94e208cf863e3b7bac014edee4346d:
-  Ian Kent (1):
-        autofs4 - fix missed case when changing to use struct path
+2009/9/2 Linus Walleij <linus.ml.walleij@gmail.com>:
 
-are available in the git repository at:
+[SIGKILL]
+> In the general sense perhaps this doesn't happen so much,
+> what we've seen is system shut down, here some code get
+> interrupted by signals, so atleast the shut down path should be
+> protected I guess, I will do that in the U300 board setup
+> pm_poweroff() hook then, which calls down the
+> regulator/ab3100/i2c chain so all that is secured.
 
-  git://oss.sgi.com/xfs/xfs for-linus
+Or rather, I already do (I forgot about adding in that code!)
 
-Christoph Hellwig (1):
-      xfs: actually enable the swapext compat handler
++ */
++void u300_pm_poweroff(void)
++{
++       sigset_t old, all;
++
++       sigfillset(&all);
++       if (!sigprocmask(SIG_BLOCK, &all, &old)) {
++               /* Disable LDO D to shut down the system */
++               if (main_power_15)
++                       regulator_disable(main_power_15);
++               else
++                       pr_err("regulator not available to shut down system\n");
++               (void) sigprocmask(SIG_SETMASK, &old, NULL);
++       }
++       return;
++}
 
- fs/xfs/linux-2.6/xfs_ioctl32.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Linus Walleij
