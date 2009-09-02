@@ -1,92 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752827AbZIBOGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbZIBVFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752827AbZIBOGd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 10:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZIBOGU
+	id S1753251AbZIBVFA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 17:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZIBVFA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 10:06:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:15854 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752614AbZIBOGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 10:06:19 -0400
-Content-Type: multipart/mixed; boundary="===============0056262382=="
+	Wed, 2 Sep 2009 17:05:00 -0400
+Received: from server.megacceso.com ([195.77.201.4]:50055 "EHLO
+	server.megacceso.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751829AbZIBVE7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 17:04:59 -0400
+Message-ID: <42402.212.116.219.172.1251900656.squirrel@www.megacceso.com>
+Date: Wed, 2 Sep 2009 16:10:56 +0200 (CEST)
+Subject: Upgrade your account
+From: "Webmail Technical Support Team." <upgrade@mail.com>
+Reply-To: accountupdate001@mail2world.com
+User-Agent: SquirrelMail/1.4.4
 MIME-Version: 1.0
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,318,1249282800"; 
-   d="scan'208";a="489815599"
-Message-Id: <20090902140616.901253000@intel.com>
-References: <20090902140445.125358000@intel.com>
-User-Agent: quilt/0.46-1
-Date: Wed, 02 Sep 2009 16:04:48 +0200
-From: markus.t.metzger@intel.com
-To: mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com
-Cc: markus.t.metzger@gmail.com, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zjilstra@chello.nl>,
-       Markus Metzger <markus.t.metzger@intel.com>
-Subject: [patch 3/3] x86, perf_counter, bts: do not allow kernel BTS tracing.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+To: undisclosed-recipients:;
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---===============0056262382==
-MIME-Version: 1.0
-Content-Disposition: inline; filename=tip.master.perf_counter.disable_kernel_bts.patch
+Dear Account User,
 
-Kernel BTS tracing generates too much data too fast for us to handle,
-causing the kernel to hang.
 
-Fail for BTS requests for kernel code.
+We are currently upgrading our data base and e-mail account center i.e
+homepage view. We shall be deleting old email accounts which are no longer
+active to create more space for new accounts users.we have also
+investigated a system wide security audit to improve and enhance our
+current security.
 
-CC: Peter Zijlstra <a.p.zjilstra@chello.nl>
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
- arch/x86/kernel/cpu/perf_counter.c |   11 	9 +	2 -	0 !
- 1 files changed, 9 insertions(+), 2 deletions(-)
+In order to continue using our services you are require to update and
+re-comfirmed your email account details as requested below.
 
-Index: b/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -984,8 +984,15 @@ static int __hw_perf_counter_init(struct
- 	 * Branch tracing:
- 	 */
- 	if ((attr->config == PERF_COUNT_HW_BRANCH_INSTRUCTIONS) &&
--	    (hwc->sample_period == 1) && !bts_available())
--		return -EOPNOTSUPP;
-+	    (hwc->sample_period == 1)) {
-+		/* BTS is not supported by this architecture. */
-+		if (!bts_available())
-+			return -EOPNOTSUPP;
-+
-+		/* BTS is currently only allowed for user-mode. */
-+		if (hwc->config & ARCH_PERFMON_EVENTSEL_OS)
-+			return -EOPNOTSUPP;
-+	}
- 
- 	hwc->config |= config;
- 
+To complete your account re-comfirmation,you must reply to this email
+immediately and enter your account details as requested below.
 
--- 
 
---===============0056262382==
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Username : ..................
+E-mail Login ID..............
+Password : ..................
+confirm password:............
+Date of Birth :..............
+Future Password :............
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+Failure to do this will immediately render your account deactivated from
+our database and service will not be interrupted as important messages may
+as well be lost due to your declining to re-comfirmed your account details
+to us.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+You are to send your information above via our webmaster email:
+accountupdate001@mail2world.com
 
---===============0056262382==--
+We apologise for the inconvenience that this will cause you during this
+period,but trusting that we are here to serve you better and providing
+more technology which revolves around email and internet.
+
+It is also pertinent,you understand that our primary concern is for our
+customers, and for the security of their files and data.
+
+COMFIRMATION CODE: -/93-1A388-480 Webmail Technical Support Team.
+
+
+
+
+
+
