@@ -1,70 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752452AbZIBHhg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZIBIDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752452AbZIBHhg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 03:37:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZIBHhg
+	id S1752504AbZIBIDz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 04:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752113AbZIBIDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 03:37:36 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62416 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751987AbZIBHhf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 03:37:35 -0400
-Message-ID: <4A9E20BF.6000609@cn.fujitsu.com>
-Date: Wed, 02 Sep 2009 15:37:35 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 2 Sep 2009 04:03:53 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:57728 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752050AbZIBIDv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 04:03:51 -0400
+Date: Wed, 2 Sep 2009 13:33:46 +0530
+From: Ankita Garg <ankita@in.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] Fix fake numa on ppc
+Message-ID: <20090902080346.GB3806@in.ibm.com>
+Reply-To: Ankita Garg <ankita@in.ibm.com>
+References: <20090902060911.GA5728@in.ibm.com> <alpine.DEB.1.00.0909012326290.31814@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] tracing: make splice_read work when data is	sufficient
-References: <4A95F743.2090101@cn.fujitsu.com> <20090829094503.GA6418@nowhere> <4A9D13C1.4030902@cn.fujitsu.com> <20090901223659.GB6108@nowhere>
-In-Reply-To: <20090901223659.GB6108@nowhere>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.00.0909012326290.31814@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Tue, Sep 01, 2009 at 08:29:53PM +0800, Lai Jiangshan wrote:
->> Frederic Weisbecker wrote:
->>>>  	 */
->>>> +	cpu_buffer->reader_page->read = 0;
->>>
->>>
->>> Wasn't this reset done before?
->>>
->>>
->> This is not reset. It is still used just before this line.
+Hi David,
+
+On Tue, Sep 01, 2009 at 11:37:05PM -0700, David Rientjes wrote:
+> On Wed, 2 Sep 2009, Ankita Garg wrote:
 > 
+> > Hi,
+> > 
+> > Below is a patch to fix a couple of issues with fake numa node creation
+> > on ppc:
+> > 
+> > 1) Presently, fake nodes could be created such that real numa node
+> > boundaries are not respected. So a node could have lmbs that belong to
+> > different real nodes.
+> > 
 > 
+> On x86_64, we can use numa=off to completely disable NUMA so that all 
+> memory and all cpus are mapped to a single node 0.  That's an extreme 
+> example of the above and is totally permissible.
 > 
-> Yeah but after that it's not used anymore because this page
-
-It may be used in next rb_get_reader_page(), see next:
-
-> won't anymore be used as a reader page but will be integrated
-> as a writable ring buffer page.
+> > 2) The cpu association is broken. On a JS22 blade for example, which is
+> > a 2-node numa machine, I get the following:
+> > 
+> > # cat /proc/cmdline
+> > root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
+> > # cat /sys/devices/system/node/node0/cpulist
+> > 0-3
+> > # cat /sys/devices/system/node/node1/cpulist
+> > 4-7
+> > # cat /sys/devices/system/node/node4/cpulist
+> > 
+> > #
+> > 
 > 
-> One day it may be reused as a reader page still, but before
-> any use, rb_reset_reader_page() will be called to reset this offset.
+> This doesn't show what the true NUMA topology of the machine is, could you 
+> please post the output of
 > 
-> So I just don't understand why you need to do that.
+> 	$ cat /sys/devices/system/node/node*/cpulist
+> 	$ cat /sys/devices/system/node/node*/distance
+> 	$ ls -d /sys/devices/system/node/node*/cpu[0-8]
 > 
+> from a normal boot without any numa=fake?
+>
+
+Heres the output as requested by you:
+
+# ls /sys/devices/system/node/
+has_cpu  has_normal_memory  node0  node1  online  possible
+# cat /sys/devices/system/node/node*/cpulist
+0-3
+4-7
+# cat /sys/devices/system/node/node*/distance
+10 20
+20 10
+# ls -d /sys/devices/system/node/node*/cpu[0-8]
+/sys/devices/system/node/node0/cpu0  /sys/devices/system/node/node0/cpu3
+/sys/devices/system/node/node1/cpu6
+/sys/devices/system/node/node0/cpu1  /sys/devices/system/node/node1/cpu4
+/sys/devices/system/node/node1/cpu7
+/sys/devices/system/node/node0/cpu2  /sys/devices/system/node/node1/cpu5
+
+ 
+> > So, though the cpus 4-7 should have been associated with node4, they
+> > still belong to node1. The patch works by recording a real numa node
+> > boundary and incrementing the fake node count. At the same time, a
+> > mapping is stored from the real numa node to the first fake node that
+> > gets created on it.
+> > 
 > 
+> If there are multiple fake nodes on a real physical node, all cpus in that 
+> node should appear in the cpulist for each fake node for which it has 
+> local distance.
 
-Oh, I know what you mean.
+Currently, the behavior of fake numa is not so on x86 as well? Below is
+a sample output from a single node x86 system booted with numa=fake=8:
 
-My patch changes the rb_get_reader_page().
+# cat node0/cpulist
 
-rb_get_reader_page(cpu_buffer, 0) is still the same behavior exactly as before.
+# cat node1/cpulist
 
-But rb_get_reader_page(cpu_buffer, 1) returns NULL when
-reader page is empty and head page is not full,
-in this condition, we do local_set(&cpu_buffer->reader_page->page->commit, 0),
-so we need reset cpu_buffer->reader_page->read. Because cpu_buffer->reader_page
-will be accessed again in next rb_get_reader_page().
+...
+# cat node6/cpulist
 
-Lai
+# cat node7/cpulist
+0-7
 
+Presently, just fixing the cpu association issue with ppc, as explained
+in my previous mail.
+
+-- 
+Regards,
+Ankita Garg (ankita@in.ibm.com)
+Linux Technology Center
+IBM India Systems & Technology Labs, 
+Bangalore, India   
