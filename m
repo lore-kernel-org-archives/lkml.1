@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751947AbZIBNE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752039AbZIBNHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751947AbZIBNE6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 09:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751435AbZIBNE6
+	id S1752039AbZIBNHu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 09:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751446AbZIBNHt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 09:04:58 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:51646 "EHLO poutre.nerim.net"
+	Wed, 2 Sep 2009 09:07:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59308 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751326AbZIBNE5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 09:04:57 -0400
-Date: Wed, 2 Sep 2009 15:04:56 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "H Hartley Sweeten" <hartleys@visionengravers.com>
-Cc: <lm-sensors@lm-sensors.org>, <mactel-linux-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, <alistair@devzero.co.uk>,
-       <nicolas@boichat.ch>, <juergh@gmail.com>, <frank@f-seidel.de>,
-       <jim.cromie@gmail.com>, <mhoffman@lightlink.com>,
-       <vt8231@hiddenengine.co.uk>
-Subject: Re: [PATCH] hwmon: include <linux/io.h> instead of <asm/io.h>
-Message-ID: <20090902150456.6c3c0767@hyperion.delvare>
-In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE190901BE9DA3@mi8nycmail19.Mi8.com>
-References: <BD79186B4FD85F4B8E60E381CAEE190901BE9DA3@mi8nycmail19.Mi8.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1751081AbZIBNHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 09:07:49 -0400
+Date: Wed, 2 Sep 2009 15:06:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: arjan@infradead.org, jeremy@goop.org, mschmidt@redhat.com,
+       mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tj@kernel.org, tglx@linutronix.de,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [PATCH] kthreads: Fix startup synchronization boot crash
+Message-ID: <20090902130644.GA19528@elte.hu>
+References: <tip-23386d63bbb3199cf247313ec088878d72debcfd@git.kernel.org> <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu> <20090901133709.GA24041@redhat.com> <20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com> <20090901155427.GA18078@elte.hu> <20090901160043.GA6708@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901160043.GA6708@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 13 Aug 2009 16:56:56 -0400, H Hartley Sweeten wrote:
-> Drivers should be including <linux/io.h> instead of <asm/io.h>.
+
+* Oleg Nesterov <oleg@redhat.com> wrote:
+
+> On 09/01, Ingo Molnar wrote:
+> >
+> > * Oleg Nesterov <oleg@redhat.com> wrote:
+> >
+> > > But I must admit, now I don't understand what happens,
+> > >
+> > > 	The modification of that variable is protected by the BKL, but
+> > > 	the _ordering_ of the initial task (which becomes the idle
+> > > 	thread of CPU0) and the init task (which is spawned by the
+> > > 	initial task) is not synchronized.
+> > >
+> > > 	So we can occasionally end up init running sooner than
+> > > 	rest_init()
+> > >
+> > > How? rest_init() can't be preempted and it holds BKL. And
+> > > kernel_init() takes BKL before anything else. Confused...
+> >
+> > it cannot be preempted but it can schedule anywhere - and the BKL
+> > will be dropped silently.
+> >
+> > This is one of the biggest dangers of the BKL
 > 
-> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
-> Cc: Alistair John Strachan <alistair@devzero.co.uk>
-> Cc: Nicolas Boichat <nicolas@boichat.ch>
-> Cc: Juerg Haefliger <juergh@gmail.com>
-> Cc: Jean Delvare <khali@linux-fr.org>
-> Cc: Frank Seidel <frank@f-seidel.de>
-> Cc: Jim Cromie <jim.cromie@gmail.com>
-> Cc: "Mark M. Hoffman" <mhoffman@lightlink.com>
-> Cc: Roger Lucas <vt8231@hiddenengine.co.uk>
+> Yes I see. But rest_init() runs under preempt_disable(). If it was 
+> rescheduled, schedule_debug() should complain. No?
 
-Applied, thanks.
+hm, either something is broken, or some other codepath learned to do 
+preempt_enable() in early init ... [which i'd call broken too]
 
--- 
-Jean Delvare
+Weird.
+
+	Ingo
