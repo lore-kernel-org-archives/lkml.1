@@ -1,90 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZIBTXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbZIBTbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbZIBTXc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 15:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZIBTXb
+	id S1752705AbZIBTbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 15:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZIBTbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 15:23:31 -0400
-Received: from mail.tmr.com ([64.65.253.246]:58655 "EHLO partygirl.tmr.com"
+	Wed, 2 Sep 2009 15:31:50 -0400
+Received: from mga03.intel.com ([143.182.124.21]:21429 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751557AbZIBTXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 15:23:30 -0400
-Message-ID: <4A9EC633.2000803@tmr.com>
-Date: Wed, 02 Sep 2009 15:23:31 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 pango-text SeaMonkey/1.1.16
+	id S1751709AbZIBTbt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 15:31:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="183381145"
+From: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+CC: Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Avi Kivity <avi@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Date: Wed, 2 Sep 2009 12:30:59 -0700
+Subject: RE: [RFC] respect the referenced bit of KVM guest pages?
+Thread-Topic: [RFC] respect the referenced bit of KVM guest pages?
+Thread-Index: Acofq0JJsYCqjn7dSiq9RFnUNkVjvQMUncow
+Message-ID: <9EECC02A4CC333418C00A85D21E893260184184010@azsmsx502.amr.corp.intel.com>
+References: <4A843B72.6030204@redhat.com> <4A843EAE.6070200@redhat.com>
+ <4A846581.2020304@redhat.com> <20090813211626.GA28274@cmpxchg.org>
+ <4A850F4A.9020507@redhat.com> <20090814091055.GA29338@cmpxchg.org>
+ <20090814095106.GA3345@localhost> <4A856467.6050102@redhat.com>
+ <20090815054524.GB11387@localhost>
+ <9EECC02A4CC333418C00A85D21E89326B6611E81@azsmsx502.amr.corp.intel.com>
+ <20090818022609.GA7958@localhost>
+In-Reply-To: <20090818022609.GA7958@localhost>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: LowFree pattern
-References: <fb7befa20909020932k74fa9e37x1eeabdb494835bb9@mail.gmail.com>
-In-Reply-To: <fb7befa20909020932k74fa9e37x1eeabdb494835bb9@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adayadil Thomas wrote:
-> Greetings.
-> 
-> I am running a centos linux with 2.6.20 version kernel. The system has
-> 1G of RAM.
-> 
-> As time goes by the LowFree becomes really low. Right now it shows
-> 137M .. but it goes as low as 8M or so
-> 
-> The command -
-> echo 3 > /proc/sys/vm/drop_caches
-> brings back the LowFree to way up high.
-> 
-> The question I have is whether the system by itself release the cache
-> (drop cache) automatically
-> to maintain a reasonable LowFree?
-> Is this configurable?
-> 
-You can change the parameters in /rpoc/sys/vm if you wish, but what makes you
-think this is needed? Cache is dropped as memory is needed, and drop_cache in
-general is a good way to slow the system.
+I'm trying to better understand the motivation for your make-mapped-exec-pages-first-class-citizens patch.  As I read your (very detailed!) description, you are diagnosing a threshold effect from Rik's evict-use-once-pages-first patch where if the inactive list is slightly smaller than the active list, the active list will start being scanned, pushing text (and other) pages onto the inactive list where they will be quickly kicked out to swap.
 
-> Any information or help is much appreciated.
-> 
-What problem did you see that you traced to LowFree?
+As I read Rik's patch, if the active list is one page larger than the inactive list, then a batch of pages will get moved from one to the other.  For this to have a noticeable effect on the system once the streaming is done, there must be something continuing to keep the active list larger than the inactive list.  Maybe there is a consistent percentage of the streamed pages which are use-twice. 
 
-> 
-> cat /proc/meminfo
-> MemTotal:      1034788 kB
-> MemFree:        138240 kB
-> Buffers:         99260 kB
-> Cached:         177776 kB
-> SwapCached:      51740 kB
-> Active:         605172 kB
-> Inactive:       113572 kB
-> HighTotal:      130720 kB
-> HighFree:          252 kB
-> LowTotal:       904068 kB
-> LowFree:        137988 kB
-> SwapTotal:     1048568 kB
-> SwapFree:       976332 kB
-> Dirty:             380 kB
-> Writeback:           0 kB
-> AnonPages:      441348 kB
-> Mapped:          15540 kB
-> Slab:           146088 kB
-> SReclaimable:   104288 kB
-> SUnreclaim:      41800 kB
-> PageTables:       1596 kB
-> NFS_Unstable:        0 kB
-> Bounce:              0 kB
-> CommitLimit:   1565960 kB
-> Committed_AS:   590576 kB
-> VmallocTotal:   114680 kB
-> VmallocUsed:     15052 kB
-> VmallocChunk:    99348 kB
+So, we a threshold effect where a small change in input (the size of the streaming file vs the number of active pages) causes a large change in output (lots of text pages suddenly start getting thrown out).   My immediate reaction to that is that there shouldn't be this sudden change in behavior, and that maybe there should only be enough scanning in shink_active_list to bring the two lists back to parity.  However, if there's something keeping the active list bigger than the inactive list, this will just put off the inevitable required scanning.
 
+As for your patch, it seems like we have a problem with scanning I/O, and instead of looking at those pages, you are looking to protect some other set of pages (mapped text).  That, in turn, increases pressure on anonymous pages (which is where I came in).  Wouldn't it be a better idea to keep looking at those streaming pages and figure out how to get them out of memory quickly?
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+						Jeff
+
 
