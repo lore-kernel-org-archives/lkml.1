@@ -1,128 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbZIBNBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbZIBNDt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752060AbZIBNBZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 09:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZIBNBZ
+	id S1752021AbZIBNDt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 09:03:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZIBNDs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 09:01:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34498 "EHLO hera.kernel.org"
+	Wed, 2 Sep 2009 09:03:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56611 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751562AbZIBNBY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 09:01:24 -0400
-Date: Wed, 2 Sep 2009 13:00:52 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
-       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf tools: Work around strict aliasing related warnings
-Message-ID: <tip-65014ab36196f6d86edc9ee23759d6930b9d89a8@git.kernel.org>
-Git-Commit-ID: 65014ab36196f6d86edc9ee23759d6930b9d89a8
-X-Mailer: tip-git-log-daemon
+	id S1751128AbZIBNDs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 09:03:48 -0400
+Date: Wed, 2 Sep 2009 15:03:36 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org, Karsten Keil <isdn@linux-pingi.de>,
+       isdn4linux@listserv.isdn4linux.de
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, tj@elte.hu
+Subject: [PATCH, v2] isdn: Fix stack corruption in isdnloop_init()
+Message-ID: <20090902130336.GA16906@elte.hu>
+References: <20090902124402.GA5539@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 13:00:53 +0000 (UTC)
+In-Reply-To: <20090902124402.GA5539@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  65014ab36196f6d86edc9ee23759d6930b9d89a8
-Gitweb:     http://git.kernel.org/tip/65014ab36196f6d86edc9ee23759d6930b9d89a8
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 2 Sep 2009 14:55:55 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 2 Sep 2009 14:56:33 +0200
 
-perf tools: Work around strict aliasing related warnings
+[ v2: use strlen instead of sizeof. ]
 
-Older versions of GCC are rather stupid about strict aliasing:
+-tip testing found this stack corruption and bootup crash
+in the ISDN subsystem, reported by stackprotector:
 
-  util/trace-event-parse.c: In function 'parse_cmdlines':
-  util/trace-event-parse.c:93: warning: dereferencing type-punned pointer will break strict-aliasing rules
-  util/trace-event-parse.c: In function 'parse_proc_kallsyms':
-  util/trace-event-parse.c:155: warning: dereferencing type-punned pointer will break strict-aliasing rules
-  util/trace-event-parse.c:157: warning: dereferencing type-punned pointer will break strict-aliasing rules
-  util/trace-event-parse.c:158: warning: dereferencing type-punned pointer will break strict-aliasing rules
-  util/trace-event-parse.c: In function 'parse_ftrace_printk':
-  util/trace-event-parse.c:294: warning: dereferencing type-punned pointer will break strict-aliasing rules
-  util/trace-event-parse.c:295: warning: dereferencing type-punned pointer will break strict-aliasing rules
-  make: *** [util/trace-event-parse.o] Error 1
+[   25.656688] calling  isdn_init+0x0/0x2c2 @ 1
+[   25.660388] ISDN subsystem Rev: 1.1.2.3/1.1.2.3/1.1.2.2/1.1.2.3/1.1.2.2/1.1.2.2
+[   25.668179] initcall isdn_init+0x0/0x2c2 returned 0 after 6510 usecs
+[   25.670005] calling  isdn_bsdcomp_init+0x0/0x45 @ 1
+[   25.673336] PPP BSD Compression module registered
+[   25.676674] initcall isdn_bsdcomp_init+0x0/0x45 returned 0 after 3255 usecs
+[   25.680005] calling  isdnloop_init+0x0/0x88 @ 1
+[   25.683337] isdnloop-ISDN-driver Rev 1.11.6.7
+[   25.686705] isdnloop: (loop0) virtual card added
+[   25.690004] Kernel panic - not syncing: stack-protector: Kernel stack is corrupted in: c1de2d8b
+[   25.690006]
+[   25.693338] Pid: 1, comm: swapper Not tainted 2.6.31-rc8-tip-01250-geed031c-dirty #9565
+[   25.696672] Call Trace:
+[   25.700008]  [<c190f517>] ? printk+0x1d/0x30
+[   25.703339]  [<c190f45d>] panic+0x50/0xed
+[   25.706677]  [<c1059194>] __stack_chk_fail+0x1e/0x42
+[   25.710005]  [<c1de2d8b>] ? isdnloop_init+0x83/0x88
+[   25.713338]  [<c1de2d8b>] isdnloop_init+0x83/0x88
+[   25.716674]  [<c1001056>] _stext+0x56/0x15a
+[   25.720007]  [<c1da8368>] kernel_init+0x8f/0xf1
+[   25.723338]  [<c1da82d9>] ? kernel_init+0x0/0xf1
+[   25.726675]  [<c1025c67>] kernel_thread_helper+0x7/0x58
+[   25.730005] Rebooting in 1 seconds..Press any key to enter the menu
 
-Make it clear to GCC that we intend with those pointers, by passing
-them through via an explicit (void *) cast.
+The bug is that the temporary array:
 
-We might want to add -fno-strict-aliasing as well, like the kernel
-itself does.
+	char rev[10];
 
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Mike Galbraith <efault@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <new-submission>
+Is sized one byte too small to store strings based on
+the 'revision' string.
+
+This is a truly ancient bug: it has been introduced in
+the v2.4.2.1 kernel, ~8.5 years ago, which extended
+the length of 'revision' by 1 byte.
+
+Instead of using a fixed size temporary array, size
+it based on the 'revision' string.
+
+Cc: <stable@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
 ---
- tools/perf/util/trace-event-info.c  |    2 +-
- tools/perf/util/trace-event-parse.c |   12 ++++++------
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/isdn/isdnloop/isdnloop.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/tools/perf/util/trace-event-info.c b/tools/perf/util/trace-event-info.c
-index 8161527..6c9302a 100644
---- a/tools/perf/util/trace-event-info.c
-+++ b/tools/perf/util/trace-event-info.c
-@@ -188,7 +188,7 @@ int bigendian(void)
- 	unsigned char str[] = { 0x1, 0x2, 0x3, 0x4, 0x0, 0x0, 0x0, 0x0};
- 	unsigned int *ptr;
+diff --git a/drivers/isdn/isdnloop/isdnloop.c b/drivers/isdn/isdnloop/isdnloop.c
+index a335c85..0c8d8cb 100644
+--- a/drivers/isdn/isdnloop/isdnloop.c
++++ b/drivers/isdn/isdnloop/isdnloop.c
+@@ -1494,7 +1494,7 @@ static int __init
+ isdnloop_init(void)
+ {
+ 	char *p;
+-	char rev[10];
++	char rev[strlen(revision)+1];
  
--	ptr = (unsigned int *)str;
-+	ptr = (unsigned int *)(void *)str;
- 	return *ptr == 0x01020304;
- }
- 
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index 665dac2..37b10c2 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -90,7 +90,7 @@ void parse_cmdlines(char *file, int size __unused)
- 	while (line) {
- 		item = malloc_or_die(sizeof(*item));
- 		sscanf(line, "%d %as", &item->pid,
--		       (float *)&item->comm); /* workaround gcc warning */
-+		       (float *)(void *)&item->comm); /* workaround gcc warning */
- 		item->next = list;
- 		list = item;
- 		line = strtok_r(NULL, "\n", &next);
-@@ -152,10 +152,10 @@ void parse_proc_kallsyms(char *file, unsigned int size __unused)
- 		item = malloc_or_die(sizeof(*item));
- 		item->mod = NULL;
- 		ret = sscanf(line, "%as %c %as\t[%as",
--			     (float *)&addr_str, /* workaround gcc warning */
-+			     (float *)(void *)&addr_str, /* workaround gcc warning */
- 			     &ch,
--			     (float *)&item->func,
--			     (float *)&item->mod);
-+			     (float *)(void *)&item->func,
-+			     (float *)(void *)&item->mod);
- 		item->addr = strtoull(addr_str, NULL, 16);
- 		free(addr_str);
- 
-@@ -291,8 +291,8 @@ void parse_ftrace_printk(char *file, unsigned int size __unused)
- 	while (line) {
- 		item = malloc_or_die(sizeof(*item));
- 		ret = sscanf(line, "%as : %as",
--			     (float *)&addr_str, /* workaround gcc warning */
--			     (float *)&item->printk);
-+			     (float *)(void *)&addr_str, /* workaround gcc warning */
-+			     (float *)(void *)&item->printk);
- 		item->addr = strtoull(addr_str, NULL, 16);
- 		free(addr_str);
- 
+ 	if ((p = strchr(revision, ':'))) {
+ 		strcpy(rev, p + 1);
