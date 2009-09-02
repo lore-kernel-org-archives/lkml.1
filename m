@@ -1,56 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZIBIrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbZIBInD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755409AbZIBIrs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 04:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZIBIrs
+	id S1755130AbZIBInD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 04:43:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753190AbZIBInC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 04:47:48 -0400
-Received: from cosmos.geomatys.fr ([88.191.17.20]:36881 "EHLO
-	cosmos.geomatys.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754097AbZIBIrr (ORCPT
+	Wed, 2 Sep 2009 04:43:02 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:41384 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753129AbZIBInB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 04:47:47 -0400
-X-Greylist: delayed 395 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Sep 2009 04:47:47 EDT
-Message-ID: <4A9E308E.60505@geomatys.fr>
-Date: Wed, 02 Sep 2009 10:45:02 +0200
-From: "corentin.labbe" <corentin.labbe@geomatys.fr>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090817)
+	Wed, 2 Sep 2009 04:43:01 -0400
+Date: Wed, 2 Sep 2009 10:47:46 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: roma1390 <roma1390@gmail.com>
+Cc: linux-kernel@vger.kernel.org, David Dillow <dave@thedillows.org>
+Subject: Re: r8169 NETDEV WATCHDOG: eth0: transmit timed out [8/8]
+Message-ID: <20090902084746.GA15870@electric-eye.fr.zoreil.com>
+References: <b410963b0908290221s4ed3d66fm50ea2862cf7500f5@mail.gmail.com> <b410963b0909020022q68101ed8n5cdafdcbdabea230@mail.gmail.com>
 MIME-Version: 1.0
-To: tomaz.mertelj@guest.arnes.si
-CC: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [lm-sensors] [PATCH] hwmon: Driver for Texas Instruments amc6821
- chip
-References: <20090831_202450_066558.tomaz.mertelj@guest.arnes.si>
-In-Reply-To: <20090831_202450_066558.tomaz.mertelj@guest.arnes.si>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b410963b0909020022q68101ed8n5cdafdcbdabea230@mail.gmail.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tomaz.mertelj@guest.arnes.si a écrit :
-> I have crafted a hwmon driver for Texas Instruments amc6821 SMB-bus 2-
-> channel temperature sensor, pwm controller. This is my first linux project 
-> so some corrections will be necessary.
-> 
-> T. Mertelj
+roma1390 <roma1390@gmail.com> :
+[...]
+> sorry but debian stable provides latest 2.6.26-2-amd64
+> curent workaround is to use: driver r8168.
 
-Hello
+Fine.
 
-I have some warnings
+You did not answer David's question regarding your readiness to test
+patches (and / or recent kernel).
 
-  CC      drivers/hwmon/amc6821.o
-drivers/hwmon/amc6821.c: In function `set_temp1_auto_point_temp':
-drivers/hwmon/amc6821.c:390: warning: comparison is always true due to limited range of data type
-drivers/hwmon/amc6821.c: In function `set_temp2_auto_point_temp':
-drivers/hwmon/amc6821.c:391: warning: comparison is always true due to limited range of data type
-drivers/hwmon/amc6821.c: In function `set_pwm1_auto_point_pwm':
-drivers/hwmon/amc6821.c:408: warning: comparison is always true due to limited range of data type
-drivers/hwmon/amc6821.c:419: warning: comparison is always true due to limited range of data type
+May I assume the answer is negative ?
 
-you use tmp as a unsigned 8 bit so it is always >= 0 (it can't be below 0)
-Prefer use:
-s8 tmp;
-
-
-Cordially
+-- 
+Ueimor
