@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751853AbZIBLbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZIBLbu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751853AbZIBLbm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 07:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751821AbZIBLbm
+	id S1751889AbZIBLbu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 07:31:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751856AbZIBLbs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 07:31:42 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41966 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751813AbZIBLbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 07:31:41 -0400
-Date: Wed, 2 Sep 2009 08:31:24 -0300
-From: Glauber Costa <glommer@redhat.com>
-To: Chris Lalancette <clalance@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH 2/2] add sysctl for kvm wallclock sync
-Message-ID: <20090902113124.GK30340@mothafucka.localdomain>
-References: <1251805848-17451-1-git-send-email-glommer@redhat.com> <1251805848-17451-2-git-send-email-glommer@redhat.com> <1251805848-17451-3-git-send-email-glommer@redhat.com> <4A9E16AD.8080508@redhat.com>
+	Wed, 2 Sep 2009 07:31:48 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:2784 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751857AbZIBLbr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 07:31:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=D/wuEKUtaIdgWFoxrWsp5qxZ1ZbYurASPTWvKlr04DPR2ne73VceQA/4NsM+Lab5ZJ
+         Ri58iLc7dO33980WDyIqD2nlLlzk9OG11CP6dPG0Y5mgU1ol1QbcVbCiEXgc+3lsO2AK
+         Rpx4WC4kwuJpJn8gUxXUQZ7VUm1LL9rj4eMKA=
+Date: Wed, 2 Sep 2009 15:31:44 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dac960: switch to seq_file
+Message-ID: <20090902113144.GB8429@x200.localdomain>
+References: <20090828195814.GE15123@x200.localdomain> <20090901162735.d30cee12.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A9E16AD.8080508@redhat.com>
-X-ChuckNorris: True
-User-Agent: Jack Bauer
+In-Reply-To: <20090901162735.d30cee12.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 08:54:37AM +0200, Chris Lalancette wrote:
-> Glauber Costa wrote:
-> > diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
-> > index fc409e9..3a4e1bd 100644
-> > --- a/arch/x86/kernel/kvmclock.c
-> > +++ b/arch/x86/kernel/kvmclock.c
-> > @@ -27,7 +27,7 @@
-> >  #define KVM_SCALE 22
-> >  
-> >  static int kvmclock = 1;
-> > -static unsigned int kvm_wall_update_interval = 5;
-> > +unsigned int kvm_wall_update_interval = 5;
+On Tue, Sep 01, 2009 at 04:27:35PM -0700, Andrew Morton wrote:
+> On Fri, 28 Aug 2009 23:58:14 +0400
+> Alexey Dobriyan <adobriyan@gmail.com> wrote:
 > 
-> I think the overall idea is very interesting, but I also think that it should be
-> disabled by default.  Because of the problems with time in virtualization,
-> people are already conditioned to run ntpd inside their guests, and this
-> kvmclock change will "fight" with ntpd.  Also, the command "# date 09091323" (or
-> whatever) ceases to work like it does on bare-metal, so I think it has to be an
-> opt-in feature.
-I don't disagree.
+> >  drivers/block/DAC960.c |  156 ++++++++++++++++++++++---------------------------
+> 
+> hm, that's a large change to a hard-to-change driver.
+> 
+> Is it correct?
 
-Actually, I thought about that myself a few hours after I sent the patch. 
-Avi, do you have a word on that ?
+Nobody knows :-)
+
+In fact I'm pretty sure conversion is correct:
+0) ->data is passed as m->private,
+1) DAC960_ProcReadStatus() -- print "OK" or "ALERT" if one controller is in alert mode,
+2) DAC960_ProcReadInitialStatus() -- print ->CombinedStatusBuffer content, lenght is in ->CurrentStatusLength
+3) DAC960_ProcReadUserCommand() -- (2) applied to ->UserStatusBuffer
+
+	"%.*s" does exactly that.
+
+4) DAC960_ProcWriteUserCommand() -- signature change to ->write method, controller is in PDE(...)->data
