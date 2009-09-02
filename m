@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753765AbZIBWpk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZIBWtu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753765AbZIBWpk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:45:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZIBWpi
+	id S1753807AbZIBWtu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 18:49:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZIBWtt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:45:38 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33522
+	Wed, 2 Sep 2009 18:49:49 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38479
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753588AbZIBWph (ORCPT
+	with ESMTP id S1751266AbZIBWts (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 18:45:37 -0400
+	Wed, 2 Sep 2009 18:49:48 -0400
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
 To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3: document conditions when reliable operation is possible)
-Date: Wed, 2 Sep 2009 17:45:34 -0500
+Subject: [PATCH] Update Documentation/md.txt to mention journaling won't help dirty+degraded case.
+Date: Wed, 2 Sep 2009 17:49:46 -0500
 User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
 Cc: Ric Wheeler <rwheeler@redhat.com>, david@lang.hm,
        Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
@@ -30,37 +30,51 @@ Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200909021745.36687.rob@landley.net>
+Message-Id: <200909021749.47695.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 September 2009 15:12:10 Pavel Machek wrote:
-> > (2) RAID5 protects you against a single failure and your test case
-> > purposely injects a double failure.
->
-> Most people would be surprised that press of reset button is 'failure'
-> in this context.
+From: Rob Landley <rob@landley.net>
 
-Apparently because most people haven't read Documentation/md.txt:
+Add more warnings to the "Boot time assembly of degraded/dirty arrays" section,
+explaining that using a journaling filesystem can't overcome this problem.
 
-  Boot time assembly of degraded/dirty arrays
-  -------------------------------------------
+Signed-off-by: Rob Landley <rob@landley.net>
+---
 
-  If a raid5 or raid6 array is both dirty and degraded, it could have
-  undetectable data corruption.  This is because the fact that it is
-  'dirty' means that the parity cannot be trusted, and the fact that it
-  is degraded means that some datablocks are missing and cannot reliably
-  be reconstructed (due to no parity).
+ Documentation/md.txt |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
-And so on for several more paragraphs.  Perhaps the documentation needs to be 
-extended to note that "journaling will not help here, because the lost data 
-blocks render entire stripes unreconstructable"...
+diff --git a/Documentation/md.txt b/Documentation/md.txt
+index 4edd39e..52b8450 100644
+--- a/Documentation/md.txt
++++ b/Documentation/md.txt
+@@ -75,6 +75,23 @@ So, to boot with a root filesystem of a dirty degraded raid[56], use
+ 
+    md-mod.start_dirty_degraded=1
+ 
++Note that Journaling filesystems do not effectively protect data in this
++case, because the update granularity of the RAID is larger than the journal
++was designed to expect.  Reconstructing data via partity information involes
++matching together corresponding stripes, and updating only some of these
++stripes renders the corresponding data in all the unmatched stripes
++meaningless.  Thus seemingly unrelated data in other parts of the filesystem
++(stored in the unmatched stripes) can become unreadable after a partial
++update, but the journal is only aware of the parts it modified, not the
++"collateral damage" elsewhere in the filesystem which was affected by those
++changes.
++
++Thus successful journal replay proves nothing in this context, and even a
++full fsck only shows whether or not the filesystem's metadata was affected.
++(A proper solution to this problem would involve adding journaling to the RAID
++itself, at least during degraded writes.  In the meantime, try not to allow
++a system to shut down uncleanly with its RAID both dirty and degraded, it
++can handle one but not both.)
+ 
+ Superblock formats
+ ------------------
 
-Hmmm, I'll take a stab at it.  (I'm not addressing the raid 0 issues brought 
-up elsewhere in this thread because I don't comfortably understand the current 
-state of play...)
 
-Rob
 -- 
 Latency is more important than throughput. It's that simple. - Linus Torvalds
