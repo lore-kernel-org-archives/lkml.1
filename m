@@ -1,192 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZIBWSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbZIBWUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbZIBWSj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZIBWSi
+	id S1753650AbZIBWUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 18:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753597AbZIBWUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:18:38 -0400
-Received: from verein.lst.de ([213.95.11.210]:44224 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753543AbZIBWSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 18:18:37 -0400
-Date: Thu, 3 Sep 2009 00:18:38 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       hch@lst.de
-Subject: [PATCH] fsync: wait for data writeout completion before calling ->fsync
-Message-ID: <20090902221838.GA5311@lst.de>
-References: <1251899966-7316-1-git-send-email-jack@suse.cz>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251899966-7316-1-git-send-email-jack@suse.cz>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+	Wed, 2 Sep 2009 18:20:00 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:43474 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753580AbZIBWT7 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 18:19:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=m3Oi+19XfJqA/VPssvP4QXHEHw3s0vDSnqBINBUvef9ZRmlrAmtVQCiSiSgP0TKT/c
+         2/PIAIqzRSeqZvO8xKTNDBLMg/itu+N9T7e89tsryk6bntenXqk6Iq3g4uvhGbhygazV
+         fnVitMj8pRxx5oj+Rv2AmhNjXJkLLaiOAGnBo=
+MIME-Version: 1.0
+In-Reply-To: <h7mgl3$v6$1@ger.gmane.org>
+References: <fb7befa20909020932k74fa9e37x1eeabdb494835bb9@mail.gmail.com>
+	 <h7mgl3$v6$1@ger.gmane.org>
+Date: Wed, 2 Sep 2009 18:20:00 -0400
+Message-ID: <fb7befa20909021520o110b9159led09237e72da469e@mail.gmail.com>
+Subject: Re: LowFree pattern
+From: Adayadil Thomas <adayadil.thomas@gmail.com>
+To: Bill Davidsen <davidsen@tmr.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think we should add this one ontop:
+> What problem did you see that you traced to LowFree?
 
--- 
-Subject: [PATCH] fsync: wait for data writeout completion before calling ->fsync
-From: Christoph Hellwig <hch@lst.de>
+I have set this device as a bridge. Higher latency and low throughput seem
+to be related to LowFree. There are also packet drops at the interface
+when LowFree is too low.
 
-Currenly vfs_fsync(_range) first calls filemap_fdatawrite to write out
-the data, the calls into ->fsync to write out the metadata and then finally
-calls filemap_fdatawait to wait for the data I/O to complete.  What sounds
-like a clever micro-optimization actually is nast trap for many filesystems.
-
-For many modern filesystems i_size or other inode information is only
-updated on I/O completion and we need to wait for I/O to finish before
-we can write out the metadata.  For old fashionen filesystems that
-instanciate blocks during the actual write and also update the metadata
-at that point it opens up a large window were we could expose uninitialized
-blocks after a crash.  While a few filesystems that need it already wait
-for the I/O to finish inside their ->fsync methods it is rather suboptimal
-as it is done under the i_mutex and also always for the whole file instead
-of just a part as we could do for O_SYNC handling.
-
-Here is a small audit of all fsync instances in the tree:
-
- - spufs_mfc_fsync:
- - ps3flash_fsync: 
- - vol_cdev_fsync:
- - printer_fsync:
- - fb_deferred_io_fsync:
- - bad_file_fsync:
- - simple_sync_file:
-
-	don't care - filesystems/drivers do't use the page cache or are
-	purely in-memory.
-
- - simple_fsync:
- - file_fsync:
- - affs_file_fsync:
- - fat_file_fsync:
- - jfs_fsync:
- - ubifs_fsync:
- - reiserfs_dir_fsync:
- - reiserfs_sync_file:
-
-	never touch pagecache themselves.  We need to wait before if we do
-	not want to expose stale data after an allocation.
-
- - afs_fsync:
- - fuse_fsync_common:
-
-	do the waiting writeback itself in awkward ways, would benefit from
-	proper semantics
-
- - block_fsync:
-
-	Does a filemap_write_and_wait on the block device inode.  Because we
-	now have f_mapping that is the same inode we call it on in vfs_fsync.
-	So just removing it and letting the VFS do the work in one go would
-	be an improvement.
-
- - btrfs_sync_file:
- - cifs_fsync:
- - xfs_file_fsync:
-
-	need the wait first and currently do it themselves. would benefit from
-	doing it outside i_mutex.
-
- - coda_fsync:
- - ecryptfs_fsync:
- - exofs_file_fsync:
- - shm_fsync:
-
-	only passes the fsync through to the lower layer
-
- - ext3_sync_file:
-
-	doesn't seem to care, comments are confusing.
-
- - ext4_sync_file:
-
-	would need the wait to work correctly for delalloc mode with late
-	i_size updates.  Otherwise the ext3 comment applies.
+I have another device which has 4G RAM split into 900M LowMem and
+the rest as HighMem. In that case also, LowMem goes to a low level, say 8M
+and although HighMem has ~2G free, the system gives OOPS (related to
+page_alloc failures)
+when acting as a bridge (passing packets).
 
 
-	currently implemens it's own writeback and wait in an odd way,
-	could benefit from doing it properly.
-
- - gfs2_fsync:
-
-	not needed for journaled data mode, but probably harmless there.
-	Currently writes back data asynchronously itself.  Needs some
-	major audit.
-
- - hostfs_fsync:
-
-	just calls fsync/datasync on the host FD.  Without the wait before
-	data might not even be inflight yet if we're unlucky.
-
- - hpfs_file_fsync:
- - ncp_fsync:
-
-	no-ops.  Dangerous before and after.
-
- - jffs2_fsync:
-
-	just calls jffs2_flush_wbuf_gc, not sure how this relates to data.
-
- - nfs_fsync_dir:
-
-	just increments stats, claims all directory operations are synchronous
-
- - nfs_file_fsync:
-
-	only writes out data???  Looks very odd.
-
- - nilfs_sync_file:
-
-	looks like it expects all data done, but not sure from the code
-
- - ntfs_dir_fsync:
- - ntfs_file_fsync:
-
-	appear to do their own data writeback.  Very convoluted code.
-
- - ocfs2_sync_file:
-
-	does it's own data writeback, but no wait.  probably needs the wait.
-
- - smb_fsync:
-
-	according to a comment expects all pages written already, probably needs
-	the wait before.
 
 
-This patch only changes vfs_fsync_range, removal of the wait in the methods
-that have it is left to the filesystem maintainers.  Note that most
-filesystems really do need an audit for their fsync methods given the
-gems found in this very brief audit.
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6/fs/sync.c
-===================================================================
---- linux-2.6.orig/fs/sync.c	2009-09-02 15:03:41.073271287 -0300
-+++ linux-2.6/fs/sync.c	2009-09-02 15:04:34.401269249 -0300
-@@ -216,7 +216,7 @@ int vfs_fsync_range(struct file *file, s
- 		goto out;
- 	}
- 
--	ret = filemap_fdatawrite_range(mapping, start, end);
-+	ret = filemap_write_and_wait_range(mapping, start, end);
- 
- 	/*
- 	 * We need to protect against concurrent writers, which could cause
-@@ -228,9 +228,6 @@ int vfs_fsync_range(struct file *file, s
- 		ret = err;
- 	mutex_unlock(&mapping->host->i_mutex);
- 
--	err = filemap_fdatawait_range(mapping, start, end);
--	if (!ret)
--		ret = err;
- out:
- 	return ret;
- }
+On Wed, Sep 2, 2009 at 3:22 PM, Bill Davidsen<davidsen@tmr.com> wrote:
+> Adayadil Thomas wrote:
+>>
+>> Greetings.
+>>
+>> I am running a centos linux with 2.6.20 version kernel. The system has
+>> 1G of RAM.
+>>
+>> As time goes by the LowFree becomes really low. Right now it shows
+>> 137M .. but it goes as low as 8M or so
+>>
+>> The command -
+>> echo 3 > /proc/sys/vm/drop_caches
+>> brings back the LowFree to way up high.
+>>
+>> The question I have is whether the system by itself release the cache
+>> (drop cache) automatically
+>> to maintain a reasonable LowFree?
+>> Is this configurable?
+>>
+> You can change the parameters in /rpoc/sys/vm if you wish, but what makes
+> you think this is needed? Cache is dropped as memory is needed, and
+> drop_cache in general is a good way to slow the system.
+>
+>> Any information or help is much appreciated.
+>>
+> What problem did you see that you traced to LowFree?
+>
+>>
+>> cat /proc/meminfo
+>> MemTotal:      1034788 kB
+>> MemFree:        138240 kB
+>> Buffers:         99260 kB
+>> Cached:         177776 kB
+>> SwapCached:      51740 kB
+>> Active:         605172 kB
+>> Inactive:       113572 kB
+>> HighTotal:      130720 kB
+>> HighFree:          252 kB
+>> LowTotal:       904068 kB
+>> LowFree:        137988 kB
+>> SwapTotal:     1048568 kB
+>> SwapFree:       976332 kB
+>> Dirty:             380 kB
+>> Writeback:           0 kB
+>> AnonPages:      441348 kB
+>> Mapped:          15540 kB
+>> Slab:           146088 kB
+>> SReclaimable:   104288 kB
+>> SUnreclaim:      41800 kB
+>> PageTables:       1596 kB
+>> NFS_Unstable:        0 kB
+>> Bounce:              0 kB
+>> CommitLimit:   1565960 kB
+>> Committed_AS:   590576 kB
+>> VmallocTotal:   114680 kB
+>> VmallocUsed:     15052 kB
+>> VmallocChunk:    99348 kB
+>
+>
+> --
+> Bill Davidsen <davidsen@tmr.com>
+>  "We have more to fear from the bungling of the incompetent than from
+> the machinations of the wicked."  - from Slashdot
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
