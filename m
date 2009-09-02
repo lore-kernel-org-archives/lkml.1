@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZIBTgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753367AbZIBTmF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbZIBTgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 15:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbZIBTgN
+	id S1753367AbZIBTmF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 15:42:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752964AbZIBTmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 15:36:13 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:39634 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbZIBTgM (ORCPT
+	Wed, 2 Sep 2009 15:42:05 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52431 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752442AbZIBTmD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 15:36:12 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=Z+ctDFpe7CM+SWkEBzZGYh0DRdyLhwjAqSW1nbJrKngoGxFU9y4edetA15pBd+yFw
-	EN9UJdzD89un9OL1CX1ww==
-Date: Wed, 2 Sep 2009 12:36:04 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ankita Garg <ankita@in.ibm.com>
-cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] Fix fake numa on ppc
-In-Reply-To: <20090902080346.GB3806@in.ibm.com>
-Message-ID: <alpine.DEB.1.00.0909021226160.10279@chino.kir.corp.google.com>
-References: <20090902060911.GA5728@in.ibm.com> <alpine.DEB.1.00.0909012326290.31814@chino.kir.corp.google.com> <20090902080346.GB3806@in.ibm.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Wed, 2 Sep 2009 15:42:03 -0400
+Date: Wed, 2 Sep 2009 12:41:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jing Huang <huangj@brocade.com>
+Cc: James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, rvadivel@brocade.com, vravindr@brocade.com
+Subject: Re: [PATCH 1/14] bfa: Brocade BFA FC SCSI driver (bfad)
+Message-Id: <20090902124135.aa55f0be.akpm@linux-foundation.org>
+In-Reply-To: <200908280754.n7S7sUMB030191@blc-10-6.brocade.com>
+References: <200908280754.n7S7sUMB030191@blc-10-6.brocade.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Sep 2009, Ankita Garg wrote:
+On Fri, 28 Aug 2009 00:54:30 -0700
+Jing Huang <huangj@brocade.com> wrote:
 
-> Currently, the behavior of fake numa is not so on x86 as well? Below is
-> a sample output from a single node x86 system booted with numa=fake=8:
+> From: Jing Huang <huangj@brocade.com>
 > 
-> # cat node0/cpulist
-> 
-> # cat node1/cpulist
-> 
-> ...
-> # cat node6/cpulist
-> 
-> # cat node7/cpulist
-> 0-7
-> 
-> Presently, just fixing the cpu association issue with ppc, as explained
-> in my previous mail.
+> This patch contains code that interfaces to upper layer linux kernel, such as
+> PCI, SCSI mid-layer and sysfs etc.
 > 
 
-Right, I'm proposing an alternate mapping scheme (which we've used for 
-years) for both platforms such that a cpu is bound (and is set in 
-cpumask_of_node()) to each fake node with which it has physical affinity.  
-That is the only way for zonelist ordering in node order, task migration 
-from offlined cpus, correct sched domains, etc.  I can propose a patchset 
-for x86_64 to do exactly this if there aren't any objections and I hope 
-you'll help do ppc.
+These patches seem to have been posted a lot of times.  Is anyone
+paying attention?
+
+> +BFA_TRC_FILE(LDRV, BFAD);
+> +
+> +static DEFINE_MUTEX(bfad_mutex);
+> +int bfad_scan_done;
+> +
+> +LIST_HEAD(bfad_list);
+> +
+> +static int      bfad_inst;
+> +int             supported_fc4s;
+> +
+> +char           *host_name;
+> +char           *os_name;
+> +char           *os_patch;
+> +int             num_rports;
+> +int             num_ios;
+> +int             num_tms;
+> +int             num_fcxps;
+> +int             num_ufbufs;
+> +int             reqq_size;
+> +int             rspq_size;
+> +int             num_sgpgs;
+> +int             rport_del_timeout = BFA_FCS_RPORT_DEF_DEL_TIMEOUT;
+> +int             bfa_lun_queue_depth = BFAD_LUN_QUEUE_DEPTH;
+> +int             bfa_io_max_sge = BFAD_IO_MAX_SGE;
+> +int             log_level = BFA_LOG_WARNING;
+> +int             ioc_auto_recover = BFA_TRUE;
+> +int             ipfc_enable = BFA_FALSE;
+> +int             ipfc_mtu = -1;
+> +int             linkup_delay = -1;
+
+eek.  These are all kernel-wide global symbols and many of them are
+very inappropriately named.  They should either be made static or given
+a subsystem-specific prefix such as "bfad_".
+
+
