@@ -1,72 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932110AbZIBBB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZIBEiI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932110AbZIBBB1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 21:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbZIBBB0
+	id S1754790AbZIBEiI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 00:38:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZIBEiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 21:01:26 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56492 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755481AbZIBBB0 (ORCPT
+	Wed, 2 Sep 2009 00:38:07 -0400
+Received: from smtp106.sbc.mail.gq1.yahoo.com ([67.195.14.109]:34257 "HELO
+	smtp106.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753984AbZIBEiG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 21:01:26 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 2 Sep 2009 09:59:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, dhaval@linux.vnet.ibm.com,
-       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
-       balbir@linux.vnet.ibm.com, paolo.valente@unimore.it,
-       jmarchan@redhat.com, fernando@oss.ntt.co.jp, jmoyer@redhat.com,
-       mingo@elte.hu, riel@redhat.com, fchecconi@gmail.com,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, righi.andrea@gmail.com,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
- track async bios.
-Message-Id: <20090902095912.cdf8a55e.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090901141142.GA13709@redhat.com>
-References: <4A9C09BE.4060404@redhat.com>
-	<20090831185640.GF3758@redhat.com>
-	<e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com>
-	<20090901.160004.226800357.ryov@valinux.co.jp>
-	<20090901141142.GA13709@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Wed, 2 Sep 2009 00:38:06 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 Sep 2009 00:38:06 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-Yahoo-SMTP:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=gDpwfM0w1LUlvei9TpgkvmzRq9J9cKIzI0TM1rFny3KQQVjf9p6BENwPUikqLafHgEsgif6libpD8ZiUpgYjE1a7ltCxjbQshSem+Gmfi3jtafYQcrBiHt23dEar/WWME2oqpAW64sI3l+aMFuiQ6A0NDtFfOvK51DoS/whtjBY=  ;
+X-Yahoo-SMTP: HIlLYKCswBDnjrunw3O.NnLyvismjGf1HBYfVTvuneM-
+X-YMail-OSG: _mahPm8VM1lgH4V6dOfipuNn0l3kcOEBLX0kSI2c4PdOb4gxJq4r9R2w4fSSogZ6Yc9YD08z4VE9oBVP86C1QvGvW6Cbrqew_Zi.IJ4pM1I2ReRTWrQe_rsXeAQ0eeHsvtsGeyvaweVQmntUwIsye3_Jv_vCv7CkTabK6XsRAkxUJvXbaTnuxpjigYL5lDJQ0RQnWmWOzDU0iF0-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 2.6.31-rc7] gpiolib: allow poll() on value
+Date: Tue, 1 Sep 2009 18:04:10 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, dg@emlix.com
+References: <200908271650.59287.david-b@pacbell.net> <20090901134311.95fba3c8.akpm@linux-foundation.org>
+In-Reply-To: <20090901134311.95fba3c8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200909011804.10934.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Sep 2009 10:11:42 -0400
-Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > > - Somebody also gave an example where there is a memory hogging process and
-> > > > Â possibly pushes out some processes to swap. It does not sound fair to
-> > > > Â charge those proccess for that swap writeout. These processes never
-> > > > Â requested swap IO.
-> > 
-> > I think that swap writeouts should be charged to the memory hogging
-> > process, because the process consumes more resources and it should get
-> > a penalty.
-> > 
+On Tuesday 01 September 2009, Andrew Morton wrote:
+> > ...
+> >
+> > +static struct idr pdesc_idr;
 > 
-> A process requesting memory gets IO penalty? IMHO, swapping is a kernel 
-> mechanism and kernel's way of providing extended RAM. If we want to solve
-> the issue of memory hogging by a process then right way to solve is to use
-> memory controller and not by charging the process for IO activity.
-> Instead, proabably a more suitable way is to charge swap activity to root
-> group (where by default all the kernel related activity goes).   
+> There's no locking to protect this tree.  If that isn't a bug then I'd
+> suggest that a comment be added here explaining why.
+
+Covered by mutex_lock(&sysfs_lock) calls per a quick re-read...
+
+
+> > +static irqreturn_t gpio_sysfs_irq(int irq, void *priv)
+> > +{
+> > +     struct work_struct      *work = priv;
+> > +
+> > +     schedule_work(work);
+> > +     return IRQ_HANDLED;
+> > +}
 > 
+> The only place where we explicitly cancel the pending work is in
+> gpio_setup_irq().  Is that sufficient?  Is there any way in which the
+> work callback can occur after things have been
+> freed/closed/deinitialised/etc?
 
-I agree. It't memcg's job.
-(Support dirty_ratio in memcg is necessary, I think)
+Not that I noticed; it's not supposed to be possible to
+free/etc with IRQs active.
 
-background-write-out-to-swap-for-memory-shortage should be handled
-as kernel I/O. If swap-out-by-memcg bacause of its limit is a problem,
-dirty_ratio for memcg should be implemetned.
-
-Thanks,
--Kame
+- Dave
 
