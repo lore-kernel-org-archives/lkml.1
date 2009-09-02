@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZIBH1b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932191AbZIBHbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755949AbZIBH1b (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 03:27:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbZIBH1b
+	id S932191AbZIBHbc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 03:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZIBHbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 03:27:31 -0400
-Received: from smtpout4.uol.com.br ([200.221.4.195]:44911 "EHLO
-	smtp.uol.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755933AbZIBH1a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 03:27:30 -0400
-Date: Wed, 2 Sep 2009 04:27:26 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org,
-       linux-usb@vger.kernel.org, Douglas Gilbert <dgilbert@interlog.com>
-Subject: Re: [Bugme-new] [Bug 14020] New: Stack trace when running smartctl
- on an USB disk
-Message-ID: <20090902072726.GA3183@ime.usp.br>
-References: <Pine.LNX.4.44L0.0908222002110.9952-100000@netrider.rowland.org>
- <Pine.LNX.4.44L0.0909010942590.2816-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.44L0.0909010942590.2816-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SIG5: 03299a0feb61bd448bdf70edb7733f15
+	Wed, 2 Sep 2009 03:31:31 -0400
+Received: from relay.atmel.no ([80.232.32.139]:62053 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755940AbZIBHbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 03:31:31 -0400
+Date: Wed, 2 Sep 2009 09:31:07 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: pierre@ossman.eu, avictor.za@gmail.com, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk, rob@emanuele.us,
+       nicolas.ferre@atmel.com
+Subject: Re: [PATCH 1/2] atmel-mci: Unified Atmel MCI drivers (AVR32 & AT91)
+Message-ID: <20090902093107.6a7cf93b@hskinnemoen-d830>
+In-Reply-To: <1245778771-8158-1-git-send-email-nicolas.ferre@atmel.com>
+References: <1245200079-6323-1-git-send-email-rob@emanuele.us>
+	<1245778771-8158-1-git-send-email-nicolas.ferre@atmel.com>
+Organization: Atmel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, People.
+Nicolas Ferre <nicolas.ferre@atmel.com> wrote:
+> From: Rob Emanuele <rob@emanuele.us>
+> 
+> Unification of the atmel-mci driver to support the AT91 processors MCI
+> interface.  The atmel-mci driver currently supports the AVR32 and this patch
+> adds AT91 support.
+> Add read/write proof selection switch dependent on chip availability of this
+> feature.
+> 
+> To use this new driver on a at91 the platform driver for your board needs to
+> updated.
+> 
+> Signed-off-by: Rob Emanuele <rob@emanuele.us>
+> [nicolas.ferre@atmel.com indent, Kconfig comment and one printk modification]
+> Signed-off-by: Nicolas Ferre <nicolas.ferre@atmel.com>
 
-On Sep 01 2009, Alan Stern wrote:
-> Should this bug report be closed out?
-
-Please, just wait a little bit more. I'm just getting recovered from
-being ill (my health is not very good, unfortunately).
-
-That with some network (and e-mail) outages made things difficult. I'm
-just getting back now.
-
-I'm going to test the suggestion from Douglas right now.
-
-
-Thanks, Rogério Brito.
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
