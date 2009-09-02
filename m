@@ -1,164 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755770AbZIBFWA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744AbZIBFVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755770AbZIBFWA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 01:22:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbZIBFV7
+	id S1755744AbZIBFVr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 01:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755726AbZIBFVq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 01:21:59 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51733 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755729AbZIBFV6 (ORCPT
+	Wed, 2 Sep 2009 01:21:46 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:52925 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755661AbZIBFVq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 01:21:58 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 2 Sep 2009 14:20:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [mmotm][PATCH 2/2] memcg: reduce calls for soft limit excess
-Message-Id: <20090902142001.35cae908.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090902141639.565175d3.nishimura@mxp.nes.nec.co.jp>
-References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090902093551.c8b171fb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090902141639.565175d3.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 01:21:46 -0400
+Date: Wed, 2 Sep 2009 10:51:38 +0530
+From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
+Message-ID: <20090902052138.GB5431@linux.vnet.ibm.com>
+Reply-To: arun@linux.vnet.ibm.com
+References: <20090901113704.GG7599@linux.vnet.ibm.com> <20090901113840.GH7599@linux.vnet.ibm.com> <20090901172825.GA6780@balbir.in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090901172825.GA6780@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Sep 2009 14:16:39 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-09-01 22:58:25]:
 
-> On Wed, 2 Sep 2009 09:35:51 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > In charge path, usage_in_excess is calculated repeatedly and
-> > it takes res_counter's spin_lock every time.
-> > 
-> Hmm, mem_cgroup_update_tree() is called in both charge and uncharge path.
-> So, this patch have effect on both path, doesn't it ?
+> * Arun R B <arun@linux.vnet.ibm.com> [2009-09-01 17:08:40]:
 > 
-> > This patch removes unnecessary calls for res_count_soft_limit_excess.
+> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
 > > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > Cleanup drivers/cpuidle/cpuidle.c
+> > 
+> > Cpuidle maintains a pm_idle_old void pointer because, currently in x86
+> > there is no clean way of registering and unregistering a idle function.
+> >
+> > So remove pm_idle_old and leave the responsibility of maintaining the
+> > list of registered idle loops to the architecture specific code. If the
+> > architecture registers cpuidle_idle_call as its idle loop, only then
+> > this loop is called.
+> > 
+> 
+> It sounds as if there is a side-effect of this
+> patch on x86 (am I reading it incorrectly), which can be fixed, but
+> it will need a patch or so to get back the old behaviour on x86.
+> 
+
+Hi Balbir,
+
+Yes, your understanding is correct. Currently, x86 exports pm_idle and
+this pm_idle is set to cpuidle_idle_call inside cpuidle.c
+
+So instead of that x86 should just export a function called
+set_arch_idle() which will be called from within
+register_idle_function() and set pm_idle to the idle handler which is
+currently being registered.
+
+I have implemented this for pseries, and in the process of doing it
+for x86 too.
+
+> > Also remove unwanted functions cpuidle_[un]install_idle_handler,
+> > cpuidle_kick_cpus()
+> >
+> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
 > > ---
-> >  mm/memcontrol.c |   31 +++++++++++++++----------------
-> >  1 file changed, 15 insertions(+), 16 deletions(-)
+> >  drivers/cpuidle/cpuidle.c  |   51 +++++++++++++++------------------------------
+> >  drivers/cpuidle/governor.c |    3 --
+> >  2 files changed, 17 insertions(+), 37 deletions(-)
 > > 
-> > Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+> > Index: linux.trees.git/drivers/cpuidle/cpuidle.c
 > > ===================================================================
-> > --- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
-> > +++ mmotm-2.6.31-Aug27/mm/memcontrol.c
-> > @@ -313,7 +313,8 @@ soft_limit_tree_from_page(struct page *p
-> >  static void
-> >  __mem_cgroup_insert_exceeded(struct mem_cgroup *mem,
-> >  				struct mem_cgroup_per_zone *mz,
-> > -				struct mem_cgroup_tree_per_zone *mctz)
-> > +				struct mem_cgroup_tree_per_zone *mctz,
-> > +				unsigned long new_usage_in_excess)
-> It might be a nitpick, shouldn't it be unsigned long long ?
-> 
-Ouch, yes. I'll post fixed one, today.
-Thank you for pointing out.
-
--Kame
-
-> Otherwise, it looks good to me.
-> 
-> 	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> Thanks,
-> Daisuke Nishimura.
-> 
-> >  {
-> >  	struct rb_node **p = &mctz->rb_root.rb_node;
-> >  	struct rb_node *parent = NULL;
-> > @@ -322,7 +323,9 @@ __mem_cgroup_insert_exceeded(struct mem_
-> >  	if (mz->on_tree)
+> > --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
+> > +++ linux.trees.git/drivers/cpuidle/cpuidle.c
+> > @@ -24,9 +24,14 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
+> > 
+> >  DEFINE_MUTEX(cpuidle_lock);
+> >  LIST_HEAD(cpuidle_detected_devices);
+> > -static void (*pm_idle_old)(void);
+> > 
+> >  static int enabled_devices;
+> > +static int idle_function_registered;
+> > +
+> > +struct idle_function_desc cpuidle_idle_desc = {
+> > +	.name           =       "cpuidle_loop",
+> > +	.idle_func      =       cpuidle_idle_call,
+> > +};
+> > 
+> >  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
+> >  static void cpuidle_kick_cpus(void)
+> > @@ -54,13 +59,10 @@ static void cpuidle_idle_call(void)
+> > 
+> >  	/* check if the device is ready */
+> >  	if (!dev || !dev->enabled) {
+> > -		if (pm_idle_old)
+> > -			pm_idle_old();
+> > -		else
+> >  #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
+> > -			default_idle();
+> > +		default_idle();
+> >  #else
+> > -			local_irq_enable();
+> > +		local_irq_enable();
+> >  #endif
 > >  		return;
-> >  
-> > -	mz->usage_in_excess = res_counter_soft_limit_excess(&mem->res);
-> > +	mz->usage_in_excess = new_usage_in_excess;
-> > +	if (!mz->usage_in_excess)
-> > +		return;
-> >  	while (*p) {
-> >  		parent = *p;
-> >  		mz_node = rb_entry(parent, struct mem_cgroup_per_zone,
-> > @@ -382,7 +385,7 @@ static bool mem_cgroup_soft_limit_check(
-> >  
-> >  static void mem_cgroup_update_tree(struct mem_cgroup *mem, struct page *page)
-> >  {
-> > -	unsigned long long new_usage_in_excess;
-> > +	unsigned long long excess;
-> >  	struct mem_cgroup_per_zone *mz;
-> >  	struct mem_cgroup_tree_per_zone *mctz;
-> >  	int nid = page_to_nid(page);
-> > @@ -395,25 +398,21 @@ static void mem_cgroup_update_tree(struc
-> >  	 */
-> >  	for (; mem; mem = parent_mem_cgroup(mem)) {
-> >  		mz = mem_cgroup_zoneinfo(mem, nid, zid);
-> > -		new_usage_in_excess =
-> > -			res_counter_soft_limit_excess(&mem->res);
-> > +		excess = res_counter_soft_limit_excess(&mem->res);
-> >  		/*
-> >  		 * We have to update the tree if mz is on RB-tree or
-> >  		 * mem is over its softlimit.
-> >  		 */
-> > -		if (new_usage_in_excess || mz->on_tree) {
-> > +		if (excess || mz->on_tree) {
-> >  			spin_lock(&mctz->lock);
-> >  			/* if on-tree, remove it */
-> >  			if (mz->on_tree)
-> >  				__mem_cgroup_remove_exceeded(mem, mz, mctz);
-> >  			/*
-> > -			 * if over soft limit, insert again. mz->usage_in_excess
-> > -			 * will be updated properly.
-> > +			 * Insert again. mz->usage_in_excess will be updated.
-> > +			 * If excess is 0, no tree ops.
-> >  			 */
-> > -			if (new_usage_in_excess)
-> > -				__mem_cgroup_insert_exceeded(mem, mz, mctz);
-> > -			else
-> > -				mz->usage_in_excess = 0;
-> > +			__mem_cgroup_insert_exceeded(mem, mz, mctz, excess);
-> >  			spin_unlock(&mctz->lock);
-> >  		}
 > >  	}
-> > @@ -2216,6 +2215,7 @@ unsigned long mem_cgroup_soft_limit_recl
-> >  	unsigned long reclaimed;
-> >  	int loop = 0;
-> >  	struct mem_cgroup_tree_per_zone *mctz;
-> > +	unsigned long long excess;
-> >  
-> >  	if (order > 0)
-> >  		return 0;
-> > @@ -2260,9 +2260,8 @@ unsigned long mem_cgroup_soft_limit_recl
-> >  				__mem_cgroup_largest_soft_limit_node(mctz);
-> >  			} while (next_mz == mz);
-> >  		}
-> > -		mz->usage_in_excess =
-> > -			res_counter_soft_limit_excess(&mz->mem->res);
-> >  		__mem_cgroup_remove_exceeded(mz->mem, mz, mctz);
-> > +		excess = res_counter_soft_limit_excess(&mz->mem->res);
-> >  		/*
-> >  		 * One school of thought says that we should not add
-> >  		 * back the node to the tree if reclaim returns 0.
-> > @@ -2271,8 +2270,8 @@ unsigned long mem_cgroup_soft_limit_recl
-> >  		 * memory to reclaim from. Consider this as a longer
-> >  		 * term TODO.
-> >  		 */
-> > -		if (mz->usage_in_excess)
-> > -			__mem_cgroup_insert_exceeded(mz->mem, mz, mctz);
-> > +		/* If excess == 0, no tree ops */
-> > +		__mem_cgroup_insert_exceeded(mz->mem, mz, mctz, excess);
-> >  		spin_unlock(&mctz->lock);
-> >  		css_put(&mz->mem->css);
-> >  		loop++;
+> > @@ -94,35 +96,11 @@ static void cpuidle_idle_call(void)
+> >  }
+> > 
+> >  /**
+> > - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
+> > - */
+> > -void cpuidle_install_idle_handler(void)
+> > -{
+> > -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
+> > -		/* Make sure all changes finished before we switch to new idle */
+> > -		smp_wmb();
+> > -		pm_idle = cpuidle_idle_call;
+> > -	}
+> > -}
+> > -
+> > -/**
+> > - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
+> > - */
+> > -void cpuidle_uninstall_idle_handler(void)
+> > -{
+> > -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
+> > -		pm_idle = pm_idle_old;
+> > -		cpuidle_kick_cpus();
+> > -	}
+> > -}
+> > -
+> > -/**
+> >   * cpuidle_pause_and_lock - temporarily disables CPUIDLE
+> >   */
+> >  void cpuidle_pause_and_lock(void)
+> >  {
+> >  	mutex_lock(&cpuidle_lock);
+> > -	cpuidle_uninstall_idle_handler();
+> >  }
+> > 
+> >  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
+> > @@ -132,7 +110,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
+> >   */
+> >  void cpuidle_resume_and_unlock(void)
+> >  {
+> > -	cpuidle_install_idle_handler();
+> >  	mutex_unlock(&cpuidle_lock);
+> >  }
 > > 
 > 
+> What does this mean for users of cpuidle_pause_and_lock/unlock?
+> Should we be calling register/unregister_idle_function here?
+>
 
+Yes, you are right. I have missed out on this part.
+register/unregister_idle_function should replace
+install/uninstall_idle_handler at those places. Thanks.
+
+> 
+> > @@ -287,6 +264,12 @@ static int __cpuidle_register_device(str
+> >  	return 0;
+> >  }
+> > 
+> > +static void register_cpuidle_idle_function(void)
+> > +{
+> > +	register_idle_function(&cpuidle_idle_desc);
+> > +
+> > +	idle_function_registered = 1;
+> 
+> Use booleans if possible, unless you intend to extend the meaning of
+> registered someday.
+>
+
+I don't intend to extend the meaning of idle_function_registered.
+Will use boolean here.
+
+> > +}
+> >  /**
+> >   * cpuidle_register_device - registers a CPU's idle PM feature
+> >   * @dev: the cpu
+> > @@ -303,7 +286,9 @@ int cpuidle_register_device(struct cpuid
+> >  	}
+> > 
+> >  	cpuidle_enable_device(dev);
+> > -	cpuidle_install_idle_handler();
+> > +
+> > +	if (!idle_function_registered)
+> > +		register_cpuidle_idle_function();
+> > 
+> >  	mutex_unlock(&cpuidle_lock);
+> > 
+> > @@ -382,8 +367,6 @@ static int __init cpuidle_init(void)
+> >  {
+> >  	int ret;
+> > 
+> > -	pm_idle_old = pm_idle;
+> > -
+> >  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
+> >  	if (ret)
+> >  		return ret;
+> > Index: linux.trees.git/drivers/cpuidle/governor.c
+> > ===================================================================
+> > --- linux.trees.git.orig/drivers/cpuidle/governor.c
+> > +++ linux.trees.git/drivers/cpuidle/governor.c
+> > @@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
+> >  	if (gov == cpuidle_curr_governor)
+> >  		return 0;
+> > 
+> > -	cpuidle_uninstall_idle_handler();
+> > -
+> >  	if (cpuidle_curr_governor) {
+> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+> >  			cpuidle_disable_device(dev);
+> > @@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
+> >  			return -EINVAL;
+> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
+> >  			cpuidle_enable_device(dev);
+> > -		cpuidle_install_idle_handler();
+> >  		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
+> >  	}
+> > 
+> 
+> -- 
+> 	Balbir
+
+Thanks for the review!
+--arun
