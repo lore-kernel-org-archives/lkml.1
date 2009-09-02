@@ -1,59 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZIBNYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752093AbZIBNYq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbZIBNYw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 09:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752124AbZIBNYv
+	id S1752093AbZIBNYq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 09:24:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZIBNYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 09:24:51 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:35119 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751384AbZIBNYs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 09:24:48 -0400
-Date: Wed, 2 Sep 2009 14:24:23 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Cc: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
-       Siarhei Siamashka <siarhei.siamashka@nokia.com>,
-       Moiseichuk Leonid <leonid.moiseichuk@nokia.com>,
-       Koskinen Aaro <aaro.koskinen@nokia.com>
-Subject: Re: [PATCH 2/2] ARM: copy_page.S: take into account the size of
-	the cache line
-Message-ID: <20090902132423.GA12595@n2100.arm.linux.org.uk>
-References: <1251907913-16261-1-git-send-email-kirill@shutemov.name> <1251907913-16261-2-git-send-email-kirill@shutemov.name>
+	Wed, 2 Sep 2009 09:24:45 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:39805 "EHLO arroyo.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751295AbZIBNYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 09:24:45 -0400
+Message-ID: <34590.192.168.10.89.1251897876.squirrel@dbdmail.itg.ti.com>
+Date: Wed, 2 Sep 2009 18:54:36 +0530 (IST)
+Subject: [PATCH] OMAP4: MMC driver support on OMAP4
+From: "kishore kadiyala" <kishore.kadiyala@ti.com>
+To: linux-kernel@vger.kernel.org, inux-omap@vger.kernel.org
+Cc: jarkko.lavinen@nokia.com, madhu.cr@ti.com
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251907913-16261-2-git-send-email-kirill@shutemov.name>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 07:11:53PM +0300, Kirill A. Shutemov wrote:
->  ENTRY(copy_page)
->  		stmfd	sp!, {r4, lr}			@	2
->  	PLD(	pld	[r1, #0]		)
-> -	PLD(	pld	[r1, #32]		)
-> +	PLD(	pld	[r1, #L1_CACHE_BYTES]		)
->  		mov	r2, #COPY_COUNT			@	1
->  		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
-> -1:	PLD(	pld	[r1, #64]		)
-> -	PLD(	pld	[r1, #96]		)
-> -2:		stmia	r0!, {r3, r4, ip, lr}		@	4
-> -		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
-> -		stmia	r0!, {r3, r4, ip, lr}		@	4
-> -		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
-> +1:	PLD(	pld	[r1, #(2*L1_CACHE_BYTES)])
-> +	PLD(	pld	[r1, #(3*L1_CACHE_BYTES)])
+This Patch adds basic support for all 5 MMC controllers on OMAP4.
 
-I really hate unnecessary parens - please remove them, and put a space
-each side of the '*'.
+-Kishore
 
-> +2:
-> +	.rept	(2 * (L1_CACHE_BYTES) / 16 - 1)
+Signed-off-by: Kishore Kadiyala <kishore.kadiyala@ti.com>
+---
+This patch doesn't include mmc-regulator support
 
-Parens are not required around L1_CACHE_BYTES either.
+ arch/arm/mach-omap2/devices.c          |   42 +++++++++++++++++++++++++++++----
+ arch/arm/plat-omap/include/mach/irqs.h |    2 +
+ arch/arm/plat-omap/include/mach/mmc.h  |    9 ++++++-
+ drivers/mmc/host/Kconfig               |    6 ++--
+ drivers/mmc/host/omap_hsmmc.c          |   10 +++++++
+ 5 files changed, 60 insertions(+), 9 deletions(-)
 
-Other than that, patch is fine.
+Index: kernel-omap4-base/arch/arm/mach-omap2/devices.c
+===================================================================
+--- kernel-omap4-base.orig/arch/arm/mach-omap2/devices.c
++++ kernel-omap4-base/arch/arm/mach-omap2/devices.c
+@@ -397,7 +397,7 @@ static inline void omap_init_sha1_md5(vo
+
+ /*-------------------------------------------------------------------------*/
+
+-#ifdef CONFIG_ARCH_OMAP3
++#if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
+
+ #define MMCHS_SYSCONFIG			0x0010
+ #define MMCHS_SYSCONFIG_SWRESET		(1 << 1)
+@@ -424,8 +424,8 @@ static struct platform_device dummy_pdev
+  **/
+ static void __init omap_hsmmc_reset(void)
+ {
+-	u32 i, nr_controllers = cpu_is_omap34xx() ? OMAP34XX_NR_MMC :
+-		OMAP24XX_NR_MMC;
++	u32 i, nr_controllers = cpu_is_omap44xx() ? OMAP44XX_NR_MMC :
++		(cpu_is_omap34xx() ? OMAP34XX_NR_MMC : OMAP24XX_NR_MMC);
+
+ 	for (i = 0; i < nr_controllers; i++) {
+ 		u32 v, base = 0;
+@@ -442,8 +442,21 @@ static void __init omap_hsmmc_reset(void
+ 		case 2:
+ 			base = OMAP3_MMC3_BASE;
+ 			break;
++		case 3:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC4_BASE;
++			break;
++		case 4:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC5_BASE;
++			break;
+ 		}
+
++		if (cpu_is_omap44xx())
++			base += OMAP4_MMC_REG_OFFSET;
++
+ 		dummy_pdev.id = i;
+ 		dev_set_name(&dummy_pdev.dev, "mmci-omap-hs.%d", i);
+ 		iclk = clk_get(dev, "ick");
+@@ -540,11 +553,23 @@ void __init omap2_init_mmc(struct omap_m
+ 			irq = INT_24XX_MMC2_IRQ;
+ 			break;
+ 		case 2:
+-			if (!cpu_is_omap34xx())
++			if (!cpu_is_omap44xx() && !cpu_is_omap34xx())
+ 				return;
+ 			base = OMAP3_MMC3_BASE;
+ 			irq = INT_34XX_MMC3_IRQ;
+ 			break;
++		case 3:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC4_BASE + OMAP4_MMC_REG_OFFSET;
++			irq = INT_44XX_MMC4_IRQ;
++			break;
++		case 4:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC5_BASE + OMAP4_MMC_REG_OFFSET;
++			irq = INT_44XX_MMC5_IRQ;
++			break;
+ 		default:
+ 			continue;
+ 		}
+@@ -552,8 +577,15 @@ void __init omap2_init_mmc(struct omap_m
+ 		if (cpu_is_omap2420()) {
+ 			size = OMAP2420_MMC_SIZE;
+ 			name = "mmci-omap";
++		} else if (cpu_is_omap44xx()) {
++			if (i < 3) {
++				base += OMAP4_MMC_REG_OFFSET;
++				irq += IRQ_GIC_START;
++			}
++			size = OMAP4_HSMMC_SIZE;
++			name = "mmci-omap-hs";
+ 		} else {
+-			size = HSMMC_SIZE;
++			size = OMAP3_HSMMC_SIZE;
+ 			name = "mmci-omap-hs";
+ 		}
+ 		omap_mmc_add(name, i, base, size, irq, mmc_data[i]);
+Index: kernel-omap4-base/arch/arm/plat-omap/include/mach/irqs.h
+===================================================================
+--- kernel-omap4-base.orig/arch/arm/plat-omap/include/mach/irqs.h
++++ kernel-omap4-base/arch/arm/plat-omap/include/mach/irqs.h
+@@ -503,6 +503,7 @@
+ #define INT_44XX_FPKA_READY_IRQ	(50 + IRQ_GIC_START)
+ #define INT_44XX_SHA1MD51_IRQ	(51 + IRQ_GIC_START)
+ #define INT_44XX_RNG_IRQ	(52 + IRQ_GIC_START)
++#define INT_44XX_MMC5_IRQ	(59 + IRQ_GIC_START)
+ #define INT_44XX_I2C3_IRQ	(61 + IRQ_GIC_START)
+ #define INT_44XX_FPKA_ERROR_IRQ	(64 + IRQ_GIC_START)
+ #define INT_44XX_PBIAS_IRQ	(75 + IRQ_GIC_START)
+@@ -511,6 +512,7 @@
+ #define INT_44XX_TLL_IRQ	(78 + IRQ_GIC_START)
+ #define INT_44XX_PARTHASH_IRQ	(79 + IRQ_GIC_START)
+ #define INT_44XX_MMC3_IRQ	(94 + IRQ_GIC_START)
++#define INT_44XX_MMC4_IRQ	(96 + IRQ_GIC_START)
+
+
+ /* Max. 128 level 2 IRQs (OMAP1610), 192 GPIOs (OMAP730/850) and
+Index: kernel-omap4-base/arch/arm/plat-omap/include/mach/mmc.h
+===================================================================
+--- kernel-omap4-base.orig/arch/arm/plat-omap/include/mach/mmc.h
++++ kernel-omap4-base/arch/arm/plat-omap/include/mach/mmc.h
+@@ -25,11 +25,18 @@
+
+ #define OMAP24XX_NR_MMC		2
+ #define OMAP34XX_NR_MMC		3
++#define OMAP44XX_NR_MMC		5
+ #define OMAP2420_MMC_SIZE	OMAP1_MMC_SIZE
+-#define HSMMC_SIZE		0x200
++#define OMAP3_HSMMC_SIZE	0x200
++#define OMAP4_HSMMC_SIZE	0x1000
+ #define OMAP2_MMC1_BASE		0x4809c000
+ #define OMAP2_MMC2_BASE		0x480b4000
+ #define OMAP3_MMC3_BASE		0x480ad000
++#define OMAP4_MMC4_BASE		0x480d1000
++#define OMAP4_MMC5_BASE		0x480d5000
++#define OMAP4_MMC_REG_OFFSET	0x100
++#define HSMMC5			(1 << 4)
++#define HSMMC4			(1 << 3)
+ #define HSMMC3			(1 << 2)
+ #define HSMMC2			(1 << 1)
+ #define HSMMC1			(1 << 0)
+Index: kernel-omap4-base/drivers/mmc/host/Kconfig
+===================================================================
+--- kernel-omap4-base.orig/drivers/mmc/host/Kconfig
++++ kernel-omap4-base/drivers/mmc/host/Kconfig
+@@ -132,11 +132,11 @@ config MMC_OMAP
+
+ config MMC_OMAP_HS
+ 	tristate "TI OMAP High Speed Multimedia Card Interface support"
+-	depends on ARCH_OMAP2430 || ARCH_OMAP3
++	depends on ARCH_OMAP2430 || ARCH_OMAP3 || ARCH_OMAP4
+ 	help
+ 	  This selects the TI OMAP High Speed Multimedia card Interface.
+-	  If you have an OMAP2430 or OMAP3 board with a Multimedia Card slot,
+-	  say Y or M here.
++	  If you have an OMAP2430 or OMAP3 board or OMAP4 board with a
++	  Multimedia Card slot, say Y or M here.
+
+ 	  If unsure, say N.
+
+Index: kernel-omap4-base/drivers/mmc/host/omap_hsmmc.c
+===================================================================
+--- kernel-omap4-base.orig/drivers/mmc/host/omap_hsmmc.c
++++ kernel-omap4-base/drivers/mmc/host/omap_hsmmc.c
+@@ -101,6 +101,8 @@
+ #define OMAP_MMC1_DEVID		0
+ #define OMAP_MMC2_DEVID		1
+ #define OMAP_MMC3_DEVID		2
++#define OMAP_MMC4_DEVID		3
++#define OMAP_MMC5_DEVID		4
+
+ #define MMC_TIMEOUT_MS		20
+ #define OMAP_MMC_MASTER_CLOCK	96000000
+@@ -1096,6 +1098,14 @@ static int __init omap_mmc_probe(struct
+ 		host->dma_line_tx = OMAP34XX_DMA_MMC3_TX;
+ 		host->dma_line_rx = OMAP34XX_DMA_MMC3_RX;
+ 		break;
++	case OMAP_MMC4_DEVID:
++		host->dma_line_tx = OMAP44XX_DMA_MMC4_TX;
++		host->dma_line_rx = OMAP44XX_DMA_MMC4_RX;
++		break;
++	case OMAP_MMC5_DEVID:
++		host->dma_line_tx = OMAP44XX_DMA_MMC5_TX;
++		host->dma_line_rx = OMAP44XX_DMA_MMC5_RX;
++		break;
+ 	default:
+ 		dev_err(mmc_dev(host->mmc), "Invalid MMC id\n");
+ 		goto err_irq;
+
+
