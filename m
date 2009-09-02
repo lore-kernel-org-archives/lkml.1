@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753602AbZIBVze@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbZIBWDd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753602AbZIBVze (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 17:55:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZIBVzd
+	id S1753562AbZIBWDd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 18:03:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753229AbZIBWDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 17:55:33 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:50048 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753586AbZIBVzc (ORCPT
+	Wed, 2 Sep 2009 18:03:32 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:55826 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752858AbZIBWDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 17:55:32 -0400
-Date: Wed, 2 Sep 2009 22:55:33 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Linus Walleij <linus.ml.walleij@gmail.com>
-Cc: Linus Walleij <linus.walleij@stericsson.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Russell King <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 1/2] AB3100 regulator support v3
-Message-ID: <20090902215533.GA18527@opensource.wolfsonmicro.com>
-References: <1251756258-23917-1-git-send-email-linus.walleij@stericsson.com> <20090902172438.GA1190@rakim.wolfsonmicro.main> <63386a3d0909021437pe94b5a5m20a63fbad396cd13@mail.gmail.com>
+	Wed, 2 Sep 2009 18:03:31 -0400
+Date: Thu, 3 Sep 2009 08:03:27 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Re: Crypto Fixes for 2.6.31
+Message-ID: <20090902220327.GA17020@gondor.apana.org.au>
+References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20090613020512.GA21024@gondor.apana.org.au> <20090621140924.GA3305@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <63386a3d0909021437pe94b5a5m20a63fbad396cd13@mail.gmail.com>
-X-Cookie: Q: Are we not men?
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090621140924.GA3305@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 11:37:00PM +0200, Linus Walleij wrote:
+Hi Linus:
 
-> The sleep settings are driven by two HW lines, so a regulator
-> can react by suspending the regulator on line A or B disjunct
-> either (logical ||) or both (logical &&). (You don't alter that in
-> runtime so no API has been developed here.)
+This push fixes a serious regression for IPsec when using the
+chainiv algorithm.  We were checking for NULL after converting a
+pointer that can be NULL to its container, which means that
+the NULL pointer check is useless.  This would occur when the
+chainiv backlog queue is depleted.  The result is a crash.
 
-OK, that's fine - it's setting things outside the normal API flow which
-is all that I was asking.
+Based on the one report received it does not occur all the time
+though, possibly because we only use the backlog when two CPUs
+try to push data through a single SA at the same time, which is
+rare.
+ 
+Please pull from
 
-> And I don't see any way for the core (set_machine_constraints)
-> to set regulators to *off* by default if they happen to be on at
-> boot.
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
 
-That'd be a boot_off constraint if someone requires it.  So far nobody
-has - there's not going to be many cases where it's appropriate to do
-so, normally either you want to leave the supplies on for the device
-driver that's taking control of the device or it does no harm to wait
-till the end of init.
+or
+
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+
+Herbert Xu (1):
+      crypto: skcipher - Fix skcipher_dequeue_givcrypt NULL test
+
+ crypto/algapi.c                    |   11 +++++++++--
+ include/crypto/algapi.h            |    1 +
+ include/crypto/internal/skcipher.h |    4 ++--
+ 3 files changed, 12 insertions(+), 4 deletions(-)
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
