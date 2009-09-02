@@ -1,86 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755920AbZIBGhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbZIBGmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755920AbZIBGhM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 02:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbZIBGhL
+	id S932195AbZIBGmO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 02:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbZIBGmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 02:37:11 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:37767 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755901AbZIBGhK (ORCPT
+	Wed, 2 Sep 2009 02:42:14 -0400
+Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:38266 "EHLO
+	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932180AbZIBGmN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 02:37:10 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=n/s5g5qNHUiG4iEvW6UsAtrdYmlBwDOpXx5yJaqmX14AQ0hfGfvdqxGMQNIfGIv2E
-	kAlak3OUcWxUrk/RF8QzQ==
-Date: Tue, 1 Sep 2009 23:37:05 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Ankita Garg <ankita@in.ibm.com>
-cc: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] Fix fake numa on ppc
-In-Reply-To: <20090902060911.GA5728@in.ibm.com>
-Message-ID: <alpine.DEB.1.00.0909012326290.31814@chino.kir.corp.google.com>
-References: <20090902060911.GA5728@in.ibm.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 2 Sep 2009 02:42:13 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=Mv5P-v-zDEQA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
+ a=W0vUJOdyAAAA:8 a=TqhozWMB9wJ85H5J9cAA:9 a=cshw5NVX0xuyGMYNsUcA:7
+ a=VnnnA3Hh3w0UpA8g967sjDQIDl8A:4 a=x8gzFH9gYPwA:10 a=U62fhAwekXMA:10
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: linux-kernel@vger.kernel.org
+Subject: Re: sata exception frozen timeout?
+Date: Wed, 2 Sep 2009 00:42:14 -0600
+User-Agent: KMail/1.12.90 (Linux/2.6.31-rc5; KDE/4.3.64; x86_64; svn-1004284; 2009-07-29)
+References: <200909010316.58715.tfjellstrom@shaw.ca> <4A9DF566.50805@gmail.com>
+In-Reply-To: <4A9DF566.50805@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909020042.14663.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Sep 2009, Ankita Garg wrote:
+On Tue September 1 2009, Robert Hancock wrote:
+> On 09/01/2009 03:16 AM, Thomas Fjellstrom wrote:
+> > I've recently started seeing the following messages from a new WD Green
+> > drive, not long after I had to RMA a Seagate drive for a strange (but
+> > different) error. Highlights from my dmesg include:
+> >
+> > [59634.792101] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+> > frozen
+> > [59634.792121] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> > [59634.792125]          res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4
+> > (timeout)
+> > [59634.792133] ata6.00: status: { DRDY }
+> > [59634.792145] ata6: hard resetting link
+> > [59635.277695] ata6: softreset failed (device not ready)
+> > [59635.277705] ata6: failed due to HW bug, retry pmp=0
+> > [59635.441570] ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+> > [59635.454030] ata6.00: configured for UDMA/133
+> > [59635.454068] ata6: EH complete
+> > ...
+> > [59713.792224] ata6.00: NCQ disabled due to excessive errors
+> > [59713.792236] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+> > frozen
+> > [59713.792254] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> > [59713.792257]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
+> > (timeout)
+> > [59713.792264] ata6.00: status: { DRDY }
+> > ...
+> > [63484.781764] ata6: hard resetting link
+> > [63485.264204] ata6: softreset failed (device not ready)
+> > [63485.264214] ata6: failed due to HW bug, retry pmp=0
+> > [63485.428205] ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+> > [63485.440499] ata6.00: configured for UDMA/100
+> > [63485.440536] ata6: EH complete
+> > [63493.780182] ata6.00: limiting speed to UDMA/33:PIO4
+> > [63493.780194] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
+> > frozen
+> > [63493.780211] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
+> > [63493.780214]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
+> > (timeout)
+> > [63493.780221] ata6.00: status: { DRDY }
+> > ...
+> > [99318.070669] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
+> > [99318.070679] ata6.00: irq_stat 0x40000001
+> > [99318.070698] ata6.00: cmd 25/00:00:30:bd:01/00:01:1b:00:00/e0 tag 0 dma
+> > 131072 in
+> > [99318.070701]          res 41/04:ef:30:bd:01/00:00:1b:00:00/e0 Emask 0x1
+> > (device error)
+> > [99318.070709] ata6.00: status: { DRDY ERR }
+> > [99318.070714] ata6.00: error: { ABRT }
+> > [99318.082588] ata6.00: configured for UDMA/33
+> > [99318.082612] ata6: EH complete
+> > ...
+> > [99339.780358] ata6: hard resetting link
+> > [99349.785096] ata6: softreset failed (device not ready)
+> > [99349.785108] ata6: hard resetting link
+> > [99359.789033] ata6: softreset failed (device not ready)
+> > [99359.789045] ata6: hard resetting link
+> > [99370.352916] ata6: link is slow to respond, please be patient (ready=0)
+> > ..
+> > [99400.016925] ata6: softreset failed (device not ready)
+> > [99400.016936] ata6: reset failed, giving up
+> > [99400.016942] ata6.00: disabled
+> > [99400.016986] ata6: EH complete
+> > [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
+> > [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> > driverbyte=DRIVER_OK
+> > [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
+> > [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> > driverbyte=DRIVER_OK
+> > [99400.017035] end_request: I/O error, dev sdf, sector 453099568
+> > [99400.017045] Buffer I/O error on device md1, logical block 113274390
+> > [99400.017058] Buffer I/O error on device md1, logical block 113274391
+> > [99400.017064] Buffer I/O error on device md1, logical block 113274392
+> > [99400.017070] Buffer I/O error on device md1, logical block 113274393
+> > [99400.017076] Buffer I/O error on device md1, logical block 113274394
+> > [99400.017082] Buffer I/O error on device md1, logical block 113274395
+> > [99400.017088] Buffer I/O error on device md1, logical block 113274396
+> > [99400.017094] Buffer I/O error on device md1, logical block 113274397
+> > [99400.017100] Buffer I/O error on device md1, logical block 113274398
+> > [99400.017106] Buffer I/O error on device md1, logical block 113274399
+> > [99400.017115] sd 5:0:0:0: [sdf] Unhandled error code
+> > [99400.017123] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> > driverbyte=DRIVER_OK
+> > [99400.017133] end_request: I/O error, dev sdf, sector 453099824
+> > [99400.017310] sd 5:0:0:0: [sdf] Unhandled error code
+> > [99400.017315] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> > driverbyte=DRIVER_OK
+> > [99400.017322] end_request: I/O error, dev sdf, sector 453099568
+> > [99400.017383] program smartctl is using a deprecated SCSI ioctl, please
+> > convert it to SG_IO
+> > [99400.017456] program smartctl is using a deprecated SCSI ioctl, please
+> > convert it to SG_IO
+> > [99400.018822] sd 5:0:0:0: [sdf] Unhandled error code
+> > [99400.018829] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
+> > driverbyte=DRIVER_OK
+> > [99400.018838] end_request: I/O error, dev sdf, sector 453099568
+> >
+> > and a bunch more end_request errors. This happens fairly reliably after a
+> > day or so of being online. I try and start to play some music or watch a
+> > video off the array (2xWD Green on md raid0) and it fails. The file
+> > system is mostly read only right now (that is I don't write to it) so I
+> > haven't manged to loose any data that I know of, and the fs seems to be
+> > fine. A reboot fixes the errors and the disk and fs work fine for a day
+> > or two before these errors show up again.
+> >
+> > I'm currently running 2.6.31-rc5 from kernel.org. What would cause these
+> > errors?
+>
+> This sort of thing is quite often a hardware problem. You can see that
+> commands start timing out and then the controller seems to mostly lose
+> communication with the drive (the resets failing). In particular, it
+> seems an overloaded power supply can cause these sort of symptoms. (It
+> seems like a lot of the time this happens with people with multiple hard
+> drives installed, either the power supply just isn't powerful enough to
+> handle them all, or there's too many drives connected to one cable and
+> the voltage drop is too high under heavy load.)
 
-> Hi,
-> 
-> Below is a patch to fix a couple of issues with fake numa node creation
-> on ppc:
-> 
-> 1) Presently, fake nodes could be created such that real numa node
-> boundaries are not respected. So a node could have lmbs that belong to
-> different real nodes.
-> 
+I doubt that's the problem, this is an almost brand new 650W and there's only 
+2 drives per cable, and each of the 3 12v rails has 19A which should be more 
+than enough for all 6 drives, even if all of them were on the same rail 
+(shouldn't be, 5v is 24A, so should be enough for just about anything).
 
-On x86_64, we can use numa=off to completely disable NUMA so that all 
-memory and all cpus are mapped to a single node 0.  That's an extreme 
-example of the above and is totally permissible.
+Were you talking about the softreset's? That seems to be a common AMD SB600+ 
+error. At least it happens with both of my AMD boards, a SB700 and a SB750. 
+Linux eventually figures out a way to initialize the sata ports, but it sure 
+takes a while if you have 10+ drives connected.
 
-> 2) The cpu association is broken. On a JS22 blade for example, which is
-> a 2-node numa machine, I get the following:
-> 
-> # cat /proc/cmdline
-> root=/dev/sda6  numa=fake=2G,4G,,6G,8G,10G,12G,14G,16G
-> # cat /sys/devices/system/node/node0/cpulist
-> 0-3
-> # cat /sys/devices/system/node/node1/cpulist
-> 4-7
-> # cat /sys/devices/system/node/node4/cpulist
-> 
-> #
-> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-This doesn't show what the true NUMA topology of the machine is, could you 
-please post the output of
 
-	$ cat /sys/devices/system/node/node*/cpulist
-	$ cat /sys/devices/system/node/node*/distance
-	$ ls -d /sys/devices/system/node/node*/cpu[0-8]
-
-from a normal boot without any numa=fake?
-
-> So, though the cpus 4-7 should have been associated with node4, they
-> still belong to node1. The patch works by recording a real numa node
-> boundary and incrementing the fake node count. At the same time, a
-> mapping is stored from the real numa node to the first fake node that
-> gets created on it.
-> 
-
-If there are multiple fake nodes on a real physical node, all cpus in that 
-node should appear in the cpulist for each fake node for which it has 
-local distance.
+-- 
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
