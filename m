@@ -1,71 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbZIBVFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752501AbZIBOP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753251AbZIBVFA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 17:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751964AbZIBVFA
+	id S1752501AbZIBOP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 10:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZIBOP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 17:05:00 -0400
-Received: from server.megacceso.com ([195.77.201.4]:50055 "EHLO
-	server.megacceso.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbZIBVE7 (ORCPT
+	Wed, 2 Sep 2009 10:15:28 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:32576 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750848AbZIBOP1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 17:04:59 -0400
-Message-ID: <42402.212.116.219.172.1251900656.squirrel@www.megacceso.com>
-Date: Wed, 2 Sep 2009 16:10:56 +0200 (CEST)
-Subject: Upgrade your account
-From: "Webmail Technical Support Team." <upgrade@mail.com>
-Reply-To: accountupdate001@mail2world.com
-User-Agent: SquirrelMail/1.4.4
+	Wed, 2 Sep 2009 10:15:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fT4tryY02IaeFiEgWM/udVgWgGulpCMVgQqLhZJ+ccxst8V3F5ihAifeniL9EgALsp
+         Rib9YwhZzcgHwb++AePGhq0qSHsA45bzIQLLa0FJFHZ4AuxftVjEJvfnVa5sCT691fya
+         MumeXLkYgwrAslb8KkK150gwgy2g/lR14j8Nw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-To: undisclosed-recipients:;
+In-Reply-To: <200909021542.11767.oliver@neukum.org>
+References: <8db1092f0909020629v5aab79d8lbfcc8c214622787c@mail.gmail.com>
+	 <200909021542.11767.oliver@neukum.org>
+Date: Wed, 2 Sep 2009 16:15:28 +0200
+Message-ID: <8db1092f0909020715g3e6f9815w96efc801cc18e3bc@mail.gmail.com>
+Subject: Re: [2.6.31-rc8] Problem with detect USB devices
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Account User,
+2009/9/2 Oliver Neukum <oliver@neukum.org>:
 
+> We have to find out where the event is lost. Please run
+> "udevadm monitor" and tell us whether you see an event as
+> you unplug your device.
 
-We are currently upgrading our data base and e-mail account center i.e
-homepage view. We shall be deleting old email accounts which are no longer
-active to create more space for new accounts users.we have also
-investigated a system wide security audit to improve and enhance our
-current security.
+Thanks for response.
 
-In order to continue using our services you are require to update and
-re-comfirmed your email account details as requested below.
+1. Start monitor:
+root@zlom:/home/maciek# udevadm monitor
+monitor will print the received events for:
+UDEV - the event which udev sends out after rule processing
+KERNEL - the kernel uevent
 
-To complete your account re-comfirmation,you must reply to this email
-immediately and enter your account details as requested below.
+2. Connect device:
+KERNEL[1251900238.630740] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1 (usb)
+KERNEL[1251900238.631294] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0 (usb)
+UDEV  [1251900238.635817] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1 (usb)
+KERNEL[1251900238.658567] add      /module/usb_storage (module)
+UDEV  [1251900238.659543] add      /module/usb_storage (module)
+KERNEL[1251900238.660124] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4 (scsi)
+KERNEL[1251900238.660161] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/scsi_host/host4
+(scsi_host)
+KERNEL[1251900238.660208] add      /bus/usb/drivers/usb-storage (drivers)
+UDEV  [1251900238.664418] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0 (usb)
+UDEV  [1251900238.666087] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4 (scsi)
+UDEV  [1251900238.666997] add      /bus/usb/drivers/usb-storage (drivers)
+UDEV  [1251900238.667274] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/scsi_host/host4
+(scsi_host)
+KERNEL[1251900243.666195] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0
+(scsi)
+KERNEL[1251900243.666298] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0
+(scsi)
+KERNEL[1251900243.666388] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_disk/4:0:0:0
+(scsi_disk)
+KERNEL[1251900243.666461] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_device/4:0:0:0
+(scsi_device)
+KERNEL[1251900243.666564] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_generic/sg2
+(scsi_generic)
+UDEV  [1251900243.668787] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0
+(scsi)
+KERNEL[1251900243.669784] change
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0
+(scsi)
+UDEV  [1251900243.675609] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0
+(scsi)
+UDEV  [1251900243.675920] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_disk/4:0:0:0
+(scsi_disk)
+UDEV  [1251900243.679152] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_device/4:0:0:0
+(scsi_device)
+UDEV  [1251900243.679597] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_generic/sg2
+(scsi_generic)
+UDEV  [1251900243.681201] change
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0
+(scsi)
+KERNEL[1251900243.780545] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/block/sdb
+(block)
+KERNEL[1251900243.780596] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/block/sdb/sdb1
+(block)
+KERNEL[1251900243.780625] add      /devices/virtual/bdi/8:16 (bdi)
+UDEV  [1251900243.784615] add      /devices/virtual/bdi/8:16 (bdi)
+UDEV  [1251900243.955713] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/block/sdb
+(block)
+UDEV  [1251900243.990627] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/block/sdb/sdb1
+(block)
 
+maciek@zlom:~$ lsusb
+Bus 005 Device 003: ID 062a:0201 Creative Labs Defender Office
+Keyboard (K7310) S Zodiak KM-9010
+Bus 005 Device 002: ID 1020:0206 Labtec
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 001 Device 004: ID 3538:0054 Power Quotient International Co., Ltd
+Flash Drive (2GB)
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
-Username : ..................
-E-mail Login ID..............
-Password : ..................
-confirm password:............
-Date of Birth :..............
-Future Password :............
+3. Disconnect:
+KERNEL[1251900287.925502] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_generic/sg2
+(scsi_generic)
+KERNEL[1251900287.925554] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_device/4:0:0:0
+(scsi_device)
+KERNEL[1251900287.925604] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_disk/4:0:0:0
+(scsi_disk)
+KERNEL[1251900287.925680] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/block/sdb/sdb1
+(block)
+KERNEL[1251900287.925721] remove   /devices/virtual/bdi/8:16 (bdi)
+KERNEL[1251900287.925819] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/block/sdb
+(block)
+KERNEL[1251900287.925850] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0
+(scsi)
+KERNEL[1251900287.925893] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0
+(scsi)
+KERNEL[1251900287.925944] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/scsi_host/host4
+(scsi_host)
+KERNEL[1251900287.925994] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4 (scsi)
+KERNEL[1251900287.926058] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0 (usb)
+KERNEL[1251900287.926302] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1 (usb)
+UDEV  [1251900287.927833] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_disk/4:0:0:0
+(scsi_disk)
+UDEV  [1251900287.928827] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_generic/sg2
+(scsi_generic)
+UDEV  [1251900287.929674] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/scsi_device/4:0:0:0
+(scsi_device)
+UDEV  [1251900287.936095] remove
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4/target4:0:0/4:0:0:0/block/sdb/sdb1
+(block)
 
-Failure to do this will immediately render your account deactivated from
-our database and service will not be interrupted as important messages may
-as well be lost due to your declining to re-comfirmed your account details
-to us.
+maciek@zlom:~$ lsusb
+Bus 005 Device 003: ID 062a:0201 Creative Labs Defender Office
+Keyboard (K7310) S Zodiak KM-9010
+Bus 005 Device 002: ID 1020:0206 Labtec
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
-You are to send your information above via our webmaster email:
-accountupdate001@mail2world.com
+4. Connect again:
 
-We apologise for the inconvenience that this will cause you during this
-period,but trusting that we are here to serve you better and providing
-more technology which revolves around email and internet.
+KERNEL[1251900489.897750] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1 (usb)
+KERNEL[1251900489.897896] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0 (usb)
+KERNEL[1251900489.898108] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5 (scsi)
+KERNEL[1251900489.898147] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/scsi_host/host5
+(scsi_host)
+KERNEL[1251900494.900911] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0
+(scsi)
+KERNEL[1251900494.900974] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0/5:0:0:0
+(scsi)
+KERNEL[1251900494.901005] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0/5:0:0:0/scsi_disk/5:0:0:0
+(scsi_disk)
+KERNEL[1251900494.901040] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0/5:0:0:0/scsi_device/5:0:0:0
+(scsi_device)
+KERNEL[1251900494.901074] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0/5:0:0:0/scsi_generic/sg2
+(scsi_generic)
+KERNEL[1251900494.904546] change
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0/5:0:0:0
+(scsi)
+KERNEL[1251900495.015049] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0/5:0:0:0/block/sdb
+(block)
+KERNEL[1251900495.015133] add
+/devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host5/target5:0:0/5:0:0:0/block/sdb/sdb1
+(block)
+KERNEL[1251900495.015237] add      /devices/virtual/bdi/8:16 (bdi)
 
-It is also pertinent,you understand that our primary concern is for our
-customers, and for the security of their files and data.
+maciek@zlom:~$ lsusb
+Bus 005 Device 003: ID 062a:0201 Creative Labs Defender Office
+Keyboard (K7310) S Zodiak KM-9010
+Bus 005 Device 002: ID 1020:0206 Labtec
+Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
+Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
 
-COMFIRMATION CODE: -/93-1A388-480 Webmail Technical Support Team.
+>
+>        HTH
+>                Oliver
+>
+>
 
+Regards
 
-
-
-
-
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
