@@ -1,67 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbZIBFmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755858AbZIBFnw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbZIBFmk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 01:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbZIBFmk
+	id S1755858AbZIBFnw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 01:43:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZIBFnv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 01:42:40 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:37809 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755729AbZIBFmj (ORCPT
+	Wed, 2 Sep 2009 01:43:51 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:51619 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755776AbZIBFnu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 01:42:39 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-Cc: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20090901113840.GH7599@linux.vnet.ibm.com>
-References: <20090901113704.GG7599@linux.vnet.ibm.com>
-	 <20090901113840.GH7599@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 02 Sep 2009 07:42:24 +0200
-Message-Id: <1251870144.7547.48.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 01:43:50 -0400
+Message-ID: <4A9E05D4.4050206@nokia.com>
+Date: Wed, 02 Sep 2009 08:42:44 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the block tree with the ubifs tree
+References: <20090902153657.dc174bf6.sfr@canb.auug.org.au>
+In-Reply-To: <20090902153657.dc174bf6.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 02 Sep 2009 05:43:17.0297 (UTC) FILETIME=[45645A10:01CA2B90]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-01 at 17:08 +0530, Arun R Bharadwaj wrote:
-> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
-> 
-> Cleanup drivers/cpuidle/cpuidle.c
-> 
-> Cpuidle maintains a pm_idle_old void pointer because, currently in x86
-> there is no clean way of registering and unregistering a idle function.
+On 09/02/2009 08:36 AM, ext Stephen Rothwell wrote:
+> Hi Jens,
+>
+> Today's linux-next merge of the block tree got a conflict in
+> fs/ubifs/super.c between commit 887ee17117fd23e962332b353d250ac9e090b20f
+> ("UBIFS: remove unneeded call from ubifs_sync_fs") from the ubifs tree
+> and commit 0184fca792940a9e4058b2c63b3f334326a4c7af ("writeback: move
+> super_block argument to struct writeback_control") from the block tree.
+>
+> The former removes the code that the latter changes.  I just used the
+> version from the ubifs tree.  I can carry this fixup as necessary.
 
-Right, and instead of fixing that, they build this cpuidle crap on top,
-instead of replacing the current crap with it.
+Yeah, I remove the call because it is not needed anymore.
 
-> So remove pm_idle_old and leave the responsibility of maintaining the
-> list of registered idle loops to the architecture specific code. If the
-> architecture registers cpuidle_idle_call as its idle loop, only then
-> this loop is called.
-
-OK, that's a start I guess. Best would be to replace all of pm_idle with
-cpuidle, which is what should have been done from the very start.
-
-If cpuidle cannot fully replace the pm_idle functionality, then it needs
-to fix that. But having two layers of idle functions is just silly.
-
-Looking at patch 2 and 3, you're making the same mistake on power, after
-those patches there are multiple ways of registering idle functions, one
-through some native interface and one through cpuidle, this strikes me
-as undesirable.
-
-If cpuidle is a good idle function manager, then it should be good
-enough to be the sole one, if its not, then why bother with it at all.
-
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
