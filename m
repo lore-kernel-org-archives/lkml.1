@@ -1,48 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbZIBRYj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753089AbZIBR1B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbZIBRYj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 13:24:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZIBRYi
+	id S1753089AbZIBR1B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 13:27:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZIBR1B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 13:24:38 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41700 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752670AbZIBRYi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 13:24:38 -0400
-Date: Wed, 2 Sep 2009 18:24:38 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Linus Walleij <linus.walleij@stericsson.com>
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@linux.intel.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Russell King <linux@arm.linux.org.uk>
-Subject: Re: [PATCH 1/2] AB3100 regulator support v3
-Message-ID: <20090902172438.GA1190@rakim.wolfsonmicro.main>
-References: <1251756258-23917-1-git-send-email-linus.walleij@stericsson.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251756258-23917-1-git-send-email-linus.walleij@stericsson.com>
-X-Cookie: Are we running light with overbyte?
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Wed, 2 Sep 2009 13:27:01 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60529 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752858AbZIBR1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 13:27:00 -0400
+Subject: Re: [patch 1/2 -mm] flex_array: introduce DEFINE_FLEX_ARRAY
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.00.0909012013180.13377@chino.kir.corp.google.com>
+References: <alpine.DEB.1.00.0909012013180.13377@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Wed, 02 Sep 2009 10:26:42 -0700
+Message-Id: <1251912402.12395.634.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 01, 2009 at 12:04:18AM +0200, Linus Walleij wrote:
-> This adds support for the regulators found in the AB3100
-> Mixed-Signal IC.
+On Tue, 2009-09-01 at 20:14 -0700, David Rientjes wrote:
+> @@ -152,7 +136,8 @@ static unsigned int index_inside_part(struct
+> flex_array *fa,
+>  {
+>         unsigned int part_offset;
 > 
-> It further also defines platform data for the ST-Ericsson
-> U300 platform and extends the AB3100 MFD driver so that
-> platform/board data with regulation constraints and an init
-> function can be passed down all the way from the board to
-> the regulators.
-> 
-> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
+> -       part_offset = element_nr % __elements_per_part(fa->element_size);
+> +       part_offset = element_nr %
+> +                               FLEX_ARRAY_ELEMENTS_PER_PART(fa->element_size);
+>         return part_offset * fa->element_size;
+>  }
 
-This looks basically good - my only concern is if the initialisation
-data supplied for the regulators is just setting up the things that can
-be set up via the API or if there's other stuff going on (this was my
-reason for the question I asked the other day).  If there's other stuff
-being configured then I'm happy with the patch modulo the static thing.
+This all looks pretty good.  The only issue is that the macro name
+lengths have gotten a bit out of hand.  
+
+For instance.  This:
+
+#define FLEX_ARRAY_ELEMENTS_PER_PART(size)                             \
+       (FLEX_ARRAY_PART_SIZE / size)
+
+ends up being longer in practice than just open-coding the operation:
+
+	FLEX_ARRAY_ELEMENTS_PER_PART(fa->element_size)                      
+
+vs.
+
+	(FLEX_ARRAY_PART_SIZE / fa->element_size)
+
+and the length also ends up making for a couple of pretty ugly line
+wraps.
+
+Otherwise, this is fine with me.
+
+Acked-by: Dave Hansen <dave@linux.vnet.ibm.com>
+
+-- Dave
+
