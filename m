@@ -1,109 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZIBWSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZIBWSj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbZIBWSo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZIBWSn
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:18:43 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:42276 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753610AbZIBWSj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1753617AbZIBWSj (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 2 Sep 2009 18:18:39 -0400
-Message-ID: <4A9EEF07.5070800@gmail.com>
-Date: Thu, 03 Sep 2009 00:17:43 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-CC: Patrick McHardy <kaber@trash.net>,
-       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Subject: Re: System freeze on reboot - general protection fault
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>	 <c4e36d110908110832y21fba830ub8804613df571228@mail.gmail.com>	 <20090811154853.GF2763@sgi.com>	 <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>	 <c4e36d110908121516u504809e9y537e9babfa95df1d@mail.gmail.com>	 <alpine.DEB.1.10.0908121820410.3257@gentwo.org>	 <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>	 <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com>	 <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net> <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
-In-Reply-To: <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 00:17:45 +0200 (CEST)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbZIBWSi
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 2 Sep 2009 18:18:38 -0400
+Received: from verein.lst.de ([213.95.11.210]:44224 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753543AbZIBWSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 18:18:37 -0400
+Date: Thu, 3 Sep 2009 00:18:38 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       hch@lst.de
+Subject: [PATCH] fsync: wait for data writeout completion before calling ->fsync
+Message-ID: <20090902221838.GA5311@lst.de>
+References: <1251899966-7316-1-git-send-email-jack@suse.cz>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251899966-7316-1-git-send-email-jack@suse.cz>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zdenek Kabelac a écrit :
-> 2009/8/17 Patrick McHardy <kaber@trash.net>:
->> Eric Dumazet wrote:
->>> Zdenek Kabelac a écrit :
->>>>  [<ffffffffa02c502f>] nf_conntrack_ftp_fini+0x2f/0x70 [nf_conntrack_ftp]
->>>>  [<ffffffff8027bcc5>] sys_delete_module+0x1a5/0x270
->>>>  [<ffffffff8020d329>] ? retint_swapgs+0xe/0x13
->>>>  [<ffffffff80271bf2>] ? trace_hardirqs_on_caller+0x162/0x1b0
->>>>  [<ffffffff80292121>] ? audit_syscall_entry+0x191/0x1c0
->>>>  [<ffffffff80526dae>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->>>>  [<ffffffff8020c84b>] system_call_fastpath+0x16/0x1b
->>>> Code: c6 00 00 0f 82 66 ff ff ff 49 8b 9e d8 05 00 00 48 85 db 75 16
->>>> e9 8e 00 00 00 0f 1f 44 00 00 48 85 c0 0f 84 80 00 00 00 48 89 c3 <0f>
->>>> b6 4b 37 48 8b 03 48 8d 14 cd 00 00 00 00 0f 18 08 48 29 ca
->>>> RIP  [<ffffffffa02b2c2c>] nf_conntrack_helper_unregister+0x16c/0x320
->>>> [nf_conntrack]
->>>>  RSP <ffff88013982fe68>
->>>> CR2: 0000000000000038
->>>> ---[ end trace bc3a0ede3d0084db ]---
->>>>
->>> I am currently traveling and wont be able to help you before next week.
->>>
->>> I added netdev, Patrick, and netfilter-devel in CC so that more eyes can take a look.
->> Thanks for the report, I'll have a look at this. Zdenek, please
->> send me the nf_conntrack.ko file used in the above oops. Thanks.
->>
-> 
-> Ok
-> 
-> I've found the solution for my problem.
-> 
-> http://thread.gmane.org/gmane.comp.security.firewalls.netfilter.devel/30483
-> 
-> I've made this small fix from this thread:
-> 
-> diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core
-> index b5869b9..68488f8 100644
-> --- a/net/netfilter/nf_conntrack_core.c
-> +++ b/net/netfilter/nf_conntrack_core.c
-> @@ -1108,6 +1108,7 @@ static void nf_conntrack_cleanup_init_net(void)
->  {
->         nf_conntrack_helper_fini();
->         nf_conntrack_proto_fini();
-> +       rcu_barrier();
->         kmem_cache_destroy(nf_conntrack_cachep);
->  }
-> 
-> @@ -1266,7 +1267,7 @@ static int nf_conntrack_init_init_net(void)
-> 
->         nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
->                                                 sizeof(struct nf_conn),
-> -                                               0, SLAB_DESTROY_BY_RCU, NULL);
-> +                                               0, 0, NULL);
->         if (!nf_conntrack_cachep) {
->                 printk(KERN_ERR "Unable to create nf_conn slab cache\n");
->                 ret = -ENOMEM;
-> 
-> 
-> As the thread nf_conntrack: Use rcu_barrier() and fix kmem_cache_create flags
-> seems to be samewhat 'unfinished'  and already a bit old and I've no
-> idea whether it actually fixes problem completely or just hides it in
-> my case - I'm leaving it to some RCU gurus to fix this issue.
-> 
-> All I could say is - this this extra rcu_barrier() and removal of
-> SLAB_DESTROY removes my GPF on reboot.
-> 
-> Zdenek
+I think we should add this one ontop:
 
-Ouch..
+-- 
+Subject: [PATCH] fsync: wait for data writeout completion before calling ->fsync
+From: Christoph Hellwig <hch@lst.de>
 
-Dont think such a patch makes your kernel better, it'll crash too.
+Currenly vfs_fsync(_range) first calls filemap_fdatawrite to write out
+the data, the calls into ->fsync to write out the metadata and then finally
+calls filemap_fdatawait to wait for the data I/O to complete.  What sounds
+like a clever micro-optimization actually is nast trap for many filesystems.
 
-You cannot remove SLAB_DESTROY_BY_RCU like this, it's there for very good reasons.
+For many modern filesystems i_size or other inode information is only
+updated on I/O completion and we need to wait for I/O to finish before
+we can write out the metadata.  For old fashionen filesystems that
+instanciate blocks during the actual write and also update the metadata
+at that point it opens up a large window were we could expose uninitialized
+blocks after a crash.  While a few filesystems that need it already wait
+for the I/O to finish inside their ->fsync methods it is rather suboptimal
+as it is done under the i_mutex and also always for the whole file instead
+of just a part as we could do for O_SYNC handling.
 
+Here is a small audit of all fsync instances in the tree:
+
+ - spufs_mfc_fsync:
+ - ps3flash_fsync: 
+ - vol_cdev_fsync:
+ - printer_fsync:
+ - fb_deferred_io_fsync:
+ - bad_file_fsync:
+ - simple_sync_file:
+
+	don't care - filesystems/drivers do't use the page cache or are
+	purely in-memory.
+
+ - simple_fsync:
+ - file_fsync:
+ - affs_file_fsync:
+ - fat_file_fsync:
+ - jfs_fsync:
+ - ubifs_fsync:
+ - reiserfs_dir_fsync:
+ - reiserfs_sync_file:
+
+	never touch pagecache themselves.  We need to wait before if we do
+	not want to expose stale data after an allocation.
+
+ - afs_fsync:
+ - fuse_fsync_common:
+
+	do the waiting writeback itself in awkward ways, would benefit from
+	proper semantics
+
+ - block_fsync:
+
+	Does a filemap_write_and_wait on the block device inode.  Because we
+	now have f_mapping that is the same inode we call it on in vfs_fsync.
+	So just removing it and letting the VFS do the work in one go would
+	be an improvement.
+
+ - btrfs_sync_file:
+ - cifs_fsync:
+ - xfs_file_fsync:
+
+	need the wait first and currently do it themselves. would benefit from
+	doing it outside i_mutex.
+
+ - coda_fsync:
+ - ecryptfs_fsync:
+ - exofs_file_fsync:
+ - shm_fsync:
+
+	only passes the fsync through to the lower layer
+
+ - ext3_sync_file:
+
+	doesn't seem to care, comments are confusing.
+
+ - ext4_sync_file:
+
+	would need the wait to work correctly for delalloc mode with late
+	i_size updates.  Otherwise the ext3 comment applies.
+
+
+	currently implemens it's own writeback and wait in an odd way,
+	could benefit from doing it properly.
+
+ - gfs2_fsync:
+
+	not needed for journaled data mode, but probably harmless there.
+	Currently writes back data asynchronously itself.  Needs some
+	major audit.
+
+ - hostfs_fsync:
+
+	just calls fsync/datasync on the host FD.  Without the wait before
+	data might not even be inflight yet if we're unlucky.
+
+ - hpfs_file_fsync:
+ - ncp_fsync:
+
+	no-ops.  Dangerous before and after.
+
+ - jffs2_fsync:
+
+	just calls jffs2_flush_wbuf_gc, not sure how this relates to data.
+
+ - nfs_fsync_dir:
+
+	just increments stats, claims all directory operations are synchronous
+
+ - nfs_file_fsync:
+
+	only writes out data???  Looks very odd.
+
+ - nilfs_sync_file:
+
+	looks like it expects all data done, but not sure from the code
+
+ - ntfs_dir_fsync:
+ - ntfs_file_fsync:
+
+	appear to do their own data writeback.  Very convoluted code.
+
+ - ocfs2_sync_file:
+
+	does it's own data writeback, but no wait.  probably needs the wait.
+
+ - smb_fsync:
+
+	according to a comment expects all pages written already, probably needs
+	the wait before.
+
+
+This patch only changes vfs_fsync_range, removal of the wait in the methods
+that have it is left to the filesystem maintainers.  Note that most
+filesystems really do need an audit for their fsync methods given the
+gems found in this very brief audit.
+
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+
+Index: linux-2.6/fs/sync.c
+===================================================================
+--- linux-2.6.orig/fs/sync.c	2009-09-02 15:03:41.073271287 -0300
++++ linux-2.6/fs/sync.c	2009-09-02 15:04:34.401269249 -0300
+@@ -216,7 +216,7 @@ int vfs_fsync_range(struct file *file, s
+ 		goto out;
+ 	}
+ 
+-	ret = filemap_fdatawrite_range(mapping, start, end);
++	ret = filemap_write_and_wait_range(mapping, start, end);
+ 
+ 	/*
+ 	 * We need to protect against concurrent writers, which could cause
+@@ -228,9 +228,6 @@ int vfs_fsync_range(struct file *file, s
+ 		ret = err;
+ 	mutex_unlock(&mapping->host->i_mutex);
+ 
+-	err = filemap_fdatawait_range(mapping, start, end);
+-	if (!ret)
+-		ret = err;
+ out:
+ 	return ret;
+ }
