@@ -1,63 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755431AbZIAX4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755437AbZIBAKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755431AbZIAX4q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 19:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZIAX4q
+	id S1755437AbZIBAKg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 20:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755412AbZIBAKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 19:56:46 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:51995 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755374AbZIAX4p (ORCPT
+	Tue, 1 Sep 2009 20:10:35 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38285 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755407AbZIBAKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 19:56:45 -0400
-Date: Wed, 2 Sep 2009 00:56:45 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_pages
-Message-ID: <20090901235645.GD1321@shareable.org>
-References: <1251803946-9243-1-git-send-email-jens.axboe@oracle.com> <1251803946-9243-9-git-send-email-jens.axboe@oracle.com> <1251830335.8502.17.camel@laptop> <20090901184455.GA27294@infradead.org> <20090901235218.GC1321@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901235218.GC1321@shareable.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 1 Sep 2009 20:10:34 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 2 Sep 2009 09:08:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       hannes@cmpxchg.org
+Subject: Re: [mmotm][BUG] free is bigger than presnet Re: mmotm
+ 2009-08-27-16-51 uploaded
+Message-Id: <20090902090816.c777f311.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090901191018.19a69696.kamezawa.hiroyu@jp.fujitsu.com>
+References: <200908272355.n7RNtghC019990@imap1.linux-foundation.org>
+	<20090901180032.55f7b8ca.kamezawa.hiroyu@jp.fujitsu.com>
+	<Pine.LNX.4.64.0909011031140.13740@sister.anvils>
+	<20090901185013.c86bd937.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090901191018.19a69696.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jamie Lokier wrote:
-> Christoph Hellwig wrote:
-> > On Tue, Sep 01, 2009 at 08:38:55PM +0200, Peter Zijlstra wrote:
-> > > Do we really need a tunable for this?
-> > 
-> > It will make increasing it in the field a lot easier.  And having deal
-> > with really large systems I have the fear that there are I/O topologies
-> > outhere for which every "reasonable" value is too low.
-> >
-> > > I guess we need a limit to avoid it writing out everything, but can't we
-> > > have something automagic?
-> > 
-> > Some automatic adjustment would be nice.  But finding the right auto
-> > tuning will be an interesting exercise.
+On Tue, 1 Sep 2009 19:10:18 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Tue, 1 Sep 2009 18:50:13 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> I have embedded systems with 32MB RAM and no MMU, where I deliberately
-> make the equivalent of max_writeback_pages *smaller* to limit the
-> number of dirty pages causing fragmentation and preventing allocation
-> of high-order pages...  Write performance is less important than being
-> able to allocate contiguous memory for reads.
+> > On Tue, 1 Sep 2009 10:33:31 +0100 (BST)
+> > Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+> > 
+> > > On Tue, 1 Sep 2009, KAMEZAWA Hiroyuki wrote:
+> > > > 
+> > > > I'm not digggin so much but /proc/meminfo corrupted.
+> > > > 
+> > > > [kamezawa@bluextal cgroup]$ cat /proc/meminfo
+> > > > MemTotal:       24421124 kB
+> > > > MemFree:        38314388 kB
+> > > 
+> > > If that's without my fix to shrink_active_list(), I'd try again with.
+> > > Hugh
+> > > 
+> > Thank you very much. I missed this patch.
+> > It's fixed.
 > 
-> They are still using 2.4 kernels, but the principle still applies.
-> maybe even more on 2.6 which is more prone to fragmentation on small
-> no-MMU devices.
+> Sorry again, at continuing tests...thre are still..
+> 
+> MemTotal:       24421124 kB
+> MemFree:        25158956 kB
+> Buffers:            2264 kB
+> Cached:            34936 kB
+> SwapCached:         5140 kB
+> 
+> I wonder I miss something..
+> 
+My mistake, sorry.
 
-Sorry, I must get more sleep.  I confused max_writeback_pages with the
-limit on dirty pages in the system, which is completely different.
+Thanks,
+-Kame
 
-So please ignore my previous mail.
 
-*little*,
--- Jamie
+> Thanks,
+> -Kame
+> 
+> 
+
