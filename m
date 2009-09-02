@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZIBLvZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751957AbZIBLvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751896AbZIBLvZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 07:51:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZIBLvY
+	id S1751957AbZIBLvq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 07:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZIBLvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 07:51:24 -0400
-Received: from qmta02.westchester.pa.mail.comcast.net ([76.96.62.24]:41761
-	"EHLO QMTA02.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751542AbZIBLvY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 07:51:24 -0400
-Date: Wed, 2 Sep 2009 06:51:23 -0500
-From: Tim Walberg <twalberg@comcast.net>
-To: Tim Walberg <twalberg@comcast.net>, Christoph Hellwig <hch@infradead.org>,
-       Linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
-Subject: Re: xfs compat_ioctl?
-Message-ID: <20090902115123.GA13355@comcast.net>
-Reply-To: Tim Walberg <twalberg@comcast.net>
-Mail-Followup-To: Tim Walberg <twalberg@comcast.net>,
-	Christoph Hellwig <hch@infradead.org>,
-	Linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
-References: <4A9B759B.7020401@msgid.tls.msk.ru> <20090831123010.GA2368@infradead.org> <20090831183751.GC19343@comcast.net> <20090831184822.GA10393@infradead.org> <20090831184918.GB10393@infradead.org> <20090831190209.GD19343@comcast.net>
+	Wed, 2 Sep 2009 07:51:45 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:47711 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751904AbZIBLvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 07:51:37 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Raphael Manfredi <Raphael_Manfredi@pobox.com>
+Subject: Re: [2.6.30.5] Diagnosing an IDE lockup with SMART long tests
+Date: Wed, 2 Sep 2009 13:51:32 +0200
+User-Agent: KMail/1.9.10
+Cc: Robert Hancock <hancockrwd@gmail.com>, linux-kernel@vger.kernel.org
+References: <6661.1251822466@nice.ram.loc> <4A9DF3E9.9090309@gmail.com> <20090902111927.GA4590@chram.org>
+In-Reply-To: <20090902111927.GA4590@chram.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090831190209.GD19343@comcast.net>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200909021351.33803.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wednesday 02 September 2009, Raphael Manfredi wrote:
+> Quoting Robert Hancock:
+> > It's most likely a bug in the IDE code somewhere, but realistically the
+> > most effective course of action would likely be to switch from the old
+> > IDE drivers and use libata instead. The IDE code doesn't receive that
+> > much testing these days, and it's really hard to debug (as you've seen,
+> > the debugging output is rather atrocious).
+>
+> I gave it a shot anyway.  Converting to PATA was surprisingly
+> straighforward.
+>
+> Anyway, I now get the following when running SMART long tests on /dev/sda:
+>
+>   ata1: lost interrupt (Status 0x50)
+>
+> And the machine hangs...  So I'm back to square one.
+> How do I prevent lockups on the system when running SMART long tests?
 
---/9DWx/yDrRhgMJTb
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+What drive is that? Isn't that an IBM drive with buggy firmware?
 
-Ok, that patch has fixed my issues with xfs_fsr. Now I just need to
-pull a new copy of xfs_progs to get the xfs_db alignment issue fix...
-
-
-		Thanks,
-			tw
-
-
-On 08/31/2009 14:02 -0500, Walberg, Tim wrote:
->>=09
->>=09
->>	On 08/31/2009 14:49 -0400, Christoph Hellwig wrote:
->>	>>	On Mon, Aug 31, 2009 at 02:48:22PM -0400, Christoph Hellwig wrote:
->>	>>	> On Mon, Aug 31, 2009 at 01:37:51PM -0500, Tim Walberg wrote:
->>	>>	> > Linux sparcy 2.6.30.4-sparcy #2 Sat Aug 1 21:14:46 CDT 2009 sparc=
-64 GNU/Linux
->>	>>	> > sparcy:~# file $(which xfs_fsr)
->>	>>	> > /usr/sbin/xfs_fsr: ELF 32-bit MSB executable, SPARC32PLUS, V8+ Re=
-quired, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Li=
-nux 2.6.18, stripped
->>	>>	>=20
->>	>>	> I'll take a look at that, thanks.
->>	>>=09
->>	>>	Err, sorry - is that with the patch I posted in this thread or withou=
-t?
->>	End of included message
->>=09
->>=09
->>	No, that's the generic 2.6.30.4... I can attempt with that patch as well=
-, but
->>	it might be a day or two...
->>=09
->>					tw
->>=09
-
-
-End of included message
-
-
-
---=20
-twalberg@comcast.net
-
---/9DWx/yDrRhgMJTb
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqeXDsACgkQw+Wcj22rJWaHTgCcDXj5l5OCxgtqjI0yX3/iqjEz
-I9gAnA1wnOpQh6vGhmNxMMvJOphas5tM
-=mAQt
------END PGP SIGNATURE-----
-
---/9DWx/yDrRhgMJTb--
+-- 
+Ondrej Zary
