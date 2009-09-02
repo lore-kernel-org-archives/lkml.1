@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZIBXRG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbZIBX1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753832AbZIBXRG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 19:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbZIBXRF
+	id S1753840AbZIBX1R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 19:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbZIBX1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 19:17:05 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:61837 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753753AbZIBXRD (ORCPT
+	Wed, 2 Sep 2009 19:27:16 -0400
+Received: from mga11.intel.com ([192.55.52.93]:12649 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753684AbZIBX1Q convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 19:17:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=IviBxH9p6JABq3Zdk6AtwBFrJZULc8QKG7CgJClLfnwGeXyxB58DBPnCloYlnkt0Dq
-         08yU9ztHkP6WZa0tUyR48jn49lFNI7QNr5ajUTyUGMOjMkWUg6Ynhrg11Nf5y1yTf4ff
-         W5RazRGMZk7Y5odYRUg0lSx3JPL+KjRIAVBSw=
-Date: Thu, 3 Sep 2009 08:15:48 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [RESEND][PATCH mmotm] Fix NUMA accounting in numastat.txt
-Message-Id: <20090903081548.482b8771.minchan.kim@barrios-desktop>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 19:27:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,321,1249282800"; 
+   d="scan'208";a="489987395"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Ingo Molnar <mingo@elte.hu>, Luming Yu <luming.yu@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>, Felix Blyakher <felixb@sgi.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Bob Picco <bob.picco@hp.com>
+Date: Wed, 2 Sep 2009 16:27:15 -0700
+Subject: RE: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then
+	enable ftrace for ia64
+Thread-Topic: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then
+	enable ftrace for ia64
+Thread-Index: Aconp+zyRL0CHhFBTlCYopqLjHCCCAEfEDQg
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E038DE7E@orsmsx505.amr.corp.intel.com>
+References: <3877989d0908272018va6ee8f7n7ab2838fdf1b26e6@mail.gmail.com>
+ <20090828062212.GB11552@elte.hu>
+In-Reply-To: <20090828062212.GB11552@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> diff -BruN linux-2.6.31-rc6/arch/ia64/include/asm/page.h
+>> linux-2.6.31-rc6-lockdep/arch/ia64/include/asm/page.h
+>> --- linux-2.6.31-rc6/arch/ia64/include/asm/page.h	2009-08-13
+>> 15:43:34.000000000 -0700
+>> +++ linux-2.6.31-rc6-lockdep/arch/ia64/include/asm/page.h	2009-08-23
+>> 18:59:00.000000000 -0700
+>> @@ -41,7 +41,7 @@
+>>  #define PAGE_SIZE		(__IA64_UL_CONST(1) << PAGE_SHIFT)
+>>  #define PAGE_MASK		(~(PAGE_SIZE - 1))
+>> 
+>> -#define PERCPU_PAGE_SHIFT	16	/* log2() of max. size of per-CPU area */
+>> +#define PERCPU_PAGE_SHIFT	20	/*16 log2() of max. size of per-CPU area */
+>>  #define PERCPU_PAGE_SIZE	(__IA64_UL_CONST(1) << PERCPU_PAGE_SHIFT)
+>
+> Why was this seemingly unrelated change done in a lockdep patch?
 
-In Documentation/numastat.txt, it confused me.
-For example, there are nodes [0,1] in system.
+IIRC it is because the lockdep code needs a lot more percpu memory than the
+64K that ia64 allocates.
 
-barrios:~$ cat /proc/zoneinfo | egrep 'numa|zone'
-Node 0, zone	DMA
-	numa_hit	33226
-	numa_miss	1739
-	numa_foreign	27978
-	..
-	..
-Node 1, zone	DMA
-	numa_hit	307
-	numa_miss	46900
-	numa_foreign	0
+But I think that I'd prefer to only allocate the extra space when it
+is needed:
 
-1) In node 0,  NUMA_MISS means it wanted to allocate page
-in node 1 but ended up with page in node 0
+#ifdef CONFIG_LOCKDEP
+#define PERCPU_PAGE_SHIFT 20 /* Need a Megabyte for lockdep */
+#else
+#define PERCPU_PAGE_SHIFT 16 /* 64K should be enough for normal use */
+#endif
 
-2) In node 0, NUMA_FOREIGN means it wanted to allocate page
-in node 0 but ended up with page from Node 1.
-
-But now, numastat explains it oppositely about (MISS, FOREIGN).
-Let's fix up with viewpoint of zone. 
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-Acked-by: Christoph Lameter <cl@linux-foundation.org>
----
- Documentation/numastat.txt |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/Documentation/numastat.txt b/Documentation/numastat.txt
-index 80133ac..9fcc9a6 100644
---- a/Documentation/numastat.txt
-+++ b/Documentation/numastat.txt
-@@ -7,10 +7,10 @@ All units are pages. Hugepages have separate counters.
-
- numa_hit			A process wanted to allocate memory from this node,
- 					and succeeded.
--numa_miss			A process wanted to allocate memory from this node,
--					but ended up with memory from another.
--numa_foreign		A process wanted to allocate on another node,
--				    but ended up with memory from this one.
-+numa_miss			A process wanted to allocate memory from another node,
-+					but ended up with memory from this node.
-+numa_foreign		A process wanted to allocate on this node,
-+				    but ended up with memory from another one.
- local_node			A process ran on this node and got memory from it.
- other_node			A process ran on this node and got memory from another node.
- interleave_hit 		Interleaving wanted to allocate from this node
---
-1.5.4.3
+-Tony
 
 
-
--- 
-Kind regards,
-Minchan Kim
-
-
--- 
-Kind regards,
-Minchan Kim
