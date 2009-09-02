@@ -1,75 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbZIBX1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZIBX2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbZIBX1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 19:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753802AbZIBX1Q
+	id S1753853AbZIBX2K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 19:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbZIBX2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 19:27:16 -0400
-Received: from mga11.intel.com ([192.55.52.93]:12649 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753684AbZIBX1Q convert rfc822-to-8bit (ORCPT
+	Wed, 2 Sep 2009 19:28:09 -0400
+Received: from fmailhost02.isp.att.net ([204.127.217.102]:57504 "EHLO
+	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753802AbZIBX2I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 19:27:16 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,321,1249282800"; 
-   d="scan'208";a="489987395"
-From: "Luck, Tony" <tony.luck@intel.com>
-To: Ingo Molnar <mingo@elte.hu>, Luming Yu <luming.yu@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Christoph Hellwig <hch@infradead.org>, LKML <linux-kernel@vger.kernel.org>,
-       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
-       "Yu, Fenghua" <fenghua.yu@intel.com>, Felix Blyakher <felixb@sgi.com>,
-       "Li, Shaohua" <shaohua.li@intel.com>, Bob Picco <bob.picco@hp.com>
-Date: Wed, 2 Sep 2009 16:27:15 -0700
-Subject: RE: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then
-	enable ftrace for ia64
-Thread-Topic: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then
-	enable ftrace for ia64
-Thread-Index: Aconp+zyRL0CHhFBTlCYopqLjHCCCAEfEDQg
-Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E038DE7E@orsmsx505.amr.corp.intel.com>
-References: <3877989d0908272018va6ee8f7n7ab2838fdf1b26e6@mail.gmail.com>
- <20090828062212.GB11552@elte.hu>
-In-Reply-To: <20090828062212.GB11552@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Wed, 2 Sep 2009 19:28:08 -0400
+X-Originating-IP: [76.109.153.227]
+Date: Wed, 2 Sep 2009 19:28:09 -0400
+From: Tom Horsley <tom.horsley@att.net>
+To: linux-kernel@vger.kernel.org
+Subject: ptrace & /proc deadlock due to mm_for_maps cred_guard_mutex patch
+Message-ID: <20090902192809.5f3efb48@zooty>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> diff -BruN linux-2.6.31-rc6/arch/ia64/include/asm/page.h
->> linux-2.6.31-rc6-lockdep/arch/ia64/include/asm/page.h
->> --- linux-2.6.31-rc6/arch/ia64/include/asm/page.h	2009-08-13
->> 15:43:34.000000000 -0700
->> +++ linux-2.6.31-rc6-lockdep/arch/ia64/include/asm/page.h	2009-08-23
->> 18:59:00.000000000 -0700
->> @@ -41,7 +41,7 @@
->>  #define PAGE_SIZE		(__IA64_UL_CONST(1) << PAGE_SHIFT)
->>  #define PAGE_MASK		(~(PAGE_SIZE - 1))
->> 
->> -#define PERCPU_PAGE_SHIFT	16	/* log2() of max. size of per-CPU area */
->> +#define PERCPU_PAGE_SHIFT	20	/*16 log2() of max. size of per-CPU area */
->>  #define PERCPU_PAGE_SIZE	(__IA64_UL_CONST(1) << PERCPU_PAGE_SHIFT)
->
-> Why was this seemingly unrelated change done in a lockdep patch?
+The redhat bugzilla:
 
-IIRC it is because the lockdep code needs a lot more percpu memory than the
-64K that ia64 allocates.
+https://bugzilla.redhat.com/show_bug.cgi?id=520206#c2
 
-But I think that I'd prefer to only allocate the extra space when it
-is needed:
+describes a test program that demonstrates an apparent
+deadlock ptrace can get into as a result of the
+patch:
 
-#ifdef CONFIG_LOCKDEP
-#define PERCPU_PAGE_SHIFT 20 /* Need a Megabyte for lockdep */
-#else
-#define PERCPU_PAGE_SHIFT 16 /* 64K should be enough for normal use */
-#endif
+   commit 704b836cbf19e885f8366bccb2e4b0474346c02d
+   Author: Oleg Nesterov <oleg@redhat.com>
+   Date:   Fri Jul 10 03:27:40 2009 +0200
+   mm_for_maps: take ->cred_guard_mutex to fix the race with exec  
 
--Tony
+ptrace hangs attempting to read the newly exec'ed debugged
+child process /proc/pid/maps file, and the child is obviously
+never going to advance as long as it is stopped by ptrace.
 
+I haven't seen any activity on the bugzilla, so since this
+was a kernel.org patch I figured I'd mention it over here.
 
+As the bugzilla says, it is possible to work around this by
+single stepping the debugged process before reading the maps
+file.
