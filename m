@@ -1,98 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZIBRcH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753170AbZIBRro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZIBRcH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 13:32:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbZIBRcG
+	id S1753170AbZIBRro (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 13:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZIBRro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 13:32:06 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:52433 "EHLO
-	TX2EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753071AbZIBRcF (ORCPT
+	Wed, 2 Sep 2009 13:47:44 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:65377 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752987AbZIBRrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 13:32:05 -0400
-X-SpamScore: -26
-X-BigFish: VPS-26(zz146fK1432R98dN9371Pa594izz1202hzzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-Message-ID: <4A9EAC09.7070000@am.sony.com>
-Date: Wed, 2 Sep 2009 10:31:53 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 2 Sep 2009 13:47:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:message-id:content-type:content-transfer-encoding;
+        b=eYJJxtNJ50Bfxj44II68ieAL2sbXpUU6a1XA1f/9UCzbgIihkv6OCBQR50kR/hnNuK
+         oHRVbzkkmAShzcpEjEPOCEW5DPDdbgiOAZ/PSmjUFwa2V/tGojIhWhrlXPwnc3B8qmVM
+         6F8MgSt+0Pym73tiihGXUstsXt6zDF3e+G5Lw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Zhu Yi <yi.zhu@intel.com>
+Subject: Re: ipw2200: firmware DMA loading rework
+Date: Wed, 2 Sep 2009 19:48:13 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-00015-gadda766-dirty; KDE/4.3.0; i686; ; )
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@skynet.ie>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <1251430951.3704.181.camel@debian> <200908301437.42133.bzolnier@gmail.com>
+In-Reply-To: <200908301437.42133.bzolnier@gmail.com>
 MIME-Version: 1.0
-To: Marc Andre Tanner <mat@brain-dump.org>
-CC: H Hartley Sweeten <hartleys@visionengravers.com>,
-       linux-embedded@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/7] printk: provide a filtering macro for printk
-References: <1251844269-12394-1-git-send-email-mat@brain-dump.org> <1251844269-12394-8-git-send-email-mat@brain-dump.org> <4A9DAD2B.3080909@am.sony.com> <BD79186B4FD85F4B8E60E381CAEE190901C55CD3@mi8nycmail19.Mi8.com> <20090902130943.GE2736@debbook.brain-dump.org> <4A9EA5C9.3010900@am.sony.com>
-In-Reply-To: <4A9EA5C9.3010900@am.sony.com>
-Content-Type: text/plain; charset="UTF-8"
+Message-Id: <200909021948.13262.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 Sep 2009 17:31:54.0695 (UTC) FILETIME=[43BC6D70:01CA2BF3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Bird wrote:
-> Marc Andre Tanner wrote:
->> On Tue, Sep 01, 2009 at 07:32:25PM -0400, H Hartley Sweeten wrote:
->>> On Tuesday, September 01, 2009 4:24 PM, Tim Bird wrote:
->>>> Some places in the kernel break the message into pieces, like so:
->>>>
->>>> printk(KERN_ERR, "Error: first part ");
->>>> ...
->>>> printk(" more info for error.\n");
->>> Technically, shouldn't the second part of the message actually be:
->>>
->>> printk(KERN_CONT " more info for error.\n");
->>>
->>> Maybe some mechanism could be created to handle the continued message
->>> if they have the KERN_CONT?
->> Yes it's true that KERN_CONT isn't handled correctly, but I don't see a way
->> to change that.
->>
->>>> These parts would not be handled consistently under certain
->>>> conditions.
->>>>
->>>> It would be confusing to see only part of the message,
->>>> but I don't know how often this construct is used.  
->> $ grep -R KERN_CONT linux-2.6 | wc -l
->> 373
->>
->>>> Maybe
->>>> another mechanism is needed to ensure that continuation
->>>> printk lines have the same log level as their start strings.
->> I currently don't see a way to achieve this with the CPP.
+On Sunday 30 August 2009 14:37:42 Bartlomiej Zolnierkiewicz wrote:
+> On Friday 28 August 2009 05:42:31 Zhu Yi wrote:
+> > Bartlomiej Zolnierkiewicz reported an atomic order-6 allocation failure
+> > for ipw2200 firmware loading in kernel 2.6.30. High order allocation is
 > 
-> If it's that few, then maybe it's OK to actually change
-> the code for those printk statements. (Heck, these locations
-> were all changed in the last 2 years anyway.)
+> s/2.6.30/2.6.31-rc6/
 > 
-> I'm just brainstorming here, but how about changing them from:
->   printk(KERN_INFO "foo");
->   printk(KERN_CONT "bar\n");
-> to:
->   printk(KERN_INFO "foo");
->   printk_cont(KERN_INFO "bar\n");
-> 
-> This way the continuation line has the log level, and can
-> be conditionally compiled based on the VERBOSITY level.  A little
-> magic would be needed to strip the first 3 chars of the fmt
-> string in printk_cont().
-> 
-> I think this makes the printk messages a bit more consistent anyway,
-> and still marks lines that are continuation lines.
+> The issue has always been there but it was some recent change that
+> explicitly triggered the allocation failures (after 2.6.31-rc1).
 
-Just another note.  Detecting continuation lines also complicates
-the printk timestamping code.  If all continuation lines were
-distinguishable by the printk code, then it might be possible
-to simplify the timestamping code as a side effect of the
-change.
- -- Tim
+ipw2200 fix works fine but yesterday I got the following error while mounting
+ext4 filesystem (mb_history is optional so the mount succeeded):
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+EXT4-fs (dm-2): barriers enabled
+kjournald2 starting: pid 3137, dev dm-2:8, commit interval 5 seconds
+EXT4-fs (dm-2): internal journal on dm-2:8
+EXT4-fs (dm-2): delayed allocation enabled
+EXT4-fs: file extents enabled
+mount: page allocation failure. order:5, mode:0xc0d0
+Pid: 3136, comm: mount Not tainted 2.6.31-rc8-00015-gadda766-dirty #78
+Call Trace:
+ [<c0394de3>] ? printk+0xf/0x14
+ [<c016a693>] __alloc_pages_nodemask+0x400/0x442
+ [<c016a71b>] __get_free_pages+0xf/0x32
+ [<c01865cf>] __kmalloc+0x28/0xfa
+ [<c023d96f>] ? __spin_lock_init+0x28/0x4d
+ [<c01f529d>] ext4_mb_init+0x392/0x460
+ [<c01e99d2>] ext4_fill_super+0x1b96/0x2012
+ [<c0239bc8>] ? snprintf+0x15/0x17
+ [<c01c0b26>] ? disk_name+0x24/0x69
+ [<c018ba63>] get_sb_bdev+0xda/0x117
+ [<c01e6711>] ext4_get_sb+0x13/0x15
+ [<c01e7e3c>] ? ext4_fill_super+0x0/0x2012
+ [<c018ad2d>] vfs_kern_mount+0x3b/0x76
+ [<c018adad>] do_kern_mount+0x33/0xbd
+ [<c019d0af>] do_mount+0x660/0x6b8
+ [<c016a71b>] ? __get_free_pages+0xf/0x32
+ [<c019d168>] sys_mount+0x61/0x99
+ [<c0102908>] sysenter_do_call+0x12/0x36
+Mem-Info:
+DMA per-cpu:
+CPU    0: hi:    0, btch:   1 usd:   0
+Normal per-cpu:
+CPU    0: hi:  186, btch:  31 usd:   0
+Active_anon:25471 active_file:22802 inactive_anon:25812
+ inactive_file:33619 unevictable:2 dirty:2452 writeback:135 unstable:0
+ free:4346 slab:4308 mapped:26038 pagetables:912 bounce:0
+DMA free:2060kB min:84kB low:104kB high:124kB active_anon:1660kB inactive_anon:1848kB active_file:144kB inactive_file:868kB unevictable:0kB present:15788kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 489 489
+Normal free:15324kB min:2788kB low:3484kB high:4180kB active_anon:100224kB inactive_anon:101400kB active_file:91064kB inactive_file:133608kB unevictable:8kB present:501392kB pages_scanned:0 all_unreclaimable? no
+lowmem_reserve[]: 0 0 0
+DMA: 1*4kB 1*8kB 0*16kB 0*32kB 0*64kB 0*128kB 0*256kB 0*512kB 0*1024kB 1*2048kB 0*4096kB = 2060kB
+Normal: 1283*4kB 648*8kB 159*16kB 53*32kB 10*64kB 1*128kB 0*256kB 0*512kB 0*1024kB 0*2048kB 0*4096kB = 15324kB
+57947 total pagecache pages
+878 pages in swap cache
+Swap cache stats: add 920, delete 42, find 11/11
+Free swap  = 1016436kB
+Total swap = 1020116kB
+131056 pages RAM
+4233 pages reserved
+90573 pages shared
+77286 pages non-shared
+EXT4-fs: mballoc enabled
+EXT4-fs (dm-2): mounted filesystem with ordered data mode
 
+Thus it seems like the original bug is still there and any ideas how to
+debug the problem further are appreciated..
+
+The complete dmesg and kernel config are here:
+
+http://www.kernel.org/pub/linux/kernel/people/bart/ext4-paf.dmesg
+http://www.kernel.org/pub/linux/kernel/people/bart/ext4-paf.config
