@@ -1,229 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbZIBNaZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752207AbZIBNc1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752158AbZIBNaZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 09:30:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZIBNaY
+	id S1752207AbZIBNc1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 09:32:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZIBNc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 09:30:24 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:55702 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbZIBNaX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 09:30:23 -0400
-Message-ID: <41963.192.168.10.89.1251898214.squirrel@dbdmail.itg.ti.com>
-In-Reply-To: <34590.192.168.10.89.1251897877.squirrel@dbdmail.itg.ti.com>
-References: <34590.192.168.10.89.1251897877.squirrel@dbdmail.itg.ti.com>
-Date: Wed, 2 Sep 2009 19:00:14 +0530 (IST)
-Subject: Re: [PATCH] OMAP4: MMC driver support on OMAP4
-From: "kishore kadiyala" <kishore.kadiyala@ti.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-omap@vger.kernel.org, jarkko.lavinen@nokia.com, madhu.cr@ti.com
-User-Agent: SquirrelMail/1.4.3a
-X-Mailer: SquirrelMail/1.4.3a
+	Wed, 2 Sep 2009 09:32:26 -0400
+Received: from kroah.org ([198.145.64.141]:45591 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752056AbZIBNcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 09:32:25 -0400
+Date: Wed, 2 Sep 2009 06:30:20 -0700
+From: Greg KH <greg@kroah.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org,
+       Shane Huang <Shane.Huang@amd.com>
+Subject: Re: [PATCH] pci: separate out pci_add_dynid()
+Message-ID: <20090902133020.GA25201@kroah.com>
+References: <4A9E38FA.3000506@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9E38FA.3000506@kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resending the patch, CC'ing LO.
+On Wed, Sep 02, 2009 at 06:20:58PM +0900, Tejun Heo wrote:
+> Separate out pci_add_dynid() from store_new_id() and export it so that
+> in-kernel code can add PCI IDs dynamically.  As the function will be
+> available regardless of HOTPLUG, put it and pull pci_free_dynids()
+> outside of CONFIG_HOTPLUG.
+> 
+> This will be used by pci-stub to initialize initial IDs via module
+> param.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+>  drivers/pci/pci-driver.c |  119 +++++++++++++++++++++++++++++------------------
+>  include/linux/pci.h      |    5 +
+>  2 files changed, 79 insertions(+), 45 deletions(-)
+> 
+> Index: ata/drivers/pci/pci-driver.c
+> ===================================================================
+> --- ata.orig/drivers/pci/pci-driver.c
+> +++ ata/drivers/pci/pci-driver.c
+> @@ -19,37 +19,98 @@
+>  #include <linux/cpu.h>
+>  #include "pci.h"
+> 
+> -/*
+> - * Dynamic device IDs are disabled for !CONFIG_HOTPLUG
+> - */
+> -
+>  struct pci_dynid {
+>  	struct list_head node;
+>  	struct pci_device_id id;
+>  };
+> 
+> -#ifdef CONFIG_HOTPLUG
+> +/**
+> + * pci_add_dynid - add a new PCI device ID to this driver and re-probe devices
+> + * @drv: target pci driver
+> + * @vendor: PCI vendor ID
+> + * @device: PCI device ID
+> + * @subvendor: PCI subvendor ID
+> + * @subdevice: PCI subdevice ID
+> + * @class: PCI class
+> + * @class_mask: PCI class mask
+> + * @driver_data: private driver data
+> + *
+> + * Adds a new dynamic pci device ID to this driver and causes the
+> + * driver to probe for all devices again.  @drv must have been
+> + * registered prior to calling this function.
+> + *
+> + * CONTEXT:
+> + * Does GFP_KERNEL allocation.
+> + *
+> + * RETURNS:
+> + * 0 on success, -errno on failure.
+> + */
+> +int pci_add_dynid(struct pci_driver *drv,
+> +		  unsigned int vendor, unsigned int device,
+> +		  unsigned int subvendor, unsigned int subdevice,
+> +		  unsigned int class, unsigned int class_mask,
+> +		  unsigned long driver_data)
+> +{
+> +	struct pci_dynid *dynid;
+> +	int retval;
+> +
+> +	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
+> +	if (!dynid)
+> +		return -ENOMEM;
+> +
+> +	dynid->id.vendor = vendor;
+> +	dynid->id.device = device;
+> +	dynid->id.subvendor = subvendor;
+> +	dynid->id.subdevice = subdevice;
+> +	dynid->id.class = class;
+> +	dynid->id.class_mask = class_mask;
+> +	dynid->id.driver_data = driver_data;
+> 
+> +	spin_lock(&drv->dynids.lock);
+> +	list_add_tail(&dynid->node, &drv->dynids.list);
+> +	spin_unlock(&drv->dynids.lock);
+> +
+> +	get_driver(&drv->driver);
+> +	retval = driver_attach(&drv->driver);
+> +	put_driver(&drv->driver);
+> +
+> +	return retval;
+> +}
+> +
+> +static void pci_free_dynids(struct pci_driver *drv)
+> +{
+> +	struct pci_dynid *dynid, *n;
+> +
+> +	spin_lock(&drv->dynids.lock);
+> +	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
+> +		list_del(&dynid->node);
+> +		kfree(dynid);
+> +	}
+> +	spin_unlock(&drv->dynids.lock);
+> +}
+> +
+> +/*
+> + * Dynamic device ID manipulation via sysfs is disabled for !CONFIG_HOTPLUG
+> + */
+> +#ifdef CONFIG_HOTPLUG
+>  /**
+> - * store_new_id - add a new PCI device ID to this driver and re-probe devices
+> + * store_new_id - sysfs frontend to pci_add_dynid()
+>   * @driver: target device driver
+>   * @buf: buffer for scanning device ID data
+>   * @count: input size
+>   *
+> - * Adds a new dynamic pci device ID to this driver,
+> - * and causes the driver to probe for all devices again.
+> + * Allow PCI IDs to be added to an existing driver via sysfs.
+>   */
+>  static ssize_t
+>  store_new_id(struct device_driver *driver, const char *buf, size_t count)
+>  {
+> -	struct pci_dynid *dynid;
+>  	struct pci_driver *pdrv = to_pci_driver(driver);
+>  	const struct pci_device_id *ids = pdrv->id_table;
+>  	__u32 vendor, device, subvendor=PCI_ANY_ID,
+>  		subdevice=PCI_ANY_ID, class=0, class_mask=0;
+>  	unsigned long driver_data=0;
+>  	int fields=0;
+> -	int retval=0;
+> +	int retval;
+> 
+>  	fields = sscanf(buf, "%x %x %x %x %x %x %lx",
+>  			&vendor, &device, &subvendor, &subdevice,
+> @@ -72,27 +133,8 @@ store_new_id(struct device_driver *drive
+>  			return retval;
+>  	}
+> 
+> -	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
+> -	if (!dynid)
+> -		return -ENOMEM;
+> -
+> -	dynid->id.vendor = vendor;
+> -	dynid->id.device = device;
+> -	dynid->id.subvendor = subvendor;
+> -	dynid->id.subdevice = subdevice;
+> -	dynid->id.class = class;
+> -	dynid->id.class_mask = class_mask;
+> -	dynid->id.driver_data = driver_data;
+> -
+> -	spin_lock(&pdrv->dynids.lock);
+> -	list_add_tail(&dynid->node, &pdrv->dynids.list);
+> -	spin_unlock(&pdrv->dynids.lock);
+> -
+> -	if (get_driver(&pdrv->driver)) {
+> -		retval = driver_attach(&pdrv->driver);
+> -		put_driver(&pdrv->driver);
+> -	}
+> -
+> +	retval = pci_add_dynid(pdrv, vendor, device, subvendor, subdevice,
+> +			       class, class_mask, driver_data);
+>  	if (retval)
+>  		return retval;
+>  	return count;
+> @@ -145,19 +187,6 @@ store_remove_id(struct device_driver *dr
+>  }
+>  static DRIVER_ATTR(remove_id, S_IWUSR, NULL, store_remove_id);
+> 
+> -static void
+> -pci_free_dynids(struct pci_driver *drv)
+> -{
+> -	struct pci_dynid *dynid, *n;
+> -
+> -	spin_lock(&drv->dynids.lock);
+> -	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
+> -		list_del(&dynid->node);
+> -		kfree(dynid);
+> -	}
+> -	spin_unlock(&drv->dynids.lock);
+> -}
+> -
+>  static int
+>  pci_create_newid_file(struct pci_driver *drv)
+>  {
+> @@ -186,7 +215,6 @@ static void pci_remove_removeid_file(str
+>  	driver_remove_file(&drv->driver, &driver_attr_remove_id);
+>  }
+>  #else /* !CONFIG_HOTPLUG */
+> -static inline void pci_free_dynids(struct pci_driver *drv) {}
+>  static inline int pci_create_newid_file(struct pci_driver *drv)
+>  {
+>  	return 0;
+> @@ -1106,6 +1134,7 @@ static int __init pci_driver_init(void)
+> 
+>  postcore_initcall(pci_driver_init);
+> 
+> +EXPORT_SYMBOL(pci_add_dynid);
 
---Kishore
+scripts/checkpatch.pl will complain about this :)
 
-This Patch adds basic support for all 5 MMC controllers on OMAP4.
+Care to mark it EXPORT_SYMBOL_GPL() please?
 
-Signed-off-by: Kishore Kadiyala <kishore.kadiyala@ti.com>
----
-This patch doesn't include mmc-regulator support
+With that change, then feel free to add:
+	Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 
- arch/arm/mach-omap2/devices.c          |   42 +++++++++++++++++++++++++++++----
- arch/arm/plat-omap/include/mach/irqs.h |    2 +
- arch/arm/plat-omap/include/mach/mmc.h  |    9 ++++++-
- drivers/mmc/host/Kconfig               |    6 ++--
- drivers/mmc/host/omap_hsmmc.c          |   10 +++++++
- 5 files changed, 60 insertions(+), 9 deletions(-)
+thanks,
 
-Index: kernel-omap4-base/arch/arm/mach-omap2/devices.c
-===================================================================
---- kernel-omap4-base.orig/arch/arm/mach-omap2/devices.c
-+++ kernel-omap4-base/arch/arm/mach-omap2/devices.c
-@@ -397,7 +397,7 @@ static inline void omap_init_sha1_md5(vo
-
- /*-------------------------------------------------------------------------*/
-
--#ifdef CONFIG_ARCH_OMAP3
-+#if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
-
- #define MMCHS_SYSCONFIG			0x0010
- #define MMCHS_SYSCONFIG_SWRESET		(1 << 1)
-@@ -424,8 +424,8 @@ static struct platform_device dummy_pdev
-  **/
- static void __init omap_hsmmc_reset(void)
- {
--	u32 i, nr_controllers = cpu_is_omap34xx() ? OMAP34XX_NR_MMC :
--		OMAP24XX_NR_MMC;
-+	u32 i, nr_controllers = cpu_is_omap44xx() ? OMAP44XX_NR_MMC :
-+		(cpu_is_omap34xx() ? OMAP34XX_NR_MMC : OMAP24XX_NR_MMC);
-
- 	for (i = 0; i < nr_controllers; i++) {
- 		u32 v, base = 0;
-@@ -442,8 +442,21 @@ static void __init omap_hsmmc_reset(void
- 		case 2:
- 			base = OMAP3_MMC3_BASE;
- 			break;
-+		case 3:
-+			if (!cpu_is_omap44xx())
-+				return;
-+			base = OMAP4_MMC4_BASE;
-+			break;
-+		case 4:
-+			if (!cpu_is_omap44xx())
-+				return;
-+			base = OMAP4_MMC5_BASE;
-+			break;
- 		}
-
-+		if (cpu_is_omap44xx())
-+			base += OMAP4_MMC_REG_OFFSET;
-+
- 		dummy_pdev.id = i;
- 		dev_set_name(&dummy_pdev.dev, "mmci-omap-hs.%d", i);
- 		iclk = clk_get(dev, "ick");
-@@ -540,11 +553,23 @@ void __init omap2_init_mmc(struct omap_m
- 			irq = INT_24XX_MMC2_IRQ;
- 			break;
- 		case 2:
--			if (!cpu_is_omap34xx())
-+			if (!cpu_is_omap44xx() && !cpu_is_omap34xx())
- 				return;
- 			base = OMAP3_MMC3_BASE;
- 			irq = INT_34XX_MMC3_IRQ;
- 			break;
-+		case 3:
-+			if (!cpu_is_omap44xx())
-+				return;
-+			base = OMAP4_MMC4_BASE + OMAP4_MMC_REG_OFFSET;
-+			irq = INT_44XX_MMC4_IRQ;
-+			break;
-+		case 4:
-+			if (!cpu_is_omap44xx())
-+				return;
-+			base = OMAP4_MMC5_BASE + OMAP4_MMC_REG_OFFSET;
-+			irq = INT_44XX_MMC5_IRQ;
-+			break;
- 		default:
- 			continue;
- 		}
-@@ -552,8 +577,15 @@ void __init omap2_init_mmc(struct omap_m
- 		if (cpu_is_omap2420()) {
- 			size = OMAP2420_MMC_SIZE;
- 			name = "mmci-omap";
-+		} else if (cpu_is_omap44xx()) {
-+			if (i < 3) {
-+				base += OMAP4_MMC_REG_OFFSET;
-+				irq += IRQ_GIC_START;
-+			}
-+			size = OMAP4_HSMMC_SIZE;
-+			name = "mmci-omap-hs";
- 		} else {
--			size = HSMMC_SIZE;
-+			size = OMAP3_HSMMC_SIZE;
- 			name = "mmci-omap-hs";
- 		}
- 		omap_mmc_add(name, i, base, size, irq, mmc_data[i]);
-Index: kernel-omap4-base/arch/arm/plat-omap/include/mach/irqs.h
-===================================================================
---- kernel-omap4-base.orig/arch/arm/plat-omap/include/mach/irqs.h
-+++ kernel-omap4-base/arch/arm/plat-omap/include/mach/irqs.h
-@@ -503,6 +503,7 @@
- #define INT_44XX_FPKA_READY_IRQ	(50 + IRQ_GIC_START)
- #define INT_44XX_SHA1MD51_IRQ	(51 + IRQ_GIC_START)
- #define INT_44XX_RNG_IRQ	(52 + IRQ_GIC_START)
-+#define INT_44XX_MMC5_IRQ	(59 + IRQ_GIC_START)
- #define INT_44XX_I2C3_IRQ	(61 + IRQ_GIC_START)
- #define INT_44XX_FPKA_ERROR_IRQ	(64 + IRQ_GIC_START)
- #define INT_44XX_PBIAS_IRQ	(75 + IRQ_GIC_START)
-@@ -511,6 +512,7 @@
- #define INT_44XX_TLL_IRQ	(78 + IRQ_GIC_START)
- #define INT_44XX_PARTHASH_IRQ	(79 + IRQ_GIC_START)
- #define INT_44XX_MMC3_IRQ	(94 + IRQ_GIC_START)
-+#define INT_44XX_MMC4_IRQ	(96 + IRQ_GIC_START)
-
-
- /* Max. 128 level 2 IRQs (OMAP1610), 192 GPIOs (OMAP730/850) and
-Index: kernel-omap4-base/arch/arm/plat-omap/include/mach/mmc.h
-===================================================================
---- kernel-omap4-base.orig/arch/arm/plat-omap/include/mach/mmc.h
-+++ kernel-omap4-base/arch/arm/plat-omap/include/mach/mmc.h
-@@ -25,11 +25,18 @@
-
- #define OMAP24XX_NR_MMC		2
- #define OMAP34XX_NR_MMC		3
-+#define OMAP44XX_NR_MMC		5
- #define OMAP2420_MMC_SIZE	OMAP1_MMC_SIZE
--#define HSMMC_SIZE		0x200
-+#define OMAP3_HSMMC_SIZE	0x200
-+#define OMAP4_HSMMC_SIZE	0x1000
- #define OMAP2_MMC1_BASE		0x4809c000
- #define OMAP2_MMC2_BASE		0x480b4000
- #define OMAP3_MMC3_BASE		0x480ad000
-+#define OMAP4_MMC4_BASE		0x480d1000
-+#define OMAP4_MMC5_BASE		0x480d5000
-+#define OMAP4_MMC_REG_OFFSET	0x100
-+#define HSMMC5			(1 << 4)
-+#define HSMMC4			(1 << 3)
- #define HSMMC3			(1 << 2)
- #define HSMMC2			(1 << 1)
- #define HSMMC1			(1 << 0)
-Index: kernel-omap4-base/drivers/mmc/host/Kconfig
-===================================================================
---- kernel-omap4-base.orig/drivers/mmc/host/Kconfig
-+++ kernel-omap4-base/drivers/mmc/host/Kconfig
-@@ -132,11 +132,11 @@ config MMC_OMAP
-
- config MMC_OMAP_HS
- 	tristate "TI OMAP High Speed Multimedia Card Interface support"
--	depends on ARCH_OMAP2430 || ARCH_OMAP3
-+	depends on ARCH_OMAP2430 || ARCH_OMAP3 || ARCH_OMAP4
- 	help
- 	  This selects the TI OMAP High Speed Multimedia card Interface.
--	  If you have an OMAP2430 or OMAP3 board with a Multimedia Card slot,
--	  say Y or M here.
-+	  If you have an OMAP2430 or OMAP3 board or OMAP4 board with a
-+	  Multimedia Card slot, say Y or M here.
-
- 	  If unsure, say N.
-
-Index: kernel-omap4-base/drivers/mmc/host/omap_hsmmc.c
-===================================================================
---- kernel-omap4-base.orig/drivers/mmc/host/omap_hsmmc.c
-+++ kernel-omap4-base/drivers/mmc/host/omap_hsmmc.c
-@@ -101,6 +101,8 @@
- #define OMAP_MMC1_DEVID		0
- #define OMAP_MMC2_DEVID		1
- #define OMAP_MMC3_DEVID		2
-+#define OMAP_MMC4_DEVID		3
-+#define OMAP_MMC5_DEVID		4
-
- #define MMC_TIMEOUT_MS		20
- #define OMAP_MMC_MASTER_CLOCK	96000000
-@@ -1096,6 +1098,14 @@ static int __init omap_mmc_probe(struct
- 		host->dma_line_tx = OMAP34XX_DMA_MMC3_TX;
- 		host->dma_line_rx = OMAP34XX_DMA_MMC3_RX;
- 		break;
-+	case OMAP_MMC4_DEVID:
-+		host->dma_line_tx = OMAP44XX_DMA_MMC4_TX;
-+		host->dma_line_rx = OMAP44XX_DMA_MMC4_RX;
-+		break;
-+	case OMAP_MMC5_DEVID:
-+		host->dma_line_tx = OMAP44XX_DMA_MMC5_TX;
-+		host->dma_line_rx = OMAP44XX_DMA_MMC5_RX;
-+		break;
- 	default:
- 		dev_err(mmc_dev(host->mmc), "Invalid MMC id\n");
- 		goto err_irq;
-
-
+greg k-h
