@@ -1,65 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751206AbZIBJuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751297AbZIBJwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751206AbZIBJuw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 05:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750884AbZIBJuv
+	id S1751297AbZIBJwu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 05:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbZIBJwu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 05:50:51 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:56001 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750783AbZIBJuu (ORCPT
+	Wed, 2 Sep 2009 05:52:50 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:33001 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750928AbZIBJwt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 05:50:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=rC9J/Eo0uC9lSlah9lGeXkkHQG/Tu4PoN2sfKSLgeb83RwmG8oMAJifeiHGFLWCjTI
-         CquEEVgsSc5re7ZSIcrLFp7jNCIV9USQeVxVZosOxnPtwmQPU8LIjajlmEpgRg/fB2nV
-         /Jp0a7izhmEC5O2ax7mKn86uOCcEOXkaAk/dI=
-MIME-Version: 1.0
-In-Reply-To: <20090901183837.GA22551@infradead.org>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
-	 <200909010933.50571.dtor@vmware.com>
-	 <1251823925.3864.216.camel@mulgrave.site> <adaocpuo9vs.fsf@cisco.com>
-	 <1251826804.12482.47.camel@mulgrave.site>
-	 <1251827676.16169.152.camel@ank32.eng.vmware.com>
-	 <20090901183837.GA22551@infradead.org>
-Date: Wed, 2 Sep 2009 11:50:50 +0200
-X-Google-Sender-Auth: 89f7f6d851e33ae0
-Message-ID: <e2e108260909020250i60c0a697r84ed900b823544cd@mail.gmail.com>
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-From: Bart Van Assche <bvanassche@acm.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Alok Kataria <akataria@vmware.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Roland Dreier <rdreier@cisco.com>, Dmitry Torokhov <dtor@vmware.com>,
-       Matthew Wilcox <matthew@wil.cx>, Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 2 Sep 2009 05:52:49 -0400
+Date: Wed, 02 Sep 2009 18:52:51 +0900 (JST)
+Message-Id: <20090902.185251.193693849.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: nauman@google.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
+       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
+ track async bios.
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090901141142.GA13709@redhat.com>
+References: <e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com>
+	<20090901.160004.226800357.ryov@valinux.co.jp>
+	<20090901141142.GA13709@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 1, 2009 at 8:38 PM, Christoph Hellwig<hch@infradead.org> wrote:
-> On Tue, Sep 01, 2009 at 05:54:36PM +0000, Alok Kataria wrote:
->> Also note that, the way all these things are implemented for each of the
->> hypervisor devices will differ and getting every hv-vendor to agree on a
->> common set of things is not very attractive proposition ( atleast, this
->> I can say from my past experiences).
->
-> virtio is shared by three or four hypervisors depending on how you
-> count it, with others under development.
+Hi Vivek,
 
-Research is ongoing about how to reach higher throughput and lower
-latency than what is possible with the virtio interface. See also Jake
-Edge, AlacrityVM, August 5, 2009 (http://lwn.net/Articles/345296/).
+> > > > - The primary use case of tracking async context seems be that if a
+> > > >  process T1 in group G1 mmaps a big file and then another process T2 in
+> > > >  group G2, asks for memory and triggers reclaim and generates writes of
+> > > >  the file pages mapped by T1, then these writes should not be charged to
+> > > >  T2, hence blkio_cgroup pages.
+> > > >
+> > > >  But the flip side of this might be that group G2 is a low weight group
+> > > >  and probably too busy also right now, which will delay the write out
+> > > >  and possibly T2 will wait longer for memory to be allocated.
+> > 
+> > In order to avoid this wait, dm-ioband issues IO which has a page with
+> > PG_Reclaim as early as possible.
+> > 
+> 
+> So in above case IO is still charged to G2 but you keep a track if page is
+> PG_Reclaim then releae the this bio before other bios queued up in the
+> group?
 
-Bart.
+Yes, the bio with PG_Reclaim page is given priority over the other bios.
+
+> > > > - At one point of time Andrew mentioned that buffered writes are generally a
+> > > >  big problem and one needs to map these to owner's group. Though I am not
+> > > >  very sure what specific problem he was referring to. Can we attribute
+> > > >  buffered writes to pdflush threads and move all pdflush threads in a
+> > > >  cgroup to limit system wide write out activity?
+> > 
+> > I think that buffered writes also should be controlled per cgroup as
+> > well as synchronous writes.
+> > 
+> 
+> But it is hard to achieve fairness for buffered writes becase we don't
+> create complete parallel IO paths and not necessarily higher weight
+> process dispatches more buffered writes to IO scheduler. (Due to page
+> cache buffered write logic).
+> 
+> So in some cases we might see buffered write fairness and in other cases
+> not. For example, run two dd processes in two groups doing buffered writes
+> and it is hard to achieve fairness between these.
+> 
+> That's why the idea that if we can't ensure Buffered write vs Buffered
+> write fairness in all the cases, then does it make sense to attribute
+> buffered writes to pdflush and put pdflush threads into a separate group
+> to limit system wide write out activity. 
+
+If all buffered writes are treated as system wide activities, it does
+not mean that bandwidth is being controlled. It is true that pdflush
+doesn't do I/O according to weight, but bandwidth (including for
+bufferd writes) should be reserved for each cgroup.
+
+> > > > - Somebody also gave an example where there is a memory hogging process and
+> > > >  possibly pushes out some processes to swap. It does not sound fair to
+> > > >  charge those proccess for that swap writeout. These processes never
+> > > >  requested swap IO.
+> > 
+> > I think that swap writeouts should be charged to the memory hogging
+> > process, because the process consumes more resources and it should get
+> > a penalty.
+> > 
+> 
+> A process requesting memory gets IO penalty? IMHO, swapping is a kernel 
+> mechanism and kernel's way of providing extended RAM. If we want to solve
+> the issue of memory hogging by a process then right way to solve is to use
+> memory controller and not by charging the process for IO activity.
+> Instead, proabably a more suitable way is to charge swap activity to root
+> group (where by default all the kernel related activity goes).   
+
+No. In the current blkio-cgroup, a process which uses a large amount
+of memory gets penalty, not a memory requester.
+
+As you wrote, using both io-controller and memory controller are
+required to prevent swap-out caused by memory consumption on another
+cgroup.
+
+> > > > - If there are multiple buffered writers in the system, then those writers
+> > > >  can also be forced to writeout some pages to disk before they are
+> > > >  allowed to dirty more pages. As per the page cache design, any writer
+> > > >  can pick any inode and start writing out pages. So it can happen a
+> > > >  weight group task is writting out pages dirtied by a lower weight group
+> > > >  task. If, async bio is mapped to owner's group, it might happen that
+> > > >  higher weight group task might be made to sleep on lower weight group
+> > > >  task because request descriptors are all consumed up.
+> > 
+> > As mentioned above, in dm-ioband, the bio is charged to the page owner
+> > and issued immediately.
+> 
+> But you are doing it only for selected pages and not for all buffered
+> writes?
+
+I'm sorry, I wrote wrong on the previous mail, IO for writing out
+page-cache pages is not issued immediately, it is throttled by
+dm-ioband.
+
+Anyway, there is a case where a higher weight group task is made
+to sleep, but if we reserve the memory for each cgroup by memory
+controller in advance, we can avoid the task put to sleep.
+
+Thanks,
+Ryo Tsuruta
