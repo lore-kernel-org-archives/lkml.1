@@ -1,150 +1,339 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbZIBEck@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZIBEnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752874AbZIBEck (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 00:32:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIBEck
+	id S1754200AbZIBEnY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 00:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZIBEnY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 00:32:40 -0400
-Received: from mail-yw0-f188.google.com ([209.85.211.188]:44712 "EHLO
-	mail-yw0-f188.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751865AbZIBEcj (ORCPT
+	Wed, 2 Sep 2009 00:43:24 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49670 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbZIBEnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 00:32:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AXFtQN3rPO9jWQkmgiY/jxYMFltLv2H2TDRg3SAxY6ah3gr8JXJMQJJztbUZ9/N3ih
-         5LkmYhdmcAe9QaZBk0nnTLMUBHQddGBQOIAtudeb1tnU6669F4UueiLBL+YQFeu1nS1X
-         b2f64TZyIg27hnfJLuJGCkWcqPS8DpNZfGkEA=
-Message-ID: <4A9DF566.50805@gmail.com>
-Date: Tue, 01 Sep 2009 22:32:38 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: tfjellstrom@shaw.ca
-CC: linux-kernel@vger.kernel.org
-Subject: Re: sata exception frozen timeout?
-References: <200909010316.58715.tfjellstrom@shaw.ca>
-In-Reply-To: <200909010316.58715.tfjellstrom@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 2 Sep 2009 00:43:23 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 2 Sep 2009 13:41:14 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [mmotm][PATCH] coalescing uncharge
+Message-Id: <20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/01/2009 03:16 AM, Thomas Fjellstrom wrote:
-> I've recently started seeing the following messages from a new WD Green drive,
-> not long after I had to RMA a Seagate drive for a strange (but different)
-> error. Highlights from my dmesg include:
->
-> [59634.792101] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-> frozen
-> [59634.792121] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
-> [59634.792125]          res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4
-> (timeout)
-> [59634.792133] ata6.00: status: { DRDY }
-> [59634.792145] ata6: hard resetting link
-> [59635.277695] ata6: softreset failed (device not ready)
-> [59635.277705] ata6: failed due to HW bug, retry pmp=0
-> [59635.441570] ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [59635.454030] ata6.00: configured for UDMA/133
-> [59635.454068] ata6: EH complete
-> ...
-> [59713.792224] ata6.00: NCQ disabled due to excessive errors
-> [59713.792236] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-> frozen
-> [59713.792254] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
-> [59713.792257]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
-> (timeout)
-> [59713.792264] ata6.00: status: { DRDY }
-> ...
-> [63484.781764] ata6: hard resetting link
-> [63485.264204] ata6: softreset failed (device not ready)
-> [63485.264214] ata6: failed due to HW bug, retry pmp=0
-> [63485.428205] ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> [63485.440499] ata6.00: configured for UDMA/100
-> [63485.440536] ata6: EH complete
-> [63493.780182] ata6.00: limiting speed to UDMA/33:PIO4
-> [63493.780194] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-> frozen
-> [63493.780211] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
-> [63493.780214]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
-> (timeout)
-> [63493.780221] ata6.00: status: { DRDY }
-> ...
-> [99318.070669] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
-> [99318.070679] ata6.00: irq_stat 0x40000001
-> [99318.070698] ata6.00: cmd 25/00:00:30:bd:01/00:01:1b:00:00/e0 tag 0 dma
-> 131072 in
-> [99318.070701]          res 41/04:ef:30:bd:01/00:00:1b:00:00/e0 Emask 0x1
-> (device error)
-> [99318.070709] ata6.00: status: { DRDY ERR }
-> [99318.070714] ata6.00: error: { ABRT }
-> [99318.082588] ata6.00: configured for UDMA/33
-> [99318.082612] ata6: EH complete
-> ...
-> [99339.780358] ata6: hard resetting link
-> [99349.785096] ata6: softreset failed (device not ready)
-> [99349.785108] ata6: hard resetting link
-> [99359.789033] ata6: softreset failed (device not ready)
-> [99359.789045] ata6: hard resetting link
-> [99370.352916] ata6: link is slow to respond, please be patient (ready=0)
-> ..
-> [99400.016925] ata6: softreset failed (device not ready)
-> [99400.016936] ata6: reset failed, giving up
-> [99400.016942] ata6.00: disabled
-> [99400.016986] ata6: EH complete
-> [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
-> [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> driverbyte=DRIVER_OK
-> [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
-> [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> driverbyte=DRIVER_OK
-> [99400.017035] end_request: I/O error, dev sdf, sector 453099568
-> [99400.017045] Buffer I/O error on device md1, logical block 113274390
-> [99400.017058] Buffer I/O error on device md1, logical block 113274391
-> [99400.017064] Buffer I/O error on device md1, logical block 113274392
-> [99400.017070] Buffer I/O error on device md1, logical block 113274393
-> [99400.017076] Buffer I/O error on device md1, logical block 113274394
-> [99400.017082] Buffer I/O error on device md1, logical block 113274395
-> [99400.017088] Buffer I/O error on device md1, logical block 113274396
-> [99400.017094] Buffer I/O error on device md1, logical block 113274397
-> [99400.017100] Buffer I/O error on device md1, logical block 113274398
-> [99400.017106] Buffer I/O error on device md1, logical block 113274399
-> [99400.017115] sd 5:0:0:0: [sdf] Unhandled error code
-> [99400.017123] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> driverbyte=DRIVER_OK
-> [99400.017133] end_request: I/O error, dev sdf, sector 453099824
-> [99400.017310] sd 5:0:0:0: [sdf] Unhandled error code
-> [99400.017315] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> driverbyte=DRIVER_OK
-> [99400.017322] end_request: I/O error, dev sdf, sector 453099568
-> [99400.017383] program smartctl is using a deprecated SCSI ioctl, please
-> convert it to SG_IO
-> [99400.017456] program smartctl is using a deprecated SCSI ioctl, please
-> convert it to SG_IO
-> [99400.018822] sd 5:0:0:0: [sdf] Unhandled error code
-> [99400.018829] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> driverbyte=DRIVER_OK
-> [99400.018838] end_request: I/O error, dev sdf, sector 453099568
->
-> and a bunch more end_request errors. This happens fairly reliably after a day
-> or so of being online. I try and start to play some music or watch a video off
-> the array (2xWD Green on md raid0) and it fails. The file system is mostly
-> read only right now (that is I don't write to it) so I haven't manged to loose
-> any data that I know of, and the fs seems to be fine. A reboot fixes the
-> errors and the disk and fs work fine for a day or two before these errors show
-> up again.
->
-> I'm currently running 2.6.31-rc5 from kernel.org. What would cause these
-> errors?
+Based on mmotm+ softlimit clean up patches I posted today.
 
-This sort of thing is quite often a hardware problem. You can see that 
-commands start timing out and then the controller seems to mostly lose 
-communication with the drive (the resets failing). In particular, it 
-seems an overloaded power supply can cause these sort of symptoms. (It 
-seems like a lot of the time this happens with people with multiple hard 
-drives installed, either the power supply just isn't powerful enough to 
-handle them all, or there's too many drives connected to one cable and 
-the voltage drop is too high under heavy load.)
+I think this version is much easier to read and cleaner than previous one.
+But it's -rc8 age now. I can wait until the end of next merge window.
+
+after make -j8 kernel.
+==
+lock_stat version 0.3
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+                              class name    con-bounces    contentions   waittime-min   waittime-max waittime-total    acq-bounces   acquisitions   holdtime-min   holdtime-max holdtime-total
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+                          &counter->lock:       3074759        3086077           0.94       14372.27     1978508.38       68039606       80763359           0.45       34243.51    37892635.86
+                          --------------
+                          &counter->lock        2970383          [<ffffffff8109921d>] res_counter_charge+0x4d
+                          &counter->lock         112516          [<ffffffff81099175>] res_counter_uncharge+0x35
+                          &counter->lock           3178          [<ffffffff81111e2a>] mem_cgroup_update_tree+0x11a/0x1c0
+                          --------------
+                          &counter->lock        2973905          [<ffffffff8109921d>] res_counter_charge+0x4d
+                          &counter->lock         109581          [<ffffffff81099175>] res_counter_uncharge+0x35
+                          &counter->lock           2591          [<ffffffff81111e2a>] mem_cgroup_update_tree+0x11a/0x1c0
+==
+After this patch, lock conention in uncharge is reduced.
+(And I know if I can reduce lock contention in charge path,
+ this dramatically reduced.)
+
+
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+In massive parallel enviroment, res_counter can be a performance bottleneck.
+This patch is a trial for reducing lock contention.
+One strong techinque to reduce lock contention is reducing calls by
+batching some amount of calls int one.
+
+Considering charge/uncharge chatacteristic,
+	- charge is done one by one via demand-paging.
+	- uncharge is done by
+		- in chunk at munmap, truncate, exit, execve...
+		- one by one via vmscan/paging.
+
+It seems we hace a chance to batched-uncharge.
+This patch is a base patch for batched uncharge. For avoiding
+scattering memcg's structure, this patch adds memcg batch uncharge
+information to the task. please see start/end usage in next patch.
+Because it will be used always at exit(), it's not very costly.
+(And much gives us much easier code than using percpu_xxx.)
+
+The degree of coalescing depends on callers
+  - at invalidate/trucate... pagevec size
+  - at unmap ....ZAP_BLOCK_SIZE
+pages itself will be freed in this degree.
+
+Changelog:
+ - unified patch for callers
+ - added commetns.
+ - make ->do_batch as bool.
+ - removed css_get() at el. We don't need it.
+
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ include/linux/memcontrol.h |   12 ++++++
+ include/linux/sched.h      |    7 +++
+ mm/memcontrol.c            |   90 ++++++++++++++++++++++++++++++++++++++++++---
+ mm/memory.c                |    2 +
+ mm/truncate.c              |    6 +++
+ 5 files changed, 111 insertions(+), 6 deletions(-)
+
+Index: mmotm-2.6.31-Aug27/include/linux/memcontrol.h
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/include/linux/memcontrol.h
++++ mmotm-2.6.31-Aug27/include/linux/memcontrol.h
+@@ -54,6 +54,10 @@ extern void mem_cgroup_rotate_lru_list(s
+ extern void mem_cgroup_del_lru(struct page *page);
+ extern void mem_cgroup_move_lists(struct page *page,
+ 				  enum lru_list from, enum lru_list to);
++
++extern void mem_cgroup_uncharge_batch_start(void);
++extern void mem_cgroup_uncharge_batch_end(void);
++
+ extern void mem_cgroup_uncharge_page(struct page *page);
+ extern void mem_cgroup_uncharge_cache_page(struct page *page);
+ extern int mem_cgroup_shmem_charge_fallback(struct page *page,
+@@ -151,6 +155,14 @@ static inline void mem_cgroup_cancel_cha
+ {
+ }
+ 
++static inline void mem_cgroup_uncharge_batch_start(void)
++{
++}
++
++static inline void mem_cgroup_uncharge_batch_start(void)
++{
++}
++
+ static inline void mem_cgroup_uncharge_page(struct page *page)
+ {
+ }
+Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
++++ mmotm-2.6.31-Aug27/mm/memcontrol.c
+@@ -1821,6 +1821,48 @@ void mem_cgroup_cancel_charge_swapin(str
+ 	css_put(&mem->css);
+ }
+ 
++static void
++__do_uncharge(struct mem_cgroup *mem, const enum charge_type ctype)
++{
++	struct memcg_batch_info *batch = NULL;
++	bool uncharge_memsw = true;
++	/* If swapout, usage of swap doesn't decrease */
++	if (!do_swap_account || ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
++		uncharge_memsw = false;
++	/*
++	 * do_batch == true when unmapping pages or inode invaludate/truncate.
++	 * In those cases, all pages freed continously can be expected to be in
++	 * the same cgroup and we have chance to coalesce uncharges.
++	 */
++	if (!current->memcg_batch.do_batch)
++		goto direct_uncharge;
++
++	batch = &current->memcg_batch;
++	/*
++	 * In usual, we do css_get() when we remember memcg pointer.
++	 * But in this case, we keep res->usage until end of a series of
++	 * uncharges. Then, it's ok to ignore memcg's refcnt.
++	 */
++	if (!batch->memcg)
++		batch->memcg = mem;
++	/*
++	 * In typical case, batch->memcg == mem. This means we can
++	 * merge a series of uncharges to an uncharge of res_counter.
++	 * If not, we uncharge res_counter ony by one.
++	 */
++	if (batch->memcg != mem)
++		goto direct_uncharge;
++	/* remember freed charge and uncharge it later */
++	batch->pages += PAGE_SIZE;
++	if (uncharge_memsw)
++		batch->memsw += PAGE_SIZE;
++	return;
++direct_uncharge:
++	res_counter_uncharge(&mem->res, PAGE_SIZE);
++	if (uncharge_memsw)
++		res_counter_uncharge(&mem->memsw, PAGE_SIZE);
++	return;
++}
+ 
+ /*
+  * uncharge if !page_mapped(page)
+@@ -1869,12 +1911,8 @@ __mem_cgroup_uncharge_common(struct page
+ 		break;
+ 	}
+ 
+-	if (!mem_cgroup_is_root(mem)) {
+-		res_counter_uncharge(&mem->res, PAGE_SIZE);
+-		if (do_swap_account &&
+-				(ctype != MEM_CGROUP_CHARGE_TYPE_SWAPOUT))
+-			res_counter_uncharge(&mem->memsw, PAGE_SIZE);
+-	}
++	if (!mem_cgroup_is_root(mem))
++		__do_uncharge(mem, ctype);
+ 	if (ctype == MEM_CGROUP_CHARGE_TYPE_SWAPOUT)
+ 		mem_cgroup_swap_statistics(mem, true);
+ 	mem_cgroup_charge_statistics(mem, pc, false);
+@@ -1920,6 +1958,46 @@ void mem_cgroup_uncharge_cache_page(stru
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+ }
+ 
++/*
++ * batch_start/batch_end is called in unmap_page_range/invlidate/trucate.
++ * In that cases, pages are freed continuously and we can expect pages
++ * are in the same memcg. All these calls itself limits the number of
++ * pages freed at once, then uncharge_start/end() is called properly.
++ */
++
++void mem_cgroup_uncharge_batch_start(void)
++{
++	VM_BUG_ON(current->memcg_batch.do_batch);
++	/* avoid batch if killed by OOM */
++	if (test_thread_flag(TIF_MEMDIE))
++		return;
++	current->memcg_batch.memcg = NULL;
++	current->memcg_batch.pages = 0;
++	current->memcg_batch.memsw = 0;
++	current->memcg_batch.do_batch = true;
++}
++
++void mem_cgroup_uncharge_batch_end(void)
++{
++	struct mem_cgroup *mem;
++
++	if (!current->memcg_batch.do_batch)
++		return;
++
++	current->memcg_batch.do_batch = false;
++
++	mem = current->memcg_batch.memcg;
++	if (!mem)
++		return;
++	/* This "mem" is valid bacause we hide charges behind us. */
++	if (current->memcg_batch.pages)
++		res_counter_uncharge(&mem->res, current->memcg_batch.pages);
++	if (current->memcg_batch.memsw)
++		res_counter_uncharge(&mem->memsw, current->memcg_batch.memsw);
++	/* Not necessary. but forget this pointer */
++	current->memcg_batch.memcg = NULL;
++}
++
+ #ifdef CONFIG_SWAP
+ /*
+  * called after __delete_from_swap_cache() and drop "page" account.
+Index: mmotm-2.6.31-Aug27/include/linux/sched.h
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/include/linux/sched.h
++++ mmotm-2.6.31-Aug27/include/linux/sched.h
+@@ -1540,6 +1540,13 @@ struct task_struct {
+ 	unsigned long trace_recursion;
+ #endif /* CONFIG_TRACING */
+ 	unsigned long stack_start;
++#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
++	struct memcg_batch_info {
++		bool do_batch;
++		struct mem_cgroup *memcg;
++		long pages, memsw;
++	} memcg_batch;
++#endif
+ };
+ 
+ /* Future-safe accessor for struct task_struct's cpus_allowed. */
+Index: mmotm-2.6.31-Aug27/mm/memory.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/mm/memory.c
++++ mmotm-2.6.31-Aug27/mm/memory.c
+@@ -909,6 +909,7 @@ static unsigned long unmap_page_range(st
+ 		details = NULL;
+ 
+ 	BUG_ON(addr >= end);
++	mem_cgroup_uncharge_batch_start();
+ 	tlb_start_vma(tlb, vma);
+ 	pgd = pgd_offset(vma->vm_mm, addr);
+ 	do {
+@@ -921,6 +922,7 @@ static unsigned long unmap_page_range(st
+ 						zap_work, details);
+ 	} while (pgd++, addr = next, (addr != end && *zap_work > 0));
+ 	tlb_end_vma(tlb, vma);
++	mem_cgroup_uncharge_batch_end();
+ 
+ 	return addr;
+ }
+Index: mmotm-2.6.31-Aug27/mm/truncate.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/mm/truncate.c
++++ mmotm-2.6.31-Aug27/mm/truncate.c
+@@ -272,6 +272,7 @@ void truncate_inode_pages_range(struct a
+ 			pagevec_release(&pvec);
+ 			break;
+ 		}
++		mem_cgroup_uncharge_batch_start();
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+ 			struct page *page = pvec.pages[i];
+ 
+@@ -286,6 +287,7 @@ void truncate_inode_pages_range(struct a
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
++		mem_cgroup_uncharge_batch_end();
+ 	}
+ }
+ EXPORT_SYMBOL(truncate_inode_pages_range);
+@@ -327,6 +329,7 @@ unsigned long invalidate_mapping_pages(s
+ 	pagevec_init(&pvec, 0);
+ 	while (next <= end &&
+ 			pagevec_lookup(&pvec, mapping, next, PAGEVEC_SIZE)) {
++		mem_cgroup_uncharge_batch_start();
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+ 			struct page *page = pvec.pages[i];
+ 			pgoff_t index;
+@@ -354,6 +357,7 @@ unsigned long invalidate_mapping_pages(s
+ 				break;
+ 		}
+ 		pagevec_release(&pvec);
++		mem_cgroup_uncharge_batch_end();
+ 		cond_resched();
+ 	}
+ 	return ret;
+@@ -428,6 +432,7 @@ int invalidate_inode_pages2_range(struct
+ 	while (next <= end && !wrapped &&
+ 		pagevec_lookup(&pvec, mapping, next,
+ 			min(end - next, (pgoff_t)PAGEVEC_SIZE - 1) + 1)) {
++		mem_cgroup_uncharge_batch_start();
+ 		for (i = 0; i < pagevec_count(&pvec); i++) {
+ 			struct page *page = pvec.pages[i];
+ 			pgoff_t page_index;
+@@ -477,6 +482,7 @@ int invalidate_inode_pages2_range(struct
+ 			unlock_page(page);
+ 		}
+ 		pagevec_release(&pvec);
++		mem_cgroup_uncharge_batch_end();
+ 		cond_resched();
+ 	}
+ 	return ret;
+
