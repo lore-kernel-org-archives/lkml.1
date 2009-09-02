@@ -1,32 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932130AbZIBEuE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbZIBFSq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932130AbZIBEuE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 00:50:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZIBEuD
+	id S1755737AbZIBFSq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 01:18:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755661AbZIBFSq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 00:50:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40134 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752892AbZIBEuC (ORCPT
+	Wed, 2 Sep 2009 01:18:46 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:38281 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755185AbZIBFSp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 00:50:02 -0400
-Date: Tue, 1 Sep 2009 21:49:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH v2 1/2] cpu: Offline state Framework.
-Message-Id: <20090901214935.bc505f9f.akpm@linux-foundation.org>
-In-Reply-To: <20090828100016.10641.62621.stgit@sofia.in.ibm.com>
-References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
-	<20090828100016.10641.62621.stgit@sofia.in.ibm.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Wed, 2 Sep 2009 01:18:45 -0400
+Date: Wed, 2 Sep 2009 14:16:39 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [mmotm][PATCH 2/2] memcg: reduce calls for soft limit excess
+Message-Id: <20090902141639.565175d3.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090902093551.c8b171fb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902093551.c8b171fb.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -34,164 +31,122 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 28 Aug 2009 15:30:16 +0530 Gautham R Shenoy <ego@in.ibm.com> wrote:
-
-> Provide an interface by which the system administrator can decide what state
-> should the CPU go to when it is offlined.
+On Wed, 2 Sep 2009 09:35:51 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> In charge path, usage_in_excess is calculated repeatedly and
+> it takes res_counter's spin_lock every time.
 > 
-> To query the hotplug states, on needs to perform a read on the sysfs tunable:
-> 	/sys/devices/system/cpu/cpu<number>/available_hotplug_states
+Hmm, mem_cgroup_update_tree() is called in both charge and uncharge path.
+So, this patch have effect on both path, doesn't it ?
+
+> This patch removes unnecessary calls for res_count_soft_limit_excess.
 > 
-> To query or set the current state for a particular CPU, one needs to
-> use the sysfs interface:
-> 	/sys/devices/system/cpu/cpu<number>/current_state
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/memcontrol.c |   31 +++++++++++++++----------------
+>  1 file changed, 15 insertions(+), 16 deletions(-)
 > 
-> This patch implements the architecture independent bits of the
-> cpu-offline-state framework.
-> 
-> Architectures which want to expose the multiple offline-states to the
-> userspace are expected to write a driver which can register
-> with this framework.
-> 
-> Such a driver should:
-> - Implement the callbacks defined in the structure struct cpu_offline_driver
->   which can be called into by this framework when the corresponding
->   sysfs interfaces are read or written into.
-> 
-> - Ensure that the following operation puts the CPU in the same state
->   as it did in the absence of the driver.
-> 	echo 0 > /sys/devices/system/cpu/cpu<number>/online
-> 
-> This framework also serializes the writes to the "current_state"
-> with respect to with the writes to the "online" sysfs tunable.
-> 
+> Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
+> +++ mmotm-2.6.31-Aug27/mm/memcontrol.c
+> @@ -313,7 +313,8 @@ soft_limit_tree_from_page(struct page *p
+>  static void
+>  __mem_cgroup_insert_exceeded(struct mem_cgroup *mem,
+>  				struct mem_cgroup_per_zone *mz,
+> -				struct mem_cgroup_tree_per_zone *mctz)
+> +				struct mem_cgroup_tree_per_zone *mctz,
+> +				unsigned long new_usage_in_excess)
+It might be a nitpick, shouldn't it be unsigned long long ?
 
-It would be nice to document this new userspace interface somewhere.
+Otherwise, it looks good to me.
 
+	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-> +struct cpu_offline_driver *cpu_offline_driver;
-> +static DEFINE_MUTEX(cpu_offline_driver_lock);
-> +
-> +ssize_t show_available_states(struct sys_device *dev,
-> +			struct sysdev_attribute *attr, char *buf)
-> +{
-> +	struct cpu *cpu = container_of(dev, struct cpu, sysdev);
-> +	int cpu_num = cpu->sysdev.id;
-> +	ssize_t ret;
-> +
-> +	mutex_lock(&cpu_offline_driver_lock);
-> +	if (!cpu_offline_driver) {
-> +		ret = -EEXIST;
-> +		goto out_unlock;
-> +	}
-> +
-> +	ret = cpu_offline_driver->read_available_states(cpu_num, buf);
-> +
-> +out_unlock:
-> +	mutex_unlock(&cpu_offline_driver_lock);
-> +
-> +	return ret;
-> +
-> +}
+Thanks,
+Daisuke Nishimura.
 
-The patch adds boatloads of global symbols which do not have names
-which are appropriate for global symbols.
-
-> +ssize_t show_current_state(struct sys_device *dev,
-> +			struct sysdev_attribute *attr, char *buf)
-
-Like that.
-
-> +ssize_t store_current_state(struct sys_device *dev,
-> +			struct sysdev_attribute *attr,
-> +			const char *buf, size_t count)
-
-And that.
-
-> +
-> +static SYSDEV_ATTR(available_hotplug_states, 0444, show_available_states,
-> +								NULL);
-> +static SYSDEV_ATTR(current_state, 0644, show_current_state,
-> +						store_current_state);
-> +
-> +/* Should be called with cpu_offline_driver_lock held */
-> +void cpu_offline_driver_add_cpu(struct sys_device *cpu_sys_dev)
-> +{
-> +	if (!cpu_offline_driver || !cpu_sys_dev)
+>  {
+>  	struct rb_node **p = &mctz->rb_root.rb_node;
+>  	struct rb_node *parent = NULL;
+> @@ -322,7 +323,9 @@ __mem_cgroup_insert_exceeded(struct mem_
+>  	if (mz->on_tree)
+>  		return;
+>  
+> -	mz->usage_in_excess = res_counter_soft_limit_excess(&mem->res);
+> +	mz->usage_in_excess = new_usage_in_excess;
+> +	if (!mz->usage_in_excess)
 > +		return;
-> +
-> +	sysdev_create_file(cpu_sys_dev, &attr_available_hotplug_states);
-> +	sysdev_create_file(cpu_sys_dev, &attr_current_state);
-> +}
-> +
-> +/* Should be called with cpu_offline_driver_lock held */
-> +void cpu_offline_driver_remove_cpu(struct sys_device *cpu_sys_dev)
-> +{
-> +	if (!cpu_offline_driver || !cpu_sys_dev)
-> +		return;
-> +
-> +	sysdev_remove_file(cpu_sys_dev, &attr_available_hotplug_states);
-> +	sysdev_remove_file(cpu_sys_dev, &attr_current_state);
-> +
-> +}
-
-Please don't just ignore possible error returns.
-
-> +int register_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
-> +{
-> +	int ret = 0;
-> +	int cpu;
-> +	mutex_lock(&cpu_offline_driver_lock);
-> +
-
-The blank line goes after end-of-locals and before start-of-code.
-
-> +	if (cpu_offline_driver != NULL) {
-> +		ret = -EEXIST;
-> +		goto out_unlock;
-> +	}
-> +
-> +	if (!(arch_cpu_driver->read_available_states &&
-> +	      arch_cpu_driver->read_current_state &&
-> +	      arch_cpu_driver->write_current_state)) {
-> +		ret = -EINVAL;
-> +		goto out_unlock;
-
-This seems pretty pointless.  Just let the code oops - the developer
-will notice fairly quickly.
-
-> +	}
-> +
-> +	cpu_offline_driver = arch_cpu_driver;
-> +
-> +	for_each_possible_cpu(cpu)
-> +		cpu_offline_driver_add_cpu(get_cpu_sysdev(cpu));
-> +
-> +out_unlock:
-> +	mutex_unlock(&cpu_offline_driver_lock);
-> +	return ret;
-> +}
-> +
-> +void unregister_cpu_offline_driver(struct cpu_offline_driver *arch_cpu_driver)
-> +{
-> +	int cpu;
-> +	mutex_lock(&cpu_offline_driver_lock);
-> +
-> +	if (!cpu_offline_driver) {
-> +		WARN_ON(1);
-
-	if (WARN_ON(!cpu_offline_driver)) {
-
-> +		mutex_unlock(&cpu_offline_driver_lock);
-> +		return;
-> +	}
-> +
-> +	for_each_possible_cpu(cpu)
-> +		cpu_offline_driver_remove_cpu(get_cpu_sysdev(cpu));
-> +
-> +	cpu_offline_driver = NULL;
-> +	mutex_unlock(&cpu_offline_driver_lock);
-> +}
-> +
-> +
-
+>  	while (*p) {
+>  		parent = *p;
+>  		mz_node = rb_entry(parent, struct mem_cgroup_per_zone,
+> @@ -382,7 +385,7 @@ static bool mem_cgroup_soft_limit_check(
+>  
+>  static void mem_cgroup_update_tree(struct mem_cgroup *mem, struct page *page)
+>  {
+> -	unsigned long long new_usage_in_excess;
+> +	unsigned long long excess;
+>  	struct mem_cgroup_per_zone *mz;
+>  	struct mem_cgroup_tree_per_zone *mctz;
+>  	int nid = page_to_nid(page);
+> @@ -395,25 +398,21 @@ static void mem_cgroup_update_tree(struc
+>  	 */
+>  	for (; mem; mem = parent_mem_cgroup(mem)) {
+>  		mz = mem_cgroup_zoneinfo(mem, nid, zid);
+> -		new_usage_in_excess =
+> -			res_counter_soft_limit_excess(&mem->res);
+> +		excess = res_counter_soft_limit_excess(&mem->res);
+>  		/*
+>  		 * We have to update the tree if mz is on RB-tree or
+>  		 * mem is over its softlimit.
+>  		 */
+> -		if (new_usage_in_excess || mz->on_tree) {
+> +		if (excess || mz->on_tree) {
+>  			spin_lock(&mctz->lock);
+>  			/* if on-tree, remove it */
+>  			if (mz->on_tree)
+>  				__mem_cgroup_remove_exceeded(mem, mz, mctz);
+>  			/*
+> -			 * if over soft limit, insert again. mz->usage_in_excess
+> -			 * will be updated properly.
+> +			 * Insert again. mz->usage_in_excess will be updated.
+> +			 * If excess is 0, no tree ops.
+>  			 */
+> -			if (new_usage_in_excess)
+> -				__mem_cgroup_insert_exceeded(mem, mz, mctz);
+> -			else
+> -				mz->usage_in_excess = 0;
+> +			__mem_cgroup_insert_exceeded(mem, mz, mctz, excess);
+>  			spin_unlock(&mctz->lock);
+>  		}
+>  	}
+> @@ -2216,6 +2215,7 @@ unsigned long mem_cgroup_soft_limit_recl
+>  	unsigned long reclaimed;
+>  	int loop = 0;
+>  	struct mem_cgroup_tree_per_zone *mctz;
+> +	unsigned long long excess;
+>  
+>  	if (order > 0)
+>  		return 0;
+> @@ -2260,9 +2260,8 @@ unsigned long mem_cgroup_soft_limit_recl
+>  				__mem_cgroup_largest_soft_limit_node(mctz);
+>  			} while (next_mz == mz);
+>  		}
+> -		mz->usage_in_excess =
+> -			res_counter_soft_limit_excess(&mz->mem->res);
+>  		__mem_cgroup_remove_exceeded(mz->mem, mz, mctz);
+> +		excess = res_counter_soft_limit_excess(&mz->mem->res);
+>  		/*
+>  		 * One school of thought says that we should not add
+>  		 * back the node to the tree if reclaim returns 0.
+> @@ -2271,8 +2270,8 @@ unsigned long mem_cgroup_soft_limit_recl
+>  		 * memory to reclaim from. Consider this as a longer
+>  		 * term TODO.
+>  		 */
+> -		if (mz->usage_in_excess)
+> -			__mem_cgroup_insert_exceeded(mz->mem, mz, mctz);
+> +		/* If excess == 0, no tree ops */
+> +		__mem_cgroup_insert_exceeded(mz->mem, mz, mctz, excess);
+>  		spin_unlock(&mctz->lock);
+>  		css_put(&mz->mem->css);
+>  		loop++;
+> 
