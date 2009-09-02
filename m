@@ -1,65 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbZIBGQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbZIBGZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755899AbZIBGQz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 02:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbZIBGQz
+	id S1755903AbZIBGZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 02:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755754AbZIBGZ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 02:16:55 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40375 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755754AbZIBGQy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 02:16:54 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Wed, 2 Sep 2009 15:15:00 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [mmotm][PATCH] coalescing uncharge
-Message-Id: <20090902151500.532ffc2f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 02:25:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39437 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753139AbZIBGZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 02:25:27 -0400
+Date: Wed, 2 Sep 2009 06:25:01 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       arjan@linux.intel.com, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, a.p.zijlstra@chello.nl,
+       arjan@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/core] sched: Add wait, sleep and iowait accounting tracepoints
+Message-ID: <tip-feb107de940aeab2ff812662a4ace3bca81e82cf@git.kernel.org>
+Git-Commit-ID: feb107de940aeab2ff812662a4ace3bca81e82cf
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 06:25:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Sep 2009 13:41:14 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+Commit-ID:  feb107de940aeab2ff812662a4ace3bca81e82cf
+Gitweb:     http://git.kernel.org/tip/feb107de940aeab2ff812662a4ace3bca81e82cf
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 23 Jul 2009 20:13:26 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 2 Sep 2009 08:21:26 +0200
 
->  #ifdef CONFIG_SWAP
->  /*
->   * called after __delete_from_swap_cache() and drop "page" account.
-> Index: mmotm-2.6.31-Aug27/include/linux/sched.h
-> ===================================================================
-> --- mmotm-2.6.31-Aug27.orig/include/linux/sched.h
-> +++ mmotm-2.6.31-Aug27/include/linux/sched.h
-> @@ -1540,6 +1540,13 @@ struct task_struct {
->  	unsigned long trace_recursion;
->  #endif /* CONFIG_TRACING */
->  	unsigned long stack_start;
-> +#ifdef CONFIG_CGROUP_MEM_RES_CTLR /* memcg uses this to do batch job */
-> +	struct memcg_batch_info {
-> +		bool do_batch;
-> +		struct mem_cgroup *memcg;
-> +		long pages, memsw;
-> +	} memcg_batch;
-> +#endif
-I wonder I should make this as a pointer
-	struct memcg_batch_info *
+sched: Add wait, sleep and iowait accounting tracepoints
 
-and allocate this dynamically at attach. Hmm. maybe useful for other purpose
-to track per-task memcg behavior.
+Add 3 schedstat tracepoints to help account for wait-time,
+sleep-time and iowait-time.
 
-Regards,
--Kmae
+They can also be used as a perf-counter source to profile tasks
+on these clocks.
 
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/trace/events/sched.h |   95 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/sched_fair.c          |   10 ++++-
+ 2 files changed, 104 insertions(+), 1 deletions(-)
+
+diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
+index 8949bb7..a4c369e 100644
+--- a/include/trace/events/sched.h
++++ b/include/trace/events/sched.h
+@@ -340,6 +340,101 @@ TRACE_EVENT(sched_signal_send,
+ 		  __entry->sig, __entry->comm, __entry->pid)
+ );
+ 
++/*
++ * XXX the below sched_stat tracepoints only apply to SCHED_OTHER/BATCH/IDLE
++ *     adding sched_stat support to SCHED_FIFO/RR would be welcome.
++ */
++
++/*
++ * Tracepoint for accounting wait time (time the task is runnable
++ * but not actually running due to scheduler contention).
++ */
++TRACE_EVENT(sched_stat_wait,
++
++	TP_PROTO(struct task_struct *tsk, u64 delay),
++
++	TP_ARGS(tsk, delay),
++
++	TP_STRUCT__entry(
++		__array( char,	comm,	TASK_COMM_LEN	)
++		__field( pid_t,	pid			)
++		__field( u64,	delay			)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
++		__entry->pid	= tsk->pid;
++		__entry->delay	= delay;
++	)
++	TP_perf_assign(
++		__perf_count(delay);
++	),
++
++	TP_printk("task: %s:%d wait: %Lu [ns]",
++			__entry->comm, __entry->pid,
++			(unsigned long long)__entry->delay)
++);
++
++/*
++ * Tracepoint for accounting sleep time (time the task is not runnable,
++ * including iowait, see below).
++ */
++TRACE_EVENT(sched_stat_sleep,
++
++	TP_PROTO(struct task_struct *tsk, u64 delay),
++
++	TP_ARGS(tsk, delay),
++
++	TP_STRUCT__entry(
++		__array( char,	comm,	TASK_COMM_LEN	)
++		__field( pid_t,	pid			)
++		__field( u64,	delay			)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
++		__entry->pid	= tsk->pid;
++		__entry->delay	= delay;
++	)
++	TP_perf_assign(
++		__perf_count(delay);
++	),
++
++	TP_printk("task: %s:%d sleep: %Lu [ns]",
++			__entry->comm, __entry->pid,
++			(unsigned long long)__entry->delay)
++);
++
++/*
++ * Tracepoint for accounting iowait time (time the task is not runnable
++ * due to waiting on IO to complete).
++ */
++TRACE_EVENT(sched_stat_iowait,
++
++	TP_PROTO(struct task_struct *tsk, u64 delay),
++
++	TP_ARGS(tsk, delay),
++
++	TP_STRUCT__entry(
++		__array( char,	comm,	TASK_COMM_LEN	)
++		__field( pid_t,	pid			)
++		__field( u64,	delay			)
++	),
++
++	TP_fast_assign(
++		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
++		__entry->pid	= tsk->pid;
++		__entry->delay	= delay;
++	)
++	TP_perf_assign(
++		__perf_count(delay);
++	),
++
++	TP_printk("task: %s:%d iowait: %Lu [ns]",
++			__entry->comm, __entry->pid,
++			(unsigned long long)__entry->delay)
++);
++
+ #endif /* _TRACE_SCHED_H */
+ 
+ /* This part must be outside protection */
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 342000b..22da9d9 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -304,6 +304,7 @@ static void update_min_vruntime(struct cfs_rq *cfs_rq)
+ 	}
+ 
+ 	cfs_rq->min_vruntime = max_vruntime(cfs_rq->min_vruntime, vruntime);
++				trace_sched_stat_iowait(tsk, delta);
+ }
+ 
+ /*
+@@ -546,6 +547,11 @@ update_stats_wait_end(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 	schedstat_set(se->wait_sum, se->wait_sum +
+ 			rq_of(cfs_rq)->clock - se->wait_start);
+ 	schedstat_set(se->wait_start, 0);
++
++	if (entity_is_task(se)) {
++		trace_sched_stat_wait(task_of(se),
++			rq_of(cfs_rq)->clock - se->wait_start);
++	}
+ }
+ 
+ static inline void
+@@ -636,8 +642,10 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
+ 		se->sleep_start = 0;
+ 		se->sum_sleep_runtime += delta;
+ 
+-		if (tsk)
++		if (tsk) {
+ 			account_scheduler_latency(tsk, delta >> 10, 1);
++			trace_sched_stat_sleep(tsk, delta);
++		}
+ 	}
+ 	if (se->block_start) {
+ 		u64 delta = rq_of(cfs_rq)->clock - se->block_start;
