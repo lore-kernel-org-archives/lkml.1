@@ -1,60 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZIBWjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZIBWjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbZIBWjX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZIBWjW
+	id S1753714AbZIBWjH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 18:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZIBWjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:39:22 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:52772 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753747AbZIBWjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 18:39:21 -0400
-Date: Wed, 2 Sep 2009 15:37:39 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fsync: wait for data writeout completion before
- calling ->fsync
-Message-ID: <20090902223739.GE7729@mail.oracle.com>
-Mail-Followup-To: Christoph Hellwig <hch@lst.de>, Jan Kara <jack@suse.cz>,
-	linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <1251899966-7316-1-git-send-email-jack@suse.cz>
- <20090902221838.GA5311@lst.de>
+	Wed, 2 Sep 2009 18:39:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56193 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752540AbZIBWjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 18:39:05 -0400
+Message-ID: <4A9EF402.7090800@kernel.org>
+Date: Thu, 03 Sep 2009 07:38:58 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090902221838.GA5311@lst.de>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4A9EF40E.009C:SCFMA4539814,ss=1,fgs=0
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Shane Huang <Shane.Huang@amd.com>
+Subject: Re: [PATCH] pci: separate out pci_add_dynid()
+References: <4A9E38FA.3000506@kernel.org> <20090902161048.GA5405@lackof.org>
+In-Reply-To: <20090902161048.GA5405@lackof.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 22:39:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 12:18:38AM +0200, Christoph Hellwig wrote:
->  - ocfs2_sync_file:
+Hello, Grant.
+
+Grant Grundler wrote:
+>> -/*
+>> - * Dynamic device IDs are disabled for !CONFIG_HOTPLUG
+>> - */
 > 
-> 	does it's own data writeback, but no wait.  probably needs the wait.
+> The comment was removed here. Ok.
 
-	The journal force commit will wait in ordered mode.  In
-writeback mode we currently allow the usual writeback problem.
+Yeap, because dynids as a whole are no longer dependent on
+CONFIG_HOTPLUG.
 
-Joel
+>> +	spin_lock(&drv->dynids.lock);
+>> +	list_add_tail(&dynid->node, &drv->dynids.list);
+>> +	spin_unlock(&drv->dynids.lock);
+>> +
+>> +	get_driver(&drv->driver);
+> 
+> Return value ignored caught my attention... But I can't say if that's wrong.
+> 
+> I'm not finding any documentation on get_driver() in Documentation/ .
+> Looking at drivers/base/driver.c:get_driver() code, I'm confused why this
+> function bothers returning struct device_driver *. My expectation is 
+> the input parameter "drv" is the same as "priv->driver" that gets returned.
+> No?
+
+Yes, it is.
+
+> In any case, if the Docbook comments for get_driver() could explain
+> whatever subtle difference there is, that would be helpful.
+
+It's one of the gripes I've had with the driver core interface.
+Returning the object which had its reference bumped up is nice to do
+do_something(get_driver(driver)); but it should have been made clear
+that the return value always equals the input parameter.  IIRC, in the
+early days of the current driver model and kref, there were intentions
+to make kref somehow more capable and handle the last reference
+problem from within it so that if (get_driver(driver)) test is
+actually meaningful but that turned out to be not too feasible, so we
+ended up with unnecessary if () around driver model get functions.  I
+try to remove them whenever an affected piece of code is being
+modified but there still are plenty left.  I'll update comment on
+driver core get functions.
+
+>> +/*
+>> + * Dynamic device ID manipulation via sysfs is disabled for !CONFIG_HOTPLUG
+>> + */
+> 
+> But same comment added back here. Is this comment correct?
+
+Yes, dynid in general is enabled regardless but sysfs access is
+available iff CONFIG_HOTPLUG.
+
+> If comments are the only thing that change, please add:
+>   Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
+> 
+> This patch seems pretty straight forward.
+
+Thanks.
 
 -- 
-
-"There are some experiences in life which should not be demanded
- twice from any man, and one of them is listening to the Brahms Requiem."
-        - George Bernard Shaw
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+tejun
