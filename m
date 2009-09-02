@@ -1,62 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753545AbZIBVaU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbZIBVhB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753545AbZIBVaU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 17:30:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753516AbZIBVaT
+	id S1751941AbZIBVhB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 17:37:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbZIBVhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 17:30:19 -0400
-Received: from relay2-d.mail.gandi.net ([217.70.183.194]:58501 "EHLO
-	relay2-d.mail.gandi.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753515AbZIBVaT (ORCPT
+	Wed, 2 Sep 2009 17:37:00 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:59101 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbZIBVg7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 17:30:19 -0400
-Date: Wed, 2 Sep 2009 14:30:43 -0700
-From: Josh Triplett <josh@joshtriplett.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, Anton Blanchard <anton@samba.org>,
-       Tim Pepper <lnxninja@linux.vnet.ibm.com>,
-       Paul McKenney <paulmck@linux.vnet.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jamey Sharp <jamey@minilop.net>
-Subject: Re: [RFC PATCH] Turn off the tick even when not idle
-Message-ID: <20090902213000.GA7137@josh-work.beaverton.ibm.com>
-References: <20090901154327.GA10024@feather>
- <20090902200125.GA1851@ucw.cz>
+	Wed, 2 Sep 2009 17:36:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ruBTGPn2pJvZJX+eXgOaqc7a0LMAh1EkxHMpLla8r3rYaXsjQxcJwwEAieuReZAjlY
+         nUj7efi6O5ncBvpJtcObnLQWHtr934iFt6xNLBVl2/5JWx+HEmq5bSNpbOPXYk5ColZQ
+         1lMcRqDMWJ3RJ6bhI7LaA7eGLfRCV5GsS1hVQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090902200125.GA1851@ucw.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090902172438.GA1190@rakim.wolfsonmicro.main>
+References: <1251756258-23917-1-git-send-email-linus.walleij@stericsson.com>
+	 <20090902172438.GA1190@rakim.wolfsonmicro.main>
+Date: Wed, 2 Sep 2009 23:37:00 +0200
+Message-ID: <63386a3d0909021437pe94b5a5m20a63fbad396cd13@mail.gmail.com>
+Subject: Re: [PATCH 1/2] AB3100 regulator support v3
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Linus Walleij <linus.walleij@stericsson.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Russell King <linux@arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 10:01:26PM +0200, Pavel Machek wrote:
-> Hi!
-> 
-> > When a process does some number crunching for a while, without involving
-> > the kernel, the kernel still interrupts it HZ times per second to figure
-> > out if it has any work to do.  With a system dedicated to doing such
-> > number crunching, the answer will almost always come up "no"; however,
-> > the kernel takes a while figuring out all the "no"s from various
-> > subsystems, every timer tick.  On my system, the timer tick takes about
-> > 80us, every 1/HZ seconds; that represents a significant overhead.  80us
-> > out of every 1ms, for instance, means 8% overhead.  Furthermore, the
-> > time taken varies, and the timer interrupts lead to jitter in the
-> > performance of the number crunching.
-> 
-> 8% overhead on hz=1000 is quite high --- what hw is that?
+2009/9/2 Mark Brown <broonie@opensource.wolfsonmicro.com>:
 
-32-bit x86, ThinkPad T60p (work laptop).  I've observed similar
-latencies on x86-64, and others have observed them on 64-bit powerpc.
+> This looks basically good - my only concern is if the initialisation
+> data supplied for the regulators is just setting up the things that can
+> be set up via the API or if there's other stuff going on (this was my
+> reason for the question I asked the other day).  If there's other stuff
+> being configured then I'm happy with the patch modulo the static thing.
 
-On top of that, almost all of that 80us consists of variations on "Do I
-have any work to do?  No?  OK then.".
+OK so this array:
 
-> You should be able to get similar results with HZ=1, right?
++       /* Set up regulators */
++       for (i = 0; i < ARRAY_SIZE(ab3100_reg_init_order); i++) {
++               err = ab3100_set_register_interruptible(ab3100,
++                                       ab3100_reg_init_order[i],
++                                       plfdata->reg_initvals[i]);
 
-Possibly, yes.  But I want good responsiveness when the system *does*
-have work to do.
+The initvals are one-byte registers for each regulator plus 2 bytes
+of sleep settings for LDO E and BUCK respectively.
 
-- Josh Triplett
+The sleep settings are driven by two HW lines, so a regulator
+can react by suspending the regulator on line A or B disjunct
+either (logical ||) or both (logical &&). (You don't alter that in
+runtime so no API has been developed here.)
+
+Apart from that it's just default-zero undefined bits and default
+voltage and default on/off setting. It is mainly written here so
+that we have a known state, eventhough the boot loader should
+have set them up (thus boot_on for some of them). But I like
+to be on the safe side. If you for example download the kernel
+through something like JTAG you may not have executed the
+boot loader, and the reset power-on defaults can be bad,
+for example have regulators enabled that should not be.
+
+Currently the framework will enable the .boot_on regulators
+effectively setting this one bit right for all regulators.
+
+For *some* of the boot_on regulators I could also use .apply_uV
+to set the voltage bits of course, but only if min_uV
+and max_uV is the same which is not the case for all
+regulators that are default on here.
+
+And I don't see any way for the core (set_machine_constraints)
+to set regulators to *off* by default if they happen to be on at
+boot.
+
+So my conclusion is that the array of initial settings is really
+needed to:
+
+- Set sleep config bits (you don't want to alter this runtime BTW)
+- Set some default voltage levels on variable regulators
+- Set some regulators default off
+- Thus establish a known initial state
+
+OK?
+
+Yours,
+Linus Walleij
