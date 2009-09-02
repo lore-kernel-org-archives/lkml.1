@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755906AbZIBHBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbZIBHQQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755906AbZIBHBg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 03:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbZIBHBg
+	id S1755661AbZIBHQQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 03:16:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZIBHQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 03:01:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59167 "EHLO hera.kernel.org"
+	Wed, 2 Sep 2009 03:16:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59871 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755708AbZIBHBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 03:01:34 -0400
-Date: Wed, 2 Sep 2009 07:01:00 GMT
+	id S1753017AbZIBHQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 03:16:14 -0400
+Date: Wed, 2 Sep 2009 07:15:46 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        arjan@linux.intel.com, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
@@ -21,23 +21,23 @@ In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
 Subject: [tip:sched/core] sched: Add wait, sleep and iowait accounting tracepoints
-Message-ID: <tip-0486aef5e10a6b2f83c16cff1ff1b13ba5375ca9@git.kernel.org>
-Git-Commit-ID: 0486aef5e10a6b2f83c16cff1ff1b13ba5375ca9
+Message-ID: <tip-768d0c27226e6587cad2fcf543f9711da3f3774e@git.kernel.org>
+Git-Commit-ID: 768d0c27226e6587cad2fcf543f9711da3f3774e
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 07:01:01 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 07:15:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0486aef5e10a6b2f83c16cff1ff1b13ba5375ca9
-Gitweb:     http://git.kernel.org/tip/0486aef5e10a6b2f83c16cff1ff1b13ba5375ca9
+Commit-ID:  768d0c27226e6587cad2fcf543f9711da3f3774e
+Gitweb:     http://git.kernel.org/tip/768d0c27226e6587cad2fcf543f9711da3f3774e
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
 AuthorDate: Thu, 23 Jul 2009 20:13:26 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 2 Sep 2009 08:44:09 +0200
+CommitDate: Wed, 2 Sep 2009 09:12:18 +0200
 
 sched: Add wait, sleep and iowait accounting tracepoints
 
@@ -52,13 +52,14 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Frederic Weisbecker <fweisbec@gmail.com>
 Cc: Arjan van de Ven <arjan@linux.intel.com>
 LKML-Reference: <new-submission>
+[ build fix for the !CONFIG_SCHEDSTATS case ]
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
  include/trace/events/sched.h |   95 ++++++++++++++++++++++++++++++++++++++++++
- kernel/sched_fair.c          |   10 ++++-
- 2 files changed, 104 insertions(+), 1 deletions(-)
+ kernel/sched_fair.c          |   12 +++++-
+ 2 files changed, 106 insertions(+), 1 deletions(-)
 
 diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
 index 8949bb7..a4c369e 100644
@@ -167,22 +168,24 @@ index 8949bb7..a4c369e 100644
  
  /* This part must be outside protection */
 diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 471fa28..0e4d6c5 100644
+index 471fa28..2ff850f 100644
 --- a/kernel/sched_fair.c
 +++ b/kernel/sched_fair.c
-@@ -546,6 +546,11 @@ update_stats_wait_end(struct cfs_rq *cfs_rq, struct sched_entity *se)
+@@ -546,6 +546,13 @@ update_stats_wait_end(struct cfs_rq *cfs_rq, struct sched_entity *se)
  	schedstat_set(se->wait_sum, se->wait_sum +
  			rq_of(cfs_rq)->clock - se->wait_start);
  	schedstat_set(se->wait_start, 0);
 +
++#ifdef CONFIG_SCHEDSTATS
 +	if (entity_is_task(se)) {
 +		trace_sched_stat_wait(task_of(se),
 +			rq_of(cfs_rq)->clock - se->wait_start);
 +	}
++#endif
  }
  
  static inline void
-@@ -636,8 +641,10 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
+@@ -636,8 +643,10 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
  		se->sleep_start = 0;
  		se->sum_sleep_runtime += delta;
  
@@ -194,7 +197,7 @@ index 471fa28..0e4d6c5 100644
  	}
  	if (se->block_start) {
  		u64 delta = rq_of(cfs_rq)->clock - se->block_start;
-@@ -655,6 +662,7 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
+@@ -655,6 +664,7 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
  			if (tsk->in_iowait) {
  				se->iowait_sum += delta;
  				se->iowait_count++;
