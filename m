@@ -1,170 +1,242 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbZIBGmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932189AbZIBGqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932195AbZIBGmO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 02:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932185AbZIBGmO
+	id S932189AbZIBGqk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 02:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753119AbZIBGqj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 02:42:14 -0400
-Received: from idcmail-mo2no.shaw.ca ([64.59.134.9]:38266 "EHLO
-	idcmail-mo2no.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932180AbZIBGmN (ORCPT
+	Wed, 2 Sep 2009 02:46:39 -0400
+Received: from mga03.intel.com ([143.182.124.21]:65498 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751706AbZIBGqi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 02:42:13 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=Mv5P-v-zDEQA:10 a=w4iE+TBsmj5y1WloLYF40w==:17 a=VwQbUJbxAAAA:8
- a=W0vUJOdyAAAA:8 a=TqhozWMB9wJ85H5J9cAA:9 a=cshw5NVX0xuyGMYNsUcA:7
- a=VnnnA3Hh3w0UpA8g967sjDQIDl8A:4 a=x8gzFH9gYPwA:10 a=U62fhAwekXMA:10
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: linux-kernel@vger.kernel.org
-Subject: Re: sata exception frozen timeout?
-Date: Wed, 2 Sep 2009 00:42:14 -0600
-User-Agent: KMail/1.12.90 (Linux/2.6.31-rc5; KDE/4.3.64; x86_64; svn-1004284; 2009-07-29)
-References: <200909010316.58715.tfjellstrom@shaw.ca> <4A9DF566.50805@gmail.com>
-In-Reply-To: <4A9DF566.50805@gmail.com>
+	Wed, 2 Sep 2009 02:46:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="183120353"
+From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: "mst@redhat.com" <mst@redhat.com>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>
+Date: Wed, 2 Sep 2009 14:45:38 +0800
+Subject: RE: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
+Thread-Topic: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
+Thread-Index: AcorHgcW3N7OP6p1T5+Dk7BvZI6PUQAdZnfg
+Message-ID: <C85CEDA13AB1CF4D9D597824A86D2B9006AEC03200@PDSMSX501.ccr.corp.intel.com>
+References: <C85CEDA13AB1CF4D9D597824A86D2B9006AEB94861@PDSMSX501.ccr.corp.intel.com>
+ <20090901090518.1193e412@nehalam>
+In-Reply-To: <20090901090518.1193e412@nehalam>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909020042.14663.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue September 1 2009, Robert Hancock wrote:
-> On 09/01/2009 03:16 AM, Thomas Fjellstrom wrote:
-> > I've recently started seeing the following messages from a new WD Green
-> > drive, not long after I had to RMA a Seagate drive for a strange (but
-> > different) error. Highlights from my dmesg include:
-> >
-> > [59634.792101] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-> > frozen
-> > [59634.792121] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
-> > [59634.792125]          res 40/00:00:00:4f:c2/00:00:00:00:00/00 Emask 0x4
-> > (timeout)
-> > [59634.792133] ata6.00: status: { DRDY }
-> > [59634.792145] ata6: hard resetting link
-> > [59635.277695] ata6: softreset failed (device not ready)
-> > [59635.277705] ata6: failed due to HW bug, retry pmp=0
-> > [59635.441570] ata6: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> > [59635.454030] ata6.00: configured for UDMA/133
-> > [59635.454068] ata6: EH complete
-> > ...
-> > [59713.792224] ata6.00: NCQ disabled due to excessive errors
-> > [59713.792236] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-> > frozen
-> > [59713.792254] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
-> > [59713.792257]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
-> > (timeout)
-> > [59713.792264] ata6.00: status: { DRDY }
-> > ...
-> > [63484.781764] ata6: hard resetting link
-> > [63485.264204] ata6: softreset failed (device not ready)
-> > [63485.264214] ata6: failed due to HW bug, retry pmp=0
-> > [63485.428205] ata6: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> > [63485.440499] ata6.00: configured for UDMA/100
-> > [63485.440536] ata6: EH complete
-> > [63493.780182] ata6.00: limiting speed to UDMA/33:PIO4
-> > [63493.780194] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6
-> > frozen
-> > [63493.780211] ata6.00: cmd b0/d8:00:00:4f:c2/00:00:00:00:00/00 tag 0
-> > [63493.780214]          res 40/00:ff:00:00:00/00:00:00:00:00/00 Emask 0x4
-> > (timeout)
-> > [63493.780221] ata6.00: status: { DRDY }
-> > ...
-> > [99318.070669] ata6.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x0
-> > [99318.070679] ata6.00: irq_stat 0x40000001
-> > [99318.070698] ata6.00: cmd 25/00:00:30:bd:01/00:01:1b:00:00/e0 tag 0 dma
-> > 131072 in
-> > [99318.070701]          res 41/04:ef:30:bd:01/00:00:1b:00:00/e0 Emask 0x1
-> > (device error)
-> > [99318.070709] ata6.00: status: { DRDY ERR }
-> > [99318.070714] ata6.00: error: { ABRT }
-> > [99318.082588] ata6.00: configured for UDMA/33
-> > [99318.082612] ata6: EH complete
-> > ...
-> > [99339.780358] ata6: hard resetting link
-> > [99349.785096] ata6: softreset failed (device not ready)
-> > [99349.785108] ata6: hard resetting link
-> > [99359.789033] ata6: softreset failed (device not ready)
-> > [99359.789045] ata6: hard resetting link
-> > [99370.352916] ata6: link is slow to respond, please be patient (ready=0)
-> > ..
-> > [99400.016925] ata6: softreset failed (device not ready)
-> > [99400.016936] ata6: reset failed, giving up
-> > [99400.016942] ata6.00: disabled
-> > [99400.016986] ata6: EH complete
-> > [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
-> > [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> > driverbyte=DRIVER_OK
-> > [99400.017021] sd 5:0:0:0: [sdf] Unhandled error code
-> > [99400.017026] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> > driverbyte=DRIVER_OK
-> > [99400.017035] end_request: I/O error, dev sdf, sector 453099568
-> > [99400.017045] Buffer I/O error on device md1, logical block 113274390
-> > [99400.017058] Buffer I/O error on device md1, logical block 113274391
-> > [99400.017064] Buffer I/O error on device md1, logical block 113274392
-> > [99400.017070] Buffer I/O error on device md1, logical block 113274393
-> > [99400.017076] Buffer I/O error on device md1, logical block 113274394
-> > [99400.017082] Buffer I/O error on device md1, logical block 113274395
-> > [99400.017088] Buffer I/O error on device md1, logical block 113274396
-> > [99400.017094] Buffer I/O error on device md1, logical block 113274397
-> > [99400.017100] Buffer I/O error on device md1, logical block 113274398
-> > [99400.017106] Buffer I/O error on device md1, logical block 113274399
-> > [99400.017115] sd 5:0:0:0: [sdf] Unhandled error code
-> > [99400.017123] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> > driverbyte=DRIVER_OK
-> > [99400.017133] end_request: I/O error, dev sdf, sector 453099824
-> > [99400.017310] sd 5:0:0:0: [sdf] Unhandled error code
-> > [99400.017315] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> > driverbyte=DRIVER_OK
-> > [99400.017322] end_request: I/O error, dev sdf, sector 453099568
-> > [99400.017383] program smartctl is using a deprecated SCSI ioctl, please
-> > convert it to SG_IO
-> > [99400.017456] program smartctl is using a deprecated SCSI ioctl, please
-> > convert it to SG_IO
-> > [99400.018822] sd 5:0:0:0: [sdf] Unhandled error code
-> > [99400.018829] sd 5:0:0:0: [sdf] Result: hostbyte=DID_BAD_TARGET
-> > driverbyte=DRIVER_OK
-> > [99400.018838] end_request: I/O error, dev sdf, sector 453099568
-> >
-> > and a bunch more end_request errors. This happens fairly reliably after a
-> > day or so of being online. I try and start to play some music or watch a
-> > video off the array (2xWD Green on md raid0) and it fails. The file
-> > system is mostly read only right now (that is I don't write to it) so I
-> > haven't manged to loose any data that I know of, and the fs seems to be
-> > fine. A reboot fixes the errors and the disk and fs work fine for a day
-> > or two before these errors show up again.
-> >
-> > I'm currently running 2.6.31-rc5 from kernel.org. What would cause these
-> > errors?
->
-> This sort of thing is quite often a hardware problem. You can see that
-> commands start timing out and then the controller seems to mostly lose
-> communication with the drive (the resets failing). In particular, it
-> seems an overloaded power supply can cause these sort of symptoms. (It
-> seems like a lot of the time this happens with people with multiple hard
-> drives installed, either the power supply just isn't powerful enough to
-> handle them all, or there's too many drives connected to one cable and
-> the voltage drop is too high under heavy load.)
+>* Code is easier to review than bullet points.
 
-I doubt that's the problem, this is an almost brand new 650W and there's only 
-2 drives per cable, and each of the 3 12v rails has 19A which should be more 
-than enough for all 6 drives, even if all of them were on the same rail 
-(shouldn't be, 5v is 24A, so should be enough for just about anything).
+	Yes. We'd send the code soon.
 
-Were you talking about the softreset's? That seems to be a common AMD SB600+ 
-error. At least it happens with both of my AMD boards, a SB700 and a SB750. 
-Linux eventually figures out a way to initialize the sata ports, but it sure 
-takes a while if you have 10+ drives connected.
+>* Direct I/O has to be safe when page is shared by multiple threads,
+> and has to be non-blocking since network I/O can take indeterminately
+> long (think big queue's, tunneling, ...)
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+In the situation, one queue pair NIC is assigned to only one guest, the pages 
+are locked and a KVM guest will not swapped out.
+
+
+>* In the past attempts at Direct I/O on network have always had SMP
+> TLB issues. The page has to be flipped or marked as COW on all CPU's
+> and the cost of the Inter Processor Interrupt to steal the page has
+> been slower than copying
+
+It may be, we have not thought about this more . Thanks.
+
+Thanks
+Xiaohui
+
+-----Original Message-----
+From: Stephen Hemminger [mailto:shemminger@vyatta.com] 
+Sent: Wednesday, September 02, 2009 12:05 AM
+To: Xin, Xiaohui
+Cc: mst@redhat.com; netdev@vger.kernel.org; virtualization@lists.linux-foundation.org; kvm@vger.kernel.org; linux-kernel@vger.kernel.org; mingo@elte.hu; linux-mm@kvack.org; akpm@linux-foundation.org; hpa@zytor.com; gregory.haskins@gmail.com
+Subject: Re: [RFC] Virtual Machine Device Queues(VMDq) support on KVM
+
+On Tue, 1 Sep 2009 14:58:19 +0800
+"Xin, Xiaohui" <xiaohui.xin@intel.com> wrote:
+
+>               [RFC] Virtual Machine Device Queues (VMDq) support on KVM
+> 
+> Network adapter with VMDq technology presents multiple pairs of tx/rx queues,
+> and renders network L2 sorting mechanism based on MAC addresses and VLAN tags
+> for each tx/rx queue pair. Here we present a generic framework, in which network
+> traffic to/from a tx/rx queue pair can be directed from/to a KVM guest without
+> any software copy.
+> 
+> Actually this framework can apply to traditional network adapters which have
+> just one tx/rx queue pair. And applications using the same user/kernel interface
+> can utilize this framework to send/receive network traffic directly thru a tx/rx
+> queue pair in a network adapter.
+> 
+> We use virtio-net architecture to illustrate the framework.
+> 
+> 
+> |--------------------|     pop               add_buf    |----------------|
+> |    Qemu process    |  <---------    TX   <----------  | Guest Kernel   |
+> |                    |  --------->         ---------->  |                |
+> |    Virtio-net      |     push              get_buf    |                |
+> |  (Backend service) |  --------->    RX   ---------->  |  Virtio-net    |
+> |                    |  <---------         <----------  |    driver      |
+> |                    |     push              get_buf    |                |
+> |--------------------|                                  |----------------|
+>                    |
+>                    |
+>                    | AIO (read & write) combined with Direct I/O
+>                    |   (which substitute synced file operations)
+> |-----------------------------------------------------------------------|
+> |     Host kernel  | read: copy-less with directly mapped user          |
+> |                  |       space to kernel, payload directly DMAed      |
+> |                  |       into user space                              |
+> |                  | write: copy-less with directly mapped user         |
+> |                  |       space to kernel, payload directly hooked     |
+> |                  |       to a skb                                     |
+> |                  |                                                    |
+> |  (a likely       |                                                    |
+> |   queue pair     |                                                    |
+> |   instance)      |                                                    |
+> |      |           |                                                    |
+> | NIC driver <-->  TUN/TAP driver                                       |
+> |-----------------------------------------------------------------------|
+>        |
+>        |
+>    traditional adapter or a tx/rx queue pair
+> 
+> The basic idea is to utilize the kernel Asynchronous I/O combined with Direct
+> I/O to implements copy-less TUN/TAP device. AIO and Direct I/O is not new to
+> kernel, we still can see it in SCSI tape driver.
+> 
+> With traditional file operations, a copying of payload contents from/to the
+> kernel DMA address to/from a user buffer is needed. That's what the copying we
+> want to save.
+> 
+> The proposed framework is like this:
+> A TUN/TAP device is bound to a traditional NIC adapter or a tx/rx queue pair in
+> host side. KVM virto-net Backend service, the user space program submits
+> asynchronous read/write I/O requests to the host kernel through TUN/TAP device.
+> The requests are corresponding to the vqueue elements include both transmission
+> & receive. They can be queued in one AIO request and later, the completion will
+> be notified through the underlying packets tx/rx processing of the rx/tx queue
+> pair.
+> 
+> Detailed path:
+> 
+> To guest Virtio-net driver, packets receive corresponding to asynchronous read
+> I/O requests of Backend service.
+> 
+> 1) Guest Virtio-net driver provides header and payload address through the
+> receive vqueue to Virtio-net backend service.
+> 
+> 2) Virtio-net backend service encapsulates multiple vqueue elements into
+> multiple AIO control blocks and composes them into one AIO read request.
+> 
+> 3) Virtio-net backend service uses io_submit() syscall to pass the request to
+> the TUN/TAP device.
+> 
+> 4) Virtio-net backend service uses io_getevents() syscall to check the
+> completion of the request.
+> 
+> 5) The TUN/TAP driver receives packets from the queue pair of NIC, and prepares
+> for Direct I/O.
+>    A modified NIC driver may render a skb which header is allocated in host
+> kernel, but the payload buffer is directly mapped from user space buffer which
+> are rendered through the AIO request by the Backend service. get_user_pages()
+> may do this. For one AIO read request, the TUN/TAP driver maintains a list for
+> the directly mapped buffers, and a NIC driver tries to get the buffers as
+> payload buffer to compose the new skbs. Of course, if getting the buffers
+> fails, then kernel allocated buffers are used.
+> 
+> 6) Modern NIC cards now mostly have the header split feature. The NIC queue
+> pair then may directly DMA the payload into the user spaces mapped payload
+> buffers.
+> Thus a zero-copy for payload is implemented in packet receiving.
+> 
+> 7) The TUN/TAP driver manually copy the host header to space user mapped.
+> 
+> 8) aio_complete() to notify the Virtio-net backend service for io_getevents().
+> 
+> 
+> To guest Virtio-net driver, packets send corresponding to asynchronous write
+> I/O requests of backend. The path is similar to packet receive.
+> 
+> 1) Guest Virtio-net driver provides header and payload address filled with
+> contents through the transmit vqueue to Virtio-net backed service.
+> 
+> 2) Virtio-net backend service encapsulates the vqueue elements into multiple
+> AIO control blocks and composes them into one AIO write request.
+> 
+> 3) Virtio-net backend service uses the io_submit() syscall to pass the
+> requests to the TUN/TAP device.
+> 
+> 4) Virtio-net backend service uses io_getevents() syscall to check the request
+> completion.
+> 
+> 5) The TUN/TAP driver gets the write requests and allocates skbs for it. The
+> header contents are copied into the skb header. The directly mapped user space
+> buffer is easily hooked into skb. Thus a zero copy for payload is implemented
+> in packet sending.
+> 
+> 6) aio_complete() to notify the Virtio-net backend service for io_getevents().
+> 
+> The proposed framework is described as above.
+> 
+> Consider the modifications to the kernel and qemu:
+> 
+> To kernel:
+> 1) The TUN/TAP driver may be modified a lot to implement AIO device operations
+> and to implement directly user space mapping into kernel. Code to maintain the
+> directly mapped user buffers should be in. It's just a modification for driver.
+> 
+> 2) The NIC driver may be modified to compose skb differently and slightly data
+> structure change to add user directly mapped buffer pointer.
+> Here, maybe it's better for a NIC driver to present an interface for an rx/tx
+> queue pair instance which will also apply to traditional hardware, the kernel
+> interface should not be changed to make the other components happy.
+> The abstraction is useful, though it is not needed immediately here.
+> 
+> 3) The skb shared info structure may be modified a little to contain the user
+> directly mapped info.
+> 
+> To Qemu:
+> 1) The Virtio-net backend service may be modified to handle AIO read/write
+> requests from the vqueues.
+> 2) Maybe a separate pthread to handle the AIO request triggering is needed.
+> 
+> Any comments are appreciated here.
+
+* Code is easier to review than bullet points.
+
+* Direct I/O has to be safe when page is shared by multiple threads,
+  and has to be non-blocking since network I/O can take indeterminately
+  long (think big queue's, tunneling, ...)
+
+* In the past attempts at Direct I/O on network have always had SMP
+  TLB issues. The page has to be flipped or marked as COW on all CPU's
+  and the cost of the Inter Processor Interrupt to steal the page has
+  been slower than copying
+
 
 
 -- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
