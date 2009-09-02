@@ -1,76 +1,236 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZIBJU2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754278AbZIBJVZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZIBJU2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 05:20:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753351AbZIBJU2
+	id S1754278AbZIBJVZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 05:21:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbZIBJVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 05:20:28 -0400
-Received: from www.tglx.de ([62.245.132.106]:51459 "EHLO www.tglx.de"
+	Wed, 2 Sep 2009 05:21:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40923 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752864AbZIBJU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 05:20:27 -0400
-Date: Wed, 2 Sep 2009 11:19:17 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: WARN_ON: fs/buffer.c:1152 mark_buffer_dirty in 2.6.31-rc8-git
-Message-ID: <alpine.LFD.2.00.0909021113330.2797@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1753386AbZIBJVY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 05:21:24 -0400
+Message-ID: <4A9E38FA.3000506@kernel.org>
+Date: Wed, 02 Sep 2009 18:20:58 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Shane Huang <Shane.Huang@amd.com>
+Subject: [PATCH] pci: separate out pci_add_dynid()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 09:21:01 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The warning in fs/buffer.c 1152 triggers with the latest git on my
-laptop when I remove an USB stick. Never seen that before.
+Separate out pci_add_dynid() from store_new_id() and export it so that
+in-kernel code can add PCI IDs dynamically.  As the function will be
+available regardless of HOTPLUG, put it and pull pci_free_dynids()
+outside of CONFIG_HOTPLUG.
 
-Thanks,
+This will be used by pci-stub to initialize initial IDs via module
+param.
 
-	tglx
+Signed-off-by: Tejun Heo <tj@kernel.org>
 ---
+ drivers/pci/pci-driver.c |  119 +++++++++++++++++++++++++++++------------------
+ include/linux/pci.h      |    5 +
+ 2 files changed, 79 insertions(+), 45 deletions(-)
 
-WARNING: at /home/tglx/work/kernel/git/linux-2.6/fs/buffer.c:1152 mark_buffer_dirty+0x3f/0xa5()
-Hardware name: 7661W1P
-Modules linked in: ext2 option usbserial usb_storage fuse ipt_MASQUERADE iptable_nat nf_nat sco bridge stp llc bnep l2cap bluetooth sunrpc ipv6 cpufreq_ondemand acpi_cpufreq freq_table dm_multipath kvm_intel kvm uinput snd_hda_codec_analog arc4 ecb iwlagn firewire_ohci firewire_core snd_hda_intel yenta_socket iwlcore crc_itu_t joydev snd_hda_codec rsrc_nonstatic mac80211 snd_hwdep snd_pcm iTCO_wdt i2c_i801 pcspkr snd_timer iTCO_vendor_support snd thinkpad_acpi cfg80211 soundcore hwmon snd_page_alloc e1000e rfkill wmi i915 drm i2c_algo_bit i2c_core video output [last unloaded: microcode]
-Pid: 26, comm: khubd Not tainted 2.6.31-rc8 #1
-Call Trace:
- [<ffffffff810610ff>] warn_slowpath_common+0x8d/0xbb
- [<ffffffff81061154>] warn_slowpath_null+0x27/0x3d
- [<ffffffff81150c16>] mark_buffer_dirty+0x3f/0xa5
- [<ffffffffa04420d5>] ext2_sync_fs+0x90/0xba [ext2]
- [<ffffffff8114e383>] __sync_filesystem+0x65/0x90
- [<ffffffff8114e5d0>] sync_filesystem+0x5a/0x75
- [<ffffffff81157667>] fsync_bdev+0x37/0x6c
- [<ffffffff8124b1aa>] invalidate_partition+0x34/0x65
- [<ffffffff8118ad52>] del_gendisk+0x4a/0x10d
- [<ffffffff81347465>] sd_remove+0x5f/0xb3
- [<ffffffff81326db5>] __device_release_driver+0x79/0xd5
- [<ffffffff81326f18>] device_release_driver+0x36/0x59
- [<ffffffff81325e59>] bus_remove_device+0xc5/0x10a
- [<ffffffff81323896>] device_del+0x141/0x1a6
- [<ffffffff81342aba>] __scsi_remove_device+0x5c/0xb1
- [<ffffffff8133f4cf>] scsi_forget_host+0x59/0x91
- [<ffffffff813379b0>] scsi_remove_host+0x93/0x123
- [<ffffffffa042b0d6>] quiesce_and_remove_host+0x72/0xcf [usb_storage]
- [<ffffffffa042b241>] usb_stor_disconnect+0x2c/0x4f [usb_storage]
- [<ffffffff8138ce3c>] usb_unbind_interface+0x7a/0x117
- [<ffffffff81326db5>] __device_release_driver+0x79/0xd5
- [<ffffffff81326f18>] device_release_driver+0x36/0x59
- [<ffffffff81325e59>] bus_remove_device+0xc5/0x10a
- [<ffffffff81323896>] device_del+0x141/0x1a6
- [<ffffffff81389498>] usb_disable_device+0xdd/0x1fb
- [<ffffffff81382b40>] usb_disconnect+0xfa/0x1ca
- [<ffffffff813844bd>] hub_events+0x639/0x11e0
- [<ffffffff813850aa>] hub_thread+0x46/0x1d0
- [<ffffffff8107d6f3>] ? autoremove_wake_function+0x0/0x5f
- [<ffffffff81385064>] ? hub_thread+0x0/0x1d0
- [<ffffffff8107d270>] kthread+0xa0/0xa8
- [<ffffffff8101409a>] child_rip+0xa/0x20
- [<ffffffff810139fd>] ? restore_args+0x0/0x30
- [<ffffffff8107d1d0>] ? kthread+0x0/0xa8
- [<ffffffff81014090>] ? child_rip+0x0/0x20
----[ end trace ccd8dc4f063ddca9 ]---
+Index: ata/drivers/pci/pci-driver.c
+===================================================================
+--- ata.orig/drivers/pci/pci-driver.c
++++ ata/drivers/pci/pci-driver.c
+@@ -19,37 +19,98 @@
+ #include <linux/cpu.h>
+ #include "pci.h"
 
+-/*
+- * Dynamic device IDs are disabled for !CONFIG_HOTPLUG
+- */
+-
+ struct pci_dynid {
+ 	struct list_head node;
+ 	struct pci_device_id id;
+ };
 
+-#ifdef CONFIG_HOTPLUG
++/**
++ * pci_add_dynid - add a new PCI device ID to this driver and re-probe devices
++ * @drv: target pci driver
++ * @vendor: PCI vendor ID
++ * @device: PCI device ID
++ * @subvendor: PCI subvendor ID
++ * @subdevice: PCI subdevice ID
++ * @class: PCI class
++ * @class_mask: PCI class mask
++ * @driver_data: private driver data
++ *
++ * Adds a new dynamic pci device ID to this driver and causes the
++ * driver to probe for all devices again.  @drv must have been
++ * registered prior to calling this function.
++ *
++ * CONTEXT:
++ * Does GFP_KERNEL allocation.
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++int pci_add_dynid(struct pci_driver *drv,
++		  unsigned int vendor, unsigned int device,
++		  unsigned int subvendor, unsigned int subdevice,
++		  unsigned int class, unsigned int class_mask,
++		  unsigned long driver_data)
++{
++	struct pci_dynid *dynid;
++	int retval;
++
++	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
++	if (!dynid)
++		return -ENOMEM;
++
++	dynid->id.vendor = vendor;
++	dynid->id.device = device;
++	dynid->id.subvendor = subvendor;
++	dynid->id.subdevice = subdevice;
++	dynid->id.class = class;
++	dynid->id.class_mask = class_mask;
++	dynid->id.driver_data = driver_data;
+
++	spin_lock(&drv->dynids.lock);
++	list_add_tail(&dynid->node, &drv->dynids.list);
++	spin_unlock(&drv->dynids.lock);
++
++	get_driver(&drv->driver);
++	retval = driver_attach(&drv->driver);
++	put_driver(&drv->driver);
++
++	return retval;
++}
++
++static void pci_free_dynids(struct pci_driver *drv)
++{
++	struct pci_dynid *dynid, *n;
++
++	spin_lock(&drv->dynids.lock);
++	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
++		list_del(&dynid->node);
++		kfree(dynid);
++	}
++	spin_unlock(&drv->dynids.lock);
++}
++
++/*
++ * Dynamic device ID manipulation via sysfs is disabled for !CONFIG_HOTPLUG
++ */
++#ifdef CONFIG_HOTPLUG
+ /**
+- * store_new_id - add a new PCI device ID to this driver and re-probe devices
++ * store_new_id - sysfs frontend to pci_add_dynid()
+  * @driver: target device driver
+  * @buf: buffer for scanning device ID data
+  * @count: input size
+  *
+- * Adds a new dynamic pci device ID to this driver,
+- * and causes the driver to probe for all devices again.
++ * Allow PCI IDs to be added to an existing driver via sysfs.
+  */
+ static ssize_t
+ store_new_id(struct device_driver *driver, const char *buf, size_t count)
+ {
+-	struct pci_dynid *dynid;
+ 	struct pci_driver *pdrv = to_pci_driver(driver);
+ 	const struct pci_device_id *ids = pdrv->id_table;
+ 	__u32 vendor, device, subvendor=PCI_ANY_ID,
+ 		subdevice=PCI_ANY_ID, class=0, class_mask=0;
+ 	unsigned long driver_data=0;
+ 	int fields=0;
+-	int retval=0;
++	int retval;
+
+ 	fields = sscanf(buf, "%x %x %x %x %x %x %lx",
+ 			&vendor, &device, &subvendor, &subdevice,
+@@ -72,27 +133,8 @@ store_new_id(struct device_driver *drive
+ 			return retval;
+ 	}
+
+-	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
+-	if (!dynid)
+-		return -ENOMEM;
+-
+-	dynid->id.vendor = vendor;
+-	dynid->id.device = device;
+-	dynid->id.subvendor = subvendor;
+-	dynid->id.subdevice = subdevice;
+-	dynid->id.class = class;
+-	dynid->id.class_mask = class_mask;
+-	dynid->id.driver_data = driver_data;
+-
+-	spin_lock(&pdrv->dynids.lock);
+-	list_add_tail(&dynid->node, &pdrv->dynids.list);
+-	spin_unlock(&pdrv->dynids.lock);
+-
+-	if (get_driver(&pdrv->driver)) {
+-		retval = driver_attach(&pdrv->driver);
+-		put_driver(&pdrv->driver);
+-	}
+-
++	retval = pci_add_dynid(pdrv, vendor, device, subvendor, subdevice,
++			       class, class_mask, driver_data);
+ 	if (retval)
+ 		return retval;
+ 	return count;
+@@ -145,19 +187,6 @@ store_remove_id(struct device_driver *dr
+ }
+ static DRIVER_ATTR(remove_id, S_IWUSR, NULL, store_remove_id);
+
+-static void
+-pci_free_dynids(struct pci_driver *drv)
+-{
+-	struct pci_dynid *dynid, *n;
+-
+-	spin_lock(&drv->dynids.lock);
+-	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
+-		list_del(&dynid->node);
+-		kfree(dynid);
+-	}
+-	spin_unlock(&drv->dynids.lock);
+-}
+-
+ static int
+ pci_create_newid_file(struct pci_driver *drv)
+ {
+@@ -186,7 +215,6 @@ static void pci_remove_removeid_file(str
+ 	driver_remove_file(&drv->driver, &driver_attr_remove_id);
+ }
+ #else /* !CONFIG_HOTPLUG */
+-static inline void pci_free_dynids(struct pci_driver *drv) {}
+ static inline int pci_create_newid_file(struct pci_driver *drv)
+ {
+ 	return 0;
+@@ -1106,6 +1134,7 @@ static int __init pci_driver_init(void)
+
+ postcore_initcall(pci_driver_init);
+
++EXPORT_SYMBOL(pci_add_dynid);
+ EXPORT_SYMBOL(pci_match_id);
+ EXPORT_SYMBOL(__pci_register_driver);
+ EXPORT_SYMBOL(pci_unregister_driver);
+Index: ata/include/linux/pci.h
+===================================================================
+--- ata.orig/include/linux/pci.h
++++ ata/include/linux/pci.h
+@@ -794,6 +794,11 @@ int __must_check __pci_register_driver(s
+ void pci_unregister_driver(struct pci_driver *dev);
+ void pci_remove_behind_bridge(struct pci_dev *dev);
+ struct pci_driver *pci_dev_driver(const struct pci_dev *dev);
++int pci_add_dynid(struct pci_driver *drv,
++		  unsigned int vendor, unsigned int device,
++		  unsigned int subvendor, unsigned int subdevice,
++		  unsigned int class, unsigned int class_mask,
++		  unsigned long driver_data);
+ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
+ 					 struct pci_dev *dev);
+ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
