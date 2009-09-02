@@ -1,185 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752847AbZIBP7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752646AbZIBPZx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752847AbZIBP7K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 11:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZIBP7J
+	id S1752646AbZIBPZx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 11:25:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752582AbZIBPZw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 11:59:09 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:52179 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbZIBP7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 11:59:08 -0400
-Date: Wed, 2 Sep 2009 08:19:27 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: tree rcu: call_rcu scalability problem?
-Message-ID: <20090902151927.GA6774@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090902094835.GB12251@wotan.suse.de> <20090902122756.GC12251@wotan.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090902122756.GC12251@wotan.suse.de>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Wed, 2 Sep 2009 11:25:52 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:55165 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752014AbZIBPZu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 11:25:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=tgsyG6iZIrsV6DtnxnZMyLSAEGSfm3Jzf68O1GEgtw/IvRCcuNmjKcdmuxgMxzXsad
+         /iah+T7SYCEy68vl8zB7knYXSRxKWgV2YVaK1q5+tWSK1KAxKLblRzahd9ppKabN8XPS
+         BZCFQeuA3wwBJnkCW+z9atHpBbrrcusGaiAhw=
+Subject: Re: [ANNOUNCE] 2.6.31-rc7-rt8
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+In-Reply-To: <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+	 <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
+	 <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+	 <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain>
+	 <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+	 <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain>
+	 <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain>
+	 <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain>
+	 <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
+	 <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain>
+	 <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain>
+	 <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain>
+	 <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain>
+	 <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain>
+	 <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Wed, 02 Sep 2009 23:25:38 +0800
+Message-Id: <1251905138.13369.56.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 02:27:56PM +0200, Nick Piggin wrote:
-> On Wed, Sep 02, 2009 at 11:48:35AM +0200, Nick Piggin wrote:
-> > Hi Paul,
-> > 
-> > I'm testing out scalability of some vfs code paths, and I'm seeing
-> > a problem with call_rcu. This is a 2s8c opteron system, so nothing
-> > crazy.
-> > 
-> > I'll show you the profile results for 1-8 threads:
-> > 
-> > 1:
-> >  29768 total                                      0.0076
-> >  15550 default_idle                              48.5938
-> >   1340 __d_lookup                                 3.6413
-> >    954 __link_path_walk                           0.2559
-> >    816 system_call_after_swapgs                   8.0792
-> >    680 kmem_cache_alloc                           1.4167
-> >    669 dput                                       1.1946
-> >    591 __call_rcu                                 2.0521
-> > 
-> > 2:
-> >  56733 total                                      0.0145
-> >  20074 default_idle                              62.7313
-> >   3075 __call_rcu                                10.6771
-> >   2650 __d_lookup                                 7.2011
-> >   2019 dput                                       3.6054
-> > 
-> > 4:
-> >  98889 total                                      0.0253
-> >  21759 default_idle                              67.9969
-> >  10994 __call_rcu                                38.1736
-> >   5185 __d_lookup                                14.0897
-> >   4475 dput                                       7.9911
+Hi all,
 
-Four threads runs on one socket but 8 threads runs on two sockets,
-I take it?
+When I tried to migrate RT-Preempt/linux-mips from 2.6.29.6-rt23 to
+2.6.31-rc8, and compile the kernel without PREEMPT_RT. there is a
+"kernel panic" take place:
 
-> > 8:
-> > 170391 total                                      0.0437
-> >  31815 __call_rcu                               110.4688
-> >  12958 dput                                      23.1393
-> >  10417 __d_lookup                                28.3071
-> > 
-> > Of course there are other scalability factors involved too, but
-> > __call_rcu is taking 54 times more CPU to do 8 times the amount
-> > of work from 1-8 threads, or a factor of 6.7 slowdown.
-> > 
-> > This is with tree RCU.
-> 
-> It seems like nearly 2/3 of the cost is here:
->         /* Add the callback to our list. */
->         *rdp->nxttail[RCU_NEXT_TAIL] = head; <<<
->         rdp->nxttail[RCU_NEXT_TAIL] = &head->next;
+...
+find the frame buffer:start=40000000
+input: AT Translated Set 2 keyboard as /class/input/input0
+usb 1-1: new high speed USB device using ehci_hcd and address 2
+atkbd.c: keyboard reset failed on isa0060/serio1
+usb 1-1: configuration #1 chosen from 1 choice
+usb 2-1: new high speed USB device using ehci_hcd and address 2
+usb 2-1: configuration #1 chosen from 1 choice
+scsi0 : SCSI emulation for USB Mass Storage devices
+Unhandled kernel unaligned access[#1]:
+Cpu 0
+$ 0   : 0000000000000000 000000001400c4e0 0000000000000018
+0000000000000001
+$ 4   : ffffffff806175e8 ffffffff806175f0 ffffffffffffffff
+ffffffff803c9f84
+$ 8   : 00000000000028db ffffffff806b0d75 0000000000000018
+74735f6d69616c63
+$12   : 0000000000000000 ffffffff80205dbc 0000000000000000
+98000000be128000
+$16   : ffffffff80620780 980000000100a192 0000000000000002
+ffffffff80650e50
+$20   : ffffffff80650e50 0000000000000006 ffffffff806b84f8
+0000000000000001
+$24   : 0000000000000028 ffffffff803c9598
+$28   : 98000000be04c000 98000000be04fa40 0000000000000003
+ffffffff8027dc70
+Hi    : 000000000000010a
+Lo    : 000000003df58000
+epc   : ffffffff8027dc70 ____pagevec_lru_add+0x1b4/0x364
+    Not tainted
+ra    : ffffffff8027dc70 ____pagevec_lru_add+0x1b4/0x364
+Status: 1400c4e2    KX SX UX KERNEL EXL
+Cause : 00008010
+BadVA : 980000000100a192
+PrId  : 00006303 (ICT Loongson-2)
+Modules linked in:
+Process swapper (pid: 1, threadinfo=98000000be04c000,
+task=98000000be04b818, tls=0)Stack : 0000000000000498 0000000000000030
+0000000000000440 0000000000000000
+        980000000100a158 0000000000000000 0000000000020058
+0000000000000000
+        98000000bd00ae30 0000000000000050 ffffffffffffffef
+ffffffff80651980
+        0000000000000000 ffffffff80273e2c 0000000000000000
+ffffffff80651980
+        980000000100a158 ffffffff802746f8 0000000000000000
+98000000bd00ae30
+        98000000be04faa8 0000000000000000 98000000bd00ac40
+0000000000000000
+        0000000000001000 0000000000000002 0000000000001000
+0000000000000000
+        00000000003fff77 ffffffff802bee1c 0000000000000000
+98000000be436580
+        98000000be425b00 98000000006f8400 98000000bd0242f8
+0000000000000000
+        0000000000000400 0000000000000001 0000000000001000
+ffffffff802c3094
+        ...
+Call Trace:
+[<ffffffff8027dc70>] ____pagevec_lru_add+0x1b4/0x364
+[<ffffffff80273e2c>] add_to_page_cache_lru+0x84/0xa8
+[<ffffffff802746f8>] find_or_create_page+0x98/0xec
+[<ffffffff802bee1c>] __getblk+0x12c/0x3d0
+[<ffffffff802c3094>] __bread+0x14/0x120
+[<ffffffff8030a834>] ext3_fill_super+0x46c/0x17f4
+[<ffffffff8029d780>] get_sb_bdev+0x138/0x1bc
+[<ffffffff8029d2e0>] vfs_kern_mount+0xb8/0x158
+[<ffffffff8029d3d8>] do_kern_mount+0x48/0xf8
+[<ffffffff802b4fdc>] do_mount+0x6e0/0x764
+[<ffffffff802b5100>] SyS_mount+0xa0/0x104
+[<ffffffff80658de0>] mount_block_root+0x124/0x2f8
+[<ffffffff806591c8>] prepare_namespace+0x198/0x1cc
+[<ffffffff80658218>] kernel_init+0x120/0x140
+[<ffffffff8021233c>] kernel_thread_helper+0x10/0x18
 
-Hmmm...  That certainly is not the first list of code in call_rcu() that
-would come to mind...
 
-> In loading the pointer to the next tail pointer. If I'm reading the profile
-> correctly. Can't see why that should be a probem though...
+Code: 3c04805b  0c083285  6484f3c8 <d2220000> 34420020  f2220000
+10400060  000200
+Disabling lock debugging due to kernel taint
+Kernel panic - not syncing: Attempted to kill init!
 
-The usual diagnosis would be false sharing.
+Have traced it basically, seems it stopped on SetPageLRU:
 
-Hmmm...  What is the workload?  CPU-bound?  If CONFIG_PREEMPT=n, I might
-expect interference from force_quiescent_state(), except that it should
-run only every few clock ticks.  So this seems quite unlikely.
+mm/swap.c: 
 
-Could you please try padding the beginning and end of struct rcu_data
-with a few hundred bytes and rerunning?  Just in case there is a shared
-per-CPU variable either before or after rcu_data in your memory layout?
+___pagevec_lru_add (struct pagevec *pvec, enum lru_list lru)
+...
+       VM_BUG_ON(is_unevictable_lru(lru));
 
-							Thanx, Paul
+        for (i = 0; i < pagevec_count(pvec); i++) {
+                struct page *page = pvec->pages[i];
+                struct zone *pagezone = page_zone(page);
+                int file;
+                int active;
 
-> ffffffff8107dee0 <__call_rcu>: /* __call_rcu total: 320971 100.000 */
->    697  0.2172 :ffffffff8107dee0:       push   %r12
->    228  0.0710 :ffffffff8107dee2:       push   %rbp
->    133  0.0414 :ffffffff8107dee3:       mov    %rdx,%rbp
->    918  0.2860 :ffffffff8107dee6:       push   %rbx
->    316  0.0985 :ffffffff8107dee7:       mov    %rsi,0x8(%rdi)
->    257  0.0801 :ffffffff8107deeb:       movq   $0x0,(%rdi)
->   1660  0.5172 :ffffffff8107def2:       mfence
->  27730  8.6394 :ffffffff8107def5:       pushfq
->  13153  4.0979 :ffffffff8107def6:       pop    %r12
->    903  0.2813 :ffffffff8107def8:       cli
->   2562  0.7982 :ffffffff8107def9:       mov    %gs:0xde68,%eax
->   1784  0.5558 :ffffffff8107df01:       cltq
->                :ffffffff8107df03:       mov    0x60(%rdx,%rax,8),%rbx
->                :ffffffff8107df08:       pushfq
->   3494  1.0886 :ffffffff8107df09:       pop    %rdx
->    896  0.2792 :ffffffff8107df0a:       cli
->   2655  0.8272 :ffffffff8107df0b:       mov    0xd0(%rbp),%rcx
->   1800  0.5608 :ffffffff8107df12:       cmp    (%rbx),%rcx
->     21  0.0065 :ffffffff8107df15:       je     ffffffff8107df32 <__call_rcu+0x52
->                :ffffffff8107df17:       mov    0x40(%rbx),%rax
->     81  0.0252 :ffffffff8107df1b:       mov    %rcx,(%rbx)
->      3 9.3e-04 :ffffffff8107df1e:       mov    %rax,0x38(%rbx)
->                :ffffffff8107df22:       mov    0x48(%rbx),%rax
->                :ffffffff8107df26:       mov    %rax,0x40(%rbx)
->                :ffffffff8107df2a:       mov    0x50(%rbx),%rax
->                :ffffffff8107df2e:       mov    %rax,0x48(%rbx)
->                :ffffffff8107df32:       push   %rdx
->   1194  0.3720 :ffffffff8107df33:       popfq
->   9518  2.9654 :ffffffff8107df34:       pushfq
->   4179  1.3020 :ffffffff8107df35:       pop    %rdx
->   1277  0.3979 :ffffffff8107df36:       cli
->   2546  0.7932 :ffffffff8107df37:       mov    0xc8(%rbp),%rax
->   1748  0.5446 :ffffffff8107df3e:       cmp    %rax,0x8(%rbx)
->      5  0.0016 :ffffffff8107df42:       je     ffffffff8107df57 <__call_rcu+0x77
->                :ffffffff8107df44:       movb   $0x1,0x19(%rbx)
->      2 6.2e-04 :ffffffff8107df48:       movb   $0x0,0x18(%rbx)
->                :ffffffff8107df4c:       mov    0xc8(%rbp),%rax
->                :ffffffff8107df53:       mov    %rax,0x8(%rbx)
->    921  0.2869 :ffffffff8107df57:       push   %rdx
->    151  0.0470 :ffffffff8107df58:       popfq
-> 183507 57.1725 :ffffffff8107df59:       mov    0x50(%rbx),%rax
->    995  0.3100 :ffffffff8107df5d:       mov    %rdi,(%rax)
->      2 6.2e-04 :ffffffff8107df60:       mov    %rdi,0x50(%rbx)
->     18  0.0056 :ffffffff8107df64:       mov    0xd0(%rbp),%rdx
->    940  0.2929 :ffffffff8107df6b:       mov    0xc8(%rbp),%rax
->     15  0.0047 :ffffffff8107df72:       cmp    %rax,%rdx
->      1 3.1e-04 :ffffffff8107df75:       je     ffffffff8107dfb0 <__call_rcu+0xd0
->    787  0.2452 :ffffffff8107df77:       mov    0x58(%rbx),%rax
->     58  0.0181 :ffffffff8107df7b:       inc    %rax
->      2 6.2e-04 :ffffffff8107df7e:       mov    %rax,0x58(%rbx)
->   1679  0.5231 :ffffffff8107df82:       movslq 0x4988fb(%rip),%rdx        # ffff
->     40  0.0125 :ffffffff8107df89:       cmp    %rdx,%rax
->      5  0.0016 :ffffffff8107df8c:       jg     ffffffff8107dfd7 <__call_rcu+0xf7
->    588  0.1832 :ffffffff8107df8e:       mov    0xe0(%rbp),%rdx
->     84  0.0262 :ffffffff8107df95:       mov    0x51f924(%rip),%rax        # ffff
->      5  0.0016 :ffffffff8107df9c:       cmp    %rax,%rdx
->    505  0.1573 :ffffffff8107df9f:       js     ffffffff8107dfc8 <__call_rcu+0xe8
->  17580  5.4771 :ffffffff8107dfa1:       push   %r12
->   1671  0.5206 :ffffffff8107dfa3:       popfq
->  24201  7.5399 :ffffffff8107dfa4:       pop    %rbx
->   1367  0.4259 :ffffffff8107dfa5:       pop    %rbp
->    377  0.1175 :ffffffff8107dfa6:       pop    %r12
->                :ffffffff8107dfa8:       retq
->                :ffffffff8107dfa9:       nopl   0x0(%rax)
->                :ffffffff8107dfb0:       mov    %rbp,%rdi
->                :ffffffff8107dfb3:       callq  ffffffff813be930 <_spin_lock_irqs
->     12  0.0037 :ffffffff8107dfb8:       mov    %rbp,%rdi
->                :ffffffff8107dfbb:       mov    %rax,%rsi
->                :ffffffff8107dfbe:       callq  ffffffff8107d8e0 <rcu_start_gp>
->                :ffffffff8107dfc3:       jmp    ffffffff8107df77 <__call_rcu+0x97
->                :ffffffff8107dfc5:       nopl   (%rax)
->                :ffffffff8107dfc8:       mov    $0x1,%esi
->     10  0.0031 :ffffffff8107dfcd:       mov    %rbp,%rdi
->                :ffffffff8107dfd0:       callq  ffffffff8107dd50 <force_quiescent
->      1 3.1e-04 :ffffffff8107dfd5:       jmp    ffffffff8107dfa1 <__call_rcu+0xc1
->    451  0.1405 :ffffffff8107dfd7:       mov    $0x7fffffffffffffff,%rdx
->    411  0.1280 :ffffffff8107dfe1:       xor    %esi,%esi
->                :ffffffff8107dfe3:       mov    %rbp,%rdi
->                :ffffffff8107dfe6:       mov    %rdx,0x60(%rbx)
->    317  0.0988 :ffffffff8107dfea:       callq  ffffffff8107dd50 <force_quiescent
->   4510  1.4051 :ffffffff8107dfef:       jmp    ffffffff8107dfa1 <__call_rcu+0xc1
->                :ffffffff8107dff1:       nopw   %cs:0x0(%rax,%rax,1)
-> 
-> 
+                if (pagezone != zone) {
+                        if (zone)
+                                spin_unlock_irq(&zone->lru_lock);
+                        zone = pagezone;
+                        spin_lock_irq(&zone->lru_lock);
+                }
+                VM_BUG_ON(PageActive(page));
+                VM_BUG_ON(PageUnevictable(page));
+                VM_BUG_ON(PageLRU(page));
+                SetPageLRU(page);                  <---------------
+                active = is_active_lru(lru);
+                file = is_file_lru(lru);
+                if (active)
+                        SetPageActive(page);
+                update_page_reclaim_stat(zone, page, file, active);
+                add_page_to_lru_list(zone, page, lru);
+        }
+        if (zone)
+                spin_unlock_irq(&zone->lru_lock);
+        release_pages(pvec->pages, pvec->nr, pvec->cold);
+        pagevec_reinit(pvec);
+...
+
+mm/swap.s:
+
+void SetPageLRU(struct page *page) { set_bit(PG_lru, &page->flags); }
+
+include/linux/page-flags.h:
+
+enum pageflags {
+        PG_locked,              /* Page is locked. Don't touch. */
+        ...
+        PG_lru,
+        ...
+
+Not sure why the page address is invalid here? and when i enable
+PREEMPT_RT or use the original linux-2.6.31-rc8, it boot normally. any
+good suggestion about it?
+
+Regards,
+Zhangjin
+
