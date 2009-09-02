@@ -1,92 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753714AbZIBWjH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753690AbZIBWmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753714AbZIBWjH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:39:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZIBWjG
+	id S1753690AbZIBWmo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 18:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZIBWmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:39:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56193 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752540AbZIBWjF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 18:39:05 -0400
-Message-ID: <4A9EF402.7090800@kernel.org>
-Date: Thu, 03 Sep 2009 07:38:58 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Wed, 2 Sep 2009 18:42:43 -0400
+Received: from moutng.kundenserver.de ([212.227.17.8]:59514 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753544AbZIBWmn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 18:42:43 -0400
+From: Christian =?iso-8859-1?q?Kr=E4mer?= <christian@kraemer-eu.de>
+Organization: Privat
+To: Frans Pop <elendil@planet.nl>
+Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
+Date: Thu, 3 Sep 2009 00:42:44 +0200
+User-Agent: KMail/1.9.9
+References: <200909021856.29565.christian@kraemer-eu.de> <200909021953.02190.elendil@planet.nl>
+In-Reply-To: <200909021953.02190.elendil@planet.nl>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Grant Grundler <grundler@parisc-linux.org>
-CC: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Shane Huang <Shane.Huang@amd.com>
-Subject: Re: [PATCH] pci: separate out pci_add_dynid()
-References: <4A9E38FA.3000506@kernel.org> <20090902161048.GA5405@lackof.org>
-In-Reply-To: <20090902161048.GA5405@lackof.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 22:39:01 +0000 (UTC)
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200909030042.45081.christian@kraemer-eu.de>
+X-Provags-ID: V01U2FsdGVkX1/pRK6UgJe6FhYUanT656aXWyDhBrvr3v1U3+p
+ DnRTkBz2eO2TkERJZ68Fb7iTLNuZwWkorJhJ9FtuNiExHmLorT
+ 0xBQyCu1V01JOHKF9HGraiY9Fv6rfOG
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Grant.
+Hi Frans,
 
-Grant Grundler wrote:
->> -/*
->> - * Dynamic device IDs are disabled for !CONFIG_HOTPLUG
->> - */
-> 
-> The comment was removed here. Ok.
+Thank you very much indeed for your answer!
 
-Yeap, because dynids as a whole are no longer dependent on
-CONFIG_HOTPLUG.
+On Wednesday 02 September 2009 19:53:01 you wrote:
+> Christian Krämer wrote:
+> > I used a Gentoo LiveCD (Kernel 2.6.24-gentoo-r7; Platform: x86)
+>
+> That's a pretty old kernel. Any chance that you can try with a more recent
+> one, such as 2.6.30? Or maybe just a more recent Gentoo CD or live CD from
+> another distribution?
+>
+> Also, did you see these following messages?
+>
 
->> +	spin_lock(&drv->dynids.lock);
->> +	list_add_tail(&dynid->node, &drv->dynids.list);
->> +	spin_unlock(&drv->dynids.lock);
->> +
->> +	get_driver(&drv->driver);
-> 
-> Return value ignored caught my attention... But I can't say if that's wrong.
-> 
-> I'm not finding any documentation on get_driver() in Documentation/ .
-> Looking at drivers/base/driver.c:get_driver() code, I'm confused why this
-> function bothers returning struct device_driver *. My expectation is 
-> the input parameter "drv" is the same as "priv->driver" that gets returned.
-> No?
+I also tried to install gentoo offline (with a portage snapshot and manually 
+downloaded distfiles). The snapshot was form the 14th August 2009. At this 
+time the source packet "gentoo-sources-2.6.30-r4" was the current stable for 
+the x86 platform, which I used.
 
-Yes, it is.
+Maybe the output in some cases may variey, but at all I had the same problem: 
+dmesg only shows that a card was inserted or ejected and also lspci doesn't 
+listed the card (without the -H1 parameter).
 
-> In any case, if the Docbook comments for get_driver() could explain
-> whatever subtle difference there is, that would be helpful.
+After that i first tried some other *nixes, but with moderatly success.
+But 'cause Linux is my favorite os, I thought, I try it with posting here on 
+the mailing list.
 
-It's one of the gripes I've had with the driver core interface.
-Returning the object which had its reference bumped up is nice to do
-do_something(get_driver(driver)); but it should have been made clear
-that the return value always equals the input parameter.  IIRC, in the
-early days of the current driver model and kref, there were intentions
-to make kref somehow more capable and handle the last reference
-problem from within it so that if (get_driver(driver)) test is
-actually meaningful but that turned out to be not too feasible, so we
-ended up with unnecessary if () around driver model get functions.  I
-try to remove them whenever an affected piece of code is being
-modified but there still are plenty left.  I'll update comment on
-driver core get functions.
+> > pcmcia: Detected deprecated PCMCIA ioctl usage from process: hwsetup.
+> > pcmcia: This interface will soon be removed from the kernel; please
+> > expect breakage unless you upgrade to new tools.
+> > pcmcia: see
+> > http://www.kernel.org/pub/linux/utils/kernel/pcmcia/pcmcia.html for
+> > details.
 
->> +/*
->> + * Dynamic device ID manipulation via sysfs is disabled for !CONFIG_HOTPLUG
->> + */
-> 
-> But same comment added back here. Is this comment correct?
+I read this page also before, but it doesn't help. eg. pcmcia-socket-startup
+doesn't help and the bridge problem with the subordinate doesn't fit, but I 
+already have tried the "pci=assign-busses" commandline already, unfortunately 
+without success.
 
-Yes, dynid in general is enabled regardless but sysfs access is
-available iff CONFIG_HOTPLUG.
+> > warning: process `hwsetup' used the deprecated sysctl system call with
+> > 1.49. warning: process `hwsetup' used the deprecated sysctl system call
+> > with 1.49.
+>
+> It looks as if that Gentoo CD is still using the deprecated pcmcia-cs
+> utilities instead of the new pcmciautils.
 
-> If comments are the only thing that change, please add:
->   Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
-> 
-> This patch seems pretty straight forward.
+That's an idea, but in the installed gentoo system there where no hwsetup 
+utility (only the usual init scrips, which simply loaded the necessary 
+modules). I admit, that I don't know what exacly hwsetup does, but it seems 
+that it only look what devices are present and load the needed kernel 
+modules.
 
-Thanks.
+Maybe the following information will help to solve the Problem:
 
--- 
-tejun
+* On FreeBSD the system freezes when i insert the card and the kernel fire 
+frequently messages of an "interrupt storm", and that it would throttle it. 
+(That's the reason why I referred at the interrupt routing difference between 
+lspci with the "special Intel"-detection Method and without. I'm not very 
+familiar with lowlevel development and don't now whether this matters or 
+not...)
+
+
+If you think it could help to install a new kernel or you need some 
+information or output, please tell me, it's no problem to install gentoo (or 
+any other distribution) with a specific kernel (and maybe some patches)
+
+>
+> Hope that helps,
+> FJP
+
+
