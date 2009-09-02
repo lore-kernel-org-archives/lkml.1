@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752122AbZIBNMx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752087AbZIBNLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752122AbZIBNMx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 09:12:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751405AbZIBNMw
+	id S1752087AbZIBNLe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 09:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZIBNLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 09:12:52 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:57305 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751295AbZIBNMw (ORCPT
+	Wed, 2 Sep 2009 09:11:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35937 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751574AbZIBNLd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 09:12:52 -0400
-Message-ID: <ff13736137802f78cf492d13c43c1af1.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <20090902.205137.71100180.ryov@valinux.co.jp>
-References: <20090902.205137.71100180.ryov@valinux.co.jp>
-Date: Wed, 2 Sep 2009 22:12:51 +0900 (JST)
-Subject: Re: a room for blkio-cgroup in struct page_cgroup
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Ryo Tsuruta" <ryov@valinux.co.jp>
-Cc: kamezawa.hiroyu@jp.fujitsu.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, linux-mm@kvack.org
-User-Agent: SquirrelMail/1.4.16
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+	Wed, 2 Sep 2009 09:11:33 -0400
+Date: Wed, 2 Sep 2009 06:14:39 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Karsten Keil <isdn@linux-pingi.de>,
+       isdn4linux@listserv.isdn4linux.de,
+       Andrew Morton <akpm@linux-foundation.org>, tj@elte.hu
+Subject: Re: [PATCH, v2] isdn: Fix stack corruption in isdnloop_init()
+Message-ID: <20090902061439.6c60124c@infradead.org>
+In-Reply-To: <20090902130336.GA16906@elte.hu>
+References: <20090902124402.GA5539@elte.hu>
+	<20090902130336.GA16906@elte.hu>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryo Tsuruta wrote:
-> Hi Kamezawa-san,
->
-> As you wrote before (http://lkml.org/lkml/2009/7/22/65)
->> To be honest, what I expected in these days for people of blockio
->> cgroup is like following for getting room for themselves.
-> <<snip>>
->> --- mmotm-2.6.31-Jul16.orig/include/linux/page_cgroup.h
->> +++ mmotm-2.6.31-Jul16/include/linux/page_cgroup.h
->> @@ -13,7 +13,7 @@
->>  struct page_cgroup {
->>       unsigned long flags;
->>       struct mem_cgroup *mem_cgroup;
->> -     struct page *page;
->> +     /* block io tracking will use extra unsigned long bytes */
->>       struct list_head lru;       /* per cgroup LRU list */
->> };
->
-> Have you already added a room for blkio_cgroup in struct page_cgroup?
-No.
+On Wed, 2 Sep 2009 15:03:36 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-> If not, I would like you to apply the above change to mmotm.
->
-Plz wait until October. We're deadly busy and some amount of more important
-patches are piled up in front of us. I have no objections if you add
-a pointer or id  because I know I can reduce 8(4)bytes later.
-Just add (a small) member for a while and ignore page_cgroup's size.
-I'll fix later.
+> 
+> [ v2: use strlen instead of sizeof. ]
+> 
+> diff --git a/drivers/isdn/isdnloop/isdnloop.c
+> b/drivers/isdn/isdnloop/isdnloop.c index a335c85..0c8d8cb 100644
+> --- a/drivers/isdn/isdnloop/isdnloop.c
+> +++ b/drivers/isdn/isdnloop/isdnloop.c
+> @@ -1494,7 +1494,7 @@ static int __init
+>  isdnloop_init(void)
+>  {
+>  	char *p;
+> -	char rev[10];
+> +	char rev[strlen(revision)+1];
+>  
+>  	if ((p = strchr(revision, ':'))) {
+>  		strcpy(rev, p + 1);
 
-> The latest blkio-cgroup has reflected the comments you pointed out.
-> I would also like you to give me any comments on it and consider
-> merging blkio-cgroup to mmotm.
->
-BTW, do you all have cosensus about implementation ?
-
-Bye,
--Kame
+now it;s a runtime variable sized array.
+NotNice(tm)
 
 
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
