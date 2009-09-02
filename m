@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751344AbZIBJrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751150AbZIBJsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751344AbZIBJrG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 05:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751006AbZIBJrF
+	id S1751150AbZIBJsh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 05:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750928AbZIBJsg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 05:47:05 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:46044 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbZIBJrC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 05:47:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kLG6Zrr9lbDxA3u0fbvWcolaWrUOopnpujeGQY7UJTNw3zbUTO0xx2E6baYrbfnGDA
-         pNPs6eOEAQY1E8VCaHsIL3mK9pIPkyip0hkiVk7KwdDQercvDYM5PSIp90JcDrGQ7sXQ
-         FndPHgeyiUJ6MCmhi5wySn+ZDv/+2fCGFHPk4=
-Message-ID: <4A9E3F1A.4050406@gmail.com>
-Date: Wed, 02 Sep 2009 11:47:06 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.4 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: oleg@redhat.com, akpm@linux-foundation.org, mingo@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] core: allow setrlimit to non-current tasks
-References: <1251884703-14523-1-git-send-email-jirislaby@gmail.com> <1251884703-14523-2-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1251884703-14523-2-git-send-email-jirislaby@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 05:48:36 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34442 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750750AbZIBJsf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 05:48:35 -0400
+Date: Wed, 2 Sep 2009 11:48:35 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Paul McKenney <paulmck@us.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: tree rcu: call_rcu scalability problem?
+Message-ID: <20090902094835.GB12251@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/02/2009 11:45 AM, Jiri Slaby wrote:
-> Namely, lock tasklist_lock for read and check whether the task
-> structure has signal and sighand non-null. Do all the signal
-> processing under that lock still held.
+Hi Paul,
 
-The description is incorrect now, indeed...
+I'm testing out scalability of some vfs code paths, and I'm seeing
+a problem with call_rcu. This is a 2s8c opteron system, so nothing
+crazy.
 
-And I broke mail threads, sorry.
+I'll show you the profile results for 1-8 threads:
+
+1:
+ 29768 total                                      0.0076
+ 15550 default_idle                              48.5938
+  1340 __d_lookup                                 3.6413
+   954 __link_path_walk                           0.2559
+   816 system_call_after_swapgs                   8.0792
+   680 kmem_cache_alloc                           1.4167
+   669 dput                                       1.1946
+   591 __call_rcu                                 2.0521
+
+2:
+ 56733 total                                      0.0145
+ 20074 default_idle                              62.7313
+  3075 __call_rcu                                10.6771
+  2650 __d_lookup                                 7.2011
+  2019 dput                                       3.6054
+
+4:
+ 98889 total                                      0.0253
+ 21759 default_idle                              67.9969
+ 10994 __call_rcu                                38.1736
+  5185 __d_lookup                                14.0897
+  4475 dput                                       7.9911
+
+8:
+170391 total                                      0.0437
+ 31815 __call_rcu                               110.4688
+ 12958 dput                                      23.1393
+ 10417 __d_lookup                                28.3071
+
+Of course there are other scalability factors involved too, but
+__call_rcu is taking 54 times more CPU to do 8 times the amount
+of work from 1-8 threads, or a factor of 6.7 slowdown.
+
+This is with tree RCU.
+
+#
+# RCU Subsystem
+#
+# CONFIG_CLASSIC_RCU is not set
+CONFIG_TREE_RCU=y
+# CONFIG_PREEMPT_RCU is not set
+# CONFIG_RCU_TRACE is not set
+CONFIG_RCU_FANOUT=64
+# CONFIG_RCU_FANOUT_EXACT is not set
+# CONFIG_TREE_RCU_TRACE is not set
+# CONFIG_PREEMPT_RCU_TRACE is not set
+
+Testing classic RCU showed its call_rcu seemed to scale better, only
+getting up to about 10 000 at 8 threads.
+
+You'd need my vfs scalability patches to reproduce this exactly, but
+the workload is just close(open(fd)), which rcu frees a lot of file
+structs. I can certainly get more detailed profiles or test patches
+for you though if you have any ideas.
+
+Thanks,
+Nick
+
