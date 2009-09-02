@@ -1,177 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbZIBN3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752158AbZIBNaZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752024AbZIBN3t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 09:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751408AbZIBN3s
+	id S1752158AbZIBNaZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 09:30:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752056AbZIBNaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 09:29:48 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:42529 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751405AbZIBN3s (ORCPT
+	Wed, 2 Sep 2009 09:30:24 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:55702 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbZIBNaX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 09:29:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=AM6i+ZQbnB8PbhwOz2x+Je4XIJ0y6P/Ieqq94gbfyHoHbvaWEdeogqoEqYQoqcMZEv
-         dMiv7tUZywGNn4KuisWjOvOqXpmbIInUPD8yTs2u03IKEJS1qK2bVZ2e1Mn4GgL1gtbg
-         +F+c4AYqgyAvfnHJr39qSa/mqhJZWMH7qUZfI=
+	Wed, 2 Sep 2009 09:30:23 -0400
+Message-ID: <41963.192.168.10.89.1251898214.squirrel@dbdmail.itg.ti.com>
+In-Reply-To: <34590.192.168.10.89.1251897877.squirrel@dbdmail.itg.ti.com>
+References: <34590.192.168.10.89.1251897877.squirrel@dbdmail.itg.ti.com>
+Date: Wed, 2 Sep 2009 19:00:14 +0530 (IST)
+Subject: Re: [PATCH] OMAP4: MMC driver support on OMAP4
+From: "kishore kadiyala" <kishore.kadiyala@ti.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-omap@vger.kernel.org, jarkko.lavinen@nokia.com, madhu.cr@ti.com
+User-Agent: SquirrelMail/1.4.3a
+X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
-Date: Wed, 2 Sep 2009 15:29:48 +0200
-Message-ID: <8db1092f0909020629v5aab79d8lbfcc8c214622787c@mail.gmail.com>
-Subject: [2.6.31-rc8] Problem with detect USB devices
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-usb@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bad version: 2.6.31-rc8
-Last known good: 2.6.31-rc7
+Resending the patch, CC'ing LO.
 
-Observed on two different machines. Upgraded Debian Testing.
-udev 0.141-2
-hal 0.5.12~git20090406.46dc48-2
-usbutils 0.84-1
+--Kishore
 
-==============================
+This Patch adds basic support for all 5 MMC controllers on OMAP4.
 
-Descriptions:
-1. When plug usb flash drive and turn on computer, device manager in
-KDE4 show it, and I can mount. When remove device very often icon
-doesn't dissapear - KDE doesn't refresh informaton about connected
-devices. When connect again, I can't mount it.
+Signed-off-by: Kishore Kadiyala <kishore.kadiyala@ti.com>
+---
+This patch doesn't include mmc-regulator support
 
-2. Sometimes when I remove and connect device again, then is listed twice:
-http://unixy.pl/maciek/download/kernel/2.6.31-rc8/zlom/snap1.jpg
-http://unixy.pl/maciek/download/kernel/2.6.31-rc8/zlom/snap2.jpg
+ arch/arm/mach-omap2/devices.c          |   42 +++++++++++++++++++++++++++++----
+ arch/arm/plat-omap/include/mach/irqs.h |    2 +
+ arch/arm/plat-omap/include/mach/mmc.h  |    9 ++++++-
+ drivers/mmc/host/Kconfig               |    6 ++--
+ drivers/mmc/host/omap_hsmmc.c          |   10 +++++++
+ 5 files changed, 60 insertions(+), 9 deletions(-)
 
-3. Plug in flash drive (a), then flash drive (b), remove (a or b),
-remove (b or a), KDE still shows icons of flash drive (a/b)
+Index: kernel-omap4-base/arch/arm/mach-omap2/devices.c
+===================================================================
+--- kernel-omap4-base.orig/arch/arm/mach-omap2/devices.c
++++ kernel-omap4-base/arch/arm/mach-omap2/devices.c
+@@ -397,7 +397,7 @@ static inline void omap_init_sha1_md5(vo
 
-4. Similar with USB printer
+ /*-------------------------------------------------------------------------*/
 
-5. I this cases (1-4) lsusb doesn't show connected devices
+-#ifdef CONFIG_ARCH_OMAP3
++#if defined(CONFIG_ARCH_OMAP3) || defined(CONFIG_ARCH_OMAP4)
 
-6. VirtualBox also has similar problem connect with USB devices.
+ #define MMCHS_SYSCONFIG			0x0010
+ #define MMCHS_SYSCONFIG_SWRESET		(1 << 1)
+@@ -424,8 +424,8 @@ static struct platform_device dummy_pdev
+  **/
+ static void __init omap_hsmmc_reset(void)
+ {
+-	u32 i, nr_controllers = cpu_is_omap34xx() ? OMAP34XX_NR_MMC :
+-		OMAP24XX_NR_MMC;
++	u32 i, nr_controllers = cpu_is_omap44xx() ? OMAP44XX_NR_MMC :
++		(cpu_is_omap34xx() ? OMAP34XX_NR_MMC : OMAP24XX_NR_MMC);
 
-==============================
+ 	for (i = 0; i < nr_controllers; i++) {
+ 		u32 v, base = 0;
+@@ -442,8 +442,21 @@ static void __init omap_hsmmc_reset(void
+ 		case 2:
+ 			base = OMAP3_MMC3_BASE;
+ 			break;
++		case 3:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC4_BASE;
++			break;
++		case 4:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC5_BASE;
++			break;
+ 		}
 
-For example:
-a) Connect flash drive, turn on computer (similar when plug device after boot):
++		if (cpu_is_omap44xx())
++			base += OMAP4_MMC_REG_OFFSET;
++
+ 		dummy_pdev.id = i;
+ 		dev_set_name(&dummy_pdev.dev, "mmci-omap-hs.%d", i);
+ 		iclk = clk_get(dev, "ick");
+@@ -540,11 +553,23 @@ void __init omap2_init_mmc(struct omap_m
+ 			irq = INT_24XX_MMC2_IRQ;
+ 			break;
+ 		case 2:
+-			if (!cpu_is_omap34xx())
++			if (!cpu_is_omap44xx() && !cpu_is_omap34xx())
+ 				return;
+ 			base = OMAP3_MMC3_BASE;
+ 			irq = INT_34XX_MMC3_IRQ;
+ 			break;
++		case 3:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC4_BASE + OMAP4_MMC_REG_OFFSET;
++			irq = INT_44XX_MMC4_IRQ;
++			break;
++		case 4:
++			if (!cpu_is_omap44xx())
++				return;
++			base = OMAP4_MMC5_BASE + OMAP4_MMC_REG_OFFSET;
++			irq = INT_44XX_MMC5_IRQ;
++			break;
+ 		default:
+ 			continue;
+ 		}
+@@ -552,8 +577,15 @@ void __init omap2_init_mmc(struct omap_m
+ 		if (cpu_is_omap2420()) {
+ 			size = OMAP2420_MMC_SIZE;
+ 			name = "mmci-omap";
++		} else if (cpu_is_omap44xx()) {
++			if (i < 3) {
++				base += OMAP4_MMC_REG_OFFSET;
++				irq += IRQ_GIC_START;
++			}
++			size = OMAP4_HSMMC_SIZE;
++			name = "mmci-omap-hs";
+ 		} else {
+-			size = HSMMC_SIZE;
++			size = OMAP3_HSMMC_SIZE;
+ 			name = "mmci-omap-hs";
+ 		}
+ 		omap_mmc_add(name, i, base, size, irq, mmc_data[i]);
+Index: kernel-omap4-base/arch/arm/plat-omap/include/mach/irqs.h
+===================================================================
+--- kernel-omap4-base.orig/arch/arm/plat-omap/include/mach/irqs.h
++++ kernel-omap4-base/arch/arm/plat-omap/include/mach/irqs.h
+@@ -503,6 +503,7 @@
+ #define INT_44XX_FPKA_READY_IRQ	(50 + IRQ_GIC_START)
+ #define INT_44XX_SHA1MD51_IRQ	(51 + IRQ_GIC_START)
+ #define INT_44XX_RNG_IRQ	(52 + IRQ_GIC_START)
++#define INT_44XX_MMC5_IRQ	(59 + IRQ_GIC_START)
+ #define INT_44XX_I2C3_IRQ	(61 + IRQ_GIC_START)
+ #define INT_44XX_FPKA_ERROR_IRQ	(64 + IRQ_GIC_START)
+ #define INT_44XX_PBIAS_IRQ	(75 + IRQ_GIC_START)
+@@ -511,6 +512,7 @@
+ #define INT_44XX_TLL_IRQ	(78 + IRQ_GIC_START)
+ #define INT_44XX_PARTHASH_IRQ	(79 + IRQ_GIC_START)
+ #define INT_44XX_MMC3_IRQ	(94 + IRQ_GIC_START)
++#define INT_44XX_MMC4_IRQ	(96 + IRQ_GIC_START)
 
-maciek@zlom:~/Desktop$ lsusb
-[...]
-Bus 001 Device 002: ID 3538:0054 Power Quotient International Co., Ltd
-Flash Drive (2GB)
-[...]
 
-b) Mount:
+ /* Max. 128 level 2 IRQs (OMAP1610), 192 GPIOs (OMAP730/850) and
+Index: kernel-omap4-base/arch/arm/plat-omap/include/mach/mmc.h
+===================================================================
+--- kernel-omap4-base.orig/arch/arm/plat-omap/include/mach/mmc.h
++++ kernel-omap4-base/arch/arm/plat-omap/include/mach/mmc.h
+@@ -25,11 +25,18 @@
 
-lshal:
-15:12:56.866: volume_uuid_599D_1168 property volume.mount_point = '/media/pqi'
-15:12:56.867: volume_uuid_599D_1168 property volume.is_mounted = true
+ #define OMAP24XX_NR_MMC		2
+ #define OMAP34XX_NR_MMC		3
++#define OMAP44XX_NR_MMC		5
+ #define OMAP2420_MMC_SIZE	OMAP1_MMC_SIZE
+-#define HSMMC_SIZE		0x200
++#define OMAP3_HSMMC_SIZE	0x200
++#define OMAP4_HSMMC_SIZE	0x1000
+ #define OMAP2_MMC1_BASE		0x4809c000
+ #define OMAP2_MMC2_BASE		0x480b4000
+ #define OMAP3_MMC3_BASE		0x480ad000
++#define OMAP4_MMC4_BASE		0x480d1000
++#define OMAP4_MMC5_BASE		0x480d5000
++#define OMAP4_MMC_REG_OFFSET	0x100
++#define HSMMC5			(1 << 4)
++#define HSMMC4			(1 << 3)
+ #define HSMMC3			(1 << 2)
+ #define HSMMC2			(1 << 1)
+ #define HSMMC1			(1 << 0)
+Index: kernel-omap4-base/drivers/mmc/host/Kconfig
+===================================================================
+--- kernel-omap4-base.orig/drivers/mmc/host/Kconfig
++++ kernel-omap4-base/drivers/mmc/host/Kconfig
+@@ -132,11 +132,11 @@ config MMC_OMAP
 
-c) Unmount:
+ config MMC_OMAP_HS
+ 	tristate "TI OMAP High Speed Multimedia Card Interface support"
+-	depends on ARCH_OMAP2430 || ARCH_OMAP3
++	depends on ARCH_OMAP2430 || ARCH_OMAP3 || ARCH_OMAP4
+ 	help
+ 	  This selects the TI OMAP High Speed Multimedia card Interface.
+-	  If you have an OMAP2430 or OMAP3 board with a Multimedia Card slot,
+-	  say Y or M here.
++	  If you have an OMAP2430 or OMAP3 board or OMAP4 board with a
++	  Multimedia Card slot, say Y or M here.
 
-lshal:
-15:13:46.528: volume_uuid_599D_1168 property volume.mount_point = ''
-15:13:46.529: volume_uuid_599D_1168 property volume.is_mounted = false
+ 	  If unsure, say N.
 
-maciek@zlom:~/Desktop$ lsusb
-[...]
-Bus 001 Device 002: ID 3538:0054 Power Quotient International Co., Ltd
-Flash Drive (2GB)
-[...]
+Index: kernel-omap4-base/drivers/mmc/host/omap_hsmmc.c
+===================================================================
+--- kernel-omap4-base.orig/drivers/mmc/host/omap_hsmmc.c
++++ kernel-omap4-base/drivers/mmc/host/omap_hsmmc.c
+@@ -101,6 +101,8 @@
+ #define OMAP_MMC1_DEVID		0
+ #define OMAP_MMC2_DEVID		1
+ #define OMAP_MMC3_DEVID		2
++#define OMAP_MMC4_DEVID		3
++#define OMAP_MMC5_DEVID		4
 
-d) Remove device:
-
-lshal:
-<doesn't show anything>
-
-KDE4 device manager still shows icon of flash drive
-
-maciek@zlom:~/Desktop$ lsusb
-Bus 005 Device 003: ID 062a:0201 Creative Labs Defender Office
-Keyboard (K7310) S Zodiak KM-9010
-Bus 005 Device 002: ID 1020:0206 Labtec
-Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-
-dmesg:
-[  385.848532] usb 1-1: USB disconnect, address 2
+ #define MMC_TIMEOUT_MS		20
+ #define OMAP_MMC_MASTER_CLOCK	96000000
+@@ -1096,6 +1098,14 @@ static int __init omap_mmc_probe(struct
+ 		host->dma_line_tx = OMAP34XX_DMA_MMC3_TX;
+ 		host->dma_line_rx = OMAP34XX_DMA_MMC3_RX;
+ 		break;
++	case OMAP_MMC4_DEVID:
++		host->dma_line_tx = OMAP44XX_DMA_MMC4_TX;
++		host->dma_line_rx = OMAP44XX_DMA_MMC4_RX;
++		break;
++	case OMAP_MMC5_DEVID:
++		host->dma_line_tx = OMAP44XX_DMA_MMC5_TX;
++		host->dma_line_rx = OMAP44XX_DMA_MMC5_RX;
++		break;
+ 	default:
+ 		dev_err(mmc_dev(host->mmc), "Invalid MMC id\n");
+ 		goto err_irq;
 
 
-e) Connect device:
-
-lshal:
-<doesn't show anything>
-
-maciek@zlom:~/Desktop$ lsusb
-Bus 005 Device 003: ID 062a:0201 Creative Labs Defender Office
-Keyboard (K7310) S Zodiak KM-9010
-Bus 005 Device 002: ID 1020:0206 Labtec
-Bus 005 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 004 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 002 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 003 Device 001: ID 1d6b:0001 Linux Foundation 1.1 root hub
-Bus 001 Device 001: ID 1d6b:0002 Linux Foundation 2.0 root hub
-(can't see flash drive)
-
-dmesg:
-[  483.727044] usb 1-1: new high speed USB device using ehci_hcd and address 5
-[  483.843749] usb 1-1: configuration #1 chosen from 1 choice
-[  483.844012] scsi5 : SCSI emulation for USB Mass Storage devices
-[  483.844222] usb-storage: device found at 5
-[  483.844225] usb-storage: waiting for device to settle before scanning
-[  488.845138] scsi 5:0:0:0: Direct-Access     pqi
-IntelligentStick 0.00 PQ: 0 ANSI: 2
-[  488.845354] sd 5:0:0:0: Attached scsi generic sg2 type 0
-[  488.846588] usb-storage: device scan complete
-[  488.846621] sd 5:0:0:0: [sdb] 2015231 512-byte logical blocks:
-(1.03 GB/983 MiB)
-[  488.847350] sd 5:0:0:0: [sdb] Write Protect is off
-[  488.847355] sd 5:0:0:0: [sdb] Mode Sense: 00 00 00 00
-[  488.847359] sd 5:0:0:0: [sdb] Assuming drive cache: write through
-[  488.850727] sd 5:0:0:0: [sdb] Assuming drive cache: write through
-[  488.850733]  sdb: sdb1
-[  488.960371] sd 5:0:0:0: [sdb] Assuming drive cache: write through
-[  488.960377] sd 5:0:0:0: [sdb] Attached SCSI removable disk
-
-==============================
-
-I try bisect, but I'm not sure that results is good:
-
-root@zlom:/usr/src/git/linux-2.6# git bisect good
-1e23502cc57cef33455ac7cb9111e3c6d991a894 is first bad commit
-root@zlom:/usr/src/git/linux-2.6# git show
-1e23502cc57cef33455ac7cb9111e3c6d991a894
-commit 1e23502cc57cef33455ac7cb9111e3c6d991a894
-Merge: e99b1f2 3161e45
-Author: Linus Torvalds <torvalds@linux-foundation.org>
-Date:   Wed Aug 26 20:54:48 2009 -0700
-
-    Merge git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6
-
-    * git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-2.6:
-      virtio: net refill on out-of-memory
-      smc91x: fix compilation on SMP
-
-Config:
-http://unixy.pl/maciek/download/kernel/2.6.31-rc8/zlom/config-2.6.31-rc8
-dmesg:
-http://unixy.pl/maciek/download/kernel/2.6.31-rc8/zlom/dmesg-2.6.31-rc8.txt
-
-I have no idea, how debug it. Any help?
-
-Regards
-
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
