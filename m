@@ -1,129 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753695AbZIBWbJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZIBWjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753695AbZIBWbJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:31:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZIBWbI
+	id S1753769AbZIBWjX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 18:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZIBWjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:31:08 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:62584 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbZIBWbG convert rfc822-to-8bit (ORCPT
+	Wed, 2 Sep 2009 18:39:22 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:52772 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753747AbZIBWjV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 18:31:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=j8A7KNCZkL6xiqNBi63SAVGvAu4e6OFPvU0eTfpfwku8mEkrCnOifx60IIRu4LhPmc
-         9Vic1Lr8gJQMqbcTQ2tP+Nf28g+/dUyUPbTHHvtTR1Jz1C76xJLUZNE4RYv6Gm5L9Ytt
-         BfGcXnqrU8WtmRLggubt9mvSnzCTLI3eJVxAM=
+	Wed, 2 Sep 2009 18:39:21 -0400
+Date: Wed, 2 Sep 2009 15:37:39 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Christoph Hellwig <hch@lst.de>
+Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fsync: wait for data writeout completion before
+ calling ->fsync
+Message-ID: <20090902223739.GE7729@mail.oracle.com>
+Mail-Followup-To: Christoph Hellwig <hch@lst.de>, Jan Kara <jack@suse.cz>,
+	linux-fsdevel@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <1251899966-7316-1-git-send-email-jack@suse.cz>
+ <20090902221838.GA5311@lst.de>
 MIME-Version: 1.0
-In-Reply-To: <4A9EEF07.5070800@gmail.com>
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
-	 <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>
-	 <c4e36d110908121516u504809e9y537e9babfa95df1d@mail.gmail.com>
-	 <alpine.DEB.1.10.0908121820410.3257@gentwo.org>
-	 <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>
-	 <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com>
-	 <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net>
-	 <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
-	 <4A9EEF07.5070800@gmail.com>
-Date: Thu, 3 Sep 2009 00:31:07 +0200
-Message-ID: <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>
-Subject: Re: System freeze on reboot - general protection fault
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Patrick McHardy <kaber@trash.net>,
-       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090902221838.GA5311@lst.de>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4A9EF40E.009C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/3 Eric Dumazet <eric.dumazet@gmail.com>:
-> Zdenek Kabelac a écrit :
->> 2009/8/17 Patrick McHardy <kaber@trash.net>:
->>> Eric Dumazet wrote:
->>>> Zdenek Kabelac a écrit :
->>>>>  [<ffffffffa02c502f>] nf_conntrack_ftp_fini+0x2f/0x70 [nf_conntrack_ftp]
->>>>>  [<ffffffff8027bcc5>] sys_delete_module+0x1a5/0x270
->>>>>  [<ffffffff8020d329>] ? retint_swapgs+0xe/0x13
->>>>>  [<ffffffff80271bf2>] ? trace_hardirqs_on_caller+0x162/0x1b0
->>>>>  [<ffffffff80292121>] ? audit_syscall_entry+0x191/0x1c0
->>>>>  [<ffffffff80526dae>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->>>>>  [<ffffffff8020c84b>] system_call_fastpath+0x16/0x1b
->>>>> Code: c6 00 00 0f 82 66 ff ff ff 49 8b 9e d8 05 00 00 48 85 db 75 16
->>>>> e9 8e 00 00 00 0f 1f 44 00 00 48 85 c0 0f 84 80 00 00 00 48 89 c3 <0f>
->>>>> b6 4b 37 48 8b 03 48 8d 14 cd 00 00 00 00 0f 18 08 48 29 ca
->>>>> RIP  [<ffffffffa02b2c2c>] nf_conntrack_helper_unregister+0x16c/0x320
->>>>> [nf_conntrack]
->>>>>  RSP <ffff88013982fe68>
->>>>> CR2: 0000000000000038
->>>>> ---[ end trace bc3a0ede3d0084db ]---
->>>>>
->>>> I am currently traveling and wont be able to help you before next week.
->>>>
->>>> I added netdev, Patrick, and netfilter-devel in CC so that more eyes can take a look.
->>> Thanks for the report, I'll have a look at this. Zdenek, please
->>> send me the nf_conntrack.ko file used in the above oops. Thanks.
->>>
->>
->> Ok
->>
->> I've found the solution for my problem.
->>
->> http://thread.gmane.org/gmane.comp.security.firewalls.netfilter.devel/30483
->>
->> I've made this small fix from this thread:
->>
->> diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core
->> index b5869b9..68488f8 100644
->> --- a/net/netfilter/nf_conntrack_core.c
->> +++ b/net/netfilter/nf_conntrack_core.c
->> @@ -1108,6 +1108,7 @@ static void nf_conntrack_cleanup_init_net(void)
->>  {
->>         nf_conntrack_helper_fini();
->>         nf_conntrack_proto_fini();
->> +       rcu_barrier();
->>         kmem_cache_destroy(nf_conntrack_cachep);
->>  }
->>
->> @@ -1266,7 +1267,7 @@ static int nf_conntrack_init_init_net(void)
->>
->>         nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
->>                                                 sizeof(struct nf_conn),
->> -                                               0, SLAB_DESTROY_BY_RCU, NULL);
->> +                                               0, 0, NULL);
->>         if (!nf_conntrack_cachep) {
->>                 printk(KERN_ERR "Unable to create nf_conn slab cache\n");
->>                 ret = -ENOMEM;
->>
->>
->> As the thread nf_conntrack: Use rcu_barrier() and fix kmem_cache_create flags
->> seems to be samewhat 'unfinished'  and already a bit old and I've no
->> idea whether it actually fixes problem completely or just hides it in
->> my case - I'm leaving it to some RCU gurus to fix this issue.
->>
->> All I could say is - this this extra rcu_barrier() and removal of
->> SLAB_DESTROY removes my GPF on reboot.
->>
->> Zdenek
->
-> Ouch..
->
-> Dont think such a patch makes your kernel better, it'll crash too.
->
-> You cannot remove SLAB_DESTROY_BY_RCU like this, it's there for very good reasons.
->
+On Thu, Sep 03, 2009 at 12:18:38AM +0200, Christoph Hellwig wrote:
+>  - ocfs2_sync_file:
+> 
+> 	does it's own data writeback, but no wait.  probably needs the wait.
 
-Well I'm not noticing any ill behavior - also note - rcu_barrier() is
-there before the cache is destroyed.
-But as I said - it's just my shot into the dark - which seems to work for me...
+	The journal force commit will wait in ordered mode.  In
+writeback mode we currently allow the usual writeback problem.
 
-Zdenek
+Joel
+
+-- 
+
+"There are some experiences in life which should not be demanded
+ twice from any man, and one of them is listening to the Brahms Requiem."
+        - George Bernard Shaw
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
