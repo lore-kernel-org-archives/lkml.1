@@ -1,164 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZIBVo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZIBVpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753136AbZIBVo4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 17:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZIBVoz
+	id S1753532AbZIBVpI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 17:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753255AbZIBVpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 17:44:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:2521 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752858AbZIBVoy (ORCPT
+	Wed, 2 Sep 2009 17:45:06 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:64486 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753169AbZIBVpD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 17:44:54 -0400
+	Wed, 2 Sep 2009 17:45:03 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hrOMpeP1GJ+CCuII74cgXqJONlmTPhBcF5Y5zQaQg/q84pwV2IK+vvWZJ0zq+34zk4
-         +gGC2NxwwEQRq6A4xqmgo2buc8e5iunplDQszNEnrkN4H+ZjYSQZzu3dKZQ378UhuIBE
-         8sXIDdfPwy1qo4i8iMirxUI86kxFf0RXDgdJ4=
-Date: Wed, 2 Sep 2009 23:44:52 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       lizf@cn.fujitsu.com, efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf trace: Sample the CPU too
-Message-ID: <20090902214449.GA6072@nowhere>
-References: <tip-cd6feeeafddbef6abfe4d90fb26e42fd844d34ed@git.kernel.org>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=A5q/wmPx3TtygQRPb9nprboD3QhwLmr+mCKhMCmtBRbU6uojxtUKKJR+txF5ELsVGF
+         WvZ2UuDwE2xB+8asVGzL9aS5E+F5Cl3NQY3SxuwiI2IeNKT+rHKv8qTYJMFY5WRE19zm
+         QpO1F6Ytq8ABWKlCyv+qEhLyfrRw+CR0wS0wo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-cd6feeeafddbef6abfe4d90fb26e42fd844d34ed@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4A896324.3040104@trash.net>
+References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
+	 <c4e36d110908110832y21fba830ub8804613df571228@mail.gmail.com>
+	 <20090811154853.GF2763@sgi.com>
+	 <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>
+	 <c4e36d110908121516u504809e9y537e9babfa95df1d@mail.gmail.com>
+	 <alpine.DEB.1.10.0908121820410.3257@gentwo.org>
+	 <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>
+	 <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com>
+	 <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net>
+Date: Wed, 2 Sep 2009 23:45:03 +0200
+Message-ID: <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
+Subject: Re: System freeze on reboot - general protection fault
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 07:31:51PM +0000, tip-bot for Ingo Molnar wrote:
-> Commit-ID:  cd6feeeafddbef6abfe4d90fb26e42fd844d34ed
-> Gitweb:     http://git.kernel.org/tip/cd6feeeafddbef6abfe4d90fb26e42fd844d34ed
-> Author:     Ingo Molnar <mingo@elte.hu>
-> AuthorDate: Wed, 2 Sep 2009 20:20:38 +0200
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 2 Sep 2009 21:28:50 +0200
-> 
-> perf trace: Sample the CPU too
-> 
-> Sample, record, parse and print the CPU field - it had all zeroes before.
-> 
-> Before (watch the second column, the CPU values):
-> 
->             perf-32685 [000]     0.000000: sched_wakeup_new: task perf:32686 [120] success=1 [011]
->             perf-32685 [000]     0.000000: sched_migrate_task: task perf:32685 [120] from: 1  to: 11
->             perf-32685 [000]     0.000000: sched_process_fork: parent perf:32685  child perf:32686
->             true-32686 [000]     0.000000: sched_wakeup: task migration/11:25 [0] success=1 [011]
->             true-32686 [000]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
->             true-32686 [000]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
->             perf-32685 [000]     0.000000: sched_switch: task perf:32685 [120] (S) ==> swapper:0 [140]
->             true-32686 [000]     0.000000: sched_switch: task perf:32686 [120] (R) ==> migration/11:25 [0]
->             true-32686 [000]     0.000000: sched_switch: task perf:32686 [120] (R) ==> distccd:12793 [125]
->             true-32686 [000]     0.000000: sched_switch: task true:32686 [120] (R) ==> distccd:12793 [125]
->             true-32686 [000]     0.000000: sched_process_exit: task true:32686 [120]
->             true-32686 [000]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767985949080 [ns]
->             true-32686 [000]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767986139446 [ns]
->             true-32686 [000]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 132844 [ns]
->             true-32686 [000]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 131724 [ns]
-> 
-> After:
-> 
->             perf-32685 [001]     0.000000: sched_wakeup_new: task perf:32686 [120] success=1 [011]
->             perf-32685 [001]     0.000000: sched_migrate_task: task perf:32685 [120] from: 1  to: 11
->             perf-32685 [001]     0.000000: sched_process_fork: parent perf:32685  child perf:32686
->             true-32686 [011]     0.000000: sched_wakeup: task migration/11:25 [0] success=1 [011]
->             true-32686 [015]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
->             true-32686 [015]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
->             perf-32685 [001]     0.000000: sched_switch: task perf:32685 [120] (S) ==> swapper:0 [140]
->             true-32686 [011]     0.000000: sched_switch: task perf:32686 [120] (R) ==> migration/11:25 [0]
->             true-32686 [015]     0.000000: sched_switch: task perf:32686 [120] (R) ==> distccd:12793 [125]
->             true-32686 [015]     0.000000: sched_switch: task true:32686 [120] (R) ==> distccd:12793 [125]
->             true-32686 [015]     0.000000: sched_process_exit: task true:32686 [120]
->             true-32686 [015]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767985949080 [ns]
->             true-32686 [015]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767986139446 [ns]
->             true-32686 [015]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 132844 [ns]
->             true-32686 [015]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 131724 [ns]
-> 
-> So we can now see how this workload migrated between CPUs.
-> 
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> Cc: Li Zefan <lizf@cn.fujitsu.com>
-> Cc: Mike Galbraith <efault@gmx.de>
-> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> LKML-Reference: <new-submission>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  tools/perf/builtin-record.c |    4 +++-
->  tools/perf/builtin-trace.c  |    9 ++++++++-
->  2 files changed, 11 insertions(+), 2 deletions(-)
-> 
-> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
-> index add514d..ff93f8e 100644
-> --- a/tools/perf/builtin-record.c
-> +++ b/tools/perf/builtin-record.c
-> @@ -403,8 +403,10 @@ static void create_counter(int counter, int cpu, pid_t pid)
->  	if (call_graph)
->  		attr->sample_type	|= PERF_SAMPLE_CALLCHAIN;
->  
-> -	if (raw_samples)
-> +	if (raw_samples) {
->  		attr->sample_type	|= PERF_SAMPLE_RAW;
-> +		attr->sample_type	|= PERF_SAMPLE_CPU;
-> +	}
->  
->  	attr->mmap		= track;
->  	attr->comm		= track;
-> diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
-> index 8247fd0..bbe4c44 100644
-> --- a/tools/perf/builtin-trace.c
-> +++ b/tools/perf/builtin-trace.c
-> @@ -58,12 +58,19 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
->  	struct dso *dso = NULL;
->  	struct thread *thread;
->  	u64 ip = event->ip.ip;
-> +	u32 cpu = -1;
->  	u64 period = 1;
->  	void *more_data = event->ip.__more_data;
->  	int cpumode;
->  
->  	thread = threads__findnew(event->ip.pid, &threads, &last_match);
->  
-> +	if (sample_type & PERF_SAMPLE_CPU) {
-> +		cpu = *(u32 *)more_data;
-> +		more_data += sizeof(u32);
-> +		more_data += sizeof(u32); /* reserved */
-> +	}
-> +
+2009/8/17 Patrick McHardy <kaber@trash.net>:
+> Eric Dumazet wrote:
+>> Zdenek Kabelac a écrit :
+>>>  [<ffffffffa02c502f>] nf_conntrack_ftp_fini+0x2f/0x70 [nf_conntrack_ftp]
+>>>  [<ffffffff8027bcc5>] sys_delete_module+0x1a5/0x270
+>>>  [<ffffffff8020d329>] ? retint_swapgs+0xe/0x13
+>>>  [<ffffffff80271bf2>] ? trace_hardirqs_on_caller+0x162/0x1b0
+>>>  [<ffffffff80292121>] ? audit_syscall_entry+0x191/0x1c0
+>>>  [<ffffffff80526dae>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>>>  [<ffffffff8020c84b>] system_call_fastpath+0x16/0x1b
+>>> Code: c6 00 00 0f 82 66 ff ff ff 49 8b 9e d8 05 00 00 48 85 db 75 16
+>>> e9 8e 00 00 00 0f 1f 44 00 00 48 85 c0 0f 84 80 00 00 00 48 89 c3 <0f>
+>>> b6 4b 37 48 8b 03 48 8d 14 cd 00 00 00 00 0f 18 08 48 29 ca
+>>> RIP  [<ffffffffa02b2c2c>] nf_conntrack_helper_unregister+0x16c/0x320
+>>> [nf_conntrack]
+>>>  RSP <ffff88013982fe68>
+>>> CR2: 0000000000000038
+>>> ---[ end trace bc3a0ede3d0084db ]---
+>>>
+>> I am currently traveling and wont be able to help you before next week.
+>>
+>> I added netdev, Patrick, and netfilter-devel in CC so that more eyes can take a look.
+>
+> Thanks for the report, I'll have a look at this. Zdenek, please
+> send me the nf_conntrack.ko file used in the above oops. Thanks.
+>
+
+Ok
+
+I've found the solution for my problem.
+
+http://thread.gmane.org/gmane.comp.security.firewalls.netfilter.devel/30483
+
+I've made this small fix from this thread:
+
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core
+index b5869b9..68488f8 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -1108,6 +1108,7 @@ static void nf_conntrack_cleanup_init_net(void)
+ {
+        nf_conntrack_helper_fini();
+        nf_conntrack_proto_fini();
++       rcu_barrier();
+        kmem_cache_destroy(nf_conntrack_cachep);
+ }
+
+@@ -1266,7 +1267,7 @@ static int nf_conntrack_init_init_net(void)
+
+        nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
+                                                sizeof(struct nf_conn),
+-                                               0, SLAB_DESTROY_BY_RCU, NULL);
++                                               0, 0, NULL);
+        if (!nf_conntrack_cachep) {
+                printk(KERN_ERR "Unable to create nf_conn slab cache\n");
+                ret = -ENOMEM;
 
 
-Cool, I've searched an easy way to have the cpu and I wasn't even aware of
-this type of event :-)
+As the thread nf_conntrack: Use rcu_barrier() and fix kmem_cache_create flags
+seems to be samewhat 'unfinished'  and already a bit old and I've no
+idea whether it actually fixes problem completely or just hides it in
+my case - I'm leaving it to some RCU gurus to fix this issue.
 
+All I could say is - this this extra rcu_barrier() and removal of
+SLAB_DESTROY removes my GPF on reboot.
 
-What about the timestamp now? I guess a specific field should be filled
-for tracepoint raw samples.
-Or may be for every raw samples?
-
-
-
->  	if (sample_type & PERF_SAMPLE_PERIOD) {
->  		period = *(u64 *)more_data;
->  		more_data += sizeof(u64);
-> @@ -120,7 +127,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
->  		 * field, although it should be the same than this perf
->  		 * event pid
->  		 */
-> -		print_event(0, raw->data, raw->size, 0, thread->comm);
-> +		print_event(cpu, raw->data, raw->size, 0, thread->comm);
->  	}
->  	total += period;
->  
-
+Zdenek
