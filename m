@@ -1,140 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751297AbZIBJwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751423AbZIBKNe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751297AbZIBJwu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 05:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751012AbZIBJwu
+	id S1751423AbZIBKNe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 06:13:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751350AbZIBKNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 05:52:50 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:33001 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750928AbZIBJwt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 05:52:49 -0400
-Date: Wed, 02 Sep 2009 18:52:51 +0900 (JST)
-Message-Id: <20090902.185251.193693849.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: nauman@google.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
- track async bios.
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090901141142.GA13709@redhat.com>
-References: <e98e18940908311651s26de5b70ye6f4a82402956309@mail.gmail.com>
-	<20090901.160004.226800357.ryov@valinux.co.jp>
-	<20090901141142.GA13709@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 2 Sep 2009 06:13:34 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35060 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751073AbZIBKNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 06:13:33 -0400
+Date: Wed, 2 Sep 2009 12:13:33 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       tytso@mit.edu, akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 1/8] writeback: get rid of generic_sync_sb_inodes()
+	export
+Message-ID: <20090902101333.GB17842@duck.novell.com>
+References: <1251880967-1136-1-git-send-email-jens.axboe@oracle.com> <1251880967-1136-2-git-send-email-jens.axboe@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251880967-1136-2-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-
-> > > > - The primary use case of tracking async context seems be that if a
-> > > >  process T1 in group G1 mmaps a big file and then another process T2 in
-> > > >  group G2, asks for memory and triggers reclaim and generates writes of
-> > > >  the file pages mapped by T1, then these writes should not be charged to
-> > > >  T2, hence blkio_cgroup pages.
-> > > >
-> > > >  But the flip side of this might be that group G2 is a low weight group
-> > > >  and probably too busy also right now, which will delay the write out
-> > > >  and possibly T2 will wait longer for memory to be allocated.
-> > 
-> > In order to avoid this wait, dm-ioband issues IO which has a page with
-> > PG_Reclaim as early as possible.
-> > 
+On Wed 02-09-09 10:42:40, Jens Axboe wrote:
+> This adds two new exported functions:
 > 
-> So in above case IO is still charged to G2 but you keep a track if page is
-> PG_Reclaim then releae the this bio before other bios queued up in the
-> group?
+> - sync_inodes_sb(), which writes out dirty inodes on a super_block, and
+> - sync_inodes_sb_wait(), which does the same but also waits for IO
+>   completion.
+  This is a nice cleanup. I only find the name sync_inodes_sb() slightly
+misleading and the comment by that function as well. The name should rather
+be something like writeback_inodes_sb() (and sync_inodes_sb_wait() could
+stay just sync_inodes_sb()) - the writeback it does does not really
+guarantee anything. For example it can skip inodes or pages it does not
+like for some reason. What that function really does is - try to write some
+dirty pages on that superblock and don't try too hard.
+  I don't insist on the renaming of the function but I really thing the
+comment should be improved.
 
-Yes, the bio with PG_Reclaim page is given priority over the other bios.
+								Honza
 
-> > > > - At one point of time Andrew mentioned that buffered writes are generally a
-> > > >  big problem and one needs to map these to owner's group. Though I am not
-> > > >  very sure what specific problem he was referring to. Can we attribute
-> > > >  buffered writes to pdflush threads and move all pdflush threads in a
-> > > >  cgroup to limit system wide write out activity?
-> > 
-> > I think that buffered writes also should be controlled per cgroup as
-> > well as synchronous writes.
-> > 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  drivers/staging/pohmelfs/inode.c |    9 +----
+>  fs/fs-writeback.c                |   68 ++++++++++++++++++++++---------------
+>  fs/sync.c                        |    8 +++--
+>  fs/ubifs/budget.c                |   16 +--------
+>  fs/ubifs/super.c                 |    8 +----
+>  include/linux/fs.h               |    2 -
+>  include/linux/writeback.h        |    3 +-
+>  7 files changed, 51 insertions(+), 63 deletions(-)
 > 
-> But it is hard to achieve fairness for buffered writes becase we don't
-> create complete parallel IO paths and not necessarily higher weight
-> process dispatches more buffered writes to IO scheduler. (Due to page
-> cache buffered write logic).
+> diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+> index 7b60579..bb6db36 100644
+> --- a/drivers/staging/pohmelfs/inode.c
+> +++ b/drivers/staging/pohmelfs/inode.c
+> @@ -1950,14 +1950,7 @@ static int pohmelfs_get_sb(struct file_system_type *fs_type,
+>   */
+>  static void pohmelfs_kill_super(struct super_block *sb)
+>  {
+> -	struct writeback_control wbc = {
+> -		.sync_mode	= WB_SYNC_ALL,
+> -		.range_start	= 0,
+> -		.range_end	= LLONG_MAX,
+> -		.nr_to_write	= LONG_MAX,
+> -	};
+> -	generic_sync_sb_inodes(sb, &wbc);
+> -
+> +	sync_sb_inodes_wait(sb);
+>  	kill_anon_super(sb);
+>  }
+>  
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index c54226b..382b15c 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -458,8 +458,8 @@ writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+>   * on the writer throttling path, and we get decent balancing between many
+>   * throttled threads: we don't want them all piling up on inode_sync_wait.
+>   */
+> -void generic_sync_sb_inodes(struct super_block *sb,
+> -				struct writeback_control *wbc)
+> +static void generic_sync_sb_inodes(struct super_block *sb,
+> +				   struct writeback_control *wbc)
+>  {
+>  	const unsigned long start = jiffies;	/* livelock avoidance */
+>  	int sync = wbc->sync_mode == WB_SYNC_ALL;
+> @@ -593,13 +593,6 @@ void generic_sync_sb_inodes(struct super_block *sb,
+>  
+>  	return;		/* Leave any unwritten inodes on s_io */
+>  }
+> -EXPORT_SYMBOL_GPL(generic_sync_sb_inodes);
+> -
+> -static void sync_sb_inodes(struct super_block *sb,
+> -				struct writeback_control *wbc)
+> -{
+> -	generic_sync_sb_inodes(sb, wbc);
+> -}
+>  
+>  /*
+>   * Start writeback of dirty pagecache data against all unlocked inodes.
+> @@ -640,7 +633,7 @@ restart:
+>  			 */
+>  			if (down_read_trylock(&sb->s_umount)) {
+>  				if (sb->s_root)
+> -					sync_sb_inodes(sb, wbc);
+> +					generic_sync_sb_inodes(sb, wbc);
+>  				up_read(&sb->s_umount);
+>  			}
+>  			spin_lock(&sb_lock);
+> @@ -653,35 +646,54 @@ restart:
+>  	spin_unlock(&sb_lock);
+>  }
+>  
+> -/*
+> - * writeback and wait upon the filesystem's dirty inodes.  The caller will
+> - * do this in two passes - one to write, and one to wait.
+> - *
+> - * A finite limit is set on the number of pages which will be written.
+> - * To prevent infinite livelock of sys_sync().
+> +/**
+> + * sync_inodes_sb	-	sync sb inode pages
+> + * @sb: the superblock
+>   *
+> - * We add in the number of potentially dirty inodes, because each inode write
+> - * can dirty pagecache in the underlying blockdev.
+> + * This function writes dirty inodes belonging to this super_block. It does
+> + * not wait for completion of IO.
+>   */
+> -void sync_inodes_sb(struct super_block *sb, int wait)
+> +long sync_inodes_sb(struct super_block *sb)
+>  {
+>  	struct writeback_control wbc = {
+> -		.sync_mode	= wait ? WB_SYNC_ALL : WB_SYNC_NONE,
+> +		.sync_mode	= WB_SYNC_NONE,
+>  		.range_start	= 0,
+>  		.range_end	= LLONG_MAX,
+>  	};
+> +	unsigned long nr_dirty = global_page_state(NR_FILE_DIRTY);
+> +	unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
+> +	long nr_to_write;
+>  
+> -	if (!wait) {
+> -		unsigned long nr_dirty = global_page_state(NR_FILE_DIRTY);
+> -		unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
+> -
+> -		wbc.nr_to_write = nr_dirty + nr_unstable +
+> +	nr_to_write = nr_dirty + nr_unstable +
+>  			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
+> -	} else
+> -		wbc.nr_to_write = LONG_MAX; /* doesn't actually matter */
+>  
+> -	sync_sb_inodes(sb, &wbc);
+> +	wbc.nr_to_write = nr_to_write;
+> +	generic_sync_sb_inodes(sb, &wbc);
+> +	return nr_to_write - wbc.nr_to_write;
+> +}
+> +EXPORT_SYMBOL(sync_inodes_sb);
+> +
+> +/**
+> + * sync_inodes_sb_wait	-	sync sb inode pages
+> + * @sb: the superblock
+> + *
+> + * This function writes and waits on any dirty inode belonging to this
+> + * super_block.
+> + */
+> +long sync_inodes_sb_wait(struct super_block *sb)
+> +{
+> +	struct writeback_control wbc = {
+> +		.sync_mode	= WB_SYNC_ALL,
+> +		.range_start	= 0,
+> +		.range_end	= LLONG_MAX,
+> +	};
+> +	long nr_to_write = LLONG_MAX; /* doesn't actually matter */
+> +
+> +	wbc.nr_to_write = nr_to_write;
+> +	generic_sync_sb_inodes(sb, &wbc);
+> +	return nr_to_write - wbc.nr_to_write;
+>  }
+> +EXPORT_SYMBOL(sync_inodes_sb_wait);
+>  
+>  /**
+>   * write_inode_now	-	write an inode to disk
+> diff --git a/fs/sync.c b/fs/sync.c
+> index 3422ba6..431dba2 100644
+> --- a/fs/sync.c
+> +++ b/fs/sync.c
+> @@ -28,11 +28,13 @@
+>  static int __sync_filesystem(struct super_block *sb, int wait)
+>  {
+>  	/* Avoid doing twice syncing and cache pruning for quota sync */
+> -	if (!wait)
+> +	if (!wait) {
+>  		writeout_quota_sb(sb, -1);
+> -	else
+> +		sync_inodes_sb(sb);
+> +	} else {
+>  		sync_quota_sb(sb, -1);
+> -	sync_inodes_sb(sb, wait);
+> +		sync_inodes_sb_wait(sb);
+> +	}
+>  	if (sb->s_op->sync_fs)
+>  		sb->s_op->sync_fs(sb, wait);
+>  	return __sync_blockdev(sb->s_bdev, wait);
+> diff --git a/fs/ubifs/budget.c b/fs/ubifs/budget.c
+> index eaf6d89..341edd1 100644
+> --- a/fs/ubifs/budget.c
+> +++ b/fs/ubifs/budget.c
+> @@ -65,26 +65,14 @@
+>  static int shrink_liability(struct ubifs_info *c, int nr_to_write)
+>  {
+>  	int nr_written;
+> -	struct writeback_control wbc = {
+> -		.sync_mode   = WB_SYNC_NONE,
+> -		.range_end   = LLONG_MAX,
+> -		.nr_to_write = nr_to_write,
+> -	};
+> -
+> -	generic_sync_sb_inodes(c->vfs_sb, &wbc);
+> -	nr_written = nr_to_write - wbc.nr_to_write;
+>  
+> +	nr_written = sync_inodes_sb(c->vfs_sb);
+>  	if (!nr_written) {
+>  		/*
+>  		 * Re-try again but wait on pages/inodes which are being
+>  		 * written-back concurrently (e.g., by pdflush).
+>  		 */
+> -		memset(&wbc, 0, sizeof(struct writeback_control));
+> -		wbc.sync_mode   = WB_SYNC_ALL;
+> -		wbc.range_end   = LLONG_MAX;
+> -		wbc.nr_to_write = nr_to_write;
+> -		generic_sync_sb_inodes(c->vfs_sb, &wbc);
+> -		nr_written = nr_to_write - wbc.nr_to_write;
+> +		nr_written = sync_inodes_sb_wait(c->vfs_sb);
+>  	}
+>  
+>  	dbg_budg("%d pages were written back", nr_written);
+> diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
+> index 26d2e0d..0caa3f1 100644
+> --- a/fs/ubifs/super.c
+> +++ b/fs/ubifs/super.c
+> @@ -438,12 +438,6 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
+>  {
+>  	int i, err;
+>  	struct ubifs_info *c = sb->s_fs_info;
+> -	struct writeback_control wbc = {
+> -		.sync_mode   = WB_SYNC_ALL,
+> -		.range_start = 0,
+> -		.range_end   = LLONG_MAX,
+> -		.nr_to_write = LONG_MAX,
+> -	};
+>  
+>  	/*
+>  	 * Zero @wait is just an advisory thing to help the file system shove
+> @@ -462,7 +456,7 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
+>  	 * the user be able to get more accurate results of 'statfs()' after
+>  	 * they synchronize the file system.
+>  	 */
+> -	generic_sync_sb_inodes(sb, &wbc);
+> +	sync_inodes_sb_wait(sb);
+>  
+>  	/*
+>  	 * Synchronize write buffers, because 'ubifs_run_commit()' does not
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 73e9b64..07b0f66 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -2070,8 +2070,6 @@ static inline void invalidate_remote_inode(struct inode *inode)
+>  extern int invalidate_inode_pages2(struct address_space *mapping);
+>  extern int invalidate_inode_pages2_range(struct address_space *mapping,
+>  					 pgoff_t start, pgoff_t end);
+> -extern void generic_sync_sb_inodes(struct super_block *sb,
+> -				struct writeback_control *wbc);
+>  extern int write_inode_now(struct inode *, int);
+>  extern int filemap_fdatawrite(struct address_space *);
+>  extern int filemap_flush(struct address_space *);
+> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+> index 3224820..f26a60b 100644
+> --- a/include/linux/writeback.h
+> +++ b/include/linux/writeback.h
+> @@ -78,7 +78,8 @@ struct writeback_control {
+>   */	
+>  void writeback_inodes(struct writeback_control *wbc);
+>  int inode_wait(void *);
+> -void sync_inodes_sb(struct super_block *, int wait);
+> +long sync_inodes_sb(struct super_block *);
+> +long sync_inodes_sb_wait(struct super_block *);
+>  
+>  /* writeback.h requires fs.h; it, too, is not included from here. */
+>  static inline void wait_on_inode(struct inode *inode)
+> -- 
+> 1.6.4.1.207.g68ea
 > 
-> So in some cases we might see buffered write fairness and in other cases
-> not. For example, run two dd processes in two groups doing buffered writes
-> and it is hard to achieve fairness between these.
-> 
-> That's why the idea that if we can't ensure Buffered write vs Buffered
-> write fairness in all the cases, then does it make sense to attribute
-> buffered writes to pdflush and put pdflush threads into a separate group
-> to limit system wide write out activity. 
-
-If all buffered writes are treated as system wide activities, it does
-not mean that bandwidth is being controlled. It is true that pdflush
-doesn't do I/O according to weight, but bandwidth (including for
-bufferd writes) should be reserved for each cgroup.
-
-> > > > - Somebody also gave an example where there is a memory hogging process and
-> > > >  possibly pushes out some processes to swap. It does not sound fair to
-> > > >  charge those proccess for that swap writeout. These processes never
-> > > >  requested swap IO.
-> > 
-> > I think that swap writeouts should be charged to the memory hogging
-> > process, because the process consumes more resources and it should get
-> > a penalty.
-> > 
-> 
-> A process requesting memory gets IO penalty? IMHO, swapping is a kernel 
-> mechanism and kernel's way of providing extended RAM. If we want to solve
-> the issue of memory hogging by a process then right way to solve is to use
-> memory controller and not by charging the process for IO activity.
-> Instead, proabably a more suitable way is to charge swap activity to root
-> group (where by default all the kernel related activity goes).   
-
-No. In the current blkio-cgroup, a process which uses a large amount
-of memory gets penalty, not a memory requester.
-
-As you wrote, using both io-controller and memory controller are
-required to prevent swap-out caused by memory consumption on another
-cgroup.
-
-> > > > - If there are multiple buffered writers in the system, then those writers
-> > > >  can also be forced to writeout some pages to disk before they are
-> > > >  allowed to dirty more pages. As per the page cache design, any writer
-> > > >  can pick any inode and start writing out pages. So it can happen a
-> > > >  weight group task is writting out pages dirtied by a lower weight group
-> > > >  task. If, async bio is mapped to owner's group, it might happen that
-> > > >  higher weight group task might be made to sleep on lower weight group
-> > > >  task because request descriptors are all consumed up.
-> > 
-> > As mentioned above, in dm-ioband, the bio is charged to the page owner
-> > and issued immediately.
-> 
-> But you are doing it only for selected pages and not for all buffered
-> writes?
-
-I'm sorry, I wrote wrong on the previous mail, IO for writing out
-page-cache pages is not issued immediately, it is throttled by
-dm-ioband.
-
-Anyway, there is a case where a higher weight group task is made
-to sleep, but if we reserve the memory for each cgroup by memory
-controller in advance, we can avoid the task put to sleep.
-
-Thanks,
-Ryo Tsuruta
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
