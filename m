@@ -1,75 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZIBTWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZIBTXc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbZIBTWq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 15:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753185AbZIBTWp
+	id S1753359AbZIBTXc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 15:23:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZIBTXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 15:22:45 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:42205 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbZIBTWo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 15:22:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=fLKENdcE5RQLjn/BxcwA8meZSejF/605znijOYj2A9CtXZrk+vdoehgrWmxR4CysFk
-         qyInHXY37PjUYOwMOLsq6jmZRXb4N2GqiVPP0S4JZokJsvEaz24ZfCrQc8PTZHPU6WbA
-         gw8pm7rx4tut6EjZk0u8tO1cX/MY6GTWcS9bI=
+	Wed, 2 Sep 2009 15:23:31 -0400
+Received: from mail.tmr.com ([64.65.253.246]:58655 "EHLO partygirl.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751557AbZIBTXa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 15:23:30 -0400
+Message-ID: <4A9EC633.2000803@tmr.com>
+Date: Wed, 02 Sep 2009 15:23:31 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090507 Fedora/1.1.16-1.fc9 pango-text SeaMonkey/1.1.16
 MIME-Version: 1.0
-In-Reply-To: <1251789947.3483.215.camel@rzhang-dt>
-References: <1251789947.3483.215.camel@rzhang-dt>
-Date: Wed, 2 Sep 2009 20:22:45 +0100
-Message-ID: <9b2b86520909021222k6cc49456vc3232e488eef9e37@mail.gmail.com>
-Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Pavel Machek <pavel@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: LowFree pattern
+References: <fb7befa20909020932k74fa9e37x1eeabdb494835bb9@mail.gmail.com>
+In-Reply-To: <fb7befa20909020932k74fa9e37x1eeabdb494835bb9@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/1/09, Zhang Rui <rui.zhang@intel.com> wrote:
->
-> Introduce ALS sysfs class.
->
-> ALS sysfs class provides a standard sysfs interface for
-> Ambient Light Sensor devices.
->
-> please read Documentation/ABI/testing/sysfs-class-als for
-> detailed sysfs designs.
->
-> ﻿CC: Pavel Machek <pavel@ucw.cz>
-> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> ---
+Adayadil Thomas wrote:
+> Greetings.
+> 
+> I am running a centos linux with 2.6.20 version kernel. The system has
+> 1G of RAM.
+> 
+> As time goes by the LowFree becomes really low. Right now it shows
+> 137M .. but it goes as low as 8M or so
+> 
+> The command -
+> echo 3 > /proc/sys/vm/drop_caches
+> brings back the LowFree to way up high.
+> 
+> The question I have is whether the system by itself release the cache
+> (drop cache) automatically
+> to maintain a reasonable LowFree?
+> Is this configurable?
+> 
+You can change the parameters in /rpoc/sys/vm if you wish, but what makes you
+think this is needed? Cache is dropped as memory is needed, and drop_cache in
+general is a good way to slow the system.
 
-> +++ linux-2.6/drivers/als/Kconfig
-> @@ -0,0 +1,10 @@
-> +#
-> +# Ambient Light Sensor sysfs device configuration
-> +#
-> +
-> +menuconfig ALS
-> +	tristate "Ambient Light Sensor sysfs device"
-> +	help
-> +	  This framework provides a generic sysfs interface for
-> +	  Ambient Light Sensor devices.
-> +	  If you want this support, you should say Y or M here.
+> Any information or help is much appreciated.
+> 
+What problem did you see that you traced to LowFree?
 
-Gratuitous nitpick:
-Can this option be made non-visible (or hidden behind CONFIG_EMBEDDED)?
+> 
+> cat /proc/meminfo
+> MemTotal:      1034788 kB
+> MemFree:        138240 kB
+> Buffers:         99260 kB
+> Cached:         177776 kB
+> SwapCached:      51740 kB
+> Active:         605172 kB
+> Inactive:       113572 kB
+> HighTotal:      130720 kB
+> HighFree:          252 kB
+> LowTotal:       904068 kB
+> LowFree:        137988 kB
+> SwapTotal:     1048568 kB
+> SwapFree:       976332 kB
+> Dirty:             380 kB
+> Writeback:           0 kB
+> AnonPages:      441348 kB
+> Mapped:          15540 kB
+> Slab:           146088 kB
+> SReclaimable:   104288 kB
+> SUnreclaim:      41800 kB
+> PageTables:       1596 kB
+> NFS_Unstable:        0 kB
+> Bounce:              0 kB
+> CommitLimit:   1565960 kB
+> Committed_AS:   590576 kB
+> VmallocTotal:   114680 kB
+> VmallocUsed:     15052 kB
+> VmallocChunk:    99348 kB
 
-Maybe you copied the pattern of the thermal sysfs interface - but the
-ACPI thermal driver is useful to keep your computer cool even without
-the sysfs interface.  ALS drivers are useless without the sysfs
-interface, no?
 
-Regards
-Alan
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
