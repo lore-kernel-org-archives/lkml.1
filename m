@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752762AbZIBODK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZIBOBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752762AbZIBODK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 10:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752616AbZIBODI
+	id S1752667AbZIBOBz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 10:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752657AbZIBOBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 10:03:08 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49733 "EHLO mx1.suse.de"
+	Wed, 2 Sep 2009 10:01:53 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:41781 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbZIBN72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752356AbZIBN72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 2 Sep 2009 09:59:28 -0400
 From: Jan Kara <jack@suse.cz>
 To: linux-fsdevel@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>, hch@lst.de, Jan Kara <jack@suse.cz>
-Subject: [PATCH 14/16] pohmelfs: Use new syncing helper
-Date: Wed,  2 Sep 2009 15:59:24 +0200
-Message-Id: <1251899966-7316-15-git-send-email-jack@suse.cz>
+Cc: LKML <linux-kernel@vger.kernel.org>, hch@lst.de, Jan Kara <jack@suse.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: [PATCH 15/16] fat: Opencode sync_page_range_nolock()
+Date: Wed,  2 Sep 2009 15:59:25 +0200
+Message-Id: <1251899966-7316-16-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1251899966-7316-1-git-send-email-jack@suse.cz>
 References: <1251899966-7316-1-git-send-email-jack@suse.cz>
@@ -22,31 +23,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use new generic_write_sync() helper instead of sync_page_range().
+fat_cont_expand() is the only user of sync_page_range_nolock(). It's also the
+only user of generic_osync_inode() which does not have a file open.  So
+opencode needed actions for FAT so that we can convert generic_osync_inode() to
+a standard syncing path.
 
-Acked-by: Evgeniy Polyakov <zbr@ioremap.net>
+Update a comment about generic_osync_inode().
+
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- drivers/staging/pohmelfs/inode.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ fs/fat/file.c |   22 ++++++++++++++++++++--
+ fs/fat/misc.c |    4 ++--
+ 2 files changed, 22 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
-index 17801a5..a2e5eed 100644
---- a/drivers/staging/pohmelfs/inode.c
-+++ b/drivers/staging/pohmelfs/inode.c
-@@ -927,10 +927,10 @@ ssize_t pohmelfs_write(struct file *file, const char __user *buf,
- 	mutex_unlock(&inode->i_mutex);
- 	WARN_ON(ret < 0);
+diff --git a/fs/fat/file.c b/fs/fat/file.c
+index f042b96..e8c159d 100644
+--- a/fs/fat/file.c
++++ b/fs/fat/file.c
+@@ -176,8 +176,26 @@ static int fat_cont_expand(struct inode *inode, loff_t size)
  
--	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+	if (ret > 0) {
- 		ssize_t err;
- 
--		err = sync_page_range(inode, mapping, pos, ret);
-+		err = generic_write_sync(file, pos, ret);
- 		if (err < 0)
- 			ret = err;
- 		WARN_ON(ret < 0);
+ 	inode->i_ctime = inode->i_mtime = CURRENT_TIME_SEC;
+ 	mark_inode_dirty(inode);
+-	if (IS_SYNC(inode))
+-		err = sync_page_range_nolock(inode, mapping, start, count);
++	if (IS_SYNC(inode)) {
++		int err2;
++
++		/*
++		 * Opencode syncing since we don't have a file open to use
++		 * standard fsync path.
++		 */
++		err = filemap_fdatawrite_range(mapping, start,
++					       start + count - 1);
++		err2 = sync_mapping_buffers(mapping);
++		if (!err)
++			err = err2;
++		err2 = write_inode_now(inode, 1);
++		if (!err)
++			err = err2;
++		if (!err) {
++			err =  filemap_fdatawait_range(mapping, start,
++						       start + count - 1);
++		}
++	}
+ out:
+ 	return err;
+ }
+diff --git a/fs/fat/misc.c b/fs/fat/misc.c
+index a6c2047..4e35be8 100644
+--- a/fs/fat/misc.c
++++ b/fs/fat/misc.c
+@@ -119,8 +119,8 @@ int fat_chain_add(struct inode *inode, int new_dclus, int nr_cluster)
+ 		MSDOS_I(inode)->i_start = new_dclus;
+ 		MSDOS_I(inode)->i_logstart = new_dclus;
+ 		/*
+-		 * Since generic_osync_inode() synchronize later if
+-		 * this is not directory, we don't here.
++		 * Since generic_write_sync() synchronizes regular files later,
++		 * we sync here only directories.
+ 		 */
+ 		if (S_ISDIR(inode->i_mode) && IS_DIRSYNC(inode)) {
+ 			ret = fat_sync_inode(inode);
 -- 
 1.6.0.2
 
