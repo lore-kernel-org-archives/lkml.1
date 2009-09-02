@@ -1,238 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755744AbZIBFVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbZIBFdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755744AbZIBFVr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 01:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755726AbZIBFVq
+	id S1755783AbZIBFdq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 01:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZIBFdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 01:21:46 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:52925 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755661AbZIBFVq (ORCPT
+	Wed, 2 Sep 2009 01:33:45 -0400
+Received: from viefep17-int.chello.at ([62.179.121.37]:55531 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755762AbZIBFdp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 01:21:46 -0400
-Date: Wed, 2 Sep 2009 10:51:38 +0530
-From: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
+	Wed, 2 Sep 2009 01:33:45 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Gautham R Shenoy <ego@in.ibm.com>
 Cc: Joel Schopp <jschopp@austin.ibm.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
-Message-ID: <20090902052138.GB5431@linux.vnet.ibm.com>
-Reply-To: arun@linux.vnet.ibm.com
-References: <20090901113704.GG7599@linux.vnet.ibm.com> <20090901113840.GH7599@linux.vnet.ibm.com> <20090901172825.GA6780@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090901172825.GA6780@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+In-Reply-To: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 Sep 2009 07:33:31 +0200
+Message-Id: <1251869611.7547.38.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Balbir Singh <balbir@linux.vnet.ibm.com> [2009-09-01 22:58:25]:
-
-> * Arun R B <arun@linux.vnet.ibm.com> [2009-09-01 17:08:40]:
+On Fri, 2009-08-28 at 15:30 +0530, Gautham R Shenoy wrote:
+> Hi,
 > 
-> > * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
-> > 
-> > Cleanup drivers/cpuidle/cpuidle.c
-> > 
-> > Cpuidle maintains a pm_idle_old void pointer because, currently in x86
-> > there is no clean way of registering and unregistering a idle function.
-> >
-> > So remove pm_idle_old and leave the responsibility of maintaining the
-> > list of registered idle loops to the architecture specific code. If the
-> > architecture registers cpuidle_idle_call as its idle loop, only then
-> > this loop is called.
-> > 
+> This is the version 2 of the patch series to provide a cpu-offline framework
+> that enables the administrators choose the state the offline CPU must be put
+> into when multiple such states are exposed by the underlying architecture.
 > 
-> It sounds as if there is a side-effect of this
-> patch on x86 (am I reading it incorrectly), which can be fixed, but
-> it will need a patch or so to get back the old behaviour on x86.
+> Version 1 of the Patch can be found here:
+> http://lkml.org/lkml/2009/8/6/236
 > 
-
-Hi Balbir,
-
-Yes, your understanding is correct. Currently, x86 exports pm_idle and
-this pm_idle is set to cpuidle_idle_call inside cpuidle.c
-
-So instead of that x86 should just export a function called
-set_arch_idle() which will be called from within
-register_idle_function() and set pm_idle to the idle handler which is
-currently being registered.
-
-I have implemented this for pseries, and in the process of doing it
-for x86 too.
-
-> > Also remove unwanted functions cpuidle_[un]install_idle_handler,
-> > cpuidle_kick_cpus()
-> >
-> > Signed-off-by: Arun R Bharadwaj <arun@linux.vnet.ibm.com>
-> > ---
-> >  drivers/cpuidle/cpuidle.c  |   51 +++++++++++++++------------------------------
-> >  drivers/cpuidle/governor.c |    3 --
-> >  2 files changed, 17 insertions(+), 37 deletions(-)
-> > 
-> > Index: linux.trees.git/drivers/cpuidle/cpuidle.c
-> > ===================================================================
-> > --- linux.trees.git.orig/drivers/cpuidle/cpuidle.c
-> > +++ linux.trees.git/drivers/cpuidle/cpuidle.c
-> > @@ -24,9 +24,14 @@ DEFINE_PER_CPU(struct cpuidle_device *, 
-> > 
-> >  DEFINE_MUTEX(cpuidle_lock);
-> >  LIST_HEAD(cpuidle_detected_devices);
-> > -static void (*pm_idle_old)(void);
-> > 
-> >  static int enabled_devices;
-> > +static int idle_function_registered;
-> > +
-> > +struct idle_function_desc cpuidle_idle_desc = {
-> > +	.name           =       "cpuidle_loop",
-> > +	.idle_func      =       cpuidle_idle_call,
-> > +};
-> > 
-> >  #if defined(CONFIG_ARCH_HAS_CPU_IDLE_WAIT)
-> >  static void cpuidle_kick_cpus(void)
-> > @@ -54,13 +59,10 @@ static void cpuidle_idle_call(void)
-> > 
-> >  	/* check if the device is ready */
-> >  	if (!dev || !dev->enabled) {
-> > -		if (pm_idle_old)
-> > -			pm_idle_old();
-> > -		else
-> >  #if defined(CONFIG_ARCH_HAS_DEFAULT_IDLE)
-> > -			default_idle();
-> > +		default_idle();
-> >  #else
-> > -			local_irq_enable();
-> > +		local_irq_enable();
-> >  #endif
-> >  		return;
-> >  	}
-> > @@ -94,35 +96,11 @@ static void cpuidle_idle_call(void)
-> >  }
-> > 
-> >  /**
-> > - * cpuidle_install_idle_handler - installs the cpuidle idle loop handler
-> > - */
-> > -void cpuidle_install_idle_handler(void)
-> > -{
-> > -	if (enabled_devices && (pm_idle != cpuidle_idle_call)) {
-> > -		/* Make sure all changes finished before we switch to new idle */
-> > -		smp_wmb();
-> > -		pm_idle = cpuidle_idle_call;
-> > -	}
-> > -}
-> > -
-> > -/**
-> > - * cpuidle_uninstall_idle_handler - uninstalls the cpuidle idle loop handler
-> > - */
-> > -void cpuidle_uninstall_idle_handler(void)
-> > -{
-> > -	if (enabled_devices && pm_idle_old && (pm_idle != pm_idle_old)) {
-> > -		pm_idle = pm_idle_old;
-> > -		cpuidle_kick_cpus();
-> > -	}
-> > -}
-> > -
-> > -/**
-> >   * cpuidle_pause_and_lock - temporarily disables CPUIDLE
-> >   */
-> >  void cpuidle_pause_and_lock(void)
-> >  {
-> >  	mutex_lock(&cpuidle_lock);
-> > -	cpuidle_uninstall_idle_handler();
-> >  }
-> > 
-> >  EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock);
-> > @@ -132,7 +110,6 @@ EXPORT_SYMBOL_GPL(cpuidle_pause_and_lock
-> >   */
-> >  void cpuidle_resume_and_unlock(void)
-> >  {
-> > -	cpuidle_install_idle_handler();
-> >  	mutex_unlock(&cpuidle_lock);
-> >  }
-> > 
+> The patch-series exposes the following sysfs tunables to
+> allow the system-adminstrator to choose the state of a CPU:
 > 
-> What does this mean for users of cpuidle_pause_and_lock/unlock?
-> Should we be calling register/unregister_idle_function here?
->
-
-Yes, you are right. I have missed out on this part.
-register/unregister_idle_function should replace
-install/uninstall_idle_handler at those places. Thanks.
-
+> To query the available hotplug states, one needs to read the sysfs tunable:
+> 	/sys/devices/system/cpu/cpu<number>/available_hotplug_states
+> To query or set the current state, on needs to read/write the sysfs tunable:
+> 	/sys/devices/system/cpu/cpu<number>/current_states
 > 
-> > @@ -287,6 +264,12 @@ static int __cpuidle_register_device(str
-> >  	return 0;
-> >  }
-> > 
-> > +static void register_cpuidle_idle_function(void)
-> > +{
-> > +	register_idle_function(&cpuidle_idle_desc);
-> > +
-> > +	idle_function_registered = 1;
+> The patchset ensures that the writes to the "current_state" sysfs file are
+> serialized against the writes to the "online" file.
 > 
-> Use booleans if possible, unless you intend to extend the meaning of
-> registered someday.
->
-
-I don't intend to extend the meaning of idle_function_registered.
-Will use boolean here.
-
-> > +}
-> >  /**
-> >   * cpuidle_register_device - registers a CPU's idle PM feature
-> >   * @dev: the cpu
-> > @@ -303,7 +286,9 @@ int cpuidle_register_device(struct cpuid
-> >  	}
-> > 
-> >  	cpuidle_enable_device(dev);
-> > -	cpuidle_install_idle_handler();
-> > +
-> > +	if (!idle_function_registered)
-> > +		register_cpuidle_idle_function();
-> > 
-> >  	mutex_unlock(&cpuidle_lock);
-> > 
-> > @@ -382,8 +367,6 @@ static int __init cpuidle_init(void)
-> >  {
-> >  	int ret;
-> > 
-> > -	pm_idle_old = pm_idle;
-> > -
-> >  	ret = cpuidle_add_class_sysfs(&cpu_sysdev_class);
-> >  	if (ret)
-> >  		return ret;
-> > Index: linux.trees.git/drivers/cpuidle/governor.c
-> > ===================================================================
-> > --- linux.trees.git.orig/drivers/cpuidle/governor.c
-> > +++ linux.trees.git/drivers/cpuidle/governor.c
-> > @@ -48,8 +48,6 @@ int cpuidle_switch_governor(struct cpuid
-> >  	if (gov == cpuidle_curr_governor)
-> >  		return 0;
-> > 
-> > -	cpuidle_uninstall_idle_handler();
-> > -
-> >  	if (cpuidle_curr_governor) {
-> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
-> >  			cpuidle_disable_device(dev);
-> > @@ -63,7 +61,6 @@ int cpuidle_switch_governor(struct cpuid
-> >  			return -EINVAL;
-> >  		list_for_each_entry(dev, &cpuidle_detected_devices, device_list)
-> >  			cpuidle_enable_device(dev);
-> > -		cpuidle_install_idle_handler();
-> >  		printk(KERN_INFO "cpuidle: using governor %s\n", gov->name);
-> >  	}
-> > 
+> This patchset also contains the offline state driver implemented for
+> pSeries. For pSeries, we define three available_hotplug_states. They are:
 > 
-> -- 
-> 	Balbir
+> 	online: The processor is online.
+> 
+> 	deallocate: This is the the default behaviour when the cpu is offlined
+> 	even in the absense of this driver. The CPU would call make an
+> 	rtas_stop_self() call and hand over the CPU back to the resource pool,
+> 	thereby effectively deallocating that vCPU from the LPAR.
+> 	NOTE: This would result in a configuration change to the LPAR
+> 	which is visible to the outside world.
+> 
+> 	deactivate: This cedes the vCPU to the hypervisor which
+> 	in turn can put the vCPU time to the best use.
+> 	NOTE: This option DOES NOT result in a configuration change
+> 	and the vCPU would be still entitled to the LPAR to which it earlier
+> 	belong to.
+> 
+> Awaiting your feedback.
 
-Thanks for the review!
---arun
+I'm still thinking this is a bad idea.
+
+The OS should only know about online/offline.
+
+Use the hypervisor interface to deal with the cpu once its offline.
+
+That is, I think this interface you propose is a layering violation.
+
