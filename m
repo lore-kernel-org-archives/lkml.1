@@ -1,79 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbZIBUMT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752565AbZIBUPH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbZIBUMT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 16:12:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751266AbZIBUMS
+	id S1752565AbZIBUPH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 16:15:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZIBUPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 16:12:18 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:37645 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750943AbZIBUMR (ORCPT
+	Wed, 2 Sep 2009 16:15:06 -0400
+Received: from mail-px0-f204.google.com ([209.85.216.204]:43148 "EHLO
+	mail-px0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750943AbZIBUPE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 16:12:17 -0400
-Date: Wed, 2 Sep 2009 22:12:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: david@lang.hm, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
-	document conditions when reliable operation is possible)
-Message-ID: <20090902201210.GC1840@ucw.cz>
-References: <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu> <4A948C94.7040103@redhat.com> <20090826025849.GF32712@mit.edu> <4A9510D2.1090704@redhat.com> <20090826111208.GA26595@elf.ucw.cz> <alpine.DEB.2.00.0908260416270.30426@asgard.lang.hm> <20090829094919.GF1634@ucw.cz> <4A9910D5.4060208@redhat.com>
+	Wed, 2 Sep 2009 16:15:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=r4HrP2VTNNnrmHzrnctC1YwLDuYmhMzAk8GAQ0cX243snm4iCixMJU23zrKqbDsYjO
+         ZBa+6N9//IXJXRVwRGQhabpFIV/qwLvD22gWBObQLVr94zj31gi7ut1cbvhIRy3uqToR
+         QECgtr7RKErz7a0PGtPCemsk8ULhGygB/9wbE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9910D5.4060208@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090902145621.83c8a79c.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090902093551.c8b171fb.kamezawa.hiroyu@jp.fujitsu.com>
+	 <20090902145621.83c8a79c.kamezawa.hiroyu@jp.fujitsu.com>
+Date: Thu, 3 Sep 2009 01:45:06 +0530
+X-Google-Sender-Auth: 57f8f0181a6e0c82
+Message-ID: <661de9470909021315m3af0de32h29f1ac8fd574249d@mail.gmail.com>
+Subject: Re: [mmotm][PATCH 2/2 v2] memcg: reduce calls for soft limit excess
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->>> people aren't objecting to better documentation, they are objecting to
->>> misleading documentation.
->>>      
->> Actually Ric is. He's trying hard to make RAID5 look better than it
->> really is.
+On Wed, Sep 2, 2009 at 11:26 AM, KAMEZAWA
+Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> In charge/uncharge/reclaim path, usage_in_excess is calculated repeatedly and
+> it takes res_counter's spin_lock every time.
 >
-> I object to misleading and dangerous documentation that you have  
-> proposed. I spend a lot of time working in data integrity, talking and  
-> writing about it so I care deeply that we don't misinform people.
 
-Yes, truth is dangerous. To vendors selling crap products. 
+I think the changelog needs to mention some refactoring you've done
+below as well, like change new_charge_in_excess to excess.
 
-> In this thread, I put out a draft that is accurate several times and you  
-> have failed to respond to it.
 
-Accurate as in 'has 0 information content' :-(.
 
-> The big picture that you don't agree with is:
+> This patch removes unnecessary calls for res_count_soft_limit_excess.
 >
-> (1) RAID (specifically MD RAID) will dramatically improve data integrity  
-> for real users. This is not a statement of opinion, this is a statement  
-> of fact that has been shown to be true in large scale deployments with  
-> commodity hardware.
+> Changelog:
+>  - fixed description.
+>  - fixed unsigned long to be unsigned long long (Thanks, Nishimura)
+>
+> Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> ---
+>  mm/memcontrol.c |   31 +++++++++++++++----------------
+>  1 file changed, 15 insertions(+), 16 deletions(-)
+>
+> Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
+> +++ mmotm-2.6.31-Aug27/mm/memcontrol.c
+> @@ -313,7 +313,8 @@ soft_limit_tree_from_page(struct page *p
+>  static void
+>  __mem_cgroup_insert_exceeded(struct mem_cgroup *mem,
+>                                struct mem_cgroup_per_zone *mz,
+> -                               struct mem_cgroup_tree_per_zone *mctz)
+> +                               struct mem_cgroup_tree_per_zone *mctz,
+> +                               unsigned long long new_usage_in_excess)
+>  {
+>        struct rb_node **p = &mctz->rb_root.rb_node;
+>        struct rb_node *parent = NULL;
+> @@ -322,7 +323,9 @@ __mem_cgroup_insert_exceeded(struct mem_
+>        if (mz->on_tree)
+>                return;
+>
+> -       mz->usage_in_excess = res_counter_soft_limit_excess(&mem->res);
+> +       mz->usage_in_excess = new_usage_in_excess;
+> +       if (!mz->usage_in_excess)
+> +               return;
+>        while (*p) {
+>                parent = *p;
+>                mz_node = rb_entry(parent, struct mem_cgroup_per_zone,
+> @@ -382,7 +385,7 @@ static bool mem_cgroup_soft_limit_check(
+>
+>  static void mem_cgroup_update_tree(struct mem_cgroup *mem, struct page *page)
+>  {
+> -       unsigned long long new_usage_in_excess;
+> +       unsigned long long excess;
+>        struct mem_cgroup_per_zone *mz;
+>        struct mem_cgroup_tree_per_zone *mctz;
+>        int nid = page_to_nid(page);
+> @@ -395,25 +398,21 @@ static void mem_cgroup_update_tree(struc
+>         */
+>        for (; mem; mem = parent_mem_cgroup(mem)) {
+>                mz = mem_cgroup_zoneinfo(mem, nid, zid);
+> -               new_usage_in_excess =
+> -                       res_counter_soft_limit_excess(&mem->res);
+> +               excess = res_counter_soft_limit_excess(&mem->res);
+>                /*
+>                 * We have to update the tree if mz is on RB-tree or
+>                 * mem is over its softlimit.
+>                 */
+> -               if (new_usage_in_excess || mz->on_tree) {
+> +               if (excess || mz->on_tree) {
+>                        spin_lock(&mctz->lock);
+>                        /* if on-tree, remove it */
+>                        if (mz->on_tree)
+>                                __mem_cgroup_remove_exceeded(mem, mz, mctz);
+>                        /*
+> -                        * if over soft limit, insert again. mz->usage_in_excess
+> -                        * will be updated properly.
+> +                        * Insert again. mz->usage_in_excess will be updated.
+> +                        * If excess is 0, no tree ops.
+>                         */
+> -                       if (new_usage_in_excess)
+> -                               __mem_cgroup_insert_exceeded(mem, mz, mctz);
+> -                       else
+> -                               mz->usage_in_excess = 0;
+> +                       __mem_cgroup_insert_exceeded(mem, mz, mctz, excess);
+>                        spin_unlock(&mctz->lock);
+>                }
+>        }
+> @@ -2216,6 +2215,7 @@ unsigned long mem_cgroup_soft_limit_recl
+>        unsigned long reclaimed;
+>        int loop = 0;
+>        struct mem_cgroup_tree_per_zone *mctz;
+> +       unsigned long long excess;
+>
+>        if (order > 0)
+>                return 0;
+> @@ -2260,9 +2260,8 @@ unsigned long mem_cgroup_soft_limit_recl
+>                                __mem_cgroup_largest_soft_limit_node(mctz);
+>                        } while (next_mz == mz);
+>                }
+> -               mz->usage_in_excess =
+> -                       res_counter_soft_limit_excess(&mz->mem->res);
+>                __mem_cgroup_remove_exceeded(mz->mem, mz, mctz);
+> +               excess = res_counter_soft_limit_excess(&mz->mem->res);
+>                /*
+>                 * One school of thought says that we should not add
+>                 * back the node to the tree if reclaim returns 0.
+> @@ -2271,8 +2270,8 @@ unsigned long mem_cgroup_soft_limit_recl
+>                 * memory to reclaim from. Consider this as a longer
+>                 * term TODO.
+>                 */
+> -               if (mz->usage_in_excess)
+> -                       __mem_cgroup_insert_exceeded(mz->mem, mz, mctz);
+> +               /* If excess == 0, no tree ops */
+> +               __mem_cgroup_insert_exceeded(mz->mem, mz, mctz, excess);
+>                spin_unlock(&mctz->lock);
+>                css_put(&mz->mem->css);
+>                loop++;
 
-It is also completely irrelevant.
+OK.. so everytime we call __mem_cgroup_insert_exceeded we save one
+res_counter operation.
 
-> (2) RAID5 protects you against a single failure and your test case  
-> purposely injects a double failure.
+Looks good
 
-Most people would be surprised that press of reset button is 'failure'
-in this context.
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
 
-> (4) Data loss occurs in non-journalling file systems and journalling  
-> file systems when you suffer double failures or hot unplug storage,  
-> especially inexpensive FLASH parts.
-
-It does not happen on inexpensive DISK parts,  so people do not expect
-that and it is worth pointing out.
-								Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Balbir Singh
