@@ -1,50 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932177AbZIBGDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbZIBGHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932177AbZIBGDf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 02:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZIBGDe
+	id S1755882AbZIBGHz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 02:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755867AbZIBGHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 02:03:34 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:56448 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755860AbZIBGDd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 02:03:33 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=WuFVPBkZ0BOvzRjQJwx8aAsMhnI2jQHoIRqXD42VriBSQpG4FBzFMfOC22d9ALqfz
-	BWo1HBpoC5e67nlmZXlMw==
-Date: Tue, 1 Sep 2009 23:03:32 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Ankita Garg <ankita@in.ibm.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix fake numa on ppc
-In-Reply-To: <1251870823.14675.420.camel@pasglop>
-Message-ID: <alpine.DEB.1.00.0909012259050.26930@chino.kir.corp.google.com>
-References: <20090901050316.GA4076@in.ibm.com> <20090901055753.GB5563@balbir.in.ibm.com> <20090901092407.GC4076@in.ibm.com> <20090901142729.GA5022@balbir.in.ibm.com> <20090902053653.GA3806@in.ibm.com> <1251870823.14675.420.camel@pasglop>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Wed, 2 Sep 2009 02:07:54 -0400
+Received: from smtp6-g21.free.fr ([212.27.42.6]:55288 "EHLO smtp6-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753020AbZIBGHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 02:07:54 -0400
+Date: Wed, 2 Sep 2009 08:07:43 +0200
+From: Raphael Manfredi <Raphael_Manfredi@pobox.com>
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.30.5] Diagnosing an IDE lockup with SMART long tests
+Message-ID: <20090902060743.GA15101@chram.org>
+References: <6661.1251822466@nice.ram.loc> <4A9DF3E9.9090309@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9DF3E9.9090309@gmail.com>
+User-Agent: Mutt/1.5.16 (2007-06-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 Sep 2009, Benjamin Herrenschmidt wrote:
+Quoting Robert Hancock:
+> It's most likely a bug in the IDE code somewhere, but realistically the 
+> most effective course of action would likely be to switch from the old IDE 
+> drivers and use libata instead. The IDE code doesn't receive that much 
+> testing these days, and it's really hard to debug (as you've seen, the 
+> debugging output is rather atrocious).
 
-> Since I'm pretty sure there could be CPU less nodes just like there
-> could be memory-less nodes, it would be good if fake numa could
-> simulate them too :-)
-> 
+Sure, but we're talking a production machine here.  Moving to libata to
+handle the IDE drives would involve many changes everywhere in the system
+and cause instability.  For instance, /etc/fstab would need to refer to
+/dev/sd*, /etc/mdadm.conf needs rewriting as well...  This is a complex move,
+and there's no assurance that libata won't have bugs in its PATA handling.
 
-You don't want to simulate cpu less nodes since they do have affinity to 
-ranges of memory, you want to map each fake node to a cpumask including 
-all cpus with affinity to its memory, map each cpu to one fake node (with 
-memory) that it has physical affinity to, and then give all fake nodes 
-local NUMA distance to those on the same physical node.  Memoryless nodes 
-take care of themselves since they rely purely on node_distance(), so the 
-index into the slit for all fake nodes to those without memory will be the 
-same.
+Since the machine is otherwise stable, I'm rather aiming at a workaround.
+Today, the workaround I have is to not run SMART long tests but it proved
+dangerous.  Therefore, I'm looking for a kernel workaround to avoid the
+lockups.
+
+Why would the reading of the status register of the IDE interface cause a
+lockup?  If I can prevent the lockup and resume work, I would not mind having
+a few lost interrupts events now and then.
+
+Raphael
