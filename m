@@ -1,45 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752749AbZIBOIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZIBOJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752749AbZIBOIk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 10:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752516AbZIBOIj
+	id S1752845AbZIBOJA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 10:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752545AbZIBOI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 10:08:39 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:26209 "EHLO mx1.redhat.com"
+	Wed, 2 Sep 2009 10:08:59 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55454 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752074AbZIBOIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 10:08:39 -0400
+	id S1752475AbZIBOIk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 10:08:40 -0400
 From: Glauber Costa <glommer@redhat.com>
 To: kvm@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: [PATCH v2 0/2] Automatically grab wallclock time updates from hypervisor
-Date: Wed,  2 Sep 2009 10:34:56 -0400
-Message-Id: <1251902098-8660-1-git-send-email-glommer@redhat.com>
+Subject: [PATCH v2 1/2] keep guest wallclock in sync with host clock
+Date: Wed,  2 Sep 2009 10:34:57 -0400
+Message-Id: <1251902098-8660-2-git-send-email-glommer@redhat.com>
+In-Reply-To: <1251902098-8660-1-git-send-email-glommer@redhat.com>
+References: <1251902098-8660-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-i folks,
+KVM clock is great to avoid drifting in guest VMs running ontop of kvm.
+However, the current mechanism will not propagate changes in wallclock value
+upwards. This effectively means that in a large pool of VMs that need accurate timing,
+all of them has to run NTP, instead of just the host doing it.
 
-In this proposed patch, I am introducing a worker fired by kvmclock that updates
-guest wallclock periodically to reflect changes in the host's wallclock. With this
-patch, a large pool of VMs will no longer have to run NTP in all of its guests.
+Since the host updates information in the shared memory area upon msr writes,
+this patch introduces a worker that writes to that msr, and calls do_settimeofday
+at fixed intervals, with second resolution. A interval of 0 determines that we
+are not interested in this behaviour. A later patch will make this optional at
+runtime
 
-The worker does that at a configurable interval, with a minimum granularity of 1
-second. So, although not exactly cheap, the msr write needed to get an updated
-wallclock value won't pose a heavy burden on the system.
+Signed-off-by: Glauber Costa <glommer@redhat.com>
+---
+ arch/x86/kernel/kvmclock.c |   70 ++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 61 insertions(+), 9 deletions(-)
 
-It is also possible to disable it completely if this behaviour is undesired for
-a specific scenario.
-
-Changes from v1:
- * disabled by default
- * adjust clock in a loop, to prevent agaist host scheduling.
-
-diffstat follows:
-
- arch/x86/include/asm/kvm_para.h |    6 +++
- arch/x86/kernel/kvmclock.c      |   85 ++++++++++++++++++++++++++++++++++----
- kernel/sysctl.c                 |   13 ++++++
- 3 files changed, 95 insertions(+), 9 deletions(-)
+diff --git a/arch/x86/kernel/kvmclock.c b/arch/x86/kernel/kvmclock.c
+index e5efcdc..555aab0 100644
+--- a/arch/x86/kernel/kvmclock.c
++++ b/arch/x86/kernel/kvmclock.c
+@@ -27,6 +27,7 @@
+ #define KVM_SCALE 22
+ 
+ static int kvmclock = 1;
++static unsigned int kvm_wall_update_interval = 0;
+ 
+ static int parse_no_kvmclock(char *arg)
+ {
+@@ -39,24 +40,75 @@ early_param("no-kvmclock", parse_no_kvmclock);
+ static DEFINE_PER_CPU_SHARED_ALIGNED(struct pvclock_vcpu_time_info, hv_clock);
+ static struct pvclock_wall_clock wall_clock;
+ 
+-/*
+- * The wallclock is the time of day when we booted. Since then, some time may
+- * have elapsed since the hypervisor wrote the data. So we try to account for
+- * that with system time
+- */
+-static unsigned long kvm_get_wallclock(void)
++static void kvm_get_wall_ts(struct timespec *ts)
+ {
+-	struct pvclock_vcpu_time_info *vcpu_time;
+-	struct timespec ts;
+ 	int low, high;
++	struct pvclock_vcpu_time_info *vcpu_time;
+ 
+ 	low = (int)__pa_symbol(&wall_clock);
+ 	high = ((u64)__pa_symbol(&wall_clock) >> 32);
+ 	native_write_msr(MSR_KVM_WALL_CLOCK, low, high);
+ 
+ 	vcpu_time = &get_cpu_var(hv_clock);
+-	pvclock_read_wallclock(&wall_clock, vcpu_time, &ts);
++	pvclock_read_wallclock(&wall_clock, vcpu_time, ts);
+ 	put_cpu_var(hv_clock);
++}
++
++static void kvm_sync_wall_clock(struct work_struct *work);
++static DECLARE_DELAYED_WORK(kvm_sync_wall_work, kvm_sync_wall_clock);
++
++static void schedule_next_update(void)
++{
++	struct timespec next;
++
++	if ((kvm_wall_update_interval == 0) ||
++	   (!kvm_para_available()) ||
++	   (!kvm_para_has_feature(KVM_FEATURE_CLOCKSOURCE)))
++		return;
++
++	next.tv_sec = kvm_wall_update_interval;
++	next.tv_nsec = 0;
++
++	schedule_delayed_work(&kvm_sync_wall_work, timespec_to_jiffies(&next));
++}
++
++static void kvm_sync_wall_clock(struct work_struct *work)
++{
++	struct timespec now, after;
++	u64 nsec_delta;
++
++	do {
++		kvm_get_wall_ts(&now);
++		do_settimeofday(&now);
++		kvm_get_wall_ts(&after);
++		nsec_delta = (u64)after.tv_sec * NSEC_PER_SEC + after.tv_nsec;
++		nsec_delta -= (u64)now.tv_sec * NSEC_PER_SEC + now.tv_nsec;
++	} while (nsec_delta > NSEC_PER_SEC / 8);
++
++	schedule_next_update();
++}
++
++static __init int init_updates(void)
++{
++	schedule_next_update();
++	return 0;
++}
++/*
++ * It has to be run after workqueues are initialized, since we call
++ * schedule_delayed_work. Other than that, we have no specific requirements
++ */
++late_initcall(init_updates);
++
++/*
++ * The wallclock is the time of day when we booted. Since then, some time may
++ * have elapsed since the hypervisor wrote the data. So we try to account for
++ * that with system time
++ */
++static unsigned long kvm_get_wallclock(void)
++{
++	struct timespec ts;
++
++	kvm_get_wall_ts(&ts);
+ 
+ 	return ts.tv_sec;
+ }
+-- 
+1.6.2.2
 
