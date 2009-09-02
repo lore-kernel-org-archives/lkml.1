@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZIBFhM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbZIBFmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbZIBFhM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 01:37:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755817AbZIBFhI
+	id S1755845AbZIBFmk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 01:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbZIBFmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 01:37:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:55744 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755800AbZIBFhG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 01:37:06 -0400
-Date: Wed, 2 Sep 2009 15:36:57 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Subject: linux-next: manual merge of the block tree with the ubifs tree
-Message-Id: <20090902153657.dc174bf6.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Wed, 2 Sep 2009 01:42:40 -0400
+Received: from viefep15-int.chello.at ([62.179.121.35]:37809 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755729AbZIBFmj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 01:42:39 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: arun@linux.vnet.ibm.com
+Cc: Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20090901113840.GH7599@linux.vnet.ibm.com>
+References: <20090901113704.GG7599@linux.vnet.ibm.com>
+	 <20090901113840.GH7599@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 Sep 2009 07:42:24 +0200
+Message-Id: <1251870144.7547.48.camel@twins>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__2_Sep_2009_15_36_57_+1000_GxrH7TJyvmSkUakQ"
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__2_Sep_2009_15_36_57_+1000_GxrH7TJyvmSkUakQ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-09-01 at 17:08 +0530, Arun R Bharadwaj wrote:
+> * Arun R Bharadwaj <arun@linux.vnet.ibm.com> [2009-09-01 17:07:04]:
+> 
+> Cleanup drivers/cpuidle/cpuidle.c
+> 
+> Cpuidle maintains a pm_idle_old void pointer because, currently in x86
+> there is no clean way of registering and unregistering a idle function.
 
-Hi Jens,
+Right, and instead of fixing that, they build this cpuidle crap on top,
+instead of replacing the current crap with it.
 
-Today's linux-next merge of the block tree got a conflict in
-fs/ubifs/super.c between commit 887ee17117fd23e962332b353d250ac9e090b20f
-("UBIFS: remove unneeded call from ubifs_sync_fs") from the ubifs tree
-and commit 0184fca792940a9e4058b2c63b3f334326a4c7af ("writeback: move
-super_block argument to struct writeback_control") from the block tree.
+> So remove pm_idle_old and leave the responsibility of maintaining the
+> list of registered idle loops to the architecture specific code. If the
+> architecture registers cpuidle_idle_call as its idle loop, only then
+> this loop is called.
 
-The former removes the code that the latter changes.  I just used the
-version from the ubifs tree.  I can carry this fixup as necessary.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+OK, that's a start I guess. Best would be to replace all of pm_idle with
+cpuidle, which is what should have been done from the very start.
 
---Signature=_Wed__2_Sep_2009_15_36_57_+1000_GxrH7TJyvmSkUakQ
-Content-Type: application/pgp-signature
+If cpuidle cannot fully replace the pm_idle functionality, then it needs
+to fix that. But having two layers of idle functions is just silly.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Looking at patch 2 and 3, you're making the same mistake on power, after
+those patches there are multiple ways of registering idle functions, one
+through some native interface and one through cpuidle, this strikes me
+as undesirable.
 
-iEYEARECAAYFAkqeBHkACgkQjjKRsyhoI8yMuwCgjUwWxWDRLFR/5RR/ricJrVb2
-bvoAoLQFKeQ5SJ/4L7IqmIddgMahvXv/
-=m78R
------END PGP SIGNATURE-----
+If cpuidle is a good idle function manager, then it should be good
+enough to be the sole one, if its not, then why bother with it at all.
 
---Signature=_Wed__2_Sep_2009_15_36_57_+1000_GxrH7TJyvmSkUakQ--
+
