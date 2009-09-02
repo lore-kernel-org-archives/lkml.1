@@ -1,81 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755615AbZIBCrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZIBCzl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755615AbZIBCrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 22:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755605AbZIBCrX
+	id S1755606AbZIBCzl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 22:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752358AbZIBCzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 22:47:23 -0400
-Received: from mga03.intel.com ([143.182.124.21]:15059 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755602AbZIBCrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 22:47:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="183064322"
-Date: Wed, 2 Sep 2009 10:47:07 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Tue, 1 Sep 2009 22:55:40 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:37473 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751978AbZIBCzj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 22:55:39 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Dmitry Torokhov <dtor@vmware.com>, Matthew Wilcox <matthew@wil.cx>,
+       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Mel Gorman <mel@csn.ul.ie>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "menage@google.com" <menage@google.com>, linux-mm <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 0/4] memcg: add support for hwpoison testing
-Message-ID: <20090902024707.GB6248@localhost>
-References: <20090831102640.092092954@intel.com> <20090901084626.ac4c8879.kamezawa.hiroyu@jp.fujitsu.com> <20090901022514.GA11974@localhost> <20090901113214.60e7ae32.kamezawa.hiroyu@jp.fujitsu.com> <20090901064652.GA20342@localhost> <20090901161228.9fb33234.kamezawa.hiroyu@jp.fujitsu.com> <20090901085549.GA4454@localhost> <20090901163152.GC5022@balbir.in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090901163152.GC5022@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>
+In-Reply-To: <1251828950.13303.31.camel@mulgrave.site>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
+	 <200909010933.50571.dtor@vmware.com>
+	 <1251823925.3864.216.camel@mulgrave.site>
+	 <1251824374.16169.128.camel@ank32.eng.vmware.com>
+	 <1251825949.12482.34.camel@mulgrave.site>
+	 <1251826877.16169.141.camel@ank32.eng.vmware.com>
+	 <1251828950.13303.31.camel@mulgrave.site>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Tue, 01 Sep 2009 19:55:41 -0700
+Message-Id: <1251860141.8844.20.camel@ank32.eng.vmware.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 12:31:52AM +0800, Balbir Singh wrote:
-> * Wu Fengguang <fengguang.wu@intel.com> [2009-09-01 16:55:49]:
-> 
-> > > My point is that memcg can show 'owner' of pages but the page may
-> > > be shared with something important task _and_ if a task is migrated,
-> > > its pages' memcg information is not updated now. Then, you can kill
-> > > a task which is not in memcg.
+On Tue, 2009-09-01 at 11:15 -0700, James Bottomley wrote:
+> On Tue, 2009-09-01 at 10:41 -0700, Alok Kataria wrote:
+> > > lguest uses the sg_ring abstraction.  Xen and KVM were certainly looking
+> > > at this too.
 > > 
-> > Ah thanks! I'm not aware of that tricky fact, and it does make a
-> > very good reason not to use memcg, although I guess locked page won't
-> > be migrated.
-> >
+> > I don't see the sg_ring abstraction that you are talking about. Can you
+> > please give me some pointers. 
 > 
-> I think what Kamezawa-San is pointing to is that the task can migrate,
-> leaving behind the page in the memcg and poisioning those pages can
-> kill a task outside the memcg. 
+> it's in drivers/lguest ... apparently it's vring now and the code is in
+> driver/virtio
+> 
+> > Also regarding Xen and KVM I think they are using the xenbus/vbus
+> > interface, which is quite different than what we do here. 
+> 
+> Not sure about Xen ... KVM uses virtio above.
+> 
+> > > 
+> > > > And anyways how large is the DMA code that we are worrying about here ?
+> > > > Only about 300-400 LOC ? I don't think we might want to over-design for
+> > > > such small gains.
+> > > 
+> > > So even if you have different DMA code, the remaining thousand or so
+> > > lines would be in common.  That's a worthwhile improvement.
 
-Yeah Kame's words reminded me of the memcg goal: it may not have to
-track task pages 100% accurately for all the tricky racy windows/cases.
-So could be risky to use memcg for hwpoison testing.
+I don't see how, the rest of the code comprises of IO/MMIO  space & ring
+processing which is very different in each of the implementations. What
+is left is the setup and initialization code which obviously depends on
+the implementation of the driver data structures. 
 
-Otherwise I felt like using memcg for hwpoison testing because the
-exported things are not that bad, and our hwpoison stress testing
-efforts may also be very good exercises to some aspects of memcg ;)
+> > 
+> > And not just that, different HV-vendors can have different features,
+> > like say XYZ can come up tomorrow and implement the multiple rings
+> > interface so the feature set doesn't remain common and we will have less
+> > code to share in the not so distant future.
+> 
+> Multiple rings is really just a multiqueue abstraction.  That's fine,
+> but it needs a standard multiqueue control plane.
+> 
+> The desire to one up the competition by adding a new whiz bang feature
+> to which you code a special interface is very common in the storage
+> industry.  The counter pressure is that consumers really like these
+> things standardised.  That's what the transport class abstraction is all
+> about.
+> 
+> We also seem to be off on a tangent about hypervisor interfaces.  I'm
+> actually more interested in the utility of an SRP abstraction or at
+> least something SAM based.  It seems that in your driver you don't quite
+> do the task management functions as SAM requests, but do them over your
+> own protocol abstractions.
 
-Back to the page sharing problem. For hwpoison testing, it is
-acceptable for the test program and the init process to share _clean_
-libc.so pages. Because the hwpoison of such pages can be recovered
-gracefully by simply unmap and drop the hwpoisoned ones.
+Okay,  I think I need to take a step back here and understand what
+actually are you asking for.
 
-But if two tasks share some dirty pages (eg. shmem), then it could
-be killing more tasks than expected. However
-- this is a general problem independent the use of memcg
-- could be avoided by checking page dirtiness and map count
-- our test schemes simply won't try to create such insane conditions
-  (It will include both tasks as the target.)
+1. What do you mean by the "transport class abstraction" ? 
+Do you mean that the way we communicate with the hypervisor needs to be
+standardized ?
 
-btw, hwpoison testing also allows "mis-killing" of no-owner pages (ie.
-newly freed pages by the target task in some racy windows) which won't
-affect the test correctness.
+2. Are you saying that we should use the virtio ring mechanism to handle
+our request and completion rings ? 
+  We can not do that. Our backend expects that each slot on the ring is
+in a particular format. Where as vring expects that each slot on the
+vring is in the vring_desc format.
+
+3. Also, the way we communicate with the hypervisor backend is that the
+driver writes to our device IO registers in a particular format. The
+format that we follow is to first write the command on the
+COMMAND_REGISTER and then write a stream of data words in the
+DATA_REGISTER, which is a normal device interface.
+The reason I make this point is to highlight we are not making any
+hypercalls instead we communicate with the hypervisor by writing to
+IO/Memory mapped regions.  So from that perspective the driver has no
+knowledge that its is talking to a software backend (aka device
+emulation) instead it is very similar to how a driver talks to a silicon
+device.  The backend expects things in a certain way and we cannot
+really change that interface ( i.e. the ABI shared between Device driver
+and Device Emulation).
+
+So sharing code with vring or virtio is not something that works well
+with our backend. The VMware PVSCSI driver is simply a virtual HBA and
+shouldn't be looked at any differently.
+
+Is their anything else that you are asking us to standardize ?
 
 Thanks,
-Fengguang
+Alok
+> 
+> James
+> 
+> 
+
