@@ -1,80 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZIBUCI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753505AbZIBUCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753489AbZIBUCI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 16:02:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZIBUCH
+	id S1753505AbZIBUCW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 16:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZIBUCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 16:02:07 -0400
-Received: from hq-exedge.brocade.com ([66.243.153.82]:21438 "EHLO
-	hq-exedge.brocade.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753462AbZIBUCG convert rfc822-to-8bit (ORCPT
+	Wed, 2 Sep 2009 16:02:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46149 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753434AbZIBUCV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 16:02:06 -0400
-From: Jing Huang <huangj@Brocade.COM>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       Ramkumar Vadivelu <rvadivel@Brocade.COM>,
-       Vinodh Ravindran <vravindr@Brocade.COM>
-Date: Wed, 2 Sep 2009 13:02:07 -0700
-Subject: RE: [PATCH 1/14] bfa: Brocade BFA FC SCSI driver (bfad)
-Thread-Topic: [PATCH 1/14] bfa: Brocade BFA FC SCSI driver (bfad)
-Thread-Index: AcosBXNVYwgBuL2dRzqdCbiZHKY6zAAAiU2w
-Message-ID: <B0A7AF226B49A14897036E9B3A68CFFECB1AA834E5@HQ-EXCH-7.corp.brocade.com>
-References: <200908280754.n7S7sUMB030191@blc-10-6.brocade.com>
- <20090902124135.aa55f0be.akpm@linux-foundation.org>
-In-Reply-To: <20090902124135.aa55f0be.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Wed, 2 Sep 2009 16:02:21 -0400
+Date: Wed, 2 Sep 2009 22:02:14 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH v2 0/2] cpu: pseries: Offline state framework.
+Message-ID: <20090902200214.GA1918@ucw.cz>
+References: <20090828095741.10641.32053.stgit@sofia.in.ibm.com> <1251869611.7547.38.camel@twins>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251869611.7547.38.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> These patches seem to have been posted a lot of times.  Is anyone
-> paying attention?
+On Wed 2009-09-02 07:33:31, Peter Zijlstra wrote:
+> On Fri, 2009-08-28 at 15:30 +0530, Gautham R Shenoy wrote:
+> > Hi,
+> > 
+> > This is the version 2 of the patch series to provide a cpu-offline framework
+> > that enables the administrators choose the state the offline CPU must be put
+> > into when multiple such states are exposed by the underlying architecture.
+> > 
+> > Version 1 of the Patch can be found here:
+> > http://lkml.org/lkml/2009/8/6/236
+> > 
+> > The patch-series exposes the following sysfs tunables to
+> > allow the system-adminstrator to choose the state of a CPU:
+> > 
+> > To query the available hotplug states, one needs to read the sysfs tunable:
+> > 	/sys/devices/system/cpu/cpu<number>/available_hotplug_states
+> > To query or set the current state, on needs to read/write the sysfs tunable:
+> > 	/sys/devices/system/cpu/cpu<number>/current_states
+> > 
+> > The patchset ensures that the writes to the "current_state" sysfs file are
+> > serialized against the writes to the "online" file.
+> > 
+> > This patchset also contains the offline state driver implemented for
+> > pSeries. For pSeries, we define three available_hotplug_states. They are:
+> > 
+> > 	online: The processor is online.
+> > 
+> > 	deallocate: This is the the default behaviour when the cpu is offlined
+> > 	even in the absense of this driver. The CPU would call make an
+> > 	rtas_stop_self() call and hand over the CPU back to the resource pool,
+> > 	thereby effectively deallocating that vCPU from the LPAR.
+> > 	NOTE: This would result in a configuration change to the LPAR
+> > 	which is visible to the outside world.
+> > 
+> > 	deactivate: This cedes the vCPU to the hypervisor which
+> > 	in turn can put the vCPU time to the best use.
+> > 	NOTE: This option DOES NOT result in a configuration change
+> > 	and the vCPU would be still entitled to the LPAR to which it earlier
+> > 	belong to.
+> > 
+> > Awaiting your feedback.
 > 
-> > +BFA_TRC_FILE(LDRV, BFAD);
-> > +
-> > +static DEFINE_MUTEX(bfad_mutex);
-> > +int bfad_scan_done;
-> > +
-> > +LIST_HEAD(bfad_list);
-> > +
-> > +static int      bfad_inst;
-> > +int             supported_fc4s;
-> > +
-> > +char           *host_name;
-> > +char           *os_name;
-> > +char           *os_patch;
-> > +int             num_rports;
-> > +int             num_ios;
-> > +int             num_tms;
-> > +int             num_fcxps;
-> > +int             num_ufbufs;
-> > +int             reqq_size;
-> > +int             rspq_size;
-> > +int             num_sgpgs;
-> > +int             rport_del_timeout = BFA_FCS_RPORT_DEF_DEL_TIMEOUT;
-> > +int             bfa_lun_queue_depth = BFAD_LUN_QUEUE_DEPTH;
-> > +int             bfa_io_max_sge = BFAD_IO_MAX_SGE;
-> > +int             log_level = BFA_LOG_WARNING;
-> > +int             ioc_auto_recover = BFA_TRUE;
-> > +int             ipfc_enable = BFA_FALSE;
-> > +int             ipfc_mtu = -1;
-> > +int             linkup_delay = -1;
+> I'm still thinking this is a bad idea.
 > 
-> eek.  These are all kernel-wide global symbols and many of them are
-> very inappropriately named.  They should either be made static or given
-> a subsystem-specific prefix such as "bfad_".
+> The OS should only know about online/offline.
 > 
+> Use the hypervisor interface to deal with the cpu once its offline.
+> 
+> That is, I think this interface you propose is a layering violation.
 
-Thanks Andrew. I will fix this and resubmit.
+Agreed. Plus having interface like 'go to this state during offliine'
+then 'go offline' is strange/stupid. For hypervisor case, you might
+want to change 'state' of cpu that is already offline.
+								Pavel
 
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
