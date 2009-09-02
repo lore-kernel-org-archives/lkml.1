@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZIBN7i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752531AbZIBOAM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZIBN7i (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 09:59:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZIBN7g
+	id S1752531AbZIBOAM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 10:00:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZIBN7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 09:59:36 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49718 "EHLO mx1.suse.de"
+	Wed, 2 Sep 2009 09:59:34 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49723 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751775AbZIBN7a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 09:59:30 -0400
+	id S1752320AbZIBN71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 09:59:27 -0400
 From: Jan Kara <jack@suse.cz>
 To: linux-fsdevel@vger.kernel.org
 Cc: LKML <linux-kernel@vger.kernel.org>, hch@lst.de, Jan Kara <jack@suse.cz>,
-       ocfs2-devel@oss.oracle.com, Joel Becker <joel.becker@oracle.com>,
-       Felix Blyakher <felixb@sgi.com>, xfs@oss.sgi.com
-Subject: [PATCH 03/16] vfs: Remove syncing from generic_file_direct_write() and generic_file_buffered_write()
-Date: Wed,  2 Sep 2009 15:59:13 +0200
-Message-Id: <1251899966-7316-4-git-send-email-jack@suse.cz>
+       Evgeniy Polyakov <zbr@ioremap.net>
+Subject: [PATCH 04/16] pohmelfs: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
+Date: Wed,  2 Sep 2009 15:59:14 +0200
+Message-Id: <1251899966-7316-5-git-send-email-jack@suse.cz>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1251899966-7316-1-git-send-email-jack@suse.cz>
 References: <1251899966-7316-1-git-send-email-jack@suse.cz>
@@ -24,106 +23,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-generic_file_direct_write() and generic_file_buffered_write() called
-generic_osync_inode() if it was called on O_SYNC file or IS_SYNC inode. But
-this is superfluous since generic_file_aio_write() does the syncing as well.
-Also XFS and OCFS2 which call these functions directly handle syncing
-themselves. So let's have a single place where syncing happens:
-generic_file_aio_write().
+Use new helper __generic_file_aio_write(). Since the fs takes care of syncing
+by itself afterwards, there are no more changes needed.
 
-We slightly change the behavior by syncing only the range of file to which the
-write happened for buffered writes but that should be all that is required.
-
-CC: ocfs2-devel@oss.oracle.com
-CC: Joel Becker <joel.becker@oracle.com>
-CC: Felix Blyakher <felixb@sgi.com>
-CC: xfs@oss.sgi.com
+CC: Evgeniy Polyakov <zbr@ioremap.net>
 Signed-off-by: Jan Kara <jack@suse.cz>
 ---
- mm/filemap.c |   35 ++++++-----------------------------
- 1 files changed, 6 insertions(+), 29 deletions(-)
+ drivers/staging/pohmelfs/inode.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 554a396..f863e1d 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -2187,20 +2187,7 @@ generic_file_direct_write(struct kiocb *iocb, const struct iovec *iov,
- 		}
- 		*ppos = end;
- 	}
--
--	/*
--	 * Sync the fs metadata but not the minor inode changes and
--	 * of course not the data as we did direct DMA for the IO.
--	 * i_mutex is held, which protects generic_osync_inode() from
--	 * livelocking.  AIO O_DIRECT ops attempt to sync metadata here.
--	 */
- out:
--	if ((written >= 0 || written == -EIOCBQUEUED) &&
--	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
--		int err = generic_osync_inode(inode, mapping, OSYNC_METADATA);
--		if (err < 0)
--			written = err;
--	}
- 	return written;
- }
- EXPORT_SYMBOL(generic_file_direct_write);
-@@ -2332,8 +2319,6 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
- {
- 	struct file *file = iocb->ki_filp;
- 	struct address_space *mapping = file->f_mapping;
--	const struct address_space_operations *a_ops = mapping->a_ops;
--	struct inode *inode = mapping->host;
- 	ssize_t status;
- 	struct iov_iter i;
+diff --git a/drivers/staging/pohmelfs/inode.c b/drivers/staging/pohmelfs/inode.c
+index 7b60579..17801a5 100644
+--- a/drivers/staging/pohmelfs/inode.c
++++ b/drivers/staging/pohmelfs/inode.c
+@@ -921,7 +921,7 @@ ssize_t pohmelfs_write(struct file *file, const char __user *buf,
+ 	if (ret)
+ 		goto err_out_unlock;
  
-@@ -2343,16 +2328,6 @@ generic_file_buffered_write(struct kiocb *iocb, const struct iovec *iov,
- 	if (likely(status >= 0)) {
- 		written += status;
- 		*ppos = pos + status;
--
--		/*
--		 * For now, when the user asks for O_SYNC, we'll actually give
--		 * O_DSYNC
--		 */
--		if (unlikely((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
--			if (!a_ops->writepage || !is_sync_kiocb(iocb))
--				status = generic_osync_inode(inode, mapping,
--						OSYNC_METADATA|OSYNC_DATA);
--		}
-   	}
- 	
- 	/*
-@@ -2514,11 +2489,12 @@ ssize_t generic_file_aio_write_nolock(struct kiocb *iocb,
+-	ret = generic_file_aio_write_nolock(&kiocb, &iov, 1, pos);
++	ret = __generic_file_aio_write(&kiocb, &iov, 1, &kiocb.ki_pos);
+ 	*ppos = kiocb.ki_pos;
  
- 	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
- 
--	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+	if ((ret > 0 || ret == -EIOCBQUEUED) &&
-+	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
- 		ssize_t err;
- 
- 		err = sync_page_range_nolock(inode, mapping, pos, ret);
--		if (err < 0)
-+		if (err < 0 && ret > 0)
- 			ret = err;
- 	}
- 	return ret;
-@@ -2550,11 +2526,12 @@ ssize_t generic_file_aio_write(struct kiocb *iocb, const struct iovec *iov,
- 	ret = __generic_file_aio_write(iocb, iov, nr_segs, &iocb->ki_pos);
  	mutex_unlock(&inode->i_mutex);
- 
--	if (ret > 0 && ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+	if ((ret > 0 || ret == -EIOCBQUEUED) &&
-+	    ((file->f_flags & O_SYNC) || IS_SYNC(inode))) {
- 		ssize_t err;
- 
- 		err = sync_page_range(inode, mapping, pos, ret);
--		if (err < 0)
-+		if (err < 0 && ret > 0)
- 			ret = err;
- 	}
- 	return ret;
 -- 
 1.6.0.2
 
