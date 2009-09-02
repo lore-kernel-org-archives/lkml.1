@@ -1,207 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbZIBHQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZIBHW4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755661AbZIBHQQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 03:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZIBHQP
+	id S1755931AbZIBHW4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 03:22:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbZIBHWz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 03:16:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59871 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753017AbZIBHQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 03:16:14 -0400
-Date: Wed, 2 Sep 2009 07:15:46 GMT
-From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       arjan@linux.intel.com, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, a.p.zijlstra@chello.nl,
-       arjan@linux.intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/core] sched: Add wait, sleep and iowait accounting tracepoints
-Message-ID: <tip-768d0c27226e6587cad2fcf543f9711da3f3774e@git.kernel.org>
-Git-Commit-ID: 768d0c27226e6587cad2fcf543f9711da3f3774e
-X-Mailer: tip-git-log-daemon
+	Wed, 2 Sep 2009 03:22:55 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:10528 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755743AbZIBHWy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 03:22:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=cGHBJDyEtgaMdXRiWLNYfTwL4vGTKAZe0OHH2AfiXY5/WZl4ogL+rFfrYG8g7B/T5a
+         AQrONAHo1EbUlArrN6k6YF71L/nWH10yoYDlEq0cE5KVnsDb60b6FOOt6hFAJGDiInG8
+         8vXicJ3wYQZcl2VgAg/lT1K5763PUnSmdoG3Y=
 MIME-Version: 1.0
+In-Reply-To: <b410963b0908290221s4ed3d66fm50ea2862cf7500f5@mail.gmail.com>
+References: <b410963b0908290221s4ed3d66fm50ea2862cf7500f5@mail.gmail.com>
+Date: Wed, 2 Sep 2009 10:22:56 +0300
+Message-ID: <b410963b0909020022q68101ed8n5cdafdcbdabea230@mail.gmail.com>
+Subject: Re: r8169 NETDEV WATCHDOG: eth0: transmit timed out [8/8]
+From: roma1390 <roma1390@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: David Dillow <dave@thedillows.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 07:15:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  768d0c27226e6587cad2fcf543f9711da3f3774e
-Gitweb:     http://git.kernel.org/tip/768d0c27226e6587cad2fcf543f9711da3f3774e
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 23 Jul 2009 20:13:26 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 2 Sep 2009 09:12:18 +0200
+>Can you please confirm this by sending your /proc/interrupt info:
+>	cat /proc/interrupts | grep eth0
 
-sched: Add wait, sleep and iowait accounting tracepoints
+# cat /proc/interrupts | grep eth0
+1274:  425472357          0          0          0          0
+0          0          0   PCI-MSI-edge      eth0
 
-Add 3 schedstat tracepoints to help account for wait-time,
-sleep-time and iowait-time.
+Please add me next time into cc.
 
-They can also be used as a perf-counter source to profile tasks
-on these clocks.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>
-LKML-Reference: <new-submission>
-[ build fix for the !CONFIG_SCHEDSTATS case ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/trace/events/sched.h |   95 ++++++++++++++++++++++++++++++++++++++++++
- kernel/sched_fair.c          |   12 +++++-
- 2 files changed, 106 insertions(+), 1 deletions(-)
-
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index 8949bb7..a4c369e 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -340,6 +340,101 @@ TRACE_EVENT(sched_signal_send,
- 		  __entry->sig, __entry->comm, __entry->pid)
- );
- 
-+/*
-+ * XXX the below sched_stat tracepoints only apply to SCHED_OTHER/BATCH/IDLE
-+ *     adding sched_stat support to SCHED_FIFO/RR would be welcome.
-+ */
-+
-+/*
-+ * Tracepoint for accounting wait time (time the task is runnable
-+ * but not actually running due to scheduler contention).
-+ */
-+TRACE_EVENT(sched_stat_wait,
-+
-+	TP_PROTO(struct task_struct *tsk, u64 delay),
-+
-+	TP_ARGS(tsk, delay),
-+
-+	TP_STRUCT__entry(
-+		__array( char,	comm,	TASK_COMM_LEN	)
-+		__field( pid_t,	pid			)
-+		__field( u64,	delay			)
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
-+		__entry->pid	= tsk->pid;
-+		__entry->delay	= delay;
-+	)
-+	TP_perf_assign(
-+		__perf_count(delay);
-+	),
-+
-+	TP_printk("task: %s:%d wait: %Lu [ns]",
-+			__entry->comm, __entry->pid,
-+			(unsigned long long)__entry->delay)
-+);
-+
-+/*
-+ * Tracepoint for accounting sleep time (time the task is not runnable,
-+ * including iowait, see below).
-+ */
-+TRACE_EVENT(sched_stat_sleep,
-+
-+	TP_PROTO(struct task_struct *tsk, u64 delay),
-+
-+	TP_ARGS(tsk, delay),
-+
-+	TP_STRUCT__entry(
-+		__array( char,	comm,	TASK_COMM_LEN	)
-+		__field( pid_t,	pid			)
-+		__field( u64,	delay			)
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
-+		__entry->pid	= tsk->pid;
-+		__entry->delay	= delay;
-+	)
-+	TP_perf_assign(
-+		__perf_count(delay);
-+	),
-+
-+	TP_printk("task: %s:%d sleep: %Lu [ns]",
-+			__entry->comm, __entry->pid,
-+			(unsigned long long)__entry->delay)
-+);
-+
-+/*
-+ * Tracepoint for accounting iowait time (time the task is not runnable
-+ * due to waiting on IO to complete).
-+ */
-+TRACE_EVENT(sched_stat_iowait,
-+
-+	TP_PROTO(struct task_struct *tsk, u64 delay),
-+
-+	TP_ARGS(tsk, delay),
-+
-+	TP_STRUCT__entry(
-+		__array( char,	comm,	TASK_COMM_LEN	)
-+		__field( pid_t,	pid			)
-+		__field( u64,	delay			)
-+	),
-+
-+	TP_fast_assign(
-+		memcpy(__entry->comm, tsk->comm, TASK_COMM_LEN);
-+		__entry->pid	= tsk->pid;
-+		__entry->delay	= delay;
-+	)
-+	TP_perf_assign(
-+		__perf_count(delay);
-+	),
-+
-+	TP_printk("task: %s:%d iowait: %Lu [ns]",
-+			__entry->comm, __entry->pid,
-+			(unsigned long long)__entry->delay)
-+);
-+
- #endif /* _TRACE_SCHED_H */
- 
- /* This part must be outside protection */
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 471fa28..2ff850f 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -546,6 +546,13 @@ update_stats_wait_end(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 	schedstat_set(se->wait_sum, se->wait_sum +
- 			rq_of(cfs_rq)->clock - se->wait_start);
- 	schedstat_set(se->wait_start, 0);
-+
-+#ifdef CONFIG_SCHEDSTATS
-+	if (entity_is_task(se)) {
-+		trace_sched_stat_wait(task_of(se),
-+			rq_of(cfs_rq)->clock - se->wait_start);
-+	}
-+#endif
- }
- 
- static inline void
-@@ -636,8 +643,10 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 		se->sleep_start = 0;
- 		se->sum_sleep_runtime += delta;
- 
--		if (tsk)
-+		if (tsk) {
- 			account_scheduler_latency(tsk, delta >> 10, 1);
-+			trace_sched_stat_sleep(tsk, delta);
-+		}
- 	}
- 	if (se->block_start) {
- 		u64 delta = rq_of(cfs_rq)->clock - se->block_start;
-@@ -655,6 +664,7 @@ static void enqueue_sleeper(struct cfs_rq *cfs_rq, struct sched_entity *se)
- 			if (tsk->in_iowait) {
- 				se->iowait_sum += delta;
- 				se->iowait_count++;
-+				trace_sched_stat_iowait(tsk, delta);
- 			}
- 
- 			/*
+sorry but debian stable provides latest 2.6.26-2-amd64
+curent workaround is to use: driver r8168.
