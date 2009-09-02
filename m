@@ -1,50 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751918AbZIBLpf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751896AbZIBLvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751918AbZIBLpf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 07:45:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751775AbZIBLpf
+	id S1751896AbZIBLvZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 07:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751765AbZIBLvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 07:45:35 -0400
-Received: from lucidpixels.com ([75.144.35.66]:49815 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbZIBLpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 07:45:34 -0400
-Date: Wed, 2 Sep 2009 07:45:36 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-To: Christoph Hellwig <hch@infradead.org>
-cc: Nikanth Karthikesan <knikanth@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, xfs@oss.sgi.com
-Subject: Re: Kernel 2.6.30.4 loop(..?) regression (& with/2.6.31-rc6)
-In-Reply-To: <alpine.DEB.2.00.0908280720220.30806@p34.internal.lan>
-Message-ID: <alpine.DEB.2.00.0909020743550.22337@p34.internal.lan>
-References: <alpine.DEB.2.00.0908221044420.30321@p34.internal.lan> <20090822201558.GA17955@infradead.org> <alpine.DEB.2.00.0908221645440.20848@p34.internal.lan> <20090822205502.GA18904@infradead.org> <alpine.DEB.2.00.0908221659030.23463@p34.internal.lan>
- <20090823224504.GA19942@infradead.org> <alpine.DEB.2.00.0908240704130.9427@p34.internal.lan> <alpine.DEB.2.00.0908260949550.9396@p34.internal.lan> <20090826180234.GC14019@infradead.org> <alpine.DEB.2.00.0908261717001.1594@p34.internal.lan>
- <20090826212732.GA18124@infradead.org> <alpine.DEB.2.00.0908261728580.1594@p34.internal.lan> <alpine.DEB.2.00.0908280720220.30806@p34.internal.lan>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 2 Sep 2009 07:51:24 -0400
+Received: from qmta02.westchester.pa.mail.comcast.net ([76.96.62.24]:41761
+	"EHLO QMTA02.westchester.pa.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751542AbZIBLvY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 07:51:24 -0400
+Date: Wed, 2 Sep 2009 06:51:23 -0500
+From: Tim Walberg <twalberg@comcast.net>
+To: Tim Walberg <twalberg@comcast.net>, Christoph Hellwig <hch@infradead.org>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: xfs compat_ioctl?
+Message-ID: <20090902115123.GA13355@comcast.net>
+Reply-To: Tim Walberg <twalberg@comcast.net>
+Mail-Followup-To: Tim Walberg <twalberg@comcast.net>,
+	Christoph Hellwig <hch@infradead.org>,
+	Linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>, xfs@oss.sgi.com
+References: <4A9B759B.7020401@msgid.tls.msk.ru> <20090831123010.GA2368@infradead.org> <20090831183751.GC19343@comcast.net> <20090831184822.GA10393@infradead.org> <20090831184918.GB10393@infradead.org> <20090831190209.GD19343@comcast.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
+Content-Disposition: inline
+In-Reply-To: <20090831190209.GD19343@comcast.net>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--/9DWx/yDrRhgMJTb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, 28 Aug 2009, Justin Piszcz wrote:
->
-> On Wed, 26 Aug 2009, Justin Piszcz wrote:
->
->> On Wed, 26 Aug 2009, Christoph Hellwig wrote:
->> 
->>> On Wed, Aug 26, 2009 at 05:19:11PM -0400, Justin Piszcz wrote:
+Ok, that patch has fixed my issues with xfs_fsr. Now I just need to
+pull a new copy of xfs_progs to get the xfs_db alignment issue fix...
 
-Christoph,
 
-Now 6 days without any problems using -o nobarrier.
+		Thanks,
+			tw
 
-$ uptime
-  07:43:55 up 6 days, 14:12,  1 user,  load average: 0.00, 0.00, 0.00
 
-So -o nobarrier is a workaround for the issue.  How / what debug settings
-should be enabled to catch the bug/problem when -o nobarrier is used?
+On 08/31/2009 14:02 -0500, Walberg, Tim wrote:
+>>=09
+>>=09
+>>	On 08/31/2009 14:49 -0400, Christoph Hellwig wrote:
+>>	>>	On Mon, Aug 31, 2009 at 02:48:22PM -0400, Christoph Hellwig wrote:
+>>	>>	> On Mon, Aug 31, 2009 at 01:37:51PM -0500, Tim Walberg wrote:
+>>	>>	> > Linux sparcy 2.6.30.4-sparcy #2 Sat Aug 1 21:14:46 CDT 2009 sparc=
+64 GNU/Linux
+>>	>>	> > sparcy:~# file $(which xfs_fsr)
+>>	>>	> > /usr/sbin/xfs_fsr: ELF 32-bit MSB executable, SPARC32PLUS, V8+ Re=
+quired, version 1 (SYSV), dynamically linked (uses shared libs), for GNU/Li=
+nux 2.6.18, stripped
+>>	>>	>=20
+>>	>>	> I'll take a look at that, thanks.
+>>	>>=09
+>>	>>	Err, sorry - is that with the patch I posted in this thread or withou=
+t?
+>>	End of included message
+>>=09
+>>=09
+>>	No, that's the generic 2.6.30.4... I can attempt with that patch as well=
+, but
+>>	it might be a day or two...
+>>=09
+>>					tw
+>>=09
 
-Justin.
+
+End of included message
+
+
+
+--=20
+twalberg@comcast.net
+
+--/9DWx/yDrRhgMJTb
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqeXDsACgkQw+Wcj22rJWaHTgCcDXj5l5OCxgtqjI0yX3/iqjEz
+I9gAnA1wnOpQh6vGhmNxMMvJOphas5tM
+=mAQt
+-----END PGP SIGNATURE-----
+
+--/9DWx/yDrRhgMJTb--
