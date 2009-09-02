@@ -1,122 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZIBOUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbZIBRYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbZIBOUH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 10:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbZIBOUG
+	id S1753111AbZIBRYj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 13:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753071AbZIBRYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 10:20:06 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:58452 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750780AbZIBOUF (ORCPT
+	Wed, 2 Sep 2009 13:24:38 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:41700 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752670AbZIBRYi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 10:20:05 -0400
-From: "Kirill A. Shutemov" <kirill@shutemov.name>
-To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Cc: Koskinen Aaro <aaro.koskinen@nokia.com>,
-       Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
-       Moiseichuk Leonid <leonid.moiseichuk@nokia.com>,
-       Siarhei Siamashka <siarhei.siamashka@nokia.com>,
-       "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: [PATCH] ARM: copy_page.S: take into account the size of the cache line
-Date: Wed,  2 Sep 2009 20:19:58 +0300
-Message-Id: <1251911998-3112-1-git-send-email-kirill@shutemov.name>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <20090902132423.GA12595@n2100.arm.linux.org.uk>
-References: <20090902132423.GA12595@n2100.arm.linux.org.uk>
+	Wed, 2 Sep 2009 13:24:38 -0400
+Date: Wed, 2 Sep 2009 18:24:38 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Linus Walleij <linus.walleij@stericsson.com>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Samuel Ortiz <sameo@linux.intel.com>,
+       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Russell King <linux@arm.linux.org.uk>
+Subject: Re: [PATCH 1/2] AB3100 regulator support v3
+Message-ID: <20090902172438.GA1190@rakim.wolfsonmicro.main>
+References: <1251756258-23917-1-git-send-email-linus.walleij@stericsson.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251756258-23917-1-git-send-email-linus.walleij@stericsson.com>
+X-Cookie: Are we running light with overbyte?
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Optimized version of copy_page() was written with assumption that cache
-line size is 32 bytes. On Cortex-A8 cache line size is 64 bytes.
+On Tue, Sep 01, 2009 at 12:04:18AM +0200, Linus Walleij wrote:
+> This adds support for the regulators found in the AB3100
+> Mixed-Signal IC.
+> 
+> It further also defines platform data for the ST-Ericsson
+> U300 platform and extends the AB3100 MFD driver so that
+> platform/board data with regulation constraints and an init
+> function can be passed down all the way from the board to
+> the regulators.
+> 
+> Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
 
-This patch tries to generalize copy_page() to work with any cache line
-size if cache line size is multiple of 16 and page size is multiple of
-two cache line size.
-
-After this optimization we've got ~25% speedup on OMAP3(tested in
-userspace).
-
-There is test for kernelspace which trigger copy-on-write after fork():
-
- #include <stdlib.h>
- #include <string.h>
- #include <unistd.h>
-
- #define BUF_SIZE (10000*4096)
- #define NFORK 200
-
- int main(int argc, char **argv)
- {
-         char *buf = malloc(BUF_SIZE);
-         int i;
-
-         memset(buf, 0, BUF_SIZE);
-
-         for(i = 0; i < NFORK; i++) {
-                 if (fork()) {
-                         wait(NULL);
-                 } else {
-                         int j;
-
-                         for(j = 0; j < BUF_SIZE; j+= 4096)
-                                 buf[j] = (j & 0xFF) + 1;
-                         break;
-                 }
-         }
-
-         free(buf);
-         return 0;
- }
-
-Before optimization this test takes ~66 seconds, after optimization
-takes ~56 seconds.
-
-Signed-off-by: Siarhei Siamashka <siarhei.siamashka@nokia.com>
-Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
----
- arch/arm/lib/copy_page.S |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
-
-diff --git a/arch/arm/lib/copy_page.S b/arch/arm/lib/copy_page.S
-index 6ae04db..6ee2f67 100644
---- a/arch/arm/lib/copy_page.S
-+++ b/arch/arm/lib/copy_page.S
-@@ -12,8 +12,9 @@
- #include <linux/linkage.h>
- #include <asm/assembler.h>
- #include <asm/asm-offsets.h>
-+#include <asm/cache.h>
- 
--#define COPY_COUNT (PAGE_SZ/64 PLD( -1 ))
-+#define COPY_COUNT (PAGE_SZ / (2 * L1_CACHE_BYTES) PLD( -1 ))
- 
- 		.text
- 		.align	5
-@@ -26,17 +27,16 @@
- ENTRY(copy_page)
- 		stmfd	sp!, {r4, lr}			@	2
- 	PLD(	pld	[r1, #0]		)
--	PLD(	pld	[r1, #32]		)
-+	PLD(	pld	[r1, #L1_CACHE_BYTES]		)
- 		mov	r2, #COPY_COUNT			@	1
- 		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
--1:	PLD(	pld	[r1, #64]		)
--	PLD(	pld	[r1, #96]		)
--2:		stmia	r0!, {r3, r4, ip, lr}		@	4
--		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
--		stmia	r0!, {r3, r4, ip, lr}		@	4
--		ldmia	r1!, {r3, r4, ip, lr}		@	4+1
-+1:	PLD(	pld	[r1, #2 * L1_CACHE_BYTES])
-+	PLD(	pld	[r1, #3 * L1_CACHE_BYTES])
-+2:
-+	.rept	(2 * L1_CACHE_BYTES / 16 - 1)
- 		stmia	r0!, {r3, r4, ip, lr}		@	4
- 		ldmia	r1!, {r3, r4, ip, lr}		@	4
-+	.endr
- 		subs	r2, r2, #1			@	1
- 		stmia	r0!, {r3, r4, ip, lr}		@	4
- 		ldmgtia	r1!, {r3, r4, ip, lr}		@	4
--- 
-1.6.4.2
-
+This looks basically good - my only concern is if the initialisation
+data supplied for the regulators is just setting up the things that can
+be set up via the API or if there's other stuff going on (this was my
+reason for the question I asked the other day).  If there's other stuff
+being configured then I'm happy with the patch modulo the static thing.
