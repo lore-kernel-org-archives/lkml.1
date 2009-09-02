@@ -1,76 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753576AbZIBWLh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbZIBWSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753576AbZIBWLh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZIBWLg
+	id S1753665AbZIBWSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 18:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZIBWSn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:11:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39630 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751188AbZIBWLf (ORCPT
+	Wed, 2 Sep 2009 18:18:43 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:42276 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753610AbZIBWSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 18:11:35 -0400
-Date: Wed, 2 Sep 2009 15:11:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: tony@atomide.com, hvaibhav@ti.com, khasim@ti.com, sakoman@gmail.com,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org,
-       tomi.valkeinen@nokia.com
-Subject: Re: [PATCH 00/18] OMAP: DSS2: Intro
-Message-Id: <20090902151126.f465bb15.akpm@linux-foundation.org>
-In-Reply-To: <4A9CC8DB.2050803@gmail.com>
-References: <1251462337-12531-1-git-send-email-tomi.valkeinen@nokia.com>
-	<4A9B96A7.5040005@gmail.com>
-	<5e088bd90908310720p290ba68dwd6106a778fd7c740@mail.gmail.com>
-	<0680EC522D0CC943BC586913CF3768C0037CE48136@dbde02.ent.ti.com>
-	<19F8576C6E063C45BE387C64729E73940436A4A9B6@dbde02.ent.ti.com>
-	<20090831155518.GC16876@atomide.com>
-	<4A9CC8DB.2050803@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 18:18:39 -0400
+Message-ID: <4A9EEF07.5070800@gmail.com>
+Date: Thu, 03 Sep 2009 00:17:43 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+CC: Patrick McHardy <kaber@trash.net>,
+       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>
+Subject: Re: System freeze on reboot - general protection fault
+References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>	 <c4e36d110908110832y21fba830ub8804613df571228@mail.gmail.com>	 <20090811154853.GF2763@sgi.com>	 <c4e36d110908111410y29b922ceod6871fda2514f6e6@mail.gmail.com>	 <c4e36d110908121516u504809e9y537e9babfa95df1d@mail.gmail.com>	 <alpine.DEB.1.10.0908121820410.3257@gentwo.org>	 <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>	 <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com>	 <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net> <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
+In-Reply-To: <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 00:17:45 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 01 Sep 2009 10:10:19 +0300
-Artem Bityutskiy <dedekind1@gmail.com> wrote:
-
-> Andrew,
+Zdenek Kabelac a écrit :
+> 2009/8/17 Patrick McHardy <kaber@trash.net>:
+>> Eric Dumazet wrote:
+>>> Zdenek Kabelac a écrit :
+>>>>  [<ffffffffa02c502f>] nf_conntrack_ftp_fini+0x2f/0x70 [nf_conntrack_ftp]
+>>>>  [<ffffffff8027bcc5>] sys_delete_module+0x1a5/0x270
+>>>>  [<ffffffff8020d329>] ? retint_swapgs+0xe/0x13
+>>>>  [<ffffffff80271bf2>] ? trace_hardirqs_on_caller+0x162/0x1b0
+>>>>  [<ffffffff80292121>] ? audit_syscall_entry+0x191/0x1c0
+>>>>  [<ffffffff80526dae>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>>>>  [<ffffffff8020c84b>] system_call_fastpath+0x16/0x1b
+>>>> Code: c6 00 00 0f 82 66 ff ff ff 49 8b 9e d8 05 00 00 48 85 db 75 16
+>>>> e9 8e 00 00 00 0f 1f 44 00 00 48 85 c0 0f 84 80 00 00 00 48 89 c3 <0f>
+>>>> b6 4b 37 48 8b 03 48 8d 14 cd 00 00 00 00 0f 18 08 48 29 ca
+>>>> RIP  [<ffffffffa02b2c2c>] nf_conntrack_helper_unregister+0x16c/0x320
+>>>> [nf_conntrack]
+>>>>  RSP <ffff88013982fe68>
+>>>> CR2: 0000000000000038
+>>>> ---[ end trace bc3a0ede3d0084db ]---
+>>>>
+>>> I am currently traveling and wont be able to help you before next week.
+>>>
+>>> I added netdev, Patrick, and netfilter-devel in CC so that more eyes can take a look.
+>> Thanks for the report, I'll have a look at this. Zdenek, please
+>> send me the nf_conntrack.ko file used in the above oops. Thanks.
+>>
 > 
-> could you please help with merging this piece of (well written) code?
-> Could you give your blessing to include it into linux-next now, and
-> merge this during the next merge window?
+> Ok
+> 
+> I've found the solution for my problem.
+> 
+> http://thread.gmane.org/gmane.comp.security.firewalls.netfilter.devel/30483
+> 
+> I've made this small fix from this thread:
+> 
+> diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core
+> index b5869b9..68488f8 100644
+> --- a/net/netfilter/nf_conntrack_core.c
+> +++ b/net/netfilter/nf_conntrack_core.c
+> @@ -1108,6 +1108,7 @@ static void nf_conntrack_cleanup_init_net(void)
+>  {
+>         nf_conntrack_helper_fini();
+>         nf_conntrack_proto_fini();
+> +       rcu_barrier();
+>         kmem_cache_destroy(nf_conntrack_cachep);
+>  }
+> 
+> @@ -1266,7 +1267,7 @@ static int nf_conntrack_init_init_net(void)
+> 
+>         nf_conntrack_cachep = kmem_cache_create("nf_conntrack",
+>                                                 sizeof(struct nf_conn),
+> -                                               0, SLAB_DESTROY_BY_RCU, NULL);
+> +                                               0, 0, NULL);
+>         if (!nf_conntrack_cachep) {
+>                 printk(KERN_ERR "Unable to create nf_conn slab cache\n");
+>                 ret = -ENOMEM;
+> 
+> 
+> As the thread nf_conntrack: Use rcu_barrier() and fix kmem_cache_create flags
+> seems to be samewhat 'unfinished'  and already a bit old and I've no
+> idea whether it actually fixes problem completely or just hides it in
+> my case - I'm leaving it to some RCU gurus to fix this issue.
+> 
+> All I could say is - this this extra rcu_barrier() and removal of
+> SLAB_DESTROY removes my GPF on reboot.
+> 
+> Zdenek
 
-I'll merge them (after I've looked through them, which I'll do now).  
+Ouch..
 
-But there are more rejects than I'm prepared to cope with.  The various
-arch/arm files have undergone some changes in linux-next which yield
-more breakage than I'm prepared to try to fix.  For example,
-arch/arm/mach-omap2/board-3430sdp.c:sdp3430_config[] ends up being an
-empty array!
+Dont think such a patch makes your kernel better, it'll crash too.
 
-Then there's the matter of these patches, already in -mm:
-
-omapfb-add-support-for-the-apollon-lcd.patch
-omapfb-add-support-for-mipi-dcs-compatible-lcds.patch
-omapfb-add-support-for-the-amstrad-delta-lcd.patch
-omapfb-add-support-for-the-2430sdp-lcd.patch
-omapfb-add-support-for-the-omap2evm-lcd.patch
-omapfb-add-support-for-the-3430sdp-lcd.patch
-omapfb-add-support-for-the-omap3-evm-lcd.patch
-omapfb-add-support-for-the-omap3-beagle-dvi-output.patch
-omapfb-add-support-for-the-gumstix-overo-lcd.patch
-omapfb-add-support-for-the-zoom-mdk-lcd.patch
-omapfb-add-support-for-rotation-on-the-blizzard-lcd-ctrl.patch
-n770-enable-lcd-mipi-dcs-in-kconfig.patch
-omapfb-dispc-various-typo-fixes.patch
-omapfb-dispc-disable-iface-clocks-along-with-func-clocks.patch
-omapfb-dispc-enable-wake-up-capability.patch
-omapfb-dispc-allow-multiple-external-irq-handlers.patch
-omapfb-suspend-resume-only-if-fb-device-is-already-initialized.patch
-omapfb-fix-coding-style-remove-dead-line.patch
-omapfb-add-fb-manual-update-option-to-kconfig.patch
-omapfb-hwa742-fix-pointer-to-be-const.patch
+You cannot remove SLAB_DESTROY_BY_RCU like this, it's there for very good reasons.
 
