@@ -1,86 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZIBQGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895AbZIBQKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZIBQGB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 12:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752503AbZIBQGA
+	id S1752895AbZIBQKt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 12:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZIBQKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 12:06:00 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:62849 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752294AbZIBQF7 convert rfc822-to-8bit (ORCPT
+	Wed, 2 Sep 2009 12:10:47 -0400
+Received: from complete.lackof.org ([198.49.126.79]:33471 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751974AbZIBQKq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 12:05:59 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=ofOJEdnhrDFJXuzkv2oleaYI06fncxnr4eZdWviNRo7rARm1PuZuMjzsWbHFo1XWj
-	ZE/5Z/KqzFLRSpTGhgkCQ==
+	Wed, 2 Sep 2009 12:10:46 -0400
+Date: Wed, 2 Sep 2009 10:10:48 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Tejun Heo <tj@kernel.org>
+Cc: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org, Shane Huang <Shane.Huang@amd.com>
+Subject: Re: [PATCH] pci: separate out pci_add_dynid()
+Message-ID: <20090902161048.GA5405@lackof.org>
+References: <4A9E38FA.3000506@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <alpine.LSU.2.00.0909021748310.25091@fbirervta.pbzchgretzou.qr>
-References: <20090902101417.11561.45663.stgit@jazzy.zrh.corp.google.com>
-	 <20090902101527.11561.59498.stgit@jazzy.zrh.corp.google.com>
-	 <4A9E8711.1070807@trash.net>
-	 <b5ddba180909020833w1739bd54t11fded8150007abc@mail.gmail.com>
-	 <4A9E90E4.9080805@trash.net>
-	 <alpine.LSU.2.00.0909021748310.25091@fbirervta.pbzchgretzou.qr>
-Date: Wed, 2 Sep 2009 18:05:54 +0200
-Message-ID: <b5ddba180909020905p2dd209ay435c4e161a5d2057@mail.gmail.com>
-Subject: Re: [PATCH 1/3] netfilter: xt_ipvs (netfilter matcher for IPVS)
-From: Hannes Eder <heder@google.com>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Patrick McHardy <kaber@trash.net>, lvs-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org,
-       =?ISO-8859-1?Q?Fabien_Duch=EAne?= <mad_fab@skynet.be>,
-       Jean-Luc Fortemaison <jl.fortemaison@uclouvain.be>,
-       Julian Anastasov <ja@ssi.bg>, Julius Volz <julius.volz@gmail.com>,
-       Laurent Grawet <laurent.grawet@uclouvain.be>,
-       Simon Horman <horms@verge.net.au>, Wensong Zhang <wensong@linux-vs.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9E38FA.3000506@kernel.org>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 2, 2009 at 17:49, Jan Engelhardt<jengelh@medozas.de> wrote:
->
-> On Wednesday 2009-09-02 17:36, Patrick McHardy wrote:
->>>
->>> Nice, I'll use par->family.
->>>
->>> So in theory I do not even need a check like the following in the beginning?
->>>
->>>      if (family != NFPROTO_IPV4
->>> #ifdef CONFIG_IP_VS_IPV6
->>>          && family != NFPROTO_IPV6
->>> #endif
->>>              ) {
->>>              match = false;
->>>              goto out;
->>>      }
->>
->>With the AF_UNSPEC registration of your match, it might be used
->
-> par->family always contains the NFPROTO of the invoking implementation,
-> which can never be UNSPEC (except, in future, xtables2 ;-)
->
-> par->match->family however may be UNSPEC if the module works that way.
-> Which is why we have par->family.
->
+On Wed, Sep 02, 2009 at 06:20:58PM +0900, Tejun Heo wrote:
+> Separate out pci_add_dynid() from store_new_id() and export it so that
+> in-kernel code can add PCI IDs dynamically.  As the function will be
+> available regardless of HOTPLUG, put it and pull pci_free_dynids()
+> outside of CONFIG_HOTPLUG.
+> 
+> This will be used by pci-stub to initialize initial IDs via module
+> param.
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> ---
+>  drivers/pci/pci-driver.c |  119 +++++++++++++++++++++++++++++------------------
+>  include/linux/pci.h      |    5 +
+>  2 files changed, 79 insertions(+), 45 deletions(-)
+> 
+> Index: ata/drivers/pci/pci-driver.c
+> ===================================================================
+> --- ata.orig/drivers/pci/pci-driver.c
+> +++ ata/drivers/pci/pci-driver.c
+> @@ -19,37 +19,98 @@
+>  #include <linux/cpu.h>
+>  #include "pci.h"
+> 
+> -/*
+> - * Dynamic device IDs are disabled for !CONFIG_HOTPLUG
+> - */
 
-I'll a check_entry function:
+The comment was removed here. Ok.
 
-static bool ipvs_mt_check(const struct xt_mtchk_param *par)
-{
-	if (par->family != NFPROTO_IPV4
-#ifdef CONFIG_IP_VS_IPV6
-	    && par->family != NFPROTO_IPV6
-#endif
-		)
-		return false;
+> -
+>  struct pci_dynid {
+>  	struct list_head node;
+>  	struct pci_device_id id;
+>  };
+> 
+> -#ifdef CONFIG_HOTPLUG
+> +/**
+> + * pci_add_dynid - add a new PCI device ID to this driver and re-probe devices
+> + * @drv: target pci driver
+> + * @vendor: PCI vendor ID
+> + * @device: PCI device ID
+> + * @subvendor: PCI subvendor ID
+> + * @subdevice: PCI subdevice ID
+> + * @class: PCI class
+> + * @class_mask: PCI class mask
+> + * @driver_data: private driver data
+> + *
+> + * Adds a new dynamic pci device ID to this driver and causes the
+> + * driver to probe for all devices again.  @drv must have been
+> + * registered prior to calling this function.
+> + *
+> + * CONTEXT:
+> + * Does GFP_KERNEL allocation.
+> + *
+> + * RETURNS:
+> + * 0 on success, -errno on failure.
+> + */
+> +int pci_add_dynid(struct pci_driver *drv,
+> +		  unsigned int vendor, unsigned int device,
+> +		  unsigned int subvendor, unsigned int subdevice,
+> +		  unsigned int class, unsigned int class_mask,
+> +		  unsigned long driver_data)
+> +{
+> +	struct pci_dynid *dynid;
+> +	int retval;
+> +
+> +	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
+> +	if (!dynid)
+> +		return -ENOMEM;
+> +
+> +	dynid->id.vendor = vendor;
+> +	dynid->id.device = device;
+> +	dynid->id.subvendor = subvendor;
+> +	dynid->id.subdevice = subdevice;
+> +	dynid->id.class = class;
+> +	dynid->id.class_mask = class_mask;
+> +	dynid->id.driver_data = driver_data;
+> 
+> +	spin_lock(&drv->dynids.lock);
+> +	list_add_tail(&dynid->node, &drv->dynids.list);
+> +	spin_unlock(&drv->dynids.lock);
+> +
+> +	get_driver(&drv->driver);
 
-	return true;
-}
+Return value ignored caught my attention... But I can't say if that's wrong.
 
-and remove the runtime check in ipvs_mt.
+I'm not finding any documentation on get_driver() in Documentation/ .
+Looking at drivers/base/driver.c:get_driver() code, I'm confused why this
+function bothers returning struct device_driver *. My expectation is 
+the input parameter "drv" is the same as "priv->driver" that gets returned.
+No?
+
+In any case, if the Docbook comments for get_driver() could explain
+whatever subtle difference there is, that would be helpful.
+
+> +	retval = driver_attach(&drv->driver);
+> +	put_driver(&drv->driver);
+> +
+> +	return retval;
+> +}
+> +
+> +static void pci_free_dynids(struct pci_driver *drv)
+> +{
+> +	struct pci_dynid *dynid, *n;
+> +
+> +	spin_lock(&drv->dynids.lock);
+> +	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
+> +		list_del(&dynid->node);
+> +		kfree(dynid);
+> +	}
+> +	spin_unlock(&drv->dynids.lock);
+> +}
+> +
+> +/*
+> + * Dynamic device ID manipulation via sysfs is disabled for !CONFIG_HOTPLUG
+> + */
+
+But same comment added back here. Is this comment correct?
+
+If comments are the only thing that change, please add:
+  Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
+
+This patch seems pretty straight forward.
+
+thanks
+grant
+
+> +#ifdef CONFIG_HOTPLUG
+>  /**
+> - * store_new_id - add a new PCI device ID to this driver and re-probe devices
+> + * store_new_id - sysfs frontend to pci_add_dynid()
+>   * @driver: target device driver
+>   * @buf: buffer for scanning device ID data
+>   * @count: input size
+>   *
+> - * Adds a new dynamic pci device ID to this driver,
+> - * and causes the driver to probe for all devices again.
+> + * Allow PCI IDs to be added to an existing driver via sysfs.
+>   */
+>  static ssize_t
+>  store_new_id(struct device_driver *driver, const char *buf, size_t count)
+>  {
+> -	struct pci_dynid *dynid;
+>  	struct pci_driver *pdrv = to_pci_driver(driver);
+>  	const struct pci_device_id *ids = pdrv->id_table;
+>  	__u32 vendor, device, subvendor=PCI_ANY_ID,
+>  		subdevice=PCI_ANY_ID, class=0, class_mask=0;
+>  	unsigned long driver_data=0;
+>  	int fields=0;
+> -	int retval=0;
+> +	int retval;
+> 
+>  	fields = sscanf(buf, "%x %x %x %x %x %x %lx",
+>  			&vendor, &device, &subvendor, &subdevice,
+> @@ -72,27 +133,8 @@ store_new_id(struct device_driver *drive
+>  			return retval;
+>  	}
+> 
+> -	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
+> -	if (!dynid)
+> -		return -ENOMEM;
+> -
+> -	dynid->id.vendor = vendor;
+> -	dynid->id.device = device;
+> -	dynid->id.subvendor = subvendor;
+> -	dynid->id.subdevice = subdevice;
+> -	dynid->id.class = class;
+> -	dynid->id.class_mask = class_mask;
+> -	dynid->id.driver_data = driver_data;
+> -
+> -	spin_lock(&pdrv->dynids.lock);
+> -	list_add_tail(&dynid->node, &pdrv->dynids.list);
+> -	spin_unlock(&pdrv->dynids.lock);
+> -
+> -	if (get_driver(&pdrv->driver)) {
+> -		retval = driver_attach(&pdrv->driver);
+> -		put_driver(&pdrv->driver);
+> -	}
+> -
+> +	retval = pci_add_dynid(pdrv, vendor, device, subvendor, subdevice,
+> +			       class, class_mask, driver_data);
+>  	if (retval)
+>  		return retval;
+>  	return count;
+> @@ -145,19 +187,6 @@ store_remove_id(struct device_driver *dr
+>  }
+>  static DRIVER_ATTR(remove_id, S_IWUSR, NULL, store_remove_id);
+> 
+> -static void
+> -pci_free_dynids(struct pci_driver *drv)
+> -{
+> -	struct pci_dynid *dynid, *n;
+> -
+> -	spin_lock(&drv->dynids.lock);
+> -	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
+> -		list_del(&dynid->node);
+> -		kfree(dynid);
+> -	}
+> -	spin_unlock(&drv->dynids.lock);
+> -}
+> -
+>  static int
+>  pci_create_newid_file(struct pci_driver *drv)
+>  {
+> @@ -186,7 +215,6 @@ static void pci_remove_removeid_file(str
+>  	driver_remove_file(&drv->driver, &driver_attr_remove_id);
+>  }
+>  #else /* !CONFIG_HOTPLUG */
+> -static inline void pci_free_dynids(struct pci_driver *drv) {}
+>  static inline int pci_create_newid_file(struct pci_driver *drv)
+>  {
+>  	return 0;
+> @@ -1106,6 +1134,7 @@ static int __init pci_driver_init(void)
+> 
+>  postcore_initcall(pci_driver_init);
+> 
+> +EXPORT_SYMBOL(pci_add_dynid);
+>  EXPORT_SYMBOL(pci_match_id);
+>  EXPORT_SYMBOL(__pci_register_driver);
+>  EXPORT_SYMBOL(pci_unregister_driver);
+> Index: ata/include/linux/pci.h
+> ===================================================================
+> --- ata.orig/include/linux/pci.h
+> +++ ata/include/linux/pci.h
+> @@ -794,6 +794,11 @@ int __must_check __pci_register_driver(s
+>  void pci_unregister_driver(struct pci_driver *dev);
+>  void pci_remove_behind_bridge(struct pci_dev *dev);
+>  struct pci_driver *pci_dev_driver(const struct pci_dev *dev);
+> +int pci_add_dynid(struct pci_driver *drv,
+> +		  unsigned int vendor, unsigned int device,
+> +		  unsigned int subvendor, unsigned int subdevice,
+> +		  unsigned int class, unsigned int class_mask,
+> +		  unsigned long driver_data);
+>  const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
+>  					 struct pci_dev *dev);
+>  int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
