@@ -1,111 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754109AbZIBJXB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbZIBJbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754109AbZIBJXB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 05:23:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750985AbZIBJXA
+	id S1753797AbZIBJbY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 05:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZIBJbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 05:23:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47464 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752034AbZIBJW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 05:22:59 -0400
-Message-ID: <4A9E396A.8070205@kernel.org>
-Date: Wed, 02 Sep 2009 18:22:50 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Shane Huang <Shane.Huang@amd.com>
-CC: Chris Wright <chrisw@sous-sol.org>
-Subject: [PATCH 2/2] pci-stub: add pci_stub.ids parameter
-References: <4A9E38FA.3000506@kernel.org>
-In-Reply-To: <4A9E38FA.3000506@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Wed, 2 Sep 2009 05:31:24 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51089 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753090AbZIBJbW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 05:31:22 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 2 Sep 2009 18:29:23 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [mmotm][experimental][PATCH] coalescing charge
+Message-Id: <20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 09:22:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add ids module parameter which allows specifying initial IDs for the
-pci-stub driver.  When built into the kernel, pci-stub is linked
-before any real pci drivers and by setting up IDs from initialization
-it can prevent built-in drivers from attaching to specific devices.
+I'm sorry that I'll be absent tomorrow. This is dump of current code.
+IMHO, this version is enough simple.
 
-While at it, make pci_stub_probe() print out about devices it grabbed
-to weed out "but my controller isn't being probed" bug reports.
+My next target is css's refcnt per page. I think we never need it...
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Chris Wright <chrisw@sous-sol.org>
+=
+This is a code for batched charging using percpu cache.
+At charge, memcg charges 64pages and remember it in percpu cache.
+Because it's cache, drain/flushed if necessary.
+
+This version uses public percpu area , not per-memcg percpu area.
+ 2 benefits of public percpu area.
+ 1. Sum of stocked charge in the system is limited to # of cpus
+    not to the number of memcg. This shows better synchonization.
+ 2. drain code for flush/cpuhotplug is very easy (and quick)
+
+The most important point of this patch is that we never touch res_counter
+in fast path. The res_counter is system-wide shared counter which is modified
+very frequently. We shouldn't touch it as far as we can for avoid false sharing.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 ---
-Sorry the first one was missing 1/2 in the title.
+ mm/memcontrol.c |   93 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 88 insertions(+), 5 deletions(-)
 
- drivers/pci/pci-stub.c |   45 ++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
-
-Index: ata/drivers/pci/pci-stub.c
+Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
 ===================================================================
---- ata.orig/drivers/pci/pci-stub.c
-+++ ata/drivers/pci/pci-stub.c
-@@ -19,8 +19,16 @@
- #include <linux/module.h>
- #include <linux/pci.h>
-
-+static char ids[1024] __initdata;
-+
-+module_param_string(ids, ids, sizeof(ids), 0);
-+MODULE_PARM_DESC(ids, "Initial PCI IDs to add to the stub driver, format is "
-+		 "\"vendor:device[:subvendor[:subdevice[:class[:class_mask]]]]\""
-+		 " and multiple comma separated entries can be specified");
-+
- static int pci_stub_probe(struct pci_dev *dev, const struct pci_device_id *id)
- {
-+	dev_printk(KERN_INFO, &dev->dev, "claimed by stub\n");
- 	return 0;
+--- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
++++ mmotm-2.6.31-Aug27/mm/memcontrol.c
+@@ -275,6 +275,7 @@ enum charge_type {
+ static void mem_cgroup_get(struct mem_cgroup *mem);
+ static void mem_cgroup_put(struct mem_cgroup *mem);
+ static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
++static void drain_all_stock(void);
+ 
+ static struct mem_cgroup_per_zone *
+ mem_cgroup_zoneinfo(struct mem_cgroup *mem, int nid, int zid)
+@@ -1136,6 +1137,8 @@ static int mem_cgroup_hierarchical_recla
+ 		victim = mem_cgroup_select_victim(root_mem);
+ 		if (victim == root_mem) {
+ 			loop++;
++			if (loop >= 1)
++				drain_all_stock();
+ 			if (loop >= 2) {
+ 				/*
+ 				 * If we have not been able to reclaim
+@@ -1253,6 +1256,79 @@ done:
+ 	unlock_page_cgroup(pc);
  }
-
-@@ -32,7 +40,42 @@ static struct pci_driver stub_driver = {
-
- static int __init pci_stub_init(void)
- {
--	return pci_register_driver(&stub_driver);
-+	char *p, *id;
-+	int rc;
+ 
++#define CHARGE_SIZE	(64 * PAGE_SIZE)
++struct memcg_stock_pcp {
++	struct mem_cgroup *from;
++	int charge;
++};
++DEFINE_PER_CPU(struct memcg_stock_pcp, memcg_stock);
 +
-+	rc = pci_register_driver(&stub_driver);
-+	if (rc)
-+		return rc;
++static bool consume_stock(struct mem_cgroup *mem)
++{
++	struct memcg_stock_pcp *stock;
++	bool ret = true;
 +
-+	/* add ids specified in the module parameter */
-+	p = ids;
-+	while ((id = strsep(&p, ","))) {
-+		unsigned int vendor, device, subvendor = PCI_ANY_ID,
-+			subdevice = PCI_ANY_ID, class=0, class_mask=0;
-+		int fields;
++	stock = &get_cpu_var(memcg_stock);
++	if (mem == stock->from && stock->charge)
++		stock->charge -= PAGE_SIZE;
++	else
++		ret = false;
++	put_cpu_var(memcg_stock);
++	return ret;
++}
 +
-+		fields = sscanf(id, "%x:%x:%x:%x:%x:%x",
-+				&vendor, &device, &subvendor, &subdevice,
-+				&class, &class_mask);
++static void drain_stock(struct memcg_stock_pcp *stock)
++{
++	struct mem_cgroup *old = stock->from;
 +
-+		if (fields < 2) {
-+			printk(KERN_WARNING
-+			       "pci-stub: invalid id string \"%s\"\n", id);
-+			continue;
-+		}
-+
-+		printk(KERN_INFO
-+		       "pci-stub: add %04X:%04X sub=%04X:%04X cls=%08X/%08X\n",
-+		       vendor, device, subvendor, subdevice, class, class_mask);
-+
-+		rc = pci_add_dynid(&stub_driver, vendor, device,
-+				   subvendor, subdevice, class, class_mask, 0);
-+		if (rc)
-+			printk(KERN_WARNING
-+			       "pci-stub: failed to add dynamic id (%d)\n", rc);
++	if (stock->charge) {
++		res_counter_uncharge(&old->res, stock->charge);
++		if (do_swap_account)
++			res_counter_uncharge(&old->memsw, stock->charge);
 +	}
++	stock->from = NULL;
++}
 +
-+	return 0;
- }
++static void drain_local_stock(struct work_struct *dummy)
++{
++	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
++	drain_stock(stock);
++	put_cpu_var(memcg_stock);
++}
++
++static void refill_stock(struct mem_cgroup *mem, int val)
++{
++	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
++
++	if (stock->from != mem) {
++		drain_stock(stock);
++		stock->from = mem;
++	}
++	stock->charge = val;
++	put_cpu_var(memcg_stock);
++}
++
++static void drain_all_stock(void)
++{
++	schedule_on_each_cpu(drain_local_stock);
++}
++
++static int __cpuinit memcg_stock_cpu_callback(struct notifier_block *nb,
++					unsigned long action,
++					void *hcpu)
++{
++#ifdef CONFIG_HOTPLUG_CPU
++	int cpu = (unsigned long)*hcpu;
++	struct memcg_stock_pcp *stock;
++
++	if (action != CPU_DEAD)
++		return NOTIFY_OK;
++	stock = per_cpu(memcg_stock, cpu);
++	drain_stock(stock);
++#endif
++	return NOTIFY_OK;
++}
++
+ /*
+  * Unlike exported interface, "oom" parameter is added. if oom==true,
+  * oom-killer can be invoked.
+@@ -1288,23 +1364,25 @@ static int __mem_cgroup_try_charge(struc
+ 		return 0;
+ 
+ 	VM_BUG_ON(css_is_removed(&mem->css));
++	if (mem_cgroup_is_root(mem))
++		goto done;
++	if (consume_stock(mem))
++		goto charged;
+ 
+ 	while (1) {
+ 		int ret = 0;
+ 		unsigned long flags = 0;
+ 
+-		if (mem_cgroup_is_root(mem))
+-			goto done;
+-		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res);
++		ret = res_counter_charge(&mem->res, CHARGE_SIZE, &fail_res);
+ 		if (likely(!ret)) {
+ 			if (!do_swap_account)
+ 				break;
+-			ret = res_counter_charge(&mem->memsw, PAGE_SIZE,
++			ret = res_counter_charge(&mem->memsw, CHARGE_SIZE,
+ 							&fail_res);
+ 			if (likely(!ret))
+ 				break;
+ 			/* mem+swap counter fails */
+-			res_counter_uncharge(&mem->res, PAGE_SIZE);
++			res_counter_uncharge(&mem->res, CHARGE_SIZE);
+ 			flags |= MEM_CGROUP_RECLAIM_NOSWAP;
+ 			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
+ 									memsw);
+@@ -1342,6 +1420,9 @@ static int __mem_cgroup_try_charge(struc
+ 			goto nomem;
+ 		}
+ 	}
++	refill_stock(mem, CHARGE_SIZE - PAGE_SIZE);
++
++charged:
+ 	/*
+ 	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
+ 	 * if they exceeds softlimit.
+@@ -2448,6 +2529,7 @@ move_account:
+ 			goto out;
+ 		/* This is for making all *used* pages to be on LRU. */
+ 		lru_add_drain_all();
++		drain_all_stock();
+ 		ret = 0;
+ 		for_each_node_state(node, N_HIGH_MEMORY) {
+ 			for (zid = 0; !ret && zid < MAX_NR_ZONES; zid++) {
+@@ -3166,6 +3248,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		root_mem_cgroup = mem;
+ 		if (mem_cgroup_soft_limit_tree_init())
+ 			goto free_out;
++		hotcpu_notifier(memcg_stock_cpu_callback, 0);
+ 
+ 	} else {
+ 		parent = mem_cgroup_from_cont(cont->parent);
 
- static void __exit pci_stub_exit(void)
