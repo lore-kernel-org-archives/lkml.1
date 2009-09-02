@@ -1,270 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752895AbZIBQKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbZIBNLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752895AbZIBQKt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 12:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZIBQKr
+	id S1752097AbZIBNLz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 09:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZIBNLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 12:10:47 -0400
-Received: from complete.lackof.org ([198.49.126.79]:33471 "EHLO
-	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751974AbZIBQKq (ORCPT
+	Wed, 2 Sep 2009 09:11:55 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:45576 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751468AbZIBNLy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 12:10:46 -0400
-Date: Wed, 2 Sep 2009 10:10:48 -0600
-From: Grant Grundler <grundler@parisc-linux.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, Shane Huang <Shane.Huang@amd.com>
-Subject: Re: [PATCH] pci: separate out pci_add_dynid()
-Message-ID: <20090902161048.GA5405@lackof.org>
-References: <4A9E38FA.3000506@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9E38FA.3000506@kernel.org>
-X-Home-Page: http://www.parisc-linux.org/
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 2 Sep 2009 09:11:54 -0400
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
+Cc: Koskinen Aaro <aaro.koskinen@nokia.com>,
+       Bityutskiy Artem <Artem.Bityutskiy@nokia.com>,
+       Moiseichuk Leonid <leonid.moiseichuk@nokia.com>,
+       Siarhei Siamashka <siarhei.siamashka@nokia.com>,
+       "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: [PATCH 1/2] ARM: Introduce ARM_L1_CACHE_SHIFT to define cache line size
+Date: Wed,  2 Sep 2009 19:11:52 +0300
+Message-Id: <1251907913-16261-1-git-send-email-kirill@shutemov.name>
+X-Mailer: git-send-email 1.6.3.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 06:20:58PM +0900, Tejun Heo wrote:
-> Separate out pci_add_dynid() from store_new_id() and export it so that
-> in-kernel code can add PCI IDs dynamically.  As the function will be
-> available regardless of HOTPLUG, put it and pull pci_free_dynids()
-> outside of CONFIG_HOTPLUG.
-> 
-> This will be used by pci-stub to initialize initial IDs via module
-> param.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> ---
->  drivers/pci/pci-driver.c |  119 +++++++++++++++++++++++++++++------------------
->  include/linux/pci.h      |    5 +
->  2 files changed, 79 insertions(+), 45 deletions(-)
-> 
-> Index: ata/drivers/pci/pci-driver.c
-> ===================================================================
-> --- ata.orig/drivers/pci/pci-driver.c
-> +++ ata/drivers/pci/pci-driver.c
-> @@ -19,37 +19,98 @@
->  #include <linux/cpu.h>
->  #include "pci.h"
-> 
-> -/*
-> - * Dynamic device IDs are disabled for !CONFIG_HOTPLUG
-> - */
+Currently kernel believes that all ARM CPUs have L1_CACHE_SHIFT == 5.
+It's not true at least for CPUs based on Cortex-A8.
 
-The comment was removed here. Ok.
+List of CPUs with cache line size != 32 should be expanded later.
 
-> -
->  struct pci_dynid {
->  	struct list_head node;
->  	struct pci_device_id id;
->  };
-> 
-> -#ifdef CONFIG_HOTPLUG
-> +/**
-> + * pci_add_dynid - add a new PCI device ID to this driver and re-probe devices
-> + * @drv: target pci driver
-> + * @vendor: PCI vendor ID
-> + * @device: PCI device ID
-> + * @subvendor: PCI subvendor ID
-> + * @subdevice: PCI subdevice ID
-> + * @class: PCI class
-> + * @class_mask: PCI class mask
-> + * @driver_data: private driver data
-> + *
-> + * Adds a new dynamic pci device ID to this driver and causes the
-> + * driver to probe for all devices again.  @drv must have been
-> + * registered prior to calling this function.
-> + *
-> + * CONTEXT:
-> + * Does GFP_KERNEL allocation.
-> + *
-> + * RETURNS:
-> + * 0 on success, -errno on failure.
-> + */
-> +int pci_add_dynid(struct pci_driver *drv,
-> +		  unsigned int vendor, unsigned int device,
-> +		  unsigned int subvendor, unsigned int subdevice,
-> +		  unsigned int class, unsigned int class_mask,
-> +		  unsigned long driver_data)
-> +{
-> +	struct pci_dynid *dynid;
-> +	int retval;
-> +
-> +	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
-> +	if (!dynid)
-> +		return -ENOMEM;
-> +
-> +	dynid->id.vendor = vendor;
-> +	dynid->id.device = device;
-> +	dynid->id.subvendor = subvendor;
-> +	dynid->id.subdevice = subdevice;
-> +	dynid->id.class = class;
-> +	dynid->id.class_mask = class_mask;
-> +	dynid->id.driver_data = driver_data;
-> 
-> +	spin_lock(&drv->dynids.lock);
-> +	list_add_tail(&dynid->node, &drv->dynids.list);
-> +	spin_unlock(&drv->dynids.lock);
-> +
-> +	get_driver(&drv->driver);
+Signed-off-by: Kirill A. Shutemov <kirill@shutemov.name>
+---
+ arch/arm/include/asm/cache.h |    2 +-
+ arch/arm/mm/Kconfig          |    5 +++++
+ 2 files changed, 6 insertions(+), 1 deletions(-)
 
-Return value ignored caught my attention... But I can't say if that's wrong.
+diff --git a/arch/arm/include/asm/cache.h b/arch/arm/include/asm/cache.h
+index feaa75f..2ee7743 100644
+--- a/arch/arm/include/asm/cache.h
++++ b/arch/arm/include/asm/cache.h
+@@ -4,7 +4,7 @@
+ #ifndef __ASMARM_CACHE_H
+ #define __ASMARM_CACHE_H
+ 
+-#define L1_CACHE_SHIFT		5
++#define L1_CACHE_SHIFT		(CONFIG_ARM_L1_CACHE_SHIFT)
+ #define L1_CACHE_BYTES		(1 << L1_CACHE_SHIFT)
+ 
+ /*
+diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+index 83c025e..3c37d4c 100644
+--- a/arch/arm/mm/Kconfig
++++ b/arch/arm/mm/Kconfig
+@@ -771,3 +771,8 @@ config CACHE_XSC3L2
+ 	select OUTER_CACHE
+ 	help
+ 	  This option enables the L2 cache on XScale3.
++
++config ARM_L1_CACHE_SHIFT
++	int
++	default 6 if ARCH_OMAP3
++	default 5
+-- 
+1.6.3.4
 
-I'm not finding any documentation on get_driver() in Documentation/ .
-Looking at drivers/base/driver.c:get_driver() code, I'm confused why this
-function bothers returning struct device_driver *. My expectation is 
-the input parameter "drv" is the same as "priv->driver" that gets returned.
-No?
-
-In any case, if the Docbook comments for get_driver() could explain
-whatever subtle difference there is, that would be helpful.
-
-> +	retval = driver_attach(&drv->driver);
-> +	put_driver(&drv->driver);
-> +
-> +	return retval;
-> +}
-> +
-> +static void pci_free_dynids(struct pci_driver *drv)
-> +{
-> +	struct pci_dynid *dynid, *n;
-> +
-> +	spin_lock(&drv->dynids.lock);
-> +	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
-> +		list_del(&dynid->node);
-> +		kfree(dynid);
-> +	}
-> +	spin_unlock(&drv->dynids.lock);
-> +}
-> +
-> +/*
-> + * Dynamic device ID manipulation via sysfs is disabled for !CONFIG_HOTPLUG
-> + */
-
-But same comment added back here. Is this comment correct?
-
-If comments are the only thing that change, please add:
-  Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
-
-This patch seems pretty straight forward.
-
-thanks
-grant
-
-> +#ifdef CONFIG_HOTPLUG
->  /**
-> - * store_new_id - add a new PCI device ID to this driver and re-probe devices
-> + * store_new_id - sysfs frontend to pci_add_dynid()
->   * @driver: target device driver
->   * @buf: buffer for scanning device ID data
->   * @count: input size
->   *
-> - * Adds a new dynamic pci device ID to this driver,
-> - * and causes the driver to probe for all devices again.
-> + * Allow PCI IDs to be added to an existing driver via sysfs.
->   */
->  static ssize_t
->  store_new_id(struct device_driver *driver, const char *buf, size_t count)
->  {
-> -	struct pci_dynid *dynid;
->  	struct pci_driver *pdrv = to_pci_driver(driver);
->  	const struct pci_device_id *ids = pdrv->id_table;
->  	__u32 vendor, device, subvendor=PCI_ANY_ID,
->  		subdevice=PCI_ANY_ID, class=0, class_mask=0;
->  	unsigned long driver_data=0;
->  	int fields=0;
-> -	int retval=0;
-> +	int retval;
-> 
->  	fields = sscanf(buf, "%x %x %x %x %x %x %lx",
->  			&vendor, &device, &subvendor, &subdevice,
-> @@ -72,27 +133,8 @@ store_new_id(struct device_driver *drive
->  			return retval;
->  	}
-> 
-> -	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
-> -	if (!dynid)
-> -		return -ENOMEM;
-> -
-> -	dynid->id.vendor = vendor;
-> -	dynid->id.device = device;
-> -	dynid->id.subvendor = subvendor;
-> -	dynid->id.subdevice = subdevice;
-> -	dynid->id.class = class;
-> -	dynid->id.class_mask = class_mask;
-> -	dynid->id.driver_data = driver_data;
-> -
-> -	spin_lock(&pdrv->dynids.lock);
-> -	list_add_tail(&dynid->node, &pdrv->dynids.list);
-> -	spin_unlock(&pdrv->dynids.lock);
-> -
-> -	if (get_driver(&pdrv->driver)) {
-> -		retval = driver_attach(&pdrv->driver);
-> -		put_driver(&pdrv->driver);
-> -	}
-> -
-> +	retval = pci_add_dynid(pdrv, vendor, device, subvendor, subdevice,
-> +			       class, class_mask, driver_data);
->  	if (retval)
->  		return retval;
->  	return count;
-> @@ -145,19 +187,6 @@ store_remove_id(struct device_driver *dr
->  }
->  static DRIVER_ATTR(remove_id, S_IWUSR, NULL, store_remove_id);
-> 
-> -static void
-> -pci_free_dynids(struct pci_driver *drv)
-> -{
-> -	struct pci_dynid *dynid, *n;
-> -
-> -	spin_lock(&drv->dynids.lock);
-> -	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
-> -		list_del(&dynid->node);
-> -		kfree(dynid);
-> -	}
-> -	spin_unlock(&drv->dynids.lock);
-> -}
-> -
->  static int
->  pci_create_newid_file(struct pci_driver *drv)
->  {
-> @@ -186,7 +215,6 @@ static void pci_remove_removeid_file(str
->  	driver_remove_file(&drv->driver, &driver_attr_remove_id);
->  }
->  #else /* !CONFIG_HOTPLUG */
-> -static inline void pci_free_dynids(struct pci_driver *drv) {}
->  static inline int pci_create_newid_file(struct pci_driver *drv)
->  {
->  	return 0;
-> @@ -1106,6 +1134,7 @@ static int __init pci_driver_init(void)
-> 
->  postcore_initcall(pci_driver_init);
-> 
-> +EXPORT_SYMBOL(pci_add_dynid);
->  EXPORT_SYMBOL(pci_match_id);
->  EXPORT_SYMBOL(__pci_register_driver);
->  EXPORT_SYMBOL(pci_unregister_driver);
-> Index: ata/include/linux/pci.h
-> ===================================================================
-> --- ata.orig/include/linux/pci.h
-> +++ ata/include/linux/pci.h
-> @@ -794,6 +794,11 @@ int __must_check __pci_register_driver(s
->  void pci_unregister_driver(struct pci_driver *dev);
->  void pci_remove_behind_bridge(struct pci_dev *dev);
->  struct pci_driver *pci_dev_driver(const struct pci_dev *dev);
-> +int pci_add_dynid(struct pci_driver *drv,
-> +		  unsigned int vendor, unsigned int device,
-> +		  unsigned int subvendor, unsigned int subdevice,
-> +		  unsigned int class, unsigned int class_mask,
-> +		  unsigned long driver_data);
->  const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
->  					 struct pci_dev *dev);
->  int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
