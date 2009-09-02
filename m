@@ -1,78 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbZIBQcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752638AbZIBQhK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbZIBQcQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 12:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZIBQcP
+	id S1752638AbZIBQhK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 12:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752241AbZIBQhJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 12:32:15 -0400
-Received: from mail-vw0-f195.google.com ([209.85.212.195]:36665 "EHLO
-	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752923AbZIBQcO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 12:32:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=XRloLAf9teoL2pk3UXcbJEJOMU7gXKm/thrCNo6Fze033uGnPeqJyYTcJk/QMJ1M6h
-         QL4Nv7KaMpmZhdizg7LlEZAxcZks/p28VNPJ2g0CHHvHbppcA3HVLRvYg4I+AGu9hQNc
-         Z4BKnJ5dHkm1Qm6JqtUz34tfpX0NZqMEf44V4=
+	Wed, 2 Sep 2009 12:37:09 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:35422 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751326AbZIBQhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 12:37:08 -0400
+Date: Wed, 2 Sep 2009 09:37:05 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: tree rcu: call_rcu scalability problem?
+Message-ID: <20090902163705.GI6774@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090902094835.GB12251@wotan.suse.de> <20090902122756.GC12251@wotan.suse.de> <20090902151927.GA6774@linux.vnet.ibm.com> <20090902162451.GB28052@wotan.suse.de>
 MIME-Version: 1.0
-Date: Wed, 2 Sep 2009 12:32:15 -0400
-Message-ID: <fb7befa20909020932k74fa9e37x1eeabdb494835bb9@mail.gmail.com>
-Subject: LowFree pattern
-From: Adayadil Thomas <adayadil.thomas@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090902162451.GB28052@wotan.suse.de>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings.
+On Wed, Sep 02, 2009 at 06:24:51PM +0200, Nick Piggin wrote:
+> On Wed, Sep 02, 2009 at 08:19:27AM -0700, Paul E. McKenney wrote:
+> > On Wed, Sep 02, 2009 at 02:27:56PM +0200, Nick Piggin wrote:
+> > > On Wed, Sep 02, 2009 at 11:48:35AM +0200, Nick Piggin wrote:
+> > > > Hi Paul,
+> > > > 
+> > > > I'm testing out scalability of some vfs code paths, and I'm seeing
+> > > > a problem with call_rcu. This is a 2s8c opteron system, so nothing
+> > > > crazy.
+> > > > 
+> > > > I'll show you the profile results for 1-8 threads:
+> > > > 
+> > > > 1:
+> > > >  29768 total                                      0.0076
+> > > >  15550 default_idle                              48.5938
+> > > >   1340 __d_lookup                                 3.6413
+> > > >    954 __link_path_walk                           0.2559
+> > > >    816 system_call_after_swapgs                   8.0792
+> > > >    680 kmem_cache_alloc                           1.4167
+> > > >    669 dput                                       1.1946
+> > > >    591 __call_rcu                                 2.0521
+> > > > 
+> > > > 2:
+> > > >  56733 total                                      0.0145
+> > > >  20074 default_idle                              62.7313
+> > > >   3075 __call_rcu                                10.6771
+> > > >   2650 __d_lookup                                 7.2011
+> > > >   2019 dput                                       3.6054
+> > > > 
+> > > > 4:
+> > > >  98889 total                                      0.0253
+> > > >  21759 default_idle                              67.9969
+> > > >  10994 __call_rcu                                38.1736
+> > > >   5185 __d_lookup                                14.0897
+> > > >   4475 dput                                       7.9911
+> > 
+> > Four threads runs on one socket but 8 threads runs on two sockets,
+> > I take it?
+> 
+> Yes.
+> 
+> 
+> > > > 8:
+> > > > 170391 total                                      0.0437
+> > > >  31815 __call_rcu                               110.4688
+> > > >  12958 dput                                      23.1393
+> > > >  10417 __d_lookup                                28.3071
+> > > > 
+> > > > Of course there are other scalability factors involved too, but
+> > > > __call_rcu is taking 54 times more CPU to do 8 times the amount
+> > > > of work from 1-8 threads, or a factor of 6.7 slowdown.
+> > > > 
+> > > > This is with tree RCU.
+> > > 
+> > > It seems like nearly 2/3 of the cost is here:
+> > >         /* Add the callback to our list. */
+> > >         *rdp->nxttail[RCU_NEXT_TAIL] = head; <<<
+> > >         rdp->nxttail[RCU_NEXT_TAIL] = &head->next;
+> > 
+> > Hmmm...  That certainly is not the first list of code in call_rcu() that
+> > would come to mind...
+> 
+> It's weird. I *think* I read the asm right, but oprofile maybe is
+> not attributing the cost to the right instruction.
+> 
+> 
+> > > In loading the pointer to the next tail pointer. If I'm reading the profile
+> > > correctly. Can't see why that should be a probem though...
+> > 
+> > The usual diagnosis would be false sharing.
+> 
+> Hmm that's possible yes.
+> 
+> 
+> > Hmmm...  What is the workload?  CPU-bound?  If CONFIG_PREEMPT=n, I might
+> > expect interference from force_quiescent_state(), except that it should
+> > run only every few clock ticks.  So this seems quite unlikely.
+> 
+> It's CPU bound and preempt=y.
+> 
+> Workload is just 8 processes running a loop of close(open("file$i")) as
+> I said though you probably won't be able to reproduce it on a vanilla
+> kernel.
 
-I am running a centos linux with 2.6.20 version kernel. The system has
-1G of RAM.
+OK, so you are executing call_rcu() a -lot-!!!
 
-As time goes by the LowFree becomes really low. Right now it shows
-137M .. but it goes as low as 8M or so
+Could you also please try CONFIG_RCU_TRACE=y, and send me the contents of
+the files in the "rcu" subdirectory in debugfs?  Please take a snapshot
+of these files, run your test for a fixed time interval (perhaps ten
+seconds, but please tell me how long), then take a second snapshot.
 
-The command -
-echo 3 > /proc/sys/vm/drop_caches
-brings back the LowFree to way up high.
+							Thanx, Paul
 
-The question I have is whether the system by itself release the cache
-(drop cache) automatically
-to maintain a reasonable LowFree?
-Is this configurable?
-
-Any information or help is much appreciated.
-
-
-cat /proc/meminfo
-MemTotal:      1034788 kB
-MemFree:        138240 kB
-Buffers:         99260 kB
-Cached:         177776 kB
-SwapCached:      51740 kB
-Active:         605172 kB
-Inactive:       113572 kB
-HighTotal:      130720 kB
-HighFree:          252 kB
-LowTotal:       904068 kB
-LowFree:        137988 kB
-SwapTotal:     1048568 kB
-SwapFree:       976332 kB
-Dirty:             380 kB
-Writeback:           0 kB
-AnonPages:      441348 kB
-Mapped:          15540 kB
-Slab:           146088 kB
-SReclaimable:   104288 kB
-SUnreclaim:      41800 kB
-PageTables:       1596 kB
-NFS_Unstable:        0 kB
-Bounce:              0 kB
-CommitLimit:   1565960 kB
-Committed_AS:   590576 kB
-VmallocTotal:   114680 kB
-VmallocUsed:     15052 kB
-VmallocChunk:    99348 kB
+> > Could you please try padding the beginning and end of struct rcu_data
+> > with a few hundred bytes and rerunning?  Just in case there is a shared
+> > per-CPU variable either before or after rcu_data in your memory layout?
+> 
+> OK I'll try that.
+> 
