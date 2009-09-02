@@ -1,66 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752619AbZIBVjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753136AbZIBVo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752619AbZIBVjz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 17:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751829AbZIBVjy
+	id S1753136AbZIBVo4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 17:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZIBVoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 17:39:54 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:58732 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751012AbZIBVjy convert rfc822-to-8bit (ORCPT
+	Wed, 2 Sep 2009 17:44:55 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:2521 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752858AbZIBVoy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 17:39:54 -0400
+	Wed, 2 Sep 2009 17:44:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZhzokoXTtFYbTohG5wzAYl76CTfE1RwSfNDg20NmflXcqHqCmoUkVLvbkAyKnIjeYs
-         2q32eSaRhijlQEIsmNKPEs9XRp0/sDC+9lt9cHKzhRiCQsWPBrqPqIoJVP8MevBRs5bw
-         ju/EE6oEy2wBedKCRPhg6UErd1Nm3cg/yg+rI=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hrOMpeP1GJ+CCuII74cgXqJONlmTPhBcF5Y5zQaQg/q84pwV2IK+vvWZJ0zq+34zk4
+         +gGC2NxwwEQRq6A4xqmgo2buc8e5iunplDQszNEnrkN4H+ZjYSQZzu3dKZQ378UhuIBE
+         8sXIDdfPwy1qo4i8iMirxUI86kxFf0RXDgdJ4=
+Date: Wed, 2 Sep 2009 23:44:52 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       lizf@cn.fujitsu.com, efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:perfcounters/core] perf trace: Sample the CPU too
+Message-ID: <20090902214449.GA6072@nowhere>
+References: <tip-cd6feeeafddbef6abfe4d90fb26e42fd844d34ed@git.kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20090902184234.GB10581@rakim.wolfsonmicro.main>
-References: <1251756324-24216-1-git-send-email-linus.walleij@stericsson.com>
-	 <20090902184234.GB10581@rakim.wolfsonmicro.main>
-Date: Wed, 2 Sep 2009 23:39:54 +0200
-Message-ID: <63386a3d0909021439k784bc80et7e5cfa38987afefb@mail.gmail.com>
-Subject: Re: [PATCH 2/2] U300 AB3100 boardinfo v3
-From: Linus Walleij <linus.ml.walleij@gmail.com>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Linus Walleij <linus.walleij@stericsson.com>,
-       Liam Girdwood <lrg@slimlogic.co.uk>,
-       Samuel Ortiz <sameo@linux.intel.com>,
-       linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Russell King <linux@arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-cd6feeeafddbef6abfe4d90fb26e42fd844d34ed@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/2 Mark Brown <broonie@opensource.wolfsonmicro.com>:
+On Wed, Sep 02, 2009 at 07:31:51PM +0000, tip-bot for Ingo Molnar wrote:
+> Commit-ID:  cd6feeeafddbef6abfe4d90fb26e42fd844d34ed
+> Gitweb:     http://git.kernel.org/tip/cd6feeeafddbef6abfe4d90fb26e42fd844d34ed
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Wed, 2 Sep 2009 20:20:38 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 2 Sep 2009 21:28:50 +0200
+> 
+> perf trace: Sample the CPU too
+> 
+> Sample, record, parse and print the CPU field - it had all zeroes before.
+> 
+> Before (watch the second column, the CPU values):
+> 
+>             perf-32685 [000]     0.000000: sched_wakeup_new: task perf:32686 [120] success=1 [011]
+>             perf-32685 [000]     0.000000: sched_migrate_task: task perf:32685 [120] from: 1  to: 11
+>             perf-32685 [000]     0.000000: sched_process_fork: parent perf:32685  child perf:32686
+>             true-32686 [000]     0.000000: sched_wakeup: task migration/11:25 [0] success=1 [011]
+>             true-32686 [000]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+>             true-32686 [000]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+>             perf-32685 [000]     0.000000: sched_switch: task perf:32685 [120] (S) ==> swapper:0 [140]
+>             true-32686 [000]     0.000000: sched_switch: task perf:32686 [120] (R) ==> migration/11:25 [0]
+>             true-32686 [000]     0.000000: sched_switch: task perf:32686 [120] (R) ==> distccd:12793 [125]
+>             true-32686 [000]     0.000000: sched_switch: task true:32686 [120] (R) ==> distccd:12793 [125]
+>             true-32686 [000]     0.000000: sched_process_exit: task true:32686 [120]
+>             true-32686 [000]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767985949080 [ns]
+>             true-32686 [000]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767986139446 [ns]
+>             true-32686 [000]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 132844 [ns]
+>             true-32686 [000]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 131724 [ns]
+> 
+> After:
+> 
+>             perf-32685 [001]     0.000000: sched_wakeup_new: task perf:32686 [120] success=1 [011]
+>             perf-32685 [001]     0.000000: sched_migrate_task: task perf:32685 [120] from: 1  to: 11
+>             perf-32685 [001]     0.000000: sched_process_fork: parent perf:32685  child perf:32686
+>             true-32686 [011]     0.000000: sched_wakeup: task migration/11:25 [0] success=1 [011]
+>             true-32686 [015]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+>             true-32686 [015]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+>             perf-32685 [001]     0.000000: sched_switch: task perf:32685 [120] (S) ==> swapper:0 [140]
+>             true-32686 [011]     0.000000: sched_switch: task perf:32686 [120] (R) ==> migration/11:25 [0]
+>             true-32686 [015]     0.000000: sched_switch: task perf:32686 [120] (R) ==> distccd:12793 [125]
+>             true-32686 [015]     0.000000: sched_switch: task true:32686 [120] (R) ==> distccd:12793 [125]
+>             true-32686 [015]     0.000000: sched_process_exit: task true:32686 [120]
+>             true-32686 [015]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767985949080 [ns]
+>             true-32686 [015]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767986139446 [ns]
+>             true-32686 [015]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 132844 [ns]
+>             true-32686 [015]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 131724 [ns]
+> 
+> So we can now see how this workload migrated between CPUs.
+> 
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Li Zefan <lizf@cn.fujitsu.com>
+> Cc: Mike Galbraith <efault@gmx.de>
+> Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+> LKML-Reference: <new-submission>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
+> ---
+>  tools/perf/builtin-record.c |    4 +++-
+>  tools/perf/builtin-trace.c  |    9 ++++++++-
+>  2 files changed, 11 insertions(+), 2 deletions(-)
+> 
+> diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+> index add514d..ff93f8e 100644
+> --- a/tools/perf/builtin-record.c
+> +++ b/tools/perf/builtin-record.c
+> @@ -403,8 +403,10 @@ static void create_counter(int counter, int cpu, pid_t pid)
+>  	if (call_graph)
+>  		attr->sample_type	|= PERF_SAMPLE_CALLCHAIN;
+>  
+> -	if (raw_samples)
+> +	if (raw_samples) {
+>  		attr->sample_type	|= PERF_SAMPLE_RAW;
+> +		attr->sample_type	|= PERF_SAMPLE_CPU;
+> +	}
+>  
+>  	attr->mmap		= track;
+>  	attr->comm		= track;
+> diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+> index 8247fd0..bbe4c44 100644
+> --- a/tools/perf/builtin-trace.c
+> +++ b/tools/perf/builtin-trace.c
+> @@ -58,12 +58,19 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+>  	struct dso *dso = NULL;
+>  	struct thread *thread;
+>  	u64 ip = event->ip.ip;
+> +	u32 cpu = -1;
+>  	u64 period = 1;
+>  	void *more_data = event->ip.__more_data;
+>  	int cpumode;
+>  
+>  	thread = threads__findnew(event->ip.pid, &threads, &last_match);
+>  
+> +	if (sample_type & PERF_SAMPLE_CPU) {
+> +		cpu = *(u32 *)more_data;
+> +		more_data += sizeof(u32);
+> +		more_data += sizeof(u32); /* reserved */
+> +	}
+> +
 
-> On Tue, Sep 01, 2009 at 12:05:24AM +0200, Linus Walleij wrote:
->> This defines regulator platform data and board power
->> regulator hogs for the ST-Ericsson U300 platform.
->
-> This is pretty much OK, just...
->
->> +static struct regulator_consumer_supply supply_ldo_a[] = {
->> +     {
->> +             .dev = NULL,
->> +             .supply = "vrad", /* Powers the radio */
->> +     },
->> +};
->
-> Now you're using the regulator init stuff to set the voltages you should
-> be able to drop most of the deviceless supplies.  I'd expect that you'd
-> want to keep the CPU core supplies for cpufreq support but the others
-> shouldn't need to be defined.  The names can be set in the constraints
-> - if set there they will be displayed to user space which normally makes
-> the diagnostics easier to follow for board users.
 
-OK I'll drop them. I've got some other small fixups here so will push a v4
-once we clarified the initsettings too.
+Cool, I've searched an easy way to have the cpu and I wasn't even aware of
+this type of event :-)
 
-Yours,
-Linus Walleij
+
+What about the timestamp now? I guess a specific field should be filled
+for tracepoint raw samples.
+Or may be for every raw samples?
+
+
+
+>  	if (sample_type & PERF_SAMPLE_PERIOD) {
+>  		period = *(u64 *)more_data;
+>  		more_data += sizeof(u64);
+> @@ -120,7 +127,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+>  		 * field, although it should be the same than this perf
+>  		 * event pid
+>  		 */
+> -		print_event(0, raw->data, raw->size, 0, thread->comm);
+> +		print_event(cpu, raw->data, raw->size, 0, thread->comm);
+>  	}
+>  	total += period;
+>  
+
