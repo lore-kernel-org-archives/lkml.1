@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755702AbZIBDYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZIBDiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755702AbZIBDYw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 23:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755683AbZIBDYw
+	id S1755683AbZIBDiE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 23:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755598AbZIBDiE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 23:24:52 -0400
-Received: from n20.bullet.mail.ukl.yahoo.com ([87.248.110.137]:26419 "HELO
-	n20.bullet.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752809AbZIBDYv convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 23:24:51 -0400
-X-Greylist: delayed 336 seconds by postgrey-1.27 at vger.kernel.org; Tue, 01 Sep 2009 23:24:50 EDT
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 275859.47317.bm@omp211.mail.ukl.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=btinternet.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=cTohhheg7l/S3pUyDa7hY/i1XpaSL6Ql9eCPXEt+1PvqoSSk/jLdDj0ifawKcgCsR4fK4ulVSeWMKR9cNOUFSADkAvWPR+GvXMACvTMEuThTj3qY+K38+ZZVu07vuKbAJVan4WtOlfOuBi7shjQ+cxift6vpKYMz3Y+p8Zym3pg=;
-Message-ID: <651657.90195.qm@web87105.mail.ird.yahoo.com>
-X-YMail-OSG: V4LufhMVM1ln9SCO97fDyWNCgzIHtlP.25Qg1d0A.Ndze4zdv6DvN8CXNFnusp.4oytYO_71WTlIbticlgJwaRJoVzZbXNNdNwOWqQUiKclFID3Ag1qzq3rv0o42ZOemniqkpi_dGxTAYE_ovhiK9mDuIZJtHB._jJ3TXxyus3nCi8sGKFJlvsyERB5WmSkBzrO8ApIv.rBBzDvexPeMfgbqjqgtaoffgL8nOBJ.ZGNXa8DbOR5aD5jPoCDJsTd88DJQJlEEx6FlqQ0MYHU.XKi_cg.Z2mRU6M1kySk7YOwoaCYR9fn2oHYWUcwZwLH5M1GhJw5Dhgj5M5eKRYc3_VWfSyBw6oWe1HmOxJgQEaM54sGxlOAKvpHWHEttPiU5_wtLYyejoh83Z8oDy7ugkrlu9Qfd6t2UncyTgMnq7LDgws1Dw5Lx2ad9dG1Z7DKZAfL9l2Ll0hJfhkSkBwod0yqX53Afm1.6HF.yqME1hEF1lsdhF_Y-
-X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
-Date: Wed, 2 Sep 2009 03:19:15 +0000 (GMT)
-From: "peterleemails@yahoo.com.hk" <peterleehsb_lee@btinternet.com>
-Subject: Attn
-To: undisclosed recipients:;
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 1 Sep 2009 23:38:04 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52895 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752750AbZIBDiD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 1 Sep 2009 23:38:03 -0400
+Date: Wed, 2 Sep 2009 13:37:58 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Roel Kluin <roel.kluin@gmail.com>
+Subject: linux-next: manual merge of the net tree with Linus' tree
+Message-Id: <20090902133758.f96cac22.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Good Day MY Friend
+Hi Dave,
 
-  I am Mr. Peter. Lee a South Korean, happily married with children, and i
-  am a director of Hang Seng Bank Ltd, in charge of the International
-  Remittance department. I have a confidential business suggestion for
-  you. I will need you to assist me in executing a business project from
-  Hong Kong to your country. I involves the transfer of a large sum of
-  money. Everything concerning this transaction shall be legally done
-  without hitch.
+Today's linux-next merge of the net tree got a conflict in
+drivers/net/yellowfin.c between commit
+e7a5965a81a29a13cd4994fa23a6a7a1488bcdb6 ("yellowfin: Fix buffer underrun
+after dev_alloc_skb() failure") from Linus' tree and commit
+61357325f377889a1daffa14962d705dc814dd0e ("netdev: convert bulk of
+drivers to netdev_tx_t") from the net tree.
 
+Just context changes.  I fixed it up (see below) and will carry the fix
+for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-                   
-  1. Full names
-  2. Occupation
-  3. Private phone number
-  4. Current contact address
-
-      Kind Regards,
-      Mr.Pt. Lee
-
-   Hang Seng Bank Limited
-   Hong Kong. {Asia}
-   Tel/Fax:-852-3017 6607
-   Email:peterleemails@yahoo.com.hk
-
-
+diff --cc drivers/net/yellowfin.c
+index c2fd618,9509477..0000000
+--- a/drivers/net/yellowfin.c
++++ b/drivers/net/yellowfin.c
+@@@ -346,8 -346,9 +346,9 @@@ static int netdev_ioctl(struct net_devi
+  static int yellowfin_open(struct net_device *dev);
+  static void yellowfin_timer(unsigned long data);
+  static void yellowfin_tx_timeout(struct net_device *dev);
+ -static void yellowfin_init_ring(struct net_device *dev);
+ +static int yellowfin_init_ring(struct net_device *dev);
+- static int yellowfin_start_xmit(struct sk_buff *skb, struct net_device *dev);
++ static netdev_tx_t yellowfin_start_xmit(struct sk_buff *skb,
++ 					struct net_device *dev);
+  static irqreturn_t yellowfin_interrupt(int irq, void *dev_instance);
+  static int yellowfin_rx(struct net_device *dev);
+  static void yellowfin_error(struct net_device *dev, int intr_status);
+@@@ -813,10 -806,11 +814,11 @@@ static int yellowfin_init_ring(struct n
+  }
+  #endif
+  	yp->tx_tail_desc = &yp->tx_status[0];
+ -	return;
+ +	return 0;
+  }
+  
+- static int yellowfin_start_xmit(struct sk_buff *skb, struct net_device *dev)
++ static netdev_tx_t yellowfin_start_xmit(struct sk_buff *skb,
++ 					struct net_device *dev)
+  {
+  	struct yellowfin_private *yp = netdev_priv(dev);
+  	unsigned entry;
