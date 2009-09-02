@@ -1,44 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbZIBHW4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755949AbZIBH1b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbZIBHW4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 03:22:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755820AbZIBHWz
+	id S1755949AbZIBH1b (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 03:27:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbZIBH1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 03:22:55 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:10528 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755743AbZIBHWy (ORCPT
+	Wed, 2 Sep 2009 03:27:31 -0400
+Received: from smtpout4.uol.com.br ([200.221.4.195]:44911 "EHLO
+	smtp.uol.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755933AbZIBH1a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 03:22:54 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=cGHBJDyEtgaMdXRiWLNYfTwL4vGTKAZe0OHH2AfiXY5/WZl4ogL+rFfrYG8g7B/T5a
-         AQrONAHo1EbUlArrN6k6YF71L/nWH10yoYDlEq0cE5KVnsDb60b6FOOt6hFAJGDiInG8
-         8vXicJ3wYQZcl2VgAg/lT1K5763PUnSmdoG3Y=
+	Wed, 2 Sep 2009 03:27:30 -0400
+Date: Wed, 2 Sep 2009 04:27:26 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org, bugzilla-daemon@bugzilla.kernel.org,
+       linux-usb@vger.kernel.org, Douglas Gilbert <dgilbert@interlog.com>
+Subject: Re: [Bugme-new] [Bug 14020] New: Stack trace when running smartctl
+ on an USB disk
+Message-ID: <20090902072726.GA3183@ime.usp.br>
+References: <Pine.LNX.4.44L0.0908222002110.9952-100000@netrider.rowland.org>
+ <Pine.LNX.4.44L0.0909010942590.2816-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-In-Reply-To: <b410963b0908290221s4ed3d66fm50ea2862cf7500f5@mail.gmail.com>
-References: <b410963b0908290221s4ed3d66fm50ea2862cf7500f5@mail.gmail.com>
-Date: Wed, 2 Sep 2009 10:22:56 +0300
-Message-ID: <b410963b0909020022q68101ed8n5cdafdcbdabea230@mail.gmail.com>
-Subject: Re: r8169 NETDEV WATCHDOG: eth0: transmit timed out [8/8]
-From: roma1390 <roma1390@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: David Dillow <dave@thedillows.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.44L0.0909010942590.2816-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-SIG5: 03299a0feb61bd448bdf70edb7733f15
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->Can you please confirm this by sending your /proc/interrupt info:
->	cat /proc/interrupts | grep eth0
+Hi, People.
 
-# cat /proc/interrupts | grep eth0
-1274:  425472357          0          0          0          0
-0          0          0   PCI-MSI-edge      eth0
+On Sep 01 2009, Alan Stern wrote:
+> Should this bug report be closed out?
 
-Please add me next time into cc.
+Please, just wait a little bit more. I'm just getting recovered from
+being ill (my health is not very good, unfortunately).
 
-sorry but debian stable provides latest 2.6.26-2-amd64
-curent workaround is to use: driver r8168.
+That with some network (and e-mail) outages made things difficult. I'm
+just getting back now.
+
+I'm going to test the suggestion from Douglas right now.
+
+
+Thanks, Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
+http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
+Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
