@@ -1,73 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752617AbZIBO4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZIBPGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752617AbZIBO4P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 10:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbZIBO4O
+	id S1752401AbZIBPGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 11:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZIBPGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 10:56:14 -0400
-Received: from stinky.trash.net ([213.144.137.162]:48197 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbZIBO4N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 10:56:13 -0400
-Message-ID: <4A9E8788.1090901@trash.net>
-Date: Wed, 02 Sep 2009 16:56:08 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
-MIME-Version: 1.0
-To: Hannes Eder <heder@google.com>
-CC: lvs-devel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, netfilter-devel@vger.kernel.org,
-       =?ISO-8859-15?Q?Fabien_Duch=EAne?= <mad_fab@skynet.be>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Jean-Luc Fortemaison <jl.fortemaison@uclouvain.be>,
-       Julian Anastasov <ja@ssi.bg>, Julius Volz <julius.volz@gmail.com>,
-       Laurent Grawet <laurent.grawet@uclouvain.be>,
-       Simon Horman <horms@verge.net.au>, Wensong Zhang <wensong@linux-vs.org>
-Subject: Re: [PATCH 2/3] IPVS: make friends with nf_conntrack
-References: <20090902101417.11561.45663.stgit@jazzy.zrh.corp.google.com> <20090902101538.11561.11911.stgit@jazzy.zrh.corp.google.com>
-In-Reply-To: <20090902101538.11561.11911.stgit@jazzy.zrh.corp.google.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-15
+	Wed, 2 Sep 2009 11:06:17 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:44056 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405AbZIBPGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 11:06:16 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
+From: James Bottomley <James.Bottomley@suse.de>
+To: akataria@vmware.com
+Cc: Dmitry Torokhov <dtor@vmware.com>, Matthew Wilcox <matthew@wil.cx>,
+       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Maxime Austruy <maustruy@vmware.com>
+In-Reply-To: <1251860141.8844.20.camel@ank32.eng.vmware.com>
+References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
+	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
+	 <200909010933.50571.dtor@vmware.com>
+	 <1251823925.3864.216.camel@mulgrave.site>
+	 <1251824374.16169.128.camel@ank32.eng.vmware.com>
+	 <1251825949.12482.34.camel@mulgrave.site>
+	 <1251826877.16169.141.camel@ank32.eng.vmware.com>
+	 <1251828950.13303.31.camel@mulgrave.site>
+	 <1251860141.8844.20.camel@ank32.eng.vmware.com>
+Content-Type: text/plain
+Date: Wed, 02 Sep 2009 10:06:07 -0500
+Message-Id: <1251903967.3892.177.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Eder wrote:
-> Update the nf_conntrack tuple in reply direction, as we will see
-> traffic from the real server (RIP) to the client (CIP).  Once this is
-> done we can use netfilters SNAT in POSTROUTING, especially with
-> xt_ipvs, to do source NAT, e.g.:
+On Tue, 2009-09-01 at 19:55 -0700, Alok Kataria wrote:
+> On Tue, 2009-09-01 at 11:15 -0700, James Bottomley wrote:
+> > On Tue, 2009-09-01 at 10:41 -0700, Alok Kataria wrote:
+> > > > lguest uses the sg_ring abstraction.  Xen and KVM were certainly looking
+> > > > at this too.
+> > > 
+> > > I don't see the sg_ring abstraction that you are talking about. Can you
+> > > please give me some pointers. 
+> > 
+> > it's in drivers/lguest ... apparently it's vring now and the code is in
+> > driver/virtio
+> > 
+> > > Also regarding Xen and KVM I think they are using the xenbus/vbus
+> > > interface, which is quite different than what we do here. 
+> > 
+> > Not sure about Xen ... KVM uses virtio above.
+> > 
+> > > > 
+> > > > > And anyways how large is the DMA code that we are worrying about here ?
+> > > > > Only about 300-400 LOC ? I don't think we might want to over-design for
+> > > > > such small gains.
+> > > > 
+> > > > So even if you have different DMA code, the remaining thousand or so
+> > > > lines would be in common.  That's a worthwhile improvement.
 > 
-> % iptables -t nat -A POSTROUTING -m ipvs --vaddr 192.168.100.30/32 --vport 8080 \
->> -j SNAT --to-source 192.168.10.10
+> I don't see how, the rest of the code comprises of IO/MMIO  space & ring
+> processing which is very different in each of the implementations. What
+> is left is the setup and initialization code which obviously depends on
+> the implementation of the driver data structures. 
+
+Are there benchmarks comparing the two approaches?
+
+> > > And not just that, different HV-vendors can have different features,
+> > > like say XYZ can come up tomorrow and implement the multiple rings
+> > > interface so the feature set doesn't remain common and we will have less
+> > > code to share in the not so distant future.
+> > 
+> > Multiple rings is really just a multiqueue abstraction.  That's fine,
+> > but it needs a standard multiqueue control plane.
+> > 
+> > The desire to one up the competition by adding a new whiz bang feature
+> > to which you code a special interface is very common in the storage
+> > industry.  The counter pressure is that consumers really like these
+> > things standardised.  That's what the transport class abstraction is all
+> > about.
+> > 
+> > We also seem to be off on a tangent about hypervisor interfaces.  I'm
+> > actually more interested in the utility of an SRP abstraction or at
+> > least something SAM based.  It seems that in your driver you don't quite
+> > do the task management functions as SAM requests, but do them over your
+> > own protocol abstractions.
 > 
+> Okay,  I think I need to take a step back here and understand what
+> actually are you asking for.
+> 
+> 1. What do you mean by the "transport class abstraction" ? 
+> Do you mean that the way we communicate with the hypervisor needs to be
+> standardized ?
 
-> +static void
-> +ip_vs_update_conntrack(struct sk_buff *skb, struct ip_vs_conn *cp)
-> +{
-> +	struct nf_conn *ct = (struct nf_conn *)skb->nfct;
-> +
-> +	if (ct == NULL || ct == &nf_conntrack_untracked ||
-> +	    nf_ct_is_confirmed(ct))
-> +		return;
-> +
-> +	/*
-> +	 * The connection is not yet in the hashtable, so we update it.
-> +	 * CIP->VIP will remain the same, so leave the tuple in
-> +	 * IP_CT_DIR_ORIGINAL untouched.  When the reply comes back from the
-> +	 * real-server we will see RIP->DIP.
-> +	 */
-> +	ct->tuplehash[IP_CT_DIR_REPLY].tuple.src.u3 = cp->daddr;
-> +	/*
-> +	 * This will also take care of UDP and other protocols.
-> +	 */
-> +	ct->tuplehash[IP_CT_DIR_REPLY].tuple.src.u.tcp.port = cp->dport;
-> +}
+Not really.  Transport classes are designed to share code and provide a
+uniform control plane when the underlying implementation is different.
 
-How does IPVS interact with conntrack helpers? If it does actually
-intend to use them (which will happen automatically), it might make
-sense to use nf_conntrack_alter_reply(), which will perform a new
-helper lookup based on the changed tuple.
+> 2. Are you saying that we should use the virtio ring mechanism to handle
+> our request and completion rings ? 
+
+That's an interesting question.  Virtio is currently the standard linux
+guest<=>hypervisor communication mechanism, but if you have comparative
+benchmarks showing that virtual hardware emulation is faster, it doesn't
+need to remain so.
+
+>   We can not do that. Our backend expects that each slot on the ring is
+> in a particular format. Where as vring expects that each slot on the
+> vring is in the vring_desc format.
+
+Your backend is a software server, surely?
+
+> 3. Also, the way we communicate with the hypervisor backend is that the
+> driver writes to our device IO registers in a particular format. The
+> format that we follow is to first write the command on the
+> COMMAND_REGISTER and then write a stream of data words in the
+> DATA_REGISTER, which is a normal device interface.
+> The reason I make this point is to highlight we are not making any
+> hypercalls instead we communicate with the hypervisor by writing to
+> IO/Memory mapped regions.  So from that perspective the driver has no
+> knowledge that its is talking to a software backend (aka device
+> emulation) instead it is very similar to how a driver talks to a silicon
+> device.  The backend expects things in a certain way and we cannot
+> really change that interface ( i.e. the ABI shared between Device driver
+> and Device Emulation).
+> 
+> So sharing code with vring or virtio is not something that works well
+> with our backend. The VMware PVSCSI driver is simply a virtual HBA and
+> shouldn't be looked at any differently.
+> 
+> Is their anything else that you are asking us to standardize ?
+
+I'm not really asking you to standardise anything (yet).  I was more
+probing for why you hadn't included any of the SCSI control plane
+interfaces and what lead you do produce a different design from the
+current patterns in virtual I/O.  I think what I'm hearing is "Because
+we didn't look at how modern SCSI drivers are constructed" and "Because
+we didn't look at how virtual I/O is currently done in Linux".  That's
+OK (it's depressingly familiar in drivers), but now we get to figure out
+what, if anything, makes sense from a SCSI control plane to a hypervisor
+interface and whether this approach to hypervisor interfaces is better
+or worse than virtio.
+
+James
+
 
