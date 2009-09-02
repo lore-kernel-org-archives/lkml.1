@@ -1,154 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZIBPGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752414AbZIBPPF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752401AbZIBPGR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 11:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZIBPGR
+	id S1752414AbZIBPPF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 11:15:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZIBPPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 11:06:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:44056 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751405AbZIBPGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 11:06:16 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-From: James Bottomley <James.Bottomley@suse.de>
-To: akataria@vmware.com
-Cc: Dmitry Torokhov <dtor@vmware.com>, Matthew Wilcox <matthew@wil.cx>,
-       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>
-In-Reply-To: <1251860141.8844.20.camel@ank32.eng.vmware.com>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
-	 <200909010933.50571.dtor@vmware.com>
-	 <1251823925.3864.216.camel@mulgrave.site>
-	 <1251824374.16169.128.camel@ank32.eng.vmware.com>
-	 <1251825949.12482.34.camel@mulgrave.site>
-	 <1251826877.16169.141.camel@ank32.eng.vmware.com>
-	 <1251828950.13303.31.camel@mulgrave.site>
-	 <1251860141.8844.20.camel@ank32.eng.vmware.com>
-Content-Type: text/plain
-Date: Wed, 02 Sep 2009 10:06:07 -0500
-Message-Id: <1251903967.3892.177.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 2 Sep 2009 11:15:04 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:60938 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbZIBPPD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 11:15:03 -0400
+Date: Wed, 2 Sep 2009 18:10:44 +0300
+From: Imre Deak <imre.deak@nokia.com>
+To: ext Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Steven Walter <stevenrwalter@gmail.com>,
+       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
+	get_user_pages() enough to prevent pages from being swapped out ?")
+Message-ID: <20090902151044.GG30183@localhost>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk> <200909011543.48439.laurent.pinchart@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909011543.48439.laurent.pinchart@ideasonboard.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 02 Sep 2009 15:12:05.0648 (UTC) FILETIME=[BB797100:01CA2BDF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-01 at 19:55 -0700, Alok Kataria wrote:
-> On Tue, 2009-09-01 at 11:15 -0700, James Bottomley wrote:
-> > On Tue, 2009-09-01 at 10:41 -0700, Alok Kataria wrote:
-> > > > lguest uses the sg_ring abstraction.  Xen and KVM were certainly looking
-> > > > at this too.
-> > > 
-> > > I don't see the sg_ring abstraction that you are talking about. Can you
-> > > please give me some pointers. 
-> > 
-> > it's in drivers/lguest ... apparently it's vring now and the code is in
-> > driver/virtio
-> > 
-> > > Also regarding Xen and KVM I think they are using the xenbus/vbus
-> > > interface, which is quite different than what we do here. 
-> > 
-> > Not sure about Xen ... KVM uses virtio above.
-> > 
-> > > > 
-> > > > > And anyways how large is the DMA code that we are worrying about here ?
-> > > > > Only about 300-400 LOC ? I don't think we might want to over-design for
-> > > > > such small gains.
-> > > > 
-> > > > So even if you have different DMA code, the remaining thousand or so
-> > > > lines would be in common.  That's a worthwhile improvement.
+On Tue, Sep 01, 2009 at 03:43:48PM +0200, ext Laurent Pinchart wrote:
+> On Tuesday 01 September 2009 15:28:24 Russell King - ARM Linux wrote:
+> > On Tue, Aug 25, 2009 at 08:53:29AM -0400, Steven Walter wrote:
+> > > On Thu, Aug 6, 2009 at 6:25 PM, Russell King - ARM
+> > > Linux<linux@arm.linux.org.uk> wrote:
+> > > [...]
+> > >
+> > > > As far as userspace DMA coherency, the only way you could do it with
+> > > > current kernel APIs is by using get_user_pages(), creating a
+> > > > scatterlist from those, and then passing it to dma_map_sg().  While the
+> > > > device has ownership of the SG, userspace must _not_ touch the buffer
+> > > > until after DMA has completed.
+> > >
+> > > [...]
+> > >
+> > > Would that work on a processor with VIVT caches?  It seems not.  In
+> > > particular, dma_map_page uses page_address to get a virtual address to
+> > > pass to map_single().  map_single() in turn uses this address to
+> > > perform cache maintenance.  Since page_address() returns the kernel
+> > > virtual address, I don't see how any cache-lines for the userspace
+> > > virtual address would get invalidated (for the DMA_FROM_DEVICE case).
+> >
+> > You are correct.
+> >
+> > > If that's true, then what is the correct way to allow DMA to/from a
+> > > userspace buffer with a VIVT cache?  If not true, what am I missing?
+> >
+> > I don't think you read what I said (but I've also forgotten what I did
+> > say).
+> >
+> > To put it simply, the kernel does not support DMA direct from userspace
+> > pages.  Solutions which have been proposed in the past only work with a
+> > sub-set of conditions (such as the one above only works with VIPT
+> > caches.)
 > 
-> I don't see how, the rest of the code comprises of IO/MMIO  space & ring
-> processing which is very different in each of the implementations. What
-> is left is the setup and initialization code which obviously depends on
-> the implementation of the driver data structures. 
+> I might be missing something obvious, but I fail to see how VIVT caches could 
+> work at all with multiple mappings. If a kernel-allocated buffer is DMA'ed to, 
+> we certainly want to invalidate all cache lines that store buffer data. As the 
+> cache doesn't care about physical addresses we thus need to invalidate all 
+> virtual mappings for the buffer. If the buffer is mmap'ed in userspace I don't 
+> see how that would be done.
 
-Are there benchmarks comparing the two approaches?
+To my understanding buffers returned by dma_alloc_*, kmalloc, vmalloc
+are ok:
 
-> > > And not just that, different HV-vendors can have different features,
-> > > like say XYZ can come up tomorrow and implement the multiple rings
-> > > interface so the feature set doesn't remain common and we will have less
-> > > code to share in the not so distant future.
-> > 
-> > Multiple rings is really just a multiqueue abstraction.  That's fine,
-> > but it needs a standard multiqueue control plane.
-> > 
-> > The desire to one up the competition by adding a new whiz bang feature
-> > to which you code a special interface is very common in the storage
-> > industry.  The counter pressure is that consumers really like these
-> > things standardised.  That's what the transport class abstraction is all
-> > about.
-> > 
-> > We also seem to be off on a tangent about hypervisor interfaces.  I'm
-> > actually more interested in the utility of an SRP abstraction or at
-> > least something SAM based.  It seems that in your driver you don't quite
-> > do the task management functions as SAM requests, but do them over your
-> > own protocol abstractions.
-> 
-> Okay,  I think I need to take a step back here and understand what
-> actually are you asking for.
-> 
-> 1. What do you mean by the "transport class abstraction" ? 
-> Do you mean that the way we communicate with the hypervisor needs to be
-> standardized ?
+The cache lines for direct mapping are flushed in dma_alloc_* and
+vmalloc. After this you are not supposed to access the buffers
+through the direct mapping until you're done with the DMA.
 
-Not really.  Transport classes are designed to share code and provide a
-uniform control plane when the underlying implementation is different.
+For kmalloc you use the direct mapping in the first place, so the
+flush in dma_map_* will be enough.
 
-> 2. Are you saying that we should use the virtio ring mechanism to handle
-> our request and completion rings ? 
+For user mappings I think you'd have to do an additional flush for
+the direct mapping, while the user mapping is flushed in dma_map_*.
 
-That's an interesting question.  Virtio is currently the standard linux
-guest<=>hypervisor communication mechanism, but if you have comparative
-benchmarks showing that virtual hardware emulation is faster, it doesn't
-need to remain so.
-
->   We can not do that. Our backend expects that each slot on the ring is
-> in a particular format. Where as vring expects that each slot on the
-> vring is in the vring_desc format.
-
-Your backend is a software server, surely?
-
-> 3. Also, the way we communicate with the hypervisor backend is that the
-> driver writes to our device IO registers in a particular format. The
-> format that we follow is to first write the command on the
-> COMMAND_REGISTER and then write a stream of data words in the
-> DATA_REGISTER, which is a normal device interface.
-> The reason I make this point is to highlight we are not making any
-> hypercalls instead we communicate with the hypervisor by writing to
-> IO/Memory mapped regions.  So from that perspective the driver has no
-> knowledge that its is talking to a software backend (aka device
-> emulation) instead it is very similar to how a driver talks to a silicon
-> device.  The backend expects things in a certain way and we cannot
-> really change that interface ( i.e. the ABI shared between Device driver
-> and Device Emulation).
-> 
-> So sharing code with vring or virtio is not something that works well
-> with our backend. The VMware PVSCSI driver is simply a virtual HBA and
-> shouldn't be looked at any differently.
-> 
-> Is their anything else that you are asking us to standardize ?
-
-I'm not really asking you to standardise anything (yet).  I was more
-probing for why you hadn't included any of the SCSI control plane
-interfaces and what lead you do produce a different design from the
-current patterns in virtual I/O.  I think what I'm hearing is "Because
-we didn't look at how modern SCSI drivers are constructed" and "Because
-we didn't look at how virtual I/O is currently done in Linux".  That's
-OK (it's depressingly familiar in drivers), but now we get to figure out
-what, if anything, makes sense from a SCSI control plane to a hypervisor
-interface and whether this approach to hypervisor interfaces is better
-or worse than virtio.
-
-James
-
+--Imre
 
