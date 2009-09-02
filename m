@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZIBBKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZIBBNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbZIBBKV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 Sep 2009 21:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbZIBBKU
+	id S1755489AbZIBBNu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 Sep 2009 21:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbZIBBNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 Sep 2009 21:10:20 -0400
-Received: from science.horizon.com ([71.41.210.146]:26804 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755307AbZIBBKT (ORCPT
+	Tue, 1 Sep 2009 21:13:50 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:53463 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752676AbZIBBNt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 Sep 2009 21:10:19 -0400
-Date: 1 Sep 2009 21:10:20 -0400
-Message-ID: <20090902011020.32110.qmail@science.horizon.com>
-From: "George Spelvin" <linux@horizon.com>
-To: adilger@sun.com, linux@horizon.com
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-Cc: david@lang.hm, linux-doc@vger.kernel.org, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz
-In-Reply-To: <20090901161828.GN4197@webber.adilger.int>
+	Tue, 1 Sep 2009 21:13:49 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Wed, 2 Sep 2009 10:11:57 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Lasse =?UTF-8?B?S8Okcmtrw6RpbmVu?= <tronic+bpsk@trn.iki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Avoiding crash in out-of-memory situations
+Message-Id: <20090902101157.89d23384.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <4A9D2079.3000805@trn.iki.fi>
+References: <4A9D2079.3000805@trn.iki.fi>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> - I seem to recall that ZFS does replicate metadata.
+On Tue, 01 Sep 2009 16:24:09 +0300
+Lasse Kärkkäinen <tronic+bpsk@trn.iki.fi> wrote:
+
+> Currently a number of simple while (1) malloc(n); processes can crash a 
+> system even if resource limits are in place as one can only limit the 
+> memory usage of a process (not that of an user nor the total used by the 
+> userspace) and any otherwise reasonable nproc and memory limits can be 
+> circumvented by using more processes.
 > 
-> ZFS definitely does replicate data.  At the lowest level it has RAID-1,
-> and RAID-Z/Z2, which are pretty close to RAID-5/6 respectively, but with
-> the important difference that every write is a full-stripe-width write,
-> so that it is not possible for RAID-Z/Z2 to cause corruption due to a
-> partially-written RAID parity stripe.
+> The OOM killer is supposed to work as a fallback in these situations, 
+> but unfortunately the system still goes absolutely unresponsive for 
+> about 10 minutes whenever the OOM killer runs. It would seem that this 
+> happens because the kernel first gets rid of all buffers and caches, 
+> slowing things down to a halt, and the OOM killer activates only after 
+> nothing else can be done.
 > 
-> In addition, for internal metadata blocks there are 1 or 2 duplicate
-> copies written to different devices, so that in case of a fatal device
-> corruption (e.g. double failure of a RAID-Z device) the metadata tree
-> is still intact.
-
-Forgive me for implying by omission that ZFS did not replicate data.
-What I was trying to point out is that it replicates metadata *more*,
-and you can choose among the redundant backups.
-
-> What else is interesting is that in the case of 1-4-bit errors the
-> default checksum function can also be used as ECC to recover the correct
-> data even if there is no replicated copy of the data.
-
-Interesting.  Do you actually see suhc low-bit-weight errors in
-practice?  I had assumed that modern disks were complicated enough
-that errors would be high-bit-weight miscorrections.
-
->> One of ZFS's big performance problems is that currently it only checksums
->> the entire RAID stripe, so it always has to read every drive, and doesn't
->> get RAID's IOPS advantage.
+> In a more complex situation (e.g. the one that we just had on our server 
+> by accidentally running too many valgrind processes) this hang state can 
+> take very long, essentially requiring the server to be reseted the hard way.
 > 
-> Or this is a drawback of the Linux software RAID because it doesn't detect
-> the case when the parity is bad before there is a second drive failure and
-> the bad parity is used to reconstruct the data block incorrectly (which
-> will also go undetected because there is no checksum).
+> As there AFAIK is no existing remedy to this problem, I would suggest 
+> implementing either (a) per-user limits, (b) a memory reserve for the 
+> kernel (e.g. one could reserve 100 MB for the kernel/buffers/caches, 
+> giving less for the userspace to allocate even if that means having to 
+> kill processes) or (c) both of them.
+> 
+> Or perhaps there is something that I missed?
+> 
+if per-user limit is allowed, memory cgroup ?
 
-Well, all conventional RAID systems lack block checksums (or, more to
-the point, rely on the drive's checksumming), and have this problem.
+Documentation/cgroups/memory.txt
 
-I was pointing out that ZFS currently doesn't support partial-stripe
-*reads*, thus limiting IOPS in random-read applications.  But that's
-an "implementation detail", not a major architectural issue.
+thx,
+-Kame
+
+
+> P.S. using or not using swap doesn't really affect the fundamental 
+> problem nor its symptoms, so please don't suggest that either way.
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+
