@@ -1,63 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752705AbZIBTbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbZIBTcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752705AbZIBTbu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 15:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZIBTbu
+	id S1752848AbZIBTcn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 15:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZIBTcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 15:31:50 -0400
-Received: from mga03.intel.com ([143.182.124.21]:21429 "EHLO mga03.intel.com"
+	Wed, 2 Sep 2009 15:32:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33063 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751709AbZIBTbt convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 15:31:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="183381145"
-From: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
-To: "Wu, Fengguang" <fengguang.wu@intel.com>
-CC: Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Avi Kivity <avi@redhat.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrea Arcangeli <aarcange@redhat.com>,
-       "Yu, Wilfred" <wilfred.yu@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Date: Wed, 2 Sep 2009 12:30:59 -0700
-Subject: RE: [RFC] respect the referenced bit of KVM guest pages?
-Thread-Topic: [RFC] respect the referenced bit of KVM guest pages?
-Thread-Index: Acofq0JJsYCqjn7dSiq9RFnUNkVjvQMUncow
-Message-ID: <9EECC02A4CC333418C00A85D21E893260184184010@azsmsx502.amr.corp.intel.com>
-References: <4A843B72.6030204@redhat.com> <4A843EAE.6070200@redhat.com>
- <4A846581.2020304@redhat.com> <20090813211626.GA28274@cmpxchg.org>
- <4A850F4A.9020507@redhat.com> <20090814091055.GA29338@cmpxchg.org>
- <20090814095106.GA3345@localhost> <4A856467.6050102@redhat.com>
- <20090815054524.GB11387@localhost>
- <9EECC02A4CC333418C00A85D21E89326B6611E81@azsmsx502.amr.corp.intel.com>
- <20090818022609.GA7958@localhost>
-In-Reply-To: <20090818022609.GA7958@localhost>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1751709AbZIBTcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 15:32:41 -0400
+Date: Wed, 2 Sep 2009 19:31:51 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, lizf@cn.fujitsu.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, fweisbec@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, lizf@cn.fujitsu.com, efault@gmx.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/core] perf trace: Sample the CPU too
+Message-ID: <tip-cd6feeeafddbef6abfe4d90fb26e42fd844d34ed@git.kernel.org>
+Git-Commit-ID: cd6feeeafddbef6abfe4d90fb26e42fd844d34ed
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 02 Sep 2009 19:31:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to better understand the motivation for your make-mapped-exec-pages-first-class-citizens patch.  As I read your (very detailed!) description, you are diagnosing a threshold effect from Rik's evict-use-once-pages-first patch where if the inactive list is slightly smaller than the active list, the active list will start being scanned, pushing text (and other) pages onto the inactive list where they will be quickly kicked out to swap.
+Commit-ID:  cd6feeeafddbef6abfe4d90fb26e42fd844d34ed
+Gitweb:     http://git.kernel.org/tip/cd6feeeafddbef6abfe4d90fb26e42fd844d34ed
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 2 Sep 2009 20:20:38 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 2 Sep 2009 21:28:50 +0200
 
-As I read Rik's patch, if the active list is one page larger than the inactive list, then a batch of pages will get moved from one to the other.  For this to have a noticeable effect on the system once the streaming is done, there must be something continuing to keep the active list larger than the inactive list.  Maybe there is a consistent percentage of the streamed pages which are use-twice. 
+perf trace: Sample the CPU too
 
-So, we a threshold effect where a small change in input (the size of the streaming file vs the number of active pages) causes a large change in output (lots of text pages suddenly start getting thrown out).   My immediate reaction to that is that there shouldn't be this sudden change in behavior, and that maybe there should only be enough scanning in shink_active_list to bring the two lists back to parity.  However, if there's something keeping the active list bigger than the inactive list, this will just put off the inevitable required scanning.
+Sample, record, parse and print the CPU field - it had all zeroes before.
 
-As for your patch, it seems like we have a problem with scanning I/O, and instead of looking at those pages, you are looking to protect some other set of pages (mapped text).  That, in turn, increases pressure on anonymous pages (which is where I came in).  Wouldn't it be a better idea to keep looking at those streaming pages and figure out how to get them out of memory quickly?
+Before (watch the second column, the CPU values):
 
-						Jeff
+            perf-32685 [000]     0.000000: sched_wakeup_new: task perf:32686 [120] success=1 [011]
+            perf-32685 [000]     0.000000: sched_migrate_task: task perf:32685 [120] from: 1  to: 11
+            perf-32685 [000]     0.000000: sched_process_fork: parent perf:32685  child perf:32686
+            true-32686 [000]     0.000000: sched_wakeup: task migration/11:25 [0] success=1 [011]
+            true-32686 [000]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+            true-32686 [000]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+            perf-32685 [000]     0.000000: sched_switch: task perf:32685 [120] (S) ==> swapper:0 [140]
+            true-32686 [000]     0.000000: sched_switch: task perf:32686 [120] (R) ==> migration/11:25 [0]
+            true-32686 [000]     0.000000: sched_switch: task perf:32686 [120] (R) ==> distccd:12793 [125]
+            true-32686 [000]     0.000000: sched_switch: task true:32686 [120] (R) ==> distccd:12793 [125]
+            true-32686 [000]     0.000000: sched_process_exit: task true:32686 [120]
+            true-32686 [000]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767985949080 [ns]
+            true-32686 [000]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767986139446 [ns]
+            true-32686 [000]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 132844 [ns]
+            true-32686 [000]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 131724 [ns]
+
+After:
+
+            perf-32685 [001]     0.000000: sched_wakeup_new: task perf:32686 [120] success=1 [011]
+            perf-32685 [001]     0.000000: sched_migrate_task: task perf:32685 [120] from: 1  to: 11
+            perf-32685 [001]     0.000000: sched_process_fork: parent perf:32685  child perf:32686
+            true-32686 [011]     0.000000: sched_wakeup: task migration/11:25 [0] success=1 [011]
+            true-32686 [015]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+            true-32686 [015]     0.000000: sched_wakeup: task distccd:12793 [125] success=1 [015]
+            perf-32685 [001]     0.000000: sched_switch: task perf:32685 [120] (S) ==> swapper:0 [140]
+            true-32686 [011]     0.000000: sched_switch: task perf:32686 [120] (R) ==> migration/11:25 [0]
+            true-32686 [015]     0.000000: sched_switch: task perf:32686 [120] (R) ==> distccd:12793 [125]
+            true-32686 [015]     0.000000: sched_switch: task true:32686 [120] (R) ==> distccd:12793 [125]
+            true-32686 [015]     0.000000: sched_process_exit: task true:32686 [120]
+            true-32686 [015]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767985949080 [ns]
+            true-32686 [015]     0.000000: sched_stat_wait: task: distccd:12793 wait: 6767986139446 [ns]
+            true-32686 [015]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 132844 [ns]
+            true-32686 [015]     0.000000: sched_stat_sleep: task: distccd:12793 sleep: 131724 [ns]
+
+So we can now see how this workload migrated between CPUs.
+
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ tools/perf/builtin-record.c |    4 +++-
+ tools/perf/builtin-trace.c  |    9 ++++++++-
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/tools/perf/builtin-record.c b/tools/perf/builtin-record.c
+index add514d..ff93f8e 100644
+--- a/tools/perf/builtin-record.c
++++ b/tools/perf/builtin-record.c
+@@ -403,8 +403,10 @@ static void create_counter(int counter, int cpu, pid_t pid)
+ 	if (call_graph)
+ 		attr->sample_type	|= PERF_SAMPLE_CALLCHAIN;
+ 
+-	if (raw_samples)
++	if (raw_samples) {
+ 		attr->sample_type	|= PERF_SAMPLE_RAW;
++		attr->sample_type	|= PERF_SAMPLE_CPU;
++	}
+ 
+ 	attr->mmap		= track;
+ 	attr->comm		= track;
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index 8247fd0..bbe4c44 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -58,12 +58,19 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 	struct dso *dso = NULL;
+ 	struct thread *thread;
+ 	u64 ip = event->ip.ip;
++	u32 cpu = -1;
+ 	u64 period = 1;
+ 	void *more_data = event->ip.__more_data;
+ 	int cpumode;
+ 
+ 	thread = threads__findnew(event->ip.pid, &threads, &last_match);
+ 
++	if (sample_type & PERF_SAMPLE_CPU) {
++		cpu = *(u32 *)more_data;
++		more_data += sizeof(u32);
++		more_data += sizeof(u32); /* reserved */
++	}
++
+ 	if (sample_type & PERF_SAMPLE_PERIOD) {
+ 		period = *(u64 *)more_data;
+ 		more_data += sizeof(u64);
+@@ -120,7 +127,7 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
+ 		 * field, although it should be the same than this perf
+ 		 * event pid
+ 		 */
+-		print_event(0, raw->data, raw->size, 0, thread->comm);
++		print_event(cpu, raw->data, raw->size, 0, thread->comm);
+ 	}
+ 	total += period;
+ 
