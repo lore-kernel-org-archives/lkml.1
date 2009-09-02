@@ -1,80 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753807AbZIBWtu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753757AbZIBXAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753807AbZIBWtu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 18:49:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZIBWtt
+	id S1753757AbZIBXAx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 19:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753543AbZIBXAw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 18:49:49 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:38479
+	Wed, 2 Sep 2009 19:00:52 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:47792
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751266AbZIBWts (ORCPT
+	with ESMTP id S1753261AbZIBXAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 18:49:48 -0400
+	Wed, 2 Sep 2009 19:00:51 -0400
 From: Rob Landley <rob@landley.net>
 Organization: Boundaries Unlimited
-To: Pavel Machek <pavel@ucw.cz>
-Subject: [PATCH] Update Documentation/md.txt to mention journaling won't help dirty+degraded case.
-Date: Wed, 2 Sep 2009 17:49:46 -0500
+To: Ric Wheeler <rwheeler@redhat.com>
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3: document conditions when reliable operation is possible)
+Date: Wed, 2 Sep 2009 18:00:48 -0500
 User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
-Cc: Ric Wheeler <rwheeler@redhat.com>, david@lang.hm,
-       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+Cc: Pavel Machek <pavel@ucw.cz>, david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
        Goswin von Brederlow <goswin-v-b@web.de>,
        kernel list <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
        rdunlap@xenotime.net, linux-doc@vger.kernel.org,
        linux-ext4@vger.kernel.org, corbet@lwn.net
-References: <20090826001645.GN4300@elf.ucw.cz> <4A9910D5.4060208@redhat.com> <20090902201210.GC1840@ucw.cz>
-In-Reply-To: <20090902201210.GC1840@ucw.cz>
+References: <20090826001645.GN4300@elf.ucw.cz> <20090902201210.GC1840@ucw.cz> <4A9ED8AB.5080003@redhat.com>
+In-Reply-To: <4A9ED8AB.5080003@redhat.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200909021749.47695.rob@landley.net>
+Message-Id: <200909021800.51096.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rob Landley <rob@landley.net>
+On Wednesday 02 September 2009 15:42:19 Ric Wheeler wrote:
+> On 09/02/2009 04:12 PM, Pavel Machek wrote:
+> >>>> people aren't objecting to better documentation, they are objecting to
+> >>>> misleading documentation.
+> >>>
+> >>> Actually Ric is. He's trying hard to make RAID5 look better than it
+> >>> really is.
+> >>
+> >> I object to misleading and dangerous documentation that you have
+> >> proposed. I spend a lot of time working in data integrity, talking and
+> >> writing about it so I care deeply that we don't misinform people.
+> >
+> > Yes, truth is dangerous. To vendors selling crap products.
+>
+> Pavel, you have no information and an attitude of not wanting to listen to
+> anyone who has real experience or facts. Not just me, but also Ted and
+> others.
+>
+> Totally pointless to reply to you further.
 
-Add more warnings to the "Boot time assembly of degraded/dirty arrays" section,
-explaining that using a journaling filesystem can't overcome this problem.
+For the record, I've been able to follow Pavel's arguments, and I've been able 
+to follow Ted's arguments.  But as far as I can tell, you're arguing about a 
+different topic than the rest of us.
 
-Signed-off-by: Rob Landley <rob@landley.net>
----
+There's a difference between:
 
- Documentation/md.txt |   17 +++++++++++++++++
- 1 file changed, 17 insertions(+)
+A) This filesystem was corrupted because the underlying hardware is permanently 
+damaged, no longer functioning as it did when it was new, and never will 
+again.
 
-diff --git a/Documentation/md.txt b/Documentation/md.txt
-index 4edd39e..52b8450 100644
---- a/Documentation/md.txt
-+++ b/Documentation/md.txt
-@@ -75,6 +75,23 @@ So, to boot with a root filesystem of a dirty degraded raid[56], use
- 
-    md-mod.start_dirty_degraded=1
- 
-+Note that Journaling filesystems do not effectively protect data in this
-+case, because the update granularity of the RAID is larger than the journal
-+was designed to expect.  Reconstructing data via partity information involes
-+matching together corresponding stripes, and updating only some of these
-+stripes renders the corresponding data in all the unmatched stripes
-+meaningless.  Thus seemingly unrelated data in other parts of the filesystem
-+(stored in the unmatched stripes) can become unreadable after a partial
-+update, but the journal is only aware of the parts it modified, not the
-+"collateral damage" elsewhere in the filesystem which was affected by those
-+changes.
-+
-+Thus successful journal replay proves nothing in this context, and even a
-+full fsck only shows whether or not the filesystem's metadata was affected.
-+(A proper solution to this problem would involve adding journaling to the RAID
-+itself, at least during degraded writes.  In the meantime, try not to allow
-+a system to shut down uncleanly with its RAID both dirty and degraded, it
-+can handle one but not both.)
- 
- Superblock formats
- ------------------
+B) We had a transient glitch that ate the filesystem.  The underlying hardware 
+is as good as new, but our data is gone.
 
+You can argue about whether or not "new" was ever any good, but Linux has run 
+on PC-class hardware from day 1.  Sure PC-class hardware remains crap in many 
+different ways, but this is not a _new_ problem.  Refusing to work around what 
+people actually _have_ and insisting we get a better class of user instead 
+_is_ a new problem, kind of a disturbing one.
 
+USB keys are the modern successor to floppy drives, and even now 
+Documentation/blockdev/floppy.txt is still full of some of the torturous 
+workarounds implemented for that over the past 2 decades.  The hardware 
+existed, and instead of turning up their nose at it they made it work as best 
+they could.
+
+Perhaps what's needed for the flash thing is a userspace package, the way 
+mdutils made floppies a lot more usable than the kernel managed at the time.  
+For the flash problem perhaps some FUSE thing a bit like mtdblock might be 
+nice, a translation layer remapping an arbitrary underlying block device into 
+larger granularity chunks and being sure to do the "write the new one before 
+you erase the old one" trick that so many hardware-only flash devices _don't_, 
+and then maybe even use Pavel's crash tool to figure out the write granularity 
+of various sticks and ship it with a whitelist people can email updates to so 
+we don't have to guess large.  (Pressure on the USB vendors to give us a "raw 
+view" extension bypassing the "pretend to be a hard drive, with remapping" 
+hardware in future devices would be nice too, but won't help any of the 
+hardware out in the field.  I'm not sure that block remapping wouldn't screw up 
+_this_ approach either, but it's an example of something that culd be 
+_tried_.)
+
+However, thinking about how to _fix_ a problem is predicated on acknowledging 
+that there actually _is_ a problem.  "The hardware is not physically damaged 
+but your data was lost" sounds to me like a software problem, and thus 
+something software could at least _attempt_ to address.  "There's millions of 
+'em, Linux can't cope" doesn't seem like a useful approach.
+
+I already addressed the software raid thing last post.
+
+Rob
 -- 
 Latency is more important than throughput. It's that simple. - Linus Torvalds
