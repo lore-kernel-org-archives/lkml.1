@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZICRZP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZICR0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbZICRZP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 13:25:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZICRZO
+	id S1754116AbZICR0D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 13:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZICR0C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 13:25:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39516 "EHLO mx1.redhat.com"
+	Thu, 3 Sep 2009 13:26:02 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59746 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751178AbZICRZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 13:25:13 -0400
-Date: Thu, 3 Sep 2009 19:20:52 +0200
+	id S1751308AbZICR0B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 13:26:01 -0400
+Date: Thu, 3 Sep 2009 19:21:45 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Jiri Slaby <jirislaby@gmail.com>
 Cc: akpm@linux-foundation.org, mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: [PATCH 0/1] sys_setrlimit: make sure ->rlim_max never grows
-Message-ID: <20090903172052.GA27161@redhat.com>
+Subject: [PATCH 1/1] sys_setrlimit: make sure ->rlim_max never grows
+Message-ID: <20090903172145.GB27161@redhat.com>
 References: <1251884703-14523-1-git-send-email-jirislaby@gmail.com> <1251884703-14523-2-git-send-email-jirislaby@gmail.com> <20090902135024.GA6452@redhat.com> <4A9EBCF8.1020609@gmail.com> <20090902215101.GA4767@redhat.com> <4A9FC8DA.4090001@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -25,36 +25,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03, Jiri Slaby wrote:
->
-> On 09/02/2009 11:51 PM, Oleg Nesterov wrote:
-> > On 09/02, Jiri Slaby wrote:
-> >> I can't think of anything else than doing all the checks and updates
-> >> under alloc_lock, introducing coarse grained static mutex in setrlimit
-> >> to protect it,
-> >
-> > Oh, please don't ;)
-> >
-> > Or I missed your point?
-> >
-> > But if you mean this series, then yes, I agree.
->
-> Yes, I meant those. But I don't know what do you agree with :).
+Mostly preparation for Jiri's changes, but probably makes sense anyway.
 
-Not sure what I agree with, but I am glad we seem to agree with each other ;)
+sys_setrlimit() checks new_rlim.rlim_max <= old_rlim->rlim_max, but when
+it takes task_lock() old_rlim->rlim_max can be already lowered. Move this
+check under task_lock().
 
-> > We should try to do something
-> > to ensure that at least rlim_max can be always lowered when admin writes to
-> > /proc/pid/limits.
->
-> Yes, that's what I asked about when I wrote the three options which I
-> was able to think of above. So any other ideas about how to elegantly
-> protect against sys_setrlimit vs. admin+/proc/*/limits race?
+Currently this is not important, we can only race with our sub-thread,
+this means the application is stupid. But when we change the code to allow
+the update of !current task's limits, it becomes important to make sure
+->rlim_max can be lowered "reliably" even if we race with the application
+doing sys_setrlimit().
 
-Perhaps we should start these change with this patch (see the next email) ?
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
 
-Perhaps, before your changes, we should "fix" sys_setrlimit() first ?
-Well, the patch (the next email) is not tested... What do you think?
+ kernel/sys.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Oleg.
+--- WAIT/kernel/sys.c~SETRLIMIT	2009-06-17 14:11:26.000000000 +0200
++++ WAIT/kernel/sys.c	2009-09-03 19:01:48.000000000 +0200
+@@ -1247,10 +1247,6 @@ SYSCALL_DEFINE2(setrlimit, unsigned int,
+ 		return -EFAULT;
+ 	if (new_rlim.rlim_cur > new_rlim.rlim_max)
+ 		return -EINVAL;
+-	old_rlim = current->signal->rlim + resource;
+-	if ((new_rlim.rlim_max > old_rlim->rlim_max) &&
+-	    !capable(CAP_SYS_RESOURCE))
+-		return -EPERM;
+ 	if (resource == RLIMIT_NOFILE && new_rlim.rlim_max > sysctl_nr_open)
+ 		return -EPERM;
+ 
+@@ -1268,13 +1264,17 @@ SYSCALL_DEFINE2(setrlimit, unsigned int,
+ 		new_rlim.rlim_cur = 1;
+ 	}
+ 
++	old_rlim = current->signal->rlim + resource;
+ 	task_lock(current->group_leader);
+-	*old_rlim = new_rlim;
++	if ((new_rlim.rlim_max <= old_rlim->rlim_max) ||
++				capable(CAP_SYS_RESOURCE))
++		*old_rlim = new_rlim;
++	else
++		retval = -EPERM;
+ 	task_unlock(current->group_leader);
+ 
+-	if (resource != RLIMIT_CPU)
++	if (retval || resource != RLIMIT_CPU)
+ 		goto out;
+-
+ 	/*
+ 	 * RLIMIT_CPU handling.   Note that the kernel fails to return an error
+ 	 * code if it rejected the user's attempt to set RLIMIT_CPU.  This is a
+@@ -1286,7 +1286,7 @@ SYSCALL_DEFINE2(setrlimit, unsigned int,
+ 
+ 	update_rlimit_cpu(new_rlim.rlim_cur);
+ out:
+-	return 0;
++	return retval;
+ }
+ 
+ /*
 
