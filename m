@@ -1,91 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752453AbZICNBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbZICNBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752453AbZICNBR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZICNBQ
+	id S1752622AbZICNBf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 09:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZICNBe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:01:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60432 "EHLO mx1.redhat.com"
+	Thu, 3 Sep 2009 09:01:34 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:50049 "EHLO mail-out1.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751808AbZICNBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:01:16 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC] cfq: adapt slice to number of processes doing I/O
-References: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 03 Sep 2009 09:01:12 -0400
-In-Reply-To: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com>
-	(Corrado Zoccolo's message of "Thu, 3 Sep 2009 13:07:01 +0200")
-Message-ID: <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1751978AbZICNBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 09:01:33 -0400
+Subject: Re: VM issue causing high CPU loads
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yohan <ytordjman@corp.free.fr>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, mikevs@xs4all.net
+In-Reply-To: <20090902170642.f4381c1d.akpm@linux-foundation.org>
+References: <4A92A25A.4050608@yohan.staff.proxad.net>
+	 <20090824162155.ce323f08.akpm@linux-foundation.org>
+	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>
+	 <20090902170642.f4381c1d.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 09:01:24 -0400
+Message-Id: <1251982884.18338.9.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 7 msgs/h 1 sum rcpts/h 8 sum msgs/h 1 total rcpts 1293 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: CE6EC785D42D7603E389F6E06C7B4FD8AC7CA079
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 211 max/h 6 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+On Wed, 2009-09-02 at 17:06 -0700, Andrew Morton wrote:
+> On Mon, 31 Aug 2009 22:39:20 +0200
+> Yohan <ytordjman@corp.free.fr> wrote:
+> 
+> > Yohan wrote:
+> > > Andrew Morton wrote:
+> > >> On Mon, 24 Aug 2009 16:23:22 +0200
+> > >> Yohan <kernel@yohan.staff.proxad.net> wrote:  
+> > >>> Hi,
+> > >>>
+> > >>>     Is someone have an idea for that :
+> > >>>
+> > >>>         http://bugzilla.kernel.org/show_bug.cgi?id=14024
+> > >>>     
+> > >> Please generate a kernel profile to work out where all the CPU tie is
+> > >> being spent.  Documentation/basic_profiling.txt is a starting point.
+> > >>   
+> > > I post some new reports, it seems that the problem is in  
+> > > rpcauth_lookup_credcache ...
+> 
+> Thanks, that helps a lot.
+> 
+> > > for information, this is an imap mail server that mounts ~10 netapp 
+> > > over ~300 mountpoints..
+> >     I saw that : http://patchwork.kernel.org/patch/24747/
+> 
+> I wonder what happened with Miquel's patch?
 
-> When the number of processes performing I/O concurrently increases,  a
-> fixed time slice per process will cause large latencies.
-> In the patch, if there are more than 3 processes performing concurrent
-> I/O, we scale the time slice down proportionally.
-> To safeguard sequential bandwidth, we impose a minimum time slice,
-> computed from cfq_slice_idle (the idea is that cfq_slice_idle
-> approximates the cost for a seek).
->
-> I performed two tests, on a rotational disk:
-> * 32 concurrent processes performing random reads
-> ** the bandwidth is improved from 466KB/s to 477KB/s
-> ** the maximum latency is reduced from 7.667s to 1.728
-> * 32 concurrent processes performing sequential reads
-> ** the bandwidth is reduced from 28093KB/s to 24393KB/s
-> ** the maximum latency is reduced from 3.781s to 1.115s
->
-> I expect numbers to be even better on SSDs, where the penalty to
-> disrupt sequential read is much less.
+At the time, I asked him to split out the various changes into several
+patches.
 
-Interesting approach.  I'm not sure what the benefits will be on SSDs,
-as the idling logic is disabled for them (when nonrot is set and they
-support ncq).  See cfq_arm_slice_timer.
+His patch did a lot of different things that would impact workloads in
+different ways. For instance, while increasing the hash table size is
+not likely to have a huge performance degradation for most people, the
+change that decreases the garbage collection timeout is very likely to
+cause issues (particularly with RPCSEC_GSS setups)...
 
-> Signed-off-by: Corrado Zoccolo <czoccolo@gmail-com>
->
-> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-> index fd7080e..cff4ca8 100644
-> --- a/block/cfq-iosched.c
-> +++ b/block/cfq-iosched.c
-> @@ -306,7 +306,15 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct
-> cfq_queue *cfqq)
->  static inline void
->  cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
->  {
-> -       cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
-> +       unsigned low_slice = cfqd->cfq_slice_idle * (1 + cfq_cfqq_sync(cfqq));
-> +       unsigned interested_queues = cfq_class_rt(cfqq) ?
-> cfqd->busy_rt_queues : cfqd->busy_queues;
+> > I did only:
+> > 
+> > --- linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-03-23 23:04:09.000000000 +0100
+> > +++ linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-05-19 16:02:35.000000000 +0200
+> > @@ -62,8 +62,12 @@ 
+> >   */
+> > - #define RPC_CREDCACHE_HASHBITS	4
+> > + #define RPC_CREDCACHE_HASHBITS	12
+> > 
+> > 
+> > And i test it in prod since sunday: i only have 36% of one core used by 
+> > system
+> > versus more than 3 cores used by system in another server that did a 
+> > drop_caches at morning...
+> > 
+> 
+> OK, but it's still pretty bad.  Let's tell the NFS guys.
+> 
+> In http://bugzilla.kernel.org/show_bug.cgi?id=14024 we appear to have a
+> major meltdown caused by the linear search in
+> rpcauth_lookup_credcache() with Yohan's workload.
+> 
 
-Either my mailer displayed this wrong, or yours wraps lines.
+OK. Could we please have some more details about the actual workload
+involved here?
+As far as I can see, there is no RPCSEC_GSS involved, so credentials
+should never expire. They will be reused as long as processes aren't
+switching between thousands and thousands of different combinations of
+uid, gid and groups.
 
-> +       unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
-> +       if (interested_queues > 3) {
-> +               slice *= 3;
 
-How did you come to this magic number of 3, both for the number of
-competing tasks and the multiplier for the slice time?  Did you
-experiment with this number at all?
 
-> +               slice /= interested_queues;
-
-Of course you realize this could disable the idling logic completely,
-right?  I'll run this patch through some tests and let you know how it
-goes.
-
-Thanks!
-
--Jeff
