@@ -1,145 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZICTXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZICRHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756177AbZICTXT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbZICTXT
+	id S1756040AbZICRHh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 13:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZICRHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:23:19 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44205 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755120AbZICTXS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:23:18 -0400
-Date: Thu, 3 Sep 2009 21:22:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Paul Mackerras <paulus@samba.org>, David Gibson <dwg@au1.ibm.com>
-Subject: Re: [Patch 0/1] HW-BKPT: Allow per-cpu kernel-space Hardware
-	Breakpoint requests
-Message-ID: <20090903192257.GA25363@elte.hu>
-References: <20090820172719.GA16499@in.ibm.com> <20090821142811.GF11098@elte.hu> <20090826033637.GB6245@nowhere> <20090826091642.GB7743@elte.hu> <20090826114954.GA6009@nowhere> <20090826180245.GA4438@in.ibm.com> <20090829134107.GD24123@elte.hu> <20090901063845.GB25221@in.ibm.com> <20090901235128.GE6108@nowhere> <20090903182810.GA3952@in.ibm.com>
+	Thu, 3 Sep 2009 13:07:36 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:55009 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752640AbZICRHf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 13:07:35 -0400
+Date: Thu, 3 Sep 2009 14:24:17 -0500 (CDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Eric Dumazet <eric.dumazet@gmail.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] slub: fix slab_pad_check()
+In-Reply-To: <4A9FDA72.8060001@gmail.com>
+Message-ID: <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1>
+References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>  <alpine.DEB.1.10.0908121820410.3257@gentwo.org>  <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>  <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com> 
+ <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net>  <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>  <4A9EEF07.5070800@gmail.com>  <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>  <4A9F1620.2080105@gmail.com>
+ <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1>
+ <4A9FDA72.8060001@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090903182810.GA3952@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 Sep 2009, Eric Dumazet wrote:
 
-* K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+> Point is we cannot deal with RCU quietness before disposing the slab cache,
+> (if SLAB_DESTROY_BY_RCU was set on the cache) since this disposing *will*
+> make call_rcu() calls when a full slab is freed/purged.
 
-> On Wed, Sep 02, 2009 at 01:51:33AM +0200, Frederic Weisbecker wrote:
-> > On Tue, Sep 01, 2009 at 12:08:45PM +0530, K.Prasad wrote:
-> > > On Sat, Aug 29, 2009 at 03:41:07PM +0200, Ingo Molnar wrote:
-> > > > 
-> > > > * K.Prasad <prasad@linux.vnet.ibm.com> wrote:
-> > > > 
-> > > > > I am not sure if pmus can handle, (or want to handle) all the 
-> > > > > intricacies involved with the hw-breakpoint layer [...]
-> > > > 
-> > > > Which are those intricacies? It's all rather straightforward 
-> > > > register scheduling and reservation stuff - which perfcounters 
-> > > > already solves in a very rich way.
-> > > > 
-> > > > 	Ingo
-> > > 
-> [edited]
-> > > And post integration, in-kernel users like ptrace, kgdb* and xmon*
-> > > which hitherto have interacted directly with the debug registers
-> > > (through set_debugreg()/set_dabr()) should route their requests through the
-> > > perf-layer. It is difficult to imagine ptrace's idempotent requests
-> > > (through ptrace_<get><set>_debugreg()) having to pass through perf-layer
-> > > (and becoming dependant on CONFIG_PERF_COUNTERS), not to mention the
-> > > tricks required to synchronise signal generation timing with exception
-> > > behaviour (especially on PPC64).
-> > > * - Not converted to use hw-breakpoint layer yet
-> > 
-> > 
-> > Actually, I see the perf layer here as a middle man between
-> > 
-> > - the very hardware stuff (dr[0-467]) handling, reading, writing, updating
-> > - the core API (register_kernel_breakpoint(), register_user_breakpoint() etc..)
-> > 
-> > And this middle man can handle so much things on its own that the two above
-> > gets utterly shrinked.
-> > 
-> > Also the ptrace thing is tricky in itself, and that can't be helped easily.
-> > Because of the direct writing to debug registers done by POKE_USR,
-> > whatever the current breakpoint API with or without perf integration, we still
-> > need subterfuges to carry it.
-> >
-> 
-> The reverse-dependancy this would create over perf (CONFIG_PERF) for the
-> hw-breakpoint layer is an undesirable side-effect, and gives rise to
-> atleast two immediate questions:
-> 
-> - Handling of requests for hw-breakpoint from users like ptrace when
->   CONFIG_PERF is not turned on
+There is no need to do call_rcu calls for frees at that point since
+objects are no longer in use. We could simply disable SLAB_DESTROY_BY_RCU
+for the final clearing of caches.
 
-This is basically just a build/layering logistics question and it is 
-solved easily - we could have a library mode for it.
+> And when RCU grace period is elapsed, the callback *will* need access to
+> the cache we want to dismantle. Better to not have kfreed()/poisoned it...
 
-> - Managing 'register scheduling and reservation' on architectures where
->   perf layer isn't ported. An inefficient way of handling this would be
->   to retain the existing register allocation code of hw-breakpoint for
->   such architectures - thereby artificially imposing arch-specific code
->   into generic stuff.
+But going through the RCU period is pointless since no user of the cache
+remains.
 
-Minimally porting perf to enable a hw-breakpoints PMU extension is 
-very easy in practice. For example on s390 it took just 15 lines of 
-code:
-
-  12310e9: [S390] Enable tick based perf_counter on s390.
-
-    arch/s390/Kconfig                    |    1 +
-    arch/s390/include/asm/perf_counter.h |    8 ++++++++
-    tools/perf/perf.h                    |    6 ++++++
-    3 files changed, 15 insertions(+), 0 deletions(-)
-
-On FRV it took 38 lines (60% of which are boilerplace copyright 
-notices), on PARISC 15 lines.
-
-By far the most complexity is in factoring out the hw-breakpoint 
-code itself - and that has to be done regardless of the register 
-scheduling model.
-
-> A solution here would be to detach parts of perf layer's code that 
-> handle register scheduling and reservation (which I learn are in 
-> kernel/perf_counter.c) into a separate entity (outside the ambit 
-> of CONFIG_PERF) that can serve the needs of both hw-breakpoint and 
-> perf thereby eliminating the two issues enumerated above.
+> I believe you mix two RCU uses here.
 >
-> The tight coupling between the functions that perform register 
-> scheduling (in kernel/perf_counter.c) and perf's data structures 
-> is quite apparent and does suggest non-trivial amount of effort to 
-> detach them into a layer of its own.
-> 
-> However this might be quite necessary in order to balance between 
-> a desire to re-use the 'register scheduling and reservation' code 
-> of perf-layer while not running into issues as above.
-> 
-> This, along with the framework (described in the previous mail) to 
-> retain the hw-breakpoint's APIs + code interacting with debug 
-> registers (including exception handling) would be a good 
-> compromise.
+> 1) The one we all know, is use normal caches (!SLAB_DESTROY_BY_RCU)
+> (or kmalloc()), and use call_rcu(... kfree_something)
+>
+>    In this case, you are 100% right that the subsystem itself has
+>    to call rcu_barrier() (or respect whatever self-synchro) itself,
+>    before calling kmem_cache_destroy()
+>
+> 2) The SLAB_DESTROY_BY_RCU one.
+>
+>    Part of cache dismantle needs to call rcu_barrier() itself.
+>    Caller doesnt have to use rcu_barrier(). It would be a waste of time,
+>    as kmem_cache_destroy() will refill rcu wait queues with its own stuff.
 
-I dont think the librarization is all that complex. It's very much 
-desired, as we'd reuse an existing piece of infrastructure to 
-implement another one - this is always good.
+The dismantling does not need RCU since there are no operations on the
+objects in progress. So simply switch DESTROY_BY_RCU off for close.
 
-	Ingo
+
+---
+ mm/slub.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/mm/slub.c
+===================================================================
+--- linux-2.6.orig/mm/slub.c	2009-09-03 10:14:51.000000000 -0500
++++ linux-2.6/mm/slub.c	2009-09-03 10:18:32.000000000 -0500
+@@ -2594,9 +2594,9 @@ static inline int kmem_cache_close(struc
+  */
+ void kmem_cache_destroy(struct kmem_cache *s)
+ {
+-	if (s->flags & SLAB_DESTROY_BY_RCU)
+-		rcu_barrier();
+ 	down_write(&slub_lock);
++	/* Stop deferring frees so that we can immediately free structures */
++	s->flags &= ~SLAB_DESTROY_BY_RCU;
+ 	s->refcount--;
+ 	if (!s->refcount) {
+ 		list_del(&s->list);
