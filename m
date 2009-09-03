@@ -1,133 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753212AbZICHj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZICHlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753212AbZICHj1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 03:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZICHj0
+	id S1753964AbZICHlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 03:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753188AbZICHlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 03:39:26 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:51918 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752441AbZICHjZ (ORCPT
+	Thu, 3 Sep 2009 03:41:20 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:45643
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753069AbZICHlT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 03:39:25 -0400
-Message-ID: <4A9F7283.1090306@gmail.com>
-Date: Thu, 03 Sep 2009 09:38:43 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 3 Sep 2009 03:41:19 -0400
+X-SpamScore: -10
+X-BigFish: VPS-10(zz936eM655Nzz1202hzzz32i6bh203h62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KPDXBV-02-CY4-02
+X-M-MSG: 
+Date: Thu, 3 Sep 2009 09:40:21 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Borislav Petkov <borislav.petkov@amd.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 1/4] x86: Fix CPU llc_shared_map information for AMD
+	Magny-Cours
+Message-ID: <20090903074021.GF7216@alberich.amd.com>
+References: <20090903073818.GE7216@alberich.amd.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>,
-       Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] slub: fix slab_pad_check() and SLAB_DESTROY_BY_RCU
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>	 <alpine.DEB.1.10.0908121820410.3257@gentwo.org>	 <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>	 <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com>	 <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net>	 <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>	 <4A9EEF07.5070800@gmail.com>	 <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>	 <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com>
-In-Reply-To: <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 09:38:43 +0200 (CEST)
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <20090903073818.GE7216@alberich.amd.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 03 Sep 2009 07:40:22.0290 (UTC) FILETIME=[CB06F720:01CA2C69]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg a écrit :
-> On Thu, Sep 3, 2009 at 4:04 AM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
->> Zdenek Kabelac a écrit :
->>> Well I'm not noticing any ill behavior - also note - rcu_barrier() is
->>> there before the cache is destroyed.
->>> But as I said - it's just my shot into the dark - which seems to work for me...
->>>
->> Reading again your traces, I do believe there are two bugs in slub
->>
->> Maybe not explaining your problem, but worth to fix !
->>
->> Thank you
->>
->> [PATCH] slub: fix slab_pad_check() and SLAB_DESTROY_BY_RCU
->>
->> When SLAB_POISON is used and slab_pad_check() finds an overwrite of the
->> slab padding, we call restore_bytes() on the whole slab, not only
->> on the padding.
->>
->> kmem_cache_destroy() should call rcu_barrier() *after* kmem_cache_close()
->> and *before* sysfs_slab_remove() or risk rcu_free_slab()
->> being called after kmem_cache is deleted (kfreed).
->>
->> rmmod nf_conntrack can crash the machine because it has to
->> kmem_cache_destroy() a SLAB_DESTROY_BY_RCU enabled cache.
->>
->> Reported-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
->> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
->> ---
->> diff --git a/mm/slub.c b/mm/slub.c
->> index b9f1491..0ac839f 100644
->> --- a/mm/slub.c
->> +++ b/mm/slub.c
->> @@ -646,7 +646,7 @@ static int slab_pad_check(struct kmem_cache *s, struct page *page)
->>        slab_err(s, page, "Padding overwritten. 0x%p-0x%p", fault, end - 1);
->>        print_section("Padding", end - remainder, remainder);
->>
->> -       restore_bytes(s, "slab padding", POISON_INUSE, start, end);
->> +       restore_bytes(s, "slab padding", POISON_INUSE, end - remainder, end);
-> 
-> OK, makes sense.
-> 
->>        return 0;
->>  }
->>
->> @@ -2594,8 +2594,6 @@ static inline int kmem_cache_close(struct kmem_cache *s)
->>  */
->>  void kmem_cache_destroy(struct kmem_cache *s)
->>  {
->> -       if (s->flags & SLAB_DESTROY_BY_RCU)
->> -               rcu_barrier();
->>        down_write(&slub_lock);
->>        s->refcount--;
->>        if (!s->refcount) {
->> @@ -2606,6 +2604,8 @@ void kmem_cache_destroy(struct kmem_cache *s)
->>                                "still has objects.\n", s->name, __func__);
->>                        dump_stack();
->>                }
->> +               if (s->flags & SLAB_DESTROY_BY_RCU)
->> +                       rcu_barrier();
->>                sysfs_slab_remove(s);
->>        } else
->>                up_write(&slub_lock);
-> 
-> The rcu_barrier() call was added by this commit:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=7ed9f7e5db58c6e8c2b4b738a75d5dcd8e17aad5
-> 
-> I guess we should CC Paul as well.
 
-Sure !
+Construct entire NodeID and use it as cpu_llc_id. Thus internal node
+siblings are stored in llc_shared_map.
 
-rcu_barrier() is definitly better than synchronize_rcu() in 
-kmem_cache_destroy()
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/include/asm/cpufeature.h |    1 +
+ arch/x86/kernel/cpu/amd.c         |   64 ++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 64 insertions(+), 1 deletions(-)
 
-But its location was not really right (for SLUB at least)
+diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
+index 4a28d22..847fee6 100644
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -95,6 +95,7 @@
+ #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
+ #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
+ #define X86_FEATURE_EXTD_APICID	(3*32+26) /* has extended APICID (8 bits) */
++#define X86_FEATURE_AMD_DCM     (3*32+27) /* multi-node processor */
+ 
+ /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
+ #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
+diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
+index 63fddcd..7a00ba3 100644
+--- a/arch/x86/kernel/cpu/amd.c
++++ b/arch/x86/kernel/cpu/amd.c
+@@ -251,6 +251,64 @@ static int __cpuinit nearby_node(int apicid)
+ #endif
+ 
+ /*
++ * Fixup core topology information for AMD multi-node processors.
++ * Assumption 1: Number of cores in each internal node is the same.
++ * Assumption 2: Mixed systems with both single-node and dual-node
++ *               processors are not supported.
++ */
++#ifdef CONFIG_X86_HT
++static void __cpuinit amd_fixup_dcm(struct cpuinfo_x86 *c)
++{
++#ifdef CONFIG_PCI
++	u32 t, cpn;
++	u8 n, n_id;
++	int cpu = smp_processor_id();
++
++	/* fixup topology information only once for a core */
++	if (cpu_has(c, X86_FEATURE_AMD_DCM))
++		return;
++
++	/* check for multi-node processor on boot cpu */
++	t = read_pci_config(0, 24, 3, 0xe8);
++	if (!(t & (1 << 29)))
++		return;
++
++	set_cpu_cap(c, X86_FEATURE_AMD_DCM);
++
++	/* cores per node: each internal node has half the number of cores */
++	cpn = c->x86_max_cores >> 1;
++
++	/* even-numbered NB_id of this dual-node processor */
++	n = c->phys_proc_id << 1;
++
++	/*
++	 * determine internal node id and assign cores fifty-fifty to
++	 * each node of the dual-node processor
++	 */
++	t = read_pci_config(0, 24 + n, 3, 0xe8);
++	n = (t>>30) & 0x3;
++	if (n == 0) {
++		if (c->cpu_core_id < cpn)
++			n_id = 0;
++		else
++			n_id = 1;
++	} else {
++		if (c->cpu_core_id < cpn)
++			n_id = 1;
++		else
++			n_id = 0;
++	}
++
++	/* compute entire NodeID, use llc_shared_map to store sibling info */
++	per_cpu(cpu_llc_id, cpu) = (c->phys_proc_id << 1) + n_id;
++
++	/* fixup core id to be in range from 0 to cpn */
++	c->cpu_core_id = c->cpu_core_id % cpn;
++#endif
++}
++#endif
++
++/*
+  * On a AMD dual core setup the lower bits of the APIC id distingush the cores.
+  * Assumes number of cores is a power of two.
+  */
+@@ -267,6 +325,9 @@ static void __cpuinit amd_detect_cmp(struct cpuinfo_x86 *c)
+ 	c->phys_proc_id = c->initial_apicid >> bits;
+ 	/* use socket ID also for last level cache */
+ 	per_cpu(cpu_llc_id, cpu) = c->phys_proc_id;
++	/* fixup topology information on multi-node processors */
++	if ((c->x86 == 0x10) && (c->x86_model == 9))
++		amd_fixup_dcm(c);
+ #endif
+ }
+ 
+@@ -277,7 +338,8 @@ static void __cpuinit srat_detect_node(struct cpuinfo_x86 *c)
+ 	int node;
+ 	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+ 
+-	node = c->phys_proc_id;
++	node = per_cpu(cpu_llc_id, cpu);
++
+ 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
+ 		node = apicid_to_node[apicid];
+ 	if (!node_online(node)) {
+-- 
+1.6.4
 
-SLAB_DESTROY_BY_RCU means subsystem will call kfree(elems) without waiting RCU
-grace period.
 
-By the time subsystem calls kmem_cache_destroy(), all previously allocated
-elems must have already be kfreed() by this subsystem.
-
-We must however wait that all slabs, queued for freeing by rcu_free_slab(),
-are indeed freed, since this freeing needs access to kmem_cache pointer.
-
-As kmem_cache_close() might clean/purge the cache and call rcu_free_slab(),
-we must call rcu_barrier() *after* kmem_cache_close(), and before kfree(kmem_cache *s)
-
-Alternatively we could delay this final kfree(s) (with call_rcu()) but would
-have to copy s->name in kmem_cache_create() instead of keeping a pointer to
- a string that might be in a module, and freed at rmmod time.
-
-Given that there is few uses in current tree that call kmem_cache_destroy()
-on a SLAB_DESTROY_BY_RCU cache, there is no need to try to optimize this
-rcu_barrier() call, unless we want superfast reboot/halt sequences...
 
