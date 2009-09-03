@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756153AbZICS5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756166AbZICS6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756153AbZICS5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 14:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZICS5f
+	id S1756166AbZICS6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 14:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbZICS6V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 14:57:35 -0400
-Received: from kroah.org ([198.145.64.141]:41420 "EHLO coco.kroah.org"
+	Thu, 3 Sep 2009 14:58:21 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58096 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754703AbZICS5e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 14:57:34 -0400
-Date: Thu, 3 Sep 2009 11:55:46 -0700
-From: Greg KH <greg@kroah.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org
-Subject: Re: Staging tree status for the .32 kernel merge
-Message-ID: <20090903185546.GB29945@kroah.com>
-References: <20090903041429.GA29875@kroah.com>
- <1251967786.3336.19.camel@johannes.local>
- <20090903161734.GA9722@infradead.org>
- <20090903175511.GA24943@kroah.com>
- <20090903184017.GA9784@infradead.org>
+	id S1754350AbZICS6V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 14:58:21 -0400
+Date: Thu, 3 Sep 2009 20:58:06 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, johnstul@us.ibm.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [boot crash] Re: [tip:timers/core] clocksource: Resolve cpu
+	hotplug dead lock with TSC unstable
+Message-ID: <20090903185806.GA5949@elte.hu>
+References: <tip-7285dd7fd375763bfb8ab1ac9cf3f1206f503c16@git.kernel.org> <20090831101928.4c00c797@skybase> <alpine.LFD.2.00.0908311754590.19335@localhost.localdomain> <20090903181743.GA22431@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090903184017.GA9784@infradead.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090903181743.GA22431@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 02:40:17PM -0400, Christoph Hellwig wrote:
-> On Thu, Sep 03, 2009 at 10:55:11AM -0700, Greg KH wrote:
-> > On Thu, Sep 03, 2009 at 12:17:34PM -0400, Christoph Hellwig wrote:
-> > > On Thu, Sep 03, 2009 at 10:49:46AM +0200, Johannes Berg wrote:
-> > > > > 	- vt66* wireless drivers.  These VIA drivers are being actively
-> > > > > 	  worked on to get into a much better shape.  Nice job.
-> > > > 
-> > > > And do they come with their own wireless stack too?
-> > > 
-> > > Please don't put in the vendor vt6656 driver, it will conflict with a
-> > > proper mac80211 vt6656 driver a group mentored by me will submit late in
-> > > the 2.6.32 cycle.
-> > 
-> > It's already in the linux-next tree, and is almost merged with the
-> > vt6655 driver from what I can see.  When your driver goes in I will be
-> > glad to disable the device ids that it covers, just let me know.
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> i tried to bisect it but it's inconclusive:
 > 
-> vt665_6_ has just one usb device id.  And please make sure to rename the
-> crap driver to something else than vt6656.ko so that it does not get in
-> way for the proper driver.
+>  # bad:  [32beef9c] Merge branch 'perfcounters/core'
+>  # bad:  [b6413360] manual merge of x86/platform
+>  # bad:  [d9e5f39a] Merge branch 'auto-oprofile-next' into auto-latest
+>  # bad:  [cbaff272] Merge branch 'auto-timers-next' into auto-latest
+> 
+> as the bisection comes up with that merge commit. Perhaps the 
+> combination of the x86/platform changes and the clocksource 
+> changes triggered it?
 
-Ok, does vt6656_crap.ko sound good to you?  :)
+That seems to be the case - i just tested a combination merge of 
+tip:auto-timers-next and tip:auto-x86-next and the result crashed in 
+a similar way too.
 
-thanks,
+Since normal bisection cannot find such breakages, i did a topical 
+bisection (merging the finegrained tip:x86/* topics into the timer 
+tree gradually and testing each merge).
 
-greg k-h
+That way i could exclude: x86/platform, x86/pat, x86/asm, x86/apic, 
+x86/percpu, x86/cpu, x86/mm and arrived to x86/tsc - which contains 
+a single commit:
+
+  d3b8f88: x86: Make tsc=reliable override boot time stability checks
+
+Reverting that commit from tip:master gives me a non-crashing 
+bootup.
+
+	Ingo
