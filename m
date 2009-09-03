@@ -1,84 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932489AbZICXCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932470AbZICW4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932489AbZICXCs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 19:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932429AbZICXCs
+	id S932470AbZICW4D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932434AbZICW4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 19:02:48 -0400
-Received: from mail-yw0-f192.google.com ([209.85.211.192]:53450 "EHLO
-	mail-yw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932426AbZICXCr (ORCPT
+	Thu, 3 Sep 2009 18:56:02 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34212 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932426AbZICW4A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 19:02:47 -0400
-X-Greylist: delayed 488 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Sep 2009 19:02:47 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=GnGSK7WqsoLGfHwPnEIIlAB2K0VR+SN6rqWbfOQWtOfKN8HqJR8+ntAY2GijhfeqgG
-         UlIBiHmc698Dwv0L1i8hOF1X9XaEHXV4Qloa+fJZIOtZMx27N4y6dQs35J0atnBOIRy5
-         XhS7H02crX6uM7FLvqrCduhdd3fm/iAHrAUnQ=
-MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 3 Sep 2009 15:54:21 -0700
-Message-ID: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com>
-Subject: Atheros Linux wireless drivers home page - and two new driver 
-	projects
-To: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Cc: Len Widra <Len.Widra@atheros.com>, Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Werner Almesberger <werner@openmoko.org>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       Bob Copeland <me@bobcopeland.com>, Greg KH <greg@kroah.com>,
-       rshlinux@gmail.com, b_yogesh_snowy@yahoo.com,
-       Michael Renzmann <mrenzmann@madwifi-project.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>,
-       Paul Fertser <fercerpav@gmail.com>, Harald Welte <laforge@openmoko.org>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 3 Sep 2009 18:56:00 -0400
+Date: Thu, 3 Sep 2009 15:55:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: hpa@zytor.com, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       kjwinchester@gmail.com, tglx@linutronix.de, borislav.petkov@amd.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86, msr: add rd/wrmsr interfaces with preset
+ registers
+Message-Id: <20090903155539.ecd64bcd.akpm@linux-foundation.org>
+In-Reply-To: <1251705011-18636-1-git-send-email-petkovbb@gmail.com>
+References: <20090831073429.GA26596@liondog.tnic>
+	<1251705011-18636-1-git-send-email-petkovbb@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm pleased to announce the new home page to Atheros Linux wireless drivers:
+On Mon, 31 Aug 2009 09:50:09 +0200
+Borislav Petkov <petkovbb@googlemail.com> wrote:
 
-http://wireless.kernel.org/en/users/Drivers/Atheros
+> +.macro op_safe_regs op:req
 
-To get updates just subscribe to the wiki. There you will find
-information regarding any old legacy Atheros driver and any proper
-upstream driver.
+Using
 
-I'd like to also take the time to announce two devices for which
-support is currently being developed for: ar5523 and ar9271. Both
-ar5523 and ar9271 device support is currently being worked on either
-by the community or by Atheros itself. Both of these driver projects
-will be using th Linux driver project [1] to gain traction. Patches
-and development discussions regarding these two drivers prior to
-getting upstream into drivers/net/wireless/ will take place on the
-Linux driver project mailing list [2]. For direct one-on-one
-communication for support and development we will rely on the
-#linux-wireless IRC channel on irc.freenode.net. Both devices are USB
-but differ greatly, please visit the ar5523 page [2] and the ar9271
-page [3] for further device specifics and more information.
+GNU assembler 2.16.1
 
-The model of development for ar9271 device support is rather new -- we
-are not targeting staging, instead we target using the strength of
-community development at an extremely early stage, as early as is
-possible, even before the device is functional. If we get a device
-driver functional prior to meeting upstream requirements then so be it
--- and the driver does gets stuffed into drivers/staging. End goal is
-to get it into proper drivers/net/wireless/ but obviously it will not
-hurt to get users some device functionality prior to that.
+I get
 
-The time of turnaround to getting users supported either through
-drivers/staging or drivers/net/wireless/ will ultimately depend on the
-resources dedicated to it. Right now I know only Stefan
-Lippers-Hollmann is working on ar5523 support and I'm the only one
-working on ar9271 support. With your help I am in hopes this will
-change soon.
+arch/x86/lib/msr-reg.S: Assembler messages:
+arch/x86/lib/msr-reg.S:53: Error: Bad macro parameter list
+arch/x86/lib/msr-reg.S:100: Error: invalid character '_' in mnemonic
+arch/x86/lib/msr-reg.S:101: Error: invalid character '_' in mnemonic
 
-[1] http://www.linuxdriverproject.org/twiki/bin/view
-[2] http://driverdev.linuxdriverproject.org/mailman/listinfo/devel
-[3] http://wireless.kernel.org/en/users/Drivers/ar5523
-[4] http://wireless.kernel.org/en/users/Drivers/ar9271
+this:
 
-  Luis
+diff -puN arch/x86/lib/msr-reg.S~a arch/x86/lib/msr-reg.S
+--- a/arch/x86/lib/msr-reg.S~a
++++ a/arch/x86/lib/msr-reg.S
+@@ -50,7 +50,7 @@ ENDPROC(native_\op\()_safe_regs)
+ 
+ #else /* X86_32 */
+ 
+-.macro op_safe_regs op:req
++.macro op_safe_regs op
+ ENTRY(native_\op\()_safe_regs)
+        CFI_STARTPROC
+        pushl_cfi %ebx
+
+
+fixed it.
