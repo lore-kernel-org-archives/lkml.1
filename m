@@ -1,93 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZICRHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZICT1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbZICRHh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 13:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755989AbZICRHg
+	id S1756189AbZICT1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZICT1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 13:07:36 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:55009 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752640AbZICRHf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 13:07:35 -0400
-Date: Thu, 3 Sep 2009 14:24:17 -0500 (CDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Eric Dumazet <eric.dumazet@gmail.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-In-Reply-To: <4A9FDA72.8060001@gmail.com>
-Message-ID: <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1>
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>  <alpine.DEB.1.10.0908121820410.3257@gentwo.org>  <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>  <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com> 
- <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net>  <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>  <4A9EEF07.5070800@gmail.com>  <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>  <4A9F1620.2080105@gmail.com>
- <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1>
- <4A9FDA72.8060001@gmail.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 3 Sep 2009 15:27:15 -0400
+Received: from claw.goop.org ([74.207.240.146]:59938 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755179AbZICT1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 15:27:14 -0400
+Message-ID: <4AA01893.6000507@goop.org>
+Date: Thu, 03 Sep 2009 12:27:15 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] x86/i386: make sure stack-protector segment base is cache
+ aligned
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Sep 2009, Eric Dumazet wrote:
+The Intel Optimization Reference Guide says:
 
-> Point is we cannot deal with RCU quietness before disposing the slab cache,
-> (if SLAB_DESTROY_BY_RCU was set on the cache) since this disposing *will*
-> make call_rcu() calls when a full slab is freed/purged.
+	In Intel Atom microarchitecture, the address generation unit
+	assumes that the segment base will be 0 by default. Non-zero
+	segment base will cause load and store operations to experience
+	a delay.
+		- If the segment base isn't aligned to a cache line
+		  boundary, the max throughput of memory operations is
+		  reduced to one [e]very 9 cycles.
+	[...]
+	Assembly/Compiler Coding Rule 15. (H impact, ML generality)
+	For Intel Atom processors, use segments with base set to 0
+	whenever possible; avoid non-zero segment base address that is
+	not aligned to cache line boundary at all cost.
 
-There is no need to do call_rcu calls for frees at that point since
-objects are no longer in use. We could simply disable SLAB_DESTROY_BY_RCU
-for the final clearing of caches.
+We can't avoid having a non-zero base for the stack-protector segment, but
+we can make it cache-aligned.
 
-> And when RCU grace period is elapsed, the callback *will* need access to
-> the cache we want to dismantle. Better to not have kfreed()/poisoned it...
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-But going through the RCU period is pointless since no user of the cache
-remains.
-
-> I believe you mix two RCU uses here.
->
-> 1) The one we all know, is use normal caches (!SLAB_DESTROY_BY_RCU)
-> (or kmalloc()), and use call_rcu(... kfree_something)
->
->    In this case, you are 100% right that the subsystem itself has
->    to call rcu_barrier() (or respect whatever self-synchro) itself,
->    before calling kmem_cache_destroy()
->
-> 2) The SLAB_DESTROY_BY_RCU one.
->
->    Part of cache dismantle needs to call rcu_barrier() itself.
->    Caller doesnt have to use rcu_barrier(). It would be a waste of time,
->    as kmem_cache_destroy() will refill rcu wait queues with its own stuff.
-
-The dismantling does not need RCU since there are no operations on the
-objects in progress. So simply switch DESTROY_BY_RCU off for close.
-
-
----
- mm/slub.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/mm/slub.c
-===================================================================
---- linux-2.6.orig/mm/slub.c	2009-09-03 10:14:51.000000000 -0500
-+++ linux-2.6/mm/slub.c	2009-09-03 10:18:32.000000000 -0500
-@@ -2594,9 +2594,9 @@ static inline int kmem_cache_close(struc
-  */
- void kmem_cache_destroy(struct kmem_cache *s)
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 0bfcf7e..f7d2c8f 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -403,7 +403,17 @@ extern unsigned long kernel_eflags;
+ extern asmlinkage void ignore_sysret(void);
+ #else	/* X86_64 */
+ #ifdef CONFIG_CC_STACKPROTECTOR
+-DECLARE_PER_CPU(unsigned long, stack_canary);
++/*
++ * Make sure stack canary segment base is cached-aligned:
++ *   "For Intel Atom processors, avoid non zero segment base address
++ *    that is not aligned to cache line boundary at all cost."
++ * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
++ */
++struct stack_canary {
++	char __pad[20];		/* canary at %gs:20 */
++	unsigned long canary;
++};
++DECLARE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
+ #endif
+ #endif	/* X86_64 */
+ 
+diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
+index c2d742c..decad97 100644
+--- a/arch/x86/include/asm/stackprotector.h
++++ b/arch/x86/include/asm/stackprotector.h
+@@ -78,14 +78,14 @@ static __always_inline void boot_init_stack_canary(void)
+ #ifdef CONFIG_X86_64
+ 	percpu_write(irq_stack_union.stack_canary, canary);
+ #else
+-	percpu_write(stack_canary, canary);
++	percpu_write(stack_canary.canary, canary);
+ #endif
+ }
+ 
+ static inline void setup_stack_canary_segment(int cpu)
  {
--	if (s->flags & SLAB_DESTROY_BY_RCU)
--		rcu_barrier();
- 	down_write(&slub_lock);
-+	/* Stop deferring frees so that we can immediately free structures */
-+	s->flags &= ~SLAB_DESTROY_BY_RCU;
- 	s->refcount--;
- 	if (!s->refcount) {
- 		list_del(&s->list);
+ #ifdef CONFIG_X86_32
+-	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu) - 20;
++	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu);
+ 	struct desc_struct *gdt_table = get_cpu_gdt_table(cpu);
+ 	struct desc_struct desc;
+ 
+diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
+index 643c59b..5bd119b 100644
+--- a/arch/x86/include/asm/system.h
++++ b/arch/x86/include/asm/system.h
+@@ -31,7 +31,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+ 	"movl %P[task_canary](%[next]), %%ebx\n\t"			\
+ 	"movl %%ebx, "__percpu_arg([stack_canary])"\n\t"
+ #define __switch_canary_oparam						\
+-	, [stack_canary] "=m" (per_cpu_var(stack_canary))
++	, [stack_canary] "=m" (per_cpu_var(stack_canary.canary))
+ #define __switch_canary_iparam						\
+ 	, [task_canary] "i" (offsetof(struct task_struct, stack_canary))
+ #else	/* CC_STACKPROTECTOR */
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index 5ce60a8..e338b5c 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -1043,7 +1043,7 @@ DEFINE_PER_CPU(struct orig_ist, orig_ist);
+ #else	/* CONFIG_X86_64 */
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+-DEFINE_PER_CPU(unsigned long, stack_canary);
++DEFINE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
+ #endif
+ 
+ /* Make sure %fs and %gs are initialized properly in idle threads */
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index cc827ac..7ffec6b 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -439,7 +439,6 @@ is386:	movl $2,%ecx		# set MP
+ 	jne 1f
+ 	movl $per_cpu__gdt_page,%eax
+ 	movl $per_cpu__stack_canary,%ecx
+-	subl $20, %ecx
+ 	movw %cx, 8 * GDT_ENTRY_STACK_CANARY + 2(%eax)
+ 	shrl $16, %ecx
+ 	movb %cl, 8 * GDT_ENTRY_STACK_CANARY + 4(%eax)
+
+
