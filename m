@@ -1,201 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754887AbZICKrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754921AbZICKuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754887AbZICKrN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 06:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754432AbZICKrL
+	id S1754921AbZICKuN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 06:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZICKuM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 06:47:11 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54017 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754205AbZICKrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 06:47:08 -0400
-Date: Thu, 3 Sep 2009 12:47:04 +0200
-From: Jan Kara <jack@suse.cz>
-To: Christoph Hellwig <hch@lst.de>
-Cc: Jan Kara <jack@suse.cz>, linux-fsdevel@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fsync: wait for data writeout completion before
-	calling ->fsync
-Message-ID: <20090903104704.GD5060@duck.novell.com>
-References: <1251899966-7316-1-git-send-email-jack@suse.cz> <20090902221838.GA5311@lst.de>
+	Thu, 3 Sep 2009 06:50:12 -0400
+Received: from smtp-vbr3.xs4all.nl ([194.109.24.23]:4843 "EHLO
+	smtp-vbr3.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754455AbZICKuL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 06:50:11 -0400
+Message-ID: <4A9F9F64.5080305@aimvalley.nl>
+Date: Thu, 03 Sep 2009 12:50:12 +0200
+From: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+User-Agent: Thunderbird 2.0.0.6 (X11/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090902221838.GA5311@lst.de>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: CONFIG_NO_HZ could cause software timeouts
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 03-09-09 00:18:38, Christoph Hellwig wrote:
-> I think we should add this one ontop:
-  Agreed. Added to the series. I'll now push the whole series to linux-next
-via my fs tree.
 
-								Honza
+The problem occurs when e.g. drivers use time_after(jiffes, timeout).
 
-> 
-> -- 
-> Subject: [PATCH] fsync: wait for data writeout completion before calling ->fsync
-> From: Christoph Hellwig <hch@lst.de>
-> 
-> Currenly vfs_fsync(_range) first calls filemap_fdatawrite to write out
-> the data, the calls into ->fsync to write out the metadata and then finally
-> calls filemap_fdatawait to wait for the data I/O to complete.  What sounds
-> like a clever micro-optimization actually is nast trap for many filesystems.
-> 
-> For many modern filesystems i_size or other inode information is only
-> updated on I/O completion and we need to wait for I/O to finish before
-> we can write out the metadata.  For old fashionen filesystems that
-> instanciate blocks during the actual write and also update the metadata
-> at that point it opens up a large window were we could expose uninitialized
-> blocks after a crash.  While a few filesystems that need it already wait
-> for the I/O to finish inside their ->fsync methods it is rather suboptimal
-> as it is done under the i_mutex and also always for the whole file instead
-> of just a part as we could do for O_SYNC handling.
-> 
-> Here is a small audit of all fsync instances in the tree:
-> 
->  - spufs_mfc_fsync:
->  - ps3flash_fsync: 
->  - vol_cdev_fsync:
->  - printer_fsync:
->  - fb_deferred_io_fsync:
->  - bad_file_fsync:
->  - simple_sync_file:
-> 
-> 	don't care - filesystems/drivers do't use the page cache or are
-> 	purely in-memory.
-> 
->  - simple_fsync:
->  - file_fsync:
->  - affs_file_fsync:
->  - fat_file_fsync:
->  - jfs_fsync:
->  - ubifs_fsync:
->  - reiserfs_dir_fsync:
->  - reiserfs_sync_file:
-> 
-> 	never touch pagecache themselves.  We need to wait before if we do
-> 	not want to expose stale data after an allocation.
-> 
->  - afs_fsync:
->  - fuse_fsync_common:
-> 
-> 	do the waiting writeback itself in awkward ways, would benefit from
-> 	proper semantics
-> 
->  - block_fsync:
-> 
-> 	Does a filemap_write_and_wait on the block device inode.  Because we
-> 	now have f_mapping that is the same inode we call it on in vfs_fsync.
-> 	So just removing it and letting the VFS do the work in one go would
-> 	be an improvement.
-> 
->  - btrfs_sync_file:
->  - cifs_fsync:
->  - xfs_file_fsync:
-> 
-> 	need the wait first and currently do it themselves. would benefit from
-> 	doing it outside i_mutex.
-> 
->  - coda_fsync:
->  - ecryptfs_fsync:
->  - exofs_file_fsync:
->  - shm_fsync:
-> 
-> 	only passes the fsync through to the lower layer
-> 
->  - ext3_sync_file:
-> 
-> 	doesn't seem to care, comments are confusing.
-> 
->  - ext4_sync_file:
-> 
-> 	would need the wait to work correctly for delalloc mode with late
-> 	i_size updates.  Otherwise the ext3 comment applies.
-> 
-> 
-> 	currently implemens it's own writeback and wait in an odd way,
-> 	could benefit from doing it properly.
-> 
->  - gfs2_fsync:
-> 
-> 	not needed for journaled data mode, but probably harmless there.
-> 	Currently writes back data asynchronously itself.  Needs some
-> 	major audit.
-> 
->  - hostfs_fsync:
-> 
-> 	just calls fsync/datasync on the host FD.  Without the wait before
-> 	data might not even be inflight yet if we're unlucky.
-> 
->  - hpfs_file_fsync:
->  - ncp_fsync:
-> 
-> 	no-ops.  Dangerous before and after.
-> 
->  - jffs2_fsync:
-> 
-> 	just calls jffs2_flush_wbuf_gc, not sure how this relates to data.
-> 
->  - nfs_fsync_dir:
-> 
-> 	just increments stats, claims all directory operations are synchronous
-> 
->  - nfs_file_fsync:
-> 
-> 	only writes out data???  Looks very odd.
-> 
->  - nilfs_sync_file:
-> 
-> 	looks like it expects all data done, but not sure from the code
-> 
->  - ntfs_dir_fsync:
->  - ntfs_file_fsync:
-> 
-> 	appear to do their own data writeback.  Very convoluted code.
-> 
->  - ocfs2_sync_file:
-> 
-> 	does it's own data writeback, but no wait.  probably needs the wait.
-> 
->  - smb_fsync:
-> 
-> 	according to a comment expects all pages written already, probably needs
-> 	the wait before.
-> 
-> 
-> This patch only changes vfs_fsync_range, removal of the wait in the methods
-> that have it is left to the filesystem maintainers.  Note that most
-> filesystems really do need an audit for their fsync methods given the
-> gems found in this very brief audit.
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> 
-> Index: linux-2.6/fs/sync.c
-> ===================================================================
-> --- linux-2.6.orig/fs/sync.c	2009-09-02 15:03:41.073271287 -0300
-> +++ linux-2.6/fs/sync.c	2009-09-02 15:04:34.401269249 -0300
-> @@ -216,7 +216,7 @@ int vfs_fsync_range(struct file *file, s
->  		goto out;
->  	}
->  
-> -	ret = filemap_fdatawrite_range(mapping, start, end);
-> +	ret = filemap_write_and_wait_range(mapping, start, end);
->  
->  	/*
->  	 * We need to protect against concurrent writers, which could cause
-> @@ -228,9 +228,6 @@ int vfs_fsync_range(struct file *file, s
->  		ret = err;
->  	mutex_unlock(&mapping->host->i_mutex);
->  
-> -	err = filemap_fdatawait_range(mapping, start, end);
-> -	if (!ret)
-> -		ret = err;
->  out:
->  	return ret;
->  }
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+CONFIG_NO_HZ could make jiffies advance by more than 1.
+This is done by: tick_nohz_update_jiffies->tick_do_update_jiffies64->do_timer
+
+If drivers use a timeout value of jiffies+1,
+"time_after(jiffies, timeout)" will be true after 1 interrupt
+(given that it advances jiffies by at least 2).
+
+This is exactly what happens in cfi_cmdset_0002.c:do_write_buffer
+for our case (Powerpc MPC8313, linux-2.6.28, CONFIG_HZ=250, CONFIG_NO_HZ=y).
+
+do_write_buffer does the following:
+  unsigned long uWriteTimeout = ( HZ / 1000 ) + 1;
+  ...
+  timeo = jiffies + uWriteTimeout;
+  ...
+  for (;;) {
+   ...
+   if (time_after(jiffies, timeo) && !chip_ready(map, adr))
+    break;
+   if (chip_ready(map, adr)) {
+    xip_enable(map, chip, adr);
+    goto op_done;
+   }
+   UDELAY(map, chip, adr, 1);
+  }
+  /* software timeout */
+  ret = -EIO;
+opdone:
+  ...
+
+I've seen a few software timeouts after the for-loop
+looped only 13 times (= 13 us delay, i.s.o. the expected 1 ms). Typically
+our NOR flash (S29GL01GP) may need upto ~ 200 us to be ready.
+
+disabling CONFIG_NO_HZ fixes the problem.
+replacing time_after by a for-loop counter to loop max 1000 times
+also fixes the problem.
+
+the latest kernel seems to have the same problem.
+
+do I miss something here or is this a known problem of CONFIG_NO_HZ ?
