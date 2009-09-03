@@ -1,123 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932349AbZICVS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbZICVWD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932349AbZICVS6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbZICVS5
+	id S932341AbZICVWD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:22:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbZICVWC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:18:57 -0400
-Received: from mail.sf-mail.de ([62.27.20.61]:60540 "EHLO mail.sf-mail.de"
+	Thu, 3 Sep 2009 17:22:02 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:61013 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755245AbZICVS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:18:56 -0400
-From: Rolf Eike Beer <eike-kernel@sf-tec.de>
-To: akataria@vmware.com
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V3.
-Date: Thu, 3 Sep 2009 23:18:53 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc6-git; KDE/4.3.1; i686; ; )
-Cc: James Bottomley <James.Bottomley@suse.de>, Matthew Wilcox <matthew@wil.cx>,
-       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, pv-drivers@vmware.com
-References: <1252006675.18725.20.camel@ank32.eng.vmware.com>
-In-Reply-To: <1252006675.18725.20.camel@ank32.eng.vmware.com>
+	id S932278AbZICVWB convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:22:01 -0400
+X-IronPort-AV: E=Sophos;i="4.44,327,1249282800"; 
+   d="scan'208";a="237378707"
+x-mimeole: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1484166.GprT2Q3Gkn";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909032318.54298.eike-kernel@sf-tec.de>
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: VM issue causing high CPU loads
+Date: Thu, 3 Sep 2009 14:21:18 -0700
+Message-ID: <7A24DF798E223B4C9864E8F92E8C93EC03F0AFB3@SACMVEXC1-PRD.hq.netapp.com>
+In-Reply-To: <20090903200550.GB5257@hostway.ca>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: VM issue causing high CPU loads
+Thread-Index: Acos0gQDjP3GE4VFSOOOHDyh16ct+gABkt2Q
+From: "Muntz, Daniel" <Dan.Muntz@netapp.com>
+To: "Simon Kirby" <sim@hostway.ca>,
+       "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Cc: "Yohan" <ytordjman@corp.free.fr>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-nfs@vger.kernel.org>,
+       "Neil Brown" <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       <mikevs@xs4all.net>
+X-OriginalArrivalTime: 03 Sep 2009 21:21:45.0765 (UTC) FILETIME=[8A447550:01CA2CDC]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1484166.GprT2Q3Gkn
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Amen.  I understand that v4 wants to extend across domains, etc., but it
+goes out of its way to prevent the use of uids/gids, which in the vast
+majority of installations would work just fine and wouldn't incur the
+overhead of the mapping/unmapping operations.  There's no reason
+uids/gids couldn't coexist with string names.  If the 4.0 spec had a
+slightly different version of this paragraph:
 
-Alok Kataria wrote:
-> VMware PVSCSI driver - v3.
->=20
-> +static void pvscsi_write_cmd_desc(const struct pvscsi_adapter *adapter,
-> +				  u32 cmd, const void *desc, size_t len)
-> +{
-> +	const u32 *ptr =3D desc;
-> +	unsigned i;
-> +
-> +	len /=3D sizeof(*ptr);
-> +	pvscsi_reg_write(adapter, PVSCSI_REG_OFFSET_COMMAND, cmd);
-> +	for (i =3D 0; i < len; i++)
+   To provide a greater degree of compatibility with previous versions
+   of NFS (i.e., v2 and v3), which identified users and groups by 32-bit
+   unsigned uid's and gid's, owner and group strings that consist of
+   decimal numeric values with no leading zeros can be given a special
+   interpretation by clients and servers which choose to provide such
+   support.  The receiver may treat such a user or group string as
+   representing the same user as would be represented by a v2/v3 uid or
+   gid having the corresponding numeric value.  A server is not
+   obligated to accept such a string, but may return an NFS4ERR_BADOWNER
+   instead.  To avoid this mechanism being used to subvert user and
+   group translation, so that a client might pass all of the owners and
+   groups in numeric form, a server SHOULD return an NFS4ERR_BADOWNER
+   error when there is a valid translation for the user or owner
+   designated in this way.  In that case, the client must use the
+   appropriate name@domain string and not the special form for
+   compatibility.
 
-This would limit len to 16 GiB as "unsigned" (looks like "unsigned int" is=
-=20
-preferred in kernel) is only 32 bit long. Instead i should probably be size=
-_t,=20
-too.
+i.e., take out the "subvert" portion, and just plain allow string
+representations of uids/gids, then at least the conversion would just be
+an atoi and itoa.  Even better, allow the uids/gids to be used directly
+and avoid the atoi/itoa, perhaps with a flag.  Either case is better
+than idmapd and getting EDELAY and an X-second pause in odd places
+because NFS has to go to userspace for a translation.
 
-> +static int __devinit pvscsi_allocate_rings(struct pvscsi_adapter *adapte=
-r)
-> +{
+  -Dan Quixote
 
-=2E..
-
-> +	BUG_ON(adapter->ringStatePA & ~PAGE_MASK);
-> +	BUG_ON(adapter->reqRingPA   & ~PAGE_MASK);
-> +	BUG_ON(adapter->cmpRingPA   & ~PAGE_MASK);
-
-Ok, that took me a moment. How about BUG_ON(!IS_ALIGNED(foo, PAGE_SIZE))?
-
-> +static const char *pvscsi_info(struct Scsi_Host *host)
-> +{
-> +	struct pvscsi_adapter *adapter =3D shost_priv(host);
-> +	static char buf[512];
-> +
-> +	sprintf(buf, "VMware PVSCSI storage adapter rev %d, req/cmp/msg rings: "
-> +		"%u/%u/%u pages, cmd_per_lun=3D%u", adapter->rev,
-> +		adapter->req_pages, adapter->cmp_pages, adapter->msg_pages,
-> +		pvscsi_template.cmd_per_lun);
-
-The buffer looks rather huge here. I'm too lazy to calculate an exact size =
-but=20
-256 should still be more than enough, no?
-
-> +static void pvscsi_shutdown_intr(struct pvscsi_adapter *adapter)
-> +{
-> +	if (adapter->irq) {
-> +		free_irq(adapter->irq, adapter);
-> +		adapter->irq =3D 0;
-> +	}
-> +	if (adapter->use_msi) {
-> +		pci_disable_msi(adapter->dev);
-> +		adapter->use_msi =3D 0;
-> +	}
-> +
-> +	if (adapter->use_msix) {
-> +		pci_disable_msix(adapter->dev);
-> +		adapter->use_msix =3D 0;
-> +	}
-> +}
-
-If MSI and MSI-X are exclusive the last one could be "else if".
-
-Greetings,
-
-Eike
-
---nextPart1484166.GprT2Q3Gkn
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEABECAAYFAkqgMr4ACgkQXKSJPmm5/E5PzgCdFVuR1DnawvWV73/WZQAq/2jN
-LR4An1gdsf98gv1ykenCsHqF8EV5dulH
-=teET
------END PGP SIGNATURE-----
-
---nextPart1484166.GprT2Q3Gkn--
+> -----Original Message-----
+> From: Simon Kirby [mailto:sim@hostway.ca] 
+> Sent: Thursday, September 03, 2009 1:06 PM
+> To: Trond Myklebust
+> Cc: Yohan; Andrew Morton; linux-kernel@vger.kernel.org; 
+> linux-nfs@vger.kernel.org; Neil Brown; J. Bruce Fields; 
+> mikevs@xs4all.net
+> Subject: Re: VM issue causing high CPU loads
+> 
+> On Thu, Sep 03, 2009 at 10:02:06AM -0400, Trond Myklebust wrote:
+> 
+> > OK, so 16 hash buckets are likely to be filled with ~10^6 
+> entries each.
+> > I can see that might be a performance issue...
+> 
+> We have a similar setup with millions of UIDs over NFS 
+> (currently NFSv3).
+> I _wish_ there were a way to use NFSv4 without having to use 
+> name-mapped UIDs and GIDs, since our user and group names 
+> come from MySQL anyway, and are guaranteed to be consistent 
+> across machines.
+> 
+> Why on earth does NFSv4 force the use of names?
+> 
+> I was considering hacking the code to stick IDs in there 
+> anyway, but I haven't looked at the feasibility of this.  I 
+> suspect this would break or complicate other things, but the 
+> current NFSv4 design just seems like an incredible waste for 
+> this case.
+> 
+> Simon-
+> --
+> To unsubscribe from this list: send the line "unsubscribe 
+> linux-nfs" in the body of a message to 
+> majordomo@vger.kernel.org More majordomo info at  
+> http://vger.kernel.org/majordomo-info.html
+> 
