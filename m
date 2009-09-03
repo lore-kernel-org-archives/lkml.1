@@ -1,147 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbZICTxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZICTsM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756239AbZICTxr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbZICTxr
+	id S1756237AbZICTsM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:48:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbZICTsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:53:47 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:47766 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756187AbZICTxq (ORCPT
+	Thu, 3 Sep 2009 15:48:11 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:51253 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755206AbZICTsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:53:46 -0400
-Message-ID: <4AA01D4F.1080707@gmail.com>
-Date: Thu, 03 Sep 2009 21:47:27 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 3 Sep 2009 15:48:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=vFtvH7g/NO67xjI45O4ich7Wh8Q9pO70XQmEP1OLfiu2V/VXQnf92LrkFUhASYw3G1
+         ORlhA/OMblFNKISclS3AFGjI4A2i4DgB2N0RLfHYkabCx2MWFIojls/+7l5huYhIR/qS
+         gaPW6Wk0DScGo5lycZrs68+wpQ7+wrwVTdz/k=
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86/i386: make sure stack-protector segment base is cache
- aligned
-References: <4AA01893.6000507@goop.org>
-In-Reply-To: <4AA01893.6000507@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 21:47:28 +0200 (CEST)
+In-Reply-To: <4A9FD047.9000002@gmail.com>
+References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
+	 <4A9EEF07.5070800@gmail.com>
+	 <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>
+	 <4A9F1620.2080105@gmail.com>
+	 <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com>
+	 <4A9F7283.1090306@gmail.com>
+	 <84144f020909030051u6cf6ae01he25c268f718ff3af@mail.gmail.com>
+	 <alpine.DEB.1.10.0909031246010.27903@V090114053VZO-1>
+	 <84144f020909030705x7909cf07w7ea0d3662a66c5cc@mail.gmail.com>
+	 <4A9FD047.9000002@gmail.com>
+Date: Thu, 3 Sep 2009 22:48:10 +0300
+X-Google-Sender-Auth: 06209338a1409741
+Message-ID: <84144f020909031248s56c16205j7992930c413b1bbe@mail.gmail.com>
+Subject: Re: [PATCH] slub: Fix kmem_cache_destroy() with SLAB_DESTROY_BY_RCU
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com, "stable@kernel.org" <stable@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge a écrit :
-> The Intel Optimization Reference Guide says:
-> 
-> 	In Intel Atom microarchitecture, the address generation unit
-> 	assumes that the segment base will be 0 by default. Non-zero
-> 	segment base will cause load and store operations to experience
-> 	a delay.
-> 		- If the segment base isn't aligned to a cache line
-> 		  boundary, the max throughput of memory operations is
-> 		  reduced to one [e]very 9 cycles.
-> 	[...]
-> 	Assembly/Compiler Coding Rule 15. (H impact, ML generality)
-> 	For Intel Atom processors, use segments with base set to 0
-> 	whenever possible; avoid non-zero segment base address that is
-> 	not aligned to cache line boundary at all cost.
-> 
-> We can't avoid having a non-zero base for the stack-protector segment, but
-> we can make it cache-aligned.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> 
-> diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-> index 0bfcf7e..f7d2c8f 100644
-> --- a/arch/x86/include/asm/processor.h
-> +++ b/arch/x86/include/asm/processor.h
-> @@ -403,7 +403,17 @@ extern unsigned long kernel_eflags;
->  extern asmlinkage void ignore_sysret(void);
->  #else	/* X86_64 */
->  #ifdef CONFIG_CC_STACKPROTECTOR
-> -DECLARE_PER_CPU(unsigned long, stack_canary);
-> +/*
-> + * Make sure stack canary segment base is cached-aligned:
-> + *   "For Intel Atom processors, avoid non zero segment base address
-> + *    that is not aligned to cache line boundary at all cost."
-> + * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
-> + */
-> +struct stack_canary {
-> +	char __pad[20];		/* canary at %gs:20 */
-> +	unsigned long canary;
-> +};
-> +DECLARE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
+On Thu, Sep 3, 2009 at 5:18 PM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
+> Here is the second patch (RCU thing). Stable candidate
+>
+> [PATCH] slub: Fix kmem_cache_destroy() with SLAB_DESTROY_BY_RCU
+>
+> kmem_cache_destroy() should call rcu_barrier() *after* kmem_cache_close()
+> and *before* sysfs_slab_remove() or risk rcu_free_slab()
+> being called after kmem_cache is deleted (kfreed).
+>
+> rmmod nf_conntrack can crash the machine because it has to
+> kmem_cache_destroy() a SLAB_DESTROY_BY_RCU enabled cache.
 
-DECLARE_PER_CPU_SHARED_ALIGNED()
+Do we have a bugzilla URL for this?
 
-Or else, we'll have many holes in percpu section, because of linker encapsulation
+> Reported-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
->  #endif
->  #endif	/* X86_64 */
->  
-> diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
-> index c2d742c..decad97 100644
-> --- a/arch/x86/include/asm/stackprotector.h
-> +++ b/arch/x86/include/asm/stackprotector.h
-> @@ -78,14 +78,14 @@ static __always_inline void boot_init_stack_canary(void)
->  #ifdef CONFIG_X86_64
->  	percpu_write(irq_stack_union.stack_canary, canary);
->  #else
-> -	percpu_write(stack_canary, canary);
-> +	percpu_write(stack_canary.canary, canary);
->  #endif
->  }
->  
->  static inline void setup_stack_canary_segment(int cpu)
->  {
->  #ifdef CONFIG_X86_32
-> -	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu) - 20;
-> +	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu);
->  	struct desc_struct *gdt_table = get_cpu_gdt_table(cpu);
->  	struct desc_struct desc;
->  
-> diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-> index 643c59b..5bd119b 100644
-> --- a/arch/x86/include/asm/system.h
-> +++ b/arch/x86/include/asm/system.h
-> @@ -31,7 +31,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
->  	"movl %P[task_canary](%[next]), %%ebx\n\t"			\
->  	"movl %%ebx, "__percpu_arg([stack_canary])"\n\t"
->  #define __switch_canary_oparam						\
-> -	, [stack_canary] "=m" (per_cpu_var(stack_canary))
-> +	, [stack_canary] "=m" (per_cpu_var(stack_canary.canary))
->  #define __switch_canary_iparam						\
->  	, [task_canary] "i" (offsetof(struct task_struct, stack_canary))
->  #else	/* CC_STACKPROTECTOR */
-> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-> index 5ce60a8..e338b5c 100644
-> --- a/arch/x86/kernel/cpu/common.c
-> +++ b/arch/x86/kernel/cpu/common.c
-> @@ -1043,7 +1043,7 @@ DEFINE_PER_CPU(struct orig_ist, orig_ist);
->  #else	/* CONFIG_X86_64 */
->  
->  #ifdef CONFIG_CC_STACKPROTECTOR
-> -DEFINE_PER_CPU(unsigned long, stack_canary);
-> +DEFINE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
+OK, this is in for-next now and queued for 2.6.31. If you guys want to
+fix this in a different way, lets do that in 2.6.32.
 
-same here, DECLARE_PER_CPU_SHARED_ALIGNED
-
->  #endif
->  
->  /* Make sure %fs and %gs are initialized properly in idle threads */
-> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-> index cc827ac..7ffec6b 100644
-> --- a/arch/x86/kernel/head_32.S
-> +++ b/arch/x86/kernel/head_32.S
-> @@ -439,7 +439,6 @@ is386:	movl $2,%ecx		# set MP
->  	jne 1f
->  	movl $per_cpu__gdt_page,%eax
->  	movl $per_cpu__stack_canary,%ecx
-> -	subl $20, %ecx
->  	movw %cx, 8 * GDT_ENTRY_STACK_CANARY + 2(%eax)
->  	shrl $16, %ecx
->  	movb %cl, 8 * GDT_ENTRY_STACK_CANARY + 4(%eax)
-> 
-> 
-> --
-
+                        Pekka
