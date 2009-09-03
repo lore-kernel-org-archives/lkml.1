@@ -1,89 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZICCYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbZICCh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754093AbZICCYW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 22:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZICCYW
+	id S1754104AbZICCh6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 22:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZICCh5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 22:24:22 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:33232 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753261AbZICCYV convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 22:24:21 -0400
-Date: Thu, 03 Sep 2009 11:24:23 +0900 (JST)
-Message-Id: <20090903.112423.226782505.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: nauman@google.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
- track async bios.
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090902135821.GB5012@redhat.com>
-References: <20090901141142.GA13709@redhat.com>
-	<20090902.185251.193693849.ryov@valinux.co.jp>
-	<20090902135821.GB5012@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 2 Sep 2009 22:37:57 -0400
+Received: from mga01.intel.com ([192.55.52.88]:35232 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753499AbZICCh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 22:37:57 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,322,1249282800"; 
+   d="scan'208";a="723428582"
+Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
+From: Zhang Rui <rui.zhang@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
+In-Reply-To: <200909030216.04896.rjw@sisk.pl>
+References: <1251789947.3483.215.camel@rzhang-dt>
+	 <200909022346.11475.rjw@sisk.pl> <20090902215148.GA3429@elf.ucw.cz>
+	 <200909030216.04896.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 10:35:39 +0800
+Message-Id: <1251945339.3483.260.camel@rzhang-dt>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-
-Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > > > > - Somebody also gave an example where there is a memory hogging process and
-> > > > > >  possibly pushes out some processes to swap. It does not sound fair to
-> > > > > >  charge those proccess for that swap writeout. These processes never
-> > > > > >  requested swap IO.
+On Thu, 2009-09-03 at 08:16 +0800, Rafael J. Wysocki wrote:
+> On Wednesday 02 September 2009, Pavel Machek wrote:
+> > On Wed 2009-09-02 23:46:11, Rafael J. Wysocki wrote:
+> > > On Wednesday 02 September 2009, Pavel Machek wrote:
+> > > > On Wed 2009-09-02 23:12:58, Rafael J. Wysocki wrote:
+> > > > > On Tuesday 01 September 2009, Pavel Machek wrote:
+> > > > > > 
+> > > > > > > > > IMO, 0 and -1 are not errors. they just suggest that the Ambient Light
+> > > > > > > > > illuminance is beyond the device support range, while the device is
+> > > > > > > > > still working normally.
+> > > > > > > > > what about exporting these values (0 and -1) to user space directly?
+> > > > > > > > 
+> > > > > > > > Returning 0 for "below" range and 99999999 for "above" range would be
+> > > > > > > > nice, yes. 
+> > > > > > > 
+> > > > > > > Why not 0 and "all ones" or 0 and -1.
+> > > > > > > 
+> > > > > > > Is there anything wrong with -1 in particular?
+> > > > > > 
+> > > > > > Normal people expect -1 to be less than 123, and output is in ascii. If
+> > > > > > you make it ((unsigned) ~0) I guess that becomes acceptable.
+> > > > > 
+> > > > > Well, "-1" is a perfectly valid alphanumerical representation of an int.
+> > > > > I don't really see the problem with the "-", unless we're talking about some
+> > > > > broken user space, that is.
 > > > > 
-> > > > I think that swap writeouts should be charged to the memory hogging
-> > > > process, because the process consumes more resources and it should get
-> > > > a penalty.
-> > > > 
+> > > > No. But if you see illumination value of -1 lumen, do you really
+> > > > expect a *lot* of light?
 > > > 
-> > > A process requesting memory gets IO penalty? IMHO, swapping is a kernel 
-> > > mechanism and kernel's way of providing extended RAM. If we want to solve
-> > > the issue of memory hogging by a process then right way to solve is to use
-> > > memory controller and not by charging the process for IO activity.
-> > > Instead, proabably a more suitable way is to charge swap activity to root
-> > > group (where by default all the kernel related activity goes).   
+> > > Not really.  I'd rather intrepret it as "the number is not to be trusted",
+> > > which is what it means.
+> > > 
+> > > The problem with "all ones" is that it depends on the size of the underlying
+> > > data type, which is not nice.  Also, if you want that to be a "big number",
+> > > there's no clear rule to tell what the number should actually be.
+> > > 
+> > > Anyway, this really is a matter of definition.  If we document the attribute
+> > > to read as "-1" in specific circumstances, the user space will have to take
+> > > that into account.
 > > 
-> > No. In the current blkio-cgroup, a process which uses a large amount
-> > of memory gets penalty, not a memory requester.
-> > 
+> > Well, I'd prefer to specify -1 as "underflow" and 1000000000 as
+> > "overflow". Any numbers should work, but ... lets make the interface
+> > logical if we can.
 > 
-> At ioband level you just get to see bio and page. How do you decide wheter
-> this bio is being issued by a process which is a memory hog?
+> The interface is already defined, isn't it?  And we're now considering whether
+> or not to pass the values defined by the interface directly to the user space,
+> which I think is the right thing to do, because we have no reason _whatsoever_
+> to change them to anything else.
 > 
-> In fact requester of memory could be anybody. It could be memory hog or a
-> different process. So are you saying that you got a mechanism where you 
-> can detect that a process is memory hog and charge swap activity to it.
-> IOW, if there are two processes A and B and assume A is the memory hog and
-> then B requests for memory which triggers lot of swap IO, then you can
-> charge all that IO to memory hog A?
+I agree.
+For environment illuminance, "-1" is surely an invalid value.
+IMO, users would rather look for what it actually means than interpret
+it to a value lower than 0.
 
-When an annoymou page is allocated, blkio-cgroup sets an ID to the
-page. And then when the page is going to swap out, dm-ioband can know
-who the owner of the page is by retrieving ID from the page.
+thanks,
+rui
 
-In the above case, since the pages of the process A are swapped-out, 
-dm-ioband charges swap IO to the process A.
 
-> Can you please point me to the relevant code in dm-ioband?
-> 
-> IMHO, to keep things simple, all swapping activity should be charged to
-> root group and be considered as kernel activity and user space not be
-> charged for that.
-
-Thanks,
-Ryo Tsuruta
