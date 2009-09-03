@@ -1,69 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbZICOTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbZICO03@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755646AbZICOTz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZICOTz
+	id S1753624AbZICO03 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:26:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZICO02
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:19:55 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:54817 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755464AbZICOTw (ORCPT
+	Thu, 3 Sep 2009 10:26:28 -0400
+Received: from mga01.intel.com ([192.55.52.88]:12890 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751130AbZICO01 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:19:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=vpP3at+i1kjt7jI4ECOrPWel4z/H50f5qznUzYbqsuC2F8pUtWuLbhbH/nQ1NYN9x3
-         SIpkyciaI68bGFKUSsPME9hve3CqzLI0S8vHjdkz/+Gj7V3f5oevJSfvG6gVGLUS6jHE
-         8y+K3rQ5EL0//Aer/GJXEp/E23xEGXFa8w9n0=
+	Thu, 3 Sep 2009 10:26:27 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,325,1249282800"; 
+   d="scan'208";a="490197830"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Paul Mackerras <paulus@samba.org>
+Date: Thu, 3 Sep 2009 15:25:42 +0100
+Subject: RE: [discuss] BTS overflow handling, was: [PATCH] perf_counter: Fix
+ a race on perf_counter_ctx
+Thread-Topic: [discuss] BTS overflow handling, was: [PATCH] perf_counter:
+ Fix a race on perf_counter_ctx
+Thread-Index: AcorC5XR7AsKI602Q0yo8rrw7ow4DQBkbp1g
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC46CFE42@irsmsx504.ger.corp.intel.com>
+References: <20090808120315.GA14086@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
+	 <20090810134608.GA8295@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7725@irsmsx504.ger.corp.intel.com>
+	 <1250600348.7583.280.camel@twins> <1250600385.7583.281.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7775@irsmsx504.ger.corp.intel.com>
+	 <1250602664.7583.293.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB77C8@irsmsx504.ger.corp.intel.com>
+	 <20090818140022.GB13013@elte.hu>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB77FF@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC465EFC5@irsmsx504.ger.corp.intel.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC465F989@irsmsx504.ger.corp.intel.com>
+	 <1251810046.7547.13.camel@twins>
+	 <928CFBE8E7CB0040959E56B4EA41A77EC46CF212@irsmsx504.ger.corp.intel.com>
+ <1251813197.7547.27.camel@twins>
+In-Reply-To: <1251813197.7547.27.camel@twins>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-In-Reply-To: <1251984455.3336.24.camel@johannes.local>
-References: <1251978140-4992-1-git-send-email-amit.kucheria@canonical.com>
-	 <a32f33a40909030454y51905525g15a65cc8364b8eb5@mail.gmail.com>
-	 <20090903122727.GA4465@matterhorn.verdurent.com>
-	 <1251984455.3336.24.camel@johannes.local>
-Date: Thu, 3 Sep 2009 16:19:53 +0200
-Message-ID: <a32f33a40909030719t43ca7fabpe2c9f77f94999b53@mail.gmail.com>
-Subject: Re: [PATCH] rt2x00: Get rid of duplicate usb id from rt2500usb
-From: Ivo Van Doorn <ivdoorn@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Amit Kucheria <amit.kucheria@canonical.com>,
-       List Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 3, 2009 at 3:27 PM, Johannes Berg<johannes@sipsolutions.net> wrote:
-> On Thu, 2009-09-03 at 15:27 +0300, Amit Kucheria wrote:
->> On 09 Sep 03, Ivo Van Doorn wrote:
->> > > USB_DEVICE(0x148f, 0x2573) is served by the rt73usb driver where it is already
->> > > defined. Remove it from rt2500usb.
->> > >
->> > > Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
->> > > Cc: Ivo van Doorn <IvDoorn@gmail.com>
->> >
->> > NACK
->> >
->> > Users have reported that this is a valid rt2500usb ID. You can thank the
->> > manufacturer of the dongle to produce dongles with the same USB ID but
->> > with different chipsets.
->> >
->> > Ivo
->>
->> Interesting. On my laptop, without this patch both the drivers are loaded
->> (lsmod), rt2500usb aborts without allocating a device successfully but I am
->> unable to associate to the AP.
+>-----Original Message-----
+>From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
+>Sent: Tuesday, September 01, 2009 3:53 PM
+>To: Metzger, Markus T
+>Cc: Ingo Molnar; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
+>kernel@vger.kernel.org; Paul Mackerras
+>Subject: RE: [discuss] BTS overflow handling, was: [PATCH] perf_counter: Fix a race on
+>perf_counter_ctx
 >
-> Sounds like the detection logic is somehow messing with the device, or
-> rt2500usb isn't actually freeing the device for rt73usb to bind?
+>On Tue, 2009-09-01 at 14:32 +0100, Metzger, Markus T wrote:
 
-That would be odd, I believe it is working with other devices with
-duplicate ID's
-where first rt2500usb is loaded and then rt73usb. As far as connecting to the
-device, the first thing rt2x00 does is reading the EEPROM and checking the
-chipset. So no registers are being written which could upset a rt73usb device.
 
-Ivo
+>> >This makes me wonder how much time it takes to drain these buffers, it
+>> >is at all possible to optimize that code path into oblivion, or will
+>> >nothing be fast enough?
+>>
+>>
+>> Are you saying that we should rather speed up that code path than try to
+>> defer all the work? There definitely is a lot of redundant work done on
+>> the generic path.
+>>
+>> I did a few experiments where I would drain only parts of the buffer.
+>> I could not drain too much before the system would hang.
+>> Besides, that does not sound too robust to me. Would it sill work on
+>> a slower system? Or on a faster one? Or on a fully loaded one?
+>
+>Base cpu speed is what counts, load is not interesting.
+>
+>Also it seems a normalizing property, the slower the cpu the less
+>branches it can process per time unit, so less data to process.
+>
+>But yes, I was suggesting to optimize this, since the current way of
+>calling perf_counter_output() multiple times is massively bloated.
+
+
+This seems to do the trick - at least on my box.
+
+I prepare the header, then do a single perf_output_begin()/perf_output_end()
+pair, and between those two, I drain the entire 2048 records BTS buffer -
+pretty much the same way as perf_counter_output() does.
+
+We could optimize this further by providing specialized draining functions,
+one for each combination of PERF_SAMPLE_ bits, but it seems to be fast
+enough the way it is.
+
+Holding the output lock that long does not seem to be a problem.
+I can do perf record -a -o /dev/null -e branches -c 1 and I don't get a
+hrtimer warning in dmesg.
+
+When I do a perf record -e branches -c 1 true in parallel, I do not get
+any trace, though. And perf does not report an error, either.
+
+
+I copied some of the generic sampling code; I'll try to restructure it
+a bit so I can call a generic function to do the actual sampling - provided
+this is still fast enough.
+
+How would we make sure it works on other boxes, as well?
+Is there a way for me to detect that I'm not handling the interrupt fast enough?
+
+
+I found another "kernel hangs" bug that is reproducible with 'normal' profiling:
+
+when I do sudo perf record -e instructions -c 1000000 -a -o /dev/null
+then unplug and replug one cpu
+then kill the perf record job
+the kernel hangs
+
+
+thanks and regards,
+markus.
+
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
