@@ -1,93 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932400AbZICWDD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932393AbZICWGh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932400AbZICWDD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 18:03:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932386AbZICWDB
+	id S932393AbZICWGh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:06:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932321AbZICWGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 18:03:01 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:42685 "EHLO e2.ny.us.ibm.com"
+	Thu, 3 Sep 2009 18:06:36 -0400
+Received: from claw.goop.org ([74.207.240.146]:36033 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932382AbZICWC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 18:02:58 -0400
-Date: Thu, 3 Sep 2009 15:03:00 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-Message-ID: <20090903220300.GN6761@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1> <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <20090903174435.GF6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909031736340.24199@V090114053VZO-1>
+	id S932302AbZICWGf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 18:06:35 -0400
+Message-ID: <4AA03DE8.40706@goop.org>
+Date: Thu, 03 Sep 2009 15:06:32 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0909031736340.24199@V090114053VZO-1>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Bastian Blank <waldi@debian.org>, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, 544145@bugs.debian.org,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: 32bit binaries on x86_64/Xen segfaults in syscall-vdso
+References: <20090830181637.GA7155@wavehammer.waldi.eu.org> <4AA02C57.30106@goop.org> <20090903220252.GA19309@wavehammer.waldi.eu.org>
+In-Reply-To: <20090903220252.GA19309@wavehammer.waldi.eu.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 05:43:12PM -0500, Christoph Lameter wrote:
-> On Thu, 3 Sep 2009, Paul E. McKenney wrote:
-> 
-> > 2.	CPU 0 discovers that the slab cache can now be destroyed.
-> >
-> > 	It determines that there are no users, and has guaranteed
-> > 	that there will be no future users.  So it knows that it
-> > 	can safely do kmem_cache_destroy().
-> >
-> > 3.	In absence of rcu_barrier(), kmem_cache_destroy() would
-> > 	immediately tear down the slab data structures.
-> 
-> Of course. This has been discussed before.
-> 
-> You need to ensure that no objects are in use before destroying a slab. In
-> case of DESTROY_BY_RCU you must ensure that there are no potential
-> readers. So use a suitable rcu barrier or something else like a
-> synchronize_rcu...
+On 09/03/09 15:02, Bastian Blank wrote:
+> AFAIK only AMD support the syscall instruction, so yes it is an AMD
+> machine. And yes, disabling the only thing that make the glibc call this
+> instruction works around it.
+>   
 
-If by "you must ensure" you mean "kmem_cache_destroy must ensure", then
-we are in complete agreement.  Otherwise, not a chance.
+The bug actually appears to be in xen_sysret32, ie the crash happens on
+the way out of the kernel.
 
-> > > But going through the RCU period is pointless since no user of the cache
-> > > remains.
-> >
-> > Which is irrelevant.  The outstanding RCU callback was posted by the
-> > slab cache itself, -not- by the user of the slab cache.
-> 
-> There will be no rcu callbacks generated at kmem_cache_destroy with the
-> patch I posted.
-
-That is true.  However, there well might be RCU callbacks generated by
-kmem_cache_free() that have not yet been invoked.  Since kmem_cache_free()
-generated them, it is ridiculous to insist that the user account for them.
-That responsibility must instead fall on kmem_cache_destroy().
-
-> > > The dismantling does not need RCU since there are no operations on the
-> > > objects in progress. So simply switch DESTROY_BY_RCU off for close.
-> >
-> > Unless I am missing something, this patch re-introduces the bug that
-> > the rcu_barrier() was added to prevent.  So, in absence of a better
-> > explanation of what I am missing:
-> 
-> The "fix" was ill advised. Slab users must ensure that no objects are in
-> use before destroying a slab. Only the slab users know how the objects
-> are being used. The slab allocator itself cannot know how to ensure that
-> there are no pending references. Putting a rcu_barrier in there creates an
-> inconsistency in the operation of kmem_cache_destroy() and an expectation
-> of functionality that the function cannot provide.
-
-If by "must ensure that no objects are in use", you mean "must have
-no further references to them", then we are in agreement.  And in my
-scenario above, it is not the -user- who later references the memory,
-but rather the slab code itself.
-
-Put the rcu_barrier() in kmem_cache_free().  Please.
-
-							Thanx, Paul
+    J
