@@ -1,96 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756423AbZICVZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756501AbZICVbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756423AbZICVZq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756375AbZICVZp
+	id S1756501AbZICVbp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756493AbZICVbp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:25:45 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:10427 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756341AbZICVZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:25:44 -0400
-X-IronPort-AV: E=Sophos;i="4.44,327,1249272000"; 
-   d="scan'208";a="5914870"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: asm-generic update candidates?
-Date: Thu, 3 Sep 2009 17:29:52 -0400
-User-Agent: KMail/1.9.5
-CC: Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+	Thu, 3 Sep 2009 17:31:45 -0400
+Received: from claw.goop.org ([74.207.240.146]:36426 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756481AbZICVbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:31:44 -0400
+Message-ID: <4AA035C0.9070202@goop.org>
+Date: Thu, 03 Sep 2009 14:31:44 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+To: Eric Dumazet <eric.dumazet@gmail.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86/i386: make sure stack-protector segment base is cache
+ aligned
+References: <4AA01893.6000507@goop.org> <4AA01D4F.1080707@gmail.com> <4AA029F8.2070002@goop.org> <4AA03016.8000904@gmail.com>
+In-Reply-To: <4AA03016.8000904@gmail.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200909031729.52538.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 03 Sep 2009 21:25:46.0818 (UTC) FILETIME=[19F23A20:01CA2CDD]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd:
+On 09/03/09 14:07, Eric Dumazet wrote:
+> I was referring to .data.percpu alignement requirements, not to false sharing.
+>   
 
-I was reviewing some files in ./arch/blackfin/include for missing copyrights, 
-and while tracking things down I noticed there were still some likely 
-candidates for inclusion in asm-generic...
+Yes, I know.  But the intent of DECLARE_PER_CPU_SHARED_ALIGNED is to
+avoid false sharing, and so it does no alignment when CONFIG_SMP isn't
+enabled.  We need alignment regardless.
 
-All seem to be the same file:
+> When we put a object with an align(64) requirement into a section, linker
+> has to put this 2**6 alignment in resulting section.
+>
+> When several .o are linked together, linker has to take the biggest alignement,
+> and has to put holes.
+>
+> Check .data.percpu size in vmlinux before and after your patch, to make sure
+> it doesnt grow too much :)
+>
+> therefore, ____cacheline_aligned objects should be placed in
+> .data.percpu.shared_aligned
+>   
 
-md5sum:
-5b6b31d728ed2ed0df73c56676fdc68f  blackfin/include/asm/fb.h
-5b6b31d728ed2ed0df73c56676fdc68f  cris/include/asm/fb.h
-5b6b31d728ed2ed0df73c56676fdc68f  frv/include/asm/fb.h
-5b6b31d728ed2ed0df73c56676fdc68f  h8300/include/asm/fb.h
-5b6b31d728ed2ed0df73c56676fdc68f  s390/include/asm/fb.h
-5b6b31d728ed2ed0df73c56676fdc68f  xtensa/include/asm/fb.h
+That section doesn't exist without SMP.  (Well,
+PER_CPU_SHARED_ALIGNED_SECTION isn't defined.)
 
-e31d052cbba4f417ba2158a41b0d8709  arm/include/asm/fb.h
-e31d052cbba4f417ba2158a41b0d8709  m32r/include/asm/fb.h
-e31d052cbba4f417ba2158a41b0d8709  sh/include/asm/fb.h
+Anyway, this should sort it out.
 
-Mostly the same:
- mn10300/include/asm/shmparam.h
- frv/include/asm/shmparam.h
- m68k/include/asm/shmparam.h
- h8300/include/asm/shmparam.h
- alpha/include/asm/shmparam.h
- x86/include/asm/shmparam.h
- m32r/include/asm/shmparam.h
- avr32/include/asm/shmparam.h
- powerpc/include/asm/shmparam.h
- blackfin/include/asm/shmparam.h
+    J
 
+>From 69022dd952e65608afe33372e902b41cb94ff126 Mon Sep 17 00:00:00 2001
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Date: Thu, 3 Sep 2009 14:17:27 -0700
+Subject: [PATCH] x86/32: put aligned stack-canary in percpu shared_aligned section
 
-All the same:
-frv/include/asm/ucontext.h
-h8300/include/asm/ucontext.h
-avr32/include/asm/ucontext.h
-m32r/include/asm/ucontext.h
-cris/include/asm/ucontext.h
-alpha/include/asm/ucontext.h
-mips/include/asm/ucontext.h
-microblaze/include/asm/ucontext.h
-mn10300/include/asm/ucontext.h
-blackfin/include/asm/ucontext.h
+Pack aligned things together into a special section to minimize padding
+holes.
 
-There seems to be lots of similarities in
- */include/asm/types.h
- */include/asm/kmap_types.h
- */include/asm/termios.h
- */include/asm/socket.h
- */include/asm/param.h
- */include/asm/signal.h (but not all)
- */include/asm/posix_types.h
- */include/asm/termbits.h
- */include/asm/segment.h
- */include/asm/auxvec.h
- */include/asm/shmbuf.h
- */include/asm/spinlock_types.h
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>
 
-Do you keep a list somewhere?
-
-Thanks
-
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index e597ecc..ac7e796 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -413,7 +413,7 @@ struct stack_canary {
+ 	char __pad[20];		/* canary at %gs:20 */
+ 	unsigned long canary;
+ };
+-DECLARE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
++DECLARE_PER_CPU_ALIGNED(struct stack_canary, stack_canary);
+ #endif
+ #endif	/* X86_64 */
+ 
+diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+index e338b5c..1e8181c 100644
+--- a/arch/x86/kernel/cpu/common.c
++++ b/arch/x86/kernel/cpu/common.c
+@@ -1043,7 +1043,7 @@ DEFINE_PER_CPU(struct orig_ist, orig_ist);
+ #else	/* CONFIG_X86_64 */
+ 
+ #ifdef CONFIG_CC_STACKPROTECTOR
+-DEFINE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
++DEFINE_PER_CPU_ALIGNED(struct stack_canary, stack_canary);
+ #endif
+ 
+ /* Make sure %fs and %gs are initialized properly in idle threads */
+diff --git a/include/asm-generic/percpu.h b/include/asm-generic/percpu.h
+index aa00800..90079c3 100644
+--- a/include/asm-generic/percpu.h
++++ b/include/asm-generic/percpu.h
+@@ -81,14 +81,17 @@ extern void setup_per_cpu_areas(void);
+ 
+ #ifdef MODULE
+ #define PER_CPU_SHARED_ALIGNED_SECTION ""
++#define PER_CPU_ALIGNED_SECTION ""
+ #else
+ #define PER_CPU_SHARED_ALIGNED_SECTION ".shared_aligned"
++#define PER_CPU_ALIGNED_SECTION ".shared_aligned"
+ #endif
+ #define PER_CPU_FIRST_SECTION ".first"
+ 
+ #else
+ 
+ #define PER_CPU_SHARED_ALIGNED_SECTION ""
++#define PER_CPU_ALIGNED_SECTION ".shared_aligned"
+ #define PER_CPU_FIRST_SECTION ""
+ 
+ #endif
+diff --git a/include/linux/percpu-defs.h b/include/linux/percpu-defs.h
+index 68438e1..3058cf9 100644
+--- a/include/linux/percpu-defs.h
++++ b/include/linux/percpu-defs.h
+@@ -66,6 +66,14 @@
+ 	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_SHARED_ALIGNED_SECTION) \
+ 	____cacheline_aligned_in_smp
+ 
++#define DECLARE_PER_CPU_ALIGNED(type, name)				\
++	DECLARE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION)	\
++	____cacheline_aligned
++
++#define DEFINE_PER_CPU_ALIGNED(type, name)				\
++	DEFINE_PER_CPU_SECTION(type, name, PER_CPU_ALIGNED_SECTION)	\
++	____cacheline_aligned
++
+ /*
+  * Declaration/definition used for per-CPU variables that must be page aligned.
+  */
 
 
