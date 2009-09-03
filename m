@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932255AbZICUl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbZICUnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932255AbZICUl2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932242AbZICUl1
+	id S932260AbZICUnT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 16:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZICUnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:41:27 -0400
-Received: from claw.goop.org ([74.207.240.146]:37651 "EHLO claw.goop.org"
+	Thu, 3 Sep 2009 16:43:18 -0400
+Received: from mail.atheros.com ([12.36.123.2]:28389 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932241AbZICUl1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:41:27 -0400
-Message-ID: <4AA029F8.2070002@goop.org>
-Date: Thu, 03 Sep 2009 13:41:28 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S932213AbZICUnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 16:43:17 -0400
+Date: Thu, 3 Sep 2009 13:43:19 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       Catalin Marinas <catalin.marinas@arm.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: [PATCH] cfg80211: clear cfg80211_inform_bss() from kmemleak
+ reports
+Message-ID: <20090903204319.GC3701@mosca>
+References: <1251958266-10692-1-git-send-email-lrodriguez@atheros.com>
+ <1251962791.3336.3.camel@johannes.local>
+ <43e72e890909031113r6010519br3b81d15cc331ba85@mail.gmail.com>
+ <1252001837.9336.2.camel@johannes.local>
 MIME-Version: 1.0
-To: Eric Dumazet <eric.dumazet@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86/i386: make sure stack-protector segment base is cache
- aligned
-References: <4AA01893.6000507@goop.org> <4AA01D4F.1080707@gmail.com>
-In-Reply-To: <4AA01D4F.1080707@gmail.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1252001837.9336.2.camel@johannes.local>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/09 12:47, Eric Dumazet wrote:
-> Jeremy Fitzhardinge a écrit :
->   
->> The Intel Optimization Reference Guide says:
->>
->> 	In Intel Atom microarchitecture, the address generation unit
->> 	assumes that the segment base will be 0 by default. Non-zero
->> 	segment base will cause load and store operations to experience
->> 	a delay.
->> 		- If the segment base isn't aligned to a cache line
->> 		  boundary, the max throughput of memory operations is
->> 		  reduced to one [e]very 9 cycles.
->> 	[...]
->> 	Assembly/Compiler Coding Rule 15. (H impact, ML generality)
->> 	For Intel Atom processors, use segments with base set to 0
->> 	whenever possible; avoid non-zero segment base address that is
->> 	not aligned to cache line boundary at all cost.
->>
->> We can't avoid having a non-zero base for the stack-protector segment, but
->> we can make it cache-aligned.
->>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->>
->> diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
->> index 0bfcf7e..f7d2c8f 100644
->> --- a/arch/x86/include/asm/processor.h
->> +++ b/arch/x86/include/asm/processor.h
->> @@ -403,7 +403,17 @@ extern unsigned long kernel_eflags;
->>  extern asmlinkage void ignore_sysret(void);
->>  #else	/* X86_64 */
->>  #ifdef CONFIG_CC_STACKPROTECTOR
->> -DECLARE_PER_CPU(unsigned long, stack_canary);
->> +/*
->> + * Make sure stack canary segment base is cached-aligned:
->> + *   "For Intel Atom processors, avoid non zero segment base address
->> + *    that is not aligned to cache line boundary at all cost."
->> + * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
->> + */
->> +struct stack_canary {
->> +	char __pad[20];		/* canary at %gs:20 */
->> +	unsigned long canary;
->> +};
->> +DECLARE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
->>     
-> DECLARE_PER_CPU_SHARED_ALIGNED()
->
-> Or else, we'll have many holes in percpu section, because of linker encapsulation
->   
+On Thu, Sep 03, 2009 at 11:17:17AM -0700, Johannes Berg wrote:
+> On Thu, 2009-09-03 at 11:13 -0700, Luis R. Rodriguez wrote:
+> 
+> > What I meant is it gobbles it up and spits another thing out. When it
+> > gobbles it up the routine then uses kref_put().
+> > 
+> > > Why can it not track this?
+> > 
+> > It probably can, just not sure if it follows kref_put(), I was under
+> > the impression here it doesn't and because of it we were getting false
+> > positives. Catalin, can you confirm?
+> 
+> Ah I'd think that if it can't track it then that's because we use a
+> pointer to the middle of the struct to keep track of it much of the
+> time.
 
-That's only cache aligned when SMP is enabled, to avoid false cacheline
-sharing.  In this case we need it unconditionally cache-aligned.
+So you agree with the patch but not the commit log entry?
 
-    J
+  Luis
