@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753103AbZICNbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753347AbZICNeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753103AbZICNbd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZICNbc
+	id S1753347AbZICNeb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 09:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752663AbZICNeb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:31:32 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:56674 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751950AbZICNbb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:31:31 -0400
-Date: Thu, 3 Sep 2009 23:31:26 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Moore <paul.moore@hp.com>
-Cc: David Miller <davem@davemloft.net>, jmorris@namei.org,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       mst@redhat.com
-Subject: Re: linux-next: security-testing/net tree build failure
-Message-Id: <20090903233126.d62918b1.sfr@canb.auug.org.au>
-In-Reply-To: <200909030910.20884.paul.moore@hp.com>
-References: <20090903161432.44af630d.sfr@canb.auug.org.au>
-	<20090902.231607.200932036.davem@davemloft.net>
-	<200909030910.20884.paul.moore@hp.com>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Thu, 3 Sep 2009 09:34:31 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:54056 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752194AbZICNea (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 09:34:30 -0400
+Subject: Re: Exporting kmemleak.h to userspace
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1251983939.22485.18.camel@pc1117.cambridge.arm.com>
+References: <43e72e890909021729q7c40f907v7a81eaf5c8b73a61@mail.gmail.com>
+	 <84144f020909022323na828156v4eb9a8497cadaef8@mail.gmail.com>
+	 <1251983939.22485.18.camel@pc1117.cambridge.arm.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-lgssFZmV0Cq1a+PC1EVM"
+Date: Thu, 03 Sep 2009 15:34:05 +0200
+Message-Id: <1251984845.3336.25.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__3_Sep_2009_23_31_26_+1000_CMPrUVLmG0wid_9Q"
+X-Mailer: Evolution 2.27.91 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__3_Sep_2009_23_31_26_+1000_CMPrUVLmG0wid_9Q
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
+
+--=-lgssFZmV0Cq1a+PC1EVM
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 3 Sep 2009 09:10:20 -0400 Paul Moore <paul.moore@hp.com> wrote:
->
-> On Thursday 03 September 2009 02:16:07 am David Miller wrote:
-> > From: Stephen Rothwell <sfr@canb.auug.org.au>
-> > Date: Thu, 3 Sep 2009 16:14:32 +1000
-> >
-> > > I applied the following merge fix patch (which I can carry as necessa=
-ry):
-> >
-> > Looks good from here, thanks Stephen.
+On Thu, 2009-09-03 at 14:18 +0100, Catalin Marinas wrote:
+> On Thu, 2009-09-03 at 09:23 +0300, Pekka Enberg wrote:
+> > On Thu, Sep 3, 2009 at 3:29 AM, Luis R. Rodriguez<mcgrof@gmail.com> wro=
+te:
+> > > I was reviewing kmemleak code and noticed kmemleak.h went exported to
+> > > userspace under include/linux/kmemleak.h. Do we expect userspace to
+> > > use this stuff somehow? All relevant kmemleak structs are kept
+> > > private, I'm curious what userspace apps would use this.
+> >=20
+> > AFAICT, nobody. Catalin, why is the header exported?
 >=20
-> Looks good over here too, thanks.
+> I haven't done anything specifically to export it. It probably gets
+> included via other files. Is adding #ifdef __KERNEL__ enough to avoid
+> this problem?
 
-Thanks for the confirmations.
+It should be exported only if it's listed in Kbuild, which it isn't.
+Luis?
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+johannes
 
---Signature=_Thu__3_Sep_2009_23_31_26_+1000_CMPrUVLmG0wid_9Q
-Content-Type: application/pgp-signature
+
+--=-lgssFZmV0Cq1a+PC1EVM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkqfxS4ACgkQjjKRsyhoI8xBFgCbBI3kxa5GuNxUsR3oebwl5Bk5
-BdIAoIxe6a1lth0Pc6XW2pYqUzBD3C8o
-=0QYW
+iQIcBAABAgAGBQJKn8XJAAoJEODzc/N7+QmaeDoQAJJsOs0DqCPzcmkHEHm2MfIf
+dj+4ZU4Cgkt1NC0NRnz0ql+p+K/JHKfYZC2243tkDqNomPoOn7uM69tKRmNrAdvd
+7D5RTDnsc1MWwtPGh72mB0WRuyURJ/9w7uRJ7AqiuisHuJYGxeD9mG/uYrMKq020
+63CM3O4vay51PbcHNJ0lg5JoTipEfQoy+t9qcerfYOqySCIA0WWXgzJk9L07GVkj
+diI9ImWUVml/X0LUXQzn5W0SxTvzvrbT2p2lDS7pHq7X8CD4lOfZTU/L3GjHsAIJ
+ni5RDyz+f3++FY4gd4qcdJer9Ld5k2XtQB1z8igwLYJfrysioipHfiTYeKmqPKFm
+SBTdbDFpHWwaUBGdSWEsBgspCitc9dzHA5kIAz4XY14UzAAX1wKxv2gTMHNu6K9j
+uFTcHy+l60/cLb/8K5OIOYw4c7wKXSbv6g0OdhsOjIoFjcV/IQabKjYWdYo3rZhw
+e224SpEG30VrXTFcKlhjJJCiB6gDU+VyBo7d68pcPj0IeLDAny2tXvgw+uSuCTDR
+xrnz0J+40OYf8XPzL5R1GkLSMUT3QnpHJ75Tw3IS2/Gc9Z3vOeux6CRQ0EOpaXb7
+6t6EZh64IG5aLTEQe2A/Lb120EMeFsoD2JowlbsJd06q2QoC/fDIQYIQHS1eVEA6
+BWLXdJLoVFWrrwD93CW2
+=O/Ro
 -----END PGP SIGNATURE-----
 
---Signature=_Thu__3_Sep_2009_23_31_26_+1000_CMPrUVLmG0wid_9Q--
+--=-lgssFZmV0Cq1a+PC1EVM--
+
