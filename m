@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZICRTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZICRZP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbZICRTU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 13:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZICRTT
+	id S1753450AbZICRZP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 13:25:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751308AbZICRZO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 13:19:19 -0400
-Received: from ausxipps301.us.dell.com ([143.166.148.223]:29187 "EHLO
-	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750844AbZICRTT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 13:19:19 -0400
-Message-ID: <4A9FFAC4.1060808@dell.com>
-Date: Thu, 03 Sep 2009 12:20:04 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 3 Sep 2009 13:25:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39516 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751178AbZICRZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 13:25:13 -0400
+Date: Thu, 3 Sep 2009 19:20:52 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: akpm@linux-foundation.org, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/1] sys_setrlimit: make sure ->rlim_max never grows
+Message-ID: <20090903172052.GA27161@redhat.com>
+References: <1251884703-14523-1-git-send-email-jirislaby@gmail.com> <1251884703-14523-2-git-send-email-jirislaby@gmail.com> <20090902135024.GA6452@redhat.com> <4A9EBCF8.1020609@gmail.com> <20090902215101.GA4767@redhat.com> <4A9FC8DA.4090001@gmail.com>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Dell-laptop is not working without wireless
-References: <20090818060340.E1C7A526EA5@mailhub.coreip.homeip.net> <20090903153215.E51F8526EA5@mailhub.coreip.homeip.net> <4A9FF1FB.5090507@dell.com> <20090903174839.948A4526EA5@mailhub.coreip.homeip.net>
-In-Reply-To: <20090903174839.948A4526EA5@mailhub.coreip.homeip.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigBF60709AA77D5EA782B4CB80"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9FC8DA.4090001@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigBF60709AA77D5EA782B4CB80
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
-
-Hi Dmitry:
-
-Dmitry Torokhov wrote:
-> On Thursday 03 September 2009 09:42:35 am Mario Limonciello wrote:
->  =20
+On 09/03, Jiri Slaby wrote:
 >
-> Hmm, what is the BIOS version in your box? Also, mine used to have
-> broadcom-based wifi and I replaced it with iwl3945, would that make
-> any difference?
-I'm on BIOS A06, but I wouldn't /expect/ any of the stable (A**) BIOS
-releases to change any behaviors like this.
+> On 09/02/2009 11:51 PM, Oleg Nesterov wrote:
+> > On 09/02, Jiri Slaby wrote:
+> >> I can't think of anything else than doing all the checks and updates
+> >> under alloc_lock, introducing coarse grained static mutex in setrlimit
+> >> to protect it,
+> >
+> > Oh, please don't ;)
+> >
+> > Or I missed your point?
+> >
+> > But if you mean this series, then yes, I agree.
+>
+> Yes, I meant those. But I don't know what do you agree with :).
 
-What card the machine shipped with won't have a bearing on the behaviors
-with the current card.  There aren't any factory processes that change
-the BIOS based on the card, just processes that would add newer firmware
-directly to cards that support it.
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
+Not sure what I agree with, but I am glad we seem to agree with each other ;)
 
+> > We should try to do something
+> > to ensure that at least rlim_max can be always lowered when admin writes to
+> > /proc/pid/limits.
+>
+> Yes, that's what I asked about when I wrote the three options which I
+> was able to think of above. So any other ideas about how to elegantly
+> protect against sys_setrlimit vs. admin+/proc/*/limits race?
 
---------------enigBF60709AA77D5EA782B4CB80
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Perhaps we should start these change with this patch (see the next email) ?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Perhaps, before your changes, we should "fix" sys_setrlimit() first ?
+Well, the patch (the next email) is not tested... What do you think?
 
-iEYEARECAAYFAkqf+sUACgkQ2CrZjkA73YvjJQCdED77s0DvZOpCUsa5lPx81MIT
-agMAn15qJS0RMQFDn8ByZ6CvTfUny5SU
-=llt0
------END PGP SIGNATURE-----
+Oleg.
 
---------------enigBF60709AA77D5EA782B4CB80--
