@@ -1,159 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZICVBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932317AbZICVIp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932294AbZICVBv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbZICVBu
+	id S932317AbZICVIp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:08:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932299AbZICVIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:01:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47598 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932252AbZICVBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:01:49 -0400
-Date: Thu, 3 Sep 2009 23:01:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jason Baron <jbaron@redhat.com>
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
-       roland@redhat.com, rth@redhat.com
-Subject: Re: [PATCH 0/4] RFC: jump label - (tracepoint optimizations)
-Message-ID: <20090903210139.GA25581@elte.hu>
-References: <cover.1252007851.git.jbaron@redhat.com>
+	Thu, 3 Sep 2009 17:08:45 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:48785 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932262AbZICVIo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:08:44 -0400
+Message-ID: <4AA03016.8000904@gmail.com>
+Date: Thu, 03 Sep 2009 23:07:34 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <cover.1252007851.git.jbaron@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86/i386: make sure stack-protector segment base is cache
+ aligned
+References: <4AA01893.6000507@goop.org> <4AA01D4F.1080707@gmail.com> <4AA029F8.2070002@goop.org>
+In-Reply-To: <4AA029F8.2070002@goop.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 23:07:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge a écrit :
+> On 09/03/09 12:47, Eric Dumazet wrote:
+>> Jeremy Fitzhardinge a écrit :
+>>   
+>>> The Intel Optimization Reference Guide says:
+>>>
+>>> 	In Intel Atom microarchitecture, the address generation unit
+>>> 	assumes that the segment base will be 0 by default. Non-zero
+>>> 	segment base will cause load and store operations to experience
+>>> 	a delay.
+>>> 		- If the segment base isn't aligned to a cache line
+>>> 		  boundary, the max throughput of memory operations is
+>>> 		  reduced to one [e]very 9 cycles.
+>>> 	[...]
+>>> 	Assembly/Compiler Coding Rule 15. (H impact, ML generality)
+>>> 	For Intel Atom processors, use segments with base set to 0
+>>> 	whenever possible; avoid non-zero segment base address that is
+>>> 	not aligned to cache line boundary at all cost.
+>>>
+>>> We can't avoid having a non-zero base for the stack-protector segment, but
+>>> we can make it cache-aligned.
+>>>
+>>> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>>>
+>>> diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+>>> index 0bfcf7e..f7d2c8f 100644
+>>> --- a/arch/x86/include/asm/processor.h
+>>> +++ b/arch/x86/include/asm/processor.h
+>>> @@ -403,7 +403,17 @@ extern unsigned long kernel_eflags;
+>>>  extern asmlinkage void ignore_sysret(void);
+>>>  #else	/* X86_64 */
+>>>  #ifdef CONFIG_CC_STACKPROTECTOR
+>>> -DECLARE_PER_CPU(unsigned long, stack_canary);
+>>> +/*
+>>> + * Make sure stack canary segment base is cached-aligned:
+>>> + *   "For Intel Atom processors, avoid non zero segment base address
+>>> + *    that is not aligned to cache line boundary at all cost."
+>>> + * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
+>>> + */
+>>> +struct stack_canary {
+>>> +	char __pad[20];		/* canary at %gs:20 */
+>>> +	unsigned long canary;
+>>> +};
+>>> +DECLARE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
+>>>     
+>> DECLARE_PER_CPU_SHARED_ALIGNED()
+>>
+>> Or else, we'll have many holes in percpu section, because of linker encapsulation
+>>   
+> 
+> That's only cache aligned when SMP is enabled, to avoid false cacheline
+> sharing.  In this case we need it unconditionally cache-aligned.
 
-* Jason Baron <jbaron@redhat.com> wrote:
+I was referring to .data.percpu alignement requirements, not to false sharing.
 
-> hi,
-> 
-> Problem:
-> 
-> Currenly, tracepoints are implemented using a conditional. The 
-> conditional check requires checking a global variable for each 
-> tracepoint. Although, the overhead of this check is small, it 
-> increases under memory pressure. As we increase the number of 
-> tracepoints in the kernel this may become more of an issue. In 
-> addition, tracepoints are often dormant (disabled), and provide no 
-> direct kernel functionality. Thus, it is highly desirable to 
-> reduce their impact as much as possible. Mathieu Desnoyers has 
-> already suggested a number of requirements for a solution to this 
-> issue.
-> 
-> Solution:
-> 
-> In discussing this problem with Roland McGrath and Richard 
-> Henderson, we came up with a new 'asm goto' statement that allows 
-> branching to a label. Thus, this patch set introdues a 
-> 'STATIC_JUMP_IF()' macro as follows:
-> 
-> #ifdef HAVE_STATIC_JUMP
-> 
-> #define STATIC_JUMP_IF(tag, label, cond)                               \
->        asm goto ("1:"   /* 5-byte insn */                              \
->           P6_NOP5                                                      \
->                ".pushsection __jump_table,  \"a\" \n\t"                \
->                _ASM_PTR "1b, %l[" #label "], %c0 \n\t"                 \
->                ".popsection \n\t"                                      \
->                : :  "i" (__sjstrtab_##tag) :  : label)
-> 
-> #else
-> 
-> #define STATIC_JUMP_IF(tag, label, cond)        \
->         if (unlikely(cond))                     \
->                 goto label;
-> 
-> #endif /* !HAVE_STATIC_JUMP */
-> 
-> 
-> which can be used as:
-> 
->         STATIC_JUMP_IF(trace, trace_label, jump_enabled);
->         printk("not doing tracing\n");
-> if (0) {
-> trace_label:
->         printk("doing tracing: %d\n", file);
-> }
-> 
-> ---------------------------------------
-> 
-> Thus, if 'HAVE_STATIC_JUMP' is defined (which will depend 
-> ultimately on the existence of 'asm goto' in the compiler 
-> version), we simply have a no-op followed by a jump around the 
-> dormant (disabled) tracing code. The 'STATIC_JUMP_IF()' macro, 
-> produces a 'jump_table' which has the following format:
-> 
-> [instruction address] [jump target] [tracepoint name]
-> 
-> Thus, to enable a tracepoint, we simply patch the 'instruction 
-> address' with a jump to the 'jump target'. The current 
-> implementation is using ftrace infrastructure to accomplish the 
-> patching, which uses 'stop_machine'. In subsequent versions, we 
-> will update the mechanism to use more efficient code patching 
-> techniques.
-> 
-> I've tested the performance of this using 'get_cycles()' calls 
-> around the tracepoint call sites. For an Intel Core 2 Quad cpu (in 
-> cycles, averages):
-> 		
-> 		idle		after tbench run
-> 		----		----------------
-> old code	 32		  88
-> new code	  2		   4
-> 
-> 
-> The performance improvement can be reproduced very reliably (using 
-> patch 4 in this series) on both Intel and AMD hardware.
-> 
-> In terms of code analysis the current code for the disabled case 
-> is a 'cmpl' followed by a 'je' around the tracepoint code. so:
-> 
-> cmpl - 83 3d 0e 77 87 00 00 - 7 bytes
-> je   - 74 3e                - 2 bytes
-> 
-> total of 9 instruction bytes.
-> 
-> The new code is a 'nopl' followed by a 'jmp'. Thus:
-> 
-> nopl - 0f 1f 44 00 00 - 5 bytes
-> jmp  - eb 3e          - 2 bytes
-> 
-> total of 7 instruction bytes.
-> 
-> So, the new code also accounts for 2 less bytes in the instruction 
-> cache per tracepoint.
-> 
-> here's a link to the gcc thread introducing this feature:
-> 
-> http://gcc.gnu.org/ml/gcc-patches/2009-07/msg01556.html
+When we put a object with an align(64) requirement into a section, linker
+has to put this 2**6 alignment in resulting section.
 
-This looks really interesting and desired. Once GCC adds this (or an 
-equivalent) feature, i'd love to have your optimization in the 
-kernel.
+When several .o are linked together, linker has to take the biggest alignement,
+and has to put holes.
 
-> Todo:
-> 
-> - convert the patching to a more optimal implementation (not using stop machine)
-> - expand infrastructure for modules
-> - other use cases?
-[...]
+Check .data.percpu size in vmlinux before and after your patch, to make sure
+it doesnt grow too much :)
 
-Other usecases might be kernel features that are turned on/off via 
-some slowpath. For example SLAB statistics could be patched in/out 
-using this method. Or scheduler statistics.
+therefore, ____cacheline_aligned objects should be placed in
+.data.percpu.shared_aligned
 
-Basically everything that is optional and touches some very hot 
-codepath would be eligible - not just tracepoints.
+I suggest running following script and check .data.percpu alignments
+are 2**2
 
-	Ingo
+# find . -name built-in.o|xargs objdump -h |grep percpu
+ 17 .data.percpu  00000018  00000000  00000000  0001db40  2**2
+ 12 .data.percpu  00000018  00000000  00000000  00015e80  2**2
+ 15 .data.percpu  000010a8  00000000  00000000  00012ec4  2**2
+ 31 .data.percpu.shared_aligned 0000055c  00000000  00000000  00085740  2**6
+ 33 .data.percpu  0000178c  00000000  00000000  00086880  2**2
+ 19 .data.percpu  000000bc  00000000  00000000  00006c64  2**2
+ 21 .data.percpu  00000010  00000000  00000000  00018990  2**2
+ 19 .data.percpu  0000000c  00000000  00000000  00008fb4  2**2
+ 30 .data.percpu  000018c0  00000000  00000000  0003cd50  2**3
+ 32 .data.percpu.shared_aligned 00000100  00000000  00000000  0003ee40  2**6
+ 43 .data.percpu.page_aligned 00001000  00000000  00000000  00048000  2**12
+ 14 .data.percpu  0000005c  00000000  00000000  0000a8a0  2**2
+ 22 .data.percpu  0000134c  00000000  00000000  0000d7a8  2**3
+ 23 .data.percpu.page_aligned 00001000  00000000  00000000  0000f000  2**12
+ 11 .data.percpu  00000014  00000000  00000000  00001428  2**2
+ 31 .data.percpu  000020b8  00000000  00000000  00045660  2**3
+ 33 .data.percpu.shared_aligned 00000108  00000000  00000000  00047f40  2**6
+ 44 .data.percpu.page_aligned 00001000  00000000  00000000  00052000  2**12
+ 21 .data.percpu  000007f8  00000000  00000000  00006b94  2**2
+ 25 .data.percpu.shared_aligned 00000008  00000000  00000000  00007400  2**6
+ 11 .data.percpu  000000e0  00000000  00000000  0000146c  2**2
+  6 .data.percpu  000000dc  00000000  00000000  000003c0  2**2
+ 41 .data.percpu  000001c4  00000000  00000000  00261d00  2**2
+ 18 .data.percpu  00000004  00000000  00000000  00009f6c  2**2
+ 18 .data.percpu  000000bc  00000000  00000000  00003e4c  2**2
+ 23 .data.percpu  00000014  00000000  00000000  00027814  2**2
+ 16 .data.percpu  00000004  00000000  00000000  000012f0  2**2
+ 27 .data.percpu  0000000c  00000000  00000000  0003d97c  2**2
+ 28 .data.percpu  00000a68  00000000  00000000  000324e0  2**2
+ 18 .data.percpu  00000008  00000000  00000000  00013b44  2**2
+ 20 .data.percpu  000004fc  00000000  00000000  001263d4  2**2
+ 18 .data.percpu  00000188  00000000  00000000  0001e0d8  2**2
+ 19 .data.percpu  00000194  00000000  00000000  00030840  2**2
+ 19 .data.percpu  000001d4  00000000  00000000  0004a508  2**2
+ 26 .data.percpu  00000040  00000000  00000000  000bc370  2**2
