@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756536AbZICWVB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbZICWUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756536AbZICWVB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 18:21:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756526AbZICWVA
+	id S1756521AbZICWUy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbZICWUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 18:21:00 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:36592 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756524AbZICWU5 (ORCPT
+	Thu, 3 Sep 2009 18:20:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57499 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755285AbZICWUw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 18:20:57 -0400
-Message-ID: <4AA0407E.8030505@gmail.com>
-Date: Fri, 04 Sep 2009 00:17:34 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-References: <4A9EEF07.5070800@gmail.com> <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com> <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1> <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <20090903174435.GF6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909031736340.24199@V090114053VZO-1> <4AA03E6A.7070800@gmail.com>
-In-Reply-To: <4AA03E6A.7070800@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 04 Sep 2009 00:17:35 +0200 (CEST)
+	Thu, 3 Sep 2009 18:20:52 -0400
+Date: Thu, 3 Sep 2009 15:20:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Sudhakar Rajashekhara" <sudhakar.raj@ti.com>
+Cc: pavel@ucw.cz, linux-parport@lists.infradead.org,
+       linux-kernel@vger.kernel.org,
+       davinci-linux-open-source@linux.davincidsp.com,
+       Greg KH <greg@kroah.com>
+Subject: Re: [PATCH] parport: Add character LCD driver for da850/omap-l138
+Message-Id: <20090903152042.bec9e4b8.akpm@linux-foundation.org>
+In-Reply-To: <000901ca2bd4$bf245190$3d6cf4b0$@raj@ti.com>
+References: <1251840159-22313-1-git-send-email-sudhakar.raj@ti.com>
+	<20090901132330.GB1569@ucw.cz>
+	<000901ca2bd4$bf245190$3d6cf4b0$@raj@ti.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Dumazet a écrit :
-> 
-> 
-> 
-> Problem is not _objects_ Christoph, but _slabs_, and your patch is not working.
-> 
-> Its true that when User calls kmem_cache_destroy(), all _objects_ were previously freed.
-> This is mandatory, with or withou SLAB_DESTROY_BY_RCU thing
-> 
-> Problem is that slub has some internal state, including some to-be-freed _slabs_,
-> that User have no control at all on it.
-> 
-> User cannot "know" slabs are freed, inuse, or whatever state in cache or call_rcu queues.
-> 
-> Face it, SLAB_DESTROY_BY_RCU is internal affair (to slub/slab/... allocators)
-> 
-> We absolutely need a rcu_barrier() somewhere, believe it or not. You can argue that it should
-> be done *before*, but it gives no speedup, only potential bugs.
-> 
-> Only case User should do its rcu_barrier() itself is if it knows some call_rcu() are pending
-> and are delaying _objects_ freeing (typical !SLAB_DESTROY_RCU usage in RCU algos).
-> 
-> I dont even understand why you care so much about kmem_cache_destroy(SLAB_DESTROY_BY_RCU),
-> given that almost nobody use it. We took almost one month to find out what the bug was in first
-> place...
+On Wed, 2 Sep 2009 19:23:27 +0530
+"Sudhakar Rajashekhara" <sudhakar.raj@ti.com> wrote:
 
+> On Tue, Sep 01, 2009 at 18:53:30, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > On TI DA850/OMAP-L138 EVM, HD44780 (24x2) LCD panel is
+> > > being used, interfaced through the SoC specific LCD
+> > > interface[1].
+> > > 
+> > > Driver from drivers/staging/panel/panel.c works for this
+> > > LCD panel but that driver expects the LCD panel to be
+> > > interfaced through a parallel port.
+> > > 
+> > > This patch implements a dummy parallel port driver which
+> > > interfaces to the panel driver in staging area through the
+> > > LCD interface available on SoC.
+> > 
+> > This is a nasty hack, right? Just fixup panel.c to work with your
+> > interface, too?
+> > 								Pavel
+> > 
+> 
+> Agree, that this is a hack. I have submitted a patch which modifies
+> panel.c to support this kind of interface.
+> 
+> Currently the problem with panel.c is that, it is tightly coupled
+> with parallel port interface. Panel driver needs to be completely
+> re-written to de-couple parallel port related stuff. If I have to
+> do this, then I need to start from ground zero as I do not have a
+> setup on which HD44780 panel has been interfaced using parallel
+> port. But I can certainly help here by testing such a modification
+> to the panel driver by testing on the hardware what I have.
+> 
+> In the meantime, can I re-submit this patch by moving the dummy
+> parallel port driver to reside in staging area? Later it can be
+> moved/deleted depending on the modifications to the panel driver.
+> 
 
-So maybe the safest thing would be to include the rcu_barrier() to insure all objects where freed
+If we're going to pull tricks like that then panel.c will never get
+itself moved from outside staging/ :(
 
-And another one for SLAB_DESTROY_BY_RCU to make sure slabs where freed
-
-void kmem_cache_destroy(struct kmem_cache *s)
-{
-	/*
-	 * Make sure no objects are waiting in call_rcu queues to be freed
-	 */
-	rcu_barrier();
-
-	down_write(&slub_lock);
-	s->refcount--;
-	if (!s->refcount) {
-                list_del(&s->list);
-                up_write(&slub_lock);
-                if (kmem_cache_close(s)) {
-                        printk(KERN_ERR "SLUB %s: %s called for cache that "
-                                "still has objects.\n", s->name, __func__);
-                        dump_stack();
-                }
-		/*
-		 * Make sure no slabs are waiting in call_rcu queues to be freed
-		 */
-                if (s->flags & SLAB_DESTROY_BY_RCU)
-                        rcu_barrier();
-                sysfs_slab_remove(s);
-        } else
-                up_write(&slub_lock);
-}
+Really, I don't think we should be hacking things into drivers/parport/
+code to accommodate design shortcomings in a staging/ driver.  Once done,
+these things have a tendency to never be undone.
