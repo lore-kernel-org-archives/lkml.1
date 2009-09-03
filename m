@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZICTej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZICThW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756175AbZICTej (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbZICTei
+	id S1756192AbZICThW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZICThT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:34:38 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:52021 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754006AbZICTeh (ORCPT
+	Thu, 3 Sep 2009 15:37:19 -0400
+Received: from mail-iw0-f175.google.com ([209.85.223.175]:42650 "EHLO
+	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756201AbZICThQ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:34:37 -0400
+	Thu, 3 Sep 2009 15:37:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=R0dUfCLD9H8GzI9y4muxcasv4XiLuC7on0sXk4UvASIAhnv14grvCZnnHvBkm+0+GW
-         9frmbYWJYlR1y795tl6vHj0ihnxr8IVOWmjyM1k1y75ZjrgjuH0UulkdyaU2dslKeQym
-         yqlvEi2hgOTDyyUWFx9ewSFd5Ks2ooZen6F0M=
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=FFO8M9VG0cQ6i3+yQ2N8JJQZ+ZgpnaLM8uMJ6JYL+bIV69spV/qG/gGev3Pbe8lvAA
+         hh9IOJnFTMifgzjzZp65biUksMdeSPgj956Zeo5jgoY1SbKmMcz6KO0veXTqHrMVrx9N
+         ShR5hMwyhwT3t3zmrV8Rz/h0UUIwRLJUHA99A=
 MIME-Version: 1.0
-In-Reply-To: <4A9FCDC6.3060003@gmail.com>
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
-	 <4A896324.3040104@trash.net>
-	 <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
-	 <4A9EEF07.5070800@gmail.com>
-	 <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>
-	 <4A9F1620.2080105@gmail.com>
-	 <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com>
-	 <4A9F7283.1090306@gmail.com>
-	 <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1>
-	 <4A9FCDC6.3060003@gmail.com>
-Date: Thu, 3 Sep 2009 22:34:38 +0300
-X-Google-Sender-Auth: c3729ee017ef01e5
-Message-ID: <84144f020909031234y764ebad2t1be8bf28dca25ace@mail.gmail.com>
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Eric Dumazet <eric.dumazet@gmail.com>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <1251967786.3336.19.camel@johannes.local>
+References: <20090903041429.GA29875@kroah.com> <1251967786.3336.19.camel@johannes.local>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 3 Sep 2009 12:35:11 -0700
+Message-ID: <43e72e890909031235t17543020leb3d19b17d955d01@mail.gmail.com>
+Subject: Re: Staging tree status for the .32 kernel merge
+To: Johannes Berg <johannes@sipsolutions.net>,
+       Christian Lamparter <chunkeey@web.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Stephen Chen <Stephen.Chen@atheros.com>
+Cc: Greg KH <greg@kroah.com>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 3, 2009 at 5:08 PM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
-> Sure, here is the poison thing
+>>       - otus.  This is sitting here until a "real" wireless driver
+>>         will be merged through the wireless tree.  Hopefully that
+>>         happens soon.
 >
-> [PATCH] slub: fix slab_pad_check()
->
-> When SLAB_POISON is used and slab_pad_check() finds an overwrite of the
-> slab padding, we call restore_bytes() on the whole slab, not only
-> on the padding.
->
-> Reported-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> ar9170 has been in for a while now, it's just not quite at feature
+> parity yet -- however that also means otus will get no work whatsoever
+> from any of the wireless folks. Draw your own conclusions. Personally, I
+> would drop it and let the users figure out whether they can live with
+> ar9170 or need to support work on it.
 
-Applied, thanks!
+Greg, as Johannes noted otus has lacked focus as Johannes whipped out
+a port for it in a few weeks and then Christian gave it some final
+love taps for inclusion, we just still use otus as just a source of
+documentation for any yet missing feature, but for that I guess I can
+just refer people to my git tree. Chris would know better where we're
+at as far as feature-parity is concerned though so I'll leave it up to
+him to judge whether or not having otus gets some users anything
+ar9170 doesn't yet have.
+
+  Luis
