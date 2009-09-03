@@ -1,58 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932288AbZICVAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932294AbZICVBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932288AbZICVAH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932246AbZICVAG
+	id S932294AbZICVBv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932258AbZICVBu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:00:06 -0400
-Received: from fanny.its.uu.se ([130.238.4.241]:40491 "EHLO fanny.its.uu.se"
+	Thu, 3 Sep 2009 17:01:50 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:47598 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932193AbZICVAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:00:05 -0400
+	id S932252AbZICVBt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:01:49 -0400
+Date: Thu, 3 Sep 2009 23:01:39 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       roland@redhat.com, rth@redhat.com
+Subject: Re: [PATCH 0/4] RFC: jump label - (tracepoint optimizations)
+Message-ID: <20090903210139.GA25581@elte.hu>
+References: <cover.1252007851.git.jbaron@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <19104.11857.497247.438179@pilspetsen.it.uu.se>
-Date: Thu, 3 Sep 2009 23:00:01 +0200
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Mikael Pettersson <mikpe@it.uu.se>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
-In-Reply-To: <87pra89sgp.fsf@devron.myhome.or.jp>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	<19099.52899.620345.326521@pilspetsen.it.uu.se>
-	<19100.31254.666066.755541@pilspetsen.it.uu.se>
-	<200909012042.59856.rjw@sisk.pl>
-	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
-	<87pra89sgp.fsf@devron.myhome.or.jp>
-X-Mailer: VM 7.17 under Emacs 20.7.1
+Content-Disposition: inline
+In-Reply-To: <cover.1252007851.git.jbaron@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OGAWA Hirofumi writes:
- > Well, anyway, I'd like to reproduce this on my machine. Could you tell
- > me the version of tools? I guess gcc testsuite using the gcc's source
- > (svn revision?), expect, dejagnu, tcl. (BTW, I'm using debian
- > testing. If it can be reproduced on kvm, I can install distro version
- > which you are using)
 
-Nothing fancy needed. You can use the gcc-4.4.1 release tarball and any recent
-gcc-4.3 weekly snapshot tarball, like 4.3-20090830.
+* Jason Baron <jbaron@redhat.com> wrote:
 
-I've always seen the bogus errors in the C or C++ testsuites, so to save
-some time you can just --enable-languages=c,c++ when building gcc.
+> hi,
+> 
+> Problem:
+> 
+> Currenly, tracepoints are implemented using a conditional. The 
+> conditional check requires checking a global variable for each 
+> tracepoint. Although, the overhead of this check is small, it 
+> increases under memory pressure. As we increase the number of 
+> tracepoints in the kernel this may become more of an issue. In 
+> addition, tracepoints are often dormant (disabled), and provide no 
+> direct kernel functionality. Thus, it is highly desirable to 
+> reduce their impact as much as possible. Mathieu Desnoyers has 
+> already suggested a number of requirements for a solution to this 
+> issue.
+> 
+> Solution:
+> 
+> In discussing this problem with Roland McGrath and Richard 
+> Henderson, we came up with a new 'asm goto' statement that allows 
+> branching to a label. Thus, this patch set introdues a 
+> 'STATIC_JUMP_IF()' macro as follows:
+> 
+> #ifdef HAVE_STATIC_JUMP
+> 
+> #define STATIC_JUMP_IF(tag, label, cond)                               \
+>        asm goto ("1:"   /* 5-byte insn */                              \
+>           P6_NOP5                                                      \
+>                ".pushsection __jump_table,  \"a\" \n\t"                \
+>                _ASM_PTR "1b, %l[" #label "], %c0 \n\t"                 \
+>                ".popsection \n\t"                                      \
+>                : :  "i" (__sjstrtab_##tag) :  : label)
+> 
+> #else
+> 
+> #define STATIC_JUMP_IF(tag, label, cond)        \
+>         if (unlikely(cond))                     \
+>                 goto label;
+> 
+> #endif /* !HAVE_STATIC_JUMP */
+> 
+> 
+> which can be used as:
+> 
+>         STATIC_JUMP_IF(trace, trace_label, jump_enabled);
+>         printk("not doing tracing\n");
+> if (0) {
+> trace_label:
+>         printk("doing tracing: %d\n", file);
+> }
+> 
+> ---------------------------------------
+> 
+> Thus, if 'HAVE_STATIC_JUMP' is defined (which will depend 
+> ultimately on the existence of 'asm goto' in the compiler 
+> version), we simply have a no-op followed by a jump around the 
+> dormant (disabled) tracing code. The 'STATIC_JUMP_IF()' macro, 
+> produces a 'jump_table' which has the following format:
+> 
+> [instruction address] [jump target] [tracepoint name]
+> 
+> Thus, to enable a tracepoint, we simply patch the 'instruction 
+> address' with a jump to the 'jump target'. The current 
+> implementation is using ftrace infrastructure to accomplish the 
+> patching, which uses 'stop_machine'. In subsequent versions, we 
+> will update the mechanism to use more efficient code patching 
+> techniques.
+> 
+> I've tested the performance of this using 'get_cycles()' calls 
+> around the tracepoint call sites. For an Intel Core 2 Quad cpu (in 
+> cycles, averages):
+> 		
+> 		idle		after tbench run
+> 		----		----------------
+> old code	 32		  88
+> new code	  2		   4
+> 
+> 
+> The performance improvement can be reproduced very reliably (using 
+> patch 4 in this series) on both Intel and AMD hardware.
+> 
+> In terms of code analysis the current code for the disabled case 
+> is a 'cmpl' followed by a 'je' around the tracepoint code. so:
+> 
+> cmpl - 83 3d 0e 77 87 00 00 - 7 bytes
+> je   - 74 3e                - 2 bytes
+> 
+> total of 9 instruction bytes.
+> 
+> The new code is a 'nopl' followed by a 'jmp'. Thus:
+> 
+> nopl - 0f 1f 44 00 00 - 5 bytes
+> jmp  - eb 3e          - 2 bytes
+> 
+> total of 7 instruction bytes.
+> 
+> So, the new code also accounts for 2 less bytes in the instruction 
+> cache per tracepoint.
+> 
+> here's a link to the gcc thread introducing this feature:
+> 
+> http://gcc.gnu.org/ml/gcc-patches/2009-07/msg01556.html
 
-The machines I've been running the testsuites on are a mix of architectures
-running older or stability-oriented distros:
+This looks really interesting and desired. Once GCC adds this (or an 
+equivalent) feature, i'd love to have your optimization in the 
+kernel.
 
-M1: i686 PC, Fedora Core 6, dejagnu-1.4.4-5.1, expect-5.43.0-5.1, tcl-8.4.13-3.fc6
-M2: powerpc64 (G5), YellowDog 6.2, dejagnu-1.4.4-5.1, expect-5.43.0-5.1, tcl-8.4.13-3
-M3: ARM, FC8-based, dejagnu-1.4.4-12.fc8, expect-5.43.0-9.fc8, tcl-8.4.17-1.fc8
+> Todo:
+> 
+> - convert the patching to a more optimal implementation (not using stop machine)
+> - expand infrastructure for modules
+> - other use cases?
+[...]
 
-/Mikael
+Other usecases might be kernel features that are turned on/off via 
+some slowpath. For example SLAB statistics could be patched in/out 
+using this method. Or scheduler statistics.
+
+Basically everything that is optional and touches some very hot 
+codepath would be eligible - not just tracepoints.
+
+	Ingo
