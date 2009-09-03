@@ -1,69 +1,187 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbZICUtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756398AbZICVYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932268AbZICUtc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932160AbZICUtb
+	id S1756398AbZICVYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756341AbZICVYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:49:31 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:37311 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932123AbZICUta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:49:30 -0400
-Subject: Re: VM issue causing high CPU loads
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Simon Kirby <sim@hostway.ca>
-Cc: Yohan <ytordjman@corp.free.fr>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       mikevs@xs4all.net
-In-Reply-To: <20090903200550.GB5257@hostway.ca>
-References: <4A92A25A.4050608@yohan.staff.proxad.net>
-	 <20090824162155.ce323f08.akpm@linux-foundation.org>
-	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>
-	 <20090902170642.f4381c1d.akpm@linux-foundation.org>
-	 <1251982884.18338.9.camel@heimdal.trondhjem.org>
-	 <4A9FC719.9020104@corp.free.fr>
-	 <1251986526.18338.29.camel@heimdal.trondhjem.org>
-	 <20090903200550.GB5257@hostway.ca>
-Content-Type: text/plain
-Date: Thu, 03 Sep 2009 16:49:25 -0400
-Message-Id: <1252010965.18338.63.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 1 sum rcpts/h 13 sum msgs/h 1 total rcpts 1320 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: D314426A4E03BE8B7168632D1372F09CF69AE6E3
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 217 max/h 6 blacklist 0 greylist 0 ratelimit 0
+	Thu, 3 Sep 2009 17:24:33 -0400
+Received: from dsl.zenzebra.mv.com ([207.22.49.29]:1056 "EHLO cmarib.ramside"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756334AbZICVYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:24:32 -0400
+X-Greylist: delayed 2067 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Sep 2009 17:24:31 EDT
+To: linux-kernel@vger.kernel.org
+Subject: PROBLEM: kernel reboot before Decompressing Linux, after setting video mode
+From: VirginSnow@vfemail.net
+Date: 03 Sep 2009 20:49:48 +0000
+Message-ID: <86tyzjg3df.fsf@cmarib.ramside>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-03 at 13:05 -0700, Simon Kirby wrote:
-> On Thu, Sep 03, 2009 at 10:02:06AM -0400, Trond Myklebust wrote:
-> 
-> > OK, so 16 hash buckets are likely to be filled with ~10^6 entries each.
-> > I can see that might be a performance issue...
-> 
-> We have a similar setup with millions of UIDs over NFS (currently NFSv3).
-> I _wish_ there were a way to use NFSv4 without having to use name-mapped
-> UIDs and GIDs, since our user and group names come from MySQL anyway, and
-> are guaranteed to be consistent across machines.
+[1.] One line summary of the problem:    
 
-That's a separate issue.
+     Linux kernel 2.6.30.5 reboots after setting video mode, but
+     before issuing the "Decompressing Linux" message.
 
-I'm working on increasing the idmapper scalability, however another
-project is currently taking up most of my time. I can't guarantee that
-the revised idmapper code will be finished in time to allow for
-inclusion in 2.6.32.
+[2.] Full description of the problem/report:
 
-> Why on earth does NFSv4 force the use of names?
+     I just compiled a kernel from the official 2.6.30.5 sources using
+     gcc 3.4.4.  "make xconfig" was used to configure the kernel, and
+     the .config was NOT edited by hand.  EARLY_PRINTK=y in .config.
 
-NFSv4 aspires to be an internet-wide protocol, and so you cannot use
-uids/gids: they just aren't guaranteed to represent a unique user
-outside your local LDAP/NIS or /etc/passwd domain. Furthermore, uids and
-gids are a posix construct. They simply don't work in environments where
-you may have lots of non-posix systems.
+     Initial builds failed due to unresolved ".L1234" symbols.  Using
+     "make xconfig" to disable uncompilable code resulted in a
+     successful kernel build.
 
-Trond
+     Booting the resulting kernel outputs the message "Probing EDD"
+     and then reboots.  Passing "edd=on" or "edd=off" on the kernel
+     command line does not help; the kernel always reboots.
 
+     Passing "vga=ask" allows me to select a video mode, which appears
+     to take effect properly.  Immediately after setting the video
+     mode, however, the machine reboots.
+
+     The problem behavior is repeatable and consistent.
+
+[3.] Keywords (i.e., modules, networking, kernel):
+
+     boot reboot query_edd set_video go_to_protected_mode
+     mask_all_interrupts setup_idt setup_gdt protected_mode_jump
+     decompress_kernel
+
+[4.] Kernel version (from /proc/version):
+
+     Attempting to boot a kernel compiled from stock 2.6.30.5 sources.
+
+[5.] Output of Oops.. message (if applicable) with symbolic information 
+     resolved (see Documentation/oops-tracing.txt)
+
+     No error message is displayed.  The machine simply reboots.
+
+[6.] A small shell script or example program which triggers the
+     problem (if possible)
+
+     N/A.  This is a problem with the early boot process.  However,
+     see diagnostic C code below.
+
+[7.] Environment
+[7.1.] Software (add the output of the ver_linux script here)
+
+     Gnu C                  3.4.4
+     Gnu make               3.80
+     binutils               2.16.1
+
+     grub                   0.96
+
+[7.2.] Processor information (from /proc/cpuinfo):
+
+     vendor_id       : GenuineIntel
+     cpu family      : 6
+     model           : 8
+     model name      : Pentium III (Coppermine)
+     flags           : fpu vme de pse tsc msr pae mce cx8 sep mtrr pge mca cmov pat pse36 mmx fxsr sse
+
+[7.3.] Module information (from /proc/modules):
+
+     N/A.  This is a problem with the early boot process.
+
+[7.4.] Loaded driver and hardware information (/proc/ioports, /proc/iomem)
+
+     HP Pavilion.  Additional specs available as needed.
+
+[7.5.] PCI information ('lspci -vvv' as root)
+[7.6.] SCSI information (from /proc/scsi/scsi)
+
+     N/A.  This is a problem with the early boot process.
+
+[7.7.] Other information that might be relevant to the problem:
+
+     I'm assuming that this bug has something to do with relocation of
+     the x86 setup code from assembly to C.  The reboot appears to
+     occur just after the call to mask_all_interrupts(), but before
+     decompressing the kernel.  Kernel version 2.6.15 boots without
+     any problem, on the same machine, with the same bootloader, and
+     with the same boot arguments.  Note that set_video() is called
+     AFTER query_edd() in arc/x86/boot/main.c, so this does not appear
+     to be related to EDD.
+
+     In order to track down the problem, I added some puts()s to pm.c:
+
+void pmbusywaitloop()
+{
+  int i = 0;
+  int j = 1 << 27;
+  for(i=0; i < j; i++) {
+    /* just to make sure this loop isn't optimized out of the code */
+    j--;
+    j++;
+  }
+}
+
+/*
+ * Actual invocation sequence
+ */
+void go_to_protected_mode(void)
+{
+  puts("Entering go_to_protected_mode\n");
+  pmbusywaitloop();
+	/* Hook before leaving real mode, also disables interrupts */
+	realmode_switch_hook();
+  puts("About to enable A20 gate\n");
+  pmbusywaitloop();
+
+	/* Enable the A20 gate */
+	if (enable_a20()) {
+		puts("A20 gate not responding, unable to boot...\n");
+		die();
+	}
+
+  puts("About to reset coprocessor\n");
+  pmbusywaitloop();
+	/* Reset coprocessor (IGNNE#) */
+	reset_coprocessor();
+
+	/* Mask all interrupts in the PIC */
+  puts("About to mask interrupts\n");
+  pmbusywaitloop();
+	mask_all_interrupts();
+
+	/* Actual transition to protected mode... */
+  puts("About to setup IDT\n");
+  pmbusywaitloop();
+	setup_idt();
+  puts("About to setup GDT\n");
+  pmbusywaitloop();
+	setup_gdt();
+  puts("About to jump to protected mode\n");
+  pmbusywaitloop();
+	protected_mode_jump(boot_params.hdr.code32_start,
+			    (u32)&boot_params + (ds() << 4));
+}
+
+When booting, the kernel outputs:
+
+Entering go_to_protected_mode
+(pause)
+About to enable A20 gate
+(pause)
+About to reset coprocessor
+(pause)
+About to mask interrupts
+(pause)
+About to setup IDT
+(pause)
+(*reboot*)
+
+Since "About to setup GDT" is never printed, I assumed that the
+problem was in setup_idt().  However, looking at setup_idt(), it
+appears that setup_idt() consists of more or less a single assembly
+instruction.  Since I don't know if puts() requires the old IDT, I'm
+not able to narrow down the problem any further than this:
+
+The reboot occurs *after* mask_all_interrupts(), but *before* the
+putstr("\nDecompressing Linux... ") in decompress_kernel().
