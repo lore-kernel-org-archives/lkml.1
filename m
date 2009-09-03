@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZICBlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753595AbZICBw2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754127AbZICBlN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 21:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZICBlM
+	id S1753595AbZICBw2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 21:52:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZICBw1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 21:41:12 -0400
-Received: from mail.atheros.com ([12.36.123.2]:53917 "EHLO mail.atheros.com"
+	Wed, 2 Sep 2009 21:52:27 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:52434 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754046AbZICBlF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 21:41:05 -0400
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: <catalin.marinas@arm.com>
-CC: <linux-kernel@vger.kernel.org>, <penberg@cs.helsinki.fi>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [PATCH 5/5] kmemleak: fix sparse warning for static declarations
-Date: Wed, 2 Sep 2009 18:40:59 -0700
-Message-ID: <1251942059-21448-6-git-send-email-lrodriguez@atheros.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1251942059-21448-1-git-send-email-lrodriguez@atheros.com>
-References: <1251942059-21448-1-git-send-email-lrodriguez@atheros.com>
+	id S1751709AbZICBw0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 21:52:26 -0400
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19103.8514.709300.585484@cargo.ozlabs.ibm.com>
+Date: Thu, 3 Sep 2009 11:52:02 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Corey Ashford <cjashfor@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] perf_counter/powerpc: Fix cache event codes for POWER7
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This fixes these sparse warnings:
+I had the codes for L1 D-cache load accesses and misses swapped around,
+and the wrong codes for LL-cache accesses and misses.  This corrects
+them.
 
-mm/kmemleak.c:1179:6: warning: symbol 'start_scan_thread' was not declared. Should it be static?
-mm/kmemleak.c:1194:6: warning: symbol 'stop_scan_thread' was not declared. Should it be static?
-
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+Reported-by: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- mm/kmemleak.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Ingo, if you have perfcounter fixes that you are going to ask Linus to
+pull before .32, please include this.
 
-diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index 09ddf9c..38496ab 100644
---- a/mm/kmemleak.c
-+++ b/mm/kmemleak.c
-@@ -1176,7 +1176,7 @@ static int kmemleak_scan_thread(void *arg)
-  * Start the automatic memory scanning thread. This function must be called
-  * with the scan_mutex held.
+ arch/powerpc/kernel/power7-pmu.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/arch/powerpc/kernel/power7-pmu.c b/arch/powerpc/kernel/power7-pmu.c
+index 388cf57..018d094 100644
+--- a/arch/powerpc/kernel/power7-pmu.c
++++ b/arch/powerpc/kernel/power7-pmu.c
+@@ -317,7 +317,7 @@ static int power7_generic_events[] = {
   */
--void start_scan_thread(void)
-+static void start_scan_thread(void)
- {
- 	if (scan_thread)
- 		return;
-@@ -1191,7 +1191,7 @@ void start_scan_thread(void)
-  * Stop the automatic memory scanning thread. This function must be called
-  * with the scan_mutex held.
-  */
--void stop_scan_thread(void)
-+static void stop_scan_thread(void)
- {
- 	if (scan_thread) {
- 		kthread_stop(scan_thread);
+ static int power7_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 	[C(L1D)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
+-		[C(OP_READ)] = {	0x400f0,	0xc880	},
++		[C(OP_READ)] = {	0xc880,		0x400f0	},
+ 		[C(OP_WRITE)] = {	0,		0x300f0	},
+ 		[C(OP_PREFETCH)] = {	0xd8b8,		0	},
+ 	},
+@@ -327,8 +327,8 @@ static int power7_cache_events[C(MAX)][C(OP_MAX)][C(RESULT_MAX)] = {
+ 		[C(OP_PREFETCH)] = {	0x408a,		0	},
+ 	},
+ 	[C(LL)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
+-		[C(OP_READ)] = {	0x6080,		0x6084	},
+-		[C(OP_WRITE)] = {	0x6082,		0x6086	},
++		[C(OP_READ)] = {	0x16080,	0x26080	},
++		[C(OP_WRITE)] = {	0x16082,	0x26082	},
+ 		[C(OP_PREFETCH)] = {	0,		0	},
+ 	},
+ 	[C(DTLB)] = {		/* 	RESULT_ACCESS	RESULT_MISS */
 -- 
-1.6.3.3
+1.6.0.4
 
