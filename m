@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754107AbZICBlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbZICBlK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754107AbZICBlL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 21:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752445AbZICBlK
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754084AbZICBlK (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 2 Sep 2009 21:41:10 -0400
-Received: from mail.atheros.com ([12.36.123.2]:53914 "EHLO mail.atheros.com"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbZICBlJ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 2 Sep 2009 21:41:09 -0400
+Received: from mail.atheros.com ([12.36.123.2]:53915 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754025AbZICBlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 21:41:00 -0400
+	id S1754026AbZICBlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 21:41:02 -0400
 From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
 To: <catalin.marinas@arm.com>
 CC: <linux-kernel@vger.kernel.org>, <penberg@cs.helsinki.fi>,
        "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [PATCH 2/5] kmemleak: add clear command support
-Date: Wed, 2 Sep 2009 18:40:56 -0700
-Message-ID: <1251942059-21448-3-git-send-email-lrodriguez@atheros.com>
+Subject: [PATCH 3/5] kmemleak: move common painting code together
+Date: Wed, 2 Sep 2009 18:40:57 -0700
+Message-ID: <1251942059-21448-4-git-send-email-lrodriguez@atheros.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1251942059-21448-1-git-send-email-lrodriguez@atheros.com>
 References: <1251942059-21448-1-git-send-email-lrodriguez@atheros.com>
@@ -25,55 +25,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In an ideal world your kmemleak output will be small,
-when its not you can use the clear command to ingore previously
-annotated kmemleak objects. We do this by painting them black.
+When painting grey or black we do the same thing, bring
+this together into a helper and identify coloring grey or
+black explicitly with defines. This makes this a little
+easier to read.
 
 Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 ---
- mm/kmemleak.c |   22 ++++++++++++++++++++++
- 1 files changed, 22 insertions(+), 0 deletions(-)
+ mm/kmemleak.c |   32 +++++++++++++++++++-------------
+ 1 files changed, 19 insertions(+), 13 deletions(-)
 
 diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index c6e71bb..4840212 100644
+index 4840212..7bb1d48 100644
 --- a/mm/kmemleak.c
 +++ b/mm/kmemleak.c
-@@ -1294,6 +1294,26 @@ static int kmemleak_release(struct inode *inode, struct file *file)
- 	return seq_release(inode, file);
+@@ -120,6 +120,9 @@ struct kmemleak_scan_area {
+ 	size_t length;
+ };
+ 
++#define KMEMLEAK_GREY	0
++#define KMEMLEAK_BLACK	-1
++
+ /*
+  * Structure holding the metadata for each allocated memory block.
+  * Modifications to such objects should be made while holding the
+@@ -266,17 +269,19 @@ static void kmemleak_disable(void);
+  */
+ static bool color_white(const struct kmemleak_object *object)
+ {
+-	return object->count != -1 && object->count < object->min_count;
++	return object->count != KMEMLEAK_BLACK &&
++		object->count < object->min_count;
  }
  
-+static void kmemleak_clear(void)
+ static bool color_gray(const struct kmemleak_object *object)
+ {
+-	return object->min_count != -1 && object->count >= object->min_count;
++	return object->min_count != KMEMLEAK_BLACK &&
++		object->count >= object->min_count;
+ }
+ 
+ static bool color_black(const struct kmemleak_object *object)
+ {
+-	return object->min_count == -1;
++	return object->min_count == KMEMLEAK_BLACK;
+ }
+ 
+ /*
+@@ -604,13 +609,21 @@ static void delete_object_part(unsigned long ptr, size_t size)
+ 
+ 	put_object(object);
+ }
++
++static void paint_it(struct kmemleak_object *object, int color)
 +{
-+	struct kmemleak_object *object;
 +	unsigned long flags;
-+
-+	mutex_lock(&scan_mutex);
-+	stop_scan_thread();
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(object, &object_list, object_list) {
-+		spin_lock_irqsave(&object->lock, flags);
-+		object->min_count = -1;
-+		spin_unlock_irqrestore(&object->lock, flags);
-+	}
-+	rcu_read_unlock();
-+	mutex_unlock(&scan_mutex);
-+
-+	start_scan_thread();
++	spin_lock_irqsave(&object->lock, flags);
++	object->min_count = color;
++	spin_unlock_irqrestore(&object->lock, flags);
 +}
 +
  /*
-  * File write operation to configure kmemleak at run-time. The following
-  * commands can be written to the /sys/kernel/debug/kmemleak file:
-@@ -1324,6 +1344,8 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+  * Make a object permanently as gray-colored so that it can no longer be
+  * reported as a leak. This is used in general to mark a false positive.
+  */
+ static void make_gray_object(unsigned long ptr)
+ {
+-	unsigned long flags;
+ 	struct kmemleak_object *object;
  
- 	if (strncmp(buf, "off", 3) == 0)
- 		kmemleak_disable();
-+	else if (strncmp(buf, "clear", 8) == 0)
-+		kmemleak_clear();
- 	else if (strncmp(buf, "stack=on", 8) == 0)
- 		kmemleak_stack_scan = 1;
- 	else if (strncmp(buf, "stack=off", 9) == 0)
+ 	object = find_and_get_object(ptr, 0);
+@@ -618,10 +631,7 @@ static void make_gray_object(unsigned long ptr)
+ 		kmemleak_warn("Graying unknown object at 0x%08lx\n", ptr);
+ 		return;
+ 	}
+-
+-	spin_lock_irqsave(&object->lock, flags);
+-	object->min_count = 0;
+-	spin_unlock_irqrestore(&object->lock, flags);
++	paint_it(object, KMEMLEAK_GREY);
+ 	put_object(object);
+ }
+ 
+@@ -631,7 +641,6 @@ static void make_gray_object(unsigned long ptr)
+  */
+ static void make_black_object(unsigned long ptr)
+ {
+-	unsigned long flags;
+ 	struct kmemleak_object *object;
+ 
+ 	object = find_and_get_object(ptr, 0);
+@@ -639,10 +648,7 @@ static void make_black_object(unsigned long ptr)
+ 		kmemleak_warn("Blacking unknown object at 0x%08lx\n", ptr);
+ 		return;
+ 	}
+-
+-	spin_lock_irqsave(&object->lock, flags);
+-	object->min_count = -1;
+-	spin_unlock_irqrestore(&object->lock, flags);
++	paint_it(object, KMEMLEAK_BLACK);
+ 	put_object(object);
+ }
+ 
 -- 
 1.6.3.3
 
