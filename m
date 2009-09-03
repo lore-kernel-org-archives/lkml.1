@@ -1,104 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbZICLar@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754994AbZICL3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755038AbZICLar (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 07:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZICLar
+	id S1754994AbZICL3t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 07:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbZICL3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 07:30:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:20789 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754958AbZICLaq convert rfc822-to-8bit (ORCPT
+	Thu, 3 Sep 2009 07:29:49 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:56376 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479AbZICL3s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 07:30:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=XrHABknVX7/17CSM5APT133ZFLb4n1gHP9sf8PdAXHnCMjY3hC078Jepsmt/NuqR87
-         Nnl+PWCzniMsfMYGvsf4mF5gVMr1vFrMGe4bn8ZCu3ge6jF4B9dhI0folml9eRt6nV6w
-         DuEe6jFWhXSuc/MSW0eYgwiVe3u3WW3i1Tgp4=
+	Thu, 3 Sep 2009 07:29:48 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Mikael Pettersson <mikpe@it.uu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19099.52899.620345.326521@pilspetsen.it.uu.se>
+	<19100.31254.666066.755541@pilspetsen.it.uu.se>
+	<200909012042.59856.rjw@sisk.pl>
+	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+Date: Thu, 03 Sep 2009 20:29:42 +0900
+In-Reply-To: <alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+	(Linus Torvalds's message of "Wed, 2 Sep 2009 15:23:28 -1000 (HST)")
+Message-ID: <87pra89sgp.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <4A9F9F64.5080305@aimvalley.nl>
-References: <4A9F9F64.5080305@aimvalley.nl>
-Date: Thu, 3 Sep 2009 13:22:57 +0200
-Message-ID: <4e5e476b0909030422m745af2e6mb8dd0148c2341e9d@mail.gmail.com>
-Subject: Re: PROBLEM: CONFIG_NO_HZ could cause software timeouts
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Is XIP enabled? It seems that the xip_udelay is not very accurate, and
-may be the cause of what you are seeing.
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-On Thu, Sep 3, 2009 at 12:50 PM, Norbert van
-Bolhuis<nvbolhuis@aimvalley.nl> wrote:
+> On Tue, 1 Sep 2009, Rafael J. Wysocki wrote:
+>> On Tuesday 01 September 2009, Mikael Pettersson wrote:
+>> > 
+>> > Starting with 2.6.31-rc8 and reverting
+>> > 
+>> > 85dfd81dc57e8183a277ddd7a56aa65c96f3f487 pty: fix data loss when stopped (^S/^Q)
+>> > d945cb9cce20ac7143c2de8d88b187f62db99bdc pty: Rework the pty layer to use the normal buffering logic
+>> > 
+>> > in that order gives me a kernel that works on both x86 and powerpc64.
+>> > 
+>> > So the bug is definitely limited to the pty buffering logic change.
+>> 
+>> Thanks a lot for this information, adding somme CCs to the list.
 >
-> The problem occurs when e.g. drivers use time_after(jiffes, timeout).
+> Mikael, is there any way to get the gcc testsuite to show the "expected" 
+> vs "result" cases when the failures occur, so that we can see what the 
+> pattern is ("it drops one character every 8kB" or something like that).
 >
-> CONFIG_NO_HZ could make jiffies advance by more than 1.
-> This is done by:
-> tick_nohz_update_jiffies->tick_do_update_jiffies64->do_timer
+> However, I get the feeling that it's really the same bug that 
+> OGAWA-san already fixed - and that his fix just doesn't always do a 100% 
+> of the job. 
 >
-> If drivers use a timeout value of jiffies+1,
-> "time_after(jiffies, timeout)" will be true after 1 interrupt
-> (given that it advances jiffies by at least 2).
+> So what Ogawa did was to make sure that we flush any pending data whenever 
+> we;re checking "do we have any data left". He did that by calling out to 
+> tty_flush_to_ldisc(), which should flush the data through to the ldisc. 
 >
-> This is exactly what happens in cfi_cmdset_0002.c:do_write_buffer
-> for our case (Powerpc MPC8313, linux-2.6.28, CONFIG_HZ=250, CONFIG_NO_HZ=y).
+> The keyword here being "should". In flush_to_ldisc(), we have at least one 
+> case where we say "we'll delay it a bit more":
 >
-> do_write_buffer does the following:
->  unsigned long uWriteTimeout = ( HZ / 1000 ) + 1;
->  ...
->  timeo = jiffies + uWriteTimeout;
->  ...
->  for (;;) {
->  ...
->  if (time_after(jiffies, timeo) && !chip_ready(map, adr))
->   break;
->  if (chip_ready(map, adr)) {
->   xip_enable(map, chip, adr);
->   goto op_done;
->  }
->  UDELAY(map, chip, adr, 1);
->  }
->  /* software timeout */
->  ret = -EIO;
-> opdone:
->  ...
+> 		if (!tty->receive_room) {
+> 			schedule_delayed_work(&tty->buf.work, 1);
+> 			break;
+> 		}
 >
-> I've seen a few software timeouts after the for-loop
-> looped only 13 times (= 13 us delay, i.s.o. the expected 1 ms). Typically
-> our NOR flash (S29GL01GP) may need upto ~ 200 us to be ready.
+> and while I think this _should_ be ok (because if there is no 
+> receive-room, then we'll hopefully always return non-zero from 
+> "input_available_p()". However, we do have this really odd case that the 
+> reader side will do "n_tty_set_room()" onlyl _after_ having checked for 
+> input_available_p(), and so maybe we do sometimes trigger the case that
 >
-> disabling CONFIG_NO_HZ fixes the problem.
-> replacing time_after by a for-loop counter to loop max 1000 times
-> also fixes the problem.
+>  - input_available_p() tries to flush to the input buffer before checking 
+>    how much data is available, by calling 'tty_flush_to_ldisc()'
 >
-> the latest kernel seems to have the same problem.
+>  - but 'tty_flush_to_ldisc()' won't do anything, because tty->receive_room 
+>    is zero.
 >
-> do I miss something here or is this a known problem of CONFIG_NO_HZ ?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+>  - so now input_available_p will say "I don't have any data", even though 
+>    there was data in the write buffers.
 >
+>  - we'll notice that the other end has hung up, and return EOF/EIO.
+>
+>  - which is very WRONG, because the other end may have hung up, but before 
+>    it did that, it wrote data that is still in the write queues, and we 
+>    should have returned that data.
+>
+> Anyway, I'm not at all sure that the "receive_room == 0" case can happen 
+> at all, but maybe it can. Ogawa-san?
 
+If I'm not missing, I think it doesn't have big change with old
+code. But I would need to check more deeply.
 
+Um.., If "receive_room == 0 && tty->read_cnt == 0" is possible, I wonder
+why reverting buffer handling fixes the problem.
 
+Well, anyway, I'd like to reproduce this on my machine. Could you tell
+me the version of tools? I guess gcc testsuite using the gcc's source
+(svn revision?), expect, dejagnu, tcl. (BTW, I'm using debian
+testing. If it can be reproduced on kvm, I can install distro version
+which you are using)
+
+Thanks.
 -- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
