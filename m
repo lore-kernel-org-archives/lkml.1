@@ -1,55 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754174AbZICNjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755183AbZICNjk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754174AbZICNjE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752639AbZICNjD
+	id S1755183AbZICNjk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 09:39:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZICNjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:39:03 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33536 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbZICNjC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:39:02 -0400
-Subject: Re: [RFC][PATCH 0/8] load-balancing and cpu_power -v2
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
-In-Reply-To: <20090903121045.GK7216@alberich.amd.com>
-References: <20090901083431.748830771@chello.nl>
-	 <20090903121045.GK7216@alberich.amd.com>
-Content-Type: text/plain
-Date: Thu, 03 Sep 2009 15:38:56 +0200
-Message-Id: <1251985136.7352.1.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 3 Sep 2009 09:39:39 -0400
+Received: from smtp5-g21.free.fr ([212.27.42.5]:46806 "EHLO smtp5-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752795AbZICNji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 09:39:38 -0400
+Message-ID: <4A9FC719.9020104@corp.free.fr>
+Date: Thu, 03 Sep 2009 15:39:37 +0200
+From: Yohan <ytordjman@corp.free.fr>
+User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+MIME-Version: 1.0
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, mikevs@xs4all.net
+Subject: Re: VM issue causing high CPU loads
+References: <4A92A25A.4050608@yohan.staff.proxad.net>	 <20090824162155.ce323f08.akpm@linux-foundation.org>	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>	 <20090902170642.f4381c1d.akpm@linux-foundation.org> <1251982884.18338.9.camel@heimdal.trondhjem.org>
+In-Reply-To: <1251982884.18338.9.camel@heimdal.trondhjem.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-03 at 14:10 +0200, Andreas Herrmann wrote:
-> On Tue, Sep 01, 2009 at 10:34:31AM +0200, Peter Zijlstra wrote:
 
-> > Anyway, have at it, poke holes and report issues.
-> 
-> Tested it (to a certain extend).
-> Found no performance degradation (on 1P, 2P, 4P systems). (One could
-> think performance might slightly degrade due to more frequent
-> __cpu_power updates).
+>>> I did only:
+>>>
+>>> --- linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-03-23 23:04:09.000000000 +0100
+>>> +++ linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-05-19 16:02:35.000000000 +0200
+>>> @@ -62,8 +62,12 @@ 
+>>>   */
+>>> - #define RPC_CREDCACHE_HASHBITS	4
+>>> + #define RPC_CREDCACHE_HASHBITS	12
+>>>
+>>>
+>>> And i test it in prod since sunday: i only have 36% of one core used by 
+>>> system
+>>> versus more than 3 cores used by system in another server that did a 
+>>> drop_caches at morning...
+>>>       
+>> OK, but it's still pretty bad.  Let's tell the NFS guys.
+>>
+>> In http://bugzilla.kernel.org/show_bug.cgi?id=14024 we appear to have a
+>> major meltdown caused by the linear search in
+>> rpcauth_lookup_credcache() with Yohan's workload.
+>>     
+> OK. Could we please have some more details about the actual workload involved here?
+>   
+I add a new server CPU graph and 60s readprofile on the bugzilla
 
-Grand.
-
-> This applies to modification of sched_mc_power_savings. And I think
-> one of above scenarios is already broken in tip/master w/o your
-> patches.
-
-I suspect so, but confirmation would be good, I don't have a single
-machine large enough to actually test any of that power saving muck.
-
-> Otherwise especially wrt to integration of APERF/MPERF this seems to
-> be a good approach.
-
-On that, are there AMD systems supporting APERF/MPERF? I only know of
-Intel machines doing so.
+> As far as I can see, there is no RPCSEC_GSS involved, so credentials
+> should never expire. They will be reused as long as processes aren't
+> switching between thousands and thousands of different combinations of
+> uid, gid and groups.
+My servers are imap servers.
+Foreach user (~15 million) it have a specific uid over ~10 nfs netapp 
+storage.
 
