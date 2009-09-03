@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZICOI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZICOMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755488AbZICOI5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbZICOI5
+	id S1755521AbZICOMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZICOMT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:08:57 -0400
-Received: from smtp5-g21.free.fr ([212.27.42.5]:44519 "EHLO smtp5-g21.free.fr"
+	Thu, 3 Sep 2009 10:12:19 -0400
+Received: from mail.cs.nmsu.edu ([128.123.64.3]:61198 "EHLO mail.cs.nmsu.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755078AbZICOI4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:08:56 -0400
-Message-ID: <4A9FCDF7.1090700@corp.free.fr>
-Date: Thu, 03 Sep 2009 16:08:55 +0200
-From: Yohan <ytordjman@corp.free.fr>
-User-Agent: Thunderbird 2.0.0.22 (Windows/20090605)
+	id S1755319AbZICOMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 10:12:18 -0400
+Message-ID: <738fcf0e7c98ac7f03a8c32a1a462bdc.squirrel@intranet.cs.nmsu.edu>
+In-Reply-To: <20090903005051.GA6733@kroah.com>
+References: <a571ebde1bc221dd250a03e9fb33ed66.squirrel@intranet.cs.nmsu.edu>
+    <20090903005051.GA6733@kroah.com>
+Date: Thu, 3 Sep 2009 08:12:19 -0600
+Subject: Re: Problem starting the input interrupt pipe on the G13
+From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+To: "Greg KH" <greg@kroah.com>
+Cc: "Linux USB" <linux-usb@vger.kernel.org>,
+       "LKML" <linux-kernel@vger.kernel.org>
+User-Agent: SquirrelMail/1.4.19
 MIME-Version: 1.0
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>, mikevs@xs4all.net
-Subject: Re: VM issue causing high CPU loads
-References: <4A92A25A.4050608@yohan.staff.proxad.net>	 <20090824162155.ce323f08.akpm@linux-foundation.org>	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>	 <20090902170642.f4381c1d.akpm@linux-foundation.org>	 <1251982884.18338.9.camel@heimdal.trondhjem.org>	 <4A9FC719.9020104@corp.free.fr> <1251986526.18338.29.camel@heimdal.trondhjem.org>
-In-Reply-To: <1251986526.18338.29.camel@heimdal.trondhjem.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust wrote:
-> On Thu, 2009-09-03 at 15:39 +0200, Yohan wrote:
->   
->>> As far as I can see, there is no RPCSEC_GSS involved, so credentials
->>> should never expire. They will be reused as long as processes aren't
->>> switching between thousands and thousands of different combinations of
->>> uid, gid and groups.
->>>       
->> My servers are imap servers.
->> Foreach user (~15 million) it have a specific uid over ~10 nfs netapp 
->> storage.
->>     
-> OK, so 16 hash buckets are likely to be filled with ~10^6 entries each.
-> I can see that might be a performance issue...
+Greg KH wrote:
+> On Wed, Sep 02, 2009 at 03:25:50PM -0600, Rick L. Vinyard, Jr. wrote:
+>> Hello,
+>>
+>> I'm still working on the G13 driver, but I've run into a problem with
+>> the
+>> interrupt in pipe. In essence, I can't figure out how to get it started.
+>>
+>> The driver can be found at:
+>> http://g13.svn.sourceforge.net/viewvc/g13/driver/trunk/
+>>
+>> I think the root of the problem lies in the fact that the G13 usage page
+>> is 0x00 (undefined). The output and feature reports seem to be working
+>> fine to set the backlight color, the LCD image and the leds on the 'M'
+>> keys.
+>>
+>> However, nothing seems to be happening with the input report (there is
+>> only one input report type on endpoint address 0x81 that contains the
+>> joystick and key values).
+>>
+>> The problem is getting the input pipe started. I grepped through the
+>> other
+>> drivers in the hid directory and I couldn't find any that had to
+>> explicitly start the input interrupt.
 >
-> So afaics, you did try adjusting the hashtable size. How much larger
-> does it have to be before you start to get acceptable performance? If it
-> solves your problem we could make hash table sizes adjustable via a
-> module parameter, for instance.
->   
-I run now with a value of 12, and it's great for me...
+> Have you just submitted an interrupt urb?
+>
+> That should be all that is needed, when the device has data, it will
+> return with it if your urb is pending.
+>
+
+I'll give it a shot.
+
+I hadn't tried it yet since I wasn't sure if that was the intended way to
+start it up within the HID framework since none of the other drivers
+submitted the urb.
+
+Also, submitting the urb requires the usbhid_device structure. Since the
+usbhid_device structure is defined in usbhid.h, and usbhid.h isn't
+installed with the kernel headers I wasn't sure if there was a better way
+to do it (raw events, input mapping or something along those lines).
+
+---
+
+Rick
+
 
