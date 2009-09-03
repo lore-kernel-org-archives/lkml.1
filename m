@@ -1,33 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932507AbZICXXM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZICX0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932507AbZICXXM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 19:23:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbZICXXL
+	id S1756570AbZICX0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 19:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932448AbZICX0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 19:23:11 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34094
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756548AbZICXXK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 19:23:10 -0400
-Date: Thu, 03 Sep 2009 16:23:25 -0700 (PDT)
-Message-Id: <20090903.162325.64855258.davem@davemloft.net>
-To: treker.chen@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Why sometimes linux kernel does not reply the ACK of second
- FIN packet?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <8e8a9c7c0909030741j63a26192m54feab96cc9fbd5a@mail.gmail.com>
-References: <8e8a9c7c0909030737g7ca5746at4bf51940ff690b36@mail.gmail.com>
-	<8e8a9c7c0909030741j63a26192m54feab96cc9fbd5a@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 3 Sep 2009 19:26:23 -0400
+Received: from claw.goop.org ([74.207.240.146]:45603 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756035AbZICX0W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 19:26:22 -0400
+Message-ID: <4AA050A0.90609@goop.org>
+Date: Thu, 03 Sep 2009 16:26:24 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Miroslav Rezanina <mrezanin@redhat.com>
+CC: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
+References: <1962776416.772071250687130436.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <1962776416.772071250687130436.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 08/19/09 06:05, Miroslav Rezanina wrote:
+> when running linux as XEN guest and use boot parameter mem= to set memory lower then is assigned to guest, not used memory should be returned to hypervisor as free. This is working with kernel available on xen.org pages, but is not working with kernel 2.6.29. Comparing both kernels I found code for returning unused memory to hypervisor is missing. Following patch add this functionality to 2.6.29 kernel.
+>   
 
-You're more likely to get a response on the networking developer
-list (netdev@vger.kernel.org), than here.
+Are you planning on submitting a revised patch along the lines I suggested?
+
+Thanks,
+    J
