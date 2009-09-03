@@ -1,49 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932484AbZICW4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932480AbZICW60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932484AbZICW4K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 18:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbZICW4H
+	id S932480AbZICW60 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932448AbZICW6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 18:56:07 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:56685 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932434AbZICW4F (ORCPT
+	Thu, 3 Sep 2009 18:58:25 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34699 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932429AbZICW6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 18:56:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=om4ogMhIBBKiub9aPQ9dQ86TLsw8H7Hcbw3hwf3VPj3VzwCwxx8zN0s10q/oXhb4Ol
-         hWhFfmZ87oqoxTkyauecQ2VjOHmvNneO3AMw9MFRwq29+x9T1INapRLJ6RLZRhVq5BUr
-         l3Y1N25hTg6OI0po6vQKikPvMqo1B5exyz56c=
+	Thu, 3 Sep 2009 18:58:24 -0400
+Message-ID: <4AA049F2.5000403@zytor.com>
+Date: Thu, 03 Sep 2009 15:57:54 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0909020308510.27310@eddie.linux-mips.org>
-References: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com>
-	 <alpine.LFD.2.00.0909020308510.27310@eddie.linux-mips.org>
-Date: Fri, 4 Sep 2009 04:56:01 +0600
-Message-ID: <b9df5fa10909031556i3d87ff72v3ce4ed8bcd4e5dd@mail.gmail.com>
-Subject: Re: [Question] x86,APIC: In apicdef.h dfr,svr,...... shouldn't be 
-	const?
-From: Rakib Mullick <rakib.mullick@gmail.com>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
-       Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Borislav Petkov <petkovbb@googlemail.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+       tglx@linutronix.de, borislav.petkov@amd.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86, msr: add rd/wrmsr interfaces with preset registers
+References: <20090831073429.GA26596@liondog.tnic>	<1251705011-18636-1-git-send-email-petkovbb@gmail.com> <20090903155539.ecd64bcd.akpm@linux-foundation.org>
+In-Reply-To: <20090903155539.ecd64bcd.akpm@linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/2/09, Maciej W. Rozycki <macro@linux-mips.org> wrote:
->
->  All the three have meaningful semantics on writes at least on some
->  versions of the APIC (they either have writable fields or trigger side
->  effects on writes).  It looks like your documentation is wrong (not
->  unheard of with Intel).
+On 09/03/2009 03:55 PM, Andrew Morton wrote:
+> On Mon, 31 Aug 2009 09:50:09 +0200
+> Borislav Petkov <petkovbb@googlemail.com> wrote:
+> 
+>> +.macro op_safe_regs op:req
+> 
+> Using
+> 
+> GNU assembler 2.16.1
+> 
+> I get
+> 
+> arch/x86/lib/msr-reg.S: Assembler messages:
+> arch/x86/lib/msr-reg.S:53: Error: Bad macro parameter list
+> arch/x86/lib/msr-reg.S:100: Error: invalid character '_' in mnemonic
+> arch/x86/lib/msr-reg.S:101: Error: invalid character '_' in mnemonic
+> 
+> this:
+> 
+> diff -puN arch/x86/lib/msr-reg.S~a arch/x86/lib/msr-reg.S
+> --- a/arch/x86/lib/msr-reg.S~a
+> +++ a/arch/x86/lib/msr-reg.S
+> @@ -50,7 +50,7 @@ ENDPROC(native_\op\()_safe_regs)
+>  
+>  #else /* X86_32 */
+>  
+> -.macro op_safe_regs op:req
+> +.macro op_safe_regs op
+>  ENTRY(native_\op\()_safe_regs)
+>         CFI_STARTPROC
+>         pushl_cfi %ebx
+> 
+> 
+> fixed it.
 
-Thanks, Maciej. If my documentation is wrong, then which documentation
-should I follow? Isn't there any well defined document?
->
->
->   Maciej
->
+Yup, already fixed in -tip.
+
+	-hpa
