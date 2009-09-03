@@ -1,43 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756562AbZICXWx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756567AbZICXXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756562AbZICXWx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 19:22:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZICXWx
+	id S1756567AbZICXXp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 19:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932475AbZICXXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 19:22:53 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:59908 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755312AbZICXWw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 19:22:52 -0400
-Message-ID: <4AA04FA9.3020808@zytor.com>
-Date: Thu, 03 Sep 2009 16:22:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: petkovbb@googlemail.com, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       kjwinchester@gmail.com, tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/3] x86, msr: add rd/wrmsr interfaces with preset registers
-References: <20090831073429.GA26596@liondog.tnic>	<1251705011-18636-1-git-send-email-petkovbb@gmail.com>	<20090903155539.ecd64bcd.akpm@linux-foundation.org>	<4AA049F2.5000403@zytor.com> <20090903161426.cc441294.akpm@linux-foundation.org>
-In-Reply-To: <20090903161426.cc441294.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Sep 2009 19:23:45 -0400
+Received: from verein.lst.de ([213.95.11.210]:57786 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756035AbZICXXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 19:23:44 -0400
+Date: Fri, 4 Sep 2009 01:23:17 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, hch@lst.de, viro@zeniv.linux.org.uk,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+Message-ID: <20090903232317.GA6760@lst.de>
+References: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com> <200908312119.12121.rjw@sisk.pl> <c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com> <c4e36d110909031529q77b53122kdb85785ba293c478@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c4e36d110909031529q77b53122kdb85785ba293c478@mail.gmail.com>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/2009 04:14 PM, Andrew Morton wrote:
+On Fri, Sep 04, 2009 at 12:29:04AM +0200, Zdenek Kabelac wrote:
+> Ok - another bisect game played - and unexpected winner is:
 > 
-> <looks>
+> (fat: add ->sync_fs)
 > 
-> Three days ago.  linux-next is still busted.
+> f83d6d46e7adf241a064a4a425e5cd8a8fd8925f
 > 
-> I want my five minutes back.
+> Reverting this commit with current -rc8 kernel makes the system happy
+> during the suspend/resume cycle. Obviously it has it price :) so just
+> plain revert is probably not a good solution so the problem looks
+> 'more serious'  (fat is not the only fs with this patch) thus adding
+> original author to this thread.
 
-x86-64 got fixed three days ago, i386 earlier today.  Didn't fix them
-both at the same time due to a brainfart on my part.  :-/
+Note that when you rever this patch on a current kernel you do actually
+get different behvaviour than when going back to before this commit.
 
-	-hpa
+In 2.6.30 we called ->write_super in the various sync functions and
+then ->sync_fs, in 2.6.31-rc8 you would not call any syncing at all
+anymore.  I think this patch might just be a symptom for a situation
+where the suspend code causes a sync and the mmc driver can't handle
+it anymore.
