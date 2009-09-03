@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754097AbZICNX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754751AbZICNXe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754097AbZICNX3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbZICNXZ
+	id S1754751AbZICNXe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 09:23:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbZICNXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:23:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37068 "EHLO
+	Thu, 3 Sep 2009 09:23:32 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37080 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752902AbZICNXT (ORCPT
+	with ESMTP id S1752346AbZICNX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:23:19 -0400
-Message-Id: <20090903132212.914248136@chello.nl>
+	Thu, 3 Sep 2009 09:23:29 -0400
+Message-Id: <20090903132213.006719409@chello.nl>
 References: <20090903132145.482814810@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Thu, 03 Sep 2009 15:21:54 +0200
+Date: Thu, 03 Sep 2009 15:21:55 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
@@ -25,14 +25,14 @@ Cc: linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
        Yanmin <yanmin_zhang@linux.intel.com>, Dave Jones <davej@redhat.com>,
        Len Brown <len.brown@intel.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
        cpufreq@vger.kernel.org
-Subject: [RFC][PATCH 09/14] x86: move APERF/MPERF into a X86_FEATURE
-Content-Disposition: inline; filename=sched-lb-8.patch
+Subject: [RFC][PATCH 10/14] x86: generic aperf/mperf code.
+Content-Disposition: inline; filename=sched-lb-9.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the APERFMPERF capacility into a X86_FEATURE flag so that it can
-be used outside of the acpi cpufreq driver.
+Move some of the aperf/mperf code out from the cpufreq driver thingy
+so that other people can enjoy it too.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: H. Peter Anvin <hpa@zytor.com>
@@ -44,67 +44,117 @@ Cc: Len Brown <len.brown@intel.com>
 Cc: Yinghai Lu <yhlu.kernel@gmail.com>
 Cc: cpufreq@vger.kernel.org
 ---
- arch/x86/include/asm/cpufeature.h          |    1 +
- arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |    9 ++-------
- arch/x86/kernel/cpu/intel.c                |    6 ++++++
- 3 files changed, 9 insertions(+), 7 deletions(-)
+ arch/x86/include/asm/processor.h           |   12 ++++++++
+ arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c |   41 +++++++++--------------------
+ 2 files changed, 26 insertions(+), 27 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/cpufeature.h
+Index: linux-2.6/arch/x86/include/asm/processor.h
 ===================================================================
---- linux-2.6.orig/arch/x86/include/asm/cpufeature.h
-+++ linux-2.6/arch/x86/include/asm/cpufeature.h
-@@ -95,6 +95,7 @@
- #define X86_FEATURE_NONSTOP_TSC	(3*32+24) /* TSC does not stop in C states */
- #define X86_FEATURE_CLFLUSH_MONITOR (3*32+25) /* "" clflush reqd with monitor */
- #define X86_FEATURE_EXTD_APICID	(3*32+26) /* has extended APICID (8 bits) */
-+#define X86_FEATURE_APERFMPERF	(3*32+27) /* APERFMPERF */
+--- linux-2.6.orig/arch/x86/include/asm/processor.h
++++ linux-2.6/arch/x86/include/asm/processor.h
+@@ -1000,4 +1000,16 @@ extern void start_thread(struct pt_regs 
+ extern int get_tsc_mode(unsigned long adr);
+ extern int set_tsc_mode(unsigned int val);
  
- /* Intel-defined CPU features, CPUID level 0x00000001 (ecx), word 4 */
- #define X86_FEATURE_XMM3	(4*32+ 0) /* "pni" SSE-3 */
++struct aperfmperf {
++	u64 aperf, mperf;
++};
++
++static inline void get_aperfmperf(struct aperfmperf *am)
++{
++	WARN_ON_ONCE(!boot_cpu_has(X86_FEATURE_APERFMPERF));
++
++	rdmsrl(MSR_IA32_APERF, am->aperf);
++	rdmsrl(MSR_IA32_MPERF, am->mperf);
++}
++
+ #endif /* _ASM_X86_PROCESSOR_H */
 Index: linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
 +++ linux-2.6/arch/x86/kernel/cpu/cpufreq/acpi-cpufreq.c
-@@ -60,7 +60,6 @@ enum {
- };
+@@ -243,23 +243,12 @@ static u32 get_cur_val(const struct cpum
+ 	return cmd.val;
+ }
  
- #define INTEL_MSR_RANGE		(0xffff)
--#define CPUID_6_ECX_APERFMPERF_CAPABILITY	(0x1)
+-struct perf_pair {
+-	union {
+-		struct {
+-			u32 lo;
+-			u32 hi;
+-		} split;
+-		u64 whole;
+-	} aperf, mperf;
+-};
+-
+ /* Called via smp_call_function_single(), on the target CPU */
+ static void read_measured_perf_ctrs(void *_cur)
+ {
+-	struct perf_pair *cur = _cur;
++	struct aperfmperf *am = _cur;
  
- struct acpi_cpufreq_data {
- 	struct acpi_processor_performance *acpi_data;
-@@ -731,12 +730,8 @@ static int acpi_cpufreq_cpu_init(struct 
- 	acpi_processor_notify_smm(THIS_MODULE);
+-	rdmsr(MSR_IA32_APERF, cur->aperf.split.lo, cur->aperf.split.hi);
+-	rdmsr(MSR_IA32_MPERF, cur->mperf.split.lo, cur->mperf.split.hi);
++	get_aperfmperf(am);
+ }
  
- 	/* Check for APERF/MPERF support in hardware */
--	if (c->x86_vendor == X86_VENDOR_INTEL && c->cpuid_level >= 6) {
--		unsigned int ecx;
--		ecx = cpuid_ecx(6);
--		if (ecx & CPUID_6_ECX_APERFMPERF_CAPABILITY)
--			acpi_cpufreq_driver.getavg = get_measured_perf;
--	}
-+	if (cpu_has(c, X86_FEATURE_APERFMPERF))
-+		acpi_cpufreq_driver.getavg = get_measured_perf;
+ /*
+@@ -278,19 +267,17 @@ static void read_measured_perf_ctrs(void
+ static unsigned int get_measured_perf(struct cpufreq_policy *policy,
+ 				      unsigned int cpu)
+ {
+-	struct perf_pair readin, cur;
++	struct aperfmperf readin, cur;
+ 	unsigned int perf_percent;
+ 	unsigned int retval;
  
- 	dprintk("CPU%u - ACPI performance management activated.\n", cpu);
- 	for (i = 0; i < perf->state_count; i++)
-Index: linux-2.6/arch/x86/kernel/cpu/intel.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/intel.c
-+++ linux-2.6/arch/x86/kernel/cpu/intel.c
-@@ -350,6 +350,12 @@ static void __cpuinit init_intel(struct 
- 			set_cpu_cap(c, X86_FEATURE_ARCH_PERFMON);
+ 	if (smp_call_function_single(cpu, read_measured_perf_ctrs, &readin, 1))
+ 		return 0;
+ 
+-	cur.aperf.whole = readin.aperf.whole -
+-				per_cpu(msr_data, cpu).saved_aperf;
+-	cur.mperf.whole = readin.mperf.whole -
+-				per_cpu(msr_data, cpu).saved_mperf;
+-	per_cpu(msr_data, cpu).saved_aperf = readin.aperf.whole;
+-	per_cpu(msr_data, cpu).saved_mperf = readin.mperf.whole;
++	cur.aperf = readin.aperf - per_cpu(msr_data, cpu).saved_aperf;
++	cur.mperf = readin.mperf - per_cpu(msr_data, cpu).saved_mperf;
++	per_cpu(msr_data, cpu).saved_aperf = readin.aperf;
++	per_cpu(msr_data, cpu).saved_mperf = readin.mperf;
+ 
+ #ifdef __i386__
+ 	/*
+@@ -305,8 +292,8 @@ static unsigned int get_measured_perf(st
+ 		h = max_t(u32, cur.aperf.split.hi, cur.mperf.split.hi);
+ 		shift_count = fls(h);
+ 
+-		cur.aperf.whole >>= shift_count;
+-		cur.mperf.whole >>= shift_count;
++		cur.aperf >>= shift_count;
++		cur.mperf >>= shift_count;
  	}
  
-+	if (c->cpuid_level > 6) {
-+		unsigned ecx = cpuid_ecx(6);
-+		if (ecx & 0x01)
-+			set_cpu_cap(c, X86_FEATURE_APERFMPERF);
-+	}
-+
- 	if (cpu_has_xmm2)
- 		set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
- 	if (cpu_has_ds) {
+ 	if (((unsigned long)(-1) / 100) < cur.aperf.split.lo) {
+@@ -321,14 +308,14 @@ static unsigned int get_measured_perf(st
+ 		perf_percent = 0;
+ 
+ #else
+-	if (unlikely(((unsigned long)(-1) / 100) < cur.aperf.whole)) {
++	if (unlikely(((unsigned long)(-1) / 100) < cur.aperf)) {
+ 		int shift_count = 7;
+-		cur.aperf.whole >>= shift_count;
+-		cur.mperf.whole >>= shift_count;
++		cur.aperf >>= shift_count;
++		cur.mperf >>= shift_count;
+ 	}
+ 
+-	if (cur.aperf.whole && cur.mperf.whole)
+-		perf_percent = (cur.aperf.whole * 100) / cur.mperf.whole;
++	if (cur.aperf && cur.mperf)
++		perf_percent = (cur.aperf * 100) / cur.mperf;
+ 	else
+ 		perf_percent = 0;
+ 
 
 -- 
 
