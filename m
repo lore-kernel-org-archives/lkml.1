@@ -1,75 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755891AbZICP5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbZICQDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755891AbZICP5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 11:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755763AbZICP5a
+	id S1755918AbZICQDI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 12:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbZICQDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 11:57:30 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:43107 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755717AbZICP53 (ORCPT
+	Thu, 3 Sep 2009 12:03:06 -0400
+Received: from mga01.intel.com ([192.55.52.88]:51656 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755732AbZICQDF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 11:57:29 -0400
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH] powerpc: Fix i8259 interrupt driver kernel crash on ML510
-To: linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Cc: Roderick Colenbrander <thunderbird2k@gmail.com>,
-       Grant Likely <grant.likely@secretlab.ca>
-Date: Thu, 03 Sep 2009 09:57:23 -0600
-Message-ID: <20090903155208.18009.73841.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.2
+	Thu, 3 Sep 2009 12:03:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,325,1249282800"; 
+   d="scan'208";a="490229009"
+From: "Luck, Tony" <tony.luck@intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Ingo Molnar <mingo@elte.hu>, Luming Yu <luming.yu@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+       "Yu, Fenghua" <fenghua.yu@intel.com>, Felix Blyakher <felixb@sgi.com>,
+       "Li, Shaohua" <shaohua.li@intel.com>, Bob Picco <bob.picco@hp.com>
+Date: Thu, 3 Sep 2009 09:02:52 -0700
+Subject: RE: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then
+ enable ftrace for ia64
+Thread-Topic: [RFC PATCH] Add TRACE_IRQFLAGS_SUPPORT, LOCKDEP_SUPPORT then
+ enable ftrace for ia64
+Thread-Index: AcoscxAX4xrUMNQwRNqXR+ofRclicwAPCJmw
+Message-ID: <57C9024A16AD2D4C97DC78E552063EA3E038E14B@orsmsx505.amr.corp.intel.com>
+References: <3877989d0908272018va6ee8f7n7ab2838fdf1b26e6@mail.gmail.com>
+	 <20090828062212.GB11552@elte.hu>
+	 <57C9024A16AD2D4C97DC78E552063EA3E038DE7E@orsmsx505.amr.corp.intel.com>
+ <1251967590.7447.0.camel@twins>
+In-Reply-To: <1251967590.7447.0.camel@twins>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roderick Colenbrander <thunderbird2k@gmail.com>
+> > #ifdef CONFIG_LOCKDEP
+> > #define PERCPU_PAGE_SHIFT 20 /* Need a Megabyte for lockdep */
+> > #else
+> > #define PERCPU_PAGE_SHIFT 16 /* 64K should be enough for normal use */
+> > #endif
+> 
+> Hmm, isn't all that percpu stuff in a special section, who's size you
+> can query at boot time and set-up accordingly?
 
-This patch fixes a null pointer exception caused by removal of
-'ack()' for level interrupts in the Xilinx interrupt driver.  A recent
-change to the xilinx interrupt controller removed the ack hook for
-level irqs.
+The size is a build time parameter (must match with a supported TLB page
+size for ia64 ... i.e. even power of two ... so 64K, 256K, 1M, 4M are all
+possible, but 128K, 512K, 2M, ... are not).
 
-Signed-off-by: Roderick Colenbrander <thunderbird2k@gmail.com>
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+Any code that includes the right header files can look at PERCPU_PAGE_SHIFT
+(or PERCPU_PAGE_SIZE) and make decisions about things.  But in the
+lockdep case the extra percpu space is statically allocated, so the special
+section overflows and results in a build failure.
 
-Hi Ben & Linus,
-
-This is a last minute bug fix must go into 2.6.31.  This patch
-is needed to prevent a kernel panic on Xilinx ml510 boards.
-
-I've also pushed the patch out to my git tree if you'd prefer to pull:
-
-The following changes since commit 326ba5010a5429a5a528b268b36a5900d4ab0eba:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc8
-
-are available in the git repository at:
-
-  git://git.secretlab.ca/git/linux-2.6 merge
-
-Roderick Colenbrander (1):
-      powerpc: Fix i8259 interrupt driver kernel crash on ML510
-
- arch/powerpc/sysdev/xilinx_intc.c |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
+-Tony
 
 
-
-diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-index 3ee1fd3..40edad5 100644
---- a/arch/powerpc/sysdev/xilinx_intc.c
-+++ b/arch/powerpc/sysdev/xilinx_intc.c
-@@ -234,7 +234,6 @@ static void xilinx_i8259_cascade(unsigned int irq, struct irq_desc *desc)
- 		generic_handle_irq(cascade_irq);
- 
- 	/* Let xilinx_intc end the interrupt */
--	desc->chip->ack(irq);
- 	desc->chip->unmask(irq);
- }
- 
 
