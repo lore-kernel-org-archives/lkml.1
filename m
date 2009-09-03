@@ -1,54 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZICIgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753970AbZICIjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZICIgY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 04:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZICIgY
+	id S1753970AbZICIjA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 04:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZICIi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 04:36:24 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58216 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753586AbZICIgX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 04:36:23 -0400
-Date: Thu, 3 Sep 2009 09:36:00 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Imre Deak <imre.deak@nokia.com>
-Cc: ext Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       Steven Walter <stevenrwalter@gmail.com>,
-       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090903083600.GA7235@n2100.arm.linux.org.uk>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk> <200909011543.48439.laurent.pinchart@ideasonboard.com> <20090902151044.GG30183@localhost>
+	Thu, 3 Sep 2009 04:38:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39560 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753586AbZICIi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 04:38:59 -0400
+Date: Thu, 3 Sep 2009 10:38:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: linux-next: tip tree build warnings
+Message-ID: <20090903083844.GA9912@elte.hu>
+References: <20090903182510.8fd4d4d1.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090902151044.GG30183@localhost>
+In-Reply-To: <20090903182510.8fd4d4d1.sfr@canb.auug.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 06:10:44PM +0300, Imre Deak wrote:
-> To my understanding buffers returned by dma_alloc_*, kmalloc, vmalloc
-> are ok:
 
-For dma_map_*, the only pages/addresses which are valid to pass are
-those returned by get_free_pages() or kmalloc.  Everything else is
-not permitted.
+* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
 
-Use of vmalloc'd and dma_alloc_* pages with the dma_map_* APIs is invalid
-use of the DMA API.  See the notes in the DMA-mapping.txt document
-against "dma_map_single".
+> Hi all,
+> 
+> Today's linux-next build (powerpc ppc64_defconfig) produced these warning:
+> 
+> In file included from include/trace/ftrace.h:285,
+>                  from include/trace/define_trace.h:61,
+>                  from include/trace/events/timer.h:342,
+>                  from kernel/timer.c:50:
+> include/trace/events/timer.h: In function 'ftrace_raw_output_itimer_state':
+> include/trace/events/timer.h:280: warning: format '%lu' expects type 'long unsigned int', but argument 4 has type 'cputime_t'
+> include/trace/events/timer.h: In function 'ftrace_raw_output_itimer_expire':
+> include/trace/events/timer.h:317: warning: format '%lu' expects type 'long unsigned int', but argument 5 has type 'cputime_t'
 
-> For user mappings I think you'd have to do an additional flush for
-> the direct mapping, while the user mapping is flushed in dma_map_*.
+Should be harmless with no runtime effects - the fix would be to 
+harmonize the cputime_t types across architectures.
 
-I will not accept a patch which adds flushing of anything other than
-the kernel direct mapping in the dma_map_* functions, so please find
-a different approach.
+> Introduced by commit 3f0a525ebf4b8ef041a332bbe4a73aee94bb064b ("timers: Add tracepoints for itimer") from the tip tree.
+> 
+> cputime_t is variously "u64", "unsigned long long" and "unsigned 
+> long" on different architectures.
+
+Should be unsigned long i think. Most architectures use it as 
+unsigned long via include/asm-generic/cputime.h, except these three:
+
+ arch/ia64/include/asm/cputime.h:typedef u64 cputime_t;
+ arch/powerpc/include/asm/cputime.h:typedef u64 cputime_t;
+ arch/s390/include/asm/cputime.h:typedef unsigned long long cputime_t;
+
+Or we could eliminate the type altogether as well and standardize on 
+u64. Thomas?
+
+	Ingo
