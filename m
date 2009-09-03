@@ -1,60 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZICNHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752542AbZICNKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbZICNHa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZICNH3
+	id S1752542AbZICNKX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 09:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751960AbZICNKW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:07:29 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55315 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751778AbZICNH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:07:29 -0400
-Date: Thu, 3 Sep 2009 15:07:31 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Corrado Zoccolo <czoccolo@gmail.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] cfq: adapt slice to number of processes doing I/O
-Message-ID: <20090903130731.GE18599@kernel.dk>
-References: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com> <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
+	Thu, 3 Sep 2009 09:10:22 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:26324 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751924AbZICNKV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 09:10:21 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: sfr@canb.auug.org.au
+Subject: Re: linux-next: security-testing/net tree build failure
+Date: Thu, 3 Sep 2009 09:10:20 -0400
+User-Agent: KMail/1.12.0 (Linux/2.6.30-gentoo-r4; KDE/4.3.0; i686; ; )
+Cc: David Miller <davem@davemloft.net>, jmorris@namei.org,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       mst@redhat.com
+References: <20090903161432.44af630d.sfr@canb.auug.org.au> <20090902.231607.200932036.davem@davemloft.net>
+In-Reply-To: <20090902.231607.200932036.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909030910.20884.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03 2009, Jeff Moyer wrote:
-> Corrado Zoccolo <czoccolo@gmail.com> writes:
-> 
-> > When the number of processes performing I/O concurrently increases,  a
-> > fixed time slice per process will cause large latencies.
-> > In the patch, if there are more than 3 processes performing concurrent
-> > I/O, we scale the time slice down proportionally.
-> > To safeguard sequential bandwidth, we impose a minimum time slice,
-> > computed from cfq_slice_idle (the idea is that cfq_slice_idle
-> > approximates the cost for a seek).
-> >
-> > I performed two tests, on a rotational disk:
-> > * 32 concurrent processes performing random reads
-> > ** the bandwidth is improved from 466KB/s to 477KB/s
-> > ** the maximum latency is reduced from 7.667s to 1.728
-> > * 32 concurrent processes performing sequential reads
-> > ** the bandwidth is reduced from 28093KB/s to 24393KB/s
-> > ** the maximum latency is reduced from 3.781s to 1.115s
-> >
-> > I expect numbers to be even better on SSDs, where the penalty to
-> > disrupt sequential read is much less.
-> 
-> Interesting approach.  I'm not sure what the benefits will be on SSDs,
-> as the idling logic is disabled for them (when nonrot is set and they
-> support ncq).  See cfq_arm_slice_timer.
+On Thursday 03 September 2009 02:16:07 am David Miller wrote:
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Thu, 3 Sep 2009 16:14:32 +1000
+>
+> > I applied the following merge fix patch (which I can carry as necessary):
+>
+> Looks good from here, thanks Stephen.
 
-Also, the problem with scaling the slice a lot is that throughput has a
-tendency to fall off a cliff at some point. Have you tried benchmarking
-buffered writes with reads?
+Looks good over here too, thanks.
 
 -- 
-Jens Axboe
-
+paul moore
+linux @ hp
