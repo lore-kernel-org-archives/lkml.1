@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZICGFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbZICGMa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbZICGFQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 02:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZICGFP
+	id S1754543AbZICGMa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 02:12:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZICGM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 02:05:15 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58237 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754227AbZICGFO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 02:05:14 -0400
-Message-ID: <4A9F5C74.1040805@cn.fujitsu.com>
-Date: Thu, 03 Sep 2009 14:04:36 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: =?UTF-8?B?QW3DqXJpY28gV2FuZw==?= <xiyou.wangcong@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Zachary Amsden <zach@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC][PATCH] x86: introduce parse_early_param_alone() to parse
- param early (Was Re: linux-next: reservetop fix disables mem= )
-References: <Pine.LNX.4.64.0908241736520.32764@sister.anvils> <4A92D029.8090807@kernel.org> <4A948C4A.8040004@cn.fujitsu.com> <4A9CD362.9010906@cn.fujitsu.com> <20090901151720.GC5394@hack>
-In-Reply-To: <20090901151720.GC5394@hack>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 3 Sep 2009 02:12:29 -0400
+Received: from mga11.intel.com ([192.55.52.93]:17662 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754503AbZICGM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 02:12:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,324,1249282800"; 
+   d="scan'208";a="723473115"
+Subject: Re: [PATCH 4/6] thermal: add sanity check for the passive attribute
+From: Zhang Rui <rui.zhang@intel.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <200908311230.32021.elendil@planet.nl>
+References: <1251303445-25317-1-git-send-email-elendil@planet.nl>
+	 <200908261848.29897.elendil@planet.nl>
+	 <1251707630.3483.181.camel@rzhang-dt>
+	 <200908311230.32021.elendil@planet.nl>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 03 Sep 2009 14:10:05 +0800
+Message-Id: <1251958205.3483.290.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Américo Wang wrote:
-
->> +#ifdef CONFIG_CMDLINE_BOOL
->> +#ifdef CONFIG_CMDLINE_OVERRIDE
->> +	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
->> +#else
->> +	if (builtin_cmdline[0]) {
->> +		/* append boot loader cmdline to builtin */
->> +		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
->> +		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
->> +		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
->> +	}
->> +#endif
->> +#endif
+On Mon, 2009-08-31 at 18:30 +0800, Frans Pop wrote:
+> On Monday 31 August 2009, Zhang Rui wrote:
+> > On Thu, 2009-08-27 at 00:48 +0800, Frans Pop wrote:
+> > > On Wednesday 26 August 2009, Matthew Garrett wrote:
+> > > > On Wed, Aug 26, 2009 at 06:17:23PM +0200, Frans Pop wrote:
+> > > > > Values below 40000 milli-celsius (limit is somewhat arbitrary)
+> > > > > don't make sense and can cause the system to go into a thermal
+> > > > > heart attack: the actual temperature will always be lower and
+> > > > > thus the system will be throttled down to its lowest setting.
+> > > >
+> > > > Not keen on this - it's a pretty arbitrary cutoff, and there are
+> > > > some cases where someone might want this value. Policy belongs in
+> > > > userspace, and all that.
+> > >
+> > > What cases do you see? Testing? Or systems that might have to operate
+> > > at such a low temperature? I deliberately chose a value that's at a
+> > > level that's easy to reach.
+> > >
+> > > I agree it is arbitrary, but it will prevent major confusion when
+> > > someone like me echo's 95 directly in sysfs.
+> >
+> > this is a problem.
+> > how about something like:
+> > #define THERMAL_PASSIVE_WARNING_LEVEL 0x40000
 > 
+> Hmmm. 40000 hexadecimal? That seems a bit high ;-)
 > 
-> This seems ugly.
+> > if (state < THERMAL_PASSIVE_WARNING_LEVEL)
+> >    printk(KERN_WARNING PREFIX "Passive trip point too low, this may"
+> >           "slow down your laptop because processors are throttled "
+> >           "whenever the temperature is higher than %dC\n", state/1000);
 > 
-> CMDLINE_OVERRIDE depends on CMDLINE_BOOL, right? So the outer #ifdef
-> can be removed. :)
+> Disadvantage is that users are unlikely to actually see that message at 
+> the time they set the value, especially if they're working in some xterm. 
+> They'd have to check dmesg or log files. It also increases the .text size 
+> of the module for an option that very few people are likely to use.
 > 
-
-Thanks for your review, but I think we can't do that.
-
-Yeah, CMDLINE_OVERRIDE depends on CMDLINE_BOOL, but we don't know whether 
-CONFIG_CMDLINE_BOOL is defined if CONFIG_CMDLINE_OVERRIDE is not defined,
-like below:
-
-#ifdef CONFIG_CMDLINE_OVERRIDE
-	strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
-#else
-	/* There have two cases:
-	 * 1: if CONFIG_CMDLINE_BOOL is defined, it's OK 
-	 * 2: if CONFIG_CMDLINE_BOOL is not defined, builtin_cmdline
-	 * is not defined, so, the compiler will complain with it
-	 */
-	if (builtin_cmdline[0]) {
-		/* append boot loader cmdline to builtin */
-		strlcat(builtin_cmdline, " ", COMMAND_LINE_SIZE);
-		strlcat(builtin_cmdline, boot_command_line, COMMAND_LINE_SIZE);
-		strlcpy(boot_command_line, builtin_cmdline, COMMAND_LINE_SIZE);
-	}
-#endif
-
-Thanks,
-Xiao
-
+> > > Would 1000 (1 °C) perhaps be more acceptable as a limit? I doubt
+> > > there are valid use-cases for below 0 temps :-)
 > 
+> I'd prefer this option. Do you see any downside to this?
+> 
+I see many laptops with a passive trip point higher than 90C, so a
+passive trip point higher than 100C may be meaningful.
+I think we should use a higher value, say 2000?
+
+thanks,
+rui
+
+
