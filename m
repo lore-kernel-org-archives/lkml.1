@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932274AbZICUpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932268AbZICUtc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932274AbZICUpx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932243AbZICUpw
+	id S932268AbZICUtc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 16:49:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932160AbZICUtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:45:52 -0400
-Received: from claw.goop.org ([74.207.240.146]:41327 "EHLO claw.goop.org"
+	Thu, 3 Sep 2009 16:49:31 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:37311 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932235AbZICUpw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:45:52 -0400
-Message-ID: <4AA02B02.7080101@goop.org>
-Date: Thu, 03 Sep 2009 13:45:54 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: mingo@redhat.com, linux-kernel@vger.kernel.org,
-       jeremy.fitzhardinge@citrix.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>
-Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
- is cache aligned
-References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com>
-In-Reply-To: <4AA02687.9080406@zytor.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
+	id S932123AbZICUta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 16:49:30 -0400
+Subject: Re: VM issue causing high CPU loads
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Simon Kirby <sim@hostway.ca>
+Cc: Yohan <ytordjman@corp.free.fr>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       mikevs@xs4all.net
+In-Reply-To: <20090903200550.GB5257@hostway.ca>
+References: <4A92A25A.4050608@yohan.staff.proxad.net>
+	 <20090824162155.ce323f08.akpm@linux-foundation.org>
+	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>
+	 <20090902170642.f4381c1d.akpm@linux-foundation.org>
+	 <1251982884.18338.9.camel@heimdal.trondhjem.org>
+	 <4A9FC719.9020104@corp.free.fr>
+	 <1251986526.18338.29.camel@heimdal.trondhjem.org>
+	 <20090903200550.GB5257@hostway.ca>
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 16:49:25 -0400
+Message-Id: <1252010965.18338.63.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 1 sum rcpts/h 13 sum msgs/h 1 total rcpts 1320 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: D314426A4E03BE8B7168632D1372F09CF69AE6E3
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 217 max/h 6 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/09 13:26, H. Peter Anvin wrote:
-> With the new zero-based percpu segment, it seems we should be able to
-> subsume the stack protector into the percpu segment and reference both
-> via %gs -- we just have to reserve the first 24 bytes of the segment,
-> and being able to reduce the number of segments we need in the kernel is
-> good for multiple reasons.
->
-> Tejun - am I missing something why that would be hard or impossible?
->   
+On Thu, 2009-09-03 at 13:05 -0700, Simon Kirby wrote:
+> On Thu, Sep 03, 2009 at 10:02:06AM -0400, Trond Myklebust wrote:
+> 
+> > OK, so 16 hash buckets are likely to be filled with ~10^6 entries each.
+> > I can see that might be a performance issue...
+> 
+> We have a similar setup with millions of UIDs over NFS (currently NFSv3).
+> I _wish_ there were a way to use NFSv4 without having to use name-mapped
+> UIDs and GIDs, since our user and group names come from MySQL anyway, and
+> are guaranteed to be consistent across machines.
 
-Two problems:
+That's a separate issue.
 
-    * gcc generates %gs: references for stack-protector, but we use %fs
-      for percpu data (because restoring %fs is faster if it's a null
-      selector; TLS uses %gs).  I guess we could use %fs if
-      !CONFIG_CC_STACKPROTECTOR, or %gs if we are using it (though that
-      has some fiddly ramifications for things like ptrace).
-    * The i386 percpu %fs base is offset by -__per_cpu_start from the
-      percpu variables, so we can directly refer to %fs:per_cpu__foo. 
-      I'm not sure what it would take to unify i386 to use the same
-      scheme as x86-64.
+I'm working on increasing the idmapper scalability, however another
+project is currently taking up most of my time. I can't guarantee that
+the revised idmapper code will be finished in time to allow for
+inclusion in 2.6.32.
 
-Neither looks insoluble.
+> Why on earth does NFSv4 force the use of names?
 
-    J
+NFSv4 aspires to be an internet-wide protocol, and so you cannot use
+uids/gids: they just aren't guaranteed to represent a unique user
+outside your local LDAP/NIS or /etc/passwd domain. Furthermore, uids and
+gids are a posix construct. They simply don't work in environments where
+you may have lots of non-posix systems.
+
+Trond
+
