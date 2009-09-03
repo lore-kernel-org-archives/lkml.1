@@ -1,67 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756551AbZICXR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932502AbZICXVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756551AbZICXR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 19:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZICXR5
+	id S932502AbZICXVj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 19:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZICXVi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 19:17:57 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:60886 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755288AbZICXR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 19:17:56 -0400
-Date: Thu, 3 Sep 2009 16:17:57 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-Message-ID: <20090903231757.GP6761@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1> <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <4AA00400.1030005@gmail.com> <alpine.DEB.1.10.0909031731540.24199@V090114053VZO-1>
+	Thu, 3 Sep 2009 19:21:38 -0400
+Received: from eddie.linux-mips.org ([78.24.191.182]:38954 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755299AbZICXVi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 19:21:38 -0400
+Date: Fri, 4 Sep 2009 00:21:39 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Rakib Mullick <rakib.mullick@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, x86@kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [Question] x86,APIC: In apicdef.h dfr,svr,...... shouldn't be 
+ const?
+In-Reply-To: <b9df5fa10909031556i3d87ff72v3ce4ed8bcd4e5dd@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0909040019180.27310@eddie.linux-mips.org>
+References: <b9df5fa10908312248x6a8946f5jfbe972f3358baad3@mail.gmail.com>  <alpine.LFD.2.00.0909020308510.27310@eddie.linux-mips.org> <b9df5fa10909031556i3d87ff72v3ce4ed8bcd4e5dd@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0909031731540.24199@V090114053VZO-1>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 05:44:54PM -0500, Christoph Lameter wrote:
-> On Thu, 3 Sep 2009, Eric Dumazet wrote:
-> 
-> > It seems very smart, but needs review of all callers to make sure no slabs
-> > are waiting for final freeing in call_rcu queue on some cpu.
-> 
-> Yes. Again this is the first time we encounter a situation where a
-> DESTROY_BY_RCU slab has to be destroyed. So the review is quite short.
-> 
-> > I suspect most of them will then have to use rcu_barrier() before calling
-> > kmem_cache_destroy(), so why not factorizing code in one place ?
-> 
-> There are different forms of RCU which require different forms of
-> barriers. Its best to leave that up to the user. Again the user must make
-> sure that no objects are in use before a slab is destroyed. For
-> SLAB_DESTROY_BY_RCU this means that there are no potential outstanding
-> reads on the structure. You may need an rcu_barrier() to accomplish that.
-> 
-> Slight variations in the use of RCU could require different method. Better
-> reduce the entanglement of slabs to RCU to a mininum possible.
+On Fri, 4 Sep 2009, Rakib Mullick wrote:
 
-If it were the user of the slab who was invoking some variant of
-call_rcu(), then I would agree with you.
+> >  All the three have meaningful semantics on writes at least on some
+> >  versions of the APIC (they either have writable fields or trigger side
+> >  effects on writes).  It looks like your documentation is wrong (not
+> >  unheard of with Intel).
+> 
+> Thanks, Maciej. If my documentation is wrong, then which documentation
+> should I follow? Isn't there any well defined document?
 
-However, call_rcu() is instead being invoked by the slab itself in the
-case of SLAB_DESTROY_BY_RCU, so that there is no variation in usage.
-Requiring that the user call rcu_barrier() is asking for subtle bugs.
-Therefore, the best approach is to have kmem_cache_destroy() handle
-the RCU cleanup, given that this cleanup is for actions taken by
-kmem_cache_free(), not by the user.
+ You may have to track down an older revision of the document or that for 
+an older CPU.  These registers may have changed as the architecture 
+evolved and while Linux supports all the APIC versions, Intel may have 
+omitted details for earlier implementations either deliberately or 
+accidentally.
 
-							Thanx, Paul
+  Maciej
