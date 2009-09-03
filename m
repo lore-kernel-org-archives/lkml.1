@@ -1,44 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZICGXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754603AbZICG0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZICGXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 02:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbZICGXa
+	id S1754603AbZICG0v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 02:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754480AbZICG0u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 02:23:30 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:36412 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754509AbZICGX3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 02:23:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=ULClW61bpS1AC00KUlzdR3NMrBhEy1h2S4LBnyneflEm2De3oQZ4+c3sa6Wd5tuJVw
-         SBFTUo/JbkjZEzXOj9mDFVCl1qUCF876+zrXWURghPj4xdXRbrDpMyEoC0djI2+GE/Ae
-         0lysBkBk7UfePrI5jLBLHgKp1NWi3dafE6/lw=
+	Thu, 3 Sep 2009 02:26:50 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55625 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754466AbZICG0t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 02:26:49 -0400
+Message-ID: <4A9F619C.2020705@kernel.org>
+Date: Thu, 03 Sep 2009 15:26:36 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <43e72e890909021729q7c40f907v7a81eaf5c8b73a61@mail.gmail.com>
-References: <43e72e890909021729q7c40f907v7a81eaf5c8b73a61@mail.gmail.com>
-Date: Thu, 3 Sep 2009 09:23:30 +0300
-X-Google-Sender-Auth: 9868153a4d83f850
-Message-ID: <84144f020909022323na828156v4eb9a8497cadaef8@mail.gmail.com>
-Subject: Re: Exporting kmemleak.h to userspace
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Greg KH <greg@kroah.com>, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       Shane Huang <Shane.Huang@amd.com>, Chris Wright <chrisw@sous-sol.org>,
+       Grant Grundler <grundler@parisc-linux.org>
+Subject: [PATCH updated 1/2] pci: separate out pci_add_dynid()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 03 Sep 2009 06:26:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 3, 2009 at 3:29 AM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
-> I was reviewing kmemleak code and noticed kmemleak.h went exported to
-> userspace under include/linux/kmemleak.h. Do we expect userspace to
-> use this stuff somehow? All relevant kmemleak structs are kept
-> private, I'm curious what userspace apps would use this.
+Separate out pci_add_dynid() from store_new_id() and export it so that
+in-kernel code can add PCI IDs dynamically.  As the function will be
+available regardless of HOTPLUG, put it and pull pci_free_dynids()
+outside of CONFIG_HOTPLUG.
 
-AFAICT, nobody. Catalin, why is the header exported?
+This will be used by pci-stub to initialize initial IDs via module
+param.
+
+While at it, remove bogus get_driver() failure check.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+Reviewed-by: Grant Grundler <grundler@parisc-linux.org>
+---
+These two patches allow preventing built-in drivers from attaching to
+devices with certain IDs.  EXPORT_SYMBOL() changed to
+EXPORT_SYMBOL_GPL() as suggested by Greg and patch description updated
+to mention drop of the bogus failure condition.
+
+Thanks.
+
+ drivers/pci/pci-driver.c |  119 +++++++++++++++++++++++++++++------------------
+ include/linux/pci.h      |    5 +
+ 2 files changed, 79 insertions(+), 45 deletions(-)
+
+Index: ata/drivers/pci/pci-driver.c
+===================================================================
+--- ata.orig/drivers/pci/pci-driver.c
++++ ata/drivers/pci/pci-driver.c
+@@ -19,37 +19,98 @@
+ #include <linux/cpu.h>
+ #include "pci.h"
+
+-/*
+- * Dynamic device IDs are disabled for !CONFIG_HOTPLUG
+- */
+-
+ struct pci_dynid {
+ 	struct list_head node;
+ 	struct pci_device_id id;
+ };
+
+-#ifdef CONFIG_HOTPLUG
++/**
++ * pci_add_dynid - add a new PCI device ID to this driver and re-probe devices
++ * @drv: target pci driver
++ * @vendor: PCI vendor ID
++ * @device: PCI device ID
++ * @subvendor: PCI subvendor ID
++ * @subdevice: PCI subdevice ID
++ * @class: PCI class
++ * @class_mask: PCI class mask
++ * @driver_data: private driver data
++ *
++ * Adds a new dynamic pci device ID to this driver and causes the
++ * driver to probe for all devices again.  @drv must have been
++ * registered prior to calling this function.
++ *
++ * CONTEXT:
++ * Does GFP_KERNEL allocation.
++ *
++ * RETURNS:
++ * 0 on success, -errno on failure.
++ */
++int pci_add_dynid(struct pci_driver *drv,
++		  unsigned int vendor, unsigned int device,
++		  unsigned int subvendor, unsigned int subdevice,
++		  unsigned int class, unsigned int class_mask,
++		  unsigned long driver_data)
++{
++	struct pci_dynid *dynid;
++	int retval;
++
++	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
++	if (!dynid)
++		return -ENOMEM;
++
++	dynid->id.vendor = vendor;
++	dynid->id.device = device;
++	dynid->id.subvendor = subvendor;
++	dynid->id.subdevice = subdevice;
++	dynid->id.class = class;
++	dynid->id.class_mask = class_mask;
++	dynid->id.driver_data = driver_data;
+
++	spin_lock(&drv->dynids.lock);
++	list_add_tail(&dynid->node, &drv->dynids.list);
++	spin_unlock(&drv->dynids.lock);
++
++	get_driver(&drv->driver);
++	retval = driver_attach(&drv->driver);
++	put_driver(&drv->driver);
++
++	return retval;
++}
++
++static void pci_free_dynids(struct pci_driver *drv)
++{
++	struct pci_dynid *dynid, *n;
++
++	spin_lock(&drv->dynids.lock);
++	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
++		list_del(&dynid->node);
++		kfree(dynid);
++	}
++	spin_unlock(&drv->dynids.lock);
++}
++
++/*
++ * Dynamic device ID manipulation via sysfs is disabled for !CONFIG_HOTPLUG
++ */
++#ifdef CONFIG_HOTPLUG
+ /**
+- * store_new_id - add a new PCI device ID to this driver and re-probe devices
++ * store_new_id - sysfs frontend to pci_add_dynid()
+  * @driver: target device driver
+  * @buf: buffer for scanning device ID data
+  * @count: input size
+  *
+- * Adds a new dynamic pci device ID to this driver,
+- * and causes the driver to probe for all devices again.
++ * Allow PCI IDs to be added to an existing driver via sysfs.
+  */
+ static ssize_t
+ store_new_id(struct device_driver *driver, const char *buf, size_t count)
+ {
+-	struct pci_dynid *dynid;
+ 	struct pci_driver *pdrv = to_pci_driver(driver);
+ 	const struct pci_device_id *ids = pdrv->id_table;
+ 	__u32 vendor, device, subvendor=PCI_ANY_ID,
+ 		subdevice=PCI_ANY_ID, class=0, class_mask=0;
+ 	unsigned long driver_data=0;
+ 	int fields=0;
+-	int retval=0;
++	int retval;
+
+ 	fields = sscanf(buf, "%x %x %x %x %x %x %lx",
+ 			&vendor, &device, &subvendor, &subdevice,
+@@ -72,27 +133,8 @@ store_new_id(struct device_driver *drive
+ 			return retval;
+ 	}
+
+-	dynid = kzalloc(sizeof(*dynid), GFP_KERNEL);
+-	if (!dynid)
+-		return -ENOMEM;
+-
+-	dynid->id.vendor = vendor;
+-	dynid->id.device = device;
+-	dynid->id.subvendor = subvendor;
+-	dynid->id.subdevice = subdevice;
+-	dynid->id.class = class;
+-	dynid->id.class_mask = class_mask;
+-	dynid->id.driver_data = driver_data;
+-
+-	spin_lock(&pdrv->dynids.lock);
+-	list_add_tail(&dynid->node, &pdrv->dynids.list);
+-	spin_unlock(&pdrv->dynids.lock);
+-
+-	if (get_driver(&pdrv->driver)) {
+-		retval = driver_attach(&pdrv->driver);
+-		put_driver(&pdrv->driver);
+-	}
+-
++	retval = pci_add_dynid(pdrv, vendor, device, subvendor, subdevice,
++			       class, class_mask, driver_data);
+ 	if (retval)
+ 		return retval;
+ 	return count;
+@@ -145,19 +187,6 @@ store_remove_id(struct device_driver *dr
+ }
+ static DRIVER_ATTR(remove_id, S_IWUSR, NULL, store_remove_id);
+
+-static void
+-pci_free_dynids(struct pci_driver *drv)
+-{
+-	struct pci_dynid *dynid, *n;
+-
+-	spin_lock(&drv->dynids.lock);
+-	list_for_each_entry_safe(dynid, n, &drv->dynids.list, node) {
+-		list_del(&dynid->node);
+-		kfree(dynid);
+-	}
+-	spin_unlock(&drv->dynids.lock);
+-}
+-
+ static int
+ pci_create_newid_file(struct pci_driver *drv)
+ {
+@@ -186,7 +215,6 @@ static void pci_remove_removeid_file(str
+ 	driver_remove_file(&drv->driver, &driver_attr_remove_id);
+ }
+ #else /* !CONFIG_HOTPLUG */
+-static inline void pci_free_dynids(struct pci_driver *drv) {}
+ static inline int pci_create_newid_file(struct pci_driver *drv)
+ {
+ 	return 0;
+@@ -1106,6 +1134,7 @@ static int __init pci_driver_init(void)
+
+ postcore_initcall(pci_driver_init);
+
++EXPORT_SYMBOL_GPL(pci_add_dynid);
+ EXPORT_SYMBOL(pci_match_id);
+ EXPORT_SYMBOL(__pci_register_driver);
+ EXPORT_SYMBOL(pci_unregister_driver);
+Index: ata/include/linux/pci.h
+===================================================================
+--- ata.orig/include/linux/pci.h
++++ ata/include/linux/pci.h
+@@ -794,6 +794,11 @@ int __must_check __pci_register_driver(s
+ void pci_unregister_driver(struct pci_driver *dev);
+ void pci_remove_behind_bridge(struct pci_dev *dev);
+ struct pci_driver *pci_dev_driver(const struct pci_dev *dev);
++int pci_add_dynid(struct pci_driver *drv,
++		  unsigned int vendor, unsigned int device,
++		  unsigned int subvendor, unsigned int subdevice,
++		  unsigned int class, unsigned int class_mask,
++		  unsigned long driver_data);
+ const struct pci_device_id *pci_match_id(const struct pci_device_id *ids,
+ 					 struct pci_dev *dev);
+ int pci_scan_bridge(struct pci_bus *bus, struct pci_dev *dev, int max,
