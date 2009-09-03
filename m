@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbZICTbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756175AbZICTej@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbZICTbn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753888AbZICTbm
+	id S1756175AbZICTej (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:34:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbZICTei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:31:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57756 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753109AbZICTbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:31:41 -0400
-Date: Thu, 3 Sep 2009 19:31:02 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       petkovbb@googlemail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       petkovbb@googlemail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <tip-f6909f394c2d4a0a71320797df72d54c49c5927e@git.kernel.org>
-References: <tip-f6909f394c2d4a0a71320797df72d54c49c5927e@git.kernel.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/cpu] x86, msr: Fix msr-reg.S compilation with gas 2.16.1, on 32-bit too
-Message-ID: <tip-8adf65cfae2d6c2ec5c06e4521f089c62f9eff05@git.kernel.org>
-Git-Commit-ID: 8adf65cfae2d6c2ec5c06e4521f089c62f9eff05
-X-Mailer: tip-git-log-daemon
+	Thu, 3 Sep 2009 15:34:38 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:52021 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754006AbZICTeh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 15:34:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=R0dUfCLD9H8GzI9y4muxcasv4XiLuC7on0sXk4UvASIAhnv14grvCZnnHvBkm+0+GW
+         9frmbYWJYlR1y795tl6vHj0ihnxr8IVOWmjyM1k1y75ZjrgjuH0UulkdyaU2dslKeQym
+         yqlvEi2hgOTDyyUWFx9ewSFd5Ks2ooZen6F0M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 03 Sep 2009 19:31:14 +0000 (UTC)
+In-Reply-To: <4A9FCDC6.3060003@gmail.com>
+References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
+	 <4A896324.3040104@trash.net>
+	 <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
+	 <4A9EEF07.5070800@gmail.com>
+	 <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>
+	 <4A9F1620.2080105@gmail.com>
+	 <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com>
+	 <4A9F7283.1090306@gmail.com>
+	 <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1>
+	 <4A9FCDC6.3060003@gmail.com>
+Date: Thu, 3 Sep 2009 22:34:38 +0300
+X-Google-Sender-Auth: c3729ee017ef01e5
+Message-ID: <84144f020909031234y764ebad2t1be8bf28dca25ace@mail.gmail.com>
+Subject: Re: [PATCH] slub: fix slab_pad_check()
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8adf65cfae2d6c2ec5c06e4521f089c62f9eff05
-Gitweb:     http://git.kernel.org/tip/8adf65cfae2d6c2ec5c06e4521f089c62f9eff05
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 3 Sep 2009 21:26:34 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 3 Sep 2009 21:26:34 +0200
+On Thu, Sep 3, 2009 at 5:08 PM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
+> Sure, here is the poison thing
+>
+> [PATCH] slub: fix slab_pad_check()
+>
+> When SLAB_POISON is used and slab_pad_check() finds an overwrite of the
+> slab padding, we call restore_bytes() on the whole slab, not only
+> on the padding.
+>
+> Reported-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 
-x86, msr: Fix msr-reg.S compilation with gas 2.16.1, on 32-bit too
-
-The macro was defined in the 32-bit path as well - breaking the
-build on 32-bit platforms:
-
-  arch/x86/lib/msr-reg.S: Assembler messages:
-  arch/x86/lib/msr-reg.S:53: Error: Bad macro parameter list
-  arch/x86/lib/msr-reg.S:100: Error: invalid character '_' in mnemonic
-  arch/x86/lib/msr-reg.S:101: Error: invalid character '_' in mnemonic
-
-Cc: Borislav Petkov <petkovbb@googlemail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-LKML-Reference: <tip-f6909f394c2d4a0a71320797df72d54c49c5927e@git.kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/lib/msr-reg.S |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/lib/msr-reg.S b/arch/x86/lib/msr-reg.S
-index d5eaf53..69fa106 100644
---- a/arch/x86/lib/msr-reg.S
-+++ b/arch/x86/lib/msr-reg.S
-@@ -50,7 +50,7 @@ ENDPROC(native_\op\()_safe_regs)
- 
- #else /* X86_32 */
- 
--.macro op_safe_regs op:req
-+.macro op_safe_regs op
- ENTRY(native_\op\()_safe_regs)
- 	CFI_STARTPROC
- 	pushl_cfi %ebx
+Applied, thanks!
