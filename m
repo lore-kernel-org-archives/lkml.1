@@ -1,162 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755973AbZICQeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZICQfm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755973AbZICQeY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 12:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755868AbZICQeX
+	id S1755991AbZICQfm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 12:35:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbZICQfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 12:34:23 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:25394 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755732AbZICQeX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 12:34:23 -0400
-Date: Thu, 3 Sep 2009 18:29:39 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
-       Roland McGrath <roland@redhat.com>, Tom Horsley <tom.horsley@att.net>,
-       linux-kernel@vger.kernel.org
-Subject: binfmt_flat.c && bprm->cred (Was: [PATCH 0/1] exec: do not sleep
-	in TASK_TRACED under ->cred_guard_mutex)
-Message-ID: <20090903162939.GA24528@redhat.com>
-References: <20090903160510.GA23638@redhat.com>
+	Thu, 3 Sep 2009 12:35:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:63683 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755867AbZICQfl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 12:35:41 -0400
+Message-ID: <4A9FF032.2020000@vlnb.net>
+Date: Thu, 03 Sep 2009 20:34:58 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090903160510.GA23638@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Joe Eykholt <jeykholt@cisco.com>
+Subject: Re: [PATCH]: Implementation of blk_rq_map_kern_sg() (aka New implementation
+  of scsi_execute_async() v3)
+References: <4A563368.5040407@vlnb.net> <4A830016.5020304@vlnb.net> <20090815082220.GJ12579@kernel.dk>
+In-Reply-To: <20090815082220.GJ12579@kernel.dk>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/Vz0ZgG2Oph6rbPFMnzkuUKrxUIWHejUW8ZvS
+ IGcHvJ90qkFvSb5ReRLC7OzUnkXfwza80jcGSaj0+lBGsoD0Wp
+ XRqB10QKXlGb8AN+7mx0A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03, Oleg Nesterov wrote:
->
-> load_flat_shared_library() does something strange (but hopefully this
-> patch doesn't break it). I do not understand why does it create the
-> new bprm. Afaics, it could reuse bprm pointer which comes as an argument
-> of ->load_binary(), all we need is to temporary change/restore bprm->file
-> for load_flat_file().
+Jens Axboe, on 08/15/2009 12:22 PM wrote:
+> On Wed, Aug 12 2009, Vladislav Bolkhovitin wrote:
+>> This patch implements function blk_rq_map_kern_sg(), which allows to map
+>> a kernel-originated SG vector to a block request. It is necessary to execute
+>> SCSI commands with from kernel going SG buffer. At the moment SCST is the only
+>> user of this functionality. It needs it, because its target drivers, which
+>> are, basically, SCSI drivers, can deal only with SGs, not with BIOs. But,
+>> according to the latest discussions, there can be other potential users for of
+>> this functionality, so I'm sending this patch in a hope that it will be
+>> also useful for them and eventually will be merged in the mainline kernel.
+>>
+>> In the previous submissions this patch was called "New implementation of
+>> scsi_execute_async()", but since in this version scsi_execute_async() was
+>> removed from it by request of Boaz Harrosh the name was changed accordingly.
+> 
+> Generally this patch looks great, I just have one little thing I'd like
+> to point out:
+> 
+>> +	while (hbio != NULL) {
+>> +		bio = hbio;
+>> +		hbio = hbio->bi_next;
+>> +		bio->bi_next = NULL;
+>> +
+>> +		blk_queue_bounce(q, &bio);
+>> +
+>> +		res = blk_rq_append_bio(q, rq, bio);
+>> +		if (unlikely(res != 0)) {
+>> +			bio->bi_next = hbio;
+>> +			hbio = bio;
+>> +			/* We can have one or more bios bounced */
+>> +			goto out_unmap_bios;
+>> +		}
+>> +	}
+> 
+> Constructs like this are always dangerous, because of how mempools work.
+> __blk_queue_bounce() will internally do:
+> 
+>         bio = bio_alloc(GFP_NOIO, cnt);
+> 
+> so you could potentially enter a deadlock if a) you are the only one
+> allocating a bio currently, and b) the alloc fails and we wait for a bio
+> to be returned to the pool. This is highly unlikely and requires other
+> conditions to be dire, but it is a problem. This is not restricted to
+> the swap out path, the problem is purely lack of progress. So the golden
+> rule is always that you either allocate these units from a private pool
+> (which is hard for bouncing, since it does both page and bio allocations
+> from a mempool), or that you always ensure that a previously allocated
+> bio is in flight before attempting a new alloc.
 
-IOW, afaics the patch below makes sense. Imho it is a bit ugly binfmt_flat.c
-plays with prepare_exec_creds().
+Sorry for the late reply, I was on vacation.
 
-But again, I don't understand this code, and I didn't even try to compile
-this patch.
+I see your concerns. Since all the bios in __blk_rq_map_kern_sg() at 
+first all allocated and only then submitted for I/O, bio_alloc() in 
+__blk_queue_bounce() potentially can deadlock, if it's called with 
+GFP_NOIO (i.e. with __GFP_WAIT) and its mempool gets empty. The fact 
+that __blk_rq_map_kern_sg() allocates originally bios using 
+bio_kmalloc() doesn't fundamentally change that, only low the failure 
+probability. (Just to make sure I understand everything correctly.)
 
-Oleg.
+Potentially this can be a problem, since SCST nearly always uses 
+GFP_KERNEL as the mask, i.e. has __GFP_WAIT set, although, I agree, the 
+deadlock is very unlikely.
 
---- a/fs/binfmt_flat.c
-+++ b/fs/binfmt_flat.c
-@@ -83,7 +83,7 @@ struct lib_info {
- };
- 
- #ifdef CONFIG_BINFMT_SHARED_FLAT
--static int load_flat_shared_library(int id, struct lib_info *p);
-+static int load_flat_shared_library(struct linux_binprm*, int, struct lib_info*);
- #endif
- 
- static int load_flat_binary(struct linux_binprm *, struct pt_regs * regs);
-@@ -308,7 +308,8 @@ out_free:
- /****************************************************************************/
- 
- static unsigned long
--calc_reloc(unsigned long r, struct lib_info *p, int curid, int internalp)
-+calc_reloc(struct linux_binprm *bprm, unnsigned long r, struct lib_info *p,
-+		int curid, int internalp)
- {
- 	unsigned long addr;
- 	int id;
-@@ -335,7 +336,7 @@ calc_reloc(unsigned long r, struct lib_i
- 					"(%d != %d)", (unsigned) r, curid, id);
- 			goto failed;
- 		} else if ( ! p->lib_list[id].loaded &&
--				load_flat_shared_library(id, p) > (unsigned long) -4096) {
-+				load_flat_shared_library(bprm, id, p) > (unsigned long) -4096) {
- 			printk("BINFMT_FLAT: failed to load library %d", id);
- 			goto failed;
- 		}
-@@ -726,7 +727,7 @@ static int load_flat_file(struct linux_b
- 		for (rp = (unsigned long *)datapos; *rp != 0xffffffff; rp++) {
- 			unsigned long addr;
- 			if (*rp) {
--				addr = calc_reloc(*rp, libinfo, id, 0);
-+				addr = calc_reloc(bprm, *rp, libinfo, id, 0);
- 				if (addr == RELOC_FAILED) {
- 					ret = -ENOEXEC;
- 					goto err;
-@@ -759,7 +760,7 @@ static int load_flat_file(struct linux_b
- 			if (flat_set_persistent (relval, &persistent))
- 				continue;
- 			addr = flat_get_relocate_addr(relval);
--			rp = (unsigned long *) calc_reloc(addr, libinfo, id, 1);
-+			rp = (unsigned long *) calc_reloc(bprm, addr, libinfo, id, 1);
- 			if (rp == (unsigned long *)RELOC_FAILED) {
- 				ret = -ENOEXEC;
- 				goto err;
-@@ -775,7 +776,7 @@ static int load_flat_file(struct linux_b
- 				 */
- 				if ((flags & FLAT_FLAG_GOTPIC) == 0)
- 					addr = ntohl(addr);
--				addr = calc_reloc(addr, libinfo, id, 0);
-+				addr = calc_reloc(bprm, addr, libinfo, id, 0);
- 				if (addr == RELOC_FAILED) {
- 					ret = -ENOEXEC;
- 					goto err;
-@@ -812,37 +813,29 @@ err:
-  * segment (including bss) but not argv/argc/environ.
-  */
- 
--static int load_flat_shared_library(int id, struct lib_info *libs)
-+static int load_flat_shared_library(struct linux_binprm *bprm, int id,
-+						struct lib_info *libs)
- {
--	struct linux_binprm bprm;
--	int res;
-+	char *save_name = bprm->filename;
-+	struct file *save_file = bprm->file;
- 	char buf[16];
--
--	/* Create the file name */
--	sprintf(buf, "/lib/lib%d.so", id);
-+	int res;
- 
- 	/* Open the file up */
--	bprm.filename = buf;
--	bprm.file = open_exec(bprm.filename);
--	res = PTR_ERR(bprm.file);
--	if (IS_ERR(bprm.file))
--		return res;
--
--	bprm.cred = prepare_exec_creds();
--	res = -ENOMEM;
--	if (!bprm.cred)
--		goto out;
--
--	res = prepare_binprm(&bprm);
--
--	if (res <= (unsigned long)-4096)
--		res = load_flat_file(&bprm, libs, id, NULL);
--
--	abort_creds(bprm.cred);
--
--out:
--	allow_write_access(bprm.file);
--	fput(bprm.file);
-+	sprintf(buf, "/lib/lib%d.so", id);
-+	bprm->filename = buf;
-+	bprm->file = open_exec(bprm->filename);
-+	res = PTR_ERR(bprm->file);
-+	if (IS_ERR(bprm->file))
-+		goto ret;
-+
-+	res = load_flat_file(bprm, libs, id, NULL);
-+
-+	allow_write_access(bprm->file);
-+	fput(bprm->file);
-+ret:
-+	bprm->filename = save_name;
-+	bprm->file = save_file;
- 
- 	return(res);
- }
+To address it and other similar cases, which, I guess, should exist, I 
+see the following 2 ways:
 
+1. Increase BIO_POOL_SIZE from current 2 to a bigger value to be large 
+enough to satisfy such full requests allocations for the maximum 
+requests. In ideal, for the worst case it should be something like for 
+2MB * NR_CPUS much data, which is 2MB / (BIO_MAX_PAGES * PAGE_SIZE) * 
+NR_CPUS = 2NR_CPUS with 4K pages. But on practice, possibly something 
+like 10-20 should be sufficient?
+
+2. Modify blk_queue_bounce() that it can fail with bounce buffers 
+allocation and graciously process that in __blk_rq_map_kern_sg() and all 
+other similar places.
+
+Which way would you prefer? Or do you think the probability for such 
+deadlock is so low, so it doesn't worth the effort to do anything with it?
+
+Thanks a lot for review!
+Vlad
