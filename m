@@ -1,62 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756517AbZICVqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932366AbZICVwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756517AbZICVqr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZICVqq
+	id S932366AbZICVwf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbZICVwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:46:46 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37929 "EHLO mx2.suse.de"
+	Thu, 3 Sep 2009 17:52:34 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:47119 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756494AbZICVqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:46:45 -0400
-Date: Thu, 3 Sep 2009 14:43:04 -0700
-From: Greg KH <gregkh@suse.de>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org, alan@linux.intel.com,
-       stern@rowland.harvard.edu
-Subject: Re: WARNINGs in usb-serial.c
-Message-ID: <20090903214304.GA23020@suse.de>
-References: <E1MjD4A-0002wi-KL@pomaz-ex.szeredi.hu>
- <20090903183637.GA5140@suse.de>
- <200909032324.01311.rjw@sisk.pl>
+	id S1756211AbZICVwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:52:33 -0400
+Message-ID: <4AA03A9F.2040500@linux.vnet.ibm.com>
+Date: Thu, 03 Sep 2009 16:52:31 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909032324.01311.rjw@sisk.pl>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: akataria@vmware.com
+CC: James Bottomley <James.Bottomley@suse.de>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>, Matthew Wilcox <matthew@wil.cx>,
+       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, pv-drivers@vmware.com
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V3.
+References: <1252006675.18725.20.camel@ank32.eng.vmware.com>
+In-Reply-To: <1252006675.18725.20.camel@ank32.eng.vmware.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 11:24:01PM +0200, Rafael J. Wysocki wrote:
-> On Thursday 03 September 2009, Greg KH wrote:
-> > On Thu, Sep 03, 2009 at 04:13:34PM +0200, Miklos Szeredi wrote:
-> > > I get the following warnings in 2.6.31-rc.  A lot of them:
-> > > 
-> > > WARNING: at drivers/usb/serial/usb-serial.c:414 serial_write_room+0x59/0x6e [usbserial]()
-> > > WARNING: at drivers/usb/serial/usb-serial.c:401 serial_write+0x77/0x9d [usbserial]()
-> > > 
-> > > This is a huawei-3565 modem.
-> > > 
-> > > The messages don't seem to hurt, but there's lot of trouble with this
-> > > gadget.  Sometimes it just doesn't work after a while and a reboot is
-> > > needed.  Sometimes it hangs the kernel after suspend, etc.  Not sure
-> > > if this is related to the warnings...
-> > 
-> > {sigh}
-> > 
-> > The tty layer changes are being a pain here :(
-> > 
-> > Alan Stern posted a set of patches to the linux-usb list to hopefully
-> > address stuff like this, is there any way you could test them out to see
-> > if they help or not?
-> 
-> Do you have a pointer to the patches, please?  I need it for the regression list.
+Alok Kataria wrote:
+> +
+> +struct pvscsi_adapter {
+> +	char			*mmioBase;
+> +	unsigned int		irq;
+> +	u8			rev;
+> +	bool			use_msi;
+> +	bool			use_msix;
+> +	bool			use_msg;
+> +
+> +	spinlock_t		hw_lock;
 
-They were posted on the linux-usb mailing list, I'm still fighting my
-patch queue to get them into my tree soon.
+Why not just use host_lock in the scsi_host structure?
 
-thanks,
 
-greg k-h
+> +
+> +/*
+> + * Map all data buffers for a command into PCI space and
+> + * setup the scatter/gather list if needed.
+> + */
+> +static void pvscsi_map_buffers(struct pvscsi_adapter *adapter,
+> +			       struct pvscsi_ctx *ctx,
+> +			       struct scsi_cmnd *cmd, PVSCSIRingReqDesc *e)
+> +{
+> +	unsigned count;
+> +	unsigned bufflen = scsi_bufflen(cmd);
+> +	struct scatterlist *sg;
+> +
+> +	e->dataLen = bufflen;
+> +	e->dataAddr = 0;
+> +	if (bufflen == 0)
+> +		return;
+> +
+> +	sg = scsi_sglist(cmd);
+> +	count = scsi_sg_count(cmd);
+> +	if (count != 0) {
+> +		int segs = pci_map_sg(adapter->dev, sg, count,
+> +				      cmd->sc_data_direction);
+
+Should use scsi_dma_map here instead.
+
+> +		if (segs > 1) {
+> +			pvscsi_create_sg(ctx, sg, segs);
+> +
+> +			e->flags |= PVSCSI_FLAG_CMD_WITH_SG_LIST;
+> +			ctx->sglPA = pci_map_single(adapter->dev, ctx->sgl,
+> +						    SGL_SIZE, PCI_DMA_TODEVICE);
+> +			e->dataAddr = ctx->sglPA;
+> +		} else
+> +			e->dataAddr = sg_dma_address(sg);
+> +	} else {
+> +		/*
+> +		 * In case there is no S/G list, scsi_sglist points
+> +		 * directly to the buffer.
+> +		 */
+> +		ctx->dataPA = pci_map_single(adapter->dev, sg, bufflen,
+> +					     cmd->sc_data_direction);
+> +		e->dataAddr = ctx->dataPA;
+> +	}
+> +}
+> +
+> +static void pvscsi_unmap_buffers(const struct pvscsi_adapter *adapter,
+> +				 struct pvscsi_ctx *ctx)
+> +{
+> +	struct scsi_cmnd *cmd;
+> +	unsigned bufflen;
+> +
+> +	cmd = ctx->cmd;
+> +	bufflen = scsi_bufflen(cmd);
+> +
+> +	if (bufflen != 0) {
+> +		unsigned count = scsi_sg_count(cmd);
+> +
+> +		if (count != 0) {
+> +			pci_unmap_sg(adapter->dev, scsi_sglist(cmd), count,
+> +				     cmd->sc_data_direction);
+
+Use scsi_dma_unmap here instead.
+
+> +			if (ctx->sglPA) {
+> +				pci_unmap_single(adapter->dev, ctx->sglPA,
+> +						 SGL_SIZE, PCI_DMA_TODEVICE);
+> +				ctx->sglPA = 0;
+> +			}
+> +		} else
+> +			pci_unmap_single(adapter->dev, ctx->dataPA, bufflen,
+> +					 cmd->sc_data_direction);
+> +	}
+> +	if (cmd->sense_buffer)
+> +		pci_unmap_single(adapter->dev, ctx->sensePA,
+> +				 SCSI_SENSE_BUFFERSIZE, PCI_DMA_FROMDEVICE);
+> +}
+> +
+
+
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
+
+
