@@ -1,105 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZICJrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZICJu4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZICJrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 05:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZICJra
+	id S1754862AbZICJu4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 05:50:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZICJuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 05:47:30 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50320 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbZICJr3 (ORCPT
+	Thu, 3 Sep 2009 05:50:55 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:56104 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754811AbZICJuz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 05:47:29 -0400
-Date: Thu, 3 Sep 2009 11:47:09 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [patch] ext2/3: document conditions when reliable operation is
-	possible
-Message-ID: <20090903094709.GG3793@elf.ucw.cz>
-References: <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090826010018.GA17684@mit.edu>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 3 Sep 2009 05:50:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=cC84lhnkhsiT0PbCao5yfbIy6SG/zzfj4tmsonNMZwo5NJfPbVcQUaGcev3cyPznQT
+         yUu5/EAUzCba8e04iX4PlVnvRQxzs3pwkMr9vpZ66OhYuwPldUy9yZVOavsdoA9d4oxm
+         ynF8BBYXNrmCfkgT2i2vTXN/aShVAEUSI1bM0=
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: lrodriguez@atheros.com, linville@tuxdriver.com,
+       linux-wireless@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Alexander Beregalov <a.beregalov@gmail.com>
+Subject: [PATCH] Staging: stlc45xx: fix usage of mac80211 workqueue
+Date: Thu,  3 Sep 2009 13:50:44 +0400
+Message-Id: <1251971444-28690-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 2009-08-25 21:00:18, Theodore Tso wrote:
-> On Tue, Aug 25, 2009 at 08:31:21PM -0400, Ric Wheeler wrote:
-> >>> You are simply incorrect, Ted did not say that ext3 does not work
-> >>> with MD raid5.
-> >>
-> >> http://lkml.org/lkml/2009/8/25/312
-> >
-> > I will let Ted clarify his text on his own, but the quoted text says "... 
-> > have potential...".
-> >
-> > Why not ask Neil if he designed MD to not work properly with ext3?
-> 
-> So let me clarify by saying the following things.   
-> 
-> 1) Filesystems are designed to expect that storage devices have
-> certain properties.  These include returning the same data that you
-> wrote, and that an error when writing a sector, or a power failure
-> when writing sector, should not be amplified to cause collateral
-> damage with previously succfessfully written sectors.
+See commit 42935ecaf(mac80211: redefine usage of the mac80211
+workqueue).
+Fix build error.
 
-Yes. Unfortunately, different filesystems expect different properties
-from block devices. ext3 will work with write cache enabled/barriers
-enabled, while ext2 needs write cache disabled.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+ drivers/staging/stlc45xx/stlc45xx.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-The requirements are also quite surprising; AFAICT ext3 can handle
-disk writing garbage to single sector during powerfail, while xfs can
-not handle that.
-
-Now, how do you expect users to know these subtle details when it is
-not documented anywhere? And why are you fighting against documenting
-these subtleties?
-
-> Secondly, what's the probability of a failure causes the RAID array to
-> become degraded, followed by a power failure, versus a power failure
-> while the RAID array is not running in degraded mode?  Hopefully you
-> are running with the RAID array in full, proper running order a much
-> larger percentage of the time than running with the RAID array in
-> degraded mode.  If not, the bug is with the system administrator!
-
-As was uncovered, MD RAID does not properly support barriers,
-so... you don't actually need drive failure.
-
-> Maybe a random OS engineer doesn't know these things --- but trust me
-> when I say a competent system administrator had better be familiar
-> with these concepts.  And someone who wants their data to be
-> reliably
-
-Trust me, 99% of sysadmins are not compentent by your definition. So
-this should be documented.
-
-> At the end of the day, filesystems are not magic.  They can't
-> compensate for crap hardware, or incompetently administered machines.
-
-ext3 greatly contributes to administrator incomentency:
-
-# The journal supports the transactions start and stop, and in case of a
-# crash, the journal can replay the transactions to quickly put the
-# partition back into a consistent state.
-
-...it does not mention that (non-default!) barrier=1 is needed to make
-this reliable, nor it mentions that there are certain requirements for
-this to work. It just says that journal will magically help you.
-
-And you wonder while people expect magic from your filesystem?
-
-								Pavel
-
+diff --git a/drivers/staging/stlc45xx/stlc45xx.c b/drivers/staging/stlc45xx/stlc45xx.c
+index 12d414d..9ec8bd1 100644
+--- a/drivers/staging/stlc45xx/stlc45xx.c
++++ b/drivers/staging/stlc45xx/stlc45xx.c
+@@ -1058,7 +1058,7 @@ static void stlc45xx_reset(struct stlc45xx *stlc)
+ 	stlc45xx_warning("resetting firmware");
+ 	stlc->fw_state = FW_STATE_RESET;
+ 	ieee80211_stop_queues(stlc->hw);
+-	queue_work(stlc->hw->workqueue, &stlc->work_reset);
++	ieee80211_queue_work(stlc->hw, &stlc->work_reset);
+ }
+ 
+ static void stlc45xx_work_tx_timeout(struct work_struct *work)
+@@ -1489,7 +1489,7 @@ static irqreturn_t stlc45xx_interrupt(int irq, void *config)
+ 
+ 	stlc45xx_debug(DEBUG_IRQ, "IRQ");
+ 
+-	queue_work(stlc->hw->workqueue, &stlc->work);
++	ieee80211_queue_work(stlc->hw, &stlc->work);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -1568,7 +1568,7 @@ static int stlc45xx_wq_tx(struct stlc45xx *stlc)
+ 		}
+ 
+ 		list_add(&entry->tx_list, &stlc->tx_sent);
+-		queue_delayed_work(stlc->hw->workqueue,
++		ieee80211_queue_delayed_work(stlc->hw,
+ 				   &stlc->work_tx_timeout,
+ 				   msecs_to_jiffies(TX_TIMEOUT));
+ 	}
+@@ -2132,7 +2132,7 @@ static int stlc45xx_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
+ 		ieee80211_stop_queues(stlc->hw);
+ 	}
+ 
+-	queue_work(stlc->hw->workqueue, &stlc->work);
++	ieee80211_queue_work(stlc->hw, &stlc->work);
+ 
+ 	spin_unlock_bh(&stlc->tx_lock);
+ 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.4.1
+
