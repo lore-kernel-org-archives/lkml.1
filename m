@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZICPMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbZICPO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZICPMZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 11:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755826AbZICPMY
+	id S1755764AbZICPO2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 11:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754321AbZICPO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 11:12:24 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:59276 "EHLO
+	Thu, 3 Sep 2009 11:14:28 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:59392 "EHLO
 	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754461AbZICPMX (ORCPT
+	with ESMTP id S1751647AbZICPO1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 11:12:23 -0400
-Message-ID: <52761.192.168.10.89.1251990725.squirrel@dbdmail.itg.ti.com>
-Date: Thu, 3 Sep 2009 20:42:05 +0530 (IST)
-Subject: [PATCH 1/2]: twl4030: register twl4030-pwrbuttonas a child of 
-     twl4030-core.c
+	Thu, 3 Sep 2009 11:14:27 -0400
+Message-ID: <55730.192.168.10.89.1251990860.squirrel@dbdmail.itg.ti.com>
+Date: Thu, 3 Sep 2009 20:44:20 +0530 (IST)
+Subject: [PATCH 2/2]: twl4030: initialize pm_power_off in twl4030-core.c
 From: "vimal singh" <vimalsingh@ti.com>
 To: linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: felipe.balbi@nokia.com, sameo@openedhand.com,
-       dbrownell@users.sourceforge.net
+Cc: felipe.balbi@nokia.com
 User-Agent: SquirrelMail/1.4.3a
 X-Mailer: SquirrelMail/1.4.3a
 MIME-Version: 1.0
@@ -31,55 +29,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'twl4030-pwrbutton' was already made as a platform_driver so it can
-be registered as a child of twl4030-core.c.
-
-But adding twl4030-pwrbutton as our child in twl4030-core is missing
-currently. This patch adds it.
+'twl4030-poweroff' module was removed sometime back. This patch adds back
+this capability.
+We don't really need a whole new driver just for initializing one pointer.
+Initialize pm_power_off in twl4030-core.c
 
 Signed-off-by: Vimal Singh <vimalsingh@ti.com>
 CC: Felipe Balbi <felipe.balbi@nokia.com>
-Cc: Samuel Ortiz <sameo@openedhand.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
 ---
 This patch is compile tested only.
 This patch is based on Felipe Balbi's patch posted earlier:
-http://lkml.org/lkml/2009/2/28/88
+http://markmail.org/message/ts4if3553qnauket
 
- drivers/mfd/twl4030-core.c |   14 ++++++++++++++
- 1 files changed, 14 insertions(+)
+ drivers/mfd/twl4030-core.c |   31 +++++++++++++++++++++++++++++++
+ 1 files changed, 31 insertions(+)
 
 Index: linux-omap-2.6/drivers/mfd/twl4030-core.c
 ===================================================================
 --- linux-omap-2.6.orig/drivers/mfd/twl4030-core.c
 +++ linux-omap-2.6/drivers/mfd/twl4030-core.c
-@@ -108,6 +108,13 @@
- #define twl_has_watchdog()        false
- #endif
+@@ -178,6 +178,10 @@
+ #define TWL4030_VAUX2		BIT(0)	/* pre-5030 voltage ranges */
+ #define TPS_SUBSET		BIT(1)	/* tps659[23]0 have fewer LDOs */
 
-+#if defined(CONFIG_INPUT_TWL4030_PWRBUTTON) \
-+	|| defined(CONFIG_INPUT_TWL4030_PWRBUTTON_MODULE)
-+#define twl_has_pwrbutton()	true
-+#else
-+#define twl_has_pwrbutton()	false
-+#endif
++/* for pm_power_off */
++#define PWR_P1_SW_EVENTS	0x10
++#define PWR_DEVOFF		(1 << 0)
 +
- /* Triton Core internal information (BEGIN) */
+ /*----------------------------------------------------------------------*/
 
- /* Last - for index max*/
-@@ -538,6 +545,13 @@ add_children(struct twl4030_platform_dat
- 			return PTR_ERR(child);
- 	}
+ /* is driver active, bound to a chip? */
+@@ -754,6 +758,30 @@ static int twl4030_remove(struct i2c_cli
+ 	return 0;
+ }
 
-+	if (twl_has_pwrbutton()) {
-+		child = add_child(1, "twl4030_pwrbutton",
-+				NULL, 0, true, pdata->irq_base + 8 + 0, 0);
-+		if (IS_ERR(child))
-+			return PTR_ERR(child);
++static void twl4030_poweroff(void)
++{
++	int err;
++	u8 val;
++
++	err = twl4030_i2c_read_u8(TWL4030_MODULE_PM_MASTER, &val,
++				  PWR_P1_SW_EVENTS);
++	if (err) {
++		pr_err("%s: i2c error %d while reading TWL4030"
++			"PM_MASTER P1_SW_EVENTS\n",
++			DRIVER_NAME, err);
++		return;
 +	}
 +
- 	if (twl_has_regulator()) {
- 		/*
- 		child = add_regulator(TWL4030_REG_VPLL1, pdata->vpll1);
++	val |= PWR_DEVOFF;
++
++	err = twl4030_i2c_write_u8(TWL4030_MODULE_PM_MASTER, val,
++				   PWR_P1_SW_EVENTS);
++	if (err)
++		pr_err("%s: i2c error %d while writing TWL4030"
++			"PM_MASTER P1_SW_EVENTS\n",
++			DRIVER_NAME, err);
++}
++
+ /* NOTE:  this driver only handles a single twl4030/tps659x0 chip */
+ static int
+ twl4030_probe(struct i2c_client *client, const struct i2c_device_id *id)
+@@ -811,6 +839,9 @@ twl4030_probe(struct i2c_client *client,
+ 			goto fail;
+ 	}
+
++	/* initialize pm_power_off routine */
++	pm_power_off = twl4030_poweroff;
++
+ 	status = add_children(pdata, id->driver_data);
+ fail:
+ 	if (status < 0)
 
 
