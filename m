@@ -1,88 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZICDKy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZICDW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754176AbZICDKy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 23:10:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZICDKx
+	id S1754186AbZICDW2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 23:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZICDW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 23:10:53 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:28748 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118AbZICDKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 23:10:53 -0400
-Message-ID: <4A9F3319.8040509@ds.jp.nec.com>
-Date: Wed, 02 Sep 2009 23:08:09 -0400
-From: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 2 Sep 2009 23:22:27 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:42344 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754130AbZICDW1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 23:22:27 -0400
+Date: Thu, 3 Sep 2009 13:22:06 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jonas Meurer <jonas@freesources.org>
+Cc: sebastian@breakpoint.cc, celejar@gmail.com, randy.dunlap@oracle.com,
+       541835@bugs.debian.org, linux-kernel@vger.kernel.org,
+       linux-crypto@vger.kernel.org, control@bugs.debian.org
+Subject: Re: [pkg-cryptsetup-devel] Bug#541835: crypto configuration /
+	dependencies broken
+Message-ID: <20090903032206.GA18883@gondor.apana.org.au>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH 07/23] io-controller: Common hierarchical fair queuing
- code in elevaotor layer
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-8-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1251495072-7780-8-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090901005120.GB22049@resivo.wgnet.de>
+Organization: Core
+X-Newsgroups: apana.lists.os.linux.cryptoapi,apana.lists.os.linux.kernel
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jonas Meurer <jonas@freesources.org> wrote:
+> 
+> i guess the best solution would be to improve the module dependency
+> system. cipher meta-modules like 'aes' should depend on all available
+> implementations. same for ivciphers, hashs, rng implementations etc.
 
-Vivek Goyal wrote, on 08/28/2009 05:30 PM:
-> +static struct io_group *io_find_alloc_group(struct request_queue *q,
-> +			struct cgroup *cgroup, struct elv_fq_data *efqd,
-> +			int create)
-> +{
-> +	struct io_cgroup *iocg = cgroup_to_io_cgroup(cgroup);
-> +	struct io_group *iog = NULL;
-> +	/* Note: Use efqd as key */
-> +	void *key = efqd;
-> +
-> +	/*
-> +	 * Take a refenrece to css object. Don't want to map a bio to
-> +	 * a group if it has been marked for deletion
-> +	 */
-> +
-> +	if (!css_tryget(&iocg->css))
-> +		return iog;
+We already do that for algorithms at least, they should all have
+aliases of the form "ALG" or "ALG-all".
 
-cgroup_to_io_cgroup() returns NULL if only blkio subsystem
-is mounted but io subsystem is not.  It can cause NULL pointer
-access.
+Things like chainiv/eseqiv should just be included always.  There
+are unlikely to be any new algorithms of that type.
 
-Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
----
- block/elevator-fq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index b723c12..6714e73 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1827,7 +1827,7 @@ static struct io_group *io_find_alloc_group(struct request_queue *q,
-         * a group if it has been marked for deletion
-         */
- 
--       if (!css_tryget(&iocg->css))
-+       if (!iocg || !css_tryget(&iocg->css))
-                return iog;
- 
-        iog = io_cgroup_lookup_group(iocg, key);
+Cheers,
 -- 
-1.6.2.5
-
-
--- 
-IKEDA, Munehiro
-  NEC Corporation of America
-    m-ikeda@ds.jp.nec.com
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
