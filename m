@@ -1,50 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754796AbZICRkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755817AbZICRoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754796AbZICRkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 13:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZICRky
+	id S1755817AbZICRoy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 13:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755499AbZICRox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 13:40:54 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:47613 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753086AbZICRkx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 13:40:53 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAE+cn0qrR7MV/2dsb2JhbADDA4hBAZAvBYQb
-X-IronPort-AV: E=Sophos;i="4.44,326,1249257600"; 
-   d="scan'208";a="237090727"
-From: Roland Dreier <rdreier@cisco.com>
-To: tziporet@dev.mellanox.co.il
-Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
-       linux-rdma@vger.kernel.org
-Subject: Re: [ofa-general] InfiniBand/RDMA merge plans for 2.6.32
-References: <adar5upos9z.fsf@cisco.com> <4A9FB004.6020904@mellanox.co.il>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 03 Sep 2009 10:40:55 -0700
-In-Reply-To: <4A9FB004.6020904@mellanox.co.il> (Tziporet Koren's message of
-	"Thu, 03 Sep 2009 15:01:08 +0300")
-Message-ID: <ada4orkoriw.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Thu, 3 Sep 2009 13:44:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17405 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755129AbZICRox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 13:44:53 -0400
+Date: Thu, 3 Sep 2009 19:41:06 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: akpm@linux-foundation.org, mingo@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] core: allow setrlimit to non-current tasks
+Message-ID: <20090903174106.GC27161@redhat.com>
+References: <4A9FC8DA.4090001@gmail.com> <1251985948-28965-1-git-send-email-jirislaby@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 Sep 2009 17:40:55.0763 (UTC) FILETIME=[B0A69A30:01CA2CBD]
-Authentication-Results: sj-dkim-1; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim1004 verified; ); 
+Content-Disposition: inline
+In-Reply-To: <1251985948-28965-1-git-send-email-jirislaby@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/03, Jiri Slaby wrote:
+>
+> @@ -1240,6 +1240,7 @@ int setrlimit(struct task_struct *tsk, unsigned int resource,
+>  		struct rlimit *new_rlim)
+>  {
+>  	struct rlimit *old_rlim;
+> +	unsigned int needs_locking = !same_thread_group(tsk, current);
+>  	int retval;
 
- > What about RDMAoE?
- > Patches were sent few weeks ago and it seems you ignore them.
+Yes, thanks for doing this, imho this optimization is worthwhile.
 
-Sorry, I should have mentioned that.
+But I'd suggest you to add this optimization in a separate patch
+because,
 
-Yes, I have been ignoring the patches -- I want to get through XRC
-first, and also I would like to see a real spec for IBoE (that resolves
-issues like multicast interaction with IGMP, address resolution, etc) so
-we can judge whether the current patches match the long-term direction
-or are just a point-in-time hack.
+> +	/* optimization: 'current' doesn't need locking, e.g. setrlimit */
+> +	if (needs_locking) {
+> +		/* protect tsk->signal and tsk->sighand from disappearing */
+> +		read_lock(&tasklist_lock);
+> +		if (!tsk->sighand) {
+> +			retval = -ESRCH;
+> +			goto unlock;
 
- - R.
+I should have mentioned this before, but it is not that simple.
+
+Even if same_thread_group(tsk, current), we must not trust tsk->sighand,
+it can be NULL if our subthread is dead. (well, we need ->signal, not
+->sighand but this doesn't matter because they disappear simultaneously).
+
+Actually, perhaps same_thread_group() is not needed, perhaps it is enough
+to avoid tasklist in sys_setrlimit case. So, I think optimization should
+do:
+
+	retval = -ESRCH;
+	if (tsk != current) {
+		read_lock(&tasklist_lock);
+		if (!tsk->sighand)
+			goto unlock;
+	}
+
+unlock:
+	if (tsk != current)
+		read_unlock(&tasklist_lock);
+
+
+Or, if we use same_thread_group(),
+
+	needs_locking = !same_thread_group(tsk, current);
+
+	if (!needs_locking)
+		tsk = current;
+	else {
+		take tasklist, check ->sighand.
+	}
+
+Oleg.
+
