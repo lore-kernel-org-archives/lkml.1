@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZICO70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZICPHG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbZICO70 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbZICO7Z
+	id S1755666AbZICPHG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 11:07:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754125AbZICPHF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:59:25 -0400
-Received: from mail-pz0-f172.google.com ([209.85.222.172]:55764 "EHLO
-	mail-pz0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754589AbZICO7Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:59:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=vdrZlSqaADIi3IAZ1O4mOLDvBKpbfcK0SBTz8bPxbKHIJg7CDkzfYkI/rvdx55343U
-         4hnTBGhWUUePXZIWN5rsTajIZpuiWaugBmbshALCWSQGcrIrBHATQNPeeUR2aGsC51TE
-         aaErjMbf7LANYnFDvmWrZKqC0EAxGas0PPWJ0=
-Date: Thu, 3 Sep 2009 07:59:21 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Mario Limonciello <mario_limonciello@dell.com>
-Subject: Re: Dell-laptop is not working without wireless
-References: <20090818060340.E1C7A526EA5@mailhub.coreip.homeip.net> <20090818121049.GB22284@srcf.ucam.org>
+	Thu, 3 Sep 2009 11:07:05 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:60348 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751252AbZICPHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 11:07:02 -0400
+Date: Thu, 3 Sep 2009 08:00:44 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>
+Subject: Re: [PATCH] slub: fix slab_pad_check() and SLAB_DESTROY_BY_RCU
+Message-ID: <20090903150044.GB6761@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com> <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net> <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com> <4A9EEF07.5070800@gmail.com> <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com> <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090818121049.GB22284@srcf.ucam.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090903153215.E51F8526EA5@mailhub.coreip.homeip.net>
+In-Reply-To: <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 18, 2009 at 01:10:49PM +0100, Matthew Garrett wrote:
-> On Mon, Aug 17, 2009 at 10:32:27PM -0700, Dmitry Torokhov wrote:
+On Thu, Sep 03, 2009 at 12:45:43PM -0500, Christoph Lameter wrote:
+> On Thu, 3 Sep 2009, Eric Dumazet wrote:
 > 
-> > dell-laptop module does not work on my Latitude d630 unless driver for
-> > my wireless card (which happens to be iwl3945) is already loaded.
-> > Otherwise dcsbas_smi_request() returns all zeroes which causes
-> > dell-laptop to not create any rfkill devices nor install backlight
-> > device:
+> > on a SLAB_DESTROY_BY_RCU cache, there is no need to try to optimize this
+> > rcu_barrier() call, unless we want superfast reboot/halt sequences...
 > 
-> That's quite bizarre. I'd had one report of the backlight setup failing, 
-> but hadn't connected it with wireless driver loading. Long shot, but I 
-> don't suppose you can figure out which bit of the wifi config is needed 
-> to get dell-laptop working by just bailing at various bits of the probe 
-> and seeing if you get sensible answers?
+> I stilll think that the action to quiesce rcu is something that the caller
+> of kmem_cache_destroy must take care of.
+
+Why?
+
+							Thanx, Paul
+
+> Could you split this into two patches: One that addresses the poison and
+> another that deals with rcu?
 > 
-
-Admittedly I have not spend much time on it but it looks like my box
-_really_ wants wifi interface to be fully operational before
-dcsbas_smi_request() starts returning proper data. I wonder if iwl3945's
-rfkill support interferes somehow here...
-
-Maybe Mario (being a Dell guy) has an idea why this might be happening?
-
--- 
-Dmitry
