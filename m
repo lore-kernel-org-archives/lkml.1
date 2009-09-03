@@ -1,77 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZICO2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753979AbZICO2P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbZICO2k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZICO2j
+	id S1753979AbZICO2P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:28:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZICO2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:28:39 -0400
-Received: from mx01.bfk.de ([193.227.124.2]:46479 "EHLO mx01.bfk.de"
+	Thu, 3 Sep 2009 10:28:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55056 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754479AbZICO2g convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:28:36 -0400
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Hellwig <hch@infradead.org>,
-       Mark Lord <lkml@rtr.ca>, Michael Tokarev <mjt@tls.msk.ru>,
-       david@lang.hm, Pavel Machek <pavel@ucw.cz>,
-       Theodore Tso <tytso@mit.edu>, NeilBrown <neilb@suse.de>,
-       Rob Landley <rob@landley.net>, Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe width, writes in storage
-References: <20090828064449.GA27528@elf.ucw.cz>
-	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>
-	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>
-	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>
-	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>
-	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>
-	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>
-	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>
-	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com>
-	<m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com>
-From: Florian Weimer <fweimer@bfk.de>
-Date: Thu, 03 Sep 2009 14:26:55 +0000
-In-Reply-To: <4A9FCF6B.1080704@redhat.com> (Ric Wheeler's message of "Thu\, 03 Sep 2009 10\:15\:07 -0400")
-Message-ID: <823a74w1cg.fsf@mid.bfk.de>
+	id S1753480AbZICO2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 10:28:14 -0400
+Date: Thu, 3 Sep 2009 14:27:37 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
+       hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/core] perf trace: Fix parsing of perf.data
+Message-ID: <tip-8886f42d6d8dabeb488c706c339634a0e3e08df4@git.kernel.org>
+Git-Commit-ID: 8886f42d6d8dabeb488c706c339634a0e3e08df4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 03 Sep 2009 14:27:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ric Wheeler:
+Commit-ID:  8886f42d6d8dabeb488c706c339634a0e3e08df4
+Gitweb:     http://git.kernel.org/tip/8886f42d6d8dabeb488c706c339634a0e3e08df4
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Thu, 3 Sep 2009 16:19:57 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Thu, 3 Sep 2009 16:19:57 +0200
 
-> Note that even without MD raid, the file system issues IO's in file
-> system block size (4096 bytes normally) and most commodity storage
-> devices use a 512  byte sector size which means that we have to update
-> 8 512b sectors.
+perf trace: Fix parsing of perf.data
 
-Database software often attempts to deal with this phenomenon
-(sometimes called "torn page writes").  For example, you can make sure
-that the first time you write to a database page, you keep a full copy
-in your transaction log.  If the machine crashes, the log is replayed,
-first completely overwriting the partially-written page.  Only after
-that, you can perform logical/incremental logging.
+We started parsing perf.data at head 0. This caused -D to
+segfault and it could possibly also case incorrect trace
+entries to be displayed.
 
-The log itself has to be protected with a different mechanism, so that
-you don't try to replay bad data.  But you haven't comitted to this
-data yet, so it is fine to skip bad records.
+Parse it at data_offset instead.
 
-Therefore, sub-page corruption is a fundamentally different issue from
-super-page corruption.
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-BTW, older textbooks will tell you that mirroring requires that you
-read from two copies of the data and compare it (and have some sort of
-tie breaker if you need availability).  And you also have to re-read
-data you've just written to disk, to make sure it's actually there and
-hit the expected sectors.  We can't even do this anymore, thanks to
-disk caches.  And it doesn't seem to be necessary in most cases.
 
--- 
-Florian Weimer                <fweimer@bfk.de>
-BFK edv-consulting GmbH       http://www.bfk.de/
-Kriegsstraße 100              tel: +49-721-96201-1
-D-76133 Karlsruhe             fax: +49-721-96201-99
+---
+ tools/perf/builtin-trace.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/tools/perf/builtin-trace.c b/tools/perf/builtin-trace.c
+index d59bf8a..914ab36 100644
+--- a/tools/perf/builtin-trace.c
++++ b/tools/perf/builtin-trace.c
+@@ -196,6 +196,7 @@ static int __cmd_trace(void)
+ 		exit(0);
+ 	}
+ 	header = perf_header__read(input);
++	head = header->data_offset;
+ 	sample_type = perf_header__sample_type(header);
+ 
+ 	if (!(sample_type & PERF_SAMPLE_RAW))
