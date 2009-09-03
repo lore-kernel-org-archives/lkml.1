@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754307AbZICFqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754386AbZICFqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754307AbZICFqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 01:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZICFqi
+	id S1754386AbZICFqr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 01:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZICFqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 01:46:38 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:57687 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753044AbZICFqh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 01:46:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=ntvl6jPEf4siJsBobA23FE97fTaVSZaewu0173xhJRhrDk3khCHJ6BK+iinutC4lp0
-         5nIa/zHEAGuXxGpWceRL393WWoCSpbuTCuvsAGZWlZbPTe+hDVf6lWkWwta1M/xHzjzf
-         z3OADq4phkYzv66enGlrfvQSlM1f+64t8SXE8=
-Date: Thu, 3 Sep 2009 07:46:35 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [PATCH -tip tracing/kprobes 3/6] kprobes/x86: Fix to add
-	__kprobes to in-kernel fault handing functions
-Message-ID: <20090903054633.GE6072@nowhere>
-References: <20090827152539.GE6058@nowhere> <20090827172311.8246.92725.stgit@localhost.localdomain> <20090830005355.GB387@nowhere> <4A99E8CB.1040600@redhat.com> <20090830160939.GA6131@nowhere> <4A9E6BDD.6090705@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A9E6BDD.6090705@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 3 Sep 2009 01:46:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34392 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754331AbZICFqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 01:46:44 -0400
+Date: Thu, 3 Sep 2009 15:46:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: James Morris <jmorris@namei.org>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>, Kyle McMartin <kyle@mcmartin.ca>,
+       <linux-parisc@vger.kernel.org>
+Subject: linux-next: manual merge of the security-testing tree with the
+ parisc tree
+Message-Id: <20090903154636.e70c50da.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__3_Sep_2009_15_46_36_+1000_Ohoksu82jTWe4ByM"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 08:58:05AM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
-> > BTW, after your patchset:
-> > 
-> > TEST    posttest
-> >   Building modules, stage 2.
-> > Error: c0101038:	2e a1 f8 b0 9e c0    	mov    %cs:0xc09eb0f8,%eax
-> > Error: objdump says 6 bytes, but insn_get_length() says 10 (attr:40000)
-> > make[1]: *** [posttest] Erreur 2
-> > make: *** [bzImage] Erreur 2
-> > make: *** Attente des tâches non terminées....
-> >   MODPOST 4 modules
-> > 
-> > 
-> > I'm cross compiling from 64 to 32 using:
-> > 
-> > make ARCH=x86
-> > 
-> > I've attached my config.
-> 
-> Aah, you might miss an important patch :D
-> http://lkml.org/lkml/2009/8/28/367
-> 
-> Thank you,
+--Signature=_Thu__3_Sep_2009_15_46_36_+1000_Ohoksu82jTWe4ByM
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi James,
 
-I thought I applied it.
-I'm really an idiot :-(
+Today's linux-next merge of the security-testing tree got conflicts in
+arch/parisc/include/asm/thread_info.h, arch/parisc/kernel/entry.S and
+arch/parisc/kernel/signal.c between commit 9f4259771faf1ffd99888796d925adae=
+4c93630b ("parisc: add TIF_NOTIFY_RESUME and use tracehook_notify_resume") =
+from the parisc tree and
+commits d0420c83f39f79afb82010c2d2cafd150eef651b ("KEYS: Extend
+TIF_NOTIFY_RESUME to (almost) all architectures [try #6]") and
+ee18d64c1f632043a02e6f5ba5e045bb26a5465f ("KEYS: Add a keyctl to install
+a process's session keyring on its parent [try #6]") from the
+security-testing tree.
 
-Sorry for the noise.
+Overlapping changes.  I fixed it up (using the parisc versions and adding
+the extra change from the latter security-testing patch) and can carry
+the fixes as necessary.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Thu__3_Sep_2009_15_46_36_+1000_Ohoksu82jTWe4ByM
+Content-Type: application/pgp-signature
 
- 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America), Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEARECAAYFAkqfWDwACgkQjjKRsyhoI8xO1wCguPqeZiR4YX5YW6vaTcxVS0fD
+Lz0AoKP3cYPaaA+nRb9uo7KiUZ/pPJO7
+=8v1y
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_Sep_2009_15_46_36_+1000_Ohoksu82jTWe4ByM--
