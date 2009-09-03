@@ -1,57 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZICAYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbZICAaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbZICAYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 20:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZICAYl
+	id S1753944AbZICAaU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 20:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZICAaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 20:24:41 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50073 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753862AbZICAYk (ORCPT
+	Wed, 2 Sep 2009 20:30:17 -0400
+Received: from mail-iw0-f176.google.com ([209.85.223.176]:61046 "EHLO
+	mail-iw0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753882AbZICAaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 20:24:40 -0400
-Message-ID: <61624a1a836fe4f48d76af9b431eba39.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <661de9470909021258j7fcc71fcv27d284738d1e37e3@mail.gmail.com>
-References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
-    <661de9470909021258j7fcc71fcv27d284738d1e37e3@mail.gmail.com>
-Date: Thu, 3 Sep 2009 09:24:39 +0900 (JST)
-Subject: Re: [mmotm][experimental][PATCH] coalescing charge
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-User-Agent: SquirrelMail/1.4.16
+	Wed, 2 Sep 2009 20:30:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=nHUEKJjiI1t0EI6tZmKVFPgQfEvOoLCv89xZBv1lWpFWu+JDi1cI14m7y0mXCy9Yw3
+         BIZMW/+SahhJ+Yzu0t8ChCNbypajimxxqDFnQDJprVzu/LopS23Gh2EImuk4etHe61L+
+         MKvSjjv5KYY1wcm2mjKAesP/TrJVzLkFKq/bE=
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Importance: Normal
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Wed, 2 Sep 2009 17:29:57 -0700
+Message-ID: <43e72e890909021729q7c40f907v7a81eaf5c8b73a61@mail.gmail.com>
+Subject: Exporting kmemleak.h to userspace
+To: Catalin Marinas <catalin.marinas@arm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Johannes Berg <johannes@sipsolutions.net>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh さんは書きました：
-> On Wed, Sep 2, 2009 at 2:59 PM, KAMEZAWA
-> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> I'm sorry that I'll be absent tomorrow. This is dump of current code.
->> IMHO, this version is enough simple.
->>
->> My next target is css's refcnt per page. I think we never need it...
->
-> Is this against 27th August 2009 mmotm?
->
-Onto mmotm-27+ all patches I sent. Maybe arguments to res_counter will
-HUNK, at least
+I was reviewing kmemleak code and noticed kmemleak.h went exported to
+userspace under include/linux/kmemleak.h. Do we expect userspace to
+use this stuff somehow? All relevant kmemleak structs are kept
+private, I'm curious what userspace apps would use this.
 
-Thanks,
--Kame
-
-> Balbir Singh
->
-
-
+  Luis
