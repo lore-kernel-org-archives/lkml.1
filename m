@@ -1,148 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756401AbZICUJP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZICUMI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756401AbZICUJP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:09:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756345AbZICUJN
+	id S1756383AbZICUMI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 16:12:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756354AbZICUMG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:09:13 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:51036 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756322AbZICUIl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:08:41 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: oleg@redhat.com
-Cc: akpm@linux-foundation.org, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH v2 8/8] FS: proc, make limits writable
-Date: Thu,  3 Sep 2009 22:08:44 +0200
-Message-Id: <1252008524-5376-8-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <20090903174106.GC27161@redhat.com>
-References: <20090903174106.GC27161@redhat.com>
+	Thu, 3 Sep 2009 16:12:06 -0400
+Received: from mx1-old.redhat.com ([66.187.233.31]:32831 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756325AbZICUMC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 16:12:02 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
+       Tom Horsley <tom.horsley@att.net>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 1/1] exec: do not sleep in TASK_TRACED under
+	->cred_guard_mutex
+In-Reply-To: Oleg Nesterov's message of  Thursday, 3 September 2009 18:05:14 +0200 <20090903160514.GA23646@redhat.com>
+References: <20090903160514.GA23646@redhat.com>
+Emacs: a learning curve that you can use as a plumb line.
+Message-Id: <20090903200924.E46DF47C94@magilla.sf.frob.com>
+Date: Thu,  3 Sep 2009 13:09:24 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow writing strings such as
-Max core file size=0:unlimited
-to /proc/<pid>/limits to change limits.
+I certainly think it's right to hold the mutex only as long as necessary.
+Clearly holding it when we stop is wrong.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- fs/proc/base.c |   78 ++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 76 insertions(+), 2 deletions(-)
+I'm a bit concerned about holding it for arbitrary periods while we block
+in the filesystem code.  e.g., consider the scenario with a hangs-forever
+NFS server or suchlike.  But I'm not sure there is a reasonable way around
+that one.
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index ea71cae..0d9e3e9 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -129,6 +129,8 @@ struct pid_entry {
- 		NULL, &proc_single_file_operations,	\
- 		{ .proc_show = show } )
- 
-+static ssize_t proc_info_read(struct file * file, char __user * buf,
-+			  size_t count, loff_t *ppos);
- /*
-  * Count the number of hardlinks for the pid_entry table, excluding the .
-  * and .. links.
-@@ -522,6 +524,74 @@ static int proc_pid_limits(struct task_struct *task, char *buffer)
- 	return count;
- }
- 
-+static ssize_t limits_write(struct file *file, const char __user *buf,
-+		size_t count, loff_t *ppos)
-+{
-+	struct task_struct *task = get_proc_task(file->f_path.dentry->d_inode);
-+	char str[32 + 1 + 16 + 1 + 16 + 1], *delim, *next;
-+	struct rlimit new_rlimit;
-+	unsigned int i;
-+	int ret;
-+
-+	if (!task) {
-+		count = -ESRCH;
-+		goto out;
-+	}
-+	if (copy_from_user(str, buf, min(count, sizeof(str) - 1))) {
-+		count = -EFAULT;
-+		goto put_task;
-+	}
-+
-+	str[min(count, sizeof(str) - 1)] = 0;
-+
-+	delim = strchr(str, '=');
-+	if (!delim) {
-+		count = -EINVAL;
-+		goto put_task;
-+	}
-+	*delim++ = 0; /* for easy 'str' usage */
-+	new_rlimit.rlim_cur = simple_strtoul(delim, &next, 0);
-+	if (*next != ':') {
-+		if (strncmp(delim, "unlimited:", 10)) {
-+			count = -EINVAL;
-+			goto put_task;
-+		}
-+		new_rlimit.rlim_cur = RLIM_INFINITY;
-+		next = delim + 9; /* move to ':' */
-+	}
-+	delim = next + 1;
-+	new_rlimit.rlim_max = simple_strtoul(delim, &next, 0);
-+	if (*next != 0) {
-+		if (strcmp(delim, "unlimited")) {
-+			count = -EINVAL;
-+			goto put_task;
-+		}
-+		new_rlimit.rlim_max = RLIM_INFINITY;
-+	}
-+
-+	for (i = 0; i < RLIM_NLIMITS; i++)
-+		if (!strcmp(str, lnames[i].name))
-+			break;
-+	if (i >= RLIM_NLIMITS) {
-+		count = -EINVAL;
-+		goto put_task;
-+	}
-+
-+	ret = setrlimit(task, i, &new_rlimit);
-+	if (ret)
-+		count = ret;
-+
-+put_task:
-+	put_task_struct(task);
-+out:
-+	return count;
-+}
-+
-+static const struct file_operations proc_pid_limits_operations = {
-+	.read		= proc_info_read,
-+	.write		= limits_write,
-+};
-+
- #ifdef CONFIG_HAVE_ARCH_TRACEHOOK
- static int proc_pid_syscall(struct task_struct *task, char *buffer)
- {
-@@ -2501,7 +2571,9 @@ static const struct pid_entry tgid_base_stuff[] = {
- 	INF("auxv",       S_IRUSR, proc_pid_auxv),
- 	ONE("status",     S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	INF("limits",	  S_IRUSR, proc_pid_limits),
-+	NOD("limits",	  S_IFREG|S_IRUSR|S_IWUSR, NULL,
-+			&proc_pid_limits_operations,
-+			{ .proc_read = proc_pid_limits }),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",      S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
-@@ -2836,7 +2908,9 @@ static const struct pid_entry tid_base_stuff[] = {
- 	INF("auxv",      S_IRUSR, proc_pid_auxv),
- 	ONE("status",    S_IRUGO, proc_pid_status),
- 	ONE("personality", S_IRUSR, proc_pid_personality),
--	INF("limits",	 S_IRUSR, proc_pid_limits),
-+	NOD("limits",	  S_IFREG|S_IRUSR|S_IWUSR, NULL,
-+			&proc_pid_limits_operations,
-+			{ .proc_read = proc_pid_limits }),
- #ifdef CONFIG_SCHED_DEBUG
- 	REG("sched",     S_IRUGO|S_IWUSR, proc_pid_sched_operations),
- #endif
--- 
-1.6.3.3
+The paired calls that leave the mutex locked in between should have some
+clear comments calling attention to their pairing.  Aside from that making
+sure that subtlety is clear, I don't see any problems in the patch off hand.
+But I haven't scoured the code path lately to have full confidence.
+I'd like to hear David's reactions.
 
+
+Thanks,
+Roland
