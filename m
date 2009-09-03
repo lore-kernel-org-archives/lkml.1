@@ -1,68 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932237AbZICUbC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932265AbZICUon@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932237AbZICUbC (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:31:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932186AbZICUbB
+	id S932265AbZICUon (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 16:44:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932235AbZICUon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:31:01 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:34752 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932144AbZICUbA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:31:00 -0400
-From: Dmitry Torokhov <dtor@vmware.com>
-Organization: VMware, Inc.
-To: James Bottomley <James.Bottomley@suse.de>
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-Date: Thu, 3 Sep 2009 13:31:02 -0700
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8; KDE/4.3.0; x86_64; ; )
-Cc: Alok Kataria <akataria@vmware.com>, Matthew Wilcox <matthew@wil.cx>,
-       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com> <1251911789.23106.25.camel@ank32.eng.vmware.com> <1252008182.3941.61.camel@mulgrave.site>
-In-Reply-To: <1252008182.3941.61.camel@mulgrave.site>
+	Thu, 3 Sep 2009 16:44:43 -0400
+Received: from kroah.org ([198.145.64.141]:51880 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932214AbZICUom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 16:44:42 -0400
+Date: Thu, 3 Sep 2009 13:33:39 -0700
+From: Greg KH <greg@kroah.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Eric Whitney <eric.whitney@hp.com>, Mel Gorman <mel@csn.ul.ie>,
+       Adam Litke <agl@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Rientjes <rientjes@google.com>,
+       Andy Whitcroft <apw@canonical.com>, stable <stable@kernel.org>
+Subject: Re: [stable] [PATCH] hugetlb: restore interleaving of bootmem huge
+ pages
+Message-ID: <20090903203339.GB7467@kroah.com>
+References: <1247860154.11565.45.camel@useless.americas.hpqcorp.net>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909031331.03037.dtor@vmware.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1247860154.11565.45.camel@useless.americas.hpqcorp.net>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 September 2009 01:03:02 pm James Bottomley wrote:
-> > > 
-> > > I'm not really asking you to standardise anything (yet).  I was more
-> > > probing for why you hadn't included any of the SCSI control plane
-> > > interfaces and what lead you do produce a different design from the
-> > > current patterns in virtual I/O.  I think what I'm hearing is "Because
-> > > we didn't look at how modern SCSI drivers are constructed" and "Because
-> > > we didn't look at how virtual I/O is currently done in Linux".  That's
-> > > OK (it's depressingly familiar in drivers),
-> > 
-> > I am sorry that's not the case, the reason we have different design as I
-> > have mentioned above is because we want a generic mechanism which works
-> > for all/most of the GOS's out their and doesn't need to be specific to
-> > Linux.
+On Fri, Jul 17, 2009 at 03:49:14PM -0400, Lee Schermerhorn wrote:
+> PATCH fix distribution of bootmem huge pages
 > 
-> Slightly confused now ... you're saying you did look at the transport
-> class and virtio?  But you chose not to do a virtio like interface (for
-> reasons which I'm still not clear on) ...
+> Against: 2.6.31-rc3
+> 
+> For stable, applicable back through 2.6.27
+> 
+> [A version of this patch has been added to the -mm tree.  That patch
+> won't apply cleanly to mainline nor stable trees because of function
+> renaming.  This one should.]
 
-Virtio is Linux-specific and is not available on older kernels which
-our hypervisor/PVSCSI combination does support. Even if we were to use
-virtio-like schema in the hypervisor code we would have to re-implement
-much of the virtio code for kernels earlier than those shipped in '07
-and do the same for other operating systems for no apparent benefit.
-The PCI device abstraction is self-contained and works well on Windows,
-Linux and other guest operating systems and so it was chosen.
+What is the git commit id of this patch that is in Linus's tree?
 
--- 
-Dmitry
+thanks,
+
+greg k-h
