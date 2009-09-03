@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932260AbZICUnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932282AbZICU4p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932260AbZICUnT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932214AbZICUnS
+	id S932282AbZICU4p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 16:56:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932252AbZICU4o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:43:18 -0400
-Received: from mail.atheros.com ([12.36.123.2]:28389 "EHLO mail.atheros.com"
+	Thu, 3 Sep 2009 16:56:44 -0400
+Received: from fifo99.com ([67.223.236.141]:33016 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932213AbZICUnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:43:17 -0400
-Date: Thu, 3 Sep 2009 13:43:19 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linville@tuxdriver.com" <linville@tuxdriver.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-Subject: Re: [PATCH] cfg80211: clear cfg80211_inform_bss() from kmemleak
- reports
-Message-ID: <20090903204319.GC3701@mosca>
-References: <1251958266-10692-1-git-send-email-lrodriguez@atheros.com>
- <1251962791.3336.3.camel@johannes.local>
- <43e72e890909031113r6010519br3b81d15cc331ba85@mail.gmail.com>
- <1252001837.9336.2.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-In-Reply-To: <1252001837.9336.2.camel@johannes.local>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S932245AbZICU4o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 16:56:44 -0400
+Subject: Re: [PATCH 0/4] RFC: jump label - (tracepoint optimizations)
+From: Daniel Walker <dwalker@fifo99.com>
+To: Jason Baron <jbaron@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca,
+       roland@redhat.com, rth@redhat.com, mingo@elte.hu
+In-Reply-To: <cover.1252007851.git.jbaron@redhat.com>
+References: <cover.1252007851.git.jbaron@redhat.com>
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 13:45:06 -0700
+Message-Id: <1252010706.9808.19.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 11:17:17AM -0700, Johannes Berg wrote:
-> On Thu, 2009-09-03 at 11:13 -0700, Luis R. Rodriguez wrote:
+On Thu, 2009-09-03 at 16:25 -0400, Jason Baron wrote:
+> hi,
 > 
-> > What I meant is it gobbles it up and spits another thing out. When it
-> > gobbles it up the routine then uses kref_put().
-> > 
-> > > Why can it not track this?
-> > 
-> > It probably can, just not sure if it follows kref_put(), I was under
-> > the impression here it doesn't and because of it we were getting false
-> > positives. Catalin, can you confirm?
+> Problem:
 > 
-> Ah I'd think that if it can't track it then that's because we use a
-> pointer to the middle of the struct to keep track of it much of the
-> time.
+> Currenly, tracepoints are implemented using a conditional. The conditional
+> check requires checking a global variable for each tracepoint. Although,
+> the overhead of this check is small, it increases under memory pressure. As we
+> increase the number of tracepoints in the kernel this may become more of an
+> issue. In addition, tracepoints are often dormant (disabled), and provide no
+> direct kernel functionality. Thus, it is highly desirable to reduce their
+> impact as much as possible. Mathieu Desnoyers has already suggested a number of
+> requirements for a solution to this issue.
 
-So you agree with the patch but not the commit log entry?
+Could you run your patches though scripts/checkpatch.pl and clean up any
+errors.. It looks like you have some style issues in a few of the
+patches.
 
-  Luis
+Daniel
+
