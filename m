@@ -1,95 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbZICWVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbZICWWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbZICWVi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 18:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbZICWVh
+	id S932409AbZICWWy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbZICWWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 18:21:37 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:35219 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751829AbZICWVg convert rfc822-to-8bit (ORCPT
+	Thu, 3 Sep 2009 18:22:53 -0400
+Received: from newpeace.netnation.com ([204.174.223.7]:57230 "EHLO
+	peace.netnation.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932370AbZICWWw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 18:21:36 -0400
-From: Chetan.Loke@Emulex.Com
-To: <brking@linux.vnet.ibm.com>, <akataria@vmware.com>
-CC: <James.Bottomley@suse.de>, <eike-kernel@sf-tec.de>, <matthew@wil.cx>,
-       <rdreier@cisco.com>, <bvanassche@acm.org>, <robert.w.love@intel.com>,
-       <randy.dunlap@oracle.com>, <michaelc@cs.wisc.edu>,
-       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-       <akpm@linux-foundation.org>, <pv-drivers@vmware.com>
-Date: Thu, 3 Sep 2009 15:21:23 -0700
-Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA - V3.
-Thread-Topic: [PATCH] SCSI driver for VMware's virtual HBA - V3.
-Thread-Index: Acos4N4vv+M6DTqiRuy7IG+cpuvlKgAAWzDg
-Message-ID: <412A05BA40734D4887DBC67661F433080FF72585@EXMAIL.ad.emulex.com>
-References: <1252006675.18725.20.camel@ank32.eng.vmware.com>
- <4AA03A9F.2040500@linux.vnet.ibm.com>
-In-Reply-To: <4AA03A9F.2040500@linux.vnet.ibm.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Thu, 3 Sep 2009 18:22:52 -0400
+Date: Thu, 3 Sep 2009 15:22:53 -0700
+From: Simon Kirby <sim@hostway.ca>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Yohan <ytordjman@corp.free.fr>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
+       mikevs@xs4all.net
+Subject: Re: VM issue causing high CPU loads
+Message-ID: <20090903222253.GA8405@hostway.ca>
+References: <4A92A25A.4050608@yohan.staff.proxad.net> <20090824162155.ce323f08.akpm@linux-foundation.org> <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr> <20090902170642.f4381c1d.akpm@linux-foundation.org> <1251982884.18338.9.camel@heimdal.trondhjem.org> <4A9FC719.9020104@corp.free.fr> <1251986526.18338.29.camel@heimdal.trondhjem.org> <20090903200550.GB5257@hostway.ca> <1252010965.18338.63.camel@heimdal.trondhjem.org>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 03 Sep 2009 22:21:24.0898 (UTC) FILETIME=[DF98D020:01CA2CE4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252010965.18338.63.camel@heimdal.trondhjem.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: linux-kernel-owner@vger.kernel.org [mailto:linux-kernel-
-> owner@vger.kernel.org] On Behalf Of Brian King
-> Sent: Thursday, September 03, 2009 5:53 PM
-> To: akataria@vmware.com
-> Cc: James Bottomley; Rolf Eike Beer; Matthew Wilcox; Roland Dreier; Bart
-> Van Assche; Robert Love; Randy Dunlap; Mike Christie; linux-
-> scsi@vger.kernel.org; LKML; Andrew Morton; pv-drivers@vmware.com
-> Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V3.
-> 
-> Alok Kataria wrote:
-> > +
-> > +struct pvscsi_adapter {
-> > +	char			*mmioBase;
-> > +	unsigned int		irq;
-> > +	u8			rev;
-> > +	bool			use_msi;
-> > +	bool			use_msix;
-> > +	bool			use_msg;
-> > +
-> > +	spinlock_t		hw_lock;
-> 
-> Why not just use host_lock in the scsi_host structure?
-> 
+On Thu, Sep 03, 2009 at 04:49:25PM -0400, Trond Myklebust wrote:
 
-Why not an adapter_resource_lock? Why block everyone @ the scsi-mid layer. 
+> I'm working on increasing the idmapper scalability, however another
+> project is currently taking up most of my time. I can't guarantee that
+> the revised idmapper code will be finished in time to allow for
+> inclusion in 2.6.32.
 
-Alok, 
+Sure, improving it would be nice for cases where it's needed, but in
+environments where all IDs are consistent (by design), it just seems
+silly to force this extra work for zero gain.
 
-(This is just a optimization.You don't need it in order to get your code merged upstream.You can always patch it later on)In fact hw_lock should be split into two locks - 
+> NFSv4 aspires to be an internet-wide protocol, and so you cannot use
+> uids/gids: they just aren't guaranteed to represent a unique user
+> outside your local LDAP/NIS or /etc/passwd domain. Furthermore, uids and
+> gids are a posix construct. They simply don't work in environments where
+> you may have lots of non-posix systems.
 
-req_path_lock(aka tx_lock) and 
-cmpl_path_lock(aka rx_lock).
+So, for environments with all POSIX systems, what do you think about
+perhaps a mount or export flag that violates the spec on purpose to allow
+numeric IDs to be used?
 
-You can then have a full-duplex channel.
+I can understand that the quiet use of IDs if name-to-user mapping fails
+will cause security issues in environments without consistent users, so
+it would now be unsafe to turn this on silently.  However, making this
+an option seems reasonable to me.
 
-Revised-code - 
-	::pvscsi_acquire_context->spin_lock_irqsave(tx_lock)
-	::pvscsi_isr->spin_lock_irqsave(rx_lock)
-	::some_future_napi_style_pvrx_poll_func->spin_lock_irqsave(rx_lock)
-	
-	::for aborts synchronize on the rx_lock so that you know what's completed and what's not.
+(Not that I know what I'm doing.)
 
-This is the kind of common code that should be provided by the bottom edge of the scsi-layer so that all the scsi-LLDD's can split their tx/rx paths!
-
-
-
-
-> Brian King
-> Linux on Power Virtualization
-> IBM Linux Technology Center
-> 
-
-
-Chetan
+Simon-
