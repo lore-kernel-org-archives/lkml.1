@@ -1,128 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbZICQlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756013AbZICQrp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932117AbZICQlv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 12:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbZICQlu
+	id S1756013AbZICQrp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 12:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZICQrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 12:41:50 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:56117 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755186AbZICQlu (ORCPT
+	Thu, 3 Sep 2009 12:47:45 -0400
+Received: from mail-yx0-f184.google.com ([209.85.210.184]:33691 "EHLO
+	mail-yx0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755988AbZICQro convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 12:41:50 -0400
-X-Loopcount0: from 10.9.160.253
-Message-ID: <4A9FF1FB.5090507@dell.com>
-Date: Thu, 03 Sep 2009 11:42:35 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Thu, 3 Sep 2009 12:47:44 -0400
+X-Greylist: delayed 19488 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Sep 2009 12:47:43 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=mw0ABhL6+/EsF/AK9bwpXFysXxql42sRjZmHxG0unLIASTzTeDyjmxQ+8Lv+CE1lK6
+         KPR8sFsEqRdvP27eePNu4CpZC6W9NRF8F/ovDC4AvW/otp6zFHLHyDrOJfumgi96HnBX
+         1NLl0yg5NsjCtTsMe2F+i+/OjnX4kPV+b/xNU=
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-CC: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Dell-laptop is not working without wireless
-References: <20090818060340.E1C7A526EA5@mailhub.coreip.homeip.net> <20090818121049.GB22284@srcf.ucam.org> <20090903153215.E51F8526EA5@mailhub.coreip.homeip.net>
-In-Reply-To: <20090903153215.E51F8526EA5@mailhub.coreip.homeip.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigCEA76C00C8D890193077C751"
+In-Reply-To: <x49ab1cxcma.fsf@segfault.boston.devel.redhat.com>
+References: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com>
+	 <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
+	 <x49ab1cxcma.fsf@segfault.boston.devel.redhat.com>
+Date: Thu, 3 Sep 2009 18:47:46 +0200
+Message-ID: <4e5e476b0909030947m2423d0cdr5fd2b3de261b2da6@mail.gmail.com>
+Subject: Re: [RFC] cfq: adapt slice to number of processes doing I/O
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigCEA76C00C8D890193077C751
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Hi Jeff,
+can you share the benchmark?
+I think I have to fix the min slice to consider priority, too, to
+respect the priorities when there are many processes.
 
-Hi Dmitry:
+For the fairness at a single priority level, my tests show that
+fairness is improved with the patches (comparing minimum and maximum
+bandwidth for a set of 32 processes):
 
-Dmitry Torokhov wrote:
-> On Tue, Aug 18, 2009 at 01:10:49PM +0100, Matthew Garrett wrote:
->  =20
+Original:
+Run status group 0 (all jobs):
+   READ: io=14192KiB, aggrb=480KiB/s, minb=7KiB/s, maxb=20KiB/s,
+mint=30001msec, maxt=30258msec
+
+Run status group 1 (all jobs):
+   READ: io=829292KiB, aggrb=27816KiB/s, minb=723KiB/s,
+maxb=1004KiB/s, mint=30004msec, maxt=30529msec
+
+Adaptive:
+Run status group 0 (all jobs):
+   READ: io=14444KiB, aggrb=488KiB/s, minb=12KiB/s, maxb=17KiB/s,
+mint=30003msec, maxt=30298msec
+
+Run status group 1 (all jobs):
+   READ: io=721324KiB, aggrb=24140KiB/s, minb=689KiB/s, maxb=795KiB/s,
+mint=30003msec, maxt=30598msec
+
+Are you using random think times? This could explain the discrepancy.
+
+Corrado
+
+On Thu, Sep 3, 2009 at 5:38 PM, Jeff Moyer<jmoyer@redhat.com> wrote:
+> Jeff Moyer <jmoyer@redhat.com> writes:
 >
-> Admittedly I have not spend much time on it but it looks like my box
-> _really_ wants wifi interface to be fully operational before
-> dcsbas_smi_request() starts returning proper data. I wonder if iwl3945'=
-s
-> rfkill support interferes somehow here...
+>> Corrado Zoccolo <czoccolo@gmail.com> writes:
+>>
+>>> When the number of processes performing I/O concurrently increases,  a
+>>> fixed time slice per process will cause large latencies.
+>>> In the patch, if there are more than 3 processes performing concurrent
+>>> I/O, we scale the time slice down proportionally.
+>>> To safeguard sequential bandwidth, we impose a minimum time slice,
+>>> computed from cfq_slice_idle (the idea is that cfq_slice_idle
+>>> approximates the cost for a seek).
+>>>
+>>> I performed two tests, on a rotational disk:
+>>> * 32 concurrent processes performing random reads
+>>> ** the bandwidth is improved from 466KB/s to 477KB/s
+>>> ** the maximum latency is reduced from 7.667s to 1.728
+>>> * 32 concurrent processes performing sequential reads
+>>> ** the bandwidth is reduced from 28093KB/s to 24393KB/s
+>>> ** the maximum latency is reduced from 3.781s to 1.115s
+>>>
+>>> I expect numbers to be even better on SSDs, where the penalty to
+>>> disrupt sequential read is much less.
+>>
+>> Interesting approach.  I'm not sure what the benefits will be on SSDs,
+>> as the idling logic is disabled for them (when nonrot is set and they
+>> support ncq).  See cfq_arm_slice_timer.
+>>
+>>> Signed-off-by: Corrado Zoccolo <czoccolo@gmail-com>
+>>>
+>>> diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+>>> index fd7080e..cff4ca8 100644
+>>> --- a/block/cfq-iosched.c
+>>> +++ b/block/cfq-iosched.c
+>>> @@ -306,7 +306,15 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct
+>>> cfq_queue *cfqq)
+>>>  static inline void
+>>>  cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+>>>  {
+>>> -       cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
+>>> +       unsigned low_slice = cfqd->cfq_slice_idle * (1 + cfq_cfqq_sync(cfqq));
+>>> +       unsigned interested_queues = cfq_class_rt(cfqq) ?
+>>> cfqd->busy_rt_queues : cfqd->busy_queues;
+>>
+>> Either my mailer displayed this wrong, or yours wraps lines.
+>>
+>>> +       unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
+>>> +       if (interested_queues > 3) {
+>>> +               slice *= 3;
+>>
+>> How did you come to this magic number of 3, both for the number of
+>> competing tasks and the multiplier for the slice time?  Did you
+>> experiment with this number at all?
+>>
+>>> +               slice /= interested_queues;
+>>
+>> Of course you realize this could disable the idling logic completely,
+>> right?  I'll run this patch through some tests and let you know how it
+>> goes.
 >
-> Maybe Mario (being a Dell guy) has an idea why this might be happening?=
-
+> I missed that you updated the slice end based on a max of slice and
+> low_slice.  Sorry about that.
 >
->  =20
-I'm on 2.6.31-rc8 or so.  I can't actually reproduce this on a d630.  I
-get all of the rfkill devices populated.
+> This patch does not fare well when judging fairness between processes.
+> I have several fio jobs that generate read workloads, and I try to
+> figure out whether the I/O scheduler is providing fairness based on the
+> I/O priorities of the processes.  With your patch applied, we get the
+> following results:
+>
+> total priority: 880
+> total data transferred: 1045920
+> class   prio    ideal   xferred %diff
+> be      0       213938  352500  64
+> be      1       190167  193012  1
+> be      2       166396  123380  -26
+> be      3       142625  86260   -40
+> be      4       118854  62964   -48
+> be      5       95083   40180   -58
+> be      6       71312   74484   4
+> be      7       47541   113140  137
+>
+> Class and prio should be self-explanatory.  ideal is my cooked up
+> version of the ideal number of bytes the given priority should have
+> transferred based on the total data transferred and all processes
+> weighted by priority competing for the disk.  xferred is the actual
+> amount of data transferred, and %diff is the difference between those
+> last two columns.
+>
+> Notice that best effort priority 7 managed to transfer more data than be
+> prio 3.  That's bad.  Now, let's look at 8 processes all at the same
+> priority level:
+>
+> total priority: 800
+> total data transferred: 1071036
+> class   prio    ideal   xferred %diff
+> be      4       133879  222452  66
+> be      4       133879  243188  81
+> be      4       133879  187380  39
+> be      4       133879  42512   -69
+> be      4       133879  39156   -71
+> be      4       133879  47604   -65
+> be      4       133879  37364   -73
+> be      4       133879  251380  87
+>
+> Hmm.  That doesn't look good.
+>
+> For comparison, here is the output from the vanilla kernel for those two
+> runs:
+>
+> total priority: 880
+> total data transferred: 954272
+> class   prio    ideal   xferred %diff
+> be      0       195192  229108  17
+> be      1       173504  202740  16
+> be      2       151816  156660  3
+> be      3       130128  152052  16
+> be      4       108440  91636   -16
+> be      5       86752   64244   -26
+> be      6       65064   34292   -48
+> be      7       43376   23540   -46
+>
+> total priority: 800
+> total data transferred: 887264
+> class   prio    ideal   xferred %diff
+> be      4       110908  124404  12
+> be      4       110908  123380  11
+> be      4       110908  118004  6
+> be      4       110908  113396  2
+> be      4       110908  107252  -4
+> be      4       110908  98356   -12
+> be      4       110908  96244   -14
+> be      4       110908  106228  -5
+>
+> It's worth noting that the overall throughput went up in the patched
+> kernel for this second case.  However, if we care at all about the
+> notion of I/O priorities, I think your patch needs more work.
+>
+> Cheers,
+> Jeff
+>
 
-$ rfkill list
-0: dell-wifi: Wireless LAN
-    Soft blocked: yes
-    Hard blocked: yes
-1: dell-bluetooth: Bluetooth
-    Soft blocked: yes
-    Hard blocked: yes
-2: phy0: Wireless LAN
-    Soft blocked: no
-    Hard blocked: yes
-$ sudo rmmod iwl3945 iwlcore dell-laptop
-$ rfkill list
-$ sudo modprobe dell-laptop
-$ rfkill list
-3: dell-wifi: Wireless LAN
-    Soft blocked: yes
-    Hard blocked: yes
-4: dell-bluetooth: Bluetooth
-    Soft blocked: yes
-    Hard blocked: yes
-
-<hit the hardware killswitch>
-
-$ rfkill list
-3: dell-wifi: Wireless LAN
-    Soft blocked: yes
-    Hard blocked: yes
-4: dell-bluetooth: Bluetooth
-    Soft blocked: yes
-    Hard blocked: yes
-5: hci0: Bluetooth
-    Soft blocked: no
-    Hard blocked: no
-$ sudo modprobe iwl3945
-$ rfkill list
-3: dell-wifi: Wireless LAN
-    Soft blocked: yes
-    Hard blocked: yes
-4: dell-bluetooth: Bluetooth
-    Soft blocked: yes
-    Hard blocked: yes
-5: hci0: Bluetooth
-    Soft blocked: no
-    Hard blocked: no
-6: phy1: Wireless LAN
-    Soft blocked: no
-    Hard blocked: no
-
-There *is* a problem here that the hardware killswitch status doesn't
-get updated, but Matthew is aware of that.  Make sure you're not getting
-false data because of it.
-
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
 
 
---------------enigCEA76C00C8D890193077C751
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+-- 
+__________________________________________________________________________
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkqf8fsACgkQ2CrZjkA73YtgfACeMlrAI2jupxDz4YUX3bgEz10b
-6AsAnAxJfdsYVyDTvdJfMT1SoPb4SYU/
-=ACwC
------END PGP SIGNATURE-----
-
---------------enigCEA76C00C8D890193077C751--
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
