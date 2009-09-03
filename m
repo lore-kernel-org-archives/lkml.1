@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756310AbZICUFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756339AbZICUIm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756310AbZICUFy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbZICUFy
+	id S1756339AbZICUIm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 16:08:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbZICUIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:05:54 -0400
-Received: from newpeace.netnation.com ([204.174.223.7]:59469 "EHLO
-	peace.netnation.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756135AbZICUFx (ORCPT
+	Thu, 3 Sep 2009 16:08:40 -0400
+Received: from server1.wserver.cz ([82.113.45.157]:51024 "EHLO
+	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756291AbZICUIi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:05:53 -0400
-Date: Thu, 3 Sep 2009 13:05:50 -0700
-From: Simon Kirby <sim@hostway.ca>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Yohan <ytordjman@corp.free.fr>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       mikevs@xs4all.net
-Subject: Re: VM issue causing high CPU loads
-Message-ID: <20090903200550.GB5257@hostway.ca>
-References: <4A92A25A.4050608@yohan.staff.proxad.net> <20090824162155.ce323f08.akpm@linux-foundation.org> <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr> <20090902170642.f4381c1d.akpm@linux-foundation.org> <1251982884.18338.9.camel@heimdal.trondhjem.org> <4A9FC719.9020104@corp.free.fr> <1251986526.18338.29.camel@heimdal.trondhjem.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251986526.18338.29.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 3 Sep 2009 16:08:38 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: oleg@redhat.com
+Cc: akpm@linux-foundation.org, mingo@redhat.com, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Eric Paris <eparis@parisplace.org>, David Howells <dhowells@redhat.com>
+Subject: [PATCH v2 1/8] SECURITY: selinux, fix update_rlimit_cpu parameter
+Date: Thu,  3 Sep 2009 22:08:37 +0200
+Message-Id: <1252008524-5376-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <20090903174106.GC27161@redhat.com>
+References: <20090903174106.GC27161@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 10:02:06AM -0400, Trond Myklebust wrote:
+OK, thanks, I ended up having this so far.
+--
+Don't pass rlim_cur member of RLIM_NLIMITS-1=RLIMIT_RTTIME limit
+to update_rlimit_cpu() in selinux_bprm_committing_creds.
 
-> OK, so 16 hash buckets are likely to be filled with ~10^6 entries each.
-> I can see that might be a performance issue...
+Use proper rlim[RLIMIT_CPU].rlim_cur instead.
 
-We have a similar setup with millions of UIDs over NFS (currently NFSv3).
-I _wish_ there were a way to use NFSv4 without having to use name-mapped
-UIDs and GIDs, since our user and group names come from MySQL anyway, and
-are guaranteed to be consistent across machines.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Acked-by: James Morris <jmorris@namei.org>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: Eric Paris <eparis@parisplace.org>
+Cc: David Howells <dhowells@redhat.com>
+---
+ security/selinux/hooks.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Why on earth does NFSv4 force the use of names?
+diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
+index cf41988..496e626 100644
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2360,7 +2360,7 @@ static void selinux_bprm_committing_creds(struct linux_binprm *bprm)
+ 			initrlim = init_task.signal->rlim + i;
+ 			rlim->rlim_cur = min(rlim->rlim_max, initrlim->rlim_cur);
+ 		}
+-		update_rlimit_cpu(rlim->rlim_cur);
++		update_rlimit_cpu(current->signal->rlim[RLIMIT_CPU].rlim_cur);
+ 	}
+ }
+ 
+-- 
+1.6.3.3
 
-I was considering hacking the code to stick IDs in there anyway, but I
-haven't looked at the feasibility of this.  I suspect this would break or
-complicate other things, but the current NFSv4 design just seems like an
-incredible waste for this case.
-
-Simon-
