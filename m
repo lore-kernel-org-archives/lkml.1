@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754657AbZICGre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZICGtJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754657AbZICGre (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 02:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbZICGre
+	id S1754721AbZICGtJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 02:49:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZICGtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 02:47:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37729 "EHLO mx3.mail.elte.hu"
+	Thu, 3 Sep 2009 02:49:08 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60646 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754528AbZICGrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 02:47:33 -0400
-Date: Thu, 3 Sep 2009 08:47:16 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: Introduce new
-	(non-)paranoia level to allow raw tracepoint access
-Message-ID: <20090903064716.GA14911@elte.hu>
-References: <tip-5380c1056d267eff49854c1fa03399bfe761da1e@git.kernel.org> <4A9F17DD.4050807@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A9F17DD.4050807@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1754494AbZICGtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 02:49:07 -0400
+Date: Thu, 3 Sep 2009 16:49:03 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Mauro Carvalho Chehab <maurochehab@gmail.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: manual merge of the v4l-dvb tree with Linus' tree
+Message-Id: <20090903164903.0d9043d1.sfr@canb.auug.org.au>
+In-Reply-To: <20090902231214.495d4002@pedra.chehab.org>
+References: <20090902121713.f709b1ce.sfr@canb.auug.org.au>
+	<20090902231214.495d4002@pedra.chehab.org>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+Hi Mauro,
 
-> >  static inline bool perf_paranoid_cpu(void)
-> >  {
-> >  	return sysctl_perf_counter_paranoid > 0;
-> > @@ -3971,6 +3977,7 @@ static const struct pmu *tp_perf_counter_init(struct perf_counter *counter)
-> >  	 * have these.
-> >  	 */
-> >  	if ((counter->attr.sample_type & PERF_SAMPLE_RAW) &&
-> > +			&& perf_paranoid_tracepoint_raw() &&
-> 
-> "&& &&"
-> 
-> This leads to build failure.
+On Wed, 2 Sep 2009 23:12:14 -0300 Mauro Carvalho Chehab <maurochehab@gmail.=
+com> wrote:
+>
+> I've rebased it to fix this merge conflict between my devel tree and upst=
+ream.
+> You probably can drop it on your next merge.
 
-Yeah - fixed that yesterday, forgot to push out :-/
+Thanks.
 
-	Ingo
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqfZt8ACgkQjjKRsyhoI8y03wCgiqD84AsM5HgzZkhiNUqGSFXA
+UQ0AoLmY8tCIE/eY7nzRv1bP/FBJiYdc
+=xQgk
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a--
