@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756140AbZICSiZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755664AbZICOoM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756140AbZICSiZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 14:38:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbZICSiZ
+	id S1755664AbZICOoM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:44:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZICOoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 14:38:25 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33701 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754460AbZICSiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 14:38:24 -0400
-Date: Thu, 3 Sep 2009 11:36:37 -0700
-From: Greg KH <gregkh@suse.de>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org,
-       alan@linux.intel.com, stern@rowland.harvard.edu
-Subject: Re: WARNINGs in usb-serial.c
-Message-ID: <20090903183637.GA5140@suse.de>
-References: <E1MjD4A-0002wi-KL@pomaz-ex.szeredi.hu>
+	Thu, 3 Sep 2009 10:44:12 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:41093 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754575AbZICOoK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 10:44:10 -0400
+Date: Thu, 3 Sep 2009 13:38:50 -0500 (CDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Eric Dumazet <eric.dumazet@gmail.com>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>,
+       paulmck@linux.vnet.ibm.com
+Subject: Re: [PATCH] slub: fix slab_pad_check()
+In-Reply-To: <4A9FCDC6.3060003@gmail.com>
+Message-ID: <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1>
+References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>  <alpine.DEB.1.10.0908121820410.3257@gentwo.org>  <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>  <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com> 
+ <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net>  <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>  <4A9EEF07.5070800@gmail.com>  <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>  <4A9F1620.2080105@gmail.com>
+ <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1MjD4A-0002wi-KL@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 04:13:34PM +0200, Miklos Szeredi wrote:
-> I get the following warnings in 2.6.31-rc.  A lot of them:
-> 
-> WARNING: at drivers/usb/serial/usb-serial.c:414 serial_write_room+0x59/0x6e [usbserial]()
-> WARNING: at drivers/usb/serial/usb-serial.c:401 serial_write+0x77/0x9d [usbserial]()
-> 
-> This is a huawei-3565 modem.
-> 
-> The messages don't seem to hurt, but there's lot of trouble with this
-> gadget.  Sometimes it just doesn't work after a while and a reboot is
-> needed.  Sometimes it hangs the kernel after suspend, etc.  Not sure
-> if this is related to the warnings...
+On Thu, 3 Sep 2009, Eric Dumazet wrote:
 
-{sigh}
+> Christoph Lameter a ?crit :
+> > On Thu, 3 Sep 2009, Eric Dumazet wrote:
+> >
+> >> on a SLAB_DESTROY_BY_RCU cache, there is no need to try to optimize this
+> >> rcu_barrier() call, unless we want superfast reboot/halt sequences...
+> >
+> > I stilll think that the action to quiesce rcu is something that the caller
+> > of kmem_cache_destroy must take care of.
+>
+> Do you mean :
+>
+> if (kmem_cache_shrink(s) == 0) {
+> 	rcu_barrier();
+> 	kmem_cache_destroy_no_rcu_barrier(s);
+> } else {
+> 	kmem_cache_destroy_with_rcu_barrier_because_SLAB_DESTROY_BY_RCU_cache(s);
+> }
+>
+> What would be the point ?
 
-The tty layer changes are being a pain here :(
+The above is port of slub?
 
-Alan Stern posted a set of patches to the linux-usb list to hopefully
-address stuff like this, is there any way you could test them out to see
-if they help or not?
+I mean that (in this case) the net subsystem would have to deal with RCU quietness
+before disposing of the slab cache. There may be multiple ways of dealing
+with RCU. The RCU barrier may be unnecessary for future uses. Typically
+one would expect that all deferred handling of structures must be complete
+for correctness before disposing of the whole cache.
 
-thanks,
+> [PATCH] slub: fix slab_pad_check()
 
-greg k-h
+Acked-by: Christoph Lameter <cl@linux-foundation.org>
