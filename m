@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756292AbZICUQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZICU0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756292AbZICUQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 16:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbZICUQz
+	id S1756352AbZICU0D (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 16:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbZICU0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 16:16:55 -0400
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:54973 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756196AbZICUQz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 16:16:55 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
-Date: Thu, 3 Sep 2009 22:16:54 +0200
-User-Agent: KMail/1.9.9
-Cc: "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       Christian =?utf-8?q?Kr=C3=A4mer?= <christian@kraemer-eu.de>,
-       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-References: <200909021856.29565.christian@kraemer-eu.de> <alpine.LFD.2.00.0909031539070.3200@localhost> <20090903195753.GC11097@pengutronix.de>
-In-Reply-To: <20090903195753.GC11097@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Thu, 3 Sep 2009 16:26:01 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:19701 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756163AbZICU0A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 16:26:00 -0400
+Subject: Re: [PATCH 1/9] task_struct: add PF_NONOTIFY for fanotify to use
+From: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, viro@zeniv.linux.org.uk,
+       alan@linux.intel.com, hch@infradead.org
+In-Reply-To: <20090828223626.GA8283@ioremap.net>
+References: <20090828185542.8014.22791.stgit@paris.rdu.redhat.com>
+	 <20090828223626.GA8283@ioremap.net>
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 16:25:49 -0400
+Message-Id: <1252009549.2425.42.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909032216.56148.elendil@planet.nl>
-X-OriginalArrivalTime: 03 Sep 2009 20:16:56.0626 (UTC) FILETIME=[7C28F120:01CA2CD3]
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 September 2009, Wolfram Sang wrote:
-> I read the thread in which you tried. I will have my try, too. This
-> time, I want to convert the existing users first and then throw the
-> interface away. To me, it looks like there is only one prominent user
-> left, Debian's discover. Even though the PCMCIA-information it collects
-> is hardly useful, I converted it:
->
-> http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=382425
->
-> Still working on getting any response from the maintainers :)
+> On Fri, Aug 28, 2009 at 02:55:42PM -0400, Eric Paris (eparis@redhat.com) wrote:
+> > Since fanotify opens file descriptors inside the kernel for it's listeners
+> > it needs a way to make sure that 2 fanotify listeners, both which listen to
+> > open events do not continuously see each others open events (and get into a
+> > livelock reporting on each other's activity).  This fix is to create a new
+> > tast_struct flags called PF_NONOTIFY.  If this flag is set in a task no
+> > fanotify events will be generated for that task.   fanotify will set the
+> > flag before and open call and will clear it immediately after.
 
-I'm a Debian Developer and one of the developers of Debian's installation 
-system. My suggestion would be to simply ignore discover. It is not used 
-anymore and the fact that it's un(der)maintained does not surprise me.
+So this patch isn't actually needed, I thought the fsnotify_open() call
+was deeper than it is.  I'm going to drop this particular patch.
 
-A simple follow-up to the bug report announcing the removal of the old 
-interface per kernel version X would be appreciated. If it actually 
-results in a build failure, it will probably get updated quickly enough. 
-The available patch will help with that.
+Can I take silence on the list as a lack of disagreement?  I'd like to
+start putting these into linux-next starting tomorrow.  Obviously I'd
+like to see the networking definitions approved and taken by davem, I'd
+like to see the FMODE_ change approved and taken by viro, but if you two
+would like me to push it directly I'd be happy to.
 
-Cheers,
-FJP
+Davem, maybe you'd rather my af_fanotify was somewhere inside net/
+instead of in fs/notify/fanotify?  I'd love to get some review here, but
+noone onlist is excited enough to step up.  (I have numerous people who
+have privately claimed they intend to use this stuff, so i promise it
+won't be dead code.)
+
+I'm ready to start committing and adding features, anyone telling me no?
+
+-Eric
+
+
+
