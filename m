@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932445AbZICWgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932444AbZICWsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932445AbZICWgA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 18:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932429AbZICWf7
+	id S932444AbZICWsW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:48:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932370AbZICWsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 18:35:59 -0400
-Received: from wavehammer.waldi.eu.org ([82.139.201.20]:43720 "EHLO
-	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932427AbZICWf7 (ORCPT
+	Thu, 3 Sep 2009 18:48:21 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:33947 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932070AbZICWsV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 18:35:59 -0400
-Date: Fri, 4 Sep 2009 00:36:03 +0200
-From: Bastian Blank <waldi@debian.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       544145@bugs.debian.org, Keir Fraser <keir.fraser@eu.citrix.com>
-Subject: Re: 32bit binaries on x86_64/Xen segfaults in syscall-vdso
-Message-ID: <20090903223603.GA19945@wavehammer.waldi.eu.org>
-Mail-Followup-To: Bastian Blank <waldi@debian.org>,
-	Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-	xen-devel@lists.xensource.com, 544145@bugs.debian.org,
-	Keir Fraser <keir.fraser@eu.citrix.com>
-References: <20090830181637.GA7155@wavehammer.waldi.eu.org> <4AA02C57.30106@goop.org> <20090903220252.GA19309@wavehammer.waldi.eu.org> <4AA03DE8.40706@goop.org>
+	Thu, 3 Sep 2009 18:48:21 -0400
+Date: Thu, 3 Sep 2009 17:43:12 -0500 (CDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>
+Subject: Re: [PATCH] slub: fix slab_pad_check()
+In-Reply-To: <20090903174435.GF6761@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.1.10.0909031736340.24199@V090114053VZO-1>
+References: <4A9EEF07.5070800@gmail.com> <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com> <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1>
+ <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1> <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <20090903174435.GF6761@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <4AA03DE8.40706@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 03:06:32PM -0700, Jeremy Fitzhardinge wrote:
-> On 09/03/09 15:02, Bastian Blank wrote:
-> > AFAIK only AMD support the syscall instruction, so yes it is an AMD
-> > machine. And yes, disabling the only thing that make the glibc call this
-> > instruction works around it.
-> The bug actually appears to be in xen_sysret32, ie the crash happens on
-> the way out of the kernel.
+On Thu, 3 Sep 2009, Paul E. McKenney wrote:
 
-This function looks weird. It tries to restores the user code segment.
-But the documentation from AMD explicitely stat that the CS and SS are
-restored from the STAR register.
+> 2.	CPU 0 discovers that the slab cache can now be destroyed.
+>
+> 	It determines that there are no users, and has guaranteed
+> 	that there will be no future users.  So it knows that it
+> 	can safely do kmem_cache_destroy().
+>
+> 3.	In absence of rcu_barrier(), kmem_cache_destroy() would
+> 	immediately tear down the slab data structures.
 
-Bastian
+Of course. This has been discussed before.
 
--- 
-Killing is stupid; useless!
-		-- McCoy, "A Private Little War", stardate 4211.8
+You need to ensure that no objects are in use before destroying a slab. In
+case of DESTROY_BY_RCU you must ensure that there are no potential
+readers. So use a suitable rcu barrier or something else like a
+synchronize_rcu...
+
+> > But going through the RCU period is pointless since no user of the cache
+> > remains.
+>
+> Which is irrelevant.  The outstanding RCU callback was posted by the
+> slab cache itself, -not- by the user of the slab cache.
+
+There will be no rcu callbacks generated at kmem_cache_destroy with the
+patch I posted.
+
+> > The dismantling does not need RCU since there are no operations on the
+> > objects in progress. So simply switch DESTROY_BY_RCU off for close.
+>
+> Unless I am missing something, this patch re-introduces the bug that
+> the rcu_barrier() was added to prevent.  So, in absence of a better
+> explanation of what I am missing:
+
+The "fix" was ill advised. Slab users must ensure that no objects are in
+use before destroying a slab. Only the slab users know how the objects
+are being used. The slab allocator itself cannot know how to ensure that
+there are no pending references. Putting a rcu_barrier in there creates an
+inconsistency in the operation of kmem_cache_destroy() and an expectation
+of functionality that the function cannot provide.
+
