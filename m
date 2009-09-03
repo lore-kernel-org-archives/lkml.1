@@ -1,60 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932319AbZICVSm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932349AbZICVS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932319AbZICVSm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932278AbZICVSl
+	id S932349AbZICVS6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932322AbZICVS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:18:41 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55062 "EHLO mx3.mail.elte.hu"
+	Thu, 3 Sep 2009 17:18:57 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:60540 "EHLO mail.sf-mail.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755210AbZICVSk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:18:40 -0400
-Date: Thu, 3 Sep 2009 23:18:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, jeremy.fitzhardinge@citrix.com,
-       stable@kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org, Tejun Heo <tj@kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
-	is cache aligned
-Message-ID: <20090903211805.GB12566@elte.hu>
-References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com>
+	id S1755245AbZICVS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:18:56 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: akataria@vmware.com
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V3.
+Date: Thu, 3 Sep 2009 23:18:53 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc6-git; KDE/4.3.1; i686; ; )
+Cc: James Bottomley <James.Bottomley@suse.de>, Matthew Wilcox <matthew@wil.cx>,
+       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, pv-drivers@vmware.com
+References: <1252006675.18725.20.camel@ank32.eng.vmware.com>
+In-Reply-To: <1252006675.18725.20.camel@ank32.eng.vmware.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA031DE.2070109@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/signed;
+  boundary="nextPart1484166.GprT2Q3Gkn";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909032318.54298.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--nextPart1484166.GprT2Q3Gkn
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+Alok Kataria wrote:
+> VMware PVSCSI driver - v3.
+>=20
+> +static void pvscsi_write_cmd_desc(const struct pvscsi_adapter *adapter,
+> +				  u32 cmd, const void *desc, size_t len)
+> +{
+> +	const u32 *ptr =3D desc;
+> +	unsigned i;
+> +
+> +	len /=3D sizeof(*ptr);
+> +	pvscsi_reg_write(adapter, PVSCSI_REG_OFFSET_COMMAND, cmd);
+> +	for (i =3D 0; i < len; i++)
 
-> On 09/03/2009 01:45 PM, Jeremy Fitzhardinge wrote:
-> > 
-> > Two problems:
-> > 
-> >     * gcc generates %gs: references for stack-protector, but we use %fs
-> >       for percpu data (because restoring %fs is faster if it's a null
-> >       selector; TLS uses %gs).  I guess we could use %fs if
-> >       !CONFIG_CC_STACKPROTECTOR, or %gs if we are using it (though that
-> >       has some fiddly ramifications for things like ptrace).
-> 
-> Well, by touching two segments we're getting the worst of both 
-> worlds, so at least assuming some significant number of real-world 
-> deployments use CC_STACKPROTECTOR, we really don't want to 
-> pessimize that case too much.
+This would limit len to 16 GiB as "unsigned" (looks like "unsigned int" is=
+=20
+preferred in kernel) is only 32 bit long. Instead i should probably be size=
+_t,=20
+too.
 
-Fedora has stackprotector enabled so it's used in a widespread way.
+> +static int __devinit pvscsi_allocate_rings(struct pvscsi_adapter *adapte=
+r)
+> +{
 
-	Ingo
+=2E..
+
+> +	BUG_ON(adapter->ringStatePA & ~PAGE_MASK);
+> +	BUG_ON(adapter->reqRingPA   & ~PAGE_MASK);
+> +	BUG_ON(adapter->cmpRingPA   & ~PAGE_MASK);
+
+Ok, that took me a moment. How about BUG_ON(!IS_ALIGNED(foo, PAGE_SIZE))?
+
+> +static const char *pvscsi_info(struct Scsi_Host *host)
+> +{
+> +	struct pvscsi_adapter *adapter =3D shost_priv(host);
+> +	static char buf[512];
+> +
+> +	sprintf(buf, "VMware PVSCSI storage adapter rev %d, req/cmp/msg rings: "
+> +		"%u/%u/%u pages, cmd_per_lun=3D%u", adapter->rev,
+> +		adapter->req_pages, adapter->cmp_pages, adapter->msg_pages,
+> +		pvscsi_template.cmd_per_lun);
+
+The buffer looks rather huge here. I'm too lazy to calculate an exact size =
+but=20
+256 should still be more than enough, no?
+
+> +static void pvscsi_shutdown_intr(struct pvscsi_adapter *adapter)
+> +{
+> +	if (adapter->irq) {
+> +		free_irq(adapter->irq, adapter);
+> +		adapter->irq =3D 0;
+> +	}
+> +	if (adapter->use_msi) {
+> +		pci_disable_msi(adapter->dev);
+> +		adapter->use_msi =3D 0;
+> +	}
+> +
+> +	if (adapter->use_msix) {
+> +		pci_disable_msix(adapter->dev);
+> +		adapter->use_msix =3D 0;
+> +	}
+> +}
+
+If MSI and MSI-X are exclusive the last one could be "else if".
+
+Greetings,
+
+Eike
+
+--nextPart1484166.GprT2Q3Gkn
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEABECAAYFAkqgMr4ACgkQXKSJPmm5/E5PzgCdFVuR1DnawvWV73/WZQAq/2jN
+LR4An1gdsf98gv1ykenCsHqF8EV5dulH
+=teET
+-----END PGP SIGNATURE-----
+
+--nextPart1484166.GprT2Q3Gkn--
