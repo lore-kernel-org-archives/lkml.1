@@ -1,96 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753800AbZICIe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbZICIfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753800AbZICIe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 04:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752248AbZICIe4
+	id S1753845AbZICIfy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 04:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZICIfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 04:34:56 -0400
-Received: from mga14.intel.com ([143.182.124.37]:21013 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752174AbZICIez convert rfc822-to-8bit (ORCPT
+	Thu, 3 Sep 2009 04:35:53 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:63275 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752248AbZICIfw convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 04:34:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="183617076"
-Date: Thu, 3 Sep 2009 16:32:53 +0800
-From: Feng Tang <feng.tang@intel.com>
-To: <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
-Subject: [PATCH] hrtimers: Remove the "timer_stats_active" check when
- setting the start info
-Message-ID: <20090903163253.1d846628@feng-desktop>
-Organization: intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+	Thu, 3 Sep 2009 04:35:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Fe4ArY5q0He+CX0OZXU5EywbvhRE/7tZveJqu/Dn69x2E0HmNqiWQb4EqMj1qyfCne
+         sHcyOCKLNSvVeZdBiTtnGvxL8hfvU4jWP622nkmOMsjLNzjsSaRVFGY84Z1q9iY3MTy3
+         2tdbiPrF5ULrkjRBTpSrVSzkkLz6BZdRlbLuo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+In-Reply-To: <1251945918.3483.267.camel@rzhang-dt>
+References: <1251789947.3483.215.camel@rzhang-dt>
+	 <9b2b86520909021222k6cc49456vc3232e488eef9e37@mail.gmail.com>
+	 <1251945918.3483.267.camel@rzhang-dt>
+Date: Thu, 3 Sep 2009 09:35:52 +0100
+Message-ID: <9b2b86520909030135v73319621g39225ef5191a28f0@mail.gmail.com>
+Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Zhang Rui <rui.zhang@intel.com>
+Cc: Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi tglx,
+On 9/3/09, Zhang Rui <rui.zhang@intel.com> wrote:
+> On Thu, 2009-09-03 at 03:22 +0800, Alan Jenkins wrote:
+>> On 9/1/09, Zhang Rui <rui.zhang@intel.com> wrote:
+>> >
+>> > Introduce ALS sysfs class.
+>> >
+>> > ALS sysfs class provides a standard sysfs interface for
+>> > Ambient Light Sensor devices.
+>> >
+>> > please read Documentation/ABI/testing/sysfs-class-als for
+>> > detailed sysfs designs.
+>> >
+>> > ﻿CC: Pavel Machek <pavel@ucw.cz>
+>> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+>> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
+>> > ---
+>>
+>> > +++ linux-2.6/drivers/als/Kconfig
+>> > @@ -0,0 +1,10 @@
+>> > +#
+>> > +# Ambient Light Sensor sysfs device configuration
+>> > +#
+>> > +
+>> > +menuconfig ALS
+>> > +	tristate "Ambient Light Sensor sysfs device"
+>> > +	help
+>> > +	  This framework provides a generic sysfs interface for
+>> > +	  Ambient Light Sensor devices.
+>> > +	  If you want this support, you should say Y or M here.
+>>
+>> Gratuitous nitpick:
+>> Can this option be made non-visible (or hidden behind CONFIG_EMBEDDED)?
+>>
+>> Maybe you copied the pattern of the thermal sysfs interface - but the
+>> ACPI thermal driver is useful to keep your computer cool even without
+>> the sysfs interface.  ALS drivers are useless without the sysfs
+>> interface, no?
+>>
+> ACPI ALS device driver is the first user of this sysfs class.
+> I think there will be more native ALS device drivers in the future,
+> which locate at drivers/als/ and depends on CONFIG_ALS.
+>
+> thanks,
+> rui
 
-Please review this patch (generated against v2.6.31-rc8)
+Oh!  So it may become a menu like e.g. hwmon.
 
-Thanks,
-Feng
-
->From 8c6b53a0ead71590a0dd5556c9ad409f0c1ad2d1 Mon Sep 17 00:00:00 2001
-From: Feng Tang <feng.tang@intel.com>
-Date: Thu, 3 Sep 2009 15:51:10 +0800
-Subject: [PATCH] hrtimers: Remove the "timer_stats_active" check when setting the start info
-
-Recent hrtimer code will set the start info to a hrtimer only when that
-flag is set, then the start info of all hrtimers will always be uninitialised
-before a "echo 1 > /proc/timer_stats", thus the /proc/timer_lists will have
-something like:
-
-active timers:
- #0: <c27d46b0>, tick_sched_timer, S:01, <(null)>, /-1
- # expires at 91062000000-91062000000 nsecs [in 156071 to 156071 nsecs]
- #1: <efb81b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
- # expires at 91062300331-91062350331 nsecs [in 456402 to 506402 nsecs]
- #2: <efac9b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
- # expires at 91068699811-91068749811 nsecs [in 6855882 to 6905882 nsecs]
- #3: <efacdb6c>, hrtimer_wakeup, S:01, <(null)>, /-1
- # expires at 91068755511-91068805511 nsecs [in 6911582 to 6961582 nsecs]
- #4: <efa95b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
- # expires at 91068806066-91068856066 nsecs [in 6962137 to 7012137 nsecs]
- .....
-
-This patch will fix it.
-
-Signed-off-by: Feng Tang <feng.tang@intel.com>
----
- include/linux/hrtimer.h |    2 --
- kernel/hrtimer.c        |    2 +-
- 2 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index 4759917..c2ae96b 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -459,8 +459,6 @@ extern void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer,
- 
- static inline void timer_stats_hrtimer_set_start_info(struct hrtimer *timer)
- {
--	if (likely(!timer_stats_active))
--		return;
- 	__timer_stats_hrtimer_set_start_info(timer, __builtin_return_address(0));
- }
- 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index 49da79a..9bf3211 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -778,7 +778,7 @@ static inline void hrtimer_init_timer_hres(struct hrtimer *timer) { }
- #ifdef CONFIG_TIMER_STATS
- void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer, void *addr)
- {
--	if (timer->start_site)
-+	if (timer->start_site == addr && timer->start_pid == current->pid)
- 		return;
- 
- 	timer->start_site = addr;
--- 
-1.5.6.3
+Thanks for the explanation
+Alan
