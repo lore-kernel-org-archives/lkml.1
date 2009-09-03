@@ -1,132 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756189AbZICT1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756194AbZICT2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756189AbZICT1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZICT1P
+	id S1756194AbZICT2n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbZICT2m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:27:15 -0400
-Received: from claw.goop.org ([74.207.240.146]:59938 "EHLO claw.goop.org"
+	Thu, 3 Sep 2009 15:28:42 -0400
+Received: from thunk.org ([69.25.196.29]:49612 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755179AbZICT1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:27:14 -0400
-Message-ID: <4AA01893.6000507@goop.org>
-Date: Thu, 03 Sep 2009 12:27:15 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1755997AbZICT2l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 15:28:41 -0400
+Date: Thu, 3 Sep 2009 15:27:25 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: david@lang.hm
+Cc: Rob Landley <rob@landley.net>, Pavel Machek <pavel@ucw.cz>,
+       Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: what fsck can (and can't) do was Re: [patch] ext2/3: document
+	conditions when reliable operation is possible
+Message-ID: <20090903192725.GB7378@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, david@lang.hm,
+	Rob Landley <rob@landley.net>, Pavel Machek <pavel@ucw.cz>,
+	Ric Wheeler <rwheeler@redhat.com>, Florian Weimer <fweimer@bfk.de>,
+	Goswin von Brederlow <goswin-v-b@web.de>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+	linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <20090824212518.GF29763@elf.ucw.cz> <alpine.DEB.2.00.0908280748080.6822@asgard.lang.hm> <20090829100558.GH1634@ucw.cz> <200908291522.07694.rob@landley.net> <alpine.DEB.2.00.0909030848480.28411@asgard.lang.hm>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/i386: make sure stack-protector segment base is cache
- aligned
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0909030848480.28411@asgard.lang.hm>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The Intel Optimization Reference Guide says:
+On Thu, Sep 03, 2009 at 09:56:48AM -0700, david@lang.hm wrote:
+> from this discussin (and the similar discussion on lwn.net) there appears 
+> to be confusion/disagreement over what fsck does and what the results of  
+> not running it are.
+>
+> it has been stated here that fsck cannot fix broken data, all it tries to 
+> do is to clean up metadata, but it would probably help to get a clear  
+> statement of what exactly that means.
 
-	In Intel Atom microarchitecture, the address generation unit
-	assumes that the segment base will be 0 by default. Non-zero
-	segment base will cause load and store operations to experience
-	a delay.
-		- If the segment base isn't aligned to a cache line
-		  boundary, the max throughput of memory operations is
-		  reduced to one [e]very 9 cycles.
-	[...]
-	Assembly/Compiler Coding Rule 15. (H impact, ML generality)
-	For Intel Atom processors, use segments with base set to 0
-	whenever possible; avoid non-zero segment base address that is
-	not aligned to cache line boundary at all cost.
+Let me give you my formulation of fsck which may be helpful.  Fsck can
+not fix broken data; and (particularly in fsck -y mode) may not even
+recover the maximal amount of lost data caused by metadata corruption.
+(This is why sometimes an expert using debugfs can recover more data
+than fsck -y, and if you have some really precious data, like ten
+years' worth of Ph.D. research that you've never bothered to back
+up[1], the first thing you should do is buy a new hard drive and make a
+sector-by-sector copy of the disk and *then* run fsck.  A new
+terrabyte hard drive costs $100; how much is your data worth to you?)
 
-We can't avoid having a non-zero base for the stack-protector segment, but
-we can make it cache-aligned.
+[1] This isn't hypothetical; while I was at MIT this sort of thing
+actually happened more than once --- which brings up the philosophical
+question of whether someone who is that stupid about not doing backups
+on critical data *deserves* to get a Ph.D. degree.  :-)
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Fsck's primary job is to make sure that further writes to the
+filesystem, whether you are creating new files or removing directory
+hierarchies, etc., will not cause *additional* data loss due to meta
+data corruption in the file system.  Its secondary goals are to
+preserve as much data as possible, and to make sure that file system
+metadata is valid (i.e., so that a block pointer contains a valid
+block address, so that an attempt to read a file won't cause an I/O
+error when the filesystems attempts to seek to a non-existent sector
+on disk).
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 0bfcf7e..f7d2c8f 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -403,7 +403,17 @@ extern unsigned long kernel_eflags;
- extern asmlinkage void ignore_sysret(void);
- #else	/* X86_64 */
- #ifdef CONFIG_CC_STACKPROTECTOR
--DECLARE_PER_CPU(unsigned long, stack_canary);
-+/*
-+ * Make sure stack canary segment base is cached-aligned:
-+ *   "For Intel Atom processors, avoid non zero segment base address
-+ *    that is not aligned to cache line boundary at all cost."
-+ * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
-+ */
-+struct stack_canary {
-+	char __pad[20];		/* canary at %gs:20 */
-+	unsigned long canary;
-+};
-+DECLARE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
- #endif
- #endif	/* X86_64 */
- 
-diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
-index c2d742c..decad97 100644
---- a/arch/x86/include/asm/stackprotector.h
-+++ b/arch/x86/include/asm/stackprotector.h
-@@ -78,14 +78,14 @@ static __always_inline void boot_init_stack_canary(void)
- #ifdef CONFIG_X86_64
- 	percpu_write(irq_stack_union.stack_canary, canary);
- #else
--	percpu_write(stack_canary, canary);
-+	percpu_write(stack_canary.canary, canary);
- #endif
- }
- 
- static inline void setup_stack_canary_segment(int cpu)
- {
- #ifdef CONFIG_X86_32
--	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu) - 20;
-+	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu);
- 	struct desc_struct *gdt_table = get_cpu_gdt_table(cpu);
- 	struct desc_struct desc;
- 
-diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
-index 643c59b..5bd119b 100644
---- a/arch/x86/include/asm/system.h
-+++ b/arch/x86/include/asm/system.h
-@@ -31,7 +31,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 	"movl %P[task_canary](%[next]), %%ebx\n\t"			\
- 	"movl %%ebx, "__percpu_arg([stack_canary])"\n\t"
- #define __switch_canary_oparam						\
--	, [stack_canary] "=m" (per_cpu_var(stack_canary))
-+	, [stack_canary] "=m" (per_cpu_var(stack_canary.canary))
- #define __switch_canary_iparam						\
- 	, [task_canary] "i" (offsetof(struct task_struct, stack_canary))
- #else	/* CC_STACKPROTECTOR */
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index 5ce60a8..e338b5c 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -1043,7 +1043,7 @@ DEFINE_PER_CPU(struct orig_ist, orig_ist);
- #else	/* CONFIG_X86_64 */
- 
- #ifdef CONFIG_CC_STACKPROTECTOR
--DEFINE_PER_CPU(unsigned long, stack_canary);
-+DEFINE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
- #endif
- 
- /* Make sure %fs and %gs are initialized properly in idle threads */
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index cc827ac..7ffec6b 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -439,7 +439,6 @@ is386:	movl $2,%ecx		# set MP
- 	jne 1f
- 	movl $per_cpu__gdt_page,%eax
- 	movl $per_cpu__stack_canary,%ecx
--	subl $20, %ecx
- 	movw %cx, 8 * GDT_ENTRY_STACK_CANARY + 2(%eax)
- 	shrl $16, %ecx
- 	movb %cl, 8 * GDT_ENTRY_STACK_CANARY + 4(%eax)
+For some filesystems, invalid, corrupt metadata can actually cause a
+system panic or oops message, so it's not necessarily safe to mount a
+filesystem with corrupt metadata read-only without risking the need to
+reboot the machine in question.  More recently, there are folks who
+have been filing security bugs when they detect such cases, so there
+are fewer examples of such cases, but historically it was a good idea
+to run fsck because otherwise it's possible the kernel might oops or
+panic when it tripped over some particularly nasty metadata corruption.
 
+> but if a fsck does not get run on a filesystem that has been damaged, 
+> what additional damage can be done?
+
+Consider the case where there are data blocks in use by inodes,
+containing precious data, but which are marked free in a filesystem
+allocation data structures (e.g., ext3's block bitmaps, but this
+applies to pretty much any filesystem, whether it's xfs, reiserfs,
+btrfs, etc.).  When you create a new file on that filesystem, there's
+a chance that blocks that really contain data belonging to other
+inodes (perhaps the aforementioned ten years' of unbacked-up
+Ph.D. thesis research) will get overwritten by the newly created file.
+
+Another example is an inode which has multiple hard links, but the
+hard link count is wrong by being too low.  Now when you delete one of
+the hard links, the inode will be released, and the inode and its data
+blocks returned to the free pool, despite the fact that it is still
+accessible via another directory entry in the filesystem, and despite
+the fact that the file contents should be saved.
+
+In the case where you have a block which is claimed by more than one
+file, if that file is rewritten in place, it's possible that the newly
+written file could have its data corrupted, so it's not just a matter
+of potential corruption to existing files; the newly created files are
+at risk as well.
+
+> can it overwrite data that could have been saved?
+>
+> can it cause new files that are created (or new data written to existing, 
+> but uncorrupted files) to be lost?
+>
+> or is it just a matter of not knowing about existing corruption?
+
+So it's yes to all of the above; yes, you can overwrite existing data
+files; yes it can cause data blocks belonging to newly created files
+to be list; and no you won't know about data loss caused by metadata
+corruption.  (Again, you won't know about data loss caused by
+corruption to the data blocks.)
+
+					- Ted
 
