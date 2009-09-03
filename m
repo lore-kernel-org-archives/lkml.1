@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbZICMxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752108AbZICMxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752255AbZICMxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 08:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZICMxr
+	id S1752108AbZICMxq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 08:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751836AbZICMxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 08:53:47 -0400
-Received: from mail.df.lth.se ([194.47.250.12]:45410 "EHLO df.lth.se"
+	Thu, 3 Sep 2009 08:53:46 -0400
+Received: from mail.df.lth.se ([194.47.250.12]:45409 "EHLO df.lth.se"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751701AbZICMxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751695AbZICMxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Sep 2009 08:53:45 -0400
 From: Linus Walleij <linus.walleij@stericsson.com>
 To: Mark Brown <broonie@opensource.wolfsonmicro.com>,
@@ -18,22 +18,16 @@ Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
        Liam Girdwood <lrg@slimlogic.co.uk>,
        Samuel Ortiz <sameo@linux.intel.com>,
        Russell King <linux@arm.linux.org.uk>
-Subject: [PATCH 1/2] AB3100 regulator support v4
-Date: Thu,  3 Sep 2009 14:53:16 +0200
-Message-Id: <1251982396-23790-1-git-send-email-linus.walleij@stericsson.com>
+Subject: [PATCH 2/2] U300 AB3100 boardinfo v4
+Date: Thu,  3 Sep 2009 14:53:29 +0200
+Message-Id: <1251982409-24055-1-git-send-email-linus.walleij@stericsson.com>
 X-Mailer: git-send-email 1.6.2.rc1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for the regulators found in the AB3100
-Mixed-Signal IC.
-
-It further also defines platform data for the ST-Ericsson
-U300 platform and extends the AB3100 MFD driver so that
-platform/board data with regulation constraints and an init
-function can be passed down all the way from the board to
-the regulators.
+This defines regulator platform data and board power
+regulator hogs for the ST-Ericsson U300 platform.
 
 Signed-off-by: Linus Walleij <linus.walleij@stericsson.com>
 Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
@@ -42,160 +36,133 @@ Cc: Samuel Ortiz <sameo@linux.intel.com>
 Cc: Russell King <linux@arm.linux.org.uk>
 ---
 ChangeLog v3->v4
+- Remove surplus ghost supplies leftover from older code
+  (sleep "regulators").
 
-- NO CHANGES just resending the patch set so Mark can
-  (hopefully) ACK it.
+- Remove "boot_on" from LDO D constraints, we have to
+  request, enable and disable this regulator from the
+  board code in order for the reference count to reach
+  0 and shut off the board at powerdown.
 
-- I believe this requires changes queued for
-  drivers/mfd/ab3100-core.c in Sam Ortiz' MFD tree to
-  be applied first, so unless the regulator-next
-  tree would by chance be in sync with MFD, either
-  Sam has to take it or we have to wait until the
-  merge window when things fall in place before
-  merging.
+- Add #include <linux/pm.h> to the platform regulator
+  file.
+
+- Remove unused supplies and tagged the rails with names
+  instead for the boot_on/always_on rails.
+
+- This will require the driver in the regulator tree to
+  be applied first and that in turn require some changes
+  from the MFD tree so the idea is to postpone the merge
+  of this until the merge window post MFD+Regulator merge.
 ---
- drivers/mfd/ab3100-core.c  |    4 +
- drivers/regulator/Kconfig  |    9 +
- drivers/regulator/Makefile |    1 +
- drivers/regulator/ab3100.c |  694 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/mfd/ab3100.h |   28 ++
- 5 files changed, 736 insertions(+), 0 deletions(-)
- create mode 100644 drivers/regulator/ab3100.c
+ arch/arm/mach-u300/Makefile    |    1 +
+ arch/arm/mach-u300/i2c.c       |  248 ++++++++++++++++++++++++++++++++++++++++
+ arch/arm/mach-u300/regulator.c |   89 ++++++++++++++
+ 3 files changed, 338 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-u300/regulator.c
 
-diff --git a/drivers/mfd/ab3100-core.c b/drivers/mfd/ab3100-core.c
-index 1d8ac1a..9411860 100644
---- a/drivers/mfd/ab3100-core.c
-+++ b/drivers/mfd/ab3100-core.c
-@@ -838,6 +838,8 @@ static int __init ab3100_probe(struct i2c_client *client,
- 			const struct i2c_device_id *id)
- {
- 	struct ab3100 *ab3100;
-+	struct ab3100_platform_data *ab3100_plf_data =
-+		client->dev.platform_data;
- 	int err;
- 	int i;
- 
-@@ -921,6 +923,8 @@ static int __init ab3100_probe(struct i2c_client *client,
- 	for (i = 0; i < ARRAY_SIZE(ab3100_platform_devs); i++) {
- 		ab3100_platform_devs[i]->dev.parent =
- 			&client->dev;
-+		ab3100_platform_devs[i]->dev.platform_data =
-+			ab3100_plf_data;
- 		platform_set_drvdata(ab3100_platform_devs[i], ab3100);
- 	}
- 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index 7e1b2df..33b4eba 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -154,5 +154,14 @@ config REGULATOR_TPS6507X
- 	  three step-down converters and two general-purpose LDO voltage regulators.
- 	  It supports TI's software based Class-2 SmartReflex implementation.
- 
-+config REGULATOR_AB3100
-+	tristate "ST-Ericsson AB3100 Regulator functions"
-+	depends on AB3100_CORE
-+	default y if AB3100_CORE
-+	help
-+	 These regulators correspond to functionality in the
-+	 AB3100 analog baseband dealing with power regulators
-+	 for the system.
-+
- endif
- 
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index e42745e..d1db7db 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -24,5 +24,6 @@ obj-$(CONFIG_REGULATOR_MC13783) += mc13783.o
- 
- obj-$(CONFIG_REGULATOR_TPS65023) += tps65023-regulator.o
- obj-$(CONFIG_REGULATOR_TPS6507X) += tps6507x-regulator.o
-+obj-$(CONFIG_REGULATOR_AB3100) += ab3100.o
- 
- ccflags-$(CONFIG_REGULATOR_DEBUG) += -DDEBUG
-diff --git a/drivers/regulator/ab3100.c b/drivers/regulator/ab3100.c
-new file mode 100644
-index 0000000..156979d
---- /dev/null
-+++ b/drivers/regulator/ab3100.c
-@@ -0,0 +1,694 @@
-+/*
-+ * drivers/regulator/ab3100.c
-+ *
-+ * Copyright (C) 2008-2009 ST-Ericsson AB
-+ * License terms: GNU General Public License (GPL) version 2
-+ * Low-level control of the AB3100 IC Low Dropout (LDO)
-+ * regulators, external regulator and buck converter
-+ * Author: Mattias Wallin <mattias.wallin@stericsson.com>
-+ * Author: Linus Walleij <linus.walleij@stericsson.com>
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/delay.h>
-+#include <linux/platform_device.h>
-+#include <linux/regulator/driver.h>
+diff --git a/arch/arm/mach-u300/Makefile b/arch/arm/mach-u300/Makefile
+index 885b5c0..fab46fe 100644
+--- a/arch/arm/mach-u300/Makefile
++++ b/arch/arm/mach-u300/Makefile
+@@ -12,3 +12,4 @@ obj-$(CONFIG_MMC)                 += mmc.o
+ obj-$(CONFIG_SPI_PL022)           += spi.o
+ obj-$(CONFIG_MACH_U300_SPIDUMMY)  += dummyspichip.o
+ obj-$(CONFIG_I2C_STU300)          += i2c.o
++obj-$(CONFIG_REGULATOR_AB3100)    += regulator.o
+diff --git a/arch/arm/mach-u300/i2c.c b/arch/arm/mach-u300/i2c.c
+index 10be1f8..68cd60e 100644
+--- a/arch/arm/mach-u300/i2c.c
++++ b/arch/arm/mach-u300/i2c.c
+@@ -9,13 +9,256 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/i2c.h>
 +#include <linux/mfd/ab3100.h>
-+
-+/* LDO registers and some handy masking definitions for AB3100 */
-+#define AB3100_LDO_A		0x40
-+#define AB3100_LDO_C		0x41
-+#define AB3100_LDO_D		0x42
-+#define AB3100_LDO_E		0x43
-+#define AB3100_LDO_E_SLEEP	0x44
-+#define AB3100_LDO_F		0x45
-+#define AB3100_LDO_G		0x46
-+#define AB3100_LDO_H		0x47
-+#define AB3100_LDO_H_SLEEP_MODE	0
-+#define AB3100_LDO_H_SLEEP_EN	2
-+#define AB3100_LDO_ON		4
-+#define AB3100_LDO_H_VSEL_AC	5
-+#define AB3100_LDO_K		0x48
-+#define AB3100_LDO_EXT		0x49
-+#define AB3100_BUCK		0x4A
-+#define AB3100_BUCK_SLEEP	0x4B
-+#define AB3100_REG_ON_MASK	0x10
-+
-+/**
-+ * struct ab3100_regulator
-+ * A struct passed around the individual regulator functions
-+ * @platform_device: platform device holding this regulator
-+ * @ab3100: handle to the AB3100 parent chip
-+ * @plfdata: AB3100 platform data passed in at probe time
-+ * @regreg: regulator register number in the AB3100
-+ * @fixed_voltage: a fixed voltage for this regulator, if this
-+ *          0 the voltages array is used instead.
-+ * @typ_voltages: an array of available typical voltages for
-+ *          this regulator
-+ * @voltages_len: length of the array of available voltages
++#include <linux/regulator/machine.h>
++#include <linux/amba/bus.h>
+ #include <mach/irqs.h>
+ 
++/*
++ * Initial settings of ab3100 registers.
++ * Common for below LDO regulator settings are that
++ * bit 7-5 controls voltage. Bit 4 turns regulator ON(1) or OFF(0).
++ * Bit 3-2 controls sleep enable and bit 1-0 controls sleep mode.
 + */
-+struct ab3100_regulator {
-+	struct regulator_dev *rdev;
-+	struct ab3100 *ab3100;
-+	struct ab3100_platform_data *plfdata;
-+	u8 regreg;
-+	int fixed_voltage;
-+	int const *typ_voltages;
-+	u8 voltages_len;
++
++/* LDO_A 0x16: 2.75V, ON, SLEEP_A, SLEEP OFF GND */
++#define LDO_A_SETTING		0x16
++/* LDO_C 0x10: 2.65V, ON, SLEEP_A or B, SLEEP full power */
++#define LDO_C_SETTING		0x10
++/* LDO_D 0x10: 2.65V, ON, sleep mode not used */
++#define LDO_D_SETTING		0x10
++/* LDO_E 0x10: 1.8V, ON, SLEEP_A or B, SLEEP full power */
++#define LDO_E_SETTING		0x10
++/* LDO_E SLEEP 0x00: 1.8V, not used, SLEEP_A or B, not used */
++#define LDO_E_SLEEP_SETTING	0x00
++/* LDO_F 0xD0: 2.5V, ON, SLEEP_A or B, SLEEP full power */
++#define LDO_F_SETTING		0xD0
++/* LDO_G 0x00: 2.85V, OFF, SLEEP_A or B, SLEEP full power */
++#define LDO_G_SETTING		0x00
++/* LDO_H 0x18: 2.75V, ON, SLEEP_B, SLEEP full power */
++#define LDO_H_SETTING		0x18
++/* LDO_K 0x00: 2.75V, OFF, SLEEP_A or B, SLEEP full power */
++#define LDO_K_SETTING		0x00
++/* LDO_EXT 0x00: Voltage not set, OFF, not used, not used */
++#define LDO_EXT_SETTING		0x00
++/* BUCK 0x7D: 1.2V, ON, SLEEP_A and B, SLEEP low power */
++#define BUCK_SETTING	0x7D
++/* BUCK SLEEP 0xAC: 1.05V, Not used, SLEEP_A and B, Not used */
++#define BUCK_SLEEP_SETTING	0xAC
++
++static struct regulator_consumer_supply supply_ldo_c[] = {
++	{
++		.dev_name = "ab3100-codec",
++		.supply = "vaudio", /* Powers the codec */
++	},
 +};
 +
-+/* The order in which registers are initialized */
-+static const u8 ab3100_reg_init_order[AB3100_NUM_REGULATORS+2] = {
-+	AB3100_LDO_A,
-+	AB3100_LDO_C,
-+	AB3100_LDO_E,
-+	AB3100_LDO_E_SLEEP,
-+	AB3100_LDO_F,
-+	AB3100_LDO_G,
-+	AB3100_LDO_H,
-+	AB3100_LDO_K,
-+	AB3100_LDO_EXT,
-+	AB3100_BUCK,
-+	AB3100_BUCK_SLEEP,
-+	AB3100_LDO_D,
++/*
++ * This one needs to be a supply so we can turn it off
++ * in order to shut down the system.
++ */
++static struct regulator_consumer_supply supply_ldo_d[] = {
++	{
++		.dev = NULL,
++		.supply = "vana15", /* Powers the SoC (CPU etc) */
++	},
++};
++
++static struct regulator_consumer_supply supply_ldo_g[] = {
++	{
++		.dev_name = "mmci",
++		.supply = "vcard", /* Powers MMC/SD card */
++	},
++};
++
++static struct regulator_consumer_supply supply_ldo_h[] = {
++	{
++		.dev_name = "xgam_pdi",
++		.supply = "vdisp", /* Powers camera, display etc */
++	},
++};
++
++static struct regulator_consumer_supply supply_ldo_k[] = {
++	{
++		.dev_name = "irda",
++		.supply = "vir", /* Power IrDA */
++	},
++};
++
++/*
++ * This is a placeholder for whoever wish to use the
++ * external power.
++ */
++static struct regulator_consumer_supply supply_ldo_ext[] = {
++	{
++		.dev = NULL,
++		.supply = "vext", /* External power */
++	},
 +};
 +
 +/* Preset (hardware defined) voltages for these regulators */
@@ -203,670 +170,274 @@ index 0000000..156979d
 +#define LDO_C_VOLTAGE 2650000
 +#define LDO_D_VOLTAGE 2650000
 +
-+static const int const ldo_e_buck_typ_voltages[] = {
-+	1800000,
-+	1400000,
-+	1300000,
-+	1200000,
-+	1100000,
-+	1050000,
-+	900000,
-+};
-+
-+static const int const ldo_f_typ_voltages[] = {
-+	1800000,
-+	1400000,
-+	1300000,
-+	1200000,
-+	1100000,
-+	1050000,
-+	2500000,
-+	2650000,
-+};
-+
-+static const int const ldo_g_typ_voltages[] = {
-+	2850000,
-+	2750000,
-+	1800000,
-+	1500000,
-+};
-+
-+static const int const ldo_h_typ_voltages[] = {
-+	2750000,
-+	1800000,
-+	1500000,
-+	1200000,
-+};
-+
-+static const int const ldo_k_typ_voltages[] = {
-+	2750000,
-+	1800000,
-+};
-+
-+
-+/* The regulator devices */
-+static struct ab3100_regulator
-+ab3100_regulators[AB3100_NUM_REGULATORS] = {
-+	{
-+		.regreg = AB3100_LDO_A,
-+		.fixed_voltage = LDO_A_VOLTAGE,
-+	},
-+	{
-+		.regreg = AB3100_LDO_C,
-+		.fixed_voltage = LDO_C_VOLTAGE,
-+	},
-+	{
-+		.regreg = AB3100_LDO_D,
-+		.fixed_voltage = LDO_D_VOLTAGE,
-+	},
-+	{
-+		.regreg = AB3100_LDO_E,
-+		.typ_voltages = ldo_e_buck_typ_voltages,
-+		.voltages_len = ARRAY_SIZE(ldo_e_buck_typ_voltages),
-+	},
-+	{
-+		.regreg = AB3100_LDO_F,
-+		.typ_voltages = ldo_f_typ_voltages,
-+		.voltages_len = ARRAY_SIZE(ldo_f_typ_voltages),
-+	},
-+	{
-+		.regreg = AB3100_LDO_G,
-+		.typ_voltages = ldo_g_typ_voltages,
-+		.voltages_len = ARRAY_SIZE(ldo_g_typ_voltages),
-+	},
-+	{
-+		.regreg = AB3100_LDO_H,
-+		.typ_voltages = ldo_h_typ_voltages,
-+		.voltages_len = ARRAY_SIZE(ldo_h_typ_voltages),
-+	},
-+	{
-+		.regreg = AB3100_LDO_K,
-+		.typ_voltages = ldo_k_typ_voltages,
-+		.voltages_len = ARRAY_SIZE(ldo_k_typ_voltages),
-+	},
-+	{
-+		.regreg = AB3100_LDO_EXT,
-+		/* No voltages for the external regulator */
-+	},
-+	{
-+		.regreg = AB3100_BUCK,
-+		.typ_voltages = ldo_e_buck_typ_voltages,
-+		.voltages_len = ARRAY_SIZE(ldo_e_buck_typ_voltages),
-+	},
-+};
-+
-+/*
-+ * General functions for enable, disable and is_enabled used for
-+ * LDO: A,C,E,F,G,H,K,EXT and BUCK
-+ */
-+static int ab3100_enable_regulator(struct regulator_dev *reg)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+	int err;
-+	u8 regval;
-+
-+	err = ab3100_get_register_interruptible(abreg->ab3100, abreg->regreg,
-+						&regval);
-+	if (err) {
-+		dev_warn(&reg->dev, "failed to get regid %d value\n",
-+			 abreg->regreg);
-+		return err;
-+	}
-+
-+	/* The regulator is already on, no reason to go further */
-+	if (regval & AB3100_REG_ON_MASK)
-+		return 0;
-+
-+	regval |= AB3100_REG_ON_MASK;
-+
-+	err = ab3100_set_register_interruptible(abreg->ab3100, abreg->regreg,
-+						regval);
-+	if (err) {
-+		dev_warn(&reg->dev, "failed to set regid %d value\n",
-+			 abreg->regreg);
-+		return err;
-+	}
-+
-+	/* Per-regulator power on delay from spec */
-+	switch (abreg->regreg) {
-+	case AB3100_LDO_A: /* Fallthrough */
-+	case AB3100_LDO_C: /* Fallthrough */
-+	case AB3100_LDO_D: /* Fallthrough */
-+	case AB3100_LDO_E: /* Fallthrough */
-+	case AB3100_LDO_H: /* Fallthrough */
-+	case AB3100_LDO_K:
-+		udelay(200);
-+		break;
-+	case AB3100_LDO_F:
-+		udelay(600);
-+		break;
-+	case AB3100_LDO_G:
-+		udelay(400);
-+		break;
-+	case AB3100_BUCK:
-+		mdelay(1);
-+		break;
-+	default:
-+		break;
-+	}
-+
-+	return 0;
-+}
-+
-+static int ab3100_disable_regulator(struct regulator_dev *reg)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+	int err;
-+	u8 regval;
-+
-+	/*
-+	 * LDO D is a special regulator. When it is disabled, the entire
-+	 * system is shut down. So this is handled specially.
-+	 */
-+	if (abreg->regreg == AB3100_LDO_D) {
-+		int i;
-+
-+		dev_info(&reg->dev, "disabling LDO D - shut down system\n");
-+		/*
-+		 * Set regulators to default values, ignore any errors,
-+		 * we're going DOWN
++static struct ab3100_platform_data ab3100_plf_data = {
++	.reg_constraints = {
++		/* LDO A routing and constraints */
++		{
++			.constraints = {
++				.name = "vrad",
++				.min_uV = LDO_A_VOLTAGE,
++				.max_uV = LDO_A_VOLTAGE,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.always_on = 1,
++				.boot_on = 1,
++			},
++		},
++		/* LDO C routing and constraints */
++		{
++			.constraints = {
++				.min_uV = LDO_C_VOLTAGE,
++				.max_uV = LDO_C_VOLTAGE,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++			},
++			.num_consumer_supplies = ARRAY_SIZE(supply_ldo_c),
++			.consumer_supplies = supply_ldo_c,
++		},
++		/* LDO D routing and constraints */
++		{
++			.constraints = {
++				.min_uV = LDO_D_VOLTAGE,
++				.max_uV = LDO_D_VOLTAGE,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				/*
++				 * Actually this is boot_on but we need
++				 * to reference count it externally to
++				 * be able to shut down the system.
++				 */
++			},
++			.num_consumer_supplies = ARRAY_SIZE(supply_ldo_d),
++			.consumer_supplies = supply_ldo_d,
++		},
++		/* LDO E routing and constraints */
++		{
++			.constraints = {
++				.name = "vio",
++				.min_uV = 1800000,
++				.max_uV = 1800000,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.valid_ops_mask =
++				REGULATOR_CHANGE_VOLTAGE |
++				REGULATOR_CHANGE_STATUS,
++				.always_on = 1,
++				.boot_on = 1,
++			},
++		},
++		/* LDO F routing and constraints */
++		{
++			.constraints = {
++				.name = "vana25",
++				.min_uV = 2500000,
++				.max_uV = 2500000,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.valid_ops_mask =
++				REGULATOR_CHANGE_VOLTAGE |
++				REGULATOR_CHANGE_STATUS,
++				.always_on = 1,
++				.boot_on = 1,
++			},
++		},
++		/* LDO G routing and constraints */
++		{
++			.constraints = {
++				.min_uV = 0,
++				.max_uV = 2850000,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.valid_ops_mask =
++				REGULATOR_CHANGE_VOLTAGE |
++				REGULATOR_CHANGE_STATUS,
++			},
++			.num_consumer_supplies = ARRAY_SIZE(supply_ldo_g),
++			.consumer_supplies = supply_ldo_g,
++		},
++		/* LDO H routing and constraints */
++		{
++			.constraints = {
++				.min_uV = 0,
++				.max_uV = 2750000,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.valid_ops_mask =
++				REGULATOR_CHANGE_VOLTAGE |
++				REGULATOR_CHANGE_STATUS,
++			},
++			.num_consumer_supplies = ARRAY_SIZE(supply_ldo_h),
++			.consumer_supplies = supply_ldo_h,
++		},
++		/* LDO K routing and constraints */
++		{
++			.constraints = {
++				.min_uV = 0,
++				.max_uV = 2750000,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.valid_ops_mask =
++				REGULATOR_CHANGE_VOLTAGE |
++				REGULATOR_CHANGE_STATUS,
++			},
++			.num_consumer_supplies = ARRAY_SIZE(supply_ldo_k),
++			.consumer_supplies = supply_ldo_k,
++		},
++		/* External regulator interface. No fixed voltage specified.
++		 * If we knew the voltage of the external regulator and it
++		 * was connected on the board, we could add the (fixed)
++		 * voltage for it here.
 +		 */
-+		for (i = 0; i < ARRAY_SIZE(ab3100_reg_init_order); i++) {
-+			(void) ab3100_set_register_interruptible(abreg->ab3100,
-+					ab3100_reg_init_order[i],
-+					abreg->plfdata->reg_initvals[i]);
-+		}
-+
-+		/* Setting LDO D to 0x00 cuts the power to the SoC */
-+		return ab3100_set_register_interruptible(abreg->ab3100,
-+							 AB3100_LDO_D, 0x00U);
-+
-+	}
-+
-+	/*
-+	 * All other regulators are handled here
-+	 */
-+	err = ab3100_get_register_interruptible(abreg->ab3100, abreg->regreg,
-+						&regval);
-+	if (err) {
-+		dev_err(&reg->dev, "unable to get register 0x%x\n",
-+			abreg->regreg);
-+		return err;
-+	}
-+	regval &= ~AB3100_REG_ON_MASK;
-+	return ab3100_set_register_interruptible(abreg->ab3100, abreg->regreg,
-+						 regval);
-+}
-+
-+static int ab3100_is_enabled_regulator(struct regulator_dev *reg)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+	u8 regval;
-+	int err;
-+
-+	err = ab3100_get_register_interruptible(abreg->ab3100, abreg->regreg,
-+						&regval);
-+	if (err) {
-+		dev_err(&reg->dev, "unable to get register 0x%x\n",
-+			abreg->regreg);
-+		return err;
-+	}
-+
-+	return regval & AB3100_REG_ON_MASK;
-+}
-+
-+static int ab3100_list_voltage_regulator(struct regulator_dev *reg,
-+					 unsigned selector)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+
-+	if (selector > abreg->voltages_len)
-+		return -EINVAL;
-+	return abreg->typ_voltages[selector];
-+}
-+
-+static int ab3100_get_voltage_regulator(struct regulator_dev *reg)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+	u8 regval;
-+	int err;
-+
-+	/* Return the voltage for fixed regulators immediately */
-+	if (abreg->fixed_voltage)
-+		return abreg->fixed_voltage;
-+
-+	/*
-+	 * For variable types, read out setting and index into
-+	 * supplied voltage list.
-+	 */
-+	err = ab3100_get_register_interruptible(abreg->ab3100,
-+						abreg->regreg, &regval);
-+	if (err) {
-+		dev_warn(&reg->dev,
-+			 "failed to get regulator value in register %02x\n",
-+			 abreg->regreg);
-+		return err;
-+	}
-+
-+	/* The 3 highest bits index voltages */
-+	regval &= 0xE0;
-+	regval >>= 5;
-+
-+	if (regval > abreg->voltages_len) {
-+		dev_err(&reg->dev,
-+			"regulator register %02x contains an illegal voltage setting\n",
-+			abreg->regreg);
-+		return -EINVAL;
-+	}
-+
-+	return abreg->typ_voltages[regval];
-+}
-+
-+static int ab3100_get_best_voltage_index(struct regulator_dev *reg,
-+				   int min_uV, int max_uV)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+	int i;
-+	int bestmatch;
-+	int bestindex;
-+
-+	/*
-+	 * Locate the minimum voltage fitting the criteria on
-+	 * this regulator. The switchable voltages are not
-+	 * in strict falling order so we need to check them
-+	 * all for the best match.
-+	 */
-+	bestmatch = INT_MAX;
-+	bestindex = -1;
-+	for (i = 0; i < abreg->voltages_len; i++) {
-+		if (abreg->typ_voltages[i] <= max_uV &&
-+		    abreg->typ_voltages[i] >= min_uV &&
-+		    abreg->typ_voltages[i] < bestmatch) {
-+			bestmatch = abreg->typ_voltages[i];
-+			bestindex = i;
-+		}
-+	}
-+
-+	if (bestindex < 0) {
-+		dev_warn(&reg->dev, "requested %d<=x<=%d uV, out of range!\n",
-+			 min_uV, max_uV);
-+		return -EINVAL;
-+	}
-+	return bestindex;
-+}
-+
-+static int ab3100_set_voltage_regulator(struct regulator_dev *reg,
-+					int min_uV, int max_uV)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+	u8 regval;
-+	int err;
-+	int bestindex;
-+
-+	bestindex = ab3100_get_best_voltage_index(reg, min_uV, max_uV);
-+	if (bestindex < 0)
-+		return bestindex;
-+
-+	err = ab3100_get_register_interruptible(abreg->ab3100,
-+						abreg->regreg, &regval);
-+	if (err) {
-+		dev_warn(&reg->dev,
-+			 "failed to get regulator register %02x\n",
-+			 abreg->regreg);
-+		return err;
-+	}
-+
-+	/* The highest three bits control the variable regulators */
-+	regval &= ~0xE0;
-+	regval |= (bestindex << 5);
-+
-+	err = ab3100_set_register_interruptible(abreg->ab3100,
-+						abreg->regreg, regval);
-+	if (err)
-+		dev_warn(&reg->dev, "failed to set regulator register %02x\n",
-+			abreg->regreg);
-+
-+	return err;
-+}
-+
-+static int ab3100_set_suspend_voltage_regulator(struct regulator_dev *reg,
-+						int uV)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+	u8 regval;
-+	int err;
-+	int bestindex;
-+	u8 targetreg;
-+
-+	if (abreg->regreg == AB3100_LDO_E)
-+		targetreg = AB3100_LDO_E_SLEEP;
-+	else if (abreg->regreg == AB3100_BUCK)
-+		targetreg = AB3100_BUCK_SLEEP;
-+	else
-+		return -EINVAL;
-+
-+	/* LDO E and BUCK have special suspend voltages you can set */
-+	bestindex = ab3100_get_best_voltage_index(reg, uV, uV);
-+
-+	err = ab3100_get_register_interruptible(abreg->ab3100,
-+						targetreg, &regval);
-+	if (err) {
-+		dev_warn(&reg->dev,
-+			 "failed to get regulator register %02x\n",
-+			 targetreg);
-+		return err;
-+	}
-+
-+	/* The highest three bits control the variable regulators */
-+	regval &= ~0xE0;
-+	regval |= (bestindex << 5);
-+
-+	err = ab3100_set_register_interruptible(abreg->ab3100,
-+						targetreg, regval);
-+	if (err)
-+		dev_warn(&reg->dev, "failed to set regulator register %02x\n",
-+			abreg->regreg);
-+
-+	return err;
-+}
-+
-+/*
-+ * The external regulator can just define a fixed voltage.
-+ */
-+static int ab3100_get_voltage_regulator_external(struct regulator_dev *reg)
-+{
-+	struct ab3100_regulator *abreg = reg->reg_data;
-+
-+	return abreg->plfdata->external_voltage;
-+}
-+
-+static struct regulator_ops regulator_ops_fixed = {
-+	.enable      = ab3100_enable_regulator,
-+	.disable     = ab3100_disable_regulator,
-+	.is_enabled  = ab3100_is_enabled_regulator,
-+	.get_voltage = ab3100_get_voltage_regulator,
-+};
-+
-+static struct regulator_ops regulator_ops_variable = {
-+	.enable      = ab3100_enable_regulator,
-+	.disable     = ab3100_disable_regulator,
-+	.is_enabled  = ab3100_is_enabled_regulator,
-+	.get_voltage = ab3100_get_voltage_regulator,
-+	.set_voltage = ab3100_set_voltage_regulator,
-+	.list_voltage = ab3100_list_voltage_regulator,
-+};
-+
-+static struct regulator_ops regulator_ops_variable_sleepable = {
-+	.enable      = ab3100_enable_regulator,
-+	.disable     = ab3100_disable_regulator,
-+	.is_enabled  = ab3100_is_enabled_regulator,
-+	.get_voltage = ab3100_get_voltage_regulator,
-+	.set_voltage = ab3100_set_voltage_regulator,
-+	.set_suspend_voltage = ab3100_set_suspend_voltage_regulator,
-+	.list_voltage = ab3100_list_voltage_regulator,
-+};
-+
-+/*
-+ * LDO EXT is an external regulator so it is really
-+ * not possible to set any voltage locally here, AB3100
-+ * is an on/off switch plain an simple. The external
-+ * voltage is defined in the board set-up if any.
-+ */
-+static struct regulator_ops regulator_ops_external = {
-+	.enable      = ab3100_enable_regulator,
-+	.disable     = ab3100_disable_regulator,
-+	.is_enabled  = ab3100_is_enabled_regulator,
-+	.get_voltage = ab3100_get_voltage_regulator_external,
-+};
-+
-+static struct regulator_desc
-+ab3100_regulator_desc[AB3100_NUM_REGULATORS] = {
-+	{
-+		.name = "LDO_A",
-+		.id   = AB3100_LDO_A,
-+		.ops  = &regulator_ops_fixed,
-+		.type = REGULATOR_VOLTAGE,
++		{
++			.constraints = {
++				.min_uV = 0,
++				.max_uV = 0,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.valid_ops_mask =
++				REGULATOR_CHANGE_STATUS,
++			},
++			.num_consumer_supplies = ARRAY_SIZE(supply_ldo_ext),
++			.consumer_supplies = supply_ldo_ext,
++		},
++		/* Buck converter routing and constraints */
++		{
++			.constraints = {
++				.name = "vcore",
++				.min_uV = 1200000,
++				.max_uV = 1800000,
++				.valid_modes_mask = REGULATOR_MODE_NORMAL,
++				.valid_ops_mask =
++				REGULATOR_CHANGE_VOLTAGE |
++				REGULATOR_CHANGE_STATUS,
++				.always_on = 1,
++				.boot_on = 1,
++			},
++		},
 +	},
-+	{
-+		.name = "LDO_C",
-+		.id   = AB3100_LDO_C,
-+		.ops  = &regulator_ops_fixed,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "LDO_D",
-+		.id   = AB3100_LDO_D,
-+		.ops  = &regulator_ops_fixed,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "LDO_E",
-+		.id   = AB3100_LDO_E,
-+		.ops  = &regulator_ops_variable_sleepable,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "LDO_F",
-+		.id   = AB3100_LDO_F,
-+		.ops  = &regulator_ops_variable,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "LDO_G",
-+		.id   = AB3100_LDO_G,
-+		.ops  = &regulator_ops_variable,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "LDO_H",
-+		.id   = AB3100_LDO_H,
-+		.ops  = &regulator_ops_variable,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "LDO_K",
-+		.id   = AB3100_LDO_K,
-+		.ops  = &regulator_ops_variable,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "LDO_EXT",
-+		.id   = AB3100_LDO_EXT,
-+		.ops  = &regulator_ops_external,
-+		.type = REGULATOR_VOLTAGE,
-+	},
-+	{
-+		.name = "BUCK",
-+		.id   = AB3100_BUCK,
-+		.ops  = &regulator_ops_variable_sleepable,
-+		.type = REGULATOR_VOLTAGE,
++	.reg_initvals = {
++		LDO_A_SETTING,
++		LDO_C_SETTING,
++		LDO_E_SETTING,
++		LDO_E_SLEEP_SETTING,
++		LDO_F_SETTING,
++		LDO_G_SETTING,
++		LDO_H_SETTING,
++		LDO_K_SETTING,
++		LDO_EXT_SETTING,
++		BUCK_SETTING,
++		BUCK_SLEEP_SETTING,
++		LDO_D_SETTING,
 +	},
 +};
 +
-+/*
-+ * NOTE: the following functions are regulators pluralis - it is the
-+ * binding to the AB3100 core driver and the parent platform device
-+ * for all the different regulators.
-+ */
-+
-+static int __init ab3100_regulators_probe(struct platform_device *pdev)
-+{
-+	struct ab3100_platform_data *plfdata = pdev->dev.platform_data;
-+	struct ab3100 *ab3100 = platform_get_drvdata(pdev);
-+	int err = 0;
-+	u8 data;
-+	int i;
-+
-+	/* Check chip state */
-+	err = ab3100_get_register_interruptible(ab3100,
-+						AB3100_LDO_D, &data);
-+	if (err) {
-+		dev_err(&pdev->dev, "could not read initial status of LDO_D\n");
-+		return err;
-+	}
-+	if (data & 0x10)
-+		dev_notice(&pdev->dev,
-+			   "chip is already in active mode (Warm start)\n");
-+	else
-+		dev_notice(&pdev->dev,
-+			   "chip is in inactive mode (Cold start)\n");
-+
-+	/* Set up regulators */
-+	for (i = 0; i < ARRAY_SIZE(ab3100_reg_init_order); i++) {
-+		err = ab3100_set_register_interruptible(ab3100,
-+					ab3100_reg_init_order[i],
-+					plfdata->reg_initvals[i]);
-+		if (err) {
-+			dev_err(&pdev->dev, "regulator initialization failed with error %d\n",
-+				err);
-+			return err;
-+		}
-+	}
-+
-+	if (err) {
-+		dev_err(&pdev->dev,
-+			"LDO D regulator initialization failed with error %d\n",
-+			err);
-+		return err;
-+	}
-+
-+	/* Register the regulators */
-+	for (i = 0; i < AB3100_NUM_REGULATORS; i++) {
-+		struct ab3100_regulator *reg = &ab3100_regulators[i];
-+		struct regulator_dev *rdev;
-+
-+		/*
-+		 * Initialize per-regulator struct.
-+		 * Inherit platform data, this comes down from the
-+		 * i2c boarddata, from the machine. So if you want to
-+		 * see what it looks like for a certain machine, go
-+		 * into the machine I2C setup.
-+		 */
-+		reg->ab3100 = ab3100;
-+		reg->plfdata = plfdata;
-+
-+		/*
-+		 * Register the regulator, pass around
-+		 * the ab3100_regulator struct
-+		 */
-+		rdev = regulator_register(&ab3100_regulator_desc[i],
-+					  &pdev->dev,
-+					  &plfdata->reg_constraints[i],
-+					  reg);
-+
-+		if (IS_ERR(rdev)) {
-+			err = PTR_ERR(rdev);
-+			dev_err(&pdev->dev,
-+				"%s: failed to register regulator %s err %d\n",
-+				__func__, ab3100_regulator_desc[i].name,
-+				err);
-+			i--;
-+			/* remove the already registered regulators */
-+			while (i > 0) {
-+				regulator_unregister(ab3100_regulators[i].rdev);
-+				i--;
-+			}
-+			return err;
-+		}
-+
-+		/* Then set a pointer back to the registered regulator */
-+		reg->rdev = rdev;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __exit ab3100_regulators_remove(struct platform_device *pdev)
-+{
-+	int i;
-+
-+	for (i = 0; i < AB3100_NUM_REGULATORS; i++) {
-+		struct ab3100_regulator *reg = &ab3100_regulators[i];
-+
-+		regulator_unregister(reg->rdev);
-+	}
-+	return 0;
-+}
-+
-+static struct platform_driver ab3100_regulators_driver = {
-+	.driver = {
-+		.name  = "ab3100-regulators",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = ab3100_regulators_probe,
-+	.remove = __exit_p(ab3100_regulators_remove),
-+};
-+
-+static __init int ab3100_regulators_init(void)
-+{
-+	return platform_driver_register(&ab3100_regulators_driver);
-+}
-+
-+static __exit void ab3100_regulators_exit(void)
-+{
-+	platform_driver_register(&ab3100_regulators_driver);
-+}
-+
-+subsys_initcall(ab3100_regulators_init);
-+module_exit(ab3100_regulators_exit);
-+
-+MODULE_AUTHOR("Mattias Wallin <mattias.wallin@stericsson.com>");
-+MODULE_DESCRIPTION("AB3100 Regulator driver");
-+MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:ab3100-regulators");
-diff --git a/include/linux/mfd/ab3100.h b/include/linux/mfd/ab3100.h
-index 56343b8..1692126 100644
---- a/include/linux/mfd/ab3100.h
-+++ b/include/linux/mfd/ab3100.h
-@@ -6,6 +6,7 @@
-  */
- 
- #include <linux/device.h>
-+#include <linux/regulator/machine.h>
- 
- #ifndef MFD_AB3100_H
- #define MFD_AB3100_H
-@@ -56,6 +57,14 @@
- #define AB3100_STR_BATT_REMOVAL				(0x40)
- #define AB3100_STR_VBUS					(0x80)
- 
-+/*
-+ * AB3100 contains 8 regulators, one external regulator controller
-+ * and a buck converter, further the LDO E and buck converter can
-+ * have separate settings if they are in sleep mode, this is
-+ * modeled as a separate regulator.
-+ */
-+#define AB3100_NUM_REGULATORS				10
-+
- /**
-  * struct ab3100
-  * @access_mutex: lock out concurrent accesses to the AB3100 registers
-@@ -86,6 +95,25 @@ struct ab3100 {
- 	bool startup_events_read;
+ static struct i2c_board_info __initdata bus0_i2c_board_info[] = {
+ 	{
+ 		.type = "ab3100",
+ 		.addr = 0x48,
+ 		.irq = IRQ_U300_IRQ0_EXT,
++		.platform_data = &ab3100_plf_data,
+ 	},
  };
  
-+/**
-+ * struct ab3100_platform_data
-+ * Data supplied to initialize board connections to the AB3100
-+ * @reg_constraints: regulator constraints for target board
-+ *     the order of these constraints are: LDO A, C, D, E,
-+ *     F, G, H, K, EXT and BUCK.
-+ * @reg_initvals: initial values for the regulator registers
-+ *     plus two sleep settings for LDO E and the BUCK converter.
-+ *     exactly AB3100_NUM_REGULATORS+2 values must be sent in.
-+ *     Order: LDO A, C, E, E sleep, F, G, H, K, EXT, BUCK,
-+ *     BUCK sleep, LDO D. (LDO D need to be initialized last.)
-+ * @external_voltage: voltage level of the external regulator.
+@@ -38,6 +281,11 @@ void __init u300_i2c_register_board_devices(void)
+ {
+ 	i2c_register_board_info(0, bus0_i2c_board_info,
+ 				ARRAY_SIZE(bus0_i2c_board_info));
++	/*
++	 * This makes the core shut down all unused regulators
++	 * after all the initcalls have completed.
++	 */
++	regulator_has_full_constraints();
+ 	i2c_register_board_info(1, bus1_i2c_board_info,
+ 				ARRAY_SIZE(bus1_i2c_board_info));
+ }
+diff --git a/arch/arm/mach-u300/regulator.c b/arch/arm/mach-u300/regulator.c
+new file mode 100644
+index 0000000..7e17a78
+--- /dev/null
++++ b/arch/arm/mach-u300/regulator.c
+@@ -0,0 +1,89 @@
++/*
++ * arch/arm/mach-u300/regulator.c
++ *
++ * Copyright (C) 2009 ST-Ericsson AB
++ * License terms: GNU General Public License (GPL) version 2
++ * Handle board-bound regulators and board power not related
++ * to any devices.
++ * Author: Linus Walleij <linus.walleij@stericsson.com>
 + */
-+struct ab3100_platform_data {
-+	struct regulator_init_data reg_constraints[AB3100_NUM_REGULATORS];
-+	u8 reg_initvals[AB3100_NUM_REGULATORS+2];
-+	int external_voltage;
-+};
++#include <linux/device.h>
++#include <linux/signal.h>
++#include <linux/err.h>
++#include <linux/regulator/consumer.h>
++#include <linux/pm.h>
++/* Those are just for writing in syscon */
++#include <linux/io.h>
++#include <mach/hardware.h>
++#include <mach/syscon.h>
 +
- int ab3100_set_register_interruptible(struct ab3100 *ab3100, u8 reg, u8 regval);
- int ab3100_get_register_interruptible(struct ab3100 *ab3100, u8 reg, u8 *regval);
- int ab3100_get_register_page_interruptible(struct ab3100 *ab3100,
++/*
++ * Regulators that power the board and chip and which are
++ * not copuled to specific drivers are hogged in these
++ * instances.
++ */
++static struct regulator *main_power_15;
++
++/*
++ * This function is used from pm.h to shut down the system by
++ * resetting all regulators in turn and then disable regulator
++ * LDO D (main power).
++ */
++void u300_pm_poweroff(void)
++{
++	sigset_t old, all;
++
++	sigfillset(&all);
++	if (!sigprocmask(SIG_BLOCK, &all, &old)) {
++		/* Disable LDO D to shut down the system */
++		if (main_power_15)
++			regulator_disable(main_power_15);
++		else
++			pr_err("regulator not available to shut down system\n");
++		(void) sigprocmask(SIG_SETMASK, &old, NULL);
++	}
++	return;
++}
++
++/*
++ * Hog the regulators needed to power up the board.
++ */
++static int __init u300_init_boardpower(void)
++{
++	int err;
++	u32 val;
++
++	pr_info("U300: setting up board power\n");
++	main_power_15 = regulator_get(NULL, "vana15");
++	if (IS_ERR(main_power_15)) {
++		pr_err("could not get vana15");
++		return PTR_ERR(main_power_15);
++	}
++	err = regulator_enable(main_power_15);
++	if (err) {
++		pr_err("could not enable vana15\n");
++		return err;
++	}
++
++	/*
++	 * On U300 a special system controller register pulls up the DC
++	 * until the vana15 (LDO D) regulator comes up. At this point, all
++	 * regulators are set and we do not need power control via
++	 * DC ON anymore. This function will likely be moved whenever
++	 * the rest of the U300 power management is implemented.
++	 */
++	pr_info("U300: disable system controller pull-up\n");
++	val = readw(U300_SYSCON_VBASE + U300_SYSCON_PMCR);
++	val &= ~U300_SYSCON_PMCR_DCON_ENABLE;
++	writew(val, U300_SYSCON_VBASE + U300_SYSCON_PMCR);
++
++	/* Register globally exported PM poweroff hook */
++	pm_power_off = u300_pm_poweroff;
++
++	return 0;
++}
++
++/*
++ * So at module init time we hog the regulator!
++ */
++module_init(u300_init_boardpower);
 -- 
 1.6.2.1
 
