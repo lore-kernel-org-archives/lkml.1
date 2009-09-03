@@ -1,62 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932311AbZICVHw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbZICVJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932311AbZICVHw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:07:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbZICVHv
+	id S932325AbZICVJs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbZICVJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:07:51 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:59188 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932258AbZICVHv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:07:51 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Thu, 3 Sep 2009 23:07:35 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH] firewire: sbp2: fix freeing of unallocated memory
-To: linux1394-devel@lists.sourceforge.net
-cc: linux-kernel@vger.kernel.org
-Message-ID: <tkrat.9397e8b23fce40ec@s5r6.in-berlin.de>
+	Thu, 3 Sep 2009 17:09:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39101 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932301AbZICVJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:09:46 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
+Date: Thu, 3 Sep 2009 23:10:43 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
+References: <1251789947.3483.215.camel@rzhang-dt> <200909030216.04896.rjw@sisk.pl> <20090903084353.GB3793@elf.ucw.cz>
+In-Reply-To: <20090903084353.GB3793@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909032310.43639.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a target writes invalid status (typically status of a command that
-already timed out, firewire-sbp2 attempts to put away an ORB that
-doesn't exist.  https://bugzilla.redhat.com/show_bug.cgi?id=519772
+On Thursday 03 September 2009, Pavel Machek wrote:
+> On Thu 2009-09-03 02:16:04, Rafael J. Wysocki wrote:
+> > On Wednesday 02 September 2009, Pavel Machek wrote:
+> > > On Wed 2009-09-02 23:46:11, Rafael J. Wysocki wrote:
+> > > > On Wednesday 02 September 2009, Pavel Machek wrote:
+> > > > > On Wed 2009-09-02 23:12:58, Rafael J. Wysocki wrote:
+> > > > > > On Tuesday 01 September 2009, Pavel Machek wrote:
+> > > > > > > 
+> > > > > > > > > > IMO, 0 and -1 are not errors. they just suggest that the Ambient Light
+> > > > > > > > > > illuminance is beyond the device support range, while the device is
+> > > > > > > > > > still working normally.
+> > > > > > > > > > what about exporting these values (0 and -1) to user space directly?
+> > > > > > > > > 
+> > > > > > > > > Returning 0 for "below" range and 99999999 for "above" range would be
+> > > > > > > > > nice, yes. 
+> > > > > > > > 
+> > > > > > > > Why not 0 and "all ones" or 0 and -1.
+> > > > > > > > 
+> > > > > > > > Is there anything wrong with -1 in particular?
+> > > > > > > 
+> > > > > > > Normal people expect -1 to be less than 123, and output is in ascii. If
+> > > > > > > you make it ((unsigned) ~0) I guess that becomes acceptable.
+> > > > > > 
+> > > > > > Well, "-1" is a perfectly valid alphanumerical representation of an int.
+> > > > > > I don't really see the problem with the "-", unless we're talking about some
+> > > > > > broken user space, that is.
+> > > > > 
+> > > > > No. But if you see illumination value of -1 lumen, do you really
+> > > > > expect a *lot* of light?
+> > > > 
+> > > > Not really.  I'd rather intrepret it as "the number is not to be trusted",
+> > > > which is what it means.
+> > > > 
+> > > > The problem with "all ones" is that it depends on the size of the underlying
+> > > > data type, which is not nice.  Also, if you want that to be a "big number",
+> > > > there's no clear rule to tell what the number should actually be.
+> > > > 
+> > > > Anyway, this really is a matter of definition.  If we document the attribute
+> > > > to read as "-1" in specific circumstances, the user space will have to take
+> > > > that into account.
+> > > 
+> > > Well, I'd prefer to specify -1 as "underflow" and 1000000000 as
+> > > "overflow". Any numbers should work, but ... lets make the interface
+> > > logical if we can.
+> > 
+> > The interface is already defined, isn't it?  And we're now
+> > considering whether
+> 
+> No, I don't think it is "already defined".
 
-Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
----
- drivers/firewire/sbp2.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ACPI Specification 4.0, Section 9.2.2, p. 335, defines the interface quite
+clearly.  It actually is defined as "Ones (-1)", but as I said previously, the
+"all ones" version is not really convenient for sysfs.
 
-Index: linux/drivers/firewire/sbp2.c
-===================================================================
---- linux.orig/drivers/firewire/sbp2.c
-+++ linux/drivers/firewire/sbp2.c
-@@ -456,12 +456,12 @@ static void sbp2_status_write(struct fw_
- 	}
- 	spin_unlock_irqrestore(&card->lock, flags);
- 
--	if (&orb->link != &lu->orb_list)
-+	if (&orb->link != &lu->orb_list) {
- 		orb->callback(orb, &status);
--	else
-+		kref_put(&orb->kref, free_orb);
-+	} else {
- 		fw_error("status write for unknown orb\n");
--
--	kref_put(&orb->kref, free_orb);
-+	}
- 
- 	fw_send_response(card, request, RCODE_COMPLETE);
- }
+I don't think the attribute should return anything other than the values
+defined by the spec, because anyone searching for documentation will first look
+into the spec.
 
--- 
-Stefan Richter
--=====-==--= =--= ---==
-http://arcgraph.de/sr/
+As I said before, I don't think we have any reason _whatsoever_ to translate
+the spec-defined values to anything else.
 
+Thanks,
+Rafael
