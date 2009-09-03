@@ -1,60 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbZICWWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932438AbZICW3F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbZICWWy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 18:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932389AbZICWWx
+	id S932438AbZICW3F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:29:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932426AbZICW3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 18:22:53 -0400
-Received: from newpeace.netnation.com ([204.174.223.7]:57230 "EHLO
-	peace.netnation.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932370AbZICWWw (ORCPT
+	Thu, 3 Sep 2009 18:29:05 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:47963 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932425AbZICW3E convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 18:22:52 -0400
-Date: Thu, 3 Sep 2009 15:22:53 -0700
-From: Simon Kirby <sim@hostway.ca>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Yohan <ytordjman@corp.free.fr>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       mikevs@xs4all.net
-Subject: Re: VM issue causing high CPU loads
-Message-ID: <20090903222253.GA8405@hostway.ca>
-References: <4A92A25A.4050608@yohan.staff.proxad.net> <20090824162155.ce323f08.akpm@linux-foundation.org> <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr> <20090902170642.f4381c1d.akpm@linux-foundation.org> <1251982884.18338.9.camel@heimdal.trondhjem.org> <4A9FC719.9020104@corp.free.fr> <1251986526.18338.29.camel@heimdal.trondhjem.org> <20090903200550.GB5257@hostway.ca> <1252010965.18338.63.camel@heimdal.trondhjem.org>
+	Thu, 3 Sep 2009 18:29:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LbAuLsuWEVXy+WUQmaYb/sg/HqRRyug9jeDrGXkpp+ko2cYlyrzIqkQVyWCcuqgfSr
+         wKSqIYWQTEoRKxV1YofdHjau0O5kearSdY2nbXPkax1oS1IxKU21O87OiTVYE/dbqRnt
+         mtBsKNEyfa9tBwfB0qfXsdMMjs5RYRQH0aOl8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252010965.18338.63.camel@heimdal.trondhjem.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
+References: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com>
+	 <200908312119.12121.rjw@sisk.pl>
+	 <c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
+Date: Fri, 4 Sep 2009 00:29:04 +0200
+Message-ID: <c4e36d110909031529q77b53122kdb85785ba293c478@mail.gmail.com>
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, hch@lst.de, viro@zeniv.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 04:49:25PM -0400, Trond Myklebust wrote:
+2009/9/1 Zdenek Kabelac <zdenek.kabelac@gmail.com>:
+> 2009/8/31 Rafael J. Wysocki <rjw@sisk.pl>:
+>> On Monday 31 August 2009, Zdenek Kabelac wrote:
+>>> Hi
+>>>
+>>> I've noticed that my machine freezes while doing s2r and having
+>>> mounted filesystem from SD card.
+>>>
+>>> My system: Lenovo T61, 4GB, C2D, kernel 2.6.31-rc8
+>>>
+>>> Here is the trace of  suspend when SD card is inserted, follows resume
+>>> and again suspend and this time with mounted filesystem from SD card.
+>>>
+>>> System locks with: PM: Removing info for mmc:mmc0:b368
+>>> Also btusb_bulk_complete: errors are interesting - I've noticed few
+>>> bugzillas in the google.
+>>> I could try bisect to find the patch - but it will take time....
+>>> So hopefully this trace will help.
+>>
+>> Not really. :-(
+>>
+>> Is this a new regression in 2.6.31-rc, or does 2.6.30 also fail?
+>>
+>
+> Well - all I know for now is this:  v2.6.30 goes to suspend (i.e.
+> machine turns to sleep), but resume fails - I do not get a single line
+> of output on serial console either - so it's hard to tell whether it
+> works or not - before suspend there are some INFO traces about lockdep
+> problems in cpu frequency.   v2.6.31-rc1 doesn't boot on my machine.
+> v2.6.31-rc2 seems to lock on suspend so this version is already
+> definitely broken. I may try to do some bisecting between these
+> kernels - but it might probably easily lead to some dead-ends probably
+> :(...
+> Also I'm using  mmc debugs for compilation of these kernels - but
+> nothing seems to printed from mmc subsystem at the end of suspend log
+> and the end is still the same - last printed lines:
+>
+>  mmc0: card b368 removed
+>  PM: Removing info for mmc:mmc0:b368
+>
 
-> I'm working on increasing the idmapper scalability, however another
-> project is currently taking up most of my time. I can't guarantee that
-> the revised idmapper code will be finished in time to allow for
-> inclusion in 2.6.32.
+Ok - another bisect game played - and unexpected winner is:
 
-Sure, improving it would be nice for cases where it's needed, but in
-environments where all IDs are consistent (by design), it just seems
-silly to force this extra work for zero gain.
+(fat: add ->sync_fs)
 
-> NFSv4 aspires to be an internet-wide protocol, and so you cannot use
-> uids/gids: they just aren't guaranteed to represent a unique user
-> outside your local LDAP/NIS or /etc/passwd domain. Furthermore, uids and
-> gids are a posix construct. They simply don't work in environments where
-> you may have lots of non-posix systems.
+f83d6d46e7adf241a064a4a425e5cd8a8fd8925f
 
-So, for environments with all POSIX systems, what do you think about
-perhaps a mount or export flag that violates the spec on purpose to allow
-numeric IDs to be used?
+Reverting this commit with current -rc8 kernel makes the system happy
+during the suspend/resume cycle. Obviously it has it price :) so just
+plain revert is probably not a good solution so the problem looks
+'more serious'  (fat is not the only fs with this patch) thus adding
+original author to this thread.
 
-I can understand that the quiet use of IDs if name-to-user mapping fails
-will cause security issues in environments without consistent users, so
-it would now be unsafe to turn this on silently.  However, making this
-an option seems reasonable to me.
-
-(Not that I know what I'm doing.)
-
-Simon-
+Zdenek
