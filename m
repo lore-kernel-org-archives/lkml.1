@@ -1,60 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZICTnF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbZICTxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756146AbZICTnF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:43:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZICTnE
+	id S1756239AbZICTxr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbZICTxr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:43:04 -0400
-Received: from kroah.org ([198.145.64.141]:39082 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753888AbZICTnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:43:03 -0400
-Date: Thu, 3 Sep 2009 12:41:21 -0700
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Christian Lamparter <chunkeey@web.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Stephen Chen <Stephen.Chen@atheros.com>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Staging tree status for the .32 kernel merge
-Message-ID: <20090903194121.GA4953@kroah.com>
-References: <20090903041429.GA29875@kroah.com>
- <1251967786.3336.19.camel@johannes.local>
- <43e72e890909031235t17543020leb3d19b17d955d01@mail.gmail.com>
+	Thu, 3 Sep 2009 15:53:47 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:47766 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756187AbZICTxq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 15:53:46 -0400
+Message-ID: <4AA01D4F.1080707@gmail.com>
+Date: Thu, 03 Sep 2009 21:47:27 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86/i386: make sure stack-protector segment base is cache
+ aligned
+References: <4AA01893.6000507@goop.org>
+In-Reply-To: <4AA01893.6000507@goop.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <43e72e890909031235t17543020leb3d19b17d955d01@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 21:47:28 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 12:35:11PM -0700, Luis R. Rodriguez wrote:
-> >>       - otus.  This is sitting here until a "real" wireless driver
-> >>         will be merged through the wireless tree.  Hopefully that
-> >>         happens soon.
-> >
-> > ar9170 has been in for a while now, it's just not quite at feature
-> > parity yet -- however that also means otus will get no work whatsoever
-> > from any of the wireless folks. Draw your own conclusions. Personally, I
-> > would drop it and let the users figure out whether they can live with
-> > ar9170 or need to support work on it.
+Jeremy Fitzhardinge a Ã©crit :
+> The Intel Optimization Reference Guide says:
 > 
-> Greg, as Johannes noted otus has lacked focus as Johannes whipped out
-> a port for it in a few weeks and then Christian gave it some final
-> love taps for inclusion, we just still use otus as just a source of
-> documentation for any yet missing feature, but for that I guess I can
-> just refer people to my git tree. Chris would know better where we're
-> at as far as feature-parity is concerned though so I'll leave it up to
-> him to judge whether or not having otus gets some users anything
-> ar9170 doesn't yet have.
+> 	In Intel Atom microarchitecture, the address generation unit
+> 	assumes that the segment base will be 0 by default. Non-zero
+> 	segment base will cause load and store operations to experience
+> 	a delay.
+> 		- If the segment base isn't aligned to a cache line
+> 		  boundary, the max throughput of memory operations is
+> 		  reduced to one [e]very 9 cycles.
+> 	[...]
+> 	Assembly/Compiler Coding Rule 15. (H impact, ML generality)
+> 	For Intel Atom processors, use segments with base set to 0
+> 	whenever possible; avoid non-zero segment base address that is
+> 	not aligned to cache line boundary at all cost.
+> 
+> We can't avoid having a non-zero base for the stack-protector segment, but
+> we can make it cache-aligned.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> 
+> diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+> index 0bfcf7e..f7d2c8f 100644
+> --- a/arch/x86/include/asm/processor.h
+> +++ b/arch/x86/include/asm/processor.h
+> @@ -403,7 +403,17 @@ extern unsigned long kernel_eflags;
+>  extern asmlinkage void ignore_sysret(void);
+>  #else	/* X86_64 */
+>  #ifdef CONFIG_CC_STACKPROTECTOR
+> -DECLARE_PER_CPU(unsigned long, stack_canary);
+> +/*
+> + * Make sure stack canary segment base is cached-aligned:
+> + *   "For Intel Atom processors, avoid non zero segment base address
+> + *    that is not aligned to cache line boundary at all cost."
+> + * (Optim Ref Manual Assembly/Compiler Coding Rule 15.)
+> + */
+> +struct stack_canary {
+> +	char __pad[20];		/* canary at %gs:20 */
+> +	unsigned long canary;
+> +};
+> +DECLARE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
 
-Ok, as I've said before, just let me know when you want the otus driver
-removed from the tree and I'll be glad to do so.
+DECLARE_PER_CPU_SHARED_ALIGNED()
 
-thanks,
+Or else, we'll have many holes in percpu section, because of linker encapsulation
 
-greg k-h
+>  #endif
+>  #endif	/* X86_64 */
+>  
+> diff --git a/arch/x86/include/asm/stackprotector.h b/arch/x86/include/asm/stackprotector.h
+> index c2d742c..decad97 100644
+> --- a/arch/x86/include/asm/stackprotector.h
+> +++ b/arch/x86/include/asm/stackprotector.h
+> @@ -78,14 +78,14 @@ static __always_inline void boot_init_stack_canary(void)
+>  #ifdef CONFIG_X86_64
+>  	percpu_write(irq_stack_union.stack_canary, canary);
+>  #else
+> -	percpu_write(stack_canary, canary);
+> +	percpu_write(stack_canary.canary, canary);
+>  #endif
+>  }
+>  
+>  static inline void setup_stack_canary_segment(int cpu)
+>  {
+>  #ifdef CONFIG_X86_32
+> -	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu) - 20;
+> +	unsigned long canary = (unsigned long)&per_cpu(stack_canary, cpu);
+>  	struct desc_struct *gdt_table = get_cpu_gdt_table(cpu);
+>  	struct desc_struct desc;
+>  
+> diff --git a/arch/x86/include/asm/system.h b/arch/x86/include/asm/system.h
+> index 643c59b..5bd119b 100644
+> --- a/arch/x86/include/asm/system.h
+> +++ b/arch/x86/include/asm/system.h
+> @@ -31,7 +31,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+>  	"movl %P[task_canary](%[next]), %%ebx\n\t"			\
+>  	"movl %%ebx, "__percpu_arg([stack_canary])"\n\t"
+>  #define __switch_canary_oparam						\
+> -	, [stack_canary] "=m" (per_cpu_var(stack_canary))
+> +	, [stack_canary] "=m" (per_cpu_var(stack_canary.canary))
+>  #define __switch_canary_iparam						\
+>  	, [task_canary] "i" (offsetof(struct task_struct, stack_canary))
+>  #else	/* CC_STACKPROTECTOR */
+> diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
+> index 5ce60a8..e338b5c 100644
+> --- a/arch/x86/kernel/cpu/common.c
+> +++ b/arch/x86/kernel/cpu/common.c
+> @@ -1043,7 +1043,7 @@ DEFINE_PER_CPU(struct orig_ist, orig_ist);
+>  #else	/* CONFIG_X86_64 */
+>  
+>  #ifdef CONFIG_CC_STACKPROTECTOR
+> -DEFINE_PER_CPU(unsigned long, stack_canary);
+> +DEFINE_PER_CPU(struct stack_canary, stack_canary) ____cacheline_aligned;
+
+same here, DECLARE_PER_CPU_SHARED_ALIGNED
+
+>  #endif
+>  
+>  /* Make sure %fs and %gs are initialized properly in idle threads */
+> diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+> index cc827ac..7ffec6b 100644
+> --- a/arch/x86/kernel/head_32.S
+> +++ b/arch/x86/kernel/head_32.S
+> @@ -439,7 +439,6 @@ is386:	movl $2,%ecx		# set MP
+>  	jne 1f
+>  	movl $per_cpu__gdt_page,%eax
+>  	movl $per_cpu__stack_canary,%ecx
+> -	subl $20, %ecx
+>  	movw %cx, 8 * GDT_ENTRY_STACK_CANARY + 2(%eax)
+>  	shrl $16, %ecx
+>  	movb %cl, 8 * GDT_ENTRY_STACK_CANARY + 4(%eax)
+> 
+> 
+> --
+
