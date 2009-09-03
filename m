@@ -1,62 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756590AbZICXur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932533AbZICXyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756590AbZICXur (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 19:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756574AbZICXuq
+	id S932533AbZICXyW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 19:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756574AbZICXyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 19:50:46 -0400
-Received: from khc.piap.pl ([195.187.100.11]:50192 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752062AbZICXup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 19:50:45 -0400
-From: Krzysztof Halasa <khc@pm.waw.pl>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
-       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe width, writes in storage
-References: <20090828064449.GA27528@elf.ucw.cz>
-	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>
-	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>
-	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>
-	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>
-	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>
-	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>
-	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>
-	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com>
-	<m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com>
-Date: Fri, 04 Sep 2009 01:50:42 +0200
-In-Reply-To: <4A9FCF6B.1080704@redhat.com> (Ric Wheeler's message of "Thu, 03
-	Sep 2009 10:15:07 -0400")
-Message-ID: <m33a73oael.fsf@intrepid.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 Sep 2009 19:54:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34557 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756575AbZICXyV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 19:54:21 -0400
+Date: Thu, 3 Sep 2009 16:52:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       srajiv@linux.vnet.ibm.com, Debora Velarde <debora@linux.vnet.ibm.com>,
+       Marcel Selhorst <m.selhorst@sirrix.com>,
+       James Morris <jmorris@namei.org>, Jan Beulich <jbeulich@novell.com>
+Subject: Re: [PATCH] TPM: Fixup pcrs sysfs file
+Message-Id: <20090903165219.2f79cdc1.akpm@linux-foundation.org>
+In-Reply-To: <20090902031613.GA11464@obsidianresearch.com>
+References: <20090902031613.GA11464@obsidianresearch.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler <rwheeler@redhat.com> writes:
+On Tue, 1 Sep 2009 21:16:13 -0600
+Jason Gunthorpe <jgunthorpe@obsidianresearch.com> wrote:
 
-> The whole thread above is about software MD using commodity drives
-> (S-ATA or SAS) without battery backed write cache.
+> I'm testing the tpm_tis low level driver with a winbond WPCT200:
+> $ cat caps
+> Manufacturer: 0x57454300
+> TCG version: 1.2
+> Firmware version: 2.16
+> 
+> and noted that tpm_pcr_read for the pcrs sysfile file does not function.
+> tpm_tis_recv returned with an error because the expected reply size was
+> set to 14 (the request size) and the chip returned 30 bytes.
+> 
+> The TCG spec says the reply size is supposed to be 30 bytes.
+> 
+> First, the BUILD_BUG_ON was surely never correct, testing a run time
+> value in big endian with that macro is just wrong. I belive the intended
+> test was to ensure that the cmd buffer has enough space to store the
+> reply.
+> 
+> Second, the length input to transmit_cmd is the size of the reply, not
+> of the request. It should be 30 for READ_PCR.
+> 
+> With this change my chip reports all 23 pcrs.
+> 
+> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+> ---
+>  drivers/char/tpm/tpm.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
+> index a6b52d6..8ba0187 100644
+> --- a/drivers/char/tpm/tpm.c
+> +++ b/drivers/char/tpm/tpm.c
+> @@ -696,8 +696,8 @@ int __tpm_pcr_read(struct tpm_chip *chip, int pcr_idx, u8 *res_buf)
+>  
+>  	cmd.header.in = pcrread_header;
+>  	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
+> -	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
+> -	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
+> +	BUILD_BUG_ON(sizeof(cmd) < READ_PCR_RESULT_SIZE);
+> +	rc = transmit_cmd(chip, &cmd, READ_PCR_RESULT_SIZE,
+>  			  "attempting to read a pcr value");
+>  
+>  	if (rc == 0)
 
-Yes. However, you mentioned external RAID arrays disable disk caches.
-That's why I asked if they are using SATA or SCSI/etc. disks, and if
-they have battery-backed cache.
+That sounds like a fairly serious bug, and this looks like a 2.6.31
+patch.
 
-> Also, when you enable the write cache (MD or not) you are buffering
-> multiple MB's of data that can go away on power loss. Far greater
-> (10x) the exposure that the partial RAID rewrite case worries about.
+Jan's build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it.patch (in
+-mm) simply removes the bogus BUILD_BUG_ON(). I think we might as well
+do that within the context of your patch.
 
-The cache is flushed with working barriers. I guess it should be
-superior to disabled WB cache, in both performance and expected disk
-lifetime.
--- 
-Krzysztof Halasa
+So I end up with the below, which I propose for 2.6.31:
+
+
+
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+
+I'm testing the tpm_tis low level driver with a winbond WPCT200:
+
+$ cat caps
+Manufacturer: 0x57454300
+TCG version: 1.2
+Firmware version: 2.16
+
+and noted that tpm_pcr_read for the pcrs sysfile file does not function. 
+tpm_tis_recv returned with an error because the expected reply size was
+set to 14 (the request size) and the chip returned 30 bytes.
+
+The TCG spec says the reply size is supposed to be 30 bytes.
+
+The length input to transmit_cmd is the size of the reply, not of the
+request.  It should be 30 for READ_PCR.
+
+With this change my chip reports all 23 pcrs.
+
+Also, the BUILD_BUG_ON() is just wrong - it's testing a value which isn't
+a compile-time constant.  Simply remove that assertion.
+
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: Debora Velarde <debora@linux.vnet.ibm.com>
+Cc: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+Cc: Marcel Selhorst <m.selhorst@sirrix.com>
+Cc: James Morris <jmorris@namei.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/char/tpm/tpm.c |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff -puN drivers/char/tpm/tpm.c~tpm-fixup-pcrs-sysfs-file drivers/char/tpm/tpm.c
+--- a/drivers/char/tpm/tpm.c~tpm-fixup-pcrs-sysfs-file
++++ a/drivers/char/tpm/tpm.c
+@@ -696,8 +696,7 @@ int __tpm_pcr_read(struct tpm_chip *chip
+ 
+ 	cmd.header.in = pcrread_header;
+ 	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
+-	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
+-	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
++	rc = transmit_cmd(chip, &cmd, READ_PCR_RESULT_SIZE,,
+ 			  "attempting to read a pcr value");
+ 
+ 	if (rc == 0)
+_
+
