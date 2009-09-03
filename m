@@ -1,78 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZICOMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755545AbZICOPB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755521AbZICOMU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZICOMT
+	id S1755545AbZICOPB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:15:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZICOPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:12:19 -0400
-Received: from mail.cs.nmsu.edu ([128.123.64.3]:61198 "EHLO mail.cs.nmsu.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755319AbZICOMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:12:18 -0400
-Message-ID: <738fcf0e7c98ac7f03a8c32a1a462bdc.squirrel@intranet.cs.nmsu.edu>
-In-Reply-To: <20090903005051.GA6733@kroah.com>
-References: <a571ebde1bc221dd250a03e9fb33ed66.squirrel@intranet.cs.nmsu.edu>
-    <20090903005051.GA6733@kroah.com>
-Date: Thu, 3 Sep 2009 08:12:19 -0600
-Subject: Re: Problem starting the input interrupt pipe on the G13
-From: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-To: "Greg KH" <greg@kroah.com>
-Cc: "Linux USB" <linux-usb@vger.kernel.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.19
+	Thu, 3 Sep 2009 10:15:00 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:24484 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750951AbZICOOp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 10:14:45 -0400
+Message-ID: <4A9FCF53.10105@hp.com>
+Date: Thu, 03 Sep 2009 10:14:43 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+To: Rob Landley <rob@landley.net>
+CC: Ric Wheeler <rwheeler@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+       david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+References: <20090826001645.GN4300@elf.ucw.cz> <200909021800.51096.rob@landley.net> <4A9F0F7A.1010805@hp.com> <200909022141.48827.rob@landley.net>
+In-Reply-To: <200909022141.48827.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Wed, Sep 02, 2009 at 03:25:50PM -0600, Rick L. Vinyard, Jr. wrote:
->> Hello,
->>
->> I'm still working on the G13 driver, but I've run into a problem with
->> the
->> interrupt in pipe. In essence, I can't figure out how to get it started.
->>
->> The driver can be found at:
->> http://g13.svn.sourceforge.net/viewvc/g13/driver/trunk/
->>
->> I think the root of the problem lies in the fact that the G13 usage page
->> is 0x00 (undefined). The output and feature reports seem to be working
->> fine to set the backlight color, the LCD image and the leds on the 'M'
->> keys.
->>
->> However, nothing seems to be happening with the input report (there is
->> only one input report type on endpoint address 0x81 that contains the
->> joystick and key values).
->>
->> The problem is getting the input pipe started. I grepped through the
->> other
->> drivers in the hid directory and I couldn't find any that had to
->> explicitly start the input interrupt.
->
-> Have you just submitted an interrupt urb?
->
-> That should be all that is needed, when the device has data, it will
-> return with it if your urb is pending.
->
+Rob Landley wrote:
+> I think he understands he was clueless too, that's why he investigated the 
+> failure and wrote it up for posterity.
+> 
+>> And Ric said do not stigmatize whole classes of A) devices, B) raid,
+>> and C) filesystems with "Pavel says...".
+> 
+> I don't care what "Pavel says", so you can leave the ad hominem at the door, 
+> thanks.
 
-I'll give it a shot.
+See, this is exactly the problem we have with all the proposed
+documentation.  The reader (you) did not get what the writer (me)
+was trying to say.  That does not say either of us was wrong in
+what we thought was meant, simply that we did not communicate.
 
-I hadn't tried it yet since I wasn't sure if that was the intended way to
-start it up within the HID framework since none of the other drivers
-submitted the urb.
+What I meant was we did not want to accept Pavel's incorrect
+documentation and post it in kernel docs.
 
-Also, submitting the urb requires the usbhid_device structure. Since the
-usbhid_device structure is defined in usbhid.h, and usbhid.h isn't
-installed with the kernel headers I wasn't sure if there was a better way
-to do it (raw events, input mapping or something along those lines).
+> The kernel presents abstractions, such as block device nodes.  Sometimes 
+> implementation details bubble through those abstractions.  Presumably, we 
+> agree on that so far.
 
----
+We don't have any problem with documenting abstractions.  But they
+must be written as abstracts and accurate, not as IMO blogs.
 
-Rick
+It is not "he means well, so we will just accept it".  The rule
+for kernel docs should be the same as for code.  If it is not
+correct in all cases or causes problems, we don't accept it.
 
-
+jim
