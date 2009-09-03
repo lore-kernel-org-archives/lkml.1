@@ -1,76 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754835AbZICJko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZICJrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754835AbZICJko (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 05:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZICJkn
+	id S1754831AbZICJrb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 05:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754519AbZICJra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 05:40:43 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:52666 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754500AbZICJkm (ORCPT
+	Thu, 3 Sep 2009 05:47:30 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50320 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752505AbZICJr3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 05:40:42 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [v4 PATCH 1/5]: cpuidle: Cleanup drivers/cpuidle/cpuidle.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: arun@linux.vnet.ibm.com
-Cc: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@lists.ozlabs.org
-In-Reply-To: <20090903044253.GA31928@linux.vnet.ibm.com>
-References: <20090901113704.GG7599@linux.vnet.ibm.com>
-	 <20090901113840.GH7599@linux.vnet.ibm.com> <1251870144.7547.48.camel@twins>
-	 <20090903044253.GA31928@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Thu, 03 Sep 2009 11:40:38 +0200
-Message-Id: <1251970838.7447.23.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Sep 2009 05:47:29 -0400
+Date: Thu, 3 Sep 2009 11:47:09 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>, Rob Landley <rob@landley.net>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [patch] ext2/3: document conditions when reliable operation is
+	possible
+Message-ID: <20090903094709.GG3793@elf.ucw.cz>
+References: <4A9468E8.607@redhat.com> <20090825225114.GE4300@elf.ucw.cz> <4A946DD1.8090906@redhat.com> <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <20090825235359.GJ4300@elf.ucw.cz> <4A947DA9.2080906@redhat.com> <20090826001645.GN4300@elf.ucw.cz> <4A948259.40007@redhat.com> <20090826010018.GA17684@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090826010018.GA17684@mit.edu>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-03 at 10:12 +0530, Arun R Bharadwaj wrote:
-
-> > OK, that's a start I guess. Best would be to replace all of pm_idle with
-> > cpuidle, which is what should have been done from the very start.
-> > 
-> > If cpuidle cannot fully replace the pm_idle functionality, then it needs
-> > to fix that. But having two layers of idle functions is just silly.
-> > 
-> > Looking at patch 2 and 3, you're making the same mistake on power, after
-> > those patches there are multiple ways of registering idle functions, one
-> > through some native interface and one through cpuidle, this strikes me
-> > as undesirable.
-> > 
-> > If cpuidle is a good idle function manager, then it should be good
-> > enough to be the sole one, if its not, then why bother with it at all.
-> > 
+On Tue 2009-08-25 21:00:18, Theodore Tso wrote:
+> On Tue, Aug 25, 2009 at 08:31:21PM -0400, Ric Wheeler wrote:
+> >>> You are simply incorrect, Ted did not say that ext3 does not work
+> >>> with MD raid5.
+> >>
+> >> http://lkml.org/lkml/2009/8/25/312
+> >
+> > I will let Ted clarify his text on his own, but the quoted text says "... 
+> > have potential...".
+> >
+> > Why not ask Neil if he designed MD to not work properly with ext3?
 > 
-> Okay, I'm giving this approach a shot now. i.e. trying to make cpuidle
-> as _the_ sole idle function manager. This would mean doing away with
-> pm_idle and ppc_md.power_save. And, cpuidle_idle_call() which is the
-> main idle loop of cpuidle, present in drivers/cpuidle/cpuidle.c will
-> have to be called from arch specific code of cpu_idle()
+> So let me clarify by saying the following things.   
 > 
-> Also this would mean enabling cpuidle for all platforms, even if the
-> platform doesn't have multiple idle states. So suppose a platform doesnt
-> have multiple states, it wouldn't want the bloated code of cpuidle
-> governors, and would want just a simple cpuidle loop.
+> 1) Filesystems are designed to expect that storage devices have
+> certain properties.  These include returning the same data that you
+> wrote, and that an error when writing a sector, or a power failure
+> when writing sector, should not be amplified to cause collateral
+> damage with previously succfessfully written sectors.
 
-Do talk to the powerpc maintainers about this. But yes, something like
-that should be doable.
+Yes. Unfortunately, different filesystems expect different properties
+from block devices. ext3 will work with write cache enabled/barriers
+enabled, while ext2 needs write cache disabled.
 
-AFAICT the whole governor thing is optional and cpuidle provides a
-spinning idle loop by default, and platforms can always register a
-simple alternative when they set up bits -- the only thing to be careful
-about is not creating a chicken-egg problem where the platform setup
-runs before cpuidle is able to register a new handler or something.
+The requirements are also quite surprising; AFAICT ext3 can handle
+disk writing garbage to single sector during powerfail, while xfs can
+not handle that.
 
-I'd be delighted to see the end of pm_idle on x86.
+Now, how do you expect users to know these subtle details when it is
+not documented anywhere? And why are you fighting against documenting
+these subtleties?
 
+> Secondly, what's the probability of a failure causes the RAID array to
+> become degraded, followed by a power failure, versus a power failure
+> while the RAID array is not running in degraded mode?  Hopefully you
+> are running with the RAID array in full, proper running order a much
+> larger percentage of the time than running with the RAID array in
+> degraded mode.  If not, the bug is with the system administrator!
+
+As was uncovered, MD RAID does not properly support barriers,
+so... you don't actually need drive failure.
+
+> Maybe a random OS engineer doesn't know these things --- but trust me
+> when I say a competent system administrator had better be familiar
+> with these concepts.  And someone who wants their data to be
+> reliably
+
+Trust me, 99% of sysadmins are not compentent by your definition. So
+this should be documented.
+
+> At the end of the day, filesystems are not magic.  They can't
+> compensate for crap hardware, or incompetently administered machines.
+
+ext3 greatly contributes to administrator incomentency:
+
+# The journal supports the transactions start and stop, and in case of a
+# crash, the journal can replay the transactions to quickly put the
+# partition back into a consistent state.
+
+...it does not mention that (non-default!) barrier=1 is needed to make
+this reliable, nor it mentions that there are certain requirements for
+this to work. It just says that journal will magically help you.
+
+And you wonder while people expect magic from your filesystem?
+
+								Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
