@@ -1,144 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbZICO03@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZICO2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbZICO03 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:26:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753049AbZICO02
+	id S1755621AbZICO2k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZICO2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:26:28 -0400
-Received: from mga01.intel.com ([192.55.52.88]:12890 "EHLO mga01.intel.com"
+	Thu, 3 Sep 2009 10:28:39 -0400
+Received: from mx01.bfk.de ([193.227.124.2]:46479 "EHLO mx01.bfk.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751130AbZICO01 convert rfc822-to-8bit (ORCPT
+	id S1754479AbZICO2g convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:26:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,325,1249282800"; 
-   d="scan'208";a="490197830"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
-CC: "tglx@linutronix.de" <tglx@linutronix.de>, "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Paul Mackerras <paulus@samba.org>
-Date: Thu, 3 Sep 2009 15:25:42 +0100
-Subject: RE: [discuss] BTS overflow handling, was: [PATCH] perf_counter: Fix
- a race on perf_counter_ctx
-Thread-Topic: [discuss] BTS overflow handling, was: [PATCH] perf_counter:
- Fix a race on perf_counter_ctx
-Thread-Index: AcorC5XR7AsKI602Q0yo8rrw7ow4DQBkbp1g
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC46CFE42@irsmsx504.ger.corp.intel.com>
-References: <20090808120315.GA14086@elte.hu>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF464@irsmsx504.ger.corp.intel.com>
-	 <20090810134608.GA8295@elte.hu>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC1BFF78D@irsmsx504.ger.corp.intel.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7725@irsmsx504.ger.corp.intel.com>
-	 <1250600348.7583.280.camel@twins> <1250600385.7583.281.camel@twins>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB7775@irsmsx504.ger.corp.intel.com>
-	 <1250602664.7583.293.camel@twins>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB77C8@irsmsx504.ger.corp.intel.com>
-	 <20090818140022.GB13013@elte.hu>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC1CB77FF@irsmsx504.ger.corp.intel.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC465EFC5@irsmsx504.ger.corp.intel.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC465F989@irsmsx504.ger.corp.intel.com>
-	 <1251810046.7547.13.camel@twins>
-	 <928CFBE8E7CB0040959E56B4EA41A77EC46CF212@irsmsx504.ger.corp.intel.com>
- <1251813197.7547.27.camel@twins>
-In-Reply-To: <1251813197.7547.27.camel@twins>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Thu, 3 Sep 2009 10:28:36 -0400
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Hellwig <hch@infradead.org>,
+       Mark Lord <lkml@rtr.ca>, Michael Tokarev <mjt@tls.msk.ru>,
+       david@lang.hm, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>, NeilBrown <neilb@suse.de>,
+       Rob Landley <rob@landley.net>, Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe width, writes in storage
+References: <20090828064449.GA27528@elf.ucw.cz>
+	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>
+	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>
+	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>
+	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>
+	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>
+	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>
+	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>
+	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com>
+	<m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com>
+From: Florian Weimer <fweimer@bfk.de>
+Date: Thu, 03 Sep 2009 14:26:55 +0000
+In-Reply-To: <4A9FCF6B.1080704@redhat.com> (Ric Wheeler's message of "Thu\, 03 Sep 2009 10\:15\:07 -0400")
+Message-ID: <823a74w1cg.fsf@mid.bfk.de>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->Sent: Tuesday, September 01, 2009 3:53 PM
->To: Metzger, Markus T
->Cc: Ingo Molnar; tglx@linutronix.de; hpa@zytor.com; markus.t.metzger@gmail.com; linux-
->kernel@vger.kernel.org; Paul Mackerras
->Subject: RE: [discuss] BTS overflow handling, was: [PATCH] perf_counter: Fix a race on
->perf_counter_ctx
->
->On Tue, 2009-09-01 at 14:32 +0100, Metzger, Markus T wrote:
+* Ric Wheeler:
 
+> Note that even without MD raid, the file system issues IO's in file
+> system block size (4096 bytes normally) and most commodity storage
+> devices use a 512  byte sector size which means that we have to update
+> 8 512b sectors.
 
->> >This makes me wonder how much time it takes to drain these buffers, it
->> >is at all possible to optimize that code path into oblivion, or will
->> >nothing be fast enough?
->>
->>
->> Are you saying that we should rather speed up that code path than try to
->> defer all the work? There definitely is a lot of redundant work done on
->> the generic path.
->>
->> I did a few experiments where I would drain only parts of the buffer.
->> I could not drain too much before the system would hang.
->> Besides, that does not sound too robust to me. Would it sill work on
->> a slower system? Or on a faster one? Or on a fully loaded one?
->
->Base cpu speed is what counts, load is not interesting.
->
->Also it seems a normalizing property, the slower the cpu the less
->branches it can process per time unit, so less data to process.
->
->But yes, I was suggesting to optimize this, since the current way of
->calling perf_counter_output() multiple times is massively bloated.
+Database software often attempts to deal with this phenomenon
+(sometimes called "torn page writes").  For example, you can make sure
+that the first time you write to a database page, you keep a full copy
+in your transaction log.  If the machine crashes, the log is replayed,
+first completely overwriting the partially-written page.  Only after
+that, you can perform logical/incremental logging.
 
+The log itself has to be protected with a different mechanism, so that
+you don't try to replay bad data.  But you haven't comitted to this
+data yet, so it is fine to skip bad records.
 
-This seems to do the trick - at least on my box.
+Therefore, sub-page corruption is a fundamentally different issue from
+super-page corruption.
 
-I prepare the header, then do a single perf_output_begin()/perf_output_end()
-pair, and between those two, I drain the entire 2048 records BTS buffer -
-pretty much the same way as perf_counter_output() does.
+BTW, older textbooks will tell you that mirroring requires that you
+read from two copies of the data and compare it (and have some sort of
+tie breaker if you need availability).  And you also have to re-read
+data you've just written to disk, to make sure it's actually there and
+hit the expected sectors.  We can't even do this anymore, thanks to
+disk caches.  And it doesn't seem to be necessary in most cases.
 
-We could optimize this further by providing specialized draining functions,
-one for each combination of PERF_SAMPLE_ bits, but it seems to be fast
-enough the way it is.
-
-Holding the output lock that long does not seem to be a problem.
-I can do perf record -a -o /dev/null -e branches -c 1 and I don't get a
-hrtimer warning in dmesg.
-
-When I do a perf record -e branches -c 1 true in parallel, I do not get
-any trace, though. And perf does not report an error, either.
-
-
-I copied some of the generic sampling code; I'll try to restructure it
-a bit so I can call a generic function to do the actual sampling - provided
-this is still fast enough.
-
-How would we make sure it works on other boxes, as well?
-Is there a way for me to detect that I'm not handling the interrupt fast enough?
-
-
-I found another "kernel hangs" bug that is reproducible with 'normal' profiling:
-
-when I do sudo perf record -e instructions -c 1000000 -a -o /dev/null
-then unplug and replug one cpu
-then kill the perf record job
-the kernel hangs
-
-
-thanks and regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+-- 
+Florian Weimer                <fweimer@bfk.de>
+BFK edv-consulting GmbH       http://www.bfk.de/
+Kriegsstraﬂe 100              tel: +49-721-96201-1
+D-76133 Karlsruhe             fax: +49-721-96201-99
