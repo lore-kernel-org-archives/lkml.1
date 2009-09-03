@@ -1,73 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZICNvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755341AbZICNvM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbZICNvy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754016AbZICNvx
+	id S1755341AbZICNvM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 09:51:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753438AbZICNvL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:51:53 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:1648 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753438AbZICNvw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:51:52 -0400
-Message-ID: <4A9FC9B3.1080809@redhat.com>
-Date: Thu, 03 Sep 2009 09:50:43 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Thu, 3 Sep 2009 09:51:11 -0400
+Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:49379 "EHLO
+	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753402AbZICNvK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 09:51:10 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4A9FC9D7.20000@cam.ac.uk>
+Date: Thu, 03 Sep 2009 14:51:19 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090803)
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
-       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-References: <20090828064449.GA27528@elf.ucw.cz>	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com> <m3ljkwnoct.fsf@intrepid.localdomain>
-In-Reply-To: <m3ljkwnoct.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: LKML <linux-kernel@vger.kernel.org>, Jean Delvare <khali@linux-fr.org>
+CC: "alan@linux.intel.com" <alan@linux.intel.com>,
+       "lenb@kernel.org" <lenb@kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>,
+       "Cory T. Tusar" <ctusar@videon-central.com>,
+       Zhang Rui <rui.zhang@intel.com>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>
+Subject: RFC: Light sensors, unifying current options?
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/2009 09:34 AM, Krzysztof Halasa wrote:
-> Ric Wheeler<rwheeler@redhat.com>  writes:
->
->>>> Just to add some support to this, all of the external RAID arrays that
->>>> I know of normally run with write cache disabled on the component
->>>> drives.
->>>
->>> Do they use "off the shelf" SATA (or PATA) disks, and if so, which ones?
->>
->> Which drives various vendors ships changes with specific products.
->> Usually, they ship drives that have carefully vetted firmware, etc.
->> but they are close to the same drives you buy on the open market.
->
-> But they aren't the same, are they? If they are not, the fact they can
-> run well with the write-through cache doesn't mean the off-the-shelf
-> ones can do as well.
+Dear All,
 
-Storage vendors have a wide range of options, but what you get today is a 
-collection of s-ata (not much any more), sas or fc.
+This thread is a follow up to (amongst others)
 
-Some times they will have different firmware, other times it is the same.
+[lm-sensors] Ambient Light sensor for Intersil-ISL29020 device
+
+Currently there are a number of light sensor drivers either in the
+mainline kernel, posted to various mailing lists or sitting in various
+testing trees.
+
+For example.
+
+Intersil ISL29020
+http://www.intersil.com/products/deviceinfo.asp?pn=ISL29020 driver
+posted by Kalan Trisal to lm-sensors (as hwmon device rejected for
+being out of subsystem scope)
+http://lists.lm-sensors.org/pipermail/lm-sensors/2009-September/026575.html
+
+ALS_sysfs class and als_acpi driver (V6 posted to lkml earlier this week).
+http://lkml.org/lkml/2009/9/1/38
+
+TSL2561 under the industrial I/O Framework. (in Greg KH's tree, will
+being in staging after merge window - there due to lack of review
+more than any known problems.)
+http://www.farnell.com/datasheets/49661.pdf
+http://lkml.org/lkml/2009/7/2/189
+
+TSL2550 under i2c/chips/ which as a location is going away.
+http://www.farnell.com/datasheets/48715.pdf
+
+(any others people know of?)
+
+Two big questions:
+
+* Are there sufficient shared characteristics between these devices to
+all for a unified framework? (would certainly be nice!)
+
+* What applications are they used for? This will drive the question
+of what functionality is desirable. (particularly do we need an event
+infrastructure or not).
+
+To sumarize the functionality currently provided by the above drivers
+(or that should probably be added)
+
+ISL29020:
+* sensing_range
+* lux_level
+* power state (should probably move over to the new power management
+  framework)
+
+ALS:
+* illuminance (equivalent of lux_level)
+* adjustment (I don't follow the purpose of this, but then I don't know
+anything about how this is being used!)
+
+TSL2561
+* infrared (raw value)
+* broad spectrum (raw value)
+(I'm of the view any derived values should probably be done in userspace)
+This one is under IIO at the moment for two reasons.
+1) I hit the same issue of no suitable subsystem, but for a much larger
+class of sensor devices. Light sensors are just one example (that's not
+to say I mind hiving this lot off to a system of their own).
+2) To provide an event interface (which I haven't yet done)
+Driver should also include:
+* integration time
+* gain control 
+
+TSL2550
+* power state
+* operating mode
+* lux (actually calculated from two separate readings as
+per the tsl2561 but the are not available to userspace)
+
+Applications:
+
+1) Backlight intensity type apps (guessing that covers most people)
+2) Environmental monitoring apps (the crossbow imb400 imote2 daughter
+board I'm using doesn't have any screen or other direct interface, its
+simply a lightweight sensor platform).
+3) High speed apps (all current sensors are pretty slow so this isn't
+yet relevant).
+
+My personal feelings is that the IIO is overkill for these types
+of sensors (slow update rate, tsl2550 takes 400ms, tsl2561 12-400ms)
+unless we want the event handling infrastructure. I'm inclined to
+say it is unecessary given the same result could be obtained by
+polling only a few times a second.
+
+My comments on ALS may be wrong or misleading as they are based on a
+brief read of the code (please correct me!)  A lot of the
+infrastructure is only necessary if we have in kernel users (and at
+the moment the functionality doesn't appear to be there for any such
+users to acquire access to these sensors in the first place.  For
+example, the approach used by hwmon of letting drivers define their
+own attributes seems to me to be more easily extendable than ALS' use
+of an ops structure. For example, I'm not convinced it makes sense for
+drivers to have to have a get_adjustment attribute or indeed even
+necessarily have a direct illuminance attribute (deriving the relevant
+value may be a case of userspace combining several associated
+readings). As an aside: Why specify it is 'ambient' light?  Kind of
+implies an unnecessary restriction on the users of the subsystem.
+
+Anyhow, the point of this email was to draw together those interested
+in a unified light sensor system and perhaps promote discussion of
+what such a unified system should do before we end up with even more
+in kernel alternatives!  As such this email isn't meant to be a
+complete description of the problem / possible issues, merely a
+starting point.
+
+Personally I really don't mind where the tsl2561 driver ends up as
+long as the functionality is all available.
+
+Any comments?
+
+Thanks
+
+---
+Jonathan Cameron
 
 
->
-> Are they SATA (or PATA) at all? SCSI etc. are usually different
-> animals, though there are SCSI and SATA models which differ only in
-> electronics.
->
-> Do you have battery-backed write-back RAID cache (which acknowledges
-> flushes before the data is written out to disks)? PC can't do that.
 
-We (red hat) have all kinds of different raid boxes...
 
-ric
 
 
