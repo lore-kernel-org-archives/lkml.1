@@ -1,119 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755991AbZICQfm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbZICQgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755991AbZICQfm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 12:35:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755897AbZICQfm
+	id S1756003AbZICQgd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 12:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZICQgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 12:35:42 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:63683 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755867AbZICQfl (ORCPT
+	Thu, 3 Sep 2009 12:36:32 -0400
+Received: from mail-yw0-f177.google.com ([209.85.211.177]:49800 "EHLO
+	mail-yw0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755897AbZICQgb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 12:35:41 -0400
-Message-ID: <4A9FF032.2020000@vlnb.net>
-Date: Thu, 03 Sep 2009 20:34:58 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 3 Sep 2009 12:36:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=v593QicW/DX9XWdDH5XBfeU67QAPBoGRR/0nUQh35FKZnvnStkf0BGYoPqzq25nHB/
+         8xgnOph0AICshr8DA797J8hFvDsPxem9G/gm8oPiRC1UXv5fkk376zev0eTCaG19+gi0
+         g1iwk1IMhiRZKcVkDmVinq77Sqnc/iBRr9fM8=
 MIME-Version: 1.0
+In-Reply-To: <20090903130731.GE18599@kernel.dk>
+References: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com>
+	 <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
+	 <20090903130731.GE18599@kernel.dk>
+Date: Thu, 3 Sep 2009 18:36:30 +0200
+Message-ID: <4e5e476b0909030936l66ac3f22jd3b43d38bca0249b@mail.gmail.com>
+Subject: Re: [RFC] cfq: adapt slice to number of processes doing I/O
+From: Corrado Zoccolo <czoccolo@gmail.com>
 To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       scst-devel@lists.sourceforge.net, Tejun Heo <tj@kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Joe Eykholt <jeykholt@cisco.com>
-Subject: Re: [PATCH]: Implementation of blk_rq_map_kern_sg() (aka New implementation
-  of scsi_execute_async() v3)
-References: <4A563368.5040407@vlnb.net> <4A830016.5020304@vlnb.net> <20090815082220.GJ12579@kernel.dk>
-In-Reply-To: <20090815082220.GJ12579@kernel.dk>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/Vz0ZgG2Oph6rbPFMnzkuUKrxUIWHejUW8ZvS
- IGcHvJ90qkFvSb5ReRLC7OzUnkXfwza80jcGSaj0+lBGsoD0Wp
- XRqB10QKXlGb8AN+7mx0A==
+Cc: Jeff Moyer <jmoyer@redhat.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe, on 08/15/2009 12:22 PM wrote:
-> On Wed, Aug 12 2009, Vladislav Bolkhovitin wrote:
->> This patch implements function blk_rq_map_kern_sg(), which allows to map
->> a kernel-originated SG vector to a block request. It is necessary to execute
->> SCSI commands with from kernel going SG buffer. At the moment SCST is the only
->> user of this functionality. It needs it, because its target drivers, which
->> are, basically, SCSI drivers, can deal only with SGs, not with BIOs. But,
->> according to the latest discussions, there can be other potential users for of
->> this functionality, so I'm sending this patch in a hope that it will be
->> also useful for them and eventually will be merged in the mainline kernel.
+Hi Jens,
+On Thu, Sep 3, 2009 at 3:07 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
+> On Thu, Sep 03 2009, Jeff Moyer wrote:
+>> Corrado Zoccolo <czoccolo@gmail.com> writes:
 >>
->> In the previous submissions this patch was called "New implementation of
->> scsi_execute_async()", but since in this version scsi_execute_async() was
->> removed from it by request of Boaz Harrosh the name was changed accordingly.
-> 
-> Generally this patch looks great, I just have one little thing I'd like
-> to point out:
-> 
->> +	while (hbio != NULL) {
->> +		bio = hbio;
->> +		hbio = hbio->bi_next;
->> +		bio->bi_next = NULL;
->> +
->> +		blk_queue_bounce(q, &bio);
->> +
->> +		res = blk_rq_append_bio(q, rq, bio);
->> +		if (unlikely(res != 0)) {
->> +			bio->bi_next = hbio;
->> +			hbio = bio;
->> +			/* We can have one or more bios bounced */
->> +			goto out_unmap_bios;
->> +		}
->> +	}
-> 
-> Constructs like this are always dangerous, because of how mempools work.
-> __blk_queue_bounce() will internally do:
-> 
->         bio = bio_alloc(GFP_NOIO, cnt);
-> 
-> so you could potentially enter a deadlock if a) you are the only one
-> allocating a bio currently, and b) the alloc fails and we wait for a bio
-> to be returned to the pool. This is highly unlikely and requires other
-> conditions to be dire, but it is a problem. This is not restricted to
-> the swap out path, the problem is purely lack of progress. So the golden
-> rule is always that you either allocate these units from a private pool
-> (which is hard for bouncing, since it does both page and bio allocations
-> from a mempool), or that you always ensure that a previously allocated
-> bio is in flight before attempting a new alloc.
+>> > When the number of processes performing I/O concurrently increases,  a
+>> > fixed time slice per process will cause large latencies.
+>> > In the patch, if there are more than 3 processes performing concurrent
+>> > I/O, we scale the time slice down proportionally.
+>> > To safeguard sequential bandwidth, we impose a minimum time slice,
+>> > computed from cfq_slice_idle (the idea is that cfq_slice_idle
+>> > approximates the cost for a seek).
+>> >
+>> > I performed two tests, on a rotational disk:
+>> > * 32 concurrent processes performing random reads
+>> > ** the bandwidth is improved from 466KB/s to 477KB/s
+>> > ** the maximum latency is reduced from 7.667s to 1.728
+>> > * 32 concurrent processes performing sequential reads
+>> > ** the bandwidth is reduced from 28093KB/s to 24393KB/s
+>> > ** the maximum latency is reduced from 3.781s to 1.115s
+>> >
+>> > I expect numbers to be even better on SSDs, where the penalty to
+>> > disrupt sequential read is much less.
+>>
+>> Interesting approach.  I'm not sure what the benefits will be on SSDs,
+>> as the idling logic is disabled for them (when nonrot is set and they
+>> support ncq).  See cfq_arm_slice_timer.
+>
+> Also, the problem with scaling the slice a lot is that throughput has a
+> tendency to fall off a cliff at some point.
 
-Sorry for the late reply, I was on vacation.
+This is the reason that I have a minimum slice. It is already reached
+for 32 processes as in my example, so the throughput drop is at most
+20%.
+Currently it is computed as 2*slice_idle for sync, and 1*slice_idle
+for async queues.
+I think this causes the leveling of data transferred regardless of
+priorities. I'll cook up a formula to better scale also the minimum
+slice according to priority, to fix this issue.
 
-I see your concerns. Since all the bios in __blk_rq_map_kern_sg() at 
-first all allocated and only then submitted for I/O, bio_alloc() in 
-__blk_queue_bounce() potentially can deadlock, if it's called with 
-GFP_NOIO (i.e. with __GFP_WAIT) and its mempool gets empty. The fact 
-that __blk_rq_map_kern_sg() allocates originally bios using 
-bio_kmalloc() doesn't fundamentally change that, only low the failure 
-probability. (Just to make sure I understand everything correctly.)
+> Have you tried benchmarking
+> buffered writes with reads?
 
-Potentially this can be a problem, since SCST nearly always uses 
-GFP_KERNEL as the mask, i.e. has __GFP_WAIT set, although, I agree, the 
-deadlock is very unlikely.
+Yes. I used that workload for benchmarks while tuning the patch.
+Adding async writes doesn't change the results, mostly because cfq
+preempts async queues when sync queues have new requests, and with
+many readers, there are always plenty of incoming reads. Writes almost
+have no chance to happen.
 
-To address it and other similar cases, which, I guess, should exist, I 
-see the following 2 ways:
+Corrado
 
-1. Increase BIO_POOL_SIZE from current 2 to a bigger value to be large 
-enough to satisfy such full requests allocations for the maximum 
-requests. In ideal, for the worst case it should be something like for 
-2MB * NR_CPUS much data, which is 2MB / (BIO_MAX_PAGES * PAGE_SIZE) * 
-NR_CPUS = 2NR_CPUS with 4K pages. But on practice, possibly something 
-like 10-20 should be sufficient?
+>
+> --
+> Jens Axboe
+>
+>
 
-2. Modify blk_queue_bounce() that it can fail with bounce buffers 
-allocation and graciously process that in __blk_rq_map_kern_sg() and all 
-other similar places.
 
-Which way would you prefer? Or do you think the probability for such 
-deadlock is so low, so it doesn't worth the effort to do anything with it?
 
-Thanks a lot for review!
-Vlad
+-- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
