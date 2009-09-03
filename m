@@ -1,224 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZICAe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbZICAgO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbZICAe0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 20:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbZICAeZ
+	id S1753950AbZICAgO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 20:36:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZICAgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 20:34:25 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50517 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752356AbZICAeY (ORCPT
+	Wed, 2 Sep 2009 20:36:13 -0400
+Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:24374 "EHLO
+	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752771AbZICAgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 20:34:24 -0400
-Message-ID: <ff8069241ae388c64cbb2d7d8d51fe4e.squirrel@webmail-b.css.fujitsu.com>
-In-Reply-To: <661de9470909021315m3af0de32h29f1ac8fd574249d@mail.gmail.com>
-References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090902093551.c8b171fb.kamezawa.hiroyu@jp.fujitsu.com>
-    <20090902145621.83c8a79c.kamezawa.hiroyu@jp.fujitsu.com>
-    <661de9470909021315m3af0de32h29f1ac8fd574249d@mail.gmail.com>
-Date: Thu, 3 Sep 2009 09:34:23 +0900 (JST)
-Subject: Re: [mmotm][PATCH 2/2 v2] memcg: reduce calls for soft limit excess
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: "Balbir Singh" <balbir@linux.vnet.ibm.com>
-Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-User-Agent: SquirrelMail/1.4.16
+	Wed, 2 Sep 2009 20:36:12 -0400
+Message-ID: <4A9F0F7A.1010805@hp.com>
+Date: Wed, 02 Sep 2009 20:36:10 -0400
+From: jim owens <jowens@hp.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
+To: Rob Landley <rob@landley.net>
+CC: Ric Wheeler <rwheeler@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+       david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+References: <20090826001645.GN4300@elf.ucw.cz> <20090902201210.GC1840@ucw.cz> <4A9ED8AB.5080003@redhat.com> <200909021800.51096.rob@landley.net>
+In-Reply-To: <200909021800.51096.rob@landley.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh さんは書きました：
-> On Wed, Sep 2, 2009 at 11:26 AM, KAMEZAWA
-> Hiroyuki<kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> In charge/uncharge/reclaim path, usage_in_excess is calculated
->> repeatedly and
->> it takes res_counter's spin_lock every time.
+Rob Landley wrote:
+> On Wednesday 02 September 2009 15:42:19 Ric Wheeler wrote:
 >>
->
-> I think the changelog needs to mention some refactoring you've done
-> below as well, like change new_charge_in_excess to excess.
->
-will do when I sent out v3. (and I'll have to do, anyway.)
+>> Totally pointless to reply to you further.
+> 
+> For the record, I've been able to follow Pavel's arguments, and I've been able 
+> to follow Ted's arguments.  But as far as I can tell, you're arguing about a 
+> different topic than the rest of us.
 
-Bye,
--Kame
->
->
->> This patch removes unnecessary calls for res_count_soft_limit_excess.
->>
->> Changelog:
->> &#160;- fixed description.
->> &#160;- fixed unsigned long to be unsigned long long (Thanks, Nishimura)
->>
->> Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
->> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->> ---
->> &#160;mm/memcontrol.c | &#160; 31 +++++++++++++++----------------
->> &#160;1 file changed, 15 insertions(+), 16 deletions(-)
->>
->> Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
->> ===================================================================
->> --- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
->> +++ mmotm-2.6.31-Aug27/mm/memcontrol.c
->> @@ -313,7 +313,8 @@ soft_limit_tree_from_page(struct page *p
->> &#160;static void
->> &#160;__mem_cgroup_insert_exceeded(struct mem_cgroup *mem,
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160; &#160;struct mem_cgroup_per_zone
-*mz,
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160; struct mem_cgroup_tree_per_zone
-*mctz)
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160; struct mem_cgroup_tree_per_zone
-*mctz,
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160; unsigned long long
-new_usage_in_excess)
->> &#160;{
->> &#160; &#160; &#160; &#160;struct rb_node **p = &mctz->rb_root.rb_node;
->> &#160; &#160; &#160; &#160;struct rb_node *parent = NULL;
->> @@ -322,7 +323,9 @@ __mem_cgroup_insert_exceeded(struct mem_
->> &#160; &#160; &#160; &#160;if (mz->on_tree)
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;return;
->>
->> - &#160; &#160; &#160; mz->usage_in_excess =
-res_counter_soft_limit_excess(&mem->res);
->> + &#160; &#160; &#160; mz->usage_in_excess = new_usage_in_excess;
->> + &#160; &#160; &#160; if (!mz->usage_in_excess)
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; return;
->> &#160; &#160; &#160; &#160;while (*p) {
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;parent = *p;
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;mz_node =
-rb_entry(parent, struct mem_cgroup_per_zone,
->> @@ -382,7 +385,7 @@ static bool mem_cgroup_soft_limit_check(
->>
->> &#160;static void mem_cgroup_update_tree(struct mem_cgroup *mem, struct
-page *page)
->> &#160;{
->> - &#160; &#160; &#160; unsigned long long new_usage_in_excess;
->> + &#160; &#160; &#160; unsigned long long excess;
->> &#160; &#160; &#160; &#160;struct mem_cgroup_per_zone *mz;
->> &#160; &#160; &#160; &#160;struct mem_cgroup_tree_per_zone *mctz;
->> &#160; &#160; &#160; &#160;int nid = page_to_nid(page);
->> @@ -395,25 +398,21 @@ static void mem_cgroup_update_tree(struc
->> &#160; &#160; &#160; &#160; */
->> &#160; &#160; &#160; &#160;for (; mem; mem = parent_mem_cgroup(mem)) {
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;mz =
-mem_cgroup_zoneinfo(mem, nid, zid);
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; new_usage_in_excess =
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; res_counter_soft_limit_excess(&mem->res);
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; excess =
-res_counter_soft_limit_excess(&mem->res);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;/*
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; * We have to
-update the tree if mz is on RB-tree or
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; * mem is over
-its softlimit.
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; */
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; if
-(new_usage_in_excess || mz->on_tree) {
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; if (excess ||
-mz->on_tree) {
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;spin_lock(&mctz->lock);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;/* if on-tree, remove it */
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;if (mz->on_tree)
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160;
-&#160;__mem_cgroup_remove_exceeded(mem, mz, mctz);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;/*
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;* if over soft limit, insert again. mz->usage_in_excess
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;* will be updated properly.
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;* Insert again. mz->usage_in_excess will be updated.
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;* If excess is 0, no tree ops.
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; */
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; if (new_usage_in_excess)
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160; __mem_cgroup_insert_exceeded(mem,
-mz, mctz);
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; else
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160; mz->usage_in_excess = 0;
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; __mem_cgroup_insert_exceeded(mem, mz, mctz, excess);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;spin_unlock(&mctz->lock);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;}
->> &#160; &#160; &#160; &#160;}
->> @@ -2216,6 +2215,7 @@ unsigned long mem_cgroup_soft_limit_recl
->> &#160; &#160; &#160; &#160;unsigned long reclaimed;
->> &#160; &#160; &#160; &#160;int loop = 0;
->> &#160; &#160; &#160; &#160;struct mem_cgroup_tree_per_zone *mctz;
->> + &#160; &#160; &#160; unsigned long long excess;
->>
->> &#160; &#160; &#160; &#160;if (order > 0)
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;return 0;
->> @@ -2260,9 +2260,8 @@ unsigned long mem_cgroup_soft_limit_recl
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160; &#160; &#160; &#160;
-&#160;__mem_cgroup_largest_soft_limit_node(mctz);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; &#160;} while (next_mz == mz);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;}
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; mz->usage_in_excess =
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; res_counter_soft_limit_excess(&mz->mem->res);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160;__mem_cgroup_remove_exceeded(mz->mem, mz, mctz);
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; excess =
-res_counter_soft_limit_excess(&mz->mem->res);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;/*
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; * One school of
-thought says that we should not add
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; * back the node
-to the tree if reclaim returns 0.
->> @@ -2271,8 +2270,8 @@ unsigned long mem_cgroup_soft_limit_recl
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; * memory to
-reclaim from. Consider this as a longer
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; * term TODO.
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; */
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; if
-(mz->usage_in_excess)
->> - &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160; __mem_cgroup_insert_exceeded(mz->mem, mz, mctz);
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160; /* If excess == 0,
-no tree ops */
->> + &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-__mem_cgroup_insert_exceeded(mz->mem, mz, mctz, excess);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160;spin_unlock(&mctz->lock);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160;
-&#160;css_put(&mz->mem->css);
->> &#160; &#160; &#160; &#160; &#160; &#160; &#160; &#160;loop++;
->
-> OK.. so everytime we call __mem_cgroup_insert_exceeded we save one
-> res_counter operation.
->
-> Looks good
->
-> Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
->
-> Balbir Singh
->
+I had no trouble following what Ric was arguing about.
 
+Ric never said "use only the best devices and you won't have problems".
 
+Ric was arguing the exact opposite - ALL devices are crap if you define
+crap as "can loose data".  What he is saying is you need to UNDERSTAND
+your devices and their behavior and you must act accordingly.
+
+PAVEL DID NOT ACT ACCORDING TO HIS DEVICE LIMITATIONS.
+
+We understand he was clueless, but user error is still user error!
+
+And Ric said do not stigmatize whole classes of A) devices, B) raid,
+and C) filesystems with "Pavel says...".
+
+> However, thinking about how to _fix_ a problem is predicated on acknowledging 
+> that there actually _is_ a problem.  "The hardware is not physically damaged 
+> but your data was lost" sounds to me like a software problem, and thus 
+> something software could at least _attempt_ to address.  "There's millions of 
+> 'em, Linux can't cope" doesn't seem like a useful approach.
+
+We have been trying forever to deal with device problems and as
+Ric kept trying to explain we do understand them.  The problem is
+not "can we be better" it is "at what cost".  As they keep saying
+"fast", "cheap", "safe"... pick any 2.  Adding software solutions
+to solve it will always turn "fast" to "slow".
+
+Most people will choose some risk they can manage (such as
+don't pull the flash card you idiot), instead of snail slow.
+
+> I already addressed the software raid thing last post.
+
+Saw it. I am not an MD guy so I will not say anything bad about it
+except all the "journal" crud.  It really is only pandering to Pavel
+because ALL filesystems can be screwed and that is what they really
+need to know.  The journal stuff distracts those who are not running
+a journaling filesystem, even if your description is correct except
+that as we fs people keep saying, fsck is meaningless and again will
+only give you a false sense of security that your data is OK.
+
+jim
