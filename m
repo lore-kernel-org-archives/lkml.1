@@ -1,113 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751536AbZICMdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752435AbZICMyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751536AbZICMdH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 08:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZICMdG
+	id S1752435AbZICMyp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 08:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZICMyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 08:33:06 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55976 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751073AbZICMdF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 08:33:05 -0400
-Date: Thu, 3 Sep 2009 14:31:11 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Rob Landley <rob@landley.net>, david@lang.hm, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [PATCH] Update Documentation/md.txt to mention journaling
-	won't help dirty+degraded case.
-Message-ID: <20090903123111.GA4227@ucw.cz>
-References: <20090826001645.GN4300@elf.ucw.cz> <4A9910D5.4060208@redhat.com> <20090902201210.GC1840@ucw.cz> <200909021749.47695.rob@landley.net> <4A9FB10B.60209@redhat.com>
+	Thu, 3 Sep 2009 08:54:45 -0400
+Received: from smtp.df.ru ([195.42.160.16]:56822 "EHLO smtp.df.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752159AbZICMyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 08:54:44 -0400
+X-Greylist: delayed 1408 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Sep 2009 08:54:43 EDT
+Date: Thu, 3 Sep 2009 16:32:14 +0400
+From: Alexey Vlasov <renton@renton.name>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: [PATCH] Report file size for deleted files; was Re: Counters
+	in df, du
+Message-ID: <20090903123214.GA5277@beaver.vrungel.ru>
+References: <20090713081106.GA5569@beaver.vrungel.ru> <87fxd19cfq.fsf@basil.nowhere.org> <20090713113252.GB5569@beaver.vrungel.ru> <20090713115917.GA27684@basil.fritz.box>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <4A9FB10B.60209@redhat.com>
+In-Reply-To: <20090713115917.GA27684@basil.fritz.box>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-09-03 08:05:31, Ric Wheeler wrote:
-> On 09/02/2009 06:49 PM, Rob Landley wrote:
->> From: Rob Landley<rob@landley.net>
->>
->> Add more warnings to the "Boot time assembly of degraded/dirty arrays" section,
->> explaining that using a journaling filesystem can't overcome this problem.
->>
->> Signed-off-by: Rob Landley<rob@landley.net>
->> ---
->>
->>   Documentation/md.txt |   17 +++++++++++++++++
->>   1 file changed, 17 insertions(+)
->>
->> diff --git a/Documentation/md.txt b/Documentation/md.txt
->> index 4edd39e..52b8450 100644
->> --- a/Documentation/md.txt
->> +++ b/Documentation/md.txt
->> @@ -75,6 +75,23 @@ So, to boot with a root filesystem of a dirty degraded raid[56], use
->>
->>      md-mod.start_dirty_degraded=1
->>
->> +Note that Journaling filesystems do not effectively protect data in this
->> +case, because the update granularity of the RAID is larger than the journal
->> +was designed to expect.  Reconstructing data via partity information involes
->> +matching together corresponding stripes, and updating only some of these
->> +stripes renders the corresponding data in all the unmatched stripes
->> +meaningless.  Thus seemingly unrelated data in other parts of the filesystem
->> +(stored in the unmatched stripes) can become unreadable after a partial
->> +update, but the journal is only aware of the parts it modified, not the
->> +"collateral damage" elsewhere in the filesystem which was affected by those
->> +changes.
->> +
->> +Thus successful journal replay proves nothing in this context, and even a
->> +full fsck only shows whether or not the filesystem's metadata was affected.
->> +(A proper solution to this problem would involve adding journaling to the RAID
->> +itself, at least during degraded writes.  In the meantime, try not to allow
->> +a system to shut down uncleanly with its RAID both dirty and degraded, it
->> +can handle one but not both.)
->>
->>   Superblock formats
->>   ------------------
->>
->>
->
-> NACK.
->
-> Now you have moved the inaccurate documentation about journalling file 
-> systems into the MD documentation.
+Hi Andi Kleen.
 
-What is inaccurate about it?
+Patch can hardly hellp, because there is another problem. Proc shows
+neither the size of deleted files, nor what he's full with /tmp.
 
-> Repeat after me:
+On Mon, Jul 13, 2009 at 01:59:17PM +0200, Andi Kleen wrote:
+> > But you can see the file date, these are new files and by next search
+> 
+> I appended a patch that reports the size.
+> 
+> -Andi
+> 
+> ---
+> 
+> VFS: Report file size for deleted files in /proc
+> 
+> It's useful to know how big deleted files are, in case a file system
+> is filled up unexpectedly and the admin wants to track down which
+> process is the culprit. This patch reports the file size 
+> in addition to (deleted) for /proc/*/fd links.
+> 
+> This modifies a public interface, but it's reasonable to assume
+> that noone relies on the particular format here.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  fs/dcache.c |   14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.31-rc1-ak/fs/dcache.c
+> ===================================================================
+> --- linux-2.6.31-rc1-ak.orig/fs/dcache.c
+> +++ linux-2.6.31-rc1-ak/fs/dcache.c
+> @@ -1910,9 +1910,19 @@ char *__d_path(const struct path *path,
+>  
+>  	spin_lock(&vfsmount_lock);
+>  	prepend(&end, &buflen, "\0", 1);
+> -	if (d_unlinked(dentry) &&
+> -		(prepend(&end, &buflen, " (deleted)", 10) != 0))
+> +	if (d_unlinked(dentry)) {
+> +		char buf[40];
+> +		int n;
+> +		if (dentry->d_inode) { /* check needed? */
+> +			n = snprintf(buf, sizeof buf, " (deleted; size %lluK)",
+> +					dentry->d_inode->i_size >> 10);
+> +		} else {
+> +			strcpy(buf, " (deleted)");
+> +			n = 10;
+> +		}
+> +		if (prepend(&end, &buflen, buf, n) != 0)
+>  			goto Elong;
+> +	}
+>  
+>  	if (buflen < 1)
+>  		goto Elong;
+> 
+> -- 
+> ak@linux.intel.com -- Speaking for myself only.
 
-> (1) partial writes to a RAID stripe (with or without file systems, with 
-> or without journals) create an invalid stripe
-
-That's what he's documenting.
-
-> (2) partial writes can be prevented in most cases by running with write 
-> cache disabled or working barriers
-
-Given how long experience with storage you claim, you should know that
-MD RAID5 does not support barriers by now...
-
-
-> Rob, you should really try to take a few disks, build a working MD RAID5 
-> group and test your ideas. Try it with and without the write cache 
-> enabled.
-
-....and understand by now that statistics are irrelevant for design
-problems.
-
-Ouch and trying to silence people by telling them to fix the problem
-instead of documenting it is not nice either.
-								Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+BRGDS. Alexey Vlasov.
