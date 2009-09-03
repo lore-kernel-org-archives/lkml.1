@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbZICTkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756146AbZICTnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbZICTkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754992AbZICTky
+	id S1756146AbZICTnF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZICTnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:40:54 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:33908 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756186AbZICTkx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:40:53 -0400
-Date: Thu, 3 Sep 2009 15:40:41 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost
-To: Wolfram Sang <w.sang@pengutronix.de>
-cc: Frans Pop <elendil@planet.nl>,
-       =?ISO-8859-15?Q?Christian_Kr=E4mer?= <christian@kraemer-eu.de>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
-In-Reply-To: <20090903193709.GA11097@pengutronix.de>
-Message-ID: <alpine.LFD.2.00.0909031539070.3200@localhost>
-References: <200909021856.29565.christian@kraemer-eu.de> <200909021953.02190.elendil@planet.nl> <200909030042.45081.christian@kraemer-eu.de> <200909031927.19590.elendil@planet.nl> <20090903193709.GA11097@pengutronix.de>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 3 Sep 2009 15:43:04 -0400
+Received: from kroah.org ([198.145.64.141]:39082 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753888AbZICTnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 15:43:03 -0400
+Date: Thu, 3 Sep 2009 12:41:21 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Christian Lamparter <chunkeey@web.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Stephen Chen <Stephen.Chen@atheros.com>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Staging tree status for the .32 kernel merge
+Message-ID: <20090903194121.GA4953@kroah.com>
+References: <20090903041429.GA29875@kroah.com>
+ <1251967786.3336.19.camel@johannes.local>
+ <43e72e890909031235t17543020leb3d19b17d955d01@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <43e72e890909031235t17543020leb3d19b17d955d01@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Sep 2009, Wolfram Sang wrote:
+On Thu, Sep 03, 2009 at 12:35:11PM -0700, Luis R. Rodriguez wrote:
+> >>       - otus.  This is sitting here until a "real" wireless driver
+> >>         will be merged through the wireless tree.  Hopefully that
+> >>         happens soon.
+> >
+> > ar9170 has been in for a while now, it's just not quite at feature
+> > parity yet -- however that also means otus will get no work whatsoever
+> > from any of the wireless folks. Draw your own conclusions. Personally, I
+> > would drop it and let the users figure out whether they can live with
+> > ar9170 or need to support work on it.
+> 
+> Greg, as Johannes noted otus has lacked focus as Johannes whipped out
+> a port for it in a few weeks and then Christian gave it some final
+> love taps for inclusion, we just still use otus as just a source of
+> documentation for any yet missing feature, but for that I guess I can
+> just refer people to my git tree. Chris would know better where we're
+> at as far as feature-parity is concerned though so I'll leave it up to
+> him to judge whether or not having otus gets some users anything
+> ar9170 doesn't yet have.
 
-> > Original message with lspci and dmesg output for .24 is at:
-> > http://lkml.org/lkml/2009/9/2/199
->
-> For a start:
->
-> That line
->
-> pcmcia: Detected deprecated PCMCIA ioctl usage from process:
-> hwsetup...
+Ok, as I've said before, just let me know when you want the otus driver
+removed from the tree and I'll be glad to do so.
 
-  the pcmcia ioctl has been listed as removable since 2005:
+thanks,
 
-http://lkml.org/lkml/2007/5/1/124
-
-and is still listed that way in Doc/feature-removal-schedule.txt, you
-can't say i didn't try.
-
-rday
---
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+greg k-h
