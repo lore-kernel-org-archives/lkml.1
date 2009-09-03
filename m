@@ -1,94 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752928AbZICHhQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753137AbZICHi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752928AbZICHhQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 03:37:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZICHhP
+	id S1753137AbZICHi1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 03:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZICHi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 03:37:15 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:28552 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751290AbZICHhO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 03:37:14 -0400
-Date: Thu, 3 Sep 2009 10:31:51 +0300
-From: Imre Deak <imre.deak@nokia.com>
-To: ext Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Steven Walter <stevenrwalter@gmail.com>, David Xiao <dxiao@broadcom.com>,
-       Ben Dooks <ben-linux@fluff.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       v4l2_linux <linux-media@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
-	get_user_pages() enough to prevent pages from being swapped out ?")
-Message-ID: <20090903073151.GA25928@localhost>
-References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk> <200909011543.48439.laurent.pinchart@ideasonboard.com> <20090902151044.GG30183@localhost>
+	Thu, 3 Sep 2009 03:38:26 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:27816
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752096AbZICHiZ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 03:38:25 -0400
+X-SpamScore: 1
+X-BigFish: VPS1(zz103dKa594izz1202hzzz32i6bh203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KPDX7V-01-0ZW-02
+X-M-MSG: 
+Date: Thu, 3 Sep 2009 09:38:18 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       Borislav Petkov <borislav.petkov@amd.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] x86: urgent fixes for AMD Magny-Cours support
+Message-ID: <20090903073818.GE7216@alberich.amd.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090902151044.GG30183@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 03 Sep 2009 07:33:21.0921 (UTC) FILETIME=[D077BF10:01CA2C68]
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 03 Sep 2009 07:38:19.0260 (UTC) FILETIME=[81B213C0:01CA2C69]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 02, 2009 at 05:10:44PM +0200, Deak Imre (Nokia-D/Helsinki) wrote:
-> On Tue, Sep 01, 2009 at 03:43:48PM +0200, ext Laurent Pinchart wrote:
-> > [...]
-> > I might be missing something obvious, but I fail to see how VIVT caches could 
-> > work at all with multiple mappings. If a kernel-allocated buffer is DMA'ed to, 
-> > we certainly want to invalidate all cache lines that store buffer data. As the 
-> > cache doesn't care about physical addresses we thus need to invalidate all 
-> > virtual mappings for the buffer. If the buffer is mmap'ed in userspace I don't 
-> > see how that would be done.
-> 
-> To my understanding buffers returned by dma_alloc_*, kmalloc, vmalloc
-> are ok:
-> 
-> The cache lines for direct mapping are flushed in dma_alloc_* and
-> vmalloc. After this you are not supposed to access the buffers
-> through the direct mapping until you're done with the DMA.
-> 
-> For kmalloc you use the direct mapping in the first place, so the
-> flush in dma_map_* will be enough.
-> 
-> For user mappings I think you'd have to do an additional flush for
-> the direct mapping, while the user mapping is flushed in dma_map_*.
+Hi,
 
-Based on the the discussion so far this is my understanding on how
-zero-copy DMA is possible on ARM. Could you please confirm / correct
-these? :
+so finally I've created a basic set of patches to fix Linux for AMD
+Magny-Cours CPU. Basic means no new sysfs attributes, no new cpumasks
+etc.  Most of it is AMD specific code. Only patch 4 modifies a more
+generic x86 function.
 
-- user space passes an arbitrary buffer:
-  - get_user_pages(user address range)
-  - DMA(user address range)
-  - user space reads from the buffer
+I kindly ask to apply these patches for .31 -- even so late in the
+game. It should not introduce regressions but allows to run .31 on
+Magny-Cours without hiccups.
 
-  Problems:
-  - not supported according to Russell
-  - unhandled faults for cache ops on not-present PTEs, but patch
-    from Laurent fixes this
+If it is really too late for .31 it should be scheduled for .32 and I'll try
+to bring it into stable-31.
 
-- mmap a kernel buffer to user space with cacheable mapping:
-  - user space writes to the buffer
-  - flush cache(user address range)
-  - DMA(kernel buffer)
-  - user space reads from the buffer
 
-  The additional flush cache is needed for VIVT/aliasing VIPT.
-  Instead of the flush cache:
-  - the mapping can be done with writethrough, non-writeallocate or
-    non-cacheable mapping, or
-  - for aliasing VIPT a non-aliasing user address is picked
+Thanks!
 
-DMA(address range) is:
-  - dma_map_*(address range)
-  - perform DMA to/from address range
-  - dma_unmap_*(address range)
+Andreas
 
-Thanks,
-Imre
+-- 
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
 
