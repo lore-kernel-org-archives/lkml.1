@@ -1,59 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751406AbZICM2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751536AbZICMdH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751406AbZICM2p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 08:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751151AbZICM2o
+	id S1751536AbZICMdH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 08:33:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZICMdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 08:28:44 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49192 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751141AbZICM2o (ORCPT
+	Thu, 3 Sep 2009 08:33:06 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:55976 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751073AbZICMdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 08:28:44 -0400
-Subject: Re: [RFC v6][PATCH 1/4] intel_txt: Intel(R) TXT boot support
-From: David Woodhouse <dwmw2@infradead.org>
-To: joseph.cihula@intel.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
-       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
-       gang.wei@intel.com, shane.wang@intel.com
-In-Reply-To: <4A4ACA63.2000708@intel.com>
-References: <4A4ACA63.2000708@intel.com>
-Content-Type: text/plain
-Date: Thu, 03 Sep 2009 13:28:34 +0100
-Message-Id: <1251980914.4483.494.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 3 Sep 2009 08:33:05 -0400
+Date: Thu, 3 Sep 2009 14:31:11 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Rob Landley <rob@landley.net>, david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [PATCH] Update Documentation/md.txt to mention journaling
+	won't help dirty+degraded case.
+Message-ID: <20090903123111.GA4227@ucw.cz>
+References: <20090826001645.GN4300@elf.ucw.cz> <4A9910D5.4060208@redhat.com> <20090902201210.GC1840@ucw.cz> <200909021749.47695.rob@landley.net> <4A9FB10B.60209@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A9FB10B.60209@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-06-30 at 19:30 -0700, Joseph Cihula wrote:
-> 
-> +int tboot_force_iommu(void)
-> +{
-> +       if (!tboot_enabled())
-> +               return 0;
-> +
-> +       if (no_iommu || swiotlb || dmar_disabled)
-> +               pr_warning("Forcing Intel-IOMMU to enabled\n");
-> +
-> +       dmar_disabled = 0;
-> +#ifdef CONFIG_SWIOTLB
-> +       swiotlb = 0;
-> +#endif
-> +       no_iommu = 0;
-> +
-> +       return 1;
-> +}
+On Thu 2009-09-03 08:05:31, Ric Wheeler wrote:
+> On 09/02/2009 06:49 PM, Rob Landley wrote:
+>> From: Rob Landley<rob@landley.net>
+>>
+>> Add more warnings to the "Boot time assembly of degraded/dirty arrays" section,
+>> explaining that using a journaling filesystem can't overcome this problem.
+>>
+>> Signed-off-by: Rob Landley<rob@landley.net>
+>> ---
+>>
+>>   Documentation/md.txt |   17 +++++++++++++++++
+>>   1 file changed, 17 insertions(+)
+>>
+>> diff --git a/Documentation/md.txt b/Documentation/md.txt
+>> index 4edd39e..52b8450 100644
+>> --- a/Documentation/md.txt
+>> +++ b/Documentation/md.txt
+>> @@ -75,6 +75,23 @@ So, to boot with a root filesystem of a dirty degraded raid[56], use
+>>
+>>      md-mod.start_dirty_degraded=1
+>>
+>> +Note that Journaling filesystems do not effectively protect data in this
+>> +case, because the update granularity of the RAID is larger than the journal
+>> +was designed to expect.  Reconstructing data via partity information involes
+>> +matching together corresponding stripes, and updating only some of these
+>> +stripes renders the corresponding data in all the unmatched stripes
+>> +meaningless.  Thus seemingly unrelated data in other parts of the filesystem
+>> +(stored in the unmatched stripes) can become unreadable after a partial
+>> +update, but the journal is only aware of the parts it modified, not the
+>> +"collateral damage" elsewhere in the filesystem which was affected by those
+>> +changes.
+>> +
+>> +Thus successful journal replay proves nothing in this context, and even a
+>> +full fsck only shows whether or not the filesystem's metadata was affected.
+>> +(A proper solution to this problem would involve adding journaling to the RAID
+>> +itself, at least during degraded writes.  In the meantime, try not to allow
+>> +a system to shut down uncleanly with its RAID both dirty and degraded, it
+>> +can handle one but not both.)
+>>
+>>   Superblock formats
+>>   ------------------
+>>
+>>
+>
+> NACK.
+>
+> Now you have moved the inaccurate documentation about journalling file 
+> systems into the MD documentation.
 
-Ick. The logic for selecting which IOMMU is used is convoluted enough
-already, without adding this here.
+What is inaccurate about it?
 
+> Repeat after me:
+
+> (1) partial writes to a RAID stripe (with or without file systems, with 
+> or without journals) create an invalid stripe
+
+That's what he's documenting.
+
+> (2) partial writes can be prevented in most cases by running with write 
+> cache disabled or working barriers
+
+Given how long experience with storage you claim, you should know that
+MD RAID5 does not support barriers by now...
+
+
+> Rob, you should really try to take a few disks, build a working MD RAID5 
+> group and test your ideas. Try it with and without the write cache 
+> enabled.
+
+....and understand by now that statistics are irrelevant for design
+problems.
+
+Ouch and trying to silence people by telling them to fix the problem
+instead of documenting it is not nice either.
+								Pavel
 -- 
-David Woodhouse                            Open Source Technology Centre
-David.Woodhouse@intel.com                              Intel Corporation
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
