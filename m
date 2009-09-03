@@ -1,88 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755590AbZICOQB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbZICOPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755590AbZICOQB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:16:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbZICOP7
+	id S1755507AbZICOPv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755345AbZICOPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:15:59 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:52711 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755565AbZICOP6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:15:58 -0400
-Message-ID: <4A9FCF6B.1080704@redhat.com>
-Date: Thu, 03 Sep 2009 10:15:07 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
-       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: wishful thinking about atomic, multi-sector or full MD stripe width,
- writes in storage
-References: <20090828064449.GA27528@elf.ucw.cz>	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com> <m3ab1cnn7y.fsf@intrepid.localdomain>
-In-Reply-To: <m3ab1cnn7y.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 3 Sep 2009 10:15:50 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:42188 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754950AbZICOPt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 10:15:49 -0400
+Subject: Re: [PATCH 1/2] AB3100 regulator support v4
+From: Liam Girdwood <lrg@slimlogic.co.uk>
+To: Linus Walleij <linus.walleij@stericsson.com>,
+       Samuel Ortiz <sameo@linux.intel.com>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Samuel Ortiz <sameo@linux.intel.com>,
+       Russell King <linux@arm.linux.org.uk>
+In-Reply-To: <1251982396-23790-1-git-send-email-linus.walleij@stericsson.com>
+References: <1251982396-23790-1-git-send-email-linus.walleij@stericsson.com>
+Content-Type: text/plain
+Date: Thu, 03 Sep 2009 15:15:48 +0100
+Message-Id: <1251987348.6735.49.camel@odin>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/2009 09:59 AM, Krzysztof Halasa wrote:
-> Ric Wheeler<rwheeler@redhat.com>  writes:
->
->> We (red hat) have all kinds of different raid boxes...
->
-> A have no doubt about it, but are those you know equipped with
-> battery-backed write-back cache? Are they using SATA disks?
->
-> We can _at_best_ compare non-battery-backed RAID using SATA disks with
-> what we typically have in a PC.
+On Thu, 2009-09-03 at 14:53 +0200, Linus Walleij wrote:
+> This adds support for the regulators found in the AB3100
+> Mixed-Signal IC.
+> 
+> It further also defines platform data for the ST-Ericsson
+> U300 platform and extends the AB3100 MFD driver so that
+> platform/board data with regulation constraints and an init
+> function can be passed down all the way from the board to
+> the regulators.
+> 
 
-The whole thread above is about software MD using commodity drives (S-ATA or 
-SAS) without battery backed write cache.
+<snip>
 
-We have that (and I have it personally) and do test it.
+> +static int ab3100_disable_regulator(struct regulator_dev *reg)
+> +{
+> +	struct ab3100_regulator *abreg = reg->reg_data;
+> +	int err;
+> +	u8 regval;
+> +
+> +	/*
+> +	 * LDO D is a special regulator. When it is disabled, the entire
+> +	 * system is shut down. So this is handled specially.
+> +	 */
+> +	if (abreg->regreg == AB3100_LDO_D) {
+> +		int i;
+> +
+> +		dev_info(&reg->dev, "disabling LDO D - shut down system\n");
+> +		/*
+> +		 * Set regulators to default values, ignore any errors,
+> +		 * we're going DOWN
+> +		 */
+> +		for (i = 0; i < ARRAY_SIZE(ab3100_reg_init_order); i++) {
+> +			(void) ab3100_set_register_interruptible(abreg->ab3100,
+> +					ab3100_reg_init_order[i],
+> +					abreg->plfdata->reg_initvals[i]);
+> +		}
+> +
+> +		/* Setting LDO D to 0x00 cuts the power to the SoC */
+> +		return ab3100_set_register_interruptible(abreg->ab3100,
+> +							 AB3100_LDO_D, 0x00U);
+> +
+> +	}
+> +
+> +	/*
+> +	 * All other regulators are handled here
+> +	 */
+> +	err = ab3100_get_register_interruptible(abreg->ab3100, abreg->regreg,
+> +						&regval);
+> +	if (err) {
+> +		dev_err(&reg->dev, "unable to get register 0x%x\n",
+> +			abreg->regreg);
+> +		return err;
+> +	}
+> +	regval &= ~AB3100_REG_ON_MASK;
+> +	return ab3100_set_register_interruptible(abreg->ab3100, abreg->regreg,
+> +						 regval);
+> +}
 
-You must disable the write cache on these commodity drives *if* the MD RAID 
-level does not support barriers properly.
+Just wondering if you had looked at the regulator supplier field in
+struct regulator_init_data. It's intention was to allow LDO D to be
+switched OFF only when all it's consumer regulators were OFF. Likewise
+it would also switch this regulator ON if any of it's children were
+switched ON.
 
-This will greatly reduce errors after a power loss (both in degraded state and 
-non-degraded state), but it will not eliminate data loss entirely. You simply 
-cannot do that with any storage device!
+I assume for this PMIC it would not be useful as it looks like this LDO
+is supplying all other PMIC regulators and is ultimately being used as
+master power ON/OFF switch ? 
 
-Note that even without MD raid, the file system issues IO's in file system block 
-size (4096 bytes normally) and most commodity storage devices use a 512  byte 
-sector size which means that we have to update 8 512b sectors.
+Samuel, are you happy for this to go via mfd for simpler merging ?
+If so :-
 
-Drives can (and do) have multiple platters and surfaces and it is perfectly 
-normal to have contiguous logical ranges of sectors map to non-contiguous 
-sectors physically. Imagine a 4KB write stripe that straddles two adjacent 
-tracks on one platter (requiring a seek) or mapped across two surfaces 
-(requiring a head switch). Also, a remapped sector can require more or less a 
-full surface seek from where ever you are to the remapped sector area of the drive.
+Signed-off-by: Liam Girdwood <lrg@slimlogic.co.uk>
 
-These are all examples that can after a power loss,  even a local (non-MD) 
-device,  do a partial update of that 4KB write range of sectors. Note that 
-unlike unlike RAID/MD, local storage has no parity on the server to detect this 
-partial write.
+Thanks
 
-This is why new file systems like btrfs and zfs do checksumming of data and 
-metadata. This won't prevent partial updates during a write, but can at least 
-detect them and try to do some kind of recovery.
+Liam
 
-In other words, this is not just an MD issue, it is entirely possible even with 
-non-MD devices.
-
-Also, when you enable the write cache (MD or not) you are buffering multiple 
-MB's of data that can go away on power loss. Far greater (10x) the exposure that 
-the partial RAID rewrite case worries about.
-
-ric
