@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754285AbZICFft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754336AbZICFgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754285AbZICFft (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 01:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbZICFfr
+	id S1754336AbZICFgB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 01:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbZICFfq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 01:35:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45167 "EHLO
+	Thu, 3 Sep 2009 01:35:46 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45166 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754239AbZICFfn (ORCPT
+	with ESMTP id S1754238AbZICFfn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Sep 2009 01:35:43 -0400
 From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
 To: catalin.marinas@arm.com, torvalds@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi, mcgrof@gmail.com,
        "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [PATCH v2 2/5] kmemleak: add clear command support
-Date: Thu,  3 Sep 2009 01:35:37 -0400
-Message-Id: <1251956140-5499-3-git-send-email-lrodriguez@atheros.com>
+Subject: [PATCH v2 3/5] kmemleak: move common painting code together
+Date: Thu,  3 Sep 2009 01:35:38 -0400
+Message-Id: <1251956140-5499-4-git-send-email-lrodriguez@atheros.com>
 X-Mailer: git-send-email 1.6.2.rc1.3.g81d3f
 In-Reply-To: <1251956140-5499-1-git-send-email-lrodriguez@atheros.com>
 References: <1251956140-5499-1-git-send-email-lrodriguez@atheros.com>
@@ -24,112 +24,108 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In an ideal world your kmemleak output will be small,
-when its not you can use the clear command to ingore previously
-annotated kmemleak objects. We do this by painting them black.
-
-You can now use 'clear'; run some critical section code you'd
-like to test, and then run 'scan'.
+When painting grey or black we do the same thing, bring
+this together into a helper and identify coloring grey or
+black explicitly with defines. This makes this a little
+easier to read.
 
 Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 ---
- Documentation/kmemleak.txt |   17 +++++++++++++++++
- mm/kmemleak.c              |   22 ++++++++++++++++++++++
- 2 files changed, 39 insertions(+), 0 deletions(-)
+ mm/kmemleak.c |   32 +++++++++++++++++++-------------
+ 1 files changed, 19 insertions(+), 13 deletions(-)
 
-diff --git a/Documentation/kmemleak.txt b/Documentation/kmemleak.txt
-index 8906803..235090b 100644
---- a/Documentation/kmemleak.txt
-+++ b/Documentation/kmemleak.txt
-@@ -27,6 +27,13 @@ To trigger an intermediate memory scan:
- 
-   # echo scan > /sys/kernel/debug/kmemleak
- 
-+To clear the list of all current possible memory leaks:
-+
-+  # echo clear > /sys/kernel/debug/kmemleak
-+
-+New leaks will then come up upon reading /sys/kernel/debug/kmemleak
-+again.
-+
- Note that the orphan objects are listed in the order they were allocated
- and one object at the beginning of the list may cause other subsequent
- objects to be reported as orphan.
-@@ -35,6 +42,8 @@ Memory scanning parameters can be modified at run-time by writing to the
- /sys/kernel/debug/kmemleak file. The following parameters are supported:
- 
-   off		- disable kmemleak (irreversible)
-+  clear		- clear list of current memory leak suspects, done by
-+		  marking all current kmemleak objects as black.
-   stack=on	- enable the task stacks scanning (default)
-   stack=off	- disable the tasks stacks scanning
-   scan=on	- start the automatic memory scanning thread (default)
-@@ -79,6 +88,8 @@ The scanning algorithm steps:
-      gray set is finished
-   4. the remaining white objects are considered orphan and reported via
-      /sys/kernel/debug/kmemleak
-+  5. All black objects are ignored on the output of
-+     /sys/kernel/debug/kmemleak
- 
- Some allocated memory blocks have pointers stored in the kernel's
- internal data structures and they cannot be detected as orphans. To
-@@ -86,6 +97,12 @@ avoid this, kmemleak can also store the number of values pointing to an
- address inside the block address range that need to be found so that the
- block is not considered a leak. One example is __vmalloc().
- 
-+Testing a sections with kmemleak
-+--------------------------------
-+
-+You can use the 'clear' and 'scan' command over certain critical sections you
-+would like to test.
-+
- Kmemleak API
- ------------
- 
 diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-index c6e71bb..b6bc34e 100644
+index b6bc34e..58c07b1 100644
 --- a/mm/kmemleak.c
 +++ b/mm/kmemleak.c
-@@ -1294,10 +1294,30 @@ static int kmemleak_release(struct inode *inode, struct file *file)
- 	return seq_release(inode, file);
+@@ -120,6 +120,9 @@ struct kmemleak_scan_area {
+ 	size_t length;
+ };
+ 
++#define KMEMLEAK_GREY	0
++#define KMEMLEAK_BLACK	-1
++
+ /*
+  * Structure holding the metadata for each allocated memory block.
+  * Modifications to such objects should be made while holding the
+@@ -266,17 +269,19 @@ static void kmemleak_disable(void);
+  */
+ static bool color_white(const struct kmemleak_object *object)
+ {
+-	return object->count != -1 && object->count < object->min_count;
++	return object->count != KMEMLEAK_BLACK &&
++		object->count < object->min_count;
  }
  
-+static void kmemleak_clear(void)
+ static bool color_gray(const struct kmemleak_object *object)
+ {
+-	return object->min_count != -1 && object->count >= object->min_count;
++	return object->min_count != KMEMLEAK_BLACK &&
++		object->count >= object->min_count;
+ }
+ 
+ static bool color_black(const struct kmemleak_object *object)
+ {
+-	return object->min_count == -1;
++	return object->min_count == KMEMLEAK_BLACK;
+ }
+ 
+ /*
+@@ -604,13 +609,21 @@ static void delete_object_part(unsigned long ptr, size_t size)
+ 
+ 	put_object(object);
+ }
++
++static void paint_it(struct kmemleak_object *object, int color)
 +{
-+	struct kmemleak_object *object;
 +	unsigned long flags;
-+
-+	stop_scan_thread();
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(object, &object_list, object_list) {
-+		spin_lock_irqsave(&object->lock, flags);
-+		object->min_count = -1;
-+		spin_unlock_irqrestore(&object->lock, flags);
-+	}
-+	rcu_read_unlock();
-+
-+	start_scan_thread();
++	spin_lock_irqsave(&object->lock, flags);
++	object->min_count = color;
++	spin_unlock_irqrestore(&object->lock, flags);
 +}
 +
  /*
-  * File write operation to configure kmemleak at run-time. The following
-  * commands can be written to the /sys/kernel/debug/kmemleak file:
-  *   off	- disable kmemleak (irreversible)
-+ *   clear	- mark all current kmemleak objects as black to ingore
-+ *		  printing them
-  *   stack=on	- enable the task stacks scanning
-  *   stack=off	- disable the tasks stacks scanning
-  *   scan=on	- start the automatic memory scanning thread
-@@ -1324,6 +1344,8 @@ static ssize_t kmemleak_write(struct file *file, const char __user *user_buf,
+  * Make a object permanently as gray-colored so that it can no longer be
+  * reported as a leak. This is used in general to mark a false positive.
+  */
+ static void make_gray_object(unsigned long ptr)
+ {
+-	unsigned long flags;
+ 	struct kmemleak_object *object;
  
- 	if (strncmp(buf, "off", 3) == 0)
- 		kmemleak_disable();
-+	else if (strncmp(buf, "clear", 5) == 0)
-+		kmemleak_clear();
- 	else if (strncmp(buf, "stack=on", 8) == 0)
- 		kmemleak_stack_scan = 1;
- 	else if (strncmp(buf, "stack=off", 9) == 0)
+ 	object = find_and_get_object(ptr, 0);
+@@ -618,10 +631,7 @@ static void make_gray_object(unsigned long ptr)
+ 		kmemleak_warn("Graying unknown object at 0x%08lx\n", ptr);
+ 		return;
+ 	}
+-
+-	spin_lock_irqsave(&object->lock, flags);
+-	object->min_count = 0;
+-	spin_unlock_irqrestore(&object->lock, flags);
++	paint_it(object, KMEMLEAK_GREY);
+ 	put_object(object);
+ }
+ 
+@@ -631,7 +641,6 @@ static void make_gray_object(unsigned long ptr)
+  */
+ static void make_black_object(unsigned long ptr)
+ {
+-	unsigned long flags;
+ 	struct kmemleak_object *object;
+ 
+ 	object = find_and_get_object(ptr, 0);
+@@ -639,10 +648,7 @@ static void make_black_object(unsigned long ptr)
+ 		kmemleak_warn("Blacking unknown object at 0x%08lx\n", ptr);
+ 		return;
+ 	}
+-
+-	spin_lock_irqsave(&object->lock, flags);
+-	object->min_count = -1;
+-	spin_unlock_irqrestore(&object->lock, flags);
++	paint_it(object, KMEMLEAK_BLACK);
+ 	put_object(object);
+ }
+ 
 -- 
 1.6.3.3
 
