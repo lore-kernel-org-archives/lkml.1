@@ -1,98 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZICCl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754143AbZICClx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754159AbZICCl7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 22:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZICCl6
+	id S1754143AbZICClx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 22:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbZICClw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 22:41:58 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:37009 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754118AbZICClz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 22:41:55 -0400
-Date: Wed, 2 Sep 2009 22:40:14 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: nauman@google.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
-	track async bios.
-Message-ID: <20090903024014.GA8644@redhat.com>
-References: <20090901141142.GA13709@redhat.com> <20090902.185251.193693849.ryov@valinux.co.jp> <20090902135821.GB5012@redhat.com> <20090903.112423.226782505.ryov@valinux.co.jp>
+	Wed, 2 Sep 2009 22:41:52 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:34136
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754079AbZICClv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 22:41:51 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: jim owens <jowens@hp.com>
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3: document conditions when reliable operation is possible)
+Date: Wed, 2 Sep 2009 21:41:46 -0500
+User-Agent: KMail/1.11.2 (Linux/2.6.28-14-generic; KDE/4.2.2; x86_64; ; )
+Cc: Ric Wheeler <rwheeler@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+       david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <20090826001645.GN4300@elf.ucw.cz> <200909021800.51096.rob@landley.net> <4A9F0F7A.1010805@hp.com>
+In-Reply-To: <4A9F0F7A.1010805@hp.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090903.112423.226782505.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200909022141.48827.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 11:24:23AM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
-> Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > > > > > - Somebody also gave an example where there is a memory hogging process and
-> > > > > > >  possibly pushes out some processes to swap. It does not sound fair to
-> > > > > > >  charge those proccess for that swap writeout. These processes never
-> > > > > > >  requested swap IO.
-> > > > > 
-> > > > > I think that swap writeouts should be charged to the memory hogging
-> > > > > process, because the process consumes more resources and it should get
-> > > > > a penalty.
-> > > > > 
-> > > > 
-> > > > A process requesting memory gets IO penalty? IMHO, swapping is a kernel 
-> > > > mechanism and kernel's way of providing extended RAM. If we want to solve
-> > > > the issue of memory hogging by a process then right way to solve is to use
-> > > > memory controller and not by charging the process for IO activity.
-> > > > Instead, proabably a more suitable way is to charge swap activity to root
-> > > > group (where by default all the kernel related activity goes).   
-> > > 
-> > > No. In the current blkio-cgroup, a process which uses a large amount
-> > > of memory gets penalty, not a memory requester.
-> > > 
-> > 
-> > At ioband level you just get to see bio and page. How do you decide wheter
-> > this bio is being issued by a process which is a memory hog?
-> > 
-> > In fact requester of memory could be anybody. It could be memory hog or a
-> > different process. So are you saying that you got a mechanism where you 
-> > can detect that a process is memory hog and charge swap activity to it.
-> > IOW, if there are two processes A and B and assume A is the memory hog and
-> > then B requests for memory which triggers lot of swap IO, then you can
-> > charge all that IO to memory hog A?
-> 
-> When an annoymou page is allocated, blkio-cgroup sets an ID to the
-> page. And then when the page is going to swap out, dm-ioband can know
-> who the owner of the page is by retrieving ID from the page.
-> 
-> In the above case, since the pages of the process A are swapped-out, 
-> dm-ioband charges swap IO to the process A.
-> 
+On Wednesday 02 September 2009 19:36:10 jim owens wrote:
+> Rob Landley wrote:
+> > On Wednesday 02 September 2009 15:42:19 Ric Wheeler wrote:
+> >> Totally pointless to reply to you further.
+> >
+> > For the record, I've been able to follow Pavel's arguments, and I've been
+> > able to follow Ted's arguments.  But as far as I can tell, you're arguing
+> > about a different topic than the rest of us.
+>
+> I had no trouble following what Ric was arguing about.
+>
+> Ric never said "use only the best devices and you won't have problems".
+>
+> Ric was arguing the exact opposite - ALL devices are crap if you define
+> crap as "can loose data". 
 
-But this does not mean that in all cases memory hog is being charged for
-swap IO, as you have said. So if a process A has done some anonymous page
-allocations and later a memory hog B comes in and forces swap out of A, 
-you will charge A for swap activity which does not seem fair as B is
-memory hog here?
+And if you include meteor strike and flooding in your operating criteria you 
+can come up with quite a straw man argument.  It still doesn't mean "X is 
+highly likely to cause data loss" can never come as news to people.
 
-Thanks
-Vivek
+> What he is saying is you need to UNDERSTAND
+> your devices and their behavior and you must act accordingly.
+>
+> PAVEL DID NOT ACT ACCORDING TO HIS DEVICE LIMITATIONS.
 
-> > Can you please point me to the relevant code in dm-ioband?
-> > 
-> > IMHO, to keep things simple, all swapping activity should be charged to
-> > root group and be considered as kernel activity and user space not be
-> > charged for that.
-> 
-> Thanks,
-> Ryo Tsuruta
+Where was this limitation documented?  (Before he documented it, I mean?)
+
+> We understand he was clueless, but user error is still user error!
+
+I think he understands he was clueless too, that's why he investigated the 
+failure and wrote it up for posterity.
+
+> And Ric said do not stigmatize whole classes of A) devices, B) raid,
+> and C) filesystems with "Pavel says...".
+
+I don't care what "Pavel says", so you can leave the ad hominem at the door, 
+thanks.
+
+The kernel presents abstractions, such as block device nodes.  Sometimes 
+implementation details bubble through those abstractions.  Presumably, we 
+agree on that so far.
+
+I was once asked to write what became Documentation/rbtree.txt, which got 
+merged.  I've also read maybe half of Documentation/RCU.  Neither technique is 
+specific to Linux, but this doesn't seem to have been an objection at the time.
+
+The technique, "journaling", is widely perceived as eliminating the need for 
+fsck (and thus the potential for filesystem corruption) in the case of unclean 
+shutdowns.  But there are easily reproducible cases where the technique, 
+"journaling", does not do this.  Thus journaling, as a concept, has 
+limitations which are _not_ widely understood by the majority of people who 
+purchase and use USB flash keys.
+
+The kernel doesn't currently have any documentation on journaling theory where 
+mention of journaling's limitations could go.  It does have a section on its 
+internal Journaling API in Documentation/DocBook/filesystems.tmpl which links 
+to two papers (both about ext3, even though reiserfs was merged first and IBM's 
+JFS was implemented before either) from 1998 and 2000 respectively.  The 2000 
+paper brushes against disk granularity answering a question starting at 72m, 
+21s, and brushes against software raid and write ordering starting at the 72m 
+32s mark.  But it never directly addresses either issue...
+
+Sigh, I'm well into tl;dr territory here, aren't I?
+
+Rob
+-- 
+Latency is more important than throughput. It's that simple. - Linus Torvalds
