@@ -1,50 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZICQHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZICQNw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZICQHT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 12:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZICQHS
+	id S1755955AbZICQNw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 12:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZICQNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 12:07:18 -0400
-Received: from kroah.org ([198.145.64.141]:46041 "EHLO coco.kroah.org"
+	Thu, 3 Sep 2009 12:13:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:44255 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752568AbZICQHR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 12:07:17 -0400
-Date: Thu, 3 Sep 2009 09:05:36 -0700
-From: Greg KH <greg@kroah.com>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-usb@vger.kernel.org
-Subject: Re: [2.6.31-rc8] Problem with detect USB devices
-Message-ID: <20090903160536.GA24050@kroah.com>
-References: <8db1092f0909020629v5aab79d8lbfcc8c214622787c@mail.gmail.com>
- <200909021542.11767.oliver@neukum.org>
- <8db1092f0909020715g3e6f9815w96efc801cc18e3bc@mail.gmail.com>
- <200909030907.02321.oliver@neukum.org>
+	id S1752626AbZICQNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 12:13:50 -0400
+Date: Thu, 3 Sep 2009 18:13:33 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 4/4] perf tools: Complete support for dynamic strings
+Message-ID: <20090903161333.GA30908@elte.hu>
+References: <1251682323-10395-1-git-send-email-fweisbec@gmail.com> <1251693921-6579-4-git-send-email-fweisbec@gmail.com> <20090831081133.GA15619@elte.hu> <20090831165924.GA6048@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200909030907.02321.oliver@neukum.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090831165924.GA6048@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 09:07:01AM +0200, Oliver Neukum wrote:
-> Am Mittwoch, 2. September 2009 16:15:28 schrieb Maciej Rutecki:
-> > KERNEL[1251900287.925994] remove
-> > /devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0/host4 (scsi)
-> > KERNEL[1251900287.926058] remove
-> > /devices/pci0000:00/0000:00:1d.7/usb1/1-1/1-1:1.0 (usb)
+
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Mon, Aug 31, 2009 at 10:11:33AM +0200, Ingo Molnar wrote:
+> > 
+> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+> > 
+> > > Complete support for __str_loc type strings of ftrace events which
+> > > have dynamic offsets values set for each of them inside their sammples.
+> > > 
+> > > Before:
+> > >         geany-5759  [000]     0.000000: lock_release: name
+> > >         geany-5759  [000]     0.000000: lock_release: name
+> > >         geany-5759  [000]     0.000000: lock_release: name
+> > >   kondemand/0-362   [000]     0.000000: lock_release: name
+> > >       pdflush-421   [000]     0.000000: lock_release: name
+> > > 
+> > > After:
+> > >         geany-5759  [000]     0.000000: lock_release: &u->lock
+> > >         geany-5759  [000]     0.000000: lock_release: key
+> > >         geany-5759  [000]     0.000000: lock_release: &group->notification_mutex
+> > >   kondemand/0-362   [000]     0.000000: lock_release: &rq->lock
+> > >       pdflush-421   [000]     0.000000: lock_release: &rq->lock
+> > 
+> > I've applied all five patches, thanks Frederic!
+> > 
+> > Also, i think this makes perf trace quite functional already so i 
+> > merged that topic (and these commits) into tracing/core, for v2.6.32 
+> > merging.
 > 
-> You are definitely seeing the correct kernel events.
-> So it must be an indirect problem.
 > 
-> Greg, any changes in sysfs between rc7 and rc8?
+> 
+> Ok.
+> 
+> 
+>  
+> > One thing that i noticed which is still quite quirky are the 
+> > parameters to perf record. (needing -R and the :r postfix to events) 
+> > Could something more intuitive be done here?
+> 
+> 
+> I hope. It's not that easy, at least for me, to find something intuitive
+> there.
+> 
+> I've thought about
+> 
+>   -e *sys:event  (because the * suggests a deref that takes the content)
+>                  But that's a bit convoluted. And moreover we may want
+>                  to support basic regex later for event selection.
+> 
+> If someone has an idea, please tell me.
+> 
+> Another thing. We could, by default display a small comment while
+> selecting an event without its content:
+> 
+> "Opening counter sys:event. Type -R if you want raw sampling."
+> 
+> The user could shut that up with a -q option.
 
-No, not that I sent in.
+The confusion comes from the multi-purpose nature of 'perf record'. 
+It is not clear from that workflow whether the resulting perf.data 
+will be for trace reporting or for profiling/call-graph analysis.
 
-thanks,
+I think we could solve some of this confusion by always gathering 
+the most information we can - and allow the user to trim down the 
+data if he wants to.
 
-greg k-h
+I.e. PERF_SAMPLE_RAW should be implicit if tracepoints are 
+specified.
+
+An additional measure would be to simplify the tracing workflow: a 
+simple 'perf trace -e sched:switch /bin/ls' should really do 
+implicit recording and should report the trace after that.
+
+	Ingo
