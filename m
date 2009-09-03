@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932325AbZICVJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932330AbZICVMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932325AbZICVJs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbZICVJr
+	id S932330AbZICVMF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbZICVMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:09:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39101 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932301AbZICVJq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:09:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
-Date: Thu, 3 Sep 2009 23:10:43 +0200
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
-Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "linux-acpi" <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
-References: <1251789947.3483.215.camel@rzhang-dt> <200909030216.04896.rjw@sisk.pl> <20090903084353.GB3793@elf.ucw.cz>
-In-Reply-To: <20090903084353.GB3793@elf.ucw.cz>
+	Thu, 3 Sep 2009 17:12:05 -0400
+Received: from mx1-old.redhat.com ([66.187.233.31]:60909 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S932242AbZICVME (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 17:12:04 -0400
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909032310.43639.rjw@sisk.pl>
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       mathieu.desnoyers@polymtl.ca, rth@redhat.com
+Subject: Re: [PATCH 0/4] RFC: jump label - (tracepoint optimizations)
+In-Reply-To: Ingo Molnar's message of  Thursday, 3 September 2009 23:01:39 +0200 <20090903210139.GA25581@elte.hu>
+References: <cover.1252007851.git.jbaron@redhat.com>
+	<20090903210139.GA25581@elte.hu>
+X-Shopping-List: (1) Translucent miscreants
+   (2) Arab-Israeli Antiperspirant compass cancer
+   (3) Satirical obsession bracelets
+   (4) Inorganic finger baskets
+Message-Id: <20090903211142.8490C47C94@magilla.sf.frob.com>
+Date: Thu,  3 Sep 2009 14:11:42 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 September 2009, Pavel Machek wrote:
-> On Thu 2009-09-03 02:16:04, Rafael J. Wysocki wrote:
-> > On Wednesday 02 September 2009, Pavel Machek wrote:
-> > > On Wed 2009-09-02 23:46:11, Rafael J. Wysocki wrote:
-> > > > On Wednesday 02 September 2009, Pavel Machek wrote:
-> > > > > On Wed 2009-09-02 23:12:58, Rafael J. Wysocki wrote:
-> > > > > > On Tuesday 01 September 2009, Pavel Machek wrote:
-> > > > > > > 
-> > > > > > > > > > IMO, 0 and -1 are not errors. they just suggest that the Ambient Light
-> > > > > > > > > > illuminance is beyond the device support range, while the device is
-> > > > > > > > > > still working normally.
-> > > > > > > > > > what about exporting these values (0 and -1) to user space directly?
-> > > > > > > > > 
-> > > > > > > > > Returning 0 for "below" range and 99999999 for "above" range would be
-> > > > > > > > > nice, yes. 
-> > > > > > > > 
-> > > > > > > > Why not 0 and "all ones" or 0 and -1.
-> > > > > > > > 
-> > > > > > > > Is there anything wrong with -1 in particular?
-> > > > > > > 
-> > > > > > > Normal people expect -1 to be less than 123, and output is in ascii. If
-> > > > > > > you make it ((unsigned) ~0) I guess that becomes acceptable.
-> > > > > > 
-> > > > > > Well, "-1" is a perfectly valid alphanumerical representation of an int.
-> > > > > > I don't really see the problem with the "-", unless we're talking about some
-> > > > > > broken user space, that is.
-> > > > > 
-> > > > > No. But if you see illumination value of -1 lumen, do you really
-> > > > > expect a *lot* of light?
-> > > > 
-> > > > Not really.  I'd rather intrepret it as "the number is not to be trusted",
-> > > > which is what it means.
-> > > > 
-> > > > The problem with "all ones" is that it depends on the size of the underlying
-> > > > data type, which is not nice.  Also, if you want that to be a "big number",
-> > > > there's no clear rule to tell what the number should actually be.
-> > > > 
-> > > > Anyway, this really is a matter of definition.  If we document the attribute
-> > > > to read as "-1" in specific circumstances, the user space will have to take
-> > > > that into account.
-> > > 
-> > > Well, I'd prefer to specify -1 as "underflow" and 1000000000 as
-> > > "overflow". Any numbers should work, but ... lets make the interface
-> > > logical if we can.
-> > 
-> > The interface is already defined, isn't it?  And we're now
-> > considering whether
-> 
-> No, I don't think it is "already defined".
+> This looks really interesting and desired. Once GCC adds this (or an 
+> equivalent) feature, i'd love to have your optimization in the 
+> kernel.
 
-ACPI Specification 4.0, Section 9.2.2, p. 335, defines the interface quite
-clearly.  It actually is defined as "Ones (-1)", but as I said previously, the
-"all ones" version is not really convenient for sysfs.
+We expect it will be in gcc 4.5 and backported to Fedora's 4.4 pretty soon.
+But it's not finalized yet, so we are only doing proof-of-concept so far.
 
-I don't think the attribute should return anything other than the values
-defined by the spec, because anyone searching for documentation will first look
-into the spec.
+> Basically everything that is optional and touches some very hot 
+> codepath would be eligible - not just tracepoints.
 
-As I said before, I don't think we have any reason _whatsoever_ to translate
-the spec-defined values to anything else.
+Sure.  Any place you have a load+conditional-jump where that is too costly,
+we can make it a nop that costs a only cycle or so.  We probably want to
+think a little harder about the nicest macro setup we can do to make
+employing this trivial in the source.
+
 
 Thanks,
-Rafael
+Roland
