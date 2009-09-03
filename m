@@ -1,58 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756192AbZICThW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756198AbZICThK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756192AbZICThW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZICThT
+	id S1756198AbZICThK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:37:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756164AbZICThJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:37:19 -0400
-Received: from mail-iw0-f175.google.com ([209.85.223.175]:42650 "EHLO
-	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756201AbZICThQ convert rfc822-to-8bit (ORCPT
+	Thu, 3 Sep 2009 15:37:09 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57564 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756102AbZICThI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:37:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=FFO8M9VG0cQ6i3+yQ2N8JJQZ+ZgpnaLM8uMJ6JYL+bIV69spV/qG/gGev3Pbe8lvAA
-         hh9IOJnFTMifgzjzZp65biUksMdeSPgj956Zeo5jgoY1SbKmMcz6KO0veXTqHrMVrx9N
-         ShR5hMwyhwT3t3zmrV8Rz/h0UUIwRLJUHA99A=
+	Thu, 3 Sep 2009 15:37:08 -0400
+Date: Thu, 3 Sep 2009 21:37:09 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Frans Pop <elendil@planet.nl>
+Cc: Christian =?iso-8859-15?Q?Kr=E4mer?= <christian@kraemer-eu.de>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
+Message-ID: <20090903193709.GA11097@pengutronix.de>
+References: <200909021856.29565.christian@kraemer-eu.de> <200909021953.02190.elendil@planet.nl> <200909030042.45081.christian@kraemer-eu.de> <200909031927.19590.elendil@planet.nl>
 MIME-Version: 1.0
-In-Reply-To: <1251967786.3336.19.camel@johannes.local>
-References: <20090903041429.GA29875@kroah.com> <1251967786.3336.19.camel@johannes.local>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 3 Sep 2009 12:35:11 -0700
-Message-ID: <43e72e890909031235t17543020leb3d19b17d955d01@mail.gmail.com>
-Subject: Re: Staging tree status for the .32 kernel merge
-To: Johannes Berg <johannes@sipsolutions.net>,
-       Christian Lamparter <chunkeey@web.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Stephen Chen <Stephen.Chen@atheros.com>
-Cc: Greg KH <greg@kroah.com>, devel@driverdev.osuosl.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="sm4nu43k4a2Rpi4c"
+Content-Disposition: inline
+In-Reply-To: <200909031927.19590.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: wsa@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>       - otus.  This is sitting here until a "real" wireless driver
->>         will be merged through the wireless tree.  Hopefully that
->>         happens soon.
->
-> ar9170 has been in for a while now, it's just not quite at feature
-> parity yet -- however that also means otus will get no work whatsoever
-> from any of the wireless folks. Draw your own conclusions. Personally, I
-> would drop it and let the users figure out whether they can live with
-> ar9170 or need to support work on it.
 
-Greg, as Johannes noted otus has lacked focus as Johannes whipped out
-a port for it in a few weeks and then Christian gave it some final
-love taps for inclusion, we just still use otus as just a source of
-documentation for any yet missing feature, but for that I guess I can
-just refer people to my git tree. Chris would know better where we're
-at as far as feature-parity is concerned though so I'll leave it up to
-him to judge whether or not having otus gets some users anything
-ar9170 doesn't yet have.
+--sm4nu43k4a2Rpi4c
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-  Luis
+> Original message with lspci and dmesg output for .24 is at:
+> http://lkml.org/lkml/2009/9/2/199
+
+For a start:
+
+That line
+
+pcmcia: Detected deprecated PCMCIA ioctl usage from process: hwsetup.
+
+has not much to do with pcmcia_cs. It is just that hwsetup uses a deprecated
+interface (new one is sysfs). Is this message still showing up with the new=
+er
+gentoo-version? I seem to recall that hwsetup got fixed meanwhile, but I ma=
+y be
+wrong here.
+
+What about these lines?
+
+PCI: Probing PCI hardware
+sysfs: duplicate filename 'bridge' can not be created
+WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+Pid: 1, comm: swapper Not tainted 2.6.24-gentoo-r7 #1
+ [<c0187ceb>] sysfs_add_one+0x54/0xb8
+ [<c01888da>] sysfs_create_link+0xaf/0xfd
+ [<c02c8020>] pci_bus_add_devices+0xba/0xff
+ [<c037ac1d>] pcibios_scan_root+0x25/0x80
+ [<c011ab3d>] printk+0x1b/0x1f
+ [<c052822f>] pci_legacy_init+0x53/0xe1
+ [<c0505769>] kernel_init+0x154/0x2b6
+ [<c0102546>] ret_from_fork+0x6/0x20
+ [<c0505615>] kernel_init+0x0/0x2b6
+ [<c0505615>] kernel_init+0x0/0x2b6
+ [<c0103877>] kernel_thread_helper+0x7/0x10
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+pci 0000:00:02.0: Error creating sysfs bridge symlink, continuing...
+sysfs: duplicate filename 'bridge' can not be created
+WARNING: at fs/sysfs/dir.c:424 sysfs_add_one()
+Pid: 1, comm: swapper Not tainted 2.6.24-gentoo-r7 #1
+ [<c0187ceb>] sysfs_add_one+0x54/0xb8
+ [<c01888da>] sysfs_create_link+0xaf/0xfd
+ [<c02c8020>] pci_bus_add_devices+0xba/0xff
+ [<c052822f>] pci_legacy_init+0x53/0xe1
+ [<c0505769>] kernel_init+0x154/0x2b6
+ [<c0102546>] ret_from_fork+0x6/0x20
+ [<c0505615>] kernel_init+0x0/0x2b6
+ [<c0505615>] kernel_init+0x0/0x2b6
+ [<c0103877>] kernel_thread_helper+0x7/0x10
+ =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+pci 0000:00:02.1: Error creating sysfs bridge symlink, continuing...
+
+Do they still show up with the latest kernel? Is this a known problem with =
+this
+laptop?
+
+So much for a glimpse, maybe I'll have a bit more time tomorrow...
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--sm4nu43k4a2Rpi4c
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqgGuUACgkQD27XaX1/VRvRwACcCz4RITh3XWu3HbW1+Z/S+7TL
+HoIAoMaMAZaDb9QoqqHxkznMpMTlgJzw
+=mXC+
+-----END PGP SIGNATURE-----
+
+--sm4nu43k4a2Rpi4c--
