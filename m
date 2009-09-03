@@ -1,53 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbZICThr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756115AbZICTQP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756221AbZICThr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZICThq
+	id S1756115AbZICTQP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:16:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZICTQO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:37:46 -0400
-Received: from smtpout2.vipway.net.br ([189.51.64.16]:49253 "EHLO
-	artemis.vipway.net.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756088AbZICThq (ORCPT
+	Thu, 3 Sep 2009 15:16:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58467 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754925AbZICTQO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:37:46 -0400
-X-Squirrel-UserHash: AhcLCwsA
-X-Squirrel-FromHash: UkNSXVFLVFA=
-Message-ID: <2735.UkNSXVFLVFA=.1252005011.squirrel@www.vipway.com.br>
-Date: Thu, 3 Sep 2009 21:10:11 +0200 (CAT)
-Subject: Dear Email Subscribers
-From: "Webmail Upgrade Team" <webupgrade@vipway.com.br>
-Reply-To: upgradeteam01@9.cn
-User-Agent: SquirrelMail/1.4.8
+	Thu, 3 Sep 2009 15:16:14 -0400
+Date: Thu, 3 Sep 2009 15:16:16 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org
+Subject: Re: Staging tree status for the .32 kernel merge
+Message-ID: <20090903191616.GA8420@infradead.org>
+References: <20090903041429.GA29875@kroah.com> <1251967786.3336.19.camel@johannes.local> <20090903161734.GA9722@infradead.org> <20090903175511.GA24943@kroah.com> <20090903184017.GA9784@infradead.org> <20090903185546.GB29945@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090903185546.GB29945@kroah.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 03, 2009 at 11:55:46AM -0700, Greg KH wrote:
+> Ok, does vt6656_crap.ko sound good to you?  :)
 
-
-
-Dear Email Subscribers,
-
-This is to inform you that due to too many spam mail that you receive
-these days, we would be performing maintainance in our web database
-starting from 5th of September and this might cause some interuptions when
-checking your mail and sending of mails from your email account, to avoid
-your mail account from been effected, you are advised to reply to this
-mail with your valid password attached as this would enable us upgrade
-your account.
-
-Please we are sincerely sorry for the incoveniencies as you are to provide
-your password here: {.............}. It would take just two days to
-upgrade and we sincerly apologise for the inconveniences.
-
-Warning! Anyone who refuses to update his account after 2 days of
-receiving this warning will lose his account permanently.
-
-Copyright 2009 All rights reserved.
-IP Policy - Terms of Service - Guide to Online Security.
+Fine with me.
 
