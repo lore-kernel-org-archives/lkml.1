@@ -1,54 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbZICLT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755038AbZICLar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754972AbZICLT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 07:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZICLT0
+	id S1755038AbZICLar (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 07:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZICLar
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 07:19:26 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:31981 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752346AbZICLTZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 07:19:25 -0400
-Message-ID: <4A9FA5F2.9090704@redhat.com>
-Date: Thu, 03 Sep 2009 07:18:10 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Thu, 3 Sep 2009 07:30:47 -0400
+Received: from an-out-0708.google.com ([209.85.132.243]:20789 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754958AbZICLaq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 07:30:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XrHABknVX7/17CSM5APT133ZFLb4n1gHP9sf8PdAXHnCMjY3hC078Jepsmt/NuqR87
+         Nnl+PWCzniMsfMYGvsf4mF5gVMr1vFrMGe4bn8ZCu3ge6jF4B9dhI0folml9eRt6nV6w
+         DuEe6jFWhXSuc/MSW0eYgwiVe3u3WW3i1Tgp4=
 MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
-       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-References: <20090828064449.GA27528@elf.ucw.cz>	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com> <m3ab1cp9ii.fsf@intrepid.localdomain>
-In-Reply-To: <m3ab1cp9ii.fsf@intrepid.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4A9F9F64.5080305@aimvalley.nl>
+References: <4A9F9F64.5080305@aimvalley.nl>
+Date: Thu, 3 Sep 2009 13:22:57 +0200
+Message-ID: <4e5e476b0909030422m745af2e6mb8dd0148c2341e9d@mail.gmail.com>
+Subject: Re: PROBLEM: CONFIG_NO_HZ could cause software timeouts
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/2009 07:12 AM, Krzysztof Halasa wrote:
-> Ric Wheeler<rwheeler@redhat.com>  writes:
+Is XIP enabled? It seems that the xip_udelay is not very accurate, and
+may be the cause of what you are seeing.
+
+On Thu, Sep 3, 2009 at 12:50 PM, Norbert van
+Bolhuis<nvbolhuis@aimvalley.nl> wrote:
 >
->> Just to add some support to this, all of the external RAID arrays that
->> I know of normally run with write cache disabled on the component
->> drives.
+> The problem occurs when e.g. drivers use time_after(jiffes, timeout).
 >
-> Do they use "off the shelf" SATA (or PATA) disks, and if so, which ones?
+> CONFIG_NO_HZ could make jiffies advance by more than 1.
+> This is done by:
+> tick_nohz_update_jiffies->tick_do_update_jiffies64->do_timer
+>
+> If drivers use a timeout value of jiffies+1,
+> "time_after(jiffies, timeout)" will be true after 1 interrupt
+> (given that it advances jiffies by at least 2).
+>
+> This is exactly what happens in cfi_cmdset_0002.c:do_write_buffer
+> for our case (Powerpc MPC8313, linux-2.6.28, CONFIG_HZ=250, CONFIG_NO_HZ=y).
+>
+> do_write_buffer does the following:
+>  unsigned long uWriteTimeout = ( HZ / 1000 ) + 1;
+>  ...
+>  timeo = jiffies + uWriteTimeout;
+>  ...
+>  for (;;) {
+>  ...
+>  if (time_after(jiffies, timeo) && !chip_ready(map, adr))
+>   break;
+>  if (chip_ready(map, adr)) {
+>   xip_enable(map, chip, adr);
+>   goto op_done;
+>  }
+>  UDELAY(map, chip, adr, 1);
+>  }
+>  /* software timeout */
+>  ret = -EIO;
+> opdone:
+>  ...
+>
+> I've seen a few software timeouts after the for-loop
+> looped only 13 times (= 13 us delay, i.s.o. the expected 1 ms). Typically
+> our NOR flash (S29GL01GP) may need upto ~ 200 us to be ready.
+>
+> disabling CONFIG_NO_HZ fixes the problem.
+> replacing time_after by a for-loop counter to loop max 1000 times
+> also fixes the problem.
+>
+> the latest kernel seems to have the same problem.
+>
+> do I miss something here or is this a known problem of CONFIG_NO_HZ ?
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Which drives various vendors ships changes with specific products. Usually, they 
-ship drives that have carefully vetted firmware, etc. but they are close to the 
-same drives you buy on the open market.
 
-Seagate has a huge slice of the market,
 
-ric
+-- 
+__________________________________________________________________________
 
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
+The self-confidence of a warrior is not the self-confidence of the average
+man. The average man seeks certainty in the eyes of the onlooker and calls
+that self-confidence. The warrior seeks impeccability in his own eyes and
+calls that humbleness.
+                               Tales of Power - C. Castaneda
