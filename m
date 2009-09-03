@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbZICIfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZICIgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753845AbZICIfy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 04:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZICIfx
+	id S1753904AbZICIgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 04:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZICIgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 04:35:53 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:63275 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752248AbZICIfw convert rfc822-to-8bit (ORCPT
+	Thu, 3 Sep 2009 04:36:24 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:58216 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753586AbZICIgX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 04:35:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Fe4ArY5q0He+CX0OZXU5EywbvhRE/7tZveJqu/Dn69x2E0HmNqiWQb4EqMj1qyfCne
-         sHcyOCKLNSvVeZdBiTtnGvxL8hfvU4jWP622nkmOMsjLNzjsSaRVFGY84Z1q9iY3MTy3
-         2tdbiPrF5ULrkjRBTpSrVSzkkLz6BZdRlbLuo=
+	Thu, 3 Sep 2009 04:36:23 -0400
+Date: Thu, 3 Sep 2009 09:36:00 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Imre Deak <imre.deak@nokia.com>
+Cc: ext Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       Steven Walter <stevenrwalter@gmail.com>,
+       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is
+	get_user_pages() enough to prevent pages from being swapped out ?")
+Message-ID: <20090903083600.GA7235@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com> <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com> <20090901132824.GN19719@n2100.arm.linux.org.uk> <200909011543.48439.laurent.pinchart@ideasonboard.com> <20090902151044.GG30183@localhost>
 MIME-Version: 1.0
-In-Reply-To: <1251945918.3483.267.camel@rzhang-dt>
-References: <1251789947.3483.215.camel@rzhang-dt>
-	 <9b2b86520909021222k6cc49456vc3232e488eef9e37@mail.gmail.com>
-	 <1251945918.3483.267.camel@rzhang-dt>
-Date: Thu, 3 Sep 2009 09:35:52 +0100
-Message-ID: <9b2b86520909030135v73319621g39225ef5191a28f0@mail.gmail.com>
-Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
-From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-To: Zhang Rui <rui.zhang@intel.com>
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Pavel Machek <pavel@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090902151044.GG30183@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/3/09, Zhang Rui <rui.zhang@intel.com> wrote:
-> On Thu, 2009-09-03 at 03:22 +0800, Alan Jenkins wrote:
->> On 9/1/09, Zhang Rui <rui.zhang@intel.com> wrote:
->> >
->> > Introduce ALS sysfs class.
->> >
->> > ALS sysfs class provides a standard sysfs interface for
->> > Ambient Light Sensor devices.
->> >
->> > please read Documentation/ABI/testing/sysfs-class-als for
->> > detailed sysfs designs.
->> >
->> > ﻿CC: Pavel Machek <pavel@ucw.cz>
->> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
->> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
->> > ---
->>
->> > +++ linux-2.6/drivers/als/Kconfig
->> > @@ -0,0 +1,10 @@
->> > +#
->> > +# Ambient Light Sensor sysfs device configuration
->> > +#
->> > +
->> > +menuconfig ALS
->> > +	tristate "Ambient Light Sensor sysfs device"
->> > +	help
->> > +	  This framework provides a generic sysfs interface for
->> > +	  Ambient Light Sensor devices.
->> > +	  If you want this support, you should say Y or M here.
->>
->> Gratuitous nitpick:
->> Can this option be made non-visible (or hidden behind CONFIG_EMBEDDED)?
->>
->> Maybe you copied the pattern of the thermal sysfs interface - but the
->> ACPI thermal driver is useful to keep your computer cool even without
->> the sysfs interface.  ALS drivers are useless without the sysfs
->> interface, no?
->>
-> ACPI ALS device driver is the first user of this sysfs class.
-> I think there will be more native ALS device drivers in the future,
-> which locate at drivers/als/ and depends on CONFIG_ALS.
->
-> thanks,
-> rui
+On Wed, Sep 02, 2009 at 06:10:44PM +0300, Imre Deak wrote:
+> To my understanding buffers returned by dma_alloc_*, kmalloc, vmalloc
+> are ok:
 
-Oh!  So it may become a menu like e.g. hwmon.
+For dma_map_*, the only pages/addresses which are valid to pass are
+those returned by get_free_pages() or kmalloc.  Everything else is
+not permitted.
 
-Thanks for the explanation
-Alan
+Use of vmalloc'd and dma_alloc_* pages with the dma_map_* APIs is invalid
+use of the DMA API.  See the notes in the DMA-mapping.txt document
+against "dma_map_single".
+
+> For user mappings I think you'd have to do an additional flush for
+> the direct mapping, while the user mapping is flushed in dma_map_*.
+
+I will not accept a patch which adds flushing of anything other than
+the kernel direct mapping in the dma_map_* functions, so please find
+a different approach.
