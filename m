@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932221AbZICSrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932166AbZICSqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932221AbZICSrN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 14:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932203AbZICSrK
+	id S932166AbZICSqt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 14:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbZICSqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 14:47:10 -0400
-Received: from zombie2.ncsc.mil ([144.51.88.133]:44076 "EHLO zombie2.ncsc.mil"
+	Thu, 3 Sep 2009 14:46:47 -0400
+Received: from mummy.ncsc.mil ([144.51.88.129]:59059 "EHLO mummy.ncsc.mil"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932175AbZICSrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 14:47:07 -0400
+	id S1756146AbZICSqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 14:46:44 -0400
+X-Greylist: delayed 427 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 Sep 2009 14:46:41 EDT
 From: "David P. Quigley" <dpquigl@tycho.nsa.gov>
 To: sds@tycho.nsa.gov, jmorris@namei.org, casey@schaufler-ca.com,
        gregkh@suse.de, ebiederm@xmission.com
 Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
        "David P. Quigley" <dpquigl@tycho.nsa.gov>
-Subject: [PATCH 2/3] LSM/SELinux: inode_{get,set,notify}secctx hooks to access LSM security context information.
-Date: Thu,  3 Sep 2009 14:25:57 -0400
-Message-Id: <1252002358-6612-3-git-send-email-dpquigl@tycho.nsa.gov>
+Subject: [PATCH 3/3] sysfs: Add labeling support for sysfs
+Date: Thu,  3 Sep 2009 14:25:58 -0400
+Message-Id: <1252002358-6612-4-git-send-email-dpquigl@tycho.nsa.gov>
 X-Mailer: git-send-email 1.5.6.6
 In-Reply-To: <1252002358-6612-1-git-send-email-dpquigl@tycho.nsa.gov>
 References: <1252002358-6612-1-git-send-email-dpquigl@tycho.nsa.gov>
@@ -24,280 +25,325 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces three new hooks. The inode_getsecctx hook is used to get
-all relevant information from an LSM about an inode. The inode_setsecctx is
-used to set both the in-core and on-disk state for the inode based on a context
-derived from inode_getsecctx.The final hook inode_notifysecctx will notify the
-LSM of a change for the in-core state of the inode in question. These hooks are
-for use in the labeled NFS code and addresses concerns of how to set security
-on an inode in a multi-xattr LSM. For historical reasons Stephen Smalley's
-explanation of the reason for these hooks is pasted below.
+This patch adds a setxattr handler to the file, directory, and symlink
+inode_operations structures for sysfs. The patch uses hooks introduced in the
+previous patch to handle the getting and setting of security information for
+the sysfs inodes. As was suggested by Eric Biederman the struct iattr in the
+sysfs_dirent structure has been replaced by a structure which contains the
+iattr, secdata and secdata length to allow the changes to persist in the event
+that the inode representing the sysfs_dirent is evicted. Because sysfs only
+stores this information when a change is made all the optional data is moved
+into one dynamically allocated field.
 
-Quote Stephen Smalley
-
-inode_setsecctx:  Change the security context of an inode.  Updates the
-in core security context managed by the security module and invokes the
-fs code as needed (via __vfs_setxattr_noperm) to update any backing
-xattrs that represent the context.  Example usage:  NFS server invokes
-this hook to change the security context in its incore inode and on the
-backing file system to a value provided by the client on a SETATTR
-operation.
-
-inode_notifysecctx:  Notify the security module of what the security
-context of an inode should be.  Initializes the incore security context
-managed by the security module for this inode.  Example usage:  NFS
-client invokes this hook to initialize the security context in its
-incore inode to the value provided by the server for the file when the
-server returned the file's attributes to the client.
+This patch addresses an issue where SELinux was denying virtd access to the PCI
+configuration entries in sysfs. The lack of setxattr handlers for sysfs
+required that a single label be assigned to all entries in sysfs. Granting virtd
+access to every entry in sysfs is not an acceptable solution so fine grained
+labeling of sysfs is required such that individual entries can be labeled
+appropriately.
 
 Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 ---
- include/linux/security.h   |   55 ++++++++++++++++++++++++++++++++++++++++++++
- security/capability.c      |   17 +++++++++++++
- security/security.c        |   18 ++++++++++++++
- security/selinux/hooks.c   |   29 +++++++++++++++++++++++
- security/smack/smack_lsm.c |   24 +++++++++++++++++++
- 5 files changed, 143 insertions(+), 0 deletions(-)
+ fs/sysfs/dir.c           |    1 +
+ fs/sysfs/inode.c         |  135 +++++++++++++++++++++++++++++++++------------
+ fs/sysfs/symlink.c       |    2 +
+ fs/sysfs/sysfs.h         |   12 ++++-
+ security/selinux/hooks.c |    4 ++
+ 5 files changed, 117 insertions(+), 37 deletions(-)
 
-diff --git a/include/linux/security.h b/include/linux/security.h
-index 1f16eea..a88fc49 100644
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -1351,6 +1351,41 @@ static inline void security_free_mnt_opts(struct security_mnt_opts *opts)
-  *	audit_rule_init.
-  *	@rule contains the allocated rule
-  *
-+ * @inode_notifysecctx:
-+ *	Notify the security module of what the security context of an inode
-+ *	should be.  Initializes the incore security context managed by the
-+ *	security module for this inode.  Example usage:  NFS client invokes
-+ *	this hook to initialize the security context in its incore inode to the
-+ *	value provided by the server for the file when the server returned the
-+ *	file's attributes to the client.
-+ *
-+ * 	Must be called with inode->i_mutex locked.
-+ *
-+ * 	@inode we wish to set the security context of.
-+ * 	@ctx contains the string which we wish to set in the inode.
-+ * 	@ctxlen contains the length of @ctx.
-+ *
-+ * @inode_setsecctx:
-+ * 	Change the security context of an inode.  Updates the
-+ * 	incore security context managed by the security module and invokes the
-+ * 	fs code as needed (via __vfs_setxattr_noperm) to update any backing
-+ * 	xattrs that represent the context.  Example usage:  NFS server invokes
-+ * 	this hook to change the security context in its incore inode and on the
-+ * 	backing filesystem to a value provided by the client on a SETATTR
-+ * 	operation.
-+ *
-+ * 	Must be called with inode->i_mutex locked.
-+ *
-+ * 	@dentry contains the inode we wish to set the security context of.
-+ * 	@ctx contains the string which we wish to set in the inode.
-+ * 	@ctxlen contains the length of @ctx.
-+ *
-+ * @inode_getsecctx:
-+ * 	Returns a string containing all relavent security context information
-+ *
-+ * 	@inode we wish to set the security context of.
-+ *	@ctx is a pointer in which to place the allocated security context.
-+ *	@ctxlen points to the place to put the length of @ctx.
-  * This is the main security structure.
-  */
- struct security_operations {
-@@ -1556,6 +1591,10 @@ struct security_operations {
- 	int (*secctx_to_secid) (const char *secdata, u32 seclen, u32 *secid);
- 	void (*release_secctx) (char *secdata, u32 seclen);
- 
-+	int (*inode_notifysecctx)(struct inode *inode, void *ctx, u32 ctxlen);
-+	int (*inode_setsecctx)(struct dentry *dentry, void *ctx, u32 ctxlen);
-+	int (*inode_getsecctx)(struct inode *inode, void **ctx, u32 *ctxlen);
-+
- #ifdef CONFIG_SECURITY_NETWORK
- 	int (*unix_stream_connect) (struct socket *sock,
- 				    struct socket *other, struct sock *newsk);
-@@ -1796,6 +1835,9 @@ int security_secid_to_secctx(u32 secid, char **secdata, u32 *seclen);
- int security_secctx_to_secid(const char *secdata, u32 seclen, u32 *secid);
- void security_release_secctx(char *secdata, u32 seclen);
- 
-+int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen);
-+int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen);
-+int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen);
- #else /* CONFIG_SECURITY */
- struct security_mnt_opts {
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 14f2d71..0050fc4 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -760,6 +760,7 @@ static struct dentry * sysfs_lookup(struct inode *dir, struct dentry *dentry,
+ const struct inode_operations sysfs_dir_inode_operations = {
+ 	.lookup		= sysfs_lookup,
+ 	.setattr	= sysfs_setattr,
++	.setxattr	= sysfs_setxattr,
  };
-@@ -2537,6 +2579,19 @@ static inline int security_secctx_to_secid(const char *secdata,
- static inline void security_release_secctx(char *secdata, u32 seclen)
+ 
+ static void remove_dir(struct sysfs_dirent *sd)
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index 555f0ff..9889bf2 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -18,6 +18,8 @@
+ #include <linux/capability.h>
+ #include <linux/errno.h>
+ #include <linux/sched.h>
++#include <linux/xattr.h>
++#include <linux/security.h>
+ #include "sysfs.h"
+ 
+ extern struct super_block * sysfs_sb;
+@@ -35,6 +37,7 @@ static struct backing_dev_info sysfs_backing_dev_info = {
+ 
+ static const struct inode_operations sysfs_inode_operations ={
+ 	.setattr	= sysfs_setattr,
++	.setxattr	= sysfs_setxattr,
+ };
+ 
+ int __init sysfs_inode_init(void)
+@@ -42,18 +45,37 @@ int __init sysfs_inode_init(void)
+ 	return bdi_init(&sysfs_backing_dev_info);
+ }
+ 
++struct sysfs_inode_attrs * sysfs_init_inode_attrs(struct sysfs_dirent * sd)
++{
++	struct sysfs_inode_attrs * attrs;
++	struct iattr * iattrs;
++
++	attrs = kzalloc(sizeof(struct sysfs_inode_attrs), GFP_KERNEL);
++	if(!attrs)
++		return NULL;
++	iattrs = &attrs->ia_iattr;
++
++	/* assign default attributes */
++	iattrs->ia_mode = sd->s_mode;
++	iattrs->ia_uid = 0;
++	iattrs->ia_gid = 0;
++	iattrs->ia_atime = iattrs->ia_mtime = iattrs->ia_ctime = CURRENT_TIME;
++
++	return attrs;
++}
+ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
  {
- }
-+
-+static inline int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-+{
-+	return -EOPNOTSUPP;
-+}
-+static inline int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-+{
-+	return -EOPNOTSUPP;
-+}
- #endif	/* CONFIG_SECURITY */
+ 	struct inode * inode = dentry->d_inode;
+ 	struct sysfs_dirent * sd = dentry->d_fsdata;
+-	struct iattr * sd_iattr;
++	struct sysfs_inode_attrs * sd_attrs;
++	struct iattr * iattrs;
+ 	unsigned int ia_valid = iattr->ia_valid;
+ 	int error;
  
- #ifdef CONFIG_SECURITY_NETWORK
-diff --git a/security/capability.c b/security/capability.c
-index 88f752e..f77684f 100644
---- a/security/capability.c
-+++ b/security/capability.c
-@@ -792,6 +792,20 @@ static void cap_release_secctx(char *secdata, u32 seclen)
+ 	if (!sd)
+ 		return -EINVAL;
+ 
+-	sd_iattr = sd->s_iattr;
++	sd_attrs = sd->s_iattr;
+ 
+ 	error = inode_change_ok(inode, iattr);
+ 	if (error)
+@@ -65,42 +87,78 @@ int sysfs_setattr(struct dentry * dentry, struct iattr * iattr)
+ 	if (error)
+ 		return error;
+ 
+-	if (!sd_iattr) {
++	if (!sd_attrs) {
+ 		/* setting attributes for the first time, allocate now */
+-		sd_iattr = kzalloc(sizeof(struct iattr), GFP_KERNEL);
+-		if (!sd_iattr)
++		sd_attrs = sysfs_init_inode_attrs(sd);
++		if (!sd_attrs)
+ 			return -ENOMEM;
+-		/* assign default attributes */
+-		sd_iattr->ia_mode = sd->s_mode;
+-		sd_iattr->ia_uid = 0;
+-		sd_iattr->ia_gid = 0;
+-		sd_iattr->ia_atime = sd_iattr->ia_mtime = sd_iattr->ia_ctime = CURRENT_TIME;
+-		sd->s_iattr = sd_iattr;
++		sd->s_iattr = sd_attrs;
++	} else {
++		/* attributes were changed atleast once in past */
++		iattrs = &sd_attrs->ia_iattr;
++
++		if (ia_valid & ATTR_UID)
++			iattrs->ia_uid = iattr->ia_uid;
++		if (ia_valid & ATTR_GID)
++			iattrs->ia_gid = iattr->ia_gid;
++		if (ia_valid & ATTR_ATIME)
++			iattrs->ia_atime = timespec_trunc(iattr->ia_atime,
++					inode->i_sb->s_time_gran);
++		if (ia_valid & ATTR_MTIME)
++			iattrs->ia_mtime = timespec_trunc(iattr->ia_mtime,
++					inode->i_sb->s_time_gran);
++		if (ia_valid & ATTR_CTIME)
++			iattrs->ia_ctime = timespec_trunc(iattr->ia_ctime,
++					inode->i_sb->s_time_gran);
++		if (ia_valid & ATTR_MODE) {
++			umode_t mode = iattr->ia_mode;
++
++			if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
++				mode &= ~S_ISGID;
++			iattrs->ia_mode = sd->s_mode = mode;
++		}
+ 	}
++	return error;
++}
+ 
+-	/* attributes were changed atleast once in past */
+-
+-	if (ia_valid & ATTR_UID)
+-		sd_iattr->ia_uid = iattr->ia_uid;
+-	if (ia_valid & ATTR_GID)
+-		sd_iattr->ia_gid = iattr->ia_gid;
+-	if (ia_valid & ATTR_ATIME)
+-		sd_iattr->ia_atime = timespec_trunc(iattr->ia_atime,
+-						inode->i_sb->s_time_gran);
+-	if (ia_valid & ATTR_MTIME)
+-		sd_iattr->ia_mtime = timespec_trunc(iattr->ia_mtime,
+-						inode->i_sb->s_time_gran);
+-	if (ia_valid & ATTR_CTIME)
+-		sd_iattr->ia_ctime = timespec_trunc(iattr->ia_ctime,
+-						inode->i_sb->s_time_gran);
+-	if (ia_valid & ATTR_MODE) {
+-		umode_t mode = iattr->ia_mode;
+-
+-		if (!in_group_p(inode->i_gid) && !capable(CAP_FSETID))
+-			mode &= ~S_ISGID;
+-		sd_iattr->ia_mode = sd->s_mode = mode;
+-	}
++int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
++		size_t size, int flags)
++{
++	struct sysfs_dirent *sd = dentry->d_fsdata;
++	struct sysfs_inode_attrs *iattrs;
++	char *suffix;
++	char *secdata;
++	int error;
++	u32 secdata_len = 0;
++
++	if (!sd)
++		return -EINVAL;
++	if (!sd->s_iattr)
++		sd->s_iattr = sysfs_init_inode_attrs(sd);
++	if (!sd->s_iattr)
++		return -ENOMEM;
++
++	iattrs = sd->s_iattr;
++
++	if (!strncmp(name, XATTR_SECURITY_PREFIX, XATTR_SECURITY_PREFIX_LEN)) {
++		const char *suffix = name + XATTR_SECURITY_PREFIX_LEN;
++		error = security_inode_setsecurity(dentry->d_inode, suffix,
++						value, size, flags);
++		if (error)
++			goto out;
++		error = security_inode_getsecctx(dentry->d_inode,
++						&secdata, &secdata_len);
++		if (error)
++			goto out;
++		if(iattrs->ia_secdata)
++			security_release_secctx(iattrs->ia_secdata,
++						iattrs->ia_secdata_len);
++		iattrs->ia_secdata = secdata;
++		iattrs->ia_secdata_len = secdata_len;
+ 
++	} else
++		return -EINVAL;
++out:
+ 	return error;
+ }
+ 
+@@ -146,6 +204,7 @@ static int sysfs_count_nlink(struct sysfs_dirent *sd)
+ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
  {
+ 	struct bin_attribute *bin_attr;
++	struct sysfs_inode_attrs * iattrs;
+ 
+ 	inode->i_private = sysfs_get(sd);
+ 	inode->i_mapping->a_ops = &sysfs_aops;
+@@ -154,16 +213,20 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+ 	inode->i_ino = sd->s_ino;
+ 	lockdep_set_class(&inode->i_mutex, &sysfs_inode_imutex_key);
+ 
+-	if (sd->s_iattr) {
++	iattrs = sd->s_iattr;
++	if (iattrs) {
+ 		/* sysfs_dirent has non-default attributes
+ 		 * get them for the new inode from persistent copy
+ 		 * in sysfs_dirent
+ 		 */
+-		set_inode_attr(inode, sd->s_iattr);
++		set_inode_attr(inode, &iattrs->ia_iattr);
++		if (iattrs->ia_secdata)
++			security_inode_notifysecctx(inode,
++						iattrs->ia_secdata,
++						iattrs->ia_secdata_len);
+ 	} else
+ 		set_default_inode_attr(inode, sd->s_mode);
+ 
+-
+ 	/* initialize inode according to type */
+ 	switch (sysfs_type(sd)) {
+ 	case SYSFS_DIR:
+diff --git a/fs/sysfs/symlink.c b/fs/sysfs/symlink.c
+index 1d897ad..c5081ad 100644
+--- a/fs/sysfs/symlink.c
++++ b/fs/sysfs/symlink.c
+@@ -16,6 +16,7 @@
+ #include <linux/kobject.h>
+ #include <linux/namei.h>
+ #include <linux/mutex.h>
++#include <linux/security.h>
+ 
+ #include "sysfs.h"
+ 
+@@ -209,6 +210,7 @@ static void sysfs_put_link(struct dentry *dentry, struct nameidata *nd, void *co
  }
  
-+static int cap_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-+{
-+	return 0;
-+}
-+
-+static int cap_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-+{
-+	return 0;
-+}
-+
-+static int cap_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-+{
-+	return 0;
-+}
- #ifdef CONFIG_KEYS
- static int cap_key_alloc(struct key *key, const struct cred *cred,
- 			 unsigned long flags)
-@@ -992,6 +1006,9 @@ void security_fixup_ops(struct security_operations *ops)
- 	set_to_cap_if_null(ops, secid_to_secctx);
- 	set_to_cap_if_null(ops, secctx_to_secid);
- 	set_to_cap_if_null(ops, release_secctx);
-+	set_to_cap_if_null(ops, inode_notifysecctx);
-+	set_to_cap_if_null(ops, inode_setsecctx);
-+	set_to_cap_if_null(ops, inode_getsecctx);
- #ifdef CONFIG_SECURITY_NETWORK
- 	set_to_cap_if_null(ops, unix_stream_connect);
- 	set_to_cap_if_null(ops, unix_may_send);
-diff --git a/security/security.c b/security/security.c
-index dc7674f..42a6d28 100644
---- a/security/security.c
-+++ b/security/security.c
-@@ -959,6 +959,24 @@ void security_release_secctx(char *secdata, u32 seclen)
- }
- EXPORT_SYMBOL(security_release_secctx);
+ const struct inode_operations sysfs_symlink_inode_operations = {
++	.setxattr = sysfs_setxattr,
+ 	.readlink = generic_readlink,
+ 	.follow_link = sysfs_follow_link,
+ 	.put_link = sysfs_put_link,
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 3fa0d98..af4c4e7 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -8,6 +8,8 @@
+  * This file is released under the GPLv2.
+  */
  
-+int security_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-+{
-+	return security_ops->inode_notifysecctx(inode, ctx, ctxlen);
-+}
-+EXPORT_SYMBOL(security_inode_notifysecctx);
++#include <linux/fs.h>
 +
-+int security_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-+{
-+	return security_ops->inode_setsecctx(dentry, ctx, ctxlen);
-+}
-+EXPORT_SYMBOL(security_inode_setsecctx);
-+
-+int security_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-+{
-+	return security_ops->inode_getsecctx(inode, ctx, ctxlen);
-+}
-+EXPORT_SYMBOL(security_inode_getsecctx);
-+
- #ifdef CONFIG_SECURITY_NETWORK
+ struct sysfs_open_dirent;
  
- int security_unix_stream_connect(struct socket *sock, struct socket *other,
+ /* type-specific structures for sysfs_dirent->s_* union members */
+@@ -31,6 +33,12 @@ struct sysfs_elem_bin_attr {
+ 	struct hlist_head	buffers;
+ };
+ 
++struct sysfs_inode_attrs {
++	struct iattr	ia_iattr;
++	void		*ia_secdata;
++	u32		ia_secdata_len;
++};
++
+ /*
+  * sysfs_dirent - the building block of sysfs hierarchy.  Each and
+  * every sysfs node is represented by single sysfs_dirent.
+@@ -56,7 +64,7 @@ struct sysfs_dirent {
+ 	unsigned int		s_flags;
+ 	ino_t			s_ino;
+ 	umode_t			s_mode;
+-	struct iattr		*s_iattr;
++	struct sysfs_inode_attrs *s_iattr;
+ };
+ 
+ #define SD_DEACTIVATED_BIAS		INT_MIN
+@@ -148,6 +156,8 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+ struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
+ void sysfs_delete_inode(struct inode *inode);
+ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
++int sysfs_setxattr(struct dentry *dentry, const char *name, const void *value,
++		size_t size, int flags);
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
+ int sysfs_inode_init(void);
+ 
 diff --git a/security/selinux/hooks.c b/security/selinux/hooks.c
-index 8d8b69c..f1d5677 100644
+index f1d5677..38ed894 100644
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -5252,6 +5252,32 @@ static void selinux_release_secctx(char *secdata, u32 seclen)
- 	kfree(secdata);
- }
+@@ -448,6 +448,10 @@ static int sb_finish_set_opts(struct super_block *sb)
+ 	    sbsec->behavior > ARRAY_SIZE(labeling_behaviors))
+ 		sbsec->flags &= ~SE_SBLABELSUPP;
  
-+/*
-+ *	called with inode->i_mutex locked
-+ */
-+static int selinux_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-+{
-+	return selinux_inode_setsecurity(inode, XATTR_SELINUX_SUFFIX, ctx, ctxlen, 0);
-+}
++	/* Special handling for sysfs. Is genfs but also has setxattr handler*/
++	if (strncmp(sb->s_type->name, "sysfs", sizeof("sysfs")) == 0)
++		sbsec->flags |= SE_SBLABELSUPP;
 +
-+/*
-+ *	called with inode->i_mutex locked
-+ */
-+static int selinux_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-+{
-+	return __vfs_setxattr_noperm(dentry, XATTR_NAME_SELINUX, ctx, ctxlen, 0);
-+}
-+
-+static int selinux_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-+{
-+	int len = 0;
-+	len = selinux_inode_getsecurity(inode, XATTR_SELINUX_SUFFIX,
-+						ctx, true);
-+	if (len < 0)
-+		return len;
-+	*ctxlen = len;
-+	return 0;
-+}
- #ifdef CONFIG_KEYS
- 
- static int selinux_key_alloc(struct key *k, const struct cred *cred,
-@@ -5448,6 +5474,9 @@ static struct security_operations selinux_ops = {
- 	.secid_to_secctx =		selinux_secid_to_secctx,
- 	.secctx_to_secid =		selinux_secctx_to_secid,
- 	.release_secctx =		selinux_release_secctx,
-+	.inode_notifysecctx =		selinux_inode_notifysecctx,
-+	.inode_setsecctx =		selinux_inode_setsecctx,
-+	.inode_getsecctx =		selinux_inode_getsecctx,
- 
- 	.unix_stream_connect =		selinux_socket_unix_stream_connect,
- 	.unix_may_send =		selinux_socket_unix_may_send,
-diff --git a/security/smack/smack_lsm.c b/security/smack/smack_lsm.c
-index 0023182..62af40e 100644
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -3029,6 +3029,27 @@ static void smack_release_secctx(char *secdata, u32 seclen)
- {
- }
- 
-+static int smack_inode_notifysecctx(struct inode *inode, void *ctx, u32 ctxlen)
-+{
-+	return smack_inode_setsecurity(inode, XATTR_SMACK_SUFFIX, ctx, ctxlen, 0);
-+}
-+
-+static int smack_inode_setsecctx(struct dentry *dentry, void *ctx, u32 ctxlen)
-+{
-+	return __vfs_setxattr_noperm(dentry, XATTR_NAME_SMACK, ctx, ctxlen, 0);	
-+}
-+
-+static int smack_inode_getsecctx(struct inode *inode, void **ctx, u32 *ctxlen)
-+{
-+	int len = 0;
-+	len = smack_inode_getsecurity(inode, XATTR_SMACK_SUFFIX, ctx, true);
-+
-+	if (len < 0)
-+		return len;
-+	*ctxlen = len;
-+	return 0;
-+}
-+
- struct security_operations smack_ops = {
- 	.name =				"smack",
- 
-@@ -3155,6 +3176,9 @@ struct security_operations smack_ops = {
- 	.secid_to_secctx = 		smack_secid_to_secctx,
- 	.secctx_to_secid = 		smack_secctx_to_secid,
- 	.release_secctx = 		smack_release_secctx,
-+	.inode_notifysecctx =		smack_inode_notifysecctx,
-+	.inode_setsecctx =		smack_inode_setsecctx,
-+	.inode_getsecctx =		smack_inode_getsecctx,
- };
- 
+ 	/* Initialize the root inode. */
+ 	rc = inode_doinit_with_dentry(root_inode, root);
  
 -- 
 1.5.6.6
