@@ -1,86 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932149AbZICSM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756092AbZICSN2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932149AbZICSM7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 14:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZICSM6
+	id S1756092AbZICSN2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 14:13:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756052AbZICSN2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 14:12:58 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:48160 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756045AbZICSM6 (ORCPT
+	Thu, 3 Sep 2009 14:13:28 -0400
+Received: from mail-iw0-f175.google.com ([209.85.223.175]:45697 "EHLO
+	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753974AbZICSN1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 14:12:58 -0400
-Subject: Re: Exporting kmemleak.h to userspace
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <43e72e890909031106q1dc3ebf0nb5281e2aeddd215e@mail.gmail.com>
-References: <43e72e890909021729q7c40f907v7a81eaf5c8b73a61@mail.gmail.com>
-	 <84144f020909022323na828156v4eb9a8497cadaef8@mail.gmail.com>
-	 <1251983939.22485.18.camel@pc1117.cambridge.arm.com>
-	 <1251984845.3336.25.camel@johannes.local>
-	 <43e72e890909031100l5f28dd4cu30cf1e1c735e0e9d@mail.gmail.com>
-	 <1252001060.9336.0.camel@johannes.local>
-	 <43e72e890909031106q1dc3ebf0nb5281e2aeddd215e@mail.gmail.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Vz7YKtWHtpaMscJTGW9i"
-Date: Thu, 03 Sep 2009 20:12:31 +0200
-Message-Id: <1252001551.9336.1.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.91 
+	Thu, 3 Sep 2009 14:13:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:from:date
+         :x-google-sender-auth:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=YR5H4H3fT0b+QWOACwRiVuIBXznzErZTRIJ+V5qp9BO8itN4ZxCwDJxxSOsaXSLPxb
+         QWVLkHbK241ApDGnRroY7cSuvQOMA5906TxuWr9ju6m/IT66rOwgv01rAtMPH5RusC86
+         qNh7zrHBUCQ32gih7qoON77kt/Mc6+yn4T1/A=
+MIME-Version: 1.0
+In-Reply-To: <1251962791.3336.3.camel@johannes.local>
+References: <1251958266-10692-1-git-send-email-lrodriguez@atheros.com> 
+	<1251962791.3336.3.camel@johannes.local>
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Date: Thu, 3 Sep 2009 11:13:09 -0700
+X-Google-Sender-Auth: f61f1ea9b9db1d1e
+Message-ID: <43e72e890909031113r6010519br3b81d15cc331ba85@mail.gmail.com>
+Subject: Re: [PATCH] cfg80211: clear cfg80211_inform_bss() from kmemleak 
+	reports
+To: Johannes Berg <johannes@sipsolutions.net>,
+       Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
+Cc: linville@tuxdriver.com, linux-wireless@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 3, 2009 at 12:26 AM, Johannes Berg<johannes@sipsolutions.net> wrote:
+> On Thu, 2009-09-03 at 02:11 -0400, Luis R. Rodriguez wrote:
+>> This was giving false positives. We use eventually free this
+>> through kref_put(), things are not so obvious through
+>> cfg80211_bss_update().
+>>
+>> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+>> ---
+>>  net/wireless/scan.c |    3 +++
+>>  1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/net/wireless/scan.c b/net/wireless/scan.c
+>> index 19c5a9a..79f7a5d 100644
+>> --- a/net/wireless/scan.c
+>> +++ b/net/wireless/scan.c
+>> @@ -495,6 +495,9 @@ cfg80211_inform_bss(struct wiphy *wiphy,
+>>
+>>       kref_init(&res->ref);
+>>
+>> +     /* cfg80211_bss_update() eats up res - we ensure we free it there */
+>> +     kmemleak_ignore(res);
+>> +
+>>       res = cfg80211_bss_update(wiphy_to_dev(wiphy), res, 0);
+>>       if (!res)
+>>               return NULL;
+>
+> That's not making sense. cfg80211_bss_update() doesn't actually take a
+> reference, it adds a new one for itself and then we return one to the
+> caller.
 
---=-Vz7YKtWHtpaMscJTGW9i
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+What I meant is it gobbles it up and spits another thing out. When it
+gobbles it up the routine then uses kref_put().
 
-On Thu, 2009-09-03 at 11:06 -0700, Luis R. Rodriguez wrote:
-> On Thu, Sep 3, 2009 at 11:04 AM, Johannes Berg<johannes@sipsolutions.net>=
- wrote:
-> > On Thu, 2009-09-03 at 11:00 -0700, Luis R. Rodriguez wrote:
-> >
-> >> Anyway my point was that userspace does not need kmemleak.h and we are
-> >> providing it to userspace.
-> >
-> > No, we're not providing it to userspace.
-> >
-> > If you actually build userspace headers it won't be included.
->=20
-> Ah then I completely mispoke. Ignore this then.
->=20
-> How *do* you export headers through kbuild then?
+> Why can it not track this?
 
-You mention them in include/linux/Kbuild, and then you run "make
-headers_install" (I think)
+It probably can, just not sure if it follows kref_put(), I was under
+the impression here it doesn't and because of it we were getting false
+positives. Catalin, can you confirm?
 
-johannes
+> Actually it looks like we do leak one in net/mac80211/ibss.c.
 
---=-Vz7YKtWHtpaMscJTGW9i
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKoAcLAAoJEODzc/N7+QmaqioP/1wyP3InSDswlUvBgiPFihD7
-v66WHwaS87BFE1a5PQUpIH1o7XaY0QVo4nZh/LW1cx7Qlh7sKC9VYNaP62t2p/24
-k+CZY65uCQgBPOvBN2Iu7uknL2MV24PaDhZlgP8YwWKXEIyo6rfAKN3qfiep3ANm
-vzpLzrio258+lqzH8T6Fyrm9DVJ9SZTd/pcQfHxPP9gTOCP3RB+tdAA3DsqX/2xZ
-l6AqPhDQhAcPk1AnlvzWLeUuO6WvLuchuEfm4CZlzOZy67ldbuNxFkvGCBzOBVoP
-vfMAQHelEluo0oIVNDTBBakonjkSoBjK8cMC8eEdIVpMY3cnLoOEJZSZmvFNIQxW
-Dxa9EPm/g4nnxFNHzIdaGIZlObjkN1gAOjJlaOvH4tvO7lkgm2EAttqLkeNomS8I
-jpScpfYX6V9UCH74XGKFFlLMYQWID+MC4LFWBBZIuOcKLAvsAiXL5Ok/HesASBeG
-ROAZ+6MewnV3MBiPO19Pp9KVTdIShMl1uAfL6hEiXp+BynzTD0gbxhMKHb7AGj8W
-4AQ4YXY09JO8PASLsFLnwgtdT7cJRwdAHpvlVKzs3AZX3erY1+xqfnisq/ElAcue
-HiVYL5E5vxj/Y37dxrWmdTHISYEvHBDOXrEhV/Cm5+jjVhPpIOq7MqliT8BFMl92
-hTLMwoJbYFCP0yhIg11d
-=awMg
------END PGP SIGNATURE-----
-
---=-Vz7YKtWHtpaMscJTGW9i--
-
+  Luis
