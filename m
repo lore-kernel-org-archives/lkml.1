@@ -1,83 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753902AbZICAHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZICAPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753902AbZICAHH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 20:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZICAHG
+	id S1753919AbZICAPW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 20:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753880AbZICAPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 20:07:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39688 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753872AbZICAHE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 20:07:04 -0400
-Date: Wed, 2 Sep 2009 17:06:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yohan <ytordjman@corp.free.fr>
-Cc: ytordjman@corp.free.fr, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>,
-       Trond Myklebust <trond.myklebust@fys.uio.no>, mikevs@xs4all.net
-Subject: Re: VM issue causing high CPU loads
-Message-Id: <20090902170642.f4381c1d.akpm@linux-foundation.org>
-In-Reply-To: <4A9C34F8.2010307@corp.free.fr>
-References: <4A92A25A.4050608@yohan.staff.proxad.net>
-	<20090824162155.ce323f08.akpm@linux-foundation.org>
-	<4A96463E.5080002@corp.free.fr>
-	<4A9C34F8.2010307@corp.free.fr>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 Sep 2009 20:15:22 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35383 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753826AbZICAPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 20:15:21 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
+Date: Thu, 3 Sep 2009 02:16:04 +0200
+User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8-rjw; KDE/4.3.0; x86_64; ; )
+Cc: Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "linux-acpi" <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>
+References: <1251789947.3483.215.camel@rzhang-dt> <200909022346.11475.rjw@sisk.pl> <20090902215148.GA3429@elf.ucw.cz>
+In-Reply-To: <20090902215148.GA3429@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909030216.04896.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 31 Aug 2009 22:39:20 +0200
-Yohan <ytordjman@corp.free.fr> wrote:
-
-> Yohan wrote:
-> > Andrew Morton wrote:
-> >> On Mon, 24 Aug 2009 16:23:22 +0200
-> >> Yohan <kernel@yohan.staff.proxad.net> wrote:  
-> >>> Hi,
-> >>>
-> >>>     Is someone have an idea for that :
-> >>>
-> >>>         http://bugzilla.kernel.org/show_bug.cgi?id=14024
-> >>>     
-> >> Please generate a kernel profile to work out where all the CPU tie is
-> >> being spent.  Documentation/basic_profiling.txt is a starting point.
-> >>   
-> > I post some new reports, it seems that the problem is in  
-> > rpcauth_lookup_credcache ...
-
-Thanks, that helps a lot.
-
-> > for information, this is an imap mail server that mounts ~10 netapp 
-> > over ~300 mountpoints..
->     I saw that : http://patchwork.kernel.org/patch/24747/
-
-I wonder what happened with Miquel's patch?
-
-> I did only:
+On Wednesday 02 September 2009, Pavel Machek wrote:
+> On Wed 2009-09-02 23:46:11, Rafael J. Wysocki wrote:
+> > On Wednesday 02 September 2009, Pavel Machek wrote:
+> > > On Wed 2009-09-02 23:12:58, Rafael J. Wysocki wrote:
+> > > > On Tuesday 01 September 2009, Pavel Machek wrote:
+> > > > > 
+> > > > > > > > IMO, 0 and -1 are not errors. they just suggest that the Ambient Light
+> > > > > > > > illuminance is beyond the device support range, while the device is
+> > > > > > > > still working normally.
+> > > > > > > > what about exporting these values (0 and -1) to user space directly?
+> > > > > > > 
+> > > > > > > Returning 0 for "below" range and 99999999 for "above" range would be
+> > > > > > > nice, yes. 
+> > > > > > 
+> > > > > > Why not 0 and "all ones" or 0 and -1.
+> > > > > > 
+> > > > > > Is there anything wrong with -1 in particular?
+> > > > > 
+> > > > > Normal people expect -1 to be less than 123, and output is in ascii. If
+> > > > > you make it ((unsigned) ~0) I guess that becomes acceptable.
+> > > > 
+> > > > Well, "-1" is a perfectly valid alphanumerical representation of an int.
+> > > > I don't really see the problem with the "-", unless we're talking about some
+> > > > broken user space, that is.
+> > > 
+> > > No. But if you see illumination value of -1 lumen, do you really
+> > > expect a *lot* of light?
+> > 
+> > Not really.  I'd rather intrepret it as "the number is not to be trusted",
+> > which is what it means.
+> > 
+> > The problem with "all ones" is that it depends on the size of the underlying
+> > data type, which is not nice.  Also, if you want that to be a "big number",
+> > there's no clear rule to tell what the number should actually be.
+> > 
+> > Anyway, this really is a matter of definition.  If we document the attribute
+> > to read as "-1" in specific circumstances, the user space will have to take
+> > that into account.
 > 
-> --- linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-03-23 23:04:09.000000000 +0100
-> +++ linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-05-19 16:02:35.000000000 +0200
-> @@ -62,8 +62,12 @@ 
->   */
-> - #define RPC_CREDCACHE_HASHBITS	4
-> + #define RPC_CREDCACHE_HASHBITS	12
-> 
-> 
-> And i test it in prod since sunday: i only have 36% of one core used by 
-> system
-> versus more than 3 cores used by system in another server that did a 
-> drop_caches at morning...
-> 
+> Well, I'd prefer to specify -1 as "underflow" and 1000000000 as
+> "overflow". Any numbers should work, but ... lets make the interface
+> logical if we can.
 
-OK, but it's still pretty bad.  Let's tell the NFS guys.
+The interface is already defined, isn't it?  And we're now considering whether
+or not to pass the values defined by the interface directly to the user space,
+which I think is the right thing to do, because we have no reason _whatsoever_
+to change them to anything else.
 
-In http://bugzilla.kernel.org/show_bug.cgi?id=14024 we appear to have a
-major meltdown caused by the linear search in
-rpcauth_lookup_credcache() with Yohan's workload.
-
+Thanks,
+Rafael
