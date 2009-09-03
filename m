@@ -1,79 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754153AbZICCri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754176AbZICDKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754153AbZICCri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 22:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZICCrh
+	id S1754176AbZICDKy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 23:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbZICDKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 22:47:37 -0400
-Received: from mga09.intel.com ([134.134.136.24]:65198 "EHLO mga09.intel.com"
+	Wed, 2 Sep 2009 23:10:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:28748 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753499AbZICCrg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 22:47:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,322,1249282800"; 
-   d="scan'208";a="547329986"
-Subject: Re: [PATCH V6 1/2] introduce ALS sysfs class
-From: Zhang Rui <rui.zhang@intel.com>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: Len Brown <lenb@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi <linux-acpi@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <9b2b86520909021222k6cc49456vc3232e488eef9e37@mail.gmail.com>
-References: <1251789947.3483.215.camel@rzhang-dt>
-	 <9b2b86520909021222k6cc49456vc3232e488eef9e37@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 03 Sep 2009 10:45:18 +0800
-Message-Id: <1251945918.3483.267.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	id S1754118AbZICDKx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 23:10:53 -0400
+Message-ID: <4A9F3319.8040509@ds.jp.nec.com>
+Date: Wed, 02 Sep 2009 23:08:09 -0400
+From: Munehiro Ikeda <m-ikeda@ds.jp.nec.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [PATCH 07/23] io-controller: Common hierarchical fair queuing
+ code in elevaotor layer
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-8-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-8-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-03 at 03:22 +0800, Alan Jenkins wrote:
-> On 9/1/09, Zhang Rui <rui.zhang@intel.com> wrote:
-> >
-> > Introduce ALS sysfs class.
-> >
-> > ALS sysfs class provides a standard sysfs interface for
-> > Ambient Light Sensor devices.
-> >
-> > please read Documentation/ABI/testing/sysfs-class-als for
-> > detailed sysfs designs.
-> >
-> > ﻿CC: Pavel Machek <pavel@ucw.cz>
-> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > Signed-off-by: Zhang Rui <rui.zhang@intel.com>
-> > ---
-> 
-> > +++ linux-2.6/drivers/als/Kconfig
-> > @@ -0,0 +1,10 @@
-> > +#
-> > +# Ambient Light Sensor sysfs device configuration
-> > +#
-> > +
-> > +menuconfig ALS
-> > +	tristate "Ambient Light Sensor sysfs device"
-> > +	help
-> > +	  This framework provides a generic sysfs interface for
-> > +	  Ambient Light Sensor devices.
-> > +	  If you want this support, you should say Y or M here.
-> 
-> Gratuitous nitpick:
-> Can this option be made non-visible (or hidden behind CONFIG_EMBEDDED)?
-> 
-> Maybe you copied the pattern of the thermal sysfs interface - but the
-> ACPI thermal driver is useful to keep your computer cool even without
-> the sysfs interface.  ALS drivers are useless without the sysfs
-> interface, no?
-> 
-ACPI ALS device driver is the first user of this sysfs class.
-I think there will be more native ALS device drivers in the future,
-which locate at drivers/als/ and depends on CONFIG_ALS.
+Hi,
 
-thanks,
-rui
+Vivek Goyal wrote, on 08/28/2009 05:30 PM:
+> +static struct io_group *io_find_alloc_group(struct request_queue *q,
+> +			struct cgroup *cgroup, struct elv_fq_data *efqd,
+> +			int create)
+> +{
+> +	struct io_cgroup *iocg = cgroup_to_io_cgroup(cgroup);
+> +	struct io_group *iog = NULL;
+> +	/* Note: Use efqd as key */
+> +	void *key = efqd;
+> +
+> +	/*
+> +	 * Take a refenrece to css object. Don't want to map a bio to
+> +	 * a group if it has been marked for deletion
+> +	 */
+> +
+> +	if (!css_tryget(&iocg->css))
+> +		return iog;
 
+cgroup_to_io_cgroup() returns NULL if only blkio subsystem
+is mounted but io subsystem is not.  It can cause NULL pointer
+access.
+
+Signed-off-by: Munehiro "Muuhh" Ikeda <m-ikeda@ds.jp.nec.com>
+---
+ block/elevator-fq.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+index b723c12..6714e73 100644
+--- a/block/elevator-fq.c
++++ b/block/elevator-fq.c
+@@ -1827,7 +1827,7 @@ static struct io_group *io_find_alloc_group(struct request_queue *q,
+         * a group if it has been marked for deletion
+         */
+ 
+-       if (!css_tryget(&iocg->css))
++       if (!iocg || !css_tryget(&iocg->css))
+                return iog;
+ 
+        iog = io_cgroup_lookup_group(iocg, key);
+-- 
+1.6.2.5
+
+
+-- 
+IKEDA, Munehiro
+  NEC Corporation of America
+    m-ikeda@ds.jp.nec.com
 
