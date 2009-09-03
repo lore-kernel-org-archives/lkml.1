@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbZICAgO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZICAx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753950AbZICAgO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 20:36:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753078AbZICAgN
+	id S1753952AbZICAx0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 Sep 2009 20:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753882AbZICAxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 20:36:13 -0400
-Received: from g5t0009.atlanta.hp.com ([15.192.0.46]:24374 "EHLO
-	g5t0009.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752771AbZICAgM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 20:36:12 -0400
-Message-ID: <4A9F0F7A.1010805@hp.com>
-Date: Wed, 02 Sep 2009 20:36:10 -0400
-From: jim owens <jowens@hp.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 2 Sep 2009 20:53:25 -0400
+Received: from kroah.org ([198.145.64.141]:56566 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753047AbZICAxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 Sep 2009 20:53:24 -0400
+Date: Wed, 2 Sep 2009 17:50:51 -0700
+From: Greg KH <greg@kroah.com>
+To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
+Cc: Linux USB <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Problem starting the input interrupt pipe on the G13
+Message-ID: <20090903005051.GA6733@kroah.com>
+References: <a571ebde1bc221dd250a03e9fb33ed66.squirrel@intranet.cs.nmsu.edu>
 MIME-Version: 1.0
-To: Rob Landley <rob@landley.net>
-CC: Ric Wheeler <rwheeler@redhat.com>, Pavel Machek <pavel@ucw.cz>,
-       david@lang.hm, Theodore Tso <tytso@mit.edu>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-References: <20090826001645.GN4300@elf.ucw.cz> <20090902201210.GC1840@ucw.cz> <4A9ED8AB.5080003@redhat.com> <200909021800.51096.rob@landley.net>
-In-Reply-To: <200909021800.51096.rob@landley.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a571ebde1bc221dd250a03e9fb33ed66.squirrel@intranet.cs.nmsu.edu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rob Landley wrote:
-> On Wednesday 02 September 2009 15:42:19 Ric Wheeler wrote:
->>
->> Totally pointless to reply to you further.
+On Wed, Sep 02, 2009 at 03:25:50PM -0600, Rick L. Vinyard, Jr. wrote:
+> Hello,
 > 
-> For the record, I've been able to follow Pavel's arguments, and I've been able 
-> to follow Ted's arguments.  But as far as I can tell, you're arguing about a 
-> different topic than the rest of us.
+> I'm still working on the G13 driver, but I've run into a problem with the
+> interrupt in pipe. In essence, I can't figure out how to get it started.
+> 
+> The driver can be found at:
+> http://g13.svn.sourceforge.net/viewvc/g13/driver/trunk/
+> 
+> I think the root of the problem lies in the fact that the G13 usage page
+> is 0x00 (undefined). The output and feature reports seem to be working
+> fine to set the backlight color, the LCD image and the leds on the 'M'
+> keys.
+> 
+> However, nothing seems to be happening with the input report (there is
+> only one input report type on endpoint address 0x81 that contains the
+> joystick and key values).
+> 
+> The problem is getting the input pipe started. I grepped through the other
+> drivers in the hid directory and I couldn't find any that had to
+> explicitly start the input interrupt.
 
-I had no trouble following what Ric was arguing about.
+Have you just submitted an interrupt urb?
 
-Ric never said "use only the best devices and you won't have problems".
+That should be all that is needed, when the device has data, it will
+return with it if your urb is pending.
 
-Ric was arguing the exact opposite - ALL devices are crap if you define
-crap as "can loose data".  What he is saying is you need to UNDERSTAND
-your devices and their behavior and you must act accordingly.
+thanks,
 
-PAVEL DID NOT ACT ACCORDING TO HIS DEVICE LIMITATIONS.
-
-We understand he was clueless, but user error is still user error!
-
-And Ric said do not stigmatize whole classes of A) devices, B) raid,
-and C) filesystems with "Pavel says...".
-
-> However, thinking about how to _fix_ a problem is predicated on acknowledging 
-> that there actually _is_ a problem.  "The hardware is not physically damaged 
-> but your data was lost" sounds to me like a software problem, and thus 
-> something software could at least _attempt_ to address.  "There's millions of 
-> 'em, Linux can't cope" doesn't seem like a useful approach.
-
-We have been trying forever to deal with device problems and as
-Ric kept trying to explain we do understand them.  The problem is
-not "can we be better" it is "at what cost".  As they keep saying
-"fast", "cheap", "safe"... pick any 2.  Adding software solutions
-to solve it will always turn "fast" to "slow".
-
-Most people will choose some risk they can manage (such as
-don't pull the flash card you idiot), instead of snail slow.
-
-> I already addressed the software raid thing last post.
-
-Saw it. I am not an MD guy so I will not say anything bad about it
-except all the "journal" crud.  It really is only pandering to Pavel
-because ALL filesystems can be screwed and that is what they really
-need to know.  The journal stuff distracts those who are not running
-a journaling filesystem, even if your description is correct except
-that as we fs people keep saying, fsck is meaningless and again will
-only give you a false sense of security that your data is OK.
-
-jim
+greg k-h
