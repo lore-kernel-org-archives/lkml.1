@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754862AbZICJu4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbZICKV4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754862AbZICJu4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 05:50:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754841AbZICJuz
+	id S1754878AbZICKV4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 06:21:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZICKV4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 05:50:55 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:56104 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754811AbZICJuz (ORCPT
+	Thu, 3 Sep 2009 06:21:56 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:34917 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754838AbZICKVz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 05:50:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=cC84lhnkhsiT0PbCao5yfbIy6SG/zzfj4tmsonNMZwo5NJfPbVcQUaGcev3cyPznQT
-         yUu5/EAUzCba8e04iX4PlVnvRQxzs3pwkMr9vpZ66OhYuwPldUy9yZVOavsdoA9d4oxm
-         ynF8BBYXNrmCfkgT2i2vTXN/aShVAEUSI1bM0=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: lrodriguez@atheros.com, linville@tuxdriver.com,
-       linux-wireless@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH] Staging: stlc45xx: fix usage of mac80211 workqueue
-Date: Thu,  3 Sep 2009 13:50:44 +0400
-Message-Id: <1251971444-28690-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.4.2
+	Thu, 3 Sep 2009 06:21:55 -0400
+Message-ID: <25273217.post@talk.nabble.com>
+Date: Thu, 3 Sep 2009 03:21:57 -0700 (PDT)
+From: zamir <zamir.alam@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Booting issue on Omap3430 due to Initrd
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Nabble-From: zamir.alam@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-See commit 42935ecaf(mac80211: redefine usage of the mac80211
-workqueue).
-Fix build error.
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/staging/stlc45xx/stlc45xx.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Hi,
 
-diff --git a/drivers/staging/stlc45xx/stlc45xx.c b/drivers/staging/stlc45xx/stlc45xx.c
-index 12d414d..9ec8bd1 100644
---- a/drivers/staging/stlc45xx/stlc45xx.c
-+++ b/drivers/staging/stlc45xx/stlc45xx.c
-@@ -1058,7 +1058,7 @@ static void stlc45xx_reset(struct stlc45xx *stlc)
- 	stlc45xx_warning("resetting firmware");
- 	stlc->fw_state = FW_STATE_RESET;
- 	ieee80211_stop_queues(stlc->hw);
--	queue_work(stlc->hw->workqueue, &stlc->work_reset);
-+	ieee80211_queue_work(stlc->hw, &stlc->work_reset);
- }
- 
- static void stlc45xx_work_tx_timeout(struct work_struct *work)
-@@ -1489,7 +1489,7 @@ static irqreturn_t stlc45xx_interrupt(int irq, void *config)
- 
- 	stlc45xx_debug(DEBUG_IRQ, "IRQ");
- 
--	queue_work(stlc->hw->workqueue, &stlc->work);
-+	ieee80211_queue_work(stlc->hw, &stlc->work);
- 
- 	return IRQ_HANDLED;
- }
-@@ -1568,7 +1568,7 @@ static int stlc45xx_wq_tx(struct stlc45xx *stlc)
- 		}
- 
- 		list_add(&entry->tx_list, &stlc->tx_sent);
--		queue_delayed_work(stlc->hw->workqueue,
-+		ieee80211_queue_delayed_work(stlc->hw,
- 				   &stlc->work_tx_timeout,
- 				   msecs_to_jiffies(TX_TIMEOUT));
- 	}
-@@ -2132,7 +2132,7 @@ static int stlc45xx_op_tx(struct ieee80211_hw *hw, struct sk_buff *skb)
- 		ieee80211_stop_queues(stlc->hw);
- 	}
- 
--	queue_work(stlc->hw->workqueue, &stlc->work);
-+	ieee80211_queue_work(stlc->hw, &stlc->work);
- 
- 	spin_unlock_bh(&stlc->tx_lock);
- 
+I am trying to boot Linux on a TI OMAP3430 based device. The device boots up
+to a point where it tries to find the initrd image but cannot find it.
+
+My kernel version is 2.6.27. I am using a custom NAND flashing utility to
+flash the device with the bootloader, initrd image and kernel. My bootloader
+creates ATAGS, copies the kernel and initrd image to RAM and then jumps to
+the kernel.
+
+The kernel boots up fine to a point where it tries to mount root. Then it
+gives the following error:
+
+No filesystem could mount root, tried: ext3 ext2 msdos vfat
+
+<0>Kernel panic - not syncing: VFS: Unable to mount root fs on
+unknown-block(1,0)
+
+On debugging I found that the following function call returns -2 (-ENOENT)
+	in_fd = sys_open(from, O_RDONLY, 0);
+
+This is called in file \init\do_mounts_rd.c inside function:
+int __init rd_load_image(char *from)
+
+This in turn is called from do_mounts_initrd.c 
+	if (rd_load_image("/initrd.image") && ROOT_DEV != Root_RAM0)
+
+
+I found that initrd.image is created in \init\initramfs.c 
+static int __init populate_rootfs(void)
+{
+...
+if (initrd_start) {
+...
+
+		fd = sys_open("/initrd.image", O_WRONLY|O_CREAT, 0700);
+...
+
+Here initrd_start is always zero so this condition never gets true. So
+initrd.image is never created.
+
+
+In short, while booting sys_open("/initrd.image", O_RDONLY, 0); fails with
+-2.
+
+I have checked the initrd image is present at the memory location specified
+in kernel tags when kernel starts.
+
+
+Can anybody point to what could be the possible reason for this problem?
+
+
+Regards,
+Zamir
 -- 
-1.6.4.1
+View this message in context: http://www.nabble.com/Booting-issue-on-Omap3430-due-to-Initrd-tp25273217p25273217.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
