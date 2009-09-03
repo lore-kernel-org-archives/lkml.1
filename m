@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbZICSfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZICSf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbZICSfL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 14:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754524AbZICSfK
+	id S1756150AbZICSf2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 14:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbZICSf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 14:35:10 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:50589 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753974AbZICSfJ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 14:35:09 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Christian =?iso-8859-1?q?Kr=E4mer?= <christian@kraemer-eu.de>
-Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
-Date: Thu, 3 Sep 2009 20:35:08 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-References: <200909021856.29565.christian@kraemer-eu.de> <200909031927.19590.elendil@planet.nl> <200909032007.18484.christian@kraemer-eu.de>
-In-Reply-To: <200909032007.18484.christian@kraemer-eu.de>
+	Thu, 3 Sep 2009 14:35:26 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:42279 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754524AbZICSfY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 14:35:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=Doo7fLFpn2KThlvGX56+n/a2Hak9U4BnlcmOBpeaEGamJToIGTtCONPNuqgG5ZZglB
+         YLx6a5TYRQTsXmbJlcp/lshP7BJgWYVwri2PAcm4s9ElXN4/0WMCVhGHS8BBxUt57WcN
+         LXD4X9/tVI2BRF/e2SGfCHkb4RGdapEHCvNgM=
+To: Greg KH <greg@kroah.com>
+Cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org
+Subject: Re: Staging tree status for the .32 kernel merge
+References: <20090903041429.GA29875@kroah.com>
+	<1251967786.3336.19.camel@johannes.local>
+	<200909031448.46943.s.L-H@gmx.de> <20090903175723.GC24943@kroah.com>
+From: Kalle Valo <kalle.valo@iki.fi>
+Date: Thu, 03 Sep 2009 21:35:23 +0300
+In-Reply-To: <20090903175723.GC24943@kroah.com> (Greg KH's message of "Thu\, 3 Sep 2009 10\:57\:23 -0700")
+Message-ID: <87y6ov98r8.fsf@litku.valot.fi>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200909032035.10342.elendil@planet.nl>
-X-OriginalArrivalTime: 03 Sep 2009 18:35:10.0750 (UTC) FILETIME=[44C633E0:01CA2CC5]
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 September 2009, Christian Krämer wrote:
-> On Thursday 03 September 2009 19:27:18 Frans Pop wrote:
-> > Christian: what is the PCI ID of the device? You can find out using
-> > 'lspci -H1 -nn'.
+Greg KH <greg@kroah.com> writes:
+
+>> at76c50x-usb, the mac80211 port of at76_usb, has been merged mainline in 
+>> 2.6.30, it works well on two at76c503a devices for me. 
 >
-> The device class is 0200 and the PCI ID is 168c:0013.
->
-> Here is the line lspci -H1 -nn shows for the card:
-> 01:00.0 Ethernet controller [0200]: Atheros Communications Inc.
-> AR5212/AR5213 Multiprotocol MAC/baseband processor [168c:0013] (rev 01)
+> So should I drop at76_usb from the tree right now?  It seems to cover
+> the same exact device ids, sorry for not noticing it yet.
 
-That means that the card should be supported by the ath5k wireless driver 
-if it was correctly initialized by the cardbus drivers.
+Yes, please remove at76_usb from staging. It's not needed anymore now
+that at76c50x-usb is in mainline. I know that some people are still
+using at76_usb, but they need to convert sooner or later. And better to
+force them to do it sooner.
 
-I happen to have a similar PCMCIA card (from a different vendor: Trust) 
-that has the same PCI ID and works without problems.
-
-I don't think I can help you any further. Hopefully one of the PCMCIA 
-developers can. One last suggestion could be to enable the PCMCIA_DEBUG 
-option in the kernel and activate that as documented in the Kconfig help 
-for that option. Suggest you use a current kernel if you do that.
-
-Good luck,
-FJP
+-- 
+Kalle Valo
