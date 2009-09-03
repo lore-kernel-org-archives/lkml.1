@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZICGtJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZICHBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754721AbZICGtJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 02:49:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZICGtI
+	id S1754761AbZICHBZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 03:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754724AbZICHBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 02:49:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:60646 "EHLO smtps.tip.net.au"
+	Thu, 3 Sep 2009 03:01:24 -0400
+Received: from mga14.intel.com ([143.182.124.37]:13345 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754494AbZICGtH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 02:49:07 -0400
-Date: Thu, 3 Sep 2009 16:49:03 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Mauro Carvalho Chehab <maurochehab@gmail.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: linux-next: manual merge of the v4l-dvb tree with Linus' tree
-Message-Id: <20090903164903.0d9043d1.sfr@canb.auug.org.au>
-In-Reply-To: <20090902231214.495d4002@pedra.chehab.org>
-References: <20090902121713.f709b1ce.sfr@canb.auug.org.au>
-	<20090902231214.495d4002@pedra.chehab.org>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a"
+	id S1754675AbZICHBX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 03:01:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="183589997"
+Date: Thu, 3 Sep 2009 15:01:16 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+       "acme@ghostprotocols.net" <acme@ghostprotocols.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: Re: [PATCH][RESEND] tcp: replace hard coded GFP_KERNEL with
+	sk_allocation
+Message-ID: <20090903070116.GA27444@localhost>
+References: <20090903040407.GA20094@localhost> <20090902.231017.31926895.davem@davemloft.net> <20090902.233225.203837229.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090902.233225.203837229.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, Sep 03, 2009 at 02:32:25PM +0800, David Miller wrote:
+> From: David Miller <davem@davemloft.net>
+> Date: Wed, 02 Sep 2009 23:10:17 -0700 (PDT)
+> 
+> > From: Wu Fengguang <fengguang.wu@intel.com>
+> > Date: Thu, 3 Sep 2009 12:04:07 +0800
+> > 
+> >> This fixed a lockdep warning which appeared when doing stress
+> >> memory tests over NFS:
+> >> 
+> >> 	inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
+> >> 
+> >> 	page reclaim => nfs_writepage => tcp_sendmsg => lock sk_lock
+> >> 
+> >> 	mount_root => nfs_root_data => tcp_close => lock sk_lock =>
+> >> 			tcp_send_fin => alloc_skb_fclone => page reclaim
+> >> 
+> >> David raised a concern that if the allocation fails in tcp_send_fin(), and it's
+> >> GFP_ATOMIC, we are going to yield() (which sleeps) and loop endlessly waiting
+> >> for the allocation to succeed.
+> >> 
+> >> But fact is, the original GFP_KERNEL also sleeps. GFP_ATOMIC+yield() looks
+> >> weird, but it is no worse the implicit sleep inside GFP_KERNEL. Both could
+> >> loop endlessly under memory pressure.
+> >> 
+> >> CC: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+> >> CC: David S. Miller <davem@davemloft.net>
+> >> CC: Herbert Xu <herbert@gondor.apana.org.au>
+> >> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > 
+> > Applied to net-next-2.6, thanks!
+> 
+> You obviously didn't build test this with TCP MD5 support
+> enabled, that fails.
 
-Hi Mauro,
+Ah sorry! I compile bare kernels on my laptop..
 
-On Wed, 2 Sep 2009 23:12:14 -0300 Mauro Carvalho Chehab <maurochehab@gmail.=
-com> wrote:
->
-> I've rebased it to fix this merge conflict between my devel tree and upst=
-ream.
-> You probably can drop it on your next merge.
+> I'm fixing it up, but if you're going to go through the motions
+> of submitting a patch multiple times, at least do a thorough
+> build test of the code you're changing.
 
-Thanks.
+Good advice.  I'll consider a build server.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqfZt8ACgkQjjKRsyhoI8y03wCgiqD84AsM5HgzZkhiNUqGSFXA
-UQ0AoLmY8tCIE/eY7nzRv1bP/FBJiYdc
-=xQgk
------END PGP SIGNATURE-----
-
---Signature=_Thu__3_Sep_2009_16_49_03_+1000_jmMt_HgLAik+Q60a--
+Thanks,
+Fengguang
