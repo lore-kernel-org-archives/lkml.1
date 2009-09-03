@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755609AbZICOTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755646AbZICOTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755609AbZICOTy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZICOTx
+	id S1755646AbZICOTz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755498AbZICOTz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:19:53 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:41613 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755354AbZICOTw (ORCPT
+	Thu, 3 Sep 2009 10:19:55 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:54817 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755464AbZICOTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 3 Sep 2009 10:19:52 -0400
-Message-ID: <4A9FD047.9000002@gmail.com>
-Date: Thu, 03 Sep 2009 16:18:47 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=vpP3at+i1kjt7jI4ECOrPWel4z/H50f5qznUzYbqsuC2F8pUtWuLbhbH/nQ1NYN9x3
+         SIpkyciaI68bGFKUSsPME9hve3CqzLI0S8vHjdkz/+Gj7V3f5oevJSfvG6gVGLUS6jHE
+         8y+K3rQ5EL0//Aer/GJXEp/E23xEGXFa8w9n0=
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com, "stable@kernel.org" <stable@kernel.org>
-Subject: [PATCH] slub: Fix kmem_cache_destroy() with SLAB_DESTROY_BY_RCU
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>	 <4A896324.3040104@trash.net>	 <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>	 <4A9EEF07.5070800@gmail.com>	 <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>	 <4A9F1620.2080105@gmail.com>	 <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com>	 <4A9F7283.1090306@gmail.com>	 <84144f020909030051u6cf6ae01he25c268f718ff3af@mail.gmail.com>	 <alpine.DEB.1.10.0909031246010.27903@V090114053VZO-1> <84144f020909030705x7909cf07w7ea0d3662a66c5cc@mail.gmail.com>
-In-Reply-To: <84144f020909030705x7909cf07w7ea0d3662a66c5cc@mail.gmail.com>
+In-Reply-To: <1251984455.3336.24.camel@johannes.local>
+References: <1251978140-4992-1-git-send-email-amit.kucheria@canonical.com>
+	 <a32f33a40909030454y51905525g15a65cc8364b8eb5@mail.gmail.com>
+	 <20090903122727.GA4465@matterhorn.verdurent.com>
+	 <1251984455.3336.24.camel@johannes.local>
+Date: Thu, 3 Sep 2009 16:19:53 +0200
+Message-ID: <a32f33a40909030719t43ca7fabpe2c9f77f94999b53@mail.gmail.com>
+Subject: Re: [PATCH] rt2x00: Get rid of duplicate usb id from rt2500usb
+From: Ivo Van Doorn <ivdoorn@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Amit Kucheria <amit.kucheria@canonical.com>,
+       List Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-wireless@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 16:18:48 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg a écrit :
-> Hi Christoph,
-> 
-> On Thu, 3 Sep 2009, Pekka Enberg wrote:
->>> Oh, sure, the fix looks sane to me. It's just that I am a complete
->>> coward when it comes to merging RCU related patches so I always try to
->>> fish an Acked-by from Paul or Christoph ;).
-> 
-> On Thu, Sep 3, 2009 at 8:50 PM, Christoph
-> Lameter<cl@linux-foundation.org> wrote:
->> I am fine with acking the poison piece.
-> 
-> Ok.
-> 
-> On Thu, Sep 3, 2009 at 8:50 PM, Christoph
-> Lameter<cl@linux-foundation.org> wrote:
->> I did not ack the patch that added rcu to kmem_cache_destroy() and I
->> likely wont ack that piece either.
-> 
-> Right. I didn't remember that I merged that over your NAK but I don't
-> share your view that kmem_cache_destroy() callers should do
-> rcu_barrier() or whatever is necessary if we can do it from
-> kmem_cache_destroy(). So I am happy to take both changes but I would
-> appreciate them being split into two separate patches.
-> 
+On Thu, Sep 3, 2009 at 3:27 PM, Johannes Berg<johannes@sipsolutions.net> wrote:
+> On Thu, 2009-09-03 at 15:27 +0300, Amit Kucheria wrote:
+>> On 09 Sep 03, Ivo Van Doorn wrote:
+>> > > USB_DEVICE(0x148f, 0x2573) is served by the rt73usb driver where it is already
+>> > > defined. Remove it from rt2500usb.
+>> > >
+>> > > Signed-off-by: Amit Kucheria <amit.kucheria@canonical.com>
+>> > > Cc: Ivo van Doorn <IvDoorn@gmail.com>
+>> >
+>> > NACK
+>> >
+>> > Users have reported that this is a valid rt2500usb ID. You can thank the
+>> > manufacturer of the dongle to produce dongles with the same USB ID but
+>> > with different chipsets.
+>> >
+>> > Ivo
+>>
+>> Interesting. On my laptop, without this patch both the drivers are loaded
+>> (lsmod), rt2500usb aborts without allocating a device successfully but I am
+>> unable to associate to the AP.
+>
+> Sounds like the detection logic is somehow messing with the device, or
+> rt2500usb isn't actually freeing the device for rt73usb to bind?
 
-Here is the second patch (RCU thing). Stable candidate
+That would be odd, I believe it is working with other devices with
+duplicate ID's
+where first rt2500usb is loaded and then rt73usb. As far as connecting to the
+device, the first thing rt2x00 does is reading the EEPROM and checking the
+chipset. So no registers are being written which could upset a rt73usb device.
 
-[PATCH] slub: Fix kmem_cache_destroy() with SLAB_DESTROY_BY_RCU
-
-kmem_cache_destroy() should call rcu_barrier() *after* kmem_cache_close()
-and *before* sysfs_slab_remove() or risk rcu_free_slab()
-being called after kmem_cache is deleted (kfreed).
-
-rmmod nf_conntrack can crash the machine because it has to
-kmem_cache_destroy() a SLAB_DESTROY_BY_RCU enabled cache.
-
-Reported-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
----
-
-diff --git a/mm/slub.c b/mm/slub.c
-index b9f1491..b627675 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2594,8 +2594,6 @@ static inline int kmem_cache_close(struct kmem_cache *s)
-  */
- void kmem_cache_destroy(struct kmem_cache *s)
- {
--	if (s->flags & SLAB_DESTROY_BY_RCU)
--		rcu_barrier();
- 	down_write(&slub_lock);
- 	s->refcount--;
- 	if (!s->refcount) {
-@@ -2606,6 +2604,8 @@ void kmem_cache_destroy(struct kmem_cache *s)
- 				"still has objects.\n", s->name, __func__);
- 			dump_stack();
- 		}
-+		if (s->flags & SLAB_DESTROY_BY_RCU)
-+			rcu_barrier();
- 		sysfs_slab_remove(s);
- 	} else
- 		up_write(&slub_lock);
+Ivo
