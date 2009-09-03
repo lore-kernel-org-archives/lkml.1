@@ -1,111 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932341AbZICVWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756454AbZICV0E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932341AbZICVWD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 17:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbZICVWC
+	id S1756454AbZICV0E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 17:26:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932321AbZICV0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 17:22:02 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:61013 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932278AbZICVWB convert rfc822-to-8bit (ORCPT
+	Thu, 3 Sep 2009 17:26:01 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:50853 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932291AbZICV0A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 17:22:01 -0400
-X-IronPort-AV: E=Sophos;i="4.44,327,1249282800"; 
-   d="scan'208";a="237378707"
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 3 Sep 2009 17:26:00 -0400
+Message-ID: <4AA0334F.5020004@zytor.com>
+Date: Thu, 03 Sep 2009 14:21:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: VM issue causing high CPU loads
-Date: Thu, 3 Sep 2009 14:21:18 -0700
-Message-ID: <7A24DF798E223B4C9864E8F92E8C93EC03F0AFB3@SACMVEXC1-PRD.hq.netapp.com>
-In-Reply-To: <20090903200550.GB5257@hostway.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: VM issue causing high CPU loads
-Thread-Index: Acos0gQDjP3GE4VFSOOOHDyh16ct+gABkt2Q
-From: "Muntz, Daniel" <Dan.Muntz@netapp.com>
-To: "Simon Kirby" <sim@hostway.ca>,
-       "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Cc: "Yohan" <ytordjman@corp.free.fr>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <linux-nfs@vger.kernel.org>,
-       "Neil Brown" <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       <mikevs@xs4all.net>
-X-OriginalArrivalTime: 03 Sep 2009 21:21:45.0765 (UTC) FILETIME=[8A447550:01CA2CDC]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, jeremy.fitzhardinge@citrix.com,
+       stable@kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org, Tejun Heo <tj@kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
+ is cache aligned
+References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <20090903211805.GB12566@elte.hu>
+In-Reply-To: <20090903211805.GB12566@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amen.  I understand that v4 wants to extend across domains, etc., but it
-goes out of its way to prevent the use of uids/gids, which in the vast
-majority of installations would work just fine and wouldn't incur the
-overhead of the mapping/unmapping operations.  There's no reason
-uids/gids couldn't coexist with string names.  If the 4.0 spec had a
-slightly different version of this paragraph:
+On 09/03/2009 02:18 PM, Ingo Molnar wrote:
+> 
+> * H. Peter Anvin <hpa@zytor.com> wrote:
+> 
+>> On 09/03/2009 01:45 PM, Jeremy Fitzhardinge wrote:
+>>>
+>>> Two problems:
+>>>
+>>>     * gcc generates %gs: references for stack-protector, but we use %fs
+>>>       for percpu data (because restoring %fs is faster if it's a null
+>>>       selector; TLS uses %gs).  I guess we could use %fs if
+>>>       !CONFIG_CC_STACKPROTECTOR, or %gs if we are using it (though that
+>>>       has some fiddly ramifications for things like ptrace).
+>>
+>> Well, by touching two segments we're getting the worst of both 
+>> worlds, so at least assuming some significant number of real-world 
+>> deployments use CC_STACKPROTECTOR, we really don't want to 
+>> pessimize that case too much.
+> 
+> Fedora has stackprotector enabled so it's used in a widespread way.
+> 
+> 	Ingo
 
-   To provide a greater degree of compatibility with previous versions
-   of NFS (i.e., v2 and v3), which identified users and groups by 32-bit
-   unsigned uid's and gid's, owner and group strings that consist of
-   decimal numeric values with no leading zeros can be given a special
-   interpretation by clients and servers which choose to provide such
-   support.  The receiver may treat such a user or group string as
-   representing the same user as would be represented by a v2/v3 uid or
-   gid having the corresponding numeric value.  A server is not
-   obligated to accept such a string, but may return an NFS4ERR_BADOWNER
-   instead.  To avoid this mechanism being used to subvert user and
-   group translation, so that a client might pass all of the owners and
-   groups in numeric form, a server SHOULD return an NFS4ERR_BADOWNER
-   error when there is a valid translation for the user or owner
-   designated in this way.  In that case, the client must use the
-   appropriate name@domain string and not the special form for
-   compatibility.
+I'm guessing most distros do, except perhaps embedded ones.
 
-i.e., take out the "subvert" portion, and just plain allow string
-representations of uids/gids, then at least the conversion would just be
-an atoi and itoa.  Even better, allow the uids/gids to be used directly
-and avoid the atoi/itoa, perhaps with a flag.  Either case is better
-than idmapd and getting EDELAY and an X-second pause in odd places
-because NFS has to go to userspace for a translation.
-
-  -Dan Quixote
-
-> -----Original Message-----
-> From: Simon Kirby [mailto:sim@hostway.ca] 
-> Sent: Thursday, September 03, 2009 1:06 PM
-> To: Trond Myklebust
-> Cc: Yohan; Andrew Morton; linux-kernel@vger.kernel.org; 
-> linux-nfs@vger.kernel.org; Neil Brown; J. Bruce Fields; 
-> mikevs@xs4all.net
-> Subject: Re: VM issue causing high CPU loads
-> 
-> On Thu, Sep 03, 2009 at 10:02:06AM -0400, Trond Myklebust wrote:
-> 
-> > OK, so 16 hash buckets are likely to be filled with ~10^6 
-> entries each.
-> > I can see that might be a performance issue...
-> 
-> We have a similar setup with millions of UIDs over NFS 
-> (currently NFSv3).
-> I _wish_ there were a way to use NFSv4 without having to use 
-> name-mapped UIDs and GIDs, since our user and group names 
-> come from MySQL anyway, and are guaranteed to be consistent 
-> across machines.
-> 
-> Why on earth does NFSv4 force the use of names?
-> 
-> I was considering hacking the code to stick IDs in there 
-> anyway, but I haven't looked at the feasibility of this.  I 
-> suspect this would break or complicate other things, but the 
-> current NFSv4 design just seems like an incredible waste for 
-> this case.
-> 
-> Simon-
-> --
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-nfs" in the body of a message to 
-> majordomo@vger.kernel.org More majordomo info at  
-> http://vger.kernel.org/majordomo-info.html
-> 
+	-hpa
