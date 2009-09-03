@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZICRQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZICRTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbZICRQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 13:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZICRQ4
+	id S1753440AbZICRTU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 13:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752272AbZICRTT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 13:16:56 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60055 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752598AbZICRQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 13:16:56 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Linux-Kernel <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [RFC] cfq: adapt slice to number of processes doing I/O
-References: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com>
-	<x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
-	<x49ab1cxcma.fsf@segfault.boston.devel.redhat.com>
-	<4e5e476b0909030947m2423d0cdr5fd2b3de261b2da6@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 03 Sep 2009 13:16:43 -0400
-In-Reply-To: <4e5e476b0909030947m2423d0cdr5fd2b3de261b2da6@mail.gmail.com>
-	(Corrado Zoccolo's message of "Thu, 3 Sep 2009 18:47:46 +0200")
-Message-ID: <x49ws4gvthg.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 3 Sep 2009 13:19:19 -0400
+Received: from ausxipps301.us.dell.com ([143.166.148.223]:29187 "EHLO
+	ausxipps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750844AbZICRTT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 13:19:19 -0400
+Message-ID: <4A9FFAC4.1060808@dell.com>
+Date: Thu, 03 Sep 2009 12:20:04 -0500
+From: Mario Limonciello <mario_limonciello@dell.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Dell-laptop is not working without wireless
+References: <20090818060340.E1C7A526EA5@mailhub.coreip.homeip.net> <20090903153215.E51F8526EA5@mailhub.coreip.homeip.net> <4A9FF1FB.5090507@dell.com> <20090903174839.948A4526EA5@mailhub.coreip.homeip.net>
+In-Reply-To: <20090903174839.948A4526EA5@mailhub.coreip.homeip.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigBF60709AA77D5EA782B4CB80"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corrado Zoccolo <czoccolo@gmail.com> writes:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigBF60709AA77D5EA782B4CB80
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-> Hi Jeff,
-> can you share the benchmark?
+Hi Dmitry:
 
-Of course, how miserly of me!
+Dmitry Torokhov wrote:
+> On Thursday 03 September 2009 09:42:35 am Mario Limonciello wrote:
+>  =20
+>
+> Hmm, what is the BIOS version in your box? Also, mine used to have
+> broadcom-based wifi and I replaced it with iwl3945, would that make
+> any difference?
+I'm on BIOS A06, but I wouldn't /expect/ any of the stable (A**) BIOS
+releases to change any behaviors like this.
 
-http://people.redhat.com/jmoyer/cfq-regression-tests-0.0.1.tar.gz
+What card the machine shipped with won't have a bearing on the behaviors
+with the current card.  There aren't any factory processes that change
+the BIOS based on the card, just processes that would add newer firmware
+directly to cards that support it.
+--=20
+Mario Limonciello
+*Dell | Linux Engineering*
+mario_limonciello@dell.com
 
-> I think I have to fix the min slice to consider priority, too, to
-> respect the priorities when there are many processes.
->
-> For the fairness at a single priority level, my tests show that
-> fairness is improved with the patches (comparing minimum and maximum
-> bandwidth for a set of 32 processes):
->
-> Original:
-> Run status group 0 (all jobs):
->    READ: io=14192KiB, aggrb=480KiB/s, minb=7KiB/s, maxb=20KiB/s,
-> mint=30001msec, maxt=30258msec
->
-> Run status group 1 (all jobs):
->    READ: io=829292KiB, aggrb=27816KiB/s, minb=723KiB/s,
-> maxb=1004KiB/s, mint=30004msec, maxt=30529msec
->
-> Adaptive:
-> Run status group 0 (all jobs):
->    READ: io=14444KiB, aggrb=488KiB/s, minb=12KiB/s, maxb=17KiB/s,
-> mint=30003msec, maxt=30298msec
->
-> Run status group 1 (all jobs):
->    READ: io=721324KiB, aggrb=24140KiB/s, minb=689KiB/s, maxb=795KiB/s,
-> mint=30003msec, maxt=30598msec
->
-> Are you using random think times? This could explain the discrepancy.
 
-No, it's just a sync read benchmark.  It's the be4-x-8.fio job file in
-the tarball mentioned above.  Note that the run-time is only 10 seconds,
-so maybe that's not enough to get accurate data?  If you try increasing
-it, be careful that you don't read in the entire file and wrap back
-around, as this is a buffered read test, that will skew the results.
+--------------enigBF60709AA77D5EA782B4CB80
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-Cheers,
-Jeff
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkqf+sUACgkQ2CrZjkA73YvjJQCdED77s0DvZOpCUsa5lPx81MIT
+agMAn15qJS0RMQFDn8ByZ6CvTfUny5SU
+=llt0
+-----END PGP SIGNATURE-----
+
+--------------enigBF60709AA77D5EA782B4CB80--
