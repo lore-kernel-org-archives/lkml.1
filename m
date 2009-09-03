@@ -1,89 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbZICGCK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754489AbZICGCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbZICGCK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 02:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZICGCJ
+	id S1754489AbZICGCU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 02:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754474AbZICGCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 02:02:09 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:46216 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754251AbZICGCI convert rfc822-to-8bit (ORCPT
+	Thu, 3 Sep 2009 02:02:19 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42835
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754395AbZICGCJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 02:02:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=vhAlOnKOYJUw3wNIsPTGRIpWQnuC//tPLxsY/qZRwGqmWg66LZSi0FwW328eKL/4ow
-         LnwdSp2DnZlNWmZiJx0cdjWLvkPJiVURxBIaqI6vEZbISncsNNtIUf6q2YWKBOTkWTl6
-         ySakU5qZMqvwkuCl+3NxEVv4tyoTS4WsO+Pjc=
-MIME-Version: 1.0
-In-Reply-To: <1251942059-21448-2-git-send-email-lrodriguez@atheros.com>
-References: <1251942059-21448-1-git-send-email-lrodriguez@atheros.com>
-	 <1251942059-21448-2-git-send-email-lrodriguez@atheros.com>
-Date: Thu, 3 Sep 2009 09:02:09 +0300
-X-Google-Sender-Auth: 4acde343625a807f
-Message-ID: <84144f020909022302m2ac62f55j63e19ddac8bc511c@mail.gmail.com>
-Subject: Re: [PATCH 1/5] kmemleak: use bool for true/false questions
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: catalin.marinas@arm.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 3 Sep 2009 02:02:09 -0400
+Date: Wed, 02 Sep 2009 23:02:24 -0700 (PDT)
+Message-Id: <20090902.230224.06686722.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: Networking
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 3, 2009 at 4:40 AM, Luis R. Rodriguez<lrodriguez@atheros.com> wrote:
-> Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+1) Packet scheduler classifier code can leak some uninitialized
+   kernel bytes to userspace.  Fix from Eric Dumazet.
 
-> ---
->  mm/kmemleak.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
->
-> diff --git a/mm/kmemleak.c b/mm/kmemleak.c
-> index 4872673..c6e71bb 100644
-> --- a/mm/kmemleak.c
-> +++ b/mm/kmemleak.c
-> @@ -264,17 +264,17 @@ static void kmemleak_disable(void);
->  * Newly created objects don't have any color assigned (object->count == -1)
->  * before the next memory scan when they become white.
->  */
-> -static int color_white(const struct kmemleak_object *object)
-> +static bool color_white(const struct kmemleak_object *object)
->  {
->        return object->count != -1 && object->count < object->min_count;
->  }
->
-> -static int color_gray(const struct kmemleak_object *object)
-> +static bool color_gray(const struct kmemleak_object *object)
->  {
->        return object->min_count != -1 && object->count >= object->min_count;
->  }
->
-> -static int color_black(const struct kmemleak_object *object)
-> +static bool color_black(const struct kmemleak_object *object)
->  {
->        return object->min_count == -1;
->  }
-> @@ -284,7 +284,7 @@ static int color_black(const struct kmemleak_object *object)
->  * not be deleted and have a minimum age to avoid false positives caused by
->  * pointers temporarily stored in CPU registers.
->  */
-> -static int unreferenced_object(struct kmemleak_object *object)
-> +static bool unreferenced_object(struct kmemleak_object *object)
->  {
->        return (object->flags & OBJECT_ALLOCATED) && color_white(object) &&
->                time_before_eq(object->jiffies + jiffies_min_age,
-> --
-> 1.6.3.3
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+2) Revert tasklet_hrtimer conversions, naggling problems exist
+   and -rcX is not the time to be tinkering with it.
+
+3) Sockets can leak when sk_free()'d shortly after sk_alloc()
+   with some protocols due to initialization order of
+   sk->sk_mem_alloc.  Fix from Jarek Poplawski and Eric Dumazet.
+
+4) gianfar frees netdev without unregistering it resulting in
+   crashes on unload.  Fix from Toru UCHIYAMA.
+
+5) ipw2200 uses large linear memory area (ie. high order allocation)
+   for firmware loading via DMA, which easily can (and does) fail.
+   Fix from Zhu Yi via John Linville.
+
+Please pull, thanks a lot!
+
+The following changes since commit 37d0892c5a94e208cf863e3b7bac014edee4346d:
+  Ian Kent (1):
+        autofs4 - fix missed case when changing to use struct path
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+
+David S. Miller (2):
+      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
+      pkt_sched: Revert tasklet_hrtimer changes.
+
+Eric Dumazet (1):
+      tc: Fix unitialized kernel memory leak
+
+Jarek Poplawski (1):
+      net: sk_free() should be allowed right after sk_alloc()
+
+Toru UCHIYAMA (1):
+      gianfar: gfar_remove needs to call unregister_netdev()
+
+Zhu Yi (1):
+      ipw2200: firmware DMA loading rework
+
+ drivers/net/gianfar.c                  |    1 +
+ drivers/net/wireless/ipw2x00/ipw2200.c |  120 ++++++++++++++++++--------------
+ include/net/pkt_sched.h                |    4 +-
+ net/core/sock.c                        |    2 +-
+ net/sched/sch_api.c                    |   12 ++--
+ net/sched/sch_cbq.c                    |   25 +++----
+ 6 files changed, 89 insertions(+), 75 deletions(-)
