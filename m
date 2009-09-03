@@ -1,36 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755468AbZICN7u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755461AbZICOCM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755468AbZICN7u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:59:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755455AbZICN7t
+	id S1755461AbZICOCM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:02:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZICOCL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:59:49 -0400
-Received: from casper.infradead.org ([85.118.1.10]:52644 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755444AbZICN7s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:59:48 -0400
-Subject: Re: [RFC][PATCH 08/14] sched: remove reciprocal for cpu_power
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
-       Andreas Herrmann <andreas.herrmann3@amd.com>,
-       Balbir Singh <balbir@in.ibm.com>
-In-Reply-To: <20090903132212.822243547@chello.nl>
-References: <20090903132145.482814810@chello.nl>
-	 <20090903132212.822243547@chello.nl>
+	Thu, 3 Sep 2009 10:02:11 -0400
+Received: from mail-out1.uio.no ([129.240.10.57]:50570 "EHLO mail-out1.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754440AbZICOCK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 10:02:10 -0400
+Subject: Re: VM issue causing high CPU loads
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Yohan <ytordjman@corp.free.fr>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>,
+       "J. Bruce Fields" <bfields@fieldses.org>, mikevs@xs4all.net
+In-Reply-To: <4A9FC719.9020104@corp.free.fr>
+References: <4A92A25A.4050608@yohan.staff.proxad.net>
+	 <20090824162155.ce323f08.akpm@linux-foundation.org>
+	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>
+	 <20090902170642.f4381c1d.akpm@linux-foundation.org>
+	 <1251982884.18338.9.camel@heimdal.trondhjem.org>
+	 <4A9FC719.9020104@corp.free.fr>
 Content-Type: text/plain
-Date: Thu, 03 Sep 2009 15:59:45 +0200
-Message-Id: <1251986385.7352.2.camel@laptop>
+Date: Thu, 03 Sep 2009 10:02:06 -0400
+Message-Id: <1251986526.18338.29.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 7 msgs/h 1 sum rcpts/h 12 sum msgs/h 2 total rcpts 1304 max rcpts/h 27 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
+X-UiO-Scanned: FA3BB371B5CEDD7D192FA13717E35909ACF4C817
+X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 214 max/h 6 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-03 at 15:21 +0200, Peter Zijlstra wrote:
-> [andreas.herrmann3@amd.com: remove include]
+On Thu, 2009-09-03 at 15:39 +0200, Yohan wrote:
+> > As far as I can see, there is no RPCSEC_GSS involved, so credentials
+> > should never expire. They will be reused as long as processes aren't
+> > switching between thousands and thousands of different combinations of
+> > uid, gid and groups.
+> My servers are imap servers.
+> Foreach user (~15 million) it have a specific uid over ~10 nfs netapp 
+> storage.
 
-/me reminds himself to quilt refresh before sending email, not after.
+OK, so 16 hash buckets are likely to be filled with ~10^6 entries each.
+I can see that might be a performance issue...
+
+So afaics, you did try adjusting the hashtable size. How much larger
+does it have to be before you start to get acceptable performance? If it
+solves your problem we could make hash table sizes adjustable via a
+module parameter, for instance.
+
+Cheers
+  Trond
 
