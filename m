@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756512AbZICWAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932379AbZICWCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756512AbZICWAd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 18:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932269AbZICWAc
+	id S932379AbZICWCx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 18:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756030AbZICWCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 18:00:32 -0400
-Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:40328 "EHLO
-	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755267AbZICWAc (ORCPT
+	Thu, 3 Sep 2009 18:02:52 -0400
+Received: from wavehammer.waldi.eu.org ([82.139.201.20]:49557 "EHLO
+	wavehammer.waldi.eu.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755267AbZICWCw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 18:00:32 -0400
-From: Ben Hutchings <ben@decadent.org.uk>
-To: linux-kernel@vger.kernel.org
-Cc: maximilian attems <max@stro.at>, Frans Pop <elendil@planet.nl>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 03 Sep 2009 23:00:31 +0100
-Message-Id: <1252015231.3475.9.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-X-SA-Exim-Connect-IP: 192.168.4.185
-X-SA-Exim-Mail-From: ben@decadent.org.uk
-Subject: [PATCH] builddeb: Fix packaged file permissions
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
+	Thu, 3 Sep 2009 18:02:52 -0400
+Date: Fri, 4 Sep 2009 00:02:52 +0200
+From: Bastian Blank <waldi@debian.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
+       544145@bugs.debian.org, Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: 32bit binaries on x86_64/Xen segfaults in syscall-vdso
+Message-ID: <20090903220252.GA19309@wavehammer.waldi.eu.org>
+Mail-Followup-To: Bastian Blank <waldi@debian.org>,
+	Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+	xen-devel@lists.xensource.com, 544145@bugs.debian.org,
+	Keir Fraser <keir.fraser@eu.citrix.com>
+References: <20090830181637.GA7155@wavehammer.waldi.eu.org> <4AA02C57.30106@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <4AA02C57.30106@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The packaged files' permissions are implicitly dependent on the
-current umask.  Not only can this result in surprisingly restrictive
-permissions, but dpkg-deb will fail if the DEBIAN directory does not
-have permissions 755 or 775.  Therefore, set the umask to 022 before
-building a package.
+On Thu, Sep 03, 2009 at 01:51:35PM -0700, Jeremy Fitzhardinge wrote:
+> On 08/30/09 11:16, Bastian Blank wrote:
+> > I upgraded one of my 32bit chroots on a x86-64 machine runing under Xen
+> > lately. All binaries started to segfault. Some extensive checks later
+> > show the vdso as the culprit. Later I found <gpe0vg$j67$1@ger.gmane.org>
+> > with the same problem. The full story can be found in the Debian bug
+> > 544145[1].
+> >
+> > It happens with Linux 2.6.30 and 2.6.31-rc8 on Xen 3.2 and 3.4.
+> >
+> > For the tests I set the vdso to compat mode to have it loaded on a fixed
+> > location.
+> >
+> > The following program is a minimal test case for the vdso in compat
+> > mode, it can be compiled against dietlibc to minimize other effects.
+> 
+> Is this an AMD machine?  Does booting with vdso32=0 on the kernel
+> command line work around the problem?
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
----
- scripts/package/builddeb |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+AFAIK only AMD support the syscall instruction, so yes it is an AMD
+machine. And yes, disabling the only thing that make the glibc call this
+instruction works around it.
 
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index 8b357b0..24cfd80 100644
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -12,6 +12,8 @@
- 
- set -e
- 
-+umask 022
-+
- create_package() {
- 	local pname="$1" pdir="$2"
- 
+Bastian
+
 -- 
-1.6.3.3
-
+Conquest is easy. Control is not.
+		-- Kirk, "Mirror, Mirror", stardate unknown
