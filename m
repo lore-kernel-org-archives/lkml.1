@@ -1,105 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752622AbZICNBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZICNHa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752622AbZICNBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 09:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZICNBe
+	id S1752463AbZICNHa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 09:07:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751924AbZICNH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 09:01:34 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:50049 "EHLO mail-out1.uio.no"
+	Thu, 3 Sep 2009 09:07:29 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:55315 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751978AbZICNBd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 09:01:33 -0400
-Subject: Re: VM issue causing high CPU loads
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Yohan <ytordjman@corp.free.fr>, linux-kernel@vger.kernel.org,
-       linux-nfs@vger.kernel.org, Neil Brown <neilb@suse.de>,
-       "J. Bruce Fields" <bfields@fieldses.org>, mikevs@xs4all.net
-In-Reply-To: <20090902170642.f4381c1d.akpm@linux-foundation.org>
-References: <4A92A25A.4050608@yohan.staff.proxad.net>
-	 <20090824162155.ce323f08.akpm@linux-foundation.org>
-	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>
-	 <20090902170642.f4381c1d.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 03 Sep 2009 09:01:24 -0400
-Message-Id: <1251982884.18338.9.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 7 msgs/h 1 sum rcpts/h 8 sum msgs/h 1 total rcpts 1293 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: CE6EC785D42D7603E389F6E06C7B4FD8AC7CA079
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 211 max/h 6 blacklist 0 greylist 0 ratelimit 0
+	id S1751778AbZICNH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 09:07:29 -0400
+Date: Thu, 3 Sep 2009 15:07:31 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Corrado Zoccolo <czoccolo@gmail.com>,
+       Linux-Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC] cfq: adapt slice to number of processes doing I/O
+Message-ID: <20090903130731.GE18599@kernel.dk>
+References: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com> <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-02 at 17:06 -0700, Andrew Morton wrote:
-> On Mon, 31 Aug 2009 22:39:20 +0200
-> Yohan <ytordjman@corp.free.fr> wrote:
+On Thu, Sep 03 2009, Jeff Moyer wrote:
+> Corrado Zoccolo <czoccolo@gmail.com> writes:
 > 
-> > Yohan wrote:
-> > > Andrew Morton wrote:
-> > >> On Mon, 24 Aug 2009 16:23:22 +0200
-> > >> Yohan <kernel@yohan.staff.proxad.net> wrote:  
-> > >>> Hi,
-> > >>>
-> > >>>     Is someone have an idea for that :
-> > >>>
-> > >>>         http://bugzilla.kernel.org/show_bug.cgi?id=14024
-> > >>>     
-> > >> Please generate a kernel profile to work out where all the CPU tie is
-> > >> being spent.  Documentation/basic_profiling.txt is a starting point.
-> > >>   
-> > > I post some new reports, it seems that the problem is in  
-> > > rpcauth_lookup_credcache ...
+> > When the number of processes performing I/O concurrently increases,  a
+> > fixed time slice per process will cause large latencies.
+> > In the patch, if there are more than 3 processes performing concurrent
+> > I/O, we scale the time slice down proportionally.
+> > To safeguard sequential bandwidth, we impose a minimum time slice,
+> > computed from cfq_slice_idle (the idea is that cfq_slice_idle
+> > approximates the cost for a seek).
+> >
+> > I performed two tests, on a rotational disk:
+> > * 32 concurrent processes performing random reads
+> > ** the bandwidth is improved from 466KB/s to 477KB/s
+> > ** the maximum latency is reduced from 7.667s to 1.728
+> > * 32 concurrent processes performing sequential reads
+> > ** the bandwidth is reduced from 28093KB/s to 24393KB/s
+> > ** the maximum latency is reduced from 3.781s to 1.115s
+> >
+> > I expect numbers to be even better on SSDs, where the penalty to
+> > disrupt sequential read is much less.
 > 
-> Thanks, that helps a lot.
-> 
-> > > for information, this is an imap mail server that mounts ~10 netapp 
-> > > over ~300 mountpoints..
-> >     I saw that : http://patchwork.kernel.org/patch/24747/
-> 
-> I wonder what happened with Miquel's patch?
+> Interesting approach.  I'm not sure what the benefits will be on SSDs,
+> as the idling logic is disabled for them (when nonrot is set and they
+> support ncq).  See cfq_arm_slice_timer.
 
-At the time, I asked him to split out the various changes into several
-patches.
+Also, the problem with scaling the slice a lot is that throughput has a
+tendency to fall off a cliff at some point. Have you tried benchmarking
+buffered writes with reads?
 
-His patch did a lot of different things that would impact workloads in
-different ways. For instance, while increasing the hash table size is
-not likely to have a huge performance degradation for most people, the
-change that decreases the garbage collection timeout is very likely to
-cause issues (particularly with RPCSEC_GSS setups)...
-
-> > I did only:
-> > 
-> > --- linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-03-23 23:04:09.000000000 +0100
-> > +++ linux-2.6.27.21/include/linux/sunrpc/auth.h	2009-05-19 16:02:35.000000000 +0200
-> > @@ -62,8 +62,12 @@ 
-> >   */
-> > - #define RPC_CREDCACHE_HASHBITS	4
-> > + #define RPC_CREDCACHE_HASHBITS	12
-> > 
-> > 
-> > And i test it in prod since sunday: i only have 36% of one core used by 
-> > system
-> > versus more than 3 cores used by system in another server that did a 
-> > drop_caches at morning...
-> > 
-> 
-> OK, but it's still pretty bad.  Let's tell the NFS guys.
-> 
-> In http://bugzilla.kernel.org/show_bug.cgi?id=14024 we appear to have a
-> major meltdown caused by the linear search in
-> rpcauth_lookup_credcache() with Yohan's workload.
-> 
-
-OK. Could we please have some more details about the actual workload
-involved here?
-As far as I can see, there is no RPCSEC_GSS involved, so credentials
-should never expire. They will be reused as long as processes aren't
-switching between thousands and thousands of different combinations of
-uid, gid and groups.
-
-
+-- 
+Jens Axboe
 
