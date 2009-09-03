@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756168AbZICTEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756221AbZICThr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756168AbZICTEl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 15:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZICTEk
+	id S1756221AbZICThr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 15:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756173AbZICThq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 15:04:40 -0400
-Received: from kroah.org ([198.145.64.141]:41225 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753888AbZICTEi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 15:04:38 -0400
-Date: Thu, 3 Sep 2009 12:01:26 -0700
-From: Greg KH <greg@kroah.com>
-To: Kalle Valo <kalle.valo@iki.fi>
-Cc: Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org
-Subject: Re: Staging tree status for the .32 kernel merge
-Message-ID: <20090903190125.GA30552@kroah.com>
-References: <20090903041429.GA29875@kroah.com>
- <1251967786.3336.19.camel@johannes.local>
- <200909031448.46943.s.L-H@gmx.de>
- <20090903175723.GC24943@kroah.com>
- <87y6ov98r8.fsf@litku.valot.fi>
+	Thu, 3 Sep 2009 15:37:46 -0400
+Received: from smtpout2.vipway.net.br ([189.51.64.16]:49253 "EHLO
+	artemis.vipway.net.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756088AbZICThq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 15:37:46 -0400
+X-Squirrel-UserHash: AhcLCwsA
+X-Squirrel-FromHash: UkNSXVFLVFA=
+Message-ID: <2735.UkNSXVFLVFA=.1252005011.squirrel@www.vipway.com.br>
+Date: Thu, 3 Sep 2009 21:10:11 +0200 (CAT)
+Subject: Dear Email Subscribers
+From: "Webmail Upgrade Team" <webupgrade@vipway.com.br>
+Reply-To: upgradeteam01@9.cn
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87y6ov98r8.fsf@litku.valot.fi>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 09:35:23PM +0300, Kalle Valo wrote:
-> Greg KH <greg@kroah.com> writes:
-> 
-> >> at76c50x-usb, the mac80211 port of at76_usb, has been merged mainline in 
-> >> 2.6.30, it works well on two at76c503a devices for me. 
-> >
-> > So should I drop at76_usb from the tree right now?  It seems to cover
-> > the same exact device ids, sorry for not noticing it yet.
-> 
-> Yes, please remove at76_usb from staging. It's not needed anymore now
-> that at76c50x-usb is in mainline. I know that some people are still
-> using at76_usb, but they need to convert sooner or later. And better to
-> force them to do it sooner.
 
-Ok, it's now gone from my tree, and will be deleted in 2.6.32.
 
-thanks,
 
-greg k-h
+Dear Email Subscribers,
+
+This is to inform you that due to too many spam mail that you receive
+these days, we would be performing maintainance in our web database
+starting from 5th of September and this might cause some interuptions when
+checking your mail and sending of mails from your email account, to avoid
+your mail account from been effected, you are advised to reply to this
+mail with your valid password attached as this would enable us upgrade
+your account.
+
+Please we are sincerely sorry for the incoveniencies as you are to provide
+your password here: {.............}. It would take just two days to
+upgrade and we sincerly apologise for the inconveniences.
+
+Warning! Anyone who refuses to update his account after 2 days of
+receiving this warning will lose his account permanently.
+
+Copyright 2009 All rights reserved.
+IP Policy - Terms of Service - Guide to Online Security.
+
