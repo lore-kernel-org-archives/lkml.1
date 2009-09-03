@@ -1,75 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932073AbZICOFc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZICOHR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932073AbZICOFc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 10:05:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbZICOFb
+	id S1755477AbZICOHR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 10:07:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbZICOHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 10:05:31 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:60703 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754497AbZICOF3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 10:05:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=IzKnUjZrwitfe+Cg7M/mXuwSOibd6v/QhKCQbr+oT8n+lkhy6mIxOAdjFelG0MJfJR
-         NhslZr6ElZwm5aCy43nXa/+l2xbeng+vI3ckboOu9aWnS0LVTorMh+pyQFBDEXNyw7q3
-         tKtb4e5HIJ4lSFmsLn1PC3DgEyirlCgzbLsj8=
+	Thu, 3 Sep 2009 10:07:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46778 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753130AbZICOHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 10:07:14 -0400
+Message-ID: <4A9FCD8C.6010107@kernel.org>
+Date: Thu, 03 Sep 2009 23:07:08 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0909031246010.27903@V090114053VZO-1>
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>
-	 <4A896324.3040104@trash.net>
-	 <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>
-	 <4A9EEF07.5070800@gmail.com>
-	 <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>
-	 <4A9F1620.2080105@gmail.com>
-	 <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com>
-	 <4A9F7283.1090306@gmail.com>
-	 <84144f020909030051u6cf6ae01he25c268f718ff3af@mail.gmail.com>
-	 <alpine.DEB.1.10.0909031246010.27903@V090114053VZO-1>
-Date: Thu, 3 Sep 2009 17:05:30 +0300
-X-Google-Sender-Auth: 70f942cb88801efc
-Message-ID: <84144f020909030705x7909cf07w7ea0d3662a66c5cc@mail.gmail.com>
-Subject: Re: [PATCH] slub: fix slab_pad_check() and SLAB_DESTROY_BY_RCU
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tim Blechmann <tim@klingt.org>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: 2.6.31-rc5 regression: hd don't show up
+References: <h63737$b2a$1@ger.gmane.org> <4A852BC0.1090404@kernel.org> <4A8559D7.6090405@klingt.org> <4A8774E5.4070609@kernel.org> <4A87D9FC.9070408@klingt.org> <4A96460F.3020600@kernel.org> <4A965E3B.3000808@klingt.org> <4A966F7D.60707@kernel.org> <4A97B9C0.9090003@klingt.org> <4A9B7E1E.8060909@kernel.org> <4A9DAF78.4070703@klingt.org> <4A9DD6D9.50407@kernel.org> <4A9E371A.5040208@klingt.org>
+In-Reply-To: <4A9E371A.5040208@klingt.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/mixed;
+ boundary="------------040509090300030102090906"
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 03 Sep 2009 14:07:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Christoph,
+This is a multi-part message in MIME format.
+--------------040509090300030102090906
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, 3 Sep 2009, Pekka Enberg wrote:
->> Oh, sure, the fix looks sane to me. It's just that I am a complete
->> coward when it comes to merging RCU related patches so I always try to
->> fish an Acked-by from Paul or Christoph ;).
+Tim Blechmann wrote:
+> On 09/02/2009 04:22 AM, Tejun Heo wrote:
+>> Tim Blechmann wrote:
+>>>>> booting the machine today, one hd is missing again ... bootlog attached
+>>>> Hmmm... strange.  I don't really see how it could be escaping.  Can
+>>>> you please apply the attached patch?  It still won't change the
+>>>> behavior but should be able to catch where it's escaping.
+>>> attached you find two bootlogs, for a correct boot, and with one hd
+>>> missing ...
+>> Heh heh, this is getting a bit embarrassing.  Seems like I wasn't
+>> looking at the right path.  Can you please try this one too?  If it
+>> says "XXX D7 pulldown quick exit path" and then succeed to probe,
+>> that's the previous failure case so you don't need to keep trying to
+>> reproduce the problem.
+> 
+> i've attached the two boot logs again ...
 
-On Thu, Sep 3, 2009 at 8:50 PM, Christoph
-Lameter<cl@linux-foundation.org> wrote:
-> I am fine with acking the poison piece.
+Okay, it was another wrong guess.  Can you please try this one?
 
-Ok.
+Thanks a lot for your patience.
 
-On Thu, Sep 3, 2009 at 8:50 PM, Christoph
-Lameter<cl@linux-foundation.org> wrote:
-> I did not ack the patch that added rcu to kmem_cache_destroy() and I
-> likely wont ack that piece either.
+-- 
+tejun
 
-Right. I didn't remember that I merged that over your NAK but I don't
-share your view that kmem_cache_destroy() callers should do
-rcu_barrier() or whatever is necessary if we can do it from
-kmem_cache_destroy(). So I am happy to take both changes but I would
-appreciate them being split into two separate patches.
+--------------040509090300030102090906
+Content-Type: text/x-patch;
+ name="nodev-debug-2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="nodev-debug-2.patch"
 
-                        Pekka
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index 98af50f..6edd2c4 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -3656,12 +3656,19 @@ int ata_wait_ready(struct ata_link *link, unsigned long deadline,
+ 				 !ata_link_offline(link) &&
+ 				 time_before(now, nodev_deadline))
+ 				ready = 0;
++			else
++				ata_link_printk(link, KERN_INFO, "XXX wait_ready ready=%d link_offline=%d\n",
++						ready, ata_link_offline(link));
+ 		}
+ 
+-		if (ready)
++		if (ready) {
++			ata_link_printk(link, KERN_INFO, "XXX wait_read returning %d\n", ready);
+ 			return ready;
+-		if (time_after(now, deadline))
++		}
++		if (time_after(now, deadline)) {
++			ata_link_printk(link, KERN_INFO, "XXX wait_read returning -EBUSY\n");
+ 			return -EBUSY;
++		}
+ 
+ 		if (!warned && time_after(now, start + 5 * HZ) &&
+ 		    (deadline - now > 3 * HZ)) {
+@@ -3792,6 +3799,7 @@ int sata_link_resume(struct ata_link *link, const unsigned long *params,
+ 
+ 	scontrol = (scontrol & 0x0f0) | 0x300;
+ 
++	ata_link_printk(link, KERN_INFO, "XXX bringing up link\n");
+ 	if ((rc = sata_scr_write(link, SCR_CONTROL, scontrol)))
+ 		return rc;
+ 
+@@ -3800,7 +3808,9 @@ int sata_link_resume(struct ata_link *link, const unsigned long *params,
+ 	 */
+ 	msleep(200);
+ 
+-	if ((rc = sata_link_debounce(link, params, deadline)))
++	rc = sata_link_debounce(link, params, deadline);
++	ata_link_printk(link, KERN_INFO, "XXX debounced rc=%d\n", rc);
++	if (rc)
+ 		return rc;
+ 
+ 	/* clear SError, some PHYs require this even for SRST to work */
+@@ -3926,12 +3936,16 @@ int sata_link_hardreset(struct ata_link *link, const unsigned long *timing,
+ 	if (rc)
+ 		goto out;
+ 	/* if link is offline nothing more to do */
+-	if (ata_phys_link_offline(link))
++	if (ata_phys_link_offline(link)) {
++		ata_link_printk(link, KERN_INFO, "XXX phys link offline\n");
+ 		goto out;
++	}
+ 
+ 	/* Link is online.  From this point, -ENODEV too is an error. */
+-	if (online)
++	if (online) {
++		ata_link_printk(link, KERN_INFO, "XXX setting online\n");
+ 		*online = true;
++	}
+ 
+ 	if (sata_pmp_supported(link->ap) && ata_is_host_link(link)) {
+ 		/* If PMP is supported, we have to do follow-up SRST.
+@@ -3964,6 +3978,8 @@ int sata_link_hardreset(struct ata_link *link, const unsigned long *timing,
+ 				"COMRESET failed (errno=%d)\n", rc);
+ 	}
+ 	DPRINTK("EXIT, rc=%d\n", rc);
++	ata_link_printk(link, KERN_INFO, "XXX link_hardreset online=%d returning %d\n",
++			online ? *online : -1, rc);
+ 	return rc;
+ }
+ 
+@@ -6082,7 +6098,7 @@ static void async_port_probe(void *data, async_cookie_t cookie)
+ 
+ 		ehi->probe_mask |= ATA_ALL_DEVICES;
+ 		ehi->action |= ATA_EH_RESET | ATA_EH_LPM;
+-		ehi->flags |= ATA_EHI_NO_AUTOPSY | ATA_EHI_QUIET;
++		ehi->flags |= ATA_EHI_NO_AUTOPSY/* | ATA_EHI_QUIET*/;
+ 
+ 		ap->pflags &= ~ATA_PFLAG_INITIALIZING;
+ 		ap->pflags |= ATA_PFLAG_LOADING;
+diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
+index a04488f..2efdabb 100644
+--- a/drivers/ata/libata-eh.c
++++ b/drivers/ata/libata-eh.c
+@@ -2437,12 +2437,22 @@ static int ata_do_reset(struct ata_link *link, ata_reset_fn_t reset,
+ static int ata_eh_followup_srst_needed(struct ata_link *link,
+ 				       int rc, const unsigned int *classes)
+ {
+-	if ((link->flags & ATA_LFLAG_NO_SRST) || ata_link_offline(link))
++	ata_link_printk(link, KERN_INFO, "XXX followup_srst_needed rc=%d classes=%d/%d\n",
++			rc, classes[0], classes[1]);
++	if ((link->flags & ATA_LFLAG_NO_SRST) || ata_link_offline(link)) {
++		ata_link_printk(link, KERN_INFO, "XXX !needed NO_SRST=%d offline=%d\n",
++				(bool)(link->flags & ATA_LFLAG_NO_SRST), ata_link_offline(link));
+ 		return 0;
+-	if (rc == -EAGAIN)
++	}
++	if (rc == -EAGAIN) {
++		ata_link_printk(link, KERN_INFO, "XXX needed, -EAGAIN\n");
+ 		return 1;
+-	if (sata_pmp_supported(link->ap) && ata_is_host_link(link))
++	}
++	if (sata_pmp_supported(link->ap) && ata_is_host_link(link)) {
++		ata_link_printk(link, KERN_INFO, "XXX needed, pmp\n");
+ 		return 1;
++	}
++	ata_link_printk(link, KERN_INFO, "XXX !needed\n");
+ 	return 0;
+ }
+ 
+@@ -2598,11 +2608,16 @@ int ata_eh_reset(struct ata_link *link, int classify,
+ 		else
+ 			ehc->i.flags |= ATA_EHI_DID_SOFTRESET;
+ 
++		ata_link_printk(link, KERN_INFO, "XXX before %s reset %d %d\n",
++				reset == hardreset ? "hard" : "soft",
++				classes[0], classes[1]);
+ 		rc = ata_do_reset(link, reset, classes, deadline, true);
+ 		if (rc && rc != -EAGAIN) {
+ 			failed_link = link;
+ 			goto fail;
+ 		}
++		ata_link_printk(link, KERN_INFO, "XXX after reset rc=%d classes=%d/%d\n",
++				rc, classes[0], classes[1]);
+ 
+ 		/* hardreset slave link if existent */
+ 		if (slave && reset == hardreset) {
+@@ -2625,11 +2640,13 @@ int ata_eh_reset(struct ata_link *link, int classify,
+ 				rc = tmp;
+ 				goto fail;
+ 			}
+-		}
++		} else
++			ata_link_printk(link, KERN_INFO, "XXX no slave link\n");
+ 
+ 		/* perform follow-up SRST if necessary */
+ 		if (reset == hardreset &&
+ 		    ata_eh_followup_srst_needed(link, rc, classes)) {
++			ata_link_printk(link, KERN_INFO, "XXX follow-up SRST\n");
+ 			reset = softreset;
+ 
+ 			if (!reset) {
+@@ -2673,8 +2690,10 @@ int ata_eh_reset(struct ata_link *link, int classify,
+ 				classes[dev->devno] = ATA_DEV_ATA;
+ 			else if (lflags & ATA_LFLAG_ASSUME_SEMB)
+ 				classes[dev->devno] = ATA_DEV_SEMB_UNSUP;
+-		} else
++		} else {
++			ata_dev_printk(dev, KERN_INFO, "XXX phys link offline, clearing class\n");
+ 			classes[dev->devno] = ATA_DEV_NONE;
++		}
+ 	}
+ 
+ 	/* record current link speed */
+diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
+index bbbb1fa..efd6fdf 100644
+--- a/drivers/ata/libata-sff.c
++++ b/drivers/ata/libata-sff.c
+@@ -1998,6 +1998,9 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
+ 	if (r_err)
+ 		*r_err = err;
+ 
++	ata_dev_printk(dev, KERN_INFO, "XXX CLASSIFY TF %02x/%02x:%02x:%02x:%02x\n",
++		       tf.command, tf.feature, tf.lbal, tf.lbam, tf.lbah);
++
+ 	/* see if device passed diags: continue and warn later */
+ 	if (err == 0)
+ 		/* diagnostic fail : do nothing _YET_ */
+@@ -2006,11 +2009,14 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
+ 		/* do nothing */ ;
+ 	else if ((dev->devno == 0) && (err == 0x81))
+ 		/* do nothing */ ;
+-	else
++	else {
++		ata_dev_printk(dev, KERN_INFO, "XXX diag nodev\n");
+ 		return ATA_DEV_NONE;
++	}
+ 
+ 	/* determine if device is ATA or ATAPI */
+ 	class = ata_dev_classify(&tf);
++	ata_dev_printk(dev, KERN_INFO, "XXX ata_dev_classify=%d\n", class);
+ 
+ 	if (class == ATA_DEV_UNKNOWN) {
+ 		/* If the device failed diagnostic, it's likely to
+@@ -2019,13 +2025,18 @@ unsigned int ata_sff_dev_classify(struct ata_device *dev, int present,
+ 		 * device signature is invalid with diagnostic
+ 		 * failure.
+ 		 */
+-		if (present && (dev->horkage & ATA_HORKAGE_DIAGNOSTIC))
++		if (present && (dev->horkage & ATA_HORKAGE_DIAGNOSTIC)) {
++			ata_dev_printk(dev, KERN_INFO, "XXX UNK && present -> ATA\n");
+ 			class = ATA_DEV_ATA;
+-		else
++		} else {
+ 			class = ATA_DEV_NONE;
++			ata_dev_printk(dev, KERN_INFO, "XXX UNK && !present -> NONE\n");
++		}
+ 	} else if ((class == ATA_DEV_ATA) &&
+-		   (ap->ops->sff_check_status(ap) == 0))
++		   (ap->ops->sff_check_status(ap) == 0)) {
+ 		class = ATA_DEV_NONE;
++		ata_dev_printk(dev, KERN_INFO, "XXX stat==0 -> NONE\n");
++	}
+ 
+ 	return class;
+ }
+@@ -2064,8 +2075,16 @@ int ata_sff_wait_after_reset(struct ata_link *link, unsigned int devmask,
+ 	/* -ENODEV means the odd clown forgot the D7 pulldown resistor
+ 	 * and TF status is 0xff, bail out on it too.
+ 	 */
+-	if (rc)
+-		return rc;
++	if (rc) {
++		ata_link_printk(link, KERN_INFO, "XXX D7 pulldown quick exit path stat=%02x, retrying in 50ms\n",
++				link->ap->ops->sff_check_status(link->ap));
++		msleep(50);
++		rc = ata_sff_wait_ready(link, deadline);
++		ata_link_printk(link, KERN_INFO, "XXX retried, rc=%d, stat=%x\n",
++				rc, link->ap->ops->sff_check_status(link->ap));
++		if (rc)
++			return rc;
++	}
+ 
+ 	/* if device 1 was found in ata_devchk, wait for register
+ 	 * access briefly, then wait for BSY to clear.
+@@ -2162,7 +2181,8 @@ int ata_sff_softreset(struct ata_link *link, unsigned int *classes,
+ 	ap->ops->sff_dev_select(ap, 0);
+ 
+ 	/* issue bus reset */
+-	DPRINTK("about to softreset, devmask=%x\n", devmask);
++	ata_link_printk(link, KERN_INFO,
++			"about to softreset, devmask=%x\n", devmask);
+ 	rc = ata_bus_softreset(ap, devmask, deadline);
+ 	/* if link is occupied, -ENODEV too is an error */
+ 	if (rc && (rc != -ENODEV || sata_scr_valid(link))) {
+@@ -2211,6 +2231,8 @@ int sata_sff_hardreset(struct ata_link *link, unsigned int *class,
+ 		*class = ata_sff_dev_classify(link->device, 1, NULL);
+ 
+ 	DPRINTK("EXIT, class=%u\n", *class);
++	ata_link_printk(link, KERN_INFO, "XXX sff_hardreset rc=%d online=%d *class=%d\n",
++			rc, online, *class);
+ 	return rc;
+ }
+ EXPORT_SYMBOL_GPL(sata_sff_hardreset);
+
+--------------040509090300030102090906--
