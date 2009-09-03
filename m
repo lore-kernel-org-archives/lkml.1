@@ -1,74 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754196AbZICDlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751887AbZICEEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754196AbZICDlo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 Sep 2009 23:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZICDlo
+	id S1751887AbZICEEQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 00:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750795AbZICEEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 Sep 2009 23:41:44 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:56022 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754134AbZICDln (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 Sep 2009 23:41:43 -0400
-Date: Thu, 03 Sep 2009 12:41:44 +0900 (JST)
-Message-Id: <20090903.124144.104054881.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: nauman@google.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 18/23] io-controller: blkio_cgroup patches from Ryo to
- track async bios.
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090903024014.GA8644@redhat.com>
-References: <20090902135821.GB5012@redhat.com>
-	<20090903.112423.226782505.ryov@valinux.co.jp>
-	<20090903024014.GA8644@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Sep 2009 00:04:15 -0400
+Received: from mga03.intel.com ([143.182.124.21]:36967 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750752AbZICEEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 00:04:14 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="183543437"
+Date: Thu, 3 Sep 2009 12:04:07 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: David Miller <davem@davemloft.net>
+Cc: "herbert@gondor.apana.org.au" <herbert@gondor.apana.org.au>,
+       Arnaldo Carvalho de Melo <acme@ghostprotocols.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: [PATCH][RESEND] tcp: replace hard coded GFP_KERNEL with
+	sk_allocation
+Message-ID: <20090903040407.GA20094@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+This fixed a lockdep warning which appeared when doing stress
+memory tests over NFS:
 
-Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > At ioband level you just get to see bio and page. How do you decide wheter
-> > > this bio is being issued by a process which is a memory hog?
-> > > 
-> > > In fact requester of memory could be anybody. It could be memory hog or a
-> > > different process. So are you saying that you got a mechanism where you 
-> > > can detect that a process is memory hog and charge swap activity to it.
-> > > IOW, if there are two processes A and B and assume A is the memory hog and
-> > > then B requests for memory which triggers lot of swap IO, then you can
-> > > charge all that IO to memory hog A?
-> > 
-> > When an annoymou page is allocated, blkio-cgroup sets an ID to the
-> > page. And then when the page is going to swap out, dm-ioband can know
-> > who the owner of the page is by retrieving ID from the page.
-> > 
-> > In the above case, since the pages of the process A are swapped-out, 
-> > dm-ioband charges swap IO to the process A.
-> > 
-> 
-> But this does not mean that in all cases memory hog is being charged for
-> swap IO, as you have said. So if a process A has done some anonymous page
-> allocations and later a memory hog B comes in and forces swap out of A, 
-> you will charge A for swap activity which does not seem fair as B is
-> memory hog here?
+	inconsistent {RECLAIM_FS-ON-W} -> {IN-RECLAIM_FS-W} usage.
 
-I think this charging policy is not bad, but I think I can understand
-you think it's not fair. Do you think it's fair if all IO is carged to B?
+	page reclaim => nfs_writepage => tcp_sendmsg => lock sk_lock
 
-We should use both io and memory controller together, as you wrote, 
+	mount_root => nfs_root_data => tcp_close => lock sk_lock =>
+			tcp_send_fin => alloc_skb_fclone => page reclaim
 
-Thanks,
-Ryo Tsuruta
+David raised a concern that if the allocation fails in tcp_send_fin(), and it's
+GFP_ATOMIC, we are going to yield() (which sleeps) and loop endlessly waiting
+for the allocation to succeed.
+
+But fact is, the original GFP_KERNEL also sleeps. GFP_ATOMIC+yield() looks
+weird, but it is no worse the implicit sleep inside GFP_KERNEL. Both could
+loop endlessly under memory pressure.
+
+CC: Arnaldo Carvalho de Melo <acme@ghostprotocols.net>
+CC: David S. Miller <davem@davemloft.net>
+CC: Herbert Xu <herbert@gondor.apana.org.au>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ net/ipv4/tcp.c        |    4 ++--
+ net/ipv4/tcp_ipv4.c   |    5 +++--
+ net/ipv4/tcp_output.c |    5 +++--
+ 3 files changed, 8 insertions(+), 6 deletions(-)
+
+--- linux.orig/net/ipv4/tcp_ipv4.c
++++ linux/net/ipv4/tcp_ipv4.c
+@@ -970,8 +970,9 @@ static int tcp_v4_parse_md5_keys(struct 
+ 
+ 	if (!tcp_sk(sk)->md5sig_info) {
+ 		struct tcp_sock *tp = tcp_sk(sk);
+-		struct tcp_md5sig_info *p = kzalloc(sizeof(*p), GFP_KERNEL);
++		struct tcp_md5sig_info *p;
+ 
++		p = kzalloc(sizeof(*p), sk->sk_allocation);
+ 		if (!p)
+ 			return -EINVAL;
+ 
+@@ -979,7 +980,7 @@ static int tcp_v4_parse_md5_keys(struct 
+ 		sk->sk_route_caps &= ~NETIF_F_GSO_MASK;
+ 	}
+ 
+-	newkey = kmemdup(cmd.tcpm_key, cmd.tcpm_keylen, GFP_KERNEL);
++	newkey = kmemdup(cmd.tcpm_key, cmd.tcpm_keylen, sk->sk_allocation);
+ 	if (!newkey)
+ 		return -ENOMEM;
+ 	return tcp_v4_md5_do_add(sk, sin->sin_addr.s_addr,
+--- linux.orig/net/ipv4/tcp_output.c
++++ linux/net/ipv4/tcp_output.c
+@@ -2100,7 +2100,8 @@ void tcp_send_fin(struct sock *sk)
+ 	} else {
+ 		/* Socket is locked, keep trying until memory is available. */
+ 		for (;;) {
+-			skb = alloc_skb_fclone(MAX_TCP_HEADER, GFP_KERNEL);
++			skb = alloc_skb_fclone(MAX_TCP_HEADER,
++					       sk->sk_allocation);
+ 			if (skb)
+ 				break;
+ 			yield();
+@@ -2358,7 +2359,7 @@ int tcp_connect(struct sock *sk)
+ 	sk->sk_wmem_queued += buff->truesize;
+ 	sk_mem_charge(sk, buff->truesize);
+ 	tp->packets_out += tcp_skb_pcount(buff);
+-	tcp_transmit_skb(sk, buff, 1, GFP_KERNEL);
++	tcp_transmit_skb(sk, buff, 1, sk->sk_allocation);
+ 
+ 	/* We change tp->snd_nxt after the tcp_transmit_skb() call
+ 	 * in order to make this packet get counted in tcpOutSegs.
+--- linux.orig/net/ipv4/tcp.c
++++ linux/net/ipv4/tcp.c
+@@ -1834,7 +1834,7 @@ void tcp_close(struct sock *sk, long tim
+ 		/* Unread data was tossed, zap the connection. */
+ 		NET_INC_STATS_USER(sock_net(sk), LINUX_MIB_TCPABORTONCLOSE);
+ 		tcp_set_state(sk, TCP_CLOSE);
+-		tcp_send_active_reset(sk, GFP_KERNEL);
++		tcp_send_active_reset(sk, sk->sk_allocation);
+ 	} else if (sock_flag(sk, SOCK_LINGER) && !sk->sk_lingertime) {
+ 		/* Check zero linger _after_ checking for unread data. */
+ 		sk->sk_prot->disconnect(sk, 0);
+@@ -2666,7 +2666,7 @@ static struct tcp_md5sig_pool **__tcp_al
+ 		struct tcp_md5sig_pool *p;
+ 		struct crypto_hash *hash;
+ 
+-		p = kzalloc(sizeof(*p), GFP_KERNEL);
++		p = kzalloc(sizeof(*p), sk->sk_allocation);
+ 		if (!p)
+ 			goto out_free;
+ 		*per_cpu_ptr(pool, cpu) = p;
