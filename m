@@ -1,94 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932087AbZICPCs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755795AbZICPIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932087AbZICPCs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 11:02:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbZICPCs
+	id S1755795AbZICPIz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 11:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755079AbZICPIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 11:02:48 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:35986 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753328AbZICPCr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 11:02:47 -0400
-Message-ID: <4A9FDA72.8060001@gmail.com>
-Date: Thu, 03 Sep 2009 17:02:10 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Thu, 3 Sep 2009 11:08:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41060 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753328AbZICPIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 11:08:54 -0400
+Message-ID: <4A9FDC37.5060004@redhat.com>
+Date: Thu, 03 Sep 2009 11:09:43 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090806 Fedora/3.0-3.8.b3.fc12 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>,
-       paulmck@linux.vnet.ibm.com
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-References: <c4e36d110908110542l3de51aaepcbd62c84b9848f2b@mail.gmail.com>  <alpine.DEB.1.10.0908121820410.3257@gentwo.org>  <c4e36d110908131009l78b29bffvb4d41b90f9b83288@mail.gmail.com>  <c4e36d110908140233v59421ba6y82192b858210370d@mail.gmail.com>  <4A87CE60.4020506@gmail.com> <4A896324.3040104@trash.net>  <c4e36d110909021445l5f44183es9e338437dfbbd195@mail.gmail.com>  <4A9EEF07.5070800@gmail.com>  <c4e36d110909021531v324a9ce2x3ff2c93b7c5a57de@mail.gmail.com>  <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1>
-In-Reply-To: <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 03 Sep 2009 17:02:11 +0200 (CEST)
+To: Florian Weimer <fweimer@bfk.de>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Hellwig <hch@infradead.org>,
+       Mark Lord <lkml@rtr.ca>, Michael Tokarev <mjt@tls.msk.ru>,
+       david@lang.hm, Pavel Machek <pavel@ucw.cz>,
+       Theodore Tso <tytso@mit.edu>, NeilBrown <neilb@suse.de>,
+       Rob Landley <rob@landley.net>, Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe
+ width, writes in storage
+References: <20090828064449.GA27528@elf.ucw.cz>	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com>	<m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com> <823a74w1cg.fsf@mid.bfk.de>
+In-Reply-To: <823a74w1cg.fsf@mid.bfk.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
-> On Thu, 3 Sep 2009, Eric Dumazet wrote:
-> 
->> Christoph Lameter a ?crit :
->>> On Thu, 3 Sep 2009, Eric Dumazet wrote:
->>>
->>>> on a SLAB_DESTROY_BY_RCU cache, there is no need to try to optimize this
->>>> rcu_barrier() call, unless we want superfast reboot/halt sequences...
->>> I stilll think that the action to quiesce rcu is something that the caller
->>> of kmem_cache_destroy must take care of.
->> Do you mean :
->>
->> if (kmem_cache_shrink(s) == 0) {
->> 	rcu_barrier();
->> 	kmem_cache_destroy_no_rcu_barrier(s);
->> } else {
->> 	kmem_cache_destroy_with_rcu_barrier_because_SLAB_DESTROY_BY_RCU_cache(s);
->> }
->>
->> What would be the point ?
-> 
-> The above is port of slub?
+On 09/03/2009 10:26 AM, Florian Weimer wrote:
+> * Ric Wheeler:
+>
+>> Note that even without MD raid, the file system issues IO's in file
+>> system block size (4096 bytes normally) and most commodity storage
+>> devices use a 512  byte sector size which means that we have to update
+>> 8 512b sectors.
+>
+> Database software often attempts to deal with this phenomenon
+> (sometimes called "torn page writes").  For example, you can make sure
+> that the first time you write to a database page, you keep a full copy
+> in your transaction log.  If the machine crashes, the log is replayed,
+> first completely overwriting the partially-written page.  Only after
+> that, you can perform logical/incremental logging.
+>
+> The log itself has to be protected with a different mechanism, so that
+> you don't try to replay bad data.  But you haven't comitted to this
+> data yet, so it is fine to skip bad records.
 
-No, I am trying to code what you suggest, and I could not find a clean way with
-current API (SLAB/SLUB/SLOB)
+Yes - databases worry a lot about this. Another technique that they tend to use 
+is to have state bits at the beginning and end of their logical pages. For 
+example, the first byte and last byte toggle together from 1 to 0 to 1 to 0 as 
+you update.
 
-> 
-> I mean that (in this case) the net subsystem would have to deal with RCU quietness
-> before disposing of the slab cache. There may be multiple ways of dealing
-> with RCU. The RCU barrier may be unnecessary for future uses. Typically
-> one would expect that all deferred handling of structures must be complete
-> for correctness before disposing of the whole cache.
+If the bits don't match, that is a quick level indication of a torn write.
 
-Point is we cannot deal with RCU quietness before disposing the slab cache,
-(if SLAB_DESTROY_BY_RCU was set on the cache) since this disposing *will* 
-make call_rcu() calls when a full slab is freed/purged.
-And when RCU grace period is elapsed, the callback *will* need access to 
-the cache we want to dismantle. Better to not have kfreed()/poisoned it...
+Even with the above scheme, you can still have data loss of course - you just 
+need an IO error in the log and in your db table that was recently updated. Not 
+entirely unlikely, especially if you use write cache enabled storage and don't 
+flush that cache :-)
 
-I believe you mix two RCU uses here.
+>
+> Therefore, sub-page corruption is a fundamentally different issue from
+> super-page corruption.
 
-1) The one we all know, is use normal caches (!SLAB_DESTROY_BY_RCU) 
-(or kmalloc()), and use call_rcu(... kfree_something)
+We have to be careful to keep our terms clear since the DB pages are (usually) 
+larger than the FS block size which in turn is larger than non-RAID storage 
+sector size. At the FS level, we send down multiples of fs blocks (not 
+blocked/aligned at RAID stripe levels, etc).
 
-   In this case, you are 100% right that the subsystem itself has
-   to call rcu_barrier() (or respect whatever self-synchro) itself,
-   before calling kmem_cache_destroy()
-
-2) The SLAB_DESTROY_BY_RCU one.
-
-   Part of cache dismantle needs to call rcu_barrier() itself.
-   Caller doesnt have to use rcu_barrier(). It would be a waste of time,
-   as kmem_cache_destroy() will refill rcu wait queues with its own stuff.
+In any case, we can get sub-FS block level "torn writes" even with a local S-ATA 
+drive in edge conditions.
 
 
+>
+> BTW, older textbooks will tell you that mirroring requires that you
+> read from two copies of the data and compare it (and have some sort of
+> tie breaker if you need availability).  And you also have to re-read
+> data you've just written to disk, to make sure it's actually there and
+> hit the expected sectors.  We can't even do this anymore, thanks to
+> disk caches.  And it doesn't seem to be necessary in most cases.
+>
 
+We can do something like this with the built in RAID in btrfs. If you detect an 
+IO error (or bad checksum) on a read, btrfs knows how to request/grab another copy.
 
+Also note that the SCSI T10 DIF/DIX has baked in support for applications to 
+layer on extra data integrity (look for MKP's slide decks). This is really neat 
+since you can intercept bad IO's on the way down and prevent overwriting good data.
+
+ric
 
