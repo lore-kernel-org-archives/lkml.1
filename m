@@ -1,243 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbZIDHBS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933049AbZIDHDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933085AbZIDHBS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:01:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933064AbZIDHBP
+	id S933049AbZIDHDb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932979AbZIDHA4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:01:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56563 "EHLO mx1.suse.de"
+	Fri, 4 Sep 2009 03:00:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56567 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932685AbZIDG6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:58:41 -0400
-Message-Id: <20090904065538.693437484@nick.local0.net>
+	id S932770AbZIDG6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:58:43 -0400
+Message-Id: <20090904065538.866776742@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:52:11 +1000
+Date: Fri, 04 Sep 2009 16:52:12 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 30/33] fs: inode lazy lru
+Subject: [patch 31/33] fs: RCU free inodes
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-inode_lock-scale-10.patch
+Content-Disposition: inline; filename=fs-inode_rcu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impelemnt lazy inode lru similarly to dcache. This should reduce inode list
-lock acquisition (todo: measure).
----
- fs/fs-writeback.c         |    2 -
- fs/inode.c                |   61 +++++++++++++++++++---------------------------
- include/linux/fs.h        |    7 ++++-
- include/linux/writeback.h |    1 
- 4 files changed, 33 insertions(+), 38 deletions(-)
+RCU free the struct inode. This will allow:
 
+- sb_inode_list_lock to be moved inside i_lock because sb list walkers who want
+  to take i_lock no longer need to take sb_inode_list_lock to walk the list in
+  the first place. This will simplify and optimize locking.
+- eventually, completely write-free RCU path walking. The inode must be
+  consulted for permissions when walking, so a write-free reference (ie.
+  RCU is helpful).
+- can potentially simplify things a bit in VM land. May not need to take the
+  page lock to get back to the page->mapping.
+- can remove some nested trylock loops in dcache code
+
+todo: convert all filesystems
+---
+ fs/block_dev.c       |    9 ++++++++-
+ fs/ext2/super.c      |    9 ++++++++-
+ fs/ext3/super.c      |    9 ++++++++-
+ fs/hugetlbfs/inode.c |    9 ++++++++-
+ fs/inode.c           |    9 ++++++++-
+ fs/proc/inode.c      |    9 ++++++++-
+ include/linux/fs.h   |    5 ++++-
+ ipc/mqueue.c         |    9 ++++++++-
+ net/socket.c         |    9 ++++++++-
+ 9 files changed, 68 insertions(+), 9 deletions(-)
+
+Index: linux-2.6/fs/ext2/super.c
+===================================================================
+--- linux-2.6.orig/fs/ext2/super.c
++++ linux-2.6/fs/ext2/super.c
+@@ -157,11 +157,18 @@ static struct inode *ext2_alloc_inode(st
+ 	return &ei->vfs_inode;
+ }
+ 
+-static void ext2_destroy_inode(struct inode *inode)
++static void ext2_i_callback(struct rcu_head *head)
+ {
++	struct inode *inode = container_of(head, struct inode, i_rcu);
++	INIT_LIST_HEAD(&inode->i_dentry);
+ 	kmem_cache_free(ext2_inode_cachep, EXT2_I(inode));
+ }
+ 
++static void ext2_destroy_inode(struct inode *inode)
++{
++	call_rcu(&inode->i_rcu, ext2_i_callback);
++}
++
+ static void init_once(void *foo)
+ {
+ 	struct ext2_inode_info *ei = (struct ext2_inode_info *) foo;
 Index: linux-2.6/fs/inode.c
 ===================================================================
 --- linux-2.6.orig/fs/inode.c
 +++ linux-2.6/fs/inode.c
-@@ -74,7 +74,6 @@ static unsigned int i_hash_shift __read_
-  * allowing for low-overhead inode sync() operations.
-  */
+@@ -252,13 +252,20 @@ void __destroy_inode(struct inode *inode
+ }
+ EXPORT_SYMBOL(__destroy_inode);
  
--LIST_HEAD(inode_in_use);
- LIST_HEAD(inode_unused);
- 
- struct inode_hash_bucket {
-@@ -273,6 +272,7 @@ void inode_init_once(struct inode *inode
- 	INIT_HLIST_NODE(&inode->i_hash);
- 	INIT_LIST_HEAD(&inode->i_dentry);
- 	INIT_LIST_HEAD(&inode->i_devices);
-+	INIT_LIST_HEAD(&inode->i_list);
- 	INIT_RADIX_TREE(&inode->i_data.page_tree, GFP_ATOMIC);
- 	spin_lock_init(&inode->i_data.tree_lock);
- 	spin_lock_init(&inode->i_data.i_mmap_lock);
-@@ -298,24 +298,6 @@ static void init_once(void *foo)
- 	inode_init_once(inode);
++static void i_callback(struct rcu_head *head)
++{
++	struct inode *inode = container_of(head, struct inode, i_rcu);
++	INIT_LIST_HEAD(&inode->i_dentry);
++	kmem_cache_free(inode_cachep, inode);
++}
++
+ void destroy_inode(struct inode *inode)
+ {
+ 	__destroy_inode(inode);
+ 	if (inode->i_sb->s_op->destroy_inode)
+ 		inode->i_sb->s_op->destroy_inode(inode);
+ 	else
+-		kmem_cache_free(inode_cachep, (inode));
++		call_rcu(&inode->i_rcu, i_callback);
  }
  
--/*
-- * inode_lock must be held
-- */
--void __iget(struct inode *inode)
--{
--	assert_spin_locked(&inode->i_lock);
--	inode->i_count++;
--	if (inode->i_count > 1)
--		return;
--
--	if (!(inode->i_state & (I_DIRTY|I_SYNC))) {
--		spin_lock(&wb_inode_list_lock);
--		list_move(&inode->i_list, &inode_in_use);
--		spin_unlock(&wb_inode_list_lock);
--	}
--	atomic_dec(&inodes_stat.nr_unused);
--}
--
- /**
-  * clear_inode - clear an inode
-  * @inode: inode to clear
-@@ -359,7 +341,7 @@ static void dispose_list(struct list_hea
- 		struct inode *inode;
- 
- 		inode = list_first_entry(head, struct inode, i_list);
--		list_del(&inode->i_list);
-+		list_del_init(&inode->i_list);
- 
- 		if (inode->i_data.nrpages)
- 			truncate_inode_pages(&inode->i_data, 0);
-@@ -412,11 +394,12 @@ static int invalidate_list(struct list_h
- 		invalidate_inode_buffers(inode);
- 		if (!inode->i_count) {
- 			spin_lock(&wb_inode_list_lock);
--			list_move(&inode->i_list, dispose);
-+			list_del(&inode->i_list);
- 			spin_unlock(&wb_inode_list_lock);
- 			WARN_ON(inode->i_state & I_NEW);
- 			inode->i_state |= I_FREEING;
- 			spin_unlock(&inode->i_lock);
-+			list_add(&inode->i_list, dispose);
- 			count++;
- 			continue;
- 		}
-@@ -503,7 +486,13 @@ again:
- 			spin_unlock(&wb_inode_list_lock);
- 			goto again;
- 		}
--		if (inode->i_state || inode->i_count) {
-+		if (inode->i_count) {
-+			list_del_init(&inode->i_list);
-+			spin_unlock(&inode->i_lock);
-+			atomic_dec(&inodes_stat.nr_unused);
-+			continue;
-+		}
-+		if (inode->i_state) {
- 			list_move(&inode->i_list, &inode_unused);
- 			spin_unlock(&inode->i_lock);
- 			continue;
-@@ -519,6 +508,7 @@ again:
- again2:
- 			spin_lock(&wb_inode_list_lock);
- 
-+			/* XXX: may no longer work well */
- 			if (inode != list_entry(inode_unused.next,
- 						struct inode, i_list))
- 				continue;	/* wrong inode or list_empty */
-@@ -667,9 +657,6 @@ __inode_add_to_lists(struct super_block
- 	atomic_inc(&inodes_stat.nr_inodes);
- 	list_add(&inode->i_sb_list, &sb->s_inodes);
- 	spin_unlock(&sb_inode_list_lock);
--	spin_lock(&wb_inode_list_lock);
--	list_add(&inode->i_list, &inode_in_use);
--	spin_unlock(&wb_inode_list_lock);
- 	if (b) {
- 		spin_lock(&b->lock);
- 		hlist_add_head(&inode->i_hash, &b->head);
-@@ -1316,9 +1303,11 @@ void generic_delete_inode(struct inode *
- {
- 	const struct super_operations *op = inode->i_sb->s_op;
- 
--	spin_lock(&wb_inode_list_lock);
--	list_del_init(&inode->i_list);
--	spin_unlock(&wb_inode_list_lock);
-+	if (!list_empty(&inode->i_list)) {
-+		spin_lock(&wb_inode_list_lock);
-+		list_del_init(&inode->i_list);
-+		spin_unlock(&wb_inode_list_lock);
-+	}
- 	list_del_init(&inode->i_sb_list);
- 	spin_unlock(&sb_inode_list_lock);
- 	WARN_ON(inode->i_state & I_NEW);
-@@ -1355,12 +1344,12 @@ static void generic_forget_inode(struct
- 	struct super_block *sb = inode->i_sb;
- 
- 	if (!hlist_unhashed(&inode->i_hash)) {
--		if (!(inode->i_state & (I_DIRTY|I_SYNC))) {
-+		if (list_empty(&inode->i_list)) {
- 			spin_lock(&wb_inode_list_lock);
--			list_move(&inode->i_list, &inode_unused);
-+			list_add(&inode->i_list, &inode_unused);
- 			spin_unlock(&wb_inode_list_lock);
-+			atomic_inc(&inodes_stat.nr_unused);
- 		}
--		atomic_inc(&inodes_stat.nr_unused);
- 		if (sb->s_flags & MS_ACTIVE) {
- 			spin_unlock(&inode->i_lock);
- 			spin_unlock(&sb_inode_list_lock);
-@@ -1376,11 +1365,13 @@ static void generic_forget_inode(struct
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state &= ~I_WILL_FREE;
- 		__remove_inode_hash(inode);
-+	}
-+	if (!list_empty(&inode->i_list)) {
-+		spin_lock(&wb_inode_list_lock);
-+		list_del_init(&inode->i_list);
-+		spin_unlock(&wb_inode_list_lock);
- 		atomic_dec(&inodes_stat.nr_unused);
- 	}
--	spin_lock(&wb_inode_list_lock);
--	list_del_init(&inode->i_list);
--	spin_unlock(&wb_inode_list_lock);
- 	list_del_init(&inode->i_sb_list);
- 	spin_unlock(&sb_inode_list_lock);
- 	WARN_ON(inode->i_state & I_NEW);
-@@ -1705,7 +1696,7 @@ void __init inode_init(void)
- 
- 	inode_hashtable =
- 		alloc_large_system_hash("Inode-cache",
--					sizeof(struct hlist_head),
-+					sizeof(struct inode_hash_bucket),
- 					ihash_entries,
- 					14,
- 					0,
+ /*
 Index: linux-2.6/include/linux/fs.h
 ===================================================================
 --- linux-2.6.orig/include/linux/fs.h
 +++ linux-2.6/include/linux/fs.h
-@@ -2166,7 +2166,6 @@ extern int insert_inode_locked4(struct i
- extern int insert_inode_locked(struct inode *);
- extern void unlock_new_inode(struct inode *);
+@@ -718,7 +718,10 @@ struct inode {
+ 	struct hlist_node	i_hash;
+ 	struct list_head	i_list;
+ 	struct list_head	i_sb_list;
+-	struct list_head	i_dentry;
++	union {
++		struct list_head	i_dentry;
++		struct rcu_head		i_rcu;
++	};
+ 	unsigned long		i_ino;
+ 	unsigned int		i_count;
+ 	unsigned int		i_nlink;
+Index: linux-2.6/fs/block_dev.c
+===================================================================
+--- linux-2.6.orig/fs/block_dev.c
++++ linux-2.6/fs/block_dev.c
+@@ -416,14 +416,21 @@ static struct inode *bdev_alloc_inode(st
+ 	return &ei->vfs_inode;
+ }
  
--extern void __iget(struct inode * inode);
- extern void iget_failed(struct inode *);
- extern void clear_inode(struct inode *);
- extern void destroy_inode(struct inode *);
-@@ -2384,6 +2383,12 @@ extern int generic_show_options(struct s
- extern void save_mount_options(struct super_block *sb, char *options);
- extern void replace_mount_options(struct super_block *sb, char *options);
+-static void bdev_destroy_inode(struct inode *inode)
++static void bdev_i_callback(struct rcu_head *head)
+ {
++	struct inode *inode = container_of(head, struct inode, i_rcu);
+ 	struct bdev_inode *bdi = BDEV_I(inode);
  
-+static inline void __iget(struct inode *inode)
++	INIT_LIST_HEAD(&inode->i_dentry);
+ 	bdi->bdev.bd_inode_backing_dev_info = NULL;
+ 	kmem_cache_free(bdev_cachep, bdi);
+ }
+ 
++static void bdev_destroy_inode(struct inode *inode)
 +{
-+	assert_spin_locked(&inode->i_lock);
-+	inode->i_count++;
++	call_rcu(&inode->i_rcu, bdev_i_callback);
 +}
 +
- static inline ino_t parent_ino(struct dentry *dentry)
+ static void init_once(void *foo)
  {
- 	ino_t res;
-Index: linux-2.6/fs/fs-writeback.c
+ 	struct bdev_inode *ei = (struct bdev_inode *) foo;
+Index: linux-2.6/fs/ext3/super.c
 ===================================================================
---- linux-2.6.orig/fs/fs-writeback.c
-+++ linux-2.6/fs/fs-writeback.c
-@@ -429,7 +429,7 @@ writeback_single_inode(struct inode *ino
- 			/*
- 			 * The inode is clean, inuse
- 			 */
--			list_move(&inode->i_list, &inode_in_use);
-+			list_del_init(&inode->i_list);
- 		} else {
- 			/*
- 			 * The inode is clean, unused
-Index: linux-2.6/include/linux/writeback.h
+--- linux-2.6.orig/fs/ext3/super.c
++++ linux-2.6/fs/ext3/super.c
+@@ -469,6 +469,13 @@ static struct inode *ext3_alloc_inode(st
+ 	return &ei->vfs_inode;
+ }
+ 
++static void ext3_i_callback(struct rcu_head *head)
++{
++	struct inode *inode = container_of(head, struct inode, i_rcu);
++	INIT_LIST_HEAD(&inode->i_dentry);
++	kmem_cache_free(ext3_inode_cachep, EXT3_I(inode));
++}
++
+ static void ext3_destroy_inode(struct inode *inode)
+ {
+ 	if (!list_empty(&(EXT3_I(inode)->i_orphan))) {
+@@ -479,7 +486,7 @@ static void ext3_destroy_inode(struct in
+ 				false);
+ 		dump_stack();
+ 	}
+-	kmem_cache_free(ext3_inode_cachep, EXT3_I(inode));
++	call_rcu(&inode->i_rcu, ext3_i_callback);
+ }
+ 
+ static void init_once(void *foo)
+Index: linux-2.6/fs/hugetlbfs/inode.c
 ===================================================================
---- linux-2.6.orig/include/linux/writeback.h
-+++ linux-2.6/include/linux/writeback.h
-@@ -11,7 +11,6 @@ struct backing_dev_info;
+--- linux-2.6.orig/fs/hugetlbfs/inode.c
++++ linux-2.6/fs/hugetlbfs/inode.c
+@@ -697,11 +697,18 @@ static struct inode *hugetlbfs_alloc_ino
+ 	return &p->vfs_inode;
+ }
  
- extern spinlock_t sb_inode_list_lock;
- extern spinlock_t wb_inode_list_lock;
--extern struct list_head inode_in_use;
- extern struct list_head inode_unused;
++static void hugetlbfs_i_callback(struct rcu_head *head)
++{
++	struct inode *inode = container_of(head, struct inode, i_rcu);
++	INIT_LIST_HEAD(&inode->i_dentry);
++	kmem_cache_free(hugetlbfs_inode_cachep, HUGETLBFS_I(inode));
++}
++
+ static void hugetlbfs_destroy_inode(struct inode *inode)
+ {
+ 	hugetlbfs_inc_free_inodes(HUGETLBFS_SB(inode->i_sb));
+ 	mpol_free_shared_policy(&HUGETLBFS_I(inode)->policy);
+-	kmem_cache_free(hugetlbfs_inode_cachep, HUGETLBFS_I(inode));
++	call_rcu(&inode->i_rcu, hugetlbfs_i_callback);
+ }
  
- /*
+ static const struct address_space_operations hugetlbfs_aops = {
+Index: linux-2.6/fs/proc/inode.c
+===================================================================
+--- linux-2.6.orig/fs/proc/inode.c
++++ linux-2.6/fs/proc/inode.c
+@@ -88,11 +88,18 @@ static struct inode *proc_alloc_inode(st
+ 	return inode;
+ }
+ 
+-static void proc_destroy_inode(struct inode *inode)
++static void proc_i_callback(struct rcu_head *head)
+ {
++	struct inode *inode = container_of(head, struct inode, i_rcu);
++	INIT_LIST_HEAD(&inode->i_dentry);
+ 	kmem_cache_free(proc_inode_cachep, PROC_I(inode));
+ }
+ 
++static void proc_destroy_inode(struct inode *inode)
++{
++	call_rcu(&inode->i_rcu, proc_i_callback);
++}
++
+ static void init_once(void *foo)
+ {
+ 	struct proc_inode *ei = (struct proc_inode *) foo;
+Index: linux-2.6/ipc/mqueue.c
+===================================================================
+--- linux-2.6.orig/ipc/mqueue.c
++++ linux-2.6/ipc/mqueue.c
+@@ -238,11 +238,18 @@ static struct inode *mqueue_alloc_inode(
+ 	return &ei->vfs_inode;
+ }
+ 
+-static void mqueue_destroy_inode(struct inode *inode)
++static void mqueue_i_callback(struct rcu_head *head)
+ {
++	struct inode *inode = container_of(head, struct inode, i_rcu);
++	INIT_LIST_HEAD(&inode->i_dentry);
+ 	kmem_cache_free(mqueue_inode_cachep, MQUEUE_I(inode));
+ }
+ 
++static void mqueue_destroy_inode(struct inode *inode)
++{
++	call_rcu(&inode->i_rcu, mqueue_i_callback);
++}
++
+ static void mqueue_delete_inode(struct inode *inode)
+ {
+ 	struct mqueue_inode_info *info;
+Index: linux-2.6/net/socket.c
+===================================================================
+--- linux-2.6.orig/net/socket.c
++++ linux-2.6/net/socket.c
+@@ -258,12 +258,19 @@ static struct inode *sock_alloc_inode(st
+ 	return &ei->vfs_inode;
+ }
+ 
+-static void sock_destroy_inode(struct inode *inode)
++static void sock_i_callback(struct rcu_head *head)
+ {
++	struct inode *inode = container_of(head, struct inode, i_rcu);
++	INIT_LIST_HEAD(&inode->i_dentry);
+ 	kmem_cache_free(sock_inode_cachep,
+ 			container_of(inode, struct socket_alloc, vfs_inode));
+ }
+ 
++static void sock_destroy_inode(struct inode *inode)
++{
++	call_rcu(&inode->i_rcu, sock_i_callback);
++}
++
+ static void init_once(void *foo)
+ {
+ 	struct socket_alloc *ei = (struct socket_alloc *)foo;
 
 
