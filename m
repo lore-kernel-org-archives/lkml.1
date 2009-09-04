@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZIDFDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756572AbZIDFEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbZIDFDJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 01:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZIDFDI
+	id S1756572AbZIDFEr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 01:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756480AbZIDFEq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 01:03:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:59404 "EHLO mx3.mail.elte.hu"
+	Fri, 4 Sep 2009 01:04:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:59558 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751905AbZIDFDH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 01:03:07 -0400
-Date: Fri, 4 Sep 2009 07:02:56 +0200
+	id S1756225AbZIDFEo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 01:04:44 -0400
+Date: Fri, 4 Sep 2009 07:04:28 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: David Miller <davem@davemloft.net>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, fweisbec@gmail.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090904050256.GA8382@elte.hu>
-References: <20090806070242.GF12579@kernel.dk> <20090816.183134.90977928.davem@davemloft.net> <20090817064851.GQ12579@kernel.dk> <20090903.213702.250776705.davem@davemloft.net>
+To: Wu Zhangjin <wuzhangjin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, James Bottomley <James.Bottomley@suse.de>,
+       Rusty Russell <rusty@rustcorp.com.au>, Helge Deller <deller@gmx.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH] fix "no member named 'sect_attrs' of strcut module"
+Message-ID: <20090904050428.GB8382@elte.hu>
+References: <1252036108-24221-1-git-send-email-wuzhangjin@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090903.213702.250776705.davem@davemloft.net>
+In-Reply-To: <1252036108-24221-1-git-send-email-wuzhangjin@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -34,44 +35,27 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* David Miller <davem@davemloft.net> wrote:
+* Wu Zhangjin <wuzhangjin@gmail.com> wrote:
 
-> From: Jens Axboe <jens.axboe@oracle.com>
-> Date: Mon, 17 Aug 2009 08:48:51 +0200
+> From: Wu Zhangjin <wuzhangjin@gmail.com>
 > 
-> >     sparc: add basic support for 'perf'
-> >     
-> >     This wires up the perf_counter_open() syscall so that basic
-> >     software support for perf is working.
-> >     
-> >     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> The commit(1b364bf438cf337a3818aee77d68c0713f3e1fc4, "module: workaround
+> duplicate section names") introduced a condition to avoid null pointer
+> reference:
 > 
-> Does this build for you without adding an
-> arch/sparc/include/asm/perf_counter.h that looks
-> something like the following?
+> -       add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
+> +       if (mod->sect_attrs)
+> +               add_notes_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
 > 
-> #ifndef _ASM_SPARC_PERF_COUNTER_H
-> #define _ASM_SPARC_PERF_COUNTER_H
+> but sect_attrs is only defined when CONFIG_KALLSYMS enabled, so this
+> patch is need to fix the following error:
 > 
-> #define PERF_COUNTER_INDEX_OFFSET	0
+> error: 'struct module' has no member named 'sect_attrs'
 > 
-> #endif
-> 
-> Or is this somehow now required in the -tip trees?
+> Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
 
-This used to be required but i recently fixed this (and that fix is 
-upstream as well) via:
+This has been fixed already, see this upstream fix:
 
-  f738eb1: perf_counter: Fix the PARISC build
-
-there's now a default define of 0 so you dont have to define it and 
-can leave out this chunk.
-
-( That index is only interesting if the architecture has a way to 
-  allow unprivileged user-space to access counter registers 
-  directly. In that case the index reflects the offset from the 
-  (constantly changing) dynamix index which we put into the mmap 
-  header. With Sparc not having a hw-PMU implementation this index 
-  is entirely uninteresting at this stage. )
+  ea6bff3: modules: Fix build error in the !CONFIG_KALLSYMS case
 
 	Ingo
