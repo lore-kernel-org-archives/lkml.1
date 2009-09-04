@@ -1,64 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756543AbZIDFF2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756510AbZIDFHJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756543AbZIDFF2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 01:05:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750999AbZIDFF1
+	id S1756510AbZIDFHJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 01:07:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbZIDFHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 01:05:27 -0400
-Received: from mail-px0-f177.google.com ([209.85.216.177]:35769 "EHLO
-	mail-px0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbZIDFF0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 01:05:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:mime-version:content-type
-         :content-disposition:user-agent:message-id;
-        b=xNjhAMCv7GbZoXf/OgpiQye1Nzs97rOw4Uz9un85bGbH70skkj/1BftIFSu3Jvb6mQ
-         SPvqVaxpiV4JF82e+A/yLZfjfSONZ1EYpqd8JA/MYtV10YyJJDNjSjH0d8MBz3tvi9RH
-         hi+/fkqxT/HAv24LgEf82bEU/Mt4ybVK2sago=
-Date: Thu, 3 Sep 2009 22:05:24 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.31-rc8
+	Fri, 4 Sep 2009 01:07:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36920 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750999AbZIDFHH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 01:07:07 -0400
+Message-ID: <4AA0A05B.5010806@kernel.org>
+Date: Fri, 04 Sep 2009 14:06:35 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090904053822.CCA13526EA5@mailhub.coreip.homeip.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, jeremy.fitzhardinge@citrix.com,
+       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
+ is cache aligned
+References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <4AA080A0.7010804@kernel.org> <4AA08283.5020306@kernel.org> <4AA08B09.50503@zytor.com> <4AA08DD3.5010509@kernel.org> <4AA08ED0.4050206@zytor.com>
+In-Reply-To: <4AA08ED0.4050206@zytor.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 04 Sep 2009 05:06:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+H. Peter Anvin wrote:
+> On 09/03/2009 08:47 PM, Tejun Heo wrote:
+>> H. Peter Anvin wrote:
+>>> On 09/03/2009 07:59 PM, Tejun Heo wrote:
+>>>> Another question.  Other than saving and loading an extra segment
+>>>> register on kernel entry/exit, whether using the same or different
+>>>> segment registers doesn't look like would make difference
+>>>> performance-wise.  If I'm interpreting the wording in the optimization
+>>>> manual correctly, it means that each non-zero segment based memory
+>>>> access will be costly regardless of which specific segment register is
+>>>> in use and there's no way we can merge segment based dereferences for
+>>>> stackprotector and percpu variables.
+>>>>
+>>> It's correct that it doesn't make any difference for access, only for load.
+>> Heh... here's a naive and hopeful plan.  How about we beg gcc
+>> developers to allow different segment register and offset in newer gcc
+>> versions and then use the same one when building with the new gcc?
+>> This should solve the i386 problem too.  It would be the best as we
+>> get to keep the separate segment register from the userland.  Too
+>> hopeful?
+> 
+> I think it's possible to set the register in more recent gcc.  Doing the
+> sane thing and having a symbol for an offset is probably worse.
 
-Please pull from:
+I was thinking about altering the build process so that we can use sed
+to substitute %gs:40 with %fs:40 while compiling.  If it's already
+possible to override the register in more recent gcc, no need to go
+into that horror.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+> I can talk to H.J. Lu about this tomorrow.
 
-to receive updates for the input subsystem.
+Great, please keep us posted.
 
-Changelog:
----------
-
-Dave Andrews (1):
-      Input: atkbd - add Compaq Presario R4000-series repeat quirk
-
-Dmitry Torokhov (1):
-      Input: i8042 - add Acer Aspire 5536 to the nomux list
-
-
-Diffstat:
---------
-
- drivers/input/keyboard/atkbd.c        |   35 +++++++++++++++++++++++++++++++++
- drivers/input/serio/i8042-x86ia64io.h |    8 +++++++
- 2 files changed, 43 insertions(+), 0 deletions(-)
+Thanks.
 
 -- 
-Dmitry
-
+tejun
