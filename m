@@ -1,63 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933790AbZIDSbW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZIDSeh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933790AbZIDSbW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 14:31:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757170AbZIDSbV
+	id S1757214AbZIDSeh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 14:34:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757176AbZIDSef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 14:31:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54209 "EHLO mx3.mail.elte.hu"
+	Fri, 4 Sep 2009 14:34:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51581 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753422AbZIDSbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 14:31:20 -0400
-Date: Fri, 4 Sep 2009 20:31:03 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       mingo@redhat.com, sam@ravnborg.org, tglx@linutronix.de,
-       David.Woodhouse@intel.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/kbuild] x86: Don't silently override CONFIG_64BIT in
-	'make oldconfig'
-Message-ID: <20090904183103.GA1873@elte.hu>
-References: <tip-5a8a2d13b1526e306ff2a9fe12dc9d5878d355f9@git.kernel.org> <20090904144857.GA12872@elte.hu> <alpine.LFD.2.00.0909041631210.14872@twosheds.infradead.org> <4AA13FE6.20807@zytor.com>
+	id S1757173AbZIDSef (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 14:34:35 -0400
+Date: Fri, 4 Sep 2009 18:34:03 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/core] perf stat: Clean up statistics calculations a bit more
+Message-ID: <tip-849abde92bd3314a4894f2b4f70b30c2accf8653@git.kernel.org>
+Git-Commit-ID: 849abde92bd3314a4894f2b4f70b30c2accf8653
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <4AA13FE6.20807@zytor.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 04 Sep 2009 18:34:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  849abde92bd3314a4894f2b4f70b30c2accf8653
+Gitweb:     http://git.kernel.org/tip/849abde92bd3314a4894f2b4f70b30c2accf8653
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 4 Sep 2009 18:23:38 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 4 Sep 2009 20:27:26 +0200
 
-* H. Peter Anvin <hpa@zytor.com> wrote:
+perf stat: Clean up statistics calculations a bit more
 
-> On 09/04/2009 08:33 AM, David Woodhouse wrote:
-> > On Fri, 4 Sep 2009, Ingo Molnar wrote:
-> > 
-> > 
-> >>> x86: Don't silently override CONFIG_64BIT in 'make oldconfig'
-> >>
-> >> -tip testing found that this commit broke the UML build:
-> >>
-> >> /home/mingo/tip/arch/um/Makefile:52:
-> >> /home/mingo/tip/arch/um/Makefile-x86: No such file or directory
-> >> make[1]: *** No rule to make target
-> >> `/home/mingo/tip/arch/um/Makefile-x86'.  Stop.
-> >> make: *** [sub-make] Error 2
-> > 
-> > Hm, doesn't that mean that UML has always been broken for ARCH=x86?
-> 
-> Quite possible.  ARCH=x86 hasn't exactly been widely used.
+Remove some, now useless, global storage.
+Don't calculate the stddev when not needed.
 
-Note, i used 'make ARCH=um' so this commit cannot be pushed upwards 
-until this problem is fixed. It could very well be some missing 
-changes on the UML side.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-	Ingo
+
+---
+ tools/perf/builtin-stat.c |   31 ++++++++++++++-----------------
+ 1 files changed, 14 insertions(+), 17 deletions(-)
+
+diff --git a/tools/perf/builtin-stat.c b/tools/perf/builtin-stat.c
+index 32b5c00..61b8282 100644
+--- a/tools/perf/builtin-stat.c
++++ b/tools/perf/builtin-stat.c
+@@ -74,7 +74,6 @@ static int			null_run			=  0;
+ 
+ static int			fd[MAX_NR_CPUS][MAX_COUNTERS];
+ 
+-static u64			event_res[MAX_COUNTERS][3];
+ static int			event_scaled[MAX_COUNTERS];
+ 
+ struct stats
+@@ -179,14 +178,12 @@ static inline int nsec_counter(int counter)
+  */
+ static void read_counter(int counter)
+ {
+-	u64 *count, single_count[3];
++	u64 count[3], single_count[3];
+ 	unsigned int cpu;
+ 	size_t res, nv;
+ 	int scaled;
+ 	int i;
+ 
+-	count = event_res[counter];
+-
+ 	count[0] = count[1] = count[2] = 0;
+ 
+ 	nv = scale ? 3 : 1;
+@@ -318,13 +315,16 @@ static int run_perf_stat(int argc __used, const char **argv)
+ 	return WEXITSTATUS(status);
+ }
+ 
+-static void print_noise(double avg, double stddev)
++static void print_noise(int counter, double avg)
+ {
+-	if (run_count > 1)
+-		fprintf(stderr, "   ( +- %7.3f%% )", 100*stddev / avg);
++	if (run_count == 1)
++		return;
++
++	fprintf(stderr, "   ( +- %7.3f%% )",
++			100 * stddev_stats(&event_res_stats[counter][0]) / avg);
+ }
+ 
+-static void nsec_printout(int counter, double avg, double stddev)
++static void nsec_printout(int counter, double avg)
+ {
+ 	double msecs = avg / 1e6;
+ 
+@@ -334,10 +334,9 @@ static void nsec_printout(int counter, double avg, double stddev)
+ 		fprintf(stderr, " # %10.3f CPUs ",
+ 				avg / avg_stats(&walltime_nsecs_stats));
+ 	}
+-	print_noise(avg, stddev);
+ }
+ 
+-static void abs_printout(int counter, double avg, double stddev)
++static void abs_printout(int counter, double avg)
+ {
+ 	fprintf(stderr, " %14.0f  %-24s", avg, event_name(counter));
+ 
+@@ -348,7 +347,6 @@ static void abs_printout(int counter, double avg, double stddev)
+ 		fprintf(stderr, " # %10.3f M/sec",
+ 				1000.0 * avg / avg_stats(&runtime_nsecs_stats));
+ 	}
+-	print_noise(avg, stddev);
+ }
+ 
+ /*
+@@ -356,12 +354,9 @@ static void abs_printout(int counter, double avg, double stddev)
+  */
+ static void print_counter(int counter)
+ {
+-	double avg, stddev;
++	double avg = avg_stats(&event_res_stats[counter][0]);
+ 	int scaled = event_scaled[counter];
+ 
+-	avg    = avg_stats(&event_res_stats[counter][0]);
+-	stddev = stddev_stats(&event_res_stats[counter][0]);
+-
+ 	if (scaled == -1) {
+ 		fprintf(stderr, " %14s  %-24s\n",
+ 			"<not counted>", event_name(counter));
+@@ -369,9 +364,11 @@ static void print_counter(int counter)
+ 	}
+ 
+ 	if (nsec_counter(counter))
+-		nsec_printout(counter, avg, stddev);
++		nsec_printout(counter, avg);
+ 	else
+-		abs_printout(counter, avg, stddev);
++		abs_printout(counter, avg);
++
++	print_noise(counter, avg);
+ 
+ 	if (scaled) {
+ 		double avg_enabled, avg_running;
