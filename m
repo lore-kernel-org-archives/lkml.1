@@ -1,110 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZIDQtn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZIDQvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757040AbZIDQtn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:49:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZIDQtl
+	id S1756897AbZIDQvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755130AbZIDQvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:49:41 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:34013 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751948AbZIDQtk (ORCPT
+	Fri, 4 Sep 2009 12:51:51 -0400
+Received: from mail-iw0-f175.google.com ([209.85.223.175]:48451 "EHLO
+	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753083AbZIDQvu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:49:40 -0400
+	Fri, 4 Sep 2009 12:51:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=NFQPHHB7W/rksCUj0hFaxFlh3jK3BlCHk7ZRanIPpR9f5sHo5H/8GpbAXxjvAHvSu7
-         aWzQz+SlbrmUugeKAYAIeL1UK7lodl2izI6YmjHrDKPazuTzCTvtYvYMVrCQzGqSwRF6
-         g9hvsA5O/CM7U3u4O414CIBQg2N4RfMtGHn/A=
-Message-ID: <4AA14523.7070405@gmail.com>
-Date: Fri, 04 Sep 2009 12:49:39 -0400
-From: Glenn Elliott <arakageeta.lkml@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=VsofsvXq8V0qJK/FWwKtQWGNfivfF9dSAGLkSRNZb39nT1JXKJbqsI5XfQxNlXZfeV
+         tnVfLlfV6UpsC8d5lPLnGvMV/6paxxN4FR35uauSoJXXyczlE9SbTG177ThFicbRPg8O
+         eXSTCIXDjrsLX8gLM5LnOa7tdOwILGTLJYoDI=
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: tglx@linutronix.de, DL-MPTFusionLinux@lsi.com,
-       Bjoern Brandenburg <bbb@cs.unc.edu>
-Subject: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1252081080.31087.7.camel@skunk>
+References: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com> 
+	<1252065236.14338.179.camel@skunk> <1252080405.24673.11.camel@mj> 
+	<1252081080.31087.7.camel@skunk>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 4 Sep 2009 09:51:32 -0700
+Message-ID: <43e72e890909040951y6a1e639bl771a63389665ca2a@mail.gmail.com>
+Subject: Re: Atheros Linux wireless drivers home page - and two new driver 
+	projects
+To: Xavier Bestel <xavier.bestel@free.fr>, Dan Williams <dcbw@redhat.com>,
+       Witold Sowa <witold.sowa@gmail.com>
+Cc: Pavel Roskin <proski@gnu.org>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, Len Widra <Len.Widra@atheros.com>,
+       Jouni Malinen <j@w1.fi>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Werner Almesberger <werner@openmoko.org>,
+       Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       Bob Copeland <me@bobcopeland.com>, Greg KH <greg@kroah.com>,
+       rshlinux@gmail.com, b_yogesh_snowy@yahoo.com,
+       Michael Renzmann <mrenzmann@madwifi-project.org>,
+       Stephen Chen <Stephen.Chen@atheros.com>,
+       Paul Fertser <fercerpav@gmail.com>, Harald Welte <laforge@openmoko.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Fri, Sep 4, 2009 at 9:18 AM, Xavier Bestel<xavier.bestel@free.fr> wrote:
+>
+> On Fri, 2009-09-04 at 12:06 -0400, Pavel Roskin wrote:
+>> On Fri, 2009-09-04 at 13:53 +0200, Xavier Bestel wrote:
+>> > On Thu, 2009-09-03 at 15:54 -0700, Luis R. Rodriguez wrote:
+>> > > I'm pleased to announce the new home page to Atheros Linux wireless drivers:
+>> > >
+>> > > http://wireless.kernel.org/en/users/Drivers/Atheros
+>> >
+>> > ath5k is marked as not master-mode capable. I thought this had been
+>> > fixed for 2.6.31 ?
+>>
+>> The above page makes no such statements.  I have fixed
+>> http://wireless.kernel.org/en/users/Drivers/ath5k
+>
+> Right, thanks.
+>
+>> https://madwifi-project.org/wiki/UserDocs/ath5kAccessPoint still needs a
+>> lot of work, or maybe it should be removed as obsolete.
+>
+> Yes, I miss access-point functionality in NetworkManager :)
 
-I get an oops when I boot 2.6.31-rc8 with the Realtime Preempt patch, 
-patch-2.6.31-rc8-rt9, on my IBM QS22 (Cell Blade-- PPC-based).  It 
-appears to be happening somewhere in the SAS disk related driver, mptsas.
+BTW a GSoC project this year was to add AP support to Network Manager.
+As far I can tell the Witold Sowa finished this so you should be able
+to test this.
 
-The unpatched 2.6.31-rc8 boots without issue.  I am using the 
-cell_defconfig configuration with the same minor additions (IPv6, 
-auditing, etc.) for both patched and unpatched kernels.  The RT-patched 
-configuration also includes the necessary RT-related settings.
+Witold, can you update the wiki page on this project with details as
+to how people can test this?
 
-Below is the captured oops, with a little extra logging, from the serial 
-console (it didn't make it to /var/log/messages).  I would be happy to 
-provide any additional information.
+http://wireless.kernel.org/en/developers/GSoC/2009/Add_AP_Support_to_Network_Manager
 
-Thank you,
-Glenn Elliott
-
-mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
-sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
-mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
-mptbase: ioc0: Initiating recovery
-mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
-mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
-sd 0:0:0:0: CDB: cdb[0]=0x0: 00 00 00 00 00 00
-mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
-mptbase: ioc0: Initiating recovery
-mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
-mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
-mptscsih: ioc0: attempting target reset! (sc=c0000007fdd02080)
-sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
-mptscsih: ioc0: WARNING - TaskMgmt type=3: ioc_state: DOORBELL_ACTIVE 
-(0x2c000000)!
-mptscsih: ioc0: target reset: FAILED (sc=c0000007fdd02080)
-mptscsih: ioc0: attempting bus reset! (sc=c0000007fdd02080)
-sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
-mptscsih: ioc0: WARNING - TaskMgmt type=4: ioc_state: DOORBELL_ACTIVE 
-(0x2c000000)!
-mptscsih: ioc0: bus reset: FAILED (sc=c0000007fdd02080)
-mptscsih: ioc0: attempting host reset! (sc=c0000007fdd02080)
-mptscsih: ioc0: host reset: SUCCESS (sc=c0000007fdd02080)
-------------[ cut here ]------------
-Badness at kernel/workqueue.c:372
-NIP: c000000000086a04 LR: c000000000087cac CTR: c00000000030c5b8
-REGS: c0000007fde230f0 TRAP: 0700   Not tainted  (2.6.31-rc8-rt9)
-MSR: 9000000000029032 <EE,ME,CE,IR,DR>  CR: 44022024  XER: 20000000
-TASK = c0000007fa3e5c50[2606] 'mpt/0' THREAD: c0000007fde20000 CPU: 2
-GPR00: 0000000000000001 c0000007fde23370 c0000000006992b0 c0000003fdde0c80
-GPR04: 0000000000000000 0000000000000000 000000000000000a c0000003fe0ce114
-GPR08: 0000000000000000 c0000007fa3e5c50 c00000000044ebb0 0000000000000000
-GPR12: 0000000000000000 c000000000722a00 0000000000000000 0000000000000004
-GPR16: c0000003fe0ce998 c0000003fe0ce968 0000000000000000 0000000000000000
-GPR20: 0000000000000001 0000000000000000 c0000003fe0ce108 0000000000000001
-GPR24: 0000000000000000 0000000000000001 c0000003fe0ce100 c0000003fe0ce720
-GPR28: c0000003fddf4000 c0000003fdde0c80 c000000000640080 0000000000000000
-NIP [c000000000086a04] .flush_cpu_workqueue+0x2c/0xa4
-LR [c000000000087cac] .flush_workqueue+0x68/0xb8
-Call Trace:
-[c0000007fde23370] [0000000000200200] 0x200200 (unreliable)
-[c0000007fde23470] [c000000000087cac] .flush_workqueue+0x68/0xb8
-[c0000007fde23500] [c00000000030c320] 
-.mptsas_cleanup_fw_event_q+0x128/0x154
-[c0000007fde235b0] [c00000000030c650] .mptsas_ioc_reset+0x98/0xe0
-[c0000007fde23640] [c0000000002f9610] .mpt_signal_reset+0x94/0xb4
-[c0000007fde236c0] [c0000000003018e4] .mpt_do_ioc_recovery+0x15ec/0x16e8
-[c0000007fde23890] [c000000000301ad8] .mpt_HardResetHandler+0xf8/0x19c
-[c0000007fde23930] [c00000000030215c] .mpt_config+0x3d4/0x470
-[c0000007fde23a30] [c0000000002ffd28] .mpt_findImVolumes+0xd0/0x6a0
-[c0000007fde23c00] [c00000000030dacc] 
-.mptsas_firmware_event_work+0x74/0x109c
-[c0000007fde23d90] [c0000000000876e8] .worker_thread+0x20c/0x2e0
-[c0000007fde23ea0] [c00000000008cb88] .kthread+0xa8/0xb4
-[c0000007fde23f90] [c000000000025b68] .kernel_thread+0x54/0x70
-Instruction dump:
-4bfffe34 fba1ffe8 7c0802a6 f8010010 7c7d1b78 fbe1fff8 f821ff01 e80d01b0
-e92300a0 7c004a78 7c000074 7800d182 <0b000000> 48395349 60000000 38bd0038
+  Luis
