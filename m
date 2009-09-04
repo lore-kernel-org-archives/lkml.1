@@ -1,109 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbZIDUGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZIDUGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbZIDUGW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbZIDUGU
+	id S1757345AbZIDUGd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbZIDUGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:06:20 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:51273 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757291AbZIDUGT (ORCPT
+	Fri, 4 Sep 2009 16:06:31 -0400
+Received: from mga09.intel.com ([134.134.136.24]:39296 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757334AbZIDUG2 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:06:19 -0400
-Date: Fri, 4 Sep 2009 16:06:13 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, jack@suse.cz,
-       tytso@mit.edu
-Subject: [PATCH RFC] Add locking to ext3_do_update_inode
-Message-ID: <20090904200613.GJ17033@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	jack@suse.cz, tytso@mit.edu
+	Fri, 4 Sep 2009 16:06:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,334,1249282800"; 
+   d="scan'208";a="547913885"
+From: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+To: "Wu, Fengguang" <fengguang.wu@intel.com>
+CC: Rik van Riel <riel@redhat.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Avi Kivity <avi@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Date: Fri, 4 Sep 2009 13:06:28 -0700
+Subject: RE: [RFC] respect the referenced bit of KVM guest pages?
+Thread-Topic: [RFC] respect the referenced bit of KVM guest pages?
+Thread-Index: AcosOvcRmPGETVeJSdKuTHDWtdPQvQBX3SEg
+Message-ID: <9EECC02A4CC333418C00A85D21E8932601841D4A66@azsmsx502.amr.corp.intel.com>
+References: <4A846581.2020304@redhat.com>
+ <20090813211626.GA28274@cmpxchg.org> <4A850F4A.9020507@redhat.com>
+ <20090814091055.GA29338@cmpxchg.org> <20090814095106.GA3345@localhost>
+ <4A856467.6050102@redhat.com> <20090815054524.GB11387@localhost>
+ <9EECC02A4CC333418C00A85D21E89326B6611E81@azsmsx502.amr.corp.intel.com>
+ <20090818022609.GA7958@localhost>
+ <9EECC02A4CC333418C00A85D21E893260184184010@azsmsx502.amr.corp.intel.com>
+ <20090903020452.GA9474@localhost>
+In-Reply-To: <20090903020452.GA9474@localhost>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: abhmt006.oracle.com [141.146.116.15]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4AA17337.00BB:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Stupid question - what in your patch allows a text page get kicked out to the inactive list after you've given it an extra pass through the active list?
 
-I've been struggling with this off and on while I've been testing the
-data=guarded work.  The symptom is corrupted orphan lists and inodes
-with the wrong i_size stored on disk.  I was convinced the
-data=guarded code was just missing a call to ext3_mark_inode_dirty, but
-tracing showed the i_disksize I was sending to ext3_mark_inode_dirty
-wasn't actually making it to the drive.
-
-ext3_mark_inode_dirty can be called without locks held (atime updates
-and a few others), so the data=guarded code uses locks while updating
-the in-memory inode, and then calls ext3_mark_inode_dirty
-without any locks held.
-
-But, ext3_mark_inode_dirty has no internal locking to make sure that
-only one CPU is updating the buffer head at a time.  Generally this
-works out ok because everyone that changes the inode then calls
-ext3_mark_inode_dirty themselves.  Even though it races, eventually
-someone updates the buffer heads and things move on.
-
-But there is still a risk of the wrong values getting in, and the
-data=guarded code seems to hit the race very often.
-
-Since everyone that changes the inode also logs it, it should be
-possible to fix this with some memory barriers.  I'll leave that as an
-exercise to the reader and lock the buffer head instead.
-
-It it probably a good idea to have a different patch series for lockless
-bit flipping on the ext3 i_state field.  ext3_do_update_inode &= clears
-EXT3_STATE_NEW without any locks held.
-
-Signed-off-by: Chris Mason <chris.mason@oracle.com>
-
-diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-index 00f5dc1..6a0a056 100644
---- a/fs/ext3/inode.c
-+++ b/fs/ext3/inode.c
-@@ -3466,6 +3479,10 @@ static int ext3_do_update_inode(handle_t *handle,
- 	struct buffer_head *bh = iloc->bh;
- 	int err = 0, rc, block;
- 
-+again:
-+	/* we can't allow multiple procs in here at once, its a bit racey */
-+	lock_buffer(bh);
-+
- 	/* For fields not not tracking in the in-memory inode,
- 	 * initialise them to zero for new inodes. */
- 	if (ei->i_state & EXT3_STATE_NEW)
-@@ -3525,16 +3542,20 @@ static int ext3_do_update_inode(handle_t *handle,
- 			       /* If this is the first large file
- 				* created, add a flag to the superblock.
- 				*/
-+				unlock_buffer(bh);
- 				err = ext3_journal_get_write_access(handle,
- 						EXT3_SB(sb)->s_sbh);
- 				if (err)
- 					goto out_brelse;
-+
- 				ext3_update_dynamic_rev(sb);
- 				EXT3_SET_RO_COMPAT_FEATURE(sb,
- 					EXT3_FEATURE_RO_COMPAT_LARGE_FILE);
- 				handle->h_sync = 1;
- 				err = ext3_journal_dirty_metadata(handle,
- 						EXT3_SB(sb)->s_sbh);
-+				/* get our lock and start over */
-+				goto again;
- 			}
- 		}
- 	}
-@@ -3557,6 +3578,7 @@ static int ext3_do_update_inode(handle_t *handle,
- 		raw_inode->i_extra_isize = cpu_to_le16(ei->i_extra_isize);
- 
- 	BUFFER_TRACE(bh, "call ext3_journal_dirty_metadata");
-+	unlock_buffer(bh);
- 	rc = ext3_journal_dirty_metadata(handle, bh);
- 	if (!err)
- 		err = rc;
+					Jeff
