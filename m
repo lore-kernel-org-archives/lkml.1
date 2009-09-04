@@ -1,146 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756396AbZIDB2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932315AbZIDBlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756396AbZIDB2j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 21:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbZIDB2i
+	id S932315AbZIDBlY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 21:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbZIDBlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 21:28:38 -0400
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:44667 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756074AbZIDB2h (ORCPT
+	Thu, 3 Sep 2009 21:41:23 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:54392 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755376AbZIDBlW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 21:28:37 -0400
-Date: Thu, 3 Sep 2009 19:28:18 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       srajiv@linux.vnet.ibm.com, Debora Velarde <debora@linux.vnet.ibm.com>,
-       Marcel Selhorst <m.selhorst@sirrix.com>,
-       James Morris <jmorris@namei.org>, Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] TPM: Fixup pcrs sysfs file
-Message-ID: <20090904012818.GU4973@obsidianresearch.com>
-References: <20090902031613.GA11464@obsidianresearch.com> <20090903165219.2f79cdc1.akpm@linux-foundation.org>
+	Thu, 3 Sep 2009 21:41:22 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Mikael Pettersson <mikpe@it.uu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19099.52899.620345.326521@pilspetsen.it.uu.se>
+	<19100.31254.666066.755541@pilspetsen.it.uu.se>
+	<200909012042.59856.rjw@sisk.pl>
+	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+	<87pra89sgp.fsf@devron.myhome.or.jp>
+	<alpine.LFD.2.00.0909031353360.15956@eeepc.linux-foundation.org>
+Date: Fri, 04 Sep 2009 10:41:20 +0900
+In-Reply-To: <alpine.LFD.2.00.0909031353360.15956@eeepc.linux-foundation.org>
+	(Linus Torvalds's message of "Thu, 3 Sep 2009 14:01:54 -1000 (HST)")
+Message-ID: <87ab1bmqpr.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090903165219.2f79cdc1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 04:52:19PM -0700, Andrew Morton wrote:
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-> > diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-> > index a6b52d6..8ba0187 100644
-> > +++ b/drivers/char/tpm/tpm.c
-> > @@ -696,8 +696,8 @@ int __tpm_pcr_read(struct tpm_chip *chip, int pcr_idx, u8 *res_buf)
-> >  
-> >  	cmd.header.in = pcrread_header;
-> >  	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
-> > -	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
-> > -	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
-> > +	BUILD_BUG_ON(sizeof(cmd) < READ_PCR_RESULT_SIZE);
-> > +	rc = transmit_cmd(chip, &cmd, READ_PCR_RESULT_SIZE,
-> >  			  "attempting to read a pcr value");
-> >  
-> >  	if (rc == 0)
-> 
-> That sounds like a fairly serious bug, and this looks like a 2.6.31
-> patch.
+> On Thu, 3 Sep 2009, OGAWA Hirofumi wrote:
+>> 
+>> If I'm not missing, I think it doesn't have big change with old
+>> code. But I would need to check more deeply.
+>
+> The thing is, the old pty code pushed _directly_ to the receiving ldisc, 
+> with no buffering.
 
-To be fair, I'm not sure the pcrs sysfile provides anything terribly
-usefull.. None of the sysfs files in this driver seem to follow the
-standard one-value-one-file convention either. But, if it is going to
-be included it may as well work properly...
+Yes.
 
-> Jan's build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it.patch (in
-> -mm) simply removes the bogus BUILD_BUG_ON(). I think we might as well
-> do that within the context of your patch.
+> I'm not entirely sure why Alan felt it needed changing, 
+> but moving over to the generic tty buffering code did get rid of some 
+> duplicate logic, and the locking is now done in one place, so that's 
+> probably the main reason.
 
-> So I end up with the below, which I propose for 2.6.31:
+IIRC, ppp had the locking issue without that patch?
 
-OK. That is fair. The tpm_cmd_params union contains a tpm_pcrread_out
-which should 'by design' ensure there is enough space.
+> Anyway, the old pty code would be entirely synchronous, and would do the 
+>
+> 	ld->ops->receive_buf(to, buf, NULL, c);
+>
+> to push the data all the way to the receive side frm pty_write(). So with 
+> the old code, the destination "receive_room" was always accurate, because 
+> both the reading side and the writing side basically accessed it directly.
+>
+> With the new code, it all goes through tty_buffer.c, and the bugs have 
+> been mostly about the receiving side not seeing all the data in the 
+> buffers. And those buffers simply didn't use to exist before.
 
-Jan's removal of the 2nd BUILD_BUG_ON is also good.
+Yes. However, pty_write() checks tty_buffer instead of receive_room. So
+I thought, the change of write side is mainly buffer size (receive_room
+size + tty_buffer size). It will stop after filling tty_buffer, not
+receive_room.
 
-But I notice tpm_pcr_extend also has a mis-use of the transmit_cmd
-idiom. This one functions ok because the in/out RPC message size
-happen to be the same. But lets fix it too?
+And (I hope) the read side guarantees to consume both buffers. If it is
+right, I guessed the change is timing issues with more larger buffer
+size.
 
-Thanks,
-Jason
+>> Um.., If "receive_room == 0 && tty->read_cnt == 0" is possible, I wonder
+>> why reverting buffer handling fixes the problem.
+>
+> In the old code, if 'receive_room' was zero, then the writer would simply 
+> stop writing (no buffers in between). So in the old code, you could never 
+> get into a situation where receive_room was zero and there was still 
+> pending data.
+>
+> At least that's how I read the situation.
 
->From 25da64a0927088c766745763728c6bcd973d0f4e Mon Sep 17 00:00:00 2001
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Date: Tue, 1 Sep 2009 21:08:55 -0600
-Subject: [PATCH] TPM: Fixup pcrs sysfs file
+Another possibility in my guess is the change of pty_flush_buffer() and
+pty_chars_in_buffer().  I'm not sure at all though, especially, I'm
+suspecting pty_flush_buffer() may change the behaviors.
 
-I'm testing the tpm_tis low level driver with a winbond WPCT200:
-$ cat caps
-Manufacturer: 0x57454300
-TCG version: 1.2
-Firmware version: 2.16
+> If I'm right, I'm hoping that the patch I sent out fixes it, and if so, 
+> we'll do that for 2.6.31 (and then after that maybe re-think whether the 
+> extra buffering is worth all this pain).
 
-and noted that tpm_pcr_read for the pcrs sysfile file does not function.
-tpm_tis_recv returned with an error because the expected reply size was
-set to 14 (the request size) and the chip returned 30 bytes.
+I also hope it works.
 
-The TCG spec says the reply size for READ_PCR is supposed to be 30 bytes.
+> And if it _doesn't_ fix it, then I think we'll just have to revert the 
+> commits in question. We won't have time to root-cause it if the above 
+> isn't it.
 
-The length input to transmit_cmd is the size of the reply, not of the
-request.
+At least for me, it sounds like good if revert works. I have no
+preference about it.
 
-With this change my chip reports all 23 pcrs.
+FWIW, meanwhile, I'll just try to see the root-cause of this as
+another/fallback solution.
 
-Also fix tpm_pcr_extend to match the idiom of the rest of the code to
-prevent future confusion.
-
-Finally, the BUILD_BUG_ON() is just wrong - it's testing a value which
-isn't a compile-time constant. Simply remove that assertion, the
-buffer is large enough by design.
-
-Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
----
- drivers/char/tpm/tpm.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-index a6b52d6..5d5b324 100644
---- a/drivers/char/tpm/tpm.c
-+++ b/drivers/char/tpm/tpm.c
-@@ -696,8 +696,7 @@ int __tpm_pcr_read(struct tpm_chip *chip, int pcr_idx, u8 *res_buf)
- 
- 	cmd.header.in = pcrread_header;
- 	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
--	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
--	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
-+	rc = transmit_cmd(chip, &cmd, READ_PCR_RESULT_SIZE,
- 			  "attempting to read a pcr value");
- 
- 	if (rc == 0)
-@@ -742,7 +741,7 @@ EXPORT_SYMBOL_GPL(tpm_pcr_read);
-  * the module usage count.
-  */
- #define TPM_ORD_PCR_EXTEND cpu_to_be32(20)
--#define EXTEND_PCR_SIZE 34
-+#define EXTEND_PCR_RESULT_SIZE 34
- static struct tpm_input_header pcrextend_header = {
- 	.tag = TPM_TAG_RQU_COMMAND,
- 	.length = cpu_to_be32(34),
-@@ -760,10 +759,9 @@ int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash)
- 		return -ENODEV;
- 
- 	cmd.header.in = pcrextend_header;
--	BUILD_BUG_ON(be32_to_cpu(cmd.header.in.length) > EXTEND_PCR_SIZE);
- 	cmd.params.pcrextend_in.pcr_idx = cpu_to_be32(pcr_idx);
- 	memcpy(cmd.params.pcrextend_in.hash, hash, TPM_DIGEST_SIZE);
--	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
-+	rc = transmit_cmd(chip, &cmd, EXTEND_PCR_RESULT_SIZE,
- 			  "attempting extend a PCR value");
- 
- 	module_put(chip->dev->driver->owner);
+Thanks.
 -- 
-1.5.4.2
-
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
