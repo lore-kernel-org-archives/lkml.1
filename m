@@ -1,497 +1,442 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933204AbZIDHEn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933160AbZIDHEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933204AbZIDHEn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:04:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933176AbZIDHEe
+	id S933160AbZIDHEJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:04:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933069AbZIDHEC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:04:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48011 "EHLO mx2.suse.de"
+	Fri, 4 Sep 2009 03:04:02 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48012 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756684AbZIDG6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756676AbZIDG6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 02:58:39 -0400
-Message-Id: <20090904065535.756341567@nick.local0.net>
+Message-Id: <20090904065535.901056585@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:51:53 +1000
+Date: Fri, 04 Sep 2009 16:51:54 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 12/33] fs: scale inode alias list
+Subject: [patch 13/33] fs: use RCU / seqlock logic for reverse and multi-step operaitons
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-dcache-scale-i_dentry.patch
+Content-Disposition: inline; filename=fs-dcache_lock-multi-step.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new lock, dcache_inode_lock, to protect the inode's i_dentry list
-from concurrent modification. d_alias is also protected by d_lock.
+The remaining usages for dcache_lock is to allow atomic, multi-step read-side
+operations over the directory tree by excluding modifications to the tree.
+Also, to walk in the leaf->root direction in the tree where we don't have
+a natural d_lock ordering.
+
+This could be accomplished by taking every d_lock, but this would mean a
+huge number of locks and actually gets very tricky.
+
+Solve this instead by using the rename seqlock for multi-step read-side
+operations. Insert operations are not serialised. Delete operations are
+tricky when walking up the directory our parent might have been deleted
+when dropping locks so also need to check and retry for that.
+
+XXX: hmm, we could of course just take the rename lock if there is any worry
+about livelock. Most of these are slow paths.
 
 ---
- fs/affs/amigaffs.c          |    2 +
- fs/dcache.c                 |   56 +++++++++++++++++++++++++++++++++++++++-----
- fs/exportfs/expfs.c         |    4 +++
- fs/nfs/getroot.c            |    4 +++
- fs/notify/fsnotify.c        |    2 +
- fs/notify/inotify/inotify.c |    2 +
- fs/ocfs2/dcache.c           |    3 +-
- fs/sysfs/dir.c              |    3 ++
- include/linux/dcache.h      |    1 
- 9 files changed, 70 insertions(+), 7 deletions(-)
+ drivers/staging/pohmelfs/path_entry.c |    7 ++
+ fs/autofs4/waitq.c                    |   10 ++
+ fs/dcache.c                           |  116 +++++++++++++++++++++++++++++-----
+ fs/nfs/namespace.c                    |   10 ++
+ fs/seq_file.c                         |    6 +
+ 5 files changed, 134 insertions(+), 15 deletions(-)
 
 Index: linux-2.6/fs/dcache.c
 ===================================================================
 --- linux-2.6.orig/fs/dcache.c
 +++ linux-2.6/fs/dcache.c
-@@ -36,6 +36,8 @@
+@@ -936,11 +936,15 @@ void shrink_dcache_for_umount(struct sup
+  * Return true if the parent or its subdirectories contain
+  * a mount point
+  */
+- 
+ int have_submounts(struct dentry *parent)
+ {
+-	struct dentry *this_parent = parent;
++	struct dentry *this_parent;
+ 	struct list_head *next;
++	unsigned seq;
++
++rename_retry:
++	this_parent = parent;
++	seq = read_seqbegin(&rename_lock);
+ 
+ 	spin_lock(&dcache_lock);
+ 	if (d_mountpoint(parent))
+@@ -974,17 +978,38 @@ resume:
+ 	 * All done at this level ... ascend and resume the search.
+ 	 */
+ 	if (this_parent != parent) {
+-		next = this_parent->d_u.d_child.next;
++		struct dentry *tmp;
++		struct dentry *child;
++
++		tmp = this_parent->d_parent;
++		rcu_read_lock();
+ 		spin_unlock(&this_parent->d_lock);
+-		this_parent = this_parent->d_parent;
++		child = this_parent;
++		this_parent = tmp;
+ 		spin_lock(&this_parent->d_lock);
++		/* might go back up the wrong parent if we have had a rename
++		 * or deletion */
++		if (this_parent != child->d_parent ||
++				// d_unlinked(this_parent) || XXX
++				read_seqretry(&rename_lock, seq)) {
++			spin_unlock(&this_parent->d_lock);
++			spin_unlock(&dcache_lock);
++			rcu_read_unlock();
++			goto rename_retry;
++		}
++		rcu_read_unlock();
++		next = child->d_u.d_child.next;
+ 		goto resume;
+ 	}
+ 	spin_unlock(&this_parent->d_lock);
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return 0; /* No mount points found in tree */
+ positive:
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return 1;
+ }
+ 
+@@ -1004,10 +1029,15 @@ positive:
+  */
+ static int select_parent(struct dentry * parent)
+ {
+-	struct dentry *this_parent = parent;
++	struct dentry *this_parent;
+ 	struct list_head *next;
++	unsigned seq;
+ 	int found = 0;
+ 
++rename_retry:
++	this_parent = parent;
++	seq = read_seqbegin(&rename_lock);
++
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&this_parent->d_lock);
+ repeat:
+@@ -1017,7 +1047,6 @@ resume:
+ 		struct list_head *tmp = next;
+ 		struct dentry *dentry = list_entry(tmp, struct dentry, d_u.d_child);
+ 		next = tmp->next;
+-		BUG_ON(this_parent == dentry);
+ 
+ 		spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
+ 		dentry_lru_del_init(dentry);
+@@ -1058,17 +1087,33 @@ resume:
+ 	 */
+ 	if (this_parent != parent) {
+ 		struct dentry *tmp;
+-		next = this_parent->d_u.d_child.next;
++		struct dentry *child;
++
+ 		tmp = this_parent->d_parent;
++		rcu_read_lock();
+ 		spin_unlock(&this_parent->d_lock);
+-		BUG_ON(tmp == this_parent);
++		child = this_parent;
+ 		this_parent = tmp;
+ 		spin_lock(&this_parent->d_lock);
++		/* might go back up the wrong parent if we have had a rename
++		 * or deletion */
++		if (this_parent != child->d_parent ||
++				// d_unlinked(this_parent) || XXX
++				read_seqretry(&rename_lock, seq)) {
++			spin_unlock(&this_parent->d_lock);
++			spin_unlock(&dcache_lock);
++			rcu_read_unlock();
++			goto rename_retry;
++		}
++		rcu_read_unlock();
++		next = child->d_u.d_child.next;
+ 		goto resume;
+ 	}
+ out:
+ 	spin_unlock(&this_parent->d_lock);
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return found;
+ }
+ 
+@@ -2173,6 +2218,7 @@ char *__d_path(const struct path *path,
+ 	char *end = buffer + buflen;
+ 	char *retval;
+ 
++	rcu_read_lock();
+ 	prepend(&end, &buflen, "\0", 1);
+ 	if (d_unlinked(dentry) &&
+ 		(prepend(&end, &buflen, " (deleted)", 10) != 0))
+@@ -2208,6 +2254,7 @@ char *__d_path(const struct path *path,
+ 	}
+ 
+ out:
++	rcu_read_unlock();
+ 	return retval;
+ 
+ global_root:
+@@ -2244,6 +2291,7 @@ char *d_path(const struct path *path, ch
+ 	char *res;
+ 	struct path root;
+ 	struct path tmp;
++	unsigned seq;
+ 
+ 	/*
+ 	 * We have various synthetic filesystems that never get mounted.  On
+@@ -2259,6 +2307,9 @@ char *d_path(const struct path *path, ch
+ 	root = current->fs->root;
+ 	path_get(&root);
+ 	read_unlock(&current->fs->lock);
++
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 	vfsmount_read_lock();
+ 	spin_lock(&path->dentry->d_lock);
+@@ -2267,6 +2318,9 @@ char *d_path(const struct path *path, ch
+ 	spin_unlock(&path->dentry->d_lock);
+ 	vfsmount_read_unlock();
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++
+ 	path_put(&root);
+ 	return res;
+ }
+@@ -2297,9 +2351,14 @@ char *dynamic_dname(struct dentry *dentr
+  */
+ char *dentry_path(struct dentry *dentry, char *buf, int buflen)
+ {
+-	char *end = buf + buflen;
++	char *end;
+ 	char *retval;
++	unsigned seq;
+ 
++rename_retry:
++	end = buf + buflen;
++	seq = read_seqbegin(&rename_lock);
++	rcu_read_lock(); /* protect parent */
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&dentry->d_lock);
+ 	prepend(&end, &buflen, "\0", 1);
+@@ -2323,13 +2382,16 @@ char *dentry_path(struct dentry *dentry,
+ 		retval = end;
+ 		dentry = parent;
+ 	}
++out:
+ 	spin_unlock(&dentry->d_lock);
+ 	spin_unlock(&dcache_lock);
++	rcu_read_unlock();
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
+ 	return retval;
+ Elong:
+-	spin_unlock(&dentry->d_lock);
+-	spin_unlock(&dcache_lock);
+-	return ERR_PTR(-ENAMETOOLONG);
++	retval = ERR_PTR(-ENAMETOOLONG);
++	goto out;
+ }
  
  /*
-  * Usage:
-+ * dcache_inode_lock protects:
-+ *   - the inode alias lists, d_inode
-  * dcache_hash_lock protects:
-  *   - the dcache hash table
-  * dcache_lru_lock protects:
-@@ -49,18 +51,21 @@
-  *
-  * Ordering:
-  * dcache_lock
-- *   dentry->d_lock
-- *     dcache_lru_lock
-- *     dcache_hash_lock
-+ *   dcache_inode_lock
-+ *     dentry->d_lock
-+ *       dcache_lru_lock
-+ *       dcache_hash_lock
-  */
- int sysctl_vfs_cache_pressure __read_mostly = 100;
- EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
+@@ -2448,9 +2510,13 @@ int is_subdir(struct dentry *new_dentry,
  
-+__cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_inode_lock);
- __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_hash_lock);
- static __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lru_lock);
- __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
- __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
- 
-+EXPORT_SYMBOL(dcache_inode_lock);
- EXPORT_SYMBOL(dcache_hash_lock);
- EXPORT_SYMBOL(dcache_lock);
- 
-@@ -125,6 +130,7 @@ static void d_free(struct dentry *dentry
-  */
- static void dentry_iput(struct dentry * dentry)
- 	__releases(dentry->d_lock)
-+	__releases(dcache_inode_lock)
- 	__releases(dcache_lock)
+ void d_genocide(struct dentry *root)
  {
- 	struct inode *inode = dentry->d_inode;
-@@ -132,6 +138,7 @@ static void dentry_iput(struct dentry *
- 		dentry->d_inode = NULL;
- 		list_del_init(&dentry->d_alias);
- 		spin_unlock(&dentry->d_lock);
-+		spin_unlock(&dcache_inode_lock);
- 		spin_unlock(&dcache_lock);
- 		if (!inode->i_nlink)
- 			fsnotify_inoderemove(inode);
-@@ -141,6 +148,7 @@ static void dentry_iput(struct dentry *
- 			iput(inode);
- 	} else {
- 		spin_unlock(&dentry->d_lock);
-+		spin_unlock(&dcache_inode_lock);
- 		spin_unlock(&dcache_lock);
- 	}
- }
-@@ -212,6 +220,7 @@ static void dentry_lru_del_init(struct d
-  */
- static struct dentry *d_kill(struct dentry *dentry)
- 	__releases(dentry->d_lock)
-+	__releases(dcache_inode_lock)
- 	__releases(dcache_lock)
- {
- 	struct dentry *parent;
-@@ -276,16 +285,21 @@ repeat:
- 			 * want to reduce dcache_lock anyway so this will
- 			 * get improved.
- 			 */
-+drop1:
- 			spin_unlock(&dentry->d_lock);
- 			goto repeat;
- 		}
-+		if (!spin_trylock(&dcache_inode_lock)) {
-+drop2:
-+			spin_unlock(&dcache_lock);
-+			goto drop1;
-+		}
- 		parent = dentry->d_parent;
- 		if (parent) {
- 			BUG_ON(parent == dentry);
- 			if (!spin_trylock(&parent->d_lock)) {
--				spin_unlock(&dentry->d_lock);
--				spin_unlock(&dcache_lock);
--				goto repeat;
-+				spin_unlock(&dcache_inode_lock);
-+				goto drop2;
- 			}
- 		}
- 	}
-@@ -313,6 +327,7 @@ repeat:
-  	spin_unlock(&dentry->d_lock);
- 	if (parent)
- 		spin_unlock(&parent->d_lock);
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 	return;
+-	struct dentry *this_parent = root;
++	struct dentry *this_parent;
+ 	struct list_head *next;
++	unsigned seq;
  
-@@ -487,7 +502,9 @@ struct dentry * d_find_alias(struct inod
- 
- 	if (!list_empty(&inode->i_dentry)) {
- 		spin_lock(&dcache_lock);
-+		spin_lock(&dcache_inode_lock);
- 		de = __d_find_alias(inode, 0);
-+		spin_unlock(&dcache_inode_lock);
- 		spin_unlock(&dcache_lock);
- 	}
- 	return de;
-@@ -502,18 +519,21 @@ void d_prune_aliases(struct inode *inode
- 	struct dentry *dentry;
- restart:
++rename_retry:
++	this_parent = root;
++	seq = read_seqbegin(&rename_lock);
  	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	list_for_each_entry(dentry, &inode->i_dentry, d_alias) {
- 		spin_lock(&dentry->d_lock);
- 		if (!dentry->d_count) {
- 			__dget_locked_dlock(dentry);
- 			__d_drop(dentry);
- 			spin_unlock(&dentry->d_lock);
-+			spin_unlock(&dcache_inode_lock);
- 			spin_unlock(&dcache_lock);
- 			dput(dentry);
- 			goto restart;
- 		}
- 		spin_unlock(&dentry->d_lock);
- 	}
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- }
- 
-@@ -541,6 +561,7 @@ static void prune_one_dentry(struct dent
- 		struct dentry *parent = NULL;
- 
- 		spin_lock(&dcache_lock);
-+		spin_lock(&dcache_inode_lock);
- again:
- 		spin_lock(&dentry->d_lock);
- 		if (dentry->d_parent && dentry != dentry->d_parent) {
-@@ -555,6 +576,7 @@ again:
- 			if (parent)
- 				spin_unlock(&parent->d_lock);
- 			spin_unlock(&dentry->d_lock);
-+			spin_unlock(&dcache_inode_lock);
- 			spin_unlock(&dcache_lock);
- 			return;
- 		}
-@@ -625,6 +647,7 @@ restart:
- 	spin_unlock(&dcache_lru_lock);
- 
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- again:
- 	spin_lock(&dcache_lru_lock); /* lru_lock also protects tmp list */
- 	while (!list_empty(&tmp)) {
-@@ -657,8 +680,10 @@ again1:
- 		prune_one_dentry(dentry);
- 		/* dcache_lock and dentry->d_lock dropped */
- 		spin_lock(&dcache_lock);
-+		spin_lock(&dcache_inode_lock);
- 		spin_lock(&dcache_lru_lock);
- 	}
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 
- 	if (count == NULL && !list_empty(&sb->s_dentry_lru))
-@@ -1195,7 +1220,9 @@ void d_instantiate(struct dentry *entry,
- {
- 	BUG_ON(!list_empty(&entry->d_alias));
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	__d_instantiate(entry, inode);
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 	security_d_instantiate(entry, inode);
- }
-@@ -1255,7 +1282,9 @@ struct dentry *d_instantiate_unique(stru
- 	BUG_ON(!list_empty(&entry->d_alias));
- 
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	result = __d_instantiate_unique(entry, inode);
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 
- 	if (!result) {
-@@ -1345,8 +1374,10 @@ struct dentry *d_obtain_alias(struct ino
- 	tmp->d_parent = tmp; /* make sure dput doesn't croak */
- 
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	res = __d_find_alias(inode, 0);
- 	if (res) {
-+		spin_unlock(&dcache_inode_lock);
- 		spin_unlock(&dcache_lock);
- 		dput(tmp);
- 		goto out_iput;
-@@ -1361,6 +1392,7 @@ struct dentry *d_obtain_alias(struct ino
- 	list_add(&tmp->d_alias, &inode->i_dentry);
- 	hlist_add_head(&tmp->d_hash, &inode->i_sb->s_anon);
- 	spin_unlock(&tmp->d_lock);
-+	spin_unlock(&dcache_inode_lock);
- 
- 	spin_unlock(&dcache_lock);
- 	return tmp;
-@@ -1393,9 +1425,11 @@ struct dentry *d_splice_alias(struct ino
- 
- 	if (inode && S_ISDIR(inode->i_mode)) {
- 		spin_lock(&dcache_lock);
-+		spin_lock(&dcache_inode_lock);
- 		new = __d_find_alias(inode, 1);
- 		if (new) {
- 			BUG_ON(!(new->d_flags & DCACHE_DISCONNECTED));
-+			spin_unlock(&dcache_inode_lock);
- 			spin_unlock(&dcache_lock);
- 			security_d_instantiate(new, inode);
- 			d_rehash(dentry);
-@@ -1404,6 +1438,7 @@ struct dentry *d_splice_alias(struct ino
- 		} else {
- 			/* already taking dcache_lock, so d_add() by hand */
- 			__d_instantiate(dentry, inode);
-+			spin_unlock(&dcache_inode_lock);
- 			spin_unlock(&dcache_lock);
- 			security_d_instantiate(dentry, inode);
- 			d_rehash(dentry);
-@@ -1477,8 +1512,10 @@ struct dentry *d_add_ci(struct dentry *d
- 	 * already has a dentry.
- 	 */
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	if (!S_ISDIR(inode->i_mode) || list_empty(&inode->i_dentry)) {
- 		__d_instantiate(found, inode);
-+		spin_unlock(&dcache_inode_lock);
- 		spin_unlock(&dcache_lock);
- 		security_d_instantiate(found, inode);
- 		return found;
-@@ -1490,6 +1527,7 @@ struct dentry *d_add_ci(struct dentry *d
- 	 */
- 	new = list_entry(inode->i_dentry.next, struct dentry, d_alias);
- 	dget_locked(new);
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 	security_d_instantiate(found, inode);
- 	d_move(new, found);
-@@ -1705,6 +1743,7 @@ void d_delete(struct dentry * dentry)
- 	 * Are we the only user?
- 	 */
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	spin_lock(&dentry->d_lock);
- 	isdir = S_ISDIR(dentry->d_inode->i_mode);
- 	if (dentry->d_count == 1) {
-@@ -1717,6 +1756,7 @@ void d_delete(struct dentry * dentry)
- 		__d_drop(dentry);
- 
- 	spin_unlock(&dentry->d_lock);
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 
- 	fsnotify_nameremove(dentry, isdir);
-@@ -1963,6 +2003,7 @@ out_unalias:
- 	d_move_locked(alias, dentry);
- 	ret = alias;
- out_err:
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 	if (m2)
- 		mutex_unlock(m2);
-@@ -2028,6 +2069,7 @@ struct dentry *d_materialise_unique(stru
- 	BUG_ON(!d_unhashed(dentry));
- 
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 
- 	if (!inode) {
- 		actual = dentry;
-@@ -2072,6 +2114,7 @@ found:
- 	_d_rehash(actual);
- 	spin_unlock(&dcache_hash_lock);
- 	spin_unlock(&actual->d_lock);
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- out_nolock:
- 	if (actual == dentry) {
-@@ -2083,6 +2126,7 @@ out_nolock:
- 	return actual;
- 
- shouldnt_be_hashed:
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 	BUG();
- }
-Index: linux-2.6/fs/sysfs/dir.c
-===================================================================
---- linux-2.6.orig/fs/sysfs/dir.c
-+++ linux-2.6/fs/sysfs/dir.c
-@@ -548,6 +548,7 @@ static void sysfs_drop_dentry(struct sys
- 	 */
+ 	spin_lock(&this_parent->d_lock);
  repeat:
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	list_for_each_entry(dentry, &inode->i_dentry, d_alias) {
- 		spin_lock(&dentry->d_lock);
- 		if (d_unhashed(dentry)) {
-@@ -557,10 +558,12 @@ repeat:
- 		dget_locked_dlock(dentry);
- 		__d_drop(dentry);
+@@ -2460,6 +2526,7 @@ resume:
+ 		struct list_head *tmp = next;
+ 		struct dentry *dentry = list_entry(tmp, struct dentry, d_u.d_child);
+ 		next = tmp->next;
++
+ 		spin_lock_nested(&dentry->d_lock, DENTRY_D_LOCK_NESTED);
+ 		if (d_unhashed(dentry) || !dentry->d_inode) {
+ 			spin_unlock(&dentry->d_lock);
+@@ -2476,15 +2543,34 @@ resume:
  		spin_unlock(&dentry->d_lock);
-+		spin_unlock(&dcache_inode_lock);
- 		spin_unlock(&dcache_lock);
- 		dput(dentry);
- 		goto repeat;
  	}
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 
- 	/* adjust nlink and update timestamp */
-Index: linux-2.6/include/linux/dcache.h
-===================================================================
---- linux-2.6.orig/include/linux/dcache.h
-+++ linux-2.6/include/linux/dcache.h
-@@ -186,6 +186,7 @@ d_iput:		no		no		no       yes
- 
- #define DCACHE_FSNOTIFY_PARENT_WATCHED	0x0080 /* Parent inode is watched by some fsnotify listener */
- 
-+extern spinlock_t dcache_inode_lock;
- extern spinlock_t dcache_hash_lock;
- extern spinlock_t dcache_lock;
- extern seqlock_t rename_lock;
-Index: linux-2.6/fs/notify/inotify/inotify.c
-===================================================================
---- linux-2.6.orig/fs/notify/inotify/inotify.c
-+++ linux-2.6/fs/notify/inotify/inotify.c
-@@ -186,6 +186,7 @@ static void set_dentry_child_flags(struc
- 	struct dentry *alias;
- 
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	list_for_each_entry(alias, &inode->i_dentry, d_alias) {
- 		struct dentry *child;
- 
-@@ -203,6 +204,7 @@ static void set_dentry_child_flags(struc
- 		}
- 		spin_unlock(&alias->d_lock);
+ 	if (this_parent != root) {
+-		next = this_parent->d_u.d_child.next;
++		struct dentry *tmp;
++		struct dentry *child;
++
++		tmp = this_parent->d_parent;
+ 		this_parent->d_count--;
++		rcu_read_lock();
+ 		spin_unlock(&this_parent->d_lock);
+-		this_parent = this_parent->d_parent;
++		child = this_parent;
++		this_parent = tmp;
+ 		spin_lock(&this_parent->d_lock);
++		/* might go back up the wrong parent if we have had a rename
++		 * or deletion */
++		if (this_parent != child->d_parent ||
++				// d_unlinked(this_parent) || XXX
++				read_seqretry(&rename_lock, seq)) {
++			spin_unlock(&this_parent->d_lock);
++			spin_unlock(&dcache_lock);
++			rcu_read_unlock();
++			goto rename_retry;
++		}
++		rcu_read_unlock();
++		next = child->d_u.d_child.next;
+ 		goto resume;
  	}
-+	spin_unlock(&dcache_inode_lock);
+ 	spin_unlock(&this_parent->d_lock);
  	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
  }
  
-Index: linux-2.6/fs/exportfs/expfs.c
+ /**
+Index: linux-2.6/fs/seq_file.c
 ===================================================================
---- linux-2.6.orig/fs/exportfs/expfs.c
-+++ linux-2.6/fs/exportfs/expfs.c
-@@ -48,8 +48,10 @@ find_acceptable_alias(struct dentry *res
- 		return result;
+--- linux-2.6.orig/fs/seq_file.c
++++ linux-2.6/fs/seq_file.c
+@@ -459,12 +459,18 @@ int seq_path_root(struct seq_file *m, st
+ 	if (m->count < m->size) {
+ 		char *s = m->buf + m->count;
+ 		char *p;
++		unsigned seq;
  
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	list_for_each_entry(dentry, &result->d_inode->i_dentry, d_alias) {
- 		dget_locked(dentry);
-+		spin_unlock(&dcache_inode_lock);
- 		spin_unlock(&dcache_lock);
- 		if (toput)
- 			dput(toput);
-@@ -58,8 +60,10 @@ find_acceptable_alias(struct dentry *res
- 			return dentry;
- 		}
++rename_retry:
++		seq = read_seqbegin(&rename_lock);
  		spin_lock(&dcache_lock);
-+		spin_lock(&dcache_inode_lock);
- 		toput = dentry;
- 	}
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 
- 	if (toput)
-Index: linux-2.6/fs/affs/amigaffs.c
-===================================================================
---- linux-2.6.orig/fs/affs/amigaffs.c
-+++ linux-2.6/fs/affs/amigaffs.c
-@@ -129,6 +129,7 @@ affs_fix_dcache(struct dentry *dentry, u
- 	struct list_head *head, *next;
- 
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	head = &inode->i_dentry;
- 	next = head->next;
- 	while (next != head) {
-@@ -139,6 +140,7 @@ affs_fix_dcache(struct dentry *dentry, u
- 		}
- 		next = next->next;
- 	}
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- }
- 
-Index: linux-2.6/fs/ocfs2/dcache.c
-===================================================================
---- linux-2.6.orig/fs/ocfs2/dcache.c
-+++ linux-2.6/fs/ocfs2/dcache.c
-@@ -141,7 +141,7 @@ struct dentry *ocfs2_find_local_alias(st
- 	struct dentry *dentry = NULL;
- 
- 	spin_lock(&dcache_lock);
--
-+	spin_lock(&dcache_inode_lock);
- 	list_for_each(p, &inode->i_dentry) {
- 		dentry = list_entry(p, struct dentry, d_alias);
- 
-@@ -159,6 +159,7 @@ struct dentry *ocfs2_find_local_alias(st
- 		dentry = NULL;
- 	}
- 
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- 
- 	return dentry;
-Index: linux-2.6/fs/nfs/getroot.c
-===================================================================
---- linux-2.6.orig/fs/nfs/getroot.c
-+++ linux-2.6/fs/nfs/getroot.c
-@@ -65,7 +65,11 @@ static int nfs_superblock_set_dummy_root
- 		 * Oops, since the test for IS_ROOT() will fail.
- 		 */
- 		spin_lock(&dcache_lock);
-+		spin_lock(&dcache_inode_lock);
-+		spin_lock(&sb->s_root->d_lock);
- 		list_del_init(&sb->s_root->d_alias);
-+		spin_unlock(&sb->s_root->d_lock);
-+		spin_unlock(&dcache_inode_lock);
+ 		vfsmount_read_lock();
+ 		p = __d_path(path, root, s, m->size - m->count);
+ 		vfsmount_read_unlock();
  		spin_unlock(&dcache_lock);
- 	}
- 	return 0;
-Index: linux-2.6/fs/notify/fsnotify.c
++		if (read_seqretry(&rename_lock, seq))
++			goto rename_retry;
++
+ 		err = PTR_ERR(p);
+ 		if (!IS_ERR(p)) {
+ 			s = mangle_path(s, p, esc);
+Index: linux-2.6/drivers/staging/pohmelfs/path_entry.c
 ===================================================================
---- linux-2.6.orig/fs/notify/fsnotify.c
-+++ linux-2.6/fs/notify/fsnotify.c
-@@ -53,6 +53,7 @@ void __fsnotify_update_child_dentry_flag
- 	watched = fsnotify_inode_watches_children(inode);
+--- linux-2.6.orig/drivers/staging/pohmelfs/path_entry.c
++++ linux-2.6/drivers/staging/pohmelfs/path_entry.c
+@@ -85,6 +85,7 @@ int pohmelfs_path_length(struct pohmelfs
+ {
+ 	struct dentry *d, *root, *first;
+ 	int len = 1; /* Root slash */
++	unsigned seq;
  
+ 	first = d = d_find_alias(&pi->vfs_inode);
+ 	if (!d) {
+@@ -96,6 +97,9 @@ int pohmelfs_path_length(struct pohmelfs
+ 	root = dget(current->fs->root.dentry);
+ 	read_unlock(&current->fs->lock);
+ 
++	rcu_read_lock();
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
  	spin_lock(&dcache_lock);
-+	spin_lock(&dcache_inode_lock);
- 	/* run all of the dentries associated with this inode.  Since this is a
- 	 * directory, there damn well better only be one item on this list */
- 	list_for_each_entry(alias, &inode->i_dentry, d_alias) {
-@@ -75,6 +76,7 @@ void __fsnotify_update_child_dentry_flag
- 		}
- 		spin_unlock(&alias->d_lock);
- 	}
-+	spin_unlock(&dcache_inode_lock);
- 	spin_unlock(&dcache_lock);
- }
  
+ 	if (!IS_ROOT(d) && d_unhashed(d))
+@@ -106,6 +110,9 @@ int pohmelfs_path_length(struct pohmelfs
+ 		d = d->d_parent;
+ 	}
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ 
+ 	dput(root);
+ 	dput(first);
+Index: linux-2.6/fs/autofs4/waitq.c
+===================================================================
+--- linux-2.6.orig/fs/autofs4/waitq.c
++++ linux-2.6/fs/autofs4/waitq.c
+@@ -189,13 +189,20 @@ static int autofs4_getpath(struct autofs
+ 	char *buf = *name;
+ 	char *p;
+ 	int len = 0;
++	unsigned seq;
+ 
++	rcu_read_lock();
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 	for (tmp = dentry ; tmp != root ; tmp = tmp->d_parent)
+ 		len += tmp->d_name.len + 1;
+ 
+ 	if (!len || --len > NAME_MAX) {
+ 		spin_unlock(&dcache_lock);
++		if (read_seqretry(&rename_lock, seq))
++			goto rename_retry;
++		rcu_read_unlock();
+ 		return 0;
+ 	}
+ 
+@@ -209,6 +216,9 @@ static int autofs4_getpath(struct autofs
+ 		strncpy(p, tmp->d_name.name, tmp->d_name.len);
+ 	}
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ 
+ 	return len;
+ }
+Index: linux-2.6/fs/nfs/namespace.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/namespace.c
++++ linux-2.6/fs/nfs/namespace.c
+@@ -50,9 +50,13 @@ char *nfs_path(const char *base,
+ {
+ 	char *end = buffer+buflen;
+ 	int namelen;
++	unsigned seq;
+ 
+ 	*--end = '\0';
+ 	buflen--;
++	rcu_read_lock();
++rename_retry:
++	seq = read_seqbegin(&rename_lock);
+ 	spin_lock(&dcache_lock);
+ 	while (!IS_ROOT(dentry) && dentry != droot) {
+ 		namelen = dentry->d_name.len;
+@@ -65,6 +69,9 @@ char *nfs_path(const char *base,
+ 		dentry = dentry->d_parent;
+ 	}
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ 	if (*end != '/') {
+ 		if (--buflen < 0)
+ 			goto Elong;
+@@ -82,6 +89,9 @@ char *nfs_path(const char *base,
+ 	return end;
+ Elong_unlock:
+ 	spin_unlock(&dcache_lock);
++	if (read_seqretry(&rename_lock, seq))
++		goto rename_retry;
++	rcu_read_unlock();
+ Elong:
+ 	return ERR_PTR(-ENAMETOOLONG);
+ }
 
 
