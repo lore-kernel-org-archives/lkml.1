@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756785AbZIDMGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZIDM0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756785AbZIDMGL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 08:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756066AbZIDMGK
+	id S1756726AbZIDM0R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 08:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755744AbZIDM0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 08:06:10 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:43973 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756032AbZIDMGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 08:06:10 -0400
-Date: Fri, 4 Sep 2009 14:06:12 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       tytso@mit.edu, akpm@linux-foundation.org
-Subject: Re: [PATCH 3/8] writeback: switch to per-bdi threads for flushing
-	data v2
-Message-ID: <20090904120611.GW18599@kernel.dk>
-References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com> <1252050406-22467-4-git-send-email-jens.axboe@oracle.com> <20090904105403.GD19857@duck.suse.cz> <20090904115858.GT18599@kernel.dk> <20090904120407.GV18599@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904120407.GV18599@kernel.dk>
+	Fri, 4 Sep 2009 08:26:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44584 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755223AbZIDM0Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 08:26:16 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18WsigUZ8QWSoi+8sYzGjzEtkODJCXvtGtUrOm6IW
+	xAsdMLYoafMiZj
+Subject: Re: CPU scheduler weirdness?
+From: Mike Galbraith <efault@gmx.de>
+To: Marton Balint <cus@fazekas.hu>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Andreas Mohr <andi@lisas.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.2.00.0909040933540.7248@cinke.fazekas.hu>
+References: <20090813084257.GA761@rhlx01.hs-esslingen.de>
+	 <alpine.LNX.2.00.0908131720050.8321@cinke.fazekas.hu>
+	 <20090813155812.GA15714@rhlx01.hs-esslingen.de>
+	 <alpine.LNX.2.00.0908171758340.2764@cinke.fazekas.hu>
+	 <1250665455.7583.326.camel@twins>
+	 <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu>
+	 <1250683834.7583.360.camel@twins>
+	 <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu>
+	 <1250707331.7154.1.camel@laptop>
+	 <alpine.LNX.2.00.0908192125180.4364@cinke.fazekas.hu>
+	 <20090820105645.GA23635@elte.hu>
+	 <alpine.LNX.2.00.0908201814270.12548@cinke.fazekas.hu>
+	 <alpine.LNX.2.00.0908282240480.32738@cinke.fazekas.hu>
+	 <alpine.LNX.2.00.0909032350580.20701@cinke.fazekas.hu>
+	 <1252045561.7005.7.camel@marge.simson.net>
+	 <alpine.LNX.2.00.0909040933540.7248@cinke.fazekas.hu>
+Content-Type: text/plain
+Date: Fri, 04 Sep 2009 14:26:14 +0200
+Message-Id: <1252067174.8232.3.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.72
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04 2009, Jens Axboe wrote:
-> +static long wb_check_old_data_flush(struct bdi_writeback *wb)
-> +{
-> +	unsigned long expired;
-> +	long nr_pages;
-> +
-> +	expired = wb->last_old_flush +
-> +			msecs_to_jiffies(dirty_writeback_interval * 10);
-> +	if (time_before(jiffies, expired))
-> +		return 0;
-> +
-> +	nr_pages = global_page_state(NR_FILE_DIRTY) +
-> +			global_page_state(NR_UNSTABLE_NFS) +
-> +			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
-> +
-> +	return wb_writeback(wb, nr_pages, NULL, WB_SYNC_NONE, 1);
-> +}
+On Fri, 2009-09-04 at 09:53 +0200, Marton Balint wrote:
+> 
+> On Fri, 4 Sep 2009, Mike Galbraith wrote:
 
-Needs to set ->last_old_flush of course. I also made it check for
-nr_pages > 0 before calling into wb_writeback().
+> > Where does your schedtest.c and schedtest_mod.c live?
+> 
+> They were attached to one of my previous mails, i'm inlining them here to 
+> make the discussion easier. Thanks for looking into this.
 
--- 
-Jens Axboe
+Thanks.  Ingo has already resolved it though.
+
+	-Mike
 
