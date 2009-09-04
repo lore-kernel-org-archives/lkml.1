@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934510AbZIEAE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934349AbZIEADv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934510AbZIEAE0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934325AbZIEAEL
+	id S934349AbZIEADv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934264AbZIEADr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:04:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33524 "EHLO
+	Fri, 4 Sep 2009 20:03:47 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33539 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933927AbZIEABU (ORCPT
+	with ESMTP id S934060AbZIEABV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:01:20 -0400
-Message-Id: <20090905000122.271241564@goodmis.org>
+	Fri, 4 Sep 2009 20:01:21 -0400
+Message-Id: <20090905000122.657369106@goodmis.org>
 References: <20090904235527.520961911@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Sep 2009 19:55:32 -0400
+Date: Fri, 04 Sep 2009 19:55:33 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,100 +21,167 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 05/18] ring-buffer: remove ring_buffer_event_discard
-Content-Disposition: inline; filename=0005-ring-buffer-remove-ring_buffer_event_discard.patch
+Subject: [PATCH 06/18] ring-buffer: do not count discarded events
+Content-Disposition: inline; filename=0006-ring-buffer-do-not-count-discarded-events.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The function ring_buffer_event_discard can be used on any item in the
-ring buffer, even after the item was committed. This function provides
-no safety nets and is very race prone.
+The latency tracers report the number of items in the trace buffer.
+This uses the ring buffer data to calculate this. Because discarded
+events are also counted, the numbers do not match the number of items
+that are printed. The ring buffer also adds a "padding" item to the
+end of each buffer page which also gets counted as a discarded item.
 
-An item may be safely removed from the ring buffer before it is committed
-with the ring_buffer_discard_commit.
+This patch decrements the counter to the page entries on a discard.
+This allows us to ignore discarded entries while reading the buffer.
 
-Since there are currently no users of this function, and because this
-function is racey and error prone, this patch removes it altogether.
-
-Note, removing this function also allows the counters to ignore
-all discarded events (patches will follow).
+Decrementing the counter is still safe since it can only happen while
+the committing flag is still set.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/linux/ring_buffer.h |   14 --------------
- kernel/trace/ring_buffer.c  |   27 ++++++---------------------
- 2 files changed, 6 insertions(+), 35 deletions(-)
+ kernel/trace/ring_buffer.c |   71 +++++++++++++++++++++++++++++++++----------
+ 1 files changed, 54 insertions(+), 17 deletions(-)
 
-diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-index 7fca716..e061b4e 100644
---- a/include/linux/ring_buffer.h
-+++ b/include/linux/ring_buffer.h
-@@ -75,20 +75,6 @@ ring_buffer_event_time_delta(struct ring_buffer_event *event)
- }
- 
- /*
-- * ring_buffer_event_discard can discard any event in the ring buffer.
-- *   it is up to the caller to protect against a reader from
-- *   consuming it or a writer from wrapping and replacing it.
-- *
-- * No external protection is needed if this is called before
-- * the event is commited. But in that case it would be better to
-- * use ring_buffer_discard_commit.
-- *
-- * Note, if an event that has not been committed is discarded
-- * with ring_buffer_event_discard, it must still be committed.
-- */
--void ring_buffer_event_discard(struct ring_buffer_event *event);
--
--/*
-  * ring_buffer_discard_commit will remove an event that has not
-  *   ben committed yet. If this is used, then ring_buffer_unlock_commit
-  *   must not be called on the discarded event. This function
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 9d939e7..092fe0c 100644
+index 092fe0c..c8d2a66 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -2328,31 +2328,16 @@ static inline void rb_event_discard(struct ring_buffer_event *event)
+@@ -218,17 +218,12 @@ enum {
+ 
+ static inline int rb_null_event(struct ring_buffer_event *event)
+ {
+-	return event->type_len == RINGBUF_TYPE_PADDING
+-			&& event->time_delta == 0;
+-}
+-
+-static inline int rb_discarded_event(struct ring_buffer_event *event)
+-{
+-	return event->type_len == RINGBUF_TYPE_PADDING && event->time_delta;
++	return event->type_len == RINGBUF_TYPE_PADDING && !event->time_delta;
  }
  
- /**
-- * ring_buffer_event_discard - discard any event in the ring buffer
-- * @event: the event to discard
-- *
-- * Sometimes a event that is in the ring buffer needs to be ignored.
-- * This function lets the user discard an event in the ring buffer
-- * and then that event will not be read later.
-- *
-- * Note, it is up to the user to be careful with this, and protect
-- * against races. If the user discards an event that has been consumed
-- * it is possible that it could corrupt the ring buffer.
-- */
--void ring_buffer_event_discard(struct ring_buffer_event *event)
--{
--	rb_event_discard(event);
--}
--EXPORT_SYMBOL_GPL(ring_buffer_event_discard);
+ static void rb_event_set_padding(struct ring_buffer_event *event)
+ {
++	/* padding has a NULL time_delta */
+ 	event->type_len = RINGBUF_TYPE_PADDING;
+ 	event->time_delta = 0;
+ }
+@@ -1778,9 +1773,6 @@ rb_reset_tail(struct ring_buffer_per_cpu *cpu_buffer,
+ 	event->type_len = RINGBUF_TYPE_PADDING;
+ 	/* time delta must be non zero */
+ 	event->time_delta = 1;
+-	/* Account for this as an entry */
+-	local_inc(&tail_page->entries);
+-	local_inc(&cpu_buffer->entries);
+ 
+ 	/* Set write to end of buffer */
+ 	length = (tail + length) - BUF_PAGE_SIZE;
+@@ -2269,18 +2261,23 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer, unsigned long length)
+ }
+ EXPORT_SYMBOL_GPL(ring_buffer_lock_reserve);
+ 
+-static void rb_commit(struct ring_buffer_per_cpu *cpu_buffer,
++static void
++rb_update_write_stamp(struct ring_buffer_per_cpu *cpu_buffer,
+ 		      struct ring_buffer_event *event)
+ {
+-	local_inc(&cpu_buffer->entries);
 -
--/**
+ 	/*
+ 	 * The event first in the commit queue updates the
+ 	 * time stamp.
+ 	 */
+ 	if (rb_event_is_commit(cpu_buffer, event))
+ 		cpu_buffer->write_stamp += event->time_delta;
++}
+ 
++static void rb_commit(struct ring_buffer_per_cpu *cpu_buffer,
++		      struct ring_buffer_event *event)
++{
++	local_inc(&cpu_buffer->entries);
++	rb_update_write_stamp(cpu_buffer, event);
+ 	rb_end_commit(cpu_buffer);
+ }
+ 
+@@ -2327,6 +2324,46 @@ static inline void rb_event_discard(struct ring_buffer_event *event)
+ 		event->time_delta = 1;
+ }
+ 
++/*
++ * Decrement the entries to the page that an event is on.
++ * The event does not even need to exist, only the pointer
++ * to the page it is on. This may only be called before the commit
++ * takes place.
++ */
++static inline void
++rb_decrement_entry(struct ring_buffer_per_cpu *cpu_buffer,
++		   struct ring_buffer_event *event)
++{
++	unsigned long addr = (unsigned long)event;
++	struct buffer_page *bpage = cpu_buffer->commit_page;
++	struct buffer_page *start;
++
++	addr &= PAGE_MASK;
++
++	/* Do the likely case first */
++	if (likely(bpage->page == (void *)addr)) {
++		local_dec(&bpage->entries);
++		return;
++	}
++
++	/*
++	 * Because the commit page may be on the reader page we
++	 * start with the next page and check the end loop there.
++	 */
++	rb_inc_page(cpu_buffer, &bpage);
++	start = bpage;
++	do {
++		if (bpage->page == (void *)addr) {
++			local_dec(&bpage->entries);
++			return;
++		}
++		rb_inc_page(cpu_buffer, &bpage);
++	} while (bpage != start);
++
++	/* commit not part of this buffer?? */
++	RB_WARN_ON(cpu_buffer, 1);
++}
++
+ /**
   * ring_buffer_commit_discard - discard an event that has not been committed
   * @buffer: the ring buffer
-  * @event: non committed event to discard
-  *
-- * This is similar to ring_buffer_event_discard but must only be
-- * performed on an event that has not been committed yet. The difference
-- * is that this will also try to free the event from the ring buffer
-+ * Sometimes an event that is in the ring buffer needs to be ignored.
-+ * This function lets the user discard an event in the ring buffer
-+ * and then that event will not be read later.
-+ *
-+ * This function only works if it is called before the the item has been
-+ * committed. It will try to free the event from the ring buffer
-  * if another event has not been added behind it.
-  *
-  * If another event has been added behind it, it will set the event
+@@ -2365,14 +2402,15 @@ void ring_buffer_discard_commit(struct ring_buffer *buffer,
+ 	 */
+ 	RB_WARN_ON(buffer, !local_read(&cpu_buffer->committing));
+ 
++	rb_decrement_entry(cpu_buffer, event);
+ 	if (rb_try_to_discard(cpu_buffer, event))
+ 		goto out;
+ 
+ 	/*
+ 	 * The commit is still visible by the reader, so we
+-	 * must increment entries.
++	 * must still update the timestamp.
+ 	 */
+-	local_inc(&cpu_buffer->entries);
++	rb_update_write_stamp(cpu_buffer, event);
+  out:
+ 	rb_end_commit(cpu_buffer);
+ 
+@@ -2884,8 +2922,7 @@ static void rb_advance_reader(struct ring_buffer_per_cpu *cpu_buffer)
+ 
+ 	event = rb_reader_event(cpu_buffer);
+ 
+-	if (event->type_len <= RINGBUF_TYPE_DATA_TYPE_LEN_MAX
+-			|| rb_discarded_event(event))
++	if (event->type_len <= RINGBUF_TYPE_DATA_TYPE_LEN_MAX)
+ 		cpu_buffer->read++;
+ 
+ 	rb_update_read_stamp(cpu_buffer, event);
 -- 
 1.6.3.3
 
