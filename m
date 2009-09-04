@@ -1,26 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbZIDHty@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933111AbZIDHwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933064AbZIDHty (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:49:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbZIDHtw
+	id S933111AbZIDHwW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932966AbZIDHwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:49:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48716 "EHLO mx2.mail.elte.hu"
+	Fri, 4 Sep 2009 03:52:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:32774 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932973AbZIDHtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 03:49:51 -0400
-Date: Fri, 4 Sep 2009 09:49:38 +0200
+	id S932510AbZIDHwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 03:52:20 -0400
+Date: Fri, 4 Sep 2009 09:51:17 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Alok Kataria <akataria@vmware.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH: x86] Print the hypervisor returned tsc_khz during boot.
-Message-ID: <20090904074938.GE20598@elte.hu>
-References: <1251076103.29422.32.camel@ank32.eng.vmware.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 10] PM: Measure suspend and resume times for individual
+	devices (was: Re: [PATCH 2/6] PM: Asynchronous resume of devices)
+Message-ID: <20090904075117.GF20598@elte.hu>
+References: <Pine.LNX.4.44L0.0908292043500.26533-100000@netrider.rowland.org> <200908311453.47138.rjw@sisk.pl> <20090831135222.GB29281@elte.hu> <200908311756.54624.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251076103.29422.32.camel@ank32.eng.vmware.com>
+In-Reply-To: <200908311756.54624.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -34,41 +42,165 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alok Kataria <akataria@vmware.com> wrote:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> On an AMD-64 system the processor frequency that is printed during 
-> system boot, may be different than the tsc frequency that was 
-> returned by the hypervisor, due to value returned from 
-> calibrate_cpu. For debugging timekeeping or other related issues 
-> it might be better to get the tsc_khz value returned by the 
-> hypervisor.
+> On Monday 31 August 2009, Ingo Molnar wrote:
+> > 
+> > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > 
+> > > On Monday 31 August 2009, Ingo Molnar wrote:
+> > > > 
+> > > > * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > > 
+> > > > > On Sunday 30 August 2009, Rafael J. Wysocki wrote:
+> > > > > > On Sunday 30 August 2009, Alan Stern wrote:
+> > > > > > > On Sat, 29 Aug 2009, Rafael J. Wysocki wrote:
+> > > > > > > 
+> > > > > > > > I only wanted to say that the advantage is not really that "big". :-)
+> > > > > > > > 
+> > > > > > > > > I must agree, 14 threads isn't a lot.  But at the moment that number is 
+> > > > > > > > > random, not under your control.
+> > > > > > > > 
+> > > > > > > > It's not directly controlled, but there are some interactions between the
+> > > > > > > > async threads, the main threads and the async framework that don't allow this
+> > > > > > > > number to grow too much.
+> > > > > > > > 
+> > > > > > > > IMO it sometimes is better to allow things to work themselves out, as long as
+> > > > > > > > they don't explode, than to try to keep everything under strict control.  YMMV.
+> > > > > > > 
+> > > > > > > For testing purposes it would be nice to have a one-line summary for
+> > > > > > > each device containing a thread ID, start timestamp, end timestamp, and
+> > > > > > > elapsed time.  With that information you could evaluate the amount of
+> > > > > > > parallelism and determine where the bottlenecks are.  It would give a
+> > > > > > > much more detailed picture of the entire process than the total time of
+> > > > > > > your recent patch 9.
+> > > > > > 
+> > > > > > Of course it would.  I think I'll implement it.
+> > > > > 
+> > > > > OK, below is a patch for that.  It only prints the time elapsed, because the
+> > > > > timestamps themselves can be obtained from the usual kernel timestamping.
+> > > > > 
+> > > > > It's on top of all the previous patches.
+> > > > > 
+> > > > > Thanks,
+> > > > > Rafael
+> > > > > 
+> > > > > ---
+> > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > Subject: PM: Measure suspend and resume times for individual devices
+> > > > > 
+> > > > > If verbose PM debugging is enabled, measure and print the time of
+> > > > > suspending and resuming of individual devices.
+> > > > > 
+> > > > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > ---
+> > > > >  drivers/base/power/main.c |   51 +++++++++++++++++++++++++++++++++++++++++-----
+> > > > >  kernel/power/swsusp.c     |    2 -
+> > > > >  2 files changed, 47 insertions(+), 6 deletions(-)
+> > > > > 
+> > > > > Index: linux-2.6/drivers/base/power/main.c
+> > > > > ===================================================================
+> > > > > --- linux-2.6.orig/drivers/base/power/main.c
+> > > > > +++ linux-2.6/drivers/base/power/main.c
+> > > > > @@ -442,11 +442,11 @@ static bool pm_op_started(struct device 
+> > > > >   */
+> > > > >  int pm_time_elapsed(struct timeval *start, struct timeval *stop)
+> > > > >  {
+> > > > > -	s64 elapsed_centisecs64;
+> > > > > +	s64 elapsed_msecs64;
+> > > > >  
+> > > > > -	elapsed_centisecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
+> > > > > -	do_div(elapsed_centisecs64, NSEC_PER_SEC / 100);
+> > > > > -	return elapsed_centisecs64;
+> > > > > +	elapsed_msecs64 = timeval_to_ns(stop) - timeval_to_ns(start);
+> > > > > +	do_div(elapsed_msecs64, NSEC_PER_SEC / 1000);
+> > > > > +	return elapsed_msecs64;
+> > > > >  }
+> > > > >  
+> > > > >  static char *pm_verb(int event)
+> > > > > @@ -476,7 +476,7 @@ static char *pm_verb(int event)
+> > > > >  static void dpm_show_time(struct timeval *start, struct timeval *stop,
+> > > > >  			  pm_message_t state, const char *info)
+> > > > >  {
+> > > > > -	int centisecs = pm_time_elapsed(start, stop);
+> > > > > +	int centisecs = pm_time_elapsed(start, stop) / 10;
+> > > > >  
+> > > > >  	printk(KERN_INFO "PM: %s%s%s of devices complete in %d.%02d seconds\n",
+> > > > >  		info ? info : "", info ? " " : "", pm_verb(state.event),
+> > > > > @@ -497,6 +497,33 @@ static void pm_dev_err(struct device *de
+> > > > >  		kobject_name(&dev->kobj), pm_verb(state.event), info, error);
+> > > > >  }
+> > > > >  
+> > > > > +#ifdef DEBUG
+> > > > > +static void device_show_time(struct timeval *start, struct device *dev,
+> > > > > +			     pm_message_t state, char *info)
+> > > > > +{
+> > > > > +	struct timeval stop;
+> > > > > +	int msecs;
+> > > > > +
+> > > > > +	do_gettimeofday(&stop);
+> > > > > +	msecs = pm_time_elapsed(start, &stop);
+> > > > > +	dev_dbg(dev, "PID %d: %s%s%s complete in %d.%03d seconds\n",
+> > > > > +		task_pid_nr(current), info ? info : "", info ? " " : "",
+> > > > > +		pm_verb(state.event), msecs / 1000, msecs % 1000);
+> > > > > +}
+> > > > > +
+> > > > > +#define TIMER_DECLARE(timer)	struct timeval timer
+> > > > > +#define TIMER_START(timer)	do { \
+> > > > > +		do_gettimeofday(&timer); \
+> > > > > +	} while (0)
+> > > > > +#define TIMER_STOP(timer, dev, state, info)	do { \
+> > > > > +		device_show_time(&timer, dev, state, info); \
+> > > > > +	} while (0)
+> > > > > +#else /* !DEBUG */
+> > > > > +#define TIMER_DECLARE(timer)
+> > > > > +#define TIMER_START(timer)	do { } while (0)
+> > > > > +#define TIMER_STOP(timer, dev, state, info)	do { } while (0)
+> > > > > +#endif /* !DEBUG */
+> > > > > +
+> > > > >  /*------------------------- Resume routines -------------------------*/
+> > > > >  
+> > > > >  /**
+> > > > > @@ -510,7 +537,9 @@ static void pm_dev_err(struct device *de
+> > > > >  static int __device_resume_noirq(struct device *dev, pm_message_t state)
+> > > > >  {
+> > > > >  	int error = 0;
+> > > > > +	TIMER_DECLARE(timer);
+> > > > >  
+> > > > > +	TIMER_START(timer);
+> > > > >  	TRACE_DEVICE(dev);
+> > > > >  	TRACE_RESUME(0);
+> > > > >  
+> > > > > @@ -523,6 +552,7 @@ static int __device_resume_noirq(struct 
+> > > > >  	wake_up_all(&dev->power.wait_queue);
+> > > > >  
+> > > > >  	TRACE_RESUME(error);
+> > > > > +	TIMER_STOP(timer, dev, state, "EARLY");
+> > > > >  	return error;
+> > > > 
+> > > > Hm, these CPP macros are rather ugly. Why is there a need for 
+> > > > the TIMER_DECLARE() wrapper - if a proper inline function is 
+> > > > used there's no need for that.
+> > > 
+> > > I need a variable to be declared so that I can save the "start" 
+> > > timestamp in it.  I don't need the variable if DEBUG is unset, 
+> > > though.
+> > > 
+> > > How would you do that without using a macro?  Or #ifdef #endif 
+> > > block that would be uglier IMO (which is why I didn't do that)?
+> > 
+> > Well, why not use an inline function like i suggested? [which does 
+> > nothing in the !enabled case] You can keep the local variable always 
+> > defined.
 > 
-> The patch below now prints the tsc frequency that the hypervisor 
-> returned. Please consider for tip.
+> Well, I used the macros _exactly_ because I didn't want to keep 
+> the local variable always defined.
 > 
-> --
-> Signed-off-by: Alok N Kataria <akataria@vmware.com>
-> 
-> Index: linux-tip-master/arch/x86/kernel/tsc.c
-> ===================================================================
-> --- linux-tip-master.orig/arch/x86/kernel/tsc.c	2009-08-23 17:53:44.000000000 -0700
-> +++ linux-tip-master/arch/x86/kernel/tsc.c	2009-08-23 17:55:08.000000000 -0700
-> @@ -405,7 +405,10 @@ unsigned long native_calibrate_tsc(void)
->  
->  	hv_tsc_khz = get_hypervisor_tsc_freq();
->  	if (hv_tsc_khz) {
-> -		printk(KERN_INFO "TSC: Frequency read from the hypervisor\n");
-> +		printk(KERN_INFO "TSC: Frequency read from the hypervisor : "
-> +				"%lu.%03lu MHz\n",
-> +				(unsigned long) hv_tsc_khz / 1000,
-> +				(unsigned long) hv_tsc_khz % 1000);
->  		return hv_tsc_khz;
->  	}
+> Now, if you think that adding several useless bytes to the stack 
+> frame is OK, perhaps it can be always defined.  However, IMnsHO 
+> that would be (a) confusing (why define a variable you don't use) 
+> and (b) wasteful.
 
-Makes sense. Note, arch/x86/kernel/tsc.c changed recently so this 
-patch does not apply anymore - mind merging it on top of that and 
-re-send it?
-
-Thanks,
+Well the compiler will eliminate them, doesnt it?
 
 	Ingo
