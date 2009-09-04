@@ -1,106 +1,216 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbZIDG6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933021AbZIDG77@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbZIDG6R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755647AbZIDG6Q
+	id S933021AbZIDG77 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:59:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932994AbZIDG75
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:58:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41150 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755460AbZIDG6P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:58:15 -0400
-Date: Fri, 4 Sep 2009 08:57:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@redhat.com>
-Subject: Re: [PATCH 1/2] kmemleak: Inform kmemleak about kernel stack
-	allocation
-Message-ID: <20090904065745.GE29829@elte.hu>
-References: <20090827165927.27901.97270.stgit@pc1117.cambridge.arm.com> <20090827170253.27901.33997.stgit@pc1117.cambridge.arm.com> <20090829132954.GB24123@elte.hu> <1251556083.5518.2.camel@pc1117.cambridge.arm.com> <20090831084546.GE15619@elte.hu> <1251797114.10349.28.camel@pc1117.cambridge.arm.com>
+	Fri, 4 Sep 2009 02:59:57 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:55110 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932966AbZIDG7w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:59:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=YotpDazjUK6UqN+x+htcz8EOz4epvp1vrVWFvcWCl3uMIofBcuIsqZCfoi0m9pTPT1
+         ll0QU3/bkczViQf58hOOMVN+Ujyjqza3UvY5ckaI8WPqfTHBK3zDs70V0s81FUQ79uhA
+         lApdiWJ1bHSQ5gFlxDljdUSgfMlXsLGTjoJmE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1251797114.10349.28.camel@pc1117.cambridge.arm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Date: Fri, 4 Sep 2009 08:59:51 +0200
+Message-ID: <cabda6420909032359y4c36596at37961b4f24a45a98@mail.gmail.com>
+Subject: [PATCH -mm] rtc-pcf2123 fixes
+From: christian pellegrin <chripell@gmail.com>
+To: Chris Verges <chrisv@cyberswitching.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi, the following patch:
 
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
+fixes bug with write command bitfield
 
-> On Mon, 2009-08-31 at 10:45 +0200, Ingo Molnar wrote:
-> > * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> > 
-> > > On Sat, 2009-08-29 at 15:29 +0200, Ingo Molnar wrote:
-> > > > * Catalin Marinas <catalin.marinas@arm.com> wrote:
-> [...]
-> > > > > diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-> > > > > index fad7d40..f26432a 100644
-> > > > > --- a/arch/x86/include/asm/thread_info.h
-> > > > > +++ b/arch/x86/include/asm/thread_info.h
-> > > > > @@ -162,7 +162,12 @@ struct thread_info {
-> > > > >  #define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
-> > > > >  
-> > > > >  #define alloc_thread_info(tsk)						\
-> > > > > -	((struct thread_info *)__get_free_pages(THREAD_FLAGS, THREAD_ORDER))
-> > > > > +({									\
-> > > > > +	struct thread_info *ti = (struct thread_info *)			\
-> > > > > +		__get_free_pages(THREAD_FLAGS, THREAD_ORDER);		\
-> > > > > +	kmemleak_alloc(ti, THREAD_SIZE, 1, THREAD_FLAGS);		\
-> > > > > +	ti;								\
-> > > > > +})
-> > > > 
-> > > > Sidenote:this used to be a trivial wrapper to gfp so it was 
-> > > > borderline OK as a CPP macro - now it's a non-trivial CPP wrapper 
-> > > > macro which is not OK. Mind converting it to an inline function?
-> > > 
-> > > I tried this first but got compilation errors in files that didn't 
-> > > even call this function. To make it workable, thread_info.h would 
-> > > need to include additional headers. If that's acceptable, I can 
-> > > post an updated patch.
-> > 
-> > I havent tried the patch myself, but by your description those build 
-> > problems seem to be pre-existing include file dependency problems 
-> > that should be tracked down and resolved - instead of widening them 
-> > by adding even more hidden dependencies via CPP macros.
-> 
-> I tried to move to an inline function and linux/gfp.h is needed for
-> __get_free_pages() and GFP_* macros. This leads to some complicated
-> circular dependencies like below:
-> 
->   CC      arch/x86/kernel/asm-offsets.s
-> In file included from /work/Linux/2.6/linux-2.6-arm/include/linux/mmzone.h:9,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/gfp.h:4,
->                  from /work/Linux/2.6/linux-2.6-arm/arch/x86/include/asm/thread_info.h:22,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/thread_info.h:56,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/preempt.h:9,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/spinlock.h:50,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/seqlock.h:29,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/time.h:8,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/stat.h:60,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/module.h:10,
->                  from /work/Linux/2.6/linux-2.6-arm/include/linux/crypto.h:21,
->                  from /work/Linux/2.6/linux-2.6-arm/arch/x86/kernel/asm-offsets_32.c:7,
->                  from /work/Linux/2.6/linux-2.6-arm/arch/x86/kernel/asm-offsets.c:2:
-> include/linux/wait.h|51| error: expected specifier-qualifier-list before ???spinlock_t???
-> 
-> The linux/mmzone.h file normally includes linux/spinlock.h but the 
-> reverse is also true when the latter includes the former via 
-> thread_info.h and gfp.h. Because of the (correct) guards in the 
-> header files, the spinlock_t definition is no longer available in 
-> mmzone.h.
+fixes bug on crashing when module unloaded but no chip present
 
-mmzone.h probably should not include spinlock.h (which is heavy) - 
-it should include spinlock_types.h (which is lighter). It only needs 
-the type definitions and none of the API definitions.
+adds access to registers via sysfs (needed for accessing calibration
+register which is needed for a good stability of the RTC)
 
-	Ingo
+Signed-off: Christian Pellegrin <chripell@fsfe.org>
+Tested-by: Christian Pellegrin <chripell@fsfe.org>
+---
+diff --git a/drivers/rtc/rtc-pcf2123.c b/drivers/rtc/rtc-pcf2123.c
+index 2fcff82..0c55f7d 100644
+--- a/drivers/rtc/rtc-pcf2123.c
++++ b/drivers/rtc/rtc-pcf2123.c
+@@ -10,6 +10,23 @@
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
+  * published by the Free Software Foundation.
++ *
++ * Please note that the CS is active high, so platform data
++ * should look something like:
++
++ static struct spi_board_info ek_spi_devices[] = {
++ ...
++  {
++    .modalias	= "rtc-pcf2123",
++    .chip_select	= 1,
++    .controller_data = (void *) AT91_PIN_PA10,
++    .max_speed_hz	= 1000 * 1000,
++    .mode = SPI_CS_HIGH,
++    .bus_num	= 0,
++  },
++...
++};
++
+  */
+
+ #include <linux/bcd.h>
+@@ -20,10 +37,9 @@
+ #include <linux/kernel.h>
+ #include <linux/string.h>
+ #include <linux/rtc.h>
+-#include <linux/workqueue.h>
+ #include <linux/spi/spi.h>
+
+-#define DRV_VERSION "0.3"
++#define DRV_VERSION "0.4"
+
+ #define PCF2123_REG_CTRL1	0x00 /* Control Register 1 */
+ #define PCF2123_REG_CTRL2	0x01 /* Control Register 2 */
+@@ -36,13 +52,19 @@
+ #define PCF2123_REG_MO		0x07
+ #define PCF2123_REG_YR		0x08
+
+-#define PCF2123_CMD_W(addr)	(((addr) & 0x0F) | 0x40)  /* single write */
++#define PCF2123_CMD_W(addr)	(((addr) & 0x0F) | 0x10)  /* single write */
+ #define PCF2123_CMD_R(addr)	(((addr) & 0x0F) | 0x90)  /* single read */
+
+ static struct spi_driver pcf2123_driver;
+
++struct pcf2123_sysfs_reg {
++	struct device_attribute attr; /* must be first */
++	char name[2];
++};
++
+ struct pcf2123_plat_data {
+ 	struct rtc_device *rtc;
++	struct pcf2123_sysfs_reg regs[16];
+ };
+
+ /*
+@@ -55,6 +77,39 @@ static inline void pcf2123_delay_trec(void)
+ 	ndelay(30);
+ }
+
++static ssize_t pcf2123_show(struct device *dev, struct device_attribute *attr,
++			    char *buffer)
++{
++	struct spi_device *spi = to_spi_device(dev);
++	struct pcf2123_sysfs_reg *r = (struct pcf2123_sysfs_reg *) attr;
++	u8 txbuf[1], rxbuf[1];
++	int ret;
++
++	txbuf[0] = PCF2123_CMD_R(simple_strtoul(r->name, NULL, 16));
++	ret = spi_write_then_read(spi, txbuf, 1, rxbuf, 1);
++	if (ret < 0)
++		return sprintf(buffer, "error: %d", ret);
++	pcf2123_delay_trec();
++	return sprintf(buffer, "0x%x", rxbuf[0]);
++}
++
++static ssize_t pcf2123_store(struct device *dev, struct device_attribute *attr,
++			     const char *buffer, size_t count)
++{
++	struct spi_device *spi = to_spi_device(dev);
++	struct pcf2123_sysfs_reg *r = (struct pcf2123_sysfs_reg *) attr;
++	u8 txbuf[2];
++	int ret;
++
++	txbuf[0] = PCF2123_CMD_W(simple_strtoul(r->name, NULL, 16));
++	txbuf[1] = simple_strtoul(buffer, NULL, 0);
++	ret = spi_write(spi, txbuf, sizeof(txbuf));
++	if (ret < 0)
++		return -EIO;
++	pcf2123_delay_trec();
++	return count;
++}
++
+ static int pcf2123_rtc_read_time(struct device *dev, struct rtc_time *tm)
+ {
+ 	struct spi_device *spi = to_spi_device(dev);
+@@ -149,7 +204,7 @@ static int __devinit pcf2123_probe(struct spi_device *spi)
+ 	struct rtc_device *rtc;
+ 	struct pcf2123_plat_data *pdata;
+ 	u8 txbuf[2], rxbuf[1];
+-	int ret;
++	int ret, i;
+
+ 	pdata = kzalloc(sizeof(struct pcf2123_plat_data), GFP_KERNEL);
+ 	if (!pdata)
+@@ -201,28 +256,50 @@ static int __devinit pcf2123_probe(struct spi_device *spi)
+ 			&pcf2123_rtc_ops, THIS_MODULE);
+
+ 	if (IS_ERR(rtc)) {
++		dev_err(&spi->dev, "failed to register.\n");
+ 		ret = PTR_ERR(rtc);
+ 		goto kfree_exit;
+ 	}
+
+ 	pdata->rtc = rtc;
+
++	for (i = 0; i < 16; i++) {
++		sprintf(pdata->regs[i].name, "%1x", i);
++		pdata->regs[i].attr.attr.mode = S_IRUGO | S_IWUSR;
++		pdata->regs[i].attr.attr.name = pdata->regs[i].name;
++		pdata->regs[i].attr.show = pcf2123_show;
++		pdata->regs[i].attr.store = pcf2123_store;
++		ret = device_create_file(&spi->dev, &pdata->regs[i].attr);
++		if (ret) {
++			dev_err(&spi->dev, "Unable to create sysfs %s\n",
++				pdata->regs[i].name);
++			pdata->regs[i].name[0] = '\0';
++		}
++	}
++
+ 	return 0;
+ kfree_exit:
+ 	kfree(pdata);
++	spi->dev.platform_data = NULL;
+ 	return ret;
+ }
+
+ static int pcf2123_remove(struct spi_device *spi)
+ {
+ 	struct pcf2123_plat_data *pdata = spi->dev.platform_data;
+-	struct rtc_device *rtc = pdata->rtc;
+-
+-	if (rtc)
+-		rtc_device_unregister(rtc);
+-
+-	kfree(pdata);
+-
++	int i;
++
++	if (pdata) {
++		struct rtc_device *rtc = pdata->rtc;
++
++		if (rtc)
++			rtc_device_unregister(rtc);
++		for (i = 0; i < 16; i++)
++			if (pdata->regs[i].name[0])
++				device_remove_file(&spi->dev,
++						   &pdata->regs[i].attr);
++		kfree(pdata);
++	}
+ 	return 0;
+ }
+
+-- 
+Christian Pellegrin, see http://www.evolware.org/chri/
+"Real Programmers don't play tennis, or any other sport which requires
+you to change clothes. Mountain climbing is OK, and Real Programmers
+wear their climbing boots to work in case a mountain should suddenly
+spring up in the middle of the computer room."
