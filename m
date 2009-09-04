@@ -1,85 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933963AbZIDUNj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934198AbZIDURG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933963AbZIDUNj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933954AbZIDUNh
+	id S934198AbZIDURG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934171AbZIDUQz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:13:37 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60230 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933952AbZIDUNh (ORCPT
+	Fri, 4 Sep 2009 16:16:55 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:60767 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934072AbZIDUQv convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:13:37 -0400
-Subject: Re: [PATCH: x86] Print the hypervisor returned tsc_khz during boot.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090904074938.GE20598@elte.hu>
-References: <1251076103.29422.32.camel@ank32.eng.vmware.com>
-	 <20090904074938.GE20598@elte.hu>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Fri, 04 Sep 2009 13:13:39 -0700
-Message-Id: <1252095219.12518.13.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Sep 2009 16:16:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RlnllfAqzYO/BtRpJWIgvGTA+ch+psbJutLHl0EjHMxGt8bRrUxKS7r4iPOVpu4XoK
+         gfxTtPLrjPHNVm3ytXmVklPQfzangzn4wSgyDvR5BtukcqibL/ZoEwaSno/WBGtSse3X
+         XXV3MY/+rIoGIp3/9YwTVV73Ixy8+HF82Uo98=
+MIME-Version: 1.0
+In-Reply-To: <1252089313.5254.0.camel@dhcp231-106.rdu.redhat.com>
+References: <8db1092f0909020629v5aab79d8lbfcc8c214622787c@mail.gmail.com>
+	 <200909030907.02321.oliver@neukum.org>
+	 <20090903160536.GA24050@kroah.com>
+	 <200909041223.22835.oliver@neukum.org>
+	 <8db1092f0909040710t5c048e93j3fb5adc9e7f1cf6a@mail.gmail.com>
+	 <8db1092f0909041130p2733f7ebs5ee8211c48bab861@mail.gmail.com>
+	 <1252089313.5254.0.camel@dhcp231-106.rdu.redhat.com>
+Date: Fri, 4 Sep 2009 22:16:43 +0200
+Message-ID: <8db1092f0909041316l77da5d75n1934d340db26e6ec@mail.gmail.com>
+Subject: Re: [2.6.31-rc8] Problem with detect USB devices
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-usb@vger.kernel.org, ebiederm@aristanetworks.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<snip>...
+2009/9/4 Eric Paris <eparis@redhat.com>:
 
-> Makes sense. Note, arch/x86/kernel/tsc.c changed recently so this 
-> patch does not apply anymore - mind merging it on top of that and 
-> re-send it?
+>
+> Update to Linus's newest git tree.  It has a fix for this problem.
+> Sorry for all the trouble.
 
-Sure, here is the one which fits on top of current tip. 
-
-I also added a print statement for the case where the TSC frequecy
-cannot be read from vmware's hypervisor.
-
-Thanks.
---
-
-On an AMD-64 system the processor frequency that is printed during
-system boot, may be different than the tsc frequency that was returned
-by the hypervisor, due to the value returned from calibrate_cpu. For
-debugging timekeeping or other related issues it might be better to get
-the tsc_khz value returned by the hypervisor.
-
-The patch below now prints the tsc frequency that the VMware hypervisor
-returned. Please consider for tip.
-
----
-Signed-off-by: Alok N Kataria <akataria@vmware.com>
-
-Index: linux-x86-tree.git/arch/x86/kernel/cpu/vmware.c
-===================================================================
---- linux-x86-tree.git.orig/arch/x86/kernel/cpu/vmware.c	2009-09-04 12:59:45.000000000 -0700
-+++ linux-x86-tree.git/arch/x86/kernel/cpu/vmware.c	2009-09-04 13:01:41.000000000 -0700
-@@ -58,6 +58,9 @@ static unsigned long vmware_get_tsc_khz(
- 	tsc_hz = eax | (((uint64_t)ebx) << 32);
- 	do_div(tsc_hz, 1000);
- 	BUG_ON(tsc_hz >> 32);
-+	printk(KERN_INFO "TSC freq read from hypervisor : %lu.%03lu MHz\n",
-+			 (unsigned long) tsc_hz / 1000,
-+			 (unsigned long) tsc_hz % 1000);
- 	return tsc_hz;
- }
- 
-@@ -69,6 +72,9 @@ void __init vmware_platform_setup(void)
- 
- 	if (ebx != UINT_MAX)
- 		x86_platform.calibrate_tsc = vmware_get_tsc_khz;
-+	else
-+		printk(KERN_WARNING
-+		       "Failed to get TSC freq from the hypervisor\n");
- }
- 
- /*
+Yes, upgrade to latest git tree solves problem. Thanks.
 
 
+Regards
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
