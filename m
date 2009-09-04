@@ -1,108 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933574AbZIDKJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933614AbZIDKJp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933574AbZIDKJg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 06:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933437AbZIDKJf
+	id S933614AbZIDKJp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 06:09:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933582AbZIDKJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 06:09:35 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:60706 "EHLO mx1.redhat.com"
+	Fri, 4 Sep 2009 06:09:44 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:59163 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933431AbZIDKJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 06:09:34 -0400
-Date: Fri, 4 Sep 2009 06:08:20 -0400
+	id S933577AbZIDKJm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 06:09:42 -0400
+Date: Fri, 4 Sep 2009 06:08:35 -0400
 From: Amerigo Wang <amwang@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>,
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
        Michael Ellerman <michael@ellerman.id.au>,
-       Amerigo Wang <amwang@redhat.com>, "M. Mohan Kumar" <mohan@in.ibm.com>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090904101047.5220.20618.sendpatchset@localhost.localdomain>
-Subject: [Patch 0/8] V6 Implement crashkernel=auto
+       "M. Mohan Kumar" <mohan@in.ibm.com>, akpm@linux-foundation.org,
+       bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
+       kamezawa.hiroyu@jp.fujitsu.com, Amerigo Wang <amwang@redhat.com>
+Message-Id: <20090904101102.5220.52114.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090904101047.5220.20618.sendpatchset@localhost.localdomain>
+References: <20090904101047.5220.20618.sendpatchset@localhost.localdomain>
+Subject: [Patch 1/8] x86: add CONFIG_KEXEC_AUTO_RESERVE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-This is the LAST try, since some people still don't like them.
+Introduce a new config option KEXEC_AUTO_RESERVE for x86.
 
-Please take whatever you want, patch 8/8 can be applied
-seprately, only taking it is fine.
-
-
-V5 -> V6:
- - move arch_default*() functions into C files.
-
-V4 -> V5:
- - Rename the global functions, as suggested by Andrew.
- - Save some macros, as suggested by Andrew.
- - Change the high threshold, from 32G to 4G.
- - Change the low threshold on ppc, suggested by ppc developers.
- - Make the mm part as a seperate function, suggest by Eric.
- - Make the IA64 code more readable.
- - Reorder the patchset again, since review from mm people is done.
-
-V3 -> V4:
- - Reorder the patches.
- - Really free the reserved memory, instead of remapping it.
-   (Thanks to KAMEZAWA Hiroyuki!)
- - Release the reserved memory resource when the size is 0.
- - Use strict_strtoul() instead of simple_strtoul().
-
-V2 -> V3:
- - Use more clever way to calculate reserved memory size, especially for IA64.
- - Add that patch that implements shrinking reserved memory
-
-V1 -> V2:
- - Use include/asm-generic/kexec.h, suggested by Neil.
- - Rename a local variable, suggested by Fenghua.
- - Fix some style problems found by checkpatch.pl.
- - Unify the Kconfig docs.
-
-This series of patch implements automatically reserved memory for crashkernel,
-by introducing a new boot option "crashkernel=auto". This idea is from Neil.
-
-In case of breaking user-space applications, it modifies this boot option after
-it decides how much memory should be reserved.
-
-On different arch, the threshold and reserved memory size is different. Please
-refer patch 7/8 which contains an update for the documentation.
-
-Patch 8/8 implements shrinking reserved memory at run-time, which is useful
-when more than enough memory is reserved automatically.
-
-This patchset _is_ already tested on x86_64, IA64 and ppc64.
-
-Cc: Neil Horman <nhorman@redhat.com>
-Cc: M. Mohan Kumar <mohan@in.ibm.com>
-Cc: Michael Ellerman <michael@ellerman.id.au>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Bernhard Walle <bernhard.walle@gmx.de>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 Signed-off-by: WANG Cong <amwang@redhat.com>
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
 ---
- Documentation/kdump/kdump.txt       |   29 ++++++++
- arch/ia64/Kconfig                   |   14 ++++
- arch/ia64/include/asm/kexec.h       |    7 ++
- arch/ia64/kernel/machine_kexec.c    |   38 +++++++++++
- arch/powerpc/Kconfig                |   11 +++
- arch/powerpc/include/asm/kexec.h    |   22 ++++++
- arch/powerpc/kernel/machine_kexec.c |   24 ++++++
- arch/x86/Kconfig                    |   13 +++
- arch/x86/include/asm/kexec.h        |    1 
- include/asm-generic/kexec.h         |   16 ++++
- include/linux/kexec.h               |    2 
- kernel/kexec.c                      |  124 ++++++++++++++++++++++++++++++++++++
- kernel/ksysfs.c                     |   21 ++++++
- 13 files changed, 322 insertions(+)
 
+Index: linux-2.6/arch/x86/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/x86/Kconfig
++++ linux-2.6/arch/x86/Kconfig
+@@ -1482,6 +1482,19 @@ config KEXEC
+ 	  support.  As of this writing the exact hardware interface is
+ 	  strongly in flux, so no good recommendation can be made.
+ 
++config KEXEC_AUTO_RESERVE
++	bool "automatically reserve memory for kexec kernel"
++	depends on KEXEC
++	default y
++	---help---
++	  Automatically reserve memory for a kexec kernel, so that you don't
++	  need to specify numbers for the "crashkernel=X@Y" boot option,
++	  instead you can use "crashkernel=auto". To make this work, you need
++	  to have more than 4G memory.
++
++	  On x86_32, 128M is reserved, on x86_64 1/32 of your memory is
++	  reserved, but it will not exceed 4G.
++
+ config CRASH_DUMP
+ 	bool "kernel crash dumps"
+ 	depends on X86_64 || (X86_32 && HIGHMEM)
