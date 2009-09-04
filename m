@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934187AbZIDUQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934141AbZIDUOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934187AbZIDUQc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934171AbZIDUQZ
+	id S934141AbZIDUOv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934120AbZIDUOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:16:25 -0400
-Received: from kroah.org ([198.145.64.141]:36304 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 16:14:49 -0400
+Received: from kroah.org ([198.145.64.141]:36311 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934106AbZIDUOq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:14:46 -0400
+	id S934113AbZIDUOr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:14:47 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:56 2009
-Message-Id: <20090904200856.335297402@mini.kroah.org>
+Message-Id: <20090904200856.494481884@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 13:07:53 -0700
+Date: Fri, 04 Sep 2009 13:07:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sunil Mushran <sunil.mushran@oracle.com>,
-       Joel Becker <joel.becker@oracle.com>
-Subject: [patch 41/48] ocfs2: Initialize the cluster were writing to in a non-sparse extend
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 42/48] rose: Fix rose_getname() leak
 References: <20090904200712.724048145@mini.kroah.org>
-Content-Disposition: inline; filename=ocfs2-initialize-the-cluster-we-re-writing-to-in-a-non-sparse-extend.patch
+Content-Disposition: inline; filename=rose-fix-rose_getname-leak.patch
 In-Reply-To: <20090904201112.GA8274@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,187 +30,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Sunil Mushran <sunil.mushran@oracle.com>
+From: Eric Dumazet <eric.dumazet@gmail.com>
 
-commit e7432675f8ca868a4af365759a8d4c3779a3d922 upstream.
+commit 17ac2e9c58b69a1e25460a568eae1b0dc0188c25 upstream.
 
-In a non-sparse extend, we correctly allocate (and zero) the clusters between
-the old_i_size and pos, but we don't zero the portions of the cluster we're
-writing to outside of pos<->len.
+rose_getname() can leak kernel memory to user.
 
-It handles clustersize > pagesize and blocksize < pagesize.
-
-[Cleaned up by Joel Becker.]
-
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ocfs2/aops.c |   64 ++++++++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 46 insertions(+), 18 deletions(-)
+ net/rose/af_rose.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/fs/ocfs2/aops.c
-+++ b/fs/ocfs2/aops.c
-@@ -908,18 +908,17 @@ struct ocfs2_write_cluster_desc {
- 	 */
- 	unsigned	c_new;
- 	unsigned	c_unwritten;
-+	unsigned	c_needs_zero;
- };
+--- a/net/rose/af_rose.c
++++ b/net/rose/af_rose.c
+@@ -957,6 +957,7 @@ static int rose_getname(struct socket *s
+ 	struct rose_sock *rose = rose_sk(sk);
+ 	int n;
  
--static inline int ocfs2_should_zero_cluster(struct ocfs2_write_cluster_desc *d)
--{
--	return d->c_new || d->c_unwritten;
--}
--
- struct ocfs2_write_ctxt {
- 	/* Logical cluster position / len of write */
- 	u32				w_cpos;
- 	u32				w_clen;
- 
-+	/* First cluster allocated in a nonsparse extend */
-+	u32				w_first_new_cpos;
-+
- 	struct ocfs2_write_cluster_desc	w_desc[OCFS2_MAX_CLUSTERS_PER_PAGE];
- 
- 	/*
-@@ -997,6 +996,7 @@ static int ocfs2_alloc_write_ctxt(struct
- 		return -ENOMEM;
- 
- 	wc->w_cpos = pos >> osb->s_clustersize_bits;
-+	wc->w_first_new_cpos = UINT_MAX;
- 	cend = (pos + len - 1) >> osb->s_clustersize_bits;
- 	wc->w_clen = cend - wc->w_cpos + 1;
- 	get_bh(di_bh);
-@@ -1239,13 +1239,11 @@ static int ocfs2_write_cluster(struct ad
- 			       struct ocfs2_write_ctxt *wc, u32 cpos,
- 			       loff_t user_pos, unsigned user_len)
- {
--	int ret, i, new, should_zero = 0;
-+	int ret, i, new;
- 	u64 v_blkno, p_blkno;
- 	struct inode *inode = mapping->host;
- 
- 	new = phys == 0 ? 1 : 0;
--	if (new || unwritten)
--		should_zero = 1;
- 
- 	if (new) {
- 		u32 tmp_pos;
-@@ -1356,7 +1354,9 @@ static int ocfs2_write_cluster_by_desc(s
- 			local_len = osb->s_clustersize - cluster_off;
- 
- 		ret = ocfs2_write_cluster(mapping, desc->c_phys,
--					  desc->c_unwritten, data_ac, meta_ac,
-+					  desc->c_unwritten,
-+					  desc->c_needs_zero,
-+					  data_ac, meta_ac,
- 					  wc, desc->c_cpos, pos, local_len);
- 		if (ret) {
- 			mlog_errno(ret);
-@@ -1406,14 +1406,14 @@ static void ocfs2_set_target_boundaries(
- 		 * newly allocated cluster.
- 		 */
- 		desc = &wc->w_desc[0];
--		if (ocfs2_should_zero_cluster(desc))
-+		if (desc->c_needs_zero)
- 			ocfs2_figure_cluster_boundaries(osb,
- 							desc->c_cpos,
- 							&wc->w_target_from,
- 							NULL);
- 
- 		desc = &wc->w_desc[wc->w_clen - 1];
--		if (ocfs2_should_zero_cluster(desc))
-+		if (desc->c_needs_zero)
- 			ocfs2_figure_cluster_boundaries(osb,
- 							desc->c_cpos,
- 							NULL,
-@@ -1481,13 +1481,28 @@ static int ocfs2_populate_write_desc(str
- 			phys++;
- 		}
- 
-+		/*
-+		 * If w_first_new_cpos is < UINT_MAX, we have a non-sparse
-+		 * file that got extended.  w_first_new_cpos tells us
-+		 * where the newly allocated clusters are so we can
-+		 * zero them.
-+		 */
-+		if (desc->c_cpos >= wc->w_first_new_cpos) {
-+			BUG_ON(phys == 0);
-+			desc->c_needs_zero = 1;
-+		}
-+
- 		desc->c_phys = phys;
- 		if (phys == 0) {
- 			desc->c_new = 1;
-+			desc->c_needs_zero = 1;
- 			*clusters_to_alloc = *clusters_to_alloc + 1;
- 		}
--		if (ext_flags & OCFS2_EXT_UNWRITTEN)
-+
-+		if (ext_flags & OCFS2_EXT_UNWRITTEN) {
- 			desc->c_unwritten = 1;
-+			desc->c_needs_zero = 1;
-+		}
- 
- 		num_clusters--;
- 	}
-@@ -1644,10 +1659,13 @@ static int ocfs2_expand_nonsparse_inode(
- 	if (newsize <= i_size_read(inode))
- 		return 0;
- 
--	ret = ocfs2_extend_no_holes(inode, newsize, newsize - len);
-+	ret = ocfs2_extend_no_holes(inode, newsize, pos);
- 	if (ret)
- 		mlog_errno(ret);
- 
-+	wc->w_first_new_cpos =
-+		ocfs2_clusters_for_bytes(inode->i_sb, i_size_read(inode));
-+
- 	return ret;
- }
- 
-@@ -1656,7 +1674,7 @@ int ocfs2_write_begin_nolock(struct addr
- 			     struct page **pagep, void **fsdata,
- 			     struct buffer_head *di_bh, struct page *mmap_page)
- {
--	int ret, credits = OCFS2_INODE_UPDATE_CREDITS;
-+	int ret, cluster_of_pages, credits = OCFS2_INODE_UPDATE_CREDITS;
- 	unsigned int clusters_to_alloc, extents_to_split;
- 	struct ocfs2_write_ctxt *wc;
- 	struct inode *inode = mapping->host;
-@@ -1724,8 +1742,19 @@ int ocfs2_write_begin_nolock(struct addr
- 
- 	}
- 
--	ocfs2_set_target_boundaries(osb, wc, pos, len,
--				    clusters_to_alloc + extents_to_split);
-+	/*
-+	 * We have to zero sparse allocated clusters, unwritten extent clusters,
-+	 * and non-sparse clusters we just extended.  For non-sparse writes,
-+	 * we know zeros will only be needed in the first and/or last cluster.
-+	 */
-+	if (clusters_to_alloc || extents_to_split ||
-+	    wc->w_desc[0].c_needs_zero ||
-+	    wc->w_desc[wc->w_clen - 1].c_needs_zero)
-+		cluster_of_pages = 1;
-+	else
-+		cluster_of_pages = 0;
-+
-+	ocfs2_set_target_boundaries(osb, wc, pos, len, cluster_of_pages);
- 
- 	handle = ocfs2_start_trans(osb, credits);
- 	if (IS_ERR(handle)) {
-@@ -1753,8 +1782,7 @@ int ocfs2_write_begin_nolock(struct addr
- 	 * extent.
- 	 */
- 	ret = ocfs2_grab_pages_for_write(mapping, wc, wc->w_cpos, pos,
--					 clusters_to_alloc + extents_to_split,
--					 mmap_page);
-+					 cluster_of_pages, mmap_page);
- 	if (ret) {
- 		mlog_errno(ret);
- 		goto out_commit;
++	memset(srose, 0, sizeof(*srose));
+ 	if (peer != 0) {
+ 		if (sk->sk_state != TCP_ESTABLISHED)
+ 			return -ENOTCONN;
 
 
