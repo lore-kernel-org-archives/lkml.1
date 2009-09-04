@@ -1,500 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933047AbZIDHBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933085AbZIDHBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933047AbZIDHBB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbZIDHA7
+	id S933085AbZIDHBS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933064AbZIDHBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:00:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48020 "EHLO mx2.suse.de"
+	Fri, 4 Sep 2009 03:01:15 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56563 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932721AbZIDG6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S932685AbZIDG6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 02:58:41 -0400
-Message-Id: <20090904065538.536556189@nick.local0.net>
+Message-Id: <20090904065538.693437484@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:52:10 +1000
+Date: Fri, 04 Sep 2009 16:52:11 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 29/33] Remove the global inode_hash_lock and replace it with per-hash-bucket locks. fs: inode per-bucket inode hash locks
+Subject: [patch 30/33] fs: inode lazy lru
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-inode_lock-scale-9.patch
+Content-Disposition: inline; filename=fs-inode_lock-scale-10.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Todo: should use bit spinlock in hlist_head pointer to save space.
+Impelemnt lazy inode lru similarly to dcache. This should reduce inode list
+lock acquisition (todo: measure).
 ---
- fs/inode.c |  167 ++++++++++++++++++++++++++++++++-----------------------------
- 1 file changed, 90 insertions(+), 77 deletions(-)
+ fs/fs-writeback.c         |    2 -
+ fs/inode.c                |   61 +++++++++++++++++++---------------------------
+ include/linux/fs.h        |    7 ++++-
+ include/linux/writeback.h |    1 
+ 4 files changed, 33 insertions(+), 38 deletions(-)
 
 Index: linux-2.6/fs/inode.c
 ===================================================================
 --- linux-2.6.orig/fs/inode.c
 +++ linux-2.6/fs/inode.c
-@@ -76,7 +76,12 @@ static unsigned int i_hash_shift __read_
+@@ -74,7 +74,6 @@ static unsigned int i_hash_shift __read_
+  * allowing for low-overhead inode sync() operations.
+  */
  
- LIST_HEAD(inode_in_use);
+-LIST_HEAD(inode_in_use);
  LIST_HEAD(inode_unused);
--static struct hlist_head *inode_hashtable __read_mostly;
-+
-+struct inode_hash_bucket {
-+	spinlock_t lock;
-+	struct hlist_head head;
-+};
-+static struct inode_hash_bucket *inode_hashtable __read_mostly;
  
- /*
-  * A simple spinlock to protect the list manipulations.
-@@ -86,7 +91,6 @@ static struct hlist_head *inode_hashtabl
-  */
- DEFINE_SPINLOCK(sb_inode_list_lock);
- DEFINE_SPINLOCK(wb_inode_list_lock);
--static DEFINE_SPINLOCK(inode_hash_lock);
- 
- /*
-  * iprune_mutex provides exclusion between the kswapd or try_to_free_pages
-@@ -582,7 +586,7 @@ static void __wait_on_freeing_inode(stru
-  * add any additional branch in the common code.
-  */
- static struct inode *find_inode(struct super_block *sb,
--				struct hlist_head *head,
-+				struct inode_hash_bucket *b,
- 				int (*test)(struct inode *, void *),
- 				void *data)
- {
-@@ -590,12 +594,12 @@ static struct inode *find_inode(struct s
- 	struct inode *inode = NULL;
- 
- repeat:
--	spin_lock(&inode_hash_lock);
--	hlist_for_each_entry(inode, node, head, i_hash) {
-+	spin_lock(&b->lock);
-+	hlist_for_each_entry(inode, node, &b->head, i_hash) {
- 		if (inode->i_sb != sb)
- 			continue;
- 		if (!spin_trylock(&inode->i_lock)) {
--			spin_unlock(&inode_hash_lock);
-+			spin_unlock(&b->lock);
- 			goto repeat;
- 		}
- 		if (!test(inode, data)) {
-@@ -603,13 +607,13 @@ repeat:
- 			continue;
- 		}
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
--			spin_unlock(&inode_hash_lock);
-+			spin_unlock(&b->lock);
- 			__wait_on_freeing_inode(inode);
- 			goto repeat;
- 		}
- 		break;
- 	}
--	spin_unlock(&inode_hash_lock);
-+	spin_unlock(&b->lock);
- 	return node ? inode : NULL;
+ struct inode_hash_bucket {
+@@ -273,6 +272,7 @@ void inode_init_once(struct inode *inode
+ 	INIT_HLIST_NODE(&inode->i_hash);
+ 	INIT_LIST_HEAD(&inode->i_dentry);
+ 	INIT_LIST_HEAD(&inode->i_devices);
++	INIT_LIST_HEAD(&inode->i_list);
+ 	INIT_RADIX_TREE(&inode->i_data.page_tree, GFP_ATOMIC);
+ 	spin_lock_init(&inode->i_data.tree_lock);
+ 	spin_lock_init(&inode->i_data.i_mmap_lock);
+@@ -298,24 +298,6 @@ static void init_once(void *foo)
+ 	inode_init_once(inode);
  }
  
-@@ -618,30 +622,31 @@ repeat:
-  * iget_locked for details.
-  */
- static struct inode *find_inode_fast(struct super_block *sb,
--				struct hlist_head *head, unsigned long ino)
-+				struct inode_hash_bucket *b,
-+				unsigned long ino)
- {
- 	struct hlist_node *node;
- 	struct inode *inode = NULL;
- 
- repeat:
--	spin_lock(&inode_hash_lock);
--	hlist_for_each_entry(inode, node, head, i_hash) {
-+	spin_lock(&b->lock);
-+	hlist_for_each_entry(inode, node, &b->head, i_hash) {
- 		if (inode->i_ino != ino)
- 			continue;
- 		if (inode->i_sb != sb)
- 			continue;
- 		if (!spin_trylock(&inode->i_lock)) {
--			spin_unlock(&inode_hash_lock);
-+			spin_unlock(&b->lock);
- 			goto repeat;
- 		}
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
--			spin_unlock(&inode_hash_lock);
-+			spin_unlock(&b->lock);
- 			__wait_on_freeing_inode(inode);
- 			goto repeat;
- 		}
- 		break;
- 	}
--	spin_unlock(&inode_hash_lock);
-+	spin_unlock(&b->lock);
- 	return node ? inode : NULL;
- }
- 
-@@ -656,7 +661,7 @@ static unsigned long hash(struct super_b
- }
- 
- static inline void
--__inode_add_to_lists(struct super_block *sb, struct hlist_head *head,
-+__inode_add_to_lists(struct super_block *sb, struct inode_hash_bucket *b,
- 			struct inode *inode)
- {
- 	atomic_inc(&inodes_stat.nr_inodes);
-@@ -665,10 +670,10 @@ __inode_add_to_lists(struct super_block
- 	spin_lock(&wb_inode_list_lock);
- 	list_add(&inode->i_list, &inode_in_use);
- 	spin_unlock(&wb_inode_list_lock);
--	if (head) {
--		spin_lock(&inode_hash_lock);
--		hlist_add_head(&inode->i_hash, head);
--		spin_unlock(&inode_hash_lock);
-+	if (b) {
-+		spin_lock(&b->lock);
-+		hlist_add_head(&inode->i_hash, &b->head);
-+		spin_unlock(&b->lock);
- 	}
- }
- 
-@@ -686,11 +691,11 @@ __inode_add_to_lists(struct super_block
-  */
- void inode_add_to_lists(struct super_block *sb, struct inode *inode)
- {
--	struct hlist_head *head = inode_hashtable + hash(sb, inode->i_ino);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, inode->i_ino);
- 
- 	spin_lock(&sb_inode_list_lock);
- 	spin_lock(&inode->i_lock);
--	__inode_add_to_lists(sb, head, inode);
-+	__inode_add_to_lists(sb, b, inode);
- 	spin_unlock(&inode->i_lock);
- }
- EXPORT_SYMBOL_GPL(inode_add_to_lists);
-@@ -770,7 +775,7 @@ EXPORT_SYMBOL(unlock_new_inode);
-  *	-- rmk@arm.uk.linux.org
-  */
- static struct inode *get_new_inode(struct super_block *sb,
--				struct hlist_head *head,
-+				struct inode_hash_bucket *b,
- 				int (*test)(struct inode *, void *),
- 				int (*set)(struct inode *, void *),
- 				void *data)
-@@ -782,7 +787,7 @@ static struct inode *get_new_inode(struc
- 		struct inode *old;
- 
- 		/* We released the lock, so.. */
--		old = find_inode(sb, head, test, data);
-+		old = find_inode(sb, b, test, data);
- 		if (!old) {
- 			spin_lock(&sb_inode_list_lock);
- 			spin_lock(&inode->i_lock);
-@@ -790,7 +795,7 @@ static struct inode *get_new_inode(struc
- 				goto set_failed;
- 
- 			inode->i_state = I_LOCK|I_NEW;
--			__inode_add_to_lists(sb, head, inode);
-+			__inode_add_to_lists(sb, b, inode);
- 			spin_unlock(&inode->i_lock);
- 
- 			/* Return the locked inode with I_NEW set, the
-@@ -824,7 +829,7 @@ set_failed:
-  * comment at iget_locked for details.
-  */
- static struct inode *get_new_inode_fast(struct super_block *sb,
--				struct hlist_head *head, unsigned long ino)
-+				struct inode_hash_bucket *b, unsigned long ino)
- {
- 	struct inode *inode;
- 
-@@ -833,13 +838,13 @@ static struct inode *get_new_inode_fast(
- 		struct inode *old;
- 
- 		/* We released the lock, so.. */
--		old = find_inode_fast(sb, head, ino);
-+		old = find_inode_fast(sb, b, ino);
- 		if (!old) {
- 			spin_lock(&sb_inode_list_lock);
- 			spin_lock(&inode->i_lock);
- 			inode->i_ino = ino;
- 			inode->i_state = I_LOCK|I_NEW;
--			__inode_add_to_lists(sb, head, inode);
-+			__inode_add_to_lists(sb, b, inode);
- 			spin_unlock(&inode->i_lock);
- 
- 			/* Return the locked inode with I_NEW set, the
-@@ -862,19 +867,20 @@ static struct inode *get_new_inode_fast(
- 	return inode;
- }
- 
--static int test_inode_iunique(struct super_block * sb, struct hlist_head *head, unsigned long ino)
-+static int test_inode_iunique(struct super_block *sb,
-+				struct inode_hash_bucket *b, unsigned long ino)
- {
- 	struct hlist_node *node;
--	struct inode * inode = NULL;
-+	struct inode *inode = NULL;
- 
--	spin_lock(&inode_hash_lock);
--	hlist_for_each_entry(inode, node, head, i_hash) {
-+	spin_lock(&b->lock);
-+	hlist_for_each_entry(inode, node, &b->head, i_hash) {
- 		if (inode->i_ino == ino && inode->i_sb == sb) {
--			spin_unlock(&inode_hash_lock);
-+			spin_unlock(&b->lock);
- 			return 0;
- 		}
- 	}
--	spin_unlock(&inode_hash_lock);
-+	spin_unlock(&b->lock);
- 	return 1;
- }
- 
-@@ -901,7 +907,7 @@ ino_t iunique(struct super_block *sb, in
- 	 */
- 	static DEFINE_SPINLOCK(unique_lock);
- 	static unsigned int counter;
--	struct hlist_head *head;
-+	struct inode_hash_bucket *b;
- 	ino_t res;
- 
- 	spin_lock(&unique_lock);
-@@ -909,8 +915,8 @@ ino_t iunique(struct super_block *sb, in
- 		if (counter <= max_reserved)
- 			counter = max_reserved + 1;
- 		res = counter++;
--		head = inode_hashtable + hash(sb, res);
--	} while (!test_inode_iunique(sb, head, res));
-+		b = inode_hashtable + hash(sb, res);
-+	} while (!test_inode_iunique(sb, b, res));
- 	spin_unlock(&unique_lock);
- 
- 	return res;
-@@ -957,12 +963,13 @@ EXPORT_SYMBOL(igrab);
-  * Note, @test is called with the inode_lock held, so can't sleep.
-  */
- static struct inode *ifind(struct super_block *sb,
--		struct hlist_head *head, int (*test)(struct inode *, void *),
-+		struct inode_hash_bucket *b,
-+		int (*test)(struct inode *, void *),
- 		void *data, const int wait)
- {
- 	struct inode *inode;
- 
--	inode = find_inode(sb, head, test, data);
-+	inode = find_inode(sb, b, test, data);
- 	if (inode) {
- 		__iget(inode);
- 		spin_unlock(&inode->i_lock);
-@@ -989,11 +996,12 @@ static struct inode *ifind(struct super_
-  * Otherwise NULL is returned.
-  */
- static struct inode *ifind_fast(struct super_block *sb,
--		struct hlist_head *head, unsigned long ino)
-+		struct inode_hash_bucket *b,
-+		unsigned long ino)
- {
- 	struct inode *inode;
- 
--	inode = find_inode_fast(sb, head, ino);
-+	inode = find_inode_fast(sb, b, ino);
- 	if (inode) {
- 		__iget(inode);
- 		spin_unlock(&inode->i_lock);
-@@ -1027,9 +1035,9 @@ static struct inode *ifind_fast(struct s
- struct inode *ilookup5_nowait(struct super_block *sb, unsigned long hashval,
- 		int (*test)(struct inode *, void *), void *data)
- {
--	struct hlist_head *head = inode_hashtable + hash(sb, hashval);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, hashval);
- 
--	return ifind(sb, head, test, data, 0);
-+	return ifind(sb, b, test, data, 0);
- }
- EXPORT_SYMBOL(ilookup5_nowait);
- 
-@@ -1055,9 +1063,9 @@ EXPORT_SYMBOL(ilookup5_nowait);
- struct inode *ilookup5(struct super_block *sb, unsigned long hashval,
- 		int (*test)(struct inode *, void *), void *data)
- {
--	struct hlist_head *head = inode_hashtable + hash(sb, hashval);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, hashval);
- 
--	return ifind(sb, head, test, data, 1);
-+	return ifind(sb, b, test, data, 1);
- }
- EXPORT_SYMBOL(ilookup5);
- 
-@@ -1077,9 +1085,9 @@ EXPORT_SYMBOL(ilookup5);
-  */
- struct inode *ilookup(struct super_block *sb, unsigned long ino)
- {
--	struct hlist_head *head = inode_hashtable + hash(sb, ino);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, ino);
- 
--	return ifind_fast(sb, head, ino);
-+	return ifind_fast(sb, b, ino);
- }
- EXPORT_SYMBOL(ilookup);
- 
-@@ -1107,17 +1115,17 @@ struct inode *iget5_locked(struct super_
- 		int (*test)(struct inode *, void *),
- 		int (*set)(struct inode *, void *), void *data)
- {
--	struct hlist_head *head = inode_hashtable + hash(sb, hashval);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, hashval);
- 	struct inode *inode;
- 
--	inode = ifind(sb, head, test, data, 1);
-+	inode = ifind(sb, b, test, data, 1);
- 	if (inode)
- 		return inode;
- 	/*
- 	 * get_new_inode() will do the right thing, re-trying the search
- 	 * in case it had to block at any point.
- 	 */
--	return get_new_inode(sb, head, test, set, data);
-+	return get_new_inode(sb, b, test, set, data);
- }
- EXPORT_SYMBOL(iget5_locked);
- 
-@@ -1138,17 +1146,17 @@ EXPORT_SYMBOL(iget5_locked);
-  */
- struct inode *iget_locked(struct super_block *sb, unsigned long ino)
- {
--	struct hlist_head *head = inode_hashtable + hash(sb, ino);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, ino);
- 	struct inode *inode;
- 
--	inode = ifind_fast(sb, head, ino);
-+	inode = ifind_fast(sb, b, ino);
- 	if (inode)
- 		return inode;
- 	/*
- 	 * get_new_inode_fast() will do the right thing, re-trying the search
- 	 * in case it had to block at any point.
- 	 */
--	return get_new_inode_fast(sb, head, ino);
-+	return get_new_inode_fast(sb, b, ino);
- }
- EXPORT_SYMBOL(iget_locked);
- 
-@@ -1156,7 +1164,7 @@ int insert_inode_locked(struct inode *in
- {
- 	struct super_block *sb = inode->i_sb;
- 	ino_t ino = inode->i_ino;
--	struct hlist_head *head = inode_hashtable + hash(sb, ino);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, ino);
- 
- 	inode->i_state |= I_LOCK|I_NEW;
- 	while (1) {
-@@ -1164,8 +1172,8 @@ int insert_inode_locked(struct inode *in
- 		struct inode *old = NULL;
- 
- repeat:
--		spin_lock(&inode_hash_lock);
--		hlist_for_each_entry(old, node, head, i_hash) {
-+		spin_lock(&b->lock);
-+		hlist_for_each_entry(old, node, &b->head, i_hash) {
- 			if (old->i_ino != ino)
- 				continue;
- 			if (old->i_sb != sb)
-@@ -1173,18 +1181,18 @@ repeat:
- 			if (old->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
- 				continue;
- 			if (!spin_trylock(&old->i_lock)) {
--				spin_unlock(&inode_hash_lock);
-+				spin_unlock(&b->lock);
- 				goto repeat;
- 			}
- 			break;
- 		}
- 		if (likely(!node)) {
- 			/* XXX: initialize inode->i_lock to locked? */
--			hlist_add_head(&inode->i_hash, head);
--			spin_unlock(&inode_hash_lock);
-+			hlist_add_head(&inode->i_hash, &b->head);
-+			spin_unlock(&b->lock);
- 			return 0;
- 		}
--		spin_unlock(&inode_hash_lock);
-+		spin_unlock(&b->lock);
- 		__iget(old);
- 		spin_unlock(&old->i_lock);
- 		wait_on_inode(old);
-@@ -1201,7 +1209,7 @@ int insert_inode_locked4(struct inode *i
- 		int (*test)(struct inode *, void *), void *data)
- {
- 	struct super_block *sb = inode->i_sb;
--	struct hlist_head *head = inode_hashtable + hash(sb, hashval);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(sb, hashval);
- 
- 	inode->i_state |= I_LOCK|I_NEW;
- 
-@@ -1210,8 +1218,8 @@ int insert_inode_locked4(struct inode *i
- 		struct inode *old = NULL;
- 
- repeat:
--		spin_lock(&inode_hash_lock);
--		hlist_for_each_entry(old, node, head, i_hash) {
-+		spin_lock(&b->lock);
-+		hlist_for_each_entry(old, node, &b->head, i_hash) {
- 			if (old->i_sb != sb)
- 				continue;
- 			if (!test(old, data))
-@@ -1219,18 +1227,18 @@ repeat:
- 			if (old->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
- 				continue;
- 			if (!spin_trylock(&old->i_lock)) {
--				spin_unlock(&inode_hash_lock);
-+				spin_unlock(&b->lock);
- 				goto repeat;
- 			}
- 			break;
- 		}
- 		if (likely(!node)) {
- 			/* XXX: initialize inode->i_lock to locked? */
--			hlist_add_head(&inode->i_hash, head);
--			spin_unlock(&inode_hash_lock);
-+			hlist_add_head(&inode->i_hash, &b->head);
-+			spin_unlock(&b->lock);
- 			return 0;
- 		}
--		spin_unlock(&inode_hash_lock);
-+		spin_unlock(&b->lock);
- 		__iget(old);
- 		spin_unlock(&old->i_lock);
- 		wait_on_inode(old);
-@@ -1253,12 +1261,12 @@ EXPORT_SYMBOL(insert_inode_locked4);
-  */
- void __insert_inode_hash(struct inode *inode, unsigned long hashval)
- {
--	struct hlist_head *head = inode_hashtable + hash(inode->i_sb, hashval);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(inode->i_sb, hashval);
- 
- 	spin_lock(&inode->i_lock);
--	spin_lock(&inode_hash_lock);
--	hlist_add_head(&inode->i_hash, head);
--	spin_unlock(&inode_hash_lock);
-+	spin_lock(&b->lock);
-+	hlist_add_head(&inode->i_hash, &b->head);
-+	spin_unlock(&b->lock);
- 	spin_unlock(&inode->i_lock);
- }
- EXPORT_SYMBOL(__insert_inode_hash);
-@@ -1272,9 +1280,10 @@ EXPORT_SYMBOL(__insert_inode_hash);
-  */
- void __remove_inode_hash(struct inode *inode)
- {
--	spin_lock(&inode_hash_lock);
-+	struct inode_hash_bucket *b = inode_hashtable + hash(inode->i_sb, inode->i_ino);
-+	spin_lock(&b->lock);
- 	hlist_del_init(&inode->i_hash);
--	spin_unlock(&inode_hash_lock);
-+	spin_unlock(&b->lock);
- }
- 
+-/*
+- * inode_lock must be held
+- */
+-void __iget(struct inode *inode)
+-{
+-	assert_spin_locked(&inode->i_lock);
+-	inode->i_count++;
+-	if (inode->i_count > 1)
+-		return;
+-
+-	if (!(inode->i_state & (I_DIRTY|I_SYNC))) {
+-		spin_lock(&wb_inode_list_lock);
+-		list_move(&inode->i_list, &inode_in_use);
+-		spin_unlock(&wb_inode_list_lock);
+-	}
+-	atomic_dec(&inodes_stat.nr_unused);
+-}
+-
  /**
-@@ -1663,7 +1672,7 @@ void __init inode_init_early(void)
+  * clear_inode - clear an inode
+  * @inode: inode to clear
+@@ -359,7 +341,7 @@ static void dispose_list(struct list_hea
+ 		struct inode *inode;
+ 
+ 		inode = list_first_entry(head, struct inode, i_list);
+-		list_del(&inode->i_list);
++		list_del_init(&inode->i_list);
+ 
+ 		if (inode->i_data.nrpages)
+ 			truncate_inode_pages(&inode->i_data, 0);
+@@ -412,11 +394,12 @@ static int invalidate_list(struct list_h
+ 		invalidate_inode_buffers(inode);
+ 		if (!inode->i_count) {
+ 			spin_lock(&wb_inode_list_lock);
+-			list_move(&inode->i_list, dispose);
++			list_del(&inode->i_list);
+ 			spin_unlock(&wb_inode_list_lock);
+ 			WARN_ON(inode->i_state & I_NEW);
+ 			inode->i_state |= I_FREEING;
+ 			spin_unlock(&inode->i_lock);
++			list_add(&inode->i_list, dispose);
+ 			count++;
+ 			continue;
+ 		}
+@@ -503,7 +486,13 @@ again:
+ 			spin_unlock(&wb_inode_list_lock);
+ 			goto again;
+ 		}
+-		if (inode->i_state || inode->i_count) {
++		if (inode->i_count) {
++			list_del_init(&inode->i_list);
++			spin_unlock(&inode->i_lock);
++			atomic_dec(&inodes_stat.nr_unused);
++			continue;
++		}
++		if (inode->i_state) {
+ 			list_move(&inode->i_list, &inode_unused);
+ 			spin_unlock(&inode->i_lock);
+ 			continue;
+@@ -519,6 +508,7 @@ again:
+ again2:
+ 			spin_lock(&wb_inode_list_lock);
+ 
++			/* XXX: may no longer work well */
+ 			if (inode != list_entry(inode_unused.next,
+ 						struct inode, i_list))
+ 				continue;	/* wrong inode or list_empty */
+@@ -667,9 +657,6 @@ __inode_add_to_lists(struct super_block
+ 	atomic_inc(&inodes_stat.nr_inodes);
+ 	list_add(&inode->i_sb_list, &sb->s_inodes);
+ 	spin_unlock(&sb_inode_list_lock);
+-	spin_lock(&wb_inode_list_lock);
+-	list_add(&inode->i_list, &inode_in_use);
+-	spin_unlock(&wb_inode_list_lock);
+ 	if (b) {
+ 		spin_lock(&b->lock);
+ 		hlist_add_head(&inode->i_hash, &b->head);
+@@ -1316,9 +1303,11 @@ void generic_delete_inode(struct inode *
+ {
+ 	const struct super_operations *op = inode->i_sb->s_op;
+ 
+-	spin_lock(&wb_inode_list_lock);
+-	list_del_init(&inode->i_list);
+-	spin_unlock(&wb_inode_list_lock);
++	if (!list_empty(&inode->i_list)) {
++		spin_lock(&wb_inode_list_lock);
++		list_del_init(&inode->i_list);
++		spin_unlock(&wb_inode_list_lock);
++	}
+ 	list_del_init(&inode->i_sb_list);
+ 	spin_unlock(&sb_inode_list_lock);
+ 	WARN_ON(inode->i_state & I_NEW);
+@@ -1355,12 +1344,12 @@ static void generic_forget_inode(struct
+ 	struct super_block *sb = inode->i_sb;
+ 
+ 	if (!hlist_unhashed(&inode->i_hash)) {
+-		if (!(inode->i_state & (I_DIRTY|I_SYNC))) {
++		if (list_empty(&inode->i_list)) {
+ 			spin_lock(&wb_inode_list_lock);
+-			list_move(&inode->i_list, &inode_unused);
++			list_add(&inode->i_list, &inode_unused);
+ 			spin_unlock(&wb_inode_list_lock);
++			atomic_inc(&inodes_stat.nr_unused);
+ 		}
+-		atomic_inc(&inodes_stat.nr_unused);
+ 		if (sb->s_flags & MS_ACTIVE) {
+ 			spin_unlock(&inode->i_lock);
+ 			spin_unlock(&sb_inode_list_lock);
+@@ -1376,11 +1365,13 @@ static void generic_forget_inode(struct
+ 		WARN_ON(inode->i_state & I_NEW);
+ 		inode->i_state &= ~I_WILL_FREE;
+ 		__remove_inode_hash(inode);
++	}
++	if (!list_empty(&inode->i_list)) {
++		spin_lock(&wb_inode_list_lock);
++		list_del_init(&inode->i_list);
++		spin_unlock(&wb_inode_list_lock);
+ 		atomic_dec(&inodes_stat.nr_unused);
+ 	}
+-	spin_lock(&wb_inode_list_lock);
+-	list_del_init(&inode->i_list);
+-	spin_unlock(&wb_inode_list_lock);
+ 	list_del_init(&inode->i_sb_list);
+ 	spin_unlock(&sb_inode_list_lock);
+ 	WARN_ON(inode->i_state & I_NEW);
+@@ -1705,7 +1696,7 @@ void __init inode_init(void)
  
  	inode_hashtable =
  		alloc_large_system_hash("Inode-cache",
@@ -502,32 +188,56 @@ Index: linux-2.6/fs/inode.c
 +					sizeof(struct inode_hash_bucket),
  					ihash_entries,
  					14,
- 					HASH_EARLY,
-@@ -1671,8 +1680,10 @@ void __init inode_init_early(void)
- 					&i_hash_mask,
- 					0);
+ 					0,
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
+@@ -2166,7 +2166,6 @@ extern int insert_inode_locked4(struct i
+ extern int insert_inode_locked(struct inode *);
+ extern void unlock_new_inode(struct inode *);
  
--	for (loop = 0; loop < (1 << i_hash_shift); loop++)
--		INIT_HLIST_HEAD(&inode_hashtable[loop]);
-+	for (loop = 0; loop < (1 << i_hash_shift); loop++) {
-+		spin_lock_init(&inode_hashtable[loop].lock);
-+		INIT_HLIST_HEAD(&inode_hashtable[loop].head);
-+	}
- }
+-extern void __iget(struct inode * inode);
+ extern void iget_failed(struct inode *);
+ extern void clear_inode(struct inode *);
+ extern void destroy_inode(struct inode *);
+@@ -2384,6 +2383,12 @@ extern int generic_show_options(struct s
+ extern void save_mount_options(struct super_block *sb, char *options);
+ extern void replace_mount_options(struct super_block *sb, char *options);
  
- void __init inode_init(void)
-@@ -1702,8 +1713,10 @@ void __init inode_init(void)
- 					&i_hash_mask,
- 					0);
++static inline void __iget(struct inode *inode)
++{
++	assert_spin_locked(&inode->i_lock);
++	inode->i_count++;
++}
++
+ static inline ino_t parent_ino(struct dentry *dentry)
+ {
+ 	ino_t res;
+Index: linux-2.6/fs/fs-writeback.c
+===================================================================
+--- linux-2.6.orig/fs/fs-writeback.c
++++ linux-2.6/fs/fs-writeback.c
+@@ -429,7 +429,7 @@ writeback_single_inode(struct inode *ino
+ 			/*
+ 			 * The inode is clean, inuse
+ 			 */
+-			list_move(&inode->i_list, &inode_in_use);
++			list_del_init(&inode->i_list);
+ 		} else {
+ 			/*
+ 			 * The inode is clean, unused
+Index: linux-2.6/include/linux/writeback.h
+===================================================================
+--- linux-2.6.orig/include/linux/writeback.h
++++ linux-2.6/include/linux/writeback.h
+@@ -11,7 +11,6 @@ struct backing_dev_info;
  
--	for (loop = 0; loop < (1 << i_hash_shift); loop++)
--		INIT_HLIST_HEAD(&inode_hashtable[loop]);
-+	for (loop = 0; loop < (1 << i_hash_shift); loop++) {
-+		spin_lock_init(&inode_hashtable[loop].lock);
-+		INIT_HLIST_HEAD(&inode_hashtable[loop].head);
-+	}
- }
+ extern spinlock_t sb_inode_list_lock;
+ extern spinlock_t wb_inode_list_lock;
+-extern struct list_head inode_in_use;
+ extern struct list_head inode_unused;
  
- void init_special_inode(struct inode *inode, umode_t mode, dev_t rdev)
+ /*
 
 
