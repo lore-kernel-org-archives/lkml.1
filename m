@@ -1,141 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932243AbZIDFSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932419AbZIDFUF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932243AbZIDFSq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 01:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755544AbZIDFSp
+	id S932419AbZIDFUF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 01:20:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932159AbZIDFUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 01:18:45 -0400
-Received: from mail-px0-f177.google.com ([209.85.216.177]:45645 "EHLO
-	mail-px0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755489AbZIDFSo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 01:18:44 -0400
-X-Greylist: delayed 797 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 01:18:43 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:references:mime-version:content-type
-         :content-disposition:in-reply-to:user-agent:message-id;
-        b=ubeKpFB9OVPu2msQ6UeniTbx2mNSupJR/iJECqGepSACNuNYQZylYawT5G5yIACDHR
-         MECAckkKO3jusYKpjavz62iEn9HCbgaa7TSd9godGKuHkfhjlFM/aiPETiRkFWuEAXA2
-         heFSLfeg4z+wJ1RxsOPyx5eTnwbxZrcsBM2ac=
-Date: Thu, 3 Sep 2009 22:18:41 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: "Dr. David Alan Gilbert" <linux@treblig.org>
-Cc: Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
-References: <20090613230842.GA18347@gallifrey> <alpine.LNX.2.00.0906231038500.7457@wotan.suse.de> <20090623185814.GB24108@gallifrey> <200906231106.37460.dmitry.torokhov@gmail.com> <20090628140452.GA15816@gallifrey>
+	Fri, 4 Sep 2009 01:20:04 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:40207 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932113AbZIDFUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 01:20:03 -0400
+Date: Fri, 4 Sep 2009 07:20:05 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: David Miller <davem@davemloft.net>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com
+Subject: Re: [PATCH] basic perf support for sparc
+Message-ID: <20090904052005.GN18599@kernel.dk>
+References: <20090817064851.GQ12579@kernel.dk> <20090903.213702.250776705.davem@davemloft.net> <20090904050256.GA8382@elte.hu> <20090903.220906.44384937.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090628140452.GA15816@gallifrey>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Message-Id: <20090904055139.4BEAB526EA5@mailhub.coreip.homeip.net>
+In-Reply-To: <20090903.220906.44384937.davem@davemloft.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Jun 28, 2009 at 03:04:52PM +0100, Dr. David Alan Gilbert wrote:
-> * Dmitry Torokhov (dmitry.torokhov@gmail.com) wrote:
-> > On Tuesday 23 June 2009 11:58:15 Dr. David Alan Gilbert wrote:
+On Thu, Sep 03 2009, David Miller wrote:
+> From: Ingo Molnar <mingo@elte.hu>
+> Date: Fri, 4 Sep 2009 07:02:56 +0200
 > 
-> <snip>
->  
-> > > Yep; I'm OK with the i8042.noaux from my point of view, but it's a
-> > > bit worrying that this used to work fine.  There's obviously been
-> > > a change somewhere since 2.6.18 (and as I remember from the dmesg
-> > > the keyboard and aux ports are being initialised in different orders).
-> > > (Actually I say obviously since 2.6.18 - but the 2.6.18 I tried
-> > > I think I only used the debian version - I should go back and
-> > > see if I can do a vanilla one), but this box has been running
-> > > Linux since the time it was originally bought with loads of distros
-> > > and clean kernels years ago.
-> > >
-> > > While this machine is old, the motherboard was a pretty common one
-> > > at the time.
-> > >
 > > 
-> > Any chance I could get dmesg with i8042.debug with 2.6.18? There was
-> > quite a large change back then when we got rid of the polling timer
-> > in i8042.
+> > * David Miller <davem@davemloft.net> wrote:
+> > 
+> >> Does this build for you without adding an
+> >> arch/sparc/include/asm/perf_counter.h that looks
+> >> something like the following?
+> >> 
+> >> #ifndef _ASM_SPARC_PERF_COUNTER_H
+> >> #define _ASM_SPARC_PERF_COUNTER_H
+> >> 
+> >> #define PERF_COUNTER_INDEX_OFFSET	0
+> >> 
+> >> #endif
+> >> 
+> >> Or is this somehow now required in the -tip trees?
+> > 
+> > This used to be required but i recently fixed this (and that fix is 
+> > upstream as well) via:
+> > 
+> >   f738eb1: perf_counter: Fix the PARISC build
+> > 
+> > there's now a default define of 0 so you dont have to define it and 
+> > can leave out this chunk.
+> > 
+> > ( That index is only interesting if the architecture has a way to 
+> >   allow unprivileged user-space to access counter registers 
+> >   directly. In that case the index reflects the offset from the 
+> >   (constantly changing) dynamix index which we put into the mmap 
+> >   header. With Sparc not having a hw-PMU implementation this index 
+> >   is entirely uninteresting at this stage. )
 > 
-> Apologies for the delay; attached is the dmesg from the Debian 2.6.18
-> in which keyboard works as previously described.
+> But you still do need at least an empty perf_counter.h file
+> right?  Jens must have left the file out of his submission
+> by accident, and that's what I'm trying to get to the bottom
+> of here :-)
 > 
+> I assume there was a similar change to deal with references to
+> set_perf_counter_pending() too or is at least a NOP definition
+> still needed?
 
-Sorry for taking so long to respond. The only vidible difference beween
-the old and the new way is that we don't "close" serio ports anymore if
-we fail to detect a mouse/keyboard.
+It wasn't required when I built and used it (and sent the patch), I used
+the posted patch as-is. It's been a few weeks since I last updated and
+ran that box, let me double check after morning coffee and send you a
+fresh patch (if needed) :-)
 
-Could you please try the patch below and tell me if it helps?
-
-Thanks!
 -- 
-Dmitry
+Jens Axboe
 
-Input: i8042 - try disabling and re-enabling AUX port at close
-
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-
-Ever since we switched from having a polling timer to registering IRQ
-handlers for both keyboard and AUX ports at the driver registration
-time, on certain boxes probing for a mouse results in keyboard
-stopping working. The only real difference between old and new way is
-that before we disabled ports after unsuccessful probe whereas now we
-leave them as is. Try to emulate the old behavior by disabling and
-immediately re-enabling AUX port when corresponding serio port is
-being closed.
-
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
-
- drivers/input/serio/i8042.c |   28 ++++++++++++++++++++++++++++
- 1 files changed, 28 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-index b53a015..a55ad99 100644
---- a/drivers/input/serio/i8042.c
-+++ b/drivers/input/serio/i8042.c
-@@ -264,6 +264,33 @@ static int i8042_aux_write(struct serio *serio, unsigned char c)
- 					I8042_CMD_MUX_SEND + port->mux);
- }
- 
-+
-+/*
-+ * i8042_aux_close attempts to clear AUX port state by disabling
-+ * and then re-enabling it.
-+ */
-+
-+static void i8042_aux_close(struct serio *serio)
-+{
-+	i8042_ctr &= ~I8042_CTR_AUXINT;
-+	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR))
-+		printk(KERN_WARNING
-+			"i8042.c: Can't write CTR while closing AUX port.\n");
-+	udelay(50);
-+
-+	i8042_ctr &= ~I8042_CTR_AUXDIS;
-+	i8042_ctr |= I8042_CTR_AUXINT;
-+	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR))
-+		printk(KERN_ERR
-+			"i8042.c: Can't reactivate AUX port.\n");
-+
-+	/*
-+	 * See if there is any data appeared while we were messing with
-+	 * port state.
-+	 */
-+	i8042_interrupt(0, NULL);
-+}
-+
- /*
-  * i8042_start() is called by serio core when port is about to finish
-  * registering. It will mark port as existing so i8042_interrupt can
-@@ -1051,6 +1078,7 @@ static int __devinit i8042_create_aux_port(int idx)
- 	serio->write		= i8042_aux_write;
- 	serio->start		= i8042_start;
- 	serio->stop		= i8042_stop;
-+	serio->close		= i8042_aux_close;
- 	serio->port_data	= port;
- 	serio->dev.parent	= &i8042_platform_device->dev;
- 	if (idx < 0) {
