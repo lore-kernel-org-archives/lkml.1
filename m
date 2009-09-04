@@ -1,57 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbZIDPDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZIDP2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756926AbZIDPDQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 11:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbZIDPDP
+	id S1755600AbZIDP2y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 11:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZIDP2x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 11:03:15 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:49915 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756778AbZIDPDO (ORCPT
+	Fri, 4 Sep 2009 11:28:53 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:58869 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751829AbZIDP2w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 11:03:14 -0400
-X-Greylist: delayed 2023 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 11:03:14 EDT
-Date: Fri, 4 Sep 2009 16:28:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Mikael Pettersson <mikpe@it.uu.se>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
- testsuite
-Message-ID: <20090904162807.1dba7a32@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0909031353360.15956@eeepc.linux-foundation.org>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	<19099.52899.620345.326521@pilspetsen.it.uu.se>
-	<19100.31254.666066.755541@pilspetsen.it.uu.se>
-	<200909012042.59856.rjw@sisk.pl>
-	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
-	<87pra89sgp.fsf@devron.myhome.or.jp>
-	<alpine.LFD.2.00.0909031353360.15956@eeepc.linux-foundation.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 Sep 2009 11:28:52 -0400
+Message-ID: <4AA13232.5000309@rsk.demon.co.uk>
+Date: Fri, 04 Sep 2009 16:28:50 +0100
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       tytso@mit.edu, akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com> <1252050406-22467-9-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1252050406-22467-9-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And if it _doesn't_ fix it, then I think we'll just have to revert the 
-> commits in question. We won't have time to root-cause it if the above 
-> isn't it.
+On 04/09/09 08:46, Jens Axboe wrote:
+> From: Theodore Ts'o<tytso@mit.edu>
+>
+> Originally, MAX_WRITEBACK_PAGES was hard-coded to 1024 because of a
+> concern of not holding I_SYNC for too long.  (At least, that was the
+> comment previously.)  This doesn't make sense now because the only
+> time we wait for I_SYNC is if we are calling sync or fsync, and in
+> that case we need to write out all of the data anyway.  Previously
+> there may have been other code paths that waited on I_SYNC, but not
+> any more.
+>
+> According to Christoph, the current writeback size is way too small,
+> and XFS had a hack that bumped out nr_to_write to four times the value
+> sent by the VM to be able to saturate medium-sized RAID arrays.  This
+> value was also problematic for ext4 as well, as it caused large files
+> to be come interleaved on disk by in 8 megabyte chunks (we bumped up
+> the nr_to_write by a factor of two).
+>
+> So, in this patch, we make the MAX_WRITEBACK_PAGES a tunable,
+> max_writeback_mb, and set it to a default value of 128 megabytes.
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=13930
+>
+> Signed-off-by: "Theodore Ts'o"<tytso@mit.edu>
+> Signed-off-by: Jens Axboe<jens.axboe@oracle.com>
+> ---
+>   fs/fs-writeback.c         |    9 +--------
+>   include/linux/writeback.h |    1 +
+>   kernel/sysctl.c           |    8 ++++++++
+>   mm/page-writeback.c       |    6 ++++++
+>   4 files changed, 16 insertions(+), 8 deletions(-)
+>
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index ce68f60..790d379 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -641,14 +641,7 @@ void writeback_inodes_wbc(struct writeback_control *wbc)
+>   	writeback_inodes_wb(&bdi->wb, wbc);
+>   }
+>
+> -/*
+> - * The maximum number of pages to writeout in a single bdi flush/kupdate
+> - * operation.  We do this so we don't hold I_SYNC against an inode for
+> - * enormous amounts of time, which would block a userspace task which has
+> - * been forced to throttle against that inode.  Also, the code reevaluates
+> - * the dirty each time it has written this many pages.
+> - */
+> -#define MAX_WRITEBACK_PAGES     1024
+> +#define MAX_WRITEBACK_PAGES	(max_writeback_mb<<  (20 - PAGE_SHIFT))
+>
+>   static inline bool over_bground_thresh(void)
+>   {
+> diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+> index 78b1e46..fbed759 100644
+> --- a/include/linux/writeback.h
+> +++ b/include/linux/writeback.h
+> @@ -104,6 +104,7 @@ extern int vm_dirty_ratio;
+>   extern unsigned long vm_dirty_bytes;
+>   extern unsigned int dirty_writeback_interval;
+>   extern unsigned int dirty_expire_interval;
+> +extern unsigned int max_writeback_mb;
+>   extern int vm_highmem_is_dirtyable;
+>   extern int block_dump;
+>   extern int laptop_mode;
+> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+> index 58be760..315fc30 100644
+> --- a/kernel/sysctl.c
+> +++ b/kernel/sysctl.c
+> @@ -1104,6 +1104,14 @@ static struct ctl_table vm_table[] = {
+>   		.proc_handler	=&proc_dointvec,
+>   	},
+>   	{
+> +		.ctl_name	= CTL_UNNUMBERED,
+> +		.procname	= "max_writeback_mb",
+> +		.data		=&max_writeback_mb,
+> +		.maxlen		= sizeof(max_writeback_mb),
+> +		.mode		= 0644,
+> +		.proc_handler	=&proc_dointvec,
+> +	},
+> +	{
+>   		.ctl_name	= VM_NR_PDFLUSH_THREADS,
+>   		.procname	= "nr_pdflush_threads",
+>   		.data		=&nr_pdflush_threads,
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 2c287d9..38fe4e8 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -55,6 +55,12 @@ static inline long sync_writeback_pages(void)
+>   /* The following parameters are exported via /proc/sys/vm */
+>
+>   /*
+> + * The maximum amount of memory (in megabytes) to write out in a
+> + * single bdflush/kupdate operation.
+> + */
+> +unsigned int max_writeback_mb = 128;
+> +
+> +/*
+>    * Start background writeback (via pdflush) at this percentage
+>    */
+>   int dirty_background_ratio = 10;
 
-In which case ppp will no longer work properly in some cases (ditto
-other protocols) and things like the pppoe gateway wont work as they
-don't in 2.6.30 - you need to go back to somewhere between 2.6.28/29 to
-undo this, then apply the alternative locking patches to the
-ppp/slip/ax25/etc ldiscs
+Hi Jens,
 
-Is the missing byte always part of the \r\n - that is handled slightly
-specially by the n_tty ldisc code and has always been buggy if there is
-flow control buffering - back to 1.3 and probably earlier. It happens on
-real ttys too given sufficient flow control blockage because the char by
-char opost stuff never did space/buffering checks. At least I don't think
-the n_tty rework fixed it.
+I've been testing this & it works pretty well here, but setting 
+max_writeback_mb to 128 seems much too large for normal desktop machines.
+
+Because it is so large the background writes don't stop when they get 
+down to the background threshold, but just keep on writing. 
+background_threshold on my machine is only about 300Mb so it can 
+undershoot by quite a bit. This could impact random write workloads 
+significantly.
+
+Would making the tunable a percentage of dirty_threshold be better for 
+most people? At least it would scale with the size of the system memory. 
+I'm guessing that machines with RAID arrays also have large memories.
+
+Or can the check for the background threshold be pushed further down 
+into writeback_inodes_wb and just check it every N pages? I think this 
+would do a better job but make the code even more complex.
+
+regards
+Richard
