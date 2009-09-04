@@ -1,46 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933316AbZIDJ0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933309AbZIDJZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933316AbZIDJ0c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 05:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbZIDJ0b
+	id S933309AbZIDJZU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 05:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933178AbZIDJZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 05:26:31 -0400
-Received: from mx1-old.redhat.com ([66.187.233.31]:41209 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933280AbZIDJ0b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 05:26:31 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 Sep 2009 05:25:19 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:56213 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933269AbZIDJZS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 05:25:18 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC][PATCH 10/14] x86: generic aperf/mperf code.
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Thomas Renninger <trenn@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Andreas Herrmann <andreas.herrmann3@amd.com>,
+       Balbir Singh <balbir@in.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Yanmin <yanmin_zhang@linux.intel.com>, Dave Jones <davej@redhat.com>,
+       Len Brown <len.brown@intel.com>, Yinghai Lu <yhlu.kernel@gmail.com>,
+       cpufreq@vger.kernel.org
+In-Reply-To: <200909041119.06979.trenn@suse.de>
+References: <20090903132145.482814810@chello.nl>
+	 <20090903132213.006719409@chello.nl>  <200909041119.06979.trenn@suse.de>
+Content-Type: text/plain
+Date: Fri, 04 Sep 2009 11:25:11 +0200
+Message-Id: <1252056311.7564.3.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, Tom Horsley <tom.horsley@att.net>,
-       linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH 1/1] exec: do not sleep in TASK_TRACED under ->cred_guard_mutex
-In-Reply-To: David Howells's message of  Friday, 4 September 2009 09:39:07 +0100 <29983.1252053547@redhat.com>
-References: <20090903160514.GA23646@redhat.com>
-	<29983.1252053547@redhat.com>
-X-Zippy-Says: Everywhere I look I see NEGATIVITY and ASPHALT...
-Message-Id: <20090904092402.A18EB8B12A@magilla.sf.frob.com>
-Date: Fri,  4 Sep 2009 02:24:02 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +int prepare_bprm_creds(struct linux_binprm *bprm)
-> > +{
-> 
-> __acquires()
-> 
-> > +void free_bprm(struct linux_binprm *bprm)
-> > +{
-> 
-> __releases()
+On Fri, 2009-09-04 at 11:19 +0200, Thomas Renninger wrote:
+> You still use struct perf_pair split/hi/lo members in #ifdef __i386__ 
+> case which you deleted above.
 
-No, they're conditional.
+> >               shift_count = fls(h);
+> >  
+> > -             cur.aperf.whole >>= shift_count;
+> > -             cur.mperf.whole >>= shift_count;
+> > +             cur.aperf >>= shift_count;
+> > +             cur.mperf >>= shift_count;
+> >       }
+> >  
+> >       if (((unsigned long)(-1) / 100) < cur.aperf.split.lo) {
+> Same here, possibly still elsewhere.
+> Is this only x86_64 compile tested?
 
+Of course, who still has 32bit only hardware anyway ;-)
 
-Thanks,
-Roland
+Will fix, thanks for spotting that.
+
