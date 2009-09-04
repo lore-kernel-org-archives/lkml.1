@@ -1,49 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933724AbZIDQZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933865AbZIDS4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933724AbZIDQZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933686AbZIDQZ2
+	id S933865AbZIDS4r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 14:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933827AbZIDS4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:25:28 -0400
-Received: from twosheds.infradead.org ([90.155.92.209]:53972 "EHLO
-	twosheds.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933675AbZIDQZ1 (ORCPT
+	Fri, 4 Sep 2009 14:56:46 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:37349 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933788AbZIDS4o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:25:27 -0400
-X-Greylist: delayed 3061 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 12:25:27 EDT
-Date: Fri, 4 Sep 2009 16:33:18 +0100 (BST)
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       sam@ravnborg.org, tglx@linutronix.de, David.Woodhouse@intel.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/kbuild] x86: Don't silently override CONFIG_64BIT in
- 'make oldconfig'
-In-Reply-To: <20090904144857.GA12872@elte.hu>
-Message-ID: <alpine.LFD.2.00.0909041631210.14872@twosheds.infradead.org>
-References: <tip-5a8a2d13b1526e306ff2a9fe12dc9d5878d355f9@git.kernel.org> <20090904144857.GA12872@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 4 Sep 2009 14:56:44 -0400
+Date: Fri, 4 Sep 2009 11:33:26 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>
+Subject: Re: [PATCH] slub: fix slab_pad_check()
+In-Reply-To: <20090903220300.GN6761@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.1.10.0909041130030.9781@V090114053VZO-1>
+References: <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1>
+ <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <20090903174435.GF6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909031736340.24199@V090114053VZO-1> <20090903220300.GN6761@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by twosheds.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Sep 2009, Ingo Molnar wrote:
+On Thu, 3 Sep 2009, Paul E. McKenney wrote:
 
-
->> x86: Don't silently override CONFIG_64BIT in 'make oldconfig'
+> > You need to ensure that no objects are in use before destroying a slab. In
+> > case of DESTROY_BY_RCU you must ensure that there are no potential
+> > readers. So use a suitable rcu barrier or something else like a
+> > synchronize_rcu...
 >
-> -tip testing found that this commit broke the UML build:
->
-> /home/mingo/tip/arch/um/Makefile:52:
-> /home/mingo/tip/arch/um/Makefile-x86: No such file or directory
-> make[1]: *** No rule to make target `/home/mingo/tip/arch/um/Makefile-x86'.  Stop.
-> make: *** [sub-make] Error 2
+> If by "you must ensure" you mean "kmem_cache_destroy must ensure", then
+> we are in complete agreement.  Otherwise, not a chance.
 
-Hm, doesn't that mean that UML has always been broken for ARCH=x86?
+Well then we are going down to a crappy interface and mixing rcu with slab
+semantics. More bugs to follow in the future.
 
--- 
-dwmw2
+> If by "must ensure that no objects are in use", you mean "must have
+> no further references to them", then we are in agreement.  And in my
+> scenario above, it is not the -user- who later references the memory,
+> but rather the slab code itself.
+
+The slab code itself is not referencing the later memory with my patch. It
+can only be the user.
+
+> Put the rcu_barrier() in kmem_cache_free().  Please.
+
+Guess we are doing this ... Sigh. Are you going to add support other rcu
+versions to slab as well as time permits and as the need arises? Should we
+add you as a maintainer? ;-)
+
+
+
