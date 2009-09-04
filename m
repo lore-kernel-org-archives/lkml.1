@@ -1,199 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932336AbZIDGeT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZIDGje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932336AbZIDGeT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:34:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZIDGeS
+	id S1755689AbZIDGje (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZIDGje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:34:18 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53558 "EHLO kernel.dk"
+	Fri, 4 Sep 2009 02:39:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:38458 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751341AbZIDGeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:34:17 -0400
-Date: Fri, 4 Sep 2009 08:34:19 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: David Miller <davem@davemloft.net>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       fweisbec@gmail.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090904063419.GO18599@kernel.dk>
-References: <20090817064851.GQ12579@kernel.dk> <20090903.213702.250776705.davem@davemloft.net> <20090904050256.GA8382@elte.hu> <20090903.220906.44384937.davem@davemloft.net> <20090904052005.GN18599@kernel.dk>
+	id S1750764AbZIDGjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:39:33 -0400
+Date: Fri, 4 Sep 2009 08:39:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, petkovbb@googlemail.com,
+       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
+       tglx@linutronix.de, borislav.petkov@amd.com,
+       linux-tip-commits@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 1/3] x86, msr: add rd/wrmsr interfaces with preset
+	registers
+Message-ID: <20090904063904.GA29829@elte.hu>
+References: <20090831073429.GA26596@liondog.tnic> <1251705011-18636-1-git-send-email-petkovbb@gmail.com> <20090903155539.ecd64bcd.akpm@linux-foundation.org> <4AA049F2.5000403@zytor.com> <20090903161426.cc441294.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090904052005.GN18599@kernel.dk>
+In-Reply-To: <20090903161426.cc441294.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04 2009, Jens Axboe wrote:
-> On Thu, Sep 03 2009, David Miller wrote:
-> > From: Ingo Molnar <mingo@elte.hu>
-> > Date: Fri, 4 Sep 2009 07:02:56 +0200
-> > 
-> > > 
-> > > * David Miller <davem@davemloft.net> wrote:
-> > > 
-> > >> Does this build for you without adding an
-> > >> arch/sparc/include/asm/perf_counter.h that looks
-> > >> something like the following?
-> > >> 
-> > >> #ifndef _ASM_SPARC_PERF_COUNTER_H
-> > >> #define _ASM_SPARC_PERF_COUNTER_H
-> > >> 
-> > >> #define PERF_COUNTER_INDEX_OFFSET	0
-> > >> 
-> > >> #endif
-> > >> 
-> > >> Or is this somehow now required in the -tip trees?
-> > > 
-> > > This used to be required but i recently fixed this (and that fix is 
-> > > upstream as well) via:
-> > > 
-> > >   f738eb1: perf_counter: Fix the PARISC build
-> > > 
-> > > there's now a default define of 0 so you dont have to define it and 
-> > > can leave out this chunk.
-> > > 
-> > > ( That index is only interesting if the architecture has a way to 
-> > >   allow unprivileged user-space to access counter registers 
-> > >   directly. In that case the index reflects the offset from the 
-> > >   (constantly changing) dynamix index which we put into the mmap 
-> > >   header. With Sparc not having a hw-PMU implementation this index 
-> > >   is entirely uninteresting at this stage. )
-> > 
-> > But you still do need at least an empty perf_counter.h file
-> > right?  Jens must have left the file out of his submission
-> > by accident, and that's what I'm trying to get to the bottom
-> > of here :-)
-> > 
-> > I assume there was a similar change to deal with references to
-> > set_perf_counter_pending() too or is at least a NOP definition
-> > still needed?
+
+* Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Thu, 03 Sep 2009 15:57:54 -0700
+> "H. Peter Anvin" <hpa@zytor.com> wrote:
 > 
-> It wasn't required when I built and used it (and sent the patch), I used
-> the posted patch as-is. It's been a few weeks since I last updated and
-> ran that box, let me double check after morning coffee and send you a
-> fresh patch (if needed) :-)
+> > On 09/03/2009 03:55 PM, Andrew Morton wrote:
+> > > On Mon, 31 Aug 2009 09:50:09 +0200
+> > > Borislav Petkov <petkovbb@googlemail.com> wrote:
+> > > 
+> > >> +.macro op_safe_regs op:req
+> > > 
+> > > Using
+> > > 
+> > > GNU assembler 2.16.1
+> > > 
+> > > I get
+> > > 
+> > > arch/x86/lib/msr-reg.S: Assembler messages:
+> > > arch/x86/lib/msr-reg.S:53: Error: Bad macro parameter list
+> > > arch/x86/lib/msr-reg.S:100: Error: invalid character '_' in mnemonic
+> > > arch/x86/lib/msr-reg.S:101: Error: invalid character '_' in mnemonic
+> > > 
+> > > this:
+> > > 
+> > > diff -puN arch/x86/lib/msr-reg.S~a arch/x86/lib/msr-reg.S
+> > > --- a/arch/x86/lib/msr-reg.S~a
+> > > +++ a/arch/x86/lib/msr-reg.S
+> > > @@ -50,7 +50,7 @@ ENDPROC(native_\op\()_safe_regs)
+> > >  
+> > >  #else /* X86_32 */
+> > >  
+> > > -.macro op_safe_regs op:req
+> > > +.macro op_safe_regs op
+> > >  ENTRY(native_\op\()_safe_regs)
+> > >         CFI_STARTPROC
+> > >         pushl_cfi %ebx
+> > > 
+> > > 
+> > > fixed it.
+> > 
+> > Yup, already fixed in -tip.
+> > 
+> 
+> <looks>
+> 
+> Three days ago.  linux-next is still busted.
 
-It seems I had a left-over arch/sparc/include/asm/perf_counter.h from
-earlier experiments that was never checked in, so that is why it worked
-for me. include/linux/sched.h does:
+No, the 32-bit ancient-binutils bug you have hit here was found and 
+fixed ~8 hours ago, by me, and i pushed the fix out immediately. 
+(and this happened before you wrote this mail and the fix was posted 
+to lkml as well.)
 
-#ifdef CONFIG_PERF_COUNTERS
-# include <asm/perf_counter.h>
-#endif
+> I want my five minutes back.
 
-so that's no way around an empty stub file. Updated patch below, this is
-what I have been using.
+I too want my five minutes back that i spent researching commit logs 
+and writing this email ;-)
 
-commit 99d9c7f3326a73e2b9952c99d6c7a15bf761858f
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Fri Sep 4 08:31:22 2009 +0200
+Btw., we could save much more if we avoided this whole 'break the 
+kernel then fix it' infinite loop that kernel development is 
+ultimately about ;-)
 
-    sparc: add basic support for 'perf'
-    
-    This wires up the perf_counter_open() syscall so that basic
-    software support for perf is working.
-    
-    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 3f8b6a9..71a9a11 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -25,6 +25,7 @@ config SPARC
- 	select ARCH_WANT_OPTIONAL_GPIOLIB
- 	select RTC_CLASS
- 	select RTC_DRV_M48T59
-+	select HAVE_PERF_COUNTERS
- 
- config SPARC32
- 	def_bool !64BIT
-@@ -44,6 +45,7 @@ config SPARC64
- 	select RTC_DRV_BQ4802
- 	select RTC_DRV_SUN4V
- 	select RTC_DRV_STARFIRE
-+	select HAVE_PERF_COUNTERS
- 
- config ARCH_DEFCONFIG
- 	string
-diff --git a/arch/sparc/include/asm/perf_counter.h b/arch/sparc/include/asm/perf_counter.h
-new file mode 100644
-index 0000000..664b624
---- /dev/null
-+++ b/arch/sparc/include/asm/perf_counter.h
-@@ -0,0 +1,8 @@
-+#ifndef __ASM_SPARC_PERF_COUNTER_H
-+#define __ASM_SPARC_PERF_COUNTER_H
-+
-+static inline void set_perf_counter_pending(void) { }
-+
-+#define	PERF_COUNTER_INDEX_OFFSET	0
-+
-+#endif 
-diff --git a/arch/sparc/include/asm/unistd.h b/arch/sparc/include/asm/unistd.h
-index b2c406d..706df66 100644
---- a/arch/sparc/include/asm/unistd.h
-+++ b/arch/sparc/include/asm/unistd.h
-@@ -395,8 +395,9 @@
- #define __NR_preadv		324
- #define __NR_pwritev		325
- #define __NR_rt_tgsigqueueinfo	326
-+#define __NR_perf_counter_open	327
- 
--#define NR_SYSCALLS		327
-+#define NR_SYSCALLS		328
- 
- #ifdef __32bit_syscall_numbers__
- /* Sparc 32-bit only has the "setresuid32", "getresuid32" variants,
-diff --git a/arch/sparc/kernel/systbls_32.S b/arch/sparc/kernel/systbls_32.S
-index 6909016..0418157 100644
---- a/arch/sparc/kernel/systbls_32.S
-+++ b/arch/sparc/kernel/systbls_32.S
-@@ -82,5 +82,5 @@ sys_call_table:
- /*310*/	.long sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
- /*315*/	.long sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
- /*320*/	.long sys_dup3, sys_pipe2, sys_inotify_init1, sys_accept4, sys_preadv
--/*325*/	.long sys_pwritev, sys_rt_tgsigqueueinfo
-+/*325*/	.long sys_pwritev, sys_rt_tgsigqueueinfo, sys_perf_counter_open
- 
-diff --git a/arch/sparc/kernel/systbls_64.S b/arch/sparc/kernel/systbls_64.S
-index 2ee7250..91b06b7 100644
---- a/arch/sparc/kernel/systbls_64.S
-+++ b/arch/sparc/kernel/systbls_64.S
-@@ -83,7 +83,7 @@ sys_call_table32:
- /*310*/	.word compat_sys_utimensat, compat_sys_signalfd, sys_timerfd_create, sys_eventfd, compat_sys_fallocate
- 	.word compat_sys_timerfd_settime, compat_sys_timerfd_gettime, compat_sys_signalfd4, sys_eventfd2, sys_epoll_create1
- /*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_accept4, compat_sys_preadv
--	.word compat_sys_pwritev, compat_sys_rt_tgsigqueueinfo
-+	.word compat_sys_pwritev, compat_sys_rt_tgsigqueueinfo, sys_perf_counter_open
- 
- #endif /* CONFIG_COMPAT */
- 
-@@ -158,4 +158,4 @@ sys_call_table:
- /*310*/	.word sys_utimensat, sys_signalfd, sys_timerfd_create, sys_eventfd, sys_fallocate
- 	.word sys_timerfd_settime, sys_timerfd_gettime, sys_signalfd4, sys_eventfd2, sys_epoll_create1
- /*320*/	.word sys_dup3, sys_pipe2, sys_inotify_init1, sys_accept4, sys_preadv
--	.word sys_pwritev, sys_rt_tgsigqueueinfo
-+	.word sys_pwritev, sys_rt_tgsigqueueinfo, sys_perf_counter_open
-diff --git a/tools/perf/perf.h b/tools/perf/perf.h
-index e5148e2..2abeb20 100644
---- a/tools/perf/perf.h
-+++ b/tools/perf/perf.h
-@@ -41,6 +41,12 @@
- #define cpu_relax()	asm volatile("" ::: "memory");
- #endif
- 
-+#ifdef __sparc__
-+#include "../../arch/sparc/include/asm/unistd.h"
-+#define rmb()		asm volatile("":::"memory")
-+#define cpu_relax()	asm volatile("":::"memory")
-+#endif
-+
- #include <time.h>
- #include <unistd.h>
- #include <sys/types.h>
-
--- 
-Jens Axboe
-
+	Ingo
