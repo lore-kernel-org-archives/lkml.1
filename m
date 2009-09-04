@@ -1,89 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757133AbZIDRdA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757128AbZIDRcp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757133AbZIDRdA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 13:33:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZIDRc7
+	id S1757128AbZIDRcp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 13:32:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbZIDRcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 13:32:59 -0400
-Received: from eng.riverbed.com ([208.70.196.45]:16395 "EHLO
-	smtp1.riverbed.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757159AbZIDRc4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 13:32:56 -0400
-X-Greylist: delayed 602 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 13:32:56 EDT
-Date: Fri, 4 Sep 2009 10:23:16 -0700
-From: Chaitanya Lala <clala@riverbed.com>
-To: tj@kernel.org
-Cc: clala@riverbed.com, rbecker@riverbed.com, linux-kernel@vger.kernel.org
-Subject: Disk failure behavior
-Message-ID: <20090904172316.GA6076@clala-laptop>
+	Fri, 4 Sep 2009 13:32:41 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39002 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757086AbZIDRcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 13:32:39 -0400
+Date: Fri, 4 Sep 2009 19:26:48 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Howells <dhowells@redhat.com>, Roland McGrath <roland@redhat.com>,
+       James Morris <jmorris@namei.org>, Tom Horsley <tom.horsley@att.net>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: [PATCH v3] exec: do not sleep in TASK_TRACED under
+	->cred_guard_mutex
+Message-ID: <20090904172648.GA25841@redhat.com>
+References: <20090904133956.GA9232@redhat.com> <20090903160514.GA23646@redhat.com> <20090903200924.E46DF47C94@magilla.sf.frob.com> <32710.1252075656@redhat.com> <20090904154947.GA17048@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090904154947.GA17048@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Tom Horsley reports that his debugger hangs when it tries to read
+/proc/pid_of_tracee/maps, this happens since
 
-I am using a back-port of libata from ~ 2.6.20 on a 2.6.9
-Red Hat kernel. I have SATA disks (using AHCI) in the 
-system which are hot-pluggable. The problem I am facing
-is that, certain disk failures bring the system into a
-weird state. The system tries to reset the disk but fails.
-Finally it prints a message "reset failed, giving up."
+	"mm_for_maps: take ->cred_guard_mutex to fix the race with exec"
+	04b836cbf19e885f8366bccb2e4b0474346c02d
 
-At this point the port is left in a frozen state and
-the interrupts from the port are masked. If now, this disk is
-pulled out and a healthy disk is inserted, the new disk's
-insertion does not raise any event/notification/interrupt.
-In fact, the only way at this point to get the disk to work is
-to reboot.
+commit in 2.6.31.
 
-Below is a snippet of the code, I am referring to, from v2.6.20.
-File - drivers/ata/libata-eh.c & function-name -  ata_eh_recover
+But the root of the problem lies in the fact that do_execve() path calls
+tracehook_report_exec() which can stop if the tracer sets PT_TRACE_EXEC.
+
+The tracee must not sleep in TASK_TRACED holding this mutex. Even if we
+remove ->cred_guard_mutex from mm_for_maps() and proc_pid_attr_write(),
+another task doing PTRACE_ATTACH should not hang until it is killed or
+the tracee resumes.
+
+With this patch do_execve() does not use ->cred_guard_mutex directly and
+we do not hold it throughout, instead:
+
+	- introduce prepare_bprm_creds() helper, it locks the mutex
+	  and calls prepare_exec_creds() to initialize bprm->cred.
+
+	- install_exec_creds() drops the mutex after commit_creds(),
+	  and thus before tracehook_report_exec()->ptrace_stop().
+
+	  or, if exec fails,
+
+	  free_bprm() drops this mutex when bprm->cred != NULL which
+	  indicates install_exec_creds() was not called.
+
+Reported-by: Tom Horsley <tom.horsley@att.net>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: David Howells <dhowells@redhat.com>
+---
+
+ include/linux/binfmts.h |    3 +-
+ fs/exec.c               |   63 ++++++++++++++++++++++++++++--------------------
+ fs/compat.c             |   17 +++---------
+ 3 files changed, 44 insertions(+), 39 deletions(-)
+
+--- WAIT/include/linux/binfmts.h~CRED_MUTEX_EEEVENT_EXEC	2009-07-24 19:02:19.000000000 +0200
++++ WAIT/include/linux/binfmts.h	2009-09-03 17:37:04.000000000 +0200
+@@ -117,9 +117,10 @@ extern int setup_arg_pages(struct linux_
+ 			   int executable_stack);
+ extern int bprm_mm_init(struct linux_binprm *bprm);
+ extern int copy_strings_kernel(int argc,char ** argv,struct linux_binprm *bprm);
+-extern void install_exec_creds(struct linux_binprm *bprm);
+ extern void do_coredump(long signr, int exit_code, struct pt_regs *regs);
+ extern void set_binfmt(struct linux_binfmt *new);
++extern int  prepare_bprm_creds(struct linux_binprm *bprm);
++extern void install_exec_creds(struct linux_binprm *bprm);
+ extern void free_bprm(struct linux_binprm *);
  
-	/* reset */
-	if (ehc->i.action & ATA_EH_RESET_MASK) {
-		ata_eh_freeze_port(ap);
-
-		rc = ata_eh_reset(ap, ata_port_nr_vacant(ap), prereset,
-				  softreset, hardreset, postreset);
-		if (rc) {
-			ata_port_printk(ap, KERN_ERR,
-					"reset failed, giving up\n");
-			goto out; 
-		}    
-
-		ata_eh_thaw_port(ap);
-	} 
-
-A possible work-around is to thaw the port before going to "out".
-That would enable the interrupts again before going to "out".
-I understand that would enable future interrupts from the old disk as well,
-but I am willing to live with that, if it helps to detect the new device.
-
-	/* reset */
-	if (ehc->i.action & ATA_EH_RESET_MASK) {
-		ata_eh_freeze_port(ap);
-
-		rc = ata_eh_reset(ap, ata_port_nr_vacant(ap), prereset,
-				  softreset, hardreset, postreset);
-		if (rc) {
-			ata_port_printk(ap, KERN_ERR,
-					"reset failed, giving up\n");
-+			ata_eh_thaw_port(ap);
-			goto out; 
-		}    
-
-		ata_eh_thaw_port(ap);
-	} 
-
-I have tested this successfully. But I would like to ask you if this would
-possibly "break" some other functionality ? I am new to the kernel ata stuff
-and want to be sure before I use this.
-
-Thanks,
-Chaitanya
+ #endif /* __KERNEL__ */
+--- WAIT/fs/exec.c~CRED_MUTEX_EEEVENT_EXEC	2009-09-03 15:31:08.000000000 +0200
++++ WAIT/fs/exec.c	2009-09-04 19:09:14.000000000 +0200
+@@ -1018,6 +1018,35 @@ out:
+ EXPORT_SYMBOL(flush_old_exec);
+ 
+ /*
++ * Prepare credentials and lock ->cred_guard_mutex.
++ * install_exec_creds() commits the new creds and drops the lock.
++ * Or, if exec fails before, free_bprm() should release ->cred and
++ * and unlock.
++ */
++int prepare_bprm_creds(struct linux_binprm *bprm)
++{
++	if (mutex_lock_interruptible(&current->cred_guard_mutex))
++		return -ERESTARTNOINTR;
++
++	bprm->cred = prepare_exec_creds();
++	if (likely(bprm->cred))
++		return 0;
++
++	mutex_unlock(&current->cred_guard_mutex);
++	return -ENOMEM;
++}
++
++void free_bprm(struct linux_binprm *bprm)
++{
++	free_arg_pages(bprm);
++	if (bprm->cred) {
++		mutex_unlock(&current->cred_guard_mutex);
++		abort_creds(bprm->cred);
++	}
++	kfree(bprm);
++}
++
++/*
+  * install the new credentials for this executable
+  */
+ void install_exec_creds(struct linux_binprm *bprm)
+@@ -1026,12 +1055,13 @@ void install_exec_creds(struct linux_bin
+ 
+ 	commit_creds(bprm->cred);
+ 	bprm->cred = NULL;
+-
+-	/* cred_guard_mutex must be held at least to this point to prevent
++	/*
++	 * cred_guard_mutex must be held at least to this point to prevent
+ 	 * ptrace_attach() from altering our determination of the task's
+-	 * credentials; any time after this it may be unlocked */
+-
++	 * credentials; any time after this it may be unlocked.
++	 */
+ 	security_bprm_committed_creds(bprm);
++	mutex_unlock(&current->cred_guard_mutex);
+ }
+ EXPORT_SYMBOL(install_exec_creds);
+ 
+@@ -1248,14 +1278,6 @@ int search_binary_handler(struct linux_b
+ 
+ EXPORT_SYMBOL(search_binary_handler);
+ 
+-void free_bprm(struct linux_binprm *bprm)
+-{
+-	free_arg_pages(bprm);
+-	if (bprm->cred)
+-		abort_creds(bprm->cred);
+-	kfree(bprm);
+-}
+-
+ /*
+  * sys_execve() executes a new program.
+  */
+@@ -1279,20 +1301,15 @@ int do_execve(char * filename,
+ 	if (!bprm)
+ 		goto out_files;
+ 
+-	retval = -ERESTARTNOINTR;
+-	if (mutex_lock_interruptible(&current->cred_guard_mutex))
++	retval = prepare_bprm_creds(bprm);
++	if (retval)
+ 		goto out_free;
+-	current->in_execve = 1;
+-
+-	retval = -ENOMEM;
+-	bprm->cred = prepare_exec_creds();
+-	if (!bprm->cred)
+-		goto out_unlock;
+ 
+ 	retval = check_unsafe_exec(bprm);
+ 	if (retval < 0)
+-		goto out_unlock;
++		goto out_free;
+ 	clear_in_exec = retval;
++	current->in_execve = 1;
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+@@ -1342,7 +1359,6 @@ int do_execve(char * filename,
+ 	/* execve succeeded */
+ 	current->fs->in_exec = 0;
+ 	current->in_execve = 0;
+-	mutex_unlock(&current->cred_guard_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+ 	if (displaced)
+@@ -1362,10 +1378,7 @@ out_file:
+ out_unmark:
+ 	if (clear_in_exec)
+ 		current->fs->in_exec = 0;
+-
+-out_unlock:
+ 	current->in_execve = 0;
+-	mutex_unlock(&current->cred_guard_mutex);
+ 
+ out_free:
+ 	free_bprm(bprm);
+--- WAIT/fs/compat.c~CRED_MUTEX_EEEVENT_EXEC	2009-09-03 15:31:08.000000000 +0200
++++ WAIT/fs/compat.c	2009-09-03 16:42:17.000000000 +0200
+@@ -1486,20 +1486,15 @@ int compat_do_execve(char * filename,
+ 	if (!bprm)
+ 		goto out_files;
+ 
+-	retval = -ERESTARTNOINTR;
+-	if (mutex_lock_interruptible(&current->cred_guard_mutex))
++	retval = prepare_bprm_creds(bprm);
++	if (retval)
+ 		goto out_free;
+-	current->in_execve = 1;
+-
+-	retval = -ENOMEM;
+-	bprm->cred = prepare_exec_creds();
+-	if (!bprm->cred)
+-		goto out_unlock;
+ 
+ 	retval = check_unsafe_exec(bprm);
+ 	if (retval < 0)
+-		goto out_unlock;
++		goto out_free;
+ 	clear_in_exec = retval;
++	current->in_execve = 1;
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+@@ -1548,7 +1543,6 @@ int compat_do_execve(char * filename,
+ 	/* execve succeeded */
+ 	current->fs->in_exec = 0;
+ 	current->in_execve = 0;
+-	mutex_unlock(&current->cred_guard_mutex);
+ 	acct_update_integrals(current);
+ 	free_bprm(bprm);
+ 	if (displaced)
+@@ -1568,10 +1562,7 @@ out_file:
+ out_unmark:
+ 	if (clear_in_exec)
+ 		current->fs->in_exec = 0;
+-
+-out_unlock:
+ 	current->in_execve = 0;
+-	mutex_unlock(&current->cred_guard_mutex);
+ 
+ out_free:
+ 	free_bprm(bprm);
 
