@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934117AbZIDUQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934106AbZIDUQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934117AbZIDUQx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934076AbZIDUOp
+	id S934106AbZIDUQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934110AbZIDUOq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:14:45 -0400
-Received: from kroah.org ([198.145.64.141]:36277 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 16:14:46 -0400
+Received: from kroah.org ([198.145.64.141]:36283 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934090AbZIDUOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:14:42 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:55 2009
-Message-Id: <20090904200855.729494368@mini.kroah.org>
+	id S934097AbZIDUOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:14:43 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:56 2009
+Message-Id: <20090904200855.890096059@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 13:07:49 -0700
+Date: Fri, 04 Sep 2009 13:07:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 37/48] irda: Fix irda_getname() leak
+       Robert Peterson <rpeterso@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 38/48] kthreads: fix kthread_create() vs kthread_stop() race
 References: <20090904200712.724048145@mini.kroah.org>
-Content-Disposition: inline; filename=irda-fix-irda_getname-leak.patch
+Content-Disposition: inline; filename=kthreads-fix-kthread_create-vs-kthread_stop-race.patch
 In-Reply-To: <20090904201112.GA8274@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,29 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Oleg Nesterov <oleg@redhat.com>
 
-commit 09384dfc76e526c3993c09c42e016372dc9dd22c upstream.
+The bug should be "accidently" fixed by recent changes in 2.6.31,
+all kernels <= 2.6.30 need the fix. The problem was never noticed before,
+it was found because it causes mysterious failures with GFS mount/umount.
 
-irda_getname() can leak kernel memory to user.
+Credits to Robert Peterson. He blaimed kthread.c from the very beginning.
+But, despite my promise, I forgot to inspect the old implementation until
+he did a lot of testing and reminded me. This led to huge delay in fixing
+this bug.
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+kthread_stop() does put_task_struct(k) before it clears kthread_stop_info.k.
+This means another kthread_create() can re-use this task_struct, but the
+new kthread can still see kthread_should_stop() == T and exit even without
+calling threadfn().
+
+Reported-by: Robert Peterson <rpeterso@redhat.com>
+Tested-by: Robert Peterson <rpeterso@redhat.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/irda/af_irda.c |    1 +
- 1 file changed, 1 insertion(+)
+ kernel/kthread.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/irda/af_irda.c
-+++ b/net/irda/af_irda.c
-@@ -714,6 +714,7 @@ static int irda_getname(struct socket *s
- 	struct sock *sk = sock->sk;
- 	struct irda_sock *self = irda_sk(sk);
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -213,12 +213,12 @@ int kthread_stop(struct task_struct *k)
+ 	/* Now set kthread_should_stop() to true, and wake it up. */
+ 	kthread_stop_info.k = k;
+ 	wake_up_process(k);
+-	put_task_struct(k);
  
-+	memset(&saddr, 0, sizeof(saddr));
- 	if (peer) {
- 		if (sk->sk_state != TCP_ESTABLISHED)
- 			return -ENOTCONN;
+ 	/* Once it dies, reset stop ptr, gather result and we're done. */
+ 	wait_for_completion(&kthread_stop_info.done);
+ 	kthread_stop_info.k = NULL;
+ 	ret = kthread_stop_info.err;
++	put_task_struct(k);
+ 	mutex_unlock(&kthread_stop_lock);
+ 
+ 	return ret;
 
 
