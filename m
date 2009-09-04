@@ -1,102 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZIDGje@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756657AbZIDGtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbZIDGje (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:39:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZIDGje
+	id S1756657AbZIDGtz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbZIDGtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:39:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38458 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbZIDGjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:39:33 -0400
-Date: Fri, 4 Sep 2009 08:39:04 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, petkovbb@googlemail.com,
-       mingo@redhat.com, linux-kernel@vger.kernel.org, kjwinchester@gmail.com,
-       tglx@linutronix.de, borislav.petkov@amd.com,
-       linux-tip-commits@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 1/3] x86, msr: add rd/wrmsr interfaces with preset
-	registers
-Message-ID: <20090904063904.GA29829@elte.hu>
-References: <20090831073429.GA26596@liondog.tnic> <1251705011-18636-1-git-send-email-petkovbb@gmail.com> <20090903155539.ecd64bcd.akpm@linux-foundation.org> <4AA049F2.5000403@zytor.com> <20090903161426.cc441294.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090903161426.cc441294.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 4 Sep 2009 02:49:53 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:48673 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752698AbZIDGtv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:49:51 -0400
+Date: Fri, 4 Sep 2009 15:40:50 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [mmotm][experimental][PATCH] coalescing charge
+Message-Id: <20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+	<20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
+	<20090904142143.15ffcb53.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Thu, 03 Sep 2009 15:57:54 -0700
-> "H. Peter Anvin" <hpa@zytor.com> wrote:
+On Fri, 4 Sep 2009 14:26:54 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> On Fri, 4 Sep 2009 14:21:43 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 > 
-> > On 09/03/2009 03:55 PM, Andrew Morton wrote:
-> > > On Mon, 31 Aug 2009 09:50:09 +0200
-> > > Borislav Petkov <petkovbb@googlemail.com> wrote:
-> > > 
-> > >> +.macro op_safe_regs op:req
-> > > 
-> > > Using
-> > > 
-> > > GNU assembler 2.16.1
-> > > 
-> > > I get
-> > > 
-> > > arch/x86/lib/msr-reg.S: Assembler messages:
-> > > arch/x86/lib/msr-reg.S:53: Error: Bad macro parameter list
-> > > arch/x86/lib/msr-reg.S:100: Error: invalid character '_' in mnemonic
-> > > arch/x86/lib/msr-reg.S:101: Error: invalid character '_' in mnemonic
-> > > 
-> > > this:
-> > > 
-> > > diff -puN arch/x86/lib/msr-reg.S~a arch/x86/lib/msr-reg.S
-> > > --- a/arch/x86/lib/msr-reg.S~a
-> > > +++ a/arch/x86/lib/msr-reg.S
-> > > @@ -50,7 +50,7 @@ ENDPROC(native_\op\()_safe_regs)
-> > >  
-> > >  #else /* X86_32 */
-> > >  
-> > > -.macro op_safe_regs op:req
-> > > +.macro op_safe_regs op
-> > >  ENTRY(native_\op\()_safe_regs)
-> > >         CFI_STARTPROC
-> > >         pushl_cfi %ebx
-> > > 
-> > > 
-> > > fixed it.
+> > On Fri, 4 Sep 2009 14:11:57 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > > 
-> > Yup, already fixed in -tip.
+> > > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > > It looks basically good. I'll do some tests with all patches applied.
+> > > > > 
+> > > > thanks.
+> > > > 
+> > > it seems that these patches make rmdir stall again...
+> > > This batched charge patch seems not to be the (only) suspect, though.
+> > > 
+> > Ouch, no probelm with the latest mmotm ? I think this charge-uncharge-offload
+> > patch set doesn't use css_set()/get()...
+> > Hm, softlimit related parts ?
 > > 
+hmm, these patches(including softlimit cleanup) seems not to be guilt.
+Current(I'm using mmotm-2009-08-27-16-51) mmotm seems to be broken about memcg's rmdir.
+
+I must admit I've not tested mmotm for several months because I have been working
+on stabilizing mainline for a long time...
+
+> Ah, one more question. What memory.usage_in_bytes shows in that case ?
+> If not zero, charge/uncharge coalescing is guilty.
 > 
-> <looks>
-> 
-> Three days ago.  linux-next is still busted.
+usage_in_bytes is 0.
+I've confirmed by crash command that the mem_cgroup has extra ref counts.
 
-No, the 32-bit ancient-binutils bug you have hit here was found and 
-fixed ~8 hours ago, by me, and i pushed the fix out immediately. 
-(and this happened before you wrote this mail and the fix was posted 
-to lkml as well.)
+I'll dig more..
 
-> I want my five minutes back.
 
-I too want my five minutes back that i spent researching commit logs 
-and writing this email ;-)
-
-Btw., we could save much more if we avoided this whole 'break the 
-kernel then fix it' infinite loop that kernel development is 
-ultimately about ;-)
-
-	Ingo
+Thanks,
+Daisuke Nishimura.
