@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934155AbZIDUSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934202AbZIDUSK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934155AbZIDUSf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934049AbZIDUSb
+	id S934202AbZIDUSK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:18:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934088AbZIDUSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:18:31 -0400
-Received: from kroah.org ([198.145.64.141]:36233 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 16:18:05 -0400
+Received: from kroah.org ([198.145.64.141]:36239 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934065AbZIDUOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:14:35 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:54 2009
-Message-Id: <20090904200854.746551563@mini.kroah.org>
+	id S934073AbZIDUOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:14:36 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:55 2009
+Message-Id: <20090904200854.878903295@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 13:07:42 -0700
+Date: Fri, 04 Sep 2009 13:07:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Izik Eidus <ieidus@redhat.com>, avi@redhat.com
-Subject: [patch 30/48] KVM: Fix dirty bit tracking for slots with large pages
+       Marcelo Tosatti <mtosatti@redhat.com>, avi@redhat.com
+Subject: [patch 31/48] KVM: x86: check for cr3 validity in mmu_alloc_roots
 References: <20090904200712.724048145@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-fix-dirty-bit-tracking-for-slots-with-large-pages.patch
+Content-Disposition: inline; filename=kvm-x86-check-for-cr3-validity-in-mmu_alloc_roots.patch
 In-Reply-To: <20090904201112.GA8274@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,33 +30,99 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Izik Eidus <ieidus@redhat.com>
+From: Marcelo Tosatti <mtosatti@redhat.com>
 
-(cherry picked from commit e244584fe3a5c20deddeca246548ac86dbc6e1d1)
+(cherry picked from commit 8986ecc0ef58c96eec48d8502c048f3ab67fd8e2)
 
-When slot is already allocated and being asked to be tracked we need
-to break the large pages.
+Verify the cr3 address stored in vcpu->arch.cr3 points to an existant
+memslot. If not, inject a triple fault.
 
-This code flush the mmu when someone ask a slot to start dirty bit
-tracking.
-
-Signed-off-by: Izik Eidus <ieidus@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- virt/kvm/kvm_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/kvm/mmu.c |   25 ++++++++++++++++++++++---
+ arch/x86/kvm/x86.c |    1 +
+ 2 files changed, 23 insertions(+), 3 deletions(-)
 
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -550,6 +550,8 @@ int __kvm_set_memory_region(struct kvm *
- 		if (!new.dirty_bitmap)
- 			goto out_free;
- 		memset(new.dirty_bitmap, 0, dirty_bytes);
-+		if (old.npages)
-+			kvm_arch_flush_shadow(kvm);
- 	}
- #endif /* not defined CONFIG_S390 */
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1350,7 +1350,19 @@ static void mmu_free_roots(struct kvm_vc
+ 	vcpu->arch.mmu.root_hpa = INVALID_PAGE;
+ }
  
+-static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
++static int mmu_check_root(struct kvm_vcpu *vcpu, gfn_t root_gfn)
++{
++	int ret = 0;
++
++	if (!kvm_is_visible_gfn(vcpu->kvm, root_gfn)) {
++		set_bit(KVM_REQ_TRIPLE_FAULT, &vcpu->requests);
++		ret = 1;
++	}
++
++	return ret;
++}
++
++static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
+ {
+ 	int i;
+ 	gfn_t root_gfn;
+@@ -1365,13 +1377,15 @@ static void mmu_alloc_roots(struct kvm_v
+ 		ASSERT(!VALID_PAGE(root));
+ 		if (tdp_enabled)
+ 			metaphysical = 1;
++		if (mmu_check_root(vcpu, root_gfn))
++			return 1;
+ 		sp = kvm_mmu_get_page(vcpu, root_gfn, 0,
+ 				      PT64_ROOT_LEVEL, metaphysical,
+ 				      ACC_ALL, NULL);
+ 		root = __pa(sp->spt);
+ 		++sp->root_count;
+ 		vcpu->arch.mmu.root_hpa = root;
+-		return;
++		return 0;
+ 	}
+ 	metaphysical = !is_paging(vcpu);
+ 	if (tdp_enabled)
+@@ -1388,6 +1402,8 @@ static void mmu_alloc_roots(struct kvm_v
+ 			root_gfn = vcpu->arch.pdptrs[i] >> PAGE_SHIFT;
+ 		} else if (vcpu->arch.mmu.root_level == 0)
+ 			root_gfn = 0;
++		if (mmu_check_root(vcpu, root_gfn))
++			return 1;
+ 		sp = kvm_mmu_get_page(vcpu, root_gfn, i << 30,
+ 				      PT32_ROOT_LEVEL, metaphysical,
+ 				      ACC_ALL, NULL);
+@@ -1396,6 +1412,7 @@ static void mmu_alloc_roots(struct kvm_v
+ 		vcpu->arch.mmu.pae_root[i] = root | PT_PRESENT_MASK;
+ 	}
+ 	vcpu->arch.mmu.root_hpa = __pa(vcpu->arch.mmu.pae_root);
++	return 0;
+ }
+ 
+ static gpa_t nonpaging_gva_to_gpa(struct kvm_vcpu *vcpu, gva_t vaddr)
+@@ -1639,8 +1656,10 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
+ 		goto out;
+ 	spin_lock(&vcpu->kvm->mmu_lock);
+ 	kvm_mmu_free_some_pages(vcpu);
+-	mmu_alloc_roots(vcpu);
++	r = mmu_alloc_roots(vcpu);
+ 	spin_unlock(&vcpu->kvm->mmu_lock);
++	if (r)
++		goto out;
+ 	kvm_x86_ops->set_cr3(vcpu, vcpu->arch.mmu.root_hpa);
+ 	kvm_mmu_flush_tlb(vcpu);
+ out:
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4073,6 +4073,7 @@ int kvm_arch_set_memory_region(struct kv
+ void kvm_arch_flush_shadow(struct kvm *kvm)
+ {
+ 	kvm_mmu_zap_all(kvm);
++	kvm_reload_remote_mmus(kvm);
+ }
+ 
+ int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
 
 
