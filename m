@@ -1,53 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756766AbZIDMbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZIDMcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756766AbZIDMbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 08:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbZIDMbn
+	id S1756787AbZIDMcd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 08:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755862AbZIDMcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 08:31:43 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:50488 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753612AbZIDMbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 08:31:42 -0400
-Subject: Re: VM issue causing high CPU loads
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Simon Kirby <sim@hostway.ca>
-Cc: Yohan <ytordjman@corp.free.fr>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Neil Brown <neilb@suse.de>, "J. Bruce Fields" <bfields@fieldses.org>,
-       mikevs@xs4all.net
-In-Reply-To: <20090903222253.GA8405@hostway.ca>
-References: <4A92A25A.4050608@yohan.staff.proxad.net>
-	 <20090824162155.ce323f08.akpm@linux-foundation.org>
-	 <4A96463E.5080002@corp.free.fr> <4A9C34F8.2010307@corp.free.fr>
-	 <20090902170642.f4381c1d.akpm@linux-foundation.org>
-	 <1251982884.18338.9.camel@heimdal.trondhjem.org>
-	 <4A9FC719.9020104@corp.free.fr>
-	 <1251986526.18338.29.camel@heimdal.trondhjem.org>
-	 <20090903200550.GB5257@hostway.ca>
-	 <1252010965.18338.63.camel@heimdal.trondhjem.org>
-	 <20090903222253.GA8405@hostway.ca>
-Content-Type: text/plain
-Date: Fri, 04 Sep 2009 08:31:37 -0400
-Message-Id: <1252067497.13204.3.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 1 sum rcpts/h 14 sum msgs/h 1 total rcpts 1328 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 8461A7DCF4F53C7C9533B3C64BDB33AFEA24FB48
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 218 max/h 6 blacklist 0 greylist 0 ratelimit 0
+	Fri, 4 Sep 2009 08:32:32 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:59960 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755903AbZIDMcb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 08:32:31 -0400
+Date: Fri, 4 Sep 2009 18:02:15 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Andrea Righi <arighi@develer.com>
+Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v1 PATCH 3/7] sched: Bandwidth initialization for fair
+	task groups
+Message-ID: <20090904123215.GA3601@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20090825094729.GP3663@in.ibm.com> <20090825094950.GS3663@in.ibm.com> <20090904104324.GA10807@linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904104324.GA10807@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-03 at 15:22 -0700, Simon Kirby wrote:
-> So, for environments with all POSIX systems, what do you think about
-> perhaps a mount or export flag that violates the spec on purpose to allow
-> numeric IDs to be used?
+On Fri, Sep 04, 2009 at 12:43:25PM +0200, Andrea Righi wrote:
+> On Tue, Aug 25, 2009 at 03:19:50PM +0530, Bharata B Rao wrote:
+> > +config CFS_HARD_LIMITS
+> > +	bool "Hard Limits for CFS Group Scheduler"
+> > +	depends on EXPERIMENTAL
+> > +	depends on FAIR_GROUP_SCHED
+> 
+> Shouldn't depend also on CGROUPS and CGROUP_SCHED? without them hard
+> limits can't be defined, right?
 
-No! I'm not interested in starting a LinuxPrivateNFSv4 protocol on top
-of everything else we've got...
+Right, but do we need to explicitly mention CGROUPS as dependency since
+CGROUP_SCHED is already dependent on it ?
 
-Trond
+> 
+> Signed-off-by: Andrea Righi <arighi@develer.com>
+> ---
+>  init/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/init/Kconfig b/init/Kconfig
+> index 71868a0..19c0290 100644
+> --- a/init/Kconfig
+> +++ b/init/Kconfig
+> @@ -459,7 +459,7 @@ config FAIR_GROUP_SCHED
+>  config CFS_HARD_LIMITS
+>  	bool "Hard Limits for CFS Group Scheduler"
+>  	depends on EXPERIMENTAL
+> -	depends on FAIR_GROUP_SCHED
+> +	depends on FAIR_GROUP_SCHED && CGROUPS && CGROUP_SCHED
+>  	default n
+>  	help
+>  	  This option enables hard limiting of CPU time obtained by
 
+Thanks for looking at the patches.
+
+Regards,
+Bharata.
