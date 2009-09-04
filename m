@@ -1,61 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934464AbZIDXHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934483AbZIDXLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934464AbZIDXHO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 19:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934445AbZIDXHN
+	id S934483AbZIDXLu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 19:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934469AbZIDXLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 19:07:13 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44120 "EHLO ogre.sisk.pl"
+	Fri, 4 Sep 2009 19:11:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:14101 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933995AbZIDXHM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 19:07:12 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: x86 maintainers <x86@kernel.org>
-Subject: [PATCH] x86: Decrease the level of some NUMA messages to KERN_DEBUG
-Date: Sat, 5 Sep 2009 01:07:45 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc8-rjw; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+	id S934453AbZIDXLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 19:11:47 -0400
+Date: Fri, 4 Sep 2009 19:11:29 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       Jens Axboe <jens.axboe@oracle.com>, Alasdair G Kergon <agk@redhat.com>,
+       Morton Andrew Morton <akpm@linux-foundation.org>,
+       Nauman Rafique <nauman@google.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Rik Van Riel <riel@redhat.com>, Moyer Jeff Moyer <jmoyer@redhat.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090904231129.GA3689@redhat.com>
+References: <20090901165011.GB3753@redhat.com> <20090904.130228.104054439.ryov@valinux.co.jp>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909050107.45175.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904.130228.104054439.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Fri, Sep 04, 2009 at 01:02:28PM +0900, Ryo Tsuruta wrote:
+> Hi Vivek,
+> 
 
-Some NUMA messages in srat_32.c are confusing to users, because they
-seem to indicate errors, while in fact they reflect normal behaviour.
+> Vivek Goyal <vgoyal@redhat.com> wrote:
+> > Hi Ryo,
+> > 
+> > I decided to play a bit more with dm-ioband and started doing some
+> > testing. I am doing a simple two dd threads doing reads and don't seem
+> > to be gettting the fairness. So thought will ask you what's the issue
+> > here. Is there an issue with my testing procedure.
 
-Decrease the level of these messages to KERN_DEBUG so that they don't
-show up unnecessarily.
+[ CCing relevant folks on thread as what does fairness mean is becoming
+  interesting]
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- arch/x86/mm/srat_32.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Thank you for testing dm-ioband. dm-ioband is designed to start
+> throttling bandwidth when multiple IO requests are issued to devices
+> simultaneously, IOW, to start throttling when IO load exceeds a
+> certain level.
+> 
 
-Index: linux-2.6/arch/x86/mm/srat_32.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/srat_32.c
-+++ linux-2.6/arch/x86/mm/srat_32.c
-@@ -215,7 +215,7 @@ int __init get_memcfg_from_srat(void)
- 		goto out_fail;
- 
- 	if (num_memory_chunks == 0) {
--		printk(KERN_WARNING
-+		printk(KERN_DEBUG
- 			 "could not find any ACPI SRAT memory areas.\n");
- 		goto out_fail;
- 	}
-@@ -277,7 +277,7 @@ int __init get_memcfg_from_srat(void)
- 	}
- 	return 1;
- out_fail:
--	printk(KERN_ERR "failed to get NUMA memory information from SRAT"
-+	printk(KERN_DEBUG "failed to get NUMA memory information from SRAT"
- 			" table\n");
- 	return 0;
- }
+What is that certain level? Secondly what's the advantage of this?
+
+I can see disadvantages though. So unless a group is really busy "up to
+that certain level" it will not get fairness? I breaks the isolation
+between groups.
+
+> Here is my test script that runs multiple dd threads on each
+> directory. Each directory stores 20 files of 2GB.
+> 
+>     #!/bin/sh
+>     tmout=60
+> 
+>     for nr_threads in 1 4 8 12 16 20; do
+>             sync; echo 3 > /proc/sys/vm/drop_caches
+> 
+>             for i in $(seq $nr_threads); do
+>                     dd if=/mnt1/ioband1.${i}.0 of=/dev/null &
+>                     dd if=/mnt2/ioband2.${i}.0 of=/dev/null &
+>             done
+>             iostat -k 1 $tmout > ${nr_threads}.log
+>             killall -ws TERM dd
+>     done
+>     exit 0
+> 
+> Here is the result. The average throughputs of each device are
+> according to the proportion of the weight settings when the number of
+> thread is over four.
+> 
+>               Average thoughput in 60 seconds [KB/s]
+> 
+>               ioband1           ioband2
+>   threads    weight 200        weight 100       total
+>         1   26642 (54.9%)     21925 (45.1%)     48568
+>         4   33974 (67.7%)     16181 (32.3%)     50156
+>         8   31952 (66.2%)     16297 (33.8%)     48249
+>        12   32062 (67.8%)     15236 (32.2%)     47299
+>        16   31780 (67.7%)     15165 (32.3%)     46946
+>        20   29955 (66.3%)     15239 (33.7%)     45195
+> 
+> Please try to run the above script on your envirionment and I would be
+> glad if you let me know the result.
+
+I ran my simple dd test again with two ioband deviecs of weight 200
+(ioband1) and 100 (ioband2)respectively. I launched four sequential dd
+readers on ioband2 and and one sequential reader in ioband1.
+
+Now if we are providing isolation between groups then ioband1 should get
+double the bandwidth of ioband1. But that does not happen. Following is
+the output of "dmsetup table" command.
+
+Fri Sep  4 18:02:01 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 0 0 0 0 0 0
+ioband1: 0 37768752 ioband 1 -1 0 0 0 0 0 0
+
+Fri Sep  4 18:02:08 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 2031 32 250280 0 0 0
+ioband1: 0 37768752 ioband 1 -1 1484 0 186544 0 0 0
+
+Fri Sep  4 18:02:12 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 3541 64 437192 0 0 0
+ioband1: 0 37768752 ioband 1 -1 2802 0 352728 0 0 0
+
+Fri Sep  4 18:02:16 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 5200 87 644144 0 0 0
+ioband1: 0 37768752 ioband 1 -1 4003 0 504296 0 0 0
+
+Fri Sep  4 18:02:20 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 7632 111 948232 0 0 0
+ioband1: 0 37768752 ioband 1 -1 4494 0 566080 0 0 0
+
+This seems to be breaking the isolation between two groups. Now if there
+is one bad group with lots of readers and writers of lower weight, it will
+overwhelm a group of higher weight with 1-2 readers running or some random
+readers running etc.
+
+If there are lots of readers running in a group and then a small file
+reader comes in a different group of higher prio, it will not get any
+fairness and latency of file read will be very high. But one would expect
+that groups will provide isolation and latency of small file reader will
+not increase with number of readers in a low prio group.
+
+I also ran your test of doing heavy IO in two groups. This time I am
+running 4 dd threads in both the ioband devices. Following is the snapshot
+of "dmsetup table" output.
+
+Fri Sep  4 17:45:27 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 0 0 0 0 0 0
+ioband1: 0 37768752 ioband 1 -1 0 0 0 0 0 0
+
+Fri Sep  4 17:45:29 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 41 0 4184 0 0 0
+ioband1: 0 37768752 ioband 1 -1 173 0 20096 0 0 0
+
+Fri Sep  4 17:45:37 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 1605 23 197976 0 0 0
+ioband1: 0 37768752 ioband 1 -1 4640 1 583168 0 0 0
+
+Fri Sep  4 17:45:45 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 3650 47 453488 0 0 0
+ioband1: 0 37768752 ioband 1 -1 8572 1 1079144 0 0 0
+
+Fri Sep  4 17:45:51 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 5111 68 635696 0 0 0
+ioband1: 0 37768752 ioband 1 -1 11587 1 1459544 0 0 0
+
+Fri Sep  4 17:45:53 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 5698 73 709272 0 0 0
+ioband1: 0 37768752 ioband 1 -1 12503 1 1575112 0 0 0
+
+Fri Sep  4 17:45:57 EDT 2009
+ioband2: 0 40355280 ioband 1 -1 6790 87 845808 0 0 0
+ioband1: 0 37768752 ioband 1 -1 14395 2 1813680 0 0 0
+
+Note, it took me more than 20 seconds (since I started the threds) to
+reach close to desired fairness level. That's too long a duration. Again
+random readers or small file readers are compeltely out of picture for
+any kind of fairness or are not protected at all with dm-ioband
+controller.
+
+I think there are serious issues with the notion of fairness and what kind of
+isolation dm-ioband provide between groups and it should be looked into.
+
+Thanks
+Vivek
