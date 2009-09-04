@@ -1,68 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756961AbZIDPbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbZIDPbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756961AbZIDPbb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 11:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756923AbZIDPba
+	id S1757000AbZIDPbl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 11:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756991AbZIDPbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 11:31:30 -0400
-Received: from cinke.fazekas.hu ([195.199.244.225]:47389 "EHLO
-	cinke.fazekas.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756927AbZIDPba (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 11:31:30 -0400
-Date: Fri, 4 Sep 2009 17:31:31 +0200 (CEST)
-From: Marton Balint <cus@fazekas.hu>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Peter Zijlstra <peterz@infradead.org>, Andreas Mohr <andi@lisas.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CPU scheduler weirdness?
-In-Reply-To: <20090904124054.GA9490@elte.hu>
-Message-ID: <alpine.LNX.2.00.0909041724210.11404@cinke.fazekas.hu>
-References: <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu> <1250683834.7583.360.camel@twins> <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu> <1250707331.7154.1.camel@laptop> <alpine.LNX.2.00.0908192125180.4364@cinke.fazekas.hu>
- <20090820105645.GA23635@elte.hu> <alpine.LNX.2.00.0908201814270.12548@cinke.fazekas.hu> <alpine.LNX.2.00.0908282240480.32738@cinke.fazekas.hu> <alpine.LNX.2.00.0909032350580.20701@cinke.fazekas.hu> <1252053631.7564.2.camel@twins>
- <20090904124054.GA9490@elte.hu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 4 Sep 2009 11:31:40 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:54668 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756985AbZIDPbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 11:31:38 -0400
+Date: Fri, 4 Sep 2009 10:31:35 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "David P. Quigley" <dpquigl@tycho.nsa.gov>
+Cc: sds@tycho.nsa.gov, jmorris@namei.org, casey@schaufler-ca.com,
+       gregkh@suse.de, ebiederm@xmission.com, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org
+Subject: Re: [PATCH 1/3] VFS: Factor out part of vfs_setxattr so it can be
+	called from the SELinux hook for inode_setsecctx.
+Message-ID: <20090904153135.GA15342@us.ibm.com>
+References: <1252002358-6612-1-git-send-email-dpquigl@tycho.nsa.gov> <1252002358-6612-2-git-send-email-dpquigl@tycho.nsa.gov>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252002358-6612-2-git-send-email-dpquigl@tycho.nsa.gov>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting David P. Quigley (dpquigl@tycho.nsa.gov):
+> This factors out the part of the vfs_setxattr function that performs the
+> setting of the xattr and its notification. This is needed so the SELinux
+> implementation of inode_setsecctx can handle the setting of the xattr while
+> maintaining the proper separation of layers.
+> 
+> Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
 
-On Fri, 4 Sep 2009, Ingo Molnar wrote:
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
->
-> * Peter Zijlstra <peterz@infradead.org> wrote:
->
->> On Thu, 2009-09-03 at 23:57 +0200, Marton Balint wrote:
->>>> sched: fine-tune SD_MC_INIT:
->>>> 14800984706bf6936bbec5187f736e928be5c218
->>>>
->>>> If I add again the removed SD_BALANCE_NEWIDLE to flags, then everything works
->>>> as expected. So what would be the correct fix for this bug? Revert the patch?
->>>> Or just add SD_BALANCE_NEWIDLE to flags?
->>>
->>>
->>> Ingo, Peter, could any of you guys have a look at the commit
->>> that caused this bug? Is it OK to revert it? Or a fix somewhere
->>> else is necessary? I'm pushing this because I hope that this bug
->>> will get fixed in the upcoming stable kernel...
->>
->> I'm fine with re-adding SD_BALANCE_IDLE and SD_WAKE_IDLE on
->> SMT/MC/CPU levels.
->>
->> Ingo?
->
-> Ok, agreed. I have re-benchmarked a couple of key workload and it
-> seems like a good change, on top of your load-balancer fixes.
->
-> Marton, could you please double check the latest -tip tree:
->
->  http://people.redhat.com/mingo/tip.git/README
->
-> Does it resolve the problem?
-
-Yes it does, thanks.
-
-Regards,
-   Marton
+> ---
+>  fs/xattr.c            |   55 +++++++++++++++++++++++++++++++++++++-----------
+>  include/linux/xattr.h |    1 +
+>  2 files changed, 43 insertions(+), 13 deletions(-)
+> 
+> diff --git a/fs/xattr.c b/fs/xattr.c
+> index 1c3d0af..6d4f6d3 100644
+> --- a/fs/xattr.c
+> +++ b/fs/xattr.c
+> @@ -66,22 +66,28 @@ xattr_permission(struct inode *inode, const char *name, int mask)
+>  	return inode_permission(inode, mask);
+>  }
+> 
+> -int
+> -vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+> -		size_t size, int flags)
+> +/**
+> + *  __vfs_setxattr_noperm - perform setxattr operation without performing
+> + *  permission checks.
+> + *
+> + *  @dentry - object to perform setxattr on
+> + *  @name - xattr name to set
+> + *  @value - value to set @name to
+> + *  @size - size of @value
+> + *  @flags - flags to pass into filesystem operations
+> + *
+> + *  returns the result of the internal setxattr or setsecurity operations.
+> + *
+> + *  This function requires the caller to lock the inode's i_mutex before it
+> + *  is executed. It also assumes that the caller will make the appropriate
+> + *  permission checks.
+> + */
+> +int __vfs_setxattr_noperm(struct dentry *dentry, const char *name,
+> +		const void *value, size_t size, int flags)
+>  {
+>  	struct inode *inode = dentry->d_inode;
+> -	int error;
+> -
+> -	error = xattr_permission(inode, name, MAY_WRITE);
+> -	if (error)
+> -		return error;
+> +	int error = -EOPNOTSUPP;
+> 
+> -	mutex_lock(&inode->i_mutex);
+> -	error = security_inode_setxattr(dentry, name, value, size, flags);
+> -	if (error)
+> -		goto out;
+> -	error = -EOPNOTSUPP;
+>  	if (inode->i_op->setxattr) {
+>  		error = inode->i_op->setxattr(dentry, name, value, size, flags);
+>  		if (!error) {
+> @@ -97,6 +103,29 @@ vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+>  		if (!error)
+>  			fsnotify_xattr(dentry);
+>  	}
+> +
+> +	return error;
+> +}
+> +
+> +
+> +int
+> +vfs_setxattr(struct dentry *dentry, const char *name, const void *value,
+> +		size_t size, int flags)
+> +{
+> +	struct inode *inode = dentry->d_inode;
+> +	int error;
+> +
+> +	error = xattr_permission(inode, name, MAY_WRITE);
+> +	if (error)
+> +		return error;
+> +
+> +	mutex_lock(&inode->i_mutex);
+> +	error = security_inode_setxattr(dentry, name, value, size, flags);
+> +	if (error)
+> +		goto out;
+> +
+> +	error = __vfs_setxattr_noperm(dentry, name, value, size, flags);
+> +
+>  out:
+>  	mutex_unlock(&inode->i_mutex);
+>  	return error;
+> diff --git a/include/linux/xattr.h b/include/linux/xattr.h
+> index d131e35..5c84af8 100644
+> --- a/include/linux/xattr.h
+> +++ b/include/linux/xattr.h
+> @@ -49,6 +49,7 @@ struct xattr_handler {
+>  ssize_t xattr_getsecurity(struct inode *, const char *, void *, size_t);
+>  ssize_t vfs_getxattr(struct dentry *, const char *, void *, size_t);
+>  ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
+> +int __vfs_setxattr_noperm(struct dentry *, const char *, const void *, size_t, int);
+>  int vfs_setxattr(struct dentry *, const char *, const void *, size_t, int);
+>  int vfs_removexattr(struct dentry *, const char *);
+> 
+> -- 
+> 1.5.6.6
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
