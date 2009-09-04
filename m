@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933865AbZIDS4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756903AbZIDPet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933865AbZIDS4r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 14:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933827AbZIDS4q
+	id S1756903AbZIDPet (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 11:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbZIDPes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 14:56:46 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:37349 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933788AbZIDS4o (ORCPT
+	Fri, 4 Sep 2009 11:34:48 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:49628 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754903AbZIDPes (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 14:56:44 -0400
-Date: Fri, 4 Sep 2009 11:33:26 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-In-Reply-To: <20090903220300.GN6761@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.10.0909041130030.9781@V090114053VZO-1>
-References: <4A9F1620.2080105@gmail.com> <84144f020909022331x2b275aa5n428f88670e0ae8bc@mail.gmail.com> <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1>
- <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <20090903174435.GF6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909031736340.24199@V090114053VZO-1> <20090903220300.GN6761@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 4 Sep 2009 11:34:48 -0400
+Date: Fri, 4 Sep 2009 17:34:50 +0200
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: avictor.za@gmail.com, linux-kernel@vger.kernel.org,
+       Nicolas Ferre <nicolas.ferre@atmel.com>
+Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Subject: Re: [PATCH] Add poll_get_char and poll_put_char uart_ops to
+ atmel_serial.
+Message-ID: <20090904153450.GH18963@pc-ras4041.res.insa>
+References: <1246352745-31323-1-git-send-email-albin.tonnerre@free-electrons.com>
+ <20090727162312.35c2f9d4@hskinnemoen-d830>
+ <20090727151900.GB4052@pc-ras4041.res.insa>
+ <20090728180941.04441c00@hskinnemoen-d830>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090728180941.04441c00@hskinnemoen-d830>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Sep 2009, Paul E. McKenney wrote:
+On Tue, Jul 28, 2009 at 06:09:41PM +0200, Haavard Skinnemoen wrote :
+> Albin Tonnerre wrote:
+> > This patch allows using KGDB over the console with the atmel_serial
+> > driver.
+> > 
+> > Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+> 
+> Acked-by: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
 
-> > You need to ensure that no objects are in use before destroying a slab. In
-> > case of DESTROY_BY_RCU you must ensure that there are no potential
-> > readers. So use a suitable rcu barrier or something else like a
-> > synchronize_rcu...
->
-> If by "you must ensure" you mean "kmem_cache_destroy must ensure", then
-> we are in complete agreement.  Otherwise, not a chance.
+Nicolas, Andrew: Any news on this?
 
-Well then we are going down to a crappy interface and mixing rcu with slab
-semantics. More bugs to follow in the future.
-
-> If by "must ensure that no objects are in use", you mean "must have
-> no further references to them", then we are in agreement.  And in my
-> scenario above, it is not the -user- who later references the memory,
-> but rather the slab code itself.
-
-The slab code itself is not referencing the later memory with my patch. It
-can only be the user.
-
-> Put the rcu_barrier() in kmem_cache_free().  Please.
-
-Guess we are doing this ... Sigh. Are you going to add support other rcu
-versions to slab as well as time permits and as the need arises? Should we
-add you as a maintainer? ;-)
-
-
-
+Regards,
+-- 
+Albin Tonnerre, Free Electrons
+Kernel, drivers and embedded Linux development,
+consulting, training and support.
+http://free-electrons.com
