@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZIDGwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932683AbZIDG6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756663AbZIDGwc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbZIDGwb
+	id S932683AbZIDG6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZIDG6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:52:31 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48710 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbZIDGwa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:52:30 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Fri, 4 Sep 2009 15:50:29 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [mmotm][experimental][PATCH] coalescing charge
-Message-Id: <20090904155029.ef544d5f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
-References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
-	<20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
-	<20090904142143.15ffcb53.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Sep 2009 02:58:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48005 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755695AbZIDG6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:58:37 -0400
+Message-Id: <20090904065142.114706411@nick.local0.net>
+User-Agent: quilt/0.46_cvs20080326-19.1
+Date: Fri, 04 Sep 2009 16:51:41 +1000
+From: npiggin@suse.de
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 00/33] my current vfs scalability patch queue
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Sep 2009 15:40:50 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+Hi,
 
-> On Fri, 4 Sep 2009 14:26:54 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Fri, 4 Sep 2009 14:21:43 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > > On Fri, 4 Sep 2009 14:11:57 +0900
-> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > 
-> > > > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > > > It looks basically good. I'll do some tests with all patches applied.
-> > > > > > 
-> > > > > thanks.
-> > > > > 
-> > > > it seems that these patches make rmdir stall again...
-> > > > This batched charge patch seems not to be the (only) suspect, though.
-> > > > 
-> > > Ouch, no probelm with the latest mmotm ? I think this charge-uncharge-offload
-> > > patch set doesn't use css_set()/get()...
-> > > Hm, softlimit related parts ?
-> > > 
-> hmm, these patches(including softlimit cleanup) seems not to be guilt.
-> Current(I'm using mmotm-2009-08-27-16-51) mmotm seems to be broken about memcg's rmdir.
-> 
-> I must admit I've not tested mmotm for several months because I have been working
-> on stabilizing mainline for a long time...
-> 
-> > Ah, one more question. What memory.usage_in_bytes shows in that case ?
-> > If not zero, charge/uncharge coalescing is guilty.
-> > 
-> usage_in_bytes is 0.
-> I've confirmed by crash command that the mem_cgroup has extra ref counts.
-> 
-> I'll dig more..
-> 
-Ok, then, I and you see different problem...
-Hmm..css refcnt leak. I'll dig, too. I hope we can catch it before sneaking
-into mainline.
+Had a bit of time to work on my vfs scalability patches. Since last time: made
+some bugfixes, scaled mntget/mntput with per-cpu counter and vfsmount brlock,
+and worked on inode cache scalability. This last one is the most interesting...
+with my last posting I had got as far as breaking the locks into constituent
+parts, but they remained mostly global locks.
 
-Thanks,
--Kame
+- I have now made per-bucket hash lock like the dcache (it still needs to be
+  made into bitlocks to avoid any bloat, but using spinlocks for now helps eg
+  with lockdep).
 
-> 
-> Thanks,
-> Daisuke Nishimura.
-> 
+- Made the inode unused lru list into a lazy list like the dcache. This reduces
+  acquisitions of the lru/writeback list lock.
+
+- Made inode rcu freed. This can enable further optimisations. But it is quite
+  a big change on its own worth noting.
+
+- RCU freed inode enables the sb_inode_list_lock to be avoided in list walkers,
+  and therefore allows it to nest within i_lock. This significantly simplifies
+  the locking and reduces acquisitions of sb_inode_list_lock.
+
+Some remaining obvious issues:
+
+- Not all filesystems are completely audited, especially when it comes to
+  looking at inode/dentry callbacks now done with locks lifted.
+
+- Global dcache_lru lock. This can be made per-zone which will improve
+  scalability and enable more efficient targetted reclaim. Needs some of
+  my old per-zone reclaim shrinker patches.
+
+- inode sb list lock is limiting global rate of inode creation, inode wb
+  list lock is limiting global rate of inode dirtying and writeback.
+
+- Inode writeback list lock tied with inode lru list lock (they use the same
+  list head). Could turn them into 2 locks. Then the lru lock can be made
+  per-zone. The writeback lock I will wait on Jens' writeback work.
+
+- sb_inode_list_lock can be made per-sb. This is a reasonable step, but not
+  good for single-sb scalability. Could perhaps add some per-cpu magazines or
+  laziness to reduce some of this locking. Most walkers of this list are
+  slowpaths, so it could be split into percpu lists or something.
+
+- inode lru lock could also be made per-zone.
+
+- dentries and inodes are now rcu freed, some (most?) nested trylock loops
+  could be removed in favour of taking the correct lock order and then
+  re-checking that things haven't changed.
+
+The reason I have had to go on with more changes to locking rather than trying
+to get things merged is because it has been difficult to show improvements in
+some cases, like for example in the inode cache lock breaking, it first
+resulted in actually more global locks for different things so scalability
+could be worse in some cases when multiple global locks need to be taken.
+
+But it is now getting to the point where I will need to get some agreement with
+the approach.
+
 
