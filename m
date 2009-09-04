@@ -1,48 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757068AbZIDQPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932605AbZIDQPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757068AbZIDQPj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757019AbZIDQPj
+	id S932605AbZIDQPK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755426AbZIDQPK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:15:39 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46784 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756185AbZIDQPi (ORCPT
+	Fri, 4 Sep 2009 12:15:10 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:44331 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757054AbZIDQPJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:15:38 -0400
-Message-ID: <4AA13C9D.2000401@zytor.com>
-Date: Fri, 04 Sep 2009 09:13:17 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 4 Sep 2009 12:15:09 -0400
+Date: Fri, 4 Sep 2009 17:15:07 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] VT: Add a boot option to disable cursor on boot
+Message-ID: <20090904161507.GA24697@srcf.ucam.org>
+References: <1252079289-5383-1-git-send-email-mjg@redhat.com> <20090904180302.6561fabf@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Tejun Heo <tj@kernel.org>, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       jeremy.fitzhardinge@citrix.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
- is cache aligned
-References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <4AA080A0.7010804@kernel.org> <4AA08283.5020306@kernel.org> <4AA08B09.50503@zytor.com> <4AA08DD3.5010509@kernel.org> <4AA08ED0.4050206@zytor.com> <4AA0A05B.5010806@kernel.org> <4AA13A8C.2080709@goop.org>
-In-Reply-To: <4AA13A8C.2080709@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904180302.6561fabf@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/04/2009 09:04 AM, Jeremy Fitzhardinge wrote:
-> 
-> Ideally we'd like to get rid of the constant offset too.  If we could
-> change it to %[fg]s:__gcc_stack_canary_offset on both 32-bit and 64-bit,
-> it would give us a lot more flexibility.  __gcc_stack_canary_offset
-> could be weakly defined to 20/40 for backwards compatibility, but we
-> could override it to point to a normal percpu variable.
-> 
+On Fri, Sep 04, 2009 at 06:03:02PM +0100, Alan Cox wrote:
 
-Yes, although that definitely means starting the gcc pipeline from scratch.
+> Seems odd to me - why can't the splash screen app in initrd just issue
+> the call to turn off the cursor - or is this splash screen coming from
+> something else ?
 
-	-hpa
+The kernel unconditionally enables the cursor before any userspace has 
+run, even if we've turned it off in the bootloader. That's the window 
+I'm trying to close.
+
+> - If the splash screen is kernel based then the splash screen module
+>   needs to be able to ask the vt driver itself
+> - If not then the user space can use ioctls like everyone else (see
+>   setterm)
+
+(see above)
+
+> - It should be implemented without adding an extra condition to a pile of
+>   ifs (or the condition mess at least become a single cursor_visible_p())
+
+It doesn't add or alter any conditionals in its current form?
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Matthew Garrett | mjg59@srcf.ucam.org
