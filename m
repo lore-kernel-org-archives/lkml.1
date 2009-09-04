@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933043AbZIDHGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756668AbZIDHTM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933043AbZIDHGx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933177AbZIDHGt
+	id S1756668AbZIDHTM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:19:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756595AbZIDHTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:06:49 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59037 "EHLO mx2.mail.elte.hu"
+	Fri, 4 Sep 2009 03:19:12 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38952 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932994AbZIDHGq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 03:06:46 -0400
-Date: Fri, 4 Sep 2009 09:06:33 +0200
+	id S1755647AbZIDHTK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 03:19:10 -0400
+Date: Fri, 4 Sep 2009 09:19:05 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: David Miller <davem@davemloft.net>, rostedt@goodmis.org,
-       nhorman@tuxdriver.com, fweisbec@gmail.com, yjwei@cn.fujitsu.com,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH resend] tracing/events: convert NAPI's tracepoint via
-	TRACE_EVENT
-Message-ID: <20090904070633.GF29829@elte.hu>
-References: <4A9B6AA7.5020508@cn.fujitsu.com> <20090831084922.GB25811@elte.hu> <alpine.DEB.2.00.0908311407060.13931@gandalf.stny.rr.com> <20090901.182645.153420711.davem@davemloft.net> <4A9DE293.6050703@cn.fujitsu.com>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [RFC][PATCH 0/8] load-balancing and cpu_power -v2
+Message-ID: <20090904071905.GI29829@elte.hu>
+References: <20090901083431.748830771@chello.nl> <20090903121045.GK7216@alberich.amd.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A9DE293.6050703@cn.fujitsu.com>
+In-Reply-To: <20090903121045.GK7216@alberich.amd.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -36,49 +34,38 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Xiao Guangrong <xiaoguangrong@cn.fujitsu.com> wrote:
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-> David Miller wrote:
+> On Tue, Sep 01, 2009 at 10:34:31AM +0200, Peter Zijlstra wrote:
+> > A more complete version, one that compiles and mostly works on the
+> > simple tests to which it was subjected.
+> > 
+> > It still lacks integration with APERF/MPERF because that stuff was
+> > hidding in some acpi driver instead of placed in arch code for general
+> > consumption.. will fix.
+> > 
+> > Also, SD_SHARE_CPUPOWER seems redundant in the face of sd->level ==
+> > SD_LV_SIBLING, should we remove the SD_flag or depricate the level?
+> > 
+> > Anyway, have at it, poke holes and report issues.
 > 
-> > This patch can't be split up, so I'm wondering how you suggest to
-> > handle this patch given that you have declared that define_trace.h
-> > changes aren't to go through the subsystem tree?
-> > 
-> > If we do the define_trace.h change only, we break the build
-> > (lack of macro defined for the trace).
-> > 
-> > If we do only the other parts of his patch, we get a duplicate
-> > definition.
-> > 
-> 
-> This patch cooperate with my previous patch to solve the include 
-> file dependencies problem. So, we do better put those two patches 
-> together. (both in -tip tree or/add both in network tree)
+> Tested it (to a certain extend).
+> Found no performance degradation (on 1P, 2P, 4P systems). (One could
+> think performance might slightly degrade due to more frequent
+> __cpu_power updates).
 
-I would not mind a duplicate commit here. Whoever merges later in 
-the merge window will resolve the (easy) conflict.
+Ok, thanks for doing that, it's really useful - this saved me a day 
+of testing and allows me to accelerate these patches and try to 
+queue them up in tip:sched today.
 
-David, you definitely dont want to pull the full tracing tree into 
-the networking tree. It wouldnt cause technical problems in 
-linux-next (Git sorts out such merges just fine and both trees are 
-well tested) but it creates an unwanted merge window dependency: if 
-the tracing tree's push to Linus is delayed for whatever reason the 
-networking tree is delayed too. That's not really good.
+Note, we have regressed the load-balancer in recently but its 
+inherent complexity makes it pretty hard to fix. We dont max out 
+kbuild performance for example - i see this in my distcc builds. 
+Would be nice to sort that out too for .32, on top of Peter's 
+power-balancing series.
 
-It's also not good on a conceptual angle - it makes it very 
-difficult for Linus to reject any of the trees, due to the mingling.
-
-A second variant would be that we could create a mini-topic (.31-rc8 
-based) in -tip with just the skb bits and the header file changes 
-and once we've tested it we could push it and you could pull that 
-(small, -git based) tree into the networking tree.
-
-A third variant would be that you could do such a mini-topic branch 
-yourself in the networking tree and we could pull that into the 
-tracing tree.
-
-All of these variants work fine with Steve's and my workload, it's 
-up to you and Neil - you are driving the changes so do whatever is 
-most convenient to you.
+We've got the sched-domains setup simplification suggestions from 
+Peter as well, those could be done separately (but are important as 
+well, to express more complex hierarchies like Magny-Cours).
 
 	Ingo
