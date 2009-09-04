@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbZIDNvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932195AbZIDOBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834AbZIDNvc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 09:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756778AbZIDNva
+	id S932195AbZIDOBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 10:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756791AbZIDOBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 09:51:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51128 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755949AbZIDNva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 09:51:30 -0400
-Subject: Re: [PATCH 0/3] tracing - adding common method for reading/parsing
- user input
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: jolsa@redhat.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <1252071073-27134-1-git-send-email-jolsa@redhat.com>
-References: <1252071073-27134-1-git-send-email-jolsa@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Fri, 04 Sep 2009 09:51:29 -0400
-Message-Id: <1252072289.799.3.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Sep 2009 10:01:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:9841 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755931AbZIDOBT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 10:01:19 -0400
+Date: Fri, 4 Sep 2009 15:55:39 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       Tom Horsley <tom.horsley@att.net>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 1/1] exec: do not sleep in TASK_TRACED under
+	->cred_guard_mutex
+Message-ID: <20090904135539.GA10400@redhat.com>
+References: <20090904124604.GA6248@redhat.com> <20090903160514.GA23646@redhat.com> <29983.1252053547@redhat.com> <32320.1252071552@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <32320.1252071552@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/04, David Howells wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > (Argh. Sorry David, the changelog should have mentioned
+> >  tracehook_report_exec() more explicitely).
+> >
+> > So, David, do you agree with this patch? Do you think it can go to 2.6.31 ?
+>
+> Okay, add my Acked-by.
 
-On Fri, 2009-09-04 at 15:31 +0200, jolsa@redhat.com wrote:
-> As 3 different places for 4 user input files were using the same way
-> of reading and parsing user's input, I made one common routine to be
-> used. 
-> 
-> The mentioned files are:
-> 	set_graph_function
-> 	set_event
-> 	set_ftrace_filter
-> 	set_ftrace_notrace
-> 
+Great.
 
-Hi Jolsa,
+> Can I recommend you mention tracehook_report_exec() in
+> the changelog and then push it to Linus again?
 
-I'll take a look at these. I know there's duplicate code that I even
-wrote a "generic" handler for others to use, that basically got a NAK
-from Andrew Morton. I probably could have put it into the ftrace code
-directly, but never did so.
+OK, will do.
 
-It will be interesting to look at your patches, especially when those
-functions all do things quite differently, with the exception of
-set_ftrace_filter and set_ftrace_notrace.
+I just sent v2 (the same patch + a bit of comments). Please tell me
+if you disagree with the comments.
 
-Note, all your patches have [PATCH 0/3] in the subject. I think I can
-figure out the order, but you will want to fix that on your next
-version.
-
-Currently I'm bug fixing other areas that need a bit of attention. I'll
-add this to my queue.
-
-Thanks,
-
--- Steve
-
+Oleg.
 
