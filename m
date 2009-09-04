@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933623AbZIDJtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933605AbZIDJtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933623AbZIDJtb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 05:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933572AbZIDJtS
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S933605AbZIDJtS (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 4 Sep 2009 05:49:18 -0400
-Received: from tx2ehsobe003.messaging.microsoft.com ([65.55.88.13]:55707 "EHLO
-	TX2EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933563AbZIDJtK (ORCPT
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933565AbZIDJtQ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 4 Sep 2009 05:49:16 -0400
+Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:55467 "EHLO
+	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933572AbZIDJtL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 05:49:10 -0400
-X-SpamScore: 1
-X-BigFish: VPS1(zzzz1202hzzz32i203h61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KPFXXQ-01-4V8-02
+	Fri, 4 Sep 2009 05:49:11 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i203h43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KPFXXR-01-4V9-02
 X-M-MSG: 
 From: Joerg Roedel <joerg.roedel@amd.com>
 To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
 CC: Joerg Roedel <joerg.roedel@amd.com>
-Subject: [PATCH 2/4] x86/amd-iommu: replace "AMD IOMMU" by "AMD-Vi"
-Date: Fri, 4 Sep 2009 11:47:25 +0200
-Message-ID: <1252057647-32322-3-git-send-email-joerg.roedel@amd.com>
+Subject: [PATCH 3/4] x86/amd-iommu: Remove redundant 'IOMMU' string
+Date: Fri, 4 Sep 2009 11:47:26 +0200
+Message-ID: <1252057647-32322-4-git-send-email-joerg.roedel@amd.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1252057647-32322-1-git-send-email-joerg.roedel@amd.com>
 References: <1252057647-32322-1-git-send-email-joerg.roedel@amd.com>
@@ -31,93 +31,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch replaces the "AMD IOMMU" printk strings with the
-official name for the hardware: "AMD-Vi".
+The 'IOMMU: ' prefix is not necessary because the
+DUMP_printk macro already prints its own prefix.
 
 Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/x86/include/asm/amd_iommu_types.h |    2 +-
- arch/x86/kernel/amd_iommu.c            |    2 +-
- arch/x86/kernel/amd_iommu_init.c       |   12 ++++++------
- 3 files changed, 8 insertions(+), 8 deletions(-)
+ arch/x86/kernel/amd_iommu_init.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/amd_iommu_types.h b/arch/x86/include/asm/amd_iommu_types.h
-index 0c878ca..106e130 100644
---- a/arch/x86/include/asm/amd_iommu_types.h
-+++ b/arch/x86/include/asm/amd_iommu_types.h
-@@ -198,7 +198,7 @@ extern bool amd_iommu_dump;
- #define DUMP_printk(format, arg...)					\
- 	do {								\
- 		if (amd_iommu_dump)						\
--			printk(KERN_INFO "AMD IOMMU: " format, ## arg);	\
-+			printk(KERN_INFO "AMD-Vi: " format, ## arg);	\
- 	} while(0);
- 
- /*
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 70fdef5..3e62d78 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -141,7 +141,7 @@ static void iommu_print_event(void *__evt)
- 	int flags = (event[1] >> EVENT_FLAGS_SHIFT) & EVENT_FLAGS_MASK;
- 	u64 address = (u64)(((u64)event[3]) << 32) | event[2];
- 
--	printk(KERN_ERR "AMD IOMMU: Event logged [");
-+	printk(KERN_ERR "AMD-Vi: Event logged [");
- 
- 	switch (type) {
- 	case EVENT_TYPE_ILL_DEV:
 diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-index c1b17e9..169958a 100644
+index 169958a..264b3ef 100644
 --- a/arch/x86/kernel/amd_iommu_init.c
 +++ b/arch/x86/kernel/amd_iommu_init.c
-@@ -252,7 +252,7 @@ static void __init iommu_feature_disable(struct amd_iommu *iommu, u8 bit)
- /* Function to enable the hardware */
- static void iommu_enable(struct amd_iommu *iommu)
- {
--	printk(KERN_INFO "AMD IOMMU: Enabling IOMMU at %s cap 0x%hx\n",
-+	printk(KERN_INFO "AMD-Vi: Enabling IOMMU at %s cap 0x%hx\n",
- 	       dev_name(&iommu->dev->dev), iommu->cap_ptr);
+@@ -858,7 +858,7 @@ static int __init init_iommu_all(struct acpi_table_header *table)
+ 		switch (*p) {
+ 		case ACPI_IVHD_TYPE:
  
- 	iommu_feature_enable(iommu, CONTROL_IOMMU_EN);
-@@ -902,7 +902,7 @@ static int __init iommu_setup_msi(struct amd_iommu *iommu)
- 
- 	r = request_irq(iommu->dev->irq, amd_iommu_int_handler,
- 			IRQF_SAMPLE_RANDOM,
--			"AMD IOMMU",
-+			"AMD-Vi",
- 			NULL);
- 
- 	if (r) {
-@@ -1150,7 +1150,7 @@ int __init amd_iommu_init(void)
- 
- 
- 	if (no_iommu) {
--		printk(KERN_INFO "AMD IOMMU disabled by kernel command line\n");
-+		printk(KERN_INFO "AMD-Vi disabled by kernel command line\n");
- 		return 0;
- 	}
- 
-@@ -1248,16 +1248,16 @@ int __init amd_iommu_init(void)
- 
- 	enable_iommus();
- 
--	printk(KERN_INFO "AMD IOMMU: device isolation ");
-+	printk(KERN_INFO "AMD-Vi: device isolation ");
- 	if (amd_iommu_isolate)
- 		printk("enabled\n");
- 	else
- 		printk("disabled\n");
- 
- 	if (amd_iommu_unmap_flush)
--		printk(KERN_INFO "AMD IOMMU: IO/TLB flush on unmap enabled\n");
-+		printk(KERN_INFO "AMD-Vi: IO/TLB flush on unmap enabled\n");
- 	else
--		printk(KERN_INFO "AMD IOMMU: Lazy IO/TLB flushing enabled\n");
-+		printk(KERN_INFO "AMD-Vi: Lazy IO/TLB flushing enabled\n");
- 
- out:
- 	return ret;
+-			DUMP_printk("IOMMU: device: %02x:%02x.%01x cap: %04x "
++			DUMP_printk("device: %02x:%02x.%01x cap: %04x "
+ 				    "seg: %d flags: %01x info %04x\n",
+ 				    PCI_BUS(h->devid), PCI_SLOT(h->devid),
+ 				    PCI_FUNC(h->devid), h->cap_ptr,
 -- 
 1.6.3.3
 
