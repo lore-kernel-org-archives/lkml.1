@@ -1,86 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZIDQHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932492AbZIDQKG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZIDQHj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbZIDQHi
+	id S932492AbZIDQKG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:10:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756847AbZIDQKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:07:38 -0400
-Received: from claw.goop.org ([74.207.240.146]:35533 "EHLO claw.goop.org"
+	Fri, 4 Sep 2009 12:10:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57664 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757046AbZIDQHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:07:38 -0400
-Message-ID: <4AA13B4B.7020101@goop.org>
-Date: Fri, 04 Sep 2009 09:07:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S1753226AbZIDQKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 12:10:03 -0400
+Message-ID: <4AA13BBE.5060501@kernel.org>
+Date: Sat, 05 Sep 2009 01:09:34 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-To: Bastian Blank <waldi@debian.org>, linux-kernel@vger.kernel.org,
-       xen-devel@lists.xensource.com, 544145@bugs.debian.org,
-       Keir Fraser <keir.fraser@eu.citrix.com>
-Subject: Re: 32bit binaries on x86_64/Xen segfaults in syscall-vdso
-References: <20090830181637.GA7155@wavehammer.waldi.eu.org> <4AA02C57.30106@goop.org> <20090903220252.GA19309@wavehammer.waldi.eu.org> <4AA03DE8.40706@goop.org> <20090903223603.GA19945@wavehammer.waldi.eu.org>
-In-Reply-To: <20090903223603.GA19945@wavehammer.waldi.eu.org>
-X-Enigmail-Version: 0.97a
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: "H. Peter Anvin" <hpa@zytor.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, jeremy.fitzhardinge@citrix.com,
+       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
+ is cache aligned
+References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <4AA080A0.7010804@kernel.org> <4AA08283.5020306@kernel.org> <4AA08B09.50503@zytor.com> <4AA08DD3.5010509@kernel.org> <4AA08ED0.4050206@zytor.com> <4AA0A05B.5010806@kernel.org> <4AA13A8C.2080709@goop.org>
+In-Reply-To: <4AA13A8C.2080709@goop.org>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 04 Sep 2009 16:09:37 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/03/09 15:36, Bastian Blank wrote:
-> This function looks weird. It tries to restores the user code segment.
-> But the documentation from AMD explicitely stat that the CS and SS are
-> restored from the STAR register.
+Jeremy Fitzhardinge wrote:
+> On 09/03/09 22:06, Tejun Heo wrote:
+>>>> Heh... here's a naive and hopeful plan.  How about we beg gcc
+>>>> developers to allow different segment register and offset in newer gcc
+>>>> versions and then use the same one when building with the new gcc?
+>>>> This should solve the i386 problem too.  It would be the best as we
+>>>> get to keep the separate segment register from the userland.  Too
+>>>> hopeful?
+>>>>       
+>>> I think it's possible to set the register in more recent gcc.  Doing the
+>>> sane thing and having a symbol for an offset is probably worse.
+>>>     
+>> I was thinking about altering the build process so that we can use sed
+>> to substitute %gs:40 with %fs:40 while compiling.  If it's already
+>> possible to override the register in more recent gcc, no need to go
+>> into that horror.
+>>   
+> 
+> Ideally we'd like to get rid of the constant offset too.  If we could
+> change it to %[fg]s:__gcc_stack_canary_offset on both 32-bit and 64-bit,
+> it would give us a lot more flexibility.  __gcc_stack_canary_offset
+> could be weakly defined to 20/40 for backwards compatibility, but we
+> could override it to point to a normal percpu variable.
 
-And STAR is always set with:
+Yeap, being able to do that will also allow using single segment
+register on i386 too.  But given that the only overhead we're talking
+here is a few more cycles when entering and leving the kernel, I don't
+think we need to do anything drastic to optimize this.  I think
+converting when gcc provides the feature should be enough.
 
-    wrmsrl(MSR_STAR,  ((u64)__USER32_CS)<<48  | ((u64)__KERNEL_CS)<<32);
+Thanks.
 
-so when using sysret to return to 32-bit, it:
-
-    The CS selector value is set to MSR IA32_STAR[63:48]. The SS is set
-    to IA32_STAR[63:48] + 8.
-
-so CS is __USER32_CS and SS is __USER32_DS.
-
-The code for xen_sysret32 is:
-
-ENTRY(xen_sysret32)
-	/*
-	 * We're already on the usermode stack at this point, but
-	 * still with the kernel gs, so we can easily switch back
-	 */
-	movq %rsp, PER_CPU_VAR(old_rsp)
-	movq PER_CPU_VAR(kernel_stack), %rsp
-
-	pushq $__USER32_DS
-	pushq PER_CPU_VAR(old_rsp)
-	pushq %r11
-	pushq $__USER32_CS
-	pushq %rcx
-
-	pushq $VGCF_in_syscall
-1:	jmp hypercall_iret
-
-The iret frame is:
-
- 	ss
- 	rsp
- 	rflags
- 	cs
- 	rip		<-- rsp
-
-so this constructs a frame of:
-
-	__USER32_DS
-	user_esp
-	user_eflags
-	__USER32_CS
-	user_eip	<-- kernel rsp
-
-and then it does the iret hypercall.
-
-But for some reason that's triggering a failsafe callback, which invokes
-a GP.
-
-    J
+-- 
+tejun
