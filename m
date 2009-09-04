@@ -1,69 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZIDMk7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZIDMwK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbZIDMk7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 08:40:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756773AbZIDMk6
+	id S1756822AbZIDMwK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 08:52:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756538AbZIDMwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 08:40:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35284 "EHLO mx3.mail.elte.hu"
+	Fri, 4 Sep 2009 08:52:10 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:60917 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756098AbZIDMk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 08:40:57 -0400
-Date: Fri, 4 Sep 2009 14:40:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Marton Balint <cus@fazekas.hu>, Andreas Mohr <andi@lisas.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: CPU scheduler weirdness?
-Message-ID: <20090904124054.GA9490@elte.hu>
-References: <alpine.LNX.2.00.0908191353100.19120@cinke.fazekas.hu> <1250683834.7583.360.camel@twins> <alpine.LNX.2.00.0908191428300.20409@cinke.fazekas.hu> <1250707331.7154.1.camel@laptop> <alpine.LNX.2.00.0908192125180.4364@cinke.fazekas.hu> <20090820105645.GA23635@elte.hu> <alpine.LNX.2.00.0908201814270.12548@cinke.fazekas.hu> <alpine.LNX.2.00.0908282240480.32738@cinke.fazekas.hu> <alpine.LNX.2.00.0909032350580.20701@cinke.fazekas.hu> <1252053631.7564.2.camel@twins>
+	id S1756773AbZIDMwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 08:52:09 -0400
+Date: Fri, 4 Sep 2009 14:46:04 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, Roland McGrath <roland@redhat.com>,
+       Tom Horsley <tom.horsley@att.net>, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 1/1] exec: do not sleep in TASK_TRACED under
+	->cred_guard_mutex
+Message-ID: <20090904124604.GA6248@redhat.com>
+References: <20090903160514.GA23646@redhat.com> <29983.1252053547@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1252053631.7564.2.camel@twins>
+In-Reply-To: <29983.1252053547@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/04, David Howells wrote:
+>
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > But I strongly believe we should blame another patch
+> >
+> > 	"CRED: Make execve() take advantage of copy-on-write credentials"
+> > 	a6f76f23d297f70e2a6b3ec607f7aeeea9e37e8d
+> >
+> > The tracee must not sleep in TASK_TRACED holding this mutex (it was named
+> > cred_exec_mutex). Even if we remove ->cred_guard_mutex from mm_for_maps()
+> > and proc_pid_attr_write(), another task doing PTRACE_ATTACH should not
+> > hang until it is killed or the tracee resumes.
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+(Argh. Sorry David, the changelog should have mentioned tracehook_report_exec()
+ more explicitely).
 
-> On Thu, 2009-09-03 at 23:57 +0200, Marton Balint wrote:
-> > > sched: fine-tune SD_MC_INIT:
-> > > 14800984706bf6936bbec5187f736e928be5c218
-> > >
-> > > If I add again the removed SD_BALANCE_NEWIDLE to flags, then everything works 
-> > > as expected. So what would be the correct fix for this bug? Revert the patch? 
-> > > Or just add SD_BALANCE_NEWIDLE to flags?
-> > 
-> > 
-> > Ingo, Peter, could any of you guys have a look at the commit 
-> > that caused this bug? Is it OK to revert it? Or a fix somewhere 
-> > else is necessary? I'm pushing this because I hope that this bug 
-> > will get fixed in the upcoming stable kernel...
-> 
-> I'm fine with re-adding SD_BALANCE_IDLE and SD_WAKE_IDLE on 
-> SMT/MC/CPU levels.
-> 
-> Ingo?
+So, David, do you agree with this patch? Do you think it can go to 2.6.31 ?
 
-Ok, agreed. I have re-benchmarked a couple of key workload and it 
-seems like a good change, on top of your load-balancer fixes.
 
-Marton, could you please double check the latest -tip tree:
+> Btw, should mm_for_maps() use mutex_lock_interruptible()?  There doesn't seem
+> any point making it non-interruptible (except for kill signals) - unless that
+> would muck up seqfile handling.
 
-  http://people.redhat.com/mingo/tip.git/README
+Perhaps, but we should change m_start() first, it should check IS_ERR() instead
+of mm != NULL. Afaics, vfs_read()->seq_read() path will return ERESTART...
+correctly.
 
-Does it resolve the problem?
+I am not sure would be right though, short reads can confuse user space. And
+this can't solve the problem, this only helps to react to signals.
 
-Thanks,
+Oleg.
 
-	Ingo
