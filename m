@@ -1,128 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933229AbZIDHru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933064AbZIDHty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933229AbZIDHru (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933018AbZIDHrs
+	id S933064AbZIDHty (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbZIDHtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:47:48 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:44527 "EHLO kernel.dk"
+	Fri, 4 Sep 2009 03:49:52 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48716 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933013AbZIDHra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 03:47:30 -0400
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       tytso@mit.edu, akpm@linux-foundation.org, jack@suse.cz,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Date: Fri,  4 Sep 2009 09:46:46 +0200
-Message-Id: <1252050406-22467-9-git-send-email-jens.axboe@oracle.com>
-X-Mailer: git-send-email 1.6.4.1.207.g68ea
-In-Reply-To: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com>
-References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com>
+	id S932973AbZIDHtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 03:49:51 -0400
+Date: Fri, 4 Sep 2009 09:49:38 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Alok Kataria <akataria@vmware.com>, Thomas Gleixner <tglx@linutronix.de>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH: x86] Print the hypervisor returned tsc_khz during boot.
+Message-ID: <20090904074938.GE20598@elte.hu>
+References: <1251076103.29422.32.camel@ank32.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1251076103.29422.32.camel@ank32.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Theodore Ts'o <tytso@mit.edu>
 
-Originally, MAX_WRITEBACK_PAGES was hard-coded to 1024 because of a
-concern of not holding I_SYNC for too long.  (At least, that was the
-comment previously.)  This doesn't make sense now because the only
-time we wait for I_SYNC is if we are calling sync or fsync, and in
-that case we need to write out all of the data anyway.  Previously
-there may have been other code paths that waited on I_SYNC, but not
-any more.
+* Alok Kataria <akataria@vmware.com> wrote:
 
-According to Christoph, the current writeback size is way too small,
-and XFS had a hack that bumped out nr_to_write to four times the value
-sent by the VM to be able to saturate medium-sized RAID arrays.  This
-value was also problematic for ext4 as well, as it caused large files
-to be come interleaved on disk by in 8 megabyte chunks (we bumped up
-the nr_to_write by a factor of two).
+> On an AMD-64 system the processor frequency that is printed during 
+> system boot, may be different than the tsc frequency that was 
+> returned by the hypervisor, due to value returned from 
+> calibrate_cpu. For debugging timekeeping or other related issues 
+> it might be better to get the tsc_khz value returned by the 
+> hypervisor.
+> 
+> The patch below now prints the tsc frequency that the hypervisor 
+> returned. Please consider for tip.
+> 
+> --
+> Signed-off-by: Alok N Kataria <akataria@vmware.com>
+> 
+> Index: linux-tip-master/arch/x86/kernel/tsc.c
+> ===================================================================
+> --- linux-tip-master.orig/arch/x86/kernel/tsc.c	2009-08-23 17:53:44.000000000 -0700
+> +++ linux-tip-master/arch/x86/kernel/tsc.c	2009-08-23 17:55:08.000000000 -0700
+> @@ -405,7 +405,10 @@ unsigned long native_calibrate_tsc(void)
+>  
+>  	hv_tsc_khz = get_hypervisor_tsc_freq();
+>  	if (hv_tsc_khz) {
+> -		printk(KERN_INFO "TSC: Frequency read from the hypervisor\n");
+> +		printk(KERN_INFO "TSC: Frequency read from the hypervisor : "
+> +				"%lu.%03lu MHz\n",
+> +				(unsigned long) hv_tsc_khz / 1000,
+> +				(unsigned long) hv_tsc_khz % 1000);
+>  		return hv_tsc_khz;
+>  	}
 
-So, in this patch, we make the MAX_WRITEBACK_PAGES a tunable,
-max_writeback_mb, and set it to a default value of 128 megabytes.
+Makes sense. Note, arch/x86/kernel/tsc.c changed recently so this 
+patch does not apply anymore - mind merging it on top of that and 
+re-send it?
 
-http://bugzilla.kernel.org/show_bug.cgi?id=13930
+Thanks,
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- fs/fs-writeback.c         |    9 +--------
- include/linux/writeback.h |    1 +
- kernel/sysctl.c           |    8 ++++++++
- mm/page-writeback.c       |    6 ++++++
- 4 files changed, 16 insertions(+), 8 deletions(-)
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index ce68f60..790d379 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -641,14 +641,7 @@ void writeback_inodes_wbc(struct writeback_control *wbc)
- 	writeback_inodes_wb(&bdi->wb, wbc);
- }
- 
--/*
-- * The maximum number of pages to writeout in a single bdi flush/kupdate
-- * operation.  We do this so we don't hold I_SYNC against an inode for
-- * enormous amounts of time, which would block a userspace task which has
-- * been forced to throttle against that inode.  Also, the code reevaluates
-- * the dirty each time it has written this many pages.
-- */
--#define MAX_WRITEBACK_PAGES     1024
-+#define MAX_WRITEBACK_PAGES	(max_writeback_mb << (20 - PAGE_SHIFT))
- 
- static inline bool over_bground_thresh(void)
- {
-diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-index 78b1e46..fbed759 100644
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -104,6 +104,7 @@ extern int vm_dirty_ratio;
- extern unsigned long vm_dirty_bytes;
- extern unsigned int dirty_writeback_interval;
- extern unsigned int dirty_expire_interval;
-+extern unsigned int max_writeback_mb;
- extern int vm_highmem_is_dirtyable;
- extern int block_dump;
- extern int laptop_mode;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 58be760..315fc30 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1104,6 +1104,14 @@ static struct ctl_table vm_table[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- 	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "max_writeback_mb",
-+		.data		= &max_writeback_mb,
-+		.maxlen		= sizeof(max_writeback_mb),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
- 		.ctl_name	= VM_NR_PDFLUSH_THREADS,
- 		.procname	= "nr_pdflush_threads",
- 		.data		= &nr_pdflush_threads,
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 2c287d9..38fe4e8 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -55,6 +55,12 @@ static inline long sync_writeback_pages(void)
- /* The following parameters are exported via /proc/sys/vm */
- 
- /*
-+ * The maximum amount of memory (in megabytes) to write out in a
-+ * single bdflush/kupdate operation.
-+ */
-+unsigned int max_writeback_mb = 128;
-+
-+/*
-  * Start background writeback (via pdflush) at this percentage
-  */
- int dirty_background_ratio = 10;
--- 
-1.6.4.1.207.g68ea
-
+	Ingo
