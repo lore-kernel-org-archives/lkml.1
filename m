@@ -1,113 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933487AbZIDKGK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbZIDLBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933487AbZIDKGK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 06:06:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933431AbZIDKGJ
+	id S1756577AbZIDLBW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 07:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZIDLBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 06:06:09 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:47220
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933378AbZIDKGI (ORCPT
+	Fri, 4 Sep 2009 07:01:20 -0400
+Received: from bipbip.grupopie.com ([195.23.16.24]:44067 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754200AbZIDLBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 06:06:08 -0400
-X-SpamScore: -12
-X-BigFish: VPS-12(z21eWzzz1202hzzz32i6bh203h43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KPFYPP-03-OJE-01
-Date: Fri, 4 Sep 2009 12:05:06 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: mingo@elte.hu, linux-kernel@vger.kernel.org
-CC: osrc-patches@elbe.amd.com
-Subject: [git pull] AMD-IOMMU (AMD-Vi) updates for 2.6.32
-Message-ID: <20090904100506.GD30765@amd.com>
+	Fri, 4 Sep 2009 07:01:19 -0400
+X-Greylist: delayed 2000 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 07:01:18 EDT
+Message-ID: <4AA0E6A5.4020701@grupopie.com>
+Date: Fri, 04 Sep 2009 11:06:29 +0100
+From: Rui Santos <rsantos@grupopie.com>
+Organization: GrupoPIE, Portugal SA
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
-Organization: Advanced Micro Devices =?iso-8859-1?Q?GmbH?=
-	=?iso-8859-1?Q?=2C_Karl-Hammerschmidt-Str=2E_34=2C_85609_Dornach_bei_M=FC?=
-	=?iso-8859-1?Q?nchen=2C_Gesch=E4ftsf=FChrer=3A_Thomas_M=2E_McCoy=2C_Giuli?=
-	=?iso-8859-1?Q?ano_Meroni=2C_Andrew_Bowd=2C_Sitz=3A_Dornach=2C_Gemeinde_A?=
-	=?iso-8859-1?Q?schheim=2C_Landkreis_M=FCnchen=2C_Registergericht_M=FCnche?=
-	=?iso-8859-1?Q?n=2C?= HRB Nr. 43632
-X-OriginalArrivalTime: 04 Sep 2009 10:05:06.0624 (UTC) FILETIME=[2DB4EC00:01CA2D47]
+To: Roberto De Ioris <roberto@unbit.it>
+CC: Linux FB-Devel <linux-fbdev-devel@lists.sourceforge.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] udlfb 2.6.31-rc8-git2: Add support for new resolutions
+Content-Type: multipart/mixed;
+ boundary="------------010909050706040902020805"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+This is a multi-part message in MIME format.
+--------------010909050706040902020805
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-The following changes since commit 37d0892c5a94e208cf863e3b7bac014edee4346d:
-  Ian Kent (1):
-        autofs4 - fix missed case when changing to use struct path
+Add new resolutions to udlfb driver: 800x600, 1360x768, 1366x768,
+1600x1200 and 1920x1080.
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/joro/linux-2.6-iommu.git amd-iommu/2.6.32
-
-Joerg Roedel (37):
-      x86/amd-iommu: Dump fault entry on DTE error
-      x86/amd-iommu: Dump illegal command on ILLEGAL_COMMAND_ERROR
-      x86/amd-iommu: Introduce function for iommu-local domain flush
-      x86/amd-iommu: Remove some merge helper code
-      x86/amd-iommu: replace "AMD IOMMU" by "AMD-Vi"
-      x86/amd-iommu: Remove redundant 'IOMMU' string
-      x86/amd-iommu: fix broken check in amd_iommu_flush_all_devices
-      x86/amd-iommu: Add function to flush all DTEs on one IOMMU
-      x86/amd-iommu: Add reset function for command buffers
-      x86/amd-iommu: Reset command buffer on ILLEGAL_COMMAND_ERROR
-      x86/amd-iommu: Panic if IOMMU command buffer reset fails
-      x86/amd-iommu: Reset command buffer if wait loop fails
-      x86/amd-iommu: Make fetch_pte aware of dynamic mapping levels
-      x86/amd-iommu: Use fetch_pte in iommu_unmap_page
-      x86/amd-iommu: Use fetch_pte in amd_iommu_iova_to_phys
-      x86/amd-iommu: Add a gneric version of amd_iommu_flush_all_devices
-      x86/amd-iommu: Introduce set_dte_entry function
-      x86/amd-iommu: Flush domains if address space size was increased
-      x86/amd-iommu: Introduce increase_address_space function
-      x86/amd-iommu: Change alloc_pte to support 64 bit address space
-      x86/amd-iommu: Remove last usages of IOMMU_PTE_L0_INDEX
-      x86/amd-iommu: Remove bus_addr check in iommu_map_page
-      x86/amd-iommu: Use 2-level page tables for dma_ops domains
-      x86/amd-iommu: Remove old page table handling macros
-      x86/amd-iommu: Support higher level PTEs in iommu_page_unmap
-      x86/amd-iommu: Change iommu_map_page to support multiple page sizes
-      x86/dma: Mark iommu_pass_through as __read_mostly
-      x86/amd-iommu: Add core functions for pd allocation/freeing
-      x86/amd-iommu: Add passthrough mode initialization functions
-      x86/amd-iommu: Fix device table write order
-      x86/amd-iommu: Align locking between attach_device and detach_device
-      x86/amd-iommu: Make sure a device is assigned in passthrough mode
-      x86/amd-iommu: Don't detach device from pt domain on driver unbind
-      x86/amd-iommu: Initialize passthrough mode when requested
-      Merge branches 'gart/fixes', 'amd-iommu/fixes+cleanups' and 'amd-iommu/fault-handling' into amd-iommu/2.6.32
-      Merge branch 'amd-iommu/passthrough' into amd-iommu/2.6.32
-      Merge branch 'amd-iommu/pagetable' into amd-iommu/2.6.32
-
-Pavel Vasilyev (1):
-      x86/gart: Do not select AGP for GART_IOMMU
-
- arch/x86/Kconfig                       |    1 -
- arch/x86/include/asm/amd_iommu.h       |    1 +
- arch/x86/include/asm/amd_iommu_types.h |   50 ++--
- arch/x86/kernel/amd_iommu.c            |  489 +++++++++++++++++++++++---------
- arch/x86/kernel/amd_iommu_init.c       |   42 ++-
- arch/x86/kernel/pci-dma.c              |    9 +-
- 6 files changed, 429 insertions(+), 163 deletions(-)
-
-These changes include updates and improvements in the page table code,
-in fault handling and they implement iommu=pt mode for AMD-Vi too.
-Last but not least there are also some minor cleanups and fixes for
-AMD-Vi and GART included in this pull-request. All these changes are
-compile-, boot- and load-tested.
-
-I had to do three merge commits for this pull request because the
-amd-iommu/passthrough and amd-iommu/pagetable branches touch the same
-code in some parts and the octopus merge of these branches failed. I had
-to merge these two branches seperatly.
-Please consider to pull.
-
-Joerg
+Signed-off-by: Rui Santos <rsantos@grupopie.com>
 
 
+--------------010909050706040902020805
+Content-Type: text/x-patch;
+ name="udlfb-2.6.31-rc8-git2.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="udlfb-2.6.31-rc8-git2.patch"
+
+diff -upNr linux-2.6.31-rc8-git2.old/drivers/staging/udlfb/udlfb.h linux-2.6.31-rc8-git2.new/drivers/staging/udlfb/udlfb.h
+--- linux-2.6.31-rc8-git2-pie.old/drivers/staging/udlfb/udlfb.h	2009-09-04 10:44:11.000000000 +0100
++++ linux-2.6.31-rc8-git2-pie.new/drivers/staging/udlfb/udlfb.h	2009-09-02 12:16:46.000000000 +0100
+@@ -1,7 +1,7 @@
+ #ifndef UDLFB_H
+ #define UDLFB_H
+ 
+-#define MAX_VMODES	4
++#define MAX_VMODES	9
+ #define FB_BPP		16
+ 
+ #define STD_CHANNEL	"\x57\xCD\xDC\xA7\x1C\x88\x5E\x15"	\
+@@ -98,31 +98,76 @@ static void dlfb_init_modes(void)
+ 	memcpy(&dlfb_video_modes[0].unknown3, "\x01\x02\xC8\x19", 4);
+ 
+ 	dlfb_video_modes[1].col = 0;
+-	memcpy(&dlfb_video_modes[1].hclock, "\x36\x18\xD5\x10", 4);
+-	memcpy(&dlfb_video_modes[1].vclock, "\x60\xA9\x7B\x33", 4);
+-	memcpy(&dlfb_video_modes[1].unknown1, "\xA1\x2B\x27\x32\xFF\xFF", 6);
+-	dlfb_video_modes[1].xres = 1024;
+-	memcpy(&dlfb_video_modes[1].unknown2, "\xD9\x9A\xFF\xCA\xFF\xFF", 6);
+-	dlfb_video_modes[1].yres = 768;
+-	memcpy(&dlfb_video_modes[1].unknown3, "\x04\x03\xC8\x32", 4);
++	memcpy(&dlfb_video_modes[1].hclock, "\x20\x3C\x7A\xC9", 4);
++	memcpy(&dlfb_video_modes[1].vclock, "\x93\x60\xC8\xC7", 4);
++	memcpy(&dlfb_video_modes[1].unknown1, "\x70\x53\xFF\xFF\x21\x27", 6);
++	dlfb_video_modes[1].xres = 800;
++	memcpy(&dlfb_video_modes[1].unknown2, "\x91\x8F\xFF\xFF\xFF\xF2", 6);
++	dlfb_video_modes[1].yres = 600;
++	memcpy(&dlfb_video_modes[1].unknown3, "\x01\x02\x40\x1F", 4);
+ 
+ 	dlfb_video_modes[2].col = 0;
+-	memcpy(&dlfb_video_modes[2].hclock, "\x98\xF8\x0D\x57", 4);
+-	memcpy(&dlfb_video_modes[2].vclock, "\x2A\x55\x4D\x54", 4);
+-	memcpy(&dlfb_video_modes[2].unknown1, "\xCA\x0D\xFF\xFF\x94\x43", 6);
+-	dlfb_video_modes[2].xres = 1280;
+-	memcpy(&dlfb_video_modes[2].unknown2, "\x9A\xA8\xFF\xFF\xFF\xF9", 6);
+-	dlfb_video_modes[2].yres = 1024;
+-	memcpy(&dlfb_video_modes[2].unknown3, "\x04\x02\x60\x54", 4);
++	memcpy(&dlfb_video_modes[2].hclock, "\x36\x18\xD5\x10", 4);
++	memcpy(&dlfb_video_modes[2].vclock, "\x60\xA9\x7B\x33", 4);
++	memcpy(&dlfb_video_modes[2].unknown1, "\xA1\x2B\x27\x32\xFF\xFF", 6);
++	dlfb_video_modes[2].xres = 1024;
++	memcpy(&dlfb_video_modes[2].unknown2, "\xD9\x9A\xFF\xCA\xFF\xFF", 6);
++	dlfb_video_modes[2].yres = 768;
++	memcpy(&dlfb_video_modes[2].unknown3, "\x04\x03\xC8\x32", 4);
+ 
+ 	dlfb_video_modes[3].col = 0;
+-	memcpy(&dlfb_video_modes[3].hclock, "\x42\x24\x38\x36", 4);
+-	memcpy(&dlfb_video_modes[3].vclock, "\xC1\x52\xD9\x29", 4);
+-	memcpy(&dlfb_video_modes[3].unknown1, "\xEA\xB8\x32\x60\xFF\xFF", 6);
+-	dlfb_video_modes[3].xres = 1400;
+-	memcpy(&dlfb_video_modes[3].unknown2, "\xC9\x4E\xFF\xFF\xFF\xF2", 6);
+-	dlfb_video_modes[3].yres = 1050;
+-	memcpy(&dlfb_video_modes[3].unknown3, "\x04\x02\x1E\x5F", 4);
++	memcpy(&dlfb_video_modes[3].hclock, "\x98\xF8\x0D\x57", 4);
++	memcpy(&dlfb_video_modes[3].vclock, "\x2A\x55\x4D\x54", 4);
++	memcpy(&dlfb_video_modes[3].unknown1, "\xCA\x0D\xFF\xFF\x94\x43", 6);
++	dlfb_video_modes[3].xres = 1280;
++	memcpy(&dlfb_video_modes[3].unknown2, "\x9A\xA8\xFF\xFF\xFF\xF9", 6);
++	dlfb_video_modes[3].yres = 1024;
++	memcpy(&dlfb_video_modes[3].unknown3, "\x04\x02\x60\x54", 4);
++
++	dlfb_video_modes[4].col = 0;
++	memcpy(&dlfb_video_modes[4].hclock, "\xF8\x42\x9E\x64", 4);
++	memcpy(&dlfb_video_modes[4].vclock, "\xF2\x6C\x28\x0F", 4);
++	memcpy(&dlfb_video_modes[4].unknown1, "\xE8\x61\xFF\xFF\x94\x43", 6);
++	dlfb_video_modes[4].xres = 1360;
++	memcpy(&dlfb_video_modes[4].unknown2, "\x40\x7B\xFF\xFF\xFF\xCA", 6);
++	dlfb_video_modes[4].yres = 768;
++	memcpy(&dlfb_video_modes[4].unknown3, "\x04\x02\xCC\x42", 4);
++
++	dlfb_video_modes[5].col = 0;
++	memcpy(&dlfb_video_modes[5].hclock, "\x19\x1E\x1F\xB0", 4);
++	memcpy(&dlfb_video_modes[5].vclock, "\x93\x60\x40\x7B", 4);
++	memcpy(&dlfb_video_modes[5].unknown1, "\x36\xE8\x27\x32\xFF\xFF", 6);
++	dlfb_video_modes[5].xres = 1366;
++	memcpy(&dlfb_video_modes[5].unknown2, "\x03\xD9\xFF\xFF\xFC\xA7", 6);
++	dlfb_video_modes[5].yres = 768;
++	memcpy(&dlfb_video_modes[5].unknown3, "\x04\x02\x9A\x42", 4);
++
++	dlfb_video_modes[6].col = 0;
++	memcpy(&dlfb_video_modes[6].hclock, "\x42\x24\x38\x36", 4);
++	memcpy(&dlfb_video_modes[6].vclock, "\xC1\x52\xD9\x29", 4);
++	memcpy(&dlfb_video_modes[6].unknown1, "\xEA\xB8\x32\x60\xFF\xFF", 6);
++	dlfb_video_modes[6].xres = 1400;
++	memcpy(&dlfb_video_modes[6].unknown2, "\xC9\x4E\xFF\xFF\xFF\xF2", 6);
++	dlfb_video_modes[6].yres = 1050;
++	memcpy(&dlfb_video_modes[6].unknown3, "\x04\x02\x1E\x5F", 4);
++
++	dlfb_video_modes[7].col = 0;
++	memcpy(&dlfb_video_modes[7].hclock, "\xCF\xA4\x3C\x4E", 4);
++	memcpy(&dlfb_video_modes[7].vclock, "\x55\x73\x71\x2B", 4);
++	memcpy(&dlfb_video_modes[7].unknown1, "\x71\x52\xFF\xFF\xEE\xCA", 6);
++	dlfb_video_modes[7].xres = 1600;
++	memcpy(&dlfb_video_modes[7].unknown2, "\xE2\x57\xFF\xFF\xFF\xF9", 6);
++	dlfb_video_modes[7].yres = 1200;
++	memcpy(&dlfb_video_modes[7].unknown3, "\x04\x02\x90\x7E", 4);
++
++	dlfb_video_modes[8].col = 0;
++	memcpy(&dlfb_video_modes[8].hclock, "\x73\xA6\x28\xB3", 4);
++	memcpy(&dlfb_video_modes[8].vclock, "\x54\xAA\x41\x5D", 4);
++	memcpy(&dlfb_video_modes[8].unknown1, "\x0D\x9F\x32\x60\xFF\xFF", 6);
++	dlfb_video_modes[8].xres = 1920;
++	memcpy(&dlfb_video_modes[8].unknown2, "\x0A\xEA\xFF\xF9\xFF\xFF", 6);
++	dlfb_video_modes[8].yres = 1080;
++	memcpy(&dlfb_video_modes[8].unknown3, "\x04\x02\xE0\x7C", 4);
+ }
+ 
+ static char *dlfb_set_register(char *bufptr, uint8_t reg, uint8_t val)
+
+--------------010909050706040902020805--
