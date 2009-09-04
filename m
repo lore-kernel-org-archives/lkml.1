@@ -1,106 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932954AbZIDGqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756663AbZIDGwc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932954AbZIDGqZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932924AbZIDGqN
+	id S1756663AbZIDGwc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:52:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbZIDGwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:46:13 -0400
-Received: from mga01.intel.com ([192.55.52.88]:41977 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932823AbZIDGqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:46:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,330,1249282800"; 
-   d="scan'208";a="490450617"
-Subject: [PATCH 18/18] I/OAT: Convert to PCI_VDEVICE()
-To: linux-kernel@vger.kernel.org
-From: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-raid@vger.kernel.org, Roland Dreier <rolandd@cisco.com>,
-       maciej.sosnowski@intel.com
-Date: Thu, 03 Sep 2009 23:46:06 -0700
-Message-ID: <20090904064606.7141.40657.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
-References: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGit/0.14.3.289.g7daff
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Fri, 4 Sep 2009 02:52:31 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:48710 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbZIDGwa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:52:30 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 4 Sep 2009 15:50:29 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [mmotm][experimental][PATCH] coalescing charge
+Message-Id: <20090904155029.ef544d5f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+	<20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
+	<20090904142143.15ffcb53.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Dreier <rdreier@cisco.com>
+On Fri, 4 Sep 2009 15:40:50 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-Trivial cleanup to make the PCI ID table easier to read.
+> On Fri, 4 Sep 2009 14:26:54 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > On Fri, 4 Sep 2009 14:21:43 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> > > On Fri, 4 Sep 2009 14:11:57 +0900
+> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > 
+> > > > > > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > > > It looks basically good. I'll do some tests with all patches applied.
+> > > > > > 
+> > > > > thanks.
+> > > > > 
+> > > > it seems that these patches make rmdir stall again...
+> > > > This batched charge patch seems not to be the (only) suspect, though.
+> > > > 
+> > > Ouch, no probelm with the latest mmotm ? I think this charge-uncharge-offload
+> > > patch set doesn't use css_set()/get()...
+> > > Hm, softlimit related parts ?
+> > > 
+> hmm, these patches(including softlimit cleanup) seems not to be guilt.
+> Current(I'm using mmotm-2009-08-27-16-51) mmotm seems to be broken about memcg's rmdir.
+> 
+> I must admit I've not tested mmotm for several months because I have been working
+> on stabilizing mainline for a long time...
+> 
+> > Ah, one more question. What memory.usage_in_bytes shows in that case ?
+> > If not zero, charge/uncharge coalescing is guilty.
+> > 
+> usage_in_bytes is 0.
+> I've confirmed by crash command that the mem_cgroup has extra ref counts.
+> 
+> I'll dig more..
+> 
+Ok, then, I and you see different problem...
+Hmm..css refcnt leak. I'll dig, too. I hope we can catch it before sneaking
+into mainline.
 
-[dan.j.williams@intel.com: extended to v3.2 devices]
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
- drivers/dma/ioat/pci.c |   46 +++++++++++++++++++++++-----------------------
- 1 files changed, 23 insertions(+), 23 deletions(-)
+Thanks,
+-Kame
 
-diff --git a/drivers/dma/ioat/pci.c b/drivers/dma/ioat/pci.c
-index 8d96533..c788fa2 100644
---- a/drivers/dma/ioat/pci.c
-+++ b/drivers/dma/ioat/pci.c
-@@ -41,35 +41,35 @@ MODULE_AUTHOR("Intel Corporation");
- 
- static struct pci_device_id ioat_pci_tbl[] = {
- 	/* I/OAT v1 platforms */
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB)  },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_SCNB) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_UNISYS, PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_CNB)  },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_SCNB) },
-+	{ PCI_VDEVICE(UNISYS, PCI_DEVICE_ID_UNISYS_DMA_DIRECTOR) },
- 
- 	/* I/OAT v2 platforms */
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_SNB) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_SNB) },
- 
- 	/* I/OAT v3 platforms */
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG0) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG1) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG2) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG3) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG4) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG5) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG6) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG7) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG0) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG1) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG2) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG3) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG4) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG5) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG6) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_TBG7) },
- 
- 	/* I/OAT v3.2 platforms */
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF0) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF1) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF2) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF3) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF4) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF5) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF6) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF7) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF8) },
--	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF9) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF0) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF1) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF2) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF3) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF4) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF5) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF6) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF7) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF8) },
-+	{ PCI_VDEVICE(INTEL, PCI_DEVICE_ID_INTEL_IOAT_JSF9) },
- 
- 	{ 0, }
- };
+> 
+> Thanks,
+> Daisuke Nishimura.
+> 
 
