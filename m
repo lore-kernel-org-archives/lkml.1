@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933938AbZIDT2G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbZIDTeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933938AbZIDT2G (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 15:28:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933904AbZIDT2F
+	id S1757263AbZIDTeU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 15:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757256AbZIDTeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 15:28:05 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:46203 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933886AbZIDT2D (ORCPT
+	Fri, 4 Sep 2009 15:34:18 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:49138 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757253AbZIDTeR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 15:28:03 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
-       <linux-fsdevel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <tj@kernel.org>
-Subject: [PATCH 4/4] pci: Remove bogus check of proc dir entry usage.
-References: <m1fxb2wm0z.fsf@fess.ebiederm.org>
-	<m1bplqwlzr.fsf@fess.ebiederm.org>
-	<m17hwewlxr.fsf_-_@fess.ebiederm.org>
-	<m13a72wlwm.fsf_-_@fess.ebiederm.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 04 Sep 2009 12:28:03 -0700
-In-Reply-To: <m13a72wlwm.fsf_-_@fess.ebiederm.org> (Eric W. Biederman's message of "Fri\, 04 Sep 2009 12\:27\:21 -0700")
-Message-ID: <m1ws4ev7b0.fsf_-_@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 4 Sep 2009 15:34:17 -0400
+X-Greylist: delayed 358 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 15:34:16 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type;
+        b=RSVbUAAcsvDXlXbqTZYMY2dqsOUCgE8xQsmecEbYZ11yn/yYqrWvr8LqLNiHmHktIS
+         C+GhD+ewdql7lcUN3tDVjaZUJD2ZolU/Rwg74RhyZQMNfsRd1xVgaBZ+d4PN31ytnclm
+         U3/mkUkWnfyDKbT8r5/xMRGruoo/ryu975lUE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 76.21.114.89
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, tj@kernel.org, gregkh@suse.de, adobriyan@gmail.com, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Exit with error (see exim mainlog)
+In-Reply-To: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+Date: Fri, 4 Sep 2009 16:28:17 -0300
+Message-ID: <d970ff420909041228h3638e840r34c0c0e79f178e55@mail.gmail.com>
+Subject: Re: MPC85xx External/Internal Interrupts
+From: Alemao <xcarandiru@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've read some posts in the list, and about:
 
-This check prevents /proc/bus/pci/*/* from being removed when
-pci devices are hot unpluged and someone happens to have it open.
-This is not a problem because proc handles this case properly.
+irq_of_parse_and_map()
+irq_create_map()
 
-Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
----
- drivers/pci/proc.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+But Im still trying to understand MPC85xx TSEC1 dts.
 
-diff --git a/drivers/pci/proc.c b/drivers/pci/proc.c
-index 593bb84..afd2a6a 100644
---- a/drivers/pci/proc.c
-+++ b/drivers/pci/proc.c
-@@ -430,8 +430,6 @@ int pci_proc_detach_device(struct pci_dev *dev)
- 	struct proc_dir_entry *e;
- 
- 	if ((e = dev->procent)) {
--		if (atomic_read(&e->count) > 1)
--			return -EBUSY;
- 		remove_proc_entry(e->name, dev->bus->procdir);
- 		dev->procent = NULL;
- 	}
--- 
-1.6.2.5
+Gianfar driver is using request_irq(), and request_irq() uses virtual
+irq, right?
 
+Thats why in dts all irqs for TSEC1 are "offseted" of 16?
+
+Manual  |  DTS
+----------------------
+13         29
+14         30
+18         34
+
+And about external IRQs, MPC8555RM doesnt have IDs for them, what
+should I use to request IRQ0 using irq_create_map()??
+
+In MPC83xx all interrupts have IDs, including IRQ0, IRQ1...
+That make things much more clear.
+
+Thanks in advance,
+
+--
+Alemao
