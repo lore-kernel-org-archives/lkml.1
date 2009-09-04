@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933554AbZIDJtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933536AbZIDJ46@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933554AbZIDJtI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 05:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933342AbZIDJtH
+	id S933536AbZIDJ46 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 05:56:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933431AbZIDJ45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 05:49:07 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:59177
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S933375AbZIDJtF (ORCPT
+	Fri, 4 Sep 2009 05:56:57 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56875
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933374AbZIDJ45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 05:49:05 -0400
-X-SpamScore: 3
-X-BigFish: VPS3(zzzz1202hzzz32i203h43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KPFXXM-02-2HF-02
-X-M-MSG: 
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: iommu@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-CC: Joerg Roedel <joerg.roedel@amd.com>, stable@kernel.org
-Subject: [PATCH 4/4] x86/amd-iommu: fix broken check in amd_iommu_flush_all_devices
-Date: Fri, 4 Sep 2009 11:47:27 +0200
-Message-ID: <1252057647-32322-5-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1252057647-32322-1-git-send-email-joerg.roedel@amd.com>
-References: <1252057647-32322-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 04 Sep 2009 09:47:29.0468 (UTC) FILETIME=[B797B7C0:01CA2D44]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Fri, 4 Sep 2009 05:56:57 -0400
+Date: Fri, 04 Sep 2009 02:57:12 -0700 (PDT)
+Message-Id: <20090904.025712.157403360.davem@davemloft.net>
+To: jens.axboe@oracle.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       fweisbec@gmail.com
+Subject: Re: [PATCH] basic perf support for sparc
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090904063419.GO18599@kernel.dk>
+References: <20090903.220906.44384937.davem@davemloft.net>
+	<20090904052005.GN18599@kernel.dk>
+	<20090904063419.GO18599@kernel.dk>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The amd_iommu_pd_table is indexed by protection domain
-number and not by device id. So this check is broken and
-must be removed.
+From: Jens Axboe <jens.axboe@oracle.com>
+Date: Fri, 4 Sep 2009 08:34:19 +0200
 
-Cc: stable@kernel.org
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- arch/x86/kernel/amd_iommu.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+> It seems I had a left-over arch/sparc/include/asm/perf_counter.h from
+> earlier experiments that was never checked in, so that is why it worked
+> for me. include/linux/sched.h does:
 
-diff --git a/arch/x86/kernel/amd_iommu.c b/arch/x86/kernel/amd_iommu.c
-index 3e62d78..009d722 100644
---- a/arch/x86/kernel/amd_iommu.c
-+++ b/arch/x86/kernel/amd_iommu.c
-@@ -479,8 +479,6 @@ void amd_iommu_flush_all_devices(void)
- 	int i;
- 
- 	for (i = 0; i <= amd_iommu_last_bdf; ++i) {
--		if (amd_iommu_pd_table[i] == NULL)
--			continue;
- 
- 		iommu = amd_iommu_rlookup_table[i];
- 		if (!iommu)
--- 
-1.6.3.3
+That explains everything :-)
 
+>     sparc: add basic support for 'perf'
+>     
+>     This wires up the perf_counter_open() syscall so that basic
+>     software support for perf is working.
+>     
+>     Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
+Applied to sparc-next-2.6, thanks!
+
+As time allows I'll work on hw counter support.
