@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934389AbZIDWYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934404AbZIDW0n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934389AbZIDWYn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 18:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934024AbZIDWYn
+	id S934404AbZIDW0n (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 18:26:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934368AbZIDW0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 18:24:43 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:33400 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933979AbZIDWYm (ORCPT
+	Fri, 4 Sep 2009 18:26:41 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:56016 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934292AbZIDW0k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 18:24:42 -0400
-Subject: Re: [PATCH] cfg80211: clear cfg80211_inform_bss() from kmemleak 
-	reports
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
-In-Reply-To: <43e72e890909041458u505ce89tf38743dd6305bf7b@mail.gmail.com>
-References: <1251958266-10692-1-git-send-email-lrodriguez@atheros.com>
-	 <1251962791.3336.3.camel@johannes.local>
-	 <43e72e890909031113r6010519br3b81d15cc331ba85@mail.gmail.com>
-	 <1252001837.9336.2.camel@johannes.local> <20090903204319.GC3701@mosca>
-	 <1252040671.9336.10.camel@johannes.local>
-	 <1252052757.26413.9.camel@pc1117.cambridge.arm.com>
-	 <43e72e890909041421m243bbea6i95c26ab21dc8732d@mail.gmail.com>
-	 <43e72e890909041458u505ce89tf38743dd6305bf7b@mail.gmail.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 04 Sep 2009 23:24:27 +0100
-Message-Id: <1252103067.21380.1.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Fri, 4 Sep 2009 18:26:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=kswji3gwElTxwJekvk/VkG3tXWq6Meghrco2MlK+SkC5OIwNLV9Ys7Ma+HWTRvfM6w
+         sQx/jkChmNMwhDDokTLsrXjvDHR3llkw81+LM/Sz7YJ4qsqFc6QPmt6KIT7ar9PFl7sS
+         0W+bYA2DqmvjKP0ROjljrKvCZwLcgTmufKdpU=
+Message-ID: <4AA19420.5060503@gmail.com>
+Date: Sat, 05 Sep 2009 00:26:40 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.5 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: linux-kernel@vger.kernel.org, mm-commits@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-nfs@vger.kernel.org
+Subject: Re: mount.nfs oops [was: mmotm 2009-09-03-16-35 uploaded]
+References: <200909032340.n83Ne6E6004708@imap1.linux-foundation.org>	 <4AA17E74.8060100@gmail.com> <1252102337.5274.4.camel@heimdal.trondhjem.org>
+In-Reply-To: <1252102337.5274.4.camel@heimdal.trondhjem.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Sep 2009 22:24:28.0223 (UTC) FILETIME=[7747BCF0:01CA2DAE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-04 at 14:58 -0700, Luis R. Rodriguez wrote:
-> On Fri, Sep 4, 2009 at 2:21 PM, Luis R. Rodriguez<lrodriguez@atheros.com> wrote:
+On 09/05/2009 12:12 AM, Trond Myklebust wrote:
+> On Fri, 2009-09-04 at 22:54 +0200, Jiri Slaby wrote:
+>> On 09/04/2009 01:40 AM, akpm@linux-foundation.org wrote:
+>>> The mm-of-the-moment snapshot 2009-09-03-16-35 has been uploaded to
+>>
+>> Hi, I got an oops while mounting an nfs:
+>> BUG: unable to handle kernel NULL pointer dereference at 000000000000001d
+>> IP: [<ffffffffa003924f>] rpcauth_lookupcred+0x4f/0xc0 [sunrpc]
 > 
-> > BTW I should not I got this kmemleak report after using the clear
-> > command by painting objects black. I'll test it now with your
-> > suggested changes.
+> This looks like the auth->au_ops->lookup_cred() call failing due to a
+> faulty pointer, which should be impossible.
 > 
-> So I pulled your git://linux-arm.org/linux-2.6 master into my tree and
-> didn't even need a 'clear' command now, the output of
-> /sys/kernel/debug/kmemleak is empty :), so I suspect you have quite a
-> few changes which should help avoid getting false positives.
-> 
-> Will these changes make it for 2.6.32?
+> I note that you had a kernel taint due to a warning before this Oops
+> happened. Any details?
 
-The kmemleak branch is planned for the upcoming merging window. I don't
-think you need to merge the master branch as it has a lot of
-arm-specific code.
+Ah, I didn't notice. It's:
+Pid: 3423, comm: pm-suspend Not tainted 2.6.31-rc8-mm1_64 #762
+Call Trace:
+ [<ffffffff8103fc48>] warn_slowpath_common+0x78/0xb0
+ [<ffffffff8103fc8f>] warn_slowpath_null+0xf/0x20
+ [<ffffffff8106950d>] __generic_smp_call_function_interrupt+0xfd/0x110
+ [<ffffffff8106956a>] hotplug_cfd+0x4a/0xa0
+ [<ffffffff81434e47>] notifier_call_chain+0x47/0x90
+ [<ffffffff8105b311>] raw_notifier_call_chain+0x11/0x20
+ [<ffffffff8141ece0>] _cpu_down+0x150/0x2d0
+ [<ffffffff8104169b>] disable_nonboot_cpus+0xab/0x130
+ [<ffffffff8106ee3d>] suspend_devices_and_enter+0xad/0x1a0
+ [<ffffffff8106f00b>] enter_state+0xdb/0xf0
+ [<ffffffff8106e741>] state_store+0x91/0x100
+ [<ffffffff8116c157>] kobj_attr_store+0x17/0x20
+ [<ffffffff8111c6a0>] sysfs_write_file+0xe0/0x160
+ [<ffffffff810c3ce8>] vfs_write+0xb8/0x1b0
+ [<ffffffff81434c35>] ? do_page_fault+0x185/0x350
+ [<ffffffff810c434c>] sys_write+0x4c/0x80
+ [<ffffffff8100be2b>] system_call_fastpath+0x16/0x1b
+---[ end trace 73264e95657dec65 ]---
+CPU1 is down
 
--- 
-Catalin
+> Also, were you doing anything special at the time (for instance removing
+> a module)?
 
+Not at all. I just did
+# mount /work
+# grep work /etc/fstab
+XXX.YYY.ZZZ:/work     /work           nfs     defaults,intr   0 0
+
+Thanks.
