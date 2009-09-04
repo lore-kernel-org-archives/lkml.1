@@ -1,108 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbZIDFT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZIDFM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932383AbZIDFT3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 01:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932153AbZIDFT2
+	id S1756611AbZIDFM3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 01:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZIDFM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 01:19:28 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59505 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932120AbZIDFT2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 01:19:28 -0400
-Date: Fri, 4 Sep 2009 14:11:57 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [mmotm][experimental][PATCH] coalescing charge
-Message-Id: <20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
-	<20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 Sep 2009 01:12:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43854 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752384AbZIDFM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 01:12:28 -0400
+Date: Fri, 4 Sep 2009 07:12:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tejun Heo <tj@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       mingo@redhat.com, linux-kernel@vger.kernel.org,
+       jeremy.fitzhardinge@citrix.com, stable@kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
+	is cache aligned
+Message-ID: <20090904051202.GA25714@elte.hu>
+References: <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <4AA080A0.7010804@kernel.org> <4AA08283.5020306@kernel.org> <4AA08B09.50503@zytor.com> <4AA08DD3.5010509@kernel.org> <4AA08ED0.4050206@zytor.com> <4AA0A05B.5010806@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA0A05B.5010806@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A few more comments.
 
-On Fri, 4 Sep 2009 13:18:35 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> On Thu, 3 Sep 2009 14:17:27 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > =
-> > > This is a code for batched charging using percpu cache.
-> > > At charge, memcg charges 64pages and remember it in percpu cache.
-> > > Because it's cache, drain/flushed if necessary.
-> > > 
-> > > This version uses public percpu area , not per-memcg percpu area.
-> > >  2 benefits of public percpu area.
-> > >  1. Sum of stocked charge in the system is limited to # of cpus
-> > >     not to the number of memcg. This shows better synchonization.
-> > >  2. drain code for flush/cpuhotplug is very easy (and quick)
-> > > 
-> > > The most important point of this patch is that we never touch res_counter
-> > > in fast path. The res_counter is system-wide shared counter which is modified
-> > > very frequently. We shouldn't touch it as far as we can for avoid false sharing.
-> > > 
-> > > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > It looks basically good. I'll do some tests with all patches applied.
+* Tejun Heo <tj@kernel.org> wrote:
+
+> H. Peter Anvin wrote:
+> > On 09/03/2009 08:47 PM, Tejun Heo wrote:
+> >> H. Peter Anvin wrote:
+> >>> On 09/03/2009 07:59 PM, Tejun Heo wrote:
+> >>>> Another question.  Other than saving and loading an extra segment
+> >>>> register on kernel entry/exit, whether using the same or different
+> >>>> segment registers doesn't look like would make difference
+> >>>> performance-wise.  If I'm interpreting the wording in the optimization
+> >>>> manual correctly, it means that each non-zero segment based memory
+> >>>> access will be costly regardless of which specific segment register is
+> >>>> in use and there's no way we can merge segment based dereferences for
+> >>>> stackprotector and percpu variables.
+> >>>>
+> >>> It's correct that it doesn't make any difference for access, only for load.
+> >> Heh... here's a naive and hopeful plan.  How about we beg gcc
+> >> developers to allow different segment register and offset in newer gcc
+> >> versions and then use the same one when building with the new gcc?
+> >> This should solve the i386 problem too.  It would be the best as we
+> >> get to keep the separate segment register from the userland.  Too
+> >> hopeful?
 > > 
-> thanks.
+> > I think it's possible to set the register in more recent gcc.  
+> > Doing the sane thing and having a symbol for an offset is 
+> > probably worse.
 > 
-it seems that these patches make rmdir stall again...
-This batched charge patch seems not to be the (only) suspect, though.
+> I was thinking about altering the build process so that we can use 
+> sed to substitute %gs:40 with %fs:40 while compiling.  If it's 
+> already possible to override the register in more recent gcc, no 
+> need to go into that horror.
+> 
+> > I can talk to H.J. Lu about this tomorrow.
+> 
+> Great, please keep us posted.
 
-> > > @@ -1288,23 +1364,25 @@ static int __mem_cgroup_try_charge(struc
-> > >  		return 0;
-> > >  
-> > >  	VM_BUG_ON(css_is_removed(&mem->css));
-> > > +	if (mem_cgroup_is_root(mem))
-> > > +		goto done;
-> > > +	if (consume_stock(mem))
-> > > +		goto charged;
-> > >  
-IMHO, it would be better to check consume_stock() every time in the while loop below,
-because someone might have already refilled the stock while the current context
-sleeps in reclaiming memory.
+Yeah - if then this should definitely be handled in the compiler.
 
-> > >  	while (1) {
-> > >  		int ret = 0;
-> > >  		unsigned long flags = 0;
-> > >  
-> > > -		if (mem_cgroup_is_root(mem))
-> > > -			goto done;
-> > > -		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res);
-> > > +		ret = res_counter_charge(&mem->res, CHARGE_SIZE, &fail_res);
-> > >  		if (likely(!ret)) {
-> > >  			if (!do_swap_account)
-> > >  				break;
-> > > -			ret = res_counter_charge(&mem->memsw, PAGE_SIZE,
-> > > +			ret = res_counter_charge(&mem->memsw, CHARGE_SIZE,
-> > >  							&fail_res);
-> > >  			if (likely(!ret))
-> > >  				break;
-> > >  			/* mem+swap counter fails */
-> > > -			res_counter_uncharge(&mem->res, PAGE_SIZE);
-> > > +			res_counter_uncharge(&mem->res, CHARGE_SIZE);
-> > >  			flags |= MEM_CGROUP_RECLAIM_NOSWAP;
-> > >  			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
-> > >  									memsw);
-How about changing pre-charge size according to the loop count ?
-IMHO, it would be better to disable pre-charge at least in nr_retries==0 case,
-i.e. it is about to causing oom.
-
-
-P.S. I will not be so active next week.
-
-Thanks,
-Daisuke Nishimura.
+	Ingo
