@@ -1,376 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933027AbZIDG7F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933146AbZIDHD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933027AbZIDG7F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:59:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933000AbZIDG67
+	id S933146AbZIDHD7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932307AbZIDG6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:58:59 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56548 "EHLO mx1.suse.de"
+	Fri, 4 Sep 2009 02:58:40 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48007 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756670AbZIDG6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756648AbZIDG6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 02:58:37 -0400
-Message-Id: <20090904065534.636133158@nick.local0.net>
+Message-Id: <20090904065534.807588321@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:51:46 +1000
+Date: Fri, 04 Sep 2009 16:51:47 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 05/33] fs: scale mntget/mntput
+Subject: [patch 06/33] fs: dcache scale hash
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-mntget-scale.patch
+Content-Disposition: inline; filename=fs-dcache-scale-d_hash.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Improve scalability of mntget/mntput by using per-cpu counters protected
-by the reader side of the brlock vfsmount_lock. mnt_mounted keeps track of
-whether the vfsmount is actually attached to the tree so we can shortcut
-expensive checks in mntput.
+Add a new lock, dcache_hash_lock, to protect the dcache hash table from
+concurrent modification. d_hash is also protected by d_lock.
 ---
- fs/libfs.c            |    1 
- fs/namespace.c        |  122 +++++++++++++++++++++++++++++++++++++++++++-------
- fs/pnode.c            |    2 
- include/linux/mount.h |   33 ++++---------
- 4 files changed, 121 insertions(+), 37 deletions(-)
+ fs/dcache.c            |   35 ++++++++++++++++++++++++-----------
+ include/linux/dcache.h |    3 +++
+ 2 files changed, 27 insertions(+), 11 deletions(-)
 
-Index: linux-2.6/fs/namespace.c
+Index: linux-2.6/fs/dcache.c
 ===================================================================
---- linux-2.6.orig/fs/namespace.c
-+++ linux-2.6/fs/namespace.c
-@@ -177,6 +177,49 @@ void mnt_release_group_id(struct vfsmoun
- 	mnt->mnt_group_id = 0;
- }
+--- linux-2.6.orig/fs/dcache.c
++++ linux-2.6/fs/dcache.c
+@@ -34,12 +34,23 @@
+ #include <linux/fs_struct.h>
+ #include "internal.h"
  
-+static inline void add_mnt_count(struct vfsmount *mnt, int n)
-+{
-+#ifdef CONFIG_SMP
-+	(*per_cpu_ptr(mnt->mnt_count, smp_processor_id())) += n;
-+#else
-+	mnt->mnt_count += n;
-+#endif
-+}
-+
-+static inline void inc_mnt_count(struct vfsmount *mnt)
-+{
-+#ifdef CONFIG_SMP
-+	(*per_cpu_ptr(mnt->mnt_count, smp_processor_id()))++;
-+#else
-+	mnt->mnt_count++;
-+#endif
-+}
-+
-+static inline void dec_mnt_count(struct vfsmount *mnt)
-+{
-+#ifdef CONFIG_SMP
-+	(*per_cpu_ptr(mnt->mnt_count, smp_processor_id()))--;
-+#else
-+	mnt->mnt_count--;
-+#endif
-+}
-+
-+unsigned int count_mnt_count(struct vfsmount *mnt)
-+{
-+#ifdef CONFIG_SMP
-+	unsigned int count = 0;
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu) {
-+		count += *per_cpu_ptr(mnt->mnt_count, cpu);
-+	}
-+
-+	return count;
-+#else
-+	return mnt->mnt_count;
-+#endif
-+}
-+
- struct vfsmount *alloc_vfsmnt(const char *name)
- {
- 	struct vfsmount *mnt = kmem_cache_zalloc(mnt_cache, GFP_KERNEL);
-@@ -193,7 +236,13 @@ struct vfsmount *alloc_vfsmnt(const char
- 				goto out_free_id;
++/*
++ * Usage:
++ * dcache_hash_lock protects dcache hash table
++ *
++ * Ordering:
++ * dcache_lock
++ *   dentry->d_lock
++ *     dcache_hash_lock
++ */
+ int sysctl_vfs_cache_pressure __read_mostly = 100;
+ EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
+ 
+- __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
++__cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_hash_lock);
++__cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
+ __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
+ 
++EXPORT_SYMBOL(dcache_hash_lock);
+ EXPORT_SYMBOL(dcache_lock);
+ 
+ static struct kmem_cache *dentry_cache __read_mostly;
+@@ -1466,17 +1477,20 @@ int d_validate(struct dentry *dentry, st
+ 		goto out;
+ 
+ 	spin_lock(&dcache_lock);
++	spin_lock(&dcache_hash_lock);
+ 	base = d_hash(dparent, dentry->d_name.hash);
+ 	hlist_for_each(lhp,base) { 
+ 		/* hlist_for_each_entry_rcu() not required for d_hash list
+ 		 * as it is parsed under dcache_lock
+ 		 */
+ 		if (dentry == hlist_entry(lhp, struct dentry, d_hash)) {
++			spin_unlock(&dcache_hash_lock);
+ 			__dget_locked(dentry);
+ 			spin_unlock(&dcache_lock);
+ 			return 1;
  		}
- 
--		atomic_set(&mnt->mnt_count, 1);
-+#ifdef CONFIG_SMP
-+		mnt->mnt_count = alloc_percpu(int);
-+		if (!mnt->mnt_count)
-+			goto out_free_devname;
-+#else
-+		mnt->mnt_count = 0;
-+#endif
- 		INIT_LIST_HEAD(&mnt->mnt_hash);
- 		INIT_LIST_HEAD(&mnt->mnt_child);
- 		INIT_LIST_HEAD(&mnt->mnt_mounts);
-@@ -205,14 +254,19 @@ struct vfsmount *alloc_vfsmnt(const char
- #ifdef CONFIG_SMP
- 		mnt->mnt_writers = alloc_percpu(int);
- 		if (!mnt->mnt_writers)
--			goto out_free_devname;
-+			goto out_free_mntcount;
- #else
- 		mnt->mnt_writers = 0;
- #endif
-+		preempt_disable();
-+		inc_mnt_count(mnt);
-+		preempt_enable();
  	}
- 	return mnt;
- 
- #ifdef CONFIG_SMP
-+out_free_mntcount:
-+	free_percpu(mnt->mnt_count);
- out_free_devname:
- 	kfree(mnt->mnt_devname);
- #endif
-@@ -526,9 +580,11 @@ static void detach_mnt(struct vfsmount *
- 	old_path->mnt = mnt->mnt_parent;
- 	mnt->mnt_parent = mnt;
- 	mnt->mnt_mountpoint = mnt->mnt_root;
--	list_del_init(&mnt->mnt_child);
- 	list_del_init(&mnt->mnt_hash);
-+	list_del_init(&mnt->mnt_child);
- 	old_path->dentry->d_mounted--;
-+	WARN_ON(mnt->mnt_mounted != 1);
-+	mnt->mnt_mounted--;
- }
- 
- void mnt_set_mountpoint(struct vfsmount *mnt, struct dentry *dentry,
-@@ -545,6 +601,8 @@ static void attach_mnt(struct vfsmount *
- 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
- 			hash(path->mnt, path->dentry));
- 	list_add_tail(&mnt->mnt_child, &path->mnt->mnt_mounts);
-+	WARN_ON(mnt->mnt_mounted != 0);
-+	mnt->mnt_mounted++;
- }
- 
- /*
-@@ -567,6 +625,8 @@ static void commit_tree(struct vfsmount
- 	list_add_tail(&mnt->mnt_hash, mount_hashtable +
- 				hash(parent, mnt->mnt_mountpoint));
- 	list_add_tail(&mnt->mnt_child, &parent->mnt_mounts);
-+	WARN_ON(mnt->mnt_mounted != 0);
-+	mnt->mnt_mounted++;
- 	touch_mnt_namespace(n);
- }
- 
-@@ -670,50 +730,80 @@ static inline void __mntput(struct vfsmo
- 
- void mntput_no_expire(struct vfsmount *mnt)
- {
--repeat:
--	/* open-code atomic_dec_and_lock for the vfsmount lock */
--	if (atomic_add_unless(&mnt->mnt_count, -1, 1))
-+	if (likely(mnt->mnt_mounted)) {
-+		vfsmount_read_lock();
-+		if (unlikely(!mnt->mnt_mounted)) {
-+			vfsmount_read_unlock();
-+			goto repeat;
-+		}
-+		dec_mnt_count(mnt);
-+		BUG_ON(count_mnt_count(mnt) == 0);
-+		vfsmount_read_unlock();
-+
- 		return;
-+	}
-+
-+repeat:
- 	vfsmount_write_lock();
--	if (!atomic_dec_and_test(&mnt->mnt_count)) {
-+	BUG_ON(mnt->mnt_mounted);
-+	dec_mnt_count(mnt);
-+	if (count_mnt_count(mnt)) {
- 		vfsmount_write_unlock();
- 		return;
- 	}
--
- 	if (likely(!mnt->mnt_pinned)) {
- 		vfsmount_write_unlock();
- 		__mntput(mnt);
- 		return;
- 	}
--	atomic_add(mnt->mnt_pinned + 1, &mnt->mnt_count);
-+	add_mnt_count(mnt, mnt->mnt_pinned + 1);
- 	mnt->mnt_pinned = 0;
- 	vfsmount_write_unlock();
- 	acct_auto_close_mnt(mnt);
- 	security_sb_umount_close(mnt);
- 	goto repeat;
- }
--
- EXPORT_SYMBOL(mntput_no_expire);
- 
-+void mntput(struct vfsmount *mnt)
-+{
-+	if (mnt) {
-+		/* avoid cacheline pingpong */
-+		if (unlikely(mnt->mnt_expiry_mark))
-+			mnt->mnt_expiry_mark = 0;
-+		mntput_no_expire(mnt);
-+	}
-+}
-+EXPORT_SYMBOL(mntput);
-+
-+struct vfsmount *mntget(struct vfsmount *mnt)
-+{
-+	if (mnt) {
-+		preempt_disable();
-+		inc_mnt_count(mnt);
-+		preempt_enable();
-+	}
-+	return mnt;
-+}
-+EXPORT_SYMBOL(mntget);
-+
- void mnt_pin(struct vfsmount *mnt)
- {
- 	vfsmount_write_lock();
- 	mnt->mnt_pinned++;
- 	vfsmount_write_unlock();
- }
--
- EXPORT_SYMBOL(mnt_pin);
- 
- void mnt_unpin(struct vfsmount *mnt)
- {
- 	vfsmount_write_lock();
- 	if (mnt->mnt_pinned) {
--		atomic_inc(&mnt->mnt_count);
-+		inc_mnt_count(mnt);
- 		mnt->mnt_pinned--;
- 	}
- 	vfsmount_write_unlock();
- }
--
- EXPORT_SYMBOL(mnt_unpin);
- 
- static inline void mangle(struct seq_file *m, const char *s)
-@@ -996,7 +1086,7 @@ int may_umount_tree(struct vfsmount *mnt
- 
- 	vfsmount_read_lock();
- 	for (p = mnt; p; p = next_mnt(p, mnt)) {
--		actual_refs += atomic_read(&p->mnt_count);
-+		actual_refs += count_mnt_count(p);
- 		minimum_refs += 2;
- 	}
- 	vfsmount_read_unlock();
-@@ -1076,6 +1166,8 @@ void umount_tree(struct vfsmount *mnt, i
- 		__touch_mnt_namespace(p->mnt_ns);
- 		p->mnt_ns = NULL;
- 		list_del_init(&p->mnt_child);
-+		WARN_ON(p->mnt_mounted != 1);
-+		p->mnt_mounted--;
- 		if (p->mnt_parent != p) {
- 			p->mnt_parent->mnt_ghosts++;
- 			p->mnt_mountpoint->d_mounted--;
-@@ -1107,7 +1199,7 @@ static int do_umount(struct vfsmount *mn
- 		    flags & (MNT_FORCE | MNT_DETACH))
- 			return -EINVAL;
- 
--		if (atomic_read(&mnt->mnt_count) != 2)
-+		if (count_mnt_count(mnt) != 2)
- 			return -EBUSY;
- 
- 		if (!xchg(&mnt->mnt_expiry_mark, 1))
-Index: linux-2.6/include/linux/mount.h
-===================================================================
---- linux-2.6.orig/include/linux/mount.h
-+++ linux-2.6/include/linux/mount.h
-@@ -56,20 +56,20 @@ struct vfsmount {
- 	struct mnt_namespace *mnt_ns;	/* containing namespace */
- 	int mnt_id;			/* mount identifier */
- 	int mnt_group_id;		/* peer group identifier */
--	/*
--	 * We put mnt_count & mnt_expiry_mark at the end of struct vfsmount
--	 * to let these frequently modified fields in a separate cache line
--	 * (so that reads of mnt_flags wont ping-pong on SMP machines)
--	 */
--	atomic_t mnt_count;
- 	int mnt_expiry_mark;		/* true if marked for expiry */
- 	int mnt_pinned;
- 	int mnt_ghosts;
-+	int mnt_mounted;
- #ifdef CONFIG_SMP
- 	int *mnt_writers;
- #else
- 	int mnt_writers;
- #endif
-+#ifdef CONFIG_SMP
-+	int *mnt_count;
-+#else
-+	int mnt_count;
-+#endif
- };
- 
- static inline int *get_mnt_writers_ptr(struct vfsmount *mnt)
-@@ -81,13 +81,6 @@ static inline int *get_mnt_writers_ptr(s
- #endif
- }
- 
--static inline struct vfsmount *mntget(struct vfsmount *mnt)
--{
--	if (mnt)
--		atomic_inc(&mnt->mnt_count);
--	return mnt;
--}
--
- struct file; /* forward dec */
- 
- extern void vfsmount_read_lock(void);
-@@ -95,23 +88,21 @@ extern void vfsmount_read_unlock(void);
- extern void vfsmount_write_lock(void);
- extern void vfsmount_write_unlock(void);
- 
-+extern unsigned int count_mnt_count(struct vfsmount *mnt);
-+
- extern int mnt_want_write(struct vfsmount *mnt);
- extern int mnt_want_write_file(struct file *file);
- extern int mnt_clone_write(struct vfsmount *mnt);
- extern void mnt_drop_write(struct vfsmount *mnt);
-+
- extern void mntput_no_expire(struct vfsmount *mnt);
-+extern struct vfsmount *mntget(struct vfsmount *mnt);
-+extern void mntput(struct vfsmount *mnt);
-+
- extern void mnt_pin(struct vfsmount *mnt);
- extern void mnt_unpin(struct vfsmount *mnt);
- extern int __mnt_is_readonly(struct vfsmount *mnt);
- 
--static inline void mntput(struct vfsmount *mnt)
--{
--	if (mnt) {
--		mnt->mnt_expiry_mark = 0;
--		mntput_no_expire(mnt);
--	}
--}
--
- extern struct vfsmount *do_kern_mount(const char *fstype, int flags,
- 				      const char *name, void *data);
- 
-Index: linux-2.6/fs/pnode.c
-===================================================================
---- linux-2.6.orig/fs/pnode.c
-+++ linux-2.6/fs/pnode.c
-@@ -279,7 +279,7 @@ out:
-  */
- static inline int do_refcount_check(struct vfsmount *mnt, int count)
- {
--	int mycount = atomic_read(&mnt->mnt_count) - mnt->mnt_ghosts;
-+	int mycount = count_mnt_count(mnt) - mnt->mnt_ghosts;
- 	return (mycount > count);
- }
- 
-Index: linux-2.6/fs/libfs.c
-===================================================================
---- linux-2.6.orig/fs/libfs.c
-+++ linux-2.6/fs/libfs.c
-@@ -244,6 +244,7 @@ int get_sb_pseudo(struct file_system_typ
- 	d_instantiate(dentry, root);
- 	s->s_root = dentry;
- 	s->s_flags |= MS_ACTIVE;
-+	mnt->mnt_mounted++; /* never unmounted, shortcut mntget (XXX: OK?) */
- 	simple_set_mnt(mnt, s);
++	spin_unlock(&dcache_hash_lock);
+ 	spin_unlock(&dcache_lock);
+ out:
  	return 0;
+@@ -1550,7 +1564,9 @@ void d_rehash(struct dentry * entry)
+ {
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&entry->d_lock);
++	spin_lock(&dcache_hash_lock);
+ 	_d_rehash(entry);
++	spin_unlock(&dcache_hash_lock);
+ 	spin_unlock(&entry->d_lock);
+ 	spin_unlock(&dcache_lock);
+ }
+@@ -1629,8 +1645,6 @@ static void switch_names(struct dentry *
+  */
+ static void d_move_locked(struct dentry * dentry, struct dentry * target)
+ {
+-	struct hlist_head *list;
+-
+ 	if (!dentry->d_inode)
+ 		printk(KERN_WARNING "VFS: moving negative dcache entry\n");
+ 
+@@ -1647,14 +1661,11 @@ static void d_move_locked(struct dentry
+ 	}
+ 
+ 	/* Move the dentry to the target hash queue, if on different bucket */
+-	if (d_unhashed(dentry))
+-		goto already_unhashed;
+-
+-	hlist_del_rcu(&dentry->d_hash);
+-
+-already_unhashed:
+-	list = d_hash(target->d_parent, target->d_name.hash);
+-	__d_rehash(dentry, list);
++	spin_lock(&dcache_hash_lock);
++	if (!d_unhashed(dentry))
++		hlist_del_rcu(&dentry->d_hash);
++	__d_rehash(dentry, d_hash(target->d_parent, target->d_name.hash));
++	spin_unlock(&dcache_hash_lock);
+ 
+ 	/* Unhash the target: dput() will then get rid of it */
+ 	__d_drop(target);
+@@ -1850,7 +1861,9 @@ struct dentry *d_materialise_unique(stru
+ found_lock:
+ 	spin_lock(&actual->d_lock);
+ found:
++	spin_lock(&dcache_hash_lock);
+ 	_d_rehash(actual);
++	spin_unlock(&dcache_hash_lock);
+ 	spin_unlock(&actual->d_lock);
+ 	spin_unlock(&dcache_lock);
+ out_nolock:
+Index: linux-2.6/include/linux/dcache.h
+===================================================================
+--- linux-2.6.orig/include/linux/dcache.h
++++ linux-2.6/include/linux/dcache.h
+@@ -186,6 +186,7 @@ d_iput:		no		no		no       yes
+ 
+ #define DCACHE_FSNOTIFY_PARENT_WATCHED	0x0080 /* Parent inode is watched by some fsnotify listener */
+ 
++extern spinlock_t dcache_hash_lock;
+ extern spinlock_t dcache_lock;
+ extern seqlock_t rename_lock;
+ 
+@@ -209,7 +210,9 @@ static inline void __d_drop(struct dentr
+ {
+ 	if (!(dentry->d_flags & DCACHE_UNHASHED)) {
+ 		dentry->d_flags |= DCACHE_UNHASHED;
++		spin_lock(&dcache_hash_lock);
+ 		hlist_del_rcu(&dentry->d_hash);
++		spin_unlock(&dcache_hash_lock);
+ 	}
+ }
  
 
 
