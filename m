@@ -1,131 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933742AbZIDQVL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933705AbZIDQU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933742AbZIDQVL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:21:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933706AbZIDQUt
+	id S933705AbZIDQU3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933681AbZIDQUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:20:49 -0400
-Received: from mba.ocn.ne.jp ([122.28.14.163]:63494 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933655AbZIDQUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:20:46 -0400
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-To: linux-mtd@lists.infradead.org
-Cc: dwmw2@infradead.org, Ian Molton <spyro@f2s.com>,
-       Dmitry Eremin-Solenikov <dbaryshkov@gmail.com>,
-       vimal singh <vimal.newwork@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] txx9ndfmc: Transfer 512 byte at a time if possible
-Date: Sat,  5 Sep 2009 01:20:45 +0900
-Message-Id: <1252081245-11895-3-git-send-email-anemo@mba.ocn.ne.jp>
-X-Mailer: git-send-email 1.5.6.5
+	Fri, 4 Sep 2009 12:20:25 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:64481 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933674AbZIDQUW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 12:20:22 -0400
+Subject: Re: [PATCH 2/3] LSM/SELinux: inode_{get,set,notify}secctx hooks to
+ access LSM security context information.
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, jmorris@namei.org,
+       casey@schaufler-ca.com, gregkh@suse.de, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <20090904154917.GB15342@us.ibm.com>
+References: <1252002358-6612-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <1252002358-6612-3-git-send-email-dpquigl@tycho.nsa.gov>
+	 <20090904154917.GB15342@us.ibm.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Fri, 04 Sep 2009 12:21:54 -0400
+Message-Id: <1252081314.13634.333.camel@moss-pluto.epoch.ncsc.mil>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using __nand_correct_data() helper function, this driver can read 512
-byte (with 6 byte ECC) at a time.  This results minor performance
-improvement.
+On Fri, 2009-09-04 at 10:49 -0500, Serge E. Hallyn wrote:
+> Quoting David P. Quigley (dpquigl@tycho.nsa.gov):
+> > This patch introduces three new hooks. The inode_getsecctx hook is used to get
+> > all relevant information from an LSM about an inode. The inode_setsecctx is
+> 
+> The 'security_xyz_getctx' namespace is getting a bit polluted.  I suspect
+> I should take this as a hint to rename my
+> 	selinux_file_get_ctx()
+> to
+> 	selinux_checkpoint_file()
 
-Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
----
- drivers/mtd/nand/txx9ndfmc.c |   52 +++++++++++++++++++++++++++++++++++++----
- 1 files changed, 47 insertions(+), 5 deletions(-)
+Yes, I think that would be clearer.
 
-diff --git a/drivers/mtd/nand/txx9ndfmc.c b/drivers/mtd/nand/txx9ndfmc.c
-index 488088e..73af832 100644
---- a/drivers/mtd/nand/txx9ndfmc.c
-+++ b/drivers/mtd/nand/txx9ndfmc.c
-@@ -189,18 +189,43 @@ static int txx9ndfmc_calculate_ecc(struct mtd_info *mtd, const uint8_t *dat,
- 				   uint8_t *ecc_code)
- {
- 	struct platform_device *dev = mtd_to_platdev(mtd);
-+	struct nand_chip *chip = mtd->priv;
-+	int eccbytes;
- 	u32 mcr = txx9ndfmc_read(dev, TXX9_NDFMCR);
- 
- 	mcr &= ~TXX9_NDFMCR_ECC_ALL;
- 	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_OFF, TXX9_NDFMCR);
- 	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_READ, TXX9_NDFMCR);
--	ecc_code[1] = txx9ndfmc_read(dev, TXX9_NDFDTR);
--	ecc_code[0] = txx9ndfmc_read(dev, TXX9_NDFDTR);
--	ecc_code[2] = txx9ndfmc_read(dev, TXX9_NDFDTR);
-+	for (eccbytes = chip->ecc.bytes; eccbytes > 0; eccbytes -= 3) {
-+		ecc_code[1] = txx9ndfmc_read(dev, TXX9_NDFDTR);
-+		ecc_code[0] = txx9ndfmc_read(dev, TXX9_NDFDTR);
-+		ecc_code[2] = txx9ndfmc_read(dev, TXX9_NDFDTR);
-+		ecc_code += 3;
-+	}
- 	txx9ndfmc_write(dev, mcr | TXX9_NDFMCR_ECC_OFF, TXX9_NDFMCR);
- 	return 0;
- }
- 
-+static int txx9ndfmc_correct_data(struct mtd_info *mtd, unsigned char *buf,
-+		unsigned char *read_ecc, unsigned char *calc_ecc)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	int eccsize;
-+	int corrected = 0;
-+	int stat;
-+
-+	for (eccsize = chip->ecc.size; eccsize > 0; eccsize -= 256) {
-+		stat = __nand_correct_data(buf, read_ecc, calc_ecc, 256);
-+		if (stat < 0)
-+			return stat;
-+		corrected += stat;
-+		buf += 256;
-+		read_ecc += 3;
-+		calc_ecc += 3;
-+	}
-+	return corrected;
-+}
-+
- static void txx9ndfmc_enable_hwecc(struct mtd_info *mtd, int mode)
- {
- 	struct platform_device *dev = mtd_to_platdev(mtd);
-@@ -244,6 +269,22 @@ static void txx9ndfmc_initialize(struct platform_device *dev)
- #define TXX9NDFMC_NS_TO_CYC(gbusclk, ns) \
- 	DIV_ROUND_UP((ns) * DIV_ROUND_UP(gbusclk, 1000), 1000000)
- 
-+static int txx9ndfmc_nand_scan(struct mtd_info *mtd)
-+{
-+	struct nand_chip *chip = mtd->priv;
-+	int ret;
-+
-+	ret = nand_scan_ident(mtd, 1);
-+	if (!ret) {
-+		if (mtd->writesize >= 512) {
-+			chip->ecc.size = mtd->writesize;
-+			chip->ecc.bytes = 3 * (mtd->writesize / 256);
-+		}
-+		ret = nand_scan_tail(mtd);
-+	}
-+	return ret;
-+}
-+
- static int __init txx9ndfmc_probe(struct platform_device *dev)
- {
- 	struct txx9ndfmc_platform_data *plat = dev->dev.platform_data;
-@@ -321,9 +362,10 @@ static int __init txx9ndfmc_probe(struct platform_device *dev)
- 		chip->cmd_ctrl = txx9ndfmc_cmd_ctrl;
- 		chip->dev_ready = txx9ndfmc_dev_ready;
- 		chip->ecc.calculate = txx9ndfmc_calculate_ecc;
--		chip->ecc.correct = nand_correct_data;
-+		chip->ecc.correct = txx9ndfmc_correct_data;
- 		chip->ecc.hwctl = txx9ndfmc_enable_hwecc;
- 		chip->ecc.mode = NAND_ECC_HW;
-+		/* txx9ndfmc_nand_scan will overwrite ecc.size and ecc.bytes */
- 		chip->ecc.size = 256;
- 		chip->ecc.bytes = 3;
- 		chip->chip_delay = 100;
-@@ -349,7 +391,7 @@ static int __init txx9ndfmc_probe(struct platform_device *dev)
- 		if (plat->wide_mask & (1 << i))
- 			chip->options |= NAND_BUSWIDTH_16;
- 
--		if (nand_scan(mtd, 1)) {
-+		if (txx9ndfmc_nand_scan(mtd)) {
- 			kfree(txx9_priv->mtdname);
- 			kfree(txx9_priv);
- 			continue;
+> or
+> 	selinux_checkpoint_file_ctx()
+> 
+> to more clearly distinguish it from your hooks and the existing
+> secid_to_secctx() set of .hooks
+> 
+> > used to set both the in-core and on-disk state for the inode based on a context
+> > derived from inode_getsecctx.The final hook inode_notifysecctx will notify the
+> > LSM of a change for the in-core state of the inode in question. These hooks are
+> > for use in the labeled NFS code and addresses concerns of how to set security
+> > on an inode in a multi-xattr LSM. For historical reasons Stephen Smalley's
+> > explanation of the reason for these hooks is pasted below.
+> > 
+> > Quote Stephen Smalley
+> > 
+> > inode_setsecctx:  Change the security context of an inode.  Updates the
+> > in core security context managed by the security module and invokes the
+> > fs code as needed (via __vfs_setxattr_noperm) to update any backing
+> > xattrs that represent the context.  Example usage:  NFS server invokes
+> > this hook to change the security context in its incore inode and on the
+> > backing file system to a value provided by the client on a SETATTR
+> > operation.
+> 
+> So this is only to be called by kernel code, right?  Hence no
+> authorization checks needed?
+
+Correct.  And just to clarify, these hooks have been previously
+discussed for the labeled NFS work, but were on hold until a user of
+them (e.g. the labeled NFS support itself) was ready to upstream.  But
+they turn out to be useful for sysfs labeling as well since they address
+Casey's concerns about not passing secids and supporting multi-xattr
+LSMs, so the sysfs patch was reworked to use them.
+
+> 
+> > inode_notifysecctx:  Notify the security module of what the security
+> > context of an inode should be.  Initializes the incore security context
+> > managed by the security module for this inode.  Example usage:  NFS
+> > client invokes this hook to initialize the security context in its
+> > incore inode to the value provided by the server for the file when the
+> > server returned the file's attributes to the client.
+> > 
+> > Signed-off-by: David P. Quigley <dpquigl@tycho.nsa.gov>
+> 
+> Acked-by: Serge Hallyn <serue@us.ibm.com>
+
 -- 
-1.5.6.5
+Stephen Smalley
+National Security Agency
 
