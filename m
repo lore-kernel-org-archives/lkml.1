@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932846AbZIDCcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932849AbZIDCd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932846AbZIDCcv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 22:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932831AbZIDCct
+	id S932849AbZIDCd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 22:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbZIDCdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 22:32:49 -0400
-Received: from mga01.intel.com ([192.55.52.88]:6373 "EHLO mga01.intel.com"
+	Thu, 3 Sep 2009 22:33:22 -0400
+Received: from mga14.intel.com ([143.182.124.37]:6001 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932821AbZIDCcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 22:32:45 -0400
+	id S932833AbZIDCcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 22:32:50 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,329,1249282800"; 
-   d="scan'208";a="723768851"
-Subject: [PATCH 27/29] mv_xor: implement a private tx_list
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="183965735"
+Subject: [PATCH 28/29] dmaengine: kill tx_list
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, netdev@vger.kernel.org,
-       maciej.sosnowski@intel.com, Saeed Bishara <saeed@marvell.com>
-Date: Thu, 03 Sep 2009 19:32:47 -0700
-Message-ID: <20090904023247.32667.94318.stgit@dwillia2-linux.ch.intel.com>
+       maciej.sosnowski@intel.com
+Date: Thu, 03 Sep 2009 19:32:52 -0700
+Message-ID: <20090904023252.32667.51136.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -29,75 +29,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drop mv_xor's use of tx_list from struct dma_async_tx_descriptor in
-preparation for removal of this field.
+The tx_list attribute of struct dma_async_tx_descriptor is common to
+most, but not all dma driver implementations.  None of the upper level
+code (dmaengine/async_tx) uses it, so allow drivers to implement it
+locally if they need it.  This saves sizeof(struct list_head) bytes for
+drivers that do not manage descriptors with a linked list (e.g.: ioatdma
+v2,3).
 
-Cc: Saeed Bishara <saeed@marvell.com>
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/mv_xor.c |    7 ++++---
- drivers/dma/mv_xor.h |    4 ++--
- 2 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/dma/dmaengine.c   |    1 -
+ include/linux/dmaengine.h |    3 ---
+ 2 files changed, 0 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/dma/mv_xor.c b/drivers/dma/mv_xor.c
-index ddab94f..d7277ac 100644
---- a/drivers/dma/mv_xor.c
-+++ b/drivers/dma/mv_xor.c
-@@ -517,7 +517,7 @@ retry:
- 			}
- 			alloc_tail->group_head = alloc_start;
- 			alloc_tail->async_tx.cookie = -EBUSY;
--			list_splice(&chain, &alloc_tail->async_tx.tx_list);
-+			list_splice(&chain, &alloc_tail->tx_list);
- 			mv_chan->last_used = last_used;
- 			mv_desc_clear_next_desc(alloc_start);
- 			mv_desc_clear_next_desc(alloc_tail);
-@@ -565,14 +565,14 @@ mv_xor_tx_submit(struct dma_async_tx_descriptor *tx)
- 	cookie = mv_desc_assign_cookie(mv_chan, sw_desc);
+diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
+index 5a87384..562d182 100644
+--- a/drivers/dma/dmaengine.c
++++ b/drivers/dma/dmaengine.c
+@@ -933,7 +933,6 @@ void dma_async_tx_descriptor_init(struct dma_async_tx_descriptor *tx,
+ {
+ 	tx->chan = chan;
+ 	spin_lock_init(&tx->lock);
+-	INIT_LIST_HEAD(&tx->tx_list);
+ }
+ EXPORT_SYMBOL(dma_async_tx_descriptor_init);
  
- 	if (list_empty(&mv_chan->chain))
--		list_splice_init(&sw_desc->async_tx.tx_list, &mv_chan->chain);
-+		list_splice_init(&sw_desc->tx_list, &mv_chan->chain);
- 	else {
- 		new_hw_chain = 0;
- 
- 		old_chain_tail = list_entry(mv_chan->chain.prev,
- 					    struct mv_xor_desc_slot,
- 					    chain_node);
--		list_splice_init(&grp_start->async_tx.tx_list,
-+		list_splice_init(&grp_start->tx_list,
- 				 &old_chain_tail->chain_node);
- 
- 		if (!mv_can_chain(grp_start))
-@@ -632,6 +632,7 @@ static int mv_xor_alloc_chan_resources(struct dma_chan *chan)
- 		slot->async_tx.tx_submit = mv_xor_tx_submit;
- 		INIT_LIST_HEAD(&slot->chain_node);
- 		INIT_LIST_HEAD(&slot->slot_node);
-+		INIT_LIST_HEAD(&slot->tx_list);
- 		hw_desc = (char *) mv_chan->device->dma_desc_pool;
- 		slot->async_tx.phys =
- 			(dma_addr_t) &hw_desc[idx * MV_XOR_SLOT_SIZE];
-diff --git a/drivers/dma/mv_xor.h b/drivers/dma/mv_xor.h
-index 06cafe1..977b592 100644
---- a/drivers/dma/mv_xor.h
-+++ b/drivers/dma/mv_xor.h
-@@ -126,9 +126,8 @@ struct mv_xor_chan {
-  * @idx: pool index
-  * @unmap_src_cnt: number of xor sources
-  * @unmap_len: transaction bytecount
-+ * @tx_list: list of slots that make up a multi-descriptor transaction
-  * @async_tx: support for the async_tx api
-- * @group_list: list of slots that make up a multi-descriptor transaction
-- *	for example transfer lengths larger than the supported hw max
-  * @xor_check_result: result of zero sum
-  * @crc32_result: result crc calculation
-  */
-@@ -145,6 +144,7 @@ struct mv_xor_desc_slot {
- 	u16			unmap_src_cnt;
- 	u32			value;
- 	size_t			unmap_len;
-+	struct list_head	tx_list;
- 	struct dma_async_tx_descriptor	async_tx;
- 	union {
- 		u32		*xor_check_result;
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index ffefba8..f114bc7 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -180,8 +180,6 @@ typedef void (*dma_async_tx_callback)(void *dma_async_param);
+  * @flags: flags to augment operation preparation, control completion, and
+  * 	communicate status
+  * @phys: physical address of the descriptor
+- * @tx_list: driver common field for operations that require multiple
+- *	descriptors
+  * @chan: target channel for this operation
+  * @tx_submit: set the prepared descriptor(s) to be executed by the engine
+  * @callback: routine to call after this operation is complete
+@@ -195,7 +193,6 @@ struct dma_async_tx_descriptor {
+ 	dma_cookie_t cookie;
+ 	enum dma_ctrl_flags flags; /* not a 'long' to pack with cookie */
+ 	dma_addr_t phys;
+-	struct list_head tx_list;
+ 	struct dma_chan *chan;
+ 	dma_cookie_t (*tx_submit)(struct dma_async_tx_descriptor *tx);
+ 	dma_async_tx_callback callback;
 
