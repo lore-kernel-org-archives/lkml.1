@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934044AbZIEABq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934425AbZIEABf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934044AbZIEABq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934446AbZIEABj
+	id S934425AbZIEABf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934264AbZIEABd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:01:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:40477 "EHLO
+	Fri, 4 Sep 2009 20:01:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33619 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934210AbZIEABZ (ORCPT
+	with ESMTP id S934183AbZIEAB0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:01:25 -0400
-Message-Id: <20090905000127.100299259@goodmis.org>
+	Fri, 4 Sep 2009 20:01:26 -0400
+Message-Id: <20090905000127.563020279@goodmis.org>
 References: <20090904235527.520961911@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Sep 2009 19:55:43 -0400
+Date: Fri, 04 Sep 2009 19:55:44 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,78 +21,77 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 16/18] tracing: report error in trace if we fail to swap latency buffer
-Content-Disposition: inline; filename=0016-tracing-report-error-in-trace-if-we-fail-to-swap-lat.patch
+Subject: [PATCH 17/18] ring-buffer: check for swapped buffers in start of committing
+Content-Disposition: inline; filename=0017-ring-buffer-check-for-swapped-buffers-in-start-of-co.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The irqsoff tracer will fail to swap the cpu buffer with the max
-buffer if it preempts a commit. Instead of ignoring this, this patch
-makes the tracer report it if the last max latency failed due to preempting
-a current commit.
+Because the irqsoff tracer can swap an internal CPU buffer, it is possible
+that a swap happens between the start of the write and before the committing
+bit is set (the committing bit will disable swapping).
 
-The output of the latency tracer will look like this:
-
- # tracer: irqsoff
- #
- # irqsoff latency trace v1.1.5 on 2.6.31-rc5
- # --------------------------------------------------------------------
- # latency: 112 us, #1/1, CPU#1 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:4)
- #    -----------------
- #    | task: -4281 (uid:0 nice:0 policy:0 rt_prio:0)
- #    -----------------
- #  => started at: save_args
- #  => ended at:   __do_softirq
- #
- #
- #                  _------=> CPU#
- #                 / _-----=> irqs-off
- #                | / _----=> need-resched
- #                || / _---=> hardirq/softirq
- #                ||| / _--=> preempt-depth
- #                |||| /
- #                |||||     delay
- #  cmd     pid   ||||| time  |   caller
- #     \   /      |||||   \   |   /
-    bash-4281    1d.s6  265us : update_max_tr_single: Failed to swap buffers due to commit in progress
-
-Note the latency time and the functions that disabled the irqs or preemption
-will still be listed.
+This patch adds a check for this and will fail the write if it detects it.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/trace.c |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ kernel/trace/ring_buffer.c |   20 +++++++++++++++++---
+ 1 files changed, 17 insertions(+), 3 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index ef08328..6df9861 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -482,9 +482,20 @@ update_max_tr_single(struct trace_array *tr, struct task_struct *tsk, int cpu)
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index f83a42a..1766c0e 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2073,7 +2073,8 @@ static void rb_end_commit(struct ring_buffer_per_cpu *cpu_buffer)
+ }
  
- 	ret = ring_buffer_swap_cpu(max_tr.buffer, tr->buffer, cpu);
+ static struct ring_buffer_event *
+-rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
++rb_reserve_next_event(struct ring_buffer *buffer,
++		      struct ring_buffer_per_cpu *cpu_buffer,
+ 		      unsigned long length)
+ {
+ 	struct ring_buffer_event *event;
+@@ -2083,6 +2084,19 @@ rb_reserve_next_event(struct ring_buffer_per_cpu *cpu_buffer,
  
-+	if (ret == -EBUSY) {
-+		/*
-+		 * We failed to swap the buffer due to a commit taking
-+		 * place on this CPU. We fail to record, but we reset
-+		 * the max trace buffer (no one writes directly to it)
-+		 * and flag that it failed.
-+		 */
-+		trace_array_printk(&max_tr, _THIS_IP_,
-+			"Failed to swap buffers due to commit in progress\n");
+ 	rb_start_commit(cpu_buffer);
+ 
++	/*
++	 * Due to the ability to swap a cpu buffer from a buffer
++	 * it is possible it was swapped before we committed.
++	 * (committing stops a swap). We check for it here and
++	 * if it happened, we have to fail the write.
++	 */
++	barrier();
++	if (unlikely(ACCESS_ONCE(cpu_buffer->buffer) != buffer)) {
++		local_dec(&cpu_buffer->committing);
++		local_dec(&cpu_buffer->commits);
++		return NULL;
 +	}
 +
- 	ftrace_enable_cpu();
+ 	length = rb_calculate_event_length(length);
+  again:
+ 	/*
+@@ -2243,7 +2257,7 @@ ring_buffer_lock_reserve(struct ring_buffer *buffer, unsigned long length)
+ 	if (length > BUF_MAX_DATA_SIZE)
+ 		goto out;
  
--	WARN_ON_ONCE(ret && ret != -EAGAIN);
-+	WARN_ON_ONCE(ret && ret != -EAGAIN && ret != -EBUSY);
+-	event = rb_reserve_next_event(cpu_buffer, length);
++	event = rb_reserve_next_event(buffer, cpu_buffer, length);
+ 	if (!event)
+ 		goto out;
  
- 	__update_max_tr(tr, tsk, cpu);
- 	__raw_spin_unlock(&ftrace_max_lock);
+@@ -2476,7 +2490,7 @@ int ring_buffer_write(struct ring_buffer *buffer,
+ 	if (length > BUF_MAX_DATA_SIZE)
+ 		goto out;
+ 
+-	event = rb_reserve_next_event(cpu_buffer, length);
++	event = rb_reserve_next_event(buffer, cpu_buffer, length);
+ 	if (!event)
+ 		goto out;
+ 
 -- 
 1.6.3.3
 
