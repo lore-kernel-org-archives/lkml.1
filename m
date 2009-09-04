@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933298AbZIDQzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933721AbZIDQ6d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933298AbZIDQzV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932751AbZIDQzU
+	id S933721AbZIDQ6d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:58:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932871AbZIDQ6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:55:20 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60407 "EHLO
+	Fri, 4 Sep 2009 12:58:30 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:42308 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932706AbZIDQzT (ORCPT
+	with ESMTP id S932706AbZIDQ6a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:55:19 -0400
-Message-ID: <4AA145E6.8000603@zytor.com>
-Date: Fri, 04 Sep 2009 09:52:54 -0700
+	Fri, 4 Sep 2009 12:58:30 -0400
+Message-ID: <4AA14618.9010505@zytor.com>
+Date: Fri, 04 Sep 2009 09:53:44 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Tejun Heo <tj@kernel.org>, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       jeremy.fitzhardinge@citrix.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
- is cache aligned
-References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <4AA080A0.7010804@kernel.org> <4AA08283.5020306@kernel.org> <4AA08B09.50503@zytor.com> <4AA139DF.3050902@goop.org>
-In-Reply-To: <4AA139DF.3050902@goop.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, mingo@redhat.com, sam@ravnborg.org,
+       tglx@linutronix.de, David.Woodhouse@intel.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/kbuild] x86: Don't silently override CONFIG_64BIT in
+ 'make oldconfig'
+References: <tip-5a8a2d13b1526e306ff2a9fe12dc9d5878d355f9@git.kernel.org>	<20090904144857.GA12872@elte.hu>	<alpine.LFD.2.00.0909041631210.14872@twosheds.infradead.org>	<4AA13FE6.20807@zytor.com> <20090904093846.a87bd198.randy.dunlap@oracle.com>
+In-Reply-To: <20090904093846.a87bd198.randy.dunlap@oracle.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/04/2009 09:01 AM, Jeremy Fitzhardinge wrote:
->>>     
->> It's correct that it doesn't make any difference for access, only for load.
->>   
+On 09/04/2009 09:38 AM, Randy Dunlap wrote:
+>>>
+>> Quite possible.  ARCH=x86 hasn't exactly been widely used.
 > 
-> Well, to be completely precise, restore.  When returning to usermode,
-> the "pop %seg" is slightly faster if you're restoring a null selector,
-> which is typically the case for %fs as 32-bit usermode doesn't use it.
+> what does ARCH=x86 mean?
 > 
 
-That's a segment load...
+Treat 32 vs 64 bit as a normal Kconfig variable.  Similar as for other
+32/64-bit architectures.
 
 	-hpa
 
