@@ -1,122 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933782AbZIDRIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933800AbZIDRJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933782AbZIDRIv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 13:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933563AbZIDRIu
+	id S933800AbZIDRJf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 13:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933769AbZIDRJf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 13:08:50 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:39338 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932871AbZIDRIt (ORCPT
+	Fri, 4 Sep 2009 13:09:35 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:60039 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933563AbZIDRJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 13:08:49 -0400
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Mimi Zohar <zohar@linux.vnet.ibm.com>, Al Viro <viro@zeniv.linux.org.uk>,
-       James Morris <jmorris@namei.org>,
-       David Safford <safford@watson.ibm.com>,
-       Ciprian Docan <docan@eden.rutgers.edu>,
-       "J.R. Okajima" <hooanon05@yahoo.co.jp>, Mimi Zohar <zohar@us.ibm.com>
-Subject: [PATCH] IMA: update ima_counts_put
-Date: Fri,  4 Sep 2009 13:08:46 -0400
-Message-Id: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com>
-X-Mailer: git-send-email 1.6.0.6
+	Fri, 4 Sep 2009 13:09:34 -0400
+Date: Fri, 4 Sep 2009 18:09:28 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
+Subject: Re: [rtc-linux] Re: [PATCH 2/2] rtc: Add boot_timesource sysfs
+	attribute
+Message-ID: <20090904170928.GA26009@srcf.ucam.org>
+References: <1252081568-6000-1-git-send-email-mjg@redhat.com> <1252081568-6000-2-git-send-email-mjg@redhat.com> <20090904182528.591dbd29@i1501.lan.towertech.it> <20090904163029.GA25239@srcf.ucam.org> <20090904183828.4376236e@i1501.lan.towertech.it> <20090904164127.GB25419@srcf.ucam.org> <20090904185243.53c9b440@i1501.lan.towertech.it> <20090904165549.GA25802@srcf.ucam.org> <20090904190345.02733404@i1501.lan.towertech.it>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904190345.02733404@i1501.lan.towertech.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- As ima_counts_put() may be called after the inode has been freed,
-verify that the inode is not NULL, before dereferencing it.
+Ok. How's this?
 
-- Maintain the IMA file counters in may_open() properly, decrementing
-any counter increments on subsequent errors.
+commit 09895be2ef8528dc33ca8516ca4f5ccbec2ffb05
+Author: Matthew Garrett <mjg@redhat.com>
+Date:   Fri Sep 4 12:23:02 2009 -0400
 
-Reported-by: Ciprian Docan <docan@eden.rutgers.edu>
-Reported-by: J.R. Okajima <hooanon05@yahoo.co.jp>
-Signed-off-by: Mimi Zohar <zohar@us.ibm.com>
----
- fs/namei.c                        |   22 +++++++++++++++-------
- security/integrity/ima/ima_main.c |    6 +++++-
- 2 files changed, 20 insertions(+), 8 deletions(-)
+    rtc: Add hctosys sysfs attribute
+    
+    CONFIG_RTC_HCTOSYS allows the kernel to read the system time from the RTC
+    at boot and resume, avoiding the need for userspace to do so. Unfortunately
+    userspace currently has no way to know whether this configuration option
+    is enabled and thus cannot sensibly choose whether to run hwclock itself or
+    not. Add a hctosys sysfs attribute which indicates whether a given RTC set
+    the system clock.
+    
+    Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-diff --git a/fs/namei.c b/fs/namei.c
-index ee01308..fcfc553 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1544,28 +1544,31 @@ int may_open(struct path *path, int acc_mode, int flag)
- 	 * An append-only file must be opened in append mode for writing.
- 	 */
- 	if (IS_APPEND(inode)) {
-+		error = -EPERM;
- 		if  ((flag & FMODE_WRITE) && !(flag & O_APPEND))
--			return -EPERM;
-+			goto err_out;
- 		if (flag & O_TRUNC)
--			return -EPERM;
-+			goto err_out;
- 	}
+diff --git a/Documentation/rtc.txt b/Documentation/rtc.txt
+index 216bb8c..baac51f 100644
+--- a/Documentation/rtc.txt
++++ b/Documentation/rtc.txt
+@@ -143,6 +143,8 @@ rtc attributes without requiring the use of ioctls. All dates and times
+ are in the RTC's timezone, rather than in system time.
  
- 	/* O_NOATIME can only be set by the owner or superuser */
- 	if (flag & O_NOATIME)
--		if (!is_owner_or_cap(inode))
--			return -EPERM;
-+		if (!is_owner_or_cap(inode)) {
-+			error = -EPERM;
-+			goto err_out;
-+		}
- 
- 	/*
- 	 * Ensure there are no outstanding leases on the file.
- 	 */
- 	error = break_lease(inode, flag);
- 	if (error)
--		return error;
-+		goto err_out;
- 
- 	if (flag & O_TRUNC) {
- 		error = get_write_access(inode);
- 		if (error)
--			return error;
-+			goto err_out;
- 
- 		/*
- 		 * Refuse to truncate files with mandatory locks held on them.
-@@ -1583,12 +1586,17 @@ int may_open(struct path *path, int acc_mode, int flag)
- 		}
- 		put_write_access(inode);
- 		if (error)
--			return error;
-+			goto err_out;
- 	} else
- 		if (flag & FMODE_WRITE)
- 			vfs_dq_init(inode);
- 
- 	return 0;
-+err_out:
-+	ima_counts_put(path, acc_mode ?
-+		       acc_mode & (MAY_READ | MAY_WRITE | MAY_EXEC) :
-+		       ACC_MODE(flag) & (MAY_READ | MAY_WRITE));
-+	return error;
+ date:  	   	 RTC-provided date
++hctosys:   	 1 if the RTC provided the system time at boot via the
++		 CONFIG_RTC_HCTOSYS kernel option, 0 otherwise
+ max_user_freq:	 The maximum interrupt rate an unprivileged user may request
+ 		 from this RTC.
+ name:		 The name of the RTC corresponding to this sysfs directory
+diff --git a/drivers/rtc/rtc-sysfs.c b/drivers/rtc/rtc-sysfs.c
+index 2531ce4..7dd23a6 100644
+--- a/drivers/rtc/rtc-sysfs.c
++++ b/drivers/rtc/rtc-sysfs.c
+@@ -102,6 +102,19 @@ rtc_sysfs_set_max_user_freq(struct device *dev, struct device_attribute *attr,
+ 	return n;
  }
  
- /*
-diff --git a/security/integrity/ima/ima_main.c b/security/integrity/ima/ima_main.c
-index 101c512..f0c9634 100644
---- a/security/integrity/ima/ima_main.c
-+++ b/security/integrity/ima/ima_main.c
-@@ -249,7 +249,11 @@ void ima_counts_put(struct path *path, int mask)
- 	struct inode *inode = path->dentry->d_inode;
- 	struct ima_iint_cache *iint;
++static ssize_t
++rtc_sysfs_show_hctosys(struct device *dev, struct device_attribute *attr,
++		char *buf)
++{
++#ifdef CONFIG_RTC_HCTOSYS_DEVICE
++	if (strcmp(dev_name(&to_rtc_device(dev)->dev),
++		   CONFIG_RTC_HCTOSYS_DEVICE) == 0)
++		return sprintf(buf, "1\n");
++	else
++#endif
++		return sprintf(buf, "0\n");
++}
++
+ static struct device_attribute rtc_attrs[] = {
+ 	__ATTR(name, S_IRUGO, rtc_sysfs_show_name, NULL),
+ 	__ATTR(date, S_IRUGO, rtc_sysfs_show_date, NULL),
+@@ -109,6 +122,7 @@ static struct device_attribute rtc_attrs[] = {
+ 	__ATTR(since_epoch, S_IRUGO, rtc_sysfs_show_since_epoch, NULL),
+ 	__ATTR(max_user_freq, S_IRUGO | S_IWUSR, rtc_sysfs_show_max_user_freq,
+ 			rtc_sysfs_set_max_user_freq),
++	__ATTR(hctosys, S_IRUGO, rtc_sysfs_show_hctosys, NULL),
+ 	{ },
+ };
  
--	if (!ima_initialized || !S_ISREG(inode->i_mode))
-+ 	/* The inode may already have been freed, freeing the iint
-+	 * with it. Verify the inode is not NULL before dereferencing
-+	 * it.
-+	 */
-+	if (!ima_initialized || !inode || !S_ISREG(inode->i_mode))
- 		return;
- 	iint = ima_iint_find_insert_get(inode);
- 	if (!iint)
--- 
-1.6.0.6
 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
