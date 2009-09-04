@@ -1,151 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756945AbZIDPmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZIDOsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756945AbZIDPmQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 11:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756606AbZIDPmO
+	id S1756935AbZIDOsh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 10:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbZIDOsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 11:42:14 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:56721 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755116AbZIDPmO (ORCPT
+	Fri, 4 Sep 2009 10:48:35 -0400
+Received: from mga06.intel.com ([134.134.136.21]:61167 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756910AbZIDOse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 11:42:14 -0400
-From: Matthew Garrett <mjg@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Matthew Garrett <mjg@redhat.com>
-Subject: [PATCH] VT: Add a boot option to disable cursor on boot
-Date: Fri,  4 Sep 2009 11:48:09 -0400
-Message-Id: <1252079289-5383-1-git-send-email-mjg@redhat.com>
-X-Mailer: git-send-email 1.6.4.1
-X-SA-Do-Not-Run: Yes
-X-SA-Exim-Connect-IP: 146.115.120.20
-X-SA-Exim-Mail-From: mjg@redhat.com
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Fri, 4 Sep 2009 10:48:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,333,1249282800"; 
+   d="scan'208";a="547821295"
+Date: Fri, 4 Sep 2009 16:48:24 +0100
+From: Alan Cox <alan@linux.intel.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, gregkh@suse.de,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: WARNINGs in usb-serial.c
+Message-ID: <20090904164824.391876b3@linux.intel.com>
+In-Reply-To: <Pine.LNX.4.44L0.0909041014490.3008-100000@iolanthe.rowland.org>
+References: <E1MjTrP-0004S3-6B@pomaz-ex.szeredi.hu>
+	<Pine.LNX.4.44L0.0909041014490.3008-100000@iolanthe.rowland.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The VT code currently enables a visible cursor on boot. This is a fairly
-unnecessary visual distraction for setups which boot to a splash screen
-before going directly into X, so add a boot option (vt.hide_boot_cursor=1)
-that doesn't enable the cursor for initial VT setup. VT resets and any
-later VT creation will leave the cursor turned on, as before.
+On Fri, 4 Sep 2009 10:17:30 -0400 (EDT)
+Alan Stern <stern@rowland.harvard.edu> wrote:
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
----
- Documentation/kernel-parameters.txt |    6 ++++++
- drivers/char/vt.c                   |   23 ++++++++++++++---------
- 2 files changed, 20 insertions(+), 9 deletions(-)
+> On Fri, 4 Sep 2009, Miklos Szeredi wrote:
+> 
+> > On Thu, 3 Sep 2009, Greg KH wrote:
+> > > On Thu, Sep 03, 2009 at 04:13:34PM +0200, Miklos Szeredi wrote:
+> > > > I get the following warnings in 2.6.31-rc.  A lot of them:
+> > > > 
+> > > > WARNING: at drivers/usb/serial/usb-serial.c:414
+> > > > serial_write_room+0x59/0x6e [usbserial]() WARNING: at
+> > > > drivers/usb/serial/usb-serial.c:401 serial_write+0x77/0x9d
+> > > > [usbserial]()
+> > > > 
+> > > > This is a huawei-3565 modem.
+> > > > 
+> > > > The messages don't seem to hurt, but there's lot of trouble
+> > > > with this gadget.  Sometimes it just doesn't work after a while
+> > > > and a reboot is needed.  Sometimes it hangs the kernel after
+> > > > suspend, etc.  Not sure if this is related to the warnings...
+> > > 
+> > > {sigh}
+> > > 
+> > > The tty layer changes are being a pain here :(
+> > > 
+> > > Alan Stern posted a set of patches to the linux-usb list to
+> > > hopefully address stuff like this, is there any way you could
+> > > test them out to see if they help or not?
+> > 
+> > Nope, it doesn't seem to help.  Still got the same warnings with the
+> > patched kernel (latest git + ghk tree + usbserial patches).
+> 
+> What were you doing when these warnings appeared?
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index 7936b80..c60ce61 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2645,6 +2645,12 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Default is 1, i.e. UTF-8 mode is enabled for all
- 			newly opened terminals.
- 
-+	vt.hide_boot_cursor=
-+			[VT]
-+			Format=<0|1>
-+			Hide the VT cursor on boot. Default is 0, resulting
-+			in the cursor being shown by default.
-+
- 	waveartist=	[HW,OSS]
- 			Format: <io>,<irq>,<dma>,<dma2>
- 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 404f4c1..a885311 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -146,10 +146,12 @@ static const struct consw *con_driver_map[MAX_NR_CONSOLES];
- 
- static int con_open(struct tty_struct *, struct file *);
- static void vc_init(struct vc_data *vc, unsigned int rows,
--		    unsigned int cols, int do_clear);
-+		    unsigned int cols, int do_clear,
-+		    int show_cursor);
- static void gotoxy(struct vc_data *vc, int new_x, int new_y);
- static void save_cur(struct vc_data *vc);
--static void reset_terminal(struct vc_data *vc, int do_clear);
-+static void reset_terminal(struct vc_data *vc, int do_clear,
-+			   int show_cursor);
- static void con_flush_chars(struct tty_struct *tty);
- static int set_vesa_blanking(char __user *p);
- static void set_cursor(struct vc_data *vc);
-@@ -159,6 +161,8 @@ static void blank_screen_t(unsigned long dummy);
- static void set_palette(struct vc_data *vc);
- 
- static int printable;		/* Is console ready for printing? */
-+static int hide_boot_cursor;	/* Show the cursor at boot time? */
-+module_param(hide_boot_cursor, int, S_IRUGO | S_IWUSR);
- int default_utf8 = true;
- module_param(default_utf8, int, S_IRUGO | S_IWUSR);
- 
-@@ -776,7 +780,7 @@ int vc_allocate(unsigned int currcons)	/* return 0 on success */
- 		vc_cons[currcons].d = NULL;
- 		return -ENOMEM;
- 	    }
--	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1);
-+	    vc_init(vc, vc->vc_rows, vc->vc_cols, 1, 1);
- 	    vcs_make_sysfs(currcons);
- 	    atomic_notifier_call_chain(&vt_notifier_list, VT_ALLOCATE, &param);
- 	}
-@@ -1595,7 +1599,7 @@ enum { ESnormal, ESesc, ESsquare, ESgetpars, ESgotpars, ESfunckey,
- 	ESpalette };
- 
- /* console_sem is held (except via vc_init()) */
--static void reset_terminal(struct vc_data *vc, int do_clear)
-+static void reset_terminal(struct vc_data *vc, int do_clear, int show_cursor)
- {
- 	vc->vc_top		= 0;
- 	vc->vc_bottom		= vc->vc_rows;
-@@ -1616,7 +1620,7 @@ static void reset_terminal(struct vc_data *vc, int do_clear)
- 	vc->vc_decscnm		= 0;
- 	vc->vc_decom		= 0;
- 	vc->vc_decawm		= 1;
--	vc->vc_deccm		= 1;
-+	vc->vc_deccm		= show_cursor;
- 	vc->vc_decim		= 0;
- 
- 	set_kbd(vc, decarm);
-@@ -1756,7 +1760,7 @@ static void do_con_trol(struct tty_struct *tty, struct vc_data *vc, int c)
- 			vc->vc_state = EShash;
- 			return;
- 		case 'c':
--			reset_terminal(vc, 1);
-+			reset_terminal(vc, 1, 1);
- 			return;
- 		case '>':  /* Numeric keypad */
- 			clr_kbd(vc, kbdapplic);
-@@ -2803,7 +2807,7 @@ module_param_named(italic, default_italic_color, int, S_IRUGO | S_IWUSR);
- module_param_named(underline, default_underline_color, int, S_IRUGO | S_IWUSR);
- 
- static void vc_init(struct vc_data *vc, unsigned int rows,
--		    unsigned int cols, int do_clear)
-+		    unsigned int cols, int do_clear, int show_cursor)
- {
- 	int j, k ;
- 
-@@ -2825,7 +2829,7 @@ static void vc_init(struct vc_data *vc, unsigned int rows,
- 	vc->vc_itcolor         = default_italic_color;
- 	vc->vc_halfcolor       = 0x08;   /* grey */
- 	init_waitqueue_head(&vc->paste_wait);
--	reset_terminal(vc, do_clear);
-+	reset_terminal(vc, do_clear, show_cursor);
- }
- 
- /*
-@@ -2877,7 +2881,8 @@ static int __init con_init(void)
- 		visual_init(vc, currcons, 1);
- 		vc->vc_screenbuf = kzalloc(vc->vc_screenbuf_size, GFP_NOWAIT);
- 		vc_init(vc, vc->vc_rows, vc->vc_cols,
--			currcons || !vc->vc_sw->con_save_screen);
-+			currcons || !vc->vc_sw->con_save_screen,
-+			!hide_boot_cursor);
- 	}
- 	currcons = fg_console = 0;
- 	master_display_fg = vc = vc_cons[currcons].d;
--- 
-1.6.4.1
+The usual way to get it was
 
+	close
+		users = 0
+		ldisc processing
+		echo
+		write room
+			hey we are closed
+				Spew
+
+I suspect the actual check in write_room is now simply bogus with it
+all being refcounted (the ldisc will hold a tty kref at that point)
