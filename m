@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932849AbZIDCd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932861AbZIDCc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932849AbZIDCd0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 22:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbZIDCdW
+	id S932861AbZIDCc7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 22:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932852AbZIDCc6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 22:33:22 -0400
-Received: from mga14.intel.com ([143.182.124.37]:6001 "EHLO mga14.intel.com"
+	Thu, 3 Sep 2009 22:32:58 -0400
+Received: from mga01.intel.com ([192.55.52.88]:48840 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932833AbZIDCcu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 22:32:50 -0400
+	id S932724AbZIDCcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 22:32:55 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="183965735"
-Subject: [PATCH 28/29] dmaengine: kill tx_list
+X-IronPort-AV: E=Sophos;i="4.44,329,1249282800"; 
+   d="scan'208";a="490400646"
+Subject: [PATCH 29/29] ioat2,
+	3: cacheline align software descriptor allocations
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, netdev@vger.kernel.org,
        maciej.sosnowski@intel.com
-Date: Thu, 03 Sep 2009 19:32:52 -0700
-Message-ID: <20090904023252.32667.51136.stgit@dwillia2-linux.ch.intel.com>
+Date: Thu, 03 Sep 2009 19:32:57 -0700
+Message-ID: <20090904023257.32667.53926.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -29,50 +30,102 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The tx_list attribute of struct dma_async_tx_descriptor is common to
-most, but not all dma driver implementations.  None of the upper level
-code (dmaengine/async_tx) uses it, so allow drivers to implement it
-locally if they need it.  This saves sizeof(struct list_head) bytes for
-drivers that do not manage descriptors with a linked list (e.g.: ioatdma
-v2,3).
+All the necessary fields for handling an ioat2,3 ring entry can fit into
+one cacheline.  Move ->len prior to ->txd in struct ioat_ring_ent, and
+move allocation of these entries to a hw-cache-aligned kmem cache to
+reduce the number of cachelines dirtied for descriptor management.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/dmaengine.c   |    1 -
- include/linux/dmaengine.h |    3 ---
- 2 files changed, 0 insertions(+), 4 deletions(-)
+ drivers/dma/ioat/dma_v2.c |    5 +++--
+ drivers/dma/ioat/dma_v2.h |    3 ++-
+ drivers/dma/ioat/pci.c    |   16 +++++++++++++++-
+ 3 files changed, 20 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 5a87384..562d182 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -933,7 +933,6 @@ void dma_async_tx_descriptor_init(struct dma_async_tx_descriptor *tx,
- {
- 	tx->chan = chan;
- 	spin_lock_init(&tx->lock);
--	INIT_LIST_HEAD(&tx->tx_list);
- }
- EXPORT_SYMBOL(dma_async_tx_descriptor_init);
+diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
+index 9ea1a47..f0c4876 100644
+--- a/drivers/dma/ioat/dma_v2.c
++++ b/drivers/dma/ioat/dma_v2.c
+@@ -400,11 +400,12 @@ static struct ioat_ring_ent *ioat2_alloc_ring_ent(struct dma_chan *chan, gfp_t f
+ 		return NULL;
+ 	memset(hw, 0, sizeof(*hw));
  
-diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index ffefba8..f114bc7 100644
---- a/include/linux/dmaengine.h
-+++ b/include/linux/dmaengine.h
-@@ -180,8 +180,6 @@ typedef void (*dma_async_tx_callback)(void *dma_async_param);
-  * @flags: flags to augment operation preparation, control completion, and
-  * 	communicate status
-  * @phys: physical address of the descriptor
-- * @tx_list: driver common field for operations that require multiple
-- *	descriptors
-  * @chan: target channel for this operation
-  * @tx_submit: set the prepared descriptor(s) to be executed by the engine
-  * @callback: routine to call after this operation is complete
-@@ -195,7 +193,6 @@ struct dma_async_tx_descriptor {
- 	dma_cookie_t cookie;
- 	enum dma_ctrl_flags flags; /* not a 'long' to pack with cookie */
- 	dma_addr_t phys;
--	struct list_head tx_list;
- 	struct dma_chan *chan;
- 	dma_cookie_t (*tx_submit)(struct dma_async_tx_descriptor *tx);
- 	dma_async_tx_callback callback;
+-	desc = kzalloc(sizeof(*desc), flags);
++	desc = kmem_cache_alloc(ioat2_cache, flags);
+ 	if (!desc) {
+ 		pci_pool_free(dma->dma_pool, hw, phys);
+ 		return NULL;
+ 	}
++	memset(desc, 0, sizeof(*desc));
+ 
+ 	dma_async_tx_descriptor_init(&desc->txd, chan);
+ 	desc->txd.tx_submit = ioat2_tx_submit_unlock;
+@@ -419,7 +420,7 @@ static void ioat2_free_ring_ent(struct ioat_ring_ent *desc, struct dma_chan *cha
+ 
+ 	dma = to_ioatdma_device(chan->device);
+ 	pci_pool_free(dma->dma_pool, desc->hw, desc->txd.phys);
+-	kfree(desc);
++	kmem_cache_free(ioat2_cache, desc);
+ }
+ 
+ static struct ioat_ring_ent **ioat2_alloc_ring(struct dma_chan *c, int order, gfp_t flags)
+diff --git a/drivers/dma/ioat/dma_v2.h b/drivers/dma/ioat/dma_v2.h
+index 9baa3d6..ac00adc 100644
+--- a/drivers/dma/ioat/dma_v2.h
++++ b/drivers/dma/ioat/dma_v2.h
+@@ -116,8 +116,8 @@ static inline u16 ioat2_xferlen_to_descs(struct ioat2_dma_chan *ioat, size_t len
+ 
+ struct ioat_ring_ent {
+ 	struct ioat_dma_descriptor *hw;
+-	struct dma_async_tx_descriptor txd;
+ 	size_t len;
++	struct dma_async_tx_descriptor txd;
+ 	#ifdef DEBUG
+ 	int id;
+ 	#endif
+@@ -143,4 +143,5 @@ int __devinit ioat2_dma_probe(struct ioatdma_device *dev, int dca);
+ int __devinit ioat3_dma_probe(struct ioatdma_device *dev, int dca);
+ struct dca_provider * __devinit ioat2_dca_init(struct pci_dev *pdev, void __iomem *iobase);
+ struct dca_provider * __devinit ioat3_dca_init(struct pci_dev *pdev, void __iomem *iobase);
++extern struct kmem_cache *ioat2_cache;
+ #endif /* IOATDMA_V2_H */
+diff --git a/drivers/dma/ioat/pci.c b/drivers/dma/ioat/pci.c
+index c4e4322..61086c6 100644
+--- a/drivers/dma/ioat/pci.c
++++ b/drivers/dma/ioat/pci.c
+@@ -69,6 +69,8 @@ static int ioat_dca_enabled = 1;
+ module_param(ioat_dca_enabled, int, 0644);
+ MODULE_PARM_DESC(ioat_dca_enabled, "control support of dca service (default: 1)");
+ 
++struct kmem_cache *ioat2_cache;
++
+ #define DRV_NAME "ioatdma"
+ 
+ static struct pci_driver ioat_pci_driver = {
+@@ -168,12 +170,24 @@ static void __devexit ioat_remove(struct pci_dev *pdev)
+ 
+ static int __init ioat_init_module(void)
+ {
+-	return pci_register_driver(&ioat_pci_driver);
++	int err;
++
++	ioat2_cache = kmem_cache_create("ioat2", sizeof(struct ioat_ring_ent),
++					0, SLAB_HWCACHE_ALIGN, NULL);
++	if (!ioat2_cache)
++		return -ENOMEM;
++
++	err = pci_register_driver(&ioat_pci_driver);
++	if (err)
++		kmem_cache_destroy(ioat2_cache);
++
++	return err;
+ }
+ module_init(ioat_init_module);
+ 
+ static void __exit ioat_exit_module(void)
+ {
+ 	pci_unregister_driver(&ioat_pci_driver);
++	kmem_cache_destroy(ioat2_cache);
+ }
+ module_exit(ioat_exit_module);
 
