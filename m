@@ -1,78 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZIDFM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756549AbZIDFRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756611AbZIDFM3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 01:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZIDFM3
+	id S1756549AbZIDFRe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 01:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZIDFRd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 01:12:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43854 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752384AbZIDFM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 01:12:28 -0400
-Date: Fri, 4 Sep 2009 07:12:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Tejun Heo <tj@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org,
-       jeremy.fitzhardinge@citrix.com, stable@kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
-	is cache aligned
-Message-ID: <20090904051202.GA25714@elte.hu>
-References: <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <4AA080A0.7010804@kernel.org> <4AA08283.5020306@kernel.org> <4AA08B09.50503@zytor.com> <4AA08DD3.5010509@kernel.org> <4AA08ED0.4050206@zytor.com> <4AA0A05B.5010806@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA0A05B.5010806@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 4 Sep 2009 01:17:33 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:8228 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755470AbZIDFRd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 01:17:33 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=pGLkceISAAAA:8 a=VwQbUJbxAAAA:8 a=8pif782wAAAA:8
+ a=gEbR8-eWmScaGpknTf4A:9 a=fN_nl2-gCVduG-hcaIUA:7
+ a=gUbh4eu6hkP9aI0J5CGQhbM6MTgA:4 a=MSl-tDqOz04A:10
+Date: Thu, 03 Sep 2009 23:17:34 -0600
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Subject: Re: mvsas issues
+In-reply-to: <72dbd3150909031732p76275c83hc43ca30601be3e53@mail.gmail.com>
+To: David Rees <drees76@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <ccdefeca5c690.4aa04e8e@shaw.ca>
+MIME-version: 1.0
+X-Mailer: Sun Java(tm) System Messenger Express 6.2-7.05 (built Sep  5 2006)
+Content-type: text/plain; charset=iso-8859-1
+Content-language: en
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+X-Accept-Language: en
+References: <200909031809.58107.tfjellstrom@shaw.ca>
+ <72dbd3150909031732p76275c83hc43ca30601be3e53@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+----- Original Message -----
+From: David Rees <drees76@gmail.com>
+Date: Thursday, September 3, 2009 6:32 pm
+Subject: Re: mvsas issues
+To: tfjellstrom@shaw.ca
+Cc: linux-kernel@vger.kernel.org
 
-* Tejun Heo <tj@kernel.org> wrote:
-
-> H. Peter Anvin wrote:
-> > On 09/03/2009 08:47 PM, Tejun Heo wrote:
-> >> H. Peter Anvin wrote:
-> >>> On 09/03/2009 07:59 PM, Tejun Heo wrote:
-> >>>> Another question.  Other than saving and loading an extra segment
-> >>>> register on kernel entry/exit, whether using the same or different
-> >>>> segment registers doesn't look like would make difference
-> >>>> performance-wise.  If I'm interpreting the wording in the optimization
-> >>>> manual correctly, it means that each non-zero segment based memory
-> >>>> access will be costly regardless of which specific segment register is
-> >>>> in use and there's no way we can merge segment based dereferences for
-> >>>> stackprotector and percpu variables.
-> >>>>
-> >>> It's correct that it doesn't make any difference for access, only for load.
-> >> Heh... here's a naive and hopeful plan.  How about we beg gcc
-> >> developers to allow different segment register and offset in newer gcc
-> >> versions and then use the same one when building with the new gcc?
-> >> This should solve the i386 problem too.  It would be the best as we
-> >> get to keep the separate segment register from the userland.  Too
-> >> hopeful?
-> > 
-> > I think it's possible to set the register in more recent gcc.  
-> > Doing the sane thing and having a symbol for an offset is 
-> > probably worse.
+> On Thu, Sep 3, 2009 at 5:09 PM, Thomas 
+> Fjellstrom<tfjellstrom@shaw.ca> wrote:
+> > I just got a Marvell SAS card, And I've been trying to copy 
+> one set of disks
+> > over to another before one of the drives dies for good...
 > 
-> I was thinking about altering the build process so that we can use 
-> sed to substitute %gs:40 with %fs:40 while compiling.  If it's 
-> already possible to override the register in more recent gcc, no 
-> need to go into that horror.
-> 
-> > I can talk to H.J. Lu about this tomorrow.
-> 
-> Great, please keep us posted.
+> Have you tried using one of the rescue oriented versions of dd 
+> to make
+> a copy of the failing disk?  Then copy the image to a good 
+> disk and
+> recreate your array (do it in read-only mode!) and see what you can
+> recover.
+>
 
-Yeah - if then this should definitely be handled in the compiler.
+I haven't yet, with 2.6.30, there doesn't seem to be an mvsas driver, in 2.6.31-rc5 it OOPSes the kernel, and in 2.6.31.-rc8 it locks up the entire marvell controller (That is all ports start returning errors) so ALL drives on it are useless. One additional problem is the drive thats giving up the ghost is one of two 2TB disks thats in a temporary md raid0 array. The rest of my disks are all 1TB or smaller. Trying to backup one half of the raid0 pair to a couple separate 1TB disks would be a pain to say the least. And last, but not least, today the drive was decideing to error out after 10 minutes of any kind of actual use. It works after boot for a while no matter which controller its on, but after a bit of load it croaks.
 
-	Ingo
+I've decided to give the system and the drive a rest for tonight and try to get it backed up in the morning. Its possible the temperature here was causing the drive to get a little too warm (60c+?). Its strange though. The drive can last 12 hours as long as the load is very light. I might get some ata errors, but nothing libata can't handle with a reset (it causes a brief pause, but stuff keeps going), but the more I try to do, the faster it decides to throw an error. The errors I got on the AMD sata controller was very similar to a recent report about high rate transfers causing libata/linux to somehow loose connection with the host. Also the same error I saw people attribute to possible power or interrupt issues. But the errors are completely different on the mvsas controller.
+
+> http://en.wikipedia.org/wiki/Dd_%28Unix%29#Recovery-
+> oriented_variants_of_dd
+> -Dave
+> 
