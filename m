@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934031AbZIDURq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934111AbZIDUOq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934031AbZIDURq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:17:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934084AbZIDUOl
+	id S934111AbZIDUOq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934081AbZIDUOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:14:41 -0400
-Received: from kroah.org ([198.145.64.141]:36256 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 16:14:43 -0400
+Received: from kroah.org ([198.145.64.141]:36263 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934049AbZIDUOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:14:39 -0400
+	id S934082AbZIDUOk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:14:40 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:55 2009
-Message-Id: <20090904200855.314980155@mini.kroah.org>
+Message-Id: <20090904200855.459975543@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 13:07:46 -0700
+Date: Fri, 04 Sep 2009 13:07:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       Oliver Hartkopp <oliver@hartkopp.net>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 34/48] can: Fix raw_getname() leak
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 35/48] do_sigaltstack: avoid copying stack_t as a structure to user space
 References: <20090904200712.724048145@mini.kroah.org>
-Content-Disposition: inline; filename=can-fix-raw_getname-leak.patch
+Content-Disposition: inline; filename=do_sigaltstack-avoid-copying-stack_t-as-a-structure-to-user-space.patch
 In-Reply-To: <20090904201112.GA8274@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,33 +28,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit e84b90ae5eb3c112d1f208964df1d8156a538289 upstream.
+commit 0083fc2c50e6c5127c2802ad323adf8143ab7856 upstream.
 
-raw_getname() can leak 10 bytes of kernel memory to user
+Ulrich Drepper correctly points out that there is generally padding in
+the structure on 64-bit hosts, and that copying the structure from
+kernel to user space can leak information from the kernel stack in those
+padding bytes.
 
-(two bytes hole between can_family and can_ifindex,
-8 bytes at the end of sockaddr_can structure)
+Avoid the whole issue by just copying the three members one by one
+instead, which also means that the function also can avoid the need for
+a stack frame.  This also happens to match how we copy the new structure
+from user space, so it all even makes sense.
 
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Acked-by: Oliver Hartkopp <oliver@hartkopp.net>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+[ The obvious solution of adding a memset() generates horrid code, gcc
+  does really stupid things. ]
+
+Reported-by: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/can/raw.c |    1 +
- 1 file changed, 1 insertion(+)
+ kernel/signal.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
---- a/net/can/raw.c
-+++ b/net/can/raw.c
-@@ -396,6 +396,7 @@ static int raw_getname(struct socket *so
- 	if (peer)
- 		return -EOPNOTSUPP;
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2353,11 +2353,9 @@ do_sigaltstack (const stack_t __user *us
+ 	stack_t oss;
+ 	int error;
  
-+	memset(addr, 0, sizeof(*addr));
- 	addr->can_family  = AF_CAN;
- 	addr->can_ifindex = ro->ifindex;
+-	if (uoss) {
+-		oss.ss_sp = (void __user *) current->sas_ss_sp;
+-		oss.ss_size = current->sas_ss_size;
+-		oss.ss_flags = sas_ss_flags(sp);
+-	}
++	oss.ss_sp = (void __user *) current->sas_ss_sp;
++	oss.ss_size = current->sas_ss_size;
++	oss.ss_flags = sas_ss_flags(sp);
  
+ 	if (uss) {
+ 		void __user *ss_sp;
+@@ -2400,13 +2398,16 @@ do_sigaltstack (const stack_t __user *us
+ 		current->sas_ss_size = ss_size;
+ 	}
+ 
++	error = 0;
+ 	if (uoss) {
+ 		error = -EFAULT;
+-		if (copy_to_user(uoss, &oss, sizeof(oss)))
++		if (!access_ok(VERIFY_WRITE, uoss, sizeof(*uoss)))
+ 			goto out;
++		error = __put_user(oss.ss_sp, &uoss->ss_sp) |
++			__put_user(oss.ss_size, &uoss->ss_size) |
++			__put_user(oss.ss_flags, &uoss->ss_flags);
+ 	}
+ 
+-	error = 0;
+ out:
+ 	return error;
+ }
 
 
