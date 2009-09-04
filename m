@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934124AbZIEABW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934409AbZIEAEH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934124AbZIEABW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934035AbZIEABU
+	id S934409AbZIEAEH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:04:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934059AbZIEABV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:01:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62184 "EHLO
+	Fri, 4 Sep 2009 20:01:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44564 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933927AbZIEABT (ORCPT
+	with ESMTP id S934011AbZIEABT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 20:01:19 -0400
-Message-Id: <20090905000120.022273594@goodmis.org>
+Message-Id: <20090905000120.748914637@goodmis.org>
 References: <20090904235527.520961911@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Sep 2009 19:55:28 -0400
+Date: Fri, 04 Sep 2009 19:55:29 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,43 +21,52 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 01/18] ring-buffer: do not reset while in a commit
-Content-Disposition: inline; filename=0001-ring-buffer-do-not-reset-while-in-a-commit.patch
+Subject: [PATCH 02/18] ring-buffer: do not swap buffers during a commit
+Content-Disposition: inline; filename=0002-ring-buffer-do-not-swap-buffers-during-a-commit.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The callers of reset must ensure that no commit can be taking place
-at the time of the reset. If it does then we may corrupt the ring buffer.
+If a commit is taking place on a CPU ring buffer, do not allow it to
+be swapped. Return -EBUSY when this is detected instead.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/ring_buffer.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ kernel/trace/ring_buffer.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index da2c59d..79d6012 100644
+index 79d6012..2878bd4 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -3373,12 +3373,16 @@ void ring_buffer_reset_cpu(struct ring_buffer *buffer, int cpu)
+@@ -3519,16 +3519,23 @@ int ring_buffer_swap_cpu(struct ring_buffer *buffer_a,
+ 	atomic_inc(&cpu_buffer_a->record_disabled);
+ 	atomic_inc(&cpu_buffer_b->record_disabled);
  
- 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
- 
-+	if (RB_WARN_ON(cpu_buffer, local_read(&cpu_buffer->committing)))
-+		goto out;
++	ret = -EBUSY;
++	if (local_read(&cpu_buffer_a->committing))
++		goto out_dec;
++	if (local_read(&cpu_buffer_b->committing))
++		goto out_dec;
 +
- 	__raw_spin_lock(&cpu_buffer->lock);
+ 	buffer_a->buffers[cpu] = cpu_buffer_b;
+ 	buffer_b->buffers[cpu] = cpu_buffer_a;
  
- 	rb_reset_cpu(cpu_buffer);
+ 	cpu_buffer_b->buffer = buffer_a;
+ 	cpu_buffer_a->buffer = buffer_b;
  
- 	__raw_spin_unlock(&cpu_buffer->lock);
- 
-+ out:
- 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- 
- 	atomic_dec(&cpu_buffer->record_disabled);
++	ret = 0;
++
++out_dec:
+ 	atomic_dec(&cpu_buffer_a->record_disabled);
+ 	atomic_dec(&cpu_buffer_b->record_disabled);
+-
+-	ret = 0;
+ out:
+ 	return ret;
+ }
 -- 
 1.6.3.3
 
