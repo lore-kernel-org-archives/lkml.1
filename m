@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756529AbZIDBnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756456AbZIDBws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756529AbZIDBnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 21:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbZIDBnj
+	id S1756456AbZIDBws (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 21:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbZIDBwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 21:43:39 -0400
-Received: from mga12.intel.com ([143.182.124.36]:17024 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756097AbZIDBni (ORCPT
+	Thu, 3 Sep 2009 21:52:47 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44823 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754820AbZIDBwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 21:43:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="183952808"
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-To: intel-gfx@lists.freedesktop.org
-Cc: linux-kernel@vger.kernel.org, Zhenyu Wang <zhenyuw@linux.intel.com>,
-       Stable Team <stable@kernel.org>, Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH 2/3] drm/i915: remove restore in resume
-Date: Fri,  4 Sep 2009 09:43:35 +0800
-Message-Id: <1252028615-13785-2-git-send-email-zhenyuw@linux.intel.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1252028615-13785-1-git-send-email-zhenyuw@linux.intel.com>
-References: <1252028615-13785-1-git-send-email-zhenyuw@linux.intel.com>
+	Thu, 3 Sep 2009 21:52:46 -0400
+Date: Thu, 3 Sep 2009 15:52:16 -1000 (HST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Mikael Pettersson <mikpe@it.uu.se>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
+ testsuite
+In-Reply-To: <87ab1bmqpr.fsf@devron.myhome.or.jp>
+Message-ID: <alpine.LFD.2.00.0909031545010.16579@eeepc.linux-foundation.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19099.52899.620345.326521@pilspetsen.it.uu.se> <19100.31254.666066.755541@pilspetsen.it.uu.se> <200909012042.59856.rjw@sisk.pl> <alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+ <87pra89sgp.fsf@devron.myhome.or.jp> <alpine.LFD.2.00.0909031353360.15956@eeepc.linux-foundation.org> <87ab1bmqpr.fsf@devron.myhome.or.jp>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't need extra restore like for intel_agp.
 
-Cc: Stable Team <stable@kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
----
- drivers/gpu/drm/i915/i915_drv.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
-index dbe568c..e8cf18d 100644
---- a/drivers/gpu/drm/i915/i915_drv.c
-+++ b/drivers/gpu/drm/i915/i915_drv.c
-@@ -97,8 +97,6 @@ static int i915_resume(struct drm_device *dev)
- 	struct drm_i915_private *dev_priv = dev->dev_private;
- 	int ret = 0;
- 
--	pci_set_power_state(dev->pdev, PCI_D0);
--	pci_restore_state(dev->pdev);
- 	if (pci_enable_device(dev->pdev))
- 		return -1;
- 	pci_set_master(dev->pdev);
--- 
-1.6.3.3
+On Fri, 4 Sep 2009, OGAWA Hirofumi wrote:
+> 
+> Yes. However, pty_write() checks tty_buffer instead of receive_room. So
+> I thought, the change of write side is mainly buffer size (receive_room
+> size + tty_buffer size).
 
+The problem has never been the write side. That side works - just with 
+extra buffering.
+
+> It will stop after filling tty_buffer, not receive_room.
+
+Yes.
+
+> And (I hope) the read side guarantees to consume both buffers. If it is
+> right, I guessed the change is timing issues with more larger buffer
+> size.
+
+That's the change. The read side only consumes the buffers it _sees_. And 
+it doesn't look at the buffers that the write side has written, only at 
+the 'received' buffers. That's why we had to add that 'tty_flush_to_ldisc' 
+so that the buffers that got written were properly moved to the receive 
+side.
+
+And that's the part that I suspect is broken - ie tty_flush_to_ldisc 
+doesn't always guarantee that it moves all the written stuff to the 
+receive side.
+
+Before, this wasn't an issue, because the writer always filled up the 
+receive buffers directly, so there was never any flushing issues.
+
+> Another possibility in my guess is the change of pty_flush_buffer() and
+> pty_chars_in_buffer().  I'm not sure at all though, especially, I'm
+> suspecting pty_flush_buffer() may change the behaviors.
+
+I don't think 'pty_flush_buffer()' is ever called in any normal 
+circumstances. Afaik, it's only called for a TIOCFLUSH ioctl (or whatever 
+it's called) when the user asks for all the contents to be thrown away.
+
+> FWIW, meanwhile, I'll just try to see the root-cause of this as
+> another/fallback solution.
+
+Absolutely. If you can find some other possibility, that would be great. 
+I'm not really sure how that 'receive_room == 0' case would ever happen in 
+practice, so my patch was really based on the assumption that the bug is 
+in the flushing code.
+
+The bug could easily be elsewhere.
+
+		Linus
