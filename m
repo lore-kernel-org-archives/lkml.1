@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934143AbZIDUPw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934175AbZIDUPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934143AbZIDUPw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:15:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933974AbZIDUPt
+	id S934175AbZIDUPT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934168AbZIDUPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:15:49 -0400
-Received: from kroah.org ([198.145.64.141]:36320 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 16:15:11 -0400
+Received: from kroah.org ([198.145.64.141]:36323 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934082AbZIDUOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:14:50 -0400
+	id S934135AbZIDUOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:14:51 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:57 2009
-Message-Id: <20090904200856.961519803@mini.kroah.org>
+Message-Id: <20090904200857.121342149@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 13:07:57 -0700
+Date: Fri, 04 Sep 2009 13:07:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Oliver Neukum <oliver@neukum.org>, Chuck Ebbert <cebbert@redhat.com>
-Subject: [patch 45/48] USB: removal of tty->low_latency hack dating back to the old serial code
+       Chuck Ebbert <cebbert@redhat.com>, Alan Cox <alan@linux.intel.com>
+Subject: [patch 46/48] Remove low_latency flag setting from nozomi and mxser drivers
 References: <20090904200712.724048145@mini.kroah.org>
-Content-Disposition: inline; filename=usb-removal-of-tty-low_latency-hack-dating-back-to-the-old-serial-code.patch
+Content-Disposition: inline; filename=remove-low_latency-flag-setting-from-nozomi-and-mxser-drivers.patch
 In-Reply-To: <20090904201112.GA8274@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,375 +30,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Oliver Neukum <oliver@neukum.org>
+From: Chuck Ebbert <cebbert@redhat.com>
 
-commit 2400a2bfbd0e912193fe3b077f492d4980141813 upstream
-
+commit 4d8d4d251df8eaaa3dae71c8cfa7fbf4510d967d upstream
 
 [ cebbert@redhat.com: backport to 2.6.27 ]
 
-USB: removal of tty->low_latency hack dating back to the old serial code
+Remove low_latency flag setting from nozomi and mxser drivers
 
-This removes tty->low_latency from all USB serial drivers that push
-data into the tty layer at hard interrupt context. It's no longer needed
-and actually harmful.
+The kernel oopses if this flag is set.
 
-Signed-off-by: Oliver Neukum <oliver@neukum.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Chuck Ebbert <cebbert@redhat.com>
+[and neither driver should set it as they call tty_flip_buffer_push from IRQ
+ paths so have always been buggy]
+
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
+Signed-off-by: Alan Cox <alan@linux.intel.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
 
 ---
- drivers/usb/serial/cyberjack.c        |    7 -------
- drivers/usb/serial/cypress_m8.c       |    4 ----
- drivers/usb/serial/empeg.c            |    6 ------
- drivers/usb/serial/garmin_gps.c       |    8 --------
- drivers/usb/serial/generic.c          |    6 ------
- drivers/usb/serial/io_edgeport.c      |    8 --------
- drivers/usb/serial/io_ti.c            |    8 --------
- drivers/usb/serial/ipaq.c             |    6 ------
- drivers/usb/serial/ipw.c              |    3 ---
- drivers/usb/serial/iuu_phoenix.c      |    1 -
- drivers/usb/serial/kobil_sct.c        |    6 ------
- drivers/usb/serial/mos7720.c          |    7 -------
- drivers/usb/serial/mos7840.c          |    6 ------
- drivers/usb/serial/option.c           |    3 ---
- drivers/usb/serial/sierra.c           |    3 ---
- drivers/usb/serial/ti_usb_3410_5052.c |   17 +----------------
- drivers/usb/serial/visor.c            |    8 --------
- 17 files changed, 1 insertion(+), 106 deletions(-)
+ drivers/char/mxser.c  |    2 --
+ drivers/char/nozomi.c |    1 -
+ 2 files changed, 3 deletions(-)
 
---- a/drivers/usb/serial/cyberjack.c
-+++ b/drivers/usb/serial/cyberjack.c
-@@ -174,13 +174,6 @@ static int  cyberjack_open(struct tty_st
- 	dbg("%s - usb_clear_halt", __func__);
- 	usb_clear_halt(port->serial->dev, port->write_urb->pipe);
+--- a/drivers/char/mxser.c
++++ b/drivers/char/mxser.c
+@@ -1099,8 +1099,6 @@ static int mxser_open(struct tty_struct 
+ 	if (retval)
+ 		return retval;
  
--	/* force low_latency on so that our tty_push actually forces
--	 * the data through, otherwise it is scheduled, and with high
--	 * data rates (like with OHCI) data can get lost.
--	 */
--	if (tty)
--		tty->low_latency = 1;
--
- 	priv = usb_get_serial_port_data(port);
- 	spin_lock_irqsave(&priv->lock, flags);
- 	priv->rdtodo = 0;
---- a/drivers/usb/serial/cypress_m8.c
-+++ b/drivers/usb/serial/cypress_m8.c
-@@ -655,10 +655,6 @@ static int cypress_open(struct tty_struc
- 	priv->rx_flags = 0;
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
--	/* setting to zero could cause data loss */
--	if (tty)
--		tty->low_latency = 1;
--
- 	/* raise both lines and set termios */
- 	spin_lock_irqsave(&priv->lock, flags);
- 	priv->line_control = CONTROL_DTR | CONTROL_RTS;
---- a/drivers/usb/serial/empeg.c
-+++ b/drivers/usb/serial/empeg.c
-@@ -478,12 +478,6 @@ static void empeg_set_termios(struct tty
- 	termios->c_cflag
- 		|= CS8;		/* character size 8 bits */
- 
--	/*
--	 * Force low_latency on; otherwise the pushes are scheduled;
--	 * this is bad as it opens up the possibility of dropping bytes
--	 * on the floor.  We don't want to drop bytes on the floor. :)
--	 */
+-	/* unmark here for very high baud rate (ex. 921600 bps) used */
 -	tty->low_latency = 1;
- 	tty_encode_baud_rate(tty, 115200, 115200);
+ 	return 0;
  }
  
---- a/drivers/usb/serial/garmin_gps.c
-+++ b/drivers/usb/serial/garmin_gps.c
-@@ -972,14 +972,6 @@ static int garmin_open(struct tty_struct
+--- a/drivers/char/nozomi.c
++++ b/drivers/char/nozomi.c
+@@ -1584,7 +1584,6 @@ static int ntty_open(struct tty_struct *
  
- 	dbg("%s - port %d", __func__, port->number);
- 
--	/*
--	 * Force low_latency on so that our tty_push actually forces the data
--	 * through, otherwise it is scheduled, and with high data rates (like
--	 * with OHCI) data can get lost.
--	 */
--	if (tty)
+ 	/* Enable interrupt downlink for channel */
+ 	if (port->tty_open_count == 1) {
 -		tty->low_latency = 1;
--
- 	spin_lock_irqsave(&garmin_data_p->lock, flags);
- 	garmin_data_p->mode  = initial_mode;
- 	garmin_data_p->count = 0;
---- a/drivers/usb/serial/generic.c
-+++ b/drivers/usb/serial/generic.c
-@@ -122,12 +122,6 @@ int usb_serial_generic_open(struct tty_s
- 
- 	dbg("%s - port %d", __func__, port->number);
- 
--	/* force low_latency on so that our tty_push actually forces the data
--	   through, otherwise it is scheduled, and with high data rates (like
--	   with OHCI) data can get lost. */
--	if (tty)
--		tty->low_latency = 1;
--
- 	/* clear the throttle flags */
- 	spin_lock_irqsave(&port->lock, flags);
- 	port->throttled = 0;
---- a/drivers/usb/serial/io_edgeport.c
-+++ b/drivers/usb/serial/io_edgeport.c
-@@ -193,8 +193,6 @@ static const struct divisor_table_entry 
- /* local variables */
- static int debug;
- 
--static int low_latency = 1;	/* tty low latency flag, on by default */
--
- static atomic_t CmdUrbs;	/* Number of outstanding Command Write Urbs */
- 
- 
-@@ -861,9 +859,6 @@ static int edge_open(struct tty_struct *
- 	if (edge_port == NULL)
- 		return -ENODEV;
- 
--	if (tty)
--		tty->low_latency = low_latency;
--
- 	/* see if we've set up our endpoint info yet (can't set it up
- 	   in edge_startup as the structures were not set up at that time.) */
- 	serial = port->serial;
-@@ -3281,6 +3276,3 @@ MODULE_FIRMWARE("edgeport/down2.fw");
- 
- module_param(debug, bool, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(debug, "Debug enabled or not");
--
--module_param(low_latency, bool, S_IRUGO | S_IWUSR);
--MODULE_PARM_DESC(low_latency, "Low latency enabled or not");
---- a/drivers/usb/serial/io_ti.c
-+++ b/drivers/usb/serial/io_ti.c
-@@ -76,7 +76,6 @@ struct edgeport_uart_buf_desc {
- #define EDGE_READ_URB_STOPPING	1
- #define EDGE_READ_URB_STOPPED	2
- 
--#define EDGE_LOW_LATENCY	1
- #define EDGE_CLOSING_WAIT	4000	/* in .01 sec */
- 
- #define EDGE_OUT_BUF_SIZE	1024
-@@ -232,7 +231,6 @@ static unsigned short OperationalBuildNu
- 
- static int debug;
- 
--static int low_latency = EDGE_LOW_LATENCY;
- static int closing_wait = EDGE_CLOSING_WAIT;
- static int ignore_cpu_rev;
- static int default_uart_mode;		/* RS232 */
-@@ -1838,9 +1836,6 @@ static int edge_open(struct tty_struct *
- 	if (edge_port == NULL)
- 		return -ENODEV;
- 
--	if (tty)
--		tty->low_latency = low_latency;
--
- 	port_number = port->number - port->serial->minor;
- 	switch (port_number) {
- 	case 0:
-@@ -2995,9 +2990,6 @@ MODULE_FIRMWARE("edgeport/down3.bin");
- module_param(debug, bool, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(debug, "Debug enabled or not");
- 
--module_param(low_latency, bool, S_IRUGO | S_IWUSR);
--MODULE_PARM_DESC(low_latency, "Low latency enabled or not");
--
- module_param(closing_wait, int, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(closing_wait, "Maximum wait for data to drain, in .01 secs");
- 
---- a/drivers/usb/serial/ipaq.c
-+++ b/drivers/usb/serial/ipaq.c
-@@ -635,13 +635,7 @@ static int ipaq_open(struct tty_struct *
- 		priv->free_len += PACKET_SIZE;
- 	}
- 
--	/*
--	 * Force low latency on. This will immediately push data to the line
--	 * discipline instead of queueing.
--	 */
--
- 	if (tty) {
--		tty->low_latency = 1;
- 		/* FIXME: These two are bogus */
- 		tty->raw = 1;
- 		tty->real_raw = 1;
---- a/drivers/usb/serial/ipw.c
-+++ b/drivers/usb/serial/ipw.c
-@@ -206,9 +206,6 @@ static int ipw_open(struct tty_struct *t
- 	if (!buf_flow_init)
- 		return -ENOMEM;
- 
--	if (tty)
--		tty->low_latency = 1;
--
- 	/* --1: Tell the modem to initialize (we think) From sniffs this is
- 	 *	always the first thing that gets sent to the modem during
- 	 *	opening of the device */
---- a/drivers/usb/serial/iuu_phoenix.c
-+++ b/drivers/usb/serial/iuu_phoenix.c
-@@ -1046,7 +1046,6 @@ static int iuu_open(struct tty_struct *t
- 		tty->termios->c_oflag = 0;
- 		tty->termios->c_iflag = 0;
- 		priv->termios_initialized = 1;
--		tty->low_latency = 1;
- 		priv->poll = 0;
- 	 }
- 	spin_unlock_irqrestore(&priv->lock, flags);
---- a/drivers/usb/serial/kobil_sct.c
-+++ b/drivers/usb/serial/kobil_sct.c
-@@ -231,13 +231,7 @@ static int kobil_open(struct tty_struct 
- 	/* someone sets the dev to 0 if the close method has been called */
- 	port->interrupt_in_urb->dev = port->serial->dev;
- 
--
--	/* force low_latency on so that our tty_push actually forces
--	 * the data through, otherwise it is scheduled, and with high
--	 * data rates (like with OHCI) data can get lost.
--	 */
- 	if (tty) {
--		tty->low_latency = 1;
- 
- 		/* Default to echo off and other sane device settings */
- 		tty->termios->c_lflag = 0;
---- a/drivers/usb/serial/mos7720.c
-+++ b/drivers/usb/serial/mos7720.c
-@@ -442,13 +442,6 @@ static int mos7720_open(struct tty_struc
- 	data = 0x0c;
- 	send_mos_cmd(serial, MOS_WRITE, port_number, 0x01, &data);
- 
--	/* force low_latency on so that our tty_push actually forces *
--	 * the data through,otherwise it is scheduled, and with      *
--	 * high data rates (like with OHCI) data can get lost.       */
--
--	if (tty)
--		tty->low_latency = 1;
--
- 	/* see if we've set up our endpoint info yet   *
- 	 * (can't set it up in mos7720_startup as the  *
- 	 * structures were not set up at that time.)   */
---- a/drivers/usb/serial/mos7840.c
-+++ b/drivers/usb/serial/mos7840.c
-@@ -990,12 +990,6 @@ static int mos7840_open(struct tty_struc
- 	status = mos7840_set_reg_sync(port, mos7840_port->ControlRegOffset,
- 									Data);
- 
--	/* force low_latency on so that our tty_push actually forces *
--	 * the data through,otherwise it is scheduled, and with      *
--	 * high data rates (like with OHCI) data can get lost.       */
--	if (tty)
--		tty->low_latency = 1;
--
- 	/* Check to see if we've set up our endpoint info yet    *
- 	 * (can't set it up in mos7840_startup as the structures *
- 	 * were not set up at that time.)                        */
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -914,9 +914,6 @@ static int option_open(struct tty_struct
- 				usb_pipeout(urb->pipe), 0); */
- 	}
- 
--	if (tty)
--		tty->low_latency = 1;
--
- 	option_send_setup(tty, port);
- 
- 	return 0;
---- a/drivers/usb/serial/sierra.c
-+++ b/drivers/usb/serial/sierra.c
-@@ -576,9 +576,6 @@ static int sierra_open(struct tty_struct
- 		}
- 	}
- 
--	if (tty)
--		tty->low_latency = 1;
--
- 	sierra_send_setup(tty, port);
- 
- 	/* start up the interrupt endpoint if we have one */
---- a/drivers/usb/serial/ti_usb_3410_5052.c
-+++ b/drivers/usb/serial/ti_usb_3410_5052.c
-@@ -101,11 +101,10 @@
- 
- #define TI_TRANSFER_TIMEOUT	2
- 
--#define TI_DEFAULT_LOW_LATENCY	0
- #define TI_DEFAULT_CLOSING_WAIT	4000		/* in .01 secs */
- 
- /* supported setserial flags */
--#define TI_SET_SERIAL_FLAGS	(ASYNC_LOW_LATENCY)
-+#define TI_SET_SERIAL_FLAGS	0
- 
- /* read urb states */
- #define TI_READ_URB_RUNNING	0
-@@ -212,7 +211,6 @@ static int ti_buf_get(struct circ_buf *c
- 
- /* module parameters */
- static int debug;
--static int low_latency = TI_DEFAULT_LOW_LATENCY;
- static int closing_wait = TI_DEFAULT_CLOSING_WAIT;
- static ushort vendor_3410[TI_EXTRA_VID_PID_COUNT];
- static unsigned int vendor_3410_count;
-@@ -333,10 +331,6 @@ MODULE_FIRMWARE("ti_5052.fw");
- module_param(debug, bool, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(debug, "Enable debugging, 0=no, 1=yes");
- 
--module_param(low_latency, bool, S_IRUGO | S_IWUSR);
--MODULE_PARM_DESC(low_latency,
--		"TTY low_latency flag, 0=off, 1=on, default is off");
--
- module_param(closing_wait, int, S_IRUGO | S_IWUSR);
- MODULE_PARM_DESC(closing_wait,
-     "Maximum wait for data to drain in close, in .01 secs, default is 4000");
-@@ -480,7 +474,6 @@ static int ti_startup(struct usb_serial 
- 		spin_lock_init(&tport->tp_lock);
- 		tport->tp_uart_base_addr = (i == 0 ?
- 				TI_UART1_BASE_ADDR : TI_UART2_BASE_ADDR);
--		tport->tp_flags = low_latency ? ASYNC_LOW_LATENCY : 0;
- 		tport->tp_closing_wait = closing_wait;
- 		init_waitqueue_head(&tport->tp_msr_wait);
- 		init_waitqueue_head(&tport->tp_write_wait);
-@@ -560,10 +553,6 @@ static int ti_open(struct tty_struct *tt
- 	if (mutex_lock_interruptible(&tdev->td_open_close_lock))
- 		return -ERESTARTSYS;
- 
--	if (tty)
--		tty->low_latency =
--				(tport->tp_flags & ASYNC_LOW_LATENCY) ? 1 : 0;
--
- 	port_number = port->number - port->serial->minor;
- 
- 	memset(&(tport->tp_icount), 0x00, sizeof(tport->tp_icount));
-@@ -1480,10 +1469,6 @@ static int ti_set_serial_info(struct ti_
- 		return -EFAULT;
- 
- 	tport->tp_flags = new_serial.flags & TI_SET_SERIAL_FLAGS;
--	/* FIXME */
--	if (port->port.tty)
--		port->port.tty->low_latency =
--			(tport->tp_flags & ASYNC_LOW_LATENCY) ? 1 : 0;
- 	tport->tp_closing_wait = new_serial.closing_wait;
- 
- 	return 0;
---- a/drivers/usb/serial/visor.c
-+++ b/drivers/usb/serial/visor.c
-@@ -296,14 +296,6 @@ static int visor_open(struct tty_struct 
- 	priv->throttled = 0;
- 	spin_unlock_irqrestore(&priv->lock, flags);
- 
--	/*
--	 * Force low_latency on so that our tty_push actually forces the data
--	 * through, otherwise it is scheduled, and with high data rates (like
--	 * with OHCI) data can get lost.
--	 */
--	if (tty)
--		tty->low_latency = 1;
--
- 	/* Start reading from the device */
- 	usb_fill_bulk_urb(port->read_urb, serial->dev,
- 			   usb_rcvbulkpipe(serial->dev,
+ 		tty->driver_data = port;
+ 		port->tty = tty;
+ 		DBG1("open: %d", port->token_dl);
 
 
