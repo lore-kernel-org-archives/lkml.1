@@ -1,86 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934423AbZIDWeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934433AbZIDWg0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934423AbZIDWeX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 18:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934394AbZIDWeV
+	id S934433AbZIDWg0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 18:36:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934420AbZIDWgZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 18:34:21 -0400
-Received: from mail-iw0-f175.google.com ([209.85.223.175]:44159 "EHLO
-	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934368AbZIDWeV (ORCPT
+	Fri, 4 Sep 2009 18:36:25 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:60766 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934419AbZIDWgY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 18:34:21 -0400
+	Fri, 4 Sep 2009 18:36:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=MgfYcaJCnoGFAboKqVt/EeXvODG+EYzTkJuvpTK9t39fXJDsHiQMZD9W0of4fWQ5wa
-         cMbZPBVf1lR1WqbWIcnKAJdQeaUvcKoiv9aZL4f4ZUotOhksDSe3dZeJQ3IxSytOU6k+
-         cA81qJXgypNUA7ict51ZTZ6c5Hk8efBwmYIZM=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=I4yd3J51zEJYzxcWHYHC6ZnynRIMwPtl0wX/syUMfmY7X9TDgjz0BEt4FF8BcXrhsr
+         ItEHoXzTHh/y7CzgATeS7gknR40xA3mIb8mod34j/eTKuX5I7o6+ntuB3Vo4+v/2ETgv
+         pBEn3DhmpP5KUcANmiUh2/K8yRfP2yKUAMbIs=
+Message-ID: <4AA19668.5080909@gmail.com>
+Date: Sat, 05 Sep 2009 00:36:24 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.5 Thunderbird/3.0b3
 MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Fri, 4 Sep 2009 15:34:03 -0700
-Message-ID: <43e72e890909041534v4a4ec6ecpc6198be37adcfdef@mail.gmail.com>
-Subject: Memory leak on acpi_add_single_object()
-To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Cc: linux-kernel@vger.kernel.org, Catalin Marinas <catalin.marinas@arm.com>
-Content-Type: text/plain; charset=UTF-8
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: suspend race -mm regression [Was: Power: fix suspend vt regression]
+References: <1249980093-16319-1-git-send-email-jirislaby@gmail.com> <4A81E073.5080703@gmail.com> <4A9B9C1C.9020506@gmail.com> <200908312132.10904.rjw@sisk.pl> <4AA0FEBF.7040104@gmail.com> <4AA19520.3070708@gmail.com>
+In-Reply-To: <4AA19520.3070708@gmail.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are 3 acpi_add_single_object() kmemleak reports on 2.6.31-rc8 +
-Catalin's kmemleak tree (git://linux-arm.org/linux-2.6 master).
+On 09/05/2009 12:30 AM, Jiri Slaby wrote:
+> WARNING: at kernel/smp.c:124
+> __generic_smp_call_function_interrupt+0xfd/0x110()
+> Hardware name: To Be Filled By O.E.M.
+> Modules linked in: nfs lockd auth_rpcgss sunrpc ath5k ath
+> Pid: 3423, comm: pm-suspend Not tainted 2.6.31-rc8-mm1_64 #762
+> Call Trace:
+>  [<ffffffff8103fc48>] warn_slowpath_common+0x78/0xb0
+>  [<ffffffff8103fc8f>] warn_slowpath_null+0xf/0x20
+>  [<ffffffff8106950d>] __generic_smp_call_function_interrupt+0xfd/0x110
+>  [<ffffffff8106956a>] hotplug_cfd+0x4a/0xa0
+>  [<ffffffff81434e47>] notifier_call_chain+0x47/0x90
+>  [<ffffffff8105b311>] raw_notifier_call_chain+0x11/0x20
+>  [<ffffffff8141ece0>] _cpu_down+0x150/0x2d0
 
-unreferenced object 0xffff88003c405940 (size 64):
-  comm "swapper", pid 1, jiffies 4294892466
-  hex dump (first 32 bytes):
-    00 00 00 00 38 00 00 00 00 00 00 00 00 00 00 00  ....8...........
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<ffffffff814e9d55>] kmemleak_alloc+0x25/0x60
-    [<ffffffff81119fbb>] __kmalloc+0x16b/0x250
-    [<ffffffff812bb379>] kzalloc+0xf/0x11
-    [<ffffffff812bb983>] acpi_add_single_object+0x58e/0xd3c
-    [<ffffffff812bc34c>] acpi_bus_scan+0x125/0x1af
-    [<ffffffff81818842>] acpi_scan_init+0xc8/0xe9
-    [<ffffffff818185fd>] acpi_init+0x21f/0x265
-    [<ffffffff8100a047>] do_one_initcall+0x37/0x1a0
-    [<ffffffff817efa16>] kernel_init+0x164/0x1ba
-    [<ffffffff810130ca>] child_rip+0xa/0x20
-    [<ffffffffffffffff>] 0xffffffffffffffff
-unreferenced object 0xffff88003c405980 (size 64):
-  comm "swapper", pid 1, jiffies 4294892467
-  hex dump (first 32 bytes):
-    00 00 00 00 38 00 00 00 00 00 00 00 00 00 00 00  ....8...........
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<ffffffff814e9d55>] kmemleak_alloc+0x25/0x60
-    [<ffffffff81119fbb>] __kmalloc+0x16b/0x250
-    [<ffffffff812bb379>] kzalloc+0xf/0x11
-    [<ffffffff812bb983>] acpi_add_single_object+0x58e/0xd3c
-    [<ffffffff812bc34c>] acpi_bus_scan+0x125/0x1af
-    [<ffffffff81818842>] acpi_scan_init+0xc8/0xe9
-    [<ffffffff818185fd>] acpi_init+0x21f/0x265
-    [<ffffffff8100a047>] do_one_initcall+0x37/0x1a0
-    [<ffffffff817efa16>] kernel_init+0x164/0x1ba
-    [<ffffffff810130ca>] child_rip+0xa/0x20
-    [<ffffffffffffffff>] 0xffffffffffffffff
-unreferenced object 0xffff88003c4059c0 (size 64):
-  comm "swapper", pid 1, jiffies 4294892470
-  hex dump (first 32 bytes):
-    00 00 00 00 38 00 00 00 00 00 00 00 00 00 00 00  ....8...........
-    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
-  backtrace:
-    [<ffffffff814e9d55>] kmemleak_alloc+0x25/0x60
-    [<ffffffff81119fbb>] __kmalloc+0x16b/0x250
-    [<ffffffff812bb379>] kzalloc+0xf/0x11
-    [<ffffffff812bb983>] acpi_add_single_object+0x58e/0xd3c
-    [<ffffffff812bc34c>] acpi_bus_scan+0x125/0x1af
-    [<ffffffff81818842>] acpi_scan_init+0xc8/0xe9
-    [<ffffffff818185fd>] acpi_init+0x21f/0x265
-    [<ffffffff8100a047>] do_one_initcall+0x37/0x1a0
-    [<ffffffff817efa16>] kernel_init+0x164/0x1ba
-    [<ffffffff810130ca>] child_rip+0xa/0x20
-    [<ffffffffffffffff>] 0xffffffffffffffff
-
-  Luis
+It's the CPU_DEAD notifier:
+ffffffff8141ecd0:       48 83 ce 07             or     $0x7,%rsi
+ffffffff8141ecd4:       48 c7 c7 08 ff 5d 81    mov
+$0xffffffff815dff08,%rdi
+ffffffff8141ecdb:       e8 20 c6 c3 ff          callq  ffffffff8105b300
+<raw_notifier_call_chain>
+ffffffff8141ece0:       3d 02 80 00 00          cmp    $0x8002,%eax
