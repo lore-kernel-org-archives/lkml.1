@@ -1,50 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933734AbZIDQ5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757033AbZIDQDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933734AbZIDQ5a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932871AbZIDQ53
+	id S1757033AbZIDQDZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757025AbZIDQDX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:57:29 -0400
-Received: from claw.goop.org ([74.207.240.146]:50961 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932452AbZIDQ52 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:57:28 -0400
-Message-ID: <4AA146FA.2000303@goop.org>
-Date: Fri, 04 Sep 2009 09:57:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Tejun Heo <tj@kernel.org>, mingo@redhat.com, linux-kernel@vger.kernel.org,
-       jeremy.fitzhardinge@citrix.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86/i386: Make sure stack-protector segment base
- is cache aligned
-References: <4AA01893.6000507@goop.org> <tip-1ea0d14e480c245683927eecc03a70faf06e80c8@git.kernel.org> <4AA02687.9080406@zytor.com> <4AA02B02.7080101@goop.org> <4AA031DE.2070109@zytor.com> <4AA080A0.7010804@kernel.org> <4AA08283.5020306@kernel.org> <4AA08B09.50503@zytor.com> <4AA139DF.3050902@goop.org> <4AA145E6.8000603@zytor.com>
-In-Reply-To: <4AA145E6.8000603@zytor.com>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=UTF-8
+	Fri, 4 Sep 2009 12:03:23 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:32947 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757014AbZIDQDV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 12:03:21 -0400
+Date: Fri, 4 Sep 2009 18:03:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-kernel@vger.kernel.org, Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH] VT: Add a boot option to disable cursor on boot
+Message-ID: <20090904180302.6561fabf@lxorguk.ukuu.org.uk>
+In-Reply-To: <1252079289-5383-1-git-send-email-mjg@redhat.com>
+References: <1252079289-5383-1-git-send-email-mjg@redhat.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/04/09 09:52, H. Peter Anvin wrote:
-> On 09/04/2009 09:01 AM, Jeremy Fitzhardinge wrote:
->   
->>>>     
->>>>         
->>> It's correct that it doesn't make any difference for access, only for load.
->>>   
->>>       
->> Well, to be completely precise, restore.  When returning to usermode,
->> the "pop %seg" is slightly faster if you're restoring a null selector,
->> which is typically the case for %fs as 32-bit usermode doesn't use it.
->>
->>     
-> That's a segment load...
+On Fri,  4 Sep 2009 11:48:09 -0400
+Matthew Garrett <mjg@redhat.com> wrote:
 
-Yeah, OK.
+> The VT code currently enables a visible cursor on boot. This is a fairly
+> unnecessary visual distraction for setups which boot to a splash screen
+> before going directly into X, so add a boot option (vt.hide_boot_cursor=1)
+> that doesn't enable the cursor for initial VT setup. VT resets and any
+> later VT creation will leave the cursor turned on, as before.
 
-    J
+Seems odd to me - why can't the splash screen app in initrd just issue
+the call to turn off the cursor - or is this splash screen coming from
+something else ?
 
+Either way the implementation in your patch is butt-ugly adding an extra
+special case all over the place.
+
+IMHO
+- If the splash screen is kernel based then the splash screen module
+  needs to be able to ask the vt driver itself
+- If not then the user space can use ioctls like everyone else (see
+  setterm)
+- It should be implemented without adding an extra condition to a pile of
+  ifs (or the condition mess at least become a single cursor_visible_p())
+
+Alan
