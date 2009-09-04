@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934198AbZIDURG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933989AbZIDU0x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934198AbZIDURG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:17:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934171AbZIDUQz
+	id S933989AbZIDU0x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:26:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933960AbZIDU0w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:16:55 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:60767 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934072AbZIDUQv convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:16:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RlnllfAqzYO/BtRpJWIgvGTA+ch+psbJutLHl0EjHMxGt8bRrUxKS7r4iPOVpu4XoK
-         gfxTtPLrjPHNVm3ytXmVklPQfzangzn4wSgyDvR5BtukcqibL/ZoEwaSno/WBGtSse3X
-         XXV3MY/+rIoGIp3/9YwTVV73Ixy8+HF82Uo98=
+	Fri, 4 Sep 2009 16:26:52 -0400
+Received: from mail.atheros.com ([12.36.123.2]:15710 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933959AbZIDU0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:26:51 -0400
+Date: Fri, 4 Sep 2009 13:26:53 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Catalin Marinas <catalin.marinas@arm.com>
+CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "penberg@cs.helsinki.fi" <penberg@cs.helsinki.fi>,
+       "mcgrof@gmail.com" <mcgrof@gmail.com>
+Subject: Re: [PATCH v2 2/5] kmemleak: add clear command support
+Message-ID: <20090904202653.GE4949@mosca>
+References: <1251956140-5499-1-git-send-email-lrodriguez@atheros.com>
+ <1251956140-5499-3-git-send-email-lrodriguez@atheros.com>
+ <1251996731.22485.25.camel@pc1117.cambridge.arm.com>
 MIME-Version: 1.0
-In-Reply-To: <1252089313.5254.0.camel@dhcp231-106.rdu.redhat.com>
-References: <8db1092f0909020629v5aab79d8lbfcc8c214622787c@mail.gmail.com>
-	 <200909030907.02321.oliver@neukum.org>
-	 <20090903160536.GA24050@kroah.com>
-	 <200909041223.22835.oliver@neukum.org>
-	 <8db1092f0909040710t5c048e93j3fb5adc9e7f1cf6a@mail.gmail.com>
-	 <8db1092f0909041130p2733f7ebs5ee8211c48bab861@mail.gmail.com>
-	 <1252089313.5254.0.camel@dhcp231-106.rdu.redhat.com>
-Date: Fri, 4 Sep 2009 22:16:43 +0200
-Message-ID: <8db1092f0909041316l77da5d75n1934d340db26e6ec@mail.gmail.com>
-Subject: Re: [2.6.31-rc8] Problem with detect USB devices
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: Oliver Neukum <oliver@neukum.org>, Greg KH <greg@kroah.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-usb@vger.kernel.org, ebiederm@aristanetworks.com
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1251996731.22485.25.camel@pc1117.cambridge.arm.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/4 Eric Paris <eparis@redhat.com>:
+On Thu, Sep 03, 2009 at 09:52:11AM -0700, Catalin Marinas wrote:
+> On Thu, 2009-09-03 at 01:35 -0400, Luis R. Rodriguez wrote:
+> > In an ideal world your kmemleak output will be small,
+> > when its not you can use the clear command to ingore previously
+> > annotated kmemleak objects. We do this by painting them black.
+> 
+> Making the objects "black" means that they are completely ignored by
+> kmemleak and they are assumed not to contain any valid references.
+> Therefore they won't be scanned and many of the newly allocated objects
+> would be false positives.
 
->
-> Update to Linus's newest git tree.  It has a fix for this problem.
-> Sorry for all the trouble.
+Got it, BTW can you elaborate as to why painting objects black would
+create false positives for newly allocated objects? I fail to understand
+why.
 
-Yes, upgrade to latest git tree solves problem. Thanks.
+> You may want to make them "gray" and only those which were reported as
+> unreferenced, something like below:
+> 
+>         if ((object->flags & OBJECT_REPORTED) && unreferenced_object(object))
+>                 make_gray_object(object->pointer)
 
+Thanks, will use this.
 
-Regards
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+  Luis
