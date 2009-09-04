@@ -1,28 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934286AbZIDVFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933950AbZIDUNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934286AbZIDVFY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 17:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933903AbZIDVFX
+	id S933950AbZIDUNT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933927AbZIDUNS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 17:05:23 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39714 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933748AbZIDVFX (ORCPT
+	Fri, 4 Sep 2009 16:13:18 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:45058 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933884AbZIDUNS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 17:05:23 -0400
-Date: Fri, 4 Sep 2009 14:03:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: jgunthorpe@obsidianresearch.com, tpmdd-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, srajiv@linux.vnet.ibm.com,
-       debora@linux.vnet.ibm.com, m.selhorst@sirrix.com, jmorris@namei.org,
-       jbeulich@novell.com
-Subject: Re: [PATCH] TPM: Fixup pubek sysfs file
-Message-Id: <20090904140325.c592289a.akpm@linux-foundation.org>
-In-Reply-To: <adaab1bnvz3.fsf@cisco.com>
-References: <20090904045231.GW4973@obsidianresearch.com>
-	<adaab1bnvz3.fsf@cisco.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Fri, 4 Sep 2009 16:13:18 -0400
+Date: Fri, 4 Sep 2009 22:12:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
+ testsuite
+Message-ID: <20090904221234.1b4ef2b8@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19099.52899.620345.326521@pilspetsen.it.uu.se>
+	<19100.31254.666066.755541@pilspetsen.it.uu.se>
+	<200909012042.59856.rjw@sisk.pl>
+	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+	<19105.5352.28380.230615@pilspetsen.it.uu.se>
+	<alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,22 +41,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 Sep 2009 22:02:24 -0700
-Roland Dreier <rdreier@cisco.com> wrote:
-
+> After writing the above, the voices in my head started clamoring about 
+> this "space allocated" vs "bytes buffered" thing, which I was obviously 
+> aware of, but hadn't thought about as an issue.
 > 
->  > Algorithm: 00 00 00 01
->  > Encscheme: 00 03
->  > Sigscheme: 00 01
->  > Parameters: 00 00 08 00 00 00 00 02 00 00 00 00
->  > Modulus length: 256
-> 
-> No argument that this fix is an improvement, but what happened to the
-> "one value per file" rule for sysfs??
+> And you know what? The thing about "space allocated" vs "bytes buffered" 
+> is that writing _one_ byte (the '\r') can cause a lot more than one byte 
+> to be allocated for a buffer (we do minimum 256-byte buffers)
 
-We goofed.  This one snuck through.
+Doh yes thats an utterly dumb bug on my part - we do have to work on
+chars.
 
-It's one of the reasons why I recommend that people cite examples of
-the sysfs/procfs output in changelogs.  These things are part of the
-kernel ABI and once they go in we cannot change them so we have to get
-them right first time.
+100% agree with the diagnosis
