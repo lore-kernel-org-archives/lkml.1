@@ -1,171 +1,344 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933033AbZIDHA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932986AbZIDG6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933033AbZIDHA3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932920AbZIDG6q
+	id S932986AbZIDG6w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932966AbZIDG6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:58:46 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56546 "EHLO mx1.suse.de"
+	Fri, 4 Sep 2009 02:58:51 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56547 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756672AbZIDG6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:58:37 -0400
-Message-Id: <20090904065533.973867247@nick.local0.net>
+	id S1756669AbZIDG6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:58:38 -0400
+Message-Id: <20090904065534.138326758@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:51:42 +1000
+Date: Fri, 04 Sep 2009 16:51:43 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Miklos Szeredi <mszeredi@suse.cz>
-Subject: [patch 01/33] fs: no games with DCACHE_UNHASHED
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 02/33] fs: cleanup files_lock
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=unhashed-d_delete.patch
+Content-Disposition: inline; filename=fs-files_list-improve.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(this is in -mm)
+Lock tty_files with a new spinlock, tty_files_lock; provide helpers to
+manipulate the per-sb files list; unexport the files_lock spinlock.
 
-Filesystems outside the regular namespace do not have to clear DCACHE_UNHASHED
-in order to have a working /proc/$pid/fd/XXX. Nothing in proc prevents the
-fd link from being used if its dentry is not in the hash.
-
-Also, it does not get put into the dcache hash if DCACHE_UNHASHED is clear;
-that depends on the filesystem calling d_add or d_rehash.
-
-So delete the misleading comments and needless code.
-
-Acked-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Nick Piggin <npiggin@suse.de>
 ---
- fs/anon_inodes.c |   16 ----------------
- fs/pipe.c        |   18 ------------------
- net/socket.c     |   19 -------------------
- 3 files changed, 53 deletions(-)
+ drivers/char/pty.c       |    6 +++++-
+ drivers/char/tty_io.c    |   26 ++++++++++++++++++--------
+ fs/file_table.c          |   42 ++++++++++++++++++------------------------
+ fs/open.c                |    4 ++--
+ include/linux/fs.h       |    8 +++-----
+ include/linux/tty.h      |    1 +
+ security/selinux/hooks.c |    4 ++--
+ 7 files changed, 49 insertions(+), 42 deletions(-)
 
-Index: linux-2.6/fs/pipe.c
+Index: linux-2.6/drivers/char/pty.c
 ===================================================================
---- linux-2.6.orig/fs/pipe.c
-+++ linux-2.6/fs/pipe.c
-@@ -887,17 +887,6 @@ void free_pipe_info(struct inode *inode)
- }
+--- linux-2.6.orig/drivers/char/pty.c
++++ linux-2.6/drivers/char/pty.c
+@@ -655,7 +655,11 @@ static int __ptmx_open(struct inode *ino
  
- static struct vfsmount *pipe_mnt __read_mostly;
--static int pipefs_delete_dentry(struct dentry *dentry)
--{
--	/*
--	 * At creation time, we pretended this dentry was hashed
--	 * (by clearing DCACHE_UNHASHED bit in d_flags)
--	 * At delete time, we restore the truth : not hashed.
--	 * (so that dput() can proceed correctly)
--	 */
--	dentry->d_flags |= DCACHE_UNHASHED;
--	return 0;
--}
+ 	set_bit(TTY_PTY_LOCK, &tty->flags); /* LOCK THE SLAVE */
+ 	filp->private_data = tty;
+-	file_move(filp, &tty->tty_files);
++
++	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
++	spin_lock(&tty_files_lock);
++	list_add(&filp->f_u.fu_list, &tty->tty_files);
++	spin_unlock(&tty_files_lock);
  
- /*
-  * pipefs_dname() is called from d_path().
-@@ -909,7 +898,6 @@ static char *pipefs_dname(struct dentry
- }
- 
- static const struct dentry_operations pipefs_dentry_operations = {
--	.d_delete	= pipefs_delete_dentry,
- 	.d_dname	= pipefs_dname,
- };
- 
-@@ -969,12 +957,6 @@ struct file *create_write_pipe(int flags
- 		goto err_inode;
- 
- 	dentry->d_op = &pipefs_dentry_operations;
--	/*
--	 * We dont want to publish this dentry into global dentry hash table.
--	 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHED
--	 * This permits a working /proc/$pid/fd/XXX on pipes
--	 */
--	dentry->d_flags &= ~DCACHE_UNHASHED;
- 	d_instantiate(dentry, inode);
- 
- 	err = -ENFILE;
-Index: linux-2.6/net/socket.c
+ 	retval = devpts_pty_new(inode, tty->link);
+ 	if (retval)
+Index: linux-2.6/drivers/char/tty_io.c
 ===================================================================
---- linux-2.6.orig/net/socket.c
-+++ linux-2.6/net/socket.c
-@@ -307,18 +307,6 @@ static struct file_system_type sock_fs_t
- 	.kill_sb =	kill_anon_super,
- };
+--- linux-2.6.orig/drivers/char/tty_io.c
++++ linux-2.6/drivers/char/tty_io.c
+@@ -136,6 +136,9 @@ LIST_HEAD(tty_drivers);			/* linked list
+ DEFINE_MUTEX(tty_mutex);
+ EXPORT_SYMBOL(tty_mutex);
  
--static int sockfs_delete_dentry(struct dentry *dentry)
--{
--	/*
--	 * At creation time, we pretended this dentry was hashed
--	 * (by clearing DCACHE_UNHASHED bit in d_flags)
--	 * At delete time, we restore the truth : not hashed.
--	 * (so that dput() can proceed correctly)
--	 */
--	dentry->d_flags |= DCACHE_UNHASHED;
--	return 0;
--}
--
- /*
-  * sockfs_dname() is called from d_path().
-  */
-@@ -329,7 +317,6 @@ static char *sockfs_dname(struct dentry
++/* Spinlock to protect the tty->tty_files list */
++DEFINE_SPINLOCK(tty_files_lock);
++
+ static ssize_t tty_read(struct file *, char __user *, size_t, loff_t *);
+ static ssize_t tty_write(struct file *, const char __user *, size_t, loff_t *);
+ ssize_t redirected_tty_write(struct file *, const char __user *,
+@@ -235,11 +238,11 @@ static int check_tty_count(struct tty_st
+ 	struct list_head *p;
+ 	int count = 0;
+ 
+-	file_list_lock();
++	spin_lock(&tty_files_lock);
+ 	list_for_each(p, &tty->tty_files) {
+ 		count++;
+ 	}
+-	file_list_unlock();
++	spin_unlock(&tty_files_lock);
+ 	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
+ 	    tty->driver->subtype == PTY_TYPE_SLAVE &&
+ 	    tty->link && tty->link->count)
+@@ -517,7 +520,7 @@ static void do_tty_hangup(struct work_st
+ 	spin_unlock(&redirect_lock);
+ 
+ 	check_tty_count(tty, "do_tty_hangup");
+-	file_list_lock();
++	spin_lock(&tty_files_lock);
+ 	/* This breaks for file handles being sent over AF_UNIX sockets ? */
+ 	list_for_each_entry(filp, &tty->tty_files, f_u.fu_list) {
+ 		if (filp->f_op->write == redirected_tty_write)
+@@ -528,7 +531,7 @@ static void do_tty_hangup(struct work_st
+ 		tty_fasync(-1, filp, 0);	/* can't block */
+ 		filp->f_op = &hung_up_tty_fops;
+ 	}
+-	file_list_unlock();
++	spin_unlock(&tty_files_lock);
+ 
+ 	tty_ldisc_hangup(tty);
+ 
+@@ -1400,9 +1403,9 @@ static void release_one_tty(struct kref
+ 	tty_driver_kref_put(driver);
+ 	module_put(driver->owner);
+ 
+-	file_list_lock();
++	spin_lock(&tty_files_lock);
+ 	list_del_init(&tty->tty_files);
+-	file_list_unlock();
++	spin_unlock(&tty_files_lock);
+ 
+ 	free_tty_struct(tty);
  }
- 
- static const struct dentry_operations sockfs_dentry_operations = {
--	.d_delete = sockfs_delete_dentry,
- 	.d_dname  = sockfs_dname,
- };
- 
-@@ -378,12 +365,6 @@ static int sock_attach_fd(struct socket
- 		return -ENOMEM;
- 
- 	dentry->d_op = &sockfs_dentry_operations;
--	/*
--	 * We dont want to push this dentry into global dentry hash table.
--	 * We pretend dentry is already hashed, by unsetting DCACHE_UNHASHED
--	 * This permits a working /proc/$pid/fd/XXX on sockets
--	 */
--	dentry->d_flags &= ~DCACHE_UNHASHED;
- 	d_instantiate(dentry, SOCK_INODE(sock));
- 
- 	sock->file = file;
-Index: linux-2.6/fs/anon_inodes.c
-===================================================================
---- linux-2.6.orig/fs/anon_inodes.c
-+++ linux-2.6/fs/anon_inodes.c
-@@ -33,24 +33,11 @@ static int anon_inodefs_get_sb(struct fi
- 			     mnt);
- }
- 
--static int anon_inodefs_delete_dentry(struct dentry *dentry)
--{
--	/*
--	 * We faked vfs to believe the dentry was hashed when we created it.
--	 * Now we restore the flag so that dput() will work correctly.
--	 */
--	dentry->d_flags |= DCACHE_UNHASHED;
--	return 1;
--}
--
- static struct file_system_type anon_inode_fs_type = {
- 	.name		= "anon_inodefs",
- 	.get_sb		= anon_inodefs_get_sb,
- 	.kill_sb	= kill_anon_super,
- };
--static const struct dentry_operations anon_inodefs_dentry_operations = {
--	.d_delete	= anon_inodefs_delete_dentry,
--};
- 
- /*
-  * nop .set_page_dirty method so that people can use .page_mkwrite on
-@@ -119,9 +106,6 @@ int anon_inode_getfd(const char *name, c
+@@ -1611,7 +1614,10 @@ void tty_release_dev(struct file *filp)
+ 	 *  - do_tty_hangup no longer sees this file descriptor as
+ 	 *    something that needs to be handled for hangups.
  	 */
- 	atomic_inc(&anon_inode_inode->i_count);
+-	file_kill(filp);
++	spin_lock(&tty_files_lock);
++	BUG_ON(list_empty(&filp->f_u.fu_list));
++	list_del_init(&filp->f_u.fu_list);
++	spin_unlock(&tty_files_lock);
+ 	filp->private_data = NULL;
  
--	dentry->d_op = &anon_inodefs_dentry_operations;
--	/* Do not publish this dentry inside the global dentry hash table */
--	dentry->d_flags &= ~DCACHE_UNHASHED;
- 	d_instantiate(dentry, anon_inode_inode);
+ 	/*
+@@ -1769,7 +1775,11 @@ got_driver:
+ 		return PTR_ERR(tty);
  
- 	error = -ENFILE;
+ 	filp->private_data = tty;
+-	file_move(filp, &tty->tty_files);
++	BUG_ON(list_empty(&filp->f_u.fu_list));
++	file_sb_list_del(filp); /* __dentry_open has put it on the sb list */
++	spin_lock(&tty_files_lock);
++	list_add(&filp->f_u.fu_list, &tty->tty_files);
++	spin_unlock(&tty_files_lock);
+ 	check_tty_count(tty, "tty_open");
+ 	if (tty->driver->type == TTY_DRIVER_TYPE_PTY &&
+ 	    tty->driver->subtype == PTY_TYPE_MASTER)
+Index: linux-2.6/fs/file_table.c
+===================================================================
+--- linux-2.6.orig/fs/file_table.c
++++ linux-2.6/fs/file_table.c
+@@ -30,8 +30,7 @@ struct files_stat_struct files_stat = {
+ 	.max_files = NR_FILE
+ };
+ 
+-/* public. Not pretty! */
+-__cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
++static __cacheline_aligned_in_smp DEFINE_SPINLOCK(files_lock);
+ 
+ /* SLAB cache for file structures */
+ static struct kmem_cache *filp_cachep __read_mostly;
+@@ -285,7 +284,7 @@ void __fput(struct file *file)
+ 		cdev_put(inode->i_cdev);
+ 	fops_put(file->f_op);
+ 	put_pid(file->f_owner.pid);
+-	file_kill(file);
++	file_sb_list_del(file);
+ 	if (file->f_mode & FMODE_WRITE)
+ 		drop_file_write_access(file);
+ 	file->f_path.dentry = NULL;
+@@ -347,31 +346,29 @@ struct file *fget_light(unsigned int fd,
+ 	return file;
+ }
+ 
+-
+ void put_filp(struct file *file)
+ {
+ 	if (atomic_long_dec_and_test(&file->f_count)) {
+ 		security_file_free(file);
+-		file_kill(file);
++		file_sb_list_del(file);
+ 		file_free(file);
+ 	}
+ }
+ 
+-void file_move(struct file *file, struct list_head *list)
++void file_sb_list_add(struct file *file, struct super_block *sb)
+ {
+-	if (!list)
+-		return;
+-	file_list_lock();
+-	list_move(&file->f_u.fu_list, list);
+-	file_list_unlock();
++	spin_lock(&files_lock);
++	BUG_ON(!list_empty(&file->f_u.fu_list));
++	list_add(&file->f_u.fu_list, &sb->s_files);
++	spin_unlock(&files_lock);
+ }
+ 
+-void file_kill(struct file *file)
++void file_sb_list_del(struct file *file)
+ {
+ 	if (!list_empty(&file->f_u.fu_list)) {
+-		file_list_lock();
++		spin_lock(&files_lock);
+ 		list_del_init(&file->f_u.fu_list);
+-		file_list_unlock();
++		spin_unlock(&files_lock);
+ 	}
+ }
+ 
+@@ -380,7 +377,7 @@ int fs_may_remount_ro(struct super_block
+ 	struct file *file;
+ 
+ 	/* Check that no files are currently opened for writing. */
+-	file_list_lock();
++	spin_lock(&files_lock);
+ 	list_for_each_entry(file, &sb->s_files, f_u.fu_list) {
+ 		struct inode *inode = file->f_path.dentry->d_inode;
+ 
+@@ -392,10 +389,10 @@ int fs_may_remount_ro(struct super_block
+ 		if (S_ISREG(inode->i_mode) && (file->f_mode & FMODE_WRITE))
+ 			goto too_bad;
+ 	}
+-	file_list_unlock();
++	spin_unlock(&files_lock);
+ 	return 1; /* Tis' cool bro. */
+ too_bad:
+-	file_list_unlock();
++	spin_unlock(&files_lock);
+ 	return 0;
+ }
+ 
+@@ -411,7 +408,7 @@ void mark_files_ro(struct super_block *s
+ 	struct file *f;
+ 
+ retry:
+-	file_list_lock();
++	spin_lock(&files_lock);
+ 	list_for_each_entry(f, &sb->s_files, f_u.fu_list) {
+ 		struct vfsmount *mnt;
+ 		if (!S_ISREG(f->f_path.dentry->d_inode->i_mode))
+@@ -425,16 +422,13 @@ retry:
+ 			continue;
+ 		file_release_write(f);
+ 		mnt = mntget(f->f_path.mnt);
+-		file_list_unlock();
+-		/*
+-		 * This can sleep, so we can't hold
+-		 * the file_list_lock() spinlock.
+-		 */
++		/* This can sleep, so we can't hold the spinlock. */
++		spin_unlock(&files_lock);
+ 		mnt_drop_write(mnt);
+ 		mntput(mnt);
+ 		goto retry;
+ 	}
+-	file_list_unlock();
++	spin_unlock(&files_lock);
+ }
+ 
+ void __init files_init(unsigned long mempages)
+Index: linux-2.6/fs/open.c
+===================================================================
+--- linux-2.6.orig/fs/open.c
++++ linux-2.6/fs/open.c
+@@ -828,7 +828,7 @@ static struct file *__dentry_open(struct
+ 	f->f_path.mnt = mnt;
+ 	f->f_pos = 0;
+ 	f->f_op = fops_get(inode->i_fop);
+-	file_move(f, &inode->i_sb->s_files);
++	file_sb_list_add(f, inode->i_sb);
+ 
+ 	error = security_dentry_open(f, cred);
+ 	if (error)
+@@ -873,7 +873,7 @@ cleanup_all:
+ 			mnt_drop_write(mnt);
+ 		}
+ 	}
+-	file_kill(f);
++	file_sb_list_del(f);
+ 	f->f_path.dentry = NULL;
+ 	f->f_path.mnt = NULL;
+ cleanup_file:
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
+@@ -940,9 +940,6 @@ struct file {
+ 	unsigned long f_mnt_write_state;
+ #endif
+ };
+-extern spinlock_t files_lock;
+-#define file_list_lock() spin_lock(&files_lock);
+-#define file_list_unlock() spin_unlock(&files_lock);
+ 
+ #define get_file(x)	atomic_long_inc(&(x)->f_count)
+ #define file_count(x)	atomic_long_read(&(x)->f_count)
+@@ -2031,6 +2028,7 @@ extern const struct file_operations read
+ extern const struct file_operations write_pipefifo_fops;
+ extern const struct file_operations rdwr_pipefifo_fops;
+ 
++extern void mark_files_ro(struct super_block *sb);
+ extern int fs_may_remount_ro(struct super_block *);
+ 
+ #ifdef CONFIG_BLOCK
+@@ -2176,8 +2174,8 @@ static inline void insert_inode_hash(str
+ }
+ 
+ extern struct file * get_empty_filp(void);
+-extern void file_move(struct file *f, struct list_head *list);
+-extern void file_kill(struct file *f);
++extern void file_sb_list_add(struct file *f, struct super_block *sb);
++extern void file_sb_list_del(struct file *f);
+ #ifdef CONFIG_BLOCK
+ struct bio;
+ extern void submit_bio(int, struct bio *);
+Index: linux-2.6/security/selinux/hooks.c
+===================================================================
+--- linux-2.6.orig/security/selinux/hooks.c
++++ linux-2.6/security/selinux/hooks.c
+@@ -2241,7 +2241,7 @@ static inline void flush_unauthorized_fi
+ 
+ 	tty = get_current_tty();
+ 	if (tty) {
+-		file_list_lock();
++		spin_lock(&tty_files_lock);
+ 		if (!list_empty(&tty->tty_files)) {
+ 			struct inode *inode;
+ 
+@@ -2257,7 +2257,7 @@ static inline void flush_unauthorized_fi
+ 				drop_tty = 1;
+ 			}
+ 		}
+-		file_list_unlock();
++		spin_unlock(&tty_files_lock);
+ 		tty_kref_put(tty);
+ 	}
+ 	/* Reset controlling tty. */
+Index: linux-2.6/include/linux/tty.h
+===================================================================
+--- linux-2.6.orig/include/linux/tty.h
++++ linux-2.6/include/linux/tty.h
+@@ -438,6 +438,7 @@ extern struct tty_struct *tty_pair_get_t
+ extern struct tty_struct *tty_pair_get_pty(struct tty_struct *tty);
+ 
+ extern struct mutex tty_mutex;
++extern spinlock_t tty_files_lock;
+ 
+ extern void tty_write_unlock(struct tty_struct *tty);
+ extern int tty_write_lock(struct tty_struct *tty, int ndelay);
 
 
