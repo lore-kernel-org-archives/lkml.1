@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933035AbZIDHAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933236AbZIDHFf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933035AbZIDHAM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932981AbZIDHAJ
+	id S933236AbZIDHFf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:05:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933201AbZIDHFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:00:09 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:53119 "EHLO mx1.redhat.com"
+	Fri, 4 Sep 2009 03:05:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56770 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932722AbZIDHAF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 03:00:05 -0400
-From: Xiaotian Feng <dfeng@redhat.com>
-To: len.brown@intel.com, rui.zhang@intel.com, yakui.zhao@intel.com,
-       bjorn.helgaas@hp.com, ak@linux.intel.com
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Xiaotian Feng <dfeng@redhat.com>
-Subject: [PATCH] drivers/acpi: fix memory leak in acpi_device_set_id
-Date: Fri,  4 Sep 2009 15:00:19 +0800
-Message-Id: <1252047619-2924-1-git-send-email-dfeng@redhat.com>
+	id S1756671AbZIDHFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 03:05:05 -0400
+Date: Fri, 4 Sep 2009 09:05:06 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: linux-fsdevel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/33] my current vfs scalability patch queue
+Message-ID: <20090904070506.GA1875@wotan.suse.de>
+References: <20090904065142.114706411@nick.local0.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904065142.114706411@nick.local0.net>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In acpi_device_set_id, if cid_list is allocated by ACPI_ALLOCATE_ZEROED,
-it is never freed. This patch fixes the memory leak. 
+On Fri, Sep 04, 2009 at 04:51:41PM +1000, npiggin@suse.de wrote:
+> But it is now getting to the point where I will need to get some agreement with
+> the approach.
 
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
----
- drivers/acpi/scan.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+BTW, yes I'm aware numbers and results are needed. I have some things,
+but I don't have that big systems to test with, or really interesting
+workoads.
 
-diff --git a/drivers/acpi/scan.c b/drivers/acpi/scan.c
-index 781435d..a0102ad 100644
---- a/drivers/acpi/scan.c
-+++ b/drivers/acpi/scan.c
-@@ -1010,6 +1010,7 @@ static void acpi_device_set_id(struct acpi_device *device,
- 	struct acpi_compatible_id_list *cid_list = NULL;
- 	const char *cid_add = NULL;
- 	acpi_status status;
-+	int free_cid_list = 0;
- 
- 	switch (type) {
- 	case ACPI_BUS_TYPE_DEVICE:
-@@ -1098,6 +1099,7 @@ static void acpi_device_set_id(struct acpi_device *device,
- 				kfree(buffer.pointer);
- 				return;
- 			} else {
-+				free_cid_list = 1;
- 				cid_list->count = 0;
- 				cid_list->size = size;
- 			}
-@@ -1124,6 +1126,8 @@ static void acpi_device_set_id(struct acpi_device *device,
- 			printk(KERN_ERR PREFIX "Memory allocation error\n");
- 	}
- 
-+	if (free_cid_list)
-+		ACPI_FREE(cid_list);
- 	kfree(buffer.pointer);
- }
- 
--- 
-1.6.2.5
+I know google is running into lock contention which is why they proposed
+the batched iput dput patches. Peter Chubb hit inode lock contention
+with reaim (don't konw if that is considered realistic). And SGI have
+had various lock contention problems with NFS fileservers.
 
+So aside from reviews and suggestions, what would be most helpful to me
+would be people willing to test out their problematic workloads with
+me. It's the only way I can try to get them fixed.
+
+Thanks,
+Nick
