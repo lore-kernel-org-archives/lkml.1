@@ -1,178 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933659AbZIDKLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933620AbZIDKU7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933659AbZIDKLQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 06:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933599AbZIDKLO
+	id S933620AbZIDKU7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 06:20:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933478AbZIDKU6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 06:11:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:25774 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933437AbZIDKLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 06:11:12 -0400
-Date: Fri, 4 Sep 2009 06:09:46 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
-       Amerigo Wang <amwang@redhat.com>,
-       Michael Ellerman <michael@ellerman.id.au>,
-       "M. Mohan Kumar" <mohan@in.ibm.com>, akpm@linux-foundation.org,
-       bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
-       Ingo Molnar <mingo@elte.hu>, Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090904101213.5220.35512.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090904101047.5220.20618.sendpatchset@localhost.localdomain>
-References: <20090904101047.5220.20618.sendpatchset@localhost.localdomain>
-Subject: [Patch 8/8] kexec: allow to shrink reserved memory
+	Fri, 4 Sep 2009 06:20:58 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48739 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933429AbZIDKU6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 06:20:58 -0400
+Date: Fri, 4 Sep 2009 12:20:58 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+Subject: Re: Staging tree status for the .32 kernel merge
+Message-ID: <20090904102058.GC3207@pengutronix.de>
+References: <20090903041429.GA29875@kroah.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="m51xatjYGsM+13rf"
+Content-Disposition: inline
+In-Reply-To: <20090903041429.GA29875@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch implements shrinking the reserved memory for crash kernel,
-if it is more than enough.
 
-For example, if you have already reserved 128M, now you just want 100M,
-you can do:
+--m51xatjYGsM+13rf
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-# echo $((100*1024*1024)) > /sys/kernel/kexec_crash_size
 
-Note, you can only do this before loading the crash kernel.
+> 	- wlan-ng driver: a bit of work here, but this seems to be
+> 	  dropping off, with the loss of a test platform for the driver.
+> 	  Hopefully someone has a device around and can help out here.
 
-Cc: Neil Horman <nhorman@redhat.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: WANG Cong <amwang@redhat.com>
+I have a USB-Stick with prism2-chipset (Netgear MA111v1) that I succesfully
+used with wlan-ng in the past. If it is of any help for further
+development, I would donate it. Is somebody interested?
 
----
+Regards,
 
-Index: linux-2.6/include/linux/kexec.h
-===================================================================
---- linux-2.6.orig/include/linux/kexec.h
-+++ linux-2.6/include/linux/kexec.h
-@@ -206,6 +206,8 @@ extern size_t vmcoreinfo_max_size;
- 
- int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
- 		unsigned long long *crash_size, unsigned long long *crash_base);
-+int crash_shrink_memory(unsigned long new_size);
-+size_t crash_get_memory_size(void);
- 
- #else /* !CONFIG_KEXEC */
- struct pt_regs;
-Index: linux-2.6/kernel/kexec.c
-===================================================================
---- linux-2.6.orig/kernel/kexec.c
-+++ linux-2.6/kernel/kexec.c
-@@ -31,6 +31,7 @@
- #include <linux/cpu.h>
- #include <linux/console.h>
- #include <linux/vmalloc.h>
-+#include <linux/swap.h>
- 
- #include <asm/page.h>
- #include <asm/uaccess.h>
-@@ -1083,6 +1084,64 @@ void crash_kexec(struct pt_regs *regs)
- 	}
- }
- 
-+size_t crash_get_memory_size(void)
-+{
-+	size_t size;
-+	mutex_lock(&kexec_mutex);
-+	size = crashk_res.end - crashk_res.start + 1;
-+	mutex_unlock(&kexec_mutex);
-+	return size;
-+}
-+
-+static void free_reserved_phys_range(unsigned long begin, unsigned long end)
-+{
-+	unsigned long addr;
-+
-+	for (addr = begin; addr < end; addr += PAGE_SIZE) {
-+		ClearPageReserved(pfn_to_page(addr >> PAGE_SHIFT));
-+		init_page_count(pfn_to_page(addr >> PAGE_SHIFT));
-+		free_page((unsigned long)__va(addr));
-+		totalram_pages++;
-+	}
-+}
-+
-+int crash_shrink_memory(unsigned long new_size)
-+{
-+	int ret = 0;
-+	unsigned long start, end;
-+
-+	mutex_lock(&kexec_mutex);
-+
-+	if (kexec_crash_image) {
-+		ret = -ENOENT;
-+		goto unlock;
-+	}
-+	start = crashk_res.start;
-+	end = crashk_res.end;
-+
-+	if (new_size >= end - start + 1) {
-+		ret = -EINVAL;
-+		if (new_size == end - start + 1)
-+			ret = 0;
-+		goto unlock;
-+	}
-+
-+	start = roundup(start, PAGE_SIZE);
-+	end = roundup(start + new_size, PAGE_SIZE);
-+
-+	free_reserved_phys_range(end, crashk_res.end);
-+
-+	if (start == end) {
-+		crashk_res.end = end;
-+		release_resource(&crashk_res);
-+	} else
-+		crashk_res.end = end - 1;
-+
-+unlock:
-+	mutex_unlock(&kexec_mutex);
-+	return ret;
-+}
-+
- static u32 *append_elf_note(u32 *buf, char *name, unsigned type, void *data,
- 			    size_t data_len)
- {
-Index: linux-2.6/kernel/ksysfs.c
-===================================================================
---- linux-2.6.orig/kernel/ksysfs.c
-+++ linux-2.6/kernel/ksysfs.c
-@@ -100,6 +100,26 @@ static ssize_t kexec_crash_loaded_show(s
- }
- KERNEL_ATTR_RO(kexec_crash_loaded);
- 
-+static ssize_t kexec_crash_size_show(struct kobject *kobj,
-+				       struct kobj_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%lu\n", crash_get_memory_size());
-+}
-+static ssize_t kexec_crash_size_store(struct kobject *kobj,
-+				   struct kobj_attribute *attr,
-+				   const char *buf, size_t count)
-+{
-+	unsigned long cnt;
-+	int ret;
-+
-+	if (strict_strtoul(buf, 0, &cnt))
-+		return -EINVAL;
-+
-+	ret = crash_shrink_memory(cnt);
-+	return ret < 0 ? ret : count;
-+}
-+KERNEL_ATTR_RW(kexec_crash_size);
-+
- static ssize_t vmcoreinfo_show(struct kobject *kobj,
- 			       struct kobj_attribute *attr, char *buf)
- {
-@@ -147,6 +167,7 @@ static struct attribute * kernel_attrs[]
- #ifdef CONFIG_KEXEC
- 	&kexec_loaded_attr.attr,
- 	&kexec_crash_loaded_attr.attr,
-+	&kexec_crash_size_attr.attr,
- 	&vmcoreinfo_attr.attr,
- #endif
- 	NULL
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--m51xatjYGsM+13rf
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqg6goACgkQD27XaX1/VRsykwCeJ2wHQKWhVpaNn3SrrUeUdm3Z
+nFIAnjkx0RYqOX9XSQQULOHBn/tJosyh
+=dSa0
+-----END PGP SIGNATURE-----
+
+--m51xatjYGsM+13rf--
