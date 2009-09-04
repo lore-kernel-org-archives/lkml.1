@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757303AbZIDTol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757315AbZIDTsJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757303AbZIDTol (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 15:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757277AbZIDToj
+	id S1757315AbZIDTsJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 15:48:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZIDTsI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 15:44:39 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:37280 "EHLO comal.ext.ti.com"
+	Fri, 4 Sep 2009 15:48:08 -0400
+Received: from comal.ext.ti.com ([198.47.26.152]:37526 "EHLO comal.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757260AbZIDToi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 15:44:38 -0400
+	id S1757198AbZIDTsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 15:48:06 -0400
 From: "Madhusudhan" <madhu.cr@ti.com>
 To: "'Tony Lindgren'" <tony@atomide.com>,
        "'Pandita, Vikram'" <vikram.pandita@ti.com>
 Cc: "'Andrew Morton'" <akpm@linux-foundation.org>,
        "'Kadiyala, Kishore'" <kishore.kadiyala@ti.com>,
-       <linux-kernel@vger.kernel.org>, <linux-omap@vger.kernel.org>,
-       <jarkko.lavinen@nokia.com>, <linux-arm-kernel@lists.arm.linux.org.uk>,
-       <linux-arm-kernel@lists.infradead.org>, <linux-mmc@vger.kernel.org>
+       <linux-kernel@vger.kernel.org>, <linux-omap@vger.kernel.org>
 References: <34590.192.168.10.89.1251897876.squirrel@dbdmail.itg.ti.com> <20090904121912.4b4e2b5a.akpm@linux-foundation.org> <FCCFB4CDC6E5564B9182F639FC35608702F9B8A526@dbde02.ent.ti.com> <20090904193347.GD15715@atomide.com>
 Subject: RE: [PATCH] OMAP4: MMC driver support on OMAP4
-Date: Fri, 4 Sep 2009 14:43:44 -0500
-Message-ID: <00d801ca2d98$033a9410$544ff780@am.dhcp.ti.com>
+Date: Fri, 4 Sep 2009 14:47:18 -0500
+Message-ID: <00dc01ca2d98$832f6240$544ff780@am.dhcp.ti.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Microsoft Office Outlook 11
 In-Reply-To: <20090904193347.GD15715@atomide.com>
-Thread-Index: Acotlqy+GYzOH9TaTmKjQckv1IpMmAAAHSHQ
+Thread-Index: Acotlqy+GYzOH9TaTmKjQckv1IpMmAAAZdgA
 x-mimeole: Produced By Microsoft MimeOLE V6.00.2900.3198
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
