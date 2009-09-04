@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934303AbZIDVaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934312AbZIDVjO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934303AbZIDVaE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 17:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934116AbZIDVaB
+	id S934312AbZIDVjO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 17:39:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934253AbZIDVjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 17:30:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38003 "EHLO mx1.redhat.com"
+	Fri, 4 Sep 2009 17:39:12 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:55514 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932751AbZIDVaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 17:30:00 -0400
-Message-ID: <4AA186B0.5090905@redhat.com>
-Date: Fri, 04 Sep 2009 17:29:20 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	id S934148AbZIDVjM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 17:39:12 -0400
+Date: Fri, 4 Sep 2009 23:33:37 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, dhowells@redhat.com, roland@redhat.com,
+       jmorris@namei.org, tom.horsley@att.net, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH v3] exec: do not sleep in TASK_TRACED under
+	->cred_guard_mutex
+Message-ID: <20090904213337.GA5021@redhat.com>
+References: <20090904133956.GA9232@redhat.com> <20090903160514.GA23646@redhat.com> <20090903200924.E46DF47C94@magilla.sf.frob.com> <32710.1252075656@redhat.com> <20090904154947.GA17048@redhat.com> <20090904172648.GA25841@redhat.com> <20090904124230.5b7258c9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Hellwig <hch@infradead.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe
- width, writes in storage
-References: <20090828064449.GA27528@elf.ucw.cz>	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com> <m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com> <4AA184D7.1010502@rtr.ca>
-In-Reply-To: <4AA184D7.1010502@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904124230.5b7258c9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/04/2009 05:21 PM, Mark Lord wrote:
-> Ric Wheeler wrote:
-> ..
->> You must disable the write cache on these commodity drives *if* the 
->> MD RAID level does not support barriers properly.
-> ..
+On 09/04, Andrew Morton wrote:
 >
-> Rather than further trying to cripple Linux on the notebook,
-> (it's bad enough already)..
-
-People using MD on notebooks (not sure there are that many using RAID5 
-MD) could leave their write cache enabled.
-
+> On Fri, 4 Sep 2009 19:26:48 +0200
+> Oleg Nesterov <oleg@redhat.com> wrote:
 >
-> How about instead, *fixing* the MD layer to properly support barriers?
-> That would be far more useful, productive, and better for end-users.
+> > Tom Horsley reports that his debugger hangs when it tries to read
+> > /proc/pid_of_tracee/maps, this happens since
+> >
+> > 	"mm_for_maps: take ->cred_guard_mutex to fix the race with exec"
+> > 	04b836cbf19e885f8366bccb2e4b0474346c02d
+> >
+> > commit in 2.6.31.
 >
-> Cheers
+> I get a reject in binfmts.h because your kernel has `extern void
+> set_binfmt' and mine has `extern int set_binfmt'.
 
-Fixing MD would be great - not sure that it would end up still faster 
-(look at md1 devices with working barriers with compared to md1 with 
-write cache disabled).
+Ah, I have exec-fix-set_binfmt-vs-sys_delete_module-race.patch from -mm
+applied...
 
-In the mean time, if you are using MD to make your data more reliable, I 
-would still strongly urge you to disable the write cache when you see 
-"barriers disabled" messages spit out in /var/log/messages :-)
+> Hopefully this patch works OK in mainline as well as in whatever kernel
+> you tested against!
 
-ric
+Yes I tried to test it ;)
+
+> I see a Cc:stable in the mail headers, but not in the changelog.  I
+> don't think the patch is applicable to -stable unless we miss 2.6.31.
+
+-stable has the same problems but I agree, it can live without this fix.
+
+Oleg.
 
