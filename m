@@ -1,54 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932805AbZIDQSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932671AbZIDQRP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932805AbZIDQSM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932335AbZIDQSM
+	id S932671AbZIDQRP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:17:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZIDQRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:18:12 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37070 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932184AbZIDQSL (ORCPT
+	Fri, 4 Sep 2009 12:17:15 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33591 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755426AbZIDQRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:18:11 -0400
-Message-ID: <4AA13D0F.6050502@zytor.com>
-Date: Fri, 04 Sep 2009 09:15:11 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 4 Sep 2009 12:17:14 -0400
+Date: Fri, 4 Sep 2009 18:16:26 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Johannes Stezenbach <js@sig21.net>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
+       linux-embedded@vger.kernel.org,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
+Subject: Re: New fast(?)-boot results on ARM
+Message-ID: <20090904161626.GD3207@pengutronix.de>
+References: <20090814170228.GM13320@pengutronix.de> <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com> <20090814204305.GA31727@pengutronix.de> <20090815103532.GA5596@sig21.net>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Ingo Molnar <mingo@elte.hu>, Xiao Guangrong <ericxiao.gr@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86: reuse the boot-time mappings of fixed_addresses
-References: <4A90AADE.20307@gmail.com> <20090829110046.GA6812@elte.hu> <4A997088.60908@zytor.com> <20090831082632.GB15619@elte.hu> <4A9C6ADF.2020707@goop.org> <20090904073355.GA20598@elte.hu> <4AA1369A.5040204@goop.org>
-In-Reply-To: <4AA1369A.5040204@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="lc9FT7cWel8HagAv"
+Content-Disposition: inline
+In-Reply-To: <20090815103532.GA5596@sig21.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/04/2009 08:47 AM, Jeremy Fitzhardinge wrote:
-> On 09/04/09 00:33, Ingo Molnar wrote:
->>> It hardly seems worth it, but I guess it isn't much code. [...]
->>>     
->> Ok, i understood this as an Acked-by from you - lemme know if that's 
->> wrong ;-)
->>   
-> 
-> That's a bit proactive.  It's more "Meh-I-suppose-d-by: ".
-> 
 
-Pretty much.  I suspect we'll have to undo this when we fix the fixmap,
-since it will no longer be adjacent to the vmalloc range.
+--lc9FT7cWel8HagAv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-	-hpa
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+> Now that microcom is in Debian sid (thanks!), where can I find ptx_ts?
+> It seems to be quite useful.
 
+Back from the holidays, so here it is:
+
+http://pengutronix.de/software/ptx_ts/index_en.html
+
+Hope it can be useful...
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--lc9FT7cWel8HagAv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqhPVoACgkQD27XaX1/VRug8wCePMT1RCsKrHVtNXhfbi37xWm3
+1eUAn11PTH1EohdwRK5mvpGFwpfM9loQ
+=4nAV
+-----END PGP SIGNATURE-----
+
+--lc9FT7cWel8HagAv--
