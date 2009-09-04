@@ -1,253 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932929AbZIDD2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756556AbZIDDf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932929AbZIDD2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 23:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932605AbZIDD2e
+	id S1756556AbZIDDf3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 23:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZIDDf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 23:28:34 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:55629 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932603AbZIDD2d (ORCPT
+	Thu, 3 Sep 2009 23:35:28 -0400
+Received: from mta1.srv.hcvlny.cv.net ([167.206.4.196]:53860 "EHLO
+	mta1.srv.hcvlny.cv.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755528AbZIDDf2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 23:28:33 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Dmitry Torokhov <dtor@vmware.com>, Matthew Wilcox <matthew@wil.cx>,
-       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Maxime Austruy <maustruy@vmware.com>, pv-drivers@vmware.com
-In-Reply-To: <1252008182.3941.61.camel@mulgrave.site>
-References: <1251415060.16297.58.camel@ank32.eng.vmware.com>
-	 <adaws4iod8k.fsf@cisco.com> <20090901161651.GO22870@parisc-linux.org>
-	 <200909010933.50571.dtor@vmware.com>
-	 <1251823925.3864.216.camel@mulgrave.site>
-	 <1251824374.16169.128.camel@ank32.eng.vmware.com>
-	 <1251825949.12482.34.camel@mulgrave.site>
-	 <1251826877.16169.141.camel@ank32.eng.vmware.com>
-	 <1251828950.13303.31.camel@mulgrave.site>
-	 <1251860141.8844.20.camel@ank32.eng.vmware.com>
-	 <1251903967.3892.177.camel@mulgrave.site>
-	 <1251911789.23106.25.camel@ank32.eng.vmware.com>
-	 <1252008182.3941.61.camel@mulgrave.site>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 03 Sep 2009 20:28:35 -0700
-Message-Id: <1252034915.29197.15.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 Sep 2009 23:35:28 -0400
+Date: Thu, 03 Sep 2009 23:35:29 -0400
+From: Steven Toth <stoth@kernellabs.com>
+Subject: [PULL] http://www.kernellabs.com/hg/~stoth/saa7164-merge
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Message-id: <4AA08B01.30705@kernellabs.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7BIT
+User-Agent: Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.6; en-US; rv:1.9.1.1)
+ Gecko/20090715 Thunderbird/3.0b3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Mauro,
 
-On Thu, 2009-09-03 at 13:03 -0700, James Bottomley wrote:
-> On Wed, 2009-09-02 at 10:16 -0700, Alok Kataria wrote:
-> > On Wed, 2009-09-02 at 08:06 -0700, James Bottomley wrote:
-> > > On Tue, 2009-09-01 at 19:55 -0700, Alok Kataria wrote:
-> > > > On Tue, 2009-09-01 at 11:15 -0700, James Bottomley wrote:
-> > > > > On Tue, 2009-09-01 at 10:41 -0700, Alok Kataria wrote:
-> > > > > > > lguest uses the sg_ring abstraction.  Xen and KVM were certainly looking
-> > > > > > > at this too.
-> > > > > > 
-> > > > > > I don't see the sg_ring abstraction that you are talking about. Can you
-> > > > > > please give me some pointers. 
-> > > > > 
-> > > > > it's in drivers/lguest ... apparently it's vring now and the code is in
-> > > > > driver/virtio
-> > > > > 
-> > > > > > Also regarding Xen and KVM I think they are using the xenbus/vbus
-> > > > > > interface, which is quite different than what we do here. 
-> > > > > 
-> > > > > Not sure about Xen ... KVM uses virtio above.
-> > > > > 
-> > > > > > > 
-> > > > > > > > And anyways how large is the DMA code that we are worrying about here ?
-> > > > > > > > Only about 300-400 LOC ? I don't think we might want to over-design for
-> > > > > > > > such small gains.
-> > > > > > > 
-> > > > > > > So even if you have different DMA code, the remaining thousand or so
-> > > > > > > lines would be in common.  That's a worthwhile improvement.
-> > > > 
-> > > > I don't see how, the rest of the code comprises of IO/MMIO  space & ring
-> > > > processing which is very different in each of the implementations. What
-> > > > is left is the setup and initialization code which obviously depends on
-> > > > the implementation of the driver data structures. 
-> > > 
-> > > Are there benchmarks comparing the two approaches?
-> > 
-> > Benchmarks comparing what ? 
-> 
-> Your approach versus virtio.
-> 
-> > > 
-> > > > > > And not just that, different HV-vendors can have different features,
-> > > > > > like say XYZ can come up tomorrow and implement the multiple rings
-> > > > > > interface so the feature set doesn't remain common and we will have less
-> > > > > > code to share in the not so distant future.
-> > > > > 
-> > > > > Multiple rings is really just a multiqueue abstraction.  That's fine,
-> > > > > but it needs a standard multiqueue control plane.
-> > > > > 
-> > > > > The desire to one up the competition by adding a new whiz bang feature
-> > > > > to which you code a special interface is very common in the storage
-> > > > > industry.  The counter pressure is that consumers really like these
-> > > > > things standardised.  That's what the transport class abstraction is all
-> > > > > about.
-> > > > > 
-> > > > > We also seem to be off on a tangent about hypervisor interfaces.  I'm
-> > > > > actually more interested in the utility of an SRP abstraction or at
-> > > > > least something SAM based.  It seems that in your driver you don't quite
-> > > > > do the task management functions as SAM requests, but do them over your
-> > > > > own protocol abstractions.
-> > > > 
-> > > > Okay,  I think I need to take a step back here and understand what
-> > > > actually are you asking for.
-> > > > 
-> > > > 1. What do you mean by the "transport class abstraction" ? 
-> > > > Do you mean that the way we communicate with the hypervisor needs to be
-> > > > standardized ?
-> > > 
-> > > Not really.  Transport classes are designed to share code and provide a
-> > > uniform control plane when the underlying implementation is different.
-> > > 
-> > > > 2. Are you saying that we should use the virtio ring mechanism to handle
-> > > > our request and completion rings ? 
-> > > 
-> > > That's an interesting question.  Virtio is currently the standard linux
-> > > guest<=>hypervisor communication mechanism, but if you have comparative
-> > > benchmarks showing that virtual hardware emulation is faster, it doesn't
-> > > need to remain so.
-> > 
-> > It is a standard that KVM and lguest are using. I don't think it needs
-> > any benchamrks to show if a particular approach is faster or not.
-> 
-> It's a useful datapoint especially since the whole object of
-> paravirtualised drivers is supposed to be speed vs full hardware
-> emulation.
->  
-> > VMware has supported paravirtualized devices in backend for more than an
-> > year now (may be more, don't quote me on this), and the backend is
-> > common across different guest OS's. Virtual hardware emulation helps us
-> > give a common interface to different GOS's, whereas virtio binds this
-> > heavily to Linux usage. And please note that the backend implementation
-> > for our virtual device was done before virtio was integrated in
-> > mainline.
-> 
-> Virtio mainline integration dates from October 2007.  The mailing list
-> discussions obviously predate that by several months.
-> 
-> > Also, from your statements above it seems that you think we are
-> > proposing to change the standard communication mechanism (between guest
-> > & hypervisor) for Linux. For the record that's not the case, the
-> > standard that the Linux based VM's are using does not need to be
-> > changed. This pvscsi driver is used for a new SCSI HBA, how does it
-> > matter if this SCSI HBA is actually a virtual HBA and implemented by the
-> > hypervisor in software. 
-> > 
-> > > 
-> > > >   We can not do that. Our backend expects that each slot on the ring is
-> > > > in a particular format. Where as vring expects that each slot on the
-> > > > vring is in the vring_desc format.
-> > > 
-> > > Your backend is a software server, surely?
-> > 
-> > Yes it is, but the backend is as good as written in stone, as it is
-> > being supported by our various products which are out in the market. The
-> > pvscsi driver that I proposed for mainlining has also been in existence
-> > for some time now and was being used/tested heavily. Earlier we used to
-> > distribute it as part of our open-vm-tools project, and it is now that
-> > we are proposing to integrate it with mainline.
-> > 
-> > So if you are hinting that since the backend is software, it can be
-> > changed the answer is no. The reason being, their are existing
-> > implementations that have that device support and we still want newer
-> > guests to make use of that backend implementation. 
-> > 
-> > > > 3. Also, the way we communicate with the hypervisor backend is that the
-> > > > driver writes to our device IO registers in a particular format. The
-> > > > format that we follow is to first write the command on the
-> > > > COMMAND_REGISTER and then write a stream of data words in the
-> > > > DATA_REGISTER, which is a normal device interface.
-> > > > The reason I make this point is to highlight we are not making any
-> > > > hypercalls instead we communicate with the hypervisor by writing to
-> > > > IO/Memory mapped regions.  So from that perspective the driver has no
-> > > > knowledge that its is talking to a software backend (aka device
-> > > > emulation) instead it is very similar to how a driver talks to a silicon
-> > > > device.  The backend expects things in a certain way and we cannot
-> > > > really change that interface ( i.e. the ABI shared between Device driver
-> > > > and Device Emulation).
-> > > > 
-> > > > So sharing code with vring or virtio is not something that works well
-> > > > with our backend. The VMware PVSCSI driver is simply a virtual HBA and
-> > > > shouldn't be looked at any differently.
-> > > > 
-> > > > Is their anything else that you are asking us to standardize ?
-> > > 
-> > > I'm not really asking you to standardise anything (yet).  I was more
-> > > probing for why you hadn't included any of the SCSI control plane
-> > > interfaces and what lead you do produce a different design from the
-> > > current patterns in virtual I/O.  I think what I'm hearing is "Because
-> > > we didn't look at how modern SCSI drivers are constructed" and "Because
-> > > we didn't look at how virtual I/O is currently done in Linux".  That's
-> > > OK (it's depressingly familiar in drivers),
-> > 
-> > I am sorry that's not the case, the reason we have different design as I
-> > have mentioned above is because we want a generic mechanism which works
-> > for all/most of the GOS's out their and doesn't need to be specific to
-> > Linux.
-> 
-> Slightly confused now ... you're saying you did look at the transport
-> class and virtio?  But you chose not to do a virtio like interface (for
-> reasons which I'm still not clear on) ... 
+This patch series adds support for the NXP SAA7164 PCIe A/V bridge used by the 
+Hauppauge HVR-2200 and HVR-2250 series of products. Support is limited to DVB-T 
+/ ATSC / QAM digital TV only. The driver has been in development (on and off) 
+for around a year and the KernelLabs saa7164-stable tree (from which this patch 
+set was prepared) has been in testing worldwide since approx May(?) 2009.
 
-Dmitry has answered all of these questions. So let me skip these.
+The project page including links for firmware downloads, MythTV and Wiki 
+instructions is here: http://www.kernellabs.com/blog/?page_id=17
 
-> I didn't manage to extract
-> anything about why no transport class from the foregoing.
+Two general observations with the tree:
 
-I still don't understand about the transport class requirement. 
-I don't see how it will benefit either VMware's driver or other Linux
-SCSI code. Nor do I understand how it helps reducing the code either.
+1. The driver is a little verbose during initial module load, I need to trim a 
+few lines of debug.
+2. During 64bit compile I have one compile time warning to be addressed.
 
-My point is that even if we abstract the transport protocol code the
-rest of the device implementation is still going to remain different for
-each virtualized solution. 
+Both of these will be resolved shortly and should not stop the driver being 
+merged and made available to a much wider range of testers.
 
-If you don't agree, can you please be a little more explicit and explain
-what exactly are you asking for ? 
+So, please pull from http://www.kernellabs.com/hg/~stoth/saa7164-merge
 
---Alok
-> 
-> James
-> 
-> > >  but now we get to figure out
-> > > what, if anything, makes sense from a SCSI control plane to a hypervisor
-> > > interface and whether this approach to hypervisor interfaces is better
-> > > or worse than virtio.
-> > 
-> > I guess these points are answered above. Let me know if their is still
-> > something amiss. 
-> > 
-> > Thanks,
-> > Alok
-> > 
-> > > 
-> > > James
-> > > 
-> > > 
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+    -  Add the SAA7164 I2C bus identifier
+    -  SAA7164: Add support for the NXP SAA7164 silicon
+    -  SAA7164: Fix some 32/64bit compile time warnings
+    -  SAA7164: Adjust I/F's to the TDA10048 enabling DVB-T lock
+    -  SAA7164: Email address change
+    -  SAA7164: Remove volatiles for PCI writes (coding style violation)
+    -  SAA7164: Increase firmware load tolerance
+    -  SAA7164: OOPS avoidance during interrupt handling
+    -  SAA7164: Removed spurious I2C errors during driver load with DVB-T boards.
+    -  SAA7164: Fix the 88021 definition to work with production boards.
+    -  SAA7164: Fixed the missing eeprom parse on a specific board.
+    -  SAA7164: Fix IRQ related system hang when firmware is not found.
+    -  SAA7164: Fix i2c eeprom read errors during load (some boards).
+    -  SAA7164: Ensure we specify I/F's for all bandwidths
+    -  SAA7164: Added waitsecs module parameter
+    -  SAA7164: Cleanup a printk
+    -  SAA7164: Increase the firmware command timeout to avoid firmware errors.
+    -  SAA7164: Removed a duplicate call to address any PCI quirks.
+    -  SAA7164: IRQ / message timeout related change
+    -  SAA7164: Removed spurious debug
+    -  SAA7164: HVR2250 changes related to attach time tuner configuration
+    -  SAA7164: Remove meaningless if'0 code
+    -  SAA7164: Minor i2c assignment cleanup
+    -  SAA7164: Ensure the HVR-2200 second tuner is configured in slave mode.
+    -  SAA7164: Add support for a new HVR-2250 hardware revision
 
+  b/linux/Documentation/video4linux/CARDLIST.saa7164   |    8
+  b/linux/drivers/media/video/saa7164/Kconfig          |   19
+  b/linux/drivers/media/video/saa7164/Makefile         |   12
+  b/linux/drivers/media/video/saa7164/saa7164-api.c    |  778 +++++++++
+  b/linux/drivers/media/video/saa7164/saa7164-buffer.c |  162 ++
+  b/linux/drivers/media/video/saa7164/saa7164-bus.c    |  448 +++++
+  b/linux/drivers/media/video/saa7164/saa7164-cards.c  |  600 +++++++
+  b/linux/drivers/media/video/saa7164/saa7164-cmd.c    |  529 ++++++
+  b/linux/drivers/media/video/saa7164/saa7164-core.c   |  797 ++++++++++
+  b/linux/drivers/media/video/saa7164/saa7164-dvb.c    |  594 +++++++
+  b/linux/drivers/media/video/saa7164/saa7164-fw.c     |  632 +++++++
+  b/linux/drivers/media/video/saa7164/saa7164-i2c.c    |  202 ++
+  b/linux/drivers/media/video/saa7164/saa7164-reg.h    |  183 ++
+  b/linux/drivers/media/video/saa7164/saa7164-types.h  |  287 +++
+  b/linux/drivers/media/video/saa7164/saa7164.h        |  405 +++++
+  b/v4l/scripts/saa7164.pl                             |   57
+  linux/Documentation/video4linux/CARDLIST.saa7164     |    5
+  linux/drivers/media/video/Kconfig                    |    2
+  linux/drivers/media/video/Makefile                   |    1
+  linux/drivers/media/video/saa7164/saa7164-api.c      |    6
+  linux/drivers/media/video/saa7164/saa7164-buffer.c   |   15
+  linux/drivers/media/video/saa7164/saa7164-bus.c      |    6
+  linux/drivers/media/video/saa7164/saa7164-cards.c    |   74
+  linux/drivers/media/video/saa7164/saa7164-cmd.c      |   47
+  linux/drivers/media/video/saa7164/saa7164-core.c     |   98 -
+  linux/drivers/media/video/saa7164/saa7164-dvb.c      |   70
+  linux/drivers/media/video/saa7164/saa7164-fw.c       |   10
+  linux/drivers/media/video/saa7164/saa7164.h          |   18
+  linux/include/linux/i2c-id.h                         |    1
+  v4l/scripts/cardlist                                 |    3
+  v4l/scripts/fix_dvb_customise.pl                     |    3
+  v4l/versions.txt                                     |    1
+  32 files changed, 5956 insertions(+), 117 deletions(-)
+
+Thanks,
+
+-- 
+Steven Toth - Kernel Labs
+http://www.kernellabs.com
