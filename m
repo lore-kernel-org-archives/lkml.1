@@ -1,46 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbZIDT5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbZIDUGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbZIDT5e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 15:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbZIDT5c
+	id S1757332AbZIDUGW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757306AbZIDUGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 15:57:32 -0400
-Received: from mail.atheros.com ([12.36.123.2]:14150 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757247AbZIDT5c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 15:57:32 -0400
-Date: Fri, 4 Sep 2009 12:57:33 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "penberg@cs.helsinki.fi" <penberg@cs.helsinki.fi>,
-       "mcgrof@gmail.com" <mcgrof@gmail.com>
-Subject: Re: [PATCH v2 0/5] kmemleak: few small cleanups and clear command
- support
-Message-ID: <20090904195733.GC4949@mosca>
-References: <1251956140-5499-1-git-send-email-lrodriguez@atheros.com>
- <1251966613.22485.7.camel@pc1117.cambridge.arm.com>
+	Fri, 4 Sep 2009 16:06:20 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:51273 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757291AbZIDUGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:06:19 -0400
+Date: Fri, 4 Sep 2009 16:06:13 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, jack@suse.cz,
+       tytso@mit.edu
+Subject: [PATCH RFC] Add locking to ext3_do_update_inode
+Message-ID: <20090904200613.GJ17033@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	jack@suse.cz, tytso@mit.edu
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1251966613.22485.7.camel@pc1117.cambridge.arm.com>
 User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt006.oracle.com [141.146.116.15]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.4AA17337.00BB:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 01:30:13AM -0700, Catalin Marinas wrote:
-> On Thu, 2009-09-03 at 01:35 -0400, Luis R. Rodriguez wrote:
-> > Still not sure who this goes through so sending this to Linus.
-> 
-> As Pekka said, in some parts of the world the working day just started.
-> BTW, as I'm the kmemleak maintainer, the patches should probably go
-> through me (or at least get an ack), especially since I have other
-> kmemleak patches to push (the kmemleak branch on
-> git://linux-arm.org/linux-2.6.git).
+Hello everyone,
 
-I'll respin on this tree with some more changes requested.
+I've been struggling with this off and on while I've been testing the
+data=guarded work.  The symptom is corrupted orphan lists and inodes
+with the wrong i_size stored on disk.  I was convinced the
+data=guarded code was just missing a call to ext3_mark_inode_dirty, but
+tracing showed the i_disksize I was sending to ext3_mark_inode_dirty
+wasn't actually making it to the drive.
 
-  Luis
+ext3_mark_inode_dirty can be called without locks held (atime updates
+and a few others), so the data=guarded code uses locks while updating
+the in-memory inode, and then calls ext3_mark_inode_dirty
+without any locks held.
+
+But, ext3_mark_inode_dirty has no internal locking to make sure that
+only one CPU is updating the buffer head at a time.  Generally this
+works out ok because everyone that changes the inode then calls
+ext3_mark_inode_dirty themselves.  Even though it races, eventually
+someone updates the buffer heads and things move on.
+
+But there is still a risk of the wrong values getting in, and the
+data=guarded code seems to hit the race very often.
+
+Since everyone that changes the inode also logs it, it should be
+possible to fix this with some memory barriers.  I'll leave that as an
+exercise to the reader and lock the buffer head instead.
+
+It it probably a good idea to have a different patch series for lockless
+bit flipping on the ext3 i_state field.  ext3_do_update_inode &= clears
+EXT3_STATE_NEW without any locks held.
+
+Signed-off-by: Chris Mason <chris.mason@oracle.com>
+
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index 00f5dc1..6a0a056 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -3466,6 +3479,10 @@ static int ext3_do_update_inode(handle_t *handle,
+ 	struct buffer_head *bh = iloc->bh;
+ 	int err = 0, rc, block;
+ 
++again:
++	/* we can't allow multiple procs in here at once, its a bit racey */
++	lock_buffer(bh);
++
+ 	/* For fields not not tracking in the in-memory inode,
+ 	 * initialise them to zero for new inodes. */
+ 	if (ei->i_state & EXT3_STATE_NEW)
+@@ -3525,16 +3542,20 @@ static int ext3_do_update_inode(handle_t *handle,
+ 			       /* If this is the first large file
+ 				* created, add a flag to the superblock.
+ 				*/
++				unlock_buffer(bh);
+ 				err = ext3_journal_get_write_access(handle,
+ 						EXT3_SB(sb)->s_sbh);
+ 				if (err)
+ 					goto out_brelse;
++
+ 				ext3_update_dynamic_rev(sb);
+ 				EXT3_SET_RO_COMPAT_FEATURE(sb,
+ 					EXT3_FEATURE_RO_COMPAT_LARGE_FILE);
+ 				handle->h_sync = 1;
+ 				err = ext3_journal_dirty_metadata(handle,
+ 						EXT3_SB(sb)->s_sbh);
++				/* get our lock and start over */
++				goto again;
+ 			}
+ 		}
+ 	}
+@@ -3557,6 +3578,7 @@ static int ext3_do_update_inode(handle_t *handle,
+ 		raw_inode->i_extra_isize = cpu_to_le16(ei->i_extra_isize);
+ 
+ 	BUFFER_TRACE(bh, "call ext3_journal_dirty_metadata");
++	unlock_buffer(bh);
+ 	rc = ext3_journal_dirty_metadata(handle, bh);
+ 	if (!err)
+ 		err = rc;
