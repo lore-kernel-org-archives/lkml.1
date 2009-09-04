@@ -1,64 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933653AbZIDKKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933643AbZIDKK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933653AbZIDKKg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 06:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933636AbZIDKK1
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S933643AbZIDKK1 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 4 Sep 2009 06:10:27 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:35646 "EHLO mx1.redhat.com"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933635AbZIDKKZ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 4 Sep 2009 06:10:25 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1538 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933632AbZIDKKX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 06:10:23 -0400
-Date: Fri, 4 Sep 2009 06:08:55 -0400
+	id S933450AbZIDKKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 06:10:16 -0400
+Date: Fri, 4 Sep 2009 06:09:05 -0400
 From: Amerigo Wang <amwang@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: tony.luck@intel.com, linux-ia64@vger.kernel.org,
-       Neil Horman <nhorman@redhat.com>,
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org, Neil Horman <nhorman@redhat.com>,
        "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@elte.hu>,
+       kamezawa.hiroyu@jp.fujitsu.com, Andi Kleen <andi@firstfloor.org>,
        Michael Ellerman <michael@ellerman.id.au>,
-       Amerigo Wang <amwang@redhat.com>, "M. Mohan Kumar" <mohan@in.ibm.com>,
-       akpm@linux-foundation.org, bernhard.walle@gmx.de,
-       Fenghua Yu <fenghua.yu@intel.com>, kamezawa.hiroyu@jp.fujitsu.com,
-       Anton Vorontsov <avorontsov@ru.mvista.com>
-Message-Id: <20090904101122.5220.45724.sendpatchset@localhost.localdomain>
+       "M. Mohan Kumar" <mohan@in.ibm.com>, akpm@linux-foundation.org,
+       bernhard.walle@gmx.de, Fenghua Yu <fenghua.yu@intel.com>,
+       Ingo Molnar <mingo@elte.hu>, Amerigo Wang <amwang@redhat.com>
+Message-Id: <20090904101133.5220.82773.sendpatchset@localhost.localdomain>
 In-Reply-To: <20090904101047.5220.20618.sendpatchset@localhost.localdomain>
 References: <20090904101047.5220.20618.sendpatchset@localhost.localdomain>
-Subject: [Patch 3/8] ia64: add CONFIG_KEXEC_AUTO_RESERVE
+Subject: [Patch 4/8] ia64: implement crashkernel=auto
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Introduce a new config option KEXEC_AUTO_RESERVE for ia64.
+Since in patch 2/8 we already implement the generic part, this will
+add the rest part for ia64.
 
 Signed-off-by: WANG Cong <amwang@redhat.com>
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+Cc: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Tony Luck <tony.luck@intel.com>
 
 ---
 
-Index: linux-2.6/arch/ia64/Kconfig
+Index: linux-2.6/arch/ia64/include/asm/kexec.h
 ===================================================================
---- linux-2.6.orig/arch/ia64/Kconfig
-+++ linux-2.6/arch/ia64/Kconfig
-@@ -582,6 +582,20 @@ config KEXEC
- 	  support.  As of this writing the exact hardware interface is
- 	  strongly in flux, so no good recommendation can be made.
+--- linux-2.6.orig/arch/ia64/include/asm/kexec.h
++++ linux-2.6/arch/ia64/include/asm/kexec.h
+@@ -1,6 +1,7 @@
+ #ifndef _ASM_IA64_KEXEC_H
+ #define _ASM_IA64_KEXEC_H
  
-+config KEXEC_AUTO_RESERVE
-+	bool "automatically reserve memory for kexec kernel"
-+	depends on KEXEC
-+	default y
-+	---help---
-+	  Automatically reserve memory for a kexec kernel, so that you don't
-+	  need to specify numbers for the "crashkernel=X@Y" boot option,
-+	  instead you can use "crashkernel=auto". To make this work, you need
-+	  to have more than 4G memory.
++#include <asm-generic/kexec.h>
+ 
+ /* Maximum physical address we can use pages from */
+ #define KEXEC_SOURCE_MEMORY_LIMIT (-1UL)
+@@ -19,6 +20,12 @@
+                 flush_icache_range(page_addr, page_addr + PAGE_SIZE); \
+         } while(0)
+ 
++#ifdef CONFIG_KEXEC_AUTO_RESERVE
++extern
++unsigned long long __init arch_default_crash_size(unsigned long long);
++#define arch_default_crash_size arch_default_crash_size
++#endif
 +
-+	  The reserved memory size is different depends on how much memory
-+	  you actually have. Please check Documentation/kdump/kdump.txt.
-+	  If you doubt, say N.
+ extern struct kimage *ia64_kimage;
+ extern const unsigned int relocate_new_kernel_size;
+ extern void relocate_new_kernel(unsigned long, unsigned long,
+Index: linux-2.6/arch/ia64/kernel/machine_kexec.c
+===================================================================
+--- linux-2.6.orig/arch/ia64/kernel/machine_kexec.c
++++ linux-2.6/arch/ia64/kernel/machine_kexec.c
+@@ -147,6 +147,44 @@ void arch_crash_save_vmcoreinfo(void)
+ #endif
+ }
+ 
++#ifdef CONFIG_KEXEC_AUTO_RESERVE
++#define MBYTES(n) ((n)*1024*1024ULL)
++#define GBYTES(n) ((n)*1024*1024*1024ULL)
++/*
++       Memory size     Reserved memory
++       ===========     ===============
++       [4G, 12G)       256M
++       [12G, 128G)     512M
++       [128G, 256G)    768M
++       [256G, 378G)    1024M
++       [378G, 512G)    1536M
++       [512G, 768G)    2048M
++       [768G, )        3072M
++ */
++unsigned long long __init arch_default_crash_size(unsigned long long total_size)
++{
++	unsigned long long ret;
 +
- config CRASH_DUMP
- 	  bool "kernel crash dumps"
- 	  depends on IA64_MCA_RECOVERY && !IA64_HP_SIM && (!SMP || HOTPLUG_CPU)
++	if (total_size >= GBYTES(4) && total_size < GBYTES(12))
++		ret = MBYTES(256);
++	else if (total_size >= GBYTES(12) && total_size < GBYTES(128))
++		ret = MBYTES(512);
++	else if (total_size >= GBYTES(128) && total_size < GBYTES(256))
++		ret = MBYTES(768);
++	else if (total_size >= GBYTES(256) && total_size < GBYTES(378))
++		ret = MBYTES(1024);
++	else if (total_size >= GBYTES(318) && total_size < GBYTES(512))
++		ret = MBYTES(1536);
++	else if (total_size >= GBYTES(512) && total_size < GBYTES(768))
++		ret = MBYTES(2048);
++	else
++		ret = MBYTES(3072);
++	return ret;
++}
++#undef GBYTES
++#undef MBYTES
++#endif
++
+ unsigned long paddr_vmcoreinfo_note(void)
+ {
+ 	return ia64_tpa((unsigned long)(char *)&vmcoreinfo_note);
