@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbZIDKuH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756718AbZIDKrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbZIDKuH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 06:50:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbZIDKuG
+	id S1756718AbZIDKrP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 06:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753612AbZIDKrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 06:50:06 -0400
-Received: from trinity.develer.com ([83.149.158.210]:42833 "EHLO
-	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751470AbZIDKuF (ORCPT
+	Fri, 4 Sep 2009 06:47:13 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:42816 "EHLO
+	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752779AbZIDKrM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 06:50:05 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 06:50:04 EDT
-Date: Fri, 4 Sep 2009 12:43:25 +0200
-From: Andrea Righi <arighi@develer.com>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pavel Emelyanov <xemul@openvz.org>,
-       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
-       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
-       Mike Waychison <mikew@google.com>
-Subject: Re: [RFC v1 PATCH 3/7] sched: Bandwidth initialization for fair
-	task groups
-Message-ID: <20090904104324.GA10807@linux>
-References: <20090825094729.GP3663@in.ibm.com> <20090825094950.GS3663@in.ibm.com>
+	Fri, 4 Sep 2009 06:47:12 -0400
+X-SpamScore: -19
+X-BigFish: VPS-19(zz1432R98dN14ffOa594izz1202hzzz32i203h6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KPG0LR-01-6BE-02
+X-M-MSG: 
+Date: Fri, 4 Sep 2009 12:45:40 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for September 4
+Message-ID: <20090904104540.GC28389@aftab>
+References: <20090904182309.dbb05c96.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090825094950.GS3663@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090904182309.dbb05c96.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 04 Sep 2009 10:45:25.0413 (UTC) FILETIME=[CF6AD550:01CA2D4C]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 25, 2009 at 03:19:50PM +0530, Bharata B Rao wrote:
-> +config CFS_HARD_LIMITS
-> +	bool "Hard Limits for CFS Group Scheduler"
-> +	depends on EXPERIMENTAL
-> +	depends on FAIR_GROUP_SCHED
+Hi Stephen,
 
-Shouldn't depend also on CGROUPS and CGROUP_SCHED? without them hard
-limits can't be defined, right?
+On Fri, Sep 04, 2009 at 06:23:09PM +1000, Stephen Rothwell wrote:
+> Hi all,
+> 
+> Changes since 20090903:
 
-Signed-off-by: Andrea Righi <arighi@develer.com>
----
- init/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+..
 
-diff --git a/init/Kconfig b/init/Kconfig
-index 71868a0..19c0290 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -459,7 +459,7 @@ config FAIR_GROUP_SCHED
- config CFS_HARD_LIMITS
- 	bool "Hard Limits for CFS Group Scheduler"
- 	depends on EXPERIMENTAL
--	depends on FAIR_GROUP_SCHED
-+	depends on FAIR_GROUP_SCHED && CGROUPS && CGROUP_SCHED
- 	default n
- 	help
- 	  This option enables hard limiting of CPU time obtained by
+> Merging edac-amd/for-next
+> CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
+> CONFLICT (content): Merge conflict in include/linux/topology.h
+
+current topology patches in -tip have significantly diverged from the
+versions I carry in the edac tree so please remove the last from the
+testing lineup temporarily. Will fix the issue after I'm back from my
+vacation the week after next.
+
+Thanks.
+
+-- 
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Andrew Bowd, Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
