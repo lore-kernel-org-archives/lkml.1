@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbZIDAju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZIDAkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754460AbZIDAju (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 20:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbZIDAjt
+	id S1755017AbZIDAkC (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 20:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754529AbZIDAj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 20:39:49 -0400
-Received: from mail-yw0-f192.google.com ([209.85.211.192]:42073 "EHLO
-	mail-yw0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752682AbZIDAjs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 20:39:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=Mh6zl3VVl0iWswU4tJxpPsBUIvMC4XvQDrn9GWQ0MPiizNBqjzg/PD9oPYdCsue2AE
-         lLBlOPD5+qky54owELR3vJXlwbteW5V5dPS6MeZbWqsDqaVeCN0EVfTN0JaGdaErGYgq
-         zmpRiapuGxk3RnpfNzi2rFUJ6u3/MGsbWf0j4=
+	Thu, 3 Sep 2009 20:39:58 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:13119 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754632AbZIDAj4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 20:39:56 -0400
+Message-ID: <4AA061C8.9080600@redhat.com>
+Date: Thu, 03 Sep 2009 20:39:36 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-In-Reply-To: <69e28c910909031634l55d44e93sa052b3d78413dd44@mail.gmail.com>
-References: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com> 
-	<69e28c910909031634l55d44e93sa052b3d78413dd44@mail.gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Thu, 3 Sep 2009 17:39:30 -0700
-Message-ID: <43e72e890909031739p279848fev1f70947a998cc937@mail.gmail.com>
-Subject: Re: Atheros Linux wireless drivers home page - and two new driver 
-	projects
-To: =?UTF-8?Q?G=C3=A1bor_Stefanik?= <netrolller.3d@gmail.com>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       Len Widra <Len.Widra@atheros.com>, Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Werner Almesberger <werner@openmoko.org>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       Bob Copeland <me@bobcopeland.com>, Greg KH <greg@kroah.com>,
-       rshlinux@gmail.com, b_yogesh_snowy@yahoo.com,
-       Michael Renzmann <mrenzmann@madwifi-project.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>,
-       Paul Fertser <fercerpav@gmail.com>, Harald Welte <laforge@openmoko.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
+       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
+       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
+       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe
+ width, writes in storage
+References: <20090828064449.GA27528@elf.ucw.cz>	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com>	<m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com> <m33a73oael.fsf@intrepid.localdomain>
+In-Reply-To: <m33a73oael.fsf@intrepid.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/3 Gábor Stefanik <netrolller.3d@gmail.com>:
-> On Fri, Sep 4, 2009 at 12:54 AM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
->> I'm pleased to announce the new home page to Atheros Linux wireless drivers:
->>
->> http://wireless.kernel.org/en/users/Drivers/Atheros
->>
->> To get updates just subscribe to the wiki. There you will find
->> information regarding any old legacy Atheros driver and any proper
->> upstream driver.
->>
->> I'd like to also take the time to announce two devices for which
->> support is currently being developed for: ar5523 and ar9271. Both
->> ar5523 and ar9271 device support is currently being worked on either
->> by the community or by Atheros itself. Both of these driver projects
->> will be using th Linux driver project [1] to gain traction. Patches
->> and development discussions regarding these two drivers prior to
->> getting upstream into drivers/net/wireless/ will take place on the
->> Linux driver project mailing list [2]. For direct one-on-one
->> communication for support and development we will rely on the
->> #linux-wireless IRC channel on irc.freenode.net. Both devices are USB
->> but differ greatly, please visit the ar5523 page [2] and the ar9271
->> page [3] for further device specifics and more information.
->>
->> The model of development for ar9271 device support is rather new -- we
->> are not targeting staging, instead we target using the strength of
->> community development at an extremely early stage, as early as is
->> possible, even before the device is functional. If we get a device
->> driver functional prior to meeting upstream requirements then so be it
->> -- and the driver does gets stuffed into drivers/staging. End goal is
->> to get it into proper drivers/net/wireless/ but obviously it will not
->> hurt to get users some device functionality prior to that.
->>
->> The time of turnaround to getting users supported either through
->> drivers/staging or drivers/net/wireless/ will ultimately depend on the
->> resources dedicated to it. Right now I know only Stefan
->> Lippers-Hollmann is working on ar5523 support and I'm the only one
->> working on ar9271 support. With your help I am in hopes this will
->> change soon.
->>
->> [1] http://www.linuxdriverproject.org/twiki/bin/view
->> [2] http://driverdev.linuxdriverproject.org/mailman/listinfo/devel
->> [3] http://wireless.kernel.org/en/users/Drivers/ar5523
->> [4] http://wireless.kernel.org/en/users/Drivers/ar9271
->>
->>  Luis
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-wireless" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
+On 09/03/2009 07:50 PM, Krzysztof Halasa wrote:
+> Ric Wheeler<rwheeler@redhat.com>  writes:
 >
-> About ar9271: is this device already in the market, or the chip itself
-> is also still in development?
+>    
+>> The whole thread above is about software MD using commodity drives
+>> (S-ATA or SAS) without battery backed write cache.
+>>      
+> Yes. However, you mentioned external RAID arrays disable disk caches.
+> That's why I asked if they are using SATA or SCSI/etc. disks, and if
+> they have battery-backed cache.
+>
+>    
 
-Some vendors are selling it, I however do not know the name or have
-any URL for it.
+Sorry for the confusion - they disable the write caches on the component 
+drives normally, but have their own write cache which is not disabled in 
+most cases.
 
-  Luis
+>> Also, when you enable the write cache (MD or not) you are buffering
+>> multiple MB's of data that can go away on power loss. Far greater
+>> (10x) the exposure that the partial RAID rewrite case worries about.
+>>      
+> The cache is flushed with working barriers. I guess it should be
+> superior to disabled WB cache, in both performance and expected disk
+> lifetime.
+>    
+
+True - barriers (especially on big, slow s-ata drives) usually give you 
+an overall win. SAS drives it seems to make less of an impact, but then 
+you always need to benchmark your workload on anything to get the only 
+numbers that really matter :-)
+
+ric
+
