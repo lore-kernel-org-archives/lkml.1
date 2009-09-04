@@ -1,49 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934316AbZIDVlc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934329AbZIDVlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934316AbZIDVlc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 17:41:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933966AbZIDVla
+	id S934329AbZIDVlq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 17:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934277AbZIDVlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 17:41:30 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40615 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933850AbZIDVl3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 17:41:29 -0400
-Subject: Re: [tip:x86/kbuild] x86: Don't silently override CONFIG_64BIT in
- 'make oldconfig'
-From: David Woodhouse <dwmw2@infradead.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, mingo@redhat.com, sam@ravnborg.org,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090904093846.a87bd198.randy.dunlap@oracle.com>
-References: <tip-5a8a2d13b1526e306ff2a9fe12dc9d5878d355f9@git.kernel.org>
-	 <20090904144857.GA12872@elte.hu>
-	 <alpine.LFD.2.00.0909041631210.14872@twosheds.infradead.org>
-	 <4AA13FE6.20807@zytor.com>
-	 <20090904093846.a87bd198.randy.dunlap@oracle.com>
-Content-Type: text/plain
-Date: Fri, 04 Sep 2009 22:40:56 +0100
-Message-Id: <1252100456.4483.544.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 4 Sep 2009 17:41:44 -0400
+Received: from mail.atheros.com ([12.36.123.2]:20430 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934082AbZIDVlo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 17:41:44 -0400
+Date: Fri, 4 Sep 2009 14:41:44 -0700
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: Catalin Marinas <catalin.marinas@arm.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+CC: Johannes Berg <johannes@sipsolutions.net>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+Subject: Re: [PATCH] cfg80211: clear cfg80211_inform_bss() from kmemleak
+ reports
+Message-ID: <20090904214143.GA4608@mosca>
+References: <1251958266-10692-1-git-send-email-lrodriguez@atheros.com>
+ <1251962791.3336.3.camel@johannes.local>
+ <43e72e890909031113r6010519br3b81d15cc331ba85@mail.gmail.com>
+ <1252001837.9336.2.camel@johannes.local>
+ <20090903204319.GC3701@mosca>
+ <1252040671.9336.10.camel@johannes.local>
+ <1252052757.26413.9.camel@pc1117.cambridge.arm.com>
+ <43e72e890909041421m243bbea6i95c26ab21dc8732d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <43e72e890909041421m243bbea6i95c26ab21dc8732d@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-04 at 09:38 -0700, Randy Dunlap wrote:
+On Fri, Sep 04, 2009 at 02:21:40PM -0700, Luis Rodriguez wrote:
+> On Fri, Sep 4, 2009 at 1:25 AM, Catalin Marinas<catalin.marinas@arm.com> wrote:
+> > On Fri, 2009-09-04 at 07:04 +0200, Johannes Berg wrote:
+> >> On Thu, 2009-09-03 at 13:43 -0700, Luis R. Rodriguez wrote:
+> >> > On Thu, Sep 03, 2009 at 11:17:17AM -0700, Johannes Berg wrote:
+> >> > > On Thu, 2009-09-03 at 11:13 -0700, Luis R. Rodriguez wrote:
+> >> > >
+> >> > > > What I meant is it gobbles it up and spits another thing out. When it
+> >> > > > gobbles it up the routine then uses kref_put().
+> >> > > >
+> >> > > > > Why can it not track this?
+> >> > > >
+> >> > > > It probably can, just not sure if it follows kref_put(), I was under
+> >> > > > the impression here it doesn't and because of it we were getting false
+> >> > > > positives. Catalin, can you confirm?
+> >> > >
+> >> > > Ah I'd think that if it can't track it then that's because we use a
+> >> > > pointer to the middle of the struct to keep track of it much of the
+> >> > > time.
+> >> >
+> >> > So you agree with the patch but not the commit log entry?
+> >>
+> >> I'm not sure -- I think kmemleak should be able to figure it out, and if
+> >> you were using IBSS then we actually have a leak that we need to plug,
+> >> but otherwise I'd prefer to get some more input from Catalin first.
+> >
+> > First of all, kmemleak_ignore() is not the right function to mark a
+> > false positive as it completely ignores an object even though it may
+> > have pointers to others. The kmemleak_not_leak() function should be
+> > used. However, there are only two places in the kernel where this was
+> > actually needed (one of them is a real leak but we ignore it as it makes
+> > the code more complicated).
+> >
+> > So, I think we should try to figure out why kmemleak reports it. There
+> > are a few common cases:
+> >     1. transient false positive - this should disappear after a few
+> >        scans
+> >     2. a pointer leading to the reported object is stored in an area of
+> >        memory not scanned by kmemleak - most commonly pages allocated
+> >        explicitly (alloc_pages etc.) as kmemleak doesn't track these.
+> >        The preferred solution is to inform kmemleak about such page
+> >        (kmemleak_alloc/kmemleak_free) rather than marking the false
+> >        positive
+> >     3. a pointer leading to the reported object isn't actually pointing
+> >        to anywhere inside the structure (i.e. using the physical
+> >        address). Here we would use kmemleak_not_leak()
 > 
-> what does ARCH=x86 mean?
+> John please revert this merged patch
+> (b563f91105758c35d7cd4589992198b9da52d579) on wireless-testing as we'd
+> like to investigate further why we get this.
+> 
+> BTW I should
+> not
 
-A bit like ARCH=powerpc. It's the new combined architecture where 64-bit
-vs. 32-bit is just a config choice. ARCH=i386 and ARCH=x86_64 are just
-historical baggage, and should be dropped like ARCH=ppc and ARCH=ppc64
-were.
+This should be *note* :)
 
--- 
-dwmw2
+> I got this kmemleak report after using the clear
+> command by painting objects black. I'll test it now with your
+> suggested changes.
 
+  Luis
