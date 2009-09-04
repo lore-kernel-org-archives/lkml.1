@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934258AbZIEAB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934510AbZIEAE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934258AbZIEAB2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934224AbZIEAB0
+	id S934510AbZIEAE0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934325AbZIEAEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:01:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:40420 "EHLO
+	Fri, 4 Sep 2009 20:04:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33524 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934029AbZIEABU (ORCPT
+	with ESMTP id S933927AbZIEABU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 20:01:20 -0400
-Message-Id: <20090905000121.753984070@goodmis.org>
+Message-Id: <20090905000122.271241564@goodmis.org>
 References: <20090904235527.520961911@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 Sep 2009 19:55:31 -0400
+Date: Fri, 04 Sep 2009 19:55:32 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,68 +21,100 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: [PATCH 04/18] ring-buffer: fix ring_buffer_read crossing pages
-Content-Disposition: inline; filename=0004-ring-buffer-fix-ring_buffer_read-crossing-pages.patch
+Subject: [PATCH 05/18] ring-buffer: remove ring_buffer_event_discard
+Content-Disposition: inline; filename=0005-ring-buffer-remove-ring_buffer_event_discard.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-When the ring buffer uses an iterator (static read mode, not on the
-fly reading), when it crosses a page boundery, it will skip the first
-entry on the next page. The reason is that the last entry of a page
-is usually padding if the page is not full. The padding will not be
-returned to the user.
+The function ring_buffer_event_discard can be used on any item in the
+ring buffer, even after the item was committed. This function provides
+no safety nets and is very race prone.
 
-The problem arises on ring_buffer_read because it also increments the
-iterator. Because both the read and peek use the same rb_iter_peek,
-the rb_iter_peak will return the padding but also increment to the next
-item. This is because the ring_buffer_peek will not incerment it
-itself.
+An item may be safely removed from the ring buffer before it is committed
+with the ring_buffer_discard_commit.
 
-The ring_buffer_read will increment it again and then call rb_iter_peek
-again to get the next item. But that will be the second item, not the
-first one on the page.
+Since there are currently no users of this function, and because this
+function is racey and error prone, this patch removes it altogether.
 
-The reason this never showed up before, is because the ftrace utility
-always calls ring_buffer_peek first and only uses ring_buffer_read
-to increment to the next item. The ring_buffer_peek will always keep
-the pointer to a valid item and not padding. This just hid the bug.
+Note, removing this function also allows the counters to ignore
+all discarded events (patches will follow).
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/ring_buffer.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ include/linux/ring_buffer.h |   14 --------------
+ kernel/trace/ring_buffer.c  |   27 ++++++---------------------
+ 2 files changed, 6 insertions(+), 35 deletions(-)
 
+diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+index 7fca716..e061b4e 100644
+--- a/include/linux/ring_buffer.h
++++ b/include/linux/ring_buffer.h
+@@ -75,20 +75,6 @@ ring_buffer_event_time_delta(struct ring_buffer_event *event)
+ }
+ 
+ /*
+- * ring_buffer_event_discard can discard any event in the ring buffer.
+- *   it is up to the caller to protect against a reader from
+- *   consuming it or a writer from wrapping and replacing it.
+- *
+- * No external protection is needed if this is called before
+- * the event is commited. But in that case it would be better to
+- * use ring_buffer_discard_commit.
+- *
+- * Note, if an event that has not been committed is discarded
+- * with ring_buffer_event_discard, it must still be committed.
+- */
+-void ring_buffer_event_discard(struct ring_buffer_event *event);
+-
+-/*
+  * ring_buffer_discard_commit will remove an event that has not
+  *   ben committed yet. If this is used, then ring_buffer_unlock_commit
+  *   must not be called on the discarded event. This function
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index a05541a..9d939e7 100644
+index 9d939e7..092fe0c 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -3286,19 +3286,19 @@ ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
- 	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
- 	unsigned long flags;
- 
-- again:
- 	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
-+ again:
- 	event = rb_iter_peek(iter, ts);
- 	if (!event)
- 		goto out;
- 
-+	if (event->type_len == RINGBUF_TYPE_PADDING)
-+		goto again;
-+
- 	rb_advance_iter(iter);
-  out:
- 	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
- 
--	if (event && event->type_len == RINGBUF_TYPE_PADDING)
--		goto again;
--
- 	return event;
+@@ -2328,31 +2328,16 @@ static inline void rb_event_discard(struct ring_buffer_event *event)
  }
- EXPORT_SYMBOL_GPL(ring_buffer_read);
+ 
+ /**
+- * ring_buffer_event_discard - discard any event in the ring buffer
+- * @event: the event to discard
+- *
+- * Sometimes a event that is in the ring buffer needs to be ignored.
+- * This function lets the user discard an event in the ring buffer
+- * and then that event will not be read later.
+- *
+- * Note, it is up to the user to be careful with this, and protect
+- * against races. If the user discards an event that has been consumed
+- * it is possible that it could corrupt the ring buffer.
+- */
+-void ring_buffer_event_discard(struct ring_buffer_event *event)
+-{
+-	rb_event_discard(event);
+-}
+-EXPORT_SYMBOL_GPL(ring_buffer_event_discard);
+-
+-/**
+  * ring_buffer_commit_discard - discard an event that has not been committed
+  * @buffer: the ring buffer
+  * @event: non committed event to discard
+  *
+- * This is similar to ring_buffer_event_discard but must only be
+- * performed on an event that has not been committed yet. The difference
+- * is that this will also try to free the event from the ring buffer
++ * Sometimes an event that is in the ring buffer needs to be ignored.
++ * This function lets the user discard an event in the ring buffer
++ * and then that event will not be read later.
++ *
++ * This function only works if it is called before the the item has been
++ * committed. It will try to free the event from the ring buffer
+  * if another event has not been added behind it.
+  *
+  * If another event has been added behind it, it will set the event
 -- 
 1.6.3.3
 
