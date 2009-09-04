@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbZIDQxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933771AbZIDQ6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932855AbZIDQxu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbZIDQxt
+	id S933771AbZIDQ6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933753AbZIDQ6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:53:49 -0400
-Received: from ru.mvista.com ([213.79.90.228]:9378 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755015AbZIDQxt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:53:49 -0400
-Date: Fri, 4 Sep 2009 20:53:48 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
-Message-ID: <20090904165348.GA1287@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
- <20090714133716.GC28970@oksana.dev.rtsoft.ru>
- <20090718120145.GB31007@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090718120145.GB31007@elte.hu>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 4 Sep 2009 12:58:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8747 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933727AbZIDQ6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 12:58:48 -0400
+Date: Fri, 4 Sep 2009 12:55:25 -0400
+From: Stefan Assmann <sassmann@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: jcm@redhat.com, sdietrich@novell.com, linux-acpi@vger.kernel.org,
+       andi@firstfloor.org, hpa@zytor.com,
+       Stefan Assmann <sassmann@redhat.com>, mingo@elte.hu,
+       Olaf.Dabrunz@gmx.net, ktokunag@redhat.com, tglx@linutronix.de,
+       lenb@kernel.org
+Message-Id: <20090904165525.26294.31112.sendpatchset@t500>
+Subject: [RFC][PATCH 0/2] boot interrupts on Intel X58 and 55x0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Jul 18, 2009 at 02:01:45PM +0200, Ingo Molnar wrote:
-> 
-> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
-> > > According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
-> > > is only the default when optimising on archs/ABIs where it doesn't
-> > > hinder debugging and -pg. So, we do not get it by default on x86,
-> > > not at any optimisation level.
-> > > 
-> > > On the other hand, *using* -fno-omit-frame-pointer causes gcc to
-> > > produce buggy code on PowerPC targets.
-> > > 
-> > > If Segher and GCC manual are right, this patch should be a no-op
-> > > for all arches except PowerPC, where the patch fixes gcc issues.
-> > > 
-> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-> > > ---
-> > > 
-> > > See this thread for more discussion:
-> > > http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
-> > > 
-> > > p.s.
-> > > Obviously, I didn't test this patch on anything else but PPC32. ;-)
-> > > 
-> > > Segher, do you know if all GCC versions that we support for
-> > > building Linux are behaving the way that GCC manual describe?
-> > 
-> > No news is good news... Ingo, can we merge this into -tip for 
-> > testing?
-> 
-> Changes to the top level Makefile should really go via Sam's kbuild 
-> tree.
+This patchset is meant to disable boot interrupts on Intel X58 and 55x0
+chipsets (Tylersburg). A lot of effort from Kei Tokunaga has gone into these
+patches. Thanks a lot Kei!
 
-Sam, any thoughts about these patches?
+The reason why this consists of 2 patches is that the PCI config space of the
+configuration device to disable boot interrupts on these chipsets is not
+always accessible by default. The first patch is to ensure that the device is
+visible while the second patch applies the necessary changes to stop the
+generation of boot interrupts. We're not really sure whether the final X58 and
+55x0 chipsets have the configuration device visible or not, so patch #1 might
+be superfluous but we've seen at least 2 machines where this is not the case.
+That's one of the reasons why this patchset is marked as RFC. The other reason
+is more serious namely the onboard NIC (8086:10c9) is malfunctioning on some
+of our test system if the second patch is applied. It fails to acquire an IP
+from DHCP and we're pretty clueless on this issue right now.
+Help is greatly appreciated!
 
-Thanks!
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+A quick summary of why boot interrupts are better off than on.
+
+Boot interrupts will be generated by the chipset if the interrupt line of a
+non-primary IO-APIC is masked and an IRQ arrives there. In that case a boot
+interrupt will be forwarded to the PIC _and_ primary IO-APIC. We're not quite
+sure why it arrives at the primary IO-APIC as well but it has been observed on
+various chipsets.
+
+As there will be no interrupt handler installed (for the boot interrupt) on
+the primary IO-APIC the interrupt will be counted as spurious, which can
+result in disabling the entire interrupt line by the kernel in case of too
+many spurious interrupts. The problem only shows up if the primary IO-APIC
+already has an interrupt handler installed on that line, otherwise that line
+would be masked anyway and the boot interrupt silently ignored (which makes it
+tricky to observe).
+
+When does this become a problem?
+
+Any device connected to a non-primary IO-APIC (that doesn't use MSIs) will
+trigger the generation of boot interrupts if it's IO-APIC pin is masked. There
+can be many reasons for that for example:
+- The interrupt is shared and a buggy device driver (from another device)
+  causes the interrupt to get disabled by the kernel.
+- The RT kernel masks interrupt lines during handling (threaded IRQ-handling).
+- Kei reported from issues in the case of kdump when the first kernel disables
+  the IO-APICs before the second kernel starts booting.
+
+It becomes a problem when too many interrupts are counted as spurious (the
+boot interrupts cannot be handled because the kernel doesn't expect them) and
+the kernel decides to better bring down the interrupt line.
