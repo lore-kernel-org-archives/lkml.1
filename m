@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZIDGpJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932618AbZIDGph@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZIDGpJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:45:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbZIDGpF
+	id S932618AbZIDGph (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:45:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbZIDGpf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:45:05 -0400
-Received: from mga01.intel.com ([192.55.52.88]:56376 "EHLO mga01.intel.com"
+	Fri, 4 Sep 2009 02:45:35 -0400
+Received: from mga09.intel.com ([134.134.136.24]:62464 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932520AbZIDGom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:44:42 -0400
+	id S1756647AbZIDGpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:45:33 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,330,1249282800"; 
-   d="scan'208";a="723813267"
-Subject: [PATCH 02/18] dmaengine, async_tx: add a "no channel switch" allocator
+   d="scan'208";a="445599425"
+Subject: [PATCH 03/18] dmaengine: cleanup unused transaction types
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, maciej.sosnowski@intel.com
-Date: Thu, 03 Sep 2009 23:44:45 -0700
-Message-ID: <20090904064445.7141.18693.stgit@dwillia2-linux.ch.intel.com>
+Date: Thu, 03 Sep 2009 23:44:50 -0700
+Message-ID: <20090904064450.7141.51497.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -28,164 +28,113 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Channel switching is problematic for some dmaengine drivers as the
-architecture precludes separating the ->prep from ->submit.  In these
-cases the driver can select ASYNC_TX_DISABLE_CHANNEL_SWITCH to modify
-the async_tx allocator to only return channels that support all of the
-required asynchronous operations.
-
-For example MD_RAID456=y selects support for asynchronous xor, xor
-validate, pq, pq validate, and memcpy.  When
-ASYNC_TX_DISABLE_CHANNEL_SWITCH=y any channel with all these
-capabilities is marked DMA_ASYNC_TX allowing async_tx_find_channel() to
-quickly locate compatible channels with the guarantee that dependency
-chains will remain on one channel.  When
-ASYNC_TX_DISABLE_CHANNEL_SWITCH=n async_tx_find_channel() may select
-channels that lead to operation chains that need to cross channel
-boundaries using the async_tx channel switch capability.
+No drivers currently implement these operation types, so they can be
+deleted.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- crypto/async_tx/async_tx.c |    4 ++++
- drivers/dma/Kconfig        |    4 ++++
- drivers/dma/dmaengine.c    |   40 ++++++++++++++++++++++++++++++++++++++++
- include/linux/dmaengine.h  |   10 +++++++++-
- 4 files changed, 57 insertions(+), 1 deletions(-)
+ arch/arm/mach-iop13xx/setup.c |    7 -------
+ arch/arm/plat-iop/adma.c      |    2 --
+ drivers/dma/iop-adma.c        |    5 +----
+ include/linux/dmaengine.h     |    3 ---
+ 4 files changed, 1 insertions(+), 16 deletions(-)
 
-diff --git a/crypto/async_tx/async_tx.c b/crypto/async_tx/async_tx.c
-index 60615fe..f9cdf04 100644
---- a/crypto/async_tx/async_tx.c
-+++ b/crypto/async_tx/async_tx.c
-@@ -81,6 +81,10 @@ async_tx_channel_switch(struct dma_async_tx_descriptor *depend_tx,
- 	struct dma_device *device = chan->device;
- 	struct dma_async_tx_descriptor *intr_tx = (void *) ~0;
+diff --git a/arch/arm/mach-iop13xx/setup.c b/arch/arm/mach-iop13xx/setup.c
+index faaef95..5c147fb 100644
+--- a/arch/arm/mach-iop13xx/setup.c
++++ b/arch/arm/mach-iop13xx/setup.c
+@@ -477,10 +477,8 @@ void __init iop13xx_platform_init(void)
+ 			plat_data = &iop13xx_adma_0_data;
+ 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
+ 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
+-			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
+ 			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
+ 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
+-			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
+ 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
+ 			break;
+ 		case IOP13XX_INIT_ADMA_1:
+@@ -489,10 +487,8 @@ void __init iop13xx_platform_init(void)
+ 			plat_data = &iop13xx_adma_1_data;
+ 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
+ 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
+-			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
+ 			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
+ 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
+-			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
+ 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
+ 			break;
+ 		case IOP13XX_INIT_ADMA_2:
+@@ -501,13 +497,10 @@ void __init iop13xx_platform_init(void)
+ 			plat_data = &iop13xx_adma_2_data;
+ 			dma_cap_set(DMA_MEMCPY, plat_data->cap_mask);
+ 			dma_cap_set(DMA_XOR, plat_data->cap_mask);
+-			dma_cap_set(DMA_DUAL_XOR, plat_data->cap_mask);
+ 			dma_cap_set(DMA_XOR_VAL, plat_data->cap_mask);
+ 			dma_cap_set(DMA_MEMSET, plat_data->cap_mask);
+-			dma_cap_set(DMA_MEMCPY_CRC32C, plat_data->cap_mask);
+ 			dma_cap_set(DMA_INTERRUPT, plat_data->cap_mask);
+ 			dma_cap_set(DMA_PQ, plat_data->cap_mask);
+-			dma_cap_set(DMA_PQ_UPDATE, plat_data->cap_mask);
+ 			dma_cap_set(DMA_PQ_VAL, plat_data->cap_mask);
+ 			break;
+ 		}
+diff --git a/arch/arm/plat-iop/adma.c b/arch/arm/plat-iop/adma.c
+index da1dd0d..1ff6a37 100644
+--- a/arch/arm/plat-iop/adma.c
++++ b/arch/arm/plat-iop/adma.c
+@@ -179,7 +179,6 @@ static int __init iop3xx_adma_cap_init(void)
+ 	dma_cap_set(DMA_INTERRUPT, iop3xx_dma_0_data.cap_mask);
+ 	#else
+ 	dma_cap_set(DMA_MEMCPY, iop3xx_dma_0_data.cap_mask);
+-	dma_cap_set(DMA_MEMCPY_CRC32C, iop3xx_dma_0_data.cap_mask);
+ 	dma_cap_set(DMA_INTERRUPT, iop3xx_dma_0_data.cap_mask);
+ 	#endif
  
-+	#ifdef CONFIG_ASYNC_TX_DISABLE_CHANNEL_SWITCH
-+	BUG();
-+	#endif
-+
- 	/* first check to see if we can still append to depend_tx */
- 	spin_lock_bh(&depend_tx->lock);
- 	if (depend_tx->parent && depend_tx->chan == tx->chan) {
-diff --git a/drivers/dma/Kconfig b/drivers/dma/Kconfig
-index 912a51b..ddcd979 100644
---- a/drivers/dma/Kconfig
-+++ b/drivers/dma/Kconfig
-@@ -17,11 +17,15 @@ if DMADEVICES
+@@ -188,7 +187,6 @@ static int __init iop3xx_adma_cap_init(void)
+ 	dma_cap_set(DMA_INTERRUPT, iop3xx_dma_1_data.cap_mask);
+ 	#else
+ 	dma_cap_set(DMA_MEMCPY, iop3xx_dma_1_data.cap_mask);
+-	dma_cap_set(DMA_MEMCPY_CRC32C, iop3xx_dma_1_data.cap_mask);
+ 	dma_cap_set(DMA_INTERRUPT, iop3xx_dma_1_data.cap_mask);
+ 	#endif
  
- comment "DMA Devices"
+diff --git a/drivers/dma/iop-adma.c b/drivers/dma/iop-adma.c
+index d6b6b52..9bbebf0 100644
+--- a/drivers/dma/iop-adma.c
++++ b/drivers/dma/iop-adma.c
+@@ -1257,15 +1257,12 @@ static int __devinit iop_adma_probe(struct platform_device *pdev)
+ 	}
  
-+config ASYNC_TX_DISABLE_CHANNEL_SWITCH
-+	bool
-+
- config INTEL_IOATDMA
- 	tristate "Intel I/OAT DMA support"
- 	depends on PCI && X86
- 	select DMA_ENGINE
- 	select DCA
-+	select ASYNC_TX_DISABLE_CHANNEL_SWITCH
- 	help
- 	  Enable support for the Intel(R) I/OAT DMA engine present
- 	  in recent Intel Xeon chipsets.
-diff --git a/drivers/dma/dmaengine.c b/drivers/dma/dmaengine.c
-index 7739f0d..bd0b248 100644
---- a/drivers/dma/dmaengine.c
-+++ b/drivers/dma/dmaengine.c
-@@ -608,6 +608,40 @@ void dmaengine_put(void)
- }
- EXPORT_SYMBOL(dmaengine_put);
+ 	dev_printk(KERN_INFO, &pdev->dev, "Intel(R) IOP: "
+-	  "( %s%s%s%s%s%s%s%s%s%s)\n",
++	  "( %s%s%s%s%s%s%s)\n",
+ 	  dma_has_cap(DMA_PQ, dma_dev->cap_mask) ? "pq " : "",
+-	  dma_has_cap(DMA_PQ_UPDATE, dma_dev->cap_mask) ? "pq_update " : "",
+ 	  dma_has_cap(DMA_PQ_VAL, dma_dev->cap_mask) ? "pq_val " : "",
+ 	  dma_has_cap(DMA_XOR, dma_dev->cap_mask) ? "xor " : "",
+-	  dma_has_cap(DMA_DUAL_XOR, dma_dev->cap_mask) ? "dual_xor " : "",
+ 	  dma_has_cap(DMA_XOR_VAL, dma_dev->cap_mask) ? "xor_val " : "",
+ 	  dma_has_cap(DMA_MEMSET, dma_dev->cap_mask)  ? "fill " : "",
+-	  dma_has_cap(DMA_MEMCPY_CRC32C, dma_dev->cap_mask) ? "cpy+crc " : "",
+ 	  dma_has_cap(DMA_MEMCPY, dma_dev->cap_mask) ? "cpy " : "",
+ 	  dma_has_cap(DMA_INTERRUPT, dma_dev->cap_mask) ? "intr " : "");
  
-+static bool device_has_all_tx_types(struct dma_device *device)
-+{
-+	/* A device that satisfies this test has channels that will never cause
-+	 * an async_tx channel switch event as all possible operation types can
-+	 * be handled.
-+	 */
-+	#ifdef CONFIG_ASYNC_TX_DMA
-+	if (!dma_has_cap(DMA_INTERRUPT, device->cap_mask))
-+		return false;
-+	#endif
-+
-+	#if defined(CONFIG_ASYNC_MEMCPY) || defined(CONFIG_ASYNC_MEMCPY_MODULE)
-+	if (!dma_has_cap(DMA_MEMCPY, device->cap_mask))
-+		return false;
-+	#endif
-+
-+	#if defined(CONFIG_ASYNC_MEMSET) || defined(CONFIG_ASYNC_MEMSET_MODULE)
-+	if (!dma_has_cap(DMA_MEMSET, device->cap_mask))
-+		return false;
-+	#endif
-+
-+	#if defined(CONFIG_ASYNC_XOR) || defined(CONFIG_ASYNC_XOR_MODULE)
-+	if (!dma_has_cap(DMA_XOR, device->cap_mask))
-+		return false;
-+	#endif
-+
-+	#if defined(CONFIG_ASYNC_PQ) || defined(CONFIG_ASYNC_PQ_MODULE)
-+	if (!dma_has_cap(DMA_PQ, device->cap_mask))
-+		return false;
-+	#endif
-+
-+	return true;
-+}
-+
- static int get_dma_id(struct dma_device *device)
- {
- 	int rc;
-@@ -665,6 +699,12 @@ int dma_async_device_register(struct dma_device *device)
- 	BUG_ON(!device->device_issue_pending);
- 	BUG_ON(!device->dev);
- 
-+	/* note: this only matters in the
-+	 * CONFIG_ASYNC_TX_DISABLE_CHANNEL_SWITCH=y case
-+	 */
-+	if (device_has_all_tx_types(device))
-+		dma_cap_set(DMA_ASYNC_TX, device->cap_mask);
-+
- 	idr_ref = kmalloc(sizeof(*idr_ref), GFP_KERNEL);
- 	if (!idr_ref)
- 		return -ENOMEM;
 diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
-index 176f827..3e35df3 100644
+index 3e35df3..94656f9 100644
 --- a/include/linux/dmaengine.h
 +++ b/include/linux/dmaengine.h
-@@ -48,6 +48,9 @@ enum dma_status {
- 
- /**
-  * enum dma_transaction_type - DMA transaction types/indexes
-+ *
-+ * Note: The DMA_ASYNC_TX capability is not to be set by drivers.  It is
-+ * automatically set as dma devices are registered.
-  */
- enum dma_transaction_type {
+@@ -56,12 +56,9 @@ enum dma_transaction_type {
  	DMA_MEMCPY,
-@@ -61,6 +64,7 @@ enum dma_transaction_type {
- 	DMA_MEMCPY_CRC32C,
+ 	DMA_XOR,
+ 	DMA_PQ,
+-	DMA_DUAL_XOR,
+-	DMA_PQ_UPDATE,
+ 	DMA_XOR_VAL,
+ 	DMA_PQ_VAL,
+ 	DMA_MEMSET,
+-	DMA_MEMCPY_CRC32C,
  	DMA_INTERRUPT,
  	DMA_PRIVATE,
-+	DMA_ASYNC_TX,
- 	DMA_SLAVE,
- };
- 
-@@ -393,7 +397,11 @@ static inline void net_dmaengine_put(void)
- #ifdef CONFIG_ASYNC_TX_DMA
- #define async_dmaengine_get()	dmaengine_get()
- #define async_dmaengine_put()	dmaengine_put()
-+#ifdef CONFIG_ASYNC_TX_DISABLE_CHANNEL_SWITCH
-+#define async_dma_find_channel(type) dma_find_channel(DMA_ASYNC_TX)
-+#else
- #define async_dma_find_channel(type) dma_find_channel(type)
-+#endif /* CONFIG_ASYNC_TX_DISABLE_CHANNEL_SWITCH */
- #else
- static inline void async_dmaengine_get(void)
- {
-@@ -406,7 +414,7 @@ async_dma_find_channel(enum dma_transaction_type type)
- {
- 	return NULL;
- }
--#endif
-+#endif /* CONFIG_ASYNC_TX_DMA */
- 
- dma_cookie_t dma_async_memcpy_buf_to_buf(struct dma_chan *chan,
- 	void *dest, void *src, size_t len);
+ 	DMA_ASYNC_TX,
 
