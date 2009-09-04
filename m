@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932662AbZIDCbO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932906AbZIDChi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932662AbZIDCbO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 22:31:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932650AbZIDCbL
+	id S932906AbZIDChi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 22:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932670AbZIDCbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 22:31:11 -0400
+	Thu, 3 Sep 2009 22:31:24 -0400
 Received: from mga11.intel.com ([192.55.52.93]:20017 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932633AbZIDCbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 22:31:08 -0400
+	id S932652AbZIDCbN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 22:31:13 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,329,1249282800"; 
-   d="scan'208";a="490400239"
-Subject: [PATCH 08/29] ioat: define descriptor control bit-field
+   d="scan'208";a="490400258"
+Subject: [PATCH 09/29] ioat1: move descriptor allocation from submit to prep
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, netdev@vger.kernel.org,
        Maciej Sosnowski <maciej.sosnowski@intel.com>
-Date: Thu, 03 Sep 2009 19:31:10 -0700
-Message-ID: <20090904023110.32667.71782.stgit@dwillia2-linux.ch.intel.com>
+Date: Thu, 03 Sep 2009 19:31:15 -0700
+Message-ID: <20090904023115.32667.49396.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -29,141 +29,207 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This cleans up a mess of and'ing and or'ing bit definitions, and allows
-simple assignments from the specified dma_ctrl_flags parameter.
+The async_tx api assumes that after a successful ->prep a subsequent
+->submit will not fail due to a lack of resources.
+
+This also fixes a bug in the allocation failure case.  Previously the
+descriptors allocated prior to the allocation failure would not be
+returned to the free list.
 
 Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/ioat/dma.c |   28 ++++++++++++++++------------
- drivers/dma/ioat/hw.h  |   38 ++++++++++++++++++--------------------
- 2 files changed, 34 insertions(+), 32 deletions(-)
+ drivers/dma/ioat/dma.c |  154 ++++++++++++++++++++----------------------------
+ 1 files changed, 65 insertions(+), 89 deletions(-)
 
 diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
-index b750804..4840d48 100644
+index 4840d48..c4333be 100644
 --- a/drivers/dma/ioat/dma.c
 +++ b/drivers/dma/ioat/dma.c
-@@ -472,9 +472,9 @@ static dma_cookie_t ioat1_tx_submit(struct dma_async_tx_descriptor *tx)
- 		return -ENOMEM;
- 	}
- 
--	hw->ctl = IOAT_DMA_DESCRIPTOR_CTL_CP_STS;
-+	hw->ctl_f.compl_write = 1;
- 	if (first->txd.callback) {
--		hw->ctl |= IOAT_DMA_DESCRIPTOR_CTL_INT_GN;
-+		hw->ctl_f.int_en = 1;
- 		if (first != new) {
- 			/* move callback into to last desc */
- 			new->txd.callback = first->txd.callback;
-@@ -563,9 +563,9 @@ static dma_cookie_t ioat2_tx_submit(struct dma_async_tx_descriptor *tx)
- 		return -ENOMEM;
- 	}
- 
--	hw->ctl |= IOAT_DMA_DESCRIPTOR_CTL_CP_STS;
-+	hw->ctl_f.compl_write = 1;
- 	if (first->txd.callback) {
--		hw->ctl |= IOAT_DMA_DESCRIPTOR_CTL_INT_GN;
-+		hw->ctl_f.int_en = 1;
- 		if (first != new) {
- 			/* move callback into to last desc */
- 			new->txd.callback = first->txd.callback;
-@@ -878,7 +878,8 @@ ioat2_dma_get_next_descriptor(struct ioat_dma_chan *ioat_chan)
- 		noop_desc = to_ioat_desc(ioat_chan->used_desc.next);
- 		/* set size to non-zero value (channel returns error when size is 0) */
- 		noop_desc->hw->size = NULL_DESC_BUFFER_SIZE;
--		noop_desc->hw->ctl = IOAT_DMA_DESCRIPTOR_NUL;
-+		noop_desc->hw->ctl = 0;
-+		noop_desc->hw->ctl_f.null = 1;
- 		noop_desc->hw->src_addr = 0;
- 		noop_desc->hw->dst_addr = 0;
- 
-@@ -1230,6 +1231,7 @@ ioat_dma_is_complete(struct dma_chan *chan, dma_cookie_t cookie,
- static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan)
+@@ -420,95 +420,29 @@ static void ioat_dma_chan_watchdog(struct work_struct *work)
+ static dma_cookie_t ioat1_tx_submit(struct dma_async_tx_descriptor *tx)
  {
- 	struct ioat_desc_sw *desc;
-+	struct ioat_dma_descriptor *hw;
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(tx->chan);
+-	struct ioat_desc_sw *first = tx_to_ioat_desc(tx);
+-	struct ioat_desc_sw *prev, *new;
+-	struct ioat_dma_descriptor *hw;
++	struct ioat_desc_sw *desc = tx_to_ioat_desc(tx);
++	struct ioat_desc_sw *first;
++	struct ioat_desc_sw *chain_tail;
+ 	dma_cookie_t cookie;
+-	LIST_HEAD(new_chain);
+-	u32 copy;
+-	size_t len;
+-	dma_addr_t src, dst;
+-	unsigned long orig_flags;
+-	unsigned int desc_count = 0;
+-
+-	/* src and dest and len are stored in the initial descriptor */
+-	len = first->len;
+-	src = first->src;
+-	dst = first->dst;
+-	orig_flags = first->txd.flags;
+-	new = first;
  
  	spin_lock_bh(&ioat_chan->desc_lock);
+-	prev = to_ioat_desc(ioat_chan->used_desc.prev);
+-	prefetch(prev->hw);
+-	do {
+-		copy = min_t(size_t, len, ioat_chan->xfercap);
+-
+-		async_tx_ack(&new->txd);
+-
+-		hw = new->hw;
+-		hw->size = copy;
+-		hw->ctl = 0;
+-		hw->src_addr = src;
+-		hw->dst_addr = dst;
+-		hw->next = 0;
+-
+-		/* chain together the physical address list for the HW */
+-		wmb();
+-		prev->hw->next = (u64) new->txd.phys;
+-
+-		len -= copy;
+-		dst += copy;
+-		src += copy;
+-
+-		list_add_tail(&new->node, &new_chain);
+-		desc_count++;
+-		prev = new;
+-	} while (len && (new = ioat1_dma_get_next_descriptor(ioat_chan)));
+-
+-	if (!new) {
+-		dev_err(to_dev(ioat_chan), "tx submit failed\n");
+-		spin_unlock_bh(&ioat_chan->desc_lock);
+-		return -ENOMEM;
+-	}
+-
+-	hw->ctl_f.compl_write = 1;
+-	if (first->txd.callback) {
+-		hw->ctl_f.int_en = 1;
+-		if (first != new) {
+-			/* move callback into to last desc */
+-			new->txd.callback = first->txd.callback;
+-			new->txd.callback_param
+-					= first->txd.callback_param;
+-			first->txd.callback = NULL;
+-			first->txd.callback_param = NULL;
+-		}
+-	}
+-
+-	new->tx_cnt = desc_count;
+-	new->txd.flags = orig_flags; /* client is in control of this ack */
+-
+-	/* store the original values for use in later cleanup */
+-	if (new != first) {
+-		new->src = first->src;
+-		new->dst = first->dst;
+-		new->len = first->len;
+-	}
+-
+ 	/* cookie incr and addition to used_list must be atomic */
+ 	cookie = ioat_chan->common.cookie;
+ 	cookie++;
+ 	if (cookie < 0)
+ 		cookie = 1;
+-	ioat_chan->common.cookie = new->txd.cookie = cookie;
++	ioat_chan->common.cookie = tx->cookie = cookie;
  
-@@ -1242,17 +1244,19 @@ static void ioat_dma_start_null_desc(struct ioat_dma_chan *ioat_chan)
- 		return;
+ 	/* write address into NextDescriptor field of last desc in chain */
+-	to_ioat_desc(ioat_chan->used_desc.prev)->hw->next =
+-							first->txd.phys;
+-	list_splice_tail(&new_chain, &ioat_chan->used_desc);
+-
+-	ioat_chan->dmacount += desc_count;
+-	ioat_chan->pending += desc_count;
++	first = to_ioat_desc(tx->tx_list.next);
++	chain_tail = to_ioat_desc(ioat_chan->used_desc.prev);
++	/* make descriptor updates globally visible before chaining */
++	wmb();
++	chain_tail->hw->next = first->txd.phys;
++	list_splice_tail_init(&tx->tx_list, &ioat_chan->used_desc);
++
++	ioat_chan->dmacount += desc->tx_cnt;
++	ioat_chan->pending += desc->tx_cnt;
+ 	if (ioat_chan->pending >= ioat_pending_level)
+ 		__ioat1_dma_memcpy_issue_pending(ioat_chan);
+ 	spin_unlock_bh(&ioat_chan->desc_lock);
+@@ -937,24 +871,66 @@ ioat1_dma_prep_memcpy(struct dma_chan *chan, dma_addr_t dma_dest,
+ 		      dma_addr_t dma_src, size_t len, unsigned long flags)
+ {
+ 	struct ioat_dma_chan *ioat_chan = to_ioat_chan(chan);
+-	struct ioat_desc_sw *new;
++	struct ioat_desc_sw *desc;
++	size_t copy;
++	LIST_HEAD(chain);
++	dma_addr_t src = dma_src;
++	dma_addr_t dest = dma_dest;
++	size_t total_len = len;
++	struct ioat_dma_descriptor *hw = NULL;
++	int tx_cnt = 0;
+ 
+ 	spin_lock_bh(&ioat_chan->desc_lock);
+-	new = ioat_dma_get_next_descriptor(ioat_chan);
+-	spin_unlock_bh(&ioat_chan->desc_lock);
++	desc = ioat_dma_get_next_descriptor(ioat_chan);
++	do {
++		if (!desc)
++			break;
+ 
+-	if (new) {
+-		new->len = len;
+-		new->dst = dma_dest;
+-		new->src = dma_src;
+-		new->txd.flags = flags;
+-		return &new->txd;
+-	} else {
++		tx_cnt++;
++		copy = min_t(size_t, len, ioat_chan->xfercap);
++
++		hw = desc->hw;
++		hw->size = copy;
++		hw->ctl = 0;
++		hw->src_addr = src;
++		hw->dst_addr = dest;
++
++		list_add_tail(&desc->node, &chain);
++
++		len -= copy;
++		dest += copy;
++		src += copy;
++		if (len) {
++			struct ioat_desc_sw *next;
++
++			async_tx_ack(&desc->txd);
++			next = ioat_dma_get_next_descriptor(ioat_chan);
++			hw->next = next ? next->txd.phys : 0;
++			desc = next;
++		} else
++			hw->next = 0;
++	} while (len);
++
++	if (!desc) {
+ 		dev_err(to_dev(ioat_chan),
+ 			"chan%d - get_next_desc failed: %d descs waiting, %d total desc\n",
+ 			chan_num(ioat_chan), ioat_chan->dmacount, ioat_chan->desccount);
++		list_splice(&chain, &ioat_chan->free_desc);
++		spin_unlock_bh(&ioat_chan->desc_lock);
+ 		return NULL;
  	}
- 
--	desc->hw->ctl = IOAT_DMA_DESCRIPTOR_NUL
--				| IOAT_DMA_DESCRIPTOR_CTL_INT_GN
--				| IOAT_DMA_DESCRIPTOR_CTL_CP_STS;
-+	hw = desc->hw;
-+	hw->ctl = 0;
-+	hw->ctl_f.null = 1;
-+	hw->ctl_f.int_en = 1;
++	spin_unlock_bh(&ioat_chan->desc_lock);
++
++	desc->txd.flags = flags;
++	desc->tx_cnt = tx_cnt;
++	desc->src = dma_src;
++	desc->dst = dma_dest;
++	desc->len = total_len;
++	list_splice(&chain, &desc->txd.tx_list);
++	hw->ctl_f.int_en = !!(flags & DMA_PREP_INTERRUPT);
 +	hw->ctl_f.compl_write = 1;
- 	/* set size to non-zero value (channel returns error when size is 0) */
--	desc->hw->size = NULL_DESC_BUFFER_SIZE;
--	desc->hw->src_addr = 0;
--	desc->hw->dst_addr = 0;
-+	hw->size = NULL_DESC_BUFFER_SIZE;
-+	hw->src_addr = 0;
-+	hw->dst_addr = 0;
- 	async_tx_ack(&desc->txd);
- 	switch (ioat_chan->device->version) {
- 	case IOAT_VER_1_2:
--		desc->hw->next = 0;
-+		hw->next = 0;
- 		list_add_tail(&desc->node, &ioat_chan->used_desc);
++
++	return &desc->txd;
+ }
  
- 		writel(((u64) desc->txd.phys) & 0x00000000FFFFFFFF,
-diff --git a/drivers/dma/ioat/hw.h b/drivers/dma/ioat/hw.h
-index 1438fa5..e13f3ed 100644
---- a/drivers/dma/ioat/hw.h
-+++ b/drivers/dma/ioat/hw.h
-@@ -40,7 +40,24 @@
- 
- struct ioat_dma_descriptor {
- 	uint32_t	size;
--	uint32_t	ctl;
-+	union {
-+		uint32_t ctl;
-+		struct {
-+			unsigned int int_en:1;
-+			unsigned int src_snoop_dis:1;
-+			unsigned int dest_snoop_dis:1;
-+			unsigned int compl_write:1;
-+			unsigned int fence:1;
-+			unsigned int null:1;
-+			unsigned int src_brk:1;
-+			unsigned int dest_brk:1;
-+			unsigned int bundle:1;
-+			unsigned int dest_dca:1;
-+			unsigned int hint:1;
-+			unsigned int rsvd2:13;
-+			unsigned int op:8;
-+		} ctl_f;
-+	};
- 	uint64_t	src_addr;
- 	uint64_t	dst_addr;
- 	uint64_t	next;
-@@ -49,23 +66,4 @@ struct ioat_dma_descriptor {
- 	uint64_t	user1;
- 	uint64_t	user2;
- };
--
--#define IOAT_DMA_DESCRIPTOR_CTL_INT_GN	0x00000001
--#define IOAT_DMA_DESCRIPTOR_CTL_SRC_SN	0x00000002
--#define IOAT_DMA_DESCRIPTOR_CTL_DST_SN	0x00000004
--#define IOAT_DMA_DESCRIPTOR_CTL_CP_STS	0x00000008
--#define IOAT_DMA_DESCRIPTOR_CTL_FRAME	0x00000010
--#define IOAT_DMA_DESCRIPTOR_NUL		0x00000020
--#define IOAT_DMA_DESCRIPTOR_CTL_SP_BRK	0x00000040
--#define IOAT_DMA_DESCRIPTOR_CTL_DP_BRK	0x00000080
--#define IOAT_DMA_DESCRIPTOR_CTL_BNDL	0x00000100
--#define IOAT_DMA_DESCRIPTOR_CTL_DCA	0x00000200
--#define IOAT_DMA_DESCRIPTOR_CTL_BUFHINT	0x00000400
--
--#define IOAT_DMA_DESCRIPTOR_CTL_OPCODE_CONTEXT	0xFF000000
--#define IOAT_DMA_DESCRIPTOR_CTL_OPCODE_DMA	0x00000000
--
--#define IOAT_DMA_DESCRIPTOR_CTL_CONTEXT_DCA	0x00000001
--#define IOAT_DMA_DESCRIPTOR_CTL_OPCODE_MASK	0xFF000000
--
- #endif
+ static struct dma_async_tx_descriptor *
 
