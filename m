@@ -1,235 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbZIDLFf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756769AbZIDLzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbZIDLFf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 07:05:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbZIDLFd
+	id S1756769AbZIDLzs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 07:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756737AbZIDLzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 07:05:33 -0400
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:45209 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754962AbZIDLFc (ORCPT
+	Fri, 4 Sep 2009 07:55:46 -0400
+Received: from mail.turknet.net.tr ([193.192.98.182]:19946 "EHLO
+	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756721AbZIDLzp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 07:05:32 -0400
-Subject: [RFC PATCH] v2 mm: balance_dirty_pages.  reduce calls to
- global_page_state to reduce cache references
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Cc: "chris.mason" <chris.mason@oracle.com>, linux-mm <linux-mm@kvack.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>
-Content-Type: text/plain
-Date: Fri, 04 Sep 2009 12:05:30 +0100
-Message-Id: <1252062330.2271.61.camel@castor>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	Fri, 4 Sep 2009 07:55:45 -0400
+X-Greylist: delayed 613 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 07:55:44 EDT
+From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [BUG] Sound related problem with Linux-2.6.31-rc8-git1-rt9
+Date: Fri, 4 Sep 2009 14:45:28 +0300
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc8-git1; KDE/4.3.1; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909041445.29212.tarkan.erimer@turknet.net.tr>
+X-OriginalArrivalTime: 04 Sep 2009 11:45:31.0838 (UTC) FILETIME=[35039DE0:01CA2D55]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reducing the number of times balance_dirty_pages calls global_page_state
-reduces the cache references and so improves write performance on a
-variety of workloads.
 
-'perf stats' of simple fio write tests shows the reduction in cache
-access.
-Where the test is fio 'write,mmap,600Mb,pre_read' on AMD AthlonX2 with
-3Gb memory (dirty_threshold approx 600 Mb)
-running each test 10 times, dropping the fasted & slowest values then
-taking 
-the average & standard deviation
+When I ran a movie, I got these errors in dmesg. Also, sound began to skip too 
+fastly. My audio device is:
 
-		average (s.d.) in millions (10^6)
-2.6.31-rc8	648.6 (14.6)
-+patch		620.1 (16.5)
-
-Achieving this reduction is by dropping clip_bdi_dirty_limit as it  
-rereads the counters to apply the dirty_threshold and moving this check
-up into balance_dirty_pages where it has already read the counters.
-
-Also by rearrange the for loop to only contain one copy of the limit
-tests allows the pdflush test after the loop to use the local copies of
-the counters rather than rereading them.
-
-In the common case with no throttling it now calls global_page_state 5
-fewer times and bdi_stat 2 fewer.
-
-This version includes the changes suggested by 
-Wu Fengguang <fengguang.wu@intel.com>
-
-Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
-----
-Thanks to everybody for the feedback & suggestions.
-This patch is against 2.6.31-rc8
-
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 81627eb..9581359 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -260,32 +260,6 @@ static void bdi_writeout_fraction(struct backing_dev_info *bdi,
- 	}
- }
- 
--/*
-- * Clip the earned share of dirty pages to that which is actually available.
-- * This avoids exceeding the total dirty_limit when the floating averages
-- * fluctuate too quickly.
-- */
--static void clip_bdi_dirty_limit(struct backing_dev_info *bdi,
--		unsigned long dirty, unsigned long *pbdi_dirty)
--{
--	unsigned long avail_dirty;
--
--	avail_dirty = global_page_state(NR_FILE_DIRTY) +
--		 global_page_state(NR_WRITEBACK) +
--		 global_page_state(NR_UNSTABLE_NFS) +
--		 global_page_state(NR_WRITEBACK_TEMP);
--
--	if (avail_dirty < dirty)
--		avail_dirty = dirty - avail_dirty;
--	else
--		avail_dirty = 0;
--
--	avail_dirty += bdi_stat(bdi, BDI_RECLAIMABLE) +
--		bdi_stat(bdi, BDI_WRITEBACK);
--
--	*pbdi_dirty = min(*pbdi_dirty, avail_dirty);
--}
--
- static inline void task_dirties_fraction(struct task_struct *tsk,
- 		long *numerator, long *denominator)
- {
-@@ -478,7 +452,6 @@ get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
- 			bdi_dirty = dirty * bdi->max_ratio / 100;
- 
- 		*pbdi_dirty = bdi_dirty;
--		clip_bdi_dirty_limit(bdi, dirty, pbdi_dirty);
- 		task_dirty_limit(current, pbdi_dirty);
- 	}
- }
-@@ -499,7 +472,7 @@ static void balance_dirty_pages(struct address_space *mapping)
- 	unsigned long bdi_thresh;
- 	unsigned long pages_written = 0;
- 	unsigned long write_chunk = sync_writeback_pages();
--
-+	int dirty_exceeded;
- 	struct backing_dev_info *bdi = mapping->backing_dev_info;
- 
- 	for (;;) {
-@@ -512,16 +485,36 @@ static void balance_dirty_pages(struct address_space *mapping)
- 		};
- 
- 		get_dirty_limits(&background_thresh, &dirty_thresh,
--				&bdi_thresh, bdi);
-+				 &bdi_thresh, bdi);
- 
- 		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
--					global_page_state(NR_UNSTABLE_NFS);
--		nr_writeback = global_page_state(NR_WRITEBACK);
-+			global_page_state(NR_UNSTABLE_NFS);
-+		nr_writeback = global_page_state(NR_WRITEBACK) +
-+			global_page_state(NR_WRITEBACK_TEMP);
- 
--		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
--		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-+		/*
-+		 * In order to avoid the stacked BDI deadlock we need
-+		 * to ensure we accurately count the 'dirty' pages when
-+		 * the threshold is low.
-+		 *
-+		 * Otherwise it would be possible to get thresh+n pages
-+		 * reported dirty, even though there are thresh-m pages
-+		 * actually dirty; with m+n sitting in the percpu
-+		 * deltas.
-+		 */
-+		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
-+			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
-+			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
-+		} else if (bdi_nr_reclaimable) {
-+			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
-+			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-+		}
- 
--		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
-+		dirty_exceeded =
-+			(bdi_nr_reclaimable + bdi_nr_writeback >= bdi_thresh)
-+			|| (nr_reclaimable + nr_writeback >= dirty_thresh);
-+
-+		if (!dirty_exceeded)
- 			break;
- 
- 		/*
-@@ -530,7 +523,11 @@ static void balance_dirty_pages(struct address_space *mapping)
- 		 * when the bdi limits are ramping up.
- 		 */
- 		if (nr_reclaimable + nr_writeback <
--				(background_thresh + dirty_thresh) / 2)
-+		    (background_thresh + dirty_thresh) / 2)
-+			break;
-+
-+		/* done enough? */
-+		if (pages_written >= write_chunk)
- 			break;
- 
- 		if (!bdi->dirty_exceeded)
-@@ -548,38 +545,14 @@ static void balance_dirty_pages(struct address_space *mapping)
- 		if (bdi_nr_reclaimable > bdi_thresh) {
- 			writeback_inodes(&wbc);
- 			pages_written += write_chunk - wbc.nr_to_write;
--			get_dirty_limits(&background_thresh, &dirty_thresh,
--				       &bdi_thresh, bdi);
--		}
--
--		/*
--		 * In order to avoid the stacked BDI deadlock we need
--		 * to ensure we accurately count the 'dirty' pages when
--		 * the threshold is low.
--		 *
--		 * Otherwise it would be possible to get thresh+n pages
--		 * reported dirty, even though there are thresh-m pages
--		 * actually dirty; with m+n sitting in the percpu
--		 * deltas.
--		 */
--		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
--			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
--			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
--		} else if (bdi_nr_reclaimable) {
--			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
--			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
-+			/* don't wait if we've done enough */
-+			if (pages_written >= write_chunk)
-+				continue;
- 		}
--
--		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
--			break;
--		if (pages_written >= write_chunk)
--			break;		/* We've done our duty */
--
- 		congestion_wait(BLK_RW_ASYNC, HZ/10);
- 	}
- 
--	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
--			bdi->dirty_exceeded)
-+	if (!dirty_exceeded && bdi->dirty_exceeded)
- 		bdi->dirty_exceeded = 0;
- 
- 	if (writeback_in_progress(bdi))
-@@ -593,10 +566,8 @@ static void balance_dirty_pages(struct address_space *mapping)
- 	 * In normal mode, we start background writeout at the lower
- 	 * background_thresh, to keep the amount of dirty memory low.
- 	 */
--	if ((laptop_mode && pages_written) ||
--			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
--					  + global_page_state(NR_UNSTABLE_NFS)
--					  > background_thresh)))
-+	if ((laptop_mode && pages_written) || (!laptop_mode &&
-+	     (nr_reclaimable > background_thresh)))
- 		pdflush_operation(background_writeout, 0);
- }
- 
+tarkane@tarkane:~$ lspci | grep -i audio
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High Definition 
+Audio Controller (rev 01)
 
 
+Tarkan Erimer
+
+
+[81001.954666] BUG: unable to handle kernel NULL pointer dereference at 
+00000000000000a8                                           
+[81001.954677] IP: [<ffffffffa010f4b5>] snd_pcm_period_elapsed+0x11/0x1ec 
+[snd_pcm]                                                
+[81001.954701] PGD 1a028067 PUD 1a022067 PMD 0                                                                                     
+[81001.954708] Oops: 0000 [#1] PREEMPT SMP                                                                                         
+[81001.954713] last sysfs file: 
+/sys/devices/pci0000:00/0000:00:1d.7/usb5/5-8/5-8:1.0/host5/target5:0:0/5:0:0:0/block/sdb/size     
+[81001.954718] CPU 1                                                                                                               
+[81001.954721] Modules linked in: nls_iso8859_1 nls_cp437 vfat fat usb_storage 
+nfs lockd fscache nfs_acl auth_rpcgss sunrpc xt_multiport iptable_filter 
+ip_tables x_tables binfmt_misc bridge stp llc bnep xfrm_user xfrm4_tunnel 
+tunnel4 ipcomp xfrm_ipcomp esp4 ah4 deflate ctr twofish twofish_common 
+camellia serpent blowfish cast5 des_generic cbc aes_x86_64 aes_generic xcbc 
+rmd160 sha256_generic sha1_generic crypto_null af_key xfs exportfs btrfs 
+zlib_deflate crc32c libcrc32c snd_hda_codec_realtek snd_hda_intel 
+snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss 
+snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer iTCO_wdt 
+snd_seq_device iTCO_vendor_support snd soundcore snd_page_alloc psmouse 
+serio_raw pcspkr usbhid ehci_hcd uhci_hcd tg3 floppy     
+[81001.954806] Pid: 2180, comm: hd-audio0 Not tainted 2.6.31-rc8-git1 #4 HP 
+Compaq dc7600 Small Form Factor                        
+[81001.954810] RIP: 0010:[<ffffffffa010f4b5>]  [<ffffffffa010f4b5>] 
+snd_pcm_period_elapsed+0x11/0x1ec [snd_pcm]                    
+[81001.954827] RSP: 0018:ffff88003a0cddd0  EFLAGS: 00010282                                                                        
+[81001.954831] RAX: 0000000000000000 RBX: ffff88003a1cf9e0 RCX: 
+0000000000000000                                                   
+[81001.954834] RDX: 0000000000000001 RSI: 0000000000000003 RDI: 
+0000000000000000                                                   
+[81001.954837] RBP: 0000000000000004 R08: ffff88003a1cf9e0 R09: 
+00000000ffffffff                                                   
+[81001.954841] R10: 0000000000000013 R11: ffffffff81033a48 R12: 
+ffff88003a49cc48                                                   
+[81001.954844] R13: 0000000000000000 R14: ffff88003a49cc00 R15: 
+ffffffffa014c092                                                   
+[81001.954849] FS:  0000000000000000(0000) GS:ffff8800017f8000(0000) 
+knlGS:0000000000000000                                        
+[81001.954853] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b                                                                   
+[81001.954856] CR2: 00000000000000a8 CR3: 000000001a01b000 CR4: 
+00000000000006a0                                                   
+[81001.954860] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
+0000000000000000                                                   
+[81001.954863] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
+0000000000000400                                                   
+[81001.954868] Process hd-audio0 (pid: 2180, threadinfo ffff88003a0cc000, task 
+ffff88003f197750)                                   
+[81001.954870] Stack:                                                                                                              
+[81001.954872]  0000000000000000 ffff88003a1cf9e0 0000000000000004 
+ffff88003a49cc48                                                
+[81001.954878] <0> 0000000000000000 ffff88003a49cc00 ffffffffa014c092 
+ffffffffa014c11c                                             
+[81001.954884] <0> ffff88003a0cdec8 ffffc9000260c100 ffff88003a49cdf0 
+ffff88003a49cdf8                                             
+[81001.954892] Call Trace:                                                                                                         
+[81001.954905]  [<ffffffffa014c092>] ? azx_irq_pending_work+0x0/0xbc 
+[snd_hda_intel]                                               
+[81001.954914]  [<ffffffffa014c11c>] ? azx_irq_pending_work+0x8a/0xbc 
+[snd_hda_intel]                                              
+[81001.954923]  [<ffffffff81051f35>] ? worker_thread+0x1cb/0x268                                                                   
+[81001.954928]  [<ffffffff81056355>] ? autoremove_wake_function+0x0/0x2e                                                           
+[81001.954933]  [<ffffffff81051d6a>] ? worker_thread+0x0/0x268                                                                     
+[81001.954938]  [<ffffffff81055f9c>] ? kthread+0x8b/0x93                                                                           
+[81001.954944]  [<ffffffff81011c5a>] ? child_rip+0xa/0x20                                                                          
+[81001.954949]  [<ffffffff81055f11>] ? kthread+0x0/0x93                                                                            
+[81001.954953]  [<ffffffff81011c50>] ? child_rip+0x0/0x20                                                                          
+[81001.954955] Code: 01 00 00 31 c9 ba 01 00 00 00 be 06 00 00 00 e8 5d 7c f2 
+e0 31 c9 89 c8 5f c3 41 57 41 56 41 55 41 54 55 53 48 83 ec 08 49 89 fd <4c> 
+8b bf a8 00 00 00 49 8b 87 b0 02 00 00 48 85 c0 74 02 ff d0
+[81001.955011] RIP  [<ffffffffa010f4b5>] snd_pcm_period_elapsed+0x11/0x1ec 
+[snd_pcm]
+[81001.955026]  RSP <ffff88003a0cddd0>
+[81001.955029] CR2: 00000000000000a8
+[81001.955033] ---[ end trace 552f354de445b720 ]---
