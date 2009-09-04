@@ -1,147 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932422AbZIDGoe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756661AbZIDGov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932422AbZIDGoe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:44:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750881AbZIDGoc
+	id S1756661AbZIDGov (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756648AbZIDGop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:44:32 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59492 "EHLO mx2.mail.elte.hu"
+	Fri, 4 Sep 2009 02:44:45 -0400
+Received: from mga01.intel.com ([192.55.52.88]:56376 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750764AbZIDGob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:44:31 -0400
-Date: Fri, 4 Sep 2009 08:44:18 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, fweisbec@gmail.com
-Subject: Re: [PATCH] basic perf support for sparc
-Message-ID: <20090904064418.GB29829@elte.hu>
-References: <20090817064851.GQ12579@kernel.dk> <20090903.213702.250776705.davem@davemloft.net> <20090904050256.GA8382@elte.hu> <20090903.220906.44384937.davem@davemloft.net> <20090904052005.GN18599@kernel.dk> <20090904063419.GO18599@kernel.dk>
+	id S1755636AbZIDGoi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:44:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,330,1249282800"; 
+   d="scan'208";a="723813254"
+Subject: [PATCH 00/18] ioatdma: raid5/raid6 offload support
+To: linux-kernel@vger.kernel.org
+From: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-raid@vger.kernel.org, maciej.sosnowski@intel.com
+Date: Thu, 03 Sep 2009 23:44:35 -0700
+Message-ID: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGit/0.14.3.289.g7daff
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904063419.GO18599@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The Intel(R) QuickData Technology specification version 3.2 adds support
+for offloading raid parity calculations.  This patchset builds upon the
+md raid6 acceleration patchset [1] and the ioatdma refactoring patchset
+[2].  Beyond the new operation types and descriptor formats these raid
+engines require a few changes to the current dmaengine/async_tx offload
+infrastructure:
+1/ v3.2 channels may prefetch descriptors which leads to later
+   descriptors in the chain possibly starting their reads before earlier
+   descriptors in the chain have completed their writes.  A 'fence' bit is
+   specified in the descriptor to disable this optimization in case there
+   are data dependencies in the chain.  Fenced operation must be explicitly
+   requested at the async_tx api level. 
+2/ The descriptor ring scheme of the ioatdma driver for v2+ devices
+   precludes async_tx channel switching.  The scheme requires that ->prep()
+   and ->submit() calls not be reordered.  To support this constraint the
+   dmaengine channel allocator is modified to only return "raid" engines
+   when CONFIG_ASYNC_TX_DISABLE_CHANNEL_SWITCH=y which ensures that the
+   async_tx api only ever sees channels that have all the requisite
+   capabilities.
+3/ Raid operations must be 4-byte aligned, so per operation alignment
+   checks are added to the async_tx api.
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+A couple user visible changes are included in this update:
+1/ A 'quickdata' attribute directory is added to the sysfs path of ioatdma
+   channel objects.  This allows channels with raid capabilities to be
+   identified and the activity of the channel to be monitored.
+2/ The ioatdma module will now be auto-loaded by the hotplug
+   infrastructure.  Add "blacklist ioatdma" to /etc/modprobe.d/blacklist to
+   maintain the prior policy.
 
-> On Fri, Sep 04 2009, Jens Axboe wrote:
-> > On Thu, Sep 03 2009, David Miller wrote:
-> > > From: Ingo Molnar <mingo@elte.hu>
-> > > Date: Fri, 4 Sep 2009 07:02:56 +0200
-> > > 
-> > > > 
-> > > > * David Miller <davem@davemloft.net> wrote:
-> > > > 
-> > > >> Does this build for you without adding an
-> > > >> arch/sparc/include/asm/perf_counter.h that looks
-> > > >> something like the following?
-> > > >> 
-> > > >> #ifndef _ASM_SPARC_PERF_COUNTER_H
-> > > >> #define _ASM_SPARC_PERF_COUNTER_H
-> > > >> 
-> > > >> #define PERF_COUNTER_INDEX_OFFSET	0
-> > > >> 
-> > > >> #endif
-> > > >> 
-> > > >> Or is this somehow now required in the -tip trees?
-> > > > 
-> > > > This used to be required but i recently fixed this (and that fix is 
-> > > > upstream as well) via:
-> > > > 
-> > > >   f738eb1: perf_counter: Fix the PARISC build
-> > > > 
-> > > > there's now a default define of 0 so you dont have to define it and 
-> > > > can leave out this chunk.
-> > > > 
-> > > > ( That index is only interesting if the architecture has a way to 
-> > > >   allow unprivileged user-space to access counter registers 
-> > > >   directly. In that case the index reflects the offset from the 
-> > > >   (constantly changing) dynamix index which we put into the mmap 
-> > > >   header. With Sparc not having a hw-PMU implementation this index 
-> > > >   is entirely uninteresting at this stage. )
-> > > 
-> > > But you still do need at least an empty perf_counter.h file
-> > > right?  Jens must have left the file out of his submission
-> > > by accident, and that's what I'm trying to get to the bottom
-> > > of here :-)
-> > > 
-> > > I assume there was a similar change to deal with references to
-> > > set_perf_counter_pending() too or is at least a NOP definition
-> > > still needed?
-> > 
-> > It wasn't required when I built and used it (and sent the 
-> > patch), I used the posted patch as-is. It's been a few weeks 
-> > since I last updated and ran that box, let me double check after 
-> > morning coffee and send you a fresh patch (if needed) :-)
-> 
-> It seems I had a left-over arch/sparc/include/asm/perf_counter.h 
-> from earlier experiments that was never checked in, so that is why 
-> it worked for me. include/linux/sched.h does:
-> 
-> #ifdef CONFIG_PERF_COUNTERS
-> # include <asm/perf_counter.h>
-> #endif
-> 
-> so that's no way around an empty stub file. Updated patch below, 
-> this is what I have been using.
+Provided the md raid6 acceleration patches [1] are accepted this
+patchset will follow them into 2.6.32.
 
-That stub is not wasted: it will be filled in with real arch hw-PMU 
-details, once that's implemented too.
+   git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git ioat-raid
 
-hw-PMU support has its advantages: it can provide NMI sampling that 
-allows 'perf report' to pierce irqs-off critical sections, and it 
-also gives access to non-time based metrics such as instructions, 
-cache-misses, etc. - depending on what the CPU can do.
+Regards,
+Dan
 
-That way you can tell at a glance what a workload does:
+[1]: http://marc.info/?l=linux-raid&m=125173687620741&w=2
+[2]: http://marc.info/?l=linux-raid&m=125203215231330&w=2
 
- aldebaran:~> perf stat ./hackbench 10
- Time: 0.109
+---
 
- Performance counter stats for './hackbench 10':
+Dan Williams (15):
+      dmaengine: add fence support
+      dmaengine, async_tx: add a "no channel switch" allocator
+      dmaengine: cleanup unused transaction types
+      dmaengine, async_tx: support alignment checks
+      ioat2+: add fence support
+      ioat3: hardware version 3.2 register / descriptor definitions
+      ioat3: split ioat3 support to its own file, add memset
+      ioat: add 'ioat' sysfs attributes
+      ioat3: enable dca for completion writes
+      ioat3: xor support
+      ioat3: xor self test
+      ioat3: pq support
+      ioat3: support xor via pq descriptors
+      ioat3: interrupt descriptor support
+      ioat3: segregate raid engines
 
-    1191.574039  task-clock-msecs         #      7.768 CPUs 
-          50363  context-switches         #      0.042 M/sec
-           4249  CPU-migrations           #      0.004 M/sec
-          17710  page-faults              #      0.015 M/sec
-     3600730931  cycles                   #   3021.827 M/sec
-     1573681316  instructions             #      0.437 IPC  
-       15394883  cache-references         #     12.920 M/sec
-        5005241  cache-misses             #      4.201 M/sec
+Roland Dreier (2):
+      Add MODULE_DEVICE_TABLE() so ioatdma module is autoloaded
+      I/OAT: Convert to PCI_VDEVICE()
 
-    0.153389368  seconds time elapsed
+Tom Picard (1):
+      ioat3: ioat3.2 pci ids for Jasper Forest
 
-without hw-PMU support it looks like this:
-
- venus:~> perf stat ./hackbench 1
- Time: 7.600
-
- Performance counter stats for './hackbench 1':
-
-   28218.316944  task-clock-ticks     #       3.590 CPU utilization factor
-          62700  context-switches     #       0.002 M/sec
-          11112  CPU-migrations       #       0.000 M/sec
-           1919  page-faults          #       0.000 M/sec
-  <not counted>  cycles              
-  <not counted>  instructions        
-  <not counted>  cache-references    
-  <not counted>  cache-misses        
-
- Wall-clock time elapsed:  7860.000004 msecs
-
-The soft stats and time measurements work just fine - the hardware 
-metrics are not counted.
-
-	Ingo
+ arch/arm/mach-iop13xx/setup.c       |    7 -
+ arch/arm/plat-iop/adma.c            |    2 -
+ crypto/async_tx/async_memcpy.c      |    9 +-
+ crypto/async_tx/async_memset.c      |    9 +-
+ crypto/async_tx/async_pq.c          |   11 +-
+ crypto/async_tx/async_raid6_recov.c |   47 +-
+ crypto/async_tx/async_tx.c          |    4 +
+ crypto/async_tx/async_xor.c         |   16 +-
+ drivers/dma/Kconfig                 |    4 +
+ drivers/dma/dmaengine.c             |   40 ++
+ drivers/dma/dmatest.c               |   14 +
+ drivers/dma/ioat/Makefile           |    2 +-
+ drivers/dma/ioat/dma.c              |  136 ++++-
+ drivers/dma/ioat/dma.h              |   34 +-
+ drivers/dma/ioat/dma_v2.c           |  129 ++--
+ drivers/dma/ioat/dma_v2.h           |   46 ++-
+ drivers/dma/ioat/dma_v3.c           | 1220 +++++++++++++++++++++++++++++++++++
+ drivers/dma/ioat/hw.h               |  142 ++++
+ drivers/dma/ioat/pci.c              |   45 +-
+ drivers/dma/ioat/registers.h        |   20 +
+ drivers/dma/iop-adma.c              |    5 +-
+ drivers/md/raid5.c                  |   37 +-
+ include/linux/async_tx.h            |    3 +
+ include/linux/dmaengine.h           |   60 ++-
+ include/linux/pci_ids.h             |   10 +
+ 25 files changed, 1880 insertions(+), 172 deletions(-)
+ create mode 100644 drivers/dma/ioat/dma_v3.c
