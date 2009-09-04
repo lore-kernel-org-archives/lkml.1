@@ -1,43 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933699AbZIDQz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933706AbZIDQ45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933699AbZIDQz4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932751AbZIDQzz
+	id S933706AbZIDQ45 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932871AbZIDQ4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:55:55 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:46005 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932588AbZIDQzz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:55:55 -0400
-Date: Fri, 4 Sep 2009 17:55:49 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] Re: [PATCH 2/2] rtc: Add boot_timesource sysfs
-	attribute
-Message-ID: <20090904165549.GA25802@srcf.ucam.org>
-References: <1252081568-6000-1-git-send-email-mjg@redhat.com> <1252081568-6000-2-git-send-email-mjg@redhat.com> <20090904182528.591dbd29@i1501.lan.towertech.it> <20090904163029.GA25239@srcf.ucam.org> <20090904183828.4376236e@i1501.lan.towertech.it> <20090904164127.GB25419@srcf.ucam.org> <20090904185243.53c9b440@i1501.lan.towertech.it>
+	Fri, 4 Sep 2009 12:56:54 -0400
+Received: from claw.goop.org ([74.207.240.146]:50953 "EHLO claw.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932870AbZIDQ4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 12:56:54 -0400
+Message-ID: <4AA146D6.8030802@goop.org>
+Date: Fri, 04 Sep 2009 09:56:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904185243.53c9b440@i1501.lan.towertech.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: Bastian Blank <waldi@debian.org>, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, 544145@bugs.debian.org,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: 32bit binaries on x86_64/Xen segfaults in syscall-vdso
+References: <20090830181637.GA7155@wavehammer.waldi.eu.org> <4AA02C57.30106@goop.org> <20090903220252.GA19309@wavehammer.waldi.eu.org> <4AA03DE8.40706@goop.org> <20090903223603.GA19945@wavehammer.waldi.eu.org> <4AA13B4B.7020101@goop.org> <20090904162003.GA6147@wavehammer.waldi.eu.org>
+In-Reply-To: <20090904162003.GA6147@wavehammer.waldi.eu.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04, 2009 at 06:52:43PM +0200, Alessandro Zummo wrote:
+On 09/04/09 09:20, Bastian Blank wrote:
+> On Fri, Sep 04, 2009 at 09:07:39AM -0700, Jeremy Fitzhardinge wrote:
+>   
+>> But for some reason that's triggering a failsafe callback, which invokes
+>> a GP.
+>>     
+> Hmm, not in my tests. It always returned to userspace correctly and died
+> some operations later, usually the "ret". This then produced either a
+> segfault (unreadable address), sigill (if it managed to reach the ELF
+> header of the ld.so) or a GPF.
 
->  that's ok, but nonetheless there's a problem in hwclock
->  if it takes 3 secs to read the time.
+Hm, I may have misdiagnosed it then.  Your symptoms are odd; either its
+landing back in userspace in the right place but then stumbles on for a
+while before crashing (wrong processor mode?) or the eip is wrong and
+its just landing in the wrong place and crashing immediately. 
 
-The 3-second case is with virtualised access to the cmos, but you're 
-right that it does sound excessive. Even so, it seems like a win to be 
-able to avoid running code that the kernel's already run
+How non-deterministic is it?  Does it differ every time, or from boot to
+boot, build to build?
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+    J
+
