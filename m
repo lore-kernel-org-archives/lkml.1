@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbZIDOvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbZIDOyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933608AbZIDOvf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 10:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbZIDOvb
+	id S1756944AbZIDOyc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 10:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756891AbZIDOyb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 10:51:31 -0400
-Received: from fifo99.com ([67.223.236.141]:52688 "EHLO fifo99.com"
+	Fri, 4 Sep 2009 10:54:31 -0400
+Received: from kroah.org ([198.145.64.141]:56621 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932351AbZIDOvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 10:51:31 -0400
-Subject: Re: [patch 16/33] fs: dcache per-bucket dcache hash locking
-From: Daniel Walker <dwalker@fifo99.com>
-To: npiggin@suse.de
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090904065536.424606052@nick.local0.net>
-References: <20090904065142.114706411@nick.local0.net>
-	 <20090904065536.424606052@nick.local0.net>
-Content-Type: text/plain
-Date: Fri, 04 Sep 2009 07:51:37 -0700
-Message-Id: <1252075897.22928.23.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1752452AbZIDOya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 10:54:30 -0400
+Date: Fri, 4 Sep 2009 07:52:06 -0700
+From: Greg KH <greg@kroah.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: linux-next: manual merge of the staging tree with the net tree
+Message-ID: <20090904145206.GA15964@kroah.com>
+References: <20090904173225.0817003b.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904173225.0817003b.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-04 at 16:51 +1000, npiggin@suse.de wrote:
-> +/* This should be called _only_ with a lock pinning the dentry */
-> +static inline struct dentry * __dget_locked_dlock(struct dentry
-> *dentry)
-> +{
-> +       dentry->d_count++;
-> +       dentry_lru_del_init(dentry);
-> +       return dentry;
-> +}
-> +
-> +static inline struct dentry * __dget_locked(struct dentry *dentry)
-> +{
+On Fri, Sep 04, 2009 at 05:32:25PM +1000, Stephen Rothwell wrote:
+> Hi Greg,
+> 
+> Today's linux-next merge of the staging tree got a conflict in
+> drivers/staging/at76_usb/at76_usb.c between commits
+> 6ed106549d17474ca17a16057f4c0ed4eba5a7ca ("net: use NETDEV_TX_OK instead
+> of 0 in ndo_start_xmit() functions") and
+> 0fc0b732eaa38beb93a6fb62f77c7bd9622c76ec ("netdev: drivers should make
+> ethtool_ops const") from the net tree and commit
+> c0e03fabb4f2a6e48f6e0b55729b26a599a2bd02 ("Staging: remove at76_usb
+> wireless driver") from the staging tree.
+> 
+> The latter just removes the driver, so I did that.
 
-Could you run your series through checkpatch, and clean up at least any
-errors you find.. Plus add your signed off, most (all?) aren't signed
-off..
+Thanks, that's an easy fix :)
 
-Daniel
-
+greg k-h
