@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933709AbZIDOwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933608AbZIDOvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933709AbZIDOwB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 10:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933695AbZIDOwA
+	id S933608AbZIDOvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 10:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932415AbZIDOvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 10:52:00 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46736 "EHLO mx1.suse.de"
+	Fri, 4 Sep 2009 10:51:31 -0400
+Received: from fifo99.com ([67.223.236.141]:52688 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933694AbZIDOv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 10:51:58 -0400
-From: Michal Marek <mmarek@suse.cz>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
-       akpm@linux-foundation.org, Jan Beulich <JBeulich@novell.com>
-Subject: [PATCH 2/2] kbuild: rebuild fix for Makefile.modbuiltin
-Date: Fri,  4 Sep 2009 16:51:33 +0200
-Message-Id: <3263f1a5a7e97b7db424ddd429698a23f8ec665b.1252075736.git.mmarek@suse.cz>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <7a5991a43c301eb402f67dc140c03aa1360e756e.1252075736.git.mmarek@suse.cz>
-References: <cover.1252075736.git.mmarek@suse.cz>
- <7a5991a43c301eb402f67dc140c03aa1360e756e.1252075736.git.mmarek@suse.cz>
-In-Reply-To: <cover.1252075736.git.mmarek@suse.cz>
-References: <cover.1252075736.git.mmarek@suse.cz>
+	id S932351AbZIDOvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 10:51:31 -0400
+Subject: Re: [patch 16/33] fs: dcache per-bucket dcache hash locking
+From: Daniel Walker <dwalker@fifo99.com>
+To: npiggin@suse.de
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090904065536.424606052@nick.local0.net>
+References: <20090904065142.114706411@nick.local0.net>
+	 <20090904065536.424606052@nick.local0.net>
+Content-Type: text/plain
+Date: Fri, 04 Sep 2009 07:51:37 -0700
+Message-Id: <1252075897.22928.23.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Beulich <JBeulich@novell.com>
+On Fri, 2009-09-04 at 16:51 +1000, npiggin@suse.de wrote:
+> +/* This should be called _only_ with a lock pinning the dentry */
+> +static inline struct dentry * __dget_locked_dlock(struct dentry
+> *dentry)
+> +{
+> +       dentry->d_count++;
+> +       dentry_lru_del_init(dentry);
+> +       return dentry;
+> +}
+> +
+> +static inline struct dentry * __dget_locked(struct dentry *dentry)
+> +{
 
-This patch addresses an issue with rebuilds failing to re-generate
-modules.builtin files after altering config options.
+Could you run your series through checkpatch, and clean up at least any
+errors you find.. Plus add your signed off, most (all?) aren't signed
+off..
 
-Signed-off-by: Jan Beulich <JBeulich@novell.com>
-Signed-off-by: Michal Marek <mmarek@suse.cz>
----
- scripts/Makefile.modbuiltin |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/scripts/Makefile.modbuiltin b/scripts/Makefile.modbuiltin
-index 55e1885..cc39366 100644
---- a/scripts/Makefile.modbuiltin
-+++ b/scripts/Makefile.modbuiltin
-@@ -31,9 +31,13 @@ modbuiltin-cmds =						\
- 	for m in $(modbuiltin-mods); do echo kernel/$$m; done;	\
- 	cat /dev/null $(modbuiltin-subdirs);
- 
--$(modbuiltin-target): $(subdir-ym)
-+$(modbuiltin-target): $(subdir-ym) FORCE
- 	$(Q)($(modbuiltin-cmds)) > $@
- 
-+PHONY += FORCE
-+
-+FORCE:
-+
- # Descending
- # ---------------------------------------------------------------------------
- 
--- 
-1.6.3.3
+Daniel
 
