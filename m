@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934175AbZIDUPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934169AbZIDUPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934175AbZIDUPT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934168AbZIDUPL
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S934169AbZIDUPL (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 4 Sep 2009 16:15:11 -0400
-Received: from kroah.org ([198.145.64.141]:36323 "EHLO coco.kroah.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934160AbZIDUPJ
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 4 Sep 2009 16:15:09 -0400
+Received: from kroah.org ([198.145.64.141]:36335 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934135AbZIDUOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:14:51 -0400
+	id S934120AbZIDUOx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:14:53 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:57 2009
-Message-Id: <20090904200857.121342149@mini.kroah.org>
+Message-Id: <20090904200857.279447289@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 13:07:58 -0700
+Date: Fri, 04 Sep 2009 13:07:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Chuck Ebbert <cebbert@redhat.com>, Alan Cox <alan@linux.intel.com>
-Subject: [patch 46/48] Remove low_latency flag setting from nozomi and mxser drivers
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Chuck Ebbert <cebbert@redhat.com>
+Subject: [patch 47/48] SCSI: sr: report more accurate drive status after closing the tray.
 References: <20090904200712.724048145@mini.kroah.org>
-Content-Disposition: inline; filename=remove-low_latency-flag-setting-from-nozomi-and-mxser-drivers.patch
+Content-Disposition: inline; filename=scsi-sr-report-more-accurate-drive-status-after-closing-the-tray.patch
 In-Reply-To: <20090904201112.GA8274@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,50 +31,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Chuck Ebbert <cebbert@redhat.com>
+From: Peter Jones <pjones@redhat.com>
 
-commit 4d8d4d251df8eaaa3dae71c8cfa7fbf4510d967d upstream
+commit 96bcc722c47d07b6fd05c9d0cb3ab8ea5574c5b1 upstream
 
-[ cebbert@redhat.com: backport to 2.6.27 ]
+[SCSI] sr: report more accurate drive status after closing the tray.
 
-Remove low_latency flag setting from nozomi and mxser drivers
+So, what's happening here is that the drive is reporting a sense of
+2/4/1 ("logical unit is becoming ready") from sr_test_unit_ready(), and
+then we ask for the media event notification before checking that result
+at all.  The check_media_event_descriptor() call isn't getting a check
+condition, but it's also reporting that the tray is closed and that
+there's no media.  In actuality it doesn't yet know if there's media or
+not, but there's no way to express that in the media event status field.
 
-The kernel oopses if this flag is set.
+My current thought is that if it told us the device isn't yet ready, we
+should return that immediately, since there's nothing that'll tell us
+any more data than that reliably:
 
-[and neither driver should set it as they call tty_flip_buffer_push from IRQ
- paths so have always been buggy]
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-Signed-off-by: Alan Cox <alan@linux.intel.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
 
 ---
- drivers/char/mxser.c  |    2 --
- drivers/char/nozomi.c |    1 -
- 2 files changed, 3 deletions(-)
+ drivers/scsi/sr_ioctl.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
---- a/drivers/char/mxser.c
-+++ b/drivers/char/mxser.c
-@@ -1099,8 +1099,6 @@ static int mxser_open(struct tty_struct 
- 	if (retval)
- 		return retval;
+--- a/drivers/scsi/sr_ioctl.c
++++ b/drivers/scsi/sr_ioctl.c
+@@ -309,6 +309,11 @@ int sr_drive_status(struct cdrom_device_
+ 	if (0 == sr_test_unit_ready(cd->device, &sshdr))
+ 		return CDS_DISC_OK;
  
--	/* unmark here for very high baud rate (ex. 921600 bps) used */
--	tty->low_latency = 1;
- 	return 0;
- }
- 
---- a/drivers/char/nozomi.c
-+++ b/drivers/char/nozomi.c
-@@ -1584,7 +1584,6 @@ static int ntty_open(struct tty_struct *
- 
- 	/* Enable interrupt downlink for channel */
- 	if (port->tty_open_count == 1) {
--		tty->low_latency = 1;
- 		tty->driver_data = port;
- 		port->tty = tty;
- 		DBG1("open: %d", port->token_dl);
++	/* SK/ASC/ASCQ of 2/4/1 means "unit is becoming ready" */
++	if (scsi_sense_valid(&sshdr) && sshdr.sense_key == NOT_READY
++			&& sshdr.asc == 0x04 && sshdr.ascq == 0x01)
++		return CDS_DRIVE_NOT_READY;
++
+ 	if (!cdrom_get_media_event(cdi, &med)) {
+ 		if (med.media_present)
+ 			return CDS_DISC_OK;
 
 
