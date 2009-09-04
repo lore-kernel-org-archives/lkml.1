@@ -1,81 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750897AbZIDEC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751565AbZIDEUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750897AbZIDEC2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 00:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750774AbZIDEC1
+	id S1751565AbZIDEUe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 00:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZIDEUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 00:02:27 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:43720 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750765AbZIDEC1 (ORCPT
+	Fri, 4 Sep 2009 00:20:34 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:60801 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZIDEUd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 00:02:27 -0400
-Date: Fri, 04 Sep 2009 13:02:28 +0900 (JST)
-Message-Id: <20090904.130228.104054439.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com
-Subject: Re: Regarding dm-ioband tests
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090901165011.GB3753@redhat.com>
-References: <20090901165011.GB3753@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 4 Sep 2009 00:20:33 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 4 Sep 2009 13:18:35 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [mmotm][experimental][PATCH] coalescing charge
+Message-Id: <20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-
-Vivek Goyal <vgoyal@redhat.com> wrote:
-> Hi Ryo,
+On Thu, 3 Sep 2009 14:17:27 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > =
+> > This is a code for batched charging using percpu cache.
+> > At charge, memcg charges 64pages and remember it in percpu cache.
+> > Because it's cache, drain/flushed if necessary.
+> > 
+> > This version uses public percpu area , not per-memcg percpu area.
+> >  2 benefits of public percpu area.
+> >  1. Sum of stocked charge in the system is limited to # of cpus
+> >     not to the number of memcg. This shows better synchonization.
+> >  2. drain code for flush/cpuhotplug is very easy (and quick)
+> > 
+> > The most important point of this patch is that we never touch res_counter
+> > in fast path. The res_counter is system-wide shared counter which is modified
+> > very frequently. We shouldn't touch it as far as we can for avoid false sharing.
+> > 
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> It looks basically good. I'll do some tests with all patches applied.
 > 
-> I decided to play a bit more with dm-ioband and started doing some
-> testing. I am doing a simple two dd threads doing reads and don't seem
-> to be gettting the fairness. So thought will ask you what's the issue
-> here. Is there an issue with my testing procedure.
+thanks.
 
-Thank you for testing dm-ioband. dm-ioband is designed to start
-throttling bandwidth when multiple IO requests are issued to devices
-simultaneously, IOW, to start throttling when IO load exceeds a
-certain level.
 
-Here is my test script that runs multiple dd threads on each
-directory. Each directory stores 20 files of 2GB.
+> I have some comments inlined.
+> > ---
+> >  mm/memcontrol.c |   93 ++++++++++++++++++++++++++++++++++++++++++++++++++++----
+> >  1 file changed, 88 insertions(+), 5 deletions(-)
+> > 
+> > Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+> > ===================================================================
+> > --- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
+> > +++ mmotm-2.6.31-Aug27/mm/memcontrol.c
+> > @@ -275,6 +275,7 @@ enum charge_type {
+> >  static void mem_cgroup_get(struct mem_cgroup *mem);
+> >  static void mem_cgroup_put(struct mem_cgroup *mem);
+> >  static struct mem_cgroup *parent_mem_cgroup(struct mem_cgroup *mem);
+> > +static void drain_all_stock(void);
+> >  
+> >  static struct mem_cgroup_per_zone *
+> >  mem_cgroup_zoneinfo(struct mem_cgroup *mem, int nid, int zid)
+> > @@ -1136,6 +1137,8 @@ static int mem_cgroup_hierarchical_recla
+> >  		victim = mem_cgroup_select_victim(root_mem);
+> >  		if (victim == root_mem) {
+> >  			loop++;
+> > +			if (loop >= 1)
+> > +				drain_all_stock();
+> >  			if (loop >= 2) {
+> >  				/*
+> >  				 * If we have not been able to reclaim
+> > @@ -1253,6 +1256,79 @@ done:
+> >  	unlock_page_cgroup(pc);
+> >  }
+> >  
+> > +#define CHARGE_SIZE	(64 * PAGE_SIZE)
+> > +struct memcg_stock_pcp {
+> > +	struct mem_cgroup *from;
+> > +	int charge;
+> > +};
+> > +DEFINE_PER_CPU(struct memcg_stock_pcp, memcg_stock);
+> > +
+> It might be better to add "static".
+> 
+ok.
 
-    #!/bin/sh
-    tmout=60
 
-    for nr_threads in 1 4 8 12 16 20; do
-            sync; echo 3 > /proc/sys/vm/drop_caches
+> > +static bool consume_stock(struct mem_cgroup *mem)
+> > +{
+> > +	struct memcg_stock_pcp *stock;
+> > +	bool ret = true;
+> > +
+> > +	stock = &get_cpu_var(memcg_stock);
+> > +	if (mem == stock->from && stock->charge)
+> > +		stock->charge -= PAGE_SIZE;
+> > +	else
+> > +		ret = false;
+> > +	put_cpu_var(memcg_stock);
+> > +	return ret;
+> > +}
+> > +
+> > +static void drain_stock(struct memcg_stock_pcp *stock)
+> > +{
+> > +	struct mem_cgroup *old = stock->from;
+> > +
+> > +	if (stock->charge) {
+> > +		res_counter_uncharge(&old->res, stock->charge);
+> > +		if (do_swap_account)
+> > +			res_counter_uncharge(&old->memsw, stock->charge);
+> > +	}
+> > +	stock->from = NULL;
+> We must clear stock->charge too.
+> 
+ok.
 
-            for i in $(seq $nr_threads); do
-                    dd if=/mnt1/ioband1.${i}.0 of=/dev/null &
-                    dd if=/mnt2/ioband2.${i}.0 of=/dev/null &
-            done
-            iostat -k 1 $tmout > ${nr_threads}.log
-            killall -ws TERM dd
-    done
-    exit 0
 
-Here is the result. The average throughputs of each device are
-according to the proportion of the weight settings when the number of
-thread is over four.
 
-              Average thoughput in 60 seconds [KB/s]
+> > +}
+> > +
+> > +static void drain_local_stock(struct work_struct *dummy)
+> > +{
+> > +	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
+> > +	drain_stock(stock);
+> > +	put_cpu_var(memcg_stock);
+> > +}
+> > +
+> > +static void refill_stock(struct mem_cgroup *mem, int val)
+> > +{
+> > +	struct memcg_stock_pcp *stock = &get_cpu_var(memcg_stock);
+> > +
+> > +	if (stock->from != mem) {
+> > +		drain_stock(stock);
+> > +		stock->from = mem;
+> > +	}
+> > +	stock->charge = val;
+> > +	put_cpu_var(memcg_stock);
+> > +}
+> > +
+> > +static void drain_all_stock(void)
+> > +{
+> > +	schedule_on_each_cpu(drain_local_stock);
+> > +}
+> > +
+> > +static int __cpuinit memcg_stock_cpu_callback(struct notifier_block *nb,
+> > +					unsigned long action,
+> > +					void *hcpu)
+> > +{
+> > +#ifdef CONFIG_HOTPLUG_CPU
+> > +	int cpu = (unsigned long)*hcpu;
+> '*' isn't needed.
+> 
+Hmm, ouch.
 
-              ioband1           ioband2
-  threads    weight 200        weight 100       total
-        1   26642 (54.9%)     21925 (45.1%)     48568
-        4   33974 (67.7%)     16181 (32.3%)     50156
-        8   31952 (66.2%)     16297 (33.8%)     48249
-       12   32062 (67.8%)     15236 (32.2%)     47299
-       16   31780 (67.7%)     15165 (32.3%)     46946
-       20   29955 (66.3%)     15239 (33.7%)     45195
+> > +	struct memcg_stock_pcp *stock;
+> > +
+> > +	if (action != CPU_DEAD)
+> > +		return NOTIFY_OK;
+> > +	stock = per_cpu(memcg_stock, cpu);
+> '&' is needed.
+> 
+yes..
 
-Please try to run the above script on your envirionment and I would be
-glad if you let me know the result.
+> > +	drain_stock(stock);
+> > +#endif
+> > +	return NOTIFY_OK;
+> > +}
+> > +
+> >  /*
+> >   * Unlike exported interface, "oom" parameter is added. if oom==true,
+> >   * oom-killer can be invoked.
+> > @@ -1288,23 +1364,25 @@ static int __mem_cgroup_try_charge(struc
+> >  		return 0;
+> >  
+> >  	VM_BUG_ON(css_is_removed(&mem->css));
+> > +	if (mem_cgroup_is_root(mem))
+> > +		goto done;
+> > +	if (consume_stock(mem))
+> > +		goto charged;
+> >  
+> >  	while (1) {
+> >  		int ret = 0;
+> >  		unsigned long flags = 0;
+> >  
+> > -		if (mem_cgroup_is_root(mem))
+> > -			goto done;
+> > -		ret = res_counter_charge(&mem->res, PAGE_SIZE, &fail_res);
+> > +		ret = res_counter_charge(&mem->res, CHARGE_SIZE, &fail_res);
+> >  		if (likely(!ret)) {
+> >  			if (!do_swap_account)
+> >  				break;
+> > -			ret = res_counter_charge(&mem->memsw, PAGE_SIZE,
+> > +			ret = res_counter_charge(&mem->memsw, CHARGE_SIZE,
+> >  							&fail_res);
+> >  			if (likely(!ret))
+> >  				break;
+> >  			/* mem+swap counter fails */
+> > -			res_counter_uncharge(&mem->res, PAGE_SIZE);
+> > +			res_counter_uncharge(&mem->res, CHARGE_SIZE);
+> >  			flags |= MEM_CGROUP_RECLAIM_NOSWAP;
+> >  			mem_over_limit = mem_cgroup_from_res_counter(fail_res,
+> >  									memsw);
+> > @@ -1342,6 +1420,9 @@ static int __mem_cgroup_try_charge(struc
+> >  			goto nomem;
+> >  		}
+> >  	}
+> > +	refill_stock(mem, CHARGE_SIZE - PAGE_SIZE);
+> > +
+> > +charged:
+> >  	/*
+> >  	 * Insert ancestor (and ancestor's ancestors), to softlimit RB-tree.
+> >  	 * if they exceeds softlimit.
+> > @@ -2448,6 +2529,7 @@ move_account:
+> >  			goto out;
+> >  		/* This is for making all *used* pages to be on LRU. */
+> >  		lru_add_drain_all();
+> > +		drain_all_stock();
+> >  		ret = 0;
+> >  		for_each_node_state(node, N_HIGH_MEMORY) {
+> >  			for (zid = 0; !ret && zid < MAX_NR_ZONES; zid++) {
+> > @@ -3166,6 +3248,7 @@ mem_cgroup_create(struct cgroup_subsys *
+> >  		root_mem_cgroup = mem;
+> >  		if (mem_cgroup_soft_limit_tree_init())
+> >  			goto free_out;
+> > +		hotcpu_notifier(memcg_stock_cpu_callback, 0);
+> >  
+> We should include cpu.h to use hotcpu_notifier().
+> 
+Ah, I'll check my .config again..
 
 Thanks,
-Ryo Tsuruta
+-Kame
+
+
+> >  	} else {
+> >  		parent = mem_cgroup_from_cont(cont->parent);
+> > 
+> 
+> 
+> Thanks,
+> Daisuke Nishimura.
+> 
+
