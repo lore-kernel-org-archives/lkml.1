@@ -1,97 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932766AbZIDHib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932810AbZIDHj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932766AbZIDHib (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZIDHia
+	id S932810AbZIDHj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932472AbZIDHjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:38:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45795 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbZIDHia (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 03:38:30 -0400
-Date: Fri, 4 Sep 2009 09:37:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, arjan@infradead.org,
-       jeremy@goop.org, mschmidt@redhat.com, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tj@kernel.org, tglx@linutronix.de,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-tip-commits@vger.kernel.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 0/1] kthreads: simplify !kthreadd_task logic, kill
-	kthreadd_task_init_done
-Message-ID: <20090904073749.GB20598@elte.hu>
-References: <20090901100351.GA3361@elte.hu> <20090901113914.GA23578@elte.hu> <20090901130436.GA22514@redhat.com> <20090901131440.GA29783@elte.hu> <20090901133709.GA24041@redhat.com> <20090901135925.GA9083@elte.hu> <20090901145526.GA31317@redhat.com> <20090901165235.GA9105@redhat.com> <m13a76xnbw.fsf@fess.ebiederm.org> <20090902091340.GA5173@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090902091340.GA5173@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 4 Sep 2009 03:39:55 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49859 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751585AbZIDHjz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 03:39:55 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Fri, 4 Sep 2009 16:37:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [mmotm][BUGFIX][PATCH] memcg: fix softlimit css refcnt handling.
+Message-Id: <20090904163758.a5604fee.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+	<20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
+	<20090904142143.15ffcb53.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Oleg Nesterov <oleg@redhat.com> wrote:
-
-> On 09/01, Eric W. Biederman wrote:
-> >
-> > Oleg Nesterov <oleg@redhat.com> writes:
-> >
-> > > On 09/01, Oleg Nesterov wrote:
-> > >>
-> > >> On 09/01, Ingo Molnar wrote:
-> > >> >
-> > >> > * Oleg Nesterov <oleg@redhat.com> wrote:
-> > >> >
-> > >> > > On 09/01, Ingo Molnar wrote:
-> > >> > > >
-> > >> > > > * Oleg Nesterov <oleg@redhat.com> wrote:
-> > >> > > >
-> > >> > > > > Yes, this should work. But I _think_ we can make the better fix...
-> > >> > > > >
-> > >> > > > > I'll try to make the patch soon. Afaics we don't need
-> > >> > > > > kthreadd_task_init_done.
-> > >> > > >
-> > >> > > > ok.
-> > >> > >
-> > >> > > Just in case, the patch is ready. [...]
-> > >> >
-> > >> > yes - that's roughly the cleanup i referred to in the commit log.
-> > >> >
-> > >> > way too late for -rc8 though - the minimal fix i did _might_ be
-> > >> > eligible.
-> > >> >
-> > >> > agreed?
-> > >>
-> > >> Agreed. Then I will sent the patch on top of this change.
-> > >
-> > > OK, I am sending the patch on top of your fix. Not sure how to really
-> > > test it, but at least the kernel works when I apply the debugging patch
-> > > below on top.
-> >
-> > Stupid question.  How is it that we wind up trying to start kernel threads
-> > before it is safe to do so?
-> >
-> > Races should be impossible because the scheduler isn't running until a few
-> > lines later.
+On Fri, 4 Sep 2009 15:40:50 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > Ah, one more question. What memory.usage_in_bytes shows in that case ?
+> > If not zero, charge/uncharge coalescing is guilty.
+> > 
+> usage_in_bytes is 0.
+> I've confirmed by crash command that the mem_cgroup has extra ref counts.
 > 
-> Yes, I am confused too.
+> I'll dig more..
 > 
-> At first I thought I understand the race, now I don't. Please see 
-> the whole thread: http://marc.info/?t=125180592500005
+BTW, do you use softlimit ? I found this but...Hmm
 
-I dont understand it either - and the .config being !SMP excludes 
-any sort of SMP race as well.
+==
+SoftLimit tree 'find next one' loop uses next_mz to remember
+next one to be visited if reclaimd==0.
+But css'refcnt handling for next_mz is not enough and it makes
+css->refcnt leak.
 
-Lets delay this until i can debug it more fully.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-	Ingo
+
+---
+ mm/memcontrol.c |   11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+Index: mmotm-2.6.31-Aug27/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.31-Aug27.orig/mm/memcontrol.c
++++ mmotm-2.6.31-Aug27/mm/memcontrol.c
+@@ -2261,6 +2261,8 @@ unsigned long mem_cgroup_soft_limit_recl
+ 		if (!reclaimed) {
+ 			do {
+ 				/*
++				 * Loop until we find yet another one.
++				 *
+ 				 * By the time we get the soft_limit lock
+ 				 * again, someone might have aded the
+ 				 * group back on the RB tree. Iterate to
+@@ -2271,7 +2273,12 @@ unsigned long mem_cgroup_soft_limit_recl
+ 				 */
+ 				next_mz =
+ 				__mem_cgroup_largest_soft_limit_node(mctz);
+-			} while (next_mz == mz);
++				if (next_mz == mz) {
++					css_put(&next_mz->mem->css);
++					next_mz = NULL;
++				} else /* next_mz == NULL or other memcg */
++					break;
++			} while (1);
+ 		}
+ 		mz->usage_in_excess =
+ 			res_counter_soft_limit_excess(&mz->mem->res);
+@@ -2299,6 +2306,8 @@ unsigned long mem_cgroup_soft_limit_recl
+ 			loop > MEM_CGROUP_MAX_SOFT_LIMIT_RECLAIM_LOOPS))
+ 			break;
+ 	} while (!nr_reclaimed);
++	if (next_mz)
++		css_put(&next_mz->mem->css);
+ 	return nr_reclaimed;
+ }
+ 
+
