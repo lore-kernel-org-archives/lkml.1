@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933975AbZIDUOM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934243AbZIDUWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933975AbZIDUOM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:14:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933942AbZIDUOK
+	id S934243AbZIDUWj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933960AbZIDUOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:14:10 -0400
-Received: from kroah.org ([198.145.64.141]:36087 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 16:14:12 -0400
+Received: from kroah.org ([198.145.64.141]:36091 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933902AbZIDUOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:14:09 -0400
+	id S933927AbZIDUOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:14:10 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 13:08:50 2009
-Message-Id: <20090904200850.052613921@mini.kroah.org>
+Message-Id: <20090904200850.199599575@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 13:07:13 -0700
+Date: Fri, 04 Sep 2009 13:07:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 01/48] ALSA: hda - Fix MacBookPro 3,1/4,1 quirk with ALC889A
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [patch 02/48] clone(): fix race between copy_process() and de_thread()
 References: <20090904200712.724048145@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-hda-fix-macbookpro-3-1-4-1-quirk-with-alc889a.patch
+Content-Disposition: inline; filename=clone-fix-race-between-copy_process-and-de_thread.patch
 In-Reply-To: <20090904201112.GA8274@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,103 +30,146 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
+From: Oleg Nesterov <oleg@redhat.com>
 
-From: Takashi Iwai <tiwai@suse.de>
+commit 4ab6c08336535f8c8e42cf45d7adeda882eff06e upstream.
 
-commit a3f730af7e33cea10ea66f05b2565fde1f9512df upstream.
+Spotted by Hiroshi Shimamoto who also provided the test-case below.
 
-This patch fixes the wrong headphone output routing for MacBookPro 3,1/4,1
-quirk with ALC889A codec, which caused the silent headphone output.
-Also, this gives the individual Headphone and Speaker volume controls.
+copy_process() uses signal->count as a reference counter, but it is not.
+This test case
 
-Reference: kernel bug#14078
-	http://bugzilla.kernel.org/show_bug.cgi?id=14078
+	#include <sys/types.h>
+	#include <sys/wait.h>
+	#include <unistd.h>
+	#include <stdio.h>
+	#include <errno.h>
+	#include <pthread.h>
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+	void *null_thread(void *p)
+	{
+		for (;;)
+			sleep(1);
+
+		return NULL;
+	}
+
+	void *exec_thread(void *p)
+	{
+		execl("/bin/true", "/bin/true", NULL);
+
+		return null_thread(p);
+	}
+
+	int main(int argc, char **argv)
+	{
+		for (;;) {
+			pid_t pid;
+			int ret, status;
+
+			pid = fork();
+			if (pid < 0)
+				break;
+
+			if (!pid) {
+				pthread_t tid;
+
+				pthread_create(&tid, NULL, exec_thread, NULL);
+				for (;;)
+					pthread_create(&tid, NULL, null_thread, NULL);
+			}
+
+			do {
+				ret = waitpid(pid, &status, 0);
+			} while (ret == -1 && errno == EINTR);
+		}
+
+		return 0;
+	}
+
+quickly creates an unkillable task.
+
+If copy_process(CLONE_THREAD) races with de_thread()
+copy_signal()->atomic(signal->count) breaks the signal->notify_count
+logic, and the execing thread can hang forever in kernel space.
+
+Change copy_process() to increment count/live only when we know for sure
+we can't fail.  In this case the forked thread will take care of its
+reference to signal correctly.
+
+If copy_process() fails, check CLONE_THREAD flag.  If it it set - do
+nothing, the counters were not changed and current belongs to the same
+thread group.  If it is not set, ->signal must be released in any case
+(and ->count must be == 1), the forked child is the only thread in the
+thread group.
+
+We need more cleanups here, in particular signal->count should not be used
+by de_thread/__exit_signal at all.  This patch only fixes the bug.
+
+Reported-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Tested-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Roland McGrath <roland@redhat.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/patch_realtek.c |   34 ++++++++++++++++++++--------------
- 1 file changed, 20 insertions(+), 14 deletions(-)
+ kernel/fork.c |   21 ++++++---------------
+ 1 file changed, 6 insertions(+), 15 deletions(-)
 
---- a/sound/pci/hda/patch_realtek.c
-+++ b/sound/pci/hda/patch_realtek.c
-@@ -5580,9 +5580,9 @@ static struct hda_verb alc885_mbp_ch2_in
- };
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -767,11 +767,9 @@ static int copy_signal(unsigned long clo
+ 	struct signal_struct *sig;
+ 	int ret;
  
- /*
-- * 6ch mode
-+ * 4ch mode
-  */
--static struct hda_verb alc885_mbp_ch6_init[] = {
-+static struct hda_verb alc885_mbp_ch4_init[] = {
- 	{ 0x1a, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT },
- 	{ 0x1a, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
- 	{ 0x1a, AC_VERB_SET_CONNECT_SEL, 0x01 },
-@@ -5591,9 +5591,9 @@ static struct hda_verb alc885_mbp_ch6_in
- 	{ } /* end */
- };
+-	if (clone_flags & CLONE_THREAD) {
+-		atomic_inc(&current->signal->count);
+-		atomic_inc(&current->signal->live);
++	if (clone_flags & CLONE_THREAD)
+ 		return 0;
+-	}
++
+ 	sig = kmem_cache_alloc(signal_cachep, GFP_KERNEL);
+ 	tsk->signal = sig;
+ 	if (!sig)
+@@ -844,16 +842,6 @@ void __cleanup_signal(struct signal_stru
+ 	kmem_cache_free(signal_cachep, sig);
+ }
  
--static struct hda_channel_mode alc885_mbp_6ch_modes[2] = {
-+static struct hda_channel_mode alc885_mbp_4ch_modes[2] = {
- 	{ 2, alc885_mbp_ch2_init },
--	{ 6, alc885_mbp_ch6_init },
-+	{ 4, alc885_mbp_ch4_init },
- };
+-static void cleanup_signal(struct task_struct *tsk)
+-{
+-	struct signal_struct *sig = tsk->signal;
+-
+-	atomic_dec(&sig->live);
+-
+-	if (atomic_dec_and_test(&sig->count))
+-		__cleanup_signal(sig);
+-}
+-
+ static void copy_flags(unsigned long clone_flags, struct task_struct *p)
+ {
+ 	unsigned long new_flags = p->flags;
+@@ -1201,6 +1189,8 @@ static struct task_struct *copy_process(
+ 	}
  
+ 	if (clone_flags & CLONE_THREAD) {
++		atomic_inc(&current->signal->count);
++		atomic_inc(&current->signal->live);
+ 		p->group_leader = current->group_leader;
+ 		list_add_tail_rcu(&p->thread_group, &p->group_leader->thread_group);
  
-@@ -5628,10 +5628,11 @@ static struct snd_kcontrol_new alc882_ba
- };
- 
- static struct snd_kcontrol_new alc885_mbp3_mixer[] = {
--	HDA_CODEC_VOLUME("Front Playback Volume", 0x0c, 0x00, HDA_OUTPUT),
--	HDA_BIND_MUTE   ("Front Playback Switch", 0x0c, 0x02, HDA_INPUT),
--	HDA_CODEC_MUTE  ("Speaker Playback Switch", 0x14, 0x00, HDA_OUTPUT),
--	HDA_CODEC_VOLUME("Line-Out Playback Volume", 0x0d, 0x00, HDA_OUTPUT),
-+	HDA_CODEC_VOLUME("Speaker Playback Volume", 0x0c, 0x00, HDA_OUTPUT),
-+	HDA_BIND_MUTE   ("Speaker Playback Switch", 0x0c, 0x02, HDA_INPUT),
-+	HDA_CODEC_VOLUME("Headphone Playback Volume", 0x0e, 0x00, HDA_OUTPUT),
-+	HDA_BIND_MUTE   ("Headphone Playback Switch", 0x0e, 0x02, HDA_INPUT),
-+	HDA_CODEC_VOLUME("Surround Playback Volume", 0x0d, 0x00, HDA_OUTPUT),
- 	HDA_CODEC_VOLUME("Line Playback Volume", 0x0b, 0x02, HDA_INPUT),
- 	HDA_CODEC_MUTE  ("Line Playback Switch", 0x0b, 0x02, HDA_INPUT),
- 	HDA_CODEC_VOLUME("Mic Playback Volume", 0x0b, 0x00, HDA_INPUT),
-@@ -5879,14 +5880,18 @@ static struct hda_verb alc885_mbp3_init_
- 	{0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_ZERO},
- 	{0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(0)},
- 	{0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(1)},
-+	/* HP mixer */
-+	{0x0e, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_ZERO},
-+	{0x0e, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(0)},
-+	{0x0e, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(1)},
- 	/* Front Pin: output 0 (0x0c) */
- 	{0x14, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT},
- 	{0x14, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
- 	{0x14, AC_VERB_SET_CONNECT_SEL, 0x00},
--	/* HP Pin: output 0 (0x0d) */
-+	/* HP Pin: output 0 (0x0e) */
- 	{0x15, AC_VERB_SET_PIN_WIDGET_CONTROL, 0xc4},
--	{0x15, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_MUTE},
--	{0x15, AC_VERB_SET_CONNECT_SEL, 0x00},
-+	{0x15, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
-+	{0x15, AC_VERB_SET_CONNECT_SEL, 0x02},
- 	{0x15, AC_VERB_SET_UNSOLICITED_ENABLE, ALC880_HP_EVENT | AC_USRSP_EN},
- 	/* Mic (rear) pin: input vref at 80% */
- 	{0x18, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_VREF80},
-@@ -6326,10 +6331,11 @@ static struct alc_config_preset alc882_p
- 		.mixers = { alc885_mbp3_mixer, alc882_chmode_mixer },
- 		.init_verbs = { alc885_mbp3_init_verbs,
- 				alc880_gpio1_init_verbs },
--		.num_dacs = ARRAY_SIZE(alc882_dac_nids),
-+		.num_dacs = 2,
- 		.dac_nids = alc882_dac_nids,
--		.channel_mode = alc885_mbp_6ch_modes,
--		.num_channel_mode = ARRAY_SIZE(alc885_mbp_6ch_modes),
-+		.hp_nid = 0x04,
-+		.channel_mode = alc885_mbp_4ch_modes,
-+		.num_channel_mode = ARRAY_SIZE(alc885_mbp_4ch_modes),
- 		.input_mux = &alc882_capture_source,
- 		.dig_out_nid = ALC882_DIGOUT_NID,
- 		.dig_in_nid = ALC882_DIGIN_NID,
+@@ -1261,7 +1251,8 @@ bad_fork_cleanup_mm:
+ 	if (p->mm)
+ 		mmput(p->mm);
+ bad_fork_cleanup_signal:
+-	cleanup_signal(p);
++	if (!(clone_flags & CLONE_THREAD))
++		__cleanup_signal(p->signal);
+ bad_fork_cleanup_sighand:
+ 	__cleanup_sighand(p->sighand);
+ bad_fork_cleanup_fs:
 
 
