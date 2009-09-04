@@ -1,106 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933702AbZIDK0T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbZIDKuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933702AbZIDK0T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 06:26:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933514AbZIDK0R
+	id S1754426AbZIDKuH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 06:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753120AbZIDKuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 06:26:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48672 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933571AbZIDK0O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 06:26:14 -0400
-Date: Fri, 4 Sep 2009 10:25:43 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, ego@in.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, andreas.herrmann3@amd.com, a.p.zijlstra@chello.nl,
-       balbir@in.ibm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: balbir@in.ibm.com, mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       andreas.herrmann3@amd.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/balancing] sched: Turn on SD_WAKE_IDLE for 'close' domains
-Message-ID: <tip-e54c7073fae0683b90b3157e97142202c7334b79@git.kernel.org>
-Git-Commit-ID: e54c7073fae0683b90b3157e97142202c7334b79
-X-Mailer: tip-git-log-daemon
+	Fri, 4 Sep 2009 06:50:06 -0400
+Received: from trinity.develer.com ([83.149.158.210]:42833 "EHLO
+	trinity.develer.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751470AbZIDKuF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 06:50:05 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 Sep 2009 06:50:04 EDT
+Date: Fri, 4 Sep 2009 12:43:25 +0200
+From: Andrea Righi <arighi@develer.com>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Pavel Emelyanov <xemul@openvz.org>,
+       Herbert Poetzl <herbert@13thfloor.at>, Avi Kivity <avi@redhat.com>,
+       Chris Friesen <cfriesen@nortel.com>, Paul Menage <menage@google.com>,
+       Mike Waychison <mikew@google.com>
+Subject: Re: [RFC v1 PATCH 3/7] sched: Bandwidth initialization for fair
+	task groups
+Message-ID: <20090904104324.GA10807@linux>
+References: <20090825094729.GP3663@in.ibm.com> <20090825094950.GS3663@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 04 Sep 2009 10:25:43 +0000 (UTC)
+In-Reply-To: <20090825094950.GS3663@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e54c7073fae0683b90b3157e97142202c7334b79
-Gitweb:     http://git.kernel.org/tip/e54c7073fae0683b90b3157e97142202c7334b79
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Fri, 4 Sep 2009 11:38:07 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 4 Sep 2009 12:17:06 +0200
+On Tue, Aug 25, 2009 at 03:19:50PM +0530, Bharata B Rao wrote:
+> +config CFS_HARD_LIMITS
+> +	bool "Hard Limits for CFS Group Scheduler"
+> +	depends on EXPERIMENTAL
+> +	depends on FAIR_GROUP_SCHED
 
-sched: Turn on SD_WAKE_IDLE for 'close' domains
+Shouldn't depend also on CGROUPS and CGROUP_SCHED? without them hard
+limits can't be defined, right?
 
-Turn it on for the thread, core and cpu domain defaults.
-
-Same argument as for NEWIDLE: we want to err on the side of
-over-balancing, and mute the effect of that when it hurts
-a workload.
-
-On a NUMA box (4x4) i get better CPU utilization:
-
- Performance counter stats for './hackbench 10' (10 runs):
-
- Before:    2124.478000  task-clock-msecs         #     12.196 CPUs    ( +- 0.614% )
- After:     2232.558805  task-clock-msecs         #     12.601 CPUs    ( +- 0.852% )
-
-It's probably not worth turning it on for the NUMA domain though,
-as even on this fast-NUMA box it's break-even in terms of cost
-versus improvement:
-
- After #2:  2288.062034  task-clock-msecs         #     12.909 CPUs    ( +- 0.864% )
-
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Balbir Singh <balbir@in.ibm.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Andrea Righi <arighi@develer.com>
 ---
- include/linux/topology.h |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ init/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/topology.h b/include/linux/topology.h
-index 66774fd..f13ff3a 100644
---- a/include/linux/topology.h
-+++ b/include/linux/topology.h
-@@ -95,7 +95,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_BALANCE_NEWIDLE			\
- 				| 1*SD_BALANCE_EXEC			\
- 				| 1*SD_BALANCE_FORK			\
--				| 0*SD_WAKE_IDLE			\
-+				| 1*SD_WAKE_IDLE			\
- 				| 1*SD_WAKE_AFFINE			\
- 				| 1*SD_WAKE_BALANCE			\
- 				| 1*SD_SHARE_CPUPOWER			\
-@@ -129,7 +129,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_BALANCE_NEWIDLE			\
- 				| 1*SD_BALANCE_EXEC			\
- 				| 1*SD_BALANCE_FORK			\
--				| 0*SD_WAKE_IDLE			\
-+				| 1*SD_WAKE_IDLE			\
- 				| 1*SD_WAKE_AFFINE			\
- 				| 1*SD_WAKE_BALANCE			\
- 				| 0*SD_SHARE_CPUPOWER			\
-@@ -163,7 +163,7 @@ int arch_update_cpu_topology(void);
- 				| 1*SD_BALANCE_NEWIDLE			\
- 				| 1*SD_BALANCE_EXEC			\
- 				| 1*SD_BALANCE_FORK			\
--				| 0*SD_WAKE_IDLE			\
-+				| 1*SD_WAKE_IDLE			\
- 				| 0*SD_WAKE_AFFINE			\
- 				| 1*SD_WAKE_BALANCE			\
- 				| 0*SD_SHARE_CPUPOWER			\
+diff --git a/init/Kconfig b/init/Kconfig
+index 71868a0..19c0290 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -459,7 +459,7 @@ config FAIR_GROUP_SCHED
+ config CFS_HARD_LIMITS
+ 	bool "Hard Limits for CFS Group Scheduler"
+ 	depends on EXPERIMENTAL
+-	depends on FAIR_GROUP_SCHED
++	depends on FAIR_GROUP_SCHED && CGROUPS && CGROUP_SCHED
+ 	default n
+ 	help
+ 	  This option enables hard limiting of CPU time obtained by
