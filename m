@@ -1,240 +1,439 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933169AbZIDHE3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbZIDHCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933169AbZIDHE3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:04:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932748AbZIDHEZ
+	id S933142AbZIDHCn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933092AbZIDHBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:04:25 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48018 "EHLO mx2.suse.de"
+	Fri, 4 Sep 2009 03:01:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56559 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756683AbZIDG6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:58:39 -0400
-Message-Id: <20090904065537.584827477@nick.local0.net>
+	id S932596AbZIDG6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:58:40 -0400
+Message-Id: <20090904065537.743848364@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:52:04 +1000
+Date: Fri, 04 Sep 2009 16:52:05 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 23/33] fs: icache atomic inodes_stat
+Subject: [patch 24/33] fs: icache lock lru/writeback lists
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-inode_lock-scale-5.patch
+Content-Disposition: inline; filename=fs-inode_lock-scale-6.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Protect inodes_stat statistics with atomic ops rather than inode_lock.
+Add a new lock, wb_inode_list_lock, to protect i_list and various lists
+which the inode can be put onto.
+
+XXX: haven't audited ocfs2
 ---
- fs/cifs/inode.c      |    2 +-
- fs/fs-writeback.c    |    3 ++-
- fs/hugetlbfs/inode.c |    6 +++---
- fs/inode.c           |   28 +++++++++++++++-------------
- include/linux/fs.h   |    5 +++--
- mm/page-writeback.c  |    3 ++-
- 6 files changed, 26 insertions(+), 21 deletions(-)
+ fs/fs-writeback.c         |   41 ++++++++++++++++++++++++++++++++++------
+ fs/hugetlbfs/inode.c      |   11 +++++++---
+ fs/inode.c                |   47 ++++++++++++++++++++++++++++++++++++----------
+ include/linux/writeback.h |    1 
+ 4 files changed, 81 insertions(+), 19 deletions(-)
 
 Index: linux-2.6/fs/fs-writeback.c
 ===================================================================
 --- linux-2.6.orig/fs/fs-writeback.c
 +++ linux-2.6/fs/fs-writeback.c
-@@ -695,7 +695,8 @@ void sync_inodes_sb(struct super_block *
- 		unsigned long nr_unstable = global_page_state(NR_UNSTABLE_NFS);
+@@ -171,7 +171,9 @@ void __mark_inode_dirty(struct inode *in
+ 		 */
+ 		if (!was_dirty) {
+ 			inode->dirtied_when = jiffies;
++			spin_lock(&wb_inode_list_lock);
+ 			list_move(&inode->i_list, &sb->s_dirty);
++			spin_unlock(&wb_inode_list_lock);
+ 		}
+ 	}
+ out:
+@@ -201,12 +203,12 @@ static void redirty_tail(struct inode *i
+ {
+ 	struct super_block *sb = inode->i_sb;
  
- 		wbc.nr_to_write = nr_dirty + nr_unstable +
--			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
-+			(atomic_read(&inodes_stat.nr_inodes) -
-+			atomic_read(&inodes_stat.nr_unused));
- 	} else
- 		wbc.nr_to_write = LONG_MAX; /* doesn't actually matter */
++	assert_spin_locked(&wb_inode_list_lock);
+ 	if (!list_empty(&sb->s_dirty)) {
+ 		struct inode *tail_inode;
  
+ 		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
+-		if (time_before(inode->dirtied_when,
+-				tail_inode->dirtied_when))
++		if (time_before(inode->dirtied_when, tail_inode->dirtied_when))
+ 			inode->dirtied_when = jiffies;
+ 	}
+ 	list_move(&inode->i_list, &sb->s_dirty);
+@@ -217,6 +219,7 @@ static void redirty_tail(struct inode *i
+  */
+ static void requeue_io(struct inode *inode)
+ {
++	assert_spin_locked(&wb_inode_list_lock);
+ 	list_move(&inode->i_list, &inode->i_sb->s_more_io);
+ }
+ 
+@@ -251,6 +254,7 @@ static void move_expired_inodes(struct l
+ 			       struct list_head *dispatch_queue,
+ 				unsigned long *older_than_this)
+ {
++	assert_spin_locked(&wb_inode_list_lock);
+ 	while (!list_empty(delaying_queue)) {
+ 		struct inode *inode = list_entry(delaying_queue->prev,
+ 						struct inode, i_list);
+@@ -289,11 +293,13 @@ static void inode_wait_for_writeback(str
+ 
+ 	wqh = bit_waitqueue(&inode->i_state, __I_SYNC);
+ 	do {
++		spin_unlock(&wb_inode_list_lock);
+ 		spin_unlock(&inode->i_lock);
+ 		spin_unlock(&inode_lock);
+ 		__wait_on_bit(wqh, &wq, inode_wait, TASK_UNINTERRUPTIBLE);
+ 		spin_lock(&inode_lock);
+ 		spin_lock(&inode->i_lock);
++		spin_lock(&wb_inode_list_lock);
+ 	} while (inode->i_state & I_SYNC);
+ }
+ 
+@@ -350,6 +356,7 @@ writeback_single_inode(struct inode *ino
+ 	inode->i_state |= I_SYNC;
+ 	inode->i_state &= ~I_DIRTY;
+ 
++	spin_unlock(&wb_inode_list_lock);
+ 	spin_unlock(&inode->i_lock);
+ 	spin_unlock(&inode_lock);
+ 
+@@ -370,6 +377,7 @@ writeback_single_inode(struct inode *ino
+ 
+ 	spin_lock(&inode_lock);
+ 	spin_lock(&inode->i_lock);
++	spin_lock(&wb_inode_list_lock);
+ 	inode->i_state &= ~I_SYNC;
+ 	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
+ 		if (!(inode->i_state & I_DIRTY) &&
+@@ -471,6 +479,8 @@ void generic_sync_sb_inodes(struct super
+ 	int sync = wbc->sync_mode == WB_SYNC_ALL;
+ 
+ 	spin_lock(&inode_lock);
++again:
++	spin_lock(&wb_inode_list_lock);
+ 	if (!wbc->for_kupdate || list_empty(&sb->s_io))
+ 		queue_io(sb, wbc->older_than_this);
+ 
+@@ -481,6 +491,11 @@ void generic_sync_sb_inodes(struct super
+ 		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		long pages_skipped;
+ 
++		if (!spin_trylock(&inode->i_lock)) {
++			spin_unlock(&wb_inode_list_lock);
++			goto again;
++		}
++
+ 		if (!bdi_cap_writeback_dirty(bdi)) {
+ 			redirty_tail(inode);
+ 			if (sb_is_blkdev_sb(sb)) {
+@@ -488,6 +503,7 @@ void generic_sync_sb_inodes(struct super
+ 				 * Dirty memory-backed blockdev: the ramdisk
+ 				 * driver does this.  Skip just this inode
+ 				 */
++				spin_unlock(&inode->i_lock);
+ 				continue;
+ 			}
+ 			/*
+@@ -495,28 +511,34 @@ void generic_sync_sb_inodes(struct super
+ 			 * than the kernel-internal bdev filesystem.  Skip the
+ 			 * entire superblock.
+ 			 */
++			spin_unlock(&inode->i_lock);
+ 			break;
+ 		}
+ 
+ 		if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 			wbc->encountered_congestion = 1;
+-			if (!sb_is_blkdev_sb(sb))
++			if (!sb_is_blkdev_sb(sb)) {
++				spin_unlock(&inode->i_lock);
+ 				break;		/* Skip a congested fs */
++			}
+ 			requeue_io(inode);
++			spin_unlock(&inode->i_lock);
+ 			continue;		/* Skip a congested blockdev */
+ 		}
+ 
+ 		if (wbc->bdi && bdi != wbc->bdi) {
+-			if (!sb_is_blkdev_sb(sb))
++			if (!sb_is_blkdev_sb(sb)) {
++				spin_unlock(&inode->i_lock);
+ 				break;		/* fs has the wrong queue */
++			}
+ 			requeue_io(inode);
++			spin_unlock(&inode->i_lock);
+ 			continue;		/* blockdev has wrong queue */
+ 		}
+ 
+-		spin_lock(&inode->i_lock);
+ 		if (inode->i_state & (I_NEW | I_WILL_FREE)) {
+-			spin_unlock(&inode->i_lock);
+ 			requeue_io(inode);
++			spin_unlock(&inode->i_lock);
+ 			continue;
+ 		}
+ 
+@@ -548,11 +570,13 @@ void generic_sync_sb_inodes(struct super
+ 			 */
+ 			redirty_tail(inode);
+ 		}
++		spin_unlock(&wb_inode_list_lock);
+ 		spin_unlock(&inode->i_lock);
+ 		spin_unlock(&inode_lock);
+ 		iput(inode);
+ 		cond_resched();
+ 		spin_lock(&inode_lock);
++		spin_lock(&wb_inode_list_lock);
+ 		if (wbc->nr_to_write <= 0) {
+ 			wbc->more_io = 1;
+ 			break;
+@@ -560,6 +584,7 @@ void generic_sync_sb_inodes(struct super
+ 		if (!list_empty(&sb->s_more_io))
+ 			wbc->more_io = 1;
+ 	}
++	spin_unlock(&wb_inode_list_lock);
+ 
+ 	if (sync) {
+ 		struct inode *inode, *old_inode = NULL;
+@@ -729,7 +754,9 @@ int write_inode_now(struct inode *inode,
+ 	might_sleep();
+ 	spin_lock(&inode_lock);
+ 	spin_lock(&inode->i_lock);
++	spin_lock(&wb_inode_list_lock);
+ 	ret = writeback_single_inode(inode, &wbc);
++	spin_unlock(&wb_inode_list_lock);
+ 	spin_unlock(&inode->i_lock);
+ 	spin_unlock(&inode_lock);
+ 	if (sync)
+@@ -755,7 +782,9 @@ int sync_inode(struct inode *inode, stru
+ 
+ 	spin_lock(&inode_lock);
+ 	spin_lock(&inode->i_lock);
++	spin_lock(&wb_inode_list_lock);
+ 	ret = writeback_single_inode(inode, wbc);
++	spin_unlock(&wb_inode_list_lock);
+ 	spin_unlock(&inode->i_lock);
+ 	spin_unlock(&inode_lock);
+ 	return ret;
 Index: linux-2.6/fs/hugetlbfs/inode.c
 ===================================================================
 --- linux-2.6.orig/fs/hugetlbfs/inode.c
 +++ linux-2.6/fs/hugetlbfs/inode.c
-@@ -386,7 +386,7 @@ static void hugetlbfs_forget_inode(struc
+@@ -384,8 +384,11 @@ static void hugetlbfs_forget_inode(struc
+ 	struct super_block *sb = inode->i_sb;
+ 
  	if (!hlist_unhashed(&inode->i_hash)) {
- 		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
+-		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
++		if (!(inode->i_state & (I_DIRTY|I_SYNC))) {
++			spin_lock(&wb_inode_list_lock);
  			list_move(&inode->i_list, &inode_unused);
--		inodes_stat.nr_unused++;
-+		atomic_inc(&inodes_stat.nr_unused);
++			spin_unlock(&wb_inode_list_lock);
++		}
+ 		atomic_inc(&inodes_stat.nr_unused);
  		if (!sb || (sb->s_flags & MS_ACTIVE)) {
  			spin_unlock(&inode_lock);
- 			return;
-@@ -404,7 +404,7 @@ static void hugetlbfs_forget_inode(struc
+@@ -403,13 +406,15 @@ static void hugetlbfs_forget_inode(struc
+ 		spin_lock(&inode_lock);
  		spin_lock(&inode->i_lock);
  		inode->i_state &= ~I_WILL_FREE;
- 		spin_unlock(&inode->i_lock);
--		inodes_stat.nr_unused--;
-+		atomic_dec(&inodes_stat.nr_unused);
+-		spin_unlock(&inode->i_lock);
+-		atomic_dec(&inodes_stat.nr_unused);
  		spin_lock(&inode_hash_lock);
  		hlist_del_init(&inode->i_hash);
  		spin_unlock(&inode_hash_lock);
-@@ -416,7 +416,7 @@ static void hugetlbfs_forget_inode(struc
- 	spin_lock(&inode->i_lock);
- 	inode->i_state |= I_FREEING;
- 	spin_unlock(&inode->i_lock);
--	inodes_stat.nr_inodes--;
-+	atomic_dec(&inodes_stat.nr_unused);
- 	spin_unlock(&inode_lock);
- 	truncate_hugepages(inode, 0);
- 	clear_inode(inode);
++		spin_unlock(&inode->i_lock);
++		atomic_dec(&inodes_stat.nr_unused);
+ 	}
++	spin_lock(&wb_inode_list_lock);
+ 	list_del_init(&inode->i_list);
++	spin_unlock(&wb_inode_list_lock);
+ 	spin_lock(&sb_inode_list_lock);
+ 	list_del_init(&inode->i_sb_list);
+ 	spin_unlock(&sb_inode_list_lock);
 Index: linux-2.6/fs/inode.c
 ===================================================================
 --- linux-2.6.orig/fs/inode.c
 +++ linux-2.6/fs/inode.c
-@@ -101,7 +101,10 @@ static DEFINE_MUTEX(iprune_mutex);
- /*
-  * Statistics gathering..
+@@ -86,6 +86,7 @@ static struct hlist_head *inode_hashtabl
   */
--struct inodes_stat_t inodes_stat;
-+struct inodes_stat_t inodes_stat = {
-+	.nr_inodes = ATOMIC_INIT(0),
-+	.nr_unused = ATOMIC_INIT(0),
-+};
- 
- static struct kmem_cache *inode_cachep __read_mostly;
- 
-@@ -303,7 +306,7 @@ void __iget(struct inode *inode)
- 
- 	if (!(inode->i_state & (I_DIRTY|I_SYNC)))
- 		list_move(&inode->i_list, &inode_in_use);
--	inodes_stat.nr_unused--;
-+	atomic_dec(&inodes_stat.nr_unused);
- }
- 
- /**
-@@ -368,9 +371,7 @@ static void dispose_list(struct list_hea
- 		destroy_inode(inode);
- 		nr_disposed++;
- 	}
--	spin_lock(&inode_lock);
--	inodes_stat.nr_inodes -= nr_disposed;
--	spin_unlock(&inode_lock);
-+	atomic_sub(nr_disposed, &inodes_stat.nr_inodes);
- }
+ DEFINE_SPINLOCK(inode_lock);
+ DEFINE_SPINLOCK(sb_inode_list_lock);
++DEFINE_SPINLOCK(wb_inode_list_lock);
+ DEFINE_SPINLOCK(inode_hash_lock);
  
  /*
-@@ -417,7 +418,7 @@ static int invalidate_list(struct list_h
- 		busy = 1;
- 	}
- 	/* only unused inodes may be cached with i_count zero */
--	inodes_stat.nr_unused -= count;
-+	atomic_sub(count, &inodes_stat.nr_unused);
- 	return busy;
+@@ -304,8 +305,11 @@ void __iget(struct inode *inode)
+ 	if (inode->i_count > 1)
+ 		return;
+ 
+-	if (!(inode->i_state & (I_DIRTY|I_SYNC)))
++	if (!(inode->i_state & (I_DIRTY|I_SYNC))) {
++		spin_lock(&wb_inode_list_lock);
+ 		list_move(&inode->i_list, &inode_in_use);
++		spin_unlock(&wb_inode_list_lock);
++	}
+ 	atomic_dec(&inodes_stat.nr_unused);
  }
  
-@@ -524,7 +525,7 @@ static void prune_icache(int nr_to_scan)
- 		spin_unlock(&inode->i_lock);
- 		nr_pruned++;
- 	}
--	inodes_stat.nr_unused -= nr_pruned;
-+	atomic_sub(nr_pruned, &inodes_stat.nr_unused);
- 	if (current_is_kswapd())
- 		__count_vm_events(KSWAPD_INODESTEAL, reap);
+@@ -407,7 +411,9 @@ static int invalidate_list(struct list_h
+ 		}
+ 		invalidate_inode_buffers(inode);
+ 		if (!inode->i_count) {
++			spin_lock(&wb_inode_list_lock);
+ 			list_move(&inode->i_list, dispose);
++			spin_unlock(&wb_inode_list_lock);
+ 			WARN_ON(inode->i_state & I_NEW);
+ 			inode->i_state |= I_FREEING;
+ 			spin_unlock(&inode->i_lock);
+@@ -486,6 +492,8 @@ static void prune_icache(int nr_to_scan)
+ 
+ 	mutex_lock(&iprune_mutex);
+ 	spin_lock(&inode_lock);
++again:
++	spin_lock(&wb_inode_list_lock);
+ 	for (nr_scanned = 0; nr_scanned < nr_to_scan; nr_scanned++) {
+ 		struct inode *inode;
+ 
+@@ -494,13 +502,17 @@ static void prune_icache(int nr_to_scan)
+ 
+ 		inode = list_entry(inode_unused.prev, struct inode, i_list);
+ 
+-		spin_lock(&inode->i_lock);
++		if (!spin_trylock(&inode->i_lock)) {
++			spin_unlock(&wb_inode_list_lock);
++			goto again;
++		}
+ 		if (inode->i_state || inode->i_count) {
+ 			list_move(&inode->i_list, &inode_unused);
+ 			spin_unlock(&inode->i_lock);
+ 			continue;
+ 		}
+ 		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
++			spin_unlock(&wb_inode_list_lock);
+ 			__iget(inode);
+ 			spin_unlock(&inode->i_lock);
+ 			spin_unlock(&inode_lock);
+@@ -509,11 +521,16 @@ static void prune_icache(int nr_to_scan)
+ 								0, -1);
+ 			iput(inode);
+ 			spin_lock(&inode_lock);
++again2:
++			spin_lock(&wb_inode_list_lock);
+ 
+ 			if (inode != list_entry(inode_unused.next,
+ 						struct inode, i_list))
+ 				continue;	/* wrong inode or list_empty */
+-			spin_lock(&inode->i_lock);
++			if (!spin_trylock(&inode->i_lock)) {
++				spin_unlock(&wb_inode_list_lock);
++				goto again2;
++			}
+ 			if (!can_unuse(inode)) {
+ 				spin_unlock(&inode->i_lock);
+ 				continue;
+@@ -531,6 +548,7 @@ static void prune_icache(int nr_to_scan)
  	else
-@@ -556,7 +557,8 @@ static int shrink_icache_memory(int nr,
- 			return -1;
- 		prune_icache(nr);
- 	}
--	return (inodes_stat.nr_unused / 100) * sysctl_vfs_cache_pressure;
-+	return (atomic_read(&inodes_stat.nr_unused) / 100) *
-+					sysctl_vfs_cache_pressure;
- }
+ 		__count_vm_events(PGINODESTEAL, reap);
+ 	spin_unlock(&inode_lock);
++	spin_unlock(&wb_inode_list_lock);
  
- static struct shrinker icache_shrinker = {
-@@ -649,7 +651,7 @@ static inline void
- __inode_add_to_lists(struct super_block *sb, struct hlist_head *head,
- 			struct inode *inode)
- {
--	inodes_stat.nr_inodes++;
-+	atomic_inc(&inodes_stat.nr_inodes);
+ 	dispose_list(&freeable);
+ 	mutex_unlock(&iprune_mutex);
+@@ -655,7 +673,9 @@ __inode_add_to_lists(struct super_block
  	spin_lock(&sb_inode_list_lock);
  	list_add(&inode->i_sb_list, &sb->s_inodes);
  	spin_unlock(&sb_inode_list_lock);
-@@ -1287,7 +1289,7 @@ void generic_delete_inode(struct inode *
- 	WARN_ON(inode->i_state & I_NEW);
- 	inode->i_state |= I_FREEING;
- 	spin_unlock(&inode->i_lock);
--	inodes_stat.nr_inodes--;
-+	atomic_dec(&inodes_stat.nr_inodes);
- 	spin_unlock(&inode_lock);
- 
- 	security_inode_delete(inode);
-@@ -1323,7 +1325,7 @@ static void generic_forget_inode(struct
- 	if (!hlist_unhashed(&inode->i_hash)) {
- 		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
- 			list_move(&inode->i_list, &inode_unused);
--		inodes_stat.nr_unused++;
-+		atomic_inc(&inodes_stat.nr_unused);
- 		if (sb->s_flags & MS_ACTIVE) {
- 			spin_unlock(&inode->i_lock);
- 			spin_unlock(&sb_inode_list_lock);
-@@ -1341,7 +1343,7 @@ static void generic_forget_inode(struct
- 		spin_lock(&inode->i_lock);
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state &= ~I_WILL_FREE;
--		inodes_stat.nr_unused--;
-+		atomic_dec(&inodes_stat.nr_unused);
++	spin_lock(&wb_inode_list_lock);
+ 	list_add(&inode->i_list, &inode_in_use);
++	spin_unlock(&wb_inode_list_lock);
+ 	if (head) {
  		spin_lock(&inode_hash_lock);
- 		hlist_del_init(&inode->i_hash);
- 		spin_unlock(&inode_hash_lock);
-@@ -1351,7 +1353,7 @@ static void generic_forget_inode(struct
+ 		hlist_add_head(&inode->i_hash, head);
+@@ -1283,14 +1303,16 @@ void generic_delete_inode(struct inode *
+ {
+ 	const struct super_operations *op = inode->i_sb->s_op;
+ 
++	spin_lock(&wb_inode_list_lock);
+ 	list_del_init(&inode->i_list);
++	spin_unlock(&wb_inode_list_lock);
+ 	list_del_init(&inode->i_sb_list);
  	spin_unlock(&sb_inode_list_lock);
  	WARN_ON(inode->i_state & I_NEW);
  	inode->i_state |= I_FREEING;
--	inodes_stat.nr_inodes--;
+ 	spin_unlock(&inode->i_lock);
+-	atomic_dec(&inodes_stat.nr_inodes);
+ 	spin_unlock(&inode_lock);
 +	atomic_dec(&inodes_stat.nr_inodes);
+ 
+ 	security_inode_delete(inode);
+ 
+@@ -1323,8 +1345,11 @@ static void generic_forget_inode(struct
+ 	struct super_block *sb = inode->i_sb;
+ 
+ 	if (!hlist_unhashed(&inode->i_hash)) {
+-		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
++		if (!(inode->i_state & (I_DIRTY|I_SYNC))) {
++			spin_lock(&wb_inode_list_lock);
+ 			list_move(&inode->i_list, &inode_unused);
++			spin_unlock(&wb_inode_list_lock);
++		}
+ 		atomic_inc(&inodes_stat.nr_unused);
+ 		if (sb->s_flags & MS_ACTIVE) {
+ 			spin_unlock(&inode->i_lock);
+@@ -1348,14 +1373,16 @@ static void generic_forget_inode(struct
+ 		hlist_del_init(&inode->i_hash);
+ 		spin_unlock(&inode_hash_lock);
+ 	}
++	spin_lock(&wb_inode_list_lock);
+ 	list_del_init(&inode->i_list);
++	spin_unlock(&wb_inode_list_lock);
+ 	list_del_init(&inode->i_sb_list);
+ 	spin_unlock(&sb_inode_list_lock);
+ 	WARN_ON(inode->i_state & I_NEW);
+ 	inode->i_state |= I_FREEING;
+-	atomic_dec(&inodes_stat.nr_inodes);
  	spin_unlock(&inode->i_lock);
  	spin_unlock(&inode_lock);
++	atomic_dec(&inodes_stat.nr_inodes);
  	if (inode->i_data.nrpages)
-Index: linux-2.6/include/linux/fs.h
+ 		truncate_inode_pages(&inode->i_data, 0);
+ 	clear_inode(inode);
+@@ -1412,17 +1439,17 @@ void iput(struct inode *inode)
+ 	if (inode) {
+ 		BUG_ON(inode->i_state == I_CLEAR);
+ 
+-retry:
++retry1:
+ 		spin_lock(&inode->i_lock);
+ 		if (inode->i_count == 1) {
+ 			if (!spin_trylock(&inode_lock)) {
++retry2:
+ 				spin_unlock(&inode->i_lock);
+-				goto retry;
++				goto retry1;
+ 			}
+ 			if (!spin_trylock(&sb_inode_list_lock)) {
+ 				spin_unlock(&inode_lock);
+-				spin_unlock(&inode->i_lock);
+-				goto retry;
++				goto retry2;
+ 			}
+ 			inode->i_count--;
+ 			iput_final(inode);
+Index: linux-2.6/include/linux/writeback.h
 ===================================================================
---- linux-2.6.orig/include/linux/fs.h
-+++ linux-2.6/include/linux/fs.h
-@@ -8,6 +8,7 @@
+--- linux-2.6.orig/include/linux/writeback.h
++++ linux-2.6/include/linux/writeback.h
+@@ -11,6 +11,7 @@ struct backing_dev_info;
  
- #include <linux/limits.h>
- #include <linux/ioctl.h>
-+#include <asm/atomic.h>
- 
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-@@ -39,8 +40,8 @@ struct files_stat_struct {
- };
- 
- struct inodes_stat_t {
--	int nr_inodes;
--	int nr_unused;
-+	atomic_t nr_inodes;
-+	atomic_t nr_unused;
- 	int dummy[5];		/* padding for sysctl ABI compatibility */
- };
- 
-Index: linux-2.6/mm/page-writeback.c
-===================================================================
---- linux-2.6.orig/mm/page-writeback.c
-+++ linux-2.6/mm/page-writeback.c
-@@ -779,7 +779,8 @@ static void wb_kupdate(unsigned long arg
- 	next_jif = start_jif + msecs_to_jiffies(dirty_writeback_interval * 10);
- 	nr_to_write = global_page_state(NR_FILE_DIRTY) +
- 			global_page_state(NR_UNSTABLE_NFS) +
--			(inodes_stat.nr_inodes - inodes_stat.nr_unused);
-+			(atomic_read(&inodes_stat.nr_inodes) -
-+			atomic_read(&inodes_stat.nr_unused));
- 	while (nr_to_write > 0) {
- 		wbc.more_io = 0;
- 		wbc.encountered_congestion = 0;
-Index: linux-2.6/fs/cifs/inode.c
-===================================================================
---- linux-2.6.orig/fs/cifs/inode.c
-+++ linux-2.6/fs/cifs/inode.c
-@@ -1428,7 +1428,7 @@ int cifs_revalidate(struct dentry *diren
- 	}
- 	cFYI(1, ("Revalidate: %s inode 0x%p count %d dentry: 0x%p d_time %ld "
- 		 "jiffies %ld", full_path, direntry->d_inode,
--		 direntry->d_inode->i_count.counter, direntry,
-+		 direntry->d_inode->i_count, direntry,
- 		 direntry->d_time, jiffies));
- 
- 	if (cifsInode->time == 0) {
+ extern spinlock_t inode_lock;
+ extern spinlock_t sb_inode_list_lock;
++extern spinlock_t wb_inode_list_lock;
+ extern spinlock_t inode_hash_lock;
+ extern struct list_head inode_in_use;
+ extern struct list_head inode_unused;
 
 
