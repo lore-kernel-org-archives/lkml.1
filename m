@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932750AbZIDCcG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932851AbZIDCfh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932750AbZIDCcG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 22:32:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932744AbZIDCcE
+	id S932851AbZIDCfh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 22:35:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932777AbZIDCfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 22:32:04 -0400
-Received: from mga09.intel.com ([134.134.136.24]:42438 "EHLO mga09.intel.com"
+	Thu, 3 Sep 2009 22:35:34 -0400
+Received: from mga14.intel.com ([143.182.124.37]:63501 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932731AbZIDCcA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 22:32:00 -0400
+	id S932738AbZIDCcE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 22:32:04 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,329,1249282800"; 
-   d="scan'208";a="547678756"
-Subject: [PATCH 18/29] ioat: ___devinit annotate the initialization paths
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="183965553"
+Subject: [PATCH 19/29] ioat1: trim ioat_dma_desc_sw
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, netdev@vger.kernel.org,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>
-Date: Thu, 03 Sep 2009 19:32:01 -0700
-Message-ID: <20090904023201.32667.21213.stgit@dwillia2-linux.ch.intel.com>
+       maciej.sosnowski@intel.com
+Date: Thu, 03 Sep 2009 19:32:06 -0700
+Message-ID: <20090904023206.32667.35974.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -29,169 +29,76 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark all single use initialization routines with __devinit.
+Save 4 bytes per software descriptor by transmitting tx_cnt in an unused
+portion of the hardware descriptor.
 
-Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/ioat/dca.c    |    9 ++++++---
- drivers/dma/ioat/dma.c    |   12 ++++++------
- drivers/dma/ioat/dma.h    |   11 ++++++-----
- drivers/dma/ioat/dma_v2.c |    4 ++--
- drivers/dma/ioat/dma_v2.h |    8 ++++----
- 5 files changed, 24 insertions(+), 20 deletions(-)
+ drivers/dma/ioat/dma.c |    4 ++--
+ drivers/dma/ioat/dma.h |    2 --
+ drivers/dma/ioat/hw.h  |    6 +++++-
+ 3 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/dma/ioat/dca.c b/drivers/dma/ioat/dca.c
-index af1c762..69d0261 100644
---- a/drivers/dma/ioat/dca.c
-+++ b/drivers/dma/ioat/dca.c
-@@ -242,7 +242,8 @@ static struct dca_ops ioat_dca_ops = {
- };
- 
- 
--struct dca_provider *ioat_dca_init(struct pci_dev *pdev, void __iomem *iobase)
-+struct dca_provider * __devinit
-+ioat_dca_init(struct pci_dev *pdev, void __iomem *iobase)
- {
- 	struct dca_provider *dca;
- 	struct ioat_dca_priv *ioatdca;
-@@ -407,7 +408,8 @@ static int ioat2_dca_count_dca_slots(void __iomem *iobase, u16 dca_offset)
- 	return slots;
- }
- 
--struct dca_provider *ioat2_dca_init(struct pci_dev *pdev, void __iomem *iobase)
-+struct dca_provider * __devinit
-+ioat2_dca_init(struct pci_dev *pdev, void __iomem *iobase)
- {
- 	struct dca_provider *dca;
- 	struct ioat_dca_priv *ioatdca;
-@@ -602,7 +604,8 @@ static int ioat3_dca_count_dca_slots(void *iobase, u16 dca_offset)
- 	return slots;
- }
- 
--struct dca_provider *ioat3_dca_init(struct pci_dev *pdev, void __iomem *iobase)
-+struct dca_provider * __devinit
-+ioat3_dca_init(struct pci_dev *pdev, void __iomem *iobase)
- {
- 	struct dca_provider *dca;
- 	struct ioat_dca_priv *ioatdca;
 diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
-index 6dd0af1..abc96c4 100644
+index abc96c4..f59b6f4 100644
 --- a/drivers/dma/ioat/dma.c
 +++ b/drivers/dma/ioat/dma.c
-@@ -870,7 +870,7 @@ static void ioat1_dma_start_null_desc(struct ioat_dma_chan *ioat)
-  */
- #define IOAT_TEST_SIZE 2000
+@@ -396,7 +396,7 @@ static dma_cookie_t ioat1_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	dump_desc_dbg(ioat, chain_tail);
+ 	dump_desc_dbg(ioat, first);
  
--static void ioat_dma_test_callback(void *dma_async_param)
-+static void __devinit ioat_dma_test_callback(void *dma_async_param)
- {
- 	struct completion *cmp = dma_async_param;
+-	ioat->pending += desc->tx_cnt;
++	ioat->pending += desc->hw->tx_cnt;
+ 	if (ioat->pending >= ioat_pending_level)
+ 		__ioat1_dma_memcpy_issue_pending(ioat);
+ 	spin_unlock_bh(&ioat->desc_lock);
+@@ -655,11 +655,11 @@ ioat1_dma_prep_memcpy(struct dma_chan *c, dma_addr_t dma_dest,
+ 	spin_unlock_bh(&ioat->desc_lock);
  
-@@ -881,7 +881,7 @@ static void ioat_dma_test_callback(void *dma_async_param)
-  * ioat_dma_self_test - Perform a IOAT transaction to verify the HW works.
-  * @device: device to be tested
-  */
--static int ioat_dma_self_test(struct ioatdma_device *device)
-+static int __devinit ioat_dma_self_test(struct ioatdma_device *device)
- {
- 	int i;
- 	u8 *src;
-@@ -1082,7 +1082,7 @@ static void ioat_disable_interrupts(struct ioatdma_device *device)
- 	writeb(0, device->reg_base + IOAT_INTRCTRL_OFFSET);
- }
+ 	desc->txd.flags = flags;
+-	desc->tx_cnt = tx_cnt;
+ 	desc->len = total_len;
+ 	list_splice(&chain, &desc->txd.tx_list);
+ 	hw->ctl_f.int_en = !!(flags & DMA_PREP_INTERRUPT);
+ 	hw->ctl_f.compl_write = 1;
++	hw->tx_cnt = tx_cnt;
+ 	dump_desc_dbg(ioat, desc);
  
--int ioat_probe(struct ioatdma_device *device)
-+int __devinit ioat_probe(struct ioatdma_device *device)
- {
- 	int err = -ENODEV;
- 	struct dma_device *dma = &device->common;
-@@ -1142,7 +1142,7 @@ err_dma_pool:
- 	return err;
- }
- 
--int ioat_register(struct ioatdma_device *device)
-+int __devinit ioat_register(struct ioatdma_device *device)
- {
- 	int err = dma_async_device_register(&device->common);
- 
-@@ -1169,7 +1169,7 @@ static void ioat1_intr_quirk(struct ioatdma_device *device)
- 	pci_write_config_dword(pdev, IOAT_PCI_DMACTRL_OFFSET, dmactrl);
- }
- 
--int ioat1_dma_probe(struct ioatdma_device *device, int dca)
-+int __devinit ioat1_dma_probe(struct ioatdma_device *device, int dca)
- {
- 	struct pci_dev *pdev = device->pdev;
- 	struct dma_device *dma;
-@@ -1200,7 +1200,7 @@ int ioat1_dma_probe(struct ioatdma_device *device, int dca)
- 	return err;
- }
- 
--void ioat_dma_remove(struct ioatdma_device *device)
-+void __devexit ioat_dma_remove(struct ioatdma_device *device)
- {
- 	struct dma_device *dma = &device->common;
- 
+ 	return &desc->txd;
 diff --git a/drivers/dma/ioat/dma.h b/drivers/dma/ioat/dma.h
-index 5fd6e2d..e47083b 100644
+index e47083b..ec851cf 100644
 --- a/drivers/dma/ioat/dma.h
 +++ b/drivers/dma/ioat/dma.h
-@@ -217,11 +217,12 @@ ioat_chan_by_index(struct ioatdma_device *device, int index)
- 	return device->idx[index];
- }
- 
--int ioat_probe(struct ioatdma_device *device);
--int ioat_register(struct ioatdma_device *device);
--int ioat1_dma_probe(struct ioatdma_device *dev, int dca);
--void ioat_dma_remove(struct ioatdma_device *device);
--struct dca_provider *ioat_dca_init(struct pci_dev *pdev, void __iomem *iobase);
-+int __devinit ioat_probe(struct ioatdma_device *device);
-+int __devinit ioat_register(struct ioatdma_device *device);
-+int __devinit ioat1_dma_probe(struct ioatdma_device *dev, int dca);
-+void __devexit ioat_dma_remove(struct ioatdma_device *device);
-+struct dca_provider * __devinit ioat_dca_init(struct pci_dev *pdev,
-+					      void __iomem *iobase);
- unsigned long ioat_get_current_completion(struct ioat_chan_common *chan);
- void ioat_init_channel(struct ioatdma_device *device,
- 		       struct ioat_chan_common *chan, int idx,
-diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
-index be617db..a0def66 100644
---- a/drivers/dma/ioat/dma_v2.c
-+++ b/drivers/dma/ioat/dma_v2.c
-@@ -684,7 +684,7 @@ ioat2_is_complete(struct dma_chan *c, dma_cookie_t cookie,
- 	return ioat_is_complete(c, cookie, done, used);
- }
- 
--int ioat2_dma_probe(struct ioatdma_device *device, int dca)
-+int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
- {
- 	struct pci_dev *pdev = device->pdev;
- 	struct dma_device *dma;
-@@ -723,7 +723,7 @@ int ioat2_dma_probe(struct ioatdma_device *device, int dca)
- 	return err;
- }
- 
--int ioat3_dma_probe(struct ioatdma_device *device, int dca)
-+int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- {
- 	struct pci_dev *pdev = device->pdev;
- 	struct dma_device *dma;
-diff --git a/drivers/dma/ioat/dma_v2.h b/drivers/dma/ioat/dma_v2.h
-index c72ccb5..bdde537 100644
---- a/drivers/dma/ioat/dma_v2.h
-+++ b/drivers/dma/ioat/dma_v2.h
-@@ -127,8 +127,8 @@ ioat2_get_ring_ent(struct ioat2_dma_chan *ioat, u16 idx)
- 	return ioat->ring[idx & ioat2_ring_mask(ioat)];
- }
- 
--int ioat2_dma_probe(struct ioatdma_device *dev, int dca);
--int ioat3_dma_probe(struct ioatdma_device *dev, int dca);
--struct dca_provider *ioat2_dca_init(struct pci_dev *pdev, void __iomem *iobase);
--struct dca_provider *ioat3_dca_init(struct pci_dev *pdev, void __iomem *iobase);
-+int __devinit ioat2_dma_probe(struct ioatdma_device *dev, int dca);
-+int __devinit ioat3_dma_probe(struct ioatdma_device *dev, int dca);
-+struct dca_provider * __devinit ioat2_dca_init(struct pci_dev *pdev, void __iomem *iobase);
-+struct dca_provider * __devinit ioat3_dca_init(struct pci_dev *pdev, void __iomem *iobase);
- #endif /* IOATDMA_V2_H */
+@@ -165,14 +165,12 @@ ioat_is_complete(struct dma_chan *c, dma_cookie_t cookie,
+  * @hw: hardware DMA descriptor
+  * @node: this descriptor will either be on the free list,
+  *     or attached to a transaction list (async_tx.tx_list)
+- * @tx_cnt: number of descriptors required to complete the transaction
+  * @txd: the generic software descriptor for all engines
+  * @id: identifier for debug
+  */
+ struct ioat_desc_sw {
+ 	struct ioat_dma_descriptor *hw;
+ 	struct list_head node;
+-	int tx_cnt;
+ 	size_t len;
+ 	struct dma_async_tx_descriptor txd;
+ 	#ifdef DEBUG
+diff --git a/drivers/dma/ioat/hw.h b/drivers/dma/ioat/hw.h
+index e13f3ed..7481fb1 100644
+--- a/drivers/dma/ioat/hw.h
++++ b/drivers/dma/ioat/hw.h
+@@ -63,7 +63,11 @@ struct ioat_dma_descriptor {
+ 	uint64_t	next;
+ 	uint64_t	rsv1;
+ 	uint64_t	rsv2;
+-	uint64_t	user1;
++	/* store some driver data in an unused portion of the descriptor */
++	union {
++		uint64_t	user1;
++		uint64_t	tx_cnt;
++	};
+ 	uint64_t	user2;
+ };
+ #endif
 
