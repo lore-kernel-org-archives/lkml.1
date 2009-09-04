@@ -1,99 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934257AbZIDUyS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933997AbZIDU6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934257AbZIDUyS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 16:54:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934055AbZIDUyQ
+	id S933997AbZIDU6N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934025AbZIDU6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 16:54:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:19173 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933855AbZIDUyO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 16:54:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=iknPiEwCvpSzqh8vU69sZj3f8Mpthm8N78qL1C1/jhs8K+FPW7E4G0108RXDiRSW+l
-         U88wwI54eSzP8Dnkjm/dSOjuWxOoU8GXSxq33Y8X1KTm0QMw/qxTE702j2Y3r7qdnsgx
-         QarGmuTbsfktoTAX/tdcOnX9QHPGI/0g9Y5k0=
-Message-ID: <4AA17E74.8060100@gmail.com>
-Date: Fri, 04 Sep 2009 22:54:12 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.5 Thunderbird/3.0b3
+	Fri, 4 Sep 2009 16:58:12 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:45385 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933995AbZIDU6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 16:58:12 -0400
+Message-ID: <4AA17F36.4020702@redhat.com>
+Date: Fri, 04 Sep 2009 16:57:26 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mm-commits@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Trond.Myklebust@netapp.com, linux-nfs@vger.kernel.org
-Subject: mount.nfs oops [was: mmotm 2009-09-03-16-35 uploaded]
-References: <200909032340.n83Ne6E6004708@imap1.linux-foundation.org>
-In-Reply-To: <200909032340.n83Ne6E6004708@imap1.linux-foundation.org>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-2
+To: "Dike, Jeffrey G" <jeffrey.g.dike@intel.com>
+CC: "Wu, Fengguang" <fengguang.wu@intel.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Avi Kivity <avi@redhat.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrea Arcangeli <aarcange@redhat.com>,
+       "Yu, Wilfred" <wilfred.yu@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Subject: Re: [RFC] respect the referenced bit of KVM guest pages?
+References: <4A846581.2020304@redhat.com> <20090813211626.GA28274@cmpxchg.org> <4A850F4A.9020507@redhat.com> <20090814091055.GA29338@cmpxchg.org> <20090814095106.GA3345@localhost> <4A856467.6050102@redhat.com> <20090815054524.GB11387@localhost> <9EECC02A4CC333418C00A85D21E89326B6611E81@azsmsx502.amr.corp.intel.com> <20090818022609.GA7958@localhost> <9EECC02A4CC333418C00A85D21E893260184184010@azsmsx502.amr.corp.intel.com> <20090903020452.GA9474@localhost> <9EECC02A4CC333418C00A85D21E8932601841D4A66@azsmsx502.amr.corp.intel.com>
+In-Reply-To: <9EECC02A4CC333418C00A85D21E8932601841D4A66@azsmsx502.amr.corp.intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/04/2009 01:40 AM, akpm@linux-foundation.org wrote:
-> The mm-of-the-moment snapshot 2009-09-03-16-35 has been uploaded to
+Dike, Jeffrey G wrote:
+> Stupid question - what in your patch allows a text page get kicked out to the inactive list after you've given it an extra pass through the active list?
 
-Hi, I got an oops while mounting an nfs:
-BUG: unable to handle kernel NULL pointer dereference at 000000000000001d
-IP: [<ffffffffa003924f>] rpcauth_lookupcred+0x4f/0xc0 [sunrpc]
-PGD 0
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/virtual/net/tun0/statistics/collisions
-CPU 1
-Modules linked in: nfs lockd auth_rpcgss sunrpc ath5k ath
-Pid: 3660, comm: mount.nfs Tainted: G        W  2.6.31-rc8-mm1_64 #762
-To Be Filled By O.E.M.
-RIP: 0010:[<ffffffffa003924f>]  [<ffffffffa003924f>]
-rpcauth_lookupcred+0x4f/0xc0 [sunrpc]
-RSP: 0018:ffff8801294bb808  EFLAGS: 00010246
-RAX: ffff88011bb6f0c0 RBX: 0000000000000001 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: ffff8801294bb808 RDI: ffffffffa005ed20
-RBP: ffff8801294bb848 R08: ffffea0006429770 R09: ffff880132d29f40
-R10: 0000000000000020 R11: 0000000000000001 R12: ffffffffa005ed20
-R13: 0000000000000000 R14: 0000000000000002 R15: ffff88011ba0ec80
-FS:  00007f42aad656f0(0000) GS:ffff880028280000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-CR2: 000000000000001d CR3: 000000010e81f000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process mount.nfs (pid: 3660, threadinfo ffff8801294ba000, task
-ffff88011bb6f0c0)
-Stack:
- 0000000000000000 0000000000000000 0000000000000000 0000001000000010
-<0> ffff88011ba0e910 ffff8801c9e22b40 ffffffffa005ed20 0000000000000080
-<0> ffff8801294bb888 ffffffffa0039363 ffff8801294bb8d8 0000000000000000
-Call Trace:
- [<ffffffffa0039363>] rpcauth_bindcred+0xa3/0x100 [sunrpc]
- [<ffffffffa0037429>] rpc_new_task+0x119/0x1e0 [sunrpc]
- [<ffffffffa0030cf9>] rpc_run_task+0x19/0x80 [sunrpc]
- [<ffffffffa0040a4c>] rpcb_getport_async+0x36c/0x590 [sunrpc]
- [<ffffffffa002f20a>] call_bind+0x5a/0x90 [sunrpc]
- [<ffffffffa0037ee2>] __rpc_execute+0xb2/0x2c0 [sunrpc]
- [<ffffffffa0038184>] rpc_execute+0x94/0xb0 [sunrpc]
- [<ffffffffa0030d1b>] rpc_run_task+0x3b/0x80 [sunrpc]
- [<ffffffffa0030e5d>] rpc_call_sync+0x3d/0x60 [sunrpc]
- [<ffffffffa0030ece>] rpc_ping+0x4e/0x70 [sunrpc]
- [<ffffffffa00319ed>] rpc_create+0x45d/0x590 [sunrpc]
- [<ffffffff811747cb>] ? match_token+0x1fb/0x220
- [<ffffffffa00a9803>] nfs_mount+0xd3/0x1c0 [nfs]
- [<ffffffff810a2fd2>] ? kstrndup+0x52/0x70
- [<ffffffffa00a0268>] nfs_get_sb+0x818/0xa00 [nfs]
- [<ffffffff810c53b8>] vfs_kern_mount+0x58/0xf0
- [<ffffffff810c54bd>] do_kern_mount+0x4d/0x130
- [<ffffffff810ddea8>] do_mount+0x2c8/0x820
- [<ffffffff810dbce8>] ? copy_mount_options+0xe8/0x190
- [<ffffffff810de493>] sys_mount+0x93/0xe0
- [<ffffffff8100be2b>] system_call_fastpath+0x16/0x1b
-Code: 05 4e ae 02 00 10 48 8b 98 40 03 00 00 75 6c 48 c7 45 c0 00 00 00
-00 48 c7 45 c8 00 00 00 00 48 c7 45 d0 00 00 00 00 48 8d 75 c0 <8b> 43
-1c 89 45 c0 8b 43 20 89 45 c4 48 8b 43 50 f0 ff 00 48 89
-RIP  [<ffffffffa003924f>] rpcauth_lookupcred+0x4f/0xc0 [sunrpc]
- RSP <ffff8801294bb808>
-CR2: 000000000000001d
----[ end trace 73264e95657dec66 ]---
+If it did not get referenced during its second pass through
+the active list, it will get deactivated.
+
+-- 
+All rights reversed.
