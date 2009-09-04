@@ -1,306 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932997AbZIDG6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932897AbZIDG6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932997AbZIDG6y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932963AbZIDG6s
+	id S932897AbZIDG6p (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932760AbZIDG6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:58:48 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48008 "EHLO mx2.suse.de"
+	Fri, 4 Sep 2009 02:58:42 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:48009 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756668AbZIDG6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755647AbZIDG6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 02:58:37 -0400
-Message-Id: <20090904065534.972731855@nick.local0.net>
+Message-Id: <20090904065535.121108656@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:51:48 +1000
+Date: Fri, 04 Sep 2009 16:51:49 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 07/33] fs: dcache scale lru
+Subject: [patch 08/33] fs: dcache scale nr_dentry
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-dcache-scale-d_lru.patch
+Content-Disposition: inline; filename=fs-dcache-scale-nr_dentry.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a new lock, dcache_lru_lock, to protect the dcache hash table from
-concurrent modification. d_lru is also protected by d_lock.
-
-Move lru scanning out from underneath dcache_lock.
-
+Make dentry_stat_t.nr_dentry an atomic_t type, and move it from under
+dcache_lock.
 ---
- fs/dcache.c |  105 ++++++++++++++++++++++++++++++++++++++++++++++++------------
- 1 file changed, 85 insertions(+), 20 deletions(-)
+ fs/dcache.c            |   20 +++++++++-----------
+ include/linux/dcache.h |    4 ++--
+ kernel/sysctl.c        |    6 ++++++
+ 3 files changed, 17 insertions(+), 13 deletions(-)
 
 Index: linux-2.6/fs/dcache.c
 ===================================================================
 --- linux-2.6.orig/fs/dcache.c
 +++ linux-2.6/fs/dcache.c
-@@ -36,17 +36,26 @@
+@@ -83,6 +83,7 @@ static struct hlist_head *dentry_hashtab
  
- /*
-  * Usage:
-- * dcache_hash_lock protects dcache hash table
-+ * dcache_hash_lock protects:
-+ *   - the dcache hash table
-+ * dcache_lru_lock protects:
-+ *   - the dcache lru lists and counters
-+ * d_lock protects:
-+ *   - d_flags
-+ *   - d_name
-+ *   - d_lru
-  *
-  * Ordering:
-  * dcache_lock
-  *   dentry->d_lock
-+ *     dcache_lru_lock
-  *     dcache_hash_lock
-  */
- int sysctl_vfs_cache_pressure __read_mostly = 100;
- EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
+ /* Statistics gathering. */
+ struct dentry_stat_t dentry_stat = {
++	.nr_dentry = ATOMIC_INIT(0),
+ 	.age_limit = 45,
+ };
  
- __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_hash_lock);
-+static __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lru_lock);
- __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
- __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
- 
-@@ -133,37 +142,56 @@ static void dentry_iput(struct dentry *
+@@ -101,11 +102,11 @@ static void d_callback(struct rcu_head *
  }
  
  /*
-- * dentry_lru_(add|add_tail|del|del_init) must be called with dcache_lock held.
-+ * dentry_lru_(add|add_tail|del|del_init) must be called with d_lock held
-+ * to protect list_empty(d_lru) condition.
+- * no dcache_lock, please.  The caller must decrement dentry_stat.nr_dentry
+- * inside dcache_lock.
++ * no dcache_lock, please.
   */
- static void dentry_lru_add(struct dentry *dentry)
+ static void d_free(struct dentry *dentry)
  {
-+	spin_lock(&dcache_lru_lock);
- 	list_add(&dentry->d_lru, &dentry->d_sb->s_dentry_lru);
- 	dentry->d_sb->s_nr_dentry_unused++;
- 	dentry_stat.nr_unused++;
-+	spin_unlock(&dcache_lru_lock);
- }
++	atomic_dec(&dentry_stat.nr_dentry);
+ 	if (dentry->d_op && dentry->d_op->d_release)
+ 		dentry->d_op->d_release(dentry);
+ 	/* if dentry was never inserted into hash, immediate free is OK */
+@@ -212,7 +213,6 @@ static struct dentry *d_kill(struct dent
+ 	struct dentry *parent;
  
- static void dentry_lru_add_tail(struct dentry *dentry)
- {
-+	spin_lock(&dcache_lru_lock);
- 	list_add_tail(&dentry->d_lru, &dentry->d_sb->s_dentry_lru);
- 	dentry->d_sb->s_nr_dentry_unused++;
- 	dentry_stat.nr_unused++;
-+	spin_unlock(&dcache_lru_lock);
-+}
-+
-+static void __dentry_lru_del(struct dentry *dentry)
-+{
-+	list_del(&dentry->d_lru);
-+	dentry->d_sb->s_nr_dentry_unused--;
-+	dentry_stat.nr_unused--;
-+}
-+
-+static void __dentry_lru_del_init(struct dentry *dentry)
-+{
-+	list_del_init(&dentry->d_lru);
-+	dentry->d_sb->s_nr_dentry_unused--;
-+	dentry_stat.nr_unused--;
- }
- 
- static void dentry_lru_del(struct dentry *dentry)
- {
- 	if (!list_empty(&dentry->d_lru)) {
--		list_del(&dentry->d_lru);
--		dentry->d_sb->s_nr_dentry_unused--;
--		dentry_stat.nr_unused--;
-+		spin_lock(&dcache_lru_lock);
-+		__dentry_lru_del(dentry);
-+		spin_unlock(&dcache_lru_lock);
+ 	list_del(&dentry->d_u.d_child);
+-	dentry_stat.nr_dentry--;	/* For d_free, below */
+ 	/*drops the locks, at that point nobody can reach this dentry */
+ 	dentry_iput(dentry);
+ 	if (IS_ROOT(dentry))
+@@ -777,10 +777,7 @@ static void shrink_dcache_for_umount_sub
+ 				    struct dentry, d_u.d_child);
  	}
+ out:
+-	/* several dentries were freed, need to correct nr_dentry */
+-	spin_lock(&dcache_lock);
+-	dentry_stat.nr_dentry -= detached;
+-	spin_unlock(&dcache_lock);
++	return;
  }
  
- static void dentry_lru_del_init(struct dentry *dentry)
- {
- 	if (likely(!list_empty(&dentry->d_lru))) {
--		list_del_init(&dentry->d_lru);
--		dentry->d_sb->s_nr_dentry_unused--;
--		dentry_stat.nr_unused--;
-+		spin_lock(&dcache_lru_lock);
-+		__dentry_lru_del_init(dentry);
-+		spin_unlock(&dcache_lru_lock);
+ /*
+@@ -1035,11 +1032,12 @@ struct dentry *d_alloc(struct dentry * p
+ 		INIT_LIST_HEAD(&dentry->d_u.d_child);
  	}
- }
  
-@@ -174,6 +202,8 @@ static void dentry_lru_del_init(struct d
-  * The dentry must already be unhashed and removed from the LRU.
-  *
-  * If this is the root of the dentry tree, return NULL.
-+ *
-+ * dcache_lock and d_lock must be held by caller, are dropped by d_kill.
-  */
- static struct dentry *d_kill(struct dentry *dentry)
- 	__releases(dentry->d_lock)
-@@ -326,11 +356,19 @@ int d_invalidate(struct dentry * dentry)
- }
+-	spin_lock(&dcache_lock);
+-	if (parent)
++	if (parent) {
++		spin_lock(&dcache_lock);
+ 		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
+-	dentry_stat.nr_dentry++;
+-	spin_unlock(&dcache_lock);
++		spin_unlock(&dcache_lock);
++	}
++	atomic_inc(&dentry_stat.nr_dentry);
  
- /* This should be called _only_ with dcache_lock held */
-+static inline struct dentry * __dget_locked_dlock(struct dentry *dentry)
-+{
-+	atomic_inc(&dentry->d_count);
-+	dentry_lru_del_init(dentry);
-+	return dentry;
-+}
- 
- static inline struct dentry * __dget_locked(struct dentry *dentry)
- {
- 	atomic_inc(&dentry->d_count);
-+	spin_lock(&dentry->d_lock);
- 	dentry_lru_del_init(dentry);
-+	spin_lock(&dentry->d_lock);
  	return dentry;
  }
+Index: linux-2.6/include/linux/dcache.h
+===================================================================
+--- linux-2.6.orig/include/linux/dcache.h
++++ linux-2.6/include/linux/dcache.h
+@@ -37,8 +37,8 @@ struct qstr {
+ };
  
-@@ -407,7 +445,7 @@ restart:
- 	list_for_each_entry(dentry, &inode->i_dentry, d_alias) {
- 		spin_lock(&dentry->d_lock);
- 		if (!atomic_read(&dentry->d_count)) {
--			__dget_locked(dentry);
-+			__dget_locked_dlock(dentry);
- 			__d_drop(dentry);
- 			spin_unlock(&dentry->d_lock);
- 			spin_unlock(&dcache_lock);
-@@ -439,17 +477,18 @@ static void prune_one_dentry(struct dent
- 	 * Prune ancestors.  Locking is simpler than in dput(),
- 	 * because dcache_lock needs to be taken anyway.
- 	 */
--	spin_lock(&dcache_lock);
- 	while (dentry) {
--		if (!atomic_dec_and_lock(&dentry->d_count, &dentry->d_lock))
-+		spin_lock(&dcache_lock);
-+		if (!atomic_dec_and_lock(&dentry->d_count, &dentry->d_lock)) {
-+			spin_unlock(&dcache_lock);
- 			return;
-+		}
- 
- 		if (dentry->d_op && dentry->d_op->d_delete)
- 			dentry->d_op->d_delete(dentry);
- 		dentry_lru_del_init(dentry);
- 		__d_drop(dentry);
- 		dentry = d_kill(dentry);
--		spin_lock(&dcache_lock);
- 	}
- }
- 
-@@ -470,10 +509,11 @@ static void __shrink_dcache_sb(struct su
- 
- 	BUG_ON(!sb);
- 	BUG_ON((flags & DCACHE_REFERENCED) && count == NULL);
--	spin_lock(&dcache_lock);
- 	if (count != NULL)
- 		/* called from prune_dcache() and shrink_dcache_parent() */
- 		cnt = *count;
-+relock:
-+	spin_lock(&dcache_lru_lock);
- restart:
- 	if (count == NULL)
- 		list_splice_init(&sb->s_dentry_lru, &tmp);
-@@ -483,7 +523,10 @@ restart:
- 					struct dentry, d_lru);
- 			BUG_ON(dentry->d_sb != sb);
- 
--			spin_lock(&dentry->d_lock);
-+			if (!spin_trylock(&dentry->d_lock)) {
-+				spin_unlock(&dcache_lru_lock);
-+				goto relock;
-+			}
- 			/*
- 			 * If we are honouring the DCACHE_REFERENCED flag and
- 			 * the dentry has this flag set, don't free it. Clear
-@@ -501,13 +544,22 @@ restart:
- 				if (!cnt)
- 					break;
- 			}
--			cond_resched_lock(&dcache_lock);
-+			cond_resched_lock(&dcache_lru_lock);
- 		}
- 	}
-+	spin_unlock(&dcache_lru_lock);
-+
-+	spin_lock(&dcache_lock);
-+again:
-+	spin_lock(&dcache_lru_lock); /* lru_lock also protects tmp list */
- 	while (!list_empty(&tmp)) {
- 		dentry = list_entry(tmp.prev, struct dentry, d_lru);
--		dentry_lru_del_init(dentry);
--		spin_lock(&dentry->d_lock);
-+
-+		if (!spin_trylock(&dentry->d_lock)) {
-+			spin_unlock(&dcache_lru_lock);
-+			goto again;
-+		}
-+		__dentry_lru_del_init(dentry);
- 		/*
- 		 * We found an inuse dentry which was not removed from
- 		 * the LRU because of laziness during lookup.  Do not free
-@@ -517,17 +569,22 @@ restart:
- 			spin_unlock(&dentry->d_lock);
- 			continue;
- 		}
-+
-+		spin_unlock(&dcache_lru_lock);
- 		prune_one_dentry(dentry);
--		/* dentry->d_lock was dropped in prune_one_dentry() */
--		cond_resched_lock(&dcache_lock);
-+		/* dcache_lock and dentry->d_lock dropped */
-+		spin_lock(&dcache_lock);
-+		spin_lock(&dcache_lru_lock);
- 	}
-+	spin_unlock(&dcache_lock);
-+
- 	if (count == NULL && !list_empty(&sb->s_dentry_lru))
- 		goto restart;
- 	if (count != NULL)
- 		*count = cnt;
- 	if (!list_empty(&referenced))
- 		list_splice(&referenced, &sb->s_dentry_lru);
--	spin_unlock(&dcache_lock);
-+	spin_unlock(&dcache_lru_lock);
- }
- 
- /**
-@@ -635,7 +692,9 @@ static void shrink_dcache_for_umount_sub
- 
- 	/* detach this root from the system */
- 	spin_lock(&dcache_lock);
-+	spin_lock(&dentry->d_lock);
- 	dentry_lru_del_init(dentry);
-+	spin_unlock(&dentry->d_lock);
- 	__d_drop(dentry);
- 	spin_unlock(&dcache_lock);
- 
-@@ -649,7 +708,9 @@ static void shrink_dcache_for_umount_sub
- 			spin_lock(&dcache_lock);
- 			list_for_each_entry(loop, &dentry->d_subdirs,
- 					    d_u.d_child) {
-+				spin_lock(&loop->d_lock);
- 				dentry_lru_del_init(loop);
-+				spin_unlock(&loop->d_lock);
- 				__d_drop(loop);
- 				cond_resched_lock(&dcache_lock);
- 			}
-@@ -832,13 +893,17 @@ resume:
- 		struct dentry *dentry = list_entry(tmp, struct dentry, d_u.d_child);
- 		next = tmp->next;
- 
-+		spin_lock(&dentry->d_lock);
- 		dentry_lru_del_init(dentry);
-+		spin_unlock(&dentry->d_lock);
- 		/* 
- 		 * move only zero ref count dentries to the end 
- 		 * of the unused list for prune_dcache
- 		 */
- 		if (!atomic_read(&dentry->d_count)) {
-+			spin_lock(&dentry->d_lock);
- 			dentry_lru_add_tail(dentry);
-+			spin_unlock(&dentry->d_lock);
- 			found++;
- 		}
- 
+ struct dentry_stat_t {
+-	int nr_dentry;
+-	int nr_unused;
++	atomic_t nr_dentry;
++	int nr_unused;		/* protected by dcache_lru_lock */
+ 	int age_limit;          /* age in seconds */
+ 	int want_pages;         /* pages requested by system */
+ 	int dummy[2];
+Index: linux-2.6/kernel/sysctl.c
+===================================================================
+--- linux-2.6.orig/kernel/sysctl.c
++++ linux-2.6/kernel/sysctl.c
+@@ -1413,6 +1413,12 @@ static struct ctl_table fs_table[] = {
+ 		.extra2		= &sysctl_nr_open_max,
+ 	},
+ 	{
++		/*
++		 * dentry_stat has an atomic_t member, so this is a bit of
++		 * a hack, but it works for the moment, and I won't bother
++		 * changing it now because we'll probably want to change to
++		 * a more scalable counter anyway.
++		 */
+ 		.ctl_name	= FS_DENTRY,
+ 		.procname	= "dentry-state",
+ 		.data		= &dentry_stat,
 
 
