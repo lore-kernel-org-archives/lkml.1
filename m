@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933747AbZIDQai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933776AbZIDQeG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933747AbZIDQai (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932747AbZIDQaf
+	id S933776AbZIDQeG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:34:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933766AbZIDQeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:30:35 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:46079 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754451AbZIDQae (ORCPT
+	Fri, 4 Sep 2009 12:34:05 -0400
+Received: from ru.mvista.com ([213.79.90.228]:9279 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S933765AbZIDQeE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:30:34 -0400
-Date: Fri, 4 Sep 2009 17:30:29 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] [PATCH 2/2] rtc: Add boot_timesource sysfs
-	attribute
-Message-ID: <20090904163029.GA25239@srcf.ucam.org>
-References: <1252081568-6000-1-git-send-email-mjg@redhat.com> <1252081568-6000-2-git-send-email-mjg@redhat.com> <20090904182528.591dbd29@i1501.lan.towertech.it>
+	Fri, 4 Sep 2009 12:34:04 -0400
+Date: Fri, 4 Sep 2009 20:34:04 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: Daniel Mack <daniel@caiaq.de>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       spyro@f2s.com, cbou@mail.ru, mreimer@vpop.net
+Subject: Re: [PATCH 2/5] pda-power: switch to new dev_pm_ops
+Message-ID: <20090904163404.GA26581@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1249496971-9019-1-git-send-email-daniel@caiaq.de>
+ <1249496971-9019-2-git-send-email-daniel@caiaq.de>
+ <200908052149.55567.elendil@planet.nl>
+ <20090805222920.GF19257@buzzloop.caiaq.de>
+ <74d0deb30908060452k1fc0e982jf14be2e895e9a805@mail.gmail.com>
+ <20090806125631.GI19257@buzzloop.caiaq.de>
+ <74d0deb30908070635s2fa76e5t954742239b8592a4@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090904182528.591dbd29@i1501.lan.towertech.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <74d0deb30908070635s2fa76e5t954742239b8592a4@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04, 2009 at 06:25:28PM +0200, Alessandro Zummo wrote:
-
->  This feature is meant to be in addition of the regular
->  hwclock call to read the system time.
+On Fri, Aug 07, 2009 at 03:35:19PM +0200, pHilipp Zabel wrote:
+[...]
+> > +static struct dev_pm_ops pda_power_pm_ops = {
+> > +       .poweroff       = pda_power_poweroff,
+> > +       .restore        = pda_power_restore,
+> > +};
 > 
->  Have you tested if there are drawbacks by not reading it? Like
->  TZ, DST and similar?
+> No no, now you're missing .suspend/.resume. As I understand it, the
+> suspend and hibernation codepaths are now completely separate.
+> 
+> Also, I'm not sure using .restore here is quite correct.
+> enable_irq_wake is called in .poweroff, after .freeze + creation of
+> the memory image. So if this memory image is restored during the next
+> boot, there is no trace of irq wakup ever being enabled and thus no
+> need to call disable_irq_wake.
+> 
+> I think just .suspend/.poweroff and .resume need to be used for this driver.
 
-Current util-linux has a hwclock that can just set the timezone without 
-performing a full read. However, there's no way of knowing whether it's 
-safe to do this without knowing that the kernel config option was set 
-and used. We'd prefer to avoid always doing --hctosys because it's a 
-noticable performance hit on boot if the work's already been done by the 
-kernel.
+Daniel, any update on this patch?
+
+Thanks,
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
