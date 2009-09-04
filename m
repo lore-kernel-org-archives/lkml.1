@@ -1,48 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933721AbZIDQ6d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932855AbZIDQxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933721AbZIDQ6d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:58:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932871AbZIDQ6a
+	id S932855AbZIDQxu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755294AbZIDQxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:58:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:42308 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932706AbZIDQ6a (ORCPT
+	Fri, 4 Sep 2009 12:53:49 -0400
+Received: from ru.mvista.com ([213.79.90.228]:9378 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755015AbZIDQxt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:58:30 -0400
-Message-ID: <4AA14618.9010505@zytor.com>
-Date: Fri, 04 Sep 2009 09:53:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Fri, 4 Sep 2009 12:53:49 -0400
+Date: Fri, 4 Sep 2009 20:53:48 +0400
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH RFC 1/2] Makefile: Never use -fno-omit-frame-pointer
+Message-ID: <20090904165348.GA1287@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <20090616201630.GA4971@oksana.dev.rtsoft.ru>
+ <20090714133716.GC28970@oksana.dev.rtsoft.ru>
+ <20090718120145.GB31007@elte.hu>
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: David Woodhouse <dwmw2@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, mingo@redhat.com, sam@ravnborg.org,
-       tglx@linutronix.de, David.Woodhouse@intel.com,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/kbuild] x86: Don't silently override CONFIG_64BIT in
- 'make oldconfig'
-References: <tip-5a8a2d13b1526e306ff2a9fe12dc9d5878d355f9@git.kernel.org>	<20090904144857.GA12872@elte.hu>	<alpine.LFD.2.00.0909041631210.14872@twosheds.infradead.org>	<4AA13FE6.20807@zytor.com> <20090904093846.a87bd198.randy.dunlap@oracle.com>
-In-Reply-To: <20090904093846.a87bd198.randy.dunlap@oracle.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20090718120145.GB31007@elte.hu>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/04/2009 09:38 AM, Randy Dunlap wrote:
->>>
->> Quite possible.  ARCH=x86 hasn't exactly been widely used.
+On Sat, Jul 18, 2009 at 02:01:45PM +0200, Ingo Molnar wrote:
 > 
-> what does ARCH=x86 mean?
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 > 
+> > On Wed, Jun 17, 2009 at 12:16:30AM +0400, Anton Vorontsov wrote:
+> > > According to Segher Boessenkool and GCC manual, -fomit-frame-pointer
+> > > is only the default when optimising on archs/ABIs where it doesn't
+> > > hinder debugging and -pg. So, we do not get it by default on x86,
+> > > not at any optimisation level.
+> > > 
+> > > On the other hand, *using* -fno-omit-frame-pointer causes gcc to
+> > > produce buggy code on PowerPC targets.
+> > > 
+> > > If Segher and GCC manual are right, this patch should be a no-op
+> > > for all arches except PowerPC, where the patch fixes gcc issues.
+> > > 
+> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > ---
+> > > 
+> > > See this thread for more discussion:
+> > > http://osdir.com/ml/linux-kernel/2009-05/msg01754.html
+> > > 
+> > > p.s.
+> > > Obviously, I didn't test this patch on anything else but PPC32. ;-)
+> > > 
+> > > Segher, do you know if all GCC versions that we support for
+> > > building Linux are behaving the way that GCC manual describe?
+> > 
+> > No news is good news... Ingo, can we merge this into -tip for 
+> > testing?
+> 
+> Changes to the top level Makefile should really go via Sam's kbuild 
+> tree.
 
-Treat 32 vs 64 bit as a normal Kconfig variable.  Similar as for other
-32/64-bit architectures.
+Sam, any thoughts about these patches?
 
-	-hpa
+Thanks!
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
