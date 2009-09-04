@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932946AbZIDGrN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932931AbZIDGqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932946AbZIDGrN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:47:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932832AbZIDGqA
+	id S932931AbZIDGqL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932839AbZIDGqH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:46:00 -0400
-Received: from mga14.intel.com ([143.182.124.37]:14457 "EHLO mga14.intel.com"
+	Fri, 4 Sep 2009 02:46:07 -0400
+Received: from mga09.intel.com ([134.134.136.24]:24211 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756692AbZIDGpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756606AbZIDGpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 02:45:34 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="184024965"
-Subject: [PATCH 10/18] ioat3: xor support
+X-IronPort-AV: E=Sophos;i="4.44,330,1249282800"; 
+   d="scan'208";a="547726427"
+Subject: [PATCH 11/18] ioat3: xor self test
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, maciej.sosnowski@intel.com
-Date: Thu, 03 Sep 2009 23:45:25 -0700
-Message-ID: <20090904064525.7141.34029.stgit@dwillia2-linux.ch.intel.com>
+Date: Thu, 03 Sep 2009 23:45:31 -0700
+Message-ID: <20090904064530.7141.64954.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -28,345 +28,383 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ioat3.2 adds xor offload support for up to 8 sources.  It can also
-perform an xor-zero-sum operation to validate whether all given sources
-sum to zero, without writing to a destination.  Xor descriptors differ
-from memcpy in that one operation may require multiple descriptors
-depending on the number of sources.  When the number of sources exceeds
-5 an extended descriptor is needed.  These descriptors need to be
-accounted for when updating the DMA_COUNT register.
+This adds a hardware specific self test to be called from ioat_probe.
+In the ioat3 case we will have tests for all the different raid
+operations, while ioat1 and ioat2 will continue to just test memcpy.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/ioat/dma_v2.c    |    2 
- drivers/dma/ioat/dma_v2.h    |    3 +
- drivers/dma/ioat/dma_v3.c    |  218 ++++++++++++++++++++++++++++++++++++++++++
- drivers/dma/ioat/registers.h |    2 
- 4 files changed, 222 insertions(+), 3 deletions(-)
+ drivers/dma/ioat/dma.c    |    5 -
+ drivers/dma/ioat/dma.h    |    4 -
+ drivers/dma/ioat/dma_v2.c |    1 
+ drivers/dma/ioat/dma_v3.c |  275 +++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 282 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
+index 2eb1fac..c524d36 100644
+--- a/drivers/dma/ioat/dma.c
++++ b/drivers/dma/ioat/dma.c
+@@ -800,7 +800,7 @@ static void __devinit ioat_dma_test_callback(void *dma_async_param)
+  * ioat_dma_self_test - Perform a IOAT transaction to verify the HW works.
+  * @device: device to be tested
+  */
+-static int __devinit ioat_dma_self_test(struct ioatdma_device *device)
++int __devinit ioat_dma_self_test(struct ioatdma_device *device)
+ {
+ 	int i;
+ 	u8 *src;
+@@ -1040,7 +1040,7 @@ int __devinit ioat_probe(struct ioatdma_device *device)
+ 	if (err)
+ 		goto err_setup_interrupts;
+ 
+-	err = ioat_dma_self_test(device);
++	err = device->self_test(device);
+ 	if (err)
+ 		goto err_self_test;
+ 
+@@ -1198,6 +1198,7 @@ int __devinit ioat1_dma_probe(struct ioatdma_device *device, int dca)
+ 
+ 	device->intr_quirk = ioat1_intr_quirk;
+ 	device->enumerate_channels = ioat1_enumerate_channels;
++	device->self_test = ioat_dma_self_test;
+ 	dma = &device->common;
+ 	dma->device_prep_dma_memcpy = ioat1_dma_prep_memcpy;
+ 	dma->device_issue_pending = ioat1_dma_memcpy_issue_pending;
+diff --git a/drivers/dma/ioat/dma.h b/drivers/dma/ioat/dma.h
+index 6c798f3..6a675a2 100644
+--- a/drivers/dma/ioat/dma.h
++++ b/drivers/dma/ioat/dma.h
+@@ -62,10 +62,10 @@
+  * @enumerate_channels: hw version specific channel enumeration
+  * @cleanup_tasklet: select between the v2 and v3 cleanup routines
+  * @timer_fn: select between the v2 and v3 timer watchdog routines
++ * @self_test: hardware version specific self test for each supported op type
+  *
+  * Note: the v3 cleanup routine supports raid operations
+  */
+-
+ struct ioatdma_device {
+ 	struct pci_dev *pdev;
+ 	void __iomem *reg_base;
+@@ -80,6 +80,7 @@ struct ioatdma_device {
+ 	int (*enumerate_channels)(struct ioatdma_device *device);
+ 	void (*cleanup_tasklet)(unsigned long data);
+ 	void (*timer_fn)(unsigned long data);
++	int (*self_test)(struct ioatdma_device *device);
+ };
+ 
+ struct ioat_chan_common {
+@@ -314,6 +315,7 @@ static inline void ioat_unmap(struct pci_dev *pdev, dma_addr_t addr, size_t len,
+ int __devinit ioat_probe(struct ioatdma_device *device);
+ int __devinit ioat_register(struct ioatdma_device *device);
+ int __devinit ioat1_dma_probe(struct ioatdma_device *dev, int dca);
++int __devinit ioat_dma_self_test(struct ioatdma_device *device);
+ void __devexit ioat_dma_remove(struct ioatdma_device *device);
+ struct dca_provider * __devinit ioat_dca_init(struct pci_dev *pdev,
+ 					      void __iomem *iobase);
 diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
-index 7408bef..56fa6d6 100644
+index 56fa6d6..e0600f4 100644
 --- a/drivers/dma/ioat/dma_v2.c
 +++ b/drivers/dma/ioat/dma_v2.c
-@@ -48,7 +48,7 @@ module_param(ioat_ring_max_alloc_order, int, 0644);
- MODULE_PARM_DESC(ioat_ring_max_alloc_order,
- 		 "ioat2+: upper limit for dynamic ring resizing (default: n=16)");
- 
--static void __ioat2_issue_pending(struct ioat2_dma_chan *ioat)
-+void __ioat2_issue_pending(struct ioat2_dma_chan *ioat)
- {
- 	void * __iomem reg_base = ioat->base.reg_base;
- 
-diff --git a/drivers/dma/ioat/dma_v2.h b/drivers/dma/ioat/dma_v2.h
-index a216b3f..47afcfd 100644
---- a/drivers/dma/ioat/dma_v2.h
-+++ b/drivers/dma/ioat/dma_v2.h
-@@ -127,6 +127,7 @@ static inline u16 ioat2_xferlen_to_descs(struct ioat2_dma_chan *ioat, size_t len
-  * @raw: hardware raw (un-typed) descriptor
-  * @txd: the generic software descriptor for all engines
-  * @len: total transaction length for unmap
-+ * @result: asynchronous result of validate operations
-  * @id: identifier for debug
-  */
- 
-@@ -143,6 +144,7 @@ struct ioat_ring_ent {
- 	};
- 	size_t len;
- 	struct dma_async_tx_descriptor txd;
-+	enum sum_check_flags *result;
- 	#ifdef DEBUG
- 	int id;
- 	#endif
-@@ -182,5 +184,6 @@ enum dma_status ioat2_is_complete(struct dma_chan *c, dma_cookie_t cookie,
- void __ioat2_restart_chan(struct ioat2_dma_chan *ioat);
- dma_cookie_t ioat2_inject_fence(struct ioat2_dma_chan *ioat);
- bool reshape_ring(struct ioat2_dma_chan *ioat, int order);
-+void __ioat2_issue_pending(struct ioat2_dma_chan *ioat);
- extern struct kobj_type ioat2_ktype;
- #endif /* IOATDMA_V2_H */
+@@ -837,6 +837,7 @@ int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
+ 	device->enumerate_channels = ioat2_enumerate_channels;
+ 	device->cleanup_tasklet = ioat2_cleanup_tasklet;
+ 	device->timer_fn = ioat2_timer_event;
++	device->self_test = ioat_dma_self_test;
+ 	dma = &device->common;
+ 	dma->device_prep_dma_memcpy = ioat2_dma_prep_memcpy_lock;
+ 	dma->device_issue_pending = ioat2_issue_pending;
 diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
-index 0913d11..957c205 100644
+index 957c205..927c08b 100644
 --- a/drivers/dma/ioat/dma_v3.c
 +++ b/drivers/dma/ioat/dma_v3.c
-@@ -64,8 +64,33 @@
- #include "dma.h"
- #include "dma_v2.h"
- 
-+/* ioat hardware assumes at least two sources for raid operations */
-+#define src_cnt_to_sw(x) ((x) + 2)
-+#define src_cnt_to_hw(x) ((x) - 2)
-+
-+/* provide a lookup table for setting the source address in the base or
-+ * extended descriptor of an xor descriptor
-+ */
-+static const u8 xor_idx_to_desc __read_mostly = 0xd0;
-+static const u8 xor_idx_to_field[] __read_mostly = { 1, 4, 5, 6, 7, 0, 1, 2 };
-+
-+static dma_addr_t xor_get_src(struct ioat_raw_descriptor *descs[2], int idx)
-+{
-+	struct ioat_raw_descriptor *raw = descs[xor_idx_to_desc >> idx & 1];
-+
-+	return raw->field[xor_idx_to_field[idx]];
-+}
-+
-+static void xor_set_src(struct ioat_raw_descriptor *descs[2],
-+			dma_addr_t addr, u32 offset, int idx)
-+{
-+	struct ioat_raw_descriptor *raw = descs[xor_idx_to_desc >> idx & 1];
-+
-+	raw->field[xor_idx_to_field[idx]] = addr + offset;
-+}
-+
- static void ioat3_dma_unmap(struct ioat2_dma_chan *ioat,
--			    struct ioat_ring_ent *desc)
-+			    struct ioat_ring_ent *desc, int idx)
- {
- 	struct ioat_chan_common *chan = &ioat->base;
- 	struct pci_dev *pdev = chan->device->pdev;
-@@ -86,13 +111,71 @@ static void ioat3_dma_unmap(struct ioat2_dma_chan *ioat,
- 				   PCI_DMA_FROMDEVICE, flags, 1);
- 		break;
- 	}
-+	case IOAT_OP_XOR_VAL:
-+	case IOAT_OP_XOR: {
-+		struct ioat_xor_descriptor *xor = desc->xor;
-+		struct ioat_ring_ent *ext;
-+		struct ioat_xor_ext_descriptor *xor_ex = NULL;
-+		int src_cnt = src_cnt_to_sw(xor->ctl_f.src_cnt);
-+		struct ioat_raw_descriptor *descs[2];
-+		int i;
-+
-+		if (src_cnt > 5) {
-+			ext = ioat2_get_ring_ent(ioat, idx + 1);
-+			xor_ex = ext->xor_ex;
-+		}
-+
-+		if (!(flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
-+			descs[0] = (struct ioat_raw_descriptor *) xor;
-+			descs[1] = (struct ioat_raw_descriptor *) xor_ex;
-+			for (i = 0; i < src_cnt; i++) {
-+				dma_addr_t src = xor_get_src(descs, i);
-+
-+				ioat_unmap(pdev, src - offset, len,
-+					   PCI_DMA_TODEVICE, flags, 0);
-+			}
-+
-+			/* dest is a source in xor validate operations */
-+			if (xor->ctl_f.op == IOAT_OP_XOR_VAL) {
-+				ioat_unmap(pdev, xor->dst_addr - offset, len,
-+					   PCI_DMA_TODEVICE, flags, 1);
-+				break;
-+			}
-+		}
-+
-+		if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP))
-+			ioat_unmap(pdev, xor->dst_addr - offset, len,
-+				   PCI_DMA_FROMDEVICE, flags, 1);
-+		break;
-+	}
- 	default:
- 		dev_err(&pdev->dev, "%s: unknown op type: %#x\n",
- 			__func__, desc->hw->ctl_f.op);
- 	}
+@@ -513,6 +513,280 @@ ioat3_prep_xor_val(struct dma_chan *chan, dma_addr_t *src,
+ 				     src_cnt - 1, len, flags);
  }
  
-+static bool desc_has_ext(struct ioat_ring_ent *desc)
++static void __devinit ioat3_dma_test_callback(void *dma_async_param)
 +{
-+	struct ioat_dma_descriptor *hw = desc->hw;
++	struct completion *cmp = dma_async_param;
 +
-+	if (hw->ctl_f.op == IOAT_OP_XOR ||
-+	    hw->ctl_f.op == IOAT_OP_XOR_VAL) {
-+		struct ioat_xor_descriptor *xor = desc->xor;
- 
-+		if (src_cnt_to_sw(xor->ctl_f.src_cnt) > 5)
-+			return true;
-+	}
-+
-+	return false;
++	complete(cmp);
 +}
 +
-+/**
-+ * __cleanup - reclaim used descriptors
-+ * @ioat: channel (ring) to clean
-+ *
-+ * The difference from the dma_v2.c __cleanup() is that this routine
-+ * handles extended descriptors and dma-unmapping raid operations.
-+ */
- static void __cleanup(struct ioat2_dma_chan *ioat, unsigned long phys_complete)
- {
- 	struct ioat_chan_common *chan = &ioat->base;
-@@ -114,7 +197,7 @@ static void __cleanup(struct ioat2_dma_chan *ioat, unsigned long phys_complete)
- 		tx = &desc->txd;
- 		if (tx->cookie) {
- 			chan->completed_cookie = tx->cookie;
--			ioat3_dma_unmap(ioat, desc);
-+			ioat3_dma_unmap(ioat, desc, ioat->tail + i);
- 			tx->cookie = 0;
- 			if (tx->callback) {
- 				tx->callback(tx->callback_param);
-@@ -124,6 +207,12 @@ static void __cleanup(struct ioat2_dma_chan *ioat, unsigned long phys_complete)
- 
- 		if (tx->phys == phys_complete)
- 			seen_current = true;
++#define IOAT_NUM_SRC_TEST 6 /* must be <= 8 */
++static int __devinit ioat_xor_val_self_test(struct ioatdma_device *device)
++{
++	int i, src_idx;
++	struct page *dest;
++	struct page *xor_srcs[IOAT_NUM_SRC_TEST];
++	struct page *xor_val_srcs[IOAT_NUM_SRC_TEST + 1];
++	dma_addr_t dma_srcs[IOAT_NUM_SRC_TEST + 1];
++	dma_addr_t dma_addr, dest_dma;
++	struct dma_async_tx_descriptor *tx;
++	struct dma_chan *dma_chan;
++	dma_cookie_t cookie;
++	u8 cmp_byte = 0;
++	u32 cmp_word;
++	u32 xor_val_result;
++	int err = 0;
++	struct completion cmp;
++	unsigned long tmo;
++	struct device *dev = &device->pdev->dev;
++	struct dma_device *dma = &device->common;
 +
-+		/* skip extended descriptors */
-+		if (desc_has_ext(desc)) {
-+			BUG_ON(i + 1 >= active);
-+			i++;
++	dev_dbg(dev, "%s\n", __func__);
++
++	if (!dma_has_cap(DMA_XOR, dma->cap_mask))
++		return 0;
++
++	for (src_idx = 0; src_idx < IOAT_NUM_SRC_TEST; src_idx++) {
++		xor_srcs[src_idx] = alloc_page(GFP_KERNEL);
++		if (!xor_srcs[src_idx]) {
++			while (src_idx--)
++				__free_page(xor_srcs[src_idx]);
++			return -ENOMEM;
 +		}
- 	}
- 	ioat->tail += i;
- 	BUG_ON(!seen_current); /* no active descs have written a completion? */
-@@ -309,6 +398,121 @@ ioat3_prep_memset_lock(struct dma_chan *c, dma_addr_t dest, int value,
- 	return &desc->txd;
- }
- 
-+static struct dma_async_tx_descriptor *
-+__ioat3_prep_xor_lock(struct dma_chan *c, enum sum_check_flags *result,
-+		      dma_addr_t dest, dma_addr_t *src, unsigned int src_cnt,
-+		      size_t len, unsigned long flags)
-+{
-+	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
-+	struct ioat_ring_ent *compl_desc;
-+	struct ioat_ring_ent *desc;
-+	struct ioat_ring_ent *ext;
-+	size_t total_len = len;
-+	struct ioat_xor_descriptor *xor;
-+	struct ioat_xor_ext_descriptor *xor_ex = NULL;
-+	struct ioat_dma_descriptor *hw;
-+	u32 offset = 0;
-+	int num_descs;
-+	int with_ext;
-+	int i;
-+	u16 idx;
-+	u8 op = result ? IOAT_OP_XOR_VAL : IOAT_OP_XOR;
-+
-+	BUG_ON(src_cnt < 2);
-+
-+	num_descs = ioat2_xferlen_to_descs(ioat, len);
-+	/* we need 2x the number of descriptors to cover greater than 5
-+	 * sources
-+	 */
-+	if (src_cnt > 5) {
-+		with_ext = 1;
-+		num_descs *= 2;
-+	} else
-+		with_ext = 0;
-+
-+	/* completion writes from the raid engine may pass completion
-+	 * writes from the legacy engine, so we need one extra null
-+	 * (legacy) descriptor to ensure all completion writes arrive in
-+	 * order.
-+	 */
-+	if (likely(num_descs) &&
-+	    ioat2_alloc_and_lock(&idx, ioat, num_descs+1) == 0)
-+		/* pass */;
-+	else
-+		return NULL;
-+	for (i = 0; i < num_descs; i += 1 + with_ext) {
-+		struct ioat_raw_descriptor *descs[2];
-+		size_t xfer_size = min_t(size_t, len, 1 << ioat->xfercap_log);
-+		int s;
-+
-+		desc = ioat2_get_ring_ent(ioat, idx + i);
-+		xor = desc->xor;
-+
-+		/* save a branch by unconditionally retrieving the
-+		 * extended descriptor xor_set_src() knows to not write
-+		 * to it in the single descriptor case
-+		 */
-+		ext = ioat2_get_ring_ent(ioat, idx + i + 1);
-+		xor_ex = ext->xor_ex;
-+
-+		descs[0] = (struct ioat_raw_descriptor *) xor;
-+		descs[1] = (struct ioat_raw_descriptor *) xor_ex;
-+		for (s = 0; s < src_cnt; s++)
-+			xor_set_src(descs, src[s], offset, s);
-+		xor->size = xfer_size;
-+		xor->dst_addr = dest + offset;
-+		xor->ctl = 0;
-+		xor->ctl_f.op = op;
-+		xor->ctl_f.src_cnt = src_cnt_to_hw(src_cnt);
-+
-+		len -= xfer_size;
-+		offset += xfer_size;
-+		dump_desc_dbg(ioat, desc);
 +	}
 +
-+	/* last xor descriptor carries the unmap parameters and fence bit */
-+	desc->txd.flags = flags;
-+	desc->len = total_len;
-+	if (result)
-+		desc->result = result;
-+	xor->ctl_f.fence = !!(flags & DMA_PREP_FENCE);
++	dest = alloc_page(GFP_KERNEL);
++	if (!dest) {
++		while (src_idx--)
++			__free_page(xor_srcs[src_idx]);
++		return -ENOMEM;
++	}
 +
-+	/* completion descriptor carries interrupt bit */
-+	compl_desc = ioat2_get_ring_ent(ioat, idx + i);
-+	compl_desc->txd.flags = flags & DMA_PREP_INTERRUPT;
-+	hw = compl_desc->hw;
-+	hw->ctl = 0;
-+	hw->ctl_f.null = 1;
-+	hw->ctl_f.int_en = !!(flags & DMA_PREP_INTERRUPT);
-+	hw->ctl_f.compl_write = 1;
-+	hw->size = NULL_DESC_BUFFER_SIZE;
-+	dump_desc_dbg(ioat, compl_desc);
++	/* Fill in src buffers */
++	for (src_idx = 0; src_idx < IOAT_NUM_SRC_TEST; src_idx++) {
++		u8 *ptr = page_address(xor_srcs[src_idx]);
++		for (i = 0; i < PAGE_SIZE; i++)
++			ptr[i] = (1 << src_idx);
++	}
 +
-+	/* we leave the channel locked to ensure in order submission */
-+	return &desc->txd;
++	for (src_idx = 0; src_idx < IOAT_NUM_SRC_TEST; src_idx++)
++		cmp_byte ^= (u8) (1 << src_idx);
++
++	cmp_word = (cmp_byte << 24) | (cmp_byte << 16) |
++			(cmp_byte << 8) | cmp_byte;
++
++	memset(page_address(dest), 0, PAGE_SIZE);
++
++	dma_chan = container_of(dma->channels.next, struct dma_chan,
++				device_node);
++	if (dma->device_alloc_chan_resources(dma_chan) < 1) {
++		err = -ENODEV;
++		goto out;
++	}
++
++	/* test xor */
++	dest_dma = dma_map_page(dev, dest, 0, PAGE_SIZE, DMA_FROM_DEVICE);
++	for (i = 0; i < IOAT_NUM_SRC_TEST; i++)
++		dma_srcs[i] = dma_map_page(dev, xor_srcs[i], 0, PAGE_SIZE,
++					   DMA_TO_DEVICE);
++	tx = dma->device_prep_dma_xor(dma_chan, dest_dma, dma_srcs,
++				      IOAT_NUM_SRC_TEST, PAGE_SIZE,
++				      DMA_PREP_INTERRUPT);
++
++	if (!tx) {
++		dev_err(dev, "Self-test xor prep failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	async_tx_ack(tx);
++	init_completion(&cmp);
++	tx->callback = ioat3_dma_test_callback;
++	tx->callback_param = &cmp;
++	cookie = tx->tx_submit(tx);
++	if (cookie < 0) {
++		dev_err(dev, "Self-test xor setup failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++	dma->device_issue_pending(dma_chan);
++
++	tmo = wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000));
++
++	if (dma->device_is_tx_complete(dma_chan, cookie, NULL, NULL) != DMA_SUCCESS) {
++		dev_err(dev, "Self-test xor timed out\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	dma_sync_single_for_cpu(dev, dest_dma, PAGE_SIZE, DMA_FROM_DEVICE);
++	for (i = 0; i < (PAGE_SIZE / sizeof(u32)); i++) {
++		u32 *ptr = page_address(dest);
++		if (ptr[i] != cmp_word) {
++			dev_err(dev, "Self-test xor failed compare\n");
++			err = -ENODEV;
++			goto free_resources;
++		}
++	}
++	dma_sync_single_for_device(dev, dest_dma, PAGE_SIZE, DMA_TO_DEVICE);
++
++	/* skip validate if the capability is not present */
++	if (!dma_has_cap(DMA_XOR_VAL, dma_chan->device->cap_mask))
++		goto free_resources;
++
++	/* validate the sources with the destintation page */
++	for (i = 0; i < IOAT_NUM_SRC_TEST; i++)
++		xor_val_srcs[i] = xor_srcs[i];
++	xor_val_srcs[i] = dest;
++
++	xor_val_result = 1;
++
++	for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
++		dma_srcs[i] = dma_map_page(dev, xor_val_srcs[i], 0, PAGE_SIZE,
++					   DMA_TO_DEVICE);
++	tx = dma->device_prep_dma_xor_val(dma_chan, dma_srcs,
++					  IOAT_NUM_SRC_TEST + 1, PAGE_SIZE,
++					  &xor_val_result, DMA_PREP_INTERRUPT);
++	if (!tx) {
++		dev_err(dev, "Self-test zero prep failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	async_tx_ack(tx);
++	init_completion(&cmp);
++	tx->callback = ioat3_dma_test_callback;
++	tx->callback_param = &cmp;
++	cookie = tx->tx_submit(tx);
++	if (cookie < 0) {
++		dev_err(dev, "Self-test zero setup failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++	dma->device_issue_pending(dma_chan);
++
++	tmo = wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000));
++
++	if (dma->device_is_tx_complete(dma_chan, cookie, NULL, NULL) != DMA_SUCCESS) {
++		dev_err(dev, "Self-test validate timed out\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	if (xor_val_result != 0) {
++		dev_err(dev, "Self-test validate failed compare\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	/* skip memset if the capability is not present */
++	if (!dma_has_cap(DMA_MEMSET, dma_chan->device->cap_mask))
++		goto free_resources;
++
++	/* test memset */
++	dma_addr = dma_map_page(dev, dest, 0,
++			PAGE_SIZE, DMA_FROM_DEVICE);
++	tx = dma->device_prep_dma_memset(dma_chan, dma_addr, 0, PAGE_SIZE,
++					 DMA_PREP_INTERRUPT);
++	if (!tx) {
++		dev_err(dev, "Self-test memset prep failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	async_tx_ack(tx);
++	init_completion(&cmp);
++	tx->callback = ioat3_dma_test_callback;
++	tx->callback_param = &cmp;
++	cookie = tx->tx_submit(tx);
++	if (cookie < 0) {
++		dev_err(dev, "Self-test memset setup failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++	dma->device_issue_pending(dma_chan);
++
++	tmo = wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000));
++
++	if (dma->device_is_tx_complete(dma_chan, cookie, NULL, NULL) != DMA_SUCCESS) {
++		dev_err(dev, "Self-test memset timed out\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	for (i = 0; i < PAGE_SIZE/sizeof(u32); i++) {
++		u32 *ptr = page_address(dest);
++		if (ptr[i]) {
++			dev_err(dev, "Self-test memset failed compare\n");
++			err = -ENODEV;
++			goto free_resources;
++		}
++	}
++
++	/* test for non-zero parity sum */
++	xor_val_result = 0;
++	for (i = 0; i < IOAT_NUM_SRC_TEST + 1; i++)
++		dma_srcs[i] = dma_map_page(dev, xor_val_srcs[i], 0, PAGE_SIZE,
++					   DMA_TO_DEVICE);
++	tx = dma->device_prep_dma_xor_val(dma_chan, dma_srcs,
++					  IOAT_NUM_SRC_TEST + 1, PAGE_SIZE,
++					  &xor_val_result, DMA_PREP_INTERRUPT);
++	if (!tx) {
++		dev_err(dev, "Self-test 2nd zero prep failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	async_tx_ack(tx);
++	init_completion(&cmp);
++	tx->callback = ioat3_dma_test_callback;
++	tx->callback_param = &cmp;
++	cookie = tx->tx_submit(tx);
++	if (cookie < 0) {
++		dev_err(dev, "Self-test  2nd zero setup failed\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++	dma->device_issue_pending(dma_chan);
++
++	tmo = wait_for_completion_timeout(&cmp, msecs_to_jiffies(3000));
++
++	if (dma->device_is_tx_complete(dma_chan, cookie, NULL, NULL) != DMA_SUCCESS) {
++		dev_err(dev, "Self-test 2nd validate timed out\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++	if (xor_val_result != SUM_CHECK_P_RESULT) {
++		dev_err(dev, "Self-test validate failed compare\n");
++		err = -ENODEV;
++		goto free_resources;
++	}
++
++free_resources:
++	dma->device_free_chan_resources(dma_chan);
++out:
++	src_idx = IOAT_NUM_SRC_TEST;
++	while (src_idx--)
++		__free_page(xor_srcs[src_idx]);
++	__free_page(dest);
++	return err;
 +}
 +
-+static struct dma_async_tx_descriptor *
-+ioat3_prep_xor(struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
-+	       unsigned int src_cnt, size_t len, unsigned long flags)
++static int __devinit ioat3_dma_self_test(struct ioatdma_device *device)
 +{
-+	return __ioat3_prep_xor_lock(chan, NULL, dest, src, src_cnt, len, flags);
-+}
++	int rc = ioat_dma_self_test(device);
 +
-+struct dma_async_tx_descriptor *
-+ioat3_prep_xor_val(struct dma_chan *chan, dma_addr_t *src,
-+		    unsigned int src_cnt, size_t len,
-+		    enum sum_check_flags *result, unsigned long flags)
-+{
-+	/* the cleanup routine only sets bits on validate failure, it
-+	 * does not clear bits on validate success... so clear it here
-+	 */
-+	*result = 0;
++	if (rc)
++		return rc;
 +
-+	return __ioat3_prep_xor_lock(chan, result, src[0], &src[1],
-+				     src_cnt - 1, len, flags);
++	rc = ioat_xor_val_self_test(device);
++	if (rc)
++		return rc;
++
++	return 0;
 +}
 +
  int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
  {
  	struct pci_dev *pdev = device->pdev;
-@@ -333,6 +537,16 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
- 		dma_cap_set(DMA_MEMSET, dma->cap_mask);
- 		dma->device_prep_dma_memset = ioat3_prep_memset_lock;
- 	}
-+	if (cap & IOAT_CAP_XOR) {
-+		dma->max_xor = 8;
-+		dma->xor_align = 2;
-+
-+		dma_cap_set(DMA_XOR, dma->cap_mask);
-+		dma->device_prep_dma_xor = ioat3_prep_xor;
-+
-+		dma_cap_set(DMA_XOR_VAL, dma->cap_mask);
-+		dma->device_prep_dma_xor_val = ioat3_prep_xor_val;
-+	}
- 
- 	/* -= IOAT ver.3 workarounds =- */
- 	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
-diff --git a/drivers/dma/ioat/registers.h b/drivers/dma/ioat/registers.h
-index 97d26ea..63038e1 100644
---- a/drivers/dma/ioat/registers.h
-+++ b/drivers/dma/ioat/registers.h
-@@ -243,6 +243,8 @@
- #define IOAT_CHANERR_XOR_Q_ERR			0x20000
- #define IOAT_CHANERR_DESCRIPTOR_COUNT_ERR	0x40000
- 
-+#define IOAT_CHANERR_HANDLE_MASK (IOAT_CHANERR_XOR_P_OR_CRC_ERR | IOAT_CHANERR_XOR_Q_ERR)
-+
- #define IOAT_CHANERR_MASK_OFFSET		0x2C	/* 32-bit Channel Error Register */
- 
- #endif /* _IOAT_REGISTERS_H_ */
+@@ -526,6 +800,7 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
+ 	device->enumerate_channels = ioat2_enumerate_channels;
+ 	device->cleanup_tasklet = ioat3_cleanup_tasklet;
+ 	device->timer_fn = ioat3_timer_event;
++	device->self_test = ioat3_dma_self_test;
+ 	dma = &device->common;
+ 	dma->device_prep_dma_memcpy = ioat2_dma_prep_memcpy_lock;
+ 	dma->device_issue_pending = ioat2_issue_pending;
 
