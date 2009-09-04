@@ -1,109 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933106AbZIDHDn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932653AbZIDGx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933106AbZIDHDn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:03:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932760AbZIDHAz
+	id S932653AbZIDGx6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756638AbZIDGx4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:00:55 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56568 "EHLO mx1.suse.de"
+	Fri, 4 Sep 2009 02:53:56 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:54588 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932803AbZIDG6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:58:43 -0400
-Message-Id: <20090904065539.239315813@nick.local0.net>
-User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:52:14 +1000
-From: npiggin@suse.de
-To: linux-fsdevel@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [patch 33/33] fs: improve scalability of pseudo filesystems
-References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-scale-pseudo.patch
+	id S1756606AbZIDGxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:53:55 -0400
+Date: Fri, 4 Sep 2009 08:53:57 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 2/8] writeback: move dirty inodes from super_block to
+	backing_dev_info
+Message-ID: <20090904065357.GP18599@kernel.dk>
+References: <1251880967-1136-1-git-send-email-jens.axboe@oracle.com> <1251880967-1136-3-git-send-email-jens.axboe@oracle.com> <20090904025609.GC3658@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904025609.GC3658@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regardless of how much we possibly try to scale dcache, there is likely
-always going to be some fundamental contention when adding or removing children
-under the same parent. Pseudo filesystems do not seem need to have connected
-dentries because by definition they are disconnected.
+On Thu, Sep 03 2009, Christoph Hellwig wrote:
+> Clean bdi_start_writeback up a bit:
+> 
+> 
+> Index: linux-2.6/fs/fs-writeback.c
+> ===================================================================
+> --- linux-2.6.orig/fs/fs-writeback.c	2009-09-03 23:50:12.880832607 -0300
+> +++ linux-2.6/fs/fs-writeback.c	2009-09-03 23:54:42.372832985 -0300
+> @@ -70,13 +70,6 @@ static inline void bdi_work_init(struct 
+>  	work->state = WS_USED;
+>  }
+>  
+> -static inline void bdi_work_init_on_stack(struct bdi_work *work,
+> -					  struct writeback_control *wbc)
+> -{
+> -	bdi_work_init(work, wbc);
+> -	work->state |= WS_ONSTACK;
+> -}
+> -
+>  /**
+>   * writeback_in_progress - determine whether there is writeback in progress
+>   * @bdi: the device's backing_dev_info structure.
+> @@ -207,35 +200,26 @@ static struct bdi_work *bdi_alloc_work(s
+>  
+>  void bdi_start_writeback(struct writeback_control *wbc)
+>  {
+> -	const bool must_wait = wbc->sync_mode == WB_SYNC_ALL;
+> -	struct bdi_work work_stack, *work = NULL;
+> -
+> -	if (!must_wait)
+> -		work = bdi_alloc_work(wbc);
+> +	struct bdi_work work;
+>  
+> -	if (!work) {
+> -		work = &work_stack;
+> -		bdi_work_init_on_stack(work, wbc);
+> +	if (wbc->sync_mode != WB_SYNC_ALL) {
+> +		struct bdi_work *w = bdi_alloc_work(wbc);
+> +		if (w) {
+> +			bdi_queue_work(wbc->bdi, w);
+> +			return;
+> +		}
+>  	}
+>  
+> -	bdi_queue_work(wbc->bdi, work);
+> +	bdi_work_init(&work, wbc);
+> +	work.state |= WS_ONSTACK;
+> +	bdi_queue_work(wbc->bdi, &work);
+>  
+>  	/*
+>  	 * If the sync mode is WB_SYNC_ALL, block waiting for the work to
+> -	 * complete. If not, we only need to wait for the work to be started,
+> -	 * if we allocated it on-stack. We use the same mechanism, if the
+> -	 * wait bit is set in the bdi_work struct, then threads will not
+> -	 * clear pending until after they are done.
+> -	 *
+> -	 * Note that work == &work_stack if must_wait is true, so we don't
+> -	 * need to do call_rcu() here ever, since the completion path will
+> -	 * have done that for us.
+> +	 * complete.
+>  	 */
+> -	if (must_wait || work == &work_stack) {
+> -		bdi_wait_on_work_clear(work);
+> -		if (work != &work_stack)
+> -			call_rcu(&work->rcu_head, bdi_work_free);
+> -	}
+> +	if (wbc->sync_mode == WB_SYNC_ALL)
+> +		bdi_wait_on_work_clear(&work);
+>  }
 
-XXX: is this right? I can't see any reason why they need to have a real
-parent.
+That doesn't work, you have to wait for on-stack work. So either we just
+punt and not do anything for WB_SYNC_NONE if the allocation fails, or we
+punt to stack and do the wait. Since it's a cleaning action and
+allocation fails, falling back to the stack and waiting seems like the
+most appropriate choice.
 
-TODO: add a d_instantiate_something() and avoid adding the extra checks
-for !d_parent
----
- fs/anon_inodes.c                 |    2 +-
- fs/notify/inotify/inotify.c      |    2 +-
- fs/pipe.c                        |    2 +-
- include/linux/fsnotify_backend.h |    2 +-
- net/socket.c                     |    2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/fs/notify/inotify/inotify.c
-===================================================================
---- linux-2.6.orig/fs/notify/inotify/inotify.c
-+++ linux-2.6/fs/notify/inotify/inotify.c
-@@ -268,7 +268,7 @@ void inotify_d_instantiate(struct dentry
- {
- 	struct dentry *parent;
- 
--	if (!inode)
-+	if (!inode || !entry->d_parent)
- 		return;
- 
- 	/* XXX: need parent lock in place of dcache_lock? */
-Index: linux-2.6/include/linux/fsnotify_backend.h
-===================================================================
---- linux-2.6.orig/include/linux/fsnotify_backend.h
-+++ linux-2.6/include/linux/fsnotify_backend.h
-@@ -291,7 +291,7 @@ static inline void __fsnotify_update_dca
-  */
- static inline void __fsnotify_d_instantiate(struct dentry *dentry, struct inode *inode)
- {
--	if (!inode)
-+	if (!inode || !dentry->d_parent)
- 		return;
- 
- 	spin_lock(&dentry->d_lock);
-Index: linux-2.6/net/socket.c
-===================================================================
---- linux-2.6.orig/net/socket.c
-+++ linux-2.6/net/socket.c
-@@ -367,7 +367,7 @@ static int sock_attach_fd(struct socket
- 	struct dentry *dentry;
- 	struct qstr name = { .name = "" };
- 
--	dentry = d_alloc(sock_mnt->mnt_sb->s_root, &name);
-+	dentry = d_alloc(NULL, &name);
- 	if (unlikely(!dentry))
- 		return -ENOMEM;
- 
-Index: linux-2.6/fs/anon_inodes.c
-===================================================================
---- linux-2.6.orig/fs/anon_inodes.c
-+++ linux-2.6/fs/anon_inodes.c
-@@ -95,7 +95,7 @@ int anon_inode_getfd(const char *name, c
- 	this.name = name;
- 	this.len = strlen(name);
- 	this.hash = 0;
--	dentry = d_alloc(anon_inode_mnt->mnt_sb->s_root, &this);
-+	dentry = d_alloc(NULL, &this);
- 	if (!dentry)
- 		goto err_put_unused_fd;
- 
-Index: linux-2.6/fs/pipe.c
-===================================================================
---- linux-2.6.orig/fs/pipe.c
-+++ linux-2.6/fs/pipe.c
-@@ -952,7 +952,7 @@ struct file *create_write_pipe(int flags
- 		goto err;
- 
- 	err = -ENOMEM;
--	dentry = d_alloc(pipe_mnt->mnt_sb->s_root, &name);
-+	dentry = d_alloc(NULL, &name);
- 	if (!dentry)
- 		goto err_inode;
- 
-
+-- 
+Jens Axboe
 
