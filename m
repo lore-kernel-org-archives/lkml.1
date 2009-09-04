@@ -1,49 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757095AbZIDQlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZIDQtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757095AbZIDQlg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757057AbZIDQlf
+	id S1757040AbZIDQtn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbZIDQtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:41:35 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:45914 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755506AbZIDQle (ORCPT
+	Fri, 4 Sep 2009 12:49:41 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:34013 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751948AbZIDQtk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:41:34 -0400
-Date: Fri, 4 Sep 2009 17:41:27 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alessandro Zummo <alessandro.zummo@towertech.it>
-Cc: rtc-linux@googlegroups.com, linux-kernel@vger.kernel.org
-Subject: Re: [rtc-linux] Re: [PATCH 2/2] rtc: Add boot_timesource sysfs
-	attribute
-Message-ID: <20090904164127.GB25419@srcf.ucam.org>
-References: <1252081568-6000-1-git-send-email-mjg@redhat.com> <1252081568-6000-2-git-send-email-mjg@redhat.com> <20090904182528.591dbd29@i1501.lan.towertech.it> <20090904163029.GA25239@srcf.ucam.org> <20090904183828.4376236e@i1501.lan.towertech.it>
+	Fri, 4 Sep 2009 12:49:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=NFQPHHB7W/rksCUj0hFaxFlh3jK3BlCHk7ZRanIPpR9f5sHo5H/8GpbAXxjvAHvSu7
+         aWzQz+SlbrmUugeKAYAIeL1UK7lodl2izI6YmjHrDKPazuTzCTvtYvYMVrCQzGqSwRF6
+         g9hvsA5O/CM7U3u4O414CIBQg2N4RfMtGHn/A=
+Message-ID: <4AA14523.7070405@gmail.com>
+Date: Fri, 04 Sep 2009 12:49:39 -0400
+From: Glenn Elliott <arakageeta.lkml@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904183828.4376236e@i1501.lan.towertech.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+To: linux-kernel@vger.kernel.org
+CC: tglx@linutronix.de, DL-MPTFusionLinux@lsi.com,
+       Bjoern Brandenburg <bbb@cs.unc.edu>
+Subject: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04, 2009 at 06:38:28PM +0200, Alessandro Zummo wrote:
-> On Fri, 4 Sep 2009 17:30:29 +0100
-> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-> 
-> > We'd prefer to avoid always doing --hctosys because it's a 
-> > noticable performance hit on boot if the work's already been done by the 
-> > kernel.
-> 
->  it shouldn't. maybe your hwclock is waiting for the tick
->  or something similar. I'd check it.
+Hello,
 
-I'm just going by what our userspace people are saying. They'd prefer 
-not to have to run --hctosys if the time's already been set - 
-https://bugzilla.redhat.com/show_bug.cgi?id=489494 has the discussion.
+I get an oops when I boot 2.6.31-rc8 with the Realtime Preempt patch, 
+patch-2.6.31-rc8-rt9, on my IBM QS22 (Cell Blade-- PPC-based).  It 
+appears to be happening somewhere in the SAS disk related driver, mptsas.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+The unpatched 2.6.31-rc8 boots without issue.  I am using the 
+cell_defconfig configuration with the same minor additions (IPv6, 
+auditing, etc.) for both patched and unpatched kernels.  The RT-patched 
+configuration also includes the necessary RT-related settings.
+
+Below is the captured oops, with a little extra logging, from the serial 
+console (it didn't make it to /var/log/messages).  I would be happy to 
+provide any additional information.
+
+Thank you,
+Glenn Elliott
+
+mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
+sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
+mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
+mptbase: ioc0: Initiating recovery
+mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
+mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
+sd 0:0:0:0: CDB: cdb[0]=0x0: 00 00 00 00 00 00
+mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
+mptbase: ioc0: Initiating recovery
+mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
+mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
+mptscsih: ioc0: attempting target reset! (sc=c0000007fdd02080)
+sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
+mptscsih: ioc0: WARNING - TaskMgmt type=3: ioc_state: DOORBELL_ACTIVE 
+(0x2c000000)!
+mptscsih: ioc0: target reset: FAILED (sc=c0000007fdd02080)
+mptscsih: ioc0: attempting bus reset! (sc=c0000007fdd02080)
+sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
+mptscsih: ioc0: WARNING - TaskMgmt type=4: ioc_state: DOORBELL_ACTIVE 
+(0x2c000000)!
+mptscsih: ioc0: bus reset: FAILED (sc=c0000007fdd02080)
+mptscsih: ioc0: attempting host reset! (sc=c0000007fdd02080)
+mptscsih: ioc0: host reset: SUCCESS (sc=c0000007fdd02080)
+------------[ cut here ]------------
+Badness at kernel/workqueue.c:372
+NIP: c000000000086a04 LR: c000000000087cac CTR: c00000000030c5b8
+REGS: c0000007fde230f0 TRAP: 0700   Not tainted  (2.6.31-rc8-rt9)
+MSR: 9000000000029032 <EE,ME,CE,IR,DR>  CR: 44022024  XER: 20000000
+TASK = c0000007fa3e5c50[2606] 'mpt/0' THREAD: c0000007fde20000 CPU: 2
+GPR00: 0000000000000001 c0000007fde23370 c0000000006992b0 c0000003fdde0c80
+GPR04: 0000000000000000 0000000000000000 000000000000000a c0000003fe0ce114
+GPR08: 0000000000000000 c0000007fa3e5c50 c00000000044ebb0 0000000000000000
+GPR12: 0000000000000000 c000000000722a00 0000000000000000 0000000000000004
+GPR16: c0000003fe0ce998 c0000003fe0ce968 0000000000000000 0000000000000000
+GPR20: 0000000000000001 0000000000000000 c0000003fe0ce108 0000000000000001
+GPR24: 0000000000000000 0000000000000001 c0000003fe0ce100 c0000003fe0ce720
+GPR28: c0000003fddf4000 c0000003fdde0c80 c000000000640080 0000000000000000
+NIP [c000000000086a04] .flush_cpu_workqueue+0x2c/0xa4
+LR [c000000000087cac] .flush_workqueue+0x68/0xb8
+Call Trace:
+[c0000007fde23370] [0000000000200200] 0x200200 (unreliable)
+[c0000007fde23470] [c000000000087cac] .flush_workqueue+0x68/0xb8
+[c0000007fde23500] [c00000000030c320] 
+.mptsas_cleanup_fw_event_q+0x128/0x154
+[c0000007fde235b0] [c00000000030c650] .mptsas_ioc_reset+0x98/0xe0
+[c0000007fde23640] [c0000000002f9610] .mpt_signal_reset+0x94/0xb4
+[c0000007fde236c0] [c0000000003018e4] .mpt_do_ioc_recovery+0x15ec/0x16e8
+[c0000007fde23890] [c000000000301ad8] .mpt_HardResetHandler+0xf8/0x19c
+[c0000007fde23930] [c00000000030215c] .mpt_config+0x3d4/0x470
+[c0000007fde23a30] [c0000000002ffd28] .mpt_findImVolumes+0xd0/0x6a0
+[c0000007fde23c00] [c00000000030dacc] 
+.mptsas_firmware_event_work+0x74/0x109c
+[c0000007fde23d90] [c0000000000876e8] .worker_thread+0x20c/0x2e0
+[c0000007fde23ea0] [c00000000008cb88] .kthread+0xa8/0xb4
+[c0000007fde23f90] [c000000000025b68] .kernel_thread+0x54/0x70
+Instruction dump:
+4bfffe34 fba1ffe8 7c0802a6 f8010010 7c7d1b78 fbe1fff8 f821ff01 e80d01b0
+e92300a0 7c004a78 7c000074 7800d182 <0b000000> 48395349 60000000 38bd0038
