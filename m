@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932872AbZIDCeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932807AbZIDCcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932872AbZIDCeU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 Sep 2009 22:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932788AbZIDCeP
+	id S932807AbZIDCcg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 Sep 2009 22:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932798AbZIDCcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 Sep 2009 22:34:15 -0400
-Received: from mga11.intel.com ([192.55.52.93]:52747 "EHLO mga11.intel.com"
+	Thu, 3 Sep 2009 22:32:32 -0400
+Received: from mga03.intel.com ([143.182.124.21]:31449 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932778AbZIDCcY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 Sep 2009 22:32:24 -0400
+	id S932758AbZIDCca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 Sep 2009 22:32:30 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,329,1249282800"; 
-   d="scan'208";a="723768821"
-Subject: [PATCH 23/29] dw_dmac: implement a private tx_list
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="183965645"
+Subject: [PATCH 24/29] fsldma: implement a private tx_list
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, netdev@vger.kernel.org,
-       Haavard Skinnemoen <haavard.skinnemoen@atmel.com>,
-       maciej.sosnowski@intel.com
-Date: Thu, 03 Sep 2009 19:32:27 -0700
-Message-ID: <20090904023227.32667.50915.stgit@dwillia2-linux.ch.intel.com>
+       Li Yang <leoli@freescale.com>, maciej.sosnowski@intel.com
+Date: Thu, 03 Sep 2009 19:32:32 -0700
+Message-ID: <20090904023232.32667.58041.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -30,115 +29,65 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drop dw_dmac's use of tx_list from struct dma_async_tx_descriptor in
+Drop fsldma's use of tx_list from struct dma_async_tx_descriptor in
 preparation for removal of this field.
 
-Cc: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+Cc: Li Yang <leoli@freescale.com>
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/dw_dmac.c      |   19 ++++++++++---------
- drivers/dma/dw_dmac_regs.h |    1 +
- 2 files changed, 11 insertions(+), 9 deletions(-)
+ drivers/dma/fsldma.c |    7 ++++---
+ drivers/dma/fsldma.h |    1 +
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/dma/dw_dmac.c b/drivers/dma/dw_dmac.c
-index 98c9a84..514ef7d 100644
---- a/drivers/dma/dw_dmac.c
-+++ b/drivers/dma/dw_dmac.c
-@@ -116,7 +116,7 @@ static void dwc_sync_desc_for_cpu(struct dw_dma_chan *dwc, struct dw_desc *desc)
- {
- 	struct dw_desc	*child;
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index f18d1bd..fb44eaa 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -337,7 +337,7 @@ static dma_cookie_t fsl_dma_tx_submit(struct dma_async_tx_descriptor *tx)
  
--	list_for_each_entry(child, &desc->txd.tx_list, desc_node)
-+	list_for_each_entry(child, &desc->tx_list, desc_node)
- 		dma_sync_single_for_cpu(chan2parent(&dwc->chan),
- 				child->txd.phys, sizeof(child->lli),
- 				DMA_TO_DEVICE);
-@@ -137,11 +137,11 @@ static void dwc_desc_put(struct dw_dma_chan *dwc, struct dw_desc *desc)
- 		dwc_sync_desc_for_cpu(dwc, desc);
+ 	fsl_chan->common.cookie = cookie;
+ 	append_ld_queue(fsl_chan, tx_to_fsl_desc(tx));
+-	list_splice_init(&tx->tx_list, fsl_chan->ld_queue.prev);
++	list_splice_init(&desc->tx_list, fsl_chan->ld_queue.prev);
  
- 		spin_lock_bh(&dwc->lock);
--		list_for_each_entry(child, &desc->txd.tx_list, desc_node)
-+		list_for_each_entry(child, &desc->tx_list, desc_node)
- 			dev_vdbg(chan2dev(&dwc->chan),
- 					"moving child desc %p to freelist\n",
- 					child);
--		list_splice_init(&desc->txd.tx_list, &dwc->free_list);
-+		list_splice_init(&desc->tx_list, &dwc->free_list);
- 		dev_vdbg(chan2dev(&dwc->chan), "moving desc %p to freelist\n", desc);
- 		list_add(&desc->desc_node, &dwc->free_list);
- 		spin_unlock_bh(&dwc->lock);
-@@ -209,7 +209,7 @@ dwc_descriptor_complete(struct dw_dma_chan *dwc, struct dw_desc *desc)
- 	param = txd->callback_param;
+ 	spin_unlock_irqrestore(&fsl_chan->desc_lock, flags);
  
- 	dwc_sync_desc_for_cpu(dwc, desc);
--	list_splice_init(&txd->tx_list, &dwc->free_list);
-+	list_splice_init(&desc->tx_list, &dwc->free_list);
- 	list_move(&desc->desc_node, &dwc->free_list);
+@@ -359,6 +359,7 @@ static struct fsl_desc_sw *fsl_dma_alloc_descriptor(
+ 	desc_sw = dma_pool_alloc(fsl_chan->desc_pool, GFP_ATOMIC, &pdesc);
+ 	if (desc_sw) {
+ 		memset(desc_sw, 0, sizeof(struct fsl_desc_sw));
++		INIT_LIST_HEAD(&desc_sw->tx_list);
+ 		dma_async_tx_descriptor_init(&desc_sw->async_tx,
+ 						&fsl_chan->common);
+ 		desc_sw->async_tx.tx_submit = fsl_dma_tx_submit;
+@@ -448,7 +449,7 @@ fsl_dma_prep_interrupt(struct dma_chan *chan, unsigned long flags)
+ 	new->async_tx.flags = flags;
  
- 	/*
-@@ -289,7 +289,7 @@ static void dwc_scan_descriptors(struct dw_dma *dw, struct dw_dma_chan *dwc)
- 			/* This one is currently in progress */
- 			return;
+ 	/* Insert the link descriptor to the LD ring */
+-	list_add_tail(&new->node, &new->async_tx.tx_list);
++	list_add_tail(&new->node, &new->tx_list);
  
--		list_for_each_entry(child, &desc->txd.tx_list, desc_node)
-+		list_for_each_entry(child, &desc->tx_list, desc_node)
- 			if (child->lli.llp == llp)
- 				/* Currently in progress */
- 				return;
-@@ -356,7 +356,7 @@ static void dwc_handle_error(struct dw_dma *dw, struct dw_dma_chan *dwc)
- 	dev_printk(KERN_CRIT, chan2dev(&dwc->chan),
- 			"  cookie: %d\n", bad_desc->txd.cookie);
- 	dwc_dump_lli(dwc, &bad_desc->lli);
--	list_for_each_entry(child, &bad_desc->txd.tx_list, desc_node)
-+	list_for_each_entry(child, &bad_desc->tx_list, desc_node)
- 		dwc_dump_lli(dwc, &child->lli);
+ 	/* Set End-of-link to the last link descriptor of new list*/
+ 	set_ld_eol(fsl_chan, new);
+@@ -506,7 +507,7 @@ static struct dma_async_tx_descriptor *fsl_dma_prep_memcpy(
+ 		dma_dest += copy;
  
- 	/* Pretend the descriptor completed successfully */
-@@ -608,7 +608,7 @@ dwc_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
- 					prev->txd.phys, sizeof(prev->lli),
- 					DMA_TO_DEVICE);
- 			list_add_tail(&desc->desc_node,
--					&first->txd.tx_list);
-+					&first->tx_list);
- 		}
- 		prev = desc;
- 	}
-@@ -700,7 +700,7 @@ dwc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 						sizeof(prev->lli),
- 						DMA_TO_DEVICE);
- 				list_add_tail(&desc->desc_node,
--						&first->txd.tx_list);
-+						&first->tx_list);
- 			}
- 			prev = desc;
- 			total_len += len;
-@@ -746,7 +746,7 @@ dwc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 						sizeof(prev->lli),
- 						DMA_TO_DEVICE);
- 				list_add_tail(&desc->desc_node,
--						&first->txd.tx_list);
-+						&first->tx_list);
- 			}
- 			prev = desc;
- 			total_len += len;
-@@ -902,6 +902,7 @@ static int dwc_alloc_chan_resources(struct dma_chan *chan)
- 			break;
- 		}
+ 		/* Insert the link descriptor to the LD ring */
+-		list_add_tail(&new->node, &first->async_tx.tx_list);
++		list_add_tail(&new->node, &first->tx_list);
+ 	} while (len);
  
-+		INIT_LIST_HEAD(&desc->tx_list);
- 		dma_async_tx_descriptor_init(&desc->txd, chan);
- 		desc->txd.tx_submit = dwc_tx_submit;
- 		desc->txd.flags = DMA_CTRL_ACK;
-diff --git a/drivers/dma/dw_dmac_regs.h b/drivers/dma/dw_dmac_regs.h
-index 13a5807..d9a939f 100644
---- a/drivers/dma/dw_dmac_regs.h
-+++ b/drivers/dma/dw_dmac_regs.h
-@@ -217,6 +217,7 @@ struct dw_desc {
- 
- 	/* THEN values for driver housekeeping */
- 	struct list_head		desc_node;
-+	struct list_head		tx_list;
- 	struct dma_async_tx_descriptor	txd;
- 	size_t				len;
- };
+ 	new->async_tx.flags = flags; /* client is in control of this ack */
+diff --git a/drivers/dma/fsldma.h b/drivers/dma/fsldma.h
+index 4f21a51..02816e8 100644
+--- a/drivers/dma/fsldma.h
++++ b/drivers/dma/fsldma.h
+@@ -89,6 +89,7 @@ struct fsl_dma_ld_hw {
+ struct fsl_desc_sw {
+ 	struct fsl_dma_ld_hw hw;
+ 	struct list_head node;
++	struct list_head tx_list;
+ 	struct dma_async_tx_descriptor async_tx;
+ 	struct list_head *ld;
+ 	void *priv;
 
