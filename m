@@ -1,628 +1,1071 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933167AbZIDHCN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933054AbZIDHBJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933167AbZIDHCN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 03:02:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933120AbZIDHBf
+	id S933054AbZIDHBJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 03:01:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932841AbZIDHBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 03:01:35 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56556 "EHLO mx1.suse.de"
+	Fri, 4 Sep 2009 03:01:07 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56557 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756699AbZIDG6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 02:58:40 -0400
-Message-Id: <20090904065537.254637575@nick.local0.net>
+	id S932591AbZIDG6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 02:58:41 -0400
+Message-Id: <20090904065537.442070253@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Fri, 04 Sep 2009 16:52:02 +1000
+Date: Fri, 04 Sep 2009 16:52:03 +1000
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [patch 21/33] fs: icache lock i_state
+Subject: [patch 22/33] fs: icache lock i_count
 References: <20090904065142.114706411@nick.local0.net>
-Content-Disposition: inline; filename=fs-inode_lock-scale-3.patch
+Content-Disposition: inline; filename=fs-inode_lock-scale-4.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Protect i_state updates with i_lock
+Protect inode->i_count with i_lock, rather than having it atomic.
+Next step should also be to move things together (eg. the refcount increment
+into d_instantiate, which will remove a lock/unlock cycle on i_lock).
 ---
- fs/drop_caches.c     |    9 +++--
- fs/fs-writeback.c    |   45 ++++++++++++++++++++--------
- fs/hugetlbfs/inode.c |    6 +++
- fs/inode.c           |   81 ++++++++++++++++++++++++++++++++++++++++++++-------
- fs/nilfs2/gcdat.c    |    1 
- fs/quota/dquot.c     |   14 ++++++--
- 6 files changed, 127 insertions(+), 29 deletions(-)
+ arch/powerpc/platforms/cell/spufs/file.c |    2 -
+ fs/affs/inode.c                          |    4 ++-
+ fs/afs/dir.c                             |    4 ++-
+ fs/anon_inodes.c                         |    4 ++-
+ fs/bfs/dir.c                             |    4 ++-
+ fs/block_dev.c                           |   15 ++++++++++--
+ fs/btrfs/inode.c                         |    4 ++-
+ fs/coda/dir.c                            |    4 ++-
+ fs/exofs/inode.c                         |   12 +++++++---
+ fs/exofs/namei.c                         |    4 ++-
+ fs/ext2/namei.c                          |    4 ++-
+ fs/ext3/ialloc.c                         |    4 +--
+ fs/ext3/namei.c                          |    4 ++-
+ fs/ext4/ialloc.c                         |    4 +--
+ fs/ext4/namei.c                          |    4 ++-
+ fs/fs-writeback.c                        |    4 +--
+ fs/gfs2/ops_inode.c                      |    4 ++-
+ fs/hfsplus/dir.c                         |    4 ++-
+ fs/hpfs/inode.c                          |    2 -
+ fs/inode.c                               |   37 ++++++++++++++++++++-----------
+ fs/jffs2/dir.c                           |    8 +++++-
+ fs/jfs/jfs_txnmgr.c                      |    4 ++-
+ fs/jfs/namei.c                           |    4 ++-
+ fs/libfs.c                               |    4 ++-
+ fs/locks.c                               |    3 --
+ fs/minix/namei.c                         |    4 ++-
+ fs/namei.c                               |    7 ++++-
+ fs/nfs/dir.c                             |    4 ++-
+ fs/nfs/getroot.c                         |    4 ++-
+ fs/nfs/inode.c                           |    4 +--
+ fs/nilfs2/mdt.c                          |    2 -
+ fs/nilfs2/namei.c                        |    4 ++-
+ fs/notify/inode_mark.c                   |   22 +++++++++++-------
+ fs/notify/inotify/inotify.c              |   28 +++++++++++++----------
+ fs/ntfs/super.c                          |    4 ++-
+ fs/ocfs2/namei.c                         |    4 ++-
+ fs/reiserfs/file.c                       |    4 +--
+ fs/reiserfs/namei.c                      |    4 ++-
+ fs/reiserfs/stree.c                      |    2 -
+ fs/sysv/namei.c                          |    4 ++-
+ fs/ubifs/dir.c                           |    4 ++-
+ fs/ubifs/super.c                         |    2 -
+ fs/udf/namei.c                           |    4 ++-
+ fs/ufs/namei.c                           |    4 ++-
+ fs/xfs/linux-2.6/xfs_iops.c              |    4 ++-
+ fs/xfs/xfs_iget.c                        |    2 -
+ fs/xfs/xfs_inode.h                       |    6 +++--
+ include/linux/fs.h                       |    2 -
+ ipc/mqueue.c                             |    7 ++++-
+ kernel/futex.c                           |    4 ++-
+ mm/shmem.c                               |    4 ++-
+ 51 files changed, 200 insertions(+), 95 deletions(-)
 
-Index: linux-2.6/fs/drop_caches.c
+Index: linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
 ===================================================================
---- linux-2.6.orig/fs/drop_caches.c
-+++ linux-2.6/fs/drop_caches.c
-@@ -19,11 +19,14 @@ static void drop_pagecache_sb(struct sup
- 	spin_lock(&inode_lock);
- 	spin_lock(&sb_inode_list_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
--			continue;
--		if (inode->i_mapping->nrpages == 0)
+--- linux-2.6.orig/arch/powerpc/platforms/cell/spufs/file.c
++++ linux-2.6/arch/powerpc/platforms/cell/spufs/file.c
+@@ -1548,7 +1548,7 @@ static int spufs_mfc_open(struct inode *
+ 	if (ctx->owner != current->mm)
+ 		return -EINVAL;
+ 
+-	if (atomic_read(&inode->i_count) != 1)
++	if (inode->i_count != 1)
+ 		return -EBUSY;
+ 
+ 	mutex_lock(&ctx->mapping_lock);
+Index: linux-2.6/fs/affs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/affs/inode.c
++++ linux-2.6/fs/affs/inode.c
+@@ -379,7 +379,9 @@ affs_add_entry(struct inode *dir, struct
+ 		affs_adjust_checksum(inode_bh, block - be32_to_cpu(chain));
+ 		mark_buffer_dirty_inode(inode_bh, inode);
+ 		inode->i_nlink = 2;
+-		atomic_inc(&inode->i_count);
 +		spin_lock(&inode->i_lock);
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW)
-+				|| inode->i_mapping->nrpages == 0) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
-+		}
- 		__iget(inode);
++		inode->i_count++;
 +		spin_unlock(&inode->i_lock);
- 		spin_unlock(&sb_inode_list_lock);
- 		spin_unlock(&inode_lock);
- 		invalidate_mapping_pages(inode->i_mapping, 0, -1);
+ 	}
+ 	affs_fix_checksum(sb, bh);
+ 	mark_buffer_dirty_inode(bh, inode);
+Index: linux-2.6/fs/afs/dir.c
+===================================================================
+--- linux-2.6.orig/fs/afs/dir.c
++++ linux-2.6/fs/afs/dir.c
+@@ -1007,7 +1007,9 @@ static int afs_link(struct dentry *from,
+ 	if (ret < 0)
+ 		goto link_error;
+ 
+-	atomic_inc(&vnode->vfs_inode.i_count);
++	spin_lock(&vnode->vfs_inode.i_lock);
++	vnode->vfs_inode.i_count++;
++	spin_unlock(&vnode->vfs_inode.i_lock);
+ 	d_instantiate(dentry, &vnode->vfs_inode);
+ 	key_put(key);
+ 	_leave(" = 0");
+Index: linux-2.6/fs/anon_inodes.c
+===================================================================
+--- linux-2.6.orig/fs/anon_inodes.c
++++ linux-2.6/fs/anon_inodes.c
+@@ -104,7 +104,9 @@ int anon_inode_getfd(const char *name, c
+ 	 * so we can avoid doing an igrab() and we can use an open-coded
+ 	 * atomic_inc().
+ 	 */
+-	atomic_inc(&anon_inode_inode->i_count);
++	spin_lock(&anon_inode_inode->i_lock);
++	anon_inode_inode->i_count++;
++	spin_unlock(&anon_inode_inode->i_lock);
+ 
+ 	d_instantiate(dentry, anon_inode_inode);
+ 
+Index: linux-2.6/fs/block_dev.c
+===================================================================
+--- linux-2.6.orig/fs/block_dev.c
++++ linux-2.6/fs/block_dev.c
+@@ -570,7 +570,12 @@ EXPORT_SYMBOL(bdget);
+  */
+ struct block_device *bdgrab(struct block_device *bdev)
+ {
+-	atomic_inc(&bdev->bd_inode->i_count);
++	struct inode *inode = bdev->bd_inode;
++
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
++
+ 	return bdev;
+ }
+ 
+@@ -600,7 +605,9 @@ static struct block_device *bd_acquire(s
+ 	spin_lock(&bdev_lock);
+ 	bdev = inode->i_bdev;
+ 	if (bdev) {
+-		atomic_inc(&bdev->bd_inode->i_count);
++		spin_lock(&inode->i_lock);
++		bdev->bd_inode->i_count++;
++		spin_unlock(&inode->i_lock);
+ 		spin_unlock(&bdev_lock);
+ 		return bdev;
+ 	}
+@@ -616,7 +623,9 @@ static struct block_device *bd_acquire(s
+ 			 * So, we can access it via ->i_mapping always
+ 			 * without igrab().
+ 			 */
+-			atomic_inc(&bdev->bd_inode->i_count);
++			spin_lock(&inode->i_lock);
++			bdev->bd_inode->i_count++;
++			spin_unlock(&inode->i_lock);
+ 			inode->i_bdev = bdev;
+ 			inode->i_mapping = bdev->bd_inode->i_mapping;
+ 			list_add(&inode->i_devices, &bdev->bd_inodes);
+Index: linux-2.6/fs/ext2/namei.c
+===================================================================
+--- linux-2.6.orig/fs/ext2/namei.c
++++ linux-2.6/fs/ext2/namei.c
+@@ -196,7 +196,9 @@ static int ext2_link (struct dentry * ol
+ 
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	inode_inc_link_count(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	err = ext2_add_link(dentry, inode);
+ 	if (!err) {
+Index: linux-2.6/fs/ext3/ialloc.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/ialloc.c
++++ linux-2.6/fs/ext3/ialloc.c
+@@ -100,9 +100,9 @@ void ext3_free_inode (handle_t *handle,
+ 	struct ext3_sb_info *sbi;
+ 	int fatal = 0, err;
+ 
+-	if (atomic_read(&inode->i_count) > 1) {
++	if (inode->i_count > 1) {
+ 		printk ("ext3_free_inode: inode has count=%d\n",
+-					atomic_read(&inode->i_count));
++					inode->i_count);
+ 		return;
+ 	}
+ 	if (inode->i_nlink) {
+Index: linux-2.6/fs/ext3/namei.c
+===================================================================
+--- linux-2.6.orig/fs/ext3/namei.c
++++ linux-2.6/fs/ext3/namei.c
+@@ -2244,7 +2244,9 @@ retry:
+ 
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	inc_nlink(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	err = ext3_add_entry(handle, dentry, inode);
+ 	if (!err) {
 Index: linux-2.6/fs/fs-writeback.c
 ===================================================================
 --- linux-2.6.orig/fs/fs-writeback.c
 +++ linux-2.6/fs/fs-writeback.c
-@@ -140,6 +140,7 @@ void __mark_inode_dirty(struct inode *in
- 		block_dump___mark_inode_dirty(inode);
- 
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	if ((inode->i_state & flags) != flags) {
- 		const int was_dirty = inode->i_state & I_DIRTY;
- 
-@@ -174,6 +175,7 @@ void __mark_inode_dirty(struct inode *in
- 		}
- 	}
- out:
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- }
- 
-@@ -287,9 +289,11 @@ static void inode_wait_for_writeback(str
- 
- 	wqh = bit_waitqueue(&inode->i_state, __I_SYNC);
- 	do {
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		__wait_on_bit(wqh, &wq, inode_wait, TASK_UNINTERRUPTIBLE);
- 		spin_lock(&inode_lock);
-+		spin_lock(&inode->i_lock);
- 	} while (inode->i_state & I_SYNC);
- }
- 
-@@ -346,6 +350,7 @@ writeback_single_inode(struct inode *ino
- 	inode->i_state |= I_SYNC;
- 	inode->i_state &= ~I_DIRTY;
- 
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 
- 	ret = do_writepages(mapping, wbc);
-@@ -364,6 +369,7 @@ writeback_single_inode(struct inode *ino
- 	}
- 
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	inode->i_state &= ~I_SYNC;
- 	if (!(inode->i_state & (I_FREEING | I_CLEAR))) {
- 		if (!(inode->i_state & I_DIRTY) &&
-@@ -492,11 +498,6 @@ void generic_sync_sb_inodes(struct super
- 			break;
- 		}
- 
--		if (inode->i_state & (I_NEW | I_WILL_FREE)) {
--			requeue_io(inode);
--			continue;
--		}
--
- 		if (wbc->nonblocking && bdi_write_congested(bdi)) {
- 			wbc->encountered_congestion = 1;
- 			if (!sb_is_blkdev_sb(sb))
-@@ -512,16 +513,27 @@ void generic_sync_sb_inodes(struct super
- 			continue;		/* blockdev has wrong queue */
- 		}
- 
-+		spin_lock(&inode->i_lock);
-+		if (inode->i_state & (I_NEW | I_WILL_FREE)) {
-+			spin_unlock(&inode->i_lock);
-+			requeue_io(inode);
-+			continue;
-+		}
-+
- 		/*
- 		 * Was this inode dirtied after sync_sb_inodes was called?
- 		 * This keeps sync from extra jobs and livelock.
- 		 */
--		if (inode_dirtied_after(inode, start))
-+		if (inode_dirtied_after(inode, start)) {
-+			spin_unlock(&inode->i_lock);
- 			break;
-+		}
- 
- 		/* Is another pdflush already flushing this queue? */
--		if (current_is_pdflush() && !writeback_acquire(bdi))
-+		if (current_is_pdflush() && !writeback_acquire(bdi)) {
-+			spin_unlock(&inode->i_lock);
- 			break;
-+		}
- 
- 		BUG_ON(inode->i_state & (I_FREEING | I_CLEAR));
- 		__iget(inode);
-@@ -536,6 +548,7 @@ void generic_sync_sb_inodes(struct super
- 			 */
- 			redirty_tail(inode);
- 		}
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		iput(inode);
- 		cond_resched();
-@@ -560,15 +573,17 @@ void generic_sync_sb_inodes(struct super
- 		 */
- 		spin_lock(&sb_inode_list_lock);
- 		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--			struct address_space *mapping;
-+			struct address_space *mapping = inode->i_mapping;
- 
-+			spin_lock(&inode->i_lock);
- 			if (inode->i_state &
--					(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
--				continue;
--			mapping = inode->i_mapping;
--			if (mapping->nrpages == 0)
-+					(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW)
-+					|| mapping->nrpages == 0) {
-+				spin_unlock(&inode->i_lock);
- 				continue;
-+			}
- 			__iget(inode);
-+			spin_unlock(&inode->i_lock);
- 			spin_unlock(&sb_inode_list_lock);
- 			spin_unlock(&inode_lock);
- 			/*
-@@ -712,7 +727,9 @@ int write_inode_now(struct inode *inode,
- 
- 	might_sleep();
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	ret = writeback_single_inode(inode, &wbc);
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	if (sync)
- 		inode_sync_wait(inode);
-@@ -736,7 +753,9 @@ int sync_inode(struct inode *inode, stru
+@@ -318,7 +318,7 @@ writeback_single_inode(struct inode *ino
+ 	unsigned dirty;
  	int ret;
  
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	ret = writeback_single_inode(inode, wbc);
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	return ret;
- }
-@@ -779,9 +798,11 @@ int generic_osync_inode(struct inode *in
- 	}
- 
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	if ((inode->i_state & I_DIRTY) &&
- 	    ((what & OSYNC_INODE) || (inode->i_state & I_DIRTY_DATASYNC)))
- 		need_write_inode_now = 1;
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 
- 	if (need_write_inode_now) {
+-	if (!atomic_read(&inode->i_count))
++	if (!inode->i_count)
+ 		WARN_ON(!(inode->i_state & (I_WILL_FREE|I_FREEING)));
+ 	else
+ 		WARN_ON(inode->i_state & I_WILL_FREE);
+@@ -423,7 +423,7 @@ writeback_single_inode(struct inode *ino
+ 			 * the pages.
+ 			 */
+ 			redirty_tail(inode);
+-		} else if (atomic_read(&inode->i_count)) {
++		} else if (inode->i_count) {
+ 			/*
+ 			 * The inode is clean, inuse
+ 			 */
 Index: linux-2.6/fs/inode.c
 ===================================================================
 --- linux-2.6.orig/fs/inode.c
 +++ linux-2.6/fs/inode.c
-@@ -296,6 +296,7 @@ static void init_once(void *foo)
-  */
+@@ -132,7 +132,7 @@ int inode_init_always(struct super_block
+ 	inode->i_sb = sb;
+ 	inode->i_blkbits = sb->s_blocksize_bits;
+ 	inode->i_flags = 0;
+-	atomic_set(&inode->i_count, 1);
++	inode->i_count = 1;
+ 	inode->i_op = &empty_iops;
+ 	inode->i_fop = &empty_fops;
+ 	inode->i_nlink = 1;
+@@ -297,11 +297,10 @@ static void init_once(void *foo)
  void __iget(struct inode *inode)
  {
-+	assert_spin_locked(&inode->i_lock);
- 	if (atomic_read(&inode->i_count)) {
- 		atomic_inc(&inode->i_count);
+ 	assert_spin_locked(&inode->i_lock);
+-	if (atomic_read(&inode->i_count)) {
+-		atomic_inc(&inode->i_count);
++	inode->i_count++;
++	if (inode->i_count > 1)
  		return;
-@@ -399,16 +400,21 @@ static int invalidate_list(struct list_h
- 		if (tmp == head)
- 			break;
- 		inode = list_entry(tmp, struct inode, i_sb_list);
--		if (inode->i_state & I_NEW)
-+		spin_lock(&inode->i_lock);
-+		if (inode->i_state & I_NEW) {
-+			spin_unlock(&inode->i_lock);
+-	}
+-	atomic_inc(&inode->i_count);
++
+ 	if (!(inode->i_state & (I_DIRTY|I_SYNC)))
+ 		list_move(&inode->i_list, &inode_in_use);
+ 	inodes_stat.nr_unused--;
+@@ -406,7 +405,7 @@ static int invalidate_list(struct list_h
  			continue;
-+		}
+ 		}
  		invalidate_inode_buffers(inode);
- 		if (!atomic_read(&inode->i_count)) {
+-		if (!atomic_read(&inode->i_count)) {
++		if (!inode->i_count) {
  			list_move(&inode->i_list, dispose);
  			WARN_ON(inode->i_state & I_NEW);
  			inode->i_state |= I_FREEING;
-+			spin_unlock(&inode->i_lock);
- 			count++;
- 			continue;
- 		}
-+		spin_unlock(&inode->i_lock);
- 		busy = 1;
- 	}
- 	/* only unused inodes may be cached with i_count zero */
-@@ -488,12 +494,15 @@ static void prune_icache(int nr_to_scan)
- 
+@@ -457,7 +456,7 @@ static int can_unuse(struct inode *inode
+ 		return 0;
+ 	if (inode_has_buffers(inode))
+ 		return 0;
+-	if (atomic_read(&inode->i_count))
++	if (inode->i_count)
+ 		return 0;
+ 	if (inode->i_data.nrpages)
+ 		return 0;
+@@ -495,7 +494,7 @@ static void prune_icache(int nr_to_scan)
  		inode = list_entry(inode_unused.prev, struct inode, i_list);
  
-+		spin_lock(&inode->i_lock);
- 		if (inode->i_state || atomic_read(&inode->i_count)) {
+ 		spin_lock(&inode->i_lock);
+-		if (inode->i_state || atomic_read(&inode->i_count)) {
++		if (inode->i_state || inode->i_count) {
  			list_move(&inode->i_list, &inode_unused);
-+			spin_unlock(&inode->i_lock);
+ 			spin_unlock(&inode->i_lock);
  			continue;
- 		}
- 		if (inode_has_buffers(inode) || inode->i_data.nrpages) {
- 			__iget(inode);
-+			spin_unlock(&inode->i_lock);
- 			spin_unlock(&inode_lock);
- 			if (remove_inode_buffers(inode))
- 				reap += invalidate_mapping_pages(&inode->i_data,
-@@ -504,12 +513,16 @@ static void prune_icache(int nr_to_scan)
- 			if (inode != list_entry(inode_unused.next,
- 						struct inode, i_list))
- 				continue;	/* wrong inode or list_empty */
--			if (!can_unuse(inode))
-+			spin_lock(&inode->i_lock);
-+			if (!can_unuse(inode)) {
-+				spin_unlock(&inode->i_lock);
- 				continue;
-+			}
- 		}
- 		list_move(&inode->i_list, &freeable);
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state |= I_FREEING;
-+		spin_unlock(&inode->i_lock);
- 		nr_pruned++;
- 	}
- 	inodes_stat.nr_unused -= nr_pruned;
-@@ -572,8 +585,14 @@ repeat:
- 	hlist_for_each_entry(inode, node, head, i_hash) {
- 		if (inode->i_sb != sb)
- 			continue;
--		if (!test(inode, data))
-+		if (!spin_trylock(&inode->i_lock)) {
-+			spin_unlock(&inode_hash_lock);
-+			goto repeat;
-+		}
-+		if (!test(inode, data)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
-+		}
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
- 			spin_unlock(&inode_hash_lock);
- 			__wait_on_freeing_inode(inode);
-@@ -602,6 +621,10 @@ repeat:
- 			continue;
- 		if (inode->i_sb != sb)
- 			continue;
-+		if (!spin_trylock(&inode->i_lock)) {
-+			spin_unlock(&inode_hash_lock);
-+			goto repeat;
-+		}
- 		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)) {
- 			spin_unlock(&inode_hash_lock);
- 			__wait_on_freeing_inode(inode);
-@@ -628,10 +651,10 @@ __inode_add_to_lists(struct super_block
- 			struct inode *inode)
- {
- 	inodes_stat.nr_inodes++;
--	list_add(&inode->i_list, &inode_in_use);
- 	spin_lock(&sb_inode_list_lock);
- 	list_add(&inode->i_sb_list, &sb->s_inodes);
- 	spin_unlock(&sb_inode_list_lock);
-+	list_add(&inode->i_list, &inode_in_use);
- 	if (head) {
- 		spin_lock(&inode_hash_lock);
- 		hlist_add_head(&inode->i_hash, head);
-@@ -688,9 +711,9 @@ struct inode *new_inode(struct super_blo
- 	inode = alloc_inode(sb);
- 	if (inode) {
- 		spin_lock(&inode_lock);
--		__inode_add_to_lists(sb, NULL, inode);
- 		inode->i_ino = ++last_ino;
- 		inode->i_state = 0;
-+		__inode_add_to_lists(sb, NULL, inode);
- 		spin_unlock(&inode_lock);
- 	}
- 	return inode;
-@@ -755,8 +778,8 @@ static struct inode *get_new_inode(struc
- 			if (set(inode, data))
- 				goto set_failed;
- 
--			__inode_add_to_lists(sb, head, inode);
- 			inode->i_state = I_LOCK|I_NEW;
-+			__inode_add_to_lists(sb, head, inode);
- 			spin_unlock(&inode_lock);
- 
- 			/* Return the locked inode with I_NEW set, the
-@@ -771,6 +794,7 @@ static struct inode *get_new_inode(struc
- 		 * allocated.
- 		 */
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		destroy_inode(inode);
- 		inode = old;
-@@ -779,6 +803,7 @@ static struct inode *get_new_inode(struc
- 	return inode;
- 
- set_failed:
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	destroy_inode(inode);
- 	return NULL;
-@@ -802,8 +827,8 @@ static struct inode *get_new_inode_fast(
- 		old = find_inode_fast(sb, head, ino);
- 		if (!old) {
- 			inode->i_ino = ino;
--			__inode_add_to_lists(sb, head, inode);
- 			inode->i_state = I_LOCK|I_NEW;
-+			__inode_add_to_lists(sb, head, inode);
- 			spin_unlock(&inode_lock);
- 
- 			/* Return the locked inode with I_NEW set, the
-@@ -818,6 +843,7 @@ static struct inode *get_new_inode_fast(
- 		 * allocated.
- 		 */
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		destroy_inode(inode);
- 		inode = old;
-@@ -859,6 +885,7 @@ ino_t iunique(struct super_block *sb, in
- 		res = counter++;
- 		head = inode_hashtable + hash(sb, res);
- 		inode = find_inode_fast(sb, head, res);
-+		spin_unlock(&inode->i_lock);
- 	} while (inode != NULL);
- 	spin_unlock(&inode_lock);
- 
-@@ -868,7 +895,10 @@ EXPORT_SYMBOL(iunique);
- 
- struct inode *igrab(struct inode *inode)
- {
-+	struct inode *ret = inode;
-+
- 	spin_lock(&inode_lock);
-+	spin_lock(&inode->i_lock);
- 	if (!(inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE)))
- 		__iget(inode);
- 	else
-@@ -877,9 +907,11 @@ struct inode *igrab(struct inode *inode)
- 		 * called yet, and somebody is calling igrab
- 		 * while the inode is getting freed.
- 		 */
--		inode = NULL;
-+		ret = NULL;
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
--	return inode;
-+
-+	return ret;
- }
- EXPORT_SYMBOL(igrab);
- 
-@@ -912,6 +944,7 @@ static struct inode *ifind(struct super_
- 	inode = find_inode(sb, head, test, data);
- 	if (inode) {
- 		__iget(inode);
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		if (likely(wait))
- 			wait_on_inode(inode);
-@@ -945,6 +978,7 @@ static struct inode *ifind_fast(struct s
- 	inode = find_inode_fast(sb, head, ino);
- 	if (inode) {
- 		__iget(inode);
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		wait_on_inode(inode);
- 		return inode;
-@@ -1114,6 +1148,7 @@ int insert_inode_locked(struct inode *in
- 		struct inode *old = NULL;
- 
- 		spin_lock(&inode_lock);
-+repeat:
- 		spin_lock(&inode_hash_lock);
- 		hlist_for_each_entry(old, node, head, i_hash) {
- 			if (old->i_ino != ino)
-@@ -1122,6 +1157,10 @@ int insert_inode_locked(struct inode *in
- 				continue;
- 			if (old->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
- 				continue;
-+			if (!spin_trylock(&old->i_lock)) {
-+				spin_unlock(&inode_hash_lock);
-+				goto repeat;
-+			}
- 			break;
- 		}
- 		if (likely(!node)) {
-@@ -1132,6 +1171,7 @@ int insert_inode_locked(struct inode *in
- 		}
- 		spin_unlock(&inode_hash_lock);
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		wait_on_inode(old);
- 		if (unlikely(!hlist_unhashed(&old->i_hash))) {
-@@ -1156,6 +1196,7 @@ int insert_inode_locked4(struct inode *i
- 		struct inode *old = NULL;
- 
- 		spin_lock(&inode_lock);
-+repeat:
- 		spin_lock(&inode_hash_lock);
- 		hlist_for_each_entry(old, node, head, i_hash) {
- 			if (old->i_sb != sb)
-@@ -1164,6 +1205,10 @@ int insert_inode_locked4(struct inode *i
- 				continue;
- 			if (old->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE))
- 				continue;
-+			if (!spin_trylock(&old->i_lock)) {
-+				spin_unlock(&inode_hash_lock);
-+				goto repeat;
-+			}
- 			break;
- 		}
- 		if (likely(!node)) {
-@@ -1174,6 +1219,7 @@ int insert_inode_locked4(struct inode *i
- 		}
- 		spin_unlock(&inode_hash_lock);
- 		__iget(old);
-+		spin_unlock(&old->i_lock);
- 		spin_unlock(&inode_lock);
- 		wait_on_inode(old);
- 		if (unlikely(!hlist_unhashed(&old->i_hash))) {
-@@ -1236,12 +1282,14 @@ void generic_delete_inode(struct inode *
+@@ -1282,8 +1281,6 @@ void generic_delete_inode(struct inode *
  {
  	const struct super_operations *op = inode->i_sb->s_op;
  
--	list_del_init(&inode->i_list);
- 	spin_lock(&sb_inode_list_lock);
-+	spin_lock(&inode->i_lock);
-+	list_del_init(&inode->i_list);
+-	spin_lock(&sb_inode_list_lock);
+-	spin_lock(&inode->i_lock);
+ 	list_del_init(&inode->i_list);
  	list_del_init(&inode->i_sb_list);
  	spin_unlock(&sb_inode_list_lock);
- 	WARN_ON(inode->i_state & I_NEW);
- 	inode->i_state |= I_FREEING;
-+	spin_unlock(&inode->i_lock);
- 	inodes_stat.nr_inodes--;
- 	spin_unlock(&inode_lock);
- 
-@@ -1275,19 +1323,27 @@ static void generic_forget_inode(struct
+@@ -1323,8 +1320,6 @@ static void generic_forget_inode(struct
  {
  	struct super_block *sb = inode->i_sb;
  
-+	spin_lock(&sb_inode_list_lock);
-+	spin_lock(&inode->i_lock);
+-	spin_lock(&sb_inode_list_lock);
+-	spin_lock(&inode->i_lock);
  	if (!hlist_unhashed(&inode->i_hash)) {
  		if (!(inode->i_state & (I_DIRTY|I_SYNC)))
  			list_move(&inode->i_list, &inode_unused);
- 		inodes_stat.nr_unused++;
- 		if (sb->s_flags & MS_ACTIVE) {
-+			spin_unlock(&inode->i_lock);
-+			spin_unlock(&sb_inode_list_lock);
- 			spin_unlock(&inode_lock);
- 			return;
- 		}
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state |= I_WILL_FREE;
-+		spin_unlock(&inode->i_lock);
-+		spin_unlock(&sb_inode_list_lock);
- 		spin_unlock(&inode_lock);
- 		write_inode_now(inode, 1);
- 		spin_lock(&inode_lock);
-+		spin_lock(&sb_inode_list_lock);
+@@ -1415,8 +1410,24 @@ void iput(struct inode *inode)
+ 	if (inode) {
+ 		BUG_ON(inode->i_state == I_CLEAR);
+ 
+-		if (atomic_dec_and_lock(&inode->i_count, &inode_lock))
++retry:
 +		spin_lock(&inode->i_lock);
- 		WARN_ON(inode->i_state & I_NEW);
- 		inode->i_state &= ~I_WILL_FREE;
- 		inodes_stat.nr_unused--;
-@@ -1296,12 +1352,12 @@ static void generic_forget_inode(struct
- 		spin_unlock(&inode_hash_lock);
++		if (inode->i_count == 1) {
++			if (!spin_trylock(&inode_lock)) {
++				spin_unlock(&inode->i_lock);
++				goto retry;
++			}
++			if (!spin_trylock(&sb_inode_list_lock)) {
++				spin_unlock(&inode_lock);
++				spin_unlock(&inode->i_lock);
++				goto retry;
++			}
++			inode->i_count--;
+ 			iput_final(inode);
++		} else {
++			inode->i_count--;
++			spin_unlock(&inode->i_lock);
++		}
  	}
- 	list_del_init(&inode->i_list);
--	spin_lock(&sb_inode_list_lock);
- 	list_del_init(&inode->i_sb_list);
- 	spin_unlock(&sb_inode_list_lock);
- 	WARN_ON(inode->i_state & I_NEW);
- 	inode->i_state |= I_FREEING;
- 	inodes_stat.nr_inodes--;
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	if (inode->i_data.nrpages)
- 		truncate_inode_pages(&inode->i_data, 0);
-@@ -1538,6 +1594,8 @@ EXPORT_SYMBOL(inode_wait);
-  * wake_up_inode() after removing from the hash list will DTRT.
-  *
-  * This is called with inode_lock held.
-+ *
-+ * Called with i_lock held and returns with it dropped.
-  */
- static void __wait_on_freeing_inode(struct inode *inode)
- {
-@@ -1545,6 +1603,7 @@ static void __wait_on_freeing_inode(stru
- 	DEFINE_WAIT_BIT(wait, &inode->i_state, __I_LOCK);
- 	wq = bit_waitqueue(&inode->i_state, __I_LOCK);
- 	prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
-+	spin_unlock(&inode->i_lock);
- 	spin_unlock(&inode_lock);
- 	schedule();
- 	finish_wait(wq, &wait.wait);
-Index: linux-2.6/fs/hugetlbfs/inode.c
+ }
+ EXPORT_SYMBOL(iput);
+Index: linux-2.6/fs/libfs.c
 ===================================================================
---- linux-2.6.orig/fs/hugetlbfs/inode.c
-+++ linux-2.6/fs/hugetlbfs/inode.c
-@@ -391,7 +391,9 @@ static void hugetlbfs_forget_inode(struc
- 			spin_unlock(&inode_lock);
- 			return;
- 		}
-+		spin_lock(&inode->i_lock);
- 		inode->i_state |= I_WILL_FREE;
-+		spin_unlock(&inode->i_lock);
- 		spin_unlock(&inode_lock);
- 		/*
- 		 * write_inode_now is a noop as we set BDI_CAP_NO_WRITEBACK
-@@ -399,7 +401,9 @@ static void hugetlbfs_forget_inode(struc
- 		 */
- 		write_inode_now(inode, 1);
- 		spin_lock(&inode_lock);
-+		spin_lock(&inode->i_lock);
- 		inode->i_state &= ~I_WILL_FREE;
-+		spin_unlock(&inode->i_lock);
- 		inodes_stat.nr_unused--;
- 		spin_lock(&inode_hash_lock);
- 		hlist_del_init(&inode->i_hash);
-@@ -409,7 +413,9 @@ static void hugetlbfs_forget_inode(struc
- 	spin_lock(&sb_inode_list_lock);
- 	list_del_init(&inode->i_sb_list);
- 	spin_unlock(&sb_inode_list_lock);
+--- linux-2.6.orig/fs/libfs.c
++++ linux-2.6/fs/libfs.c
+@@ -280,7 +280,9 @@ int simple_link(struct dentry *old_dentr
+ 
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+ 	inc_nlink(inode);
+-	atomic_inc(&inode->i_count);
 +	spin_lock(&inode->i_lock);
- 	inode->i_state |= I_FREEING;
++	inode->i_count++;
 +	spin_unlock(&inode->i_lock);
- 	inodes_stat.nr_inodes--;
- 	spin_unlock(&inode_lock);
- 	truncate_hugepages(inode, 0);
-Index: linux-2.6/fs/nilfs2/gcdat.c
+ 	dget(dentry);
+ 	d_instantiate(dentry, inode);
+ 	return 0;
+Index: linux-2.6/fs/locks.c
 ===================================================================
---- linux-2.6.orig/fs/nilfs2/gcdat.c
-+++ linux-2.6/fs/nilfs2/gcdat.c
-@@ -27,6 +27,7 @@
- #include "page.h"
- #include "mdt.h"
+--- linux-2.6.orig/fs/locks.c
++++ linux-2.6/fs/locks.c
+@@ -1374,8 +1374,7 @@ int generic_setlease(struct file *filp,
+ 		if ((arg == F_RDLCK) && (atomic_read(&inode->i_writecount) > 0))
+ 			goto out;
+ 		if ((arg == F_WRLCK)
+-		    && (dentry->d_count > 1
+-			|| (atomic_read(&inode->i_count) > 1)))
++		    && (dentry->d_count > 1 || inode->i_count > 1))
+ 			goto out;
+ 	}
  
-+/* XXX: what protects i_state? */
- int nilfs_init_gcdat_inode(struct the_nilfs *nilfs)
- {
- 	struct inode *dat = nilfs->ns_dat, *gcdat = nilfs->ns_gc_dat;
-Index: linux-2.6/fs/quota/dquot.c
+Index: linux-2.6/fs/namei.c
 ===================================================================
---- linux-2.6.orig/fs/quota/dquot.c
-+++ linux-2.6/fs/quota/dquot.c
-@@ -824,14 +824,22 @@ static void add_dquot_ref(struct super_b
- 	spin_lock(&inode_lock);
- 	spin_lock(&sb_inode_list_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+--- linux-2.6.orig/fs/namei.c
++++ linux-2.6/fs/namei.c
+@@ -2312,8 +2312,11 @@ static long do_unlinkat(int dfd, const c
+ 		if (nd.last.name[nd.last.len])
+ 			goto slashes;
+ 		inode = dentry->d_inode;
+-		if (inode)
+-			atomic_inc(&inode->i_count);
++		if (inode) {
++			spin_lock(&inode->i_lock);
++			inode->i_count++;
++			spin_unlock(&inode->i_lock);
++		}
+ 		error = mnt_want_write(nd.path.mnt);
+ 		if (error)
+ 			goto exit2;
+Index: linux-2.6/fs/nfs/dir.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/dir.c
++++ linux-2.6/fs/nfs/dir.c
+@@ -1536,7 +1536,9 @@ nfs_link(struct dentry *old_dentry, stru
+ 	d_drop(dentry);
+ 	error = NFS_PROTO(dir)->link(inode, dir, &dentry->d_name);
+ 	if (error == 0) {
+-		atomic_inc(&inode->i_count);
 +		spin_lock(&inode->i_lock);
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
--		if (!atomic_read(&inode->i_writecount))
-+		}
-+		if (!atomic_read(&inode->i_writecount)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
--		if (!dqinit_needed(inode, type))
-+		}
-+		if (!dqinit_needed(inode, type)) {
-+			spin_unlock(&inode->i_lock);
- 			continue;
-+		}
- 
- 		__iget(inode);
++		inode->i_count++;
 +		spin_unlock(&inode->i_lock);
- 		spin_unlock(&sb_inode_list_lock);
- 		spin_unlock(&inode_lock);
+ 		d_add(dentry, inode);
+ 	}
+ 	return error;
+Index: linux-2.6/fs/nfs/getroot.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/getroot.c
++++ linux-2.6/fs/nfs/getroot.c
+@@ -55,7 +55,9 @@ static int nfs_superblock_set_dummy_root
+ 			return -ENOMEM;
+ 		}
+ 		/* Circumvent igrab(): we know the inode is not being freed */
+-		atomic_inc(&inode->i_count);
++		spin_lock(&inode->i_lock);
++		inode->i_count++;
++		spin_unlock(&inode->i_lock);
+ 		/*
+ 		 * Ensure that this dentry is invisible to d_find_alias().
+ 		 * Otherwise, it may be spliced into the tree by
+Index: linux-2.6/fs/notify/inotify/inotify.c
+===================================================================
+--- linux-2.6.orig/fs/notify/inotify/inotify.c
++++ linux-2.6/fs/notify/inotify/inotify.c
+@@ -406,23 +406,28 @@ void inotify_unmount_inodes(struct list_
+ 		 * evict all inodes with zero i_count from icache which is
+ 		 * unnecessarily violent and may in fact be illegal to do.
+ 		 */
+-		if (!atomic_read(&inode->i_count))
++		if (!inode->i_count)
+ 			continue;
  
+ 		need_iput_tmp = need_iput;
+ 		need_iput = NULL;
+ 		/* In case inotify_remove_watch_locked() drops a reference. */
+-		if (inode != need_iput_tmp)
++		if (inode != need_iput_tmp) {
++			spin_lock(&inode->i_lock);
+ 			__iget(inode);
+-		else
++			spin_unlock(&inode->i_lock);
++		} else
+ 			need_iput_tmp = NULL;
+ 		/* In case the dropping of a reference would nuke next_i. */
+-		if ((&next_i->i_sb_list != list) &&
+-				atomic_read(&next_i->i_count) &&
+-				!(next_i->i_state & (I_CLEAR | I_FREEING |
+-					I_WILL_FREE))) {
+-			__iget(next_i);
+-			need_iput = next_i;
++		if (&next_i->i_sb_list != list) {
++			spin_lock(&next_i->i_lock);
++			if (next_i->i_count &&
++				!(next_i->i_state &
++					(I_CLEAR|I_FREEING|I_WILL_FREE))) {
++				__iget(next_i);
++				need_iput = next_i;
++			}
++			spin_unlock(&next_i->i_lock);
+ 		}
+ 
+ 		/*
+@@ -441,11 +446,10 @@ void inotify_unmount_inodes(struct list_
+ 		mutex_lock(&inode->inotify_mutex);
+ 		watches = &inode->inotify_watches;
+ 		list_for_each_entry_safe(watch, next_w, watches, i_list) {
+-			struct inotify_handle *ih= watch->ih;
++			struct inotify_handle *ih = watch->ih;
+ 			get_inotify_watch(watch);
+ 			mutex_lock(&ih->mutex);
+-			ih->in_ops->handle_event(watch, watch->wd, IN_UNMOUNT, 0,
+-						 NULL, NULL);
++			ih->in_ops->handle_event(watch, watch->wd, IN_UNMOUNT, 0, NULL, NULL);
+ 			inotify_remove_watch_locked(ih, watch);
+ 			mutex_unlock(&ih->mutex);
+ 			put_inotify_watch(watch);
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_iops.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_iops.c
++++ linux-2.6/fs/xfs/linux-2.6/xfs_iops.c
+@@ -358,7 +358,9 @@ xfs_vn_link(
+ 	if (unlikely(error))
+ 		return -error;
+ 
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	d_instantiate(dentry, inode);
+ 	return 0;
+ }
+Index: linux-2.6/fs/xfs/xfs_iget.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_iget.c
++++ linux-2.6/fs/xfs/xfs_iget.c
+@@ -827,7 +827,7 @@ xfs_isilocked(
+ /*  0 */		(void *)(__psint_t)(vk),		\
+ /*  1 */		(void *)(s),				\
+ /*  2 */		(void *)(__psint_t) line,		\
+-/*  3 */		(void *)(__psint_t)atomic_read(&VFS_I(ip)->i_count), \
++/*  3 */		(void *)(__psint_t)&VFS_I(ip)->i_count,	\
+ /*  4 */		(void *)(ra),				\
+ /*  5 */		NULL,					\
+ /*  6 */		(void *)(__psint_t)current_cpu(),	\
+Index: linux-2.6/fs/xfs/xfs_inode.h
+===================================================================
+--- linux-2.6.orig/fs/xfs/xfs_inode.h
++++ linux-2.6/fs/xfs/xfs_inode.h
+@@ -545,8 +545,10 @@ extern void xfs_itrace_rele(struct xfs_i
+ 
+ #define IHOLD(ip) \
+ do { \
+-	ASSERT(atomic_read(&VFS_I(ip)->i_count) > 0) ; \
+-	atomic_inc(&(VFS_I(ip)->i_count)); \
++	spin_lock(&VFS_I(ip)->i_lock);		\
++	ASSERT(&VFS_I(ip)->i_count > 0);	\
++	VFS_I(ip)->i_count++;			\
++	spin_unlock(&VFS_I(ip)->i_lock);	\
+ 	xfs_itrace_hold((ip), __FILE__, __LINE__, (inst_t *)__return_address); \
+ } while (0)
+ 
+Index: linux-2.6/include/linux/fs.h
+===================================================================
+--- linux-2.6.orig/include/linux/fs.h
++++ linux-2.6/include/linux/fs.h
+@@ -719,7 +719,7 @@ struct inode {
+ 	struct list_head	i_sb_list;
+ 	struct list_head	i_dentry;
+ 	unsigned long		i_ino;
+-	atomic_t		i_count;
++	unsigned int		i_count;
+ 	unsigned int		i_nlink;
+ 	uid_t			i_uid;
+ 	gid_t			i_gid;
+Index: linux-2.6/ipc/mqueue.c
+===================================================================
+--- linux-2.6.orig/ipc/mqueue.c
++++ linux-2.6/ipc/mqueue.c
+@@ -779,8 +779,11 @@ SYSCALL_DEFINE1(mq_unlink, const char __
+ 	}
+ 
+ 	inode = dentry->d_inode;
+-	if (inode)
+-		atomic_inc(&inode->i_count);
++	if (inode) {
++		spin_lock(&inode->i_lock);
++		inode->i_count++;
++		spin_unlock(&inode->i_lock);
++	}
+ 	err = mnt_want_write(ipc_ns->mq_mnt);
+ 	if (err)
+ 		goto out_err;
+Index: linux-2.6/kernel/futex.c
+===================================================================
+--- linux-2.6.orig/kernel/futex.c
++++ linux-2.6/kernel/futex.c
+@@ -164,7 +164,9 @@ static void get_futex_key_refs(union fut
+ 
+ 	switch (key->both.offset & (FUT_OFF_INODE|FUT_OFF_MMSHARED)) {
+ 	case FUT_OFF_INODE:
+-		atomic_inc(&key->shared.inode->i_count);
++		spin_lock(&key->shared.inode->i_lock);
++		key->shared.inode->i_count++;
++		spin_unlock(&key->shared.inode->i_lock);
+ 		break;
+ 	case FUT_OFF_MMSHARED:
+ 		atomic_inc(&key->private.mm->mm_count);
+Index: linux-2.6/mm/shmem.c
+===================================================================
+--- linux-2.6.orig/mm/shmem.c
++++ linux-2.6/mm/shmem.c
+@@ -1867,7 +1867,9 @@ static int shmem_link(struct dentry *old
+ 	dir->i_size += BOGO_DIRENT_SIZE;
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+ 	inc_nlink(inode);
+-	atomic_inc(&inode->i_count);	/* New dentry reference */
++	spin_lock(&inode->i_lock);
++	inode->i_count++;	/* New dentry reference */
++	spin_unlock(&inode->i_lock);
+ 	dget(dentry);		/* Extra pinning count for the created dentry */
+ 	d_instantiate(dentry, inode);
+ out:
+Index: linux-2.6/fs/bfs/dir.c
+===================================================================
+--- linux-2.6.orig/fs/bfs/dir.c
++++ linux-2.6/fs/bfs/dir.c
+@@ -178,7 +178,9 @@ static int bfs_link(struct dentry *old,
+ 	inc_nlink(inode);
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	mark_inode_dirty(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	d_instantiate(new, inode);
+ 	mutex_unlock(&info->bfs_lock);
+ 	return 0;
+Index: linux-2.6/fs/btrfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/btrfs/inode.c
++++ linux-2.6/fs/btrfs/inode.c
+@@ -3871,7 +3871,9 @@ static int btrfs_link(struct dentry *old
+ 	trans = btrfs_start_transaction(root, 1);
+ 
+ 	btrfs_set_trans_block_group(trans, dir);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	err = btrfs_add_nondir(trans, dentry, inode, 1, index);
+ 
+Index: linux-2.6/fs/coda/dir.c
+===================================================================
+--- linux-2.6.orig/fs/coda/dir.c
++++ linux-2.6/fs/coda/dir.c
+@@ -302,7 +302,9 @@ static int coda_link(struct dentry *sour
+ 	}
+ 
+ 	coda_dir_update_mtime(dir_inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	d_instantiate(de, inode);
+ 	inc_nlink(inode);
+ 
+Index: linux-2.6/fs/exofs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/exofs/inode.c
++++ linux-2.6/fs/exofs/inode.c
+@@ -1038,7 +1038,9 @@ static void create_done(struct osd_reque
+ 	} else
+ 		set_obj_created(oi);
+ 
+-	atomic_dec(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count--;
++	spin_unlock(&inode->i_lock);
+ 	wake_up(&oi->i_wq);
+ }
+ 
+@@ -1104,11 +1106,15 @@ struct inode *exofs_new_inode(struct ino
+ 	/* increment the refcount so that the inode will still be around when we
+ 	 * reach the callback
+ 	 */
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	ret = exofs_async_op(or, create_done, inode, oi->i_cred);
+ 	if (ret) {
+-		atomic_dec(&inode->i_count);
++		spin_lock(&inode->i_lock);
++		inode->i_count--;
++		spin_unlock(&inode->i_lock);
+ 		osd_end_request(or);
+ 		return ERR_PTR(-EIO);
+ 	}
+Index: linux-2.6/fs/exofs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/exofs/namei.c
++++ linux-2.6/fs/exofs/namei.c
+@@ -153,7 +153,9 @@ static int exofs_link(struct dentry *old
+ 
+ 	inode->i_ctime = CURRENT_TIME;
+ 	inode_inc_link_count(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	return exofs_add_nondir(dentry, inode);
+ }
+Index: linux-2.6/fs/ext4/ialloc.c
+===================================================================
+--- linux-2.6.orig/fs/ext4/ialloc.c
++++ linux-2.6/fs/ext4/ialloc.c
+@@ -192,9 +192,9 @@ void ext4_free_inode(handle_t *handle, s
+ 	struct ext4_sb_info *sbi;
+ 	int fatal = 0, err, count, cleared;
+ 
+-	if (atomic_read(&inode->i_count) > 1) {
++	if (inode->i_count > 1) {
+ 		printk(KERN_ERR "ext4_free_inode: inode has count=%d\n",
+-		       atomic_read(&inode->i_count));
++		       inode->i_count);
+ 		return;
+ 	}
+ 	if (inode->i_nlink) {
+Index: linux-2.6/fs/ext4/namei.c
+===================================================================
+--- linux-2.6.orig/fs/ext4/namei.c
++++ linux-2.6/fs/ext4/namei.c
+@@ -2331,7 +2331,9 @@ retry:
+ 
+ 	inode->i_ctime = ext4_current_time(inode);
+ 	ext4_inc_count(handle, inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	err = ext4_add_entry(handle, dentry, inode);
+ 	if (!err) {
+Index: linux-2.6/fs/gfs2/ops_inode.c
+===================================================================
+--- linux-2.6.orig/fs/gfs2/ops_inode.c
++++ linux-2.6/fs/gfs2/ops_inode.c
+@@ -255,7 +255,9 @@ out_parent:
+ 	gfs2_holder_uninit(ghs);
+ 	gfs2_holder_uninit(ghs + 1);
+ 	if (!error) {
+-		atomic_inc(&inode->i_count);
++		spin_lock(&inode->i_lock);
++		inode->i_count++;
++		spin_unlock(&inode->i_lock);
+ 		d_instantiate(dentry, inode);
+ 		mark_inode_dirty(inode);
+ 	}
+Index: linux-2.6/fs/hfsplus/dir.c
+===================================================================
+--- linux-2.6.orig/fs/hfsplus/dir.c
++++ linux-2.6/fs/hfsplus/dir.c
+@@ -301,7 +301,9 @@ static int hfsplus_link(struct dentry *s
+ 
+ 	inc_nlink(inode);
+ 	hfsplus_instantiate(dst_dentry, inode, cnid);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	mark_inode_dirty(inode);
+ 	HFSPLUS_SB(sb).file_count++;
+Index: linux-2.6/fs/hpfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/hpfs/inode.c
++++ linux-2.6/fs/hpfs/inode.c
+@@ -182,7 +182,7 @@ void hpfs_write_inode(struct inode *i)
+ 	struct hpfs_inode_info *hpfs_inode = hpfs_i(i);
+ 	struct inode *parent;
+ 	if (i->i_ino == hpfs_sb(i->i_sb)->sb_root) return;
+-	if (hpfs_inode->i_rddir_off && !atomic_read(&i->i_count)) {
++	if (hpfs_inode->i_rddir_off && !i->i_count) {
+ 		if (*hpfs_inode->i_rddir_off) printk("HPFS: write_inode: some position still there\n");
+ 		kfree(hpfs_inode->i_rddir_off);
+ 		hpfs_inode->i_rddir_off = NULL;
+Index: linux-2.6/fs/jffs2/dir.c
+===================================================================
+--- linux-2.6.orig/fs/jffs2/dir.c
++++ linux-2.6/fs/jffs2/dir.c
+@@ -287,7 +287,9 @@ static int jffs2_link (struct dentry *ol
+ 		mutex_unlock(&f->sem);
+ 		d_instantiate(dentry, old_dentry->d_inode);
+ 		dir_i->i_mtime = dir_i->i_ctime = ITIME(now);
+-		atomic_inc(&old_dentry->d_inode->i_count);
++		spin_lock(&old_dentry->d_inode->i_lock);
++		old_dentry->d_inode->i_count++;
++		spin_unlock(&old_dentry->d_inode->i_lock);
+ 	}
+ 	return ret;
+ }
+@@ -866,7 +868,9 @@ static int jffs2_rename (struct inode *o
+ 		printk(KERN_NOTICE "jffs2_rename(): Link succeeded, unlink failed (err %d). You now have a hard link\n", ret);
+ 		/* Might as well let the VFS know */
+ 		d_instantiate(new_dentry, old_dentry->d_inode);
+-		atomic_inc(&old_dentry->d_inode->i_count);
++		spin_lock(&old_dentry->d_inode->i_lock);
++		old_dentry->d_inode->i_count++;
++		spin_unlock(&old_dentry->d_inode->i_lock);
+ 		new_dir_i->i_mtime = new_dir_i->i_ctime = ITIME(now);
+ 		return ret;
+ 	}
+Index: linux-2.6/fs/jfs/jfs_txnmgr.c
+===================================================================
+--- linux-2.6.orig/fs/jfs/jfs_txnmgr.c
++++ linux-2.6/fs/jfs/jfs_txnmgr.c
+@@ -1279,7 +1279,9 @@ int txCommit(tid_t tid,		/* transaction
+ 	 * lazy commit thread finishes processing
+ 	 */
+ 	if (tblk->xflag & COMMIT_DELETE) {
+-		atomic_inc(&tblk->u.ip->i_count);
++		spin_lock(&tblk->u.ip->i_lock);
++		tblk->u.ip->i_count++;
++		spin_unlock(&tblk->u.ip->i_lock);
+ 		/*
+ 		 * Avoid a rare deadlock
+ 		 *
+Index: linux-2.6/fs/jfs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/jfs/namei.c
++++ linux-2.6/fs/jfs/namei.c
+@@ -831,7 +831,9 @@ static int jfs_link(struct dentry *old_d
+ 	ip->i_ctime = CURRENT_TIME;
+ 	dir->i_ctime = dir->i_mtime = CURRENT_TIME;
+ 	mark_inode_dirty(dir);
+-	atomic_inc(&ip->i_count);
++	spin_lock(&ip->i_lock);
++	ip->i_count++;
++	spin_unlock(&ip->i_lock);
+ 
+ 	iplist[0] = ip;
+ 	iplist[1] = dir;
+Index: linux-2.6/fs/minix/namei.c
+===================================================================
+--- linux-2.6.orig/fs/minix/namei.c
++++ linux-2.6/fs/minix/namei.c
+@@ -103,7 +103,9 @@ static int minix_link(struct dentry * ol
+ 
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	inode_inc_link_count(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	return add_nondir(dentry, inode);
+ }
+ 
+Index: linux-2.6/fs/nfs/inode.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/inode.c
++++ linux-2.6/fs/nfs/inode.c
+@@ -364,7 +364,7 @@ nfs_fhget(struct super_block *sb, struct
+ 	dprintk("NFS: nfs_fhget(%s/%Ld ct=%d)\n",
+ 		inode->i_sb->s_id,
+ 		(long long)NFS_FILEID(inode),
+-		atomic_read(&inode->i_count));
++		inode->i_count);
+ 
+ out:
+ 	return inode;
+@@ -1148,7 +1148,7 @@ static int nfs_update_inode(struct inode
+ 
+ 	dfprintk(VFS, "NFS: %s(%s/%ld ct=%d info=0x%x)\n",
+ 			__func__, inode->i_sb->s_id, inode->i_ino,
+-			atomic_read(&inode->i_count), fattr->valid);
++			inode->i_count, fattr->valid);
+ 
+ 	if ((fattr->valid & NFS_ATTR_FATTR_FILEID) && nfsi->fileid != fattr->fileid)
+ 		goto out_fileid;
+Index: linux-2.6/fs/nilfs2/mdt.c
+===================================================================
+--- linux-2.6.orig/fs/nilfs2/mdt.c
++++ linux-2.6/fs/nilfs2/mdt.c
+@@ -470,7 +470,7 @@ nilfs_mdt_new_common(struct the_nilfs *n
+ 		inode->i_sb = sb; /* sb may be NULL for some meta data files */
+ 		inode->i_blkbits = nilfs->ns_blocksize_bits;
+ 		inode->i_flags = 0;
+-		atomic_set(&inode->i_count, 1);
++		inode->i_count = 1;
+ 		inode->i_nlink = 1;
+ 		inode->i_ino = ino;
+ 		inode->i_mode = S_IFREG;
+Index: linux-2.6/fs/nilfs2/namei.c
+===================================================================
+--- linux-2.6.orig/fs/nilfs2/namei.c
++++ linux-2.6/fs/nilfs2/namei.c
+@@ -221,7 +221,9 @@ static int nilfs_link(struct dentry *old
+ 
+ 	inode->i_ctime = CURRENT_TIME;
+ 	inode_inc_link_count(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	err = nilfs_add_nondir(dentry, inode);
+ 	if (!err)
+Index: linux-2.6/fs/ocfs2/namei.c
+===================================================================
+--- linux-2.6.orig/fs/ocfs2/namei.c
++++ linux-2.6/fs/ocfs2/namei.c
+@@ -719,7 +719,9 @@ static int ocfs2_link(struct dentry *old
+ 		goto out_commit;
+ 	}
+ 
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	dentry->d_op = &ocfs2_dentry_ops;
+ 	d_instantiate(dentry, inode);
+ 
+Index: linux-2.6/fs/reiserfs/file.c
+===================================================================
+--- linux-2.6.orig/fs/reiserfs/file.c
++++ linux-2.6/fs/reiserfs/file.c
+@@ -39,7 +39,7 @@ static int reiserfs_file_release(struct
+ 	BUG_ON(!S_ISREG(inode->i_mode));
+ 
+ 	/* fast out for when nothing needs to be done */
+-	if ((atomic_read(&inode->i_count) > 1 ||
++	if ((inode->i_count > 1 ||
+ 	     !(REISERFS_I(inode)->i_flags & i_pack_on_close_mask) ||
+ 	     !tail_has_to_be_packed(inode)) &&
+ 	    REISERFS_I(inode)->i_prealloc_count <= 0) {
+@@ -94,7 +94,7 @@ static int reiserfs_file_release(struct
+ 	if (!err)
+ 		err = jbegin_failure;
+ 
+-	if (!err && atomic_read(&inode->i_count) <= 1 &&
++	if (!err && inode->i_count <= 1 &&
+ 	    (REISERFS_I(inode)->i_flags & i_pack_on_close_mask) &&
+ 	    tail_has_to_be_packed(inode)) {
+ 		/* if regular file is released by last holder and it has been
+Index: linux-2.6/fs/reiserfs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/reiserfs/namei.c
++++ linux-2.6/fs/reiserfs/namei.c
+@@ -1142,7 +1142,9 @@ static int reiserfs_link(struct dentry *
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	reiserfs_update_sd(&th, inode);
+ 
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	d_instantiate(dentry, inode);
+ 	retval = journal_end(&th, dir->i_sb, jbegin_count);
+ 	reiserfs_write_unlock(dir->i_sb);
+Index: linux-2.6/fs/reiserfs/stree.c
+===================================================================
+--- linux-2.6.orig/fs/reiserfs/stree.c
++++ linux-2.6/fs/reiserfs/stree.c
+@@ -1440,7 +1440,7 @@ static int maybe_indirect_to_direct(stru
+ 	 ** reading in the last block.  The user will hit problems trying to
+ 	 ** read the file, but for now we just skip the indirect2direct
+ 	 */
+-	if (atomic_read(&inode->i_count) > 1 ||
++	if (inode->i_count > 1 ||
+ 	    !tail_has_to_be_packed(inode) ||
+ 	    !page || (REISERFS_I(inode)->i_flags & i_nopack_mask)) {
+ 		/* leave tail in an unformatted node */
+Index: linux-2.6/fs/sysv/namei.c
+===================================================================
+--- linux-2.6.orig/fs/sysv/namei.c
++++ linux-2.6/fs/sysv/namei.c
+@@ -126,7 +126,9 @@ static int sysv_link(struct dentry * old
+ 
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	inode_inc_link_count(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	return add_nondir(dentry, inode);
+ }
+Index: linux-2.6/fs/ubifs/dir.c
+===================================================================
+--- linux-2.6.orig/fs/ubifs/dir.c
++++ linux-2.6/fs/ubifs/dir.c
+@@ -557,7 +557,9 @@ static int ubifs_link(struct dentry *old
+ 
+ 	lock_2_inodes(dir, inode);
+ 	inc_nlink(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	inode->i_ctime = ubifs_current_time(inode);
+ 	dir->i_size += sz_change;
+ 	dir_ui->ui_size = dir->i_size;
+Index: linux-2.6/fs/ubifs/super.c
+===================================================================
+--- linux-2.6.orig/fs/ubifs/super.c
++++ linux-2.6/fs/ubifs/super.c
+@@ -341,7 +341,7 @@ static void ubifs_delete_inode(struct in
+ 		goto out;
+ 
+ 	dbg_gen("inode %lu, mode %#x", inode->i_ino, (int)inode->i_mode);
+-	ubifs_assert(!atomic_read(&inode->i_count));
++	ubifs_assert(!inode->i_count);
+ 	ubifs_assert(inode->i_nlink == 0);
+ 
+ 	truncate_inode_pages(&inode->i_data, 0);
+Index: linux-2.6/fs/udf/namei.c
+===================================================================
+--- linux-2.6.orig/fs/udf/namei.c
++++ linux-2.6/fs/udf/namei.c
+@@ -1091,7 +1091,9 @@ static int udf_link(struct dentry *old_d
+ 	inc_nlink(inode);
+ 	inode->i_ctime = current_fs_time(inode->i_sb);
+ 	mark_inode_dirty(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 	d_instantiate(dentry, inode);
+ 	unlock_kernel();
+ 
+Index: linux-2.6/fs/ufs/namei.c
+===================================================================
+--- linux-2.6.orig/fs/ufs/namei.c
++++ linux-2.6/fs/ufs/namei.c
+@@ -178,7 +178,9 @@ static int ufs_link (struct dentry * old
+ 
+ 	inode->i_ctime = CURRENT_TIME_SEC;
+ 	inode_inc_link_count(inode);
+-	atomic_inc(&inode->i_count);
++	spin_lock(&inode->i_lock);
++	inode->i_count++;
++	spin_unlock(&inode->i_lock);
+ 
+ 	error = ufs_add_nondir(dentry, inode);
+ 	unlock_kernel();
+Index: linux-2.6/fs/notify/inode_mark.c
+===================================================================
+--- linux-2.6.orig/fs/notify/inode_mark.c
++++ linux-2.6/fs/notify/inode_mark.c
+@@ -383,24 +383,30 @@ void fsnotify_unmount_inodes(struct list
+ 		 * evict all inodes with zero i_count from icache which is
+ 		 * unnecessarily violent and may in fact be illegal to do.
+ 		 */
+-		if (!atomic_read(&inode->i_count))
++		if (!inode->i_count)
+ 			continue;
+ 
+ 		need_iput_tmp = need_iput;
+ 		need_iput = NULL;
+ 
+ 		/* In case fsnotify_inode_delete() drops a reference. */
+-		if (inode != need_iput_tmp)
++		if (inode != need_iput_tmp) {
++			spin_lock(&inode->i_lock);
+ 			__iget(inode);
+-		else
++			spin_unlock(&inode->i_lock);
++		} else
+ 			need_iput_tmp = NULL;
+ 
+ 		/* In case the dropping of a reference would nuke next_i. */
+-		if ((&next_i->i_sb_list != list) &&
+-		    atomic_read(&next_i->i_count) &&
+-		    !(next_i->i_state & (I_CLEAR | I_FREEING | I_WILL_FREE))) {
+-			__iget(next_i);
+-			need_iput = next_i;
++		if (&next_i->i_sb_list != list) {
++			spin_lock(&next_i->i_lock);
++			if (next_i->i_count &&
++				!(next_i->i_state &
++					(I_CLEAR | I_FREEING | I_WILL_FREE))) {
++				__iget(next_i);
++				need_iput = next_i;
++			}
++			spin_unlock(&next_i->i_lock);
+ 		}
+ 
+ 		/*
+Index: linux-2.6/fs/ntfs/super.c
+===================================================================
+--- linux-2.6.orig/fs/ntfs/super.c
++++ linux-2.6/fs/ntfs/super.c
+@@ -2923,7 +2923,9 @@ static int ntfs_fill_super(struct super_
+ 	}
+ 	if ((sb->s_root = d_alloc_root(vol->root_ino))) {
+ 		/* We increment i_count simulating an ntfs_iget(). */
+-		atomic_inc(&vol->root_ino->i_count);
++		spin_lock(&vol->root_ino->i_lock);
++		vol->root_ino->i_count++;
++		spin_unlock(&vol->root_ino->i_lock);
+ 		ntfs_debug("Exiting, status successful.");
+ 		/* Release the default upcase if it has no users. */
+ 		mutex_lock(&ntfs_lock);
 
 
