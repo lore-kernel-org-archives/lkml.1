@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932820AbZIDGpz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932804AbZIDGsi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932820AbZIDGpz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 02:45:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932773AbZIDGpw
+	id S932804AbZIDGsi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 02:48:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932682AbZIDGpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 02:45:52 -0400
-Received: from mga01.intel.com ([192.55.52.88]:50659 "EHLO mga01.intel.com"
+	Fri, 4 Sep 2009 02:45:43 -0400
+Received: from mga01.intel.com ([192.55.52.88]:22618 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756693AbZIDGpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756684AbZIDGpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 02:45:33 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,330,1249282800"; 
-   d="scan'208";a="490450514"
-Subject: [PATCH 07/18] ioat3: split ioat3 support to its own file, add memset
+   d="scan'208";a="723813379"
+Subject: [PATCH 08/18] ioat: add 'ioat' sysfs attributes
 To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
 Cc: linux-raid@vger.kernel.org, maciej.sosnowski@intel.com
-Date: Thu, 03 Sep 2009 23:45:10 -0700
-Message-ID: <20090904064510.7141.80671.stgit@dwillia2-linux.ch.intel.com>
+Date: Thu, 03 Sep 2009 23:45:15 -0700
+Message-ID: <20090904064515.7141.3535.stgit@dwillia2-linux.ch.intel.com>
 In-Reply-To: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
 References: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
 User-Agent: StGit/0.14.3.289.g7daff
@@ -28,743 +28,323 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Up until this point the driver for Intel(R) QuickData Technology
-engines, specification versions 2 and 3, were mostly identical save for
-a few quirks.  Version 3.2 hardware adds many new capabilities (like
-raid offload support) requiring some infrastructure that is not relevant
-for v2.  For better code organization of the new funcionality move v3
-and v3.2 support to its own file dma_v3.c, and export some routines from
-the base files (dma.c and dma_v2.c) that can be reused directly.
+Export driver attributes for diagnostic purposes:
+'ring_size': total number of descriptors available to the engine
+'ring_active': number of descriptors in-flight
+'capabilities': supported operation types for this channel
+'version': Intel(R) QuickData specfication revision
 
-The first new capability included in this code reorganization is support
-for v3.2 memset operations.
+This also allows some chattiness to be removed from the driver startup
+as this information is now available via sysfs.
 
 Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 ---
- drivers/dma/ioat/Makefile |    2 
- drivers/dma/ioat/dma.c    |   11 -
- drivers/dma/ioat/dma.h    |   16 ++
- drivers/dma/ioat/dma_v2.c |   94 +++---------
- drivers/dma/ioat/dma_v2.h |   14 ++
- drivers/dma/ioat/dma_v3.c |  367 +++++++++++++++++++++++++++++++++++++++++++++
- drivers/dma/ioat/pci.c    |    2 
- 7 files changed, 422 insertions(+), 84 deletions(-)
- create mode 100644 drivers/dma/ioat/dma_v3.c
+ drivers/dma/ioat/dma.c    |  120 +++++++++++++++++++++++++++++++++++++++++++--
+ drivers/dma/ioat/dma.h    |   12 +++++
+ drivers/dma/ioat/dma_v2.c |   33 ++++++++++++
+ drivers/dma/ioat/dma_v2.h |    1 
+ drivers/dma/ioat/dma_v3.c |    3 +
+ drivers/dma/ioat/pci.c    |    3 +
+ 6 files changed, 166 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/dma/ioat/Makefile b/drivers/dma/ioat/Makefile
-index 205a639..8997d3f 100644
---- a/drivers/dma/ioat/Makefile
-+++ b/drivers/dma/ioat/Makefile
-@@ -1,2 +1,2 @@
- obj-$(CONFIG_INTEL_IOATDMA) += ioatdma.o
--ioatdma-objs := pci.o dma.o dma_v2.o dca.o
-+ioatdma-objs := pci.o dma.o dma_v2.o dma_v3.o dca.o
 diff --git a/drivers/dma/ioat/dma.c b/drivers/dma/ioat/dma.c
-index 21527b8..92c2778 100644
+index 92c2778..2eb1fac 100644
 --- a/drivers/dma/ioat/dma.c
 +++ b/drivers/dma/ioat/dma.c
-@@ -539,17 +539,6 @@ static void ioat1_cleanup_tasklet(unsigned long data)
- 	writew(IOAT_CHANCTRL_RUN, chan->base.reg_base + IOAT_CHANCTRL_OFFSET);
+@@ -263,6 +263,7 @@ static dma_cookie_t ioat1_tx_submit(struct dma_async_tx_descriptor *tx)
+ 	if (!test_and_set_bit(IOAT_COMPLETION_PENDING, &chan->state))
+ 		mod_timer(&chan->timer, jiffies + COMPLETION_TIMEOUT);
+ 
++	ioat->active += desc->hw->tx_cnt;
+ 	ioat->pending += desc->hw->tx_cnt;
+ 	if (ioat->pending >= ioat_pending_level)
+ 		__ioat1_dma_memcpy_issue_pending(ioat);
+@@ -612,6 +613,7 @@ static void __cleanup(struct ioat_dma_chan *ioat, unsigned long phys_complete)
+ 			chan->completed_cookie = tx->cookie;
+ 			tx->cookie = 0;
+ 			ioat_dma_unmap(chan, tx->flags, desc->len, desc->hw);
++			ioat->active -= desc->hw->tx_cnt;
+ 			if (tx->callback) {
+ 				tx->callback(tx->callback_param);
+ 				tx->callback = NULL;
+@@ -1029,13 +1031,8 @@ int __devinit ioat_probe(struct ioatdma_device *device)
+ 	dma_cap_set(DMA_MEMCPY, dma->cap_mask);
+ 	dma->dev = &pdev->dev;
+ 
+-	dev_err(dev, "Intel(R) I/OAT DMA Engine found,"
+-		" %d channels, device version 0x%02x, driver version %s\n",
+-		dma->chancnt, device->version, IOAT_DMA_VERSION);
+-
+ 	if (!dma->chancnt) {
+-		dev_err(dev, "Intel(R) I/OAT DMA Engine problem found: "
+-			"zero channels detected\n");
++		dev_err(dev, "zero channels detected\n");
+ 		goto err_setup_interrupts;
+ 	}
+ 
+@@ -1086,6 +1083,113 @@ static void ioat1_intr_quirk(struct ioatdma_device *device)
+ 	pci_write_config_dword(pdev, IOAT_PCI_DMACTRL_OFFSET, dmactrl);
  }
  
--static void ioat_unmap(struct pci_dev *pdev, dma_addr_t addr, size_t len,
--		       int direction, enum dma_ctrl_flags flags, bool dst)
--{
--	if ((dst && (flags & DMA_COMPL_DEST_UNMAP_SINGLE)) ||
--	    (!dst && (flags & DMA_COMPL_SRC_UNMAP_SINGLE)))
--		pci_unmap_single(pdev, addr, len, direction);
--	else
--		pci_unmap_page(pdev, addr, len, direction);
--}
--
--
- void ioat_dma_unmap(struct ioat_chan_common *chan, enum dma_ctrl_flags flags,
- 		    size_t len, struct ioat_dma_descriptor *hw)
- {
-diff --git a/drivers/dma/ioat/dma.h b/drivers/dma/ioat/dma.h
-index 08e391a..5999c12 100644
---- a/drivers/dma/ioat/dma.h
-+++ b/drivers/dma/ioat/dma.h
-@@ -60,6 +60,10 @@
-  * @dca: direct cache access context
-  * @intr_quirk: interrupt setup quirk (for ioat_v1 devices)
-  * @enumerate_channels: hw version specific channel enumeration
-+ * @cleanup_tasklet: select between the v2 and v3 cleanup routines
-+ * @timer_fn: select between the v2 and v3 timer watchdog routines
-+ *
-+ * Note: the v3 cleanup routine supports raid operations
-  */
- 
- struct ioatdma_device {
-@@ -74,6 +78,8 @@ struct ioatdma_device {
- 	struct dca_provider *dca;
- 	void (*intr_quirk)(struct ioatdma_device *device);
- 	int (*enumerate_channels)(struct ioatdma_device *device);
-+	void (*cleanup_tasklet)(unsigned long data);
-+	void (*timer_fn)(unsigned long data);
- };
- 
- struct ioat_chan_common {
-@@ -288,6 +294,16 @@ static inline bool is_ioat_bug(unsigned long err)
- 			 IOAT_CHANERR_LENGTH_ERR));
- }
- 
-+static inline void ioat_unmap(struct pci_dev *pdev, dma_addr_t addr, size_t len,
-+			      int direction, enum dma_ctrl_flags flags, bool dst)
++static ssize_t ring_size_show(struct dma_chan *c, char *page)
 +{
-+	if ((dst && (flags & DMA_COMPL_DEST_UNMAP_SINGLE)) ||
-+	    (!dst && (flags & DMA_COMPL_SRC_UNMAP_SINGLE)))
-+		pci_unmap_single(pdev, addr, len, direction);
-+	else
-+		pci_unmap_page(pdev, addr, len, direction);
++	struct ioat_dma_chan *ioat = to_ioat_chan(c);
++
++	return sprintf(page, "%d\n", ioat->desccount);
 +}
++static struct ioat_sysfs_entry ring_size_attr = __ATTR_RO(ring_size);
 +
- int __devinit ioat_probe(struct ioatdma_device *device);
- int __devinit ioat_register(struct ioatdma_device *device);
- int __devinit ioat1_dma_probe(struct ioatdma_device *dev, int dca);
-diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
-index b3a1f81..5a736a3 100644
---- a/drivers/dma/ioat/dma_v2.c
-+++ b/drivers/dma/ioat/dma_v2.c
-@@ -39,7 +39,7 @@
- #include "registers.h"
- #include "hw.h"
- 
--static int ioat_ring_alloc_order = 8;
-+int ioat_ring_alloc_order = 8;
- module_param(ioat_ring_alloc_order, int, 0644);
- MODULE_PARM_DESC(ioat_ring_alloc_order,
- 		 "ioat2+: allocate 2^n descriptors per channel (default: n=8)");
-@@ -63,7 +63,7 @@ static void __ioat2_issue_pending(struct ioat2_dma_chan *ioat)
- 		__func__, ioat->head, ioat->tail, ioat->issued, ioat->dmacount);
- }
- 
--static void ioat2_issue_pending(struct dma_chan *chan)
-+void ioat2_issue_pending(struct dma_chan *chan)
- {
- 	struct ioat2_dma_chan *ioat = to_ioat2_chan(chan);
- 
-@@ -214,7 +214,7 @@ static void ioat2_cleanup_tasklet(unsigned long data)
- 	writew(IOAT_CHANCTRL_RUN, ioat->base.reg_base + IOAT_CHANCTRL_OFFSET);
- }
- 
--static void __restart_chan(struct ioat2_dma_chan *ioat)
-+void __ioat2_restart_chan(struct ioat2_dma_chan *ioat)
- {
- 	struct ioat_chan_common *chan = &ioat->base;
- 
-@@ -255,11 +255,9 @@ static void ioat2_restart_channel(struct ioat2_dma_chan *ioat)
- 	if (ioat_cleanup_preamble(chan, &phys_complete))
- 		__cleanup(ioat, phys_complete);
- 
--	__restart_chan(ioat);
-+	__ioat2_restart_chan(ioat);
- }
- 
--static bool reshape_ring(struct ioat2_dma_chan *ioat, int order);
--
- static void ioat2_timer_event(unsigned long data)
- {
- 	struct ioat2_dma_chan *ioat = (void *) data;
-@@ -321,7 +319,7 @@ static void ioat2_timer_event(unsigned long data)
-  * ioat2_enumerate_channels - find and initialize the device's channels
-  * @device: the device to be enumerated
-  */
--static int ioat2_enumerate_channels(struct ioatdma_device *device)
-+int ioat2_enumerate_channels(struct ioatdma_device *device)
- {
- 	struct ioat2_dma_chan *ioat;
- 	struct device *dev = &device->pdev->dev;
-@@ -354,8 +352,8 @@ static int ioat2_enumerate_channels(struct ioatdma_device *device)
- 			break;
- 
- 		ioat_init_channel(device, &ioat->base, i,
--				  ioat2_timer_event,
--				  ioat2_cleanup_tasklet,
-+				  device->timer_fn,
-+				  device->cleanup_tasklet,
- 				  (unsigned long) ioat);
- 		ioat->xfercap_log = xfercap_log;
- 		spin_lock_init(&ioat->ring_lock);
-@@ -461,7 +459,7 @@ static struct ioat_ring_ent **ioat2_alloc_ring(struct dma_chan *c, int order, gf
- /* ioat2_alloc_chan_resources - allocate/initialize ioat2 descriptor ring
-  * @chan: channel to be initialized
-  */
--static int ioat2_alloc_chan_resources(struct dma_chan *c)
-+int ioat2_alloc_chan_resources(struct dma_chan *c)
- {
- 	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
- 	struct ioat_chan_common *chan = &ioat->base;
-@@ -515,7 +513,7 @@ static int ioat2_alloc_chan_resources(struct dma_chan *c)
- 	return 1 << ioat->alloc_order;
- }
- 
--static bool reshape_ring(struct ioat2_dma_chan *ioat, int order)
-+bool reshape_ring(struct ioat2_dma_chan *ioat, int order)
- {
- 	/* reshape differs from normal ring allocation in that we want
- 	 * to allocate a new software ring while only
-@@ -628,7 +626,7 @@ static bool reshape_ring(struct ioat2_dma_chan *ioat, int order)
-  * @ioat: ioat2,3 channel (ring) to operate on
-  * @num_descs: allocation length
-  */
--static int ioat2_alloc_and_lock(u16 *idx, struct ioat2_dma_chan *ioat, int num_descs)
-+int ioat2_alloc_and_lock(u16 *idx, struct ioat2_dma_chan *ioat, int num_descs)
- {
- 	struct ioat_chan_common *chan = &ioat->base;
- 
-@@ -656,9 +654,11 @@ static int ioat2_alloc_and_lock(u16 *idx, struct ioat2_dma_chan *ioat, int num_d
- 		spin_lock_bh(&chan->cleanup_lock);
- 		if (jiffies > chan->timer.expires &&
- 		    timer_pending(&chan->timer)) {
-+			struct ioatdma_device *device = chan->device;
-+
- 			mod_timer(&chan->timer, jiffies + COMPLETION_TIMEOUT);
- 			spin_unlock_bh(&chan->cleanup_lock);
--			ioat2_timer_event((unsigned long) ioat);
-+			device->timer_fn((unsigned long) ioat);
- 		} else
- 			spin_unlock_bh(&chan->cleanup_lock);
- 		return -ENOMEM;
-@@ -671,7 +671,7 @@ static int ioat2_alloc_and_lock(u16 *idx, struct ioat2_dma_chan *ioat, int num_d
- 	return 0;  /* with ioat->ring_lock held */
- }
- 
--static struct dma_async_tx_descriptor *
-+struct dma_async_tx_descriptor *
- ioat2_dma_prep_memcpy_lock(struct dma_chan *c, dma_addr_t dma_dest,
- 			   dma_addr_t dma_src, size_t len, unsigned long flags)
- {
-@@ -723,11 +723,11 @@ ioat2_dma_prep_memcpy_lock(struct dma_chan *c, dma_addr_t dma_dest,
-  * ioat2_free_chan_resources - release all the descriptors
-  * @chan: the channel to be cleaned
-  */
--static void ioat2_free_chan_resources(struct dma_chan *c)
-+void ioat2_free_chan_resources(struct dma_chan *c)
- {
- 	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
- 	struct ioat_chan_common *chan = &ioat->base;
--	struct ioatdma_device *ioatdma_device = chan->device;
-+	struct ioatdma_device *device = chan->device;
- 	struct ioat_ring_ent *desc;
- 	const u16 total_descs = 1 << ioat->alloc_order;
- 	int descs;
-@@ -741,7 +741,7 @@ static void ioat2_free_chan_resources(struct dma_chan *c)
- 
- 	tasklet_disable(&chan->cleanup_task);
- 	del_timer_sync(&chan->timer);
--	ioat2_cleanup(ioat);
-+	device->cleanup_tasklet((unsigned long) ioat);
- 
- 	/* Delay 100ms after reset to allow internal DMA logic to quiesce
- 	 * before removing DMA descriptor resources.
-@@ -771,8 +771,7 @@ static void ioat2_free_chan_resources(struct dma_chan *c)
- 	kfree(ioat->ring);
- 	ioat->ring = NULL;
- 	ioat->alloc_order = 0;
--	pci_pool_free(ioatdma_device->completion_pool,
--		      chan->completion,
-+	pci_pool_free(device->completion_pool, chan->completion,
- 		      chan->completion_dma);
- 	spin_unlock_bh(&ioat->ring_lock);
- 
-@@ -782,16 +781,17 @@ static void ioat2_free_chan_resources(struct dma_chan *c)
- 	ioat->dmacount = 0;
- }
- 
--static enum dma_status
-+enum dma_status
- ioat2_is_complete(struct dma_chan *c, dma_cookie_t cookie,
- 		     dma_cookie_t *done, dma_cookie_t *used)
- {
- 	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
-+	struct ioatdma_device *device = ioat->base.device;
- 
- 	if (ioat_is_complete(c, cookie, done, used) == DMA_SUCCESS)
- 		return DMA_SUCCESS;
- 
--	ioat2_cleanup(ioat);
-+	device->cleanup_tasklet((unsigned long) ioat);
- 
- 	return ioat_is_complete(c, cookie, done, used);
- }
-@@ -805,6 +805,8 @@ int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
- 	int err;
- 
- 	device->enumerate_channels = ioat2_enumerate_channels;
-+	device->cleanup_tasklet = ioat2_cleanup_tasklet;
-+	device->timer_fn = ioat2_timer_event;
- 	dma = &device->common;
- 	dma->device_prep_dma_memcpy = ioat2_dma_prep_memcpy_lock;
- 	dma->device_issue_pending = ioat2_issue_pending;
-@@ -831,53 +833,3 @@ int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
- 
- 	return err;
- }
--
--int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
--{
--	struct pci_dev *pdev = device->pdev;
--	struct dma_device *dma;
--	struct dma_chan *c;
--	struct ioat_chan_common *chan;
--	int err;
--	u16 dev_id;
--
--	device->enumerate_channels = ioat2_enumerate_channels;
--	dma = &device->common;
--	dma->device_prep_dma_memcpy = ioat2_dma_prep_memcpy_lock;
--	dma->device_issue_pending = ioat2_issue_pending;
--	dma->device_alloc_chan_resources = ioat2_alloc_chan_resources;
--	dma->device_free_chan_resources = ioat2_free_chan_resources;
--	dma->device_is_tx_complete = ioat2_is_complete;
--
--	/* -= IOAT ver.3 workarounds =- */
--	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
--	 * that can cause stability issues for IOAT ver.3
--	 */
--	pci_write_config_dword(pdev, IOAT_PCI_CHANERRMASK_INT_OFFSET, 0x3e07);
--
--	/* Clear DMAUNCERRSTS Cfg-Reg Parity Error status bit
--	 * (workaround for spurious config parity error after restart)
--	 */
--	pci_read_config_word(pdev, IOAT_PCI_DEVICE_ID_OFFSET, &dev_id);
--	if (dev_id == PCI_DEVICE_ID_INTEL_IOAT_TBG0)
--		pci_write_config_dword(pdev, IOAT_PCI_DMAUNCERRSTS_OFFSET, 0x10);
--
--	err = ioat_probe(device);
--	if (err)
--		return err;
--	ioat_set_tcp_copy_break(262144);
--
--	list_for_each_entry(c, &dma->channels, device_node) {
--		chan = to_chan_common(c);
--		writel(IOAT_DMA_DCA_ANY_CPU,
--		       chan->reg_base + IOAT_DCACTRL_OFFSET);
--	}
--
--	err = ioat_register(device);
--	if (err)
--		return err;
--	if (dca)
--		device->dca = ioat3_dca_init(pdev, device->reg_base);
--
--	return err;
--}
-diff --git a/drivers/dma/ioat/dma_v2.h b/drivers/dma/ioat/dma_v2.h
-index 9011306..af69dd1 100644
---- a/drivers/dma/ioat/dma_v2.h
-+++ b/drivers/dma/ioat/dma_v2.h
-@@ -27,6 +27,7 @@
- 
- 
- extern int ioat_pending_level;
-+extern int ioat_ring_alloc_order;
- 
- /*
-  * workaround for IOAT ver.3.0 null descriptor issue
-@@ -168,4 +169,17 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *dev, int dca);
- struct dca_provider * __devinit ioat2_dca_init(struct pci_dev *pdev, void __iomem *iobase);
- struct dca_provider * __devinit ioat3_dca_init(struct pci_dev *pdev, void __iomem *iobase);
- extern struct kmem_cache *ioat2_cache;
-+int ioat2_alloc_and_lock(u16 *idx, struct ioat2_dma_chan *ioat, int num_descs);
-+int ioat2_enumerate_channels(struct ioatdma_device *device);
-+struct dma_async_tx_descriptor *
-+ioat2_dma_prep_memcpy_lock(struct dma_chan *c, dma_addr_t dma_dest,
-+			   dma_addr_t dma_src, size_t len, unsigned long flags);
-+void ioat2_issue_pending(struct dma_chan *chan);
-+int ioat2_alloc_chan_resources(struct dma_chan *c);
-+void ioat2_free_chan_resources(struct dma_chan *c);
-+enum dma_status ioat2_is_complete(struct dma_chan *c, dma_cookie_t cookie,
-+				  dma_cookie_t *done, dma_cookie_t *used);
-+void __ioat2_restart_chan(struct ioat2_dma_chan *ioat);
-+dma_cookie_t ioat2_inject_fence(struct ioat2_dma_chan *ioat);
-+bool reshape_ring(struct ioat2_dma_chan *ioat, int order);
- #endif /* IOATDMA_V2_H */
-diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
-new file mode 100644
-index 0000000..b223d66
---- /dev/null
-+++ b/drivers/dma/ioat/dma_v3.c
-@@ -0,0 +1,367 @@
-+/*
-+ * This file is provided under a dual BSD/GPLv2 license.  When using or
-+ * redistributing this file, you may do so under either license.
-+ *
-+ * GPL LICENSE SUMMARY
-+ *
-+ * Copyright(c) 2004 - 2009 Intel Corporation. All rights reserved.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ * The full GNU General Public License is included in this distribution in
-+ * the file called "COPYING".
-+ *
-+ * BSD LICENSE
-+ *
-+ * Copyright(c) 2004-2009 Intel Corporation. All rights reserved.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *
-+ *   * Redistributions of source code must retain the above copyright
-+ *     notice, this list of conditions and the following disclaimer.
-+ *   * Redistributions in binary form must reproduce the above copyright
-+ *     notice, this list of conditions and the following disclaimer in
-+ *     the documentation and/or other materials provided with the
-+ *     distribution.
-+ *   * Neither the name of Intel Corporation nor the names of its
-+ *     contributors may be used to endorse or promote products derived
-+ *     from this software without specific prior written permission.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-+ * POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/*
-+ * Support routines for v3+ hardware
-+ */
-+
-+#include <linux/pci.h>
-+#include <linux/dmaengine.h>
-+#include <linux/dma-mapping.h>
-+#include "registers.h"
-+#include "hw.h"
-+#include "dma.h"
-+#include "dma_v2.h"
-+
-+static void ioat3_dma_unmap(struct ioat2_dma_chan *ioat,
-+			    struct ioat_ring_ent *desc)
++static ssize_t ring_active_show(struct dma_chan *c, char *page)
 +{
-+	struct ioat_chan_common *chan = &ioat->base;
-+	struct pci_dev *pdev = chan->device->pdev;
-+	size_t len = desc->len;
-+	size_t offset = len - desc->hw->size;
-+	struct dma_async_tx_descriptor *tx = &desc->txd;
-+	enum dma_ctrl_flags flags = tx->flags;
++	struct ioat_dma_chan *ioat = to_ioat_chan(c);
 +
-+	switch (desc->hw->ctl_f.op) {
-+	case IOAT_OP_COPY:
-+		ioat_dma_unmap(chan, flags, len, desc->hw);
-+		break;
-+	case IOAT_OP_FILL: {
-+		struct ioat_fill_descriptor *hw = desc->fill;
-+
-+		if (!(flags & DMA_COMPL_SKIP_DEST_UNMAP))
-+			ioat_unmap(pdev, hw->dst_addr - offset, len,
-+				   PCI_DMA_FROMDEVICE, flags, 1);
-+		break;
-+	}
-+	default:
-+		dev_err(&pdev->dev, "%s: unknown op type: %#x\n",
-+			__func__, desc->hw->ctl_f.op);
-+	}
++	return sprintf(page, "%d\n", ioat->active);
 +}
++static struct ioat_sysfs_entry ring_active_attr = __ATTR_RO(ring_active);
 +
-+
-+static void __cleanup(struct ioat2_dma_chan *ioat, unsigned long phys_complete)
++static ssize_t cap_show(struct dma_chan *c, char *page)
 +{
-+	struct ioat_chan_common *chan = &ioat->base;
-+	struct ioat_ring_ent *desc;
-+	bool seen_current = false;
-+	u16 active;
-+	int i;
++	struct dma_device *dma = c->device;
 +
-+	dev_dbg(to_dev(chan), "%s: head: %#x tail: %#x issued: %#x\n",
-+		__func__, ioat->head, ioat->tail, ioat->issued);
++	return sprintf(page, "copy%s%s%s%s%s%s\n",
++		       dma_has_cap(DMA_PQ, dma->cap_mask) ? " pq" : "",
++		       dma_has_cap(DMA_PQ_VAL, dma->cap_mask) ? " pq_val" : "",
++		       dma_has_cap(DMA_XOR, dma->cap_mask) ? " xor" : "",
++		       dma_has_cap(DMA_XOR_VAL, dma->cap_mask) ? " xor_val" : "",
++		       dma_has_cap(DMA_MEMSET, dma->cap_mask)  ? " fill" : "",
++		       dma_has_cap(DMA_INTERRUPT, dma->cap_mask) ? " intr" : "");
 +
-+	active = ioat2_ring_active(ioat);
-+	for (i = 0; i < active && !seen_current; i++) {
-+		struct dma_async_tx_descriptor *tx;
-+
-+		prefetch(ioat2_get_ring_ent(ioat, ioat->tail + i + 1));
-+		desc = ioat2_get_ring_ent(ioat, ioat->tail + i);
-+		dump_desc_dbg(ioat, desc);
-+		tx = &desc->txd;
-+		if (tx->cookie) {
-+			chan->completed_cookie = tx->cookie;
-+			ioat3_dma_unmap(ioat, desc);
-+			tx->cookie = 0;
-+			if (tx->callback) {
-+				tx->callback(tx->callback_param);
-+				tx->callback = NULL;
-+			}
-+		}
-+
-+		if (tx->phys == phys_complete)
-+			seen_current = true;
-+	}
-+	ioat->tail += i;
-+	BUG_ON(!seen_current); /* no active descs have written a completion? */
-+	chan->last_completion = phys_complete;
-+	if (ioat->head == ioat->tail) {
-+		dev_dbg(to_dev(chan), "%s: cancel completion timeout\n",
-+			__func__);
-+		clear_bit(IOAT_COMPLETION_PENDING, &chan->state);
-+		mod_timer(&chan->timer, jiffies + IDLE_TIMEOUT);
-+	}
 +}
++struct ioat_sysfs_entry ioat_cap_attr = __ATTR_RO(cap);
 +
-+static void ioat3_cleanup(struct ioat2_dma_chan *ioat)
++static ssize_t version_show(struct dma_chan *c, char *page)
 +{
-+	struct ioat_chan_common *chan = &ioat->base;
-+	unsigned long phys_complete;
++	struct dma_device *dma = c->device;
++	struct ioatdma_device *device = to_ioatdma_device(dma);
 +
-+	prefetch(chan->completion);
-+
-+	if (!spin_trylock_bh(&chan->cleanup_lock))
-+		return;
-+
-+	if (!ioat_cleanup_preamble(chan, &phys_complete)) {
-+		spin_unlock_bh(&chan->cleanup_lock);
-+		return;
-+	}
-+
-+	if (!spin_trylock_bh(&ioat->ring_lock)) {
-+		spin_unlock_bh(&chan->cleanup_lock);
-+		return;
-+	}
-+
-+	__cleanup(ioat, phys_complete);
-+
-+	spin_unlock_bh(&ioat->ring_lock);
-+	spin_unlock_bh(&chan->cleanup_lock);
++	return sprintf(page, "%d.%d\n",
++		       device->version >> 4, device->version & 0xf);
 +}
++struct ioat_sysfs_entry ioat_version_attr = __ATTR_RO(version);
 +
-+static void ioat3_cleanup_tasklet(unsigned long data)
++static struct attribute *ioat1_attrs[] = {
++	&ring_size_attr.attr,
++	&ring_active_attr.attr,
++	&ioat_cap_attr.attr,
++	&ioat_version_attr.attr,
++	NULL,
++};
++
++static ssize_t
++ioat_attr_show(struct kobject *kobj, struct attribute *attr, char *page)
 +{
-+	struct ioat2_dma_chan *ioat = (void *) data;
-+
-+	ioat3_cleanup(ioat);
-+	writew(IOAT_CHANCTRL_RUN, ioat->base.reg_base + IOAT_CHANCTRL_OFFSET);
-+}
-+
-+static void ioat3_restart_channel(struct ioat2_dma_chan *ioat)
-+{
-+	struct ioat_chan_common *chan = &ioat->base;
-+	unsigned long phys_complete;
-+	u32 status;
-+
-+	status = ioat_chansts(chan);
-+	if (is_ioat_active(status) || is_ioat_idle(status))
-+		ioat_suspend(chan);
-+	while (is_ioat_active(status) || is_ioat_idle(status)) {
-+		status = ioat_chansts(chan);
-+		cpu_relax();
-+	}
-+
-+	if (ioat_cleanup_preamble(chan, &phys_complete))
-+		__cleanup(ioat, phys_complete);
-+
-+	__ioat2_restart_chan(ioat);
-+}
-+
-+static void ioat3_timer_event(unsigned long data)
-+{
-+	struct ioat2_dma_chan *ioat = (void *) data;
-+	struct ioat_chan_common *chan = &ioat->base;
-+
-+	spin_lock_bh(&chan->cleanup_lock);
-+	if (test_bit(IOAT_COMPLETION_PENDING, &chan->state)) {
-+		unsigned long phys_complete;
-+		u64 status;
-+
-+		spin_lock_bh(&ioat->ring_lock);
-+		status = ioat_chansts(chan);
-+
-+		/* when halted due to errors check for channel
-+		 * programming errors before advancing the completion state
-+		 */
-+		if (is_ioat_halted(status)) {
-+			u32 chanerr;
-+
-+			chanerr = readl(chan->reg_base + IOAT_CHANERR_OFFSET);
-+			BUG_ON(is_ioat_bug(chanerr));
-+		}
-+
-+		/* if we haven't made progress and we have already
-+		 * acknowledged a pending completion once, then be more
-+		 * forceful with a restart
-+		 */
-+		if (ioat_cleanup_preamble(chan, &phys_complete))
-+			__cleanup(ioat, phys_complete);
-+		else if (test_bit(IOAT_COMPLETION_ACK, &chan->state))
-+			ioat3_restart_channel(ioat);
-+		else {
-+			set_bit(IOAT_COMPLETION_ACK, &chan->state);
-+			mod_timer(&chan->timer, jiffies + COMPLETION_TIMEOUT);
-+		}
-+		spin_unlock_bh(&ioat->ring_lock);
-+	} else {
-+		u16 active;
-+
-+		/* if the ring is idle, empty, and oversized try to step
-+		 * down the size
-+		 */
-+		spin_lock_bh(&ioat->ring_lock);
-+		active = ioat2_ring_active(ioat);
-+		if (active == 0 && ioat->alloc_order > ioat_get_alloc_order())
-+			reshape_ring(ioat, ioat->alloc_order-1);
-+		spin_unlock_bh(&ioat->ring_lock);
-+
-+		/* keep shrinking until we get back to our minimum
-+		 * default size
-+		 */
-+		if (ioat->alloc_order > ioat_get_alloc_order())
-+			mod_timer(&chan->timer, jiffies + IDLE_TIMEOUT);
-+	}
-+	spin_unlock_bh(&chan->cleanup_lock);
-+}
-+
-+static enum dma_status
-+ioat3_is_complete(struct dma_chan *c, dma_cookie_t cookie,
-+		  dma_cookie_t *done, dma_cookie_t *used)
-+{
-+	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
-+
-+	if (ioat_is_complete(c, cookie, done, used) == DMA_SUCCESS)
-+		return DMA_SUCCESS;
-+
-+	ioat3_cleanup(ioat);
-+
-+	return ioat_is_complete(c, cookie, done, used);
-+}
-+
-+static struct dma_async_tx_descriptor *
-+ioat3_prep_memset_lock(struct dma_chan *c, dma_addr_t dest, int value,
-+		       size_t len, unsigned long flags)
-+{
-+	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
-+	struct ioat_ring_ent *desc;
-+	size_t total_len = len;
-+	struct ioat_fill_descriptor *fill;
-+	int num_descs;
-+	u64 src_data = (0x0101010101010101ULL) * (value & 0xff);
-+	u16 idx;
-+	int i;
-+
-+	num_descs = ioat2_xferlen_to_descs(ioat, len);
-+	if (likely(num_descs) &&
-+	    ioat2_alloc_and_lock(&idx, ioat, num_descs) == 0)
-+		/* pass */;
-+	else
-+		return NULL;
-+	for (i = 0; i < num_descs; i++) {
-+		size_t xfer_size = min_t(size_t, len, 1 << ioat->xfercap_log);
-+
-+		desc = ioat2_get_ring_ent(ioat, idx + i);
-+		fill = desc->fill;
-+
-+		fill->size = xfer_size;
-+		fill->src_data = src_data;
-+		fill->dst_addr = dest;
-+		fill->ctl = 0;
-+		fill->ctl_f.op = IOAT_OP_FILL;
-+
-+		len -= xfer_size;
-+		dest += xfer_size;
-+		dump_desc_dbg(ioat, desc);
-+	}
-+
-+	desc->txd.flags = flags;
-+	desc->len = total_len;
-+	fill->ctl_f.int_en = !!(flags & DMA_PREP_INTERRUPT);
-+	fill->ctl_f.fence = !!(flags & DMA_PREP_FENCE);
-+	fill->ctl_f.compl_write = 1;
-+	dump_desc_dbg(ioat, desc);
-+
-+	/* we leave the channel locked to ensure in order submission */
-+	return &desc->txd;
-+}
-+
-+int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
-+{
-+	struct pci_dev *pdev = device->pdev;
-+	struct dma_device *dma;
-+	struct dma_chan *c;
++	struct ioat_sysfs_entry *entry;
 +	struct ioat_chan_common *chan;
-+	int err;
-+	u16 dev_id;
-+	u32 cap;
 +
-+	device->enumerate_channels = ioat2_enumerate_channels;
-+	device->cleanup_tasklet = ioat3_cleanup_tasklet;
-+	device->timer_fn = ioat3_timer_event;
-+	dma = &device->common;
-+	dma->device_prep_dma_memcpy = ioat2_dma_prep_memcpy_lock;
-+	dma->device_issue_pending = ioat2_issue_pending;
-+	dma->device_alloc_chan_resources = ioat2_alloc_chan_resources;
-+	dma->device_free_chan_resources = ioat2_free_chan_resources;
-+	dma->device_is_tx_complete = ioat3_is_complete;
-+	cap = readl(device->reg_base + IOAT_DMA_CAP_OFFSET);
-+	if (cap & IOAT_CAP_FILL_BLOCK) {
-+		dma_cap_set(DMA_MEMSET, dma->cap_mask);
-+		dma->device_prep_dma_memset = ioat3_prep_memset_lock;
-+	}
++	entry = container_of(attr, struct ioat_sysfs_entry, attr);
++	chan = container_of(kobj, struct ioat_chan_common, kobj);
 +
-+	/* -= IOAT ver.3 workarounds =- */
-+	/* Write CHANERRMSK_INT with 3E07h to mask out the errors
-+	 * that can cause stability issues for IOAT ver.3
-+	 */
-+	pci_write_config_dword(pdev, IOAT_PCI_CHANERRMASK_INT_OFFSET, 0x3e07);
++	if (!entry->show)
++		return -EIO;
++	return entry->show(&chan->common, page);
++}
 +
-+	/* Clear DMAUNCERRSTS Cfg-Reg Parity Error status bit
-+	 * (workaround for spurious config parity error after restart)
-+	 */
-+	pci_read_config_word(pdev, IOAT_PCI_DEVICE_ID_OFFSET, &dev_id);
-+	if (dev_id == PCI_DEVICE_ID_INTEL_IOAT_TBG0)
-+		pci_write_config_dword(pdev, IOAT_PCI_DMAUNCERRSTS_OFFSET, 0x10);
++struct sysfs_ops ioat_sysfs_ops = {
++	.show	= ioat_attr_show,
++};
 +
-+	err = ioat_probe(device);
-+	if (err)
-+		return err;
-+	ioat_set_tcp_copy_break(262144);
++static struct kobj_type ioat1_ktype = {
++	.sysfs_ops = &ioat_sysfs_ops,
++	.default_attrs = ioat1_attrs,
++};
++
++void ioat_kobject_add(struct ioatdma_device *device, struct kobj_type *type)
++{
++	struct dma_device *dma = &device->common;
++	struct dma_chan *c;
 +
 +	list_for_each_entry(c, &dma->channels, device_node) {
-+		chan = to_chan_common(c);
-+		writel(IOAT_DMA_DCA_ANY_CPU,
-+		       chan->reg_base + IOAT_DCACTRL_OFFSET);
++		struct ioat_chan_common *chan = to_chan_common(c);
++		struct kobject *parent = &c->dev->device.kobj;
++		int err;
++
++		err = kobject_init_and_add(&chan->kobj, type, parent, "quickdata");
++		if (err) {
++			dev_warn(to_dev(chan),
++				 "sysfs init error (%d), continuing...\n", err);
++			kobject_put(&chan->kobj);
++			set_bit(IOAT_KOBJ_INIT_FAIL, &chan->state);
++		}
 +	}
-+
-+	err = ioat_register(device);
-+	if (err)
-+		return err;
-+	if (dca)
-+		device->dca = ioat3_dca_init(pdev, device->reg_base);
-+
-+	return 0;
 +}
++
++void ioat_kobject_del(struct ioatdma_device *device)
++{
++	struct dma_device *dma = &device->common;
++	struct dma_chan *c;
++
++	list_for_each_entry(c, &dma->channels, device_node) {
++		struct ioat_chan_common *chan = to_chan_common(c);
++
++		if (!test_bit(IOAT_KOBJ_INIT_FAIL, &chan->state)) {
++			kobject_del(&chan->kobj);
++			kobject_put(&chan->kobj);
++		}
++	}
++}
++
+ int __devinit ioat1_dma_probe(struct ioatdma_device *device, int dca)
+ {
+ 	struct pci_dev *pdev = device->pdev;
+@@ -1108,6 +1212,8 @@ int __devinit ioat1_dma_probe(struct ioatdma_device *device, int dca)
+ 	err = ioat_register(device);
+ 	if (err)
+ 		return err;
++	ioat_kobject_add(device, &ioat1_ktype);
++
+ 	if (dca)
+ 		device->dca = ioat_dca_init(pdev, device->reg_base);
+ 
+@@ -1120,6 +1226,8 @@ void __devexit ioat_dma_remove(struct ioatdma_device *device)
+ 
+ 	ioat_disable_interrupts(device);
+ 
++	ioat_kobject_del(device);
++
+ 	dma_async_device_unregister(dma);
+ 
+ 	pci_pool_destroy(device->dma_pool);
+diff --git a/drivers/dma/ioat/dma.h b/drivers/dma/ioat/dma.h
+index 5999c12..6c798f3 100644
+--- a/drivers/dma/ioat/dma.h
++++ b/drivers/dma/ioat/dma.h
+@@ -92,6 +92,7 @@ struct ioat_chan_common {
+ 	#define IOAT_COMPLETION_PENDING 0
+ 	#define IOAT_COMPLETION_ACK 1
+ 	#define IOAT_RESET_PENDING 2
++	#define IOAT_KOBJ_INIT_FAIL 3
+ 	struct timer_list timer;
+ 	#define COMPLETION_TIMEOUT msecs_to_jiffies(100)
+ 	#define IDLE_TIMEOUT msecs_to_jiffies(2000)
+@@ -100,8 +101,13 @@ struct ioat_chan_common {
+ 	dma_addr_t completion_dma;
+ 	u64 *completion;
+ 	struct tasklet_struct cleanup_task;
++	struct kobject kobj;
+ };
+ 
++struct ioat_sysfs_entry {
++	struct attribute attr;
++	ssize_t (*show)(struct dma_chan *, char *);
++};
+ 
+ /**
+  * struct ioat_dma_chan - internal representation of a DMA channel
+@@ -117,6 +123,7 @@ struct ioat_dma_chan {
+ 
+ 	int pending;
+ 	u16 desccount;
++	u16 active;
+ };
+ 
+ static inline struct ioat_chan_common *to_chan_common(struct dma_chan *c)
+@@ -320,4 +327,9 @@ void ioat_dma_unmap(struct ioat_chan_common *chan, enum dma_ctrl_flags flags,
+ 		    size_t len, struct ioat_dma_descriptor *hw);
+ bool ioat_cleanup_preamble(struct ioat_chan_common *chan,
+ 			   unsigned long *phys_complete);
++void ioat_kobject_add(struct ioatdma_device *device, struct kobj_type *type);
++void ioat_kobject_del(struct ioatdma_device *device);
++extern struct sysfs_ops ioat_sysfs_ops;
++extern struct ioat_sysfs_entry ioat_version_attr;
++extern struct ioat_sysfs_entry ioat_cap_attr;
+ #endif /* IOATDMA_H */
+diff --git a/drivers/dma/ioat/dma_v2.c b/drivers/dma/ioat/dma_v2.c
+index 5a736a3..7408bef 100644
+--- a/drivers/dma/ioat/dma_v2.c
++++ b/drivers/dma/ioat/dma_v2.c
+@@ -796,6 +796,36 @@ ioat2_is_complete(struct dma_chan *c, dma_cookie_t cookie,
+ 	return ioat_is_complete(c, cookie, done, used);
+ }
+ 
++static ssize_t ring_size_show(struct dma_chan *c, char *page)
++{
++	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
++
++	return sprintf(page, "%d\n", (1 << ioat->alloc_order) & ~1);
++}
++static struct ioat_sysfs_entry ring_size_attr = __ATTR_RO(ring_size);
++
++static ssize_t ring_active_show(struct dma_chan *c, char *page)
++{
++	struct ioat2_dma_chan *ioat = to_ioat2_chan(c);
++
++	/* ...taken outside the lock, no need to be precise */
++	return sprintf(page, "%d\n", ioat2_ring_active(ioat));
++}
++static struct ioat_sysfs_entry ring_active_attr = __ATTR_RO(ring_active);
++
++static struct attribute *ioat2_attrs[] = {
++	&ring_size_attr.attr,
++	&ring_active_attr.attr,
++	&ioat_cap_attr.attr,
++	&ioat_version_attr.attr,
++	NULL,
++};
++
++struct kobj_type ioat2_ktype = {
++	.sysfs_ops = &ioat_sysfs_ops,
++	.default_attrs = ioat2_attrs,
++};
++
+ int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
+ {
+ 	struct pci_dev *pdev = device->pdev;
+@@ -828,6 +858,9 @@ int __devinit ioat2_dma_probe(struct ioatdma_device *device, int dca)
+ 	err = ioat_register(device);
+ 	if (err)
+ 		return err;
++
++	ioat_kobject_add(device, &ioat2_ktype);
++
+ 	if (dca)
+ 		device->dca = ioat2_dca_init(pdev, device->reg_base);
+ 
+diff --git a/drivers/dma/ioat/dma_v2.h b/drivers/dma/ioat/dma_v2.h
+index af69dd1..a216b3f 100644
+--- a/drivers/dma/ioat/dma_v2.h
++++ b/drivers/dma/ioat/dma_v2.h
+@@ -182,4 +182,5 @@ enum dma_status ioat2_is_complete(struct dma_chan *c, dma_cookie_t cookie,
+ void __ioat2_restart_chan(struct ioat2_dma_chan *ioat);
+ dma_cookie_t ioat2_inject_fence(struct ioat2_dma_chan *ioat);
+ bool reshape_ring(struct ioat2_dma_chan *ioat, int order);
++extern struct kobj_type ioat2_ktype;
+ #endif /* IOATDMA_V2_H */
+diff --git a/drivers/dma/ioat/dma_v3.c b/drivers/dma/ioat/dma_v3.c
+index b223d66..22af78e 100644
+--- a/drivers/dma/ioat/dma_v3.c
++++ b/drivers/dma/ioat/dma_v3.c
+@@ -360,6 +360,9 @@ int __devinit ioat3_dma_probe(struct ioatdma_device *device, int dca)
+ 	err = ioat_register(device);
+ 	if (err)
+ 		return err;
++
++	ioat_kobject_add(device, &ioat2_ktype);
++
+ 	if (dca)
+ 		device->dca = ioat3_dca_init(pdev, device->reg_base);
+ 
 diff --git a/drivers/dma/ioat/pci.c b/drivers/dma/ioat/pci.c
-index 61086c6..064bc95 100644
+index 064bc95..b3d5e89 100644
 --- a/drivers/dma/ioat/pci.c
 +++ b/drivers/dma/ioat/pci.c
-@@ -36,7 +36,7 @@
- #include "hw.h"
+@@ -172,6 +172,9 @@ static int __init ioat_init_module(void)
+ {
+ 	int err;
  
- MODULE_VERSION(IOAT_DMA_VERSION);
--MODULE_LICENSE("GPL");
-+MODULE_LICENSE("Dual BSD/GPL");
- MODULE_AUTHOR("Intel Corporation");
- 
- static struct pci_device_id ioat_pci_tbl[] = {
++	pr_info("%s: Intel(R) QuickData Technology Driver %s\n",
++		DRV_NAME, IOAT_DMA_VERSION);
++
+ 	ioat2_cache = kmem_cache_create("ioat2", sizeof(struct ioat_ring_ent),
+ 					0, SLAB_HWCACHE_ALIGN, NULL);
+ 	if (!ioat2_cache)
 
