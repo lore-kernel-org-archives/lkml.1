@@ -1,62 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934401AbZIDW3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934395AbZIDW0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934401AbZIDW3K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 18:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934350AbZIDW3I
+	id S934395AbZIDW0W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 18:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934364AbZIDW0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 18:29:08 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:33585 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934024AbZIDW3I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 18:29:08 -0400
-Subject: Re: [PATCH v2 2/5] kmemleak: add clear command support
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
-Cc: Luis Rodriguez <Luis.Rodriguez@Atheros.com>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "penberg@cs.helsinki.fi" <penberg@cs.helsinki.fi>,
-       "mcgrof@gmail.com" <mcgrof@gmail.com>
-In-Reply-To: <20090904202653.GE4949@mosca>
-References: <1251956140-5499-1-git-send-email-lrodriguez@atheros.com>
-	 <1251956140-5499-3-git-send-email-lrodriguez@atheros.com>
-	 <1251996731.22485.25.camel@pc1117.cambridge.arm.com>
-	 <20090904202653.GE4949@mosca>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Fri, 04 Sep 2009 23:28:47 +0100
-Message-Id: <1252103327.21380.6.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 Sep 2009 22:28:48.0219 (UTC) FILETIME=[123FFAB0:01CA2DAF]
+	Fri, 4 Sep 2009 18:26:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:37394 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934292AbZIDW0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 18:26:18 -0400
+Message-ID: <4AA194CE.30200@redhat.com>
+Date: Fri, 04 Sep 2009 18:29:34 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [PATCH -tip tracing/kprobes 3/6] kprobes/x86: Fix to add	__kprobes
+ to in-kernel fault handing functions
+References: <20090827152539.GE6058@nowhere> <20090827172311.8246.92725.stgit@localhost.localdomain> <20090830005355.GB387@nowhere> <4A99E8CB.1040600@redhat.com> <20090830160939.GA6131@nowhere> <4A9E6BDD.6090705@redhat.com> <20090904190651.GC6118@nowhere>
+In-Reply-To: <20090904190651.GC6118@nowhere>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-04 at 13:26 -0700, Luis R. Rodriguez wrote:
-> On Thu, Sep 03, 2009 at 09:52:11AM -0700, Catalin Marinas wrote:
-> > On Thu, 2009-09-03 at 01:35 -0400, Luis R. Rodriguez wrote:
-> > > In an ideal world your kmemleak output will be small,
-> > > when its not you can use the clear command to ingore previously
-> > > annotated kmemleak objects. We do this by painting them black.
-> > 
-> > Making the objects "black" means that they are completely ignored by
-> > kmemleak and they are assumed not to contain any valid references.
-> > Therefore they won't be scanned and many of the newly allocated objects
-> > would be false positives.
-> 
-> Got it, BTW can you elaborate as to why painting objects black would
-> create false positives for newly allocated objects? I fail to understand
-> why.
+Frederic Weisbecker wrote:
+> On Wed, Sep 02, 2009 at 08:58:05AM -0400, Masami Hiramatsu wrote:
+>> Frederic Weisbecker wrote:
+>>> BTW, after your patchset:
+>>>
+>>> TEST    posttest
+>>>    Building modules, stage 2.
+>>> Error: c0101038:	2e a1 f8 b0 9e c0    	mov    %cs:0xc09eb0f8,%eax
+>>> Error: objdump says 6 bytes, but insn_get_length() says 10 (attr:40000)
+>>> make[1]: *** [posttest] Erreur 2
+>>> make: *** [bzImage] Erreur 2
+>>> make: *** Attente des tâches non terminées....
+>>>    MODPOST 4 modules
+>>>
+>>>
+>>> I'm cross compiling from 64 to 32 using:
+>>>
+>>> make ARCH=x86
+>>>
+>>> I've attached my config.
+>>
+>> Aah, you might miss an important patch :D
+>> http://lkml.org/lkml/2009/8/28/367
+>>
+>> Thank you,
+>>
+>
+>
+> Well, even with this patch I have this problem occuring with
+> make ARCH=x86
+>
+> Error: c125d65d:	0f 6f 02             	movq   (%edx),%mm0
+> Error: objdump says 3 bytes, but insn_get_length() says 2 (attr:0)
+> make[1]: *** [posttest] Erreur 2
+> make: *** [bzImage] Erreur 2
+>
+> Hmm, may be that's because it doesn't support mmx instructions.
+> The whole patchset is on
+>
+> git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+> 	tracing/kprobes
+>
+> Config and make V=1 log attached.
 
-Black objects are not scanned by kmemleak. Making valid objects black as
-per your patch, they may (actually quite likely) contain pointers to
-newly allocated objects. Since they won't be scanned, the newly
-allocated objects are reported as unreferenced as no pointers to them
-were found during scanning.
+Aah, Indeed. It's time to add MMX/SSE support on x86 insn decoder.
+
+Thank you for reporting!
 
 -- 
-Catalin
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
