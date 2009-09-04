@@ -1,294 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbZIDIXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933016AbZIDI0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932840AbZIDIXU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 04:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756596AbZIDIXS
+	id S933016AbZIDI0N (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 04:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932510AbZIDI0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 04:23:18 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:45696 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756122AbZIDIXO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 04:23:14 -0400
-Date: Fri, 4 Sep 2009 18:23:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for September 4
-Message-Id: <20090904182309.dbb05c96.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.5; i486-pc-linux-gnu)
+	Fri, 4 Sep 2009 04:26:13 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:52243 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932127AbZIDI0L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 04:26:11 -0400
+Subject: Re: [PATCH] cfg80211: clear cfg80211_inform_bss() from kmemleak
+	reports
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linville@tuxdriver.com" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <1252040671.9336.10.camel@johannes.local>
+References: <1251958266-10692-1-git-send-email-lrodriguez@atheros.com>
+	 <1251962791.3336.3.camel@johannes.local>
+	 <43e72e890909031113r6010519br3b81d15cc331ba85@mail.gmail.com>
+	 <1252001837.9336.2.camel@johannes.local>  <20090903204319.GC3701@mosca>
+	 <1252040671.9336.10.camel@johannes.local>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Fri, 04 Sep 2009 09:25:57 +0100
+Message-Id: <1252052757.26413.9.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__4_Sep_2009_18_23_09_+1000_Q9KJEcNnXctq0JcE"
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 04 Sep 2009 08:25:58.0234 (UTC) FILETIME=[5430A3A0:01CA2D39]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__4_Sep_2009_18_23_09_+1000_Q9KJEcNnXctq0JcE
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, 2009-09-04 at 07:04 +0200, Johannes Berg wrote:
+> On Thu, 2009-09-03 at 13:43 -0700, Luis R. Rodriguez wrote:
+> > On Thu, Sep 03, 2009 at 11:17:17AM -0700, Johannes Berg wrote:
+> > > On Thu, 2009-09-03 at 11:13 -0700, Luis R. Rodriguez wrote:
+> > > 
+> > > > What I meant is it gobbles it up and spits another thing out. When it
+> > > > gobbles it up the routine then uses kref_put().
+> > > > 
+> > > > > Why can it not track this?
+> > > > 
+> > > > It probably can, just not sure if it follows kref_put(), I was under
+> > > > the impression here it doesn't and because of it we were getting false
+> > > > positives. Catalin, can you confirm?
+> > > 
+> > > Ah I'd think that if it can't track it then that's because we use a
+> > > pointer to the middle of the struct to keep track of it much of the
+> > > time.
+> > 
+> > So you agree with the patch but not the commit log entry?
+> 
+> I'm not sure -- I think kmemleak should be able to figure it out, and if
+> you were using IBSS then we actually have a leak that we need to plug,
+> but otherwise I'd prefer to get some more input from Catalin first.
 
-Hi all,
+First of all, kmemleak_ignore() is not the right function to mark a
+false positive as it completely ignores an object even though it may
+have pointers to others. The kmemleak_not_leak() function should be
+used. However, there are only two places in the kernel where this was
+actually needed (one of them is a real leak but we ignore it as it makes
+the code more complicated).
 
-Changes since 20090903:
+So, I think we should try to figure out why kmemleak reports it. There
+are a few common cases:
+     1. transient false positive - this should disappear after a few
+        scans
+     2. a pointer leading to the reported object is stored in an area of
+        memory not scanned by kmemleak - most commonly pages allocated
+        explicitly (alloc_pages etc.) as kmemleak doesn't track these.
+        The preferred solution is to inform kmemleak about such page
+        (kmemleak_alloc/kmemleak_free) rather than marking the false
+        positive
+     3. a pointer leading to the reported object isn't actually pointing
+        to anywhere inside the structure (i.e. using the physical
+        address). Here we would use kmemleak_not_leak()
 
-The xfs tree gained a conflict against the ext3 tree.
+> Catalin, is it conceivable that kmemleak reports false positives if we
+> use a struct like
+> 
+> struct pubbss {
+> ...
+> };
+> 
+> struct bss {
+> ...
+> struct pubbss pub;
+> };
+> 
+> and then keep track of &bss->pub; pointers instead of bss directly?
 
-The acpi tree still has a build failure so I used the version from
-next-20090831.
+It should not report  false positive here. That's a pretty common case
+with struct list_head, struct device etc. and kmemleak handles them
+properly - if there is a memory location pointing to *anywhere* inside a
+structure, the object is considered referenced and not reported.
 
-The security-testing tree still has a build failure so I used the version
-of the tree from next-20090902.
+-- 
+Catalin
 
-The staging tree gained a conflict against the net tree.
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
-and sparc64 defconfig. These builds also have
-CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
-CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 141 trees (counting Linus' and 21 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/tty.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging ide-curent/master
-Merging dwmw2/master
-Merging arm/devel
-Merging davinci/for-next
-Merging pxa/for-next
-Merging thumb-2/thumb-2
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging microblaze/next
-Merging mips/mips-for-linux-next
-Merging parisc/next
-Merging powerpc/next
-CONFLICT (content): Merge conflict in kernel/gcov/Kconfig
-Merging 4xx/next
-Merging galak/next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging xtensa/master
-Merging cifs/master
-Merging configfs/linux-next
-Merging ecryptfs/next
-Merging ext3/for_next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-CONFLICT (content): Merge conflict in net/sunrpc/cache.c
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging udf/for_next
-Merging v9fs/for-next
-Merging ubifs/linux-next
-Merging xfs/master
-CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_lrw.c
-Merging reiserfs-bkl/reiserfs/kill-bkl
-Merging vfs/for-next
-Merging pci/linux-next
-CONFLICT (content): Merge conflict in arch/powerpc/kernel/pci_64.c
-Applying: pci: merge fixup for fundamental reset conflict with powerpc tree
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-CONFLICT (content): Merge conflict in drivers/media/video/gspca/Kconfig
-CONFLICT (content): Merge conflict in drivers/media/video/sh_mobile_ceu_cam=
-era.c
-Merging quota/for_next
-Merging kbuild/master
-Merging kconfig/for-next
-CONFLICT (content): Merge conflict in scripts/extract-ikconfig
-Merging ide/master
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-$ git reset --hard HEAD^
-Merging refs/next/20090831/acpi
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-Merging async_tx/next
-Merging net/master
-Merging wireless/master
-Merging mtd/master
-Merging crypto/master
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
-Merging mmc/next
-Merging input/next
-CONFLICT (content): Merge conflict in drivers/base/platform.c
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in fs/ubifs/super.c
-Merging quilt/device-mapper
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-CONFLICT (content): Merge conflict in firmware/Makefile
-Merging voltage/for-next
-CONFLICT (content): Merge conflict in drivers/regulator/Kconfig
-Merging security-testing/next
-CONFLICT (content): Merge conflict in arch/arm/kernel/signal.c
-CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
-CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
-CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
-Applying: security: fix merge for tun_struct changes
-$ git reset --hard HEAD^
-Merging refs/next/20090902/security-testing
-Applying: security: fix merge for tun_struct changes
-Merging lblnet/master
-CONFLICT (content): Merge conflict in drivers/net/tun.c
-Merging agp/agp-next
-CONFLICT (content): Merge conflict in drivers/char/agp/uninorth-agp.c
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging fsnotify/for-next
-Merging irda/for-next
-Merging hwlat/for-linus
-Merging drbd/drbd
-Merging kmemleak/kmemleak
-Merging tip/auto-latest
-CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
-CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
-CONFLICT (content): Merge conflict in drivers/pci/dmar.c
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in include/linux/rcupdate.h
-CONFLICT (content): Merge conflict in kernel/fork.c
-Applying: tip: fix merge for cupmask update
-Merging oprofile/for-next
-CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
-Merging edac-amd/for-next
-CONFLICT (content): Merge conflict in arch/x86/kernel/smpboot.c
-CONFLICT (content): Merge conflict in include/linux/topology.h
-Merging percpu/for-next
-CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
-CONFLICT (content): Merge conflict in kernel/sched.c
-Merging sfi/sfi-test
-CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
-Merging asm-generic/next
-Merging hwpoison/hwpoison
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in drivers/base/class.c
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/tty
-CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
-Merging quilt/usb
-Merging quilt/staging
-CONFLICT (delete/modify): drivers/staging/at76_usb/at76_usb.c deleted in qu=
-ilt/staging and modified in HEAD. Version HEAD of drivers/staging/at76_usb/=
-at76_usb.c left in tree.
-CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
-d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
-l/VirtualEthernetLinux.c left in tree.
-$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
-$ git rm -f drivers/staging/at76_usb/at76_usb.c
-Merging scsi-post-merge/master
-
---Signature=_Fri__4_Sep_2009_18_23_09_+1000_Q9KJEcNnXctq0JcE
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqgzm0ACgkQjjKRsyhoI8yzgQCgmZcxs6sDqnxa7fdHYcDVzsy9
-nIcAoLTWAaVORmWAunU8QZuWWIdmo3U5
-=8FZ6
------END PGP SIGNATURE-----
-
---Signature=_Fri__4_Sep_2009_18_23_09_+1000_Q9KJEcNnXctq0JcE--
