@@ -1,87 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbZIDTYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934275AbZIDUzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757245AbZIDTYY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 15:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933850AbZIDTYX
+	id S934275AbZIDUzV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 16:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934025AbZIDUzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 15:24:23 -0400
-Received: from comal.ext.ti.com ([198.47.26.152]:35571 "EHLO comal.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757165AbZIDTYW convert rfc822-to-8bit (ORCPT
+	Fri, 4 Sep 2009 16:55:20 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:39558 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933855AbZIDUzT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 15:24:22 -0400
-From: "Pandita, Vikram" <vikram.pandita@ti.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Kadiyala, Kishore" <kishore.kadiyala@ti.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>,
-       "jarkko.lavinen@nokia.com" <jarkko.lavinen@nokia.com>,
-       "Chikkature Rajashekar, Madhusudhan" <madhu.cr@ti.com>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "linux-arm-kernel@lists.infradead.org" 
-	<linux-arm-kernel@lists.infradead.org>,
-       "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>
-Date: Sat, 5 Sep 2009 00:53:21 +0530
-Subject: RE: [PATCH] OMAP4: MMC driver support on OMAP4
-Thread-Topic: [PATCH] OMAP4: MMC driver support on OMAP4
-Thread-Index: AcotlMMjfo+1TMazQAC9wZKn0WNnBAAABgUQ
-Message-ID: <FCCFB4CDC6E5564B9182F639FC35608702F9B8A526@dbde02.ent.ti.com>
-References: <34590.192.168.10.89.1251897876.squirrel@dbdmail.itg.ti.com>
- <20090904121912.4b4e2b5a.akpm@linux-foundation.org>
-In-Reply-To: <20090904121912.4b4e2b5a.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 4 Sep 2009 16:55:19 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+       <linux-fsdevel@vger.kernel.org>, Alexey Dobriyan <adobriyan@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Tejun Heo <tj@kernel.org>
+Subject: [PATCH 0/4] Safely removing mmaped files
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 04 Sep 2009 12:24:44 -0700
+Message-ID: <m1fxb2wm0z.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=76.21.114.89;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 76.21.114.89
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, tj@kernel.org, gregkh@suse.de, adobriyan@gmail.com, linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in02.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew/Kishore
 
->-----Original Message-----
->From: linux-omap-owner@vger.kernel.org [mailto:linux-omap-owner@vger.kernel.org] On Behalf Of Andrew
->Morton
->Sent: Friday, September 04, 2009 2:19 PM
->
->On Wed, 2 Sep 2009 18:54:36 +0530 (IST)
->"kishore kadiyala" <kishore.kadiyala@ti.com> wrote:
->
->> This Patch adds basic support for all 5 MMC controllers on OMAP4.
->>
->> -Kishore
->>
->> Signed-off-by: Kishore Kadiyala <kishore.kadiyala@ti.com>
->> ---
->> This patch doesn't include mmc-regulator support
->>
->
->This looks like an ARM patch more than an MMC patch.  I grabbed it as
->an MMC thing but hopefully someone else will grab it for a more
->appropriate tree.
+Currently when mmaped files are removed I have not found a single
+instance in the kernel where we handle it correctly.  Frequently after
+a hot remove we will either leak a file (with weird ensuing
+consequences) or we will goof and not call vm_ops->close() which can
+cause leaks.
 
-A patch split is required:
+It turns out this problem isn't too bad to actually fix and this
+patchset is my generic solution.  Tested against 2.6.31-rc8 with a
+process that mmaped /sys/*/*/resource0 and /proc/bus/pci/*/*.
 
->>  arch/arm/mach-omap2/devices.c          |   42 +++++++++++++++++++++++++++++----
->>  arch/arm/plat-omap/include/mach/irqs.h |    2 +
->>  arch/arm/plat-omap/include/mach/mmc.h  |    9 ++++++-
+I'm not certain what the best way to carry these patches is to get
+them merged.  Andrew can you carry this patchset?
 
-These files will go through linux-omap -> arm: to RMK
 
->>  drivers/mmc/host/Kconfig               |    6 ++--
->>  drivers/mmc/host/omap_hsmmc.c          |   10 +++++++
->>  5 files changed, 60 insertions(+), 9 deletions(-)
-
-These files can go through Andrew.
-
->
->--
->To unsubscribe from this list: send the line "unsubscribe linux-omap" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+Eric
