@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbZIDQGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZIDQHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757043AbZIDQGz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 12:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757019AbZIDQGz
+	id S1757065AbZIDQHj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 12:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757050AbZIDQHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 12:06:55 -0400
-Received: from c60.cesmail.net ([216.154.195.49]:12101 "EHLO c60.cesmail.net"
+	Fri, 4 Sep 2009 12:07:38 -0400
+Received: from claw.goop.org ([74.207.240.146]:35533 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755743AbZIDQGy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 12:06:54 -0400
-Subject: Re: Atheros Linux wireless drivers home page - and two new driver 
- projects
-From: Pavel Roskin <proski@gnu.org>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org, Len Widra <Len.Widra@atheros.com>,
-       Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Werner Almesberger <werner@openmoko.org>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       Bob Copeland <me@bobcopeland.com>, Greg KH <greg@kroah.com>,
-       rshlinux@gmail.com, b_yogesh_snowy@yahoo.com,
-       Michael Renzmann <mrenzmann@madwifi-project.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>,
-       Paul Fertser <fercerpav@gmail.com>, Harald Welte <laforge@openmoko.org>
-In-Reply-To: <1252065236.14338.179.camel@skunk>
-References: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com>
-	 <1252065236.14338.179.camel@skunk>
-Content-Type: text/plain
-Date: Fri, 04 Sep 2009 12:06:45 -0400
-Message-Id: <1252080405.24673.11.camel@mj>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+	id S1757046AbZIDQHi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 12:07:38 -0400
+Message-ID: <4AA13B4B.7020101@goop.org>
+Date: Fri, 04 Sep 2009 09:07:39 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Bastian Blank <waldi@debian.org>, linux-kernel@vger.kernel.org,
+       xen-devel@lists.xensource.com, 544145@bugs.debian.org,
+       Keir Fraser <keir.fraser@eu.citrix.com>
+Subject: Re: 32bit binaries on x86_64/Xen segfaults in syscall-vdso
+References: <20090830181637.GA7155@wavehammer.waldi.eu.org> <4AA02C57.30106@goop.org> <20090903220252.GA19309@wavehammer.waldi.eu.org> <4AA03DE8.40706@goop.org> <20090903223603.GA19945@wavehammer.waldi.eu.org>
+In-Reply-To: <20090903223603.GA19945@wavehammer.waldi.eu.org>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-04 at 13:53 +0200, Xavier Bestel wrote:
-> On Thu, 2009-09-03 at 15:54 -0700, Luis R. Rodriguez wrote:
-> > I'm pleased to announce the new home page to Atheros Linux wireless drivers:
-> > 
-> > http://wireless.kernel.org/en/users/Drivers/Atheros
-> 
-> ath5k is marked as not master-mode capable. I thought this had been
-> fixed for 2.6.31 ?
+On 09/03/09 15:36, Bastian Blank wrote:
+> This function looks weird. It tries to restores the user code segment.
+> But the documentation from AMD explicitely stat that the CS and SS are
+> restored from the STAR register.
 
-The above page makes no such statements.  I have fixed
-http://wireless.kernel.org/en/users/Drivers/ath5k
+And STAR is always set with:
 
-https://madwifi-project.org/wiki/UserDocs/ath5kAccessPoint still needs a
-lot of work, or maybe it should be removed as obsolete.
+    wrmsrl(MSR_STAR,  ((u64)__USER32_CS)<<48  | ((u64)__KERNEL_CS)<<32);
 
--- 
-Regards,
-Pavel Roskin
+so when using sysret to return to 32-bit, it:
+
+    The CS selector value is set to MSR IA32_STAR[63:48]. The SS is set
+    to IA32_STAR[63:48] + 8.
+
+so CS is __USER32_CS and SS is __USER32_DS.
+
+The code for xen_sysret32 is:
+
+ENTRY(xen_sysret32)
+	/*
+	 * We're already on the usermode stack at this point, but
+	 * still with the kernel gs, so we can easily switch back
+	 */
+	movq %rsp, PER_CPU_VAR(old_rsp)
+	movq PER_CPU_VAR(kernel_stack), %rsp
+
+	pushq $__USER32_DS
+	pushq PER_CPU_VAR(old_rsp)
+	pushq %r11
+	pushq $__USER32_CS
+	pushq %rcx
+
+	pushq $VGCF_in_syscall
+1:	jmp hypercall_iret
+
+The iret frame is:
+
+ 	ss
+ 	rsp
+ 	rflags
+ 	cs
+ 	rip		<-- rsp
+
+so this constructs a frame of:
+
+	__USER32_DS
+	user_esp
+	user_eflags
+	__USER32_CS
+	user_eip	<-- kernel rsp
+
+and then it does the iret hypercall.
+
+But for some reason that's triggering a failsafe callback, which invokes
+a GP.
+
+    J
