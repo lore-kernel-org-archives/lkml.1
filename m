@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934503AbZIEAEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934342AbZIEAHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934503AbZIEAEN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934059AbZIEAEK
+	id S934342AbZIEAHA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934059AbZIEAG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:04:10 -0400
-Received: from mail-iw0-f175.google.com ([209.85.223.175]:63422 "EHLO
+	Fri, 4 Sep 2009 20:06:58 -0400
+Received: from mail-iw0-f175.google.com ([209.85.223.175]:64523 "EHLO
 	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934097AbZIEAED (ORCPT
+	with ESMTP id S934011AbZIEAG6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:04:03 -0400
+	Fri, 4 Sep 2009 20:06:58 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type;
-        b=WeBx92dFy2Uv9F/oXbmNOalmXSDqQj/1iijVprE7yR0ZWe+JLwxS0SQvAd99DkBBGx
-         rjRDMvintL8wiuUrZJIKXZoWvbrpbFll1yO5fMIbU9OZGsZm3ZksOV+yMQ9dnlHwU8XR
-         NSYi+BhPERGjCnwjB4U69tvuajFIt5lYnfBfM=
+        h=mime-version:from:date:message-id:subject:to:cc:content-type;
+        b=ODhENhpQhIn4Ylv1REkrhmLeeBwoY5+lIcFiF5DF0puEg3VZdpRU2pbSI5XMxPvRhH
+         B4catv3srQ2EqZw99HV5YsF+qIQFfOPQE1qCNcA3s5KbJYf3OU7LQ6g6nx2wa47EmusT
+         1uW0p3SIAFtwqeOgCJY7A5vnS2NdpHiCOV8PA=
 MIME-Version: 1.0
-In-Reply-To: <43e72e890909041548i553d63b6k1602eeb52920c4ec@mail.gmail.com>
-References: <1251958266-10692-1-git-send-email-lrodriguez@atheros.com> 
-	<43e72e890909031113r6010519br3b81d15cc331ba85@mail.gmail.com> 
-	<1252001837.9336.2.camel@johannes.local> <20090903204319.GC3701@mosca> 
-	<1252040671.9336.10.camel@johannes.local> <1252052757.26413.9.camel@pc1117.cambridge.arm.com> 
-	<43e72e890909041421m243bbea6i95c26ab21dc8732d@mail.gmail.com> 
-	<43e72e890909041458u505ce89tf38743dd6305bf7b@mail.gmail.com> 
-	<1252103067.21380.1.camel@pc1117.cambridge.arm.com> <43e72e890909041548i553d63b6k1602eeb52920c4ec@mail.gmail.com>
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Date: Fri, 4 Sep 2009 17:03:45 -0700
-X-Google-Sender-Auth: 3ed45d6a825f561a
-Message-ID: <43e72e890909041703k79326384ided33edfccaaeb0a@mail.gmail.com>
-Subject: Re: [PATCH] cfg80211: clear cfg80211_inform_bss() from kmemleak 
-	reports
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Fri, 4 Sep 2009 17:06:39 -0700
+Message-ID: <43e72e890909041706u12f271eq2317c69038c73c2@mail.gmail.com>
+Subject: process_zones() kmemleak on 2.6.31-rc8
+To: linux-mm@kvack.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>, linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 4, 2009 at 3:48 PM, Luis R. Rodriguez<lrodriguez@atheros.com> wrote:
-> On Fri, Sep 4, 2009 at 3:24 PM, Catalin Marinas<catalin.marinas@arm.com> wrote:
->> On Fri, 2009-09-04 at 14:58 -0700, Luis R. Rodriguez wrote:
->>> On Fri, Sep 4, 2009 at 2:21 PM, Luis R. Rodriguez<lrodriguez@atheros.com> wrote:
->>>
->>> > BTW I should not I got this kmemleak report after using the clear
->>> > command by painting objects black. I'll test it now with your
->>> > suggested changes.
->>>
->>> So I pulled your git://linux-arm.org/linux-2.6 master into my tree and
->>> didn't even need a 'clear' command now, the output of
->>> /sys/kernel/debug/kmemleak is empty :), so I suspect you have quite a
->>> few changes which should help avoid getting false positives.
->>>
->>> Will these changes make it for 2.6.32?
->>
->> The kmemleak branch is planned for the upcoming merging window.
->
-> Ah great.
->
->> I don't
->> think you need to merge the master branch as it has a lot of
->> arm-specific code.
->
-> That was a goof, thanks, I'll rebase onto your kmemleak branch.
+I get these kmemleak reports on 2.6.31-rc8 + Catalin's
+git://linux-arm.org/linux-2.6 kmemleak branch. This kmemleak report
+sticks there even after further scans issued manually.
 
-I rebased and I still get these, even if I scan every now and then,
-they stay up there.
-
-On wireless_send_event() I can follow the allocated skb put onto the
-skb queue wext_nlevents, and then schedule work is supposed to process
-it on wireless_nlevent_process(). From there I am able to follow the
-skb onto netlink_unicast() (for unicast data) but I do not see where
-this ends up being freed. The compskb is set onto the
-skb_shinfo(skb)->frag_list and not sure if netlink_unicast() ever
-frees that.
+unreferenced object 0xffff88003e001040 (size 64):
+  comm "swapper", pid 0, jiffies 4294892296
+  hex dump (first 32 bytes):
+    00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00  ................
+    50 10 00 3e 00 88 ff ff 50 10 00 3e 00 88 ff ff  P..>....P..>....
+  backtrace:
+    [<ffffffff814e9d55>] kmemleak_alloc+0x25/0x60
+    [<ffffffff81118a83>] kmem_cache_alloc_node+0x193/0x200
+    [<ffffffff814fa09e>] process_zones+0x70/0x1cd
+    [<ffffffff8180d4c5>] setup_per_cpu_pageset+0x11/0x27
+    [<ffffffff817f0016>] start_kernel+0x371/0x415
+    [<ffffffff817ef61a>] x86_64_start_reservations+0x125/0x129
+    [<ffffffff817ef718>] x86_64_start_kernel+0xfa/0x109
+    [<ffffffffffffffff>] 0xffffffffffffffff
+unreferenced object 0xffff88003e0015c0 (size 64):
+  comm "swapper", pid 1, jiffies 4294892353
+  hex dump (first 32 bytes):
+    00 00 00 00 00 00 00 00 01 00 00 00 00 00 00 00  ................
+    d0 15 00 3e 00 88 ff ff d0 15 00 3e 00 88 ff ff  ...>.......>....
+  backtrace:
+    [<ffffffff814e9d55>] kmemleak_alloc+0x25/0x60
+    [<ffffffff81118a83>] kmem_cache_alloc_node+0x193/0x200
+    [<ffffffff814fa09e>] process_zones+0x70/0x1cd
+    [<ffffffff814fa230>] pageset_cpuup_callback+0x35/0x92
+    [<ffffffff815019b7>] notifier_call_chain+0x47/0x90
+    [<ffffffff81078559>] __raw_notifier_call_chain+0x9/0x10
+    [<ffffffff814f8f25>] _cpu_up+0x75/0x130
+    [<ffffffff814f903a>] cpu_up+0x5a/0x6a
+    [<ffffffff817ef97e>] kernel_init+0xcc/0x1ba
+    [<ffffffff810130ca>] child_rip+0xa/0x20
+    [<ffffffffffffffff>] 0xffffffffffffffff
 
   Luis
