@@ -1,94 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZIEKGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZIEKdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757262AbZIEKGm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 06:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZIEKGl
+	id S1757337AbZIEKdW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 06:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZIEKdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 06:06:41 -0400
-Received: from mail-yx0-f182.google.com ([209.85.210.182]:56119 "EHLO
-	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751111AbZIEKGk convert rfc822-to-8bit (ORCPT
+	Sat, 5 Sep 2009 06:33:21 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57074 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757310AbZIEKdU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 06:06:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=CKOOIYMucG2AGDCmZinDRk253bO6qCojUOysxsR/wVL6iVrTw7+dpleFJFq79QUyUu
-         iIdqHVHEMB2e6kNgsoPNczt9D1Z6JZOhxWg9f26ZVNKLB5x0ld2vCXUHshBq4yFLkML9
-         IEPbyD6LJ4mz2sUicLrpdnsq/2JqhASe9bUyw=
+	Sat, 5 Sep 2009 06:33:20 -0400
+Date: Sat, 5 Sep 2009 12:28:10 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Ric Wheeler <rwheeler@redhat.com>
+Cc: Rob Landley <rob@landley.net>, jim owens <jowens@hp.com>, david@lang.hm,
+       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090905102810.GA1341@ucw.cz>
+References: <20090826001645.GN4300@elf.ucw.cz> <200909022141.48827.rob@landley.net> <4A9FCF53.10105@hp.com> <200909040244.54772.rob@landley.net> <4AA0FECE.3010200@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <ce9ab5790908102329k73f66b5bgcdd8ac52d6631116@mail.gmail.com>
-References: <61339.192.168.10.89.1247226725.squirrel@dbdmail.itg.ti.com> 
-	<48097.192.168.10.89.1247232736.squirrel@dbdmail.itg.ti.com> 
-	<60361.192.168.10.89.1247482584.squirrel@dbdmail.itg.ti.com> 
-	<20090810162734.GH1938@atomide.com> <ce9ab5790908102245r28224bf5nfa2a1b22267767fe@mail.gmail.com> 
-	<4A810DE4.7030202@gmail.com> <ce9ab5790908102329k73f66b5bgcdd8ac52d6631116@mail.gmail.com>
-From: vimal singh <vimal.newwork@gmail.com>
-Date: Sat, 5 Sep 2009 15:36:21 +0530
-Message-ID: <ce9ab5790909050306m180e7c22g7bbdea7f7053d159@mail.gmail.com>
-Subject: Re: [PATCH-v3 1:2] [MTD][NAND]omap: Adding support for nand 
-	prefetch-read and post-write, in MPU mode.
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
-       dedekind@infradead.org, linux-kernel@vger.kernel.org,
-       david-b@pacbell.net, linux-mtd@lists.infradead.org,
-       vimal singh <vimalsingh@ti.com>, dwmw2@infradead.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA0FECE.3010200@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
-
-
-On Tue, Aug 11, 2009 at 11:59 AM, vimal singh<vimal.newwork@gmail.com> wrote:
-> On Tue, Aug 11, 2009 at 11:51 AM, Artem Bityutskiy<dedekind1@gmail.com> wrote:
->> On 08/11/2009 08:45 AM, vimal singh wrote:
->>>
->>> On Mon, Aug 10, 2009 at 9:57 PM, Tony Lindgren<tony@atomide.com>  wrote:
+On Fri 2009-09-04 07:49:34, Ric Wheeler wrote:
+> On 09/04/2009 03:44 AM, Rob Landley wrote:
+>> On Thursday 03 September 2009 09:14:43 jim owens wrote:
+>>    
+>>> Rob Landley wrote:
+>>>      
+>>>> I think he understands he was clueless too, that's why he investigated
+>>>> the failure and wrote it up for posterity.
 >>>>
->>>> * vimal singh<vimalsingh@ti.com>  [090713 13:56]:
->>>>>
->>>>> Patch updated for ' ioreadX / iowriteX and ioreadX_rep / iowriteX_rep'
->>>>> as per
->>>>> David Brownell's comment. I updated 'omap_(read/write)_buf16' fucntions
->>>>> also
->>>>> for this.
->>>>>
->>>>> -vimal
->>>>>
->>>>> This patch adds prefetch support to access nand flash in mpu mode.
->>>>> This patch also adds 8-bit nand support (omap_read/write_buf8).
->>>>> Prefetch can be used for both 8- and 16-bit devices.
->>>>>
->>>>> Signed-off-by: Vimal Singh<vimalsingh@ti.com>
->>>>
->>>> Sorry for the delay. I've looked at the GPMC part, and that now looks OK
->>>> to me. So I'm OK for this to get integrated via the MTD list.
->>>>
->>>> Acked-by: Tony Lindgren<tony@atomide.com>
->>>>
->>>
->>> Can you give your ack to below patch too?
->>>
->>> http://lists.infradead.org/pipermail/linux-mtd/2009-July/026373.html
->>
->> I've picked up both of your patches, please, check:
->> http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/33f48f597315842f39427ee4261cbf82a9afeaf3
->> http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/b67d52c91b26e97f981f2c292619d31667d5b272
->>
+>>>>        
+>>>>> And Ric said do not stigmatize whole classes of A) devices, B) raid,
+>>>>> and C) filesystems with "Pavel says...".
+>>>>>          
+>>>> I don't care what "Pavel says", so you can leave the ad hominem at the
+>>>> door, thanks.
+>>>>        
+>>> See, this is exactly the problem we have with all the proposed
+>>> documentation.  The reader (you) did not get what the writer (me)
+>>> was trying to say.  That does not say either of us was wrong in
+>>> what we thought was meant, simply that we did not communicate.
+>>>      
+>> That's why I've mostly stopped bothering with this thread.  I could respond to
+>> Ric Wheeler's latest (what does write barriers have to do with whether or not
+>> a multi-sector stripe is guaranteed to be atomically updated during a panic or
+>> power failure?) but there's just no point.
+>>    
 >
-Is there any chance for these patches to get merged in this merge
-window? These have been waiting for long time.
+> The point of that post was that the failure that you and Pavel both  
+> attribute to RAID and journalled fs happens whenever the storage cannot  
+> promise to do atomic writes of a logical FS block (prevent torn  
+> pages/split writes/etc). I gave a specific example of why this happens  
+> even with simple, single disk systems.
 
--Vimal
+ext3 does not expect atomic write of 4K block, according to Ted. So
+no, it is not broken on single disk.
+ 
+>> The LWN article on the topic is out, and incomplete as it is I expect it's the
+>> best documentation anybody will actually _read_.
 
-> Thanks Artem.
->
->> --
->> Best Regards,
->> Artem Bityutskiy (Артём Битюцкий)
->>
->
+Would anyone (probably privately?) share the lwn link?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
