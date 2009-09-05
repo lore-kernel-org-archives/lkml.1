@@ -1,135 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbZIETWw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753039AbZIETe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753012AbZIETWw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 15:22:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZIETWs
+	id S1753039AbZIETe6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 15:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZIETe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 15:22:48 -0400
-Received: from mga11.intel.com ([192.55.52.93]:53480 "EHLO mga11.intel.com"
+	Sat, 5 Sep 2009 15:34:56 -0400
+Received: from mga11.intel.com ([192.55.52.93]:40850 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897AbZIETWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 15:22:48 -0400
+	id S1751622AbZIETe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 15:34:56 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,338,1249282800"; 
-   d="scan'208";a="490839868"
-Message-ID: <4AA2BA83.5020707@intel.com>
-Date: Sat, 05 Sep 2009 12:22:43 -0700
+   d="scan'208";a="724205271"
+Subject: [PATCH] at_hdmac: implement a private tx_list
+To: linux-kernel@vger.kernel.org
 From: Dan Williams <dan.j.williams@intel.com>
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+Date: Sat, 05 Sep 2009 12:34:58 -0700
+Message-ID: <20090905193355.18821.45429.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: StGit/0.14.3.289.g7daff
 MIME-Version: 1.0
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: Neil Brown <neilb@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-raid <linux-raid@vger.kernel.org>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-Subject: What's in async_tx.git/next for 2.6.32?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provided Neil and Peter provide their acks for the raid6 acceleration 
-work, here is what is pending in async_tx.git/next for 2.6.32:
+Drop at_hdmac's use of tx_list from struct dma_async_tx_descriptor in
+preparation for removal of this field.
 
-1/ Ira's DMA_SLAVE support for the fsldma driver that just missed the 
-2.6.31 window
-2/ raid6 extensions to the async_tx api
-3/ percpu conversion of the md-raid456 stripe processing resources 
-(address buffers / raid6-spare-page)
-4/ conversion of md-raid6 to the asynchronous raid6 api
-5/ experimental support for offloading stripe processing to the async 
-thread pool (multicore raid)
-6/ raid offload support for the ioatdma driver (v3.2 of Intel(R) 
-QuickData Technology)
+Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
+One more tx_list push down patch for 2.6.32.
 
-Atsushi Nemoto (1):
-       dmaengine: Move all map_sg/unmap_sg for slave channel to its client
+Thanks,
+Dan
 
-Dan Williams (67):
-       async_tx: rename zero_sum to val
-       async_tx: kill ASYNC_TX_DEP_ACK flag
-       async_tx: structify submission arguments, add scribble
-       async_xor: permit callers to pass in a 'dma/page scribble' region
-       md/raid6: release spare page at ->stop()
-       ioat: move to drivers/dma/ioat/
-       ioat: move definitions to dma.h
-       ioat: convert ioat_probe to pcim/devm
-       ioat: cleanup some long deref chains and 80 column collisions
-       ioat: kill function prototype ifdef guards
-       ioat: split ioat_dma_probe into core/version-specific routines
-       ioat: fix type mismatch for ->dmacount
-       ioat: define descriptor control bit-field
-       ioat1: move descriptor allocation from submit to prep
-       md/raid6: move the spare page to a percpu allocation
-       md/raid5,6: add percpu scribble region for buffer lists
-       async_tx: add sum check flags
-       async_tx: kill needless module_{init|exit}
-       async_tx: remove walk of tx->parent chain in dma_wait_for_async_tx
-       async_tx: add support for asynchronous GF multiplication
-       async_tx: add support for asynchronous RAID6 recovery operations
-       dmatest: add pq support
-       async_tx: raid6 recovery self test
-       iop-adma: cleanup iop_adma_run_tx_complete_actions
-       iop-adma: fix lockdep false positive
-       iop-adma: P+Q support for iop13xx adma engines
-       iop-adma: P+Q self test
-       md/raid5: factor out mark_uptodate from ops_complete_compute5
-       md/raid6: asynchronous raid6 operations
-       md/raid6: asynchronous handle_parity_check6
-       md/raid456: distribute raid processing over multiple cores
-       ioat: fix self test interrupts
-       ioat: prepare the code for ioat[12]_dma_chan split
-       ioat2,3: convert to a true ring buffer
-       ioat1: kill unused unmap parameters
-       ioat: add some dev_dbg() calls
-       ioat: cleanup completion status reads
-       ioat: ignore reserved bits for chancnt and xfercap
-       ioat: preserve chanctrl bits when re-arming interrupts
-       ioat: ___devinit annotate the initialization paths
-       ioat1: trim ioat_dma_desc_sw
-       ioat: switch watchdog and reset handler from workqueue to timer
-       ioat2,3: dynamically resize descriptor ring
-       net_dma: poll for a descriptor after allocation failure
-       dw_dmac: implement a private tx_list
-       fsldma: implement a private tx_list
-       iop-adma: implement a private tx_list
-       ioat: implement a private tx_list
-       mv_xor: implement a private tx_list
-       at_hdmac: implement a private tx_list
-       dmaengine: kill tx_list
-       ioat2,3: cacheline align software descriptor allocations
-       dmaengine: add fence support
-       dmaengine, async_tx: add a "no channel switch" allocator
-       dmaengine: cleanup unused transaction types
-       dmaengine, async_tx: support alignment checks
-       ioat2+: add fence support
-       ioat3: hardware version 3.2 register / descriptor definitions
-       ioat3: split ioat3 support to its own file, add memset
-       ioat: add 'ioat' sysfs attributes
-       ioat3: enable dca for completion writes
-       ioat3: xor support
-       ioat3: xor self test
-       ioat3: pq support
-       ioat3: support xor via pq descriptors
-       ioat3: interrupt descriptor support
-       ioat3: segregate raid engines
+ drivers/dma/at_hdmac.c      |   17 +++++++++--------
+ drivers/dma/at_hdmac_regs.h |    1 +
+ 2 files changed, 10 insertions(+), 8 deletions(-)
 
-Ira Snyder (2):
-       fsldma: split apart external pause and request count features
-       fsldma: Add DMA_SLAVE support
+diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
+index 9a1e5fb..da4e8b7 100644
+--- a/drivers/dma/at_hdmac.c
++++ b/drivers/dma/at_hdmac.c
+@@ -87,6 +87,7 @@ static struct at_desc *atc_alloc_descriptor(struct dma_chan *chan,
+ 	desc = dma_pool_alloc(atdma->dma_desc_pool, gfp_flags, &phys);
+ 	if (desc) {
+ 		memset(desc, 0, sizeof(struct at_desc));
++		INIT_LIST_HEAD(&desc->tx_list);
+ 		dma_async_tx_descriptor_init(&desc->txd, chan);
+ 		/* txd.flags will be overwritten in prep functions */
+ 		desc->txd.flags = DMA_CTRL_ACK;
+@@ -150,11 +151,11 @@ static void atc_desc_put(struct at_dma_chan *atchan, struct at_desc *desc)
+ 		struct at_desc *child;
+ 
+ 		spin_lock_bh(&atchan->lock);
+-		list_for_each_entry(child, &desc->txd.tx_list, desc_node)
++		list_for_each_entry(child, &desc->tx_list, desc_node)
+ 			dev_vdbg(chan2dev(&atchan->chan_common),
+ 					"moving child desc %p to freelist\n",
+ 					child);
+-		list_splice_init(&desc->txd.tx_list, &atchan->free_list);
++		list_splice_init(&desc->tx_list, &atchan->free_list);
+ 		dev_vdbg(chan2dev(&atchan->chan_common),
+ 			 "moving desc %p to freelist\n", desc);
+ 		list_add(&desc->desc_node, &atchan->free_list);
+@@ -247,7 +248,7 @@ atc_chain_complete(struct at_dma_chan *atchan, struct at_desc *desc)
+ 	param = txd->callback_param;
+ 
+ 	/* move children to free_list */
+-	list_splice_init(&txd->tx_list, &atchan->free_list);
++	list_splice_init(&desc->tx_list, &atchan->free_list);
+ 	/* move myself to free_list */
+ 	list_move(&desc->desc_node, &atchan->free_list);
+ 
+@@ -334,7 +335,7 @@ static void atc_cleanup_descriptors(struct at_dma_chan *atchan)
+ 			/* This one is currently in progress */
+ 			return;
+ 
+-		list_for_each_entry(child, &desc->txd.tx_list, desc_node)
++		list_for_each_entry(child, &desc->tx_list, desc_node)
+ 			if (!(child->lli.ctrla & ATC_DONE))
+ 				/* Currently in progress */
+ 				return;
+@@ -407,7 +408,7 @@ static void atc_handle_error(struct at_dma_chan *atchan)
+ 	dev_crit(chan2dev(&atchan->chan_common),
+ 			"  cookie: %d\n", bad_desc->txd.cookie);
+ 	atc_dump_lli(atchan, &bad_desc->lli);
+-	list_for_each_entry(child, &bad_desc->txd.tx_list, desc_node)
++	list_for_each_entry(child, &bad_desc->tx_list, desc_node)
+ 		atc_dump_lli(atchan, &child->lli);
+ 
+ 	/* Pretend the descriptor completed successfully */
+@@ -587,7 +588,7 @@ atc_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
+ 			prev->lli.dscr = desc->txd.phys;
+ 			/* insert the link descriptor to the LD ring */
+ 			list_add_tail(&desc->desc_node,
+-					&first->txd.tx_list);
++					&first->tx_list);
+ 		}
+ 		prev = desc;
+ 	}
+@@ -687,7 +688,7 @@ atc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
+ 				prev->lli.dscr = desc->txd.phys;
+ 				/* insert the link descriptor to the LD ring */
+ 				list_add_tail(&desc->desc_node,
+-						&first->txd.tx_list);
++						&first->tx_list);
+ 			}
+ 			prev = desc;
+ 			total_len += len;
+@@ -729,7 +730,7 @@ atc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
+ 				prev->lli.dscr = desc->txd.phys;
+ 				/* insert the link descriptor to the LD ring */
+ 				list_add_tail(&desc->desc_node,
+-						&first->txd.tx_list);
++						&first->tx_list);
+ 			}
+ 			prev = desc;
+ 			total_len += len;
+diff --git a/drivers/dma/at_hdmac_regs.h b/drivers/dma/at_hdmac_regs.h
+index 4c972af..495457e 100644
+--- a/drivers/dma/at_hdmac_regs.h
++++ b/drivers/dma/at_hdmac_regs.h
+@@ -165,6 +165,7 @@ struct at_desc {
+ 	struct at_lli			lli;
+ 
+ 	/* THEN values for driver housekeeping */
++	struct list_head		tx_list;
+ 	struct dma_async_tx_descriptor	txd;
+ 	struct list_head		desc_node;
+ 	size_t				len;
 
-Roland Dreier (2):
-       Add MODULE_DEVICE_TABLE() so ioatdma module is autoloaded
-       I/OAT: Convert to PCI_VDEVICE()
-
-Tom Picard (1):
-       ioat3: ioat3.2 pci ids for Jasper Forest
-
-Yuri Tikhonov (5):
-       md/raid5,6: common schedule_reconstruction for raid5/6
-       md/raid6: asynchronous handle_stripe_fill6
-       md/raid6: asynchronous handle_stripe_dirtying6
-       md/raid6: asynchronous handle_stripe6
-       md/raid6: remove synchronous infrastructure
