@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934719AbZIEAcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964888AbZIEA0O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934719AbZIEAcM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934598AbZIEAcD
+	id S964888AbZIEA0O (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:26:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934665AbZIEAVT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:32:03 -0400
-Received: from kroah.org ([198.145.64.141]:42127 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:21:19 -0400
+Received: from kroah.org ([198.145.64.141]:42130 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934588AbZIEAUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:49 -0400
+	id S934593AbZIEAUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:51 2009
-Message-Id: <20090905001450.984456308@mini.kroah.org>
+Message-Id: <20090905001451.138788082@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:58 -0700
+Date: Fri, 04 Sep 2009 17:13:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Glauber Costa <glommer@redhat.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>, avi@redhat.com
-Subject: [patch 23/71] KVM: Introduce {set/get}_interrupt_shadow()
+       Glauber Costa <glommer@redhat.com>, avi@redhat.com,
+       Gleb Natapov <gleb@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [patch 24/71] KVM: Deal with interrupt shadow state for emulated instructions
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-introduce-set-get-_interrupt_shadow.patch
+Content-Disposition: inline; filename=kvm-deal-with-interrupt-shadow-state-for-emulated-instructions.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -33,167 +33,113 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Glauber Costa <glommer@redhat.com>
 
-This patch introduces set/get_interrupt_shadow(), that does exactly
-what the name suggests. It also replaces open code that explicitly does
-it with the now existent functions. It differs slightly from upstream,
-because upstream merged it after gleb's interrupt rework, that we don't
-ship.
+(cherry picked from commit 310b5d306c1aee7ebe32f702c0e33e7988d50646)
 
-Just for reference, upstream changelog is
-(2809f5d2c4cfad171167b131bb2a21ab65eba40f):
+We currently unblock shadow interrupt state when we skip an instruction,
+but failing to do so when we actually emulate one. This blocks interrupts
+in key instruction blocks, in particular sti; hlt; sequences
 
-This patch replaces drop_interrupt_shadow with the more
-general set_interrupt_shadow, that can either drop or raise
-it, depending on its parameter.  It also adds ->get_interrupt_shadow()
-for future use.
+If the instruction emulated is an sti, we have to block shadow interrupts.
+The same goes for mov ss. pop ss also needs it, but we don't currently
+emulate it.
+
+Without this patch, I cannot boot gpxe option roms at vmx machines.
+This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
 
 Signed-off-by: Glauber Costa <glommer@redhat.com>
+CC: H. Peter Anvin <hpa@zytor.com>
+CC: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
-Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/include/asm/kvm_host.h        |    2 +
- arch/x86/include/asm/kvm_x86_emulate.h |    3 ++
- arch/x86/kvm/svm.c                     |   25 ++++++++++++++++++-
- arch/x86/kvm/vmx.c                     |   42 +++++++++++++++++++++++++--------
- 4 files changed, 62 insertions(+), 10 deletions(-)
+ arch/x86/include/asm/kvm_x86_emulate.h |    3 +++
+ arch/x86/kvm/x86.c                     |    6 +++++-
+ arch/x86/kvm/x86_emulate.c             |   20 ++++++++++++++++++++
+ 3 files changed, 28 insertions(+), 1 deletion(-)
 
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -513,6 +513,8 @@ struct kvm_x86_ops {
- 	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
- 	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
- 	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
-+	void (*set_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
-+	u32 (*get_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
- 	void (*patch_hypercall)(struct kvm_vcpu *vcpu,
- 				unsigned char *hypercall_addr);
- 	int (*get_irq)(struct kvm_vcpu *vcpu);
 --- a/arch/x86/include/asm/kvm_x86_emulate.h
 +++ b/arch/x86/include/asm/kvm_x86_emulate.h
-@@ -143,6 +143,9 @@ struct decode_cache {
- 	struct fetch_cache fetch;
+@@ -155,6 +155,9 @@ struct x86_emulate_ctxt {
+ 	int mode;
+ 	u32 cs_base;
+ 
++	/* interruptibility state, as a result of execution of STI or MOV SS */
++	int interruptibility;
++
+ 	/* decode cache */
+ 	struct decode_cache decode;
  };
- 
-+#define X86_SHADOW_INT_MOV_SS  1
-+#define X86_SHADOW_INT_STI     2
-+
- struct x86_emulate_ctxt {
- 	/* Register state before/after emulation. */
- 	struct kvm_vcpu *vcpu;
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -227,6 +227,27 @@ static int is_external_interrupt(u32 inf
- 	return info == (SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_INTR);
- }
- 
-+static u32 svm_get_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+	u32 ret = 0;
-+
-+	if (svm->vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK)
-+		ret |= X86_SHADOW_INT_STI | X86_SHADOW_INT_MOV_SS;
-+	return ret & mask;
-+}
-+
-+static void svm_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-+{
-+	struct vcpu_svm *svm = to_svm(vcpu);
-+
-+	if (mask == 0)
-+		svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
-+	else
-+		svm->vmcb->control.int_state |= SVM_INTERRUPT_SHADOW_MASK;
-+
-+}
-+
- static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -2366,7 +2366,7 @@ int emulate_instruction(struct kvm_vcpu 
+ 			u16 error_code,
+ 			int emulation_type)
  {
- 	struct vcpu_svm *svm = to_svm(vcpu);
-@@ -240,7 +261,7 @@ static void skip_emulated_instruction(st
- 		       __func__, kvm_rip_read(vcpu), svm->next_rip);
+-	int r;
++	int r, shadow_mask;
+ 	struct decode_cache *c;
  
- 	kvm_rip_write(vcpu, svm->next_rip);
--	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
-+	svm_set_interrupt_shadow(vcpu, 0);
+ 	kvm_clear_exception_queue(vcpu);
+@@ -2415,6 +2415,10 @@ int emulate_instruction(struct kvm_vcpu 
+ 	}
  
- 	vcpu->arch.interrupt_window_open = (svm->vcpu.arch.hflags & HF_GIF_MASK);
- }
-@@ -2667,6 +2688,8 @@ static struct kvm_x86_ops svm_x86_ops = 
- 	.run = svm_vcpu_run,
- 	.handle_exit = handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-+	.set_interrupt_shadow = svm_set_interrupt_shadow,
-+	.get_interrupt_shadow = svm_get_interrupt_shadow,
- 	.patch_hypercall = svm_patch_hypercall,
- 	.get_irq = svm_get_irq,
- 	.set_irq = svm_set_irq,
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -732,23 +732,45 @@ static void vmx_set_rflags(struct kvm_vc
- 	vmcs_writel(GUEST_RFLAGS, rflags);
+ 	r = x86_emulate_insn(&vcpu->arch.emulate_ctxt, &emulate_ops);
++	shadow_mask = vcpu->arch.emulate_ctxt.interruptibility;
++
++	if (r == 0)
++		kvm_x86_ops->set_interrupt_shadow(vcpu, shadow_mask);
+ 
+ 	if (vcpu->arch.pio.string)
+ 		return EMULATE_DO_MMIO;
+--- a/arch/x86/kvm/x86_emulate.c
++++ b/arch/x86/kvm/x86_emulate.c
+@@ -1349,6 +1349,20 @@ static inline int writeback(struct x86_e
+ 	return 0;
  }
  
-+static u32 vmx_get_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
++void toggle_interruptibility(struct x86_emulate_ctxt *ctxt, u32 mask)
 +{
-+	u32 interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
-+	int ret = 0;
-+
-+	if (interruptibility & GUEST_INTR_STATE_STI)
-+		ret |= X86_SHADOW_INT_STI;
-+	if (interruptibility & GUEST_INTR_STATE_MOV_SS)
-+		ret |= X86_SHADOW_INT_MOV_SS;
-+
-+	return ret & mask;
++	u32 int_shadow = kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu, mask);
++	/*
++	 * an sti; sti; sequence only disable interrupts for the first
++	 * instruction. So, if the last instruction, be it emulated or
++	 * not, left the system with the INT_STI flag enabled, it
++	 * means that the last instruction is an sti. We should not
++	 * leave the flag on in this case. The same goes for mov ss
++	 */
++	if (!(int_shadow & mask))
++		ctxt->interruptibility = mask;
 +}
 +
-+static void vmx_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-+{
-+	u32 interruptibility_old = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
-+	u32 interruptibility = interruptibility_old;
-+
-+	interruptibility &= ~(GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
-+
-+	if (mask & X86_SHADOW_INT_MOV_SS)
-+		interruptibility |= GUEST_INTR_STATE_MOV_SS;
-+	if (mask & X86_SHADOW_INT_STI)
-+		interruptibility |= GUEST_INTR_STATE_STI;
-+
-+	if ((interruptibility != interruptibility_old))
-+		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO, interruptibility);
-+}
-+
- static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
+ int
+ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
  {
- 	unsigned long rip;
--	u32 interruptibility;
+@@ -1360,6 +1374,8 @@ x86_emulate_insn(struct x86_emulate_ctxt
+ 	int io_dir_in;
+ 	int rc = 0;
  
- 	rip = kvm_rip_read(vcpu);
- 	rip += vmcs_read32(VM_EXIT_INSTRUCTION_LEN);
- 	kvm_rip_write(vcpu, rip);
++	ctxt->interruptibility = 0;
++
+ 	/* Shadow copy of register state. Committed on successful emulation.
+ 	 * NOTE: we can copy them from vcpu as x86_decode_insn() doesn't
+ 	 * modify them.
+@@ -1609,6 +1625,9 @@ special_insn:
+ 		int err;
  
--	/*
--	 * We emulated an instruction, so temporary interrupt blocking
--	 * should be removed, if set.
--	 */
--	interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
--	if (interruptibility & 3)
--		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
--			     interruptibility & ~3);
-+	/* skipping an emulated instruction also counts */
-+	vmx_set_interrupt_shadow(vcpu, 0);
- 	vcpu->arch.interrupt_window_open = 1;
- }
- 
-@@ -3738,6 +3760,8 @@ static struct kvm_x86_ops vmx_x86_ops = 
- 	.run = vmx_vcpu_run,
- 	.handle_exit = kvm_handle_exit,
- 	.skip_emulated_instruction = skip_emulated_instruction,
-+	.set_interrupt_shadow = vmx_set_interrupt_shadow,
-+	.get_interrupt_shadow = vmx_get_interrupt_shadow,
- 	.patch_hypercall = vmx_patch_hypercall,
- 	.get_irq = vmx_get_irq,
- 	.set_irq = vmx_inject_irq,
+ 		sel = c->src.val;
++		if (c->modrm_reg == VCPU_SREG_SS)
++			toggle_interruptibility(ctxt, X86_SHADOW_INT_MOV_SS);
++
+ 		if (c->modrm_reg <= 5) {
+ 			type_bits = (c->modrm_reg == 1) ? 9 : 1;
+ 			err = kvm_load_segment_descriptor(ctxt->vcpu, sel,
+@@ -1865,6 +1884,7 @@ special_insn:
+ 		c->dst.type = OP_NONE;	/* Disable writeback. */
+ 		break;
+ 	case 0xfb: /* sti */
++		toggle_interruptibility(ctxt, X86_SHADOW_INT_STI);
+ 		ctxt->eflags |= X86_EFLAGS_IF;
+ 		c->dst.type = OP_NONE;	/* Disable writeback. */
+ 		break;
 
 
