@@ -1,142 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZIERBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752706AbZIERHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbZIERBA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 13:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZIERA7
+	id S1752706AbZIERHi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 13:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZIERHg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 13:00:59 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:44577 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752525AbZIERA6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 13:00:58 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	<19099.52899.620345.326521@pilspetsen.it.uu.se>
-	<19100.31254.666066.755541@pilspetsen.it.uu.se>
-	<200909012042.59856.rjw@sisk.pl>
-	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
-	<19105.5352.28380.230615@pilspetsen.it.uu.se>
-	<alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org>
-Date: Sun, 06 Sep 2009 02:00:52 +0900
-In-Reply-To: <alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org>
-	(Linus Torvalds's message of "Fri, 4 Sep 2009 09:11:58 -1000 (HST)")
-Message-ID: <87pra55nsr.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 Sep 2009 13:07:36 -0400
+Received: from fifo99.com ([67.223.236.141]:48164 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752491AbZIERHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 13:07:35 -0400
+Subject: Re: [RFC][PATCH 2/2] disable boot interrupts on Intel X58 and 55x0
+From: Daniel Walker <dwalker@fifo99.com>
+To: Olaf Dabrunz <Olaf.Dabrunz@gmx.net>
+Cc: Stefan Assmann <sassmann@redhat.com>, linux-kernel@vger.kernel.org,
+       jcm@redhat.com, sdietrich@novell.com, linux-acpi@vger.kernel.org,
+       andi@firstfloor.org, hpa@zytor.com, mingo@elte.hu, ktokunag@redhat.com,
+       tglx@linutronix.de, lenb@kernel.org
+In-Reply-To: <20090905161852.GA19706@santana.dyndns.org>
+References: <20090904165525.26294.31112.sendpatchset@t500>
+	 <20090904165545.26294.94612.sendpatchset@t500>
+	 <1252084019.22928.39.camel@desktop> <4AA22A6F.30003@redhat.com>
+	 <1252162040.6877.7.camel@desktop>
+	 <20090905161852.GA19706@santana.dyndns.org>
+Content-Type: text/plain
+Date: Sat, 05 Sep 2009 10:07:39 -0700
+Message-Id: <1252170459.6877.44.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds <torvalds@linux-foundation.org> writes:
+On Sat, 2009-09-05 at 18:18 +0200, Olaf Dabrunz wrote:
+> On 05-Sep-09, Daniel Walker wrote:
+> > On Sat, 2009-09-05 at 11:07 +0200, Stefan Assmann wrote:
+> > > On 04.09.2009 19:06, Daniel Walker wrote:
+> > > > On Fri, 2009-09-04 at 12:55 -0400, Stefan Assmann wrote:
+> > > >> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_QPI_TBG15,  quirk_disable_intel_tylersburg_boot_interrupt);
+> > > >> +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_INTEL,  PCI_DEVICE_ID_INTEL_QPI_TBG15,  quirk_disable_intel_tylersburg_boot_interrupt);
+> > > > 
+> > > > 
+> > > > These lines are wildly long .. Could you reduce these down to a max of
+> > > > 80 characters..
+> > > 
+> > > Hi Daniel,
+> > > 
+> > > you're right about the lines being to long, however if you take a peek
+> > > at drivers/pci/quirks.c you'll see that all the quirks are done this
+> > > way. :)
+> > 
+> > I looked, the whole thing is a mess .. Really all these lines need to be
+> > cleaned up.. It doesn't help to have you add more to it tho. Especially
+> > the tab's or spaces between the commas, I can say I understand why that
+> > is.. If there is a good reason why it's like that I'm all ears..
+> 
+> It makes adding/deleting/modifying the entries easier, with one-line
+> editor operations. And if all data for one ID-to-quirk relationship is
+> on one line, with tabs to make for nice columns, I can more easily see
+> which device is linked to which quirk. That is why I usually prefer one
+> line per entry. And the entries in quirks.c are long, but not too long
+> for that IMHO.
 
-> On Fri, 4 Sep 2009, Linus Torvalds wrote:
->> 
->> So I'm starting to suspect that the real bug is that we do that 
->> 'pty_space()' in pty_write() call at all. The _callers_ should already 
->> have done the write_room() check, and if somebody doesn't do it, then the 
->> tty buffering will eventually do a hard limit at the 65kB allocation mark.
->
-> Ok, so the thought was right, but the patch was obviously not even 
-> compiled, because the compiler points out that 'c' was not initialized.
->
-> I'm sure you already figured the obvious meaning out, but here's a fixed 
-> version.
+Firstly I would say these entries aren't consistent at all.. Some are
+comma tab delimited, some are comma space delimited, and some are mixed
+space plus tab delimited plus comma delimited.. Many are actually broken
+down into less than 80 max length already..
 
-This is not meaning to object to your patch though, I think we would be
-good to fix pty_space(), not leaving as wrong. With fix it, I guess we
-don't get strange behavior in the near of buffer limit.
+I'm not sure I see how this makes "adding/deleting/modifying" easier ..
+We have lots of other situations where lines are broken down less than
+80, function arguments, macros, structures all sorts of stuff. 
 
-Also, it seems the non-n_tty path doesn't use tty_write_room() check,
-and instead it just try to write and check written bytes which returned
-by tty->ops->write().
+Taking this block for instance,
 
-So, it will use the 64kb limit at least few paths, and I'm not sure
-though, non-n_tty path (e.g. ppp) doesn't use tty_write_room() check
-always. It may not be consistent if we removed pty_space() in pty_write().
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+                        PCI_DEVICE_ID_TIGON3_5780,
+                        quirk_msi_intx_disable_bug);
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+                        PCI_DEVICE_ID_TIGON3_5780S,
+                        quirk_msi_intx_disable_bug);
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+                        PCI_DEVICE_ID_TIGON3_5714,
+                        quirk_msi_intx_disable_bug);
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+                        PCI_DEVICE_ID_TIGON3_5714S,
+                        quirk_msi_intx_disable_bug);
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+                        PCI_DEVICE_ID_TIGON3_5715,
+                        quirk_msi_intx_disable_bug);
+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_BROADCOM,
+                        PCI_DEVICE_ID_TIGON3_5715S,
+                        quirk_msi_intx_disable_bug);
 
-So, it may not be issue though, I made this patch to fix
-pty_space(). What do you think?
+In this block there is a fairly clear pattern you can follow. One
+problem with using tabs is that in order to get the perceive benefit
+your suggesting you would be forced to have a terminal at a certain
+size. Without that the single lines just end up line wrapped but in a
+less consistent way. You also have the problem that people have to
+deliberately add this formatting , sometimes one tab is enough,
+sometimes you need two tabs, maybe someone uses spaces instead .. So you
+end up with people potentially using all sorts of different methods and
+maybe not getting it right (not to mention it's special formatting just
+for this file)..
 
-Well, anyway, I've tested your patch and this patch fixed the
-gcc-testsuite on my machine.
+> So this will only be a problem for terminals that are limited to 80
+> rows, and I do not think that anyone is that restricted nowadays.
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+It's more than that.. In order to un-wrap the lines in this file you
+have to have a terminal at over 130 characters in width.
 
+I think it would be better to create a script that parses this file and
+produces consistent list in the format your describing, just for review
+purposes.. That way it takes the human element out of it, and it still
+lets you look at the formatting that your looking for.
 
+Daniel
 
-Signed-off-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
----
-
-diff -puN drivers/char/pty.c~tty-debug drivers/char/pty.c
---- linux-2.6/drivers/char/pty.c~tty-debug	2009-09-05 20:10:35.000000000 +0900
-+++ linux-2.6-hirofumi/drivers/char/pty.c	2009-09-06 01:50:44.000000000 +0900
-@@ -91,7 +91,7 @@ static void pty_unthrottle(struct tty_st
- 
- static int pty_space(struct tty_struct *to)
- {
--	int n = 8192 - to->buf.memory_used;
-+	int n = 8192 - tty_buffer_used(to);
- 	if (n < 0)
- 		return 0;
- 	return n;
-diff -puN drivers/char/tty_buffer.c~tty-debug drivers/char/tty_buffer.c
---- linux-2.6/drivers/char/tty_buffer.c~tty-debug	2009-09-05 21:02:48.000000000 +0900
-+++ linux-2.6-hirofumi/drivers/char/tty_buffer.c	2009-09-05 21:08:47.000000000 +0900
-@@ -231,6 +231,30 @@ int tty_buffer_request_room(struct tty_s
- EXPORT_SYMBOL_GPL(tty_buffer_request_room);
- 
- /**
-+ *	tty_buffer_used		-	return used tty buffer size
-+ *	@tty: tty structure
-+ *
-+ *	Return used tty buffer size.
-+ */
-+size_t tty_buffer_used(struct tty_struct *tty)
-+{
-+	size_t size;
-+	int left;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&tty->buf.lock, flags);
-+	if (tty->buf.tail)
-+		left = tty->buf.tail->size - tty->buf.tail->used;
-+	else
-+		left = 0;
-+	size = tty->buf.memory_used - left;
-+	spin_unlock_irqrestore(&tty->buf.lock, flags);
-+
-+	return size;
-+}
-+EXPORT_SYMBOL_GPL(tty_buffer_used);
-+
-+/**
-  *	tty_insert_flip_string	-	Add characters to the tty buffer
-  *	@tty: tty structure
-  *	@chars: characters
-diff -puN include/linux/tty_flip.h~tty-debug include/linux/tty_flip.h
---- linux-2.6/include/linux/tty_flip.h~tty-debug	2009-09-05 21:06:25.000000000 +0900
-+++ linux-2.6-hirofumi/include/linux/tty_flip.h	2009-09-05 21:06:39.000000000 +0900
-@@ -2,6 +2,7 @@
- #define _LINUX_TTY_FLIP_H
- 
- extern int tty_buffer_request_room(struct tty_struct *tty, size_t size);
-+extern size_t tty_buffer_used(struct tty_struct *tty);
- extern int tty_insert_flip_string(struct tty_struct *tty, const unsigned char *chars, size_t size);
- extern int tty_insert_flip_string_flags(struct tty_struct *tty, const unsigned char *chars, const char *flags, size_t size);
- extern int tty_prepare_flip_string(struct tty_struct *tty, unsigned char **chars, size_t size);
-_
