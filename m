@@ -1,32 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934574AbZIEBNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934657AbZIEBNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934574AbZIEBNL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 21:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934486AbZIEBNK
+	id S934657AbZIEBNS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 21:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934608AbZIEBNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 21:13:10 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:34635 "EHLO mx1.redhat.com"
+	Fri, 4 Sep 2009 21:13:15 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12509 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934421AbZIEBNJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 21:13:09 -0400
+	id S934489AbZIEBNL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 21:13:11 -0400
 From: jolsa@redhat.com
 To: mingo@elte.hu, rostedt@goodmis.org
 Cc: linux-kernel@vger.kernel.org
-Subject: [PATCHv2 1/3] tracing - buf iterator definition, parsing function
-Date: Sat,  5 Sep 2009 03:12:59 +0200
-Message-Id: <1252113181-3325-2-git-send-email-jolsa@redhat.com>
+Subject: [PATCHv2 2/3] tracing - buf iterator support for set_event 
+Date: Sat,  5 Sep 2009 03:13:00 +0200
+Message-Id: <1252113181-3325-3-git-send-email-jolsa@redhat.com>
 In-Reply-To: <1252113181-3325-1-git-send-email-jolsa@redhat.com>
 References: <1252113181-3325-1-git-send-email-jolsa@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Defined 'trace_biter' structure to carry the properties of the input,
-through the multiple writes.
-
-The 'trace_get_user' reads the user incput string separated by space
-(matched by isspace(ch). For each string found the 'struct trace_biter' 
-iterator is updated, and the function returns.
+Updated 'set_event' write method to use the 'trace_get_user' function.
 
 wbr,
 jirka
@@ -34,163 +29,99 @@ jirka
 Signed-off-by: Jiri Olsa <jolsa@redhat.com>
 
 ---
- kernel/trace/trace.c |   83 ++++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/trace/trace.h |   48 +++++++++++++++++++++++++++++
- 2 files changed, 131 insertions(+), 0 deletions(-)
+ kernel/trace/trace_events.c |   58 +++++++++---------------------------------
+ 1 files changed, 13 insertions(+), 45 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index af15008..8cf8f99 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -335,6 +335,89 @@ static struct {
- 
- int trace_clock_id;
- 
-+/*
-+ * trace_get_user - reads the user incput string separated by  space
-+ * (matched by isspace(ch))
-+ *
-+ * For each string found the 'struct trace_biter' iterator is updated,
-+ * and the function returns.
-+ *
-+ * Returns number of bytes read.
-+ *
-+ * see kernel/trace/trace.h for 'struct trace_biter' details.
-+ */
-+int trace_get_user(struct trace_biter *biter, const char __user *ubuf,
-+	size_t cnt, loff_t *ppos)
-+{
-+	char ch;
-+	size_t read = 0;
-+	ssize_t ret;
-+
-+	if (!*ppos)
-+		TRACE_BITER_CLEAR(biter);
-+
-+	ret = get_user(ch, ubuf++);
-+	if (ret)
-+		goto out;
-+
-+	read++;
-+	cnt--;
-+
-+	/*
-+	 * If the parser haven't finished with the last write,
-+	 * continue reading the user input without skipping spaces.
-+	 */
-+	if (!biter->cont) {
-+		/* skip white space */
-+		while (cnt && isspace(ch)) {
-+			ret = get_user(ch, ubuf++);
-+			if (ret)
-+				goto out;
-+			read++;
-+			cnt--;
-+		}
-+
-+		/* only spaces were written */
-+		if (isspace(ch)) {
-+			*ppos += read;
-+			ret = read;
-+			goto out;
-+		}
-+
-+		biter->idx = 0;
-+	}
-+
-+	/* read the non-space input */
-+	while (cnt && !isspace(ch)) {
-+		if (biter->idx < biter->size)
-+			biter->buffer[biter->idx++] = ch;
-+		else {
-+			ret = -EINVAL;
-+			goto out;
-+		}
-+		ret = get_user(ch, ubuf++);
-+		if (ret)
-+			goto out;
-+		read++;
-+		cnt--;
-+	}
-+
-+	/* We either got finished input or we have to wait for another call. */
-+	if (isspace(ch)) {
-+		biter->buffer[biter->idx] = 0;
-+		biter->cont = 0;
-+	} else {
-+		biter->cont = 1;
-+		biter->buffer[biter->idx++] = ch;
-+	}
-+
-+	*ppos += read;
-+	ret = read;
-+
-+out:
-+	return ret;
-+}
-+
- ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf, size_t cnt)
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index d33bcde..7e5703c 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -230,11 +230,9 @@ static ssize_t
+ ftrace_event_write(struct file *file, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
  {
- 	int len;
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index d881015..d4e38e8 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -652,6 +652,54 @@ static inline int ftrace_trace_task(struct task_struct *task)
- #endif
++	struct trace_biter biter;
+ 	size_t read = 0;
+-	int i, set = 1;
+ 	ssize_t ret;
+-	char *buf;
+-	char ch;
  
- /*
-+ * struct trace_biter - servers for reading the user input separated by spaces
-+ * @cont: set if the input is not complete - no final space char was found
-+ * @buffer: holds the parsed user input
-+ * @idx: user input lenght
-+ * @size: buffer size
-+ */
-+struct trace_biter {
-+	bool		cont;
-+	char		*buffer;
-+	unsigned	idx;
-+	unsigned	size;
-+};
+ 	if (!cnt || cnt < 0)
+ 		return 0;
+@@ -243,60 +241,30 @@ ftrace_event_write(struct file *file, const char __user *ubuf,
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	ret = get_user(ch, ubuf++);
+-	if (ret)
+-		return ret;
+-	read++;
+-	cnt--;
+-
+-	/* skip white space */
+-	while (cnt && isspace(ch)) {
+-		ret = get_user(ch, ubuf++);
+-		if (ret)
+-			return ret;
+-		read++;
+-		cnt--;
+-	}
+-
+-	/* Only white space found? */
+-	if (isspace(ch)) {
+-		file->f_pos += read;
+-		ret = read;
+-		return ret;
+-	}
+-
+-	buf = kmalloc(EVENT_BUF_SIZE+1, GFP_KERNEL);
+-	if (!buf)
++	if (trace_biter_alloc(&biter, EVENT_BUF_SIZE + 1))
+ 		return -ENOMEM;
+ 
+-	if (cnt > EVENT_BUF_SIZE)
+-		cnt = EVENT_BUF_SIZE;
++	read = trace_get_user(&biter, ubuf, cnt, ppos);
 +
-+#define TRACE_BITER_LOADED(biter) (biter->idx)
-+#define TRACE_BITER_CONT(biter)   (biter->cont)
-+#define TRACE_BITER_CLEAR(biter) \
-+do { \
-+	biter->cont = false; \
-+	biter->idx = 0; \
-+} while(0)
-+
-+/*
-+ * trace_biter_alloc - allocates the buffer for trace buffer iterator
-+ */
-+static inline int trace_biter_alloc(struct trace_biter *biter, int size)
-+{
-+	memset(biter, 0, sizeof(*biter));
-+
-+	biter->buffer = kmalloc(size, GFP_KERNEL);
-+	if (!biter->buffer)
-+		return 1;
-+
-+	biter->size = size;
-+	return 0;
-+}
-+
-+/*
-+ * trace_biter_free - frees the buffer for trace buffer iterator
-+ */
-+static inline void trace_biter_free(struct trace_biter *biter)
-+{
-+	kfree(biter->buffer);
-+}
-+
-+extern int trace_get_user(struct trace_biter *biter, const char __user *ubuf,
-+	size_t cnt, loff_t *ppos);
-+
-+/*
-  * trace_iterator_flags is an enumeration that defines bit
-  * positions into trace_flags that controls the output.
-  *
++	if (TRACE_BITER_LOADED((&biter))) {
++		char *buf = biter.buffer;
++		int set = 1;
+ 
+-	i = 0;
+-	while (cnt && !isspace(ch)) {
+-		if (!i && ch == '!')
++		if (*buf == '!') {
+ 			set = 0;
+-		else
+-			buf[i++] = ch;
++			buf++;
++		}
++		biter.buffer[biter.idx] = 0;
+ 
+-		ret = get_user(ch, ubuf++);
++		ret = ftrace_set_clr_event(buf, set);
+ 		if (ret)
+ 			goto out_free;
+-		read++;
+-		cnt--;
+ 	}
+-	buf[i] = 0;
+-
+-	file->f_pos += read;
+-
+-	ret = ftrace_set_clr_event(buf, set);
+-	if (ret)
+-		goto out_free;
+ 
+ 	ret = read;
+ 
+  out_free:
+-	kfree(buf);
++	trace_biter_free(&biter);
+ 
+ 	return ret;
+ }
 -- 
 1.6.2.5
 
