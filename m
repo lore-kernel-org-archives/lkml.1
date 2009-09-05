@@ -1,91 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbZIEQQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZIEQST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752460AbZIEQQe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 12:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZIEQQe
+	id S1752502AbZIEQST (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 12:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752155AbZIEQSS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 12:16:34 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58507 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146AbZIEQQd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 12:16:33 -0400
-Date: Sat, 5 Sep 2009 18:16:35 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-Cc: Jeff Moyer <jmoyer@redhat.com>,
-       Linux-Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC] cfq: adapt slice to number of processes doing I/O
-Message-ID: <20090905161635.GI18599@kernel.dk>
-References: <4e5e476b0909030407k8a7b534v42bdffcad06127bd@mail.gmail.com> <x49ljkwxjvr.fsf@segfault.boston.devel.redhat.com> <20090903130731.GE18599@kernel.dk> <4e5e476b0909030936l66ac3f22jd3b43d38bca0249b@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4e5e476b0909030936l66ac3f22jd3b43d38bca0249b@mail.gmail.com>
+	Sat, 5 Sep 2009 12:18:18 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:58307 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751160AbZIEQSR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 12:18:17 -0400
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz
+In-Reply-To: <20090905132653.GH24516@shareable.org>
+References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com>
+	 <1252050406-22467-9-git-send-email-jens.axboe@oracle.com>
+	 <4AA13232.5000309@rsk.demon.co.uk>  <20090905132653.GH24516@shareable.org>
+Content-Type: text/plain
+Date: Sat, 05 Sep 2009 17:18:16 +0100
+Message-Id: <1252167496.2291.15.camel@castor>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03 2009, Corrado Zoccolo wrote:
-> Hi Jens,
-> On Thu, Sep 3, 2009 at 3:07 PM, Jens Axboe<jens.axboe@oracle.com> wrote:
-> > On Thu, Sep 03 2009, Jeff Moyer wrote:
-> >> Corrado Zoccolo <czoccolo@gmail.com> writes:
-> >>
-> >> > When the number of processes performing I/O concurrently increases,  a
-> >> > fixed time slice per process will cause large latencies.
-> >> > In the patch, if there are more than 3 processes performing concurrent
-> >> > I/O, we scale the time slice down proportionally.
-> >> > To safeguard sequential bandwidth, we impose a minimum time slice,
-> >> > computed from cfq_slice_idle (the idea is that cfq_slice_idle
-> >> > approximates the cost for a seek).
-> >> >
-> >> > I performed two tests, on a rotational disk:
-> >> > * 32 concurrent processes performing random reads
-> >> > ** the bandwidth is improved from 466KB/s to 477KB/s
-> >> > ** the maximum latency is reduced from 7.667s to 1.728
-> >> > * 32 concurrent processes performing sequential reads
-> >> > ** the bandwidth is reduced from 28093KB/s to 24393KB/s
-> >> > ** the maximum latency is reduced from 3.781s to 1.115s
-> >> >
-> >> > I expect numbers to be even better on SSDs, where the penalty to
-> >> > disrupt sequential read is much less.
-> >>
-> >> Interesting approach.  I'm not sure what the benefits will be on SSDs,
-> >> as the idling logic is disabled for them (when nonrot is set and they
-> >> support ncq).  See cfq_arm_slice_timer.
-> >
-> > Also, the problem with scaling the slice a lot is that throughput has a
-> > tendency to fall off a cliff at some point.
+On Sat, 2009-09-05 at 14:26 +0100, Jamie Lokier wrote:
+> Richard Kennedy wrote:
+> > I've been testing this & it works pretty well here, but setting 
+> > max_writeback_mb to 128 seems much too large for normal desktop machines.
+> > 
+> > Because it is so large the background writes don't stop when they get 
+> > down to the background threshold, but just keep on writing. 
+> > background_threshold on my machine is only about 300Mb so it can 
+> > undershoot by quite a bit. This could impact random write workloads 
+> > significantly.
 > 
-> This is the reason that I have a minimum slice. It is already reached
-> for 32 processes as in my example, so the throughput drop is at most
-> 20%.
-> Currently it is computed as 2*slice_idle for sync, and 1*slice_idle
-> for async queues.
-> I think this causes the leveling of data transferred regardless of
-> priorities. I'll cook up a formula to better scale also the minimum
-> slice according to priority, to fix this issue.
+> If that's true, would it be even worse for embedded devices with, say,
+> just 32MB RAM?  It sounds like writeback undershoot might be rather
+> extreme in that case.
 
-For your case, it may be different for other hardware. But I think the
-approach is sane to some degree, it'll require more work though. One
-problem is that the count of busy queues will fluctuate a lot for sync
-IO, so you'll have fairness issues. The number of potentially interested
-processes needs to be a rolling average of some sort, not just looking
-at ->busy_queues.
+Well, on a machine that small I don't think it will be any worse. The
+current code tries to write 1024 pages so its undershoot will be about
+100% anyway. 
 
-> > Have you tried benchmarking
-> > buffered writes with reads?
+> Also on this topic, should max_writeback be smaller for slow disks?  I
+> have a small device here with a hard disk that can only be written at
+> 2-10MB/s due to limitations of the built-in IDE controller.
 > 
-> Yes. I used that workload for benchmarks while tuning the patch.
-> Adding async writes doesn't change the results, mostly because cfq
-> preempts async queues when sync queues have new requests, and with
-> many readers, there are always plenty of incoming reads. Writes almost
-> have no chance to happen.
+> I know that's unusual, but it shows there is quite a wide range of
+> speeds at which disks can be written, even just counting hard disks.
+> 
+> -- Jamie
 
-OK, it should not, if the slice start logic is working. Just wanted to
-make sure :-)
+I'm not sure about that, it will depend on how the background threshold
+issue gets fixed.
 
--- 
-Jens Axboe
+regards
+Richard
+ 
 
