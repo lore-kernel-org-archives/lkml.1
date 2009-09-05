@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932743AbZIEJJT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZIEJ5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932743AbZIEJJT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 05:09:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932569AbZIEJJS
+	id S1757237AbZIEJ5n (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 05:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZIEJ5l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 05:09:18 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39767 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932495AbZIEJJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 05:09:18 -0400
-Message-ID: <4AA22A6F.30003@redhat.com>
-Date: Sat, 05 Sep 2009 11:07:59 +0200
-From: Stefan Assmann <sassmann@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sat, 5 Sep 2009 05:57:41 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:59334 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751765AbZIEJ5k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 05:57:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=o/XZf3/7GujpNmrfF2IcPrkc+dZ3cKFfkDFe49H4k4TUBaWG3hl6x3W4d/N7UQrqWW
+         XYFMwZHMaaSfVYW/sVRWeb6Nu90tWYNxLLZcasd3UgkqDv23laku27qc4/mPpZRer2n7
+         8FiXeLLcLeOHxJRVvECYLy/diBvNiRLl+tLLo=
+Date: Sat, 5 Sep 2009 11:57:36 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/cpu] x86, msr: change msr-reg.o to obj-y, and export
+ its symbols
+Message-ID: <20090905095736.GA5005@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
+	mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+	tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+References: <20090904140834.GA15789@elte.hu>
+ <tip-b19ae3999891cad21a3995c34d313dda5df014e2@git.kernel.org>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: linux-kernel@vger.kernel.org, jcm@redhat.com, sdietrich@novell.com,
-       linux-acpi@vger.kernel.org, andi@firstfloor.org, hpa@zytor.com,
-       mingo@elte.hu, Olaf.Dabrunz@gmx.net, ktokunag@redhat.com,
-       tglx@linutronix.de, lenb@kernel.org
-Subject: Re: [RFC][PATCH 2/2] disable boot interrupts on Intel X58 and 55x0
-References: <20090904165525.26294.31112.sendpatchset@t500>	 <20090904165545.26294.94612.sendpatchset@t500> <1252084019.22928.39.camel@desktop>
-In-Reply-To: <1252084019.22928.39.camel@desktop>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <tip-b19ae3999891cad21a3995c34d313dda5df014e2@git.kernel.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 04.09.2009 19:06, Daniel Walker wrote:
-> On Fri, 2009-09-04 at 12:55 -0400, Stefan Assmann wrote:
->> + * Disable boot interrupts on Intel X58, 55x0 (Tylersburg).
->> + * See Intel document #321328-001, section 19.10.2.27.
->> + * (Disable PCI INTx Routing to ICH)
->> + */
->> +#define INTEL_X58_55x0_QPIPINTRC_OFFSET        0xe0
->> +#define INTEL_X58_55x0_QPIPINTRC_BIT   (1<<25)
->> +static void quirk_disable_intel_tylersburg_boot_interrupt(struct
->> pci_dev *dev)
->> +{
->> +       u32 pci_config_dword;
->> +
->> +       if (noioapicquirk)
->> +               return;
->> +
->> +       pci_read_config_dword(dev, INTEL_X58_55x0_QPIPINTRC_OFFSET,
->> &pci_config_dword);
->> +       pci_config_dword |= INTEL_X58_55x0_QPIPINTRC_BIT;
->> +       pci_write_config_dword(dev, INTEL_X58_55x0_QPIPINTRC_OFFSET,
->> pci_config_dword);
->> +
->> +       printk(KERN_INFO "disabled boot interrupt on device 0x%04x:0x%
->> 04x\n",
->> +               dev->vendor, dev->device);
->> +}
->> +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL,   PCI_DEVICE_ID_INTEL_QPI_TBG15,  quirk_disable_intel_tylersburg_boot_interrupt);
->> +DECLARE_PCI_FIXUP_RESUME(PCI_VENDOR_ID_INTEL,  PCI_DEVICE_ID_INTEL_QPI_TBG15,  quirk_disable_intel_tylersburg_boot_interrupt);
+On Fri, Sep 04, 2009 at 05:06:47PM +0000, tip-bot for H. Peter Anvin wrote:
+> x86, msr: change msr-reg.o to obj-y, and export its symbols
 > 
-> 
-> These lines are wildly long .. Could you reduce these down to a max of
-> 80 characters..
+> Change msr-reg.o to obj-y (it will be included in virtually every
+> kernel since it is used by the initialization code for AMD processors)
 
-Hi Daniel,
+Yeah, about that, I'm wondering whether a more fine grained
+Kconfig suboptions would be appropriate here. Currently,
+<arch/x86/kernel/cpu/{intel,amd}.c> are sprinkled with the
 
-you're right about the lines being to long, however if you take a peek
-at drivers/pci/quirks.c you'll see that all the quirks are done this
-way. :)
+if (c->x86 == XX) { apply quirks }
 
-  Stefan
---
-Stefan Assmann         | Red Hat GmbH
-Software Engineer      | Otto-Hahn-Strasse 20, 85609 Dornach
-                       | HR: Amtsgericht Muenchen HRB 153243
-                       | GF: Brendan Lane, Charlie Peters,
-sassmann at redhat.com |     Michael Cunningham, Charles Cachera
+thingies and we could put those into their own files which are
+built/linked only when enabled. Before that, you would have chosen
+the CPU vendor and the CPU family thus pulling only the related
+quirks/fixes. Distros will of course need to enable all of them. Then,
+all those different families quirks should be iterated over in a manner
+similar to the initcall mechanism.
+
+Anyways, just an idea - it could be dumb overengineering but on a
+first glance it will organize/simplify the quirks code, reduce kernel
+image proper, get rid of Kconfig options like CONFIG_X86_F00F_BUG,
+vendor-specific cpuinfo_x86 members like fdiv_bug, f00f_bug, coma_bug,
+and [add another good reason here :)].
+
+Comments?
+
+-- 
+Regards/Gruss,
+    Boris.
