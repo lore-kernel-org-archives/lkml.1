@@ -1,64 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbZIERIF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751862AbZIENJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752715AbZIERIF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 13:08:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZIERID
+	id S1751862AbZIENJf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 09:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZIENJc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 13:08:03 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:47960 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbZIERIB (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 13:08:01 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Roman Zippel <zippel@linux-m68k.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Odd Kconfig output..
-From: Valdis.Kletnieks@vt.edu
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1252155974_2420P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Sat, 05 Sep 2009 09:06:14 -0400
-Message-ID: <12284.1252155974@turing-police.cc.vt.edu>
+	Sat, 5 Sep 2009 09:09:32 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:35131 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751676AbZIENJb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 09:09:31 -0400
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Richard Purdie <rpurdie@rpsys.net>
+Date: Sat,  5 Sep 2009 14:09:20 +0100
+Message-Id: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+X-Mailer: git-send-email 1.6.3.3
+X-SA-Exim-Connect-IP: 82.41.28.43
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH 1/2] backlight: Add WM831x backlight driver
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1252155974_2420P
-Content-Type: text/plain; charset=us-ascii
+The WM831x series of PMICs provide DC-DC boost convertors and current
+sinks which can be used together to drive LEDs for use as backlights.
+Expose this functionality via the backlight API.
 
-Saw this while doing  a 'make oldconfig' moving from -mmotm0827 to -mmotm0903:
+Since when used in this configuration the current sink and boost
+convertor are very tightly coupled with a multi-stage startup for
+the current sink which overlaps with the boost convertor startup
+this driver bypasses the regulator API. Machine inititialisation
+is responsible for ensuring that the regulators are not accessed
+via both APIs.
 
-RCU Implementation
-> 1. Tree-based hierarchical RCU (TREE_RCU)
-  2. Preemptable tree-based hierarchical RCU (TREE_PREEMPT_RCU) (NEW)
-choice[1-2]: ?
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+---
+ drivers/video/backlight/Kconfig     |    7 +
+ drivers/video/backlight/Makefile    |    1 +
+ drivers/video/backlight/wm831x_bl.c |  250 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 258 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/video/backlight/wm831x_bl.c
 
-There is no help available for this kernel option.
-Prompt: RCU Implementation
-  Defined at init/Kconfig:329
-  Location:
-    -> General setup
-      -> RCU Subsystem
-  Selected by: m [=m]
+diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
+index 90861cd..205de1a 100644
+--- a/drivers/video/backlight/Kconfig
++++ b/drivers/video/backlight/Kconfig
+@@ -229,3 +229,10 @@ config BACKLIGHT_SAHARA
+ 	help
+ 	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
+ 	  backlight driver.
++
++config BACKLIGHT_WM831X
++	tristate "WM831x PMIC Backlight Driver"
++	depends on BACKLIGHT_CLASS_DEVICE && MFD_WM831X
++	help
++	  If you have a backlight driven by the ISINK and DCDC of a
++	  WM831x PMIC say y to enable the backlight driver for it.
+diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
+index 4eb178c..df0b67c 100644
+--- a/drivers/video/backlight/Makefile
++++ b/drivers/video/backlight/Makefile
+@@ -24,4 +24,5 @@ obj-$(CONFIG_BACKLIGHT_DA903X)	+= da903x_bl.o
+ obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
+ obj-$(CONFIG_BACKLIGHT_TOSA)	+= tosa_bl.o
+ obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
++obj-$(CONFIG_BACKLIGHT_WM831X)	+= wm831x_bl.o
+ 
+diff --git a/drivers/video/backlight/wm831x_bl.c b/drivers/video/backlight/wm831x_bl.c
+new file mode 100644
+index 0000000..467bdb7
+--- /dev/null
++++ b/drivers/video/backlight/wm831x_bl.c
+@@ -0,0 +1,250 @@
++/*
++ * Backlight driver for Wolfson Microelectronics WM831x PMICs
++ *
++ * Copyright 2009 Wolfson Microelectonics plc
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/fb.h>
++#include <linux/backlight.h>
++
++#include <linux/mfd/wm831x/core.h>
++#include <linux/mfd/wm831x/pdata.h>
++#include <linux/mfd/wm831x/regulator.h>
++
++struct wm831x_backlight_data {
++	struct wm831x *wm831x;
++	int isink_reg;
++	int current_brightness;
++};
++
++static int wm831x_backlight_set(struct backlight_device *bl, int brightness)
++{
++	struct wm831x_backlight_data *data = bl_get_data(bl);
++	struct wm831x *wm831x = data->wm831x;
++	int power_up = !data->current_brightness && brightness;
++	int power_down = data->current_brightness && !brightness;
++	int ret;
++
++	if (power_up) {
++		/* Enable the ISINK */
++		ret = wm831x_set_bits(wm831x, data->isink_reg,
++				      WM831X_CS1_ENA, WM831X_CS1_ENA);
++		if (ret < 0)
++			goto err;
++
++		/* Enable the DC-DC */
++		ret = wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE,
++				      WM831X_DC4_ENA, WM831X_DC4_ENA);
++		if (ret < 0)
++			goto err;
++	}
++
++	if (power_down) {
++		/* DCDC first */
++		ret = wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE,
++				      WM831X_DC4_ENA, 0);
++		if (ret < 0)
++			goto err;
++
++		/* ISINK */
++		ret = wm831x_set_bits(wm831x, data->isink_reg,
++				      WM831X_CS1_DRIVE | WM831X_CS1_ENA, 0);
++		if (ret < 0)
++			goto err;
++	}
++
++	/* Set the new brightness */
++	ret = wm831x_set_bits(wm831x, data->isink_reg,
++			      WM831X_CS1_ISEL_MASK, brightness);
++	if (ret < 0)
++		goto err;
++
++	if (power_up) {
++		/* Drive current through the ISINK */
++		ret = wm831x_set_bits(wm831x, data->isink_reg,
++				      WM831X_CS1_DRIVE, WM831X_CS1_DRIVE);
++		if (ret < 0)
++			return ret;
++	}
++
++	data->current_brightness = brightness;
++
++	return 0;
++
++err:
++	/* If we were in the middle of a power transition always shut down
++	 * for safety.
++	 */
++	if (power_up || power_down) {
++		wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, WM831X_DC4_ENA, 0);
++		wm831x_set_bits(wm831x, data->isink_reg, WM831X_CS1_ENA, 0);
++	}
++
++	return ret;
++}
++
++static int wm831x_backlight_update_status(struct backlight_device *bl)
++{
++	int brightness = bl->props.brightness;
++
++	if (bl->props.power != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
++		brightness = 0;
++
++	if (bl->props.state & BL_CORE_SUSPENDED)
++		brightness = 0;
++
++	return wm831x_backlight_set(bl, brightness);
++}
++
++static int wm831x_backlight_get_brightness(struct backlight_device *bl)
++{
++	struct wm831x_backlight_data *data = bl_get_data(bl);
++	return data->current_brightness;
++}
++
++static struct backlight_ops wm831x_backlight_ops = {
++	.options = BL_CORE_SUSPENDRESUME,
++	.update_status	= wm831x_backlight_update_status,
++	.get_brightness	= wm831x_backlight_get_brightness,
++};
++
++static int wm831x_backlight_probe(struct platform_device *pdev)
++{
++	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
++	struct wm831x_pdata *wm831x_pdata;
++	struct wm831x_backlight_pdata *pdata;
++	struct wm831x_backlight_data *data;
++	struct backlight_device *bl;
++	int ret, i, max_isel, isink_reg, dcdc_cfg;
++
++	/* We need platform data */
++	if (pdev->dev.parent->platform_data) {
++		wm831x_pdata = pdev->dev.parent->platform_data;
++		pdata = wm831x_pdata->backlight;
++	} else {
++		pdata = NULL;
++	}
++
++	if (!pdata) {
++		dev_err(&pdev->dev, "No platform data supplied\n");
++		return -EINVAL;
++	}
++
++	/* Figure out the maximum current we can use */
++	for (i = 0; i < WM831X_ISINK_MAX_ISEL; i++) {
++		if (wm831x_isinkv_values[i] > pdata->max_uA)
++			break;
++	}
++
++	if (i == 0) {
++		dev_err(&pdev->dev, "Invalid max_uA: %duA\n", pdata->max_uA);
++		return -EINVAL;
++	}
++	max_isel = i - 1;
++
++	if (pdata->max_uA != wm831x_isinkv_values[max_isel])
++		dev_warn(&pdev->dev,
++			 "Maximum current is %duA not %duA as requested\n",
++			 wm831x_isinkv_values[max_isel], pdata->max_uA);
++
++	switch (pdata->isink) {
++	case 1:
++		isink_reg = WM831X_CURRENT_SINK_1;
++		dcdc_cfg = 0;
++		break;
++	case 2:
++		isink_reg = WM831X_CURRENT_SINK_2;
++		dcdc_cfg = WM831X_DC4_FBSRC;
++		break;
++	default:
++		dev_err(&pdev->dev, "Invalid ISINK %d\n", pdata->isink);
++		return -EINVAL;
++	}
++
++	/* Configure the ISINK to use for feedback */
++	ret = wm831x_reg_unlock(wm831x);
++	if (ret < 0)
++		return ret;
++
++	ret = wm831x_set_bits(wm831x, WM831X_DC4_CONTROL, WM831X_DC4_FBSRC,
++			      dcdc_cfg);
++
++	wm831x_reg_lock(wm831x);
++	if (ret < 0)
++		return ret;
++
++	data = kzalloc(sizeof(*data), GFP_KERNEL);
++	if (data == NULL)
++		return -ENOMEM;
++
++	data->wm831x = wm831x;
++	data->current_brightness = 0;
++	data->isink_reg = isink_reg;
++
++	bl = backlight_device_register("wm831x", &pdev->dev,
++			data, &wm831x_backlight_ops);
++	if (IS_ERR(bl)) {
++		dev_err(&pdev->dev, "failed to register backlight\n");
++		kfree(data);
++		return PTR_ERR(bl);
++	}
++
++	bl->props.max_brightness = max_isel;
++	bl->props.brightness = max_isel;
++
++	platform_set_drvdata(pdev, bl);
++
++	/* Disable the DCDC if it was started so we can bootstrap */
++	wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, WM831X_DC4_ENA, 0);
++
++
++	backlight_update_status(bl);
++
++	return 0;
++}
++
++static int wm831x_backlight_remove(struct platform_device *pdev)
++{
++	struct backlight_device *bl = platform_get_drvdata(pdev);
++	struct wm831x_backlight_data *data = bl_get_data(bl);
++
++	backlight_device_unregister(bl);
++	kfree(data);
++	return 0;
++}
++
++static struct platform_driver wm831x_backlight_driver = {
++	.driver		= {
++		.name	= "wm831x-backlight",
++		.owner	= THIS_MODULE,
++	},
++	.probe		= wm831x_backlight_probe,
++	.remove		= wm831x_backlight_remove,
++};
++
++static int __init wm831x_backlight_init(void)
++{
++	return platform_driver_register(&wm831x_backlight_driver);
++}
++module_init(wm831x_backlight_init);
++
++static void __exit wm831x_backlight_exit(void)
++{
++	platform_driver_unregister(&wm831x_backlight_driver);
++}
++module_exit(wm831x_backlight_exit);
++
++MODULE_DESCRIPTION("Backlight Driver for WM831x PMICs");
++MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com");
++MODULE_LICENSE("GPL");
++MODULE_ALIAS("platform:wm831x-backlight");
+-- 
+1.6.3.3
 
-Where did that 'Selected by:' come from? Or is that just an artifact of
-the way Kconfig implements 'choice'?
-
-
-
---==_Exmh_1252155974_2420P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKomJGcC3lWbTT17ARAoazAKCLMS2hhz9lXO3eistRqMEPQnWxKACgvICa
-557ZFY691/0DRczp2tjkOXA=
-=B2Qd
------END PGP SIGNATURE-----
-
---==_Exmh_1252155974_2420P--
