@@ -1,63 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934595AbZIEDVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964989AbZIEAac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934595AbZIEDVt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 23:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934532AbZIEDVs
+	id S964989AbZIEAac (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964921AbZIEAa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 23:21:48 -0400
-Received: from kroah.org ([198.145.64.141]:57374 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754202AbZIEDVr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 23:21:47 -0400
-Date: Fri, 4 Sep 2009 17:29:26 -0700
-From: Greg KH <greg@kroah.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Johannes Berg <johannes@sipsolutions.net>, linux-kernel@vger.kernel.org,
-       devel@driverdev.osuosl.org
-Subject: Re: Staging tree status for the .32 kernel merge
-Message-ID: <20090905002926.GA18493@kroah.com>
-References: <20090903041429.GA29875@kroah.com>
- <1251967786.3336.19.camel@johannes.local>
- <20090903161734.GA9722@infradead.org>
- <20090903175511.GA24943@kroah.com>
- <20090903184017.GA9784@infradead.org>
- <20090903185546.GB29945@kroah.com>
- <1252109760.27694.0.camel@violet>
+	Fri, 4 Sep 2009 20:30:27 -0400
+Received: from mx1-old.redhat.com ([66.187.233.31]:40810 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934626AbZIEAaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:30:23 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252109760.27694.0.camel@violet>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+X-Fcc: ~/Mail/linus
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] kconfig CROSS_COMPILE option
+Emacs: because one operating system isn't enough.
+Message-Id: <20090905002947.A4C678BEB1@magilla.sf.frob.com>
+Date: Fri,  4 Sep 2009 17:29:47 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 05, 2009 at 02:16:00AM +0200, Marcel Holtmann wrote:
-> Hi Greg,
-> 
-> > > > > > And do they come with their own wireless stack too?
-> > > > > 
-> > > > > Please don't put in the vendor vt6656 driver, it will conflict with a
-> > > > > proper mac80211 vt6656 driver a group mentored by me will submit late in
-> > > > > the 2.6.32 cycle.
-> > > > 
-> > > > It's already in the linux-next tree, and is almost merged with the
-> > > > vt6655 driver from what I can see.  When your driver goes in I will be
-> > > > glad to disable the device ids that it covers, just let me know.
-> > > 
-> > > vt665_6_ has just one usb device id.  And please make sure to rename the
-> > > crap driver to something else than vt6656.ko so that it does not get in
-> > > way for the proper driver.
-> > 
-> > Ok, does vt6656_crap.ko sound good to you?  :)
-> 
-> can we suffix all of the staging drivers with _crap actually? At least
-> for the wireless ones.
+This adds CROSS_COMPILE as a kconfig string so you can store it in .config.
+Then you can use plain "make" in the configured kernel build directory to
+do the right cross compilation without setting the command-line or
+environment variable every time.
 
-Heh, no, the "crap" name is internal only, we don't expose that to
-users.
+With this, you can set up different build directories for different kernel
+configurations, whether native or cross-builds, and then use the simple:
+	make -C /build/dir M=module-source-dir
+idiom to build modules for any given target kernel, indicating which one
+by nothing but the build directory chosen.
 
-thanks,
+I tried a version that defaults the string with env="CROSS_COMPILE" so that
+in a "make oldconfig" with CROSS_COMPILE in the environment you can just
+hit return to store the way you're building it.  But the kconfig prompt for
+strings doesn't give you any way to say you want an empty string instead of
+the default, so I punted that.
 
-greg k-h
+Signed-off-by: Roland McGrath <roland@redhat.com>
+CC: Sam Ravnborg <sam@ravnborg.org>
+---
+ Makefile     |    4 +++-
+ init/Kconfig |    8 ++++++++
+ 2 files changed, 11 insertions(+), 1 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 25c615e..8f02b6e 100644
+--- a/Makefile
++++ b/Makefile
+@@ -177,11 +177,13 @@ SUBARCH := $(shell uname -m | sed -e s/i.86/i386/ -e s/sun4u/sparc64/ \
+ # CROSS_COMPILE can be set on the command line
+ # make CROSS_COMPILE=ia64-linux-
+ # Alternatively CROSS_COMPILE can be set in the environment.
++# A third alternative is to store a setting in .config so that plain
++# "make" in the configured kernel build directory always uses that.
+ # Default value for CROSS_COMPILE is not to prefix executables
+ # Note: Some architectures assign CROSS_COMPILE in their arch/*/Makefile
+ export KBUILD_BUILDHOST := $(SUBARCH)
+ ARCH		?= $(SUBARCH)
+-CROSS_COMPILE	?=
++CROSS_COMPILE	?= $(CONFIG_CROSS_COMPILE:"%"=%)
+ 
+ # Architecture as present in compile.h
+ UTS_MACHINE 	:= $(ARCH)
+diff --git a/init/Kconfig b/init/Kconfig
+index 3f7e609..452080d 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -76,6 +76,14 @@ config INIT_ENV_ARG_LIMIT
+ 	  variables passed to init from the kernel command line.
+ 
+ 
++config CROSS_COMPILE
++	string "Cross-compiler tool prefix"
++	help
++	  Same as running 'make CROSS_COMPILE=prefix-' but stored for
++	  default make runs in this kernel build directory.  You don't
++	  need to set this unless you want the configured kernel build
++	  directory to select the cross-compiler automatically.
++
+ config LOCALVERSION
+ 	string "Local version - append to kernel release"
+ 	help
