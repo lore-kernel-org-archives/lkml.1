@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757337AbZIEKdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZIEKdE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757337AbZIEKdW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 06:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757308AbZIEKdV
+	id S1757290AbZIEKdE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 06:33:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757160AbZIEKdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 06:33:21 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57074 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757310AbZIEKdU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 06:33:20 -0400
-Date: Sat, 5 Sep 2009 12:28:10 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Rob Landley <rob@landley.net>, jim owens <jowens@hp.com>, david@lang.hm,
-       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
-	document conditions when reliable operation is possible)
-Message-ID: <20090905102810.GA1341@ucw.cz>
-References: <20090826001645.GN4300@elf.ucw.cz> <200909022141.48827.rob@landley.net> <4A9FCF53.10105@hp.com> <200909040244.54772.rob@landley.net> <4AA0FECE.3010200@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA0FECE.3010200@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 5 Sep 2009 06:33:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38319 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757116AbZIEKdC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 06:33:02 -0400
+Subject: [PATCH] x86: fix section mismatch kernel/time.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 05 Sep 2009 15:59:15 +0530
+Message-Id: <1252146555.4969.1.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-09-04 07:49:34, Ric Wheeler wrote:
-> On 09/04/2009 03:44 AM, Rob Landley wrote:
->> On Thursday 03 September 2009 09:14:43 jim owens wrote:
->>    
->>> Rob Landley wrote:
->>>      
->>>> I think he understands he was clueless too, that's why he investigated
->>>> the failure and wrote it up for posterity.
->>>>
->>>>        
->>>>> And Ric said do not stigmatize whole classes of A) devices, B) raid,
->>>>> and C) filesystems with "Pavel says...".
->>>>>          
->>>> I don't care what "Pavel says", so you can leave the ad hominem at the
->>>> door, thanks.
->>>>        
->>> See, this is exactly the problem we have with all the proposed
->>> documentation.  The reader (you) did not get what the writer (me)
->>> was trying to say.  That does not say either of us was wrong in
->>> what we thought was meant, simply that we did not communicate.
->>>      
->> That's why I've mostly stopped bothering with this thread.  I could respond to
->> Ric Wheeler's latest (what does write barriers have to do with whether or not
->> a multi-sector stripe is guaranteed to be atomically updated during a panic or
->> power failure?) but there's just no point.
->>    
->
-> The point of that post was that the failure that you and Pavel both  
-> attribute to RAID and journalled fs happens whenever the storage cannot  
-> promise to do atomic writes of a logical FS block (prevent torn  
-> pages/split writes/etc). I gave a specific example of why this happens  
-> even with simple, single disk systems.
 
-ext3 does not expect atomic write of 4K block, according to Ted. So
-no, it is not broken on single disk.
+Commit dd0a70c8 move tsc_init to late_time_init which leads to :
+
+WARNING: arch/x86/built-in.o(.text+0x397f): Section mismatch in reference from the function x86_late_time_init() to the function .init.text:tsc_init()
+The function x86_late_time_init() references
+the function __init tsc_init().
+This is often because x86_late_time_init lacks a __init
+
+So adding __init to x86_late_time_init() fixes this mismatch.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/time.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/time.c b/arch/x86/kernel/time.c
+index fcece00..8c6d692 100644
+--- a/arch/x86/kernel/time.c
++++ b/arch/x86/kernel/time.c
+@@ -105,7 +105,7 @@ void __init hpet_time_init(void)
+ 	setup_default_timer_irq();
+ }
  
->> The LWN article on the topic is out, and incomplete as it is I expect it's the
->> best documentation anybody will actually _read_.
-
-Would anyone (probably privately?) share the lwn link?
-								Pavel
+-static void x86_late_time_init(void)
++static void __init x86_late_time_init(void)
+ {
+ 	x86_init.timers.timer_init();
+ 	tsc_init();
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+1.6.0.6
+
+
+
