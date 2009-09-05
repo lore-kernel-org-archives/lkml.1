@@ -1,333 +1,472 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751862AbZIENJf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751916AbZIENJl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751862AbZIENJf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 09:09:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZIENJc
+	id S1751916AbZIENJl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 09:09:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZIENJk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 09:09:32 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:35131 "EHLO
+	Sat, 5 Sep 2009 09:09:40 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:35138 "EHLO
 	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751676AbZIENJb (ORCPT
+	with ESMTP id S1751783AbZIENJe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 09:09:31 -0400
+	Sat, 5 Sep 2009 09:09:34 -0400
 From: Mark Brown <broonie@opensource.wolfsonmicro.com>
 To: Richard Purdie <rpurdie@rpsys.net>
 Cc: linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>,
        Mark Brown <broonie@opensource.wolfsonmicro.com>,
        Richard Purdie <rpurdie@rpsys.net>
-Date: Sat,  5 Sep 2009 14:09:20 +0100
-Message-Id: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+Date: Sat,  5 Sep 2009 14:09:21 +0100
+Message-Id: <1252156161-10062-2-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+References: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
 X-SA-Exim-Connect-IP: 82.41.28.43
 X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: [PATCH 1/2] backlight: Add WM831x backlight driver
+Subject: [PATCH 2/2] leds: Add WM831x status LED driver
 X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
 X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The WM831x series of PMICs provide DC-DC boost convertors and current
-sinks which can be used together to drive LEDs for use as backlights.
-Expose this functionality via the backlight API.
+The WM831x devices feature two software controlled status LEDs with
+hardware assisted blinking.
 
-Since when used in this configuration the current sink and boost
-convertor are very tightly coupled with a multi-stage startup for
-the current sink which overlaps with the boost convertor startup
-this driver bypasses the regulator API. Machine inititialisation
-is responsible for ensuring that the regulators are not accessed
-via both APIs.
+The device can also autonomously control the LEDs based on a selection
+of sources.  This can be configured at boot time using either platform
+data or the chip OTP.  A sysfs file in the style of that for triggers
+allowing the control source to be configured at run time.  Triggers
+can't be used here since they can't depend on the implementation details
+of a specific LED type.
 
 Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Cc: Richard Purdie <rpurdie@rpsys.net>
 ---
- drivers/video/backlight/Kconfig     |    7 +
- drivers/video/backlight/Makefile    |    1 +
- drivers/video/backlight/wm831x_bl.c |  250 +++++++++++++++++++++++++++++++++++
- 3 files changed, 258 insertions(+), 0 deletions(-)
- create mode 100644 drivers/video/backlight/wm831x_bl.c
+ drivers/leds/Kconfig              |    7 +
+ drivers/leds/Makefile             |    1 +
+ drivers/leds/leds-wm831x-status.c |  341 +++++++++++++++++++++++++++++++++++++
+ include/linux/mfd/wm831x/status.h |   34 ++++
+ 4 files changed, 383 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/leds/leds-wm831x-status.c
+ create mode 100644 include/linux/mfd/wm831x/status.h
 
-diff --git a/drivers/video/backlight/Kconfig b/drivers/video/backlight/Kconfig
-index 90861cd..205de1a 100644
---- a/drivers/video/backlight/Kconfig
-+++ b/drivers/video/backlight/Kconfig
-@@ -229,3 +229,10 @@ config BACKLIGHT_SAHARA
- 	help
- 	  If you have a Tabletkiosk Sahara Touch-iT, say y to enable the
- 	  backlight driver.
-+
-+config BACKLIGHT_WM831X
-+	tristate "WM831x PMIC Backlight Driver"
-+	depends on BACKLIGHT_CLASS_DEVICE && MFD_WM831X
-+	help
-+	  If you have a backlight driven by the ISINK and DCDC of a
-+	  WM831x PMIC say y to enable the backlight driver for it.
-diff --git a/drivers/video/backlight/Makefile b/drivers/video/backlight/Makefile
-index 4eb178c..df0b67c 100644
---- a/drivers/video/backlight/Makefile
-+++ b/drivers/video/backlight/Makefile
-@@ -24,4 +24,5 @@ obj-$(CONFIG_BACKLIGHT_DA903X)	+= da903x_bl.o
- obj-$(CONFIG_BACKLIGHT_MBP_NVIDIA) += mbp_nvidia_bl.o
- obj-$(CONFIG_BACKLIGHT_TOSA)	+= tosa_bl.o
- obj-$(CONFIG_BACKLIGHT_SAHARA)	+= kb3886_bl.o
-+obj-$(CONFIG_BACKLIGHT_WM831X)	+= wm831x_bl.o
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 7c8e712..edfd4e3 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -195,6 +195,13 @@ config LEDS_PCA955X
+ 	  LED driver chips accessed via the I2C bus.  Supported
+ 	  devices include PCA9550, PCA9551, PCA9552, and PCA9553.
  
-diff --git a/drivers/video/backlight/wm831x_bl.c b/drivers/video/backlight/wm831x_bl.c
++config LEDS_WM831X_STATUS
++	tristate "LED support for status LEDs on WM831x PMICs"
++	depends on LEDS_CLASS && MFD_WM831X
++	help
++	  This option enables support for the status LEDs of the WM831x
++          series of PMICs.
++
+ config LEDS_WM8350
+ 	tristate "LED Support for WM8350 AudioPlus PMIC"
+ 	depends on LEDS_CLASS && MFD_WM8350
+diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+index e8cdcf7..46d7270 100644
+--- a/drivers/leds/Makefile
++++ b/drivers/leds/Makefile
+@@ -26,6 +26,7 @@ obj-$(CONFIG_LEDS_HP6XX)		+= leds-hp6xx.o
+ obj-$(CONFIG_LEDS_FSG)			+= leds-fsg.o
+ obj-$(CONFIG_LEDS_PCA955X)		+= leds-pca955x.o
+ obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
++obj-$(CONFIG_LEDS_WM831X_STATUS)	+= leds-wm831x-status.o
+ obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
+ obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
+ 
+diff --git a/drivers/leds/leds-wm831x-status.c b/drivers/leds/leds-wm831x-status.c
 new file mode 100644
-index 0000000..467bdb7
+index 0000000..c586d05
 --- /dev/null
-+++ b/drivers/video/backlight/wm831x_bl.c
-@@ -0,0 +1,250 @@
++++ b/drivers/leds/leds-wm831x-status.c
+@@ -0,0 +1,341 @@
 +/*
-+ * Backlight driver for Wolfson Microelectronics WM831x PMICs
++ * LED driver for WM831x status LEDs
 + *
-+ * Copyright 2009 Wolfson Microelectonics plc
++ * Copyright(C) 2009 Wolfson Microelectronics PLC.
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
++ *
 + */
 +
 +#include <linux/kernel.h>
 +#include <linux/init.h>
 +#include <linux/platform_device.h>
-+#include <linux/fb.h>
-+#include <linux/backlight.h>
-+
++#include <linux/leds.h>
++#include <linux/err.h>
 +#include <linux/mfd/wm831x/core.h>
 +#include <linux/mfd/wm831x/pdata.h>
-+#include <linux/mfd/wm831x/regulator.h>
++#include <linux/mfd/wm831x/status.h>
 +
-+struct wm831x_backlight_data {
++
++struct wm831x_status {
++	struct led_classdev cdev;
 +	struct wm831x *wm831x;
-+	int isink_reg;
-+	int current_brightness;
++	struct work_struct work;
++	struct mutex mutex;
++
++	spinlock_t value_lock;
++	int reg;     /* Control register */
++	int reg_val; /* Control register value */
++
++	int blink;
++	int blink_time;
++	int blink_cyc;
++	int src;
++	enum led_brightness brightness;
 +};
 +
-+static int wm831x_backlight_set(struct backlight_device *bl, int brightness)
++#define to_wm831x_status(led_cdev) \
++	container_of(led_cdev, struct wm831x_status, cdev)
++
++static void wm831x_status_work(struct work_struct *work)
 +{
-+	struct wm831x_backlight_data *data = bl_get_data(bl);
-+	struct wm831x *wm831x = data->wm831x;
-+	int power_up = !data->current_brightness && brightness;
-+	int power_down = data->current_brightness && !brightness;
-+	int ret;
++	struct wm831x_status *led = container_of(work, struct wm831x_status,
++						 work);
++	unsigned long flags;
 +
-+	if (power_up) {
-+		/* Enable the ISINK */
-+		ret = wm831x_set_bits(wm831x, data->isink_reg,
-+				      WM831X_CS1_ENA, WM831X_CS1_ENA);
-+		if (ret < 0)
-+			goto err;
++	mutex_lock(&led->mutex);
 +
-+		/* Enable the DC-DC */
-+		ret = wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE,
-+				      WM831X_DC4_ENA, WM831X_DC4_ENA);
-+		if (ret < 0)
-+			goto err;
++	led->reg_val &= ~(WM831X_LED_SRC_MASK | WM831X_LED_MODE_MASK |
++			  WM831X_LED_DUTY_CYC_MASK | WM831X_LED_DUR_MASK);
++
++	spin_lock_irqsave(&led->value_lock, flags);
++
++	led->reg_val |= led->src << WM831X_LED_SRC_SHIFT;
++	if (led->blink) {
++		led->reg_val |= 2 << WM831X_LED_MODE_SHIFT;
++		led->reg_val |= led->blink_time << WM831X_LED_DUR_SHIFT;
++		led->reg_val |= led->blink_cyc;
++	} else {
++		if (led->brightness != LED_OFF)
++			led->reg_val |= 1 << WM831X_LED_MODE_SHIFT;
 +	}
 +
-+	if (power_down) {
-+		/* DCDC first */
-+		ret = wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE,
-+				      WM831X_DC4_ENA, 0);
-+		if (ret < 0)
-+			goto err;
++	spin_unlock_irqrestore(&led->value_lock, flags);
 +
-+		/* ISINK */
-+		ret = wm831x_set_bits(wm831x, data->isink_reg,
-+				      WM831X_CS1_DRIVE | WM831X_CS1_ENA, 0);
-+		if (ret < 0)
-+			goto err;
++	wm831x_reg_write(led->wm831x, led->reg, led->reg_val);
++
++	mutex_unlock(&led->mutex);
++}
++
++static void wm831x_status_set(struct led_classdev *led_cdev,
++			   enum led_brightness value)
++{
++	struct wm831x_status *led = to_wm831x_status(led_cdev);
++	unsigned long flags;
++
++	spin_lock_irqsave(&led->value_lock, flags);
++	led->brightness = value;
++	if (value == LED_OFF)
++		led->blink = 0;
++	schedule_work(&led->work);
++	spin_unlock_irqrestore(&led->value_lock, flags);
++}
++
++static int wm831x_status_blink_set(struct led_classdev *led_cdev,
++				   unsigned long *delay_on,
++				   unsigned long *delay_off)
++{
++	struct wm831x_status *led = to_wm831x_status(led_cdev);
++	unsigned long flags;
++	int ret = 0;
++
++	/* Pick some defaults if we've not been given times */
++	if (*delay_on == 0 && *delay_off == 0) {
++		*delay_on = 250;
++		*delay_off = 250;
 +	}
 +
-+	/* Set the new brightness */
-+	ret = wm831x_set_bits(wm831x, data->isink_reg,
-+			      WM831X_CS1_ISEL_MASK, brightness);
-+	if (ret < 0)
-+		goto err;
++	spin_lock_irqsave(&led->value_lock, flags);
 +
-+	if (power_up) {
-+		/* Drive current through the ISINK */
-+		ret = wm831x_set_bits(wm831x, data->isink_reg,
-+				      WM831X_CS1_DRIVE, WM831X_CS1_DRIVE);
-+		if (ret < 0)
-+			return ret;
++	/* We only have a limited selection of settings, see if we can
++	 * support the configuration we're being given */
++	switch (*delay_on) {
++	case 1000:
++		led->blink_time = 0;
++		break;
++	case 250:
++		led->blink_time = 1;
++		break;
++	case 125:
++		led->blink_time = 2;
++		break;
++	case 62:
++	case 63:
++		/* Actually 62.5ms */
++		led->blink_time = 3;
++		break;
++	default:
++		ret = -EINVAL;
++		break;
 +	}
 +
-+	data->current_brightness = brightness;
-+
-+	return 0;
-+
-+err:
-+	/* If we were in the middle of a power transition always shut down
-+	 * for safety.
-+	 */
-+	if (power_up || power_down) {
-+		wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, WM831X_DC4_ENA, 0);
-+		wm831x_set_bits(wm831x, data->isink_reg, WM831X_CS1_ENA, 0);
++	if (ret == 0) {
++		switch (*delay_off / *delay_on) {
++		case 1:
++			led->blink_cyc = 0;
++			break;
++		case 3:
++			led->blink_cyc = 1;
++			break;
++		case 4:
++			led->blink_cyc = 2;
++			break;
++		case 8:
++			led->blink_cyc = 3;
++			break;
++		default:
++			ret = -EINVAL;
++			break;
++		}
 +	}
++
++	if (ret == 0)
++		led->blink = 1;
++	else
++		led->blink = 0;
++
++	/* Always update; if we fail turn off blinking since we expect
++	 * a software fallback. */
++	schedule_work(&led->work);
++
++	spin_unlock_irqrestore(&led->value_lock, flags);
 +
 +	return ret;
 +}
 +
-+static int wm831x_backlight_update_status(struct backlight_device *bl)
-+{
-+	int brightness = bl->props.brightness;
-+
-+	if (bl->props.power != FB_BLANK_UNBLANK)
-+		brightness = 0;
-+
-+	if (bl->props.fb_blank != FB_BLANK_UNBLANK)
-+		brightness = 0;
-+
-+	if (bl->props.state & BL_CORE_SUSPENDED)
-+		brightness = 0;
-+
-+	return wm831x_backlight_set(bl, brightness);
-+}
-+
-+static int wm831x_backlight_get_brightness(struct backlight_device *bl)
-+{
-+	struct wm831x_backlight_data *data = bl_get_data(bl);
-+	return data->current_brightness;
-+}
-+
-+static struct backlight_ops wm831x_backlight_ops = {
-+	.options = BL_CORE_SUSPENDRESUME,
-+	.update_status	= wm831x_backlight_update_status,
-+	.get_brightness	= wm831x_backlight_get_brightness,
++static const char *led_src_texts[] = {
++	"otp",
++	"power",
++	"charger",
++	"soft",
 +};
 +
-+static int wm831x_backlight_probe(struct platform_device *pdev)
++static ssize_t wm831x_status_src_show(struct device *dev,
++				      struct device_attribute *attr, char *buf)
++{
++	struct led_classdev *led_cdev = dev_get_drvdata(dev);
++	struct wm831x_status *led = to_wm831x_status(led_cdev);
++	int i;
++	ssize_t ret = 0;
++
++	mutex_lock(&led->mutex);
++
++	for (i = 0; i < ARRAY_SIZE(led_src_texts); i++)
++		if (i == led->src)
++			ret += sprintf(&buf[ret], "[%s] ", led_src_texts[i]);
++		else
++			ret += sprintf(&buf[ret], "%s ", led_src_texts[i]);
++
++	mutex_unlock(&led->mutex);
++
++	ret += sprintf(&buf[ret], "\n");
++
++	return ret;
++}
++
++static ssize_t wm831x_status_src_store(struct device *dev,
++				       struct device_attribute *attr,
++				       const char *buf, size_t size)
++{
++	struct led_classdev *led_cdev = dev_get_drvdata(dev);
++	struct wm831x_status *led = to_wm831x_status(led_cdev);
++	char name[20];
++	int i;
++	size_t len;
++
++	name[sizeof(name) - 1] = '\0';
++	strncpy(name, buf, sizeof(name) - 1);
++	len = strlen(name);
++
++	if (len && name[len - 1] == '\n')
++		name[len - 1] = '\0';
++
++	for (i = 0; i < ARRAY_SIZE(led_src_texts); i++) {
++		if (!strcmp(name, led_src_texts[i])) {
++			mutex_lock(&led->mutex);
++
++			led->src = i;
++			schedule_work(&led->work);
++
++			mutex_unlock(&led->mutex);
++		}
++	}
++
++	return size;
++}
++
++static DEVICE_ATTR(src, 0644, wm831x_status_src_show, wm831x_status_src_store);
++
++static int wm831x_status_probe(struct platform_device *pdev)
 +{
 +	struct wm831x *wm831x = dev_get_drvdata(pdev->dev.parent);
-+	struct wm831x_pdata *wm831x_pdata;
-+	struct wm831x_backlight_pdata *pdata;
-+	struct wm831x_backlight_data *data;
-+	struct backlight_device *bl;
-+	int ret, i, max_isel, isink_reg, dcdc_cfg;
++	struct wm831x_pdata *chip_pdata;
++	struct wm831x_status_pdata pdata;
++	struct wm831x_status *drvdata;
++	struct resource *res;
++	int id = pdev->id % ARRAY_SIZE(chip_pdata->status);
++	int ret;
 +
-+	/* We need platform data */
-+	if (pdev->dev.parent->platform_data) {
-+		wm831x_pdata = pdev->dev.parent->platform_data;
-+		pdata = wm831x_pdata->backlight;
-+	} else {
-+		pdata = NULL;
++	res = platform_get_resource(pdev, IORESOURCE_IO, 0);
++	if (res == NULL) {
++		dev_err(&pdev->dev, "No I/O resource\n");
++		ret = -EINVAL;
++		goto err;
 +	}
 +
-+	if (!pdata) {
-+		dev_err(&pdev->dev, "No platform data supplied\n");
-+		return -EINVAL;
-+	}
-+
-+	/* Figure out the maximum current we can use */
-+	for (i = 0; i < WM831X_ISINK_MAX_ISEL; i++) {
-+		if (wm831x_isinkv_values[i] > pdata->max_uA)
-+			break;
-+	}
-+
-+	if (i == 0) {
-+		dev_err(&pdev->dev, "Invalid max_uA: %duA\n", pdata->max_uA);
-+		return -EINVAL;
-+	}
-+	max_isel = i - 1;
-+
-+	if (pdata->max_uA != wm831x_isinkv_values[max_isel])
-+		dev_warn(&pdev->dev,
-+			 "Maximum current is %duA not %duA as requested\n",
-+			 wm831x_isinkv_values[max_isel], pdata->max_uA);
-+
-+	switch (pdata->isink) {
-+	case 1:
-+		isink_reg = WM831X_CURRENT_SINK_1;
-+		dcdc_cfg = 0;
-+		break;
-+	case 2:
-+		isink_reg = WM831X_CURRENT_SINK_2;
-+		dcdc_cfg = WM831X_DC4_FBSRC;
-+		break;
-+	default:
-+		dev_err(&pdev->dev, "Invalid ISINK %d\n", pdata->isink);
-+		return -EINVAL;
-+	}
-+
-+	/* Configure the ISINK to use for feedback */
-+	ret = wm831x_reg_unlock(wm831x);
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = wm831x_set_bits(wm831x, WM831X_DC4_CONTROL, WM831X_DC4_FBSRC,
-+			      dcdc_cfg);
-+
-+	wm831x_reg_lock(wm831x);
-+	if (ret < 0)
-+		return ret;
-+
-+	data = kzalloc(sizeof(*data), GFP_KERNEL);
-+	if (data == NULL)
++	drvdata = kzalloc(sizeof(struct wm831x_status), GFP_KERNEL);
++	if (!drvdata)
 +		return -ENOMEM;
++	dev_set_drvdata(&pdev->dev, drvdata);
 +
-+	data->wm831x = wm831x;
-+	data->current_brightness = 0;
-+	data->isink_reg = isink_reg;
++	drvdata->wm831x = wm831x;
++	drvdata->reg = res->start;
 +
-+	bl = backlight_device_register("wm831x", &pdev->dev,
-+			data, &wm831x_backlight_ops);
-+	if (IS_ERR(bl)) {
-+		dev_err(&pdev->dev, "failed to register backlight\n");
-+		kfree(data);
-+		return PTR_ERR(bl);
++	if (wm831x->dev->platform_data)
++		chip_pdata = wm831x->dev->platform_data;
++	else
++		chip_pdata = NULL;
++
++	memset(&pdata, 0, sizeof(pdata));
++	if (chip_pdata && chip_pdata->status[id])
++		memcpy(&pdata, chip_pdata->status[id], sizeof(pdata));
++	else
++		pdata.name = dev_name(&pdev->dev);
++
++	mutex_init(&drvdata->mutex);
++	INIT_WORK(&drvdata->work, wm831x_status_work);
++	spin_lock_init(&drvdata->value_lock);
++
++	/* We cache the configuration register and read startup values
++	 * from it. */
++	drvdata->reg_val = wm831x_reg_read(wm831x, drvdata->reg);
++
++	if (drvdata->reg_val & WM831X_LED_MODE_MASK)
++		drvdata->brightness = LED_FULL;
++	else
++		drvdata->brightness = LED_OFF;
++
++	/* Set a default source if configured, otherwise leave the
++	 * current hardware setting.
++	 */
++	if (pdata.default_src == WM831X_STATUS_PRESERVE) {
++		drvdata->src = drvdata->reg_val;
++		drvdata->src &= WM831X_LED_SRC_MASK;
++		drvdata->src >>= WM831X_LED_SRC_SHIFT;
++	} else {
++		drvdata->src = pdata.default_src - 1;
 +	}
 +
-+	bl->props.max_brightness = max_isel;
-+	bl->props.brightness = max_isel;
++	drvdata->cdev.name = pdata.name;
++	drvdata->cdev.default_trigger = pdata.default_trigger;
++	drvdata->cdev.brightness_set = wm831x_status_set;
++	drvdata->cdev.blink_set = wm831x_status_blink_set;
 +
-+	platform_set_drvdata(pdev, bl);
++	ret = led_classdev_register(wm831x->dev, &drvdata->cdev);
++	if (ret < 0) {
++		dev_err(&pdev->dev, "Failed to register LED: %d\n", ret);
++		goto err_led;
++	}
 +
-+	/* Disable the DCDC if it was started so we can bootstrap */
-+	wm831x_set_bits(wm831x, WM831X_DCDC_ENABLE, WM831X_DC4_ENA, 0);
-+
-+
-+	backlight_update_status(bl);
++	ret = device_create_file(drvdata->cdev.dev, &dev_attr_src);
++	if (ret != 0)
++		dev_err(&pdev->dev,
++			"No source control for LED: %d\n", ret);
 +
 +	return 0;
++
++err_led:
++	led_classdev_unregister(&drvdata->cdev);
++	kfree(drvdata);
++err:
++	return ret;
 +}
 +
-+static int wm831x_backlight_remove(struct platform_device *pdev)
++static int wm831x_status_remove(struct platform_device *pdev)
 +{
-+	struct backlight_device *bl = platform_get_drvdata(pdev);
-+	struct wm831x_backlight_data *data = bl_get_data(bl);
++	struct wm831x_status *drvdata = platform_get_drvdata(pdev);
 +
-+	backlight_device_unregister(bl);
-+	kfree(data);
++	device_remove_file(drvdata->cdev.dev, &dev_attr_src);
++	led_classdev_unregister(&drvdata->cdev);
++	kfree(drvdata);
++
 +	return 0;
 +}
 +
-+static struct platform_driver wm831x_backlight_driver = {
-+	.driver		= {
-+		.name	= "wm831x-backlight",
-+		.owner	= THIS_MODULE,
-+	},
-+	.probe		= wm831x_backlight_probe,
-+	.remove		= wm831x_backlight_remove,
++static struct platform_driver wm831x_status_driver = {
++	.driver = {
++		   .name = "wm831x-status",
++		   .owner = THIS_MODULE,
++		   },
++	.probe = wm831x_status_probe,
++	.remove = wm831x_status_remove,
 +};
 +
-+static int __init wm831x_backlight_init(void)
++static int __devinit wm831x_status_init(void)
 +{
-+	return platform_driver_register(&wm831x_backlight_driver);
++	return platform_driver_register(&wm831x_status_driver);
 +}
-+module_init(wm831x_backlight_init);
++module_init(wm831x_status_init);
 +
-+static void __exit wm831x_backlight_exit(void)
++static void wm831x_status_exit(void)
 +{
-+	platform_driver_unregister(&wm831x_backlight_driver);
++	platform_driver_unregister(&wm831x_status_driver);
 +}
-+module_exit(wm831x_backlight_exit);
++module_exit(wm831x_status_exit);
 +
-+MODULE_DESCRIPTION("Backlight Driver for WM831x PMICs");
-+MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com");
++MODULE_AUTHOR("Mark Brown <broonie@opensource.wolfsonmicro.com>");
++MODULE_DESCRIPTION("WM831x status LED driver");
 +MODULE_LICENSE("GPL");
-+MODULE_ALIAS("platform:wm831x-backlight");
++MODULE_ALIAS("platform:wm831x-status");
+diff --git a/include/linux/mfd/wm831x/status.h b/include/linux/mfd/wm831x/status.h
+new file mode 100644
+index 0000000..6bc090d
+--- /dev/null
++++ b/include/linux/mfd/wm831x/status.h
+@@ -0,0 +1,34 @@
++/*
++ * include/linux/mfd/wm831x/status.h -- Status LEDs for WM831x
++ *
++ * Copyright 2009 Wolfson Microelectronics PLC.
++ *
++ * Author: Mark Brown <broonie@opensource.wolfsonmicro.com>
++ *
++ *  This program is free software; you can redistribute  it and/or modify it
++ *  under  the terms of  the GNU General  Public License as published by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at your
++ *  option) any later version.
++ *
++ */
++
++#ifndef __MFD_WM831X_STATUS_H__
++#define __MFD_WM831X_STATUS_H__
++
++#define WM831X_LED_SRC_MASK                    0xC000  /* LED_SRC - [15:14] */
++#define WM831X_LED_SRC_SHIFT                       14  /* LED_SRC - [15:14] */
++#define WM831X_LED_SRC_WIDTH                        2  /* LED_SRC - [15:14] */
++#define WM831X_LED_MODE_MASK                   0x0300  /* LED_MODE - [9:8] */
++#define WM831X_LED_MODE_SHIFT                       8  /* LED_MODE - [9:8] */
++#define WM831X_LED_MODE_WIDTH                       2  /* LED_MODE - [9:8] */
++#define WM831X_LED_SEQ_LEN_MASK                0x0030  /* LED_SEQ_LEN - [5:4] */
++#define WM831X_LED_SEQ_LEN_SHIFT                    4  /* LED_SEQ_LEN - [5:4] */
++#define WM831X_LED_SEQ_LEN_WIDTH                    2  /* LED_SEQ_LEN - [5:4] */
++#define WM831X_LED_DUR_MASK                    0x000C  /* LED_DUR - [3:2] */
++#define WM831X_LED_DUR_SHIFT                        2  /* LED_DUR - [3:2] */
++#define WM831X_LED_DUR_WIDTH                        2  /* LED_DUR - [3:2] */
++#define WM831X_LED_DUTY_CYC_MASK               0x0003  /* LED_DUTY_CYC - [1:0] */
++#define WM831X_LED_DUTY_CYC_SHIFT                   0  /* LED_DUTY_CYC - [1:0] */
++#define WM831X_LED_DUTY_CYC_WIDTH                   2  /* LED_DUTY_CYC - [1:0] */
++
++#endif
 -- 
 1.6.3.3
 
