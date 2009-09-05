@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZIESHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752882AbZIESMw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbZIESHd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 14:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZIESHb
+	id S1752882AbZIESMw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 14:12:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZIESMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 14:07:31 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37170 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752474AbZIESHa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 14:07:30 -0400
-Date: Sat, 5 Sep 2009 11:06:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-cc: Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
- testsuite
-In-Reply-To: <87pra55nsr.fsf@devron.myhome.or.jp>
-Message-ID: <alpine.LFD.2.00.0909051059360.6727@eeepc.linux-foundation.org>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19099.52899.620345.326521@pilspetsen.it.uu.se> <19100.31254.666066.755541@pilspetsen.it.uu.se> <200909012042.59856.rjw@sisk.pl> <alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
- <19105.5352.28380.230615@pilspetsen.it.uu.se> <alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
- <alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org> <87pra55nsr.fsf@devron.myhome.or.jp>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 5 Sep 2009 14:12:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2270 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752579AbZIESMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 14:12:48 -0400
+Message-Id: <200909051812.n85ICiMs002769@int-mx08.intmail.prod.int.phx2.redhat.com>
+Date: Sat, 5 Sep 2009 14:12:43 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Greg KH <greg@kroah.com>
+Cc: Joel Becker <Joel.Becker@oracle.com>, <linux-kernel@vger.kernel.org>
+Subject: [stable] 2.6.27.32-rc1 build failure
+Organization: Red Hat, Inc.
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.27.32-rc1 is missing a line, causing:
+fs/ocfs2/aops.c: In function 'ocfs2_write_cluster':
+fs/ocfs2/aops.c:1286: error: 'should_zero' undeclared (first use in
+this function)
 
+Caused by patch #41:
+ocfs2-initialize-the-cluster-we-re-writing-to-in-a-non-sparse-extend.patch
 
-On Sun, 6 Sep 2009, OGAWA Hirofumi wrote:
-> 
-> This is not meaning to object to your patch though, I think we would be
-> good to fix pty_space(), not leaving as wrong. With fix it, I guess we
-> don't get strange behavior in the near of buffer limit.
+Fix, taken from the 2.6.30-stable patch:
 
-I'd actually rather not make that function any more complicated.
-
-Just make the rules be very simple:
-
- - the pty layer has ~64kB buffering, and if you just blindly do a 
-   ->write() op, you can see how many characters you were able to write.
-
- - before doing a ->write() op, you can ask how many characters you are 
-   guaranteed to be able to write by doing a "->write_room()" call.
-
-..and then the bug literally was just that "pty_write()" was confused, and 
-thought that it should do that "write_room()" thing, which it really 
-shouldn't ever have done.
-
-So I really think that the true fix is to just remove the code from 
-pty_write(), and not do anything more complicated. I'll also commit the 
-change to write '\r\n' as one single string, because quite frankly, it's 
-just stupid to do it as two characters, but at that point it's just a 
-cleanup.
-
-> Also, it seems the non-n_tty path doesn't use tty_write_room() check,
-> and instead it just try to write and check written bytes which returned
-> by tty->ops->write().
-
-.. and I think that's fine. I think write_room() should be used sparingly, 
-and only by code that cares about being able to fit at least 'n' 
-characters in the tty buffers. In fact, I think even n_tty would likely in 
-general be better off without it (and just check the return value), but 
-because of the stateful character translation (that doesn't actually keep 
-any state around, it just wants to expand things as it goes along), and 
-because of historical reasons, we'll just keep it using write_room.
-
-		Linus
+--- linux-2.6.27.x86_64.orig/fs/ocfs2/aops.c
++++ linux-2.6.27.x86_64/fs/ocfs2/aops.c
+@@ -1234,6 +1234,7 @@ out:
+  */
+ static int ocfs2_write_cluster(struct address_space *mapping,
+ 			       u32 phys, unsigned int unwritten,
++			       unsigned int should_zero,
+ 			       struct ocfs2_alloc_context *data_ac,
+ 			       struct ocfs2_alloc_context *meta_ac,
+ 			       struct ocfs2_write_ctxt *wc, u32 cpos,
