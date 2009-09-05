@@ -1,87 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbZIEO3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752229AbZIEOaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbZIEO3P (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 10:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZIEO3O
+	id S1752229AbZIEOaW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 10:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZIEOaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 10:29:14 -0400
-Received: from THUNK.ORG ([69.25.196.29]:44634 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751987AbZIEO3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 10:29:12 -0400
-Date: Sat, 5 Sep 2009 10:28:37 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-Subject: Re: ipw2200: firmware DMA loading rework
-Message-ID: <20090905142837.GI16217@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Mel Gorman <mel@csn.ul.ie>,
-	"Luis R. Rodriguez" <mcgrof@gmail.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-	Zhu Yi <yi.zhu@intel.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	Pekka Enberg <penberg@cs.helsinki.fi>,
-	"Rafael J. Wysocki" <rjw@sisk.pl>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Kernel Testers List <kernel-testers@vger.kernel.org>,
-	Mel Gorman <mel@skynet.ie>,
-	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-	"linux-mm@kvack.org" <linux-mm@kvack.org>,
-	James Ketrenos <jketreno@linux.intel.com>,
-	"Chatre, Reinette" <reinette.chatre@intel.com>,
-	"linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-	"ipw2100-devel@lists.sourceforge.net" <ipw2100-devel@lists.sourceforge.net>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <1251430951.3704.181.camel@debian> <200908301437.42133.bzolnier@gmail.com> <200909021948.13262.bzolnier@gmail.com> <43e72e890909021102g7f844c79xefccf305f5f5c5b6@mail.gmail.com> <20090903124913.GA26110@csn.ul.ie>
+	Sat, 5 Sep 2009 10:30:22 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:36800 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751936AbZIEOaV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 10:30:21 -0400
+Date: Sat, 5 Sep 2009 16:30:22 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Christian =?iso-8859-15?Q?Kr=E4mer?= <christian@kraemer-eu.de>
+Cc: linux-pcmcia@lists.infradead.org, Frans Pop <elendil@planet.nl>,
+       Peter Stuge <peter@stuge.se>, linux-kernel@vger.kernel.org
+Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
+Message-ID: <20090905143022.GD3171@pengutronix.de>
+References: <200909021856.29565.christian@kraemer-eu.de> <200909031927.19590.elendil@planet.nl> <20090904043025.2774.qmail@stuge.se> <200909042239.17180.christian@kraemer-eu.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="W5WqUoFLvi1M7tJE"
 Content-Disposition: inline
-In-Reply-To: <20090903124913.GA26110@csn.ul.ie>
+In-Reply-To: <200909042239.17180.christian@kraemer-eu.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 01:49:14PM +0100, Mel Gorman wrote:
-> > 
-> > This looks very similar to the kmemleak ext4 reports upon a mount. If
-> > it is the same issue, which from the trace it seems it is, then this
-> > is due to an extra kmalloc() allocation and this apparently will not
-> > get fixed on 2.6.31 due to the closeness of the merge window and the
-> > non-criticalness this issue has been deemed.
 
-No, it's a different problem.
+--W5WqUoFLvi1M7tJE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> I suspect the more pressing concern is why is this kmalloc() resulting in
-> an order-5 allocation request? What size is the buffer being requested?
-> Was that expected?  What is the contents of /proc/slabinfo in case a buffer
-> that should have required order-1 or order-2 is using a higher order for
-> some reason.
 
-It's allocating 68,000 bytes for the mb_history structure, which is
-used for debugging purposes.  That's why it's optional and we continue
-if it's not allocated.  We should fix it to use vmalloc() and I'm
-inclined to turn it off by default since it's not worth the overhead,
-and most ext4 users won't find it useful or interesting.
+(As a first note: The dmesg output suffers from linebreaks. Please make sure
+your MUA doesn't split up the logs.)
 
-	      	   	      	    	 - Ted
+> Even I installed gentoo with the 2.6.30.5 downloaded from kernel.org.
+
+Good. The sysfs-errors went away, too.
+
+> [    0.000000] IBM Thinkpad 600 Series 2645 detected: force use of acpi=
+=3Dnoirq
+
+Uh oh. Which BIOS version do you have?
+
+[...]
+> [    1.179419] ACPI: ACPI Dock Station Driver: 1 docks/bays found
+
+Well, looks like you are using a docking station. Does it work without the
+docking station? What is its name? There seem to be more problems with thos=
+e,
+for example:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=3D10805
+
+> [    1.183173] * Found PM-Timer Bug on the chipset. Due to workarounds fo=
+r a bug,
+> [    1.183191] * this clock source is slow. Consider trying other clock s=
+ources
+
+Wow, there seem to be quite some issues with this laptop...
+
+To make sure: Do regular PC Cards (non-CardBus) work with/without the docki=
+ng
+station? (I would assume that...)
+
+Regards,
+
+   Wolfram
+
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+
+--W5WqUoFLvi1M7tJE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqidf4ACgkQD27XaX1/VRur5gCfXWBvImvjeP7RdpeLkjV6ecix
+D+UAn2kLa5456o93kmQmsyog3bcLIJ11
+=MWnm
+-----END PGP SIGNATURE-----
+
+--W5WqUoFLvi1M7tJE--
