@@ -1,53 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751920AbZIEN1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752652AbZIERGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751920AbZIEN1F (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 09:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751786AbZIEN1F
+	id S1752652AbZIERGa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 13:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZIERG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 09:27:05 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:35423 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751426AbZIEN1D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 09:27:03 -0400
-Date: Sat, 5 Sep 2009 14:26:53 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090905132653.GH24516@shareable.org>
-References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com> <1252050406-22467-9-git-send-email-jens.axboe@oracle.com> <4AA13232.5000309@rsk.demon.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA13232.5000309@rsk.demon.co.uk>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 5 Sep 2009 13:06:29 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:47943 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751423AbZIERG3 (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 13:06:29 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: RCU Kconfig help text
+From: Valdis.Kletnieks@vt.edu
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1252157230_2420P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 05 Sep 2009 09:27:10 -0400
+Message-ID: <12924.1252157230@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Kennedy wrote:
-> I've been testing this & it works pretty well here, but setting 
-> max_writeback_mb to 128 seems much too large for normal desktop machines.
-> 
-> Because it is so large the background writes don't stop when they get 
-> down to the background threshold, but just keep on writing. 
-> background_threshold on my machine is only about 300Mb so it can 
-> undershoot by quite a bit. This could impact random write workloads 
-> significantly.
+--==_Exmh_1252157230_2420P
+Content-Type: text/plain; charset=us-ascii
 
-If that's true, would it be even worse for embedded devices with, say,
-just 32MB RAM?  It sounds like writeback undershoot might be rather
-extreme in that case.
+init/Kconfig says:
 
-Also on this topic, should max_writeback be smaller for slow disks?  I
-have a small device here with a hard disk that can only be written at
-2-10MB/s due to limitations of the built-in IDE controller.
+"choice
+        prompt "RCU Implementation"
+        default TREE_RCU
 
-I know that's unusual, but it shows there is quite a wide range of
-speeds at which disks can be written, even just counting hard disks.
+config TREE_RCU
+        bool "Tree-based hierarchical RCU"
+        help
+          This option selects the RCU implementation that is
+          designed for very large SMP system with hundreds or
+          thousands of CPUs.  It also scales down nicely to
+          smaller systems.
 
--- Jamie
+config TREE_PREEMPT_RCU
+        bool "Preemptable tree-based hierarchical RCU"
+        depends on PREEMPT
+        help
+          This option selects the RCU implementation that is
+          designed for very large SMP systems with hundreds or
+          thousands of CPUs, but for which real-time response
+          is also required.
+
+endchoice"
+
+This leaves somebody who has a laptop wondering which choice is best for
+a system with only one or two cores that has CONFIG_PREEMPT defined. One
+choice says it scales down nicely, the other explicitly has a 'depends on
+PREEMPT' attached to it...
+
+(Yes, I realize in practice, the RCU sections on a laptop are probably usually
+so short they don't matter in practice.  I finally concluded TREE_PREEMPT was
+apparently a rename of CONFIG_PREEMPT_RCU and went with that since that was
+working for me before...)
+
+
+--==_Exmh_1252157230_2420P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKomcucC3lWbTT17ARAsNHAKDsJbCbSXHwXFTyjtae5RN81B9s2ACg2MSB
+YjUnqcllZFVODsaSo7h+NFY=
+=WpR2
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1252157230_2420P--
