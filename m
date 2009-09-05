@@ -1,74 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZIEV1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZIEV1h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753389AbZIEV1y (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 17:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751244AbZIEV1w
+	id S1753368AbZIEV1h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 17:27:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751753AbZIEV1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 17:27:52 -0400
-Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:3332 "EHLO
-	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751152AbZIEV1w (ORCPT
+	Sat, 5 Sep 2009 17:27:35 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50730 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbZIEV1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 17:27:52 -0400
-X-Trace: 254199618/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.92.10/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.92.10
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Aq8EAAp0okpPRVwK/2dsb2JhbACBU9Y7hBgF
-X-IronPort-AV: E=Sophos;i="4.44,339,1249254000"; 
-   d="scan'208";a="254199618"
-Date: Sat, 5 Sep 2009 22:26:48 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 3/3] ksm: mremap use err from ksm_madvise
-In-Reply-To: <Pine.LNX.4.64.0909052219580.7381@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0909052225250.7387@sister.anvils>
-References: <Pine.LNX.4.64.0909052219580.7381@sister.anvils>
+	Sat, 5 Sep 2009 17:27:34 -0400
+Date: Sat, 5 Sep 2009 23:27:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Rob Landley <rob@landley.net>,
+       jim owens <jowens@hp.com>, david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+	document conditions when reliable operation is possible)
+Message-ID: <20090905212732.GB27650@elf.ucw.cz>
+References: <20090826001645.GN4300@elf.ucw.cz> <200909022141.48827.rob@landley.net> <4A9FCF53.10105@hp.com> <200909040244.54772.rob@landley.net> <4AA0FECE.3010200@redhat.com> <20090905102810.GA1341@ucw.cz> <20090905075424.4e103612@bike.lwn.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090905075424.4e103612@bike.lwn.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mremap move's use of ksm_madvise() was assuming -ENOMEM on failure,
-because ksm_madvise used to say -EAGAIN for that; but ksm_madvise now
-says -ENOMEM (letting madvise convert that to -EAGAIN), and can also
-say -ERESTARTSYS when signalled: so pass the error from ksm_madvise.
+On Sat 2009-09-05 07:54:24, Jonathan Corbet wrote:
+> On Sat, 5 Sep 2009 12:28:10 +0200
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > >> The LWN article on the topic is out, and incomplete as it is I expect it's the
+> > >> best documentation anybody will actually _read_.  
+> > 
+> > Would anyone (probably privately?) share the lwn link?
+> 
+> 	http://lwn.net/SubscriberLink/349970/9875eff987190551/
+> 
+> assuming you've not already gotten one from elsewhere.
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
+Thanks, and thanks for nice article!
+									Pavel
 
- mm/mremap.c |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
---- mmotm/mm/mremap.c	2009-09-05 14:40:16.000000000 +0100
-+++ linux/mm/mremap.c	2009-09-05 16:41:55.000000000 +0100
-@@ -175,6 +175,7 @@ static unsigned long move_vma(struct vm_
- 	unsigned long excess = 0;
- 	unsigned long hiwater_vm;
- 	int split = 0;
-+	int err;
- 
- 	/*
- 	 * We'd prefer to avoid failure later on in do_munmap:
-@@ -190,9 +191,10 @@ static unsigned long move_vma(struct vm_
- 	 * pages recently unmapped.  But leave vma->vm_flags as it was,
- 	 * so KSM can come around to merge on vma and new_vma afterwards.
- 	 */
--	if (ksm_madvise(vma, old_addr, old_addr + old_len,
--						MADV_UNMERGEABLE, &vm_flags))
--		return -ENOMEM;
-+	err = ksm_madvise(vma, old_addr, old_addr + old_len,
-+						MADV_UNMERGEABLE, &vm_flags);
-+	if (err)
-+		return err;
- 
- 	new_pgoff = vma->vm_pgoff + ((old_addr - vma->vm_start) >> PAGE_SHIFT);
- 	new_vma = copy_vma(&vma, new_addr, new_len, new_pgoff);
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
