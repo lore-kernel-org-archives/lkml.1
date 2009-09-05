@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964959AbZIEA21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964917AbZIEA2J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964959AbZIEA21 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964914AbZIEA2J
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S964917AbZIEA2J (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 4 Sep 2009 20:28:09 -0400
-Received: from kroah.org ([198.145.64.141]:42217 "EHLO coco.kroah.org"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934642AbZIEA2G
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 4 Sep 2009 20:28:06 -0400
+Received: from kroah.org ([198.145.64.141]:42243 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934636AbZIEAVK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:21:10 -0400
+	id S934553AbZIEAVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:21:11 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:54 2009
-Message-Id: <20090905001454.318712892@mini.kroah.org>
+Message-Id: <20090905001454.452097866@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:14:20 -0700
+Date: Fri, 04 Sep 2009 17:14:21 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       James Bottomley <James.Bottomley@suse.de>,
-       Kashyap Desai <kashyap.desai@lsi.com>, Eric Moore <Eric.moore@lsi.com>
-Subject: [patch 45/71] [SCSI] mpt2sas: fix config request and diag reset deadlock
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Subject: [patch 46/71] do_sigaltstack: avoid copying stack_t as a structure to user space
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=mpt2sas-fix-config-request-and-diag-reset-deadlock.patch
+Content-Disposition: inline; filename=do_sigaltstack-avoid-copying-stack_t-as-a-structure-to-user-space.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,460 +28,66 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Kashyap, Desai <kashyap.desai@lsi.com>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit 388ce4beb7135722c584b0af18f215e3ec657adf upstream.
+commit 0083fc2c50e6c5127c2802ad323adf8143ab7856 upstream.
 
-Moving the setting and clearing of the mutex's to
-_config_request. There was a mutex deadlock when diag reset is called from
-inside _config_request, so diag reset was moved to outside the mutexs.
+Ulrich Drepper correctly points out that there is generally padding in
+the structure on 64-bit hosts, and that copying the structure from
+kernel to user space can leak information from the kernel stack in those
+padding bytes.
 
-Signed-off-by: James Bottomley <James.Bottomley@suse.de>
-Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
-Signed-off-by: Eric Moore <Eric.moore@lsi.com>
+Avoid the whole issue by just copying the three members one by one
+instead, which also means that the function also can avoid the need for
+a stack frame.  This also happens to match how we copy the new structure
+from user space, so it all even makes sense.
+
+[ The obvious solution of adding a memset() generates horrid code, gcc
+  does really stupid things. ]
+
+Reported-by: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/scsi/mpt2sas/mpt2sas_config.c |   85 ++++++++--------------------------
- 1 file changed, 20 insertions(+), 65 deletions(-)
+ kernel/signal.c |   15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
 
---- a/drivers/scsi/mpt2sas/mpt2sas_config.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_config.c
-@@ -236,12 +236,14 @@ _config_request(struct MPT2SAS_ADAPTER *
- 	Mpi2ConfigRequest_t *config_request;
- 	int r;
- 	u8 retry_count;
--	u8 issue_reset;
-+	u8 issue_host_reset = 0;
- 	u16 wait_state_count;
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -2414,11 +2414,9 @@ do_sigaltstack (const stack_t __user *us
+ 	stack_t oss;
+ 	int error;
  
-+	mutex_lock(&ioc->config_cmds.mutex);
- 	if (ioc->config_cmds.status != MPT2_CMD_NOT_USED) {
- 		printk(MPT2SAS_ERR_FMT "%s: config_cmd in use\n",
- 		    ioc->name, __func__);
-+		mutex_unlock(&ioc->config_cmds.mutex);
- 		return -EAGAIN;
- 	}
- 	retry_count = 0;
-@@ -260,8 +262,8 @@ _config_request(struct MPT2SAS_ADAPTER *
- 			printk(MPT2SAS_ERR_FMT
- 			    "%s: failed due to ioc not operational\n",
- 			    ioc->name, __func__);
--			ioc->config_cmds.status = MPT2_CMD_NOT_USED;
--			return -EFAULT;
-+			r = -EFAULT;
-+			goto out;
- 		}
- 		ssleep(1);
- 		ioc_state = mpt2sas_base_get_iocstate(ioc, 1);
-@@ -277,8 +279,8 @@ _config_request(struct MPT2SAS_ADAPTER *
- 	if (!smid) {
- 		printk(MPT2SAS_ERR_FMT "%s: failed obtaining a smid\n",
- 		    ioc->name, __func__);
--		ioc->config_cmds.status = MPT2_CMD_NOT_USED;
--		return -EAGAIN;
-+		r = -EAGAIN;
-+		goto out;
- 	}
- 
- 	r = 0;
-@@ -298,9 +300,15 @@ _config_request(struct MPT2SAS_ADAPTER *
- 		    ioc->name, __func__);
- 		_debug_dump_mf(mpi_request,
- 		    sizeof(Mpi2ConfigRequest_t)/4);
--		if (!(ioc->config_cmds.status & MPT2_CMD_RESET))
--			issue_reset = 1;
--		goto issue_host_reset;
-+		retry_count++;
-+		if (ioc->config_cmds.smid == smid)
-+			mpt2sas_base_free_smid(ioc, smid);
-+		if ((ioc->shost_recovery) ||
-+		    (ioc->config_cmds.status & MPT2_CMD_RESET))
-+			goto retry_config;
-+		issue_host_reset = 1;
-+		r = -EFAULT;
-+		goto out;
- 	}
- 	if (ioc->config_cmds.status & MPT2_CMD_REPLY_VALID)
- 		memcpy(mpi_reply, ioc->config_cmds.reply,
-@@ -308,21 +316,13 @@ _config_request(struct MPT2SAS_ADAPTER *
- 	if (retry_count)
- 		printk(MPT2SAS_INFO_FMT "%s: retry completed!!\n",
- 		    ioc->name, __func__);
-+out:
- 	ioc->config_cmds.status = MPT2_CMD_NOT_USED;
--	return r;
--
-- issue_host_reset:
--	if (issue_reset)
-+	mutex_unlock(&ioc->config_cmds.mutex);
-+	if (issue_host_reset)
- 		mpt2sas_base_hard_reset_handler(ioc, CAN_SLEEP,
- 		    FORCE_BIG_HAMMER);
--	ioc->config_cmds.status = MPT2_CMD_NOT_USED;
--	if (!retry_count) {
--		printk(MPT2SAS_INFO_FMT "%s: attempting retry\n",
--		    ioc->name, __func__);
--		retry_count++;
--		goto retry_config;
+-	if (uoss) {
+-		oss.ss_sp = (void __user *) current->sas_ss_sp;
+-		oss.ss_size = current->sas_ss_size;
+-		oss.ss_flags = sas_ss_flags(sp);
 -	}
--	return -EFAULT;
-+	return r;
++	oss.ss_sp = (void __user *) current->sas_ss_sp;
++	oss.ss_size = current->sas_ss_size;
++	oss.ss_flags = sas_ss_flags(sp);
+ 
+ 	if (uss) {
+ 		void __user *ss_sp;
+@@ -2461,13 +2459,16 @@ do_sigaltstack (const stack_t __user *us
+ 		current->sas_ss_size = ss_size;
+ 	}
+ 
++	error = 0;
+ 	if (uoss) {
+ 		error = -EFAULT;
+-		if (copy_to_user(uoss, &oss, sizeof(oss)))
++		if (!access_ok(VERIFY_WRITE, uoss, sizeof(*uoss)))
+ 			goto out;
++		error = __put_user(oss.ss_sp, &uoss->ss_sp) |
++			__put_user(oss.ss_size, &uoss->ss_size) |
++			__put_user(oss.ss_flags, &uoss->ss_flags);
+ 	}
+ 
+-	error = 0;
+ out:
+ 	return error;
  }
- 
- /**
-@@ -381,7 +381,6 @@ mpt2sas_config_get_manufacturing_pg0(str
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2ManufacturingPage0_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -423,7 +422,6 @@ mpt2sas_config_get_manufacturing_pg0(str
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -444,7 +442,6 @@ mpt2sas_config_get_bios_pg2(struct MPT2S
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2BiosPage2_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -486,7 +483,6 @@ mpt2sas_config_get_bios_pg2(struct MPT2S
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -507,7 +503,6 @@ mpt2sas_config_get_bios_pg3(struct MPT2S
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2BiosPage3_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -549,7 +544,6 @@ mpt2sas_config_get_bios_pg3(struct MPT2S
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -570,7 +564,6 @@ mpt2sas_config_get_iounit_pg0(struct MPT
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2IOUnitPage0_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -612,7 +605,6 @@ mpt2sas_config_get_iounit_pg0(struct MPT
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -633,7 +625,6 @@ mpt2sas_config_get_iounit_pg1(struct MPT
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2IOUnitPage1_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -675,7 +666,6 @@ mpt2sas_config_get_iounit_pg1(struct MPT
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -696,7 +686,6 @@ mpt2sas_config_set_iounit_pg1(struct MPT
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
- 	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_HEADER;
-@@ -738,7 +727,6 @@ mpt2sas_config_set_iounit_pg1(struct MPT
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -759,7 +747,6 @@ mpt2sas_config_get_ioc_pg8(struct MPT2SA
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2IOCPage8_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -801,7 +788,6 @@ mpt2sas_config_get_ioc_pg8(struct MPT2SA
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -824,7 +810,6 @@ mpt2sas_config_get_sas_device_pg0(struct
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2SasDevicePage0_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -869,7 +854,6 @@ mpt2sas_config_get_sas_device_pg0(struct
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -892,7 +876,6 @@ mpt2sas_config_get_sas_device_pg1(struct
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2SasDevicePage1_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -937,7 +920,6 @@ mpt2sas_config_get_sas_device_pg1(struct
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -959,7 +941,6 @@ mpt2sas_config_get_number_hba_phys(struc
- 	Mpi2ConfigReply_t mpi_reply;
- 	Mpi2SasIOUnitPage0_t config_page;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
- 	mpi_request.Action = MPI2_CONFIG_ACTION_PAGE_HEADER;
-@@ -1008,7 +989,6 @@ mpt2sas_config_get_number_hba_phys(struc
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1032,8 +1012,6 @@ mpt2sas_config_get_sas_iounit_pg0(struct
- 	Mpi2ConfigRequest_t mpi_request;
- 	int r;
- 	struct config_request mem;
--
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sz);
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1076,7 +1054,6 @@ mpt2sas_config_get_sas_iounit_pg0(struct
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1101,7 +1078,6 @@ mpt2sas_config_get_sas_iounit_pg1(struct
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sz);
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1144,7 +1120,6 @@ mpt2sas_config_get_sas_iounit_pg1(struct
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1167,7 +1142,6 @@ mpt2sas_config_get_expander_pg0(struct M
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2ExpanderPage0_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1212,7 +1186,6 @@ mpt2sas_config_get_expander_pg0(struct M
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1236,7 +1209,6 @@ mpt2sas_config_get_expander_pg1(struct M
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2ExpanderPage1_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1283,7 +1255,6 @@ mpt2sas_config_get_expander_pg1(struct M
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1306,7 +1277,6 @@ mpt2sas_config_get_enclosure_pg0(struct 
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2SasEnclosurePage0_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1351,7 +1321,6 @@ mpt2sas_config_get_enclosure_pg0(struct 
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1373,7 +1342,6 @@ mpt2sas_config_get_phy_pg0(struct MPT2SA
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2SasPhyPage0_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1419,7 +1387,6 @@ mpt2sas_config_get_phy_pg0(struct MPT2SA
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1441,7 +1408,6 @@ mpt2sas_config_get_phy_pg1(struct MPT2SA
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2SasPhyPage1_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1487,7 +1453,6 @@ mpt2sas_config_get_phy_pg1(struct MPT2SA
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1511,7 +1476,6 @@ mpt2sas_config_get_raid_volume_pg1(struc
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(config_page, 0, sizeof(Mpi2RaidVolPage1_t));
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1554,7 +1518,6 @@ mpt2sas_config_get_raid_volume_pg1(struc
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1578,7 +1541,6 @@ mpt2sas_config_get_number_pds(struct MPT
- 	struct config_request mem;
- 	u16 ioc_status;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	*num_pds = 0;
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1626,7 +1588,6 @@ mpt2sas_config_get_number_pds(struct MPT
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1651,7 +1612,6 @@ mpt2sas_config_get_raid_volume_pg0(struc
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	memset(config_page, 0, sz);
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1693,7 +1653,6 @@ mpt2sas_config_get_raid_volume_pg0(struc
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1717,7 +1676,6 @@ mpt2sas_config_get_phys_disk_pg0(struct 
- 	int r;
- 	struct config_request mem;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	memset(config_page, 0, sizeof(Mpi2RaidPhysDiskPage0_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1760,7 +1718,6 @@ mpt2sas_config_get_phys_disk_pg0(struct 
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
-@@ -1784,7 +1741,6 @@ mpt2sas_config_get_volume_handle(struct 
- 	struct config_request mem;
- 	u16 ioc_status;
- 
--	mutex_lock(&ioc->config_cmds.mutex);
- 	*volume_handle = 0;
- 	memset(&mpi_request, 0, sizeof(Mpi2ConfigRequest_t));
- 	mpi_request.Function = MPI2_FUNCTION_CONFIG;
-@@ -1848,7 +1804,6 @@ mpt2sas_config_get_volume_handle(struct 
- 		_config_free_config_dma_memory(ioc, &mem);
- 
-  out:
--	mutex_unlock(&ioc->config_cmds.mutex);
- 	return r;
- }
- 
 
 
