@@ -1,57 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZIEWku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbZIEWmQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753528AbZIEWku (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 18:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZIEWks
+	id S1753553AbZIEWmQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 18:42:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZIEWmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 18:40:48 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:60872 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753437AbZIEWkr convert rfc822-to-8bit (ORCPT
+	Sat, 5 Sep 2009 18:42:15 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:53793 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751918AbZIEWmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 18:40:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=PIbXrtw5kF/9H+Z3DfBdNaIE/h2SbL6/DBKtP8EqYTGODNMr5uaYY3J2YnhTEzjPLb
-         rou8rdnyJdab3Iw7ANGMRcqgjlzdGWCfbOf+gJ1ERmJV7yAnO5abw8edAKPAS1ID2N4A
-         AQfEOB5hjy6m2273iv2mWNPiD9jevWLqe92Oc=
+	Sat, 5 Sep 2009 18:42:14 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+References: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com>
+	<200908312119.12121.rjw@sisk.pl>
+	<c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
+	<c4e36d110909031529q77b53122kdb85785ba293c478@mail.gmail.com>
+	<20090903232317.GA6760@lst.de> <87ljkvmt71.fsf@devron.myhome.or.jp>
+	<c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
+	<87iqfx5mss.fsf@devron.myhome.or.jp>
+	<c4e36d110909051253s5c5e9d96x3ebdc444231b5776@mail.gmail.com>
+Date: Sun, 06 Sep 2009 07:42:13 +0900
+In-Reply-To: <c4e36d110909051253s5c5e9d96x3ebdc444231b5776@mail.gmail.com>
+	(Zdenek Kabelac's message of "Sat, 5 Sep 2009 21:53:49 +0200")
+Message-ID: <873a7157zu.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090905204037.GE4953@gandalf.sssup.it>
-References: <DDFD17CC94A9BD49A82147DDF7D545C501F0F575@exchange.ZeugmaSystems.local> 
-	<20090905204037.GE4953@gandalf.sssup.it>
-From: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Date: Sun, 6 Sep 2009 00:40:29 +0200
-Message-ID: <193b0f820909051540v1ad63c24xc822dbdef5bd0c1c@mail.gmail.com>
-Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
-To: Fabio Checconi <fchecconi@gmail.com>
-Cc: Anirban Sinha <ASinha@zeugmasystems.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You say you pin the threads to a single core: how many cores does your
-> system have?
+Zdenek Kabelac <zdenek.kabelac@gmail.com> writes:
+
+> 2009/9/5 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>:
+>> Zdenek Kabelac <zdenek.kabelac@gmail.com> writes:
+>>
+>>> 2009/9/4 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>:
+>>>> Christoph Hellwig <hch@lst.de> writes:
+>>>>
+>>>>> Note that when you rever this patch on a current kernel you do actually
+>>>>> get different behvaviour than when going back to before this commit.
+>>>>>
+>>>>> In 2.6.30 we called ->write_super in the various sync functions and
+>>>>> then ->sync_fs, in 2.6.31-rc8 you would not call any syncing at all
+>>>>> anymore.  I think this patch might just be a symptom for a situation
+>>>>> where the suspend code causes a sync and the mmc driver can't handle
+>>>>> it anymore.
+>>>
+>>> So - here is the console trace from suspend when I've added
+>>> dump_stack() to the fat_sync_fs()   (and also added debug prints
+>>> around each call in this function -so its obvious the function is
+>>> actually left - but then it freezes later somewhere.)
+>>>
+>>> It's interesting that 3 calls to sync happens.
+>>
+>> It seems
+>>
+>>    1) sync() (probabry "sync" command)
+>>    2) sync as part of suspend sequence
+>>    3) sync_filesystem() by mmc remove event
+>>
+>> I guess the root-cause of the problem would be 3). However, it would not
+>> be easy to fix, at least, we would need to think about what we want to
+>> do for it. So, to workaround it for now, I've made this patch.
+>>
+>> Can you try whether this patch fixes this problem?
+>>
 >
-> If this is the case, this behavior is the expected one, the scheduler
-> tries to reduce the number of migrations, concentrating the bandwidth
-> of rt tasks on a single core.  With your workload it doesn't work well
-> because runtime migration has freed the other core(s) from rt bandwidth,
-> so these cores are available to SCHED_OTHER ones, but your SCHED_OTHER
-> thread is pinned and cannot make use of them.
+> So I've tested your patch - it seems to fix the problem in suspend -
+> the machine sleeps - however after resume the mmc SD card becomes
+> unusable to the system and appended call trace filled my message log
+> very quickly:
+>
+> After reboot the filesystem appeared to be usable again without errors.
 
-Indeed. I've tested this same test program in a single core machine and it
-produces the expected behavior:
+Thanks for testing.  "logical block size: 27499" is wrong value
+completely. Of course, fatfs is assuming the blocksize is not changed.
+(mmc wasn't resumed correctly?)
 
-rt_runtime_us / rt_period_us     % loops executed in SCHED_OTHER
-95%                              4.48%
-60%                              54.84%
-50%                              86.03%
-40%                              OTHER completed first
+Well, this problem seems to be completely different problem, and it
+seems the problem of suspend or mmc (or block?) stuff, or something.
 
+It would need to be analyzed by those people.
 
-Lucas De Marchi
+Meanwhile, I'll apply this patch to workaround suspend problem and to
+remove unneeded write for next window.
+
+Thanks.
+
+> Call Trace:
+>  [<ffffffff81134f6b>] __getblk+0x2cb/0x300
+>  [<ffffffff813dcb58>] ? _spin_unlock_irqrestore+0x38/0x80
+>  [<ffffffff81135122>] __breadahead+0x12/0x40
+>  [<ffffffffa0520cb7>] fat_count_free_clusters+0x307/0x320 [fat]
+>  [<ffffffff81103a58>] ? check_object+0xd8/0x260
+>  [<ffffffff8107d83d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffffa0522d55>] fat_statfs+0xf5/0x110 [fat]
+>  [<ffffffff8110be5c>] vfs_statfs+0x7c/0xa0
+>  [<ffffffff8110c0b0>] vfs_statfs_native+0x20/0xb0
+>  [<ffffffff8110c243>] sys_statfs+0x73/0xb0
+>  [<ffffffff8122ab2b>] ? __up_write+0xcb/0x120
+>  [<ffffffff8100c18c>] ? sysret_check+0x27/0x62
+>  [<ffffffff8109eb8b>] ? audit_syscall_entry+0x28b/0x2b0
+>  [<ffffffff8107d7ed>] ? trace_hardirqs_on_caller+0x15d/0x1a0
+>  [<ffffffff813dbf1e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>  [<ffffffff8100c15b>] system_call_fastpath+0x16/0x1b
+> getblk(): invalid block size 512 requested
+> logical block size: 27499
+>
+>  [<ffffffff81135122>] __breadahead+0x12/0x40
+>  [<ffffffffa0520cb7>] fat_count_free_clusters+0x307/0x320 [fat]
+>  [<ffffffff81103a58>] ? check_object+0xd8/0x260
+>  [<ffffffff8107d83d>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffffa0522d55>] fat_statfs+0xf5/0x110 [fat]
+>  [<ffffffff8110be5c>] vfs_statfs+0x7c/0xa0
+>  [<ffffffff8110c0b0>] vfs_statfs_native+0x20/0xb0
+>  [<ffffffff8110c243>] sys_statfs+0x73/0xb0
+>  [<ffffffff8122ab2b>] ? __up_write+0xcb/0x120
+>  [<ffffffff8100c18c>] ? sysret_check+0x27/0x62
+>  [<ffffffff8109eb8b>] ? audit_syscall_entry+0x28b/0x2b0
+>  [<ffffffff8107d7ed>] ? trace_hardirqs_on_caller+0x15d/0x1a0
+>  [<ffffffff813dbf1e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+>  [<ffffffff8100c15b>] system_call_fastpath+0x16/0x1b
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
