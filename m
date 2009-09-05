@@ -1,83 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752002AbZIENnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751678AbZIENy0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752002AbZIENnV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 09:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZIENnU
+	id S1751678AbZIENy0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 09:54:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZIENyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 09:43:20 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:49378 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbZIENnT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 09:43:19 -0400
-Date: Sat, 5 Sep 2009 15:43:20 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Frans Pop <elendil@planet.nl>
-Cc: Christian =?iso-8859-15?Q?Kr=E4mer?= <christian@kraemer-eu.de>,
-       "Robert P. J. Day" <rpjday@crashcourse.ca>,
-       linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
-Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
-Message-ID: <20090905134320.GB3171@pengutronix.de>
-References: <200909021856.29565.christian@kraemer-eu.de> <alpine.LFD.2.00.0909031539070.3200@localhost> <20090903195753.GC11097@pengutronix.de> <200909032216.56148.elendil@planet.nl>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="/WwmFnJnmDyWGHa4"
-Content-Disposition: inline
-In-Reply-To: <200909032216.56148.elendil@planet.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Sat, 5 Sep 2009 09:54:25 -0400
+Received: from vena.lwn.net ([206.168.112.25]:48656 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751057AbZIENyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 09:54:24 -0400
+Date: Sat, 5 Sep 2009 07:54:24 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Rob Landley <rob@landley.net>,
+       jim owens <jowens@hp.com>, david@lang.hm, Theodore Tso <tytso@mit.edu>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
+ document conditions when reliable operation is possible)
+Message-ID: <20090905075424.4e103612@bike.lwn.net>
+In-Reply-To: <20090905102810.GA1341@ucw.cz>
+References: <20090826001645.GN4300@elf.ucw.cz>
+	<200909022141.48827.rob@landley.net>
+	<4A9FCF53.10105@hp.com>
+	<200909040244.54772.rob@landley.net>
+	<4AA0FECE.3010200@redhat.com>
+	<20090905102810.GA1341@ucw.cz>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 5 Sep 2009 12:28:10 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
---/WwmFnJnmDyWGHa4
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> >> The LWN article on the topic is out, and incomplete as it is I expect it's the
+> >> best documentation anybody will actually _read_.  
+> 
+> Would anyone (probably privately?) share the lwn link?
 
-On Thu, Sep 03, 2009 at 10:16:54PM +0200, Frans Pop wrote:
-> On Thursday 03 September 2009, Wolfram Sang wrote:
-> > I read the thread in which you tried. I will have my try, too. This
-> > time, I want to convert the existing users first and then throw the
-> > interface away. To me, it looks like there is only one prominent user
-> > left, Debian's discover. Even though the PCMCIA-information it collects
-> > is hardly useful, I converted it:
-> >
-> > http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=3D382425
-> >
-> > Still working on getting any response from the maintainers :)
->=20
-> I'm a Debian Developer and one of the developers of Debian's installation=
-=20
-> system. My suggestion would be to simply ignore discover. It is not used=
-=20
-> anymore and the fact that it's un(der)maintained does not surprise me.
+	http://lwn.net/SubscriberLink/349970/9875eff987190551/
 
-Thanks for this clarification! Hopefully it will help the process.
+assuming you've not already gotten one from elsewhere.
 
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---/WwmFnJnmDyWGHa4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqiavgACgkQD27XaX1/VRsegwCfX+AVrgiGSO185Htvni/9NICh
-CFcAnA0/HG1mYxWltXGKwTs9MdGUtQfS
-=PU3U
------END PGP SIGNATURE-----
-
---/WwmFnJnmDyWGHa4--
+jon
