@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZIEWQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753528AbZIEWku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZIEWQr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 18:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZIEWQo
+	id S1753528AbZIEWku (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 18:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZIEWks
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 18:16:44 -0400
-Received: from vena.lwn.net ([206.168.112.25]:41344 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751878AbZIEWQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 18:16:44 -0400
-Date: Sat, 5 Sep 2009 16:16:45 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, JosephChan@via.com.tw,
-       ScottFang@viatech.com.cn,
-       Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: Re: [PATCH v2] viafb: 2D engine rewrite (and viafb patches in
- general)
-Message-ID: <20090905161645.74a49a84@bike.lwn.net>
-In-Reply-To: <1252097032-3568-1-git-send-email-FlorianSchandinat@gmx.de>
-References: <1251666438-5448-1-git-send-email-FlorianSchandinat@gmx.de>
-	<1252097032-3568-1-git-send-email-FlorianSchandinat@gmx.de>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Sat, 5 Sep 2009 18:40:48 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:60872 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753437AbZIEWkr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 18:40:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=PIbXrtw5kF/9H+Z3DfBdNaIE/h2SbL6/DBKtP8EqYTGODNMr5uaYY3J2YnhTEzjPLb
+         rou8rdnyJdab3Iw7ANGMRcqgjlzdGWCfbOf+gJ1ERmJV7yAnO5abw8edAKPAS1ID2N4A
+         AQfEOB5hjy6m2273iv2mWNPiD9jevWLqe92Oc=
+MIME-Version: 1.0
+In-Reply-To: <20090905204037.GE4953@gandalf.sssup.it>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501F0F575@exchange.ZeugmaSystems.local> 
+	<20090905204037.GE4953@gandalf.sssup.it>
+From: Lucas De Marchi <lucas.de.marchi@gmail.com>
+Date: Sun, 6 Sep 2009 00:40:29 +0200
+Message-ID: <193b0f820909051540v1ad63c24xc822dbdef5bd0c1c@mail.gmail.com>
+Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: Anirban Sinha <ASinha@zeugmasystems.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri,  4 Sep 2009 20:43:52 +0000
-Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+> You say you pin the threads to a single core: how many cores does your
+> system have?
+>
+> If this is the case, this behavior is the expected one, the scheduler
+> tries to reduce the number of migrations, concentrating the bandwidth
+> of rt tasks on a single core.  With your workload it doesn't work well
+> because runtime migration has freed the other core(s) from rt bandwidth,
+> so these cores are available to SCHED_OTHER ones, but your SCHED_OTHER
+> thread is pinned and cannot make use of them.
 
-> This patch is a completly rewritten 2D engine. The engine is no longer
-> in a default state but reinitialized every time to allow usage for both
-> framebuffers regardless of their settings.
-> The whole engine handling is concentrated in a big function which takes
-> 16 parameters.
+Indeed. I've tested this same test program in a single core machine and it
+produces the expected behavior:
 
-Ouch, that's a lot of parameters.  Might it be better to create a
-structure to encapsulate all of those drawing parameters?
+rt_runtime_us / rt_period_us     % loops executed in SCHED_OTHER
+95%                              4.48%
+60%                              54.84%
+50%                              86.03%
+40%                              OTHER completed first
 
-On a more general level: is anybody maintaining a tree for patches to
-the viafb driver?  I'm going to be doing some work here (writing a
-driver for the video capture engine), and there's patches sitting in
-Harald's tree and the OLPC tree.  It seems like a central merge point
-might be a nice thing to have.
 
-I'd be happy to run such a tree.  I'm really *not* qualified to be
-passing judgment on patches to the framebuffer driver at this point,
-though, so I'm not sure that I'm the best person for the job.
-
-jon
+Lucas De Marchi
