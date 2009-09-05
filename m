@@ -1,132 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbZIEWmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753600AbZIEWm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753553AbZIEWmQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 18:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZIEWmP
+	id S1753600AbZIEWm1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 18:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZIEWmZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 18:42:15 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:53793 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751918AbZIEWmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 18:42:14 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-References: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com>
-	<200908312119.12121.rjw@sisk.pl>
-	<c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
-	<c4e36d110909031529q77b53122kdb85785ba293c478@mail.gmail.com>
-	<20090903232317.GA6760@lst.de> <87ljkvmt71.fsf@devron.myhome.or.jp>
-	<c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
-	<87iqfx5mss.fsf@devron.myhome.or.jp>
-	<c4e36d110909051253s5c5e9d96x3ebdc444231b5776@mail.gmail.com>
-Date: Sun, 06 Sep 2009 07:42:13 +0900
-In-Reply-To: <c4e36d110909051253s5c5e9d96x3ebdc444231b5776@mail.gmail.com>
-	(Zdenek Kabelac's message of "Sat, 5 Sep 2009 21:53:49 +0200")
-Message-ID: <873a7157zu.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Sat, 5 Sep 2009 18:42:25 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:37152 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753577AbZIEWmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 18:42:23 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19106.59719.36991.788931@pilspetsen.it.uu.se>
+Date: Sun, 6 Sep 2009 00:42:15 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
+ testsuite
+In-Reply-To: <alpine.LFD.2.01.0909051256550.3414@localhost.localdomain>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19099.52899.620345.326521@pilspetsen.it.uu.se>
+	<19100.31254.666066.755541@pilspetsen.it.uu.se>
+	<200909012042.59856.rjw@sisk.pl>
+	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+	<19105.5352.28380.230615@pilspetsen.it.uu.se>
+	<alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040917120.4537@eeepc.linux-foundation.org>
+	<19106.16773.461397.654704@pilspetsen.it.uu.se>
+	<alpine.LFD.2.01.0909051256550.3414@localhost.localdomain>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zdenek Kabelac <zdenek.kabelac@gmail.com> writes:
+Linus Torvalds writes:
+ > 
+ > 
+ > On Sat, 5 Sep 2009, Mikael Pettersson wrote:
+ > > 
+ > > Thanks, I'm testing this and the pty_write() fix on i686 and ppc64 now.
+ > > 
+ > > Sometimes the bug is difficult to trigger, so I may need to do loads of
+ > > testing with different gcc versions before I dare to say that it's fixed.
+ > 
+ > Ok, I'm going to commit the two patches, because even if there is some 
+ > other bug hiding too (and it doesn't fix your thing - although I think it 
+ > will), this is definitely a real fix regardless.
+ > 
+ > And I want to do a -rc9 and let it get a couple of days of testing, since 
+ > I got way more pull requests than I hoped for while I was off diving.
 
-> 2009/9/5 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>:
->> Zdenek Kabelac <zdenek.kabelac@gmail.com> writes:
->>
->>> 2009/9/4 OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>:
->>>> Christoph Hellwig <hch@lst.de> writes:
->>>>
->>>>> Note that when you rever this patch on a current kernel you do actually
->>>>> get different behvaviour than when going back to before this commit.
->>>>>
->>>>> In 2.6.30 we called ->write_super in the various sync functions and
->>>>> then ->sync_fs, in 2.6.31-rc8 you would not call any syncing at all
->>>>> anymore.  I think this patch might just be a symptom for a situation
->>>>> where the suspend code causes a sync and the mmc driver can't handle
->>>>> it anymore.
->>>
->>> So - here is the console trace from suspend when I've added
->>> dump_stack() to the fat_sync_fs()   (and also added debug prints
->>> around each call in this function -so its obvious the function is
->>> actually left - but then it freezes later somewhere.)
->>>
->>> It's interesting that 3 calls to sync happens.
->>
->> It seems
->>
->>    1) sync() (probabry "sync" command)
->>    2) sync as part of suspend sequence
->>    3) sync_filesystem() by mmc remove event
->>
->> I guess the root-cause of the problem would be 3). However, it would not
->> be easy to fix, at least, we would need to think about what we want to
->> do for it. So, to workaround it for now, I've made this patch.
->>
->> Can you try whether this patch fixes this problem?
->>
->
-> So I've tested your patch - it seems to fix the problem in suspend -
-> the machine sleeps - however after resume the mmc SD card becomes
-> unusable to the system and appended call trace filled my message log
-> very quickly:
->
-> After reboot the filesystem appeared to be usable again without errors.
+With these two fixes my i686 box finished all gcc bootstrap/regtest
+cycles I had scheduled with no signs of pty errors. My ppc64 box
+isn't done yet, but so far it's not seen any errors either. So I'm
+reasonably optimistic about these fixes.
 
-Thanks for testing.  "logical block size: 27499" is wrong value
-completely. Of course, fatfs is assuming the blocksize is not changed.
-(mmc wasn't resumed correctly?)
-
-Well, this problem seems to be completely different problem, and it
-seems the problem of suspend or mmc (or block?) stuff, or something.
-
-It would need to be analyzed by those people.
-
-Meanwhile, I'll apply this patch to workaround suspend problem and to
-remove unneeded write for next window.
-
-Thanks.
-
-> Call Trace:
->  [<ffffffff81134f6b>] __getblk+0x2cb/0x300
->  [<ffffffff813dcb58>] ? _spin_unlock_irqrestore+0x38/0x80
->  [<ffffffff81135122>] __breadahead+0x12/0x40
->  [<ffffffffa0520cb7>] fat_count_free_clusters+0x307/0x320 [fat]
->  [<ffffffff81103a58>] ? check_object+0xd8/0x260
->  [<ffffffff8107d83d>] ? trace_hardirqs_on+0xd/0x10
->  [<ffffffffa0522d55>] fat_statfs+0xf5/0x110 [fat]
->  [<ffffffff8110be5c>] vfs_statfs+0x7c/0xa0
->  [<ffffffff8110c0b0>] vfs_statfs_native+0x20/0xb0
->  [<ffffffff8110c243>] sys_statfs+0x73/0xb0
->  [<ffffffff8122ab2b>] ? __up_write+0xcb/0x120
->  [<ffffffff8100c18c>] ? sysret_check+0x27/0x62
->  [<ffffffff8109eb8b>] ? audit_syscall_entry+0x28b/0x2b0
->  [<ffffffff8107d7ed>] ? trace_hardirqs_on_caller+0x15d/0x1a0
->  [<ffffffff813dbf1e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff8100c15b>] system_call_fastpath+0x16/0x1b
-> getblk(): invalid block size 512 requested
-> logical block size: 27499
->
->  [<ffffffff81135122>] __breadahead+0x12/0x40
->  [<ffffffffa0520cb7>] fat_count_free_clusters+0x307/0x320 [fat]
->  [<ffffffff81103a58>] ? check_object+0xd8/0x260
->  [<ffffffff8107d83d>] ? trace_hardirqs_on+0xd/0x10
->  [<ffffffffa0522d55>] fat_statfs+0xf5/0x110 [fat]
->  [<ffffffff8110be5c>] vfs_statfs+0x7c/0xa0
->  [<ffffffff8110c0b0>] vfs_statfs_native+0x20/0xb0
->  [<ffffffff8110c243>] sys_statfs+0x73/0xb0
->  [<ffffffff8122ab2b>] ? __up_write+0xcb/0x120
->  [<ffffffff8100c18c>] ? sysret_check+0x27/0x62
->  [<ffffffff8109eb8b>] ? audit_syscall_entry+0x28b/0x2b0
->  [<ffffffff8107d7ed>] ? trace_hardirqs_on_caller+0x15d/0x1a0
->  [<ffffffff813dbf1e>] ? trace_hardirqs_on_thunk+0x3a/0x3f
->  [<ffffffff8100c15b>] system_call_fastpath+0x16/0x1b
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+/Mikael
