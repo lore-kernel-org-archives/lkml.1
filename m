@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964798AbZIEAVZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934697AbZIEA2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964798AbZIEAVZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:21:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934637AbZIEAVM
+	id S934697AbZIEA2E (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934642AbZIEAVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:21:12 -0400
-Received: from kroah.org ([198.145.64.141]:42135 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:21:13 -0400
+Received: from kroah.org ([198.145.64.141]:42149 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934605AbZIEAUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:52 -0400
+	id S934610AbZIEAUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:53 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:51 2009
-Message-Id: <20090905001451.601997092@mini.kroah.org>
+Message-Id: <20090905001451.752437785@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:14:02 -0700
+Date: Fri, 04 Sep 2009 17:14:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Amit Shah <amit.shah@redhat.com>, avi@redhat.com
-Subject: [patch 27/71] KVM: Ignore reads to K7 EVNTSEL MSRs
+       Avi Kivity <avi@redhat.com>
+Subject: [patch 28/71] KVM: Fix cpuid feature misreporting
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-ignore-reads-to-k7-evntsel-msrs.patch
+Content-Disposition: inline; filename=kvm-fix-cpuid-feature-misreporting.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,34 +30,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Amit Shah <amit.shah@redhat.com>
+From: Avi Kivity <avi@redhat.com>
 
-(cherry picked from commit 9e6996240afcbe61682eab8eeaeb65c34333164d)
+(cherry picked from commit 8d753f369bd28fff1706ffe9fb9fea4fd88cf85b)
 
-In commit 7fe29e0faacb650d31b9e9f538203a157bec821d we ignored the
-reads to the P6 EVNTSEL MSRs. That fixed crashes on Intel machines.
+MTRR, PAT, MCE, and MCA are all supported (to some extent) but not reported.
+Vista requires these features, so if userspace relies on kernel cpuid
+reporting, it loses support for Vista.
 
-Ignore the reads to K7 EVNTSEL MSRs as well to fix this on AMD
-hosts.
-
-This fixes Kaspersky antivirus crashing Windows guests on AMD hosts.
-
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kvm/x86.c |    1 +
- 1 file changed, 1 insertion(+)
+ arch/x86/kvm/x86.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -900,6 +900,7 @@ int kvm_get_msr_common(struct kvm_vcpu *
- 	case MSR_VM_HSAVE_PA:
- 	case MSR_P6_EVNTSEL0:
- 	case MSR_P6_EVNTSEL1:
-+	case MSR_K7_EVNTSEL0:
- 		data = 0;
- 		break;
- 	case MSR_MTRRcap:
+@@ -1256,9 +1256,12 @@ static void do_cpuid_ent(struct kvm_cpui
+ 		bit(X86_FEATURE_VME) | bit(X86_FEATURE_DE) |
+ 		bit(X86_FEATURE_PSE) | bit(X86_FEATURE_TSC) |
+ 		bit(X86_FEATURE_MSR) | bit(X86_FEATURE_PAE) |
++		bit(X86_FEATURE_MCE) |
+ 		bit(X86_FEATURE_CX8) | bit(X86_FEATURE_APIC) |
+-		bit(X86_FEATURE_SEP) | bit(X86_FEATURE_PGE) |
+-		bit(X86_FEATURE_CMOV) | bit(X86_FEATURE_PSE36) |
++		bit(X86_FEATURE_SEP) | bit(X86_FEATURE_MTRR) |
++		bit(X86_FEATURE_PGE) | bit(X86_FEATURE_MCA) |
++		bit(X86_FEATURE_CMOV) | bit(X86_FEATURE_PAT) |
++		bit(X86_FEATURE_PSE36) |
+ 		bit(X86_FEATURE_CLFLSH) | bit(X86_FEATURE_MMX) |
+ 		bit(X86_FEATURE_FXSR) | bit(X86_FEATURE_XMM) |
+ 		bit(X86_FEATURE_XMM2) | bit(X86_FEATURE_SELFSNOOP);
 
 
