@@ -1,98 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934713AbZIEAbp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934264AbZIEAoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934713AbZIEAbp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933789AbZIEAbl
+	id S934264AbZIEAoy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933858AbZIEAox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:31:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34514 "EHLO hera.kernel.org"
+	Fri, 4 Sep 2009 20:44:53 -0400
+Received: from mail.atheros.com ([12.36.123.2]:31872 "EHLO mail.atheros.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934611AbZIEAbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:31:38 -0400
-Message-ID: <4AA1B16A.4080002@kernel.org>
-Date: Sat, 05 Sep 2009 09:31:38 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S933828AbZIEAox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:44:53 -0400
+From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
+To: <catalin.marinas@arm.com>
+CC: <linux-kernel@vger.kernel.org>, <linux-mm@kvack.org>,
+       <penberg@cs.helsinki.fi>, <mcgrof@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [PATCH v3 0/5] kmemleak: few small cleanups and clear command support
+Date: Fri, 4 Sep 2009 17:44:49 -0700
+Message-ID: <1252111494-7593-1-git-send-email-lrodriguez@atheros.com>
+X-Mailer: git-send-email 1.6.3.3
 MIME-Version: 1.0
-To: Chaitanya Lala <clala@riverbed.com>
-CC: rbecker@riverbed.com, linux-kernel@vger.kernel.org
-Subject: Re: Disk failure behavior
-References: <20090904172316.GA6076@clala-laptop>
-In-Reply-To: <20090904172316.GA6076@clala-laptop>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 05 Sep 2009 00:31:40 +0000 (UTC)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Here is my third respin, this time rebased ontop of:
 
-Chaitanya Lala wrote:
-> I am using a back-port of libata from ~ 2.6.20 on a 2.6.9
-> Red Hat kernel. I have SATA disks (using AHCI) in the 
-> system which are hot-pluggable. The problem I am facing
-> is that, certain disk failures bring the system into a
-> weird state. The system tries to reset the disk but fails.
-> Finally it prints a message "reset failed, giving up."
-> 
-> At this point the port is left in a frozen state and
-> the interrupts from the port are masked. If now, this disk is
-> pulled out and a healthy disk is inserted, the new disk's
-> insertion does not raise any event/notification/interrupt.
-> In fact, the only way at this point to get the disk to work is
-> to reboot.
+git://linux-arm.org/linux-2.6 kmemleak
 
-# echo - - - /sys/class/scsi_host/hostX/scan
+As suggested by Catalin we now clear the list by only painting reported
+unreferenced objects and the color we use is grey to ensure future
+scans are possible on these same objects to account for new allocations
+in the future referenced on the cleared objects.
 
-should revive it too.
+Patch 3 is now a little different, now with a paint_ptr() and
+a __paint_it() helper.
 
-> Below is a snippet of the code, I am referring to, from v2.6.20.
-> File - drivers/ata/libata-eh.c & function-name -  ata_eh_recover
->  
-> 	/* reset */
-> 	if (ehc->i.action & ATA_EH_RESET_MASK) {
-> 		ata_eh_freeze_port(ap);
-> 
-> 		rc = ata_eh_reset(ap, ata_port_nr_vacant(ap), prereset,
-> 				  softreset, hardreset, postreset);
-> 		if (rc) {
-> 			ata_port_printk(ap, KERN_ERR,
-> 					"reset failed, giving up\n");
-> 			goto out; 
-> 		}    
-> 
-> 		ata_eh_thaw_port(ap);
-> 	} 
-> 
-> A possible work-around is to thaw the port before going to "out".
-> That would enable the interrupts again before going to "out".
-> I understand that would enable future interrupts from the old disk as well,
-> but I am willing to live with that, if it helps to detect the new device.
-> 
-> 	/* reset */
-> 	if (ehc->i.action & ATA_EH_RESET_MASK) {
-> 		ata_eh_freeze_port(ap);
-> 
-> 		rc = ata_eh_reset(ap, ata_port_nr_vacant(ap), prereset,
-> 				  softreset, hardreset, postreset);
-> 		if (rc) {
-> 			ata_port_printk(ap, KERN_ERR,
-> 					"reset failed, giving up\n");
-> +			ata_eh_thaw_port(ap);
-> 			goto out; 
-> 		}    
-> 
-> 		ata_eh_thaw_port(ap);
-> 	} 
-> 
-> I have tested this successfully. But I would like to ask you if this would
-> possibly "break" some other functionality ? I am new to the kernel ata stuff
-> and want to be sure before I use this.
+I tested this by clearing kmemleak after bootup, then writing my
+own buggy module which kmalloc()'d onto some internal pointer,
+scanned, unloaded, and scanned again and then saw a new shiny
+report come up:
 
-Unless your controller causes IRQ storm bringing down the controller,
-the above change shouldn't be dangerous.
+unreferenced object 0xffff88003ad70920 (size 16):
+  comm "insmod", pid 7449, jiffies 4296458482
+  hex dump (first 16 bytes):
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace:
+    [<ffffffff814e9d55>] kmemleak_alloc+0x25/0x60
+    [<ffffffff81118c3b>] kmem_cache_alloc+0x14b/0x1c0
+    [<ffffffffa000a07f>] 0xffffffffa000a07f
+    [<ffffffff8100a047>] do_one_initcall+0x37/0x1a0
+    [<ffffffff810950d9>] sys_init_module+0xd9/0x230
+    [<ffffffff81011f02>] system_call_fastpath+0x16/0x1b
+    [<ffffffffffffffff>] 0xffffffffffffffff
 
--- 
-tejun
+Luis R. Rodriguez (5):
+  kmemleak: use bool for true/false questions
+  kmemleak: add clear command support
+  kmemleak: move common painting code together
+  kmemleak: fix sparse warning over overshadowed flags
+  kmemleak: fix sparse warning for static declarations
+
+ Documentation/kmemleak.txt |   30 +++++++++++
+ mm/kmemleak.c              |  116 ++++++++++++++++++++++++++++++--------------
+ 2 files changed, 109 insertions(+), 37 deletions(-)
+
