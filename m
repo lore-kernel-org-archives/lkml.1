@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934550AbZIEAeK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934581AbZIEAdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934550AbZIEAeK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:34:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934436AbZIEAdp
+	id S934581AbZIEAdS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934566AbZIEAUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:33:45 -0400
-Received: from kroah.org ([198.145.64.141]:42059 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:20:41 -0400
+Received: from kroah.org ([198.145.64.141]:42061 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934548AbZIEAUc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:32 -0400
+	id S934557AbZIEAUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:33 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:48 2009
-Message-Id: <20090905001448.033172069@mini.kroah.org>
+Message-Id: <20090905001448.241227912@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:41 -0700
+Date: Fri, 04 Sep 2009 17:13:42 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Bo Liu <bo-liu@hotmail.com>, Mel Gorman <mel@csn.ul.ie>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: [patch 06/71] mm: build_zonelists(): move clear node_load[] to __build_all_zonelists()
+       Pavel Roskin <proski@gnu.org>, Ivo van Doorn <IvDoorn@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [patch 07/71] rt2x00: fix memory corruption in rf cache, add a sanity check
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=mm-build_zonelists-move-clear-node_load-to-__build_all_zonelists.patch
+Content-Disposition: inline; filename=rt2x00-fix-memory-corruption-in-rf-cache-add-a-sanity-check.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,65 +30,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Bo Liu <bo-liu@hotmail.com>
+From: Pavel Roskin <proski@gnu.org>
 
-commit 7f9cfb31030737a7fc9a1cbca3fd01bec184c849 upstream.
+commit 6b26dead3ce97d016b57724b01974d5ca5c84bd5 upstream.
 
-If node_load[] is cleared everytime build_zonelists() is
-called,node_load[] will have no help to find the next node that should
-appear in the given node's fallback list.
+Change rt2x00_rf_read() and rt2x00_rf_write() to subtract 1 from the rf
+register number.  This is needed because the rf registers are enumerated
+starting with one.  The size of the rf register cache is just enough to
+hold all registers, so writing to the highest register was corrupting
+memory.  Add a check to make sure that the rf register number is valid.
 
-Because of the bug, zonelist's node_order is not calculated as expected.
-This bug affects on big machine, which has asynmetric node distance.
-
-[synmetric NUMA's node distance]
-     0    1    2
-0   10   12   12
-1   12   10   12
-2   12   12   10
-
-[asynmetric NUMA's node distance]
-     0    1    2
-0   10   12   20
-1   12   10   14
-2   20   14   10
-
-This (my bug) is very old but no one has reported this for a long time.
-Maybe because the number of asynmetric NUMA is very small and they use
-cpuset for customizing node memory allocation fallback.
-
-[akpm@linux-foundation.org: fix CONFIG_NUMA=n build]
-Signed-off-by: Bo Liu <bo-liu@hotmail.com>
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Pavel Roskin <proski@gnu.org>
+Acked-by: Ivo van Doorn <IvDoorn@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/page_alloc.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/net/wireless/rt2x00/rt2x00.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/mm/page_alloc.c
-+++ b/mm/page_alloc.c
-@@ -2342,7 +2342,6 @@ static void build_zonelists(pg_data_t *p
- 	prev_node = local_node;
- 	nodes_clear(used_mask);
- 
--	memset(node_load, 0, sizeof(node_load));
- 	memset(node_order, 0, sizeof(node_order));
- 	j = 0;
- 
-@@ -2451,6 +2450,9 @@ static int __build_all_zonelists(void *d
+--- a/drivers/net/wireless/rt2x00/rt2x00.h
++++ b/drivers/net/wireless/rt2x00/rt2x00.h
+@@ -814,13 +814,15 @@ struct rt2x00_dev {
+ static inline void rt2x00_rf_read(struct rt2x00_dev *rt2x00dev,
+ 				  const unsigned int word, u32 *data)
  {
- 	int nid;
+-	*data = rt2x00dev->rf[word];
++	BUG_ON(word < 1 || word > rt2x00dev->ops->rf_size / sizeof(u32));
++	*data = rt2x00dev->rf[word - 1];
+ }
  
-+#ifdef CONFIG_NUMA
-+	memset(node_load, 0, sizeof(node_load));
-+#endif
- 	for_each_online_node(nid) {
- 		pg_data_t *pgdat = NODE_DATA(nid);
+ static inline void rt2x00_rf_write(struct rt2x00_dev *rt2x00dev,
+ 				   const unsigned int word, u32 data)
+ {
+-	rt2x00dev->rf[word] = data;
++	BUG_ON(word < 1 || word > rt2x00dev->ops->rf_size / sizeof(u32));
++	rt2x00dev->rf[word - 1] = data;
+ }
  
+ /*
 
 
