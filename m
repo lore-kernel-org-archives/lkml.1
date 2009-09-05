@@ -1,72 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbZIEXCF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbZIEXMc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753603AbZIEXCF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 19:02:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZIEXCE
+	id S1753654AbZIEXMc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 19:12:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZIEXMb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 19:02:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60341 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751819AbZIEXCE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 19:02:04 -0400
-Date: Sat, 5 Sep 2009 16:01:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
-       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       JosephChan@via.com.tw, ScottFang@viatech.com.cn
-Subject: Re: [PATCH v2] viafb: 2D engine rewrite (and viafb patches in
- general)
-Message-Id: <20090905160140.7b36527f.akpm@linux-foundation.org>
-In-Reply-To: <20090905161645.74a49a84@bike.lwn.net>
-References: <1251666438-5448-1-git-send-email-FlorianSchandinat@gmx.de>
-	<1252097032-3568-1-git-send-email-FlorianSchandinat@gmx.de>
-	<20090905161645.74a49a84@bike.lwn.net>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Sep 2009 19:12:31 -0400
+Received: from mx.treblig.org ([80.68.94.177]:40493 "EHLO mx.treblig.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751896AbZIEXMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 19:12:30 -0400
+X-Greylist: delayed 1226 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Sep 2009 19:12:29 EDT
+Date: Sun, 6 Sep 2009 00:51:59 +0100
+From: "Dr. David Alan Gilbert" <linux@treblig.org>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
+Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
+Message-ID: <20090905235159.GA23660@gallifrey>
+References: <20090613230842.GA18347@gallifrey> <alpine.LNX.2.00.0906231038500.7457@wotan.suse.de> <20090623185814.GB24108@gallifrey> <200906231106.37460.dmitry.torokhov@gmail.com> <20090628140452.GA15816@gallifrey> <20090904055139.4BEAB526EA5@mailhub.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904055139.4BEAB526EA5@mailhub.coreip.homeip.net>
+X-Chocolate: 70 percent or better cocoa solids preferably
+X-Operating-System: Linux/2.6.29.2-bytemark-kvm-tickless-2009-05-05 (i686)
+X-Uptime: 00:41:50 up 102 days, 17:03,  2 users,  load average: 0.00, 0.00, 0.00
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Sep 2009 16:16:45 -0600 Jonathan Corbet <corbet@lwn.net> wrote:
-
-> On Fri,  4 Sep 2009 20:43:52 +0000
-> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+* Dmitry Torokhov (dmitry.torokhov@gmail.com) wrote:
+> On Sun, Jun 28, 2009 at 03:04:52PM +0100, Dr. David Alan Gilbert wrote:
+> > * Dmitry Torokhov (dmitry.torokhov@gmail.com) wrote:
+> > > On Tuesday 23 June 2009 11:58:15 Dr. David Alan Gilbert wrote:
+> > 
+> > <snip>
+> >  
+> > > > Yep; I'm OK with the i8042.noaux from my point of view, but it's a
+> > > > bit worrying that this used to work fine.  There's obviously been
+> > > > a change somewhere since 2.6.18 (and as I remember from the dmesg
+> > > > the keyboard and aux ports are being initialised in different orders).
+> > > > (Actually I say obviously since 2.6.18 - but the 2.6.18 I tried
+> > > > I think I only used the debian version - I should go back and
+> > > > see if I can do a vanilla one), but this box has been running
+> > > > Linux since the time it was originally bought with loads of distros
+> > > > and clean kernels years ago.
+> > > >
+> > > > While this machine is old, the motherboard was a pretty common one
+> > > > at the time.
+> > > >
+> > > 
+> > > Any chance I could get dmesg with i8042.debug with 2.6.18? There was
+> > > quite a large change back then when we got rid of the polling timer
+> > > in i8042.
+> > 
+> > Apologies for the delay; attached is the dmesg from the Debian 2.6.18
+> > in which keyboard works as previously described.
+> > 
 > 
-> > This patch is a completly rewritten 2D engine. The engine is no longer
-> > in a default state but reinitialized every time to allow usage for both
-> > framebuffers regardless of their settings.
-> > The whole engine handling is concentrated in a big function which takes
-> > 16 parameters.
+> Sorry for taking so long to respond. The only vidible difference beween
+> the old and the new way is that we don't "close" serio ports anymore if
+> we fail to detect a mouse/keyboard.
 > 
-> Ouch, that's a lot of parameters.  Might it be better to create a
-> structure to encapsulate all of those drawing parameters?
+> Could you please try the patch below and tell me if it helps?
 
-I was wondering that.  There's less advantage to that than usual
-because the call graph is not at all deep.
+Yes that fixes it - thank you!
+(Tested on 2.6.31-rc8, having first checked rc8 on it's own was still broken)
 
-> On a more general level: is anybody maintaining a tree for patches to
-> the viafb driver?
+Dave
 
--mm.
-
->  I'm going to be doing some work here (writing a
-> driver for the video capture engine), and there's patches sitting in
-> Harald's tree and the OLPC tree.
-
-As far as the rest of the world is concerned, that stuff doesn't exist.
-
->  It seems like a central merge point
-> might be a nice thing to have.
 > 
-> I'd be happy to run such a tree.  I'm really *not* qualified to be
-> passing judgment on patches to the framebuffer driver at this point,
-> though, so I'm not sure that I'm the best person for the job.
-
-Send 'em over.  I haven't heard anything from the original viafb
-submitters for a long time.  Hopefully Florian has time to help out
-with some review-n-test.
-
+> Thanks!
+> -- 
+> Dmitry
+> 
+> Input: i8042 - try disabling and re-enabling AUX port at close
+> 
+> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+> 
+> Ever since we switched from having a polling timer to registering IRQ
+> handlers for both keyboard and AUX ports at the driver registration
+> time, on certain boxes probing for a mouse results in keyboard
+> stopping working. The only real difference between old and new way is
+> that before we disabled ports after unsuccessful probe whereas now we
+> leave them as is. Try to emulate the old behavior by disabling and
+> immediately re-enabling AUX port when corresponding serio port is
+> being closed.
+> 
+> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
+> ---
+> 
+>  drivers/input/serio/i8042.c |   28 ++++++++++++++++++++++++++++
+>  1 files changed, 28 insertions(+), 0 deletions(-)
+> 
+> 
+> diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
+> index b53a015..a55ad99 100644
+> --- a/drivers/input/serio/i8042.c
+> +++ b/drivers/input/serio/i8042.c
+> @@ -264,6 +264,33 @@ static int i8042_aux_write(struct serio *serio, unsigned char c)
+>  					I8042_CMD_MUX_SEND + port->mux);
+>  }
+>  
+> +
+> +/*
+> + * i8042_aux_close attempts to clear AUX port state by disabling
+> + * and then re-enabling it.
+> + */
+> +
+> +static void i8042_aux_close(struct serio *serio)
+> +{
+> +	i8042_ctr &= ~I8042_CTR_AUXINT;
+> +	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR))
+> +		printk(KERN_WARNING
+> +			"i8042.c: Can't write CTR while closing AUX port.\n");
+> +	udelay(50);
+> +
+> +	i8042_ctr &= ~I8042_CTR_AUXDIS;
+> +	i8042_ctr |= I8042_CTR_AUXINT;
+> +	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR))
+> +		printk(KERN_ERR
+> +			"i8042.c: Can't reactivate AUX port.\n");
+> +
+> +	/*
+> +	 * See if there is any data appeared while we were messing with
+> +	 * port state.
+> +	 */
+> +	i8042_interrupt(0, NULL);
+> +}
+> +
+>  /*
+>   * i8042_start() is called by serio core when port is about to finish
+>   * registering. It will mark port as existing so i8042_interrupt can
+> @@ -1051,6 +1078,7 @@ static int __devinit i8042_create_aux_port(int idx)
+>  	serio->write		= i8042_aux_write;
+>  	serio->start		= i8042_start;
+>  	serio->stop		= i8042_stop;
+> +	serio->close		= i8042_aux_close;
+>  	serio->port_data	= port;
+>  	serio->dev.parent	= &i8042_platform_device->dev;
+>  	if (idx < 0) {
+-- 
+ -----Open up your eyes, open up your mind, open up your code -------   
+/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
+\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
+ \ _________________________|_____ http://www.treblig.org   |_______/
