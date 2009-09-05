@@ -1,220 +1,386 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbZIERmI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZIERTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbZIERmI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 13:42:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752576AbZIERmH
+	id S1752664AbZIERTA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 13:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZIERS7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 13:42:07 -0400
-Received: from mail-pz0-f203.google.com ([209.85.222.203]:39709 "EHLO
-	mail-pz0-f203.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752575AbZIERmG (ORCPT
+	Sat, 5 Sep 2009 13:18:59 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:49199 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751431AbZIERS6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 13:42:06 -0400
-X-Greylist: delayed 1298 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Sep 2009 13:42:05 EDT
-Message-Id: <CC0E4F61-CD88-4683-B2F1-B50E10C51998@anirban.org>
-From: Anirban Sinha <ani@anirban.org>
-To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v936)
-Subject: re: question on sched-rt group allocation cap: sched_rt_runtime_us
-Date: Sat, 5 Sep 2009 10:13:09 -0700
-Cc: Anirban Sinha <ASinha@zeugmasystems.com>, Anirban Sinha <ani@anirban.org>
-X-Mailer: Apple Mail (2.936)
+	Sat, 5 Sep 2009 13:18:58 -0400
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: akpm@linux-foundation.org
+Cc: hpa@zytor.com, mingo@elte.hu, phillip@lougher.demon.co.uk,
+       rmk@arm.linux.org.uk, sam@ravnborg.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: [PATCH] Add support for LZO-compressed kernels
+Date: Sat,  5 Sep 2009 19:19:01 +0200
+Message-Id: <1252171146-13805-1-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again:
+This is the first part of the lzo patch
+The lzo compressor is worse than gzip at compression, but faster at
+extraction. Here are some figures for an ARM board I'm working on:
 
-I am copying my test code here. I am really hoping to get some answers/ 
-pointers. If there are whitespace/formatting issues in this mail,  
-please let me know. I am using an alternate mailer.
+Uncompressed size: 3.24Mo
+gzip  1.61Mo 0.72s
+lzo   1.75Mo 0.48s
 
-Cheers,
+So for a compression ratio that is still relatively close to gzip, it's
+much faster to extract, at least in that case.
 
-Ani
+This version applies to kernel 2.6.31-rc3
 
+This part contains:
+ - Makefile routine to support lzo compression
+ - Fixes to the existing lzo compressor so that it can be used in
+   compressed kernels
+ - wrapper around the existing lzo1x_decompress, as it only extracts one
+   block at a time, while we need to extract a whole file here
+ - config dialog for kernel compression
 
-/* Test code to experiment the CPU allocation cap for an FIFO RT thread
-  * spinning on a tight loop. Yes, you read it right. RT thread on a
-  * tight loop.
-*/
-#define _GNU_SOURCE
+Changes since v1:
+ - lib/decompress_unlzo.c: include linux/decompress/unlzo.h only when
+   we're not compiling the pre-boot environment to prevent compile
+   issues
 
-#include <sched.h>
-#include <pthread.h>
-#include <time.h>
-#include <utmpx.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include <assert.h>
+Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+---
+ include/linux/decompress/unlzo.h |   10 ++
+ init/Kconfig                     |   18 +++-
+ lib/decompress_unlzo.c           |  207 ++++++++++++++++++++++++++++++++++++++
+ lib/lzo/lzo1x_decompress.c       |    9 +-
+ scripts/Makefile.lib             |    5 +
+ 5 files changed, 242 insertions(+), 7 deletions(-)
+ create mode 100644 include/linux/decompress/unlzo.h
+ create mode 100644 lib/decompress_unlzo.c
 
-unsigned long reg_count;
+diff --git a/include/linux/decompress/unlzo.h b/include/linux/decompress/unlzo.h
+new file mode 100644
+index 0000000..9872297
+--- /dev/null
++++ b/include/linux/decompress/unlzo.h
+@@ -0,0 +1,10 @@
++#ifndef DECOMPRESS_UNLZO_H
++#define DECOMPRESS_UNLZO_H
++
++int unlzo(unsigned char *inbuf, int len,
++	int(*fill)(void*, unsigned int),
++	int(*flush)(void*, unsigned int),
++	unsigned char *output,
++	int *pos,
++	void(*error)(char *x));
++#endif
+diff --git a/init/Kconfig b/init/Kconfig
+index 3f7e609..43c2e60 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -115,10 +115,13 @@ config HAVE_KERNEL_BZIP2
+ config HAVE_KERNEL_LZMA
+ 	bool
+ 
++config HAVE_KERNEL_LZO
++	bool
++
+ choice
+ 	prompt "Kernel compression mode"
+ 	default KERNEL_GZIP
+-	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA
++	depends on HAVE_KERNEL_GZIP || HAVE_KERNEL_BZIP2 || HAVE_KERNEL_LZMA || HAVE_KERNEL_LZO
+ 	help
+ 	  The linux kernel is a kind of self-extracting executable.
+ 	  Several compression algorithms are available, which differ
+@@ -141,9 +144,8 @@ config KERNEL_GZIP
+ 	bool "Gzip"
+ 	depends on HAVE_KERNEL_GZIP
+ 	help
+-	  The old and tried gzip compression. Its compression ratio is
+-	  the poorest among the 3 choices; however its speed (both
+-	  compression and decompression) is the fastest.
++	  The old and tried gzip compression. It provides a good balance
++	  between compression ration and decompression speed.
+ 
+ config KERNEL_BZIP2
+ 	bool "Bzip2"
+@@ -164,6 +166,14 @@ config KERNEL_LZMA
+ 	  two. Compression is slowest.	The kernel size is about 33%
+ 	  smaller with LZMA in comparison to gzip.
+ 
++config KERNEL_LZO
++	bool "LZO"
++	depends on HAVE_KERNEL_LZO
++	help
++	  Its compression ratio is the poorest among the 4. The kernel
++	  size is about about 10% bigger than gzip; however its speed
++	  (both compression and decompression) is the fastest.
++
+ endchoice
+ 
+ config SWAP
+diff --git a/lib/decompress_unlzo.c b/lib/decompress_unlzo.c
+new file mode 100644
+index 0000000..185dc36
+--- /dev/null
++++ b/lib/decompress_unlzo.c
+@@ -0,0 +1,207 @@
++/*
++ * LZO decompressor for the Linux kernel. Code borrowed from the lzo
++ * implementation by Markus Franz Xaver Johannes Oberhumer.
++ *
++ * Linux kernel adaptation:
++ * Copyright (C) 2009
++ * Albin Tonnerre, Free Electrons <albin.tonnerre@free-electrons.com>
++ *
++ * Original code:
++ * Copyright (C) 1996-2005 Markus Franz Xaver Johannes Oberhumer
++ * All Rights Reserved.
++ *
++ * lzop and the LZO library are free software; you can redistribute them
++ * and/or modify them under the terms of the GNU General Public License as
++ * published by the Free Software Foundation; either version 2 of
++ * the License, or (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; see the file COPYING.
++ * If not, write to the Free Software Foundation, Inc.,
++ * 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * Markus F.X.J. Oberhumer
++ * <markus@oberhumer.com>
++ * http://www.oberhumer.com/opensource/lzop/
++ */
++
++#ifdef STATIC
++#include "lzo/lzo1x_decompress.c"
++#else
++#include <linux/slab.h>
++#include <linux/decompress/unlzo.h>
++#endif
++
++#include <linux/types.h>
++#include <linux/lzo.h>
++#include <linux/decompress/mm.h>
++
++#include <linux/compiler.h>
++#include <asm/unaligned.h>
++
++static const unsigned char lzop_magic[] =
++	{ 0x89, 0x4c, 0x5a, 0x4f, 0x00, 0x0d, 0x0a, 0x1a, 0x0a };
++
++#define LZO_BLOCK_SIZE        (256*1024l)
++#define HEADER_HAS_FILTER      0x00000800L
++
++STATIC inline int INIT parse_header(u8 *input, u8 *skip)
++{
++	int l;
++	u8 *parse = input;
++	u8 level = 0;
++	u16 version;
++
++	/* read magic: 9 first bits */
++	for (l = 0; l < 9; l++) {
++		if (*parse++ != lzop_magic[l])
++			return 0;
++	}
++	/* get version (2bytes), skip library version (2),
++	 * 'need to be extracted' version (2) and
++	 * method (1) */
++	version = get_unaligned_be16(parse);
++	parse += 7;
++	if (version >= 0x0940)
++		level = *parse++;
++	if (get_unaligned_be32(parse) & HEADER_HAS_FILTER)
++		parse += 8; /* flags + filter info */
++	else
++		parse += 4; /* flags */
++
++	/* skip mode and mtime_low */
++	parse += 8;
++	if (version >= 0x0940)
++		parse += 4;	/* skip mtime_high */
++
++	l = *parse++;
++	/* don't care about the file name, and skip checksum */
++	parse += l + 4;
++
++	*skip = parse - input;
++	return 1;
++}
++
++STATIC inline int INIT unlzo(u8 *input, int in_len,
++                             int (*fill) (void *, unsigned int),
++                             int (*flush) (void *, unsigned int),
++                             u8 *output, int *posp,
++                             void (*error_fn) (char *x))
++{
++	u8 skip = 0, r = 0;
++	u32 src_len, dst_len;
++	size_t tmp;
++	u8 *in_buf, *in_buf_save, *out_buf;
++	int obytes_processed = 0;
++
++	set_error_fn(error_fn);
++
++	if (output)
++		out_buf = output;
++	else if (!flush) {
++		error("NULL output pointer and no flush function provided");
++		goto exit;
++	} else {
++		if (!(out_buf = malloc(LZO_BLOCK_SIZE))) {
++			error("Could not allocate output buffer");
++			goto exit;
++		}
++	}
++
++	if (input && fill) {
++		error("Both input pointer and fill function provided, don't know what to do");
++		goto exit_1;
++	} else if (input)
++		in_buf = input;
++	else if (!fill || !posp) {
++		error("NULL input pointer and missing position pointer or fill function");
++		goto exit_1;
++	} else {
++		if (!(in_buf = malloc(lzo1x_worst_compress(LZO_BLOCK_SIZE)))) {
++			error("Could not allocate input buffer");
++			goto exit_1;
++		}
++	}
++	in_buf_save = in_buf;
++
++	if (posp)
++		*posp = 0;
++
++	if (fill)
++		fill(in_buf, lzo1x_worst_compress(LZO_BLOCK_SIZE));
++
++	if (!parse_header(input, &skip)) {
++		error("invalid header");
++		goto exit_2;
++	}
++	in_buf += skip;
++
++	if (posp)
++		*posp = skip;
++
++	for (;;) {
++		/* read uncompressed block size */
++		dst_len = get_unaligned_be32(in_buf);
++		in_buf += 4;
++
++		/* exit if last block */
++		if (dst_len == 0) {
++			if (posp)
++				*posp += 4;
++			break;
++		}
++
++		if (dst_len > LZO_BLOCK_SIZE) {
++			error("dest len longer than block size");
++			goto exit_2;
++		}
++
++		/* read compressed block size, and skip block checksum info */
++		src_len = get_unaligned_be32(in_buf);
++		in_buf += 8;
++
++		if (src_len <= 0 || src_len > dst_len) {
++			error("file corrupted");
++			goto exit_2;
++		}
++
++		/* decompress */
++		tmp = dst_len;
++		r = lzo1x_decompress_safe((u8 *) in_buf, src_len, out_buf, &tmp);
++
++		if (r != LZO_E_OK || dst_len != tmp) {
++			error("Compressed data violation");
++			goto exit_2;
++		}
++
++		obytes_processed += dst_len;
++		if (flush)
++			flush(out_buf, dst_len);
++		if (output)
++			out_buf += dst_len;
++		if (posp)
++			*posp += src_len + 12;
++		if (fill) {
++			in_buf = in_buf_save;
++			fill(in_buf, lzo1x_worst_compress(LZO_BLOCK_SIZE));
++		}
++		else
++			in_buf += src_len;
++	}
++
++exit_2:
++	if (!input)
++		free(in_buf);
++exit_1:
++	if (!output)
++		free(out_buf);
++exit:
++	return obytes_processed;
++}
++
++#define decompress unlzo
+diff --git a/lib/lzo/lzo1x_decompress.c b/lib/lzo/lzo1x_decompress.c
+index 5dc6b29..f2fd098 100644
+--- a/lib/lzo/lzo1x_decompress.c
++++ b/lib/lzo/lzo1x_decompress.c
+@@ -11,11 +11,13 @@
+  *  Richard Purdie <rpurdie@openedhand.com>
+  */
+ 
++#ifndef STATIC
+ #include <linux/module.h>
+ #include <linux/kernel.h>
+-#include <linux/lzo.h>
+-#include <asm/byteorder.h>
++#endif
++
+ #include <asm/unaligned.h>
++#include <linux/lzo.h>
+ #include "lzodefs.h"
+ 
+ #define HAVE_IP(x, ip_end, ip) ((size_t)(ip_end - ip) < (x))
+@@ -244,9 +246,10 @@ lookbehind_overrun:
+ 	*out_len = op - out;
+ 	return LZO_E_LOOKBEHIND_OVERRUN;
+ }
+-
++#ifndef STATIC
+ EXPORT_SYMBOL_GPL(lzo1x_decompress_safe);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_DESCRIPTION("LZO1X Decompressor");
+ 
++#endif
+diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
+index 7a77787..7b721d1 100644
+--- a/scripts/Makefile.lib
++++ b/scripts/Makefile.lib
+@@ -230,3 +230,8 @@ quiet_cmd_lzma = LZMA    $@
+ cmd_lzma = (cat $(filter-out FORCE,$^) | \
+ 	lzma -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
+ 	(rm -f $@ ; false)
++
++quiet_cmd_lzo = LZO    $@
++cmd_lzo = (cat $(filter-out FORCE,$^) | \
++	lzop -9 && $(call size_append, $(filter-out FORCE,$^))) > $@ || \
++	(rm -f $@ ; false)
+-- 
+1.6.3.3
 
-void *fifo_thread(void *arg)
-{
-     int core = (int) arg;
-     int i, j;
-     cpu_set_t cpuset;
-     struct sched_param fifo_schedparam;
-     int fifo_policy;
-     unsigned long start, end;
-     unsigned long fifo_count = 0;
-
-     CPU_ZERO(&cpuset);
-     CPU_SET(core, &cpuset);
-
-     assert(sched_setaffinity(0, sizeof cpuset, &cpuset) == 0);
-
-     /* RT priority 1 - lowest */
-     fifo_schedparam.sched_priority = 1;
-     assert(pthread_setschedparam(pthread_self(), SCHED_FIFO,  
-&fifo_schedparam) == 0);
-     start = reg_count;
-     printf("start reg_count=%llu\n", start);
-
-     for(i = 0; i < 5; i++) {
-         for(j = 0; j < UINT_MAX/10; j++) {
-	  fifo_count++;
-         }
-     }
-     printf("\nRT thread has terminated\n");
-     end = reg_count;
-     printf("end reg_count=%llu\n", end);
-     printf("delta reg count = %llu\n", end-start);
-     printf("fifo count = %llu\n", fifo_count);
-     printf("% = %f\n", ((float)(end-start)*100)/(float)fifo_count);
-
-     return NULL;
-}
-
-void *reg_thread(void *arg)
-{
-     int core = (int) arg;
-     int i, j;
-     int new_nice;
-     cpu_set_t cpuset;
-     struct sched_param fifo_schedparam;
-     int fifo_policy;
-     /* let's renice it to highest priority level */
-     new_nice = nice(-20);
-     printf("new nice value for regular thread=%d\n", new_nice);
-     printf("regular thread dispatch(%d)\n", core);
-
-     CPU_ZERO(&cpuset);
-     CPU_SET(core, &cpuset);
-
-     assert(sched_setaffinity(0, sizeof cpuset, &cpuset) == 0);
-
-     for(i = 0; i < 5; i++) {
-       for(j = 0; j < UINT_MAX/10; j++) {
-	reg_count++;
-       }
-     }
-     printf("\nregular thread has terminated\n");
-
-     return NULL;
-}
-
-
-int main(int argc, char *argv[])
-{
-     char *core_str = NULL;
-     int core;
-     pthread_t tid1, tid2;
-     pthread_attr_t attr;
-
-     if(argc != 2) {
-         fprintf(stderr, "Usage: %s <core-ID>\n", argv[0]);
-         return -1;
-     }
-     reg_count = 0;
-
-     core = atoi(argv[1]);
-
-     pthread_attr_init(&attr);
-     assert(pthread_attr_setschedpolicy(&attr, SCHED_FIFO) == 0);
-     assert(pthread_create(&tid1, &attr, fifo_thread, (void*)core) ==  
-0);
-
-     assert(pthread_attr_setschedpolicy(&attr, SCHED_OTHER) == 0);
-     assert(pthread_create(&tid2, &attr, reg_thread, (void*)core) == 0);
-
-     pthread_join(tid1, NULL);
-     pthread_join(tid2, NULL);
-
-     return 0;
-}
-
------
-
-From: Anirban Sinha
-Sent: Fri 9/4/2009 5:55 PM
-To:
-Subject: question on sched-rt group allocation cap: sched_rt_runtime_us
-
-Hi Ingo and rest:
-
-I have been playing around with the sched_rt_runtime_us cap that can  
-be used to limit the amount of CPU time allocated towards scheduling  
-rt group threads. I am using 2.6.26 with CONFIG_GROUP_SCHED disabled  
-(we use only the root user in our embedded setup). I have no other CPU  
-intensive workloads (RT or otherwise) running on my system. I have  
-changed no other scheduling parameters from /proc.
-
-I have written a small test program that:
-
-(a) forks two threads, one SCHED_FIFO and one SCHED_OTHER (this thread  
-is reniced to -20) and ties both of them to a specific core.
-(b) runs both the threads in a tight loop (same number of iterations  
-for both threads) until the SCHED_FIFO thread terminates.
-(c) calculates the number of completed iterations of the regular  
-SCHED_OTHER thread against the fixed number of iterations of the  
-SCHED_FIFO thread. It then calculates a percentage based on that.
-
-I am running the above workload against varying sched_rt_runtime_us  
-values (200 ms to 700 ms) keeping the sched_rt_period_us constant at  
-1000 ms. I have also experimented a little bit by decreasing the value  
-of sched_rt_period_us (thus increasing the sched granularity) with no  
-apparent change in behavior.
-
-My observations are listed in tabular form. The numbers in the two  
-columns are:
-
-rt_runtime_us /
-rt_period_us
-
-     Vs
-
-completed iterations of reg thr /
-all iterations of RT thr (in %)
-
-
-0.2   100 % (reg thread completed all its iterations).
-0.3   73 %
-0.4   45 %
-0.5   17 %
-0.6   0 % (reg thr completely throttled. Never ran)
-0.7   0 %
-
-This result kind of baffles me. Even when we cap the RT group to a  
-fraction of 0.6 of overall CPU time, the rest 0.4 \should\ still be  
-available for running regular threads. So my SCHED_OTHER \should\ make  
-some progress as opposed to being completely throttled. Similarly,  
-with any fraction less than 0.5, the SCHED_OTHER should complete  
-before SCHED_FIFO.
-
-I do not have an easy way to verify my results over the latest kernel  
-(2.6.31). Was there any regressions in the scheduling subsystem in  
-2.6.26? Can this behavior be explained? Do we need to tweak any other / 
-proc parameters?
-
-Cheers,
-
-Ani
-
-
-  
-     
