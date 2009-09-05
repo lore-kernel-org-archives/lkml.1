@@ -1,53 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZIEUaD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753396AbZIEVhZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753141AbZIEUaD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 16:30:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZIEUaC
+	id S1753396AbZIEVhZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 17:37:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752636AbZIEVhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 16:30:02 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47144 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751152AbZIEUaB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 16:30:01 -0400
-Date: Sat, 5 Sep 2009 13:29:27 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Mikael Pettersson <mikpe@it.uu.se>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
- testsuite
-In-Reply-To: <19106.16773.461397.654704@pilspetsen.it.uu.se>
-Message-ID: <alpine.LFD.2.01.0909051256550.3414@localhost.localdomain>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19099.52899.620345.326521@pilspetsen.it.uu.se> <19100.31254.666066.755541@pilspetsen.it.uu.se> <200909012042.59856.rjw@sisk.pl> <alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
- <19105.5352.28380.230615@pilspetsen.it.uu.se> <alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
- <alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040917120.4537@eeepc.linux-foundation.org> <19106.16773.461397.654704@pilspetsen.it.uu.se>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 5 Sep 2009 17:37:23 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:59069 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751830AbZIEVhX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 17:37:23 -0400
+X-Greylist: delayed 3600 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Sep 2009 17:37:22 EDT
+Date: Sat, 5 Sep 2009 22:40:37 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Anirban Sinha <ASinha@zeugmasystems.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
+Message-ID: <20090905204037.GE4953@gandalf.sssup.it>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501F0F575@exchange.ZeugmaSystems.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501F0F575@exchange.ZeugmaSystems.local>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 5 Sep 2009, Mikael Pettersson wrote:
+> From: Anirban Sinha <ASinha@zeugmasystems.com>
+> Date: Fri, Sep 04, 2009 05:55:15PM -0700
+>
+> Hi Ingo and rest:
 > 
-> Thanks, I'm testing this and the pty_write() fix on i686 and ppc64 now.
+> I have been playing around with the sched_rt_runtime_us cap that can be
+> used to limit the amount of CPU time allocated towards scheduling rt
+> group threads. I am using 2.6.26 with CONFIG_GROUP_SCHED disabled (we
+> use only the root user in our embedded setup). I have no other CPU
+> intensive workloads (RT or otherwise) running on my system. I have
+> changed no other scheduling parameters from /proc. 
 > 
-> Sometimes the bug is difficult to trigger, so I may need to do loads of
-> testing with different gcc versions before I dare to say that it's fixed.
+> I have written a small test program that:
+> 
+> (a) forks two threads, one SCHED_FIFO and one SCHED_OTHER (this thread
+> is reniced to -20) and ties both of them to a specific core.
+> (b) runs both the threads in a tight loop (same number of iterations for
+> both threads) until the SCHED_FIFO thread terminates.
+> (c) calculates the number of completed iterations of the regular
+> SCHED_OTHER thread against the fixed number of iterations of the
+> SCHED_FIFO thread. It then calculates a percentage based on that.
+> 
+> I am running the above workload against varying sched_rt_runtime_us
+> values (200 ms to 700 ms) keeping the sched_rt_period_us constant at
+> 1000 ms. I have also experimented a little bit by decreasing the value
+> of sched_rt_period_us (thus increasing the sched granularity) with no
+> apparent change in behavior. 
+> 
+> My observations are listed in tabular form: 
+> 
+> Ratio of                  # of completed iterations of reg thread /
+> sched_rt_runtime_us /     # of iterations of RT thread (in %)
+> sched_rt_runtime_us       
+> 
+> 0.2                      100 % (regular thread completed all its
+> iterations).
+> 0.3                      73 %
+> 0.4                      45 %
+> 0.5                      17 %
+> 0.6                      0 % (SCHED_OTHER thread completely throttled.
+> Never ran)
+> 0.7                      0 %
+> 
+> This result kind of baffles me. Even when we cap the RT group to a
+> fraction of 0.6 of overall CPU time, the rest 0.4 \should\ still be
+> available for running regular threads. So my SCHED_OTHER \should\ make
+> some progress as opposed to being completely throttled. Similarly, with
+> any fraction less than 0.5, the SCHED_OTHER should complete before
+> SCHED_FIFO.
+> 
+> I do not have an easy way to verify my results over the latest kernel
+> (2.6.31). Was there any regressions in the scheduling subsystem in
+> 2.6.26? Can this behavior be explained? Do we need to tweak any other
+> /proc parameters?
+> 
 
-Ok, I'm going to commit the two patches, because even if there is some 
-other bug hiding too (and it doesn't fix your thing - although I think it 
-will), this is definitely a real fix regardless.
+You say you pin the threads to a single core: how many cores does your
+system have?
 
-And I want to do a -rc9 and let it get a couple of days of testing, since 
-I got way more pull requests than I hoped for while I was off diving.
+I don't know if 2.6.26 had anything wrong (from a quick look the relevant
+code seems similar to what we have now), but something like that can be
+the consequence of the runtime migration logic moving bandwidth from a
+second core to the one executing the two tasks.
 
-			Linus
+If this is the case, this behavior is the expected one, the scheduler
+tries to reduce the number of migrations, concentrating the bandwidth
+of rt tasks on a single core.  With your workload it doesn't work well
+because runtime migration has freed the other core(s) from rt bandwidth,
+so these cores are available to SCHED_OTHER ones, but your SCHED_OTHER
+thread is pinned and cannot make use of them.
