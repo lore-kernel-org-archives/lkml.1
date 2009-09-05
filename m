@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934554AbZIEAej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934341AbZIEAdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934554AbZIEAej (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934481AbZIEAeh
+	id S934341AbZIEAdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934545AbZIEAUc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:34:37 -0400
-Received: from kroah.org ([198.145.64.141]:42046 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:20:32 -0400
+Received: from kroah.org ([198.145.64.141]:42048 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934515AbZIEAU3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:29 -0400
+	id S934544AbZIEAUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:30 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:47 2009
-Message-Id: <20090905001447.401529069@mini.kroah.org>
+Message-Id: <20090905001447.558632285@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:38 -0700
+Date: Fri, 04 Sep 2009 17:13:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 03/71] Make bitmask and operators return a result code
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Mike Travis <travis@sgi.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 04/71] x86: dont send an IPI to the empty set of CPUs
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=make-bitmask-and-operators-return-a-result-code.patch
+Content-Disposition: inline; filename=x86-don-t-send-an-ipi-to-the-empty-set-of-cpu-s.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,185 +31,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit f4b0373b26567cafd421d91101852ed7a34e9e94 upstream.
+commit 83d349f35e1ae72268c5104dbf9ab2ae635425d4 upstream.
 
-When 'and'ing two bitmasks (where 'andnot' is a variation on it), some
-cases want to know whether the result is the empty set or not.  In
-particular, the TLB IPI sending code wants to do cpumask operations and
-determine if there are any CPU's left in the final set.
+The default_send_IPI_mask_logical() function uses the "flat" APIC mode
+to send an IPI to a set of CPU's at once, but if that set happens to be
+empty, some older local APIC's will apparently be rather unhappy.  So
+just warn if a caller gives us an empty mask, and ignore it.
 
-So this just makes the bitmask (and cpumask) functions return a boolean
-for whether the result has any bits set.
+This fixes a regression in 2.6.30.x, due to commit 4595f9620 ("x86:
+change flush_tlb_others to take a const struct cpumask"), documented
+here:
 
+	http://bugzilla.kernel.org/show_bug.cgi?id=13933
+
+which causes a silent lock-up.  It only seems to happen on PPro, P2, P3
+and Athlon XP cores.  Most developers sadly (or not so sadly, if you're
+a developer..) have more modern CPU's.  Also, on x86-64 we don't use the
+flat APIC mode, so it would never trigger there even if the APIC didn't
+like sending an empty IPI mask.
+
+Reported-by: Pavel Vilim <wylda@volny.cz>
+Reported-and-tested-by: Thomas Björnell <thomas.bjornell@gmail.com>
+Reported-and-tested-by: Martin Rogge <marogge@onlinehome.de>
+Cc: Mike Travis <travis@sgi.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/bitmap.h  |   18 ++++++++----------
- include/linux/cpumask.h |   20 ++++++++++----------
- lib/bitmap.c            |   12 ++++++++----
- 3 files changed, 26 insertions(+), 24 deletions(-)
+ arch/x86/kernel/apic/ipi.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/include/linux/bitmap.h
-+++ b/include/linux/bitmap.h
-@@ -94,13 +94,13 @@ extern void __bitmap_shift_right(unsigne
-                         const unsigned long *src, int shift, int bits);
- extern void __bitmap_shift_left(unsigned long *dst,
-                         const unsigned long *src, int shift, int bits);
--extern void __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
-+extern int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
- 			const unsigned long *bitmap2, int bits);
- extern void __bitmap_or(unsigned long *dst, const unsigned long *bitmap1,
- 			const unsigned long *bitmap2, int bits);
- extern void __bitmap_xor(unsigned long *dst, const unsigned long *bitmap1,
- 			const unsigned long *bitmap2, int bits);
--extern void __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
-+extern int __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
- 			const unsigned long *bitmap2, int bits);
- extern int __bitmap_intersects(const unsigned long *bitmap1,
- 			const unsigned long *bitmap2, int bits);
-@@ -171,13 +171,12 @@ static inline void bitmap_copy(unsigned 
- 	}
- }
+--- a/arch/x86/kernel/apic/ipi.c
++++ b/arch/x86/kernel/apic/ipi.c
+@@ -106,6 +106,9 @@ void default_send_IPI_mask_logical(const
+ 	unsigned long mask = cpumask_bits(cpumask)[0];
+ 	unsigned long flags;
  
--static inline void bitmap_and(unsigned long *dst, const unsigned long *src1,
-+static inline int bitmap_and(unsigned long *dst, const unsigned long *src1,
- 			const unsigned long *src2, int nbits)
- {
- 	if (small_const_nbits(nbits))
--		*dst = *src1 & *src2;
--	else
--		__bitmap_and(dst, src1, src2, nbits);
-+		return (*dst = *src1 & *src2) != 0;
-+	return __bitmap_and(dst, src1, src2, nbits);
- }
- 
- static inline void bitmap_or(unsigned long *dst, const unsigned long *src1,
-@@ -198,13 +197,12 @@ static inline void bitmap_xor(unsigned l
- 		__bitmap_xor(dst, src1, src2, nbits);
- }
- 
--static inline void bitmap_andnot(unsigned long *dst, const unsigned long *src1,
-+static inline int bitmap_andnot(unsigned long *dst, const unsigned long *src1,
- 			const unsigned long *src2, int nbits)
- {
- 	if (small_const_nbits(nbits))
--		*dst = *src1 & ~(*src2);
--	else
--		__bitmap_andnot(dst, src1, src2, nbits);
-+		return (*dst = *src1 & ~(*src2)) != 0;
-+	return __bitmap_andnot(dst, src1, src2, nbits);
- }
- 
- static inline void bitmap_complement(unsigned long *dst, const unsigned long *src,
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -43,10 +43,10 @@
-  * int cpu_isset(cpu, mask)		true iff bit 'cpu' set in mask
-  * int cpu_test_and_set(cpu, mask)	test and set bit 'cpu' in mask
-  *
-- * void cpus_and(dst, src1, src2)	dst = src1 & src2  [intersection]
-+ * int cpus_and(dst, src1, src2)	dst = src1 & src2  [intersection]
-  * void cpus_or(dst, src1, src2)	dst = src1 | src2  [union]
-  * void cpus_xor(dst, src1, src2)	dst = src1 ^ src2
-- * void cpus_andnot(dst, src1, src2)	dst = src1 & ~src2
-+ * int cpus_andnot(dst, src1, src2)	dst = src1 & ~src2
-  * void cpus_complement(dst, src)	dst = ~src
-  *
-  * int cpus_equal(mask1, mask2)		Does mask1 == mask2?
-@@ -179,10 +179,10 @@ static inline int __cpu_test_and_set(int
- }
- 
- #define cpus_and(dst, src1, src2) __cpus_and(&(dst), &(src1), &(src2), NR_CPUS)
--static inline void __cpus_and(cpumask_t *dstp, const cpumask_t *src1p,
-+static inline int __cpus_and(cpumask_t *dstp, const cpumask_t *src1p,
- 					const cpumask_t *src2p, int nbits)
- {
--	bitmap_and(dstp->bits, src1p->bits, src2p->bits, nbits);
-+	return bitmap_and(dstp->bits, src1p->bits, src2p->bits, nbits);
- }
- 
- #define cpus_or(dst, src1, src2) __cpus_or(&(dst), &(src1), &(src2), NR_CPUS)
-@@ -201,10 +201,10 @@ static inline void __cpus_xor(cpumask_t 
- 
- #define cpus_andnot(dst, src1, src2) \
- 				__cpus_andnot(&(dst), &(src1), &(src2), NR_CPUS)
--static inline void __cpus_andnot(cpumask_t *dstp, const cpumask_t *src1p,
-+static inline int __cpus_andnot(cpumask_t *dstp, const cpumask_t *src1p,
- 					const cpumask_t *src2p, int nbits)
- {
--	bitmap_andnot(dstp->bits, src1p->bits, src2p->bits, nbits);
-+	return bitmap_andnot(dstp->bits, src1p->bits, src2p->bits, nbits);
- }
- 
- #define cpus_complement(dst, src) __cpus_complement(&(dst), &(src), NR_CPUS)
-@@ -738,11 +738,11 @@ static inline void cpumask_clear(struct 
-  * @src1p: the first input
-  * @src2p: the second input
-  */
--static inline void cpumask_and(struct cpumask *dstp,
-+static inline int cpumask_and(struct cpumask *dstp,
- 			       const struct cpumask *src1p,
- 			       const struct cpumask *src2p)
- {
--	bitmap_and(cpumask_bits(dstp), cpumask_bits(src1p),
-+	return bitmap_and(cpumask_bits(dstp), cpumask_bits(src1p),
- 				       cpumask_bits(src2p), nr_cpumask_bits);
- }
- 
-@@ -779,11 +779,11 @@ static inline void cpumask_xor(struct cp
-  * @src1p: the first input
-  * @src2p: the second input
-  */
--static inline void cpumask_andnot(struct cpumask *dstp,
-+static inline int cpumask_andnot(struct cpumask *dstp,
- 				  const struct cpumask *src1p,
- 				  const struct cpumask *src2p)
- {
--	bitmap_andnot(cpumask_bits(dstp), cpumask_bits(src1p),
-+	return bitmap_andnot(cpumask_bits(dstp), cpumask_bits(src1p),
- 					  cpumask_bits(src2p), nr_cpumask_bits);
- }
- 
---- a/lib/bitmap.c
-+++ b/lib/bitmap.c
-@@ -179,14 +179,16 @@ void __bitmap_shift_left(unsigned long *
- }
- EXPORT_SYMBOL(__bitmap_shift_left);
- 
--void __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
-+int __bitmap_and(unsigned long *dst, const unsigned long *bitmap1,
- 				const unsigned long *bitmap2, int bits)
- {
- 	int k;
- 	int nr = BITS_TO_LONGS(bits);
-+	unsigned long result = 0;
- 
- 	for (k = 0; k < nr; k++)
--		dst[k] = bitmap1[k] & bitmap2[k];
-+		result |= (dst[k] = bitmap1[k] & bitmap2[k]);
-+	return result != 0;
- }
- EXPORT_SYMBOL(__bitmap_and);
- 
-@@ -212,14 +214,16 @@ void __bitmap_xor(unsigned long *dst, co
- }
- EXPORT_SYMBOL(__bitmap_xor);
- 
--void __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
-+int __bitmap_andnot(unsigned long *dst, const unsigned long *bitmap1,
- 				const unsigned long *bitmap2, int bits)
- {
- 	int k;
- 	int nr = BITS_TO_LONGS(bits);
-+	unsigned long result = 0;
- 
- 	for (k = 0; k < nr; k++)
--		dst[k] = bitmap1[k] & ~bitmap2[k];
-+		result |= (dst[k] = bitmap1[k] & ~bitmap2[k]);
-+	return result != 0;
- }
- EXPORT_SYMBOL(__bitmap_andnot);
- 
++	if (WARN_ONCE(!mask, "empty IPI mask"))
++		return;
++
+ 	local_irq_save(flags);
+ 	WARN_ON(mask & ~cpumask_bits(cpu_online_mask)[0]);
+ 	__default_send_IPI_dest_field(mask, vector, apic->dest_logical);
 
 
