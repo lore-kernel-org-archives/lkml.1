@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964963AbZIEA2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964946AbZIEA11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964963AbZIEA2r (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934674AbZIEA2C
+	id S964946AbZIEA11 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964927AbZIEA1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:28:02 -0400
-Received: from kroah.org ([198.145.64.141]:42231 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:27:25 -0400
+Received: from kroah.org ([198.145.64.141]:42258 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934643AbZIEAVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:21:13 -0400
+	id S934649AbZIEAVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:21:15 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:55 2009
-Message-Id: <20090905001454.892105532@mini.kroah.org>
+Message-Id: <20090905001455.060330272@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:14:24 -0700
+Date: Fri, 04 Sep 2009 17:14:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Sunil Mushran <sunil.mushran@oracle.com>,
-       Joel Becker <joel.becker@oracle.com>
-Subject: [patch 49/71] ocfs2: Initialize the cluster were writing to in a non-sparse extend
+       Frans Pop <elendil@planet.nl>, Zhang Rui <rui.zhang@intel.com>,
+       Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 50/71] ACPI processor: force throttling state when BIOS returns incorrect value
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=ocfs2-initialize-the-cluster-we-re-writing-to-in-a-non-sparse-extend.patch
+Content-Disposition: inline; filename=acpi-processor-force-throttling-state-when-bios-returns-incorrect-value.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,195 +31,206 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Sunil Mushran <sunil.mushran@oracle.com>
+From: Frans Pop <elendil@planet.nl>
 
-commit e7432675f8ca868a4af365759a8d4c3779a3d922 upstream.
+commit 2a908002c7b1b666616103e9df2419b38d7c6f1f upstream.
 
-In a non-sparse extend, we correctly allocate (and zero) the clusters between
-the old_i_size and pos, but we don't zero the portions of the cluster we're
-writing to outside of pos<->len.
+If the BIOS reports an invalid throttling state (which seems to be
+fairly common after system boot), a reset is done to state T0.
+Because of a check in acpi_processor_get_throttling_ptc(), the reset
+never actually gets executed, which results in the error reoccurring
+on every access of for example /proc/acpi/processor/CPU0/throttling.
 
-It handles clustersize > pagesize and blocksize < pagesize.
+Add a 'force' option to acpi_processor_set_throttling() to ensure
+the reset really takes effect.
 
-[Cleaned up by Joel Becker.]
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13389
 
-Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
-Signed-off-by: Joel Becker <joel.becker@oracle.com>
+This patch, together with the next one, fixes a regression introduced in
+2.6.30, listed on the regression list. They have been available for 2.5
+months now in bugzilla, but have not been picked up, despite various
+reminders and without any reason given.
+
+Google shows that numerous people are hitting this issue. The issue is in
+itself relatively minor, but the bug in the code is clear.
+
+The patches have been in all my kernels and today testing has shown that
+throttling works correctly with the patches applied when the system
+overheats (http://bugzilla.kernel.org/show_bug.cgi?id=13918#c14).
+
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Acked-by: Zhang Rui <rui.zhang@intel.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/ocfs2/aops.c |   66 +++++++++++++++++++++++++++++++++++++++-----------------
- 1 file changed, 47 insertions(+), 19 deletions(-)
+ drivers/acpi/processor_thermal.c    |    6 +++---
+ drivers/acpi/processor_throttling.c |   26 ++++++++++++++------------
+ include/acpi/processor.h            |    5 +++--
+ 3 files changed, 20 insertions(+), 17 deletions(-)
 
---- a/fs/ocfs2/aops.c
-+++ b/fs/ocfs2/aops.c
-@@ -894,18 +894,17 @@ struct ocfs2_write_cluster_desc {
- 	 */
- 	unsigned	c_new;
- 	unsigned	c_unwritten;
-+	unsigned	c_needs_zero;
- };
+--- a/drivers/acpi/processor_thermal.c
++++ b/drivers/acpi/processor_thermal.c
+@@ -66,7 +66,7 @@ static int acpi_processor_apply_limit(st
+ 		if (pr->limit.thermal.tx > tx)
+ 			tx = pr->limit.thermal.tx;
  
--static inline int ocfs2_should_zero_cluster(struct ocfs2_write_cluster_desc *d)
--{
--	return d->c_new || d->c_unwritten;
--}
--
- struct ocfs2_write_ctxt {
- 	/* Logical cluster position / len of write */
- 	u32				w_cpos;
- 	u32				w_clen;
- 
-+	/* First cluster allocated in a nonsparse extend */
-+	u32				w_first_new_cpos;
-+
- 	struct ocfs2_write_cluster_desc	w_desc[OCFS2_MAX_CLUSTERS_PER_PAGE];
- 
- 	/*
-@@ -983,6 +982,7 @@ static int ocfs2_alloc_write_ctxt(struct
- 		return -ENOMEM;
- 
- 	wc->w_cpos = pos >> osb->s_clustersize_bits;
-+	wc->w_first_new_cpos = UINT_MAX;
- 	cend = (pos + len - 1) >> osb->s_clustersize_bits;
- 	wc->w_clen = cend - wc->w_cpos + 1;
- 	get_bh(di_bh);
-@@ -1217,20 +1217,18 @@ out:
-  */
- static int ocfs2_write_cluster(struct address_space *mapping,
- 			       u32 phys, unsigned int unwritten,
-+			       unsigned int should_zero,
- 			       struct ocfs2_alloc_context *data_ac,
- 			       struct ocfs2_alloc_context *meta_ac,
- 			       struct ocfs2_write_ctxt *wc, u32 cpos,
- 			       loff_t user_pos, unsigned user_len)
- {
--	int ret, i, new, should_zero = 0;
-+	int ret, i, new;
- 	u64 v_blkno, p_blkno;
- 	struct inode *inode = mapping->host;
- 	struct ocfs2_extent_tree et;
- 
- 	new = phys == 0 ? 1 : 0;
--	if (new || unwritten)
--		should_zero = 1;
--
- 	if (new) {
- 		u32 tmp_pos;
- 
-@@ -1341,7 +1339,9 @@ static int ocfs2_write_cluster_by_desc(s
- 			local_len = osb->s_clustersize - cluster_off;
- 
- 		ret = ocfs2_write_cluster(mapping, desc->c_phys,
--					  desc->c_unwritten, data_ac, meta_ac,
-+					  desc->c_unwritten,
-+					  desc->c_needs_zero,
-+					  data_ac, meta_ac,
- 					  wc, desc->c_cpos, pos, local_len);
- 		if (ret) {
- 			mlog_errno(ret);
-@@ -1391,14 +1391,14 @@ static void ocfs2_set_target_boundaries(
- 		 * newly allocated cluster.
- 		 */
- 		desc = &wc->w_desc[0];
--		if (ocfs2_should_zero_cluster(desc))
-+		if (desc->c_needs_zero)
- 			ocfs2_figure_cluster_boundaries(osb,
- 							desc->c_cpos,
- 							&wc->w_target_from,
- 							NULL);
- 
- 		desc = &wc->w_desc[wc->w_clen - 1];
--		if (ocfs2_should_zero_cluster(desc))
-+		if (desc->c_needs_zero)
- 			ocfs2_figure_cluster_boundaries(osb,
- 							desc->c_cpos,
- 							NULL,
-@@ -1466,13 +1466,28 @@ static int ocfs2_populate_write_desc(str
- 			phys++;
- 		}
- 
-+		/*
-+		 * If w_first_new_cpos is < UINT_MAX, we have a non-sparse
-+		 * file that got extended.  w_first_new_cpos tells us
-+		 * where the newly allocated clusters are so we can
-+		 * zero them.
-+		 */
-+		if (desc->c_cpos >= wc->w_first_new_cpos) {
-+			BUG_ON(phys == 0);
-+			desc->c_needs_zero = 1;
-+		}
-+
- 		desc->c_phys = phys;
- 		if (phys == 0) {
- 			desc->c_new = 1;
-+			desc->c_needs_zero = 1;
- 			*clusters_to_alloc = *clusters_to_alloc + 1;
- 		}
--		if (ext_flags & OCFS2_EXT_UNWRITTEN)
-+
-+		if (ext_flags & OCFS2_EXT_UNWRITTEN) {
- 			desc->c_unwritten = 1;
-+			desc->c_needs_zero = 1;
-+		}
- 
- 		num_clusters--;
+-		result = acpi_processor_set_throttling(pr, tx);
++		result = acpi_processor_set_throttling(pr, tx, false);
+ 		if (result)
+ 			goto end;
  	}
-@@ -1632,10 +1647,13 @@ static int ocfs2_expand_nonsparse_inode(
- 	if (newsize <= i_size_read(inode))
- 		return 0;
+@@ -421,12 +421,12 @@ processor_set_cur_state(struct thermal_c
  
--	ret = ocfs2_extend_no_holes(inode, newsize, newsize - len);
-+	ret = ocfs2_extend_no_holes(inode, newsize, pos);
- 	if (ret)
- 		mlog_errno(ret);
+ 	if (state <= max_pstate) {
+ 		if (pr->flags.throttling && pr->throttling.state)
+-			result = acpi_processor_set_throttling(pr, 0);
++			result = acpi_processor_set_throttling(pr, 0, false);
+ 		cpufreq_set_cur_state(pr->id, state);
+ 	} else {
+ 		cpufreq_set_cur_state(pr->id, max_pstate);
+ 		result = acpi_processor_set_throttling(pr,
+-				state - max_pstate);
++				state - max_pstate, false);
+ 	}
+ 	return result;
+ }
+--- a/drivers/acpi/processor_throttling.c
++++ b/drivers/acpi/processor_throttling.c
+@@ -62,7 +62,8 @@ struct throttling_tstate {
+ #define THROTTLING_POSTCHANGE      (2)
  
-+	wc->w_first_new_cpos =
-+		ocfs2_clusters_for_bytes(inode->i_sb, i_size_read(inode));
-+
- 	return ret;
+ static int acpi_processor_get_throttling(struct acpi_processor *pr);
+-int acpi_processor_set_throttling(struct acpi_processor *pr, int state);
++int acpi_processor_set_throttling(struct acpi_processor *pr,
++						int state, bool force);
+ 
+ static int acpi_processor_update_tsd_coord(void)
+ {
+@@ -361,7 +362,7 @@ int acpi_processor_tstate_has_changed(st
+ 		 */
+ 		target_state = throttling_limit;
+ 	}
+-	return acpi_processor_set_throttling(pr, target_state);
++	return acpi_processor_set_throttling(pr, target_state, false);
  }
  
-@@ -1644,7 +1662,7 @@ int ocfs2_write_begin_nolock(struct addr
- 			     struct page **pagep, void **fsdata,
- 			     struct buffer_head *di_bh, struct page *mmap_page)
+ /*
+@@ -842,7 +843,7 @@ static int acpi_processor_get_throttling
+ 			ACPI_WARNING((AE_INFO,
+ 				"Invalid throttling state, reset"));
+ 			state = 0;
+-			ret = acpi_processor_set_throttling(pr, state);
++			ret = acpi_processor_set_throttling(pr, state, true);
+ 			if (ret)
+ 				return ret;
+ 		}
+@@ -915,7 +916,7 @@ static int acpi_processor_get_fadt_info(
+ }
+ 
+ static int acpi_processor_set_throttling_fadt(struct acpi_processor *pr,
+-					      int state)
++					      int state, bool force)
  {
--	int ret, credits = OCFS2_INODE_UPDATE_CREDITS;
-+	int ret, cluster_of_pages, credits = OCFS2_INODE_UPDATE_CREDITS;
- 	unsigned int clusters_to_alloc, extents_to_split;
- 	struct ocfs2_write_ctxt *wc;
- 	struct inode *inode = mapping->host;
-@@ -1722,8 +1740,19 @@ int ocfs2_write_begin_nolock(struct addr
+ 	u32 value = 0;
+ 	u32 duty_mask = 0;
+@@ -930,7 +931,7 @@ static int acpi_processor_set_throttling
+ 	if (!pr->flags.throttling)
+ 		return -ENODEV;
  
+-	if (state == pr->throttling.state)
++	if (!force && (state == pr->throttling.state))
+ 		return 0;
+ 
+ 	if (state < pr->throttling_platform_limit)
+@@ -988,7 +989,7 @@ static int acpi_processor_set_throttling
+ }
+ 
+ static int acpi_processor_set_throttling_ptc(struct acpi_processor *pr,
+-					     int state)
++					     int state, bool force)
+ {
+ 	int ret;
+ 	acpi_integer value;
+@@ -1002,7 +1003,7 @@ static int acpi_processor_set_throttling
+ 	if (!pr->flags.throttling)
+ 		return -ENODEV;
+ 
+-	if (state == pr->throttling.state)
++	if (!force && (state == pr->throttling.state))
+ 		return 0;
+ 
+ 	if (state < pr->throttling_platform_limit)
+@@ -1018,7 +1019,8 @@ static int acpi_processor_set_throttling
+ 	return 0;
+ }
+ 
+-int acpi_processor_set_throttling(struct acpi_processor *pr, int state)
++int acpi_processor_set_throttling(struct acpi_processor *pr,
++						int state, bool force)
+ {
+ 	cpumask_var_t saved_mask;
+ 	int ret = 0;
+@@ -1070,7 +1072,7 @@ int acpi_processor_set_throttling(struct
+ 		/* FIXME: use work_on_cpu() */
+ 		set_cpus_allowed_ptr(current, cpumask_of(pr->id));
+ 		ret = p_throttling->acpi_processor_set_throttling(pr,
+-						t_state.target_state);
++						t_state.target_state, force);
+ 	} else {
+ 		/*
+ 		 * When the T-state coordination is SW_ALL or HW_ALL,
+@@ -1103,7 +1105,7 @@ int acpi_processor_set_throttling(struct
+ 			set_cpus_allowed_ptr(current, cpumask_of(i));
+ 			ret = match_pr->throttling.
+ 				acpi_processor_set_throttling(
+-				match_pr, t_state.target_state);
++				match_pr, t_state.target_state, force);
+ 		}
  	}
+ 	/*
+@@ -1201,7 +1203,7 @@ int acpi_processor_get_throttling_info(s
+ 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
+ 				  "Disabling throttling (was T%d)\n",
+ 				  pr->throttling.state));
+-		result = acpi_processor_set_throttling(pr, 0);
++		result = acpi_processor_set_throttling(pr, 0, false);
+ 		if (result)
+ 			goto end;
+ 	}
+@@ -1307,7 +1309,7 @@ static ssize_t acpi_processor_write_thro
+ 	if (strcmp(tmpbuf, charp) != 0)
+ 		return -EINVAL;
  
--	ocfs2_set_target_boundaries(osb, wc, pos, len,
--				    clusters_to_alloc + extents_to_split);
-+	/*
-+	 * We have to zero sparse allocated clusters, unwritten extent clusters,
-+	 * and non-sparse clusters we just extended.  For non-sparse writes,
-+	 * we know zeros will only be needed in the first and/or last cluster.
-+	 */
-+	if (clusters_to_alloc || extents_to_split ||
-+	    wc->w_desc[0].c_needs_zero ||
-+	    wc->w_desc[wc->w_clen - 1].c_needs_zero)
-+		cluster_of_pages = 1;
-+	else
-+		cluster_of_pages = 0;
-+
-+	ocfs2_set_target_boundaries(osb, wc, pos, len, cluster_of_pages);
+-	result = acpi_processor_set_throttling(pr, state_val);
++	result = acpi_processor_set_throttling(pr, state_val, false);
+ 	if (result)
+ 		return result;
  
- 	handle = ocfs2_start_trans(osb, credits);
- 	if (IS_ERR(handle)) {
-@@ -1756,8 +1785,7 @@ int ocfs2_write_begin_nolock(struct addr
- 	 * extent.
- 	 */
- 	ret = ocfs2_grab_pages_for_write(mapping, wc, wc->w_cpos, pos,
--					 clusters_to_alloc + extents_to_split,
--					 mmap_page);
-+					 cluster_of_pages, mmap_page);
- 	if (ret) {
- 		mlog_errno(ret);
- 		goto out_quota;
+--- a/include/acpi/processor.h
++++ b/include/acpi/processor.h
+@@ -174,7 +174,7 @@ struct acpi_processor_throttling {
+ 	cpumask_var_t shared_cpu_map;
+ 	int (*acpi_processor_get_throttling) (struct acpi_processor * pr);
+ 	int (*acpi_processor_set_throttling) (struct acpi_processor * pr,
+-					      int state);
++					      int state, bool force);
+ 
+ 	u32 address;
+ 	u8 duty_offset;
+@@ -320,7 +320,8 @@ static inline int acpi_processor_ppc_has
+ /* in processor_throttling.c */
+ int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
+ int acpi_processor_get_throttling_info(struct acpi_processor *pr);
+-extern int acpi_processor_set_throttling(struct acpi_processor *pr, int state);
++extern int acpi_processor_set_throttling(struct acpi_processor *pr,
++					 int state, bool force);
+ extern const struct file_operations acpi_processor_throttling_fops;
+ extern void acpi_processor_throttling_init(void);
+ /* in processor_idle.c */
 
 
