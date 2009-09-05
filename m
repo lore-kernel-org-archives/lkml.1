@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750877AbZIEE0A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751176AbZIEFBa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750877AbZIEE0A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 00:26:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750769AbZIEEZ6
+	id S1751176AbZIEFBa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 01:01:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZIEFB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 00:25:58 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:21158 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750722AbZIEEZ5 (ORCPT
+	Sat, 5 Sep 2009 01:01:29 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:58696 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750729AbZIEFB2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 00:25:57 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: TEXT/PLAIN; charset=US-ASCII
-Date: Sat, 05 Sep 2009 00:25:37 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-X-X-Sender: nico@xanadu.home
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-ext4@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] ext2: fix unbalanced kmap()/kunmap()
-Message-id: <alpine.LFD.2.00.0909042343540.6044@xanadu.home>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sat, 5 Sep 2009 01:01:28 -0400
+X-Greylist: delayed 367 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Sep 2009 01:01:28 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:organization:message-id:references
+         :in-reply-to:x-mailer:mime-version:content-type
+         :content-transfer-encoding;
+        b=R2CzmwADQME6xYAfLNT9Xd3E5C933tLpEPQ5Rtkg8TuyDSy7vEe7DKxlHgfIwaPODv
+         7OxcG+kkvIwXXUt4y8s01PnKRXiZeR5q+hhscJX0RnY6Fk+r+THFb6nNkSwcU+NjiGMt
+         LJrV2QcKcUBjacgtvojgMRkjivQIsQ2safYQU=
+From: Grant Coady <gcoady.lk@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/71] 2.6.30.6-stable review
+Date: Sat, 05 Sep 2009 14:54:58 +1000
+Organization: scattered
+Message-ID: <5kr3a594kgt8fcdbl0e2tp8s6gltma4ljr@4ax.com>
+References: <20090905001824.GA18171@kroah.com>
+In-Reply-To: <20090905001824.GA18171@kroah.com>
+X-Mailer: Forte Agent 5.00/32.1171
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In ext2_rename(), dir_page is acquired through ext2_dotdot().  It is 
-then released through ext2_set_link() but only if old_dir != new_dir. 
-Failing that, the pkmap reference count is never decremented and the 
-page remains pinned forever.  Repeat that a couple times with highmem 
-pages and all pkmap slots get exhausted, and every further kmap() calls 
-end up stalling on the pkmap_map_wait queue at which point the whole 
-system comes to a halt.
+On Fri, 4 Sep 2009 17:18:24 -0700, you wrote:
 
-Signed-off-by: Nicolas Pitre <nico@marvell.com>
----
+>This is the start of the stable review cycle for the 2.6.30.6 release.
+>There are 71 patches in this series, all will be posted as a response to
+>this one.  If anyone has any issues with these being applied, please let
+>us know.  If anyone is a maintainer of the proper subsystem, and wants
+>to add a Signed-off-by: line to the patch, please respond with it.
+>
+>These patches are sent out with a number of different people on the Cc:
+>line.  If you wish to be a reviewer, please email stable@kernel.org to
+>add your name to the list.  If you want to be off the reviewer list,
+>also email us.
+>
+>Responses should be made by Sunday, Sept 6, 21:00:00 UTC.  Anything
+>Anything received after that time might be too late.
+>
+>The whole patch series can be found in one patch at:
+>	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.6-rc1.gz
 
-I ran into this issue while testing highmem on ARM by running the git 
-test suite in a loop with 3 parallel instances.  Using the right mv 
-sequence in a script would constitute a pretty simple recipe for a 
-local DoS on systems running ext2 and highmem.  No idea if ext3 or ext4 
-have the same issue.
+Hi Greg,
 
-diff --git a/fs/ext2/namei.c b/fs/ext2/namei.c
-index e1dedb0..78d9b92 100644
---- a/fs/ext2/namei.c
-+++ b/fs/ext2/namei.c
-@@ -362,6 +362,10 @@ static int ext2_rename (struct inode * old_dir, struct dentry * old_dentry,
- 	if (dir_de) {
- 		if (old_dir != new_dir)
- 			ext2_set_link(old_inode, dir_de, dir_page, new_dir, 0);
-+		else {
-+			kunmap(dir_page);
-+			page_cache_release(dir_page);
-+		}
- 		inode_dec_link_count(old_dir);
- 	}
- 	return 0;
+'Snot there yet.
+
+Grant.
+-- 
+http://bugsplatter.id.au
