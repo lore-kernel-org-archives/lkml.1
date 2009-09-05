@@ -1,31 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964783AbZIEAU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964795AbZIEAVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964783AbZIEAU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934606AbZIEAUy
+	id S964795AbZIEAVB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964788AbZIEAU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:20:54 -0400
-Received: from kroah.org ([198.145.64.141]:42091 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:20:57 -0400
+Received: from kroah.org ([198.145.64.141]:42098 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934561AbZIEAUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:39 -0400
+	id S934499AbZIEAUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:40 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:49 2009
-Message-Id: <20090905001449.445826398@mini.kroah.org>
+Message-Id: <20090905001449.605017170@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:48 -0700
+Date: Fri, 04 Sep 2009 17:13:49 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Catalin Marinas <catalin.marinas@arm.com>,
-       Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 13/71] tracing: Fix too large stack usage in do_one_initcall()
+       Clemens Ladisch <clemens@ladisch.de>, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 14/71] sound: pcm_lib: fix unsorted list constraint handling
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=tracing-fix-too-large-stack-usage-in-do_one_initcall.patch
+Content-Disposition: inline; filename=sound-pcm_lib-fix-unsorted-list-constraint-handling.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -34,183 +29,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ingo Molnar <mingo@elte.hu>
+From: Clemens Ladisch <clemens@ladisch.de>
 
-commit 4a683bf94b8a10e2bb0da07aec3ac0a55e5de61f upstream.
+commit b1ddaf681e362ed453182ddee1699d7487069a16 upstream.
 
-One of my testboxes triggered this nasty stack overflow crash
-during SCSI probing:
+snd_interval_list() expected a sorted list but did not document this, so
+there are drivers that give it an unsorted list.  To fix this, change
+the algorithm to work with any list.
 
-[    5.874004] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-[    5.875004] device: 'sda': device_add
-[    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
-[    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
-[    5.878004] *pde = 00000000
-[    5.878004] Thread overran stack, or stack corrupted
-[    5.878004] Oops: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
-[    5.878004] last sysfs file:
-[    5.878004]
-[    5.878004] Pid: 1, comm: swapper Not tainted (2.6.31-rc6-tip-01272-g9919e28-dirty #5685)
-[    5.878004] EIP: 0060:[<b1008321>] EFLAGS: 00010083 CPU: 0
-[    5.878004] EIP is at print_context_stack+0x81/0x110
-[    5.878004] EAX: cf8a3000 EBX: cf8a3fe4 ECX: 00000049 EDX: 00000000
-[    5.878004] ESI: b1cfce84 EDI: 00000000 EBP: cf8a3018 ESP: cf8a2ff4
-[    5.878004]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-[    5.878004] Process swapper (pid: 1, ti=cf8a2000 task=cf8a8000 task.ti=cf8a3000)
-[    5.878004] Stack:
-[    5.878004]  b1004867 fffff000 cf8a3ffc
-[    5.878004] Call Trace:
-[    5.878004]  [<b1004867>] ? kernel_thread_helper+0x7/0x10
-[    5.878004] BUG: unable to handle kernel NULL pointer dereference at 00000a0c
-[    5.878004] IP: [<b1008321>] print_context_stack+0x81/0x110
-[    5.878004] *pde = 00000000
-[    5.878004] Thread overran stack, or stack corrupted
-[    5.878004] Oops: 0000 [#2] PREEMPT SMP DEBUG_PAGEALLOC
+This fixes the "Slave PCM not usable" error with USB devices that have
+multiple alternate settings with sample rates in decreasing order, such
+as the Philips Askey VC010 WebCam.
 
-The oops did not reveal any more details about the real stack
-that we have and the system got into an infinite loop of
-recursive pagefaults.
+http://bugzilla.kernel.org/show_bug.cgi?id=14028
 
-So i booted with CONFIG_STACK_TRACER=y and the 'stacktrace' boot
-parameter. The box did not crash (timings/conditions probably
-changed a tiny bit to trigger the catastrophic crash), but the
-/debug/tracing/stack_trace file was rather revealing:
-
-        Depth    Size   Location    (72 entries)
-        -----    ----   --------
-  0)     3704      52   __change_page_attr+0xb8/0x290
-  1)     3652      24   __change_page_attr_set_clr+0x43/0x90
-  2)     3628      60   kernel_map_pages+0x108/0x120
-  3)     3568      40   prep_new_page+0x7d/0x130
-  4)     3528      84   get_page_from_freelist+0x106/0x420
-  5)     3444     116   __alloc_pages_nodemask+0xd7/0x550
-  6)     3328      36   allocate_slab+0xb1/0x100
-  7)     3292      36   new_slab+0x1c/0x160
-  8)     3256      36   __slab_alloc+0x133/0x2b0
-  9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
- 10)     3216     108   create_object+0x28/0x250
- 11)     3108      40   kmemleak_alloc+0x81/0xc0
- 12)     3068      24   kmem_cache_alloc+0x162/0x1d0
- 13)     3044      52   scsi_pool_alloc_command+0x29/0x70
- 14)     2992      20   scsi_host_alloc_command+0x22/0x70
- 15)     2972      24   __scsi_get_command+0x1b/0x90
- 16)     2948      28   scsi_get_command+0x35/0x90
- 17)     2920      24   scsi_setup_blk_pc_cmnd+0xd4/0x100
- 18)     2896     128   sd_prep_fn+0x332/0xa70
- 19)     2768      36   blk_peek_request+0xe7/0x1d0
- 20)     2732      56   scsi_request_fn+0x54/0x520
- 21)     2676      12   __generic_unplug_device+0x2b/0x40
- 22)     2664      24   blk_execute_rq_nowait+0x59/0x80
- 23)     2640     172   blk_execute_rq+0x6b/0xb0
- 24)     2468      32   scsi_execute+0xe0/0x140
- 25)     2436      64   scsi_execute_req+0x152/0x160
- 26)     2372      60   scsi_vpd_inquiry+0x6c/0x90
- 27)     2312      44   scsi_get_vpd_page+0x112/0x160
- 28)     2268      52   sd_revalidate_disk+0x1df/0x320
- 29)     2216      92   rescan_partitions+0x98/0x330
- 30)     2124      52   __blkdev_get+0x309/0x350
- 31)     2072       8   blkdev_get+0xf/0x20
- 32)     2064      44   register_disk+0xff/0x120
- 33)     2020      36   add_disk+0x6e/0xb0
- 34)     1984      44   sd_probe_async+0xfb/0x1d0
- 35)     1940      44   __async_schedule+0xf4/0x1b0
- 36)     1896       8   async_schedule+0x12/0x20
- 37)     1888      60   sd_probe+0x305/0x360
- 38)     1828      44   really_probe+0x63/0x170
- 39)     1784      36   driver_probe_device+0x5d/0x60
- 40)     1748      16   __device_attach+0x49/0x50
- 41)     1732      32   bus_for_each_drv+0x5b/0x80
- 42)     1700      24   device_attach+0x6b/0x70
- 43)     1676      16   bus_attach_device+0x47/0x60
- 44)     1660      76   device_add+0x33d/0x400
- 45)     1584      52   scsi_sysfs_add_sdev+0x6a/0x2c0
- 46)     1532     108   scsi_add_lun+0x44b/0x460
- 47)     1424     116   scsi_probe_and_add_lun+0x182/0x4e0
- 48)     1308      36   __scsi_add_device+0xd9/0xe0
- 49)     1272      44   ata_scsi_scan_host+0x10b/0x190
- 50)     1228      24   async_port_probe+0x96/0xd0
- 51)     1204      44   __async_schedule+0xf4/0x1b0
- 52)     1160       8   async_schedule+0x12/0x20
- 53)     1152      48   ata_host_register+0x171/0x1d0
- 54)     1104      60   ata_pci_sff_activate_host+0xf3/0x230
- 55)     1044      44   ata_pci_sff_init_one+0xea/0x100
- 56)     1000      48   amd_init_one+0xb2/0x190
- 57)      952       8   local_pci_probe+0x13/0x20
- 58)      944      32   pci_device_probe+0x68/0x90
- 59)      912      44   really_probe+0x63/0x170
- 60)      868      36   driver_probe_device+0x5d/0x60
- 61)      832      20   __driver_attach+0x89/0xa0
- 62)      812      32   bus_for_each_dev+0x5b/0x80
- 63)      780      12   driver_attach+0x1e/0x20
- 64)      768      72   bus_add_driver+0x14b/0x2d0
- 65)      696      36   driver_register+0x6e/0x150
- 66)      660      20   __pci_register_driver+0x53/0xc0
- 67)      640       8   amd_init+0x14/0x16
- 68)      632     572   do_one_initcall+0x2b/0x1d0
- 69)       60      12   do_basic_setup+0x56/0x6a
- 70)       48      20   kernel_init+0x84/0xce
- 71)       28      28   kernel_thread_helper+0x7/0x10
-
-There's a lot of fat functions on that stack trace, but
-the largest of all is do_one_initcall(). This is due to
-the boot trace entry variables being on the stack.
-
-Fixing this is relatively easy, initcalls are fundamentally
-serialized, so we can move the local variables to file scope.
-
-Note that this large stack footprint was present for a
-couple of months already - what pushed my system over
-the edge was the addition of kmemleak to the call-chain:
-
-  6)     3328      36   allocate_slab+0xb1/0x100
-  7)     3292      36   new_slab+0x1c/0x160
-  8)     3256      36   __slab_alloc+0x133/0x2b0
-  9)     3220       4   kmem_cache_alloc+0x1bb/0x1d0
- 10)     3216     108   create_object+0x28/0x250
- 11)     3108      40   kmemleak_alloc+0x81/0xc0
- 12)     3068      24   kmem_cache_alloc+0x162/0x1d0
- 13)     3044      52   scsi_pool_alloc_command+0x29/0x70
-
-This pushes the total to ~3800 bytes, only a tiny bit
-more was needed to corrupt the on-kernel-stack thread_info.
-
-The fix reduces the stack footprint from 572 bytes
-to 28 bytes.
-
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <srostedt@redhat.com>
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Reported-and-tested-by: Andrzej <adkadk@gmail.com>
+Signed-off-by: Clemens Ladisch <clemens@ladisch.de>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- init/main.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ sound/core/pcm_lib.c |   39 ++++++++-------------------------------
+ 1 file changed, 8 insertions(+), 31 deletions(-)
 
---- a/init/main.c
-+++ b/init/main.c
-@@ -702,13 +702,14 @@ asmlinkage void __init start_kernel(void
- int initcall_debug;
- core_param(initcall_debug, initcall_debug, bool, 0644);
- 
-+static char msgbuf[64];
-+static struct boot_trace_call call;
-+static struct boot_trace_ret ret;
-+
- int do_one_initcall(initcall_t fn)
+--- a/sound/core/pcm_lib.c
++++ b/sound/core/pcm_lib.c
+@@ -876,47 +876,24 @@ static int snd_interval_ratden(struct sn
+ int snd_interval_list(struct snd_interval *i, unsigned int count, unsigned int *list, unsigned int mask)
  {
- 	int count = preempt_count();
- 	ktime_t calltime, delta, rettime;
--	char msgbuf[64];
--	struct boot_trace_call call;
--	struct boot_trace_ret ret;
+         unsigned int k;
+-	int changed = 0;
++	struct snd_interval list_range;
  
- 	if (initcall_debug) {
- 		call.caller = task_pid_nr(current);
+ 	if (!count) {
+ 		i->empty = 1;
+ 		return -EINVAL;
+ 	}
++	snd_interval_any(&list_range);
++	list_range.min = UINT_MAX;
++	list_range.max = 0;
+         for (k = 0; k < count; k++) {
+ 		if (mask && !(mask & (1 << k)))
+ 			continue;
+-                if (i->min == list[k] && !i->openmin)
+-                        goto _l1;
+-                if (i->min < list[k]) {
+-                        i->min = list[k];
+-			i->openmin = 0;
+-			changed = 1;
+-                        goto _l1;
+-                }
+-        }
+-        i->empty = 1;
+-        return -EINVAL;
+- _l1:
+-        for (k = count; k-- > 0;) {
+-		if (mask && !(mask & (1 << k)))
++		if (!snd_interval_test(i, list[k]))
+ 			continue;
+-                if (i->max == list[k] && !i->openmax)
+-                        goto _l2;
+-                if (i->max > list[k]) {
+-                        i->max = list[k];
+-			i->openmax = 0;
+-			changed = 1;
+-                        goto _l2;
+-                }
++		list_range.min = min(list_range.min, list[k]);
++		list_range.max = max(list_range.max, list[k]);
+         }
+-        i->empty = 1;
+-        return -EINVAL;
+- _l2:
+-	if (snd_interval_checkempty(i)) {
+-		i->empty = 1;
+-		return -EINVAL;
+-	}
+-        return changed;
++	return snd_interval_refine(i, &list_range);
+ }
+ 
+ EXPORT_SYMBOL(snd_interval_list);
 
 
