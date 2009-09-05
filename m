@@ -1,81 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752063AbZIEOPQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752631AbZIERHO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752063AbZIEOPQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 10:15:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZIEOPP
+	id S1752631AbZIERHO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 13:07:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752536AbZIERHN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 10:15:15 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57923 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751900AbZIEOPO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 10:15:14 -0400
-Date: Sat, 5 Sep 2009 17:15:16 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cl@linux-foundation.org, eric.dumazet@gmail.com,
-       paulmck@linux.vnet.ibm.com, stable@kernel.org, zdenek.kabelac@gmail.com
-Subject: [GIT PULL] SLUB RCU fix for 2.6.31
-Message-ID: <alpine.DEB.2.00.0909051710360.30081@melkki.cs.helsinki.fi>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 5 Sep 2009 13:07:13 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:47953 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752338AbZIERHM (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 13:07:12 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Miklos Szeredi <mszeredi@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Johansen <jjohansen@suse.de>
+Cc: Matthew Wilcox <matthew@wil.cx>, Andreas Gruenbacher <agruen@suse.de>,
+       Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
+       linux-kernel@vger.kernel.org
+Subject: vfs-fix-d_path-for-unreachable-paths.patch
+From: Valdis.Kletnieks@vt.edu
 Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset=us-ascii
+Content-Type: multipart/signed; boundary="==_Exmh_1252160549_2442P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Sat, 05 Sep 2009 10:22:29 -0400
+Message-ID: <2818.1252160549@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+--==_Exmh_1252160549_2442P
+Content-Type: text/plain; charset="us-ascii"
+Content-Id: <2802.1252160530.1@turing-police.cc.vt.edu>
 
-Here's a last minute RCU fix for SLUB from Eric Dumazet. It's a bug fix to Paul
-McKenney's commit 7ed9f7e5db58c6e8c2b4b738a75d5dcd8e17aad5 ("fix
-RCU-callback-after-kmem_cache_destroy problem in sl[aou]b") that added the
-rcu_barrier() call too early in kmem_cache_destroy(). You can find full
-discussion of the bug here:
+This patch apparently does something resembling what it's supposed to - the
+first few lines of /proc/mounts now looks like:
 
-   http://thread.gmane.org/gmane.linux.kernel/876016/focus=876086
+% head -5 /proc/mounts
+rootfs (unreachable)/ rootfs rw 0 0
+/dev/root / ext3 rw,seclabel,noatime,nodiratime,user_xattr,acl,data=writeback,us
+rquota,grpquota 0 0
+/dev /dev tmpfs rw,seclabel,relatime,mode=755 0 0
+/proc /proc proc rw,relatime 0 0
+/sys /sys sysfs rw,relatime 0 0
 
-The bug can be triggered with "rmmod nf_conntrack", for example. I think 
-the fix is simple enough to be merged this late in the release cycle 
-but we can also defer the fix to 2.6.31.1 if you don't feel comfortable 
-with merging it now.
+The now-unreachable rootfs is the letftover initrd rootfs.
 
- 			Pekka
+The patch commentary notes:
 
-The following changes since commit 326ba5010a5429a5a528b268b36a5900d4ab0eba:
-   Linus Torvalds (1):
-         Linux 2.6.31-rc8
+> This patch addresses all these issues, by prefixing such unreachable paths
+> with "(unreachable)".  This isn't perfect since the returned path may
+> still be a valid _relative_ path, and applications may not check the
+> result of getcwd() for starting with a '/' before using it.
 
-are available in the git repository at:
+It turns out that some things don't check the contents of /proc/mounts for
+starting with a / before using it either:
 
-   ssh://master.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6 slab/urgent
+# /sbin/restorecon -v /etc/passwd
+Full path required for exclude: (unreachable)/.
 
-Eric Dumazet (1):
-       slub: Fix kmem_cache_destroy() with SLAB_DESTROY_BY_RCU
+And strace shows it's a read of /proc/mounts, not a getcwd() call:
 
-  mm/slub.c |    4 ++--
-  1 files changed, 2 insertions(+), 2 deletions(-)
+....
+open("/proc/self/task/11479/attr/current", O_RDONLY) = 3
+read(3, "staff_u:sysadm_r:setfiles_t:s0\0"..., 4095) = 31
+close(3)                                = 0
+uname({sys="Linux", node="turing-police.cc.vt.edu", ...}) = 0
+open("/proc/mounts", O_RDONLY)          = 3
+fstat(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+mmap(NULL, 4096, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fe
+9ce36a000
+read(3, "rootfs (unreachable)/ rootfs rw 0"..., 1024) = 1024
+write(2, "Full path required for exclude: ("..., 48) = 48
 
-diff --git a/mm/slub.c b/mm/slub.c
-index b9f1491..b627675 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2594,8 +2594,6 @@ static inline int kmem_cache_close(struct kmem_cache *s)
-   */
-  void kmem_cache_destroy(struct kmem_cache *s)
-  {
--	if (s->flags & SLAB_DESTROY_BY_RCU)
--		rcu_barrier();
-  	down_write(&slub_lock);
-  	s->refcount--;
-  	if (!s->refcount) {
-@@ -2606,6 +2604,8 @@ void kmem_cache_destroy(struct kmem_cache *s)
-  				"still has objects.\n", s->name, __func__);
-  			dump_stack();
-  		}
-+		if (s->flags & SLAB_DESTROY_BY_RCU)
-+			rcu_barrier();
-  		sysfs_slab_remove(s);
-  	} else
-  		up_write(&slub_lock);
+The added "(unreachable) text also gives /etc/rc0.d/S01halt indigestion,
+because it thinks it can do stuff like:
+
+awk '$2 !~ /\/(|dev|proc|selinux|sys)$/ && $1 !~ /^\/dev\/ram/ { print $2 }' \
+    /proc/mounts | sort -r | \
+  while read line; do
+    $UMOUNT -f $line
+done
+
+Somebody is buggy here, but I'm not sure who. The initrd for leaving a dangling
+reference, the patch for breaking /proc/mounts, or /sbin/restorecon and the
+shutdown script for being far too trusting of what the kernel tells it?
+
+
+--==_Exmh_1252160549_2442P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKonQlcC3lWbTT17ARAo6GAKCLayByTEBHIw1CB0mU+OnMkSpXVACgi/wR
+a+sKX3a9YFnKLFVUxRi2FxQ=
+=IWEf
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1252160549_2442P--
