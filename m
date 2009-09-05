@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934679AbZIEAX2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934637AbZIEAVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934679AbZIEAX2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:23:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964817AbZIEAVc
+	id S934637AbZIEAVj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964833AbZIEAVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:21:32 -0400
-Received: from kroah.org ([198.145.64.141]:42205 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:21:37 -0400
+Received: from kroah.org ([198.145.64.141]:42209 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934623AbZIEAVC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:21:02 -0400
+	id S934628AbZIEAVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:21:04 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:53 2009
-Message-Id: <20090905001453.124138246@mini.kroah.org>
+Message-Id: <20090905001453.218323397@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:14:12 -0700
+Date: Fri, 04 Sep 2009 17:14:13 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Tejun Heo <tj@kernel.org>, Jeff Garzik <jgarzik@redhat.com>
-Subject: [patch 37/71] libata: OCZ Vertex cant do HPA
+       Kashyap Desai <kashyap.desai@lsi.com>,
+       James Bottomley <James.Bottomley@suse.de>
+Subject: [patch 38/71] SCSI: mpt2sas: Introduced check for enclosure_handle to avoid crash
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=libata-ocz-vertex-can-t-do-hpa.patch
+Content-Disposition: inline; filename=scsi-mpt2sas-introduced-check-for-enclosure_handle-to-avoid-crash.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,38 +30,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Tejun Heo <tj@kernel.org>
+From: Kashyap, Desai <kashyap.desai@lsi.com>
 
-commit 7831387bda72af3059be48d39846d3eb6d8ce2f6 upstream.
+commit 15052c9e85bf0cdadcb69eb89623bf12bad8b4f8 upstream.
 
-OCZ Vertex SSD can't do HPA and not in a usual way.  It reports HPA,
-allows unlocking but then fails all IOs which fall in the unlocked
-area.  Quirk it so that HPA unlocking is not used for the device.
+Kernel panic is seen because of enclosure_handle received from FW is zero.
+Check is introduced before calling mpt2sas_config_get_enclosure_pg0.
 
-Reported by Daniel Perup in bnc#522414.
-
- https://bugzilla.novell.com/show_bug.cgi?id=522414
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Daniel Perup <probe@spray.se>
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+Signed-off-by: Kashyap Desai <kashyap.desai@lsi.com>
+Signed-off-by: James Bottomley <James.Bottomley@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/ata/libata-core.c |    3 +++
- 1 file changed, 3 insertions(+)
+ drivers/scsi/mpt2sas/mpt2sas_scsih.c |    7 +++----
+ 1 file changed, 3 insertions(+), 4 deletions(-)
 
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -4271,6 +4271,9 @@ static const struct ata_blacklist_entry 
- 	{ "WDC WD2500JD-00HBB0", "WD-WMAL71490727", ATA_HORKAGE_BROKEN_HPA },
- 	{ "MAXTOR 6L080L4",	"A93.0500",	ATA_HORKAGE_BROKEN_HPA },
+--- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
++++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
+@@ -3442,12 +3442,11 @@ _scsih_add_device(struct MPT2SAS_ADAPTER
+ 	sas_device->hidden_raid_component = is_pd;
  
-+	/* this one allows HPA unlocking but fails IOs on the area */
-+	{ "OCZ-VERTEX",		    "1.30",	ATA_HORKAGE_BROKEN_HPA },
-+
- 	/* Devices which report 1 sector over size HPA */
- 	{ "ST340823A",		NULL,		ATA_HORKAGE_HPA_SIZE, },
- 	{ "ST320413A",		NULL,		ATA_HORKAGE_HPA_SIZE, },
+ 	/* get enclosure_logical_id */
+-	if (!(mpt2sas_config_get_enclosure_pg0(ioc, &mpi_reply, &enclosure_pg0,
+-	   MPI2_SAS_ENCLOS_PGAD_FORM_HANDLE,
+-	   sas_device->enclosure_handle))) {
++	if (sas_device->enclosure_handle && !(mpt2sas_config_get_enclosure_pg0(
++	   ioc, &mpi_reply, &enclosure_pg0, MPI2_SAS_ENCLOS_PGAD_FORM_HANDLE,
++	   sas_device->enclosure_handle)))
+ 		sas_device->enclosure_logical_id =
+ 		    le64_to_cpu(enclosure_pg0.EnclosureLogicalID);
+-	}
+ 
+ 	/* get device name */
+ 	sas_device->device_name = le64_to_cpu(sas_device_pg0.DeviceName);
 
 
