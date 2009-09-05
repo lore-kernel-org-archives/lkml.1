@@ -1,72 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZIEJ5n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZIEKGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbZIEJ5n (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 05:57:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZIEJ5l
+	id S1757262AbZIEKGm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 06:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZIEKGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 05:57:41 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:59334 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751765AbZIEJ5k (ORCPT
+	Sat, 5 Sep 2009 06:06:41 -0400
+Received: from mail-yx0-f182.google.com ([209.85.210.182]:56119 "EHLO
+	mail-yx0-f182.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751111AbZIEKGk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 05:57:40 -0400
+	Sat, 5 Sep 2009 06:06:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition:in-reply-to
-         :user-agent;
-        b=o/XZf3/7GujpNmrfF2IcPrkc+dZ3cKFfkDFe49H4k4TUBaWG3hl6x3W4d/N7UQrqWW
-         XYFMwZHMaaSfVYW/sVRWeb6Nu90tWYNxLLZcasd3UgkqDv23laku27qc4/mPpZRer2n7
-         8FiXeLLcLeOHxJRVvECYLy/diBvNiRLl+tLLo=
-Date: Sat, 5 Sep 2009 11:57:36 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
-Cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/cpu] x86, msr: change msr-reg.o to obj-y, and export
- its symbols
-Message-ID: <20090905095736.GA5005@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@googlemail.com>,
-	mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-	tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-References: <20090904140834.GA15789@elte.hu>
- <tip-b19ae3999891cad21a3995c34d313dda5df014e2@git.kernel.org>
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=CKOOIYMucG2AGDCmZinDRk253bO6qCojUOysxsR/wVL6iVrTw7+dpleFJFq79QUyUu
+         iIdqHVHEMB2e6kNgsoPNczt9D1Z6JZOhxWg9f26ZVNKLB5x0ld2vCXUHshBq4yFLkML9
+         IEPbyD6LJ4mz2sUicLrpdnsq/2JqhASe9bUyw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <tip-b19ae3999891cad21a3995c34d313dda5df014e2@git.kernel.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <ce9ab5790908102329k73f66b5bgcdd8ac52d6631116@mail.gmail.com>
+References: <61339.192.168.10.89.1247226725.squirrel@dbdmail.itg.ti.com> 
+	<48097.192.168.10.89.1247232736.squirrel@dbdmail.itg.ti.com> 
+	<60361.192.168.10.89.1247482584.squirrel@dbdmail.itg.ti.com> 
+	<20090810162734.GH1938@atomide.com> <ce9ab5790908102245r28224bf5nfa2a1b22267767fe@mail.gmail.com> 
+	<4A810DE4.7030202@gmail.com> <ce9ab5790908102329k73f66b5bgcdd8ac52d6631116@mail.gmail.com>
+From: vimal singh <vimal.newwork@gmail.com>
+Date: Sat, 5 Sep 2009 15:36:21 +0530
+Message-ID: <ce9ab5790909050306m180e7c22g7bbdea7f7053d159@mail.gmail.com>
+Subject: Re: [PATCH-v3 1:2] [MTD][NAND]omap: Adding support for nand 
+	prefetch-read and post-write, in MPU mode.
+To: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Tony Lindgren <tony@atomide.com>, linux-omap@vger.kernel.org,
+       dedekind@infradead.org, linux-kernel@vger.kernel.org,
+       david-b@pacbell.net, linux-mtd@lists.infradead.org,
+       vimal singh <vimalsingh@ti.com>, dwmw2@infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04, 2009 at 05:06:47PM +0000, tip-bot for H. Peter Anvin wrote:
-> x86, msr: change msr-reg.o to obj-y, and export its symbols
-> 
-> Change msr-reg.o to obj-y (it will be included in virtually every
-> kernel since it is used by the initialization code for AMD processors)
+Hi David,
 
-Yeah, about that, I'm wondering whether a more fine grained
-Kconfig suboptions would be appropriate here. Currently,
-<arch/x86/kernel/cpu/{intel,amd}.c> are sprinkled with the
 
-if (c->x86 == XX) { apply quirks }
+On Tue, Aug 11, 2009 at 11:59 AM, vimal singh<vimal.newwork@gmail.com> wrote:
+> On Tue, Aug 11, 2009 at 11:51 AM, Artem Bityutskiy<dedekind1@gmail.com> wrote:
+>> On 08/11/2009 08:45 AM, vimal singh wrote:
+>>>
+>>> On Mon, Aug 10, 2009 at 9:57 PM, Tony Lindgren<tony@atomide.com>  wrote:
+>>>>
+>>>> * vimal singh<vimalsingh@ti.com>  [090713 13:56]:
+>>>>>
+>>>>> Patch updated for ' ioreadX / iowriteX and ioreadX_rep / iowriteX_rep'
+>>>>> as per
+>>>>> David Brownell's comment. I updated 'omap_(read/write)_buf16' fucntions
+>>>>> also
+>>>>> for this.
+>>>>>
+>>>>> -vimal
+>>>>>
+>>>>> This patch adds prefetch support to access nand flash in mpu mode.
+>>>>> This patch also adds 8-bit nand support (omap_read/write_buf8).
+>>>>> Prefetch can be used for both 8- and 16-bit devices.
+>>>>>
+>>>>> Signed-off-by: Vimal Singh<vimalsingh@ti.com>
+>>>>
+>>>> Sorry for the delay. I've looked at the GPMC part, and that now looks OK
+>>>> to me. So I'm OK for this to get integrated via the MTD list.
+>>>>
+>>>> Acked-by: Tony Lindgren<tony@atomide.com>
+>>>>
+>>>
+>>> Can you give your ack to below patch too?
+>>>
+>>> http://lists.infradead.org/pipermail/linux-mtd/2009-July/026373.html
+>>
+>> I've picked up both of your patches, please, check:
+>> http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/33f48f597315842f39427ee4261cbf82a9afeaf3
+>> http://git.infradead.org/users/dedekind/l2-mtd-2.6.git/commit/b67d52c91b26e97f981f2c292619d31667d5b272
+>>
+>
+Is there any chance for these patches to get merged in this merge
+window? These have been waiting for long time.
 
-thingies and we could put those into their own files which are
-built/linked only when enabled. Before that, you would have chosen
-the CPU vendor and the CPU family thus pulling only the related
-quirks/fixes. Distros will of course need to enable all of them. Then,
-all those different families quirks should be iterated over in a manner
-similar to the initcall mechanism.
+-Vimal
 
-Anyways, just an idea - it could be dumb overengineering but on a
-first glance it will organize/simplify the quirks code, reduce kernel
-image proper, get rid of Kconfig options like CONFIG_X86_F00F_BUG,
-vendor-specific cpuinfo_x86 members like fdiv_bug, f00f_bug, coma_bug,
-and [add another good reason here :)].
-
-Comments?
-
--- 
-Regards/Gruss,
-    Boris.
+> Thanks Artem.
+>
+>> --
+>> Best Regards,
+>> Artem Bityutskiy (Артём Битюцкий)
+>>
+>
