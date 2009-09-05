@@ -1,79 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752910AbZIESTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752951AbZIES4E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752910AbZIESTy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 14:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZIESTw
+	id S1752951AbZIES4E (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 14:56:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZIES4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 14:19:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:57946 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbZIESTw (ORCPT
+	Sat, 5 Sep 2009 14:56:03 -0400
+Received: from mail.parknet.ad.jp ([210.171.162.6]:34655 "EHLO
+	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbZIES4B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 14:19:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HMIeBXrZR+ScdfIUYbIcfSQSJ4wVg+hog2OjbdrDpuDZRdv3rgiZLS3AMoyk2jmrb8
-         EFPE/ksQ5yXO5NDwE9uBAXBFQUoj+xvkwNm+rj9I03sauhmnX9N/6FDf8KRrj1aqsMqB
-         NCauNrJtnPO2NxC8SBQDFJKqYJE+mscHEsiAs=
-Message-ID: <4AA2ABC2.1060803@gmail.com>
-Date: Sat, 05 Sep 2009 20:19:46 +0200
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Sat, 5 Sep 2009 14:56:01 -0400
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19099.52899.620345.326521@pilspetsen.it.uu.se>
+	<19100.31254.666066.755541@pilspetsen.it.uu.se>
+	<200909012042.59856.rjw@sisk.pl>
+	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+	<19105.5352.28380.230615@pilspetsen.it.uu.se>
+	<alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org>
+	<87pra55nsr.fsf@devron.myhome.or.jp>
+	<alpine.LFD.2.00.0909051059360.6727@eeepc.linux-foundation.org>
+Date: Sun, 06 Sep 2009 03:56:00 +0900
+In-Reply-To: <alpine.LFD.2.00.0909051059360.6727@eeepc.linux-foundation.org>
+	(Linus Torvalds's message of "Sat, 5 Sep 2009 11:06:25 -0700 (PDT)")
+Message-ID: <87eiql5igv.fsf@devron.myhome.or.jp>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
 MIME-Version: 1.0
-To: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: CONFIG_NO_HZ could cause software timeouts
-References: <4A9F9F64.5080305@aimvalley.nl>
-In-Reply-To: <4A9F9F64.5080305@aimvalley.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Norbert van Bolhuis wrote:
-> 
-> The problem occurs when e.g. drivers use time_after(jiffes, timeout).
-> 
-> CONFIG_NO_HZ could make jiffies advance by more than 1.
-> This is done by:
-> tick_nohz_update_jiffies->tick_do_update_jiffies64->do_timer
-> 
-> If drivers use a timeout value of jiffies+1,
-> "time_after(jiffies, timeout)" will be true after 1 interrupt
-> (given that it advances jiffies by at least 2).
-> 
-> This is exactly what happens in cfi_cmdset_0002.c:do_write_buffer
-> for our case (Powerpc MPC8313, linux-2.6.28, CONFIG_HZ=250,
-> CONFIG_NO_HZ=y).
-> 
-> do_write_buffer does the following:
->  unsigned long uWriteTimeout = ( HZ / 1000 ) + 1;
->  ...
->  timeo = jiffies + uWriteTimeout;
->  ...
->  for (;;) {
->   ...
->   if (time_after(jiffies, timeo) && !chip_ready(map, adr))
->    break;
->   if (chip_ready(map, adr)) {
->    xip_enable(map, chip, adr);
->    goto op_done;
->   }
->   UDELAY(map, chip, adr, 1);
->  }
->  /* software timeout */
->  ret = -EIO;
-> opdone:
->  ...
-> 
-> I've seen a few software timeouts after the for-loop
-> looped only 13 times (= 13 us delay, i.s.o. the expected 1 ms). Typically
+Linus Torvalds <torvalds@linux-foundation.org> writes:
 
-Are you sure? UDELAY may call schedule(), which can return to this thread
-after much longer time than 13us...
+> On Sun, 6 Sep 2009, OGAWA Hirofumi wrote:
+>> 
+>> This is not meaning to object to your patch though, I think we would be
+>> good to fix pty_space(), not leaving as wrong. With fix it, I guess we
+>> don't get strange behavior in the near of buffer limit.
+>
+> I'd actually rather not make that function any more complicated.
+>
+> Just make the rules be very simple:
+>
+>  - the pty layer has ~64kB buffering, and if you just blindly do a 
+>    ->write() op, you can see how many characters you were able to write.
+>
+>  - before doing a ->write() op, you can ask how many characters you are 
+>    guaranteed to be able to write by doing a "->write_room()" call.
+>
+> ..and then the bug literally was just that "pty_write()" was confused, and 
+> thought that it should do that "write_room()" thing, which it really 
+> shouldn't ever have done.
+>
+> So I really think that the true fix is to just remove the code from 
+> pty_write(), and not do anything more complicated. I'll also commit the 
+> change to write '\r\n' as one single string, because quite frankly, it's 
+> just stupid to do it as two characters, but at that point it's just a 
+> cleanup.
 
+But, current write_room() returns almost all wrong value. For example,
+if we have the 4kb preallocated buffer in some state and used it,
+->memory_used will be 4kb even if we are using only a byte actually.
 
-Marcin
+I thought it's strange/wrong, even if we removed the pty_space() in
+pty_write().
+
+>> Also, it seems the non-n_tty path doesn't use tty_write_room() check,
+>> and instead it just try to write and check written bytes which returned
+>> by tty->ops->write().
+>
+> .. and I think that's fine. I think write_room() should be used sparingly, 
+> and only by code that cares about being able to fit at least 'n' 
+> characters in the tty buffers. In fact, I think even n_tty would likely in 
+> general be better off without it (and just check the return value), but 
+> because of the stateful character translation (that doesn't actually keep 
+> any state around, it just wants to expand things as it goes along), and 
+> because of historical reasons, we'll just keep it using write_room.
+
+As a bit long term solution, I agree. Current code seems to have fragile
+buffer handling about echoes, \n etc. And yes, perhaps, to avoid
+write_room() is clean way.
+
+But, I felt 64kb (pty_write) vs 8kb (pty_write_room) sounds strange
+currently.
+
+Thanks.
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
