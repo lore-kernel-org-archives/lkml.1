@@ -1,137 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753039AbZIETe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbZIETsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753039AbZIETe6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 15:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752712AbZIETe4
+	id S1753209AbZIETsQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 15:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753117AbZIETsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 15:34:56 -0400
-Received: from mga11.intel.com ([192.55.52.93]:40850 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751622AbZIETe4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 15:34:56 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,338,1249282800"; 
-   d="scan'208";a="724205271"
-Subject: [PATCH] at_hdmac: implement a private tx_list
-To: linux-kernel@vger.kernel.org
-From: Dan Williams <dan.j.williams@intel.com>
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
-Date: Sat, 05 Sep 2009 12:34:58 -0700
-Message-ID: <20090905193355.18821.45429.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: StGit/0.14.3.289.g7daff
+	Sat, 5 Sep 2009 15:48:10 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:49746 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753107AbZIETsG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 15:48:06 -0400
+From: Christian =?utf-8?q?Kr=C3=A4mer?= <christian@kraemer-eu.de>
+Organization: Privat
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
+Date: Sat, 5 Sep 2009 21:46:10 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-pcmcia@lists.infradead.org, Frans Pop <elendil@planet.nl>,
+       Peter Stuge <peter@stuge.se>, linux-kernel@vger.kernel.org
+References: <200909021856.29565.christian@kraemer-eu.de> <200909042239.17180.christian@kraemer-eu.de> <20090905143022.GD3171@pengutronix.de>
+In-Reply-To: <20090905143022.GD3171@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Message-Id: <200909052146.10779.christian@kraemer-eu.de>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX197nsjO1tw/F8hXwzL8BvpbWvXrL3TDX94I+is
+ rQAPapuxoHi4pW2lc25OE3qQHWR8ZmPrFEHzBYE13FHhE/Fr8j
+ c+he9r1kjvLlpzoYY+HYVKuFw1celCP
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Drop at_hdmac's use of tx_list from struct dma_async_tx_descriptor in
-preparation for removal of this field.
+On Saturday 05 September 2009 16:30:22 Wolfram Sang wrote:
+> (As a first note: The dmesg output suffers from linebreaks. Please make
+> sure your MUA doesn't split up the logs.)
+>
+> > Even I installed gentoo with the 2.6.30.5 downloaded from kernel.org.
+>
+> Good. The sysfs-errors went away, too.
+>
+> > [    0.000000] IBM Thinkpad 600 Series 2645 detected: force use of
+> > acpi=noirq
+>
+> Uh oh. Which BIOS version do you have?
 
-Cc: Nicolas Ferre <nicolas.ferre@atmel.com>
-Signed-off-by: Dan Williams <dan.j.williams@intel.com>
----
+The configuration interface displays: IBET41WW, 05/12/99.
+I know this isn't the newest version, but I don't have a floppy device for the
+laptop. I'll try to brun a dos cd with el torito folppy emulation, maybe i can
+upgrade it this way.
 
-One more tx_list push down patch for 2.6.32.
+> > [    1.179419] ACPI: ACPI Dock Station Driver: 1 docks/bays found
+>
+> Well, looks like you are using a docking station. Does it work without the
+> docking station? What is its name? There seem to be more problems with
+> those, for example:
+>
+> http://bugzilla.kernel.org/show_bug.cgi?id=10805
 
-Thanks,
-Dan
+Strange, I'dont use a docking station. I have not even got one.
 
- drivers/dma/at_hdmac.c      |   17 +++++++++--------
- drivers/dma/at_hdmac_regs.h |    1 +
- 2 files changed, 10 insertions(+), 8 deletions(-)
+> > [    1.183173] * Found PM-Timer Bug on the chipset. Due to workarounds
+> > for a bug, [    1.183191] * this clock source is slow. Consider trying
+> > other clock sources
+>
+> Wow, there seem to be quite some issues with this laptop...
 
-diff --git a/drivers/dma/at_hdmac.c b/drivers/dma/at_hdmac.c
-index 9a1e5fb..da4e8b7 100644
---- a/drivers/dma/at_hdmac.c
-+++ b/drivers/dma/at_hdmac.c
-@@ -87,6 +87,7 @@ static struct at_desc *atc_alloc_descriptor(struct dma_chan *chan,
- 	desc = dma_pool_alloc(atdma->dma_desc_pool, gfp_flags, &phys);
- 	if (desc) {
- 		memset(desc, 0, sizeof(struct at_desc));
-+		INIT_LIST_HEAD(&desc->tx_list);
- 		dma_async_tx_descriptor_init(&desc->txd, chan);
- 		/* txd.flags will be overwritten in prep functions */
- 		desc->txd.flags = DMA_CTRL_ACK;
-@@ -150,11 +151,11 @@ static void atc_desc_put(struct at_dma_chan *atchan, struct at_desc *desc)
- 		struct at_desc *child;
- 
- 		spin_lock_bh(&atchan->lock);
--		list_for_each_entry(child, &desc->txd.tx_list, desc_node)
-+		list_for_each_entry(child, &desc->tx_list, desc_node)
- 			dev_vdbg(chan2dev(&atchan->chan_common),
- 					"moving child desc %p to freelist\n",
- 					child);
--		list_splice_init(&desc->txd.tx_list, &atchan->free_list);
-+		list_splice_init(&desc->tx_list, &atchan->free_list);
- 		dev_vdbg(chan2dev(&atchan->chan_common),
- 			 "moving desc %p to freelist\n", desc);
- 		list_add(&desc->desc_node, &atchan->free_list);
-@@ -247,7 +248,7 @@ atc_chain_complete(struct at_dma_chan *atchan, struct at_desc *desc)
- 	param = txd->callback_param;
- 
- 	/* move children to free_list */
--	list_splice_init(&txd->tx_list, &atchan->free_list);
-+	list_splice_init(&desc->tx_list, &atchan->free_list);
- 	/* move myself to free_list */
- 	list_move(&desc->desc_node, &atchan->free_list);
- 
-@@ -334,7 +335,7 @@ static void atc_cleanup_descriptors(struct at_dma_chan *atchan)
- 			/* This one is currently in progress */
- 			return;
- 
--		list_for_each_entry(child, &desc->txd.tx_list, desc_node)
-+		list_for_each_entry(child, &desc->tx_list, desc_node)
- 			if (!(child->lli.ctrla & ATC_DONE))
- 				/* Currently in progress */
- 				return;
-@@ -407,7 +408,7 @@ static void atc_handle_error(struct at_dma_chan *atchan)
- 	dev_crit(chan2dev(&atchan->chan_common),
- 			"  cookie: %d\n", bad_desc->txd.cookie);
- 	atc_dump_lli(atchan, &bad_desc->lli);
--	list_for_each_entry(child, &bad_desc->txd.tx_list, desc_node)
-+	list_for_each_entry(child, &bad_desc->tx_list, desc_node)
- 		atc_dump_lli(atchan, &child->lli);
- 
- 	/* Pretend the descriptor completed successfully */
-@@ -587,7 +588,7 @@ atc_prep_dma_memcpy(struct dma_chan *chan, dma_addr_t dest, dma_addr_t src,
- 			prev->lli.dscr = desc->txd.phys;
- 			/* insert the link descriptor to the LD ring */
- 			list_add_tail(&desc->desc_node,
--					&first->txd.tx_list);
-+					&first->tx_list);
- 		}
- 		prev = desc;
- 	}
-@@ -687,7 +688,7 @@ atc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 				prev->lli.dscr = desc->txd.phys;
- 				/* insert the link descriptor to the LD ring */
- 				list_add_tail(&desc->desc_node,
--						&first->txd.tx_list);
-+						&first->tx_list);
- 			}
- 			prev = desc;
- 			total_len += len;
-@@ -729,7 +730,7 @@ atc_prep_slave_sg(struct dma_chan *chan, struct scatterlist *sgl,
- 				prev->lli.dscr = desc->txd.phys;
- 				/* insert the link descriptor to the LD ring */
- 				list_add_tail(&desc->desc_node,
--						&first->txd.tx_list);
-+						&first->tx_list);
- 			}
- 			prev = desc;
- 			total_len += len;
-diff --git a/drivers/dma/at_hdmac_regs.h b/drivers/dma/at_hdmac_regs.h
-index 4c972af..495457e 100644
---- a/drivers/dma/at_hdmac_regs.h
-+++ b/drivers/dma/at_hdmac_regs.h
-@@ -165,6 +165,7 @@ struct at_desc {
- 	struct at_lli			lli;
- 
- 	/* THEN values for driver housekeeping */
-+	struct list_head		tx_list;
- 	struct dma_async_tx_descriptor	txd;
- 	struct list_head		desc_node;
- 	size_t				len;
+unfortunately...
+
+> To make sure: Do regular PC Cards (non-CardBus) work with/without the
+> docking station? (I would assume that...)
+
+With regular PC Cards you mean 16 bit cards, don't you? I have only those one
+wlan card, but i can try to organisate one.
 
