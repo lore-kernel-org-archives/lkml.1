@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933867AbZIEAcr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934705AbZIEAbF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933867AbZIEAcr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:32:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933637AbZIEAco
+	id S934705AbZIEAbF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:31:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934499AbZIEAU7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:32:44 -0400
-Received: from kroah.org ([198.145.64.141]:42110 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:20:59 -0400
+Received: from kroah.org ([198.145.64.141]:42114 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934570AbZIEAUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:43 -0400
+	id S934528AbZIEAUo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:44 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:50 2009
-Message-Id: <20090905001450.075904809@mini.kroah.org>
+Message-Id: <20090905001450.234791690@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:52 -0700
+Date: Fri, 04 Sep 2009 17:13:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 17/71] SUNRPC: Fix rpc_task_force_reencode
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 18/71] ALSA: hda - Fix MacBookPro 3,1/4,1 quirk with ALC889A
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=sunrpc-fix-rpc_task_force_reencode.patch
+Content-Disposition: inline; filename=alsa-hda-fix-macbookpro-3-1-4-1-quirk-with-alc889a.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,34 +29,102 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 2574cc9f4ffc6c681c9177111357efe5b76f0e36 upstream.
+commit a3f730af7e33cea10ea66f05b2565fde1f9512df upstream.
 
-This patch fixes the bug that was reported in
-  http://bugzilla.kernel.org/show_bug.cgi?id=14053
+This patch fixes the wrong headphone output routing for MacBookPro 3,1/4,1
+quirk with ALC889A codec, which caused the silent headphone output.
+Also, this gives the individual Headphone and Speaker volume controls.
 
-If we're in the case where we need to force a reencode and then resend of
-the RPC request, due to xprt_transmit failing with a networking error, then
-we _must_ retransmit the entire request.
+Reference: kernel bug#14078
+	http://bugzilla.kernel.org/show_bug.cgi?id=14078
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/sunrpc/clnt.c |    1 +
- 1 file changed, 1 insertion(+)
+ sound/pci/hda/patch_realtek.c |   34 ++++++++++++++++++++--------------
+ 1 file changed, 20 insertions(+), 14 deletions(-)
 
---- a/net/sunrpc/clnt.c
-+++ b/net/sunrpc/clnt.c
-@@ -876,6 +876,7 @@ static inline void
- rpc_task_force_reencode(struct rpc_task *task)
- {
- 	task->tk_rqstp->rq_snd_buf.len = 0;
-+	task->tk_rqstp->rq_bytes_sent = 0;
- }
+--- a/sound/pci/hda/patch_realtek.c
++++ b/sound/pci/hda/patch_realtek.c
+@@ -6186,9 +6186,9 @@ static struct hda_verb alc885_mbp_ch2_in
+ };
  
- static inline void
+ /*
+- * 6ch mode
++ * 4ch mode
+  */
+-static struct hda_verb alc885_mbp_ch6_init[] = {
++static struct hda_verb alc885_mbp_ch4_init[] = {
+ 	{ 0x1a, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT },
+ 	{ 0x1a, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
+ 	{ 0x1a, AC_VERB_SET_CONNECT_SEL, 0x01 },
+@@ -6197,9 +6197,9 @@ static struct hda_verb alc885_mbp_ch6_in
+ 	{ } /* end */
+ };
+ 
+-static struct hda_channel_mode alc885_mbp_6ch_modes[2] = {
++static struct hda_channel_mode alc885_mbp_4ch_modes[2] = {
+ 	{ 2, alc885_mbp_ch2_init },
+-	{ 6, alc885_mbp_ch6_init },
++	{ 4, alc885_mbp_ch4_init },
+ };
+ 
+ 
+@@ -6232,10 +6232,11 @@ static struct snd_kcontrol_new alc882_ba
+ };
+ 
+ static struct snd_kcontrol_new alc885_mbp3_mixer[] = {
+-	HDA_CODEC_VOLUME("Front Playback Volume", 0x0c, 0x00, HDA_OUTPUT),
+-	HDA_BIND_MUTE   ("Front Playback Switch", 0x0c, 0x02, HDA_INPUT),
+-	HDA_CODEC_MUTE  ("Speaker Playback Switch", 0x14, 0x00, HDA_OUTPUT),
+-	HDA_CODEC_VOLUME("Line-Out Playback Volume", 0x0d, 0x00, HDA_OUTPUT),
++	HDA_CODEC_VOLUME("Speaker Playback Volume", 0x0c, 0x00, HDA_OUTPUT),
++	HDA_BIND_MUTE   ("Speaker Playback Switch", 0x0c, 0x02, HDA_INPUT),
++	HDA_CODEC_VOLUME("Headphone Playback Volume", 0x0e, 0x00, HDA_OUTPUT),
++	HDA_BIND_MUTE   ("Headphone Playback Switch", 0x0e, 0x02, HDA_INPUT),
++	HDA_CODEC_VOLUME("Surround Playback Volume", 0x0d, 0x00, HDA_OUTPUT),
+ 	HDA_CODEC_VOLUME("Line Playback Volume", 0x0b, 0x02, HDA_INPUT),
+ 	HDA_CODEC_MUTE  ("Line Playback Switch", 0x0b, 0x02, HDA_INPUT),
+ 	HDA_CODEC_VOLUME("Mic Playback Volume", 0x0b, 0x00, HDA_INPUT),
+@@ -6481,14 +6482,18 @@ static struct hda_verb alc885_mbp3_init_
+ 	{0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_ZERO},
+ 	{0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(0)},
+ 	{0x0d, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(1)},
++	/* HP mixer */
++	{0x0e, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_ZERO},
++	{0x0e, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(0)},
++	{0x0e, AC_VERB_SET_AMP_GAIN_MUTE, AMP_IN_MUTE(1)},
+ 	/* Front Pin: output 0 (0x0c) */
+ 	{0x14, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_OUT},
+ 	{0x14, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
+ 	{0x14, AC_VERB_SET_CONNECT_SEL, 0x00},
+-	/* HP Pin: output 0 (0x0d) */
++	/* HP Pin: output 0 (0x0e) */
+ 	{0x15, AC_VERB_SET_PIN_WIDGET_CONTROL, 0xc4},
+-	{0x15, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_MUTE},
+-	{0x15, AC_VERB_SET_CONNECT_SEL, 0x00},
++	{0x15, AC_VERB_SET_AMP_GAIN_MUTE, AMP_OUT_UNMUTE},
++	{0x15, AC_VERB_SET_CONNECT_SEL, 0x02},
+ 	{0x15, AC_VERB_SET_UNSOLICITED_ENABLE, ALC880_HP_EVENT | AC_USRSP_EN},
+ 	/* Mic (rear) pin: input vref at 80% */
+ 	{0x18, AC_VERB_SET_PIN_WIDGET_CONTROL, PIN_VREF80},
+@@ -6885,10 +6890,11 @@ static struct alc_config_preset alc882_p
+ 		.mixers = { alc885_mbp3_mixer, alc882_chmode_mixer },
+ 		.init_verbs = { alc885_mbp3_init_verbs,
+ 				alc880_gpio1_init_verbs },
+-		.num_dacs = ARRAY_SIZE(alc882_dac_nids),
++		.num_dacs = 2,
+ 		.dac_nids = alc882_dac_nids,
+-		.channel_mode = alc885_mbp_6ch_modes,
+-		.num_channel_mode = ARRAY_SIZE(alc885_mbp_6ch_modes),
++		.hp_nid = 0x04,
++		.channel_mode = alc885_mbp_4ch_modes,
++		.num_channel_mode = ARRAY_SIZE(alc885_mbp_4ch_modes),
+ 		.input_mux = &alc882_capture_source,
+ 		.dig_out_nid = ALC882_DIGOUT_NID,
+ 		.dig_in_nid = ALC882_DIGIN_NID,
 
 
