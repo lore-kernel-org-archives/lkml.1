@@ -1,66 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751176AbZIEFBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZIEGkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751176AbZIEFBa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 01:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZIEFB3
+	id S1753403AbZIEGkU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 02:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751259AbZIEGkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 01:01:29 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:58696 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750729AbZIEFB2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 01:01:28 -0400
-X-Greylist: delayed 367 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Sep 2009 01:01:28 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:organization:message-id:references
-         :in-reply-to:x-mailer:mime-version:content-type
-         :content-transfer-encoding;
-        b=R2CzmwADQME6xYAfLNT9Xd3E5C933tLpEPQ5Rtkg8TuyDSy7vEe7DKxlHgfIwaPODv
-         7OxcG+kkvIwXXUt4y8s01PnKRXiZeR5q+hhscJX0RnY6Fk+r+THFb6nNkSwcU+NjiGMt
-         LJrV2QcKcUBjacgtvojgMRkjivQIsQ2safYQU=
-From: Grant Coady <gcoady.lk@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/71] 2.6.30.6-stable review
-Date: Sat, 05 Sep 2009 14:54:58 +1000
-Organization: scattered
-Message-ID: <5kr3a594kgt8fcdbl0e2tp8s6gltma4ljr@4ax.com>
-References: <20090905001824.GA18171@kroah.com>
-In-Reply-To: <20090905001824.GA18171@kroah.com>
-X-Mailer: Forte Agent 5.00/32.1171
+	Sat, 5 Sep 2009 02:40:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18745 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbZIEGkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 02:40:18 -0400
+Date: Sat, 5 Sep 2009 08:40:07 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv2 0/3] tracing - adding common method for
+	reading/parsing user input
+Message-ID: <20090905064007.GA5688@jolsa.redhat.com>
+References: <1252113181-3325-1-git-send-email-jolsa@redhat.com> <1252118486.6877.3.camel@desktop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1252118486.6877.3.camel@desktop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Sep 2009 17:18:24 -0700, you wrote:
-
->This is the start of the stable review cycle for the 2.6.30.6 release.
->There are 71 patches in this series, all will be posted as a response to
->this one.  If anyone has any issues with these being applied, please let
->us know.  If anyone is a maintainer of the proper subsystem, and wants
->to add a Signed-off-by: line to the patch, please respond with it.
+On Fri, Sep 04, 2009 at 07:41:26PM -0700, Daniel Walker wrote:
+> On Sat, 2009-09-05 at 03:12 +0200, jolsa@redhat.com wrote:
+> > As 3 different places for 4 user input files were using the same way
+> > of reading and parsing user's input, I made one common routine to be
+> > used. 
+> > 
+> 
+> Patches 1 and 3 have a couple of minor checkpatch errors.. 
+> 
+> Daniel
 >
->These patches are sent out with a number of different people on the Cc:
->line.  If you wish to be a reviewer, please email stable@kernel.org to
->add your name to the list.  If you want to be off the reviewer list,
->also email us.
->
->Responses should be made by Sunday, Sept 6, 21:00:00 UTC.  Anything
->Anything received after that time might be too late.
->
->The whole patch series can be found in one patch at:
->	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.6-rc1.gz
 
-Hi Greg,
+thanks, let me send out those changes later after I get other comments
 
-'Snot there yet.
-
-Grant.
--- 
-http://bugsplatter.id.au
+wbr,
+jirka
