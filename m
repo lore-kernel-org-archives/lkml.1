@@ -1,54 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932608AbZIEKes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZIEKql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932608AbZIEKes (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 06:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbZIEKer
+	id S1757329AbZIEKql (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 06:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757288AbZIEKqk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 06:34:47 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57167 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757158AbZIEKeq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 06:34:46 -0400
-Date: Sat, 5 Sep 2009 12:34:42 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Theodore Tso <tytso@mit.edu>, NeilBrown <neilb@suse.de>,
-       Ric Wheeler <rwheeler@redhat.com>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: raid is dangerous but that's secret (was Re: [patch] ext2/3:
-	document conditions when reliable operation is possible)
-Message-ID: <20090905103442.GB1341@ucw.cz>
-References: <20090825232601.GF4300@elf.ucw.cz> <4A947682.2010204@redhat.com> <200908262253.17886.rob@landley.net> <4A967175.5070700@redhat.com> <20090827221319.GA1601@ucw.cz> <4A9733C1.2070904@redhat.com> <20090828064449.GA27528@elf.ucw.cz> <20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz> <20090830152023.GB23828@mit.edu>
+	Sat, 5 Sep 2009 06:46:40 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:48094 "EHLO fanny.its.uu.se"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757217AbZIEKqj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 06:46:39 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090830152023.GB23828@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <19106.16773.461397.654704@pilspetsen.it.uu.se>
+Date: Sat, 5 Sep 2009 12:46:29 +0200
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
+ testsuite
+In-Reply-To: <alpine.LFD.2.00.0909040917120.4537@eeepc.linux-foundation.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	<19099.52899.620345.326521@pilspetsen.it.uu.se>
+	<19100.31254.666066.755541@pilspetsen.it.uu.se>
+	<200909012042.59856.rjw@sisk.pl>
+	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+	<19105.5352.28380.230615@pilspetsen.it.uu.se>
+	<alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org>
+	<alpine.LFD.2.00.0909040917120.4537@eeepc.linux-foundation.org>
+X-Mailer: VM 7.17 under Emacs 20.7.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Linus Torvalds writes:
+ > 
+ > 
+ > On Fri, 4 Sep 2009, Linus Torvalds wrote:
+ > > 
+ > > I'm sure you already figured the obvious meaning out, but here's a fixed 
+ > > version.
+ > 
+ > And here's another patch that may also fix this, simply by virtue of 
+ > writing the "\r\n" as a single string, rather than as two characters. That 
+ > way, we should never get into the situation that th '\r' allocates a new 
+ > buffer (larger than one character), and then the later '\n' writing 
+ > decides that we've filled up.
 
-> > If it only was this simple. We don't have 'check brakes' (aka
-> > 'journalling ineffective') warning light. If we had that, I would not
-> > have problem.
-> 
-> But we do; comptently designed (and in the cast of software RAID,
-> competently packaged) RAID subsystems send notifications to the system
-> administrator when there is a hard drive failure.  Some hardware RAID
-> systems will send a page to the system administrator.  A mid-range
-> Areca card has a separate ethernet port so it can send e-mail to the
-> administrator, even if the OS is hosed for some reason.
+Thanks, I'm testing this and the pty_write() fix on i686 and ppc64 now.
 
-Well, my MMC/uSD cards do not have ethernet ports to remind me that
-they are unreliable :-(.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Sometimes the bug is difficult to trigger, so I may need to do loads of
+testing with different gcc versions before I dare to say that it's fixed.
+
+/Mikael
