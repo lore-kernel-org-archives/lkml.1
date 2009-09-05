@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964888AbZIEA0O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964932AbZIEA1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964888AbZIEA0O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:26:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934665AbZIEAVT
+	id S964932AbZIEA1Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934651AbZIEAVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:21:19 -0400
-Received: from kroah.org ([198.145.64.141]:42130 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:21:15 -0400
+Received: from kroah.org ([198.145.64.141]:42135 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934593AbZIEAUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934599AbZIEAUu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 20:20:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:51 2009
-Message-Id: <20090905001451.138788082@mini.kroah.org>
+Message-Id: <20090905001451.296102408@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:59 -0700
+Date: Fri, 04 Sep 2009 17:14:00 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Glauber Costa <glommer@redhat.com>, avi@redhat.com,
-       Gleb Natapov <gleb@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: [patch 24/71] KVM: Deal with interrupt shadow state for emulated instructions
+       Avi Kivity <avi@redhat.com>
+Subject: [patch 25/71] KVM: MMU: Use different shadows when EFER.NXE changes
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-deal-with-interrupt-shadow-state-for-emulated-instructions.patch
+Content-Disposition: inline; filename=kvm-mmu-use-different-shadows-when-efer.nxe-changes.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,115 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Glauber Costa <glommer@redhat.com>
+From: Avi Kivity <avi@redhat.com>
 
-(cherry picked from commit 310b5d306c1aee7ebe32f702c0e33e7988d50646)
+(cherry picked from commit 9645bb56b31a1b70ab9e470387b5264cafc04aa9)
 
-We currently unblock shadow interrupt state when we skip an instruction,
-but failing to do so when we actually emulate one. This blocks interrupts
-in key instruction blocks, in particular sti; hlt; sequences
+A pte that is shadowed when the guest EFER.NXE=1 is not valid when
+EFER.NXE=0; if bit 63 is set, the pte should cause a fault, and since the
+shadow EFER always has NX enabled, this won't happen.
 
-If the instruction emulated is an sti, we have to block shadow interrupts.
-The same goes for mov ss. pop ss also needs it, but we don't currently
-emulate it.
+Fix by using a different shadow page table for different EFER.NXE bits.  This
+allows vcpus to run correctly with different values of EFER.NXE, and for
+transitions on this bit to be handled correctly without requiring a full
+flush.
 
-Without this patch, I cannot boot gpxe option roms at vmx machines.
-This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
-
-Signed-off-by: Glauber Costa <glommer@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
-CC: Gleb Natapov <gleb@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/include/asm/kvm_x86_emulate.h |    3 +++
- arch/x86/kvm/x86.c                     |    6 +++++-
- arch/x86/kvm/x86_emulate.c             |   20 ++++++++++++++++++++
- 3 files changed, 28 insertions(+), 1 deletion(-)
+ arch/x86/include/asm/kvm_host.h |    1 +
+ arch/x86/kvm/x86.c              |    3 +++
+ 2 files changed, 4 insertions(+)
 
---- a/arch/x86/include/asm/kvm_x86_emulate.h
-+++ b/arch/x86/include/asm/kvm_x86_emulate.h
-@@ -155,6 +155,9 @@ struct x86_emulate_ctxt {
- 	int mode;
- 	u32 cs_base;
- 
-+	/* interruptibility state, as a result of execution of STI or MOV SS */
-+	int interruptibility;
-+
- 	/* decode cache */
- 	struct decode_cache decode;
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -185,6 +185,7 @@ union kvm_mmu_page_role {
+ 		unsigned access:3;
+ 		unsigned invalid:1;
+ 		unsigned cr4_pge:1;
++		unsigned nxe:1;
+ 	};
  };
+ 
 --- a/arch/x86/kvm/x86.c
 +++ b/arch/x86/kvm/x86.c
-@@ -2366,7 +2366,7 @@ int emulate_instruction(struct kvm_vcpu 
- 			u16 error_code,
- 			int emulation_type)
- {
--	int r;
-+	int r, shadow_mask;
- 	struct decode_cache *c;
+@@ -523,6 +523,9 @@ static void set_efer(struct kvm_vcpu *vc
+ 	efer |= vcpu->arch.shadow_efer & EFER_LMA;
  
- 	kvm_clear_exception_queue(vcpu);
-@@ -2415,6 +2415,10 @@ int emulate_instruction(struct kvm_vcpu 
- 	}
- 
- 	r = x86_emulate_insn(&vcpu->arch.emulate_ctxt, &emulate_ops);
-+	shadow_mask = vcpu->arch.emulate_ctxt.interruptibility;
+ 	vcpu->arch.shadow_efer = efer;
 +
-+	if (r == 0)
-+		kvm_x86_ops->set_interrupt_shadow(vcpu, shadow_mask);
- 
- 	if (vcpu->arch.pio.string)
- 		return EMULATE_DO_MMIO;
---- a/arch/x86/kvm/x86_emulate.c
-+++ b/arch/x86/kvm/x86_emulate.c
-@@ -1349,6 +1349,20 @@ static inline int writeback(struct x86_e
- 	return 0;
++	vcpu->arch.mmu.base_role.nxe = (efer & EFER_NX) && !tdp_enabled;
++	kvm_mmu_reset_context(vcpu);
  }
  
-+void toggle_interruptibility(struct x86_emulate_ctxt *ctxt, u32 mask)
-+{
-+	u32 int_shadow = kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu, mask);
-+	/*
-+	 * an sti; sti; sequence only disable interrupts for the first
-+	 * instruction. So, if the last instruction, be it emulated or
-+	 * not, left the system with the INT_STI flag enabled, it
-+	 * means that the last instruction is an sti. We should not
-+	 * leave the flag on in this case. The same goes for mov ss
-+	 */
-+	if (!(int_shadow & mask))
-+		ctxt->interruptibility = mask;
-+}
-+
- int
- x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
- {
-@@ -1360,6 +1374,8 @@ x86_emulate_insn(struct x86_emulate_ctxt
- 	int io_dir_in;
- 	int rc = 0;
- 
-+	ctxt->interruptibility = 0;
-+
- 	/* Shadow copy of register state. Committed on successful emulation.
- 	 * NOTE: we can copy them from vcpu as x86_decode_insn() doesn't
- 	 * modify them.
-@@ -1609,6 +1625,9 @@ special_insn:
- 		int err;
- 
- 		sel = c->src.val;
-+		if (c->modrm_reg == VCPU_SREG_SS)
-+			toggle_interruptibility(ctxt, X86_SHADOW_INT_MOV_SS);
-+
- 		if (c->modrm_reg <= 5) {
- 			type_bits = (c->modrm_reg == 1) ? 9 : 1;
- 			err = kvm_load_segment_descriptor(ctxt->vcpu, sel,
-@@ -1865,6 +1884,7 @@ special_insn:
- 		c->dst.type = OP_NONE;	/* Disable writeback. */
- 		break;
- 	case 0xfb: /* sti */
-+		toggle_interruptibility(ctxt, X86_SHADOW_INT_STI);
- 		ctxt->eflags |= X86_EFLAGS_IF;
- 		c->dst.type = OP_NONE;	/* Disable writeback. */
- 		break;
+ void kvm_enable_efer_bits(u64 mask)
 
 
