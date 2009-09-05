@@ -1,148 +1,259 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753654AbZIEXMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbZIEXyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753654AbZIEXMc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 19:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZIEXMb
+	id S1753702AbZIEXyb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 19:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753519AbZIEXy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 19:12:31 -0400
-Received: from mx.treblig.org ([80.68.94.177]:40493 "EHLO mx.treblig.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751896AbZIEXMa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 19:12:30 -0400
-X-Greylist: delayed 1226 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 Sep 2009 19:12:29 EDT
-Date: Sun, 6 Sep 2009 00:51:59 +0100
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel@vger.kernel.org, linux-input@vger.kernel.org
-Subject: Re: 2.6.{28,30} Keyboard not working on oldish machine
-Message-ID: <20090905235159.GA23660@gallifrey>
-References: <20090613230842.GA18347@gallifrey> <alpine.LNX.2.00.0906231038500.7457@wotan.suse.de> <20090623185814.GB24108@gallifrey> <200906231106.37460.dmitry.torokhov@gmail.com> <20090628140452.GA15816@gallifrey> <20090904055139.4BEAB526EA5@mailhub.coreip.homeip.net>
+	Sat, 5 Sep 2009 19:54:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38063 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751904AbZIEXy2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 19:54:28 -0400
+Date: Sat, 5 Sep 2009 16:54:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.31-rc9
+Message-ID: <alpine.LFD.2.01.0909051645430.3329@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904055139.4BEAB526EA5@mailhub.coreip.homeip.net>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/2.6.29.2-bytemark-kvm-tickless-2009-05-05 (i686)
-X-Uptime: 00:41:50 up 102 days, 17:03,  2 users,  load average: 0.00, 0.00, 0.00
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Dmitry Torokhov (dmitry.torokhov@gmail.com) wrote:
-> On Sun, Jun 28, 2009 at 03:04:52PM +0100, Dr. David Alan Gilbert wrote:
-> > * Dmitry Torokhov (dmitry.torokhov@gmail.com) wrote:
-> > > On Tuesday 23 June 2009 11:58:15 Dr. David Alan Gilbert wrote:
-> > 
-> > <snip>
-> >  
-> > > > Yep; I'm OK with the i8042.noaux from my point of view, but it's a
-> > > > bit worrying that this used to work fine.  There's obviously been
-> > > > a change somewhere since 2.6.18 (and as I remember from the dmesg
-> > > > the keyboard and aux ports are being initialised in different orders).
-> > > > (Actually I say obviously since 2.6.18 - but the 2.6.18 I tried
-> > > > I think I only used the debian version - I should go back and
-> > > > see if I can do a vanilla one), but this box has been running
-> > > > Linux since the time it was originally bought with loads of distros
-> > > > and clean kernels years ago.
-> > > >
-> > > > While this machine is old, the motherboard was a pretty common one
-> > > > at the time.
-> > > >
-> > > 
-> > > Any chance I could get dmesg with i8042.debug with 2.6.18? There was
-> > > quite a large change back then when we got rid of the polling timer
-> > > in i8042.
-> > 
-> > Apologies for the delay; attached is the dmesg from the Debian 2.6.18
-> > in which keyboard works as previously described.
-> > 
-> 
-> Sorry for taking so long to respond. The only vidible difference beween
-> the old and the new way is that we don't "close" serio ports anymore if
-> we fail to detect a mouse/keyboard.
-> 
-> Could you please try the patch below and tell me if it helps?
 
-Yes that fixes it - thank you!
-(Tested on 2.6.31-rc8, having first checked rc8 on it's own was still broken)
+I know I said I'd just release the final 2.6.31 when I was done diving, 
+but there were more pull requests while I was away than I'm comfortable 
+with at this stage. So I'm doing an -rc9 to let it simmer for a couple of 
+days and get some last-minute testing before doing the final release.
 
-Dave
+In particular, inotify was still broken in -rc8, and while several people 
+have verified that the -git trees fixed it, doing an -rc9 to get wider 
+checking is a good idea. We've also hopefully _finally_ fixed that last 
+annoying pty buffering bug, with Mikael Pettersson confirming that the 
+problems he saw are fixed.
 
-> 
-> Thanks!
-> -- 
-> Dmitry
-> 
-> Input: i8042 - try disabling and re-enabling AUX port at close
-> 
-> From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-> 
-> Ever since we switched from having a polling timer to registering IRQ
-> handlers for both keyboard and AUX ports at the driver registration
-> time, on certain boxes probing for a mouse results in keyboard
-> stopping working. The only real difference between old and new way is
-> that before we disabled ports after unsuccessful probe whereas now we
-> leave them as is. Try to emulate the old behavior by disabling and
-> immediately re-enabling AUX port when corresponding serio port is
-> being closed.
-> 
-> Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-> ---
-> 
->  drivers/input/serio/i8042.c |   28 ++++++++++++++++++++++++++++
->  1 files changed, 28 insertions(+), 0 deletions(-)
-> 
-> 
-> diff --git a/drivers/input/serio/i8042.c b/drivers/input/serio/i8042.c
-> index b53a015..a55ad99 100644
-> --- a/drivers/input/serio/i8042.c
-> +++ b/drivers/input/serio/i8042.c
-> @@ -264,6 +264,33 @@ static int i8042_aux_write(struct serio *serio, unsigned char c)
->  					I8042_CMD_MUX_SEND + port->mux);
->  }
->  
-> +
-> +/*
-> + * i8042_aux_close attempts to clear AUX port state by disabling
-> + * and then re-enabling it.
-> + */
-> +
-> +static void i8042_aux_close(struct serio *serio)
-> +{
-> +	i8042_ctr &= ~I8042_CTR_AUXINT;
-> +	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR))
-> +		printk(KERN_WARNING
-> +			"i8042.c: Can't write CTR while closing AUX port.\n");
-> +	udelay(50);
-> +
-> +	i8042_ctr &= ~I8042_CTR_AUXDIS;
-> +	i8042_ctr |= I8042_CTR_AUXINT;
-> +	if (i8042_command(&i8042_ctr, I8042_CMD_CTL_WCTR))
-> +		printk(KERN_ERR
-> +			"i8042.c: Can't reactivate AUX port.\n");
-> +
-> +	/*
-> +	 * See if there is any data appeared while we were messing with
-> +	 * port state.
-> +	 */
-> +	i8042_interrupt(0, NULL);
-> +}
-> +
->  /*
->   * i8042_start() is called by serio core when port is about to finish
->   * registering. It will mark port as existing so i8042_interrupt can
-> @@ -1051,6 +1078,7 @@ static int __devinit i8042_create_aux_port(int idx)
->  	serio->write		= i8042_aux_write;
->  	serio->start		= i8042_start;
->  	serio->stop		= i8042_stop;
-> +	serio->close		= i8042_aux_close;
->  	serio->port_data	= port;
->  	serio->dev.parent	= &i8042_platform_device->dev;
->  	if (idx < 0) {
--- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    | Running GNU/Linux on Alpha,68K| Happy  \ 
-\ gro.gilbert @ treblig.org | MIPS,x86,ARM,SPARC,PPC & HPPA | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+There are also some (too big at this stage, oh well) updates to DM and a 
+couple of media drivers, and some Intel KMS fixes.
+
+And then a random smattering of one-liners.
+
+Go wild, and please give this a final round of testing.
+
+			Linus
+
+---
+Anton Vorontsov (1):
+      mtd: m25p80: fix null pointer dereference bug
+
+Bartlomiej Zolnierkiewicz (1):
+      ata_piix: parallel scanning on PATA needs an extra locking
+
+Benjamin Herrenschmidt (1):
+      lmb: Also remove __init from lmb_end_of_RAM() declaration in lmb.h
+
+Brian Rogers (1):
+      inotify: do not send a block of zeros when no pathname is available
+
+Bruno Prémont (1):
+      drm/i915: Check if BIOS enabled dual-channel LVDS on 8xx, not only on 9xx
+
+Chris Wright (1):
+      PCI SR-IOV: correct broken resource alignment calculations
+
+Christoph Hellwig (1):
+      xfs: actually enable the swapext compat handler
+
+Clemens Ladisch (2):
+      sound: oxygen: fix MCLK rate for 192 kHz playback
+      sound: oxygen: handle cards with missing EEPROM
+
+Dave Andrews (1):
+      Input: atkbd - add Compaq Presario R4000-series repeat quirk
+
+David Howells (1):
+      nommu: fix error handling in do_mmap_pgoff()
+
+David Müller (ELSOFT AG) (1):
+      drm/i915: Improve CRTDDC mapping by using VBT info
+
+David S. Miller (3):
+      pkt_sched: Revert tasklet_hrtimer changes.
+      sparc64: Kill spurious NMI watchdog triggers by increasing limit to 30 seconds.
+      sparc64: Fix bootup with mcount in some configs.
+
+Dimitri Gorokhovik (2):
+      mtd: nftl: write support is broken
+      mtd: nftl: fix offset alignments
+
+Dmitry Torokhov (1):
+      Input: i8042 - add Acer Aspire 5536 to the nomux list
+
+Dominik Brodowski (1):
+      [CPUFREQ] Re-enable cpufreq suspend and resume code
+
+Eric Anholt (1):
+      drm/i915: Fix CPU-spinning hangs related to fence usage by using an LRU.
+
+Eric Dumazet (2):
+      tc: Fix unitialized kernel memory leak
+      slub: Fix kmem_cache_destroy() with SLAB_DESTROY_BY_RCU
+
+Eric Paris (2):
+      inotify: fix length reporting and size checking
+      inotify: update the group mask on mark addition
+
+Grant Grundler (1):
+      parisc: fix warning in traps.c
+
+H. Peter Anvin (1):
+      x86, xen: Initialize cx to suppress warning
+
+Herbert Xu (1):
+      crypto: skcipher - Fix skcipher_dequeue_givcrypt NULL test
+
+Ian Kent (1):
+      autofs4 - fix missed case when changing to use struct path
+
+Ingo Molnar (2):
+      perf_counters: Increase paranoia level
+      modules: Fix build error in the !CONFIG_KALLSYMS case
+
+Jarek Poplawski (1):
+      net: sk_free() should be allowed right after sk_alloc()
+
+Jeremy Fitzhardinge (1):
+      x86, xen: Suppress WP test on Xen
+
+Jiri Bohac (1):
+      [IA64] fix csum_ipv6_magic()
+
+Jiri Slaby (1):
+      toshiba_acpi: return on a fail path
+
+Joe Perches (1):
+      V4L/DVB (12564a): MAINTAINERS: Update gspca sn9c20x name style
+
+Jonathan Brassow (4):
+      dm log: fix userspace status output
+      dm log: remove incorrect field from userspace table output
+      dm raid1: do not allow log_failure variable to unset after being set
+      dm log: userspace add luid to distinguish between concurrent log instances
+
+Keith Packard (1):
+      ACPI: don't free non-existent backlight in acpi video module
+
+Kiyoshi Ueda (1):
+      dm multipath: fix oops when request based io fails when no paths
+
+Lin Ming (1):
+      ACPICA: Windows compatibility fix: same buffer/string store
+
+Linus Torvalds (3):
+      n_tty: do O_ONLCR translation as a single write
+      pty: don't limit the writes to 'pty_space()' inside 'pty_write()'
+      Linux 2.6.31-rc9
+
+Ma Ling (2):
+      drm/i915: Always use SDVO_B detect bit for SDVO output detection.
+      drm/i915: Set crtc/clone mask in different output devices
+
+Massimo Cirillo (1):
+      JFFS2: add missing verify buffer allocation/deallocation
+
+Mauro Carvalho Chehab (1):
+      V4L/DVB (12449): adds webcam for Micron device MT9M111 0x143A to em28xx
+
+Mel Gorman (1):
+      page-allocator: always change pageblock ownership when anti-fragmentation is disabled
+
+Michael Krufky (1):
+      V4L/DVB (12446): sms1xxx: restore GPIO functionality for all Hauppauge devices
+
+Mike Snitzer (3):
+      dm snapshot: implement iterate devices
+      dm table: add more context to terse warning messages
+      dm stripe: expose correct io hints
+
+Mikulas Patocka (5):
+      dm table: fix queue_limit checking device iterator
+      dm snapshot: refactor zero_disk_area to use chunk_io
+      dm snapshot: fix header corruption race on invalidation
+      dm exception store: split set_chunk_size
+      dm snapshot: fix on disk chunk size validation
+
+Nicolas Pitre (1):
+      ext2: fix unbalanced kmap()/kunmap()
+
+Nikanth Karthikesan (1):
+      block: Allow changing max_sectors_kb above the default 512
+
+Oleg Nesterov (2):
+      workqueues: introduce __cancel_delayed_work()
+      exec: do not sleep in TASK_TRACED under ->cred_guard_mutex
+
+Paul Mackerras (1):
+      perf_counter/powerpc: Fix cache event codes for POWER7
+
+Peter Zijlstra (1):
+      perf_counter: Fix /0 bug in swcounters
+
+Randy Dunlap (1):
+      V4L/DVB (12502): gspca - sn9c20x: Fix gscpa sn9c20x build errors.
+
+Roderick Colenbrander (1):
+      powerpc: Fix i8259 interrupt driver kernel crash on ML510
+
+Roel Kluin (2):
+      drm/i915: Fix typo that broke SVID1 in intel_sdvo_multifunc_encoder()
+      V4L/DVB (12457): zr364: wrong indexes
+
+Ryusuke Konishi (1):
+      nilfs2: fix preempt count underflow in nilfs_btnode_prepare_change_key
+
+Sean Young (1):
+      drm/i915: Set the multiplier for SDVO on G33 platform
+
+Shine Liu (1):
+      V4L/DVB (12495): em28xx: Don't call em28xx_ir_init when disable_ir is true
+
+Stefan Richter (4):
+      firewire: core: fix crash in iso resource management
+      firewire: ohci: fix Agere FW643 and multiple cameras
+      firewire: ohci: fix Ricoh R5C832, video reception
+      firewire: sbp2: fix freeing of unallocated memory
+
+Sunil Mushran (1):
+      ocfs2: ocfs2_write_begin_nolock() should handle len=0
+
+Takashi Iwai (2):
+      ALSA: hda - Add missing mux check for VT1708
+      ALSA: hda - Fix MacBookPro 3,1/4,1 quirk with ALC889A
+
+Tao Ma (1):
+      ocfs2: invalidate dentry if its dentry_lock isn't initialized.
+
+Tejun Heo (1):
+      percpu: don't assume existence of cpu0
+
+Tony Luck (1):
+      [IA64] Fix warning in dma-mapping.c
+
+Toru UCHIYAMA (1):
+      gianfar: gfar_remove needs to call unregister_netdev()
+
+Trond Myklebust (1):
+      SUNRPC: Fix rpc_task_force_reencode
+
+Udi Atar (2):
+      V4L/DVB (12450): Siano: Fixed SDIO compilation bugs
+      V4L/DVB (12451): Update KConfig File to enable SDIO and USB interfaces
+
+Yinghai Lu (1):
+      x86: Fix vSMP boot crash
+
+Zhu Yi (1):
+      ipw2200: firmware DMA loading rework
