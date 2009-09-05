@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752814AbZIERoG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZIESHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752814AbZIERoG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 13:44:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752686AbZIERoF
+	id S1752873AbZIESHd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 14:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752642AbZIESHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 13:44:05 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:57708 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752576AbZIERoE (ORCPT
+	Sat, 5 Sep 2009 14:07:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37170 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752474AbZIESHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 13:44:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=N6UslFOem4zhdEcQy0TPW27E0S6X9Cag4++WOpHxzZjsO5VO828RgpqL4qmWuQ3NAw
-         46qDiP4YDe9DyD9CG8ayAHfsT927RlG9I/L8sYQqZoNalJOl1CygdQs8i7NkKT8fd0+S
-         Fwt+A6C/CZVPCOkhPQae4GxlgG9qVhNrYfqkA=
+	Sat, 5 Sep 2009 14:07:30 -0400
+Date: Sat, 5 Sep 2009 11:06:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+cc: Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
+ testsuite
+In-Reply-To: <87pra55nsr.fsf@devron.myhome.or.jp>
+Message-ID: <alpine.LFD.2.00.0909051059360.6727@eeepc.linux-foundation.org>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19099.52899.620345.326521@pilspetsen.it.uu.se> <19100.31254.666066.755541@pilspetsen.it.uu.se> <200909012042.59856.rjw@sisk.pl> <alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+ <19105.5352.28380.230615@pilspetsen.it.uu.se> <alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
+ <alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org> <87pra55nsr.fsf@devron.myhome.or.jp>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501F0F575@exchange.ZeugmaSystems.local>
-References: <Acotv57vW6nkRxQOQLuBf8W5yfJIlwAAtMAw> <DDFD17CC94A9BD49A82147DDF7D545C501F0F575@exchange.ZeugmaSystems.local>
-From: Lucas De Marchi <lucas.de.marchi@gmail.com>
-Date: Sat, 5 Sep 2009 19:43:43 +0200
-Message-ID: <193b0f820909051043w3cf7f9excc2771381555ccdc@mail.gmail.com>
-Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
-To: Anirban Sinha <ASinha@zeugmasystems.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 5, 2009 at 02:55, Anirban Sinha<ASinha@zeugmasystems.com> wrote:
-> Hi Ingo and rest:
->
-> I have been playing around with the sched_rt_runtime_us cap that can be
-> used to limit the amount of CPU time allocated towards scheduling rt
-> group threads. I am using 2.6.26 with CONFIG_GROUP_SCHED disabled (we
-> use only the root user in our embedded setup). I have no other CPU
-> intensive workloads (RT or otherwise) running on my system. I have
-> changed no other scheduling parameters from /proc.
->
-> I have written a small test program that:
 
-Would you mind sending the source of this test?
 
-Lucas De Marchi
+On Sun, 6 Sep 2009, OGAWA Hirofumi wrote:
+> 
+> This is not meaning to object to your patch though, I think we would be
+> good to fix pty_space(), not leaving as wrong. With fix it, I guess we
+> don't get strange behavior in the near of buffer limit.
+
+I'd actually rather not make that function any more complicated.
+
+Just make the rules be very simple:
+
+ - the pty layer has ~64kB buffering, and if you just blindly do a 
+   ->write() op, you can see how many characters you were able to write.
+
+ - before doing a ->write() op, you can ask how many characters you are 
+   guaranteed to be able to write by doing a "->write_room()" call.
+
+..and then the bug literally was just that "pty_write()" was confused, and 
+thought that it should do that "write_room()" thing, which it really 
+shouldn't ever have done.
+
+So I really think that the true fix is to just remove the code from 
+pty_write(), and not do anything more complicated. I'll also commit the 
+change to write '\r\n' as one single string, because quite frankly, it's 
+just stupid to do it as two characters, but at that point it's just a 
+cleanup.
+
+> Also, it seems the non-n_tty path doesn't use tty_write_room() check,
+> and instead it just try to write and check written bytes which returned
+> by tty->ops->write().
+
+.. and I think that's fine. I think write_room() should be used sparingly, 
+and only by code that cares about being able to fit at least 'n' 
+characters in the tty buffers. In fact, I think even n_tty would likely in 
+general be better off without it (and just check the return value), but 
+because of the stateful character translation (that doesn't actually keep 
+any state around, it just wants to expand things as it goes along), and 
+because of historical reasons, we'll just keep it using write_room.
+
+		Linus
