@@ -1,48 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753101AbZIETsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753012AbZIETWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753101AbZIETsF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 15:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZIETsE
+	id S1753012AbZIETWw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 15:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752932AbZIETWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 15:48:04 -0400
-Received: from moutng.kundenserver.de ([212.227.17.10]:57076 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753031AbZIETsD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 15:48:03 -0400
-From: Christian =?utf-8?q?Kr=C3=A4mer?= <christian@kraemer-eu.de>
-Organization: Privat
-To: Wolfram Sang <w.sang@pengutronix.de>
-Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
-Date: Sat, 5 Sep 2009 21:08:39 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-pcmcia@lists.infradead.org, Frans Pop <elendil@planet.nl>,
-       linux-kernel@vger.kernel.org
-References: <200909021856.29565.christian@kraemer-eu.de> <200909040149.45066.christian@kraemer-eu.de> <20090905135911.GC3171@pengutronix.de>
-In-Reply-To: <20090905135911.GC3171@pengutronix.de>
+	Sat, 5 Sep 2009 15:22:48 -0400
+Received: from mga11.intel.com ([192.55.52.93]:53480 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752897AbZIETWs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 15:22:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,338,1249282800"; 
+   d="scan'208";a="490839868"
+Message-ID: <4AA2BA83.5020707@intel.com>
+Date: Sat, 05 Sep 2009 12:22:43 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+CC: Neil Brown <neilb@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-raid <linux-raid@vger.kernel.org>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+Subject: What's in async_tx.git/next for 2.6.32?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909052108.39225.christian@kraemer-eu.de>
-X-Provags-ID: V01U2FsdGVkX19jackwCxKjXAkasXH1bUJ7OgJJ3Ll+WqPJYwO
- HKb1fOVwTjRJhCB0ryVSXReZI1j6hBfiP6HvyPtJa4gY6UNI0n
- jA/Qx1syamExyl7Qeu1YzDbd/EsVPf1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 September 2009 15:59:11 Wolfram Sang wrote:
-> > For this laptop at all there are a lot of problems with newer linux
-> > kernels. Some people got it working with serveral hacks in the config
-> > file of the pcmcia_cs suite, but all those tips only fit with pcmcia_cs
-> > and so to the 2.4 kernel. If you're interessted in those sources, i could
-> > search the URLs again in my browser history.
->
-> Yes, maybe those explain the problem; that would definately help ;)
+Provided Neil and Peter provide their acks for the raid6 acceleration 
+work, here is what is pending in async_tx.git/next for 2.6.32:
 
-Okay, here are the urls i found some hacks for this model:
-http://www.krumeich.de/download/tp600/config.opts
-http://www.cs.cmu.edu/~jcl/linux/thinkpad_600.html
-http://www.faqs.org/docs/Linux-HOWTO/PCMCIA-HOWTO.html
+1/ Ira's DMA_SLAVE support for the fsldma driver that just missed the 
+2.6.31 window
+2/ raid6 extensions to the async_tx api
+3/ percpu conversion of the md-raid456 stripe processing resources 
+(address buffers / raid6-spare-page)
+4/ conversion of md-raid6 to the asynchronous raid6 api
+5/ experimental support for offloading stripe processing to the async 
+thread pool (multicore raid)
+6/ raid offload support for the ioatdma driver (v3.2 of Intel(R) 
+QuickData Technology)
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git next
+
+Atsushi Nemoto (1):
+       dmaengine: Move all map_sg/unmap_sg for slave channel to its client
+
+Dan Williams (67):
+       async_tx: rename zero_sum to val
+       async_tx: kill ASYNC_TX_DEP_ACK flag
+       async_tx: structify submission arguments, add scribble
+       async_xor: permit callers to pass in a 'dma/page scribble' region
+       md/raid6: release spare page at ->stop()
+       ioat: move to drivers/dma/ioat/
+       ioat: move definitions to dma.h
+       ioat: convert ioat_probe to pcim/devm
+       ioat: cleanup some long deref chains and 80 column collisions
+       ioat: kill function prototype ifdef guards
+       ioat: split ioat_dma_probe into core/version-specific routines
+       ioat: fix type mismatch for ->dmacount
+       ioat: define descriptor control bit-field
+       ioat1: move descriptor allocation from submit to prep
+       md/raid6: move the spare page to a percpu allocation
+       md/raid5,6: add percpu scribble region for buffer lists
+       async_tx: add sum check flags
+       async_tx: kill needless module_{init|exit}
+       async_tx: remove walk of tx->parent chain in dma_wait_for_async_tx
+       async_tx: add support for asynchronous GF multiplication
+       async_tx: add support for asynchronous RAID6 recovery operations
+       dmatest: add pq support
+       async_tx: raid6 recovery self test
+       iop-adma: cleanup iop_adma_run_tx_complete_actions
+       iop-adma: fix lockdep false positive
+       iop-adma: P+Q support for iop13xx adma engines
+       iop-adma: P+Q self test
+       md/raid5: factor out mark_uptodate from ops_complete_compute5
+       md/raid6: asynchronous raid6 operations
+       md/raid6: asynchronous handle_parity_check6
+       md/raid456: distribute raid processing over multiple cores
+       ioat: fix self test interrupts
+       ioat: prepare the code for ioat[12]_dma_chan split
+       ioat2,3: convert to a true ring buffer
+       ioat1: kill unused unmap parameters
+       ioat: add some dev_dbg() calls
+       ioat: cleanup completion status reads
+       ioat: ignore reserved bits for chancnt and xfercap
+       ioat: preserve chanctrl bits when re-arming interrupts
+       ioat: ___devinit annotate the initialization paths
+       ioat1: trim ioat_dma_desc_sw
+       ioat: switch watchdog and reset handler from workqueue to timer
+       ioat2,3: dynamically resize descriptor ring
+       net_dma: poll for a descriptor after allocation failure
+       dw_dmac: implement a private tx_list
+       fsldma: implement a private tx_list
+       iop-adma: implement a private tx_list
+       ioat: implement a private tx_list
+       mv_xor: implement a private tx_list
+       at_hdmac: implement a private tx_list
+       dmaengine: kill tx_list
+       ioat2,3: cacheline align software descriptor allocations
+       dmaengine: add fence support
+       dmaengine, async_tx: add a "no channel switch" allocator
+       dmaengine: cleanup unused transaction types
+       dmaengine, async_tx: support alignment checks
+       ioat2+: add fence support
+       ioat3: hardware version 3.2 register / descriptor definitions
+       ioat3: split ioat3 support to its own file, add memset
+       ioat: add 'ioat' sysfs attributes
+       ioat3: enable dca for completion writes
+       ioat3: xor support
+       ioat3: xor self test
+       ioat3: pq support
+       ioat3: support xor via pq descriptors
+       ioat3: interrupt descriptor support
+       ioat3: segregate raid engines
+
+Ira Snyder (2):
+       fsldma: split apart external pause and request count features
+       fsldma: Add DMA_SLAVE support
+
+Roland Dreier (2):
+       Add MODULE_DEVICE_TABLE() so ioatdma module is autoloaded
+       I/OAT: Convert to PCI_VDEVICE()
+
+Tom Picard (1):
+       ioat3: ioat3.2 pci ids for Jasper Forest
+
+Yuri Tikhonov (5):
+       md/raid5,6: common schedule_reconstruction for raid5/6
+       md/raid6: asynchronous handle_stripe_fill6
+       md/raid6: asynchronous handle_stripe_dirtying6
+       md/raid6: asynchronous handle_stripe6
+       md/raid6: remove synchronous infrastructure
