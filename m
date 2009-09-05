@@ -1,47 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753178AbZIEVYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753303AbZIEV0L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753178AbZIEVYm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 17:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751089AbZIEVYl
+	id S1753303AbZIEV0L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 17:26:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZIEV0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 17:24:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47257 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750722AbZIEVYl (ORCPT
+	Sat, 5 Sep 2009 17:26:10 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:40108 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751089AbZIEV0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 17:24:41 -0400
-Date: Sat, 5 Sep 2009 14:23:29 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Tejun Heo <tj@kernel.org>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       David Miller <davem@davemloft.net>, Meelis Roos <mroos@linux.ee>
-Subject: Re: [GIT PULL] percpu fixes for 2.6.31-rc8
-In-Reply-To: <4A9D1A18.5000201@kernel.org>
-Message-ID: <alpine.LFD.2.01.0909051422130.3414@localhost.localdomain>
-References: <4A9D18B7.3010405@kernel.org> <4A9D1A18.5000201@kernel.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Sat, 5 Sep 2009 17:26:09 -0400
+X-Trace: 258213545/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.92.10/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.92.10
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Aq8EAJRzokpPRVwK/2dsb2JhbACBU9Y7hBgF
+X-IronPort-AV: E=Sophos;i="4.44,339,1249254000"; 
+   d="scan'208";a="258213545"
+Date: Sat, 5 Sep 2009 22:25:21 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH 2/3] ksm: unmerge is an origin of OOMs
+In-Reply-To: <Pine.LNX.4.64.0909052219580.7381@sister.anvils>
+Message-ID: <Pine.LNX.4.64.0909052222430.7387@sister.anvils>
+References: <Pine.LNX.4.64.0909052219580.7381@sister.anvils>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Just as the swapoff system call allocates many pages of RAM to various
+processes, perhaps triggering OOM, so "echo 2 >/sys/kernel/mm/ksm/run"
+(unmerge) is liable to allocate many pages of RAM to various processes,
+perhaps triggering OOM; and each is normally run from a modest admin
+process (swapoff or shell), easily repeated until it succeeds.
 
+So treat unmerge_and_remove_all_rmap_items() in the same way that we
+treat try_to_unuse(): generalize PF_SWAPOFF to PF_OOM_ORIGIN, and
+bracket both with that, to ask the OOM killer to kill them first,
+to prevent them from spawning more and more OOM kills.
 
-On Tue, 1 Sep 2009, Tejun Heo wrote:
-> 
-> Ummm... one question.  The above tree is on top of the previous
-> for-linus fixes tree.  It pulls in to the current #master alright but
-> it would still be a merge instead of a fast-forward.  Would it be
-> better to prep fixes tree on top of the current #master so that it
-> results in fast-forward?  If that's the case, please let me know or
-> just cherry pick the top commit.
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+---
 
-No, I actually prefer people to avoid rebasing unless they have some real 
-reason for it. My pulls almost always end up being merges anyway, since I 
-pull from several people, so even if you were to have rebased, it would 
-_not_ have been a fast-forward for me, since I'd in the meantime have 
-pulled from others anyway.
+ include/linux/sched.h |    2 +-
+ mm/ksm.c              |    2 ++
+ mm/oom_kill.c         |    2 +-
+ mm/swapfile.c         |    4 ++--
+ 4 files changed, 6 insertions(+), 4 deletions(-)
 
-			Linus
+--- mmotm/include/linux/sched.h	2009-09-05 14:40:16.000000000 +0100
++++ linux/include/linux/sched.h	2009-09-05 16:41:55.000000000 +0100
+@@ -1755,7 +1755,7 @@ extern cputime_t task_gtime(struct task_
+ #define PF_FROZEN	0x00010000	/* frozen for system suspend */
+ #define PF_FSTRANS	0x00020000	/* inside a filesystem transaction */
+ #define PF_KSWAPD	0x00040000	/* I am kswapd */
+-#define PF_SWAPOFF	0x00080000	/* I am in swapoff */
++#define PF_OOM_ORIGIN	0x00080000	/* Allocating much memory to others */
+ #define PF_LESS_THROTTLE 0x00100000	/* Throttle me less: I clean memory */
+ #define PF_KTHREAD	0x00200000	/* I am a kernel thread */
+ #define PF_RANDOMIZE	0x00400000	/* randomize virtual address space */
+--- mmotm/mm/ksm.c	2009-09-05 14:40:16.000000000 +0100
++++ linux/mm/ksm.c	2009-09-05 16:41:55.000000000 +0100
+@@ -1564,7 +1564,9 @@ static ssize_t run_store(struct kobject
+ 	if (ksm_run != flags) {
+ 		ksm_run = flags;
+ 		if (flags & KSM_RUN_UNMERGE) {
++			current->flags |= PF_OOM_ORIGIN;
+ 			err = unmerge_and_remove_all_rmap_items();
++			current->flags &= ~PF_OOM_ORIGIN;
+ 			if (err) {
+ 				ksm_run = KSM_RUN_STOP;
+ 				count = err;
+--- mmotm/mm/oom_kill.c	2009-09-05 14:40:16.000000000 +0100
++++ linux/mm/oom_kill.c	2009-09-05 16:41:55.000000000 +0100
+@@ -103,7 +103,7 @@ unsigned long badness(struct task_struct
+ 	/*
+ 	 * swapoff can easily use up all memory, so kill those first.
+ 	 */
+-	if (p->flags & PF_SWAPOFF)
++	if (p->flags & PF_OOM_ORIGIN)
+ 		return ULONG_MAX;
+ 
+ 	/*
+--- mmotm/mm/swapfile.c	2009-09-05 14:40:16.000000000 +0100
++++ linux/mm/swapfile.c	2009-09-05 16:41:55.000000000 +0100
+@@ -1573,9 +1573,9 @@ SYSCALL_DEFINE1(swapoff, const char __us
+ 	p->flags &= ~SWP_WRITEOK;
+ 	spin_unlock(&swap_lock);
+ 
+-	current->flags |= PF_SWAPOFF;
++	current->flags |= PF_OOM_ORIGIN;
+ 	err = try_to_unuse(type);
+-	current->flags &= ~PF_SWAPOFF;
++	current->flags &= ~PF_OOM_ORIGIN;
+ 
+ 	if (err) {
+ 		/* re-insert swap space back into swap_list */
