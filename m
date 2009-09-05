@@ -1,44 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932843AbZIEMkA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751688AbZIEMvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932843AbZIEMkA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 08:40:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757368AbZIEMj6
+	id S1751688AbZIEMvZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 08:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZIEMvY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 08:39:58 -0400
-Received: from 1wt.eu ([62.212.114.60]:48148 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757369AbZIEMj6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 08:39:58 -0400
-Date: Sat, 5 Sep 2009 14:39:51 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: Staging tree status for the .32 kernel merge
-Message-ID: <20090905123951.GA1120@1wt.eu>
-References: <20090903041429.GA29875@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090903041429.GA29875@kroah.com>
-User-Agent: Mutt/1.5.11
+	Sat, 5 Sep 2009 08:51:24 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:34842 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbZIEMvX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 08:51:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=MnK49nJWjkDeL/U1qYFVmC1OFEM3UNTj/77pIRs2xPEGT7ymipgWOWChRDhANQvf7R
+         ncqihwvEa9GRBulAlIPiFD4o6evofpLQc9uDcifxriYZ2A4LlxIq4xhXB0s+KoNiotsJ
+         WVsJOq5K6eV1MAqQ5Om89b9Rj55yTLoaP/YdA=
+MIME-Version: 1.0
+Date: Sat, 5 Sep 2009 08:51:24 -0400
+Message-ID: <194f62550909050551n3ac70080u528ae8a9322d4a5a@mail.gmail.com>
+Subject: [ARM9] OOM with plenty of free swap space?
+From: Clemens Eisserer <linuxhippy@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Hi,
 
-On Wed, Sep 02, 2009 at 09:14:30PM -0700, Greg KH wrote:
-> 	- panel.  Another one that should be simple to merge.  Anyone?
+I am using a Nokia-770 internet tablet (ARM9) running a 2.6.16.27
+(precompiled wlan driver) kernel as a small buissness server
+(postgres, tor, samba, lighttp).
 
-I just got an email from a guy who proposed to work on it and who
-showed me he's currently running tests and fixing a bug when removing
-the module.
+It works quite well, however I recently discovered that postgres was
+killed by the oom killer (log below),
+although plenty of free swap was available. Its a really small
+database so it should easily fit in the 64mb main memory.
 
-Hopefully he'll make enough progress to get the driver merged.
+Any idea what could the reason for this OOM?
 
-This proves that the principle of the staging tree seems to work,
-and that your call was useful ;-)
+Thank you in advance, Clemens
 
-Regards,
-Willy
 
+[17676.783874] oom-killer: gfp_mask=0x201d2, order=0
+[17676.797241] [<c0026890>] (dump_stack+0x0/0x14) from [<c0071850>]
+(out_of_memory+0x40/0x1d8)
+[17676.797393] [<c0071810>] (out_of_memory+0x0/0x1d8) from
+[<c0072d50>] (__alloc_pages+0x240/0x2c4)
+[17676.797515] [<c0072b10>] (__alloc_pages+0x0/0x2c4) from
+[<c0075648>] (__do_page_cache_readahead+0x150/0x324)
+[17676.797637] [<c00754f8>] (__do_page_cache_readahead+0x0/0x324) from
+[<c0075914>] (do_page_cache_readahead+0x64/0x70)
+[17676.797760] [<c00758b0>] (do_page_cache_readahead+0x0/0x70) from
+[<c006eba0>] (filemap_nopage+0x190/0x3ec)
+[17676.797943]  r7 = 00000000  r6 = 00219560  r5 = 00000000  r4 =
+C25E0000
+[17676.798004] [<c006ea10>] (filemap_nopage+0x0/0x3ec) from
+[<c007cc04>] (__handle_mm_fault+0x2fc/0x96c)
+[17676.798126] [<c007c908>] (__handle_mm_fault+0x0/0x96c) from
+[<c0029364>] (do_page_fault+0xe4/0x214)
+[17676.798248] [<c0029280>] (do_page_fault+0x0/0x214) from
+[<c00295e0>] (do_DataAbort+0x3c/0xa4)
+[17676.798339] [<c00295a4>] (do_DataAbort+0x0/0xa4) from [<c0020da8>]
+(ret_from_exception+0x0/0x10)
+[17676.798461]  r8 = 00000000  r7 = 40639540  r6 = 40639560  r5 =
+00000001
+[17676.798553]  r4 = FFFFFFFF
+[17676.798583] Mem-info:
+[17676.798614] DMA per-cpu:
+[17676.798675] cpu 0 hot: high 18, batch 3 used:2
+[17676.798706] cpu 0 cold: high 6, batch 1 used:0
+[17676.798767] DMA32 per-cpu: empty
+[17676.798797] Normal per-cpu: empty
+[17676.798828] HighMem per-cpu: empty
+[17676.798950] Free pages:        1172kB (0kB HighMem)
+[17676.799011] Active:5576 inactive:6815 dirty:0 writeback:231
+unstable:0 free:293 slab:1257 mapped:12129 pagetables:374
+[17676.799133] DMA free:1172kB min:1024kB low:1280kB high:1536kB
+active:22304kB inactive:27260kB present:65536kB pages_scanned:91
+all_unreclaimable? no
+[17676.799224] lowmem_reserve[]: 0 0 0 0
+[17676.799285] DMA32 free:0kB min:0kB low:0kB high:0kB active:0kB
+inactive:0kB present:0kB pages_scanned:0 all_unreclaimable? no
+[17676.799377] lowmem_reserve[]: 0 0 0 0
+[17676.799468] Normal free:0kB min:0kB low:0kB high:0kB active:0kB
+inactive:0kB present:0kB pages_scanned:0 all_unreclaimable? no
+[17676.799530] lowmem_reserve[]: 0 0 0 0
+[17676.799621] HighMem free:0kB min:128kB low:128kB high:128kB
+active:0kB inactive:0kB present:0kB pages_scanned:0 all_unreclaimable?
+no
+[17676.799682] lowmem_reserve[]: 0 0 0 0
+[17676.799743] DMA: 33*4kB 4*8kB 1*16kB 1*32kB 1*64kB 1*128kB 1*256kB
+1*512kB 0*1024kB 0*2048kB 0*4096kB = 1172kB
+[17676.799896] DMA32: empty
+[17676.799926] Normal: empty
+[17676.799957] HighMem: empty
+[17676.800018] Swap cache: add 12847, delete 11756, find 42323/43010, race 0+0
+[17676.800079] Free swap  = 167716kB
+[17676.800109] Total swap = 198272kB
+[17676.800170] Free swap:       167716kB
+[17676.804534] 16384 pages of RAM
+[17676.804565] 638 free pages
+[17676.804595] 1096 reserved pages
+[17676.804626] 1257 slab pages
+[17676.804656] 19580 pages shared
+[17676.804718] 1091 pages swap cached
+[17676.805267] Out of Memory: Kill process 1535 (postgres) score 11478
+and children.
+[17676.805358] Out of memory: Killed process 1537 (postgres).
