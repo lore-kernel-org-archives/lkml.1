@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964970AbZIEA3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934719AbZIEAcM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964970AbZIEA3A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934527AbZIEAVI
+	id S934719AbZIEAcM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:32:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934598AbZIEAcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:21:08 -0400
-Received: from kroah.org ([198.145.64.141]:42123 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:32:03 -0400
+Received: from kroah.org ([198.145.64.141]:42127 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934559AbZIEAUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:48 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:50 2009
-Message-Id: <20090905001450.847789632@mini.kroah.org>
+	id S934588AbZIEAUt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:49 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:51 2009
+Message-Id: <20090905001450.984456308@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:57 -0700
+Date: Fri, 04 Sep 2009 17:13:58 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, avi@redhat.com,
-       Gleb Natapov <gleb@redhat.com>
-Subject: [patch 22/71] KVM: MMU: do not free active mmu pages in free_mmu_pages()
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       Glauber Costa <glommer@redhat.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>, avi@redhat.com
+Subject: [patch 23/71] KVM: Introduce {set/get}_interrupt_shadow()
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-mmu-do-not-free-active-mmu-pages-in-free_mmu_pages.patch
+Content-Disposition: inline; filename=kvm-introduce-set-get-_interrupt_shadow.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,48 +31,169 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Gleb Natapov <gleb@redhat.com>
+From: Glauber Costa <glommer@redhat.com>
 
-(cherry picked from commit f00be0cae4e6ad0a8c7be381c6d9be3586800b3e)
+This patch introduces set/get_interrupt_shadow(), that does exactly
+what the name suggests. It also replaces open code that explicitly does
+it with the now existent functions. It differs slightly from upstream,
+because upstream merged it after gleb's interrupt rework, that we don't
+ship.
 
-free_mmu_pages() should only undo what alloc_mmu_pages() does.
-Free mmu pages from the generic VM destruction function, kvm_destroy_vm().
+Just for reference, upstream changelog is
+(2809f5d2c4cfad171167b131bb2a21ab65eba40f):
 
-Signed-off-by: Gleb Natapov <gleb@redhat.com>
+This patch replaces drop_interrupt_shadow with the more
+general set_interrupt_shadow, that can either drop or raise
+it, depending on its parameter.  It also adds ->get_interrupt_shadow()
+for future use.
+
+Signed-off-by: Glauber Costa <glommer@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- arch/x86/kvm/mmu.c  |    8 --------
- virt/kvm/kvm_main.c |    2 ++
- 2 files changed, 2 insertions(+), 8 deletions(-)
+ arch/x86/include/asm/kvm_host.h        |    2 +
+ arch/x86/include/asm/kvm_x86_emulate.h |    3 ++
+ arch/x86/kvm/svm.c                     |   25 ++++++++++++++++++-
+ arch/x86/kvm/vmx.c                     |   42 +++++++++++++++++++++++++--------
+ 4 files changed, 62 insertions(+), 10 deletions(-)
 
---- a/arch/x86/kvm/mmu.c
-+++ b/arch/x86/kvm/mmu.c
-@@ -2657,14 +2657,6 @@ EXPORT_SYMBOL_GPL(kvm_disable_tdp);
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -513,6 +513,8 @@ struct kvm_x86_ops {
+ 	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
+ 	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
+ 	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
++	void (*set_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
++	u32 (*get_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
+ 	void (*patch_hypercall)(struct kvm_vcpu *vcpu,
+ 				unsigned char *hypercall_addr);
+ 	int (*get_irq)(struct kvm_vcpu *vcpu);
+--- a/arch/x86/include/asm/kvm_x86_emulate.h
++++ b/arch/x86/include/asm/kvm_x86_emulate.h
+@@ -143,6 +143,9 @@ struct decode_cache {
+ 	struct fetch_cache fetch;
+ };
  
- static void free_mmu_pages(struct kvm_vcpu *vcpu)
- {
--	struct kvm_mmu_page *sp;
--
--	while (!list_empty(&vcpu->kvm->arch.active_mmu_pages)) {
--		sp = container_of(vcpu->kvm->arch.active_mmu_pages.next,
--				  struct kvm_mmu_page, link);
--		kvm_mmu_zap_page(vcpu->kvm, sp);
--		cond_resched();
--	}
- 	free_page((unsigned long)vcpu->arch.mmu.pae_root);
++#define X86_SHADOW_INT_MOV_SS  1
++#define X86_SHADOW_INT_STI     2
++
+ struct x86_emulate_ctxt {
+ 	/* Register state before/after emulation. */
+ 	struct kvm_vcpu *vcpu;
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -227,6 +227,27 @@ static int is_external_interrupt(u32 inf
+ 	return info == (SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_INTR);
  }
  
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -881,6 +881,8 @@ static void kvm_destroy_vm(struct kvm *k
- #endif
- #if defined(CONFIG_MMU_NOTIFIER) && defined(KVM_ARCH_WANT_MMU_NOTIFIER)
- 	mmu_notifier_unregister(&kvm->mmu_notifier, kvm->mm);
-+#else
-+	kvm_arch_flush_shadow(kvm);
- #endif
- 	kvm_arch_destroy_vm(kvm);
- 	mmdrop(mm);
++static u32 svm_get_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++	u32 ret = 0;
++
++	if (svm->vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK)
++		ret |= X86_SHADOW_INT_STI | X86_SHADOW_INT_MOV_SS;
++	return ret & mask;
++}
++
++static void svm_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
++{
++	struct vcpu_svm *svm = to_svm(vcpu);
++
++	if (mask == 0)
++		svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
++	else
++		svm->vmcb->control.int_state |= SVM_INTERRUPT_SHADOW_MASK;
++
++}
++
+ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
+ {
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+@@ -240,7 +261,7 @@ static void skip_emulated_instruction(st
+ 		       __func__, kvm_rip_read(vcpu), svm->next_rip);
+ 
+ 	kvm_rip_write(vcpu, svm->next_rip);
+-	svm->vmcb->control.int_state &= ~SVM_INTERRUPT_SHADOW_MASK;
++	svm_set_interrupt_shadow(vcpu, 0);
+ 
+ 	vcpu->arch.interrupt_window_open = (svm->vcpu.arch.hflags & HF_GIF_MASK);
+ }
+@@ -2667,6 +2688,8 @@ static struct kvm_x86_ops svm_x86_ops = 
+ 	.run = svm_vcpu_run,
+ 	.handle_exit = handle_exit,
+ 	.skip_emulated_instruction = skip_emulated_instruction,
++	.set_interrupt_shadow = svm_set_interrupt_shadow,
++	.get_interrupt_shadow = svm_get_interrupt_shadow,
+ 	.patch_hypercall = svm_patch_hypercall,
+ 	.get_irq = svm_get_irq,
+ 	.set_irq = svm_set_irq,
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -732,23 +732,45 @@ static void vmx_set_rflags(struct kvm_vc
+ 	vmcs_writel(GUEST_RFLAGS, rflags);
+ }
+ 
++static u32 vmx_get_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
++{
++	u32 interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
++	int ret = 0;
++
++	if (interruptibility & GUEST_INTR_STATE_STI)
++		ret |= X86_SHADOW_INT_STI;
++	if (interruptibility & GUEST_INTR_STATE_MOV_SS)
++		ret |= X86_SHADOW_INT_MOV_SS;
++
++	return ret & mask;
++}
++
++static void vmx_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
++{
++	u32 interruptibility_old = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
++	u32 interruptibility = interruptibility_old;
++
++	interruptibility &= ~(GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS);
++
++	if (mask & X86_SHADOW_INT_MOV_SS)
++		interruptibility |= GUEST_INTR_STATE_MOV_SS;
++	if (mask & X86_SHADOW_INT_STI)
++		interruptibility |= GUEST_INTR_STATE_STI;
++
++	if ((interruptibility != interruptibility_old))
++		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO, interruptibility);
++}
++
+ static void skip_emulated_instruction(struct kvm_vcpu *vcpu)
+ {
+ 	unsigned long rip;
+-	u32 interruptibility;
+ 
+ 	rip = kvm_rip_read(vcpu);
+ 	rip += vmcs_read32(VM_EXIT_INSTRUCTION_LEN);
+ 	kvm_rip_write(vcpu, rip);
+ 
+-	/*
+-	 * We emulated an instruction, so temporary interrupt blocking
+-	 * should be removed, if set.
+-	 */
+-	interruptibility = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
+-	if (interruptibility & 3)
+-		vmcs_write32(GUEST_INTERRUPTIBILITY_INFO,
+-			     interruptibility & ~3);
++	/* skipping an emulated instruction also counts */
++	vmx_set_interrupt_shadow(vcpu, 0);
+ 	vcpu->arch.interrupt_window_open = 1;
+ }
+ 
+@@ -3738,6 +3760,8 @@ static struct kvm_x86_ops vmx_x86_ops = 
+ 	.run = vmx_vcpu_run,
+ 	.handle_exit = kvm_handle_exit,
+ 	.skip_emulated_instruction = skip_emulated_instruction,
++	.set_interrupt_shadow = vmx_set_interrupt_shadow,
++	.get_interrupt_shadow = vmx_get_interrupt_shadow,
+ 	.patch_hypercall = vmx_patch_hypercall,
+ 	.get_irq = vmx_get_irq,
+ 	.set_irq = vmx_inject_irq,
 
 
