@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753196AbZIEUBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753141AbZIEUaD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753196AbZIEUBq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 16:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753092AbZIEUBp
+	id S1753141AbZIEUaD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 16:30:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752487AbZIEUaC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 16:01:45 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:36117 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752897AbZIEUBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 16:01:44 -0400
-Date: Sat, 5 Sep 2009 13:01:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: RCU Kconfig help text
-Message-ID: <20090905200145.GB7181@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <12924.1252157230@turing-police.cc.vt.edu>
+	Sat, 5 Sep 2009 16:30:02 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47144 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751152AbZIEUaB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 16:30:01 -0400
+Date: Sat, 5 Sep 2009 13:29:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mikael Pettersson <mikpe@it.uu.se>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's
+ testsuite
+In-Reply-To: <19106.16773.461397.654704@pilspetsen.it.uu.se>
+Message-ID: <alpine.LFD.2.01.0909051256550.3414@localhost.localdomain>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <19099.52899.620345.326521@pilspetsen.it.uu.se> <19100.31254.666066.755541@pilspetsen.it.uu.se> <200909012042.59856.rjw@sisk.pl> <alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
+ <19105.5352.28380.230615@pilspetsen.it.uu.se> <alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
+ <alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org> <alpine.LFD.2.00.0909040917120.4537@eeepc.linux-foundation.org> <19106.16773.461397.654704@pilspetsen.it.uu.se>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <12924.1252157230@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 05, 2009 at 09:27:10AM -0400, Valdis.Kletnieks@vt.edu wrote:
-> init/Kconfig says:
-> 
-> "choice
->         prompt "RCU Implementation"
->         default TREE_RCU
-> 
-> config TREE_RCU
->         bool "Tree-based hierarchical RCU"
->         help
->           This option selects the RCU implementation that is
->           designed for very large SMP system with hundreds or
->           thousands of CPUs.  It also scales down nicely to
->           smaller systems.
-> 
-> config TREE_PREEMPT_RCU
->         bool "Preemptable tree-based hierarchical RCU"
->         depends on PREEMPT
->         help
->           This option selects the RCU implementation that is
->           designed for very large SMP systems with hundreds or
->           thousands of CPUs, but for which real-time response
->           is also required.
-> 
-> endchoice"
-> 
-> This leaves somebody who has a laptop wondering which choice is best for
-> a system with only one or two cores that has CONFIG_PREEMPT defined. One
-> choice says it scales down nicely, the other explicitly has a 'depends on
-> PREEMPT' attached to it...
-> 
-> (Yes, I realize in practice, the RCU sections on a laptop are probably usually
-> so short they don't matter in practice.  I finally concluded TREE_PREEMPT was
-> apparently a rename of CONFIG_PREEMPT_RCU and went with that since that was
-> working for me before...)
 
-Good point -- I will add the "It also scales down nicely to smaller
-systems" to TREE_PREEMPT_RCU.
 
-For -really- small systems, TINY_RCU will hopefully be there at some
-point, but it can only handle single-CPU systems.
+On Sat, 5 Sep 2009, Mikael Pettersson wrote:
+> 
+> Thanks, I'm testing this and the pty_write() fix on i686 and ppc64 now.
+> 
+> Sometimes the bug is difficult to trigger, so I may need to do loads of
+> testing with different gcc versions before I dare to say that it's fixed.
 
-							Thanx, Paul
+Ok, I'm going to commit the two patches, because even if there is some 
+other bug hiding too (and it doesn't fix your thing - although I think it 
+will), this is definitely a real fix regardless.
+
+And I want to do a -rc9 and let it get a couple of days of testing, since 
+I got way more pull requests than I hoped for while I was off diving.
+
+			Linus
