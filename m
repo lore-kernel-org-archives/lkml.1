@@ -1,61 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753578AbZIEWq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753603AbZIEXCF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753578AbZIEWq4 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 18:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbZIEWqz
+	id S1753603AbZIEXCF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 19:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZIEXCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 18:46:55 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:44277 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753392AbZIEWqy (ORCPT
+	Sat, 5 Sep 2009 19:02:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60341 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751819AbZIEXCE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 18:46:54 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mikael Pettersson <mikpe@it.uu.se>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Alan Cox <alan@linux.intel.com>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [Bug #14015] pty regressed again, breaking expect and gcc's testsuite
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	<19099.52899.620345.326521@pilspetsen.it.uu.se>
-	<19100.31254.666066.755541@pilspetsen.it.uu.se>
-	<200909012042.59856.rjw@sisk.pl>
-	<alpine.LFD.2.00.0909021429360.3590@eeepc.linux-foundation.org>
-	<19105.5352.28380.230615@pilspetsen.it.uu.se>
-	<alpine.LFD.2.00.0909040729490.5232@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040739060.17375@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040753370.17375@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040804450.23850@eeepc.linux-foundation.org>
-	<alpine.LFD.2.00.0909040910140.4537@eeepc.linux-foundation.org>
-	<87pra55nsr.fsf@devron.myhome.or.jp>
-	<20090905225642.79251527@lxorguk.ukuu.org.uk>
-Date: Sun, 06 Sep 2009 07:46:51 +0900
-In-Reply-To: <20090905225642.79251527@lxorguk.ukuu.org.uk> (Alan Cox's message
-	of "Sat, 5 Sep 2009 22:56:42 +0100")
-Message-ID: <87y6ot3t7o.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 Sep 2009 19:02:04 -0400
+Date: Sat, 5 Sep 2009 16:01:40 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>,
+       linux-fbdev-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       JosephChan@via.com.tw, ScottFang@viatech.com.cn
+Subject: Re: [PATCH v2] viafb: 2D engine rewrite (and viafb patches in
+ general)
+Message-Id: <20090905160140.7b36527f.akpm@linux-foundation.org>
+In-Reply-To: <20090905161645.74a49a84@bike.lwn.net>
+References: <1251666438-5448-1-git-send-email-FlorianSchandinat@gmx.de>
+	<1252097032-3568-1-git-send-email-FlorianSchandinat@gmx.de>
+	<20090905161645.74a49a84@bike.lwn.net>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
+On Sat, 5 Sep 2009 16:16:45 -0600 Jonathan Corbet <corbet@lwn.net> wrote:
 
->> So, it will use the 64kb limit at least few paths, and I'm not sure
->> though, non-n_tty path (e.g. ppp) doesn't use tty_write_room() check
->> always. It may not be consistent if we removed pty_space() in pty_write().
->
-> The correct behaviour for most network protocols to overflow is to drop
-> packets so the behaviour of not checking was intentional.
+> On Fri,  4 Sep 2009 20:43:52 +0000
+> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+> 
+> > This patch is a completly rewritten 2D engine. The engine is no longer
+> > in a default state but reinitialized every time to allow usage for both
+> > framebuffers regardless of their settings.
+> > The whole engine handling is concentrated in a big function which takes
+> > 16 parameters.
+> 
+> Ouch, that's a lot of parameters.  Might it be better to create a
+> structure to encapsulate all of those drawing parameters?
 
-I see. I meant, ppp doesn't check (64kb) on write, but post-process(?)
-checks (8kb). If there is this situation, I just worried it becomes the
-cause of wrong behavior.
+I was wondering that.  There's less advantage to that than usual
+because the call graph is not at all deep.
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+> On a more general level: is anybody maintaining a tree for patches to
+> the viafb driver?
+
+-mm.
+
+>  I'm going to be doing some work here (writing a
+> driver for the video capture engine), and there's patches sitting in
+> Harald's tree and the OLPC tree.
+
+As far as the rest of the world is concerned, that stuff doesn't exist.
+
+>  It seems like a central merge point
+> might be a nice thing to have.
+> 
+> I'd be happy to run such a tree.  I'm really *not* qualified to be
+> passing judgment on patches to the framebuffer driver at this point,
+> though, so I'm not sure that I'm the best person for the job.
+
+Send 'em over.  I haven't heard anything from the original viafb
+submitters for a long time.  Hopefully Florian has time to help out
+with some review-n-test.
+
