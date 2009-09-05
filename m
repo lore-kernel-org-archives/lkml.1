@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932800AbZIEMVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757359AbZIEMjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932800AbZIEMVW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 08:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932672AbZIEMVT
+	id S1757359AbZIEMjs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 08:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757168AbZIEMjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 08:21:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:20839 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932477AbZIEMVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 08:21:18 -0400
-Message-ID: <4AA2579F.9010802@redhat.com>
-Date: Sat, 05 Sep 2009 08:20:47 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Sat, 5 Sep 2009 08:39:47 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:39784 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbZIEMjq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 08:39:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=OoyMOcctIPJNVxBNdsgvgP3R7o7uOEDp8JOS7k9RjIf9YxmyHhZQAVbm3vtEVOXP4b
+         0QJJC4zRmUooBYGK9BMFjM9x6cbohYtq+kknS41c90Fc2Dwq/uXWqePZXW+TSzh8y830
+         uRfHaNOwocFNZGq4Y+rgDDCQUKcvLerk480QQ=
+Message-ID: <4AA25C11.9050209@gmail.com>
+Date: Sat, 05 Sep 2009 14:39:45 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.5 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Rob Landley <rob@landley.net>, jim owens <jowens@hp.com>, david@lang.hm,
-       Theodore Tso <tytso@mit.edu>, Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: [testcase] test your fs/storage stack (was Re: [patch] ext2/3:
- document conditions when reliable operation is possible)
-References: <20090826001645.GN4300@elf.ucw.cz> <200909022141.48827.rob@landley.net> <4A9FCF53.10105@hp.com> <200909040244.54772.rob@landley.net> <4AA0FECE.3010200@redhat.com> <20090905102810.GA1341@ucw.cz>
-In-Reply-To: <20090905102810.GA1341@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Nick Piggin <npiggin@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [-mm] warning during suspend [was: suspend race -mm regression]
+References: <1249980093-16319-1-git-send-email-jirislaby@gmail.com> <4A81E073.5080703@gmail.com> <4A9B9C1C.9020506@gmail.com> <200908312132.10904.rjw@sisk.pl> <4AA0FEBF.7040104@gmail.com> <4AA19520.3070708@gmail.com> <4AA19668.5080909@gmail.com>
+In-Reply-To: <4AA19668.5080909@gmail.com>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/05/2009 06:28 AM, Pavel Machek wrote:
-> On Fri 2009-09-04 07:49:34, Ric Wheeler wrote:
->    
->> On 09/04/2009 03:44 AM, Rob Landley wrote:
->>      
->>> On Thursday 03 September 2009 09:14:43 jim owens wrote:
->>>
->>>        
->>>> Rob Landley wrote:
->>>>
->>>>          
->>>>> I think he understands he was clueless too, that's why he investigated
->>>>> the failure and wrote it up for posterity.
->>>>>
->>>>>
->>>>>            
->>>>>> And Ric said do not stigmatize whole classes of A) devices, B) raid,
->>>>>> and C) filesystems with "Pavel says...".
->>>>>>
->>>>>>              
->>>>> I don't care what "Pavel says", so you can leave the ad hominem at the
->>>>> door, thanks.
->>>>>
->>>>>            
->>>> See, this is exactly the problem we have with all the proposed
->>>> documentation.  The reader (you) did not get what the writer (me)
->>>> was trying to say.  That does not say either of us was wrong in
->>>> what we thought was meant, simply that we did not communicate.
->>>>
->>>>          
->>> That's why I've mostly stopped bothering with this thread.  I could respond to
->>> Ric Wheeler's latest (what does write barriers have to do with whether or not
->>> a multi-sector stripe is guaranteed to be atomically updated during a panic or
->>> power failure?) but there's just no point.
->>>
->>>        
->> The point of that post was that the failure that you and Pavel both
->> attribute to RAID and journalled fs happens whenever the storage cannot
->> promise to do atomic writes of a logical FS block (prevent torn
->> pages/split writes/etc). I gave a specific example of why this happens
->> even with simple, single disk systems.
->>      
-> ext3 does not expect atomic write of 4K block, according to Ted. So
-> no, it is not broken on single disk.
->    
+On 09/05/2009 12:36 AM, Jiri Slaby wrote:
+> On 09/05/2009 12:30 AM, Jiri Slaby wrote:
+>> WARNING: at kernel/smp.c:124
+>> __generic_smp_call_function_interrupt+0xfd/0x110()
+>> Hardware name: To Be Filled By O.E.M.
+>> Modules linked in: nfs lockd auth_rpcgss sunrpc ath5k ath
+>> Pid: 3423, comm: pm-suspend Not tainted 2.6.31-rc8-mm1_64 #762
+>> Call Trace:
+>>  [<ffffffff8103fc48>] warn_slowpath_common+0x78/0xb0
+>>  [<ffffffff8103fc8f>] warn_slowpath_null+0xf/0x20
+>>  [<ffffffff8106950d>] __generic_smp_call_function_interrupt+0xfd/0x110
+>>  [<ffffffff8106956a>] hotplug_cfd+0x4a/0xa0
+>>  [<ffffffff81434e47>] notifier_call_chain+0x47/0x90
+>>  [<ffffffff8105b311>] raw_notifier_call_chain+0x11/0x20
+>>  [<ffffffff8141ece0>] _cpu_down+0x150/0x2d0
+> 
+> It's the CPU_DEAD notifier:
+> ffffffff8141ecd0:       48 83 ce 07             or     $0x7,%rsi
+> ffffffff8141ecd4:       48 c7 c7 08 ff 5d 81    mov
+> $0xffffffff815dff08,%rdi
+> ffffffff8141ecdb:       e8 20 c6 c3 ff          callq  ffffffff8105b300
+> <raw_notifier_call_chain>
+> ffffffff8141ece0:       3d 02 80 00 00          cmp    $0x8002,%eax
 
-I am not sure what you mean by "expect."
+And it's due to:
+generic-ipi-fix-the-race-between-generic_smp_call_function_-and-hotplug_cfd.patch
 
-ext3 (and other file systems) certainly expect that acknowledged writes 
-will still be there after a crash.
-
-With your disk write cache on (and no working barriers or non-volatile 
-write cache), this will always require a repair via fsck or leave you 
-with corrupted data or metadata.
-
-ext4, btrfs and zfs all do checksumming of writes, but this is a 
-detection mechanism.
-
-Repair of the partial write is done on detection (if you have another 
-copy in btrfs or xfs) or by repair (ext4's fsck).
-
-For what it's worth, this is the same story with databases (DB2, Oracle, 
-etc). They spend a lot of energy trying to detect partial writes from 
-the application level's point of view and their granularity is often 
-multiple fs blocks....
-
->
->    
->>> The LWN article on the topic is out, and incomplete as it is I expect it's the
->>> best documentation anybody will actually _read_.
->>>        
-> Would anyone (probably privately?) share the lwn link?
-> 								Pavel
->    
-
+Should the WARN_ONs now warn only when run_callbacks is true?
