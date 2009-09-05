@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964918AbZIEA0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964906AbZIEAZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964918AbZIEA0Q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934633AbZIEA0M
+	id S964906AbZIEAZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964899AbZIEAZt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:26:12 -0400
-Received: from kroah.org ([198.145.64.141]:42286 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:25:49 -0400
+Received: from kroah.org ([198.145.64.141]:42288 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934593AbZIEAVU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:21:20 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:55 2009
-Message-Id: <20090905001455.863242923@mini.kroah.org>
+	id S934672AbZIEAVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:21:21 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:56 2009
+Message-Id: <20090905001456.006786520@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:14:30 -0700
+Date: Fri, 04 Sep 2009 17:14:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Jim Paris <jim@jtan.com>, linux-media@vger.kernel.org,
-       Jean-Francois Moine <moinejf@free.fr>
-Subject: [patch 55/71] gspca - ov534: Fix ov772x
+       Robert Peterson <rpeterso@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 56/71] kthreads: fix kthread_create() vs kthread_stop() race
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=gspca-ov534-fix-ov772x.patch
+Content-Disposition: inline; filename=kthreads-fix-kthread_create-vs-kthread_stop-race.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,35 +30,47 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Jean-Francois Moine <moinejf@free.fr>
+From: Oleg Nesterov <oleg@redhat.com>
 
-The scan of the image packets of the sensor ov772x was broken when
-the sensor ov965x was added.
+The bug should be "accidently" fixed by recent changes in 2.6.31,
+all kernels <= 2.6.30 need the fix. The problem was never noticed before,
+it was found because it causes mysterious failures with GFS mount/umount.
 
-[ Based on upstream c874f3aa, modified slightly for v2.6.30.5 ]
+Credits to Robert Peterson. He blaimed kthread.c from the very beginning.
+But, despite my promise, I forgot to inspect the old implementation until
+he did a lot of testing and reminded me. This led to huge delay in fixing
+this bug.
 
-Signed-off-by: Jim Paris <jim@jtan.com>
-Acked-by: Jean-Francois Moine <moinejf@free.fr>
+kthread_stop() does put_task_struct(k) before it clears kthread_stop_info.k.
+This means another kthread_create() can re-use this task_struct, but the
+new kthread can still see kthread_should_stop() == T and exit even without
+calling threadfn().
+
+Reported-by: Robert Peterson <rpeterso@redhat.com>
+Tested-by: Robert Peterson <rpeterso@redhat.com>
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/gspca/ov534.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ kernel/kthread.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/media/video/gspca/ov534.c
-+++ b/drivers/media/video/gspca/ov534.c
-@@ -832,9 +832,11 @@ static void sd_pkt_scan(struct gspca_dev
- 	__u32 this_pts;
- 	u16 this_fid;
- 	int remaining_len = len;
-+	int payload_len;
+--- a/kernel/kthread.c
++++ b/kernel/kthread.c
+@@ -216,12 +216,12 @@ int kthread_stop(struct task_struct *k)
+ 	/* Now set kthread_should_stop() to true, and wake it up. */
+ 	kthread_stop_info.k = k;
+ 	wake_up_process(k);
+-	put_task_struct(k);
  
-+	payload_len = (sd->sensor == SENSOR_OV772X) ? 2048 : 2040;
- 	do {
--		len = min(remaining_len, 2040);		/*fixme: was 2048*/
-+		len = min(remaining_len, payload_len);
+ 	/* Once it dies, reset stop ptr, gather result and we're done. */
+ 	wait_for_completion(&kthread_stop_info.done);
+ 	kthread_stop_info.k = NULL;
+ 	ret = kthread_stop_info.err;
++	put_task_struct(k);
+ 	mutex_unlock(&kthread_stop_lock);
  
- 		/* Payloads are prefixed with a UVC-style header.  We
- 		   consider a frame to start when the FID toggles, or the PTS
+ 	trace_sched_kthread_stop_ret(ret);
 
 
