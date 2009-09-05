@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964867AbZIEAVu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934678AbZIEAY3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964867AbZIEAVu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:21:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964850AbZIEAVn
+	id S934678AbZIEAY3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:24:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964790AbZIEAY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:21:43 -0400
-Received: from kroah.org ([198.145.64.141]:42286 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:24:26 -0400
+Received: from kroah.org ([198.145.64.141]:42297 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964799AbZIEAVZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:21:25 -0400
+	id S964800AbZIEAV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:21:26 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:56 2009
-Message-Id: <20090905001456.474373462@mini.kroah.org>
+Message-Id: <20090905001456.619370111@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:14:34 -0700
+Date: Fri, 04 Sep 2009 17:14:35 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 59/71] USB: EHCI: use the new clear_tt_buffer interface
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>
+Subject: [patch 60/71] USB: EHCI: fix two new bugs related to Clear-TT-Buffer
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ehci-use-the-new-clear_tt_buffer-interface.patch
+Content-Disposition: inline; filename=usb-ehci-fix-two-new-bugs-related-to-clear-tt-buffer.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,260 +32,86 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 914b701280a76f96890ad63eb0fa99bf204b961c upstream.
+commit 7a0f0d951273eee889c2441846842348ebc00a2a upstream.
 
-This patch (as1256) changes ehci-hcd and all the other drivers in the
-EHCI family to make use of the new clear_tt_buffer callbacks.  When a
-Clear-TT-Buffer request is in progress for a QH, the QH is not allowed
-to be linked into the async schedule until the request is finished.
-At that time, if there are any URBs queued for the QH, it is linked
-into the async schedule.
+This patch (as1273) fixes two(!) bugs introduced by the new
+Clear-TT-Buffer implementation in ehci-hcd.
+
+	It is now possible for an idle QH to have some URBs on its
+	queue -- this will happen if a Clear-TT-Buffer is pending for
+	the QH's endpoint.  Consequently we should not issue a warning
+	when someone tries to unlink an URB from an idle QH; instead
+	we should process the request immediately.
+
+	The refcounts for QHs could get messed up, because
+	submit_async() would increment the refcount when calling
+	qh_link_async() and qh_link_async() would then refuse to link
+	the QH into the schedule if a Clear-TT-Buffer was pending.
+	Instead we should increment the refcount only when the QH
+	actually is added to the schedule.  The current code tries to
+	be clever by leaving the refcount alone if an unlink is
+	immediately followed by a relink; the patch changes this to an
+	unconditional decrement and increment (although they occur in
+	the opposite order).
 
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+CC: David Brownell <david-b@pacbell.net>
+Tested-by: Manuel Lauss <manuel.lauss@gmail.com>
+Tested-by: Matthijs Kooijman <matthijs@stdin.nl>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-au1xxx.c |    2 
- drivers/usb/host/ehci-fsl.c    |    2 
- drivers/usb/host/ehci-hcd.c    |    2 
- drivers/usb/host/ehci-ixp4xx.c |    2 
- drivers/usb/host/ehci-orion.c  |    2 
- drivers/usb/host/ehci-pci.c    |    2 
- drivers/usb/host/ehci-ppc-of.c |    2 
- drivers/usb/host/ehci-ps3.c    |    2 
- drivers/usb/host/ehci-q.c      |   91 ++++++++++++++++++++++++++++++-----------
- drivers/usb/host/ehci.h        |    2 
- 10 files changed, 86 insertions(+), 23 deletions(-)
+ drivers/usb/host/ehci-hcd.c |    3 ++-
+ drivers/usb/host/ehci-q.c   |    6 +++---
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/host/ehci-au1xxx.c
-+++ b/drivers/usb/host/ehci-au1xxx.c
-@@ -112,6 +112,8 @@ static const struct hc_driver ehci_au1xx
- 	.bus_resume		= ehci_bus_resume,
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- static int ehci_hcd_au1xxx_drv_probe(struct platform_device *pdev)
---- a/drivers/usb/host/ehci-fsl.c
-+++ b/drivers/usb/host/ehci-fsl.c
-@@ -324,6 +324,8 @@ static const struct hc_driver ehci_fsl_h
- 	.bus_resume = ehci_bus_resume,
- 	.relinquish_port = ehci_relinquish_port,
- 	.port_handed_over = ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
- };
- 
- static int ehci_fsl_drv_probe(struct platform_device *pdev)
---- a/drivers/usb/host/ehci.h
-+++ b/drivers/usb/host/ehci.h
-@@ -353,7 +353,9 @@ struct ehci_qh {
- 	unsigned short		period;		/* polling interval */
- 	unsigned short		start;		/* where polling starts */
- #define NO_FRAME ((unsigned short)~0)			/* pick new start */
-+
- 	struct usb_device	*dev;		/* access to TT */
-+	unsigned		clearing_tt:1;	/* Clear-TT-Buf in progress */
- } __attribute__ ((aligned (32)));
- 
- /*-------------------------------------------------------------------------*/
 --- a/drivers/usb/host/ehci-hcd.c
 +++ b/drivers/usb/host/ehci-hcd.c
-@@ -1003,6 +1003,8 @@ idle_timeout:
- 		schedule_timeout_uninterruptible(1);
- 		goto rescan;
- 	case QH_STATE_IDLE:		/* fully unlinked */
-+		if (qh->clearing_tt)
-+			goto idle_timeout;
- 		if (list_empty (&qh->qtd_list)) {
- 			qh_put (qh);
+@@ -903,7 +903,8 @@ static int ehci_urb_dequeue(struct usb_h
+ 			/* already started */
  			break;
---- a/drivers/usb/host/ehci-ixp4xx.c
-+++ b/drivers/usb/host/ehci-ixp4xx.c
-@@ -60,6 +60,8 @@ static const struct hc_driver ixp4xx_ehc
- #endif
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- static int ixp4xx_ehci_probe(struct platform_device *pdev)
---- a/drivers/usb/host/ehci-orion.c
-+++ b/drivers/usb/host/ehci-orion.c
-@@ -164,6 +164,8 @@ static const struct hc_driver ehci_orion
- 	.bus_resume = ehci_bus_resume,
- 	.relinquish_port = ehci_relinquish_port,
- 	.port_handed_over = ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete = ehci_clear_tt_buffer_complete,
- };
- 
- static void __init
---- a/drivers/usb/host/ehci-pci.c
-+++ b/drivers/usb/host/ehci-pci.c
-@@ -408,6 +408,8 @@ static const struct hc_driver ehci_pci_h
- 	.bus_resume =		ehci_bus_resume,
- 	.relinquish_port =	ehci_relinquish_port,
- 	.port_handed_over =	ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- /*-------------------------------------------------------------------------*/
---- a/drivers/usb/host/ehci-ppc-of.c
-+++ b/drivers/usb/host/ehci-ppc-of.c
-@@ -78,6 +78,8 @@ static const struct hc_driver ehci_ppc_o
- #endif
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- 
---- a/drivers/usb/host/ehci-ps3.c
-+++ b/drivers/usb/host/ehci-ps3.c
-@@ -74,6 +74,8 @@ static const struct hc_driver ps3_ehci_h
- #endif
- 	.relinquish_port	= ehci_relinquish_port,
- 	.port_handed_over	= ehci_port_handed_over,
-+
-+	.clear_tt_buffer_complete	= ehci_clear_tt_buffer_complete,
- };
- 
- static int ps3_ehci_probe(struct ps3_system_bus_device *dev)
+ 		case QH_STATE_IDLE:
+-			WARN_ON(1);
++			/* QH might be waiting for a Clear-TT-Buffer */
++			qh_completions(ehci, qh);
+ 			break;
+ 		}
+ 		break;
 --- a/drivers/usb/host/ehci-q.c
 +++ b/drivers/usb/host/ehci-q.c
-@@ -139,6 +139,55 @@ qh_refresh (struct ehci_hcd *ehci, struc
+@@ -938,6 +938,7 @@ static void qh_link_async (struct ehci_h
+ 	head->qh_next.qh = qh;
+ 	head->hw_next = dma;
  
- /*-------------------------------------------------------------------------*/
- 
-+static void qh_link_async(struct ehci_hcd *ehci, struct ehci_qh *qh);
-+
-+static void ehci_clear_tt_buffer_complete(struct usb_hcd *hcd,
-+		struct usb_host_endpoint *ep)
-+{
-+	struct ehci_hcd		*ehci = hcd_to_ehci(hcd);
-+	struct ehci_qh		*qh = ep->hcpriv;
-+	unsigned long		flags;
-+
-+	spin_lock_irqsave(&ehci->lock, flags);
-+	qh->clearing_tt = 0;
-+	if (qh->qh_state == QH_STATE_IDLE && !list_empty(&qh->qtd_list)
-+			&& HC_IS_RUNNING(hcd->state))
++	qh_get(qh);
+ 	qh->xacterrs = QH_XACTERR_MAX;
+ 	qh->qh_state = QH_STATE_LINKED;
+ 	/* qtd completions reported later by interrupt */
+@@ -1078,7 +1079,7 @@ submit_async (
+ 	 * the HC and TT handle it when the TT has a buffer ready.
+ 	 */
+ 	if (likely (qh->qh_state == QH_STATE_IDLE))
+-		qh_link_async (ehci, qh_get (qh));
 +		qh_link_async(ehci, qh);
-+	spin_unlock_irqrestore(&ehci->lock, flags);
-+}
-+
-+static void ehci_clear_tt_buffer(struct ehci_hcd *ehci, struct ehci_qh *qh,
-+		struct urb *urb, u32 token)
-+{
-+
-+	/* If an async split transaction gets an error or is unlinked,
-+	 * the TT buffer may be left in an indeterminate state.  We
-+	 * have to clear the TT buffer.
-+	 *
-+	 * Note: this routine is never called for Isochronous transfers.
-+	 */
-+	if (urb->dev->tt && !usb_pipeint(urb->pipe) && !qh->clearing_tt) {
-+#ifdef DEBUG
-+		struct usb_device *tt = urb->dev->tt->hub;
-+		dev_dbg(&tt->dev,
-+			"clear tt buffer port %d, a%d ep%d t%08x\n",
-+			urb->dev->ttport, urb->dev->devnum,
-+			usb_pipeendpoint(urb->pipe), token);
-+#endif /* DEBUG */
-+		if (!ehci_is_TDI(ehci)
-+				|| urb->dev->tt->hub !=
-+				   ehci_to_hcd(ehci)->self.root_hub) {
-+			if (usb_hub_clear_tt_buffer(urb) == 0)
-+				qh->clearing_tt = 1;
-+		} else {
-+
-+			/* REVISIT ARC-derived cores don't clear the root
-+			 * hub TT buffer in this way...
-+			 */
-+		}
-+	}
-+}
-+
- static int qtd_copy_status (
- 	struct ehci_hcd *ehci,
- 	struct urb *urb,
-@@ -195,28 +244,6 @@ static int qtd_copy_status (
- 			usb_pipeendpoint (urb->pipe),
- 			usb_pipein (urb->pipe) ? "in" : "out",
- 			token, status);
+  done:
+ 	spin_unlock_irqrestore (&ehci->lock, flags);
+ 	if (unlikely (qh == NULL))
+@@ -1113,8 +1114,6 @@ static void end_unlink_async (struct ehc
+ 			&& HC_IS_RUNNING (ehci_to_hcd(ehci)->state))
+ 		qh_link_async (ehci, qh);
+ 	else {
+-		qh_put (qh);		// refcount from async list
 -
--		/* if async CSPLIT failed, try cleaning out the TT buffer */
--		if (status != -EPIPE
--				&& urb->dev->tt
--				&& !usb_pipeint(urb->pipe)
--				&& ((token & QTD_STS_MMF) != 0
--					|| QTD_CERR(token) == 0)
--				&& (!ehci_is_TDI(ehci)
--			                || urb->dev->tt->hub !=
--					   ehci_to_hcd(ehci)->self.root_hub)) {
--#ifdef DEBUG
--			struct usb_device *tt = urb->dev->tt->hub;
--			dev_dbg (&tt->dev,
--				"clear tt buffer port %d, a%d ep%d t%08x\n",
--				urb->dev->ttport, urb->dev->devnum,
--				usb_pipeendpoint (urb->pipe), token);
--#endif /* DEBUG */
--			/* REVISIT ARC-derived cores don't clear the root
--			 * hub TT buffer in this way...
--			 */
--			usb_hub_clear_tt_buffer(urb);
--		}
+ 		/* it's not free to turn the async schedule on/off; leave it
+ 		 * active but idle for a while once it empties.
+ 		 */
+@@ -1122,6 +1121,7 @@ static void end_unlink_async (struct ehc
+ 				&& ehci->async->qh_next.qh == NULL)
+ 			timer_action (ehci, TIMER_ASYNC_OFF);
  	}
++	qh_put(qh);			/* refcount from async list */
  
- 	return status;
-@@ -407,9 +434,16 @@ qh_completions (struct ehci_hcd *ehci, s
- 			/* qh unlinked; token in overlay may be most current */
- 			if (state == QH_STATE_IDLE
- 					&& cpu_to_hc32(ehci, qtd->qtd_dma)
--						== qh->hw_current)
-+						== qh->hw_current) {
- 				token = hc32_to_cpu(ehci, qh->hw_token);
- 
-+				/* An unlink may leave an incomplete
-+				 * async transaction in the TT buffer.
-+				 * We have to clear it.
-+				 */
-+				ehci_clear_tt_buffer(ehci, qh, urb, token);
-+			}
-+
- 			/* force halt for unlinked or blocked qh, so we'll
- 			 * patch the qh later and so that completions can't
- 			 * activate it while we "know" it's stopped.
-@@ -435,6 +469,13 @@ halt:
- 					&& (qtd->hw_alt_next
- 						& EHCI_LIST_END(ehci)))
- 				last_status = -EINPROGRESS;
-+
-+			/* As part of low/full-speed endpoint-halt processing
-+			 * we must clear the TT buffer (11.17.5).
-+			 */
-+			if (unlikely(last_status != -EINPROGRESS &&
-+					last_status != -EREMOTEIO))
-+				ehci_clear_tt_buffer(ehci, qh, urb, token);
- 		}
- 
- 		/* if we're removing something not at the queue head,
-@@ -864,6 +905,10 @@ static void qh_link_async (struct ehci_h
- 	__hc32		dma = QH_NEXT(ehci, qh->qh_dma);
- 	struct ehci_qh	*head;
- 
-+	/* Don't link a QH if there's a Clear-TT-Buffer pending */
-+	if (unlikely(qh->clearing_tt))
-+		return;
-+
- 	/* (re)start the async schedule? */
- 	head = ehci->async;
- 	timer_action_done (ehci, TIMER_ASYNC_OFF);
+ 	if (next) {
+ 		ehci->reclaim = NULL;
 
 
