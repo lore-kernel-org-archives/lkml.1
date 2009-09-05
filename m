@@ -1,136 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757349AbZIELLC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932703AbZIELSJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757349AbZIELLC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 07:11:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbZIELLB
+	id S932703AbZIELSJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 07:18:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbZIELSI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 07:11:01 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:53117 "EHLO mx1.redhat.com"
+	Sat, 5 Sep 2009 07:18:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51829 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757317AbZIELLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 07:11:00 -0400
-Date: Sat, 5 Sep 2009 07:10:52 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
-Message-ID: <20090905071052.50501826@tlielax.poochiereds.net>
-In-Reply-To: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
+	id S1757288AbZIELSG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 07:18:06 -0400
+Subject: 20 Section mismatch warnings from x86_init,
+ arch/x86/kernel/x86_init.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sat, 05 Sep 2009 16:44:30 +0530
+Message-Id: <1252149270.4969.6.camel@ht.satnam>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Sep 2009 12:27:35 -0400 (EDT)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+WARNING: arch/x86/kernel/built-in.o(.data+0x1c8): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
 
-> This is on 32 bit x86 on a Dell 1950
-> 
-> After mouting a cifs share we have 5 second hiccups. Typical log output
-> when doing a simple "ls /mnt":
-> 
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/transport.c: For smb_command 50
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/transport.c: Sending smb:
-> total_len 118
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/inode.c: CIFS VFS: leaving
-> cifs_revalidate (xid = 258) rc = 0
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/dir.c: CIFS VFS: in cifs_lookup
-> as Xid: 263 with uid: 0
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/dir.c: parent inode = 0xf58d2e60
-> name is: AutoWire.bmp and dentry = 0xf5adb63c
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/dir.c: NULL inode in lookup
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/dir.c: Full path: \AutoWire.bmp
-> inode = 0x(null)
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/inode.c: Getting info on \AutoWire.bmp
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/transport.c: For smb_command 50
-> Sep  4 16:21:43 rd-spare kernel:  fs/cifs/transport.c: Sending smb:  total_len 104
-> 
->  ---- 5 second hiccup
-> 
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/connect.c: rfc1002 length 0xce
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/connect.c: rfc1002 length 0xc0
+WARNING: arch/x86/kernel/built-in.o(.data+0x1cc): Section mismatch in reference from the variable x86_init to the function .init.text:reserve_standard_io_resources()
+The variable x86_init references
+the function __init reserve_standard_io_resources()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
 
-(adding linux-cifs-client mailing list)
+WARNING: arch/x86/kernel/built-in.o(.data+0x1d0): Section mismatch in reference from the variable x86_init to the function .init.text:default_machine_specific_memory_setup()
+The variable x86_init references
+the function __init default_machine_specific_memory_setup()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
 
-It looks like it's just taking 5s for the server to respond here. Do
-you happen to have a wire capture of one of these events? That may tell
-us more than cifsFYI info...
+WARNING: arch/x86/kernel/built-in.o(.data+0x1d4): Section mismatch in reference from the variable x86_init to the function .init.text:x86_init_uint_noop()
+The variable x86_init references
+the function __init x86_init_uint_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
 
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: inode 0xf5876518 old_time=26000 new_time=32751
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: cifs_revalidate - inode unchanged
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/file.c: CIFS VFS: in cifs_writepages as Xid: 264 with uid: 0
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/file.c: CIFS VFS: leaving cifs_writepages (xid = 264) rc = 0
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: CIFS VFS: leaving cifs_revalidate (xid = 262) rc = 0
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: CIFS VFS: in cifs_revalidate as Xid: 265 with uid: 0
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: Revalidate: \Akamai Headsets.doc inode 0xf5876518 count 2 dentry: 0xf5ada8d0 d_time 260
-> 00 jiffies 32751
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: CIFS VFS: leaving cifs_revalidate (xid = 265) rc = 0
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: CIFS VFS: in cifs_revalidate as Xid: 266 with uid: 0
-> Sep  4 16:21:48 rd-spare kernel:  fs/cifs/inode.c: Revalidate: \Akamai Headsets.doc inode 0xf5876518 count 2 dentry: 0xf5ada8d0 d_time 260
-> 00 jiffies 32751
-> 
-> 
-> This is happening intermittently on a variety of hosts.
-> 
-> cat /proc/fs/cifs/DebugData
-> 
-> Display Internal CIFS Data Structures for Debugging
-> ---------------------------------------------------
-> CIFS Version 1.60
-> Active VFS Requests: 2
-> Servers:
-> 1) Name: 10.2.4.64  Domain: W2K Uses: 1 OS: Windows Server 2003 R2 3790
-> Service Pack 2
-> 	NOS: Windows Server 2003 R2 5.2	Capability: 0x1f3fd
-> 	SMB session status: 1	TCP status: 1
-> 	Local Users To Server: 1 SecMode: 0x3 Req On Wire: 2
-> 	Shares:
-> 	1) \\chiprodfs2\company Mounts: 1 Type: NTFS DevInfo: 0x20
-> Attributes: 0x700ff
-> PathComponentMax: 255 Status: 0x1 type: DISK
-> 
-> 	MIDs:
-> 	State: 2 com: 50 pid: 5951 tsk: f756d1b0 mid 277
-> 	State: 2 com: 50 pid: 6044 tsk: f69d4760 mid 278
-> 
-> cat /proc/fs/cifs/Stats
-> 
-> Resources in use
-> CIFS Session: 1
-> Share (unique mount targets): 1
-> SMB Request/Response Buffer: 5 Pool size: 5
-> SMB Small Req/Resp Buffer: 1 Pool size: 30
-> Operations (MIDs): 2
-> 
-> 0 session 0 share reconnects
-> Total vfs operations: 525 maximum at one time: 3
-> 
-> 1) \\chiprodfs2\company
-> SMBs: 305 Oplock Breaks: 0
-> Reads:  0 Bytes: 0
-> Writes: 0 Bytes: 0
-> Flushes: 0
-> Locks: 0 HardLinks: 0 Symlinks: 0
-> Opens: 0 Closes: 0 Deletes: 0
-> Posix Opens: 0 Posix Mkdirs: 0
-> Mkdirs: 0 Rmdirs: 0
-> Renames: 0 T2 Renames 0
-> FindFirst: 2 FNext 0 FClose 0
-> 
-> 
-> What is this ???
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+WARNING: arch/x86/kernel/built-in.o(.data+0x1d8): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1dc): Section mismatch in reference from the variable x86_init to the function .init.text:default_mpc_apic_id()
+The variable x86_init references
+the function __init default_mpc_apic_id()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1e0): Section mismatch in reference from the variable x86_init to the function .init.text:default_smp_read_mpc_oem()
+The variable x86_init references
+the function __init default_smp_read_mpc_oem()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1e8): Section mismatch in reference from the variable x86_init to the function .init.text:default_mpc_oem_bus_info()
+The variable x86_init references
+the function __init default_mpc_oem_bus_info()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1ec): Section mismatch in reference from the variable x86_init to the function .init.text:default_find_smp_config()
+The variable x86_init references
+the function __init default_find_smp_config()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1f0): Section mismatch in reference from the variable x86_init to the function .init.text:default_get_smp_config()
+The variable x86_init references
+the function __init default_get_smp_config()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1f4): Section mismatch in reference from the variable x86_init to the function .init.text:init_ISA_irqs()
+The variable x86_init references
+the function __init init_ISA_irqs()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1f8): Section mismatch in reference from the variable x86_init to the function .init.text:native_init_IRQ()
+The variable x86_init references
+the function __init native_init_IRQ()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x1fc): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x200): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x204): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x210): Section mismatch in reference from the variable x86_init to the function .init.text:setup_boot_APIC_clock()
+The variable x86_init references
+the function __init setup_boot_APIC_clock()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x214): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/kernel/built-in.o(.data+0x218): Section mismatch in reference from the variable x86_init to the function .init.text:hpet_time_init()
+The variable x86_init references
+the function __init hpet_time_init()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+  LD      arch/x86/built-in.o
+WARNING: arch/x86/built-in.o(.data+0x1c8): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1cc): Section mismatch in reference from the variable x86_init to the function .init.text:reserve_standard_io_resources()
+The variable x86_init references
+the function __init reserve_standard_io_resources()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1d0): Section mismatch in reference from the variable x86_init to the function .init.text:default_machine_specific_memory_setup()
+The variable x86_init references
+the function __init default_machine_specific_memory_setup()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1d4): Section mismatch in reference from the variable x86_init to the function .init.text:x86_init_uint_noop()
+The variable x86_init references
+the function __init x86_init_uint_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1d8): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1dc): Section mismatch in reference from the variable x86_init to the function .init.text:default_mpc_apic_id()
+The variable x86_init references
+the function __init default_mpc_apic_id()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1e0): Section mismatch in reference from the variable x86_init to the function .init.text:default_smp_read_mpc_oem()
+The variable x86_init references
+the function __init default_smp_read_mpc_oem()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1e8): Section mismatch in reference from the variable x86_init to the function .init.text:default_mpc_oem_bus_info()
+The variable x86_init references
+the function __init default_mpc_oem_bus_info()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1ec): Section mismatch in reference from the variable x86_init to the function .init.text:default_find_smp_config()
+The variable x86_init references
+the function __init default_find_smp_config()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1f0): Section mismatch in reference from the variable x86_init to the function .init.text:default_get_smp_config()
+The variable x86_init references
+the function __init default_get_smp_config()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1f4): Section mismatch in reference from the variable x86_init to the function .init.text:init_ISA_irqs()
+The variable x86_init references
+the function __init init_ISA_irqs()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1f8): Section mismatch in reference from the variable x86_init to the function .init.text:native_init_IRQ()
+The variable x86_init references
+the function __init native_init_IRQ()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x1fc): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x200): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x204): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x208): Section mismatch in reference from the variable x86_init to the function .init.text:native_pagetable_setup_start()
+The variable x86_init references
+the function __init native_pagetable_setup_start()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x20c): Section mismatch in reference from the variable x86_init to the function .init.text:native_pagetable_setup_done()
+The variable x86_init references
+the function __init native_pagetable_setup_done()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x210): Section mismatch in reference from the variable x86_init to the function .init.text:setup_boot_APIC_clock()
+The variable x86_init references
+the function __init setup_boot_APIC_clock()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x214): Section mismatch in reference from the variable x86_init to the function .cpuinit.text:x86_init_noop()
+The variable x86_init references
+the function __cpuinit x86_init_noop()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+
+WARNING: arch/x86/built-in.o(.data+0x218): Section mismatch in reference from the variable x86_init to the function .init.text:hpet_time_init()
+The variable x86_init references
+the function __init hpet_time_init()
+If the reference is valid then annotate the
+variable with __init* or __refdata (see linux/init.h) or name the variable:
+*driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
 
 
--- 
-Jeff Layton <jlayton@redhat.com>
