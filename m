@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964998AbZIEAbB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934589AbZIEAVM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964998AbZIEAbB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:31:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934620AbZIEAU7
+	id S934589AbZIEAVM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:21:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964793AbZIEAVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:20:59 -0400
-Received: from kroah.org ([198.145.64.141]:42116 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:21:01 -0400
+Received: from kroah.org ([198.145.64.141]:42117 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934526AbZIEAUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:20:45 -0400
+	id S934583AbZIEAUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:20:46 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:50 2009
-Message-Id: <20090905001450.371736811@mini.kroah.org>
+Message-Id: <20090905001450.537742693@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:54 -0700
+Date: Fri, 04 Sep 2009 17:13:55 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
        Marcelo Tosatti <mtosatti@redhat.com>, avi@redhat.com
-Subject: [patch 19/71] KVM: take mmu_lock when updating a deleted slot
+Subject: [patch 20/71] KVM: x86: check for cr3 validity in mmu_alloc_roots
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-take-mmu_lock-when-updating-a-deleted-slot.patch
+Content-Disposition: inline; filename=kvm-x86-check-for-cr3-validity-in-mmu_alloc_roots.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,30 +32,107 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 ------------------
 From: Marcelo Tosatti <mtosatti@redhat.com>
 
-(cherry picked from commit b43b1901ad282aeb74161837fb403927102687a1)
+(cherry picked from commit 8986ecc0ef58c96eec48d8502c048f3ab67fd8e2)
 
-kvm_handle_hva relies on mmu_lock protection to safely access
-the memslot structures.
+Verify the cr3 address stored in vcpu->arch.cr3 points to an existant
+memslot. If not, inject a triple fault.
 
 Signed-off-by: Marcelo Tosatti <mtosatti@redhat.com>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- virt/kvm/kvm_main.c |    2 ++
- 1 file changed, 2 insertions(+)
+ arch/x86/kvm/mmu.c |   27 +++++++++++++++++++++++----
+ arch/x86/kvm/x86.c |    1 +
+ 2 files changed, 24 insertions(+), 4 deletions(-)
 
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -1055,8 +1055,10 @@ int __kvm_set_memory_region(struct kvm *
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -1942,7 +1942,19 @@ static void mmu_free_roots(struct kvm_vc
+ 	vcpu->arch.mmu.root_hpa = INVALID_PAGE;
+ }
  
- 	kvm_free_physmem_slot(&old, npages ? &new : NULL);
- 	/* Slot deletion case: we have to update the current slot */
-+	spin_lock(&kvm->mmu_lock);
- 	if (!npages)
- 		*memslot = old;
-+	spin_unlock(&kvm->mmu_lock);
- #ifdef CONFIG_DMAR
- 	/* map the pages in iommu page table */
- 	r = kvm_iommu_map_pages(kvm, base_gfn, npages);
+-static void mmu_alloc_roots(struct kvm_vcpu *vcpu)
++static int mmu_check_root(struct kvm_vcpu *vcpu, gfn_t root_gfn)
++{
++	int ret = 0;
++
++	if (!kvm_is_visible_gfn(vcpu->kvm, root_gfn)) {
++		set_bit(KVM_REQ_TRIPLE_FAULT, &vcpu->requests);
++		ret = 1;
++	}
++
++	return ret;
++}
++
++static int mmu_alloc_roots(struct kvm_vcpu *vcpu)
+ {
+ 	int i;
+ 	gfn_t root_gfn;
+@@ -1957,13 +1969,15 @@ static void mmu_alloc_roots(struct kvm_v
+ 		ASSERT(!VALID_PAGE(root));
+ 		if (tdp_enabled)
+ 			direct = 1;
++		if (mmu_check_root(vcpu, root_gfn))
++			return 1;
+ 		sp = kvm_mmu_get_page(vcpu, root_gfn, 0,
+ 				      PT64_ROOT_LEVEL, direct,
+ 				      ACC_ALL, NULL);
+ 		root = __pa(sp->spt);
+ 		++sp->root_count;
+ 		vcpu->arch.mmu.root_hpa = root;
+-		return;
++		return 0;
+ 	}
+ 	direct = !is_paging(vcpu);
+ 	if (tdp_enabled)
+@@ -1980,6 +1994,8 @@ static void mmu_alloc_roots(struct kvm_v
+ 			root_gfn = vcpu->arch.pdptrs[i] >> PAGE_SHIFT;
+ 		} else if (vcpu->arch.mmu.root_level == 0)
+ 			root_gfn = 0;
++		if (mmu_check_root(vcpu, root_gfn))
++			return 1;
+ 		sp = kvm_mmu_get_page(vcpu, root_gfn, i << 30,
+ 				      PT32_ROOT_LEVEL, direct,
+ 				      ACC_ALL, NULL);
+@@ -1988,6 +2004,7 @@ static void mmu_alloc_roots(struct kvm_v
+ 		vcpu->arch.mmu.pae_root[i] = root | PT_PRESENT_MASK;
+ 	}
+ 	vcpu->arch.mmu.root_hpa = __pa(vcpu->arch.mmu.pae_root);
++	return 0;
+ }
+ 
+ static void mmu_sync_roots(struct kvm_vcpu *vcpu)
+@@ -2006,7 +2023,7 @@ static void mmu_sync_roots(struct kvm_vc
+ 	for (i = 0; i < 4; ++i) {
+ 		hpa_t root = vcpu->arch.mmu.pae_root[i];
+ 
+-		if (root) {
++		if (root && VALID_PAGE(root)) {
+ 			root &= PT64_BASE_ADDR_MASK;
+ 			sp = page_header(root);
+ 			mmu_sync_children(vcpu, sp);
+@@ -2290,9 +2307,11 @@ int kvm_mmu_load(struct kvm_vcpu *vcpu)
+ 		goto out;
+ 	spin_lock(&vcpu->kvm->mmu_lock);
+ 	kvm_mmu_free_some_pages(vcpu);
+-	mmu_alloc_roots(vcpu);
++	r = mmu_alloc_roots(vcpu);
+ 	mmu_sync_roots(vcpu);
+ 	spin_unlock(&vcpu->kvm->mmu_lock);
++	if (r)
++		goto out;
+ 	kvm_x86_ops->set_cr3(vcpu, vcpu->arch.mmu.root_hpa);
+ 	kvm_mmu_flush_tlb(vcpu);
+ out:
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -4433,6 +4433,7 @@ int kvm_arch_set_memory_region(struct kv
+ void kvm_arch_flush_shadow(struct kvm *kvm)
+ {
+ 	kvm_mmu_zap_all(kvm);
++	kvm_reload_remote_mmus(kvm);
+ }
+ 
+ int kvm_arch_vcpu_runnable(struct kvm_vcpu *vcpu)
 
 
