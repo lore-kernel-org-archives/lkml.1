@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964946AbZIEA11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934665AbZIEA1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964946AbZIEA11 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964927AbZIEA1Z
+	id S934665AbZIEA1q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964828AbZIEA1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:27:25 -0400
-Received: from kroah.org ([198.145.64.141]:42258 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:27:22 -0400
+Received: from kroah.org ([198.145.64.141]:42264 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934649AbZIEAVP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 Sep 2009 20:21:15 -0400
+	id S934654AbZIEAVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 Sep 2009 20:21:16 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:55 2009
-Message-Id: <20090905001455.060330272@mini.kroah.org>
+Message-Id: <20090905001455.221274331@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:14:25 -0700
+Date: Fri, 04 Sep 2009 17:14:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Frans Pop <elendil@planet.nl>, Zhang Rui <rui.zhang@intel.com>,
-       Len Brown <lenb@kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: [patch 50/71] ACPI processor: force throttling state when BIOS returns incorrect value
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk, xfs@oss.sgi.com,
+       Christoph Hellwig <hch@lst.de>
+Subject: [patch 51/71] vfs: fix inode_init_always calling convention
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=acpi-processor-force-throttling-state-when-bios-returns-incorrect-value.patch
+Content-Disposition: inline; filename=vfs-fix-inode_init_always-calling-convention.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,206 +29,148 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Frans Pop <elendil@planet.nl>
+From: Christoph Hellwig <hch@infradead.org>
 
-commit 2a908002c7b1b666616103e9df2419b38d7c6f1f upstream.
+backport of upstream commit 54e346215e4fe2ca8c94c54e546cc61902060510
 
-If the BIOS reports an invalid throttling state (which seems to be
-fairly common after system boot), a reset is done to state T0.
-Because of a check in acpi_processor_get_throttling_ptc(), the reset
-never actually gets executed, which results in the error reoccurring
-on every access of for example /proc/acpi/processor/CPU0/throttling.
+Currently inode_init_always calls into ->destroy_inode if the additional
+initialization fails.  That's not only counter-intuitive because
+inode_init_always did not allocate the inode structure, but in case of
+XFS it's actively harmful as ->destroy_inode might delete the inode from
+a radix-tree that has never been added.  This in turn might end up
+deleting the inode for the same inum that has been instanciated by
+another process and cause lots of cause subtile problems.
 
-Add a 'force' option to acpi_processor_set_throttling() to ensure
-the reset really takes effect.
+Also in the case of re-initializing a reclaimable inode in XFS it would
+free an inode we still want to keep alive.
 
-Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13389
-
-This patch, together with the next one, fixes a regression introduced in
-2.6.30, listed on the regression list. They have been available for 2.5
-months now in bugzilla, but have not been picked up, despite various
-reminders and without any reason given.
-
-Google shows that numerous people are hitting this issue. The issue is in
-itself relatively minor, but the bug in the code is clear.
-
-The patches have been in all my kernels and today testing has shown that
-throttling works correctly with the patches applied when the system
-overheats (http://bugzilla.kernel.org/show_bug.cgi?id=13918#c14).
-
-Signed-off-by: Frans Pop <elendil@planet.nl>
-Acked-by: Zhang Rui <rui.zhang@intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/acpi/processor_thermal.c    |    6 +++---
- drivers/acpi/processor_throttling.c |   26 ++++++++++++++------------
- include/acpi/processor.h            |    5 +++--
- 3 files changed, 20 insertions(+), 17 deletions(-)
+ fs/inode.c         |   30 +++++++++++++++++-------------
+ fs/xfs/xfs_iget.c  |   17 +++++------------
+ include/linux/fs.h |    2 +-
+ 3 files changed, 23 insertions(+), 26 deletions(-)
 
---- a/drivers/acpi/processor_thermal.c
-+++ b/drivers/acpi/processor_thermal.c
-@@ -66,7 +66,7 @@ static int acpi_processor_apply_limit(st
- 		if (pr->limit.thermal.tx > tx)
- 			tx = pr->limit.thermal.tx;
- 
--		result = acpi_processor_set_throttling(pr, tx);
-+		result = acpi_processor_set_throttling(pr, tx, false);
- 		if (result)
- 			goto end;
- 	}
-@@ -421,12 +421,12 @@ processor_set_cur_state(struct thermal_c
- 
- 	if (state <= max_pstate) {
- 		if (pr->flags.throttling && pr->throttling.state)
--			result = acpi_processor_set_throttling(pr, 0);
-+			result = acpi_processor_set_throttling(pr, 0, false);
- 		cpufreq_set_cur_state(pr->id, state);
- 	} else {
- 		cpufreq_set_cur_state(pr->id, max_pstate);
- 		result = acpi_processor_set_throttling(pr,
--				state - max_pstate);
-+				state - max_pstate, false);
- 	}
- 	return result;
- }
---- a/drivers/acpi/processor_throttling.c
-+++ b/drivers/acpi/processor_throttling.c
-@@ -62,7 +62,8 @@ struct throttling_tstate {
- #define THROTTLING_POSTCHANGE      (2)
- 
- static int acpi_processor_get_throttling(struct acpi_processor *pr);
--int acpi_processor_set_throttling(struct acpi_processor *pr, int state);
-+int acpi_processor_set_throttling(struct acpi_processor *pr,
-+						int state, bool force);
- 
- static int acpi_processor_update_tsd_coord(void)
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -118,12 +118,11 @@ static void wake_up_inode(struct inode *
+  * These are initializations that need to be done on every inode
+  * allocation as the fields are not initialised by slab allocation.
+  */
+-struct inode *inode_init_always(struct super_block *sb, struct inode *inode)
++int inode_init_always(struct super_block *sb, struct inode *inode)
  {
-@@ -361,7 +362,7 @@ int acpi_processor_tstate_has_changed(st
+ 	static const struct address_space_operations empty_aops;
+ 	static struct inode_operations empty_iops;
+ 	static const struct file_operations empty_fops;
+-
+ 	struct address_space *const mapping = &inode->i_data;
+ 
+ 	inode->i_sb = sb;
+@@ -150,7 +149,7 @@ struct inode *inode_init_always(struct s
+ 	inode->dirtied_when = 0;
+ 
+ 	if (security_inode_alloc(inode))
+-		goto out_free_inode;
++		goto out;
+ 
+ 	/* allocate and initialize an i_integrity */
+ 	if (ima_inode_alloc(inode))
+@@ -189,16 +188,12 @@ struct inode *inode_init_always(struct s
+ 	inode->i_private = NULL;
+ 	inode->i_mapping = mapping;
+ 
+-	return inode;
++	return 0;
+ 
+ out_free_security:
+ 	security_inode_free(inode);
+-out_free_inode:
+-	if (inode->i_sb->s_op->destroy_inode)
+-		inode->i_sb->s_op->destroy_inode(inode);
+-	else
+-		kmem_cache_free(inode_cachep, (inode));
+-	return NULL;
++out:
++	return -ENOMEM;
+ }
+ EXPORT_SYMBOL(inode_init_always);
+ 
+@@ -211,9 +206,18 @@ static struct inode *alloc_inode(struct 
+ 	else
+ 		inode = kmem_cache_alloc(inode_cachep, GFP_KERNEL);
+ 
+-	if (inode)
+-		return inode_init_always(sb, inode);
+-	return NULL;
++	if (!inode)
++		return NULL;
++
++	if (unlikely(inode_init_always(sb, inode))) {
++		if (inode->i_sb->s_op->destroy_inode)
++			inode->i_sb->s_op->destroy_inode(inode);
++		else
++			kmem_cache_free(inode_cachep, inode);
++		return NULL;
++	}
++
++	return inode;
+ }
+ 
+ void destroy_inode(struct inode *inode)
+--- a/fs/xfs/xfs_iget.c
++++ b/fs/xfs/xfs_iget.c
+@@ -63,6 +63,10 @@ xfs_inode_alloc(
+ 	ip = kmem_zone_alloc(xfs_inode_zone, KM_SLEEP);
+ 	if (!ip)
+ 		return NULL;
++	if (inode_init_always(mp->m_super, VFS_I(ip))) {
++		kmem_zone_free(xfs_inode_zone, ip);
++		return NULL;
++	}
+ 
+ 	ASSERT(atomic_read(&ip->i_iocount) == 0);
+ 	ASSERT(atomic_read(&ip->i_pincount) == 0);
+@@ -104,17 +108,6 @@ xfs_inode_alloc(
+ #ifdef XFS_DIR2_TRACE
+ 	ip->i_dir_trace = ktrace_alloc(XFS_DIR2_KTRACE_SIZE, KM_NOFS);
+ #endif
+-	/*
+-	* Now initialise the VFS inode. We do this after the xfs_inode
+-	* initialisation as internal failures will result in ->destroy_inode
+-	* being called and that will pass down through the reclaim path and
+-	* free the XFS inode. This path requires the XFS inode to already be
+-	* initialised. Hence if this call fails, the xfs_inode has already
+-	* been freed and we should not reference it at all in the error
+-	* handling.
+-	*/
+-	if (!inode_init_always(mp->m_super, VFS_I(ip)))
+-		return NULL;
+ 
+ 	/* prevent anyone from using this yet */
+ 	VFS_I(ip)->i_state = I_NEW|I_LOCK;
+@@ -166,7 +159,7 @@ xfs_iget_cache_hit(
+ 		 * errors cleanly, then tag it so it can be set up correctly
+ 		 * later.
  		 */
- 		target_state = throttling_limit;
- 	}
--	return acpi_processor_set_throttling(pr, target_state);
-+	return acpi_processor_set_throttling(pr, target_state, false);
- }
- 
- /*
-@@ -842,7 +843,7 @@ static int acpi_processor_get_throttling
- 			ACPI_WARNING((AE_INFO,
- 				"Invalid throttling state, reset"));
- 			state = 0;
--			ret = acpi_processor_set_throttling(pr, state);
-+			ret = acpi_processor_set_throttling(pr, state, true);
- 			if (ret)
- 				return ret;
+-		if (!inode_init_always(mp->m_super, VFS_I(ip))) {
++		if (inode_init_always(mp->m_super, VFS_I(ip))) {
+ 			error = ENOMEM;
+ 			goto out_error;
  		}
-@@ -915,7 +916,7 @@ static int acpi_processor_get_fadt_info(
- }
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -2135,7 +2135,7 @@ extern loff_t default_llseek(struct file
  
- static int acpi_processor_set_throttling_fadt(struct acpi_processor *pr,
--					      int state)
-+					      int state, bool force)
- {
- 	u32 value = 0;
- 	u32 duty_mask = 0;
-@@ -930,7 +931,7 @@ static int acpi_processor_set_throttling
- 	if (!pr->flags.throttling)
- 		return -ENODEV;
+ extern loff_t vfs_llseek(struct file *file, loff_t offset, int origin);
  
--	if (state == pr->throttling.state)
-+	if (!force && (state == pr->throttling.state))
- 		return 0;
- 
- 	if (state < pr->throttling_platform_limit)
-@@ -988,7 +989,7 @@ static int acpi_processor_set_throttling
- }
- 
- static int acpi_processor_set_throttling_ptc(struct acpi_processor *pr,
--					     int state)
-+					     int state, bool force)
- {
- 	int ret;
- 	acpi_integer value;
-@@ -1002,7 +1003,7 @@ static int acpi_processor_set_throttling
- 	if (!pr->flags.throttling)
- 		return -ENODEV;
- 
--	if (state == pr->throttling.state)
-+	if (!force && (state == pr->throttling.state))
- 		return 0;
- 
- 	if (state < pr->throttling_platform_limit)
-@@ -1018,7 +1019,8 @@ static int acpi_processor_set_throttling
- 	return 0;
- }
- 
--int acpi_processor_set_throttling(struct acpi_processor *pr, int state)
-+int acpi_processor_set_throttling(struct acpi_processor *pr,
-+						int state, bool force)
- {
- 	cpumask_var_t saved_mask;
- 	int ret = 0;
-@@ -1070,7 +1072,7 @@ int acpi_processor_set_throttling(struct
- 		/* FIXME: use work_on_cpu() */
- 		set_cpus_allowed_ptr(current, cpumask_of(pr->id));
- 		ret = p_throttling->acpi_processor_set_throttling(pr,
--						t_state.target_state);
-+						t_state.target_state, force);
- 	} else {
- 		/*
- 		 * When the T-state coordination is SW_ALL or HW_ALL,
-@@ -1103,7 +1105,7 @@ int acpi_processor_set_throttling(struct
- 			set_cpus_allowed_ptr(current, cpumask_of(i));
- 			ret = match_pr->throttling.
- 				acpi_processor_set_throttling(
--				match_pr, t_state.target_state);
-+				match_pr, t_state.target_state, force);
- 		}
- 	}
- 	/*
-@@ -1201,7 +1203,7 @@ int acpi_processor_get_throttling_info(s
- 		ACPI_DEBUG_PRINT((ACPI_DB_INFO,
- 				  "Disabling throttling (was T%d)\n",
- 				  pr->throttling.state));
--		result = acpi_processor_set_throttling(pr, 0);
-+		result = acpi_processor_set_throttling(pr, 0, false);
- 		if (result)
- 			goto end;
- 	}
-@@ -1307,7 +1309,7 @@ static ssize_t acpi_processor_write_thro
- 	if (strcmp(tmpbuf, charp) != 0)
- 		return -EINVAL;
- 
--	result = acpi_processor_set_throttling(pr, state_val);
-+	result = acpi_processor_set_throttling(pr, state_val, false);
- 	if (result)
- 		return result;
- 
---- a/include/acpi/processor.h
-+++ b/include/acpi/processor.h
-@@ -174,7 +174,7 @@ struct acpi_processor_throttling {
- 	cpumask_var_t shared_cpu_map;
- 	int (*acpi_processor_get_throttling) (struct acpi_processor * pr);
- 	int (*acpi_processor_set_throttling) (struct acpi_processor * pr,
--					      int state);
-+					      int state, bool force);
- 
- 	u32 address;
- 	u8 duty_offset;
-@@ -320,7 +320,8 @@ static inline int acpi_processor_ppc_has
- /* in processor_throttling.c */
- int acpi_processor_tstate_has_changed(struct acpi_processor *pr);
- int acpi_processor_get_throttling_info(struct acpi_processor *pr);
--extern int acpi_processor_set_throttling(struct acpi_processor *pr, int state);
-+extern int acpi_processor_set_throttling(struct acpi_processor *pr,
-+					 int state, bool force);
- extern const struct file_operations acpi_processor_throttling_fops;
- extern void acpi_processor_throttling_init(void);
- /* in processor_idle.c */
+-extern struct inode * inode_init_always(struct super_block *, struct inode *);
++extern int inode_init_always(struct super_block *, struct inode *);
+ extern void inode_init_once(struct inode *);
+ extern void inode_add_to_lists(struct super_block *, struct inode *);
+ extern void iput(struct inode *);
 
 
