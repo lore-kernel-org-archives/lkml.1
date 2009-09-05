@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934542AbZIEAUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934556AbZIEAUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934542AbZIEAUa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 Sep 2009 20:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934499AbZIEAU3
+	id S934556AbZIEAUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 Sep 2009 20:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934499AbZIEAUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 Sep 2009 20:20:29 -0400
-Received: from kroah.org ([198.145.64.141]:42034 "EHLO coco.kroah.org"
+	Fri, 4 Sep 2009 20:20:30 -0400
+Received: from kroah.org ([198.145.64.141]:42040 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934174AbZIEAU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S934193AbZIEAU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 Sep 2009 20:20:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Sep  4 17:14:47 2009
-Message-Id: <20090905001447.110796519@mini.kroah.org>
+Message-Id: <20090905001447.228488853@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 04 Sep 2009 17:13:36 -0700
+Date: Fri, 04 Sep 2009 17:13:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Hannes Hering <hering2@de.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 01/71] ehea: Fix napi list corruption on ifconfig down
+       Guillaume Knispel <gknispel@proformatique.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Tejun Heo <tj@kernel.org>
+Subject: [patch 02/71] poll/select: initialize triggered field of struct poll_wqueues
 References: <20090905001335.106974681@mini.kroah.org>
-Content-Disposition: inline; filename=ehea-fix-napi-list-corruption-on-ifconfig-down.patch
+Content-Disposition: inline; filename=poll-select-initialize-triggered-field-of-struct-poll_wqueues.patch
 In-Reply-To: <20090905001824.GA18171@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,44 +30,44 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Hannes Hering <hering2@de.ibm.com>
+From: Guillaume Knispel <gknispel@proformatique.com>
 
-commit 357eb46d8f275b4e8484541234ea3ba06065e258 upstream.
+commit b2add73dbf93fd50f00564d7abc3e2b9aa9dd20c upstream.
 
-This patch fixes the napi list handling when an ehea interface is shut
-down to avoid corruption of the napi list.
+The triggered field of struct poll_wqueues introduced in commit
+5f820f648c92a5ecc771a96b3c29aa6e90013bba ("poll: allow f_op->poll to
+sleep").
 
-Signed-off-by: Hannes Hering <hering2@de.ibm.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+It was first set to 1 in pollwake() (now __pollwake() ), tested and
+later set to 0 in poll_schedule_timeout(), but not initialized before.
+
+As a result when the process needs to sleep, triggered was likely to be
+non-zero even if pollwake() is not called before the first
+poll_schedule_timeout(), meaning schedule_hrtimeout_range() would not be
+called and an extra loop calling all ->poll() would be done.
+
+This patch initialize triggered to 0 in poll_initwait() so the ->poll()
+are not called twice before the process goes to sleep when it needs to.
+
+Signed-off-by: Guillaume Knispel <gknispel@proformatique.com>
+Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Acked-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/ehea/ehea.h      |    2 +-
- drivers/net/ehea/ehea_main.c |    3 +++
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ fs/select.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/net/ehea/ehea.h
-+++ b/drivers/net/ehea/ehea.h
-@@ -40,7 +40,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0101"
-+#define DRV_VERSION	"EHEA_0102"
- 
- /* eHEA capability flags */
- #define DLPAR_PORT_ADD_REM 1
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -1545,6 +1545,9 @@ static int ehea_clean_portres(struct ehe
+--- a/fs/select.c
++++ b/fs/select.c
+@@ -110,6 +110,7 @@ void poll_initwait(struct poll_wqueues *
  {
- 	int ret, i;
- 
-+	if (pr->qp)
-+		netif_napi_del(&pr->napi);
-+
- 	ret = ehea_destroy_qp(pr->qp);
- 
- 	if (!ret) {
+ 	init_poll_funcptr(&pwq->pt, __pollwait);
+ 	pwq->polling_task = current;
++	pwq->triggered = 0;
+ 	pwq->error = 0;
+ 	pwq->table = NULL;
+ 	pwq->inline_index = 0;
 
 
