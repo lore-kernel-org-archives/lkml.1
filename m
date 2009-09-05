@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751360AbZIEM57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751527AbZIEM7q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751360AbZIEM57 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 08:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751170AbZIEM56
+	id S1751527AbZIEM7q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 08:59:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZIEM7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 08:57:58 -0400
-Received: from rtr.ca ([76.10.145.34]:60622 "EHLO mail.rtr.ca"
+	Sat, 5 Sep 2009 08:59:43 -0400
+Received: from THUNK.ORG ([69.25.196.29]:50911 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750901AbZIEM55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 08:57:57 -0400
-Message-ID: <4AA26055.2090400@rtr.ca>
-Date: Sat, 05 Sep 2009 08:57:57 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1751053AbZIEM7n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 08:59:43 -0400
+Date: Sat, 5 Sep 2009 08:59:30 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Nicolas Pitre <nico@cam.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, linux-ext4@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ext2: fix unbalanced kmap()/kunmap()
+Message-ID: <20090905125930.GF16217@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Nicolas Pitre <nico@cam.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	linux-ext4@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0909042343540.6044@xanadu.home>
 MIME-Version: 1.0
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Christoph Hellwig <hch@infradead.org>,
-       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       Pavel Machek <pavel@ucw.cz>, Theodore Tso <tytso@mit.edu>,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe
- width, writes in storage
-References: <20090828064449.GA27528@elf.ucw.cz>	<20090828120854.GA8153@mit.edu> <20090830075135.GA1874@ucw.cz>	<alpine.DEB.2.00.0908300550320.6822@asgard.lang.hm>	<4A9A88B6.9050902@redhat.com> <4A9A9034.8000703@msgid.tls.msk.ru>	<20090830163513.GA25899@infradead.org> <4A9BCCEF.7010402@redhat.com>	<20090831131626.GA17325@infradead.org> <4A9BCDFE.50008@rtr.ca>	<20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com>	<m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com>	<m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com> <m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com> <4AA184D7.1010502@rtr.ca> <4AA186B0.5090905@redhat.com>
-In-Reply-To: <4AA186B0.5090905@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0909042343540.6044@xanadu.home>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:
-> On 09/04/2009 05:21 PM, Mark Lord wrote:
-..
->> How about instead, *fixing* the MD layer to properly support barriers?
->> That would be far more useful, productive, and better for end-users.
-..
-> Fixing MD would be great - not sure that it would end up still faster 
-> (look at md1 devices with working barriers with compared to md1 with 
-> write cache disabled).
-..
+On Sat, Sep 05, 2009 at 12:25:37AM -0400, Nicolas Pitre wrote:
+> In ext2_rename(), dir_page is acquired through ext2_dotdot().  It is 
+> then released through ext2_set_link() but only if old_dir != new_dir. 
+> Failing that, the pkmap reference count is never decremented and the 
+> page remains pinned forever.  Repeat that a couple times with highmem 
+> pages and all pkmap slots get exhausted, and every further kmap() calls 
+> end up stalling on the pkmap_map_wait queue at which point the whole 
+> system comes to a halt.
+> 
+> Signed-off-by: Nicolas Pitre <nico@marvell.com>
 
-There's no inherent reason for it to be slower, except possibly
-drives with b0rked FUA support.
+Acked-by: "Theodore Ts'o" <tytso@mit.edu>
 
-So the first step is to fix MD to pass barriers to the LLDs
-for most/all RAID types. 
+> I ran into this issue while testing highmem on ARM by running the git 
+> test suite in a loop with 3 parallel instances.  Using the right mv 
+> sequence in a script would constitute a pretty simple recipe for a 
+> local DoS on systems running ext2 and highmem.  No idea if ext3 or ext4 
+> have the same issue.
 
-Then, if it has performance issues, those can be addressed
-by more application of little grey cells.  :)
+This is an ext2-only issue; for journalling reasons ext3 and ext4 read
+and write the directory via buffer heads.  So this issue won't apply
+for ext3 or ext4.
 
-Cheers
+						- Ted
