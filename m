@@ -1,157 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbZIFW6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbZIFXEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbZIFW6l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 18:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758183AbZIFW6k
+	id S1758244AbZIFXEP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 19:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758195AbZIFXEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 18:58:40 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35122 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758125AbZIFW6j (ORCPT
+	Sun, 6 Sep 2009 19:04:14 -0400
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.65]:42144 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758183AbZIFXEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 18:58:39 -0400
-X-Sasl-enc: pPFKD7ef04JserPRDwaPlbY/+W8zfpyGme5UkJyjejcD 1252277919
-Message-ID: <4AA43E92.8080708@imap.cc>
-Date: Mon, 07 Sep 2009 00:58:26 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/48] 2.6.27.32-stable review
-References: <20090904201112.GA8274@kroah.com>
-In-Reply-To: <20090904201112.GA8274@kroah.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA41CCB3D2BB6B6C5F1026E4D"
+	Sun, 6 Sep 2009 19:04:13 -0400
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Mon, 7 Sep 2009 08:04:03 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       d-nishimura@mtf.biglobe.ne.jp,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [mmotm][BUGFIX][PATCH] memcg: fix softlimit css refcnt handling(yet
+ another one)
+Message-Id: <20090907080403.5e4510b3.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20090904190726.6442f3df.d-nishimura@mtf.biglobe.ne.jp>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+	<20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
+	<20090904142143.15ffcb53.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+	<20090904163758.a5604fee.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904190726.6442f3df.d-nishimura@mtf.biglobe.ne.jp>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA41CCB3D2BB6B6C5F1026E4D
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, 4 Sep 2009 19:07:26 +0900
+Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
 
-Greg,
+> On Fri, 4 Sep 2009 16:37:58 +0900
+> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> 
+> > On Fri, 4 Sep 2009 15:40:50 +0900
+> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > Ah, one more question. What memory.usage_in_bytes shows in that case ?
+> > > > If not zero, charge/uncharge coalescing is guilty.
+> > > > 
+> > > usage_in_bytes is 0.
+> > > I've confirmed by crash command that the mem_cgroup has extra ref counts.
+> > > 
+> > > I'll dig more..
+> > > 
+> > BTW, do you use softlimit ? I found this but...Hmm
+> > 
+> No.
+> I'm sorry I can't access my machine, so can't test this.
+> 
+> 
+> But I think this patch itself is needed and looks good.
+> 
+I've found the cause of the issue.
 
-if at all possible, could you please include the patch below, with an
+Andrew, could you add this one after KAMEZAWA-san's
+memory-controller-soft-limit-reclaim-on-contention-v9-fix-softlimit-css-refcnt-handling.patch ?
 
-Acked-by: Tilman Schmidt <tilman@imap.cc>
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-tacked on? It applies fine to 2.6.27.31.
+refcount of the "victim" should be decremented before exiting the loop.
 
-Thanks a lot in advance,
-Tilman
-
----- original message follows ----
-Message-ID: <4A9524BE.3060508@canonical.com>
-Date: Wed, 26 Aug 2009 14:04:14 +0200
-From: Stefan Bader <stefan.bader@canonical.com>
-To: stable@kernel.org
-CC: Tilman Schmidt <tilman@imap.cc>,=20
- "David S. Miller" <davem@davemloft.net>,
- Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] Fix incorrect stable backport to bas_gigaset patch
-
-This seems to affect 2.6.27.y and (discontinued) 2.6.28.y. Some code went=
- into=20
-gigaset_probe instead of gigaset_initcshw causing an oops when the hardwa=
-re is=20
-probed.
-[I added one pr_err statement from upstream, too)
-
--Stefan
-
-=46rom 944fd2dab4173cea4fdcd50732529639ec00cf5d Mon Sep 17 00:00:00 2001
-From: Stefan Bader <stefan.bader@canonical.com>
-Date: Tue, 25 Aug 2009 17:35:56 +0200
-Subject: [PATCH] UBUNTU: SAUCE: Fix incorrect stable backport to bas_giga=
-set
-
-BugLink: http://bugs.launchpad.net/bugs/417732
-
-commit 56f7efe48d57dda9e59e23ab161c118271cce815
-Author: Tilman Schmidt <tilman@imap.cc>
-Date:   Wed Apr 15 03:25:43 2009 -0700
-
-    bas_gigaset: correctly allocate USB interrupt transfer buffer
-
-    [ Upstream commit 170ebf85160dd128e1c4206cc197cce7d1424705 ]
-
-This incorrect backport to 2.6.28.10 placed some code into the probe func=
-tion
-which used a pointer before it was initialized. Moving this to the correc=
-t
-place (as it is in upstream).
-
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 ---
- drivers/isdn/gigaset/bas-gigaset.c |   16 +++++++++-------
- 1 files changed, 9 insertions(+), 7 deletions(-)
+ mm/memcontrol.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/ba=
-s-gigaset.c
-index fcec2df..3990eae 100644
---- a/drivers/isdn/gigaset/bas-gigaset.c
-+++ b/drivers/isdn/gigaset/bas-gigaset.c
-@@ -2140,8 +2140,16 @@ static int gigaset_initcshw(struct cardstate *cs)
- 	struct bas_cardstate *ucs;
-=20
- 	cs->hw.bas =3D ucs =3D kmalloc(sizeof *ucs, GFP_KERNEL);
--	if (!ucs)
-+	if (!ucs) {
-+		pr_err("out of memory\n");
-+		return 0;
-+	}
-+	ucs->int_in_buf =3D kmalloc(IP_MSGSIZE, GFP_KERNEL);
-+	if (!ucs->int_in_buf) {
-+		kfree(ucs);
-+		pr_err("out of memory\n");
- 		return 0;
-+	}
-=20
- 	ucs->urb_cmd_in =3D NULL;
- 	ucs->urb_cmd_out =3D NULL;
-@@ -2236,12 +2244,6 @@ static int gigaset_probe(struct usb_interface *int=
-erface,
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index ac51294..011aba6 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1133,8 +1133,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+ 				 * anything, it might because there are
+ 				 * no reclaimable pages under this hierarchy
+ 				 */
+-				if (!check_soft || !total)
++				if (!check_soft || !total) {
++					css_put(&victim->css);
+ 					break;
++				}
+ 				/*
+ 				 * We want to do more targetted reclaim.
+ 				 * excess >> 2 is not to excessive so as to
+@@ -1142,8 +1144,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+ 				 * coming back to reclaim from this cgroup
+ 				 */
+ 				if (total >= (excess >> 2) ||
+-					(loop > MEM_CGROUP_MAX_RECLAIM_LOOPS))
++					(loop > MEM_CGROUP_MAX_RECLAIM_LOOPS)) {
++					css_put(&victim->css);
+ 					break;
++				}
+ 			}
  		}
- 		hostif =3D interface->cur_altsetting;
- 	}
--	ucs->int_in_buf =3D kmalloc(IP_MSGSIZE, GFP_KERNEL);
--	if (!ucs->int_in_buf) {
--		kfree(ucs);
--		pr_err("out of memory\n");
--		return 0;
--	}
-=20
- 	/* Reject application specific interfaces
- 	 */
---=20
-1.5.4.3
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enigA41CCB3D2BB6B6C5F1026E4D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKpD6cQ3+did9BuFsRAqlVAJ9UVMc9Ke0T+gWy3yFUPgGUUU9C1wCfW1+r
-8p/mqKPklnh6UB61oB/r684=
-=hL7s
------END PGP SIGNATURE-----
-
---------------enigA41CCB3D2BB6B6C5F1026E4D--
+ 		if (!mem_cgroup_local_usage(&victim->stat)) {
