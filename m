@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZIFPHM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757999AbZIFPJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbZIFPHM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 11:07:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbZIFPHK
+	id S1757999AbZIFPJz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 11:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbZIFPJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 11:07:10 -0400
-Received: from mail-pz0-f192.google.com ([209.85.222.192]:58242 "EHLO
-	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752800AbZIFPHJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 11:07:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type;
-        b=fAMzqaDPdKKwXIQRr3YTjMis4vZ8Bd3qNpr+em6TxsM+NabUmhiqGEj4cDHdlu1d02
-         0OM4te5L6n1/9XGrgNEVF2KZaHgWKyn+DY7tH1+1OccOVUc0VzskmZgp3uthIPiza5PT
-         ANbIb5gQHi2ZgDTd5jQSl2BlBTtnUdKLKTCxY=
-MIME-Version: 1.0
-Date: Sun, 6 Sep 2009 17:07:11 +0200
-X-Google-Sender-Auth: 19dd9ed067048e47
-Message-ID: <10f740e80909060807g11a29730wc809c08efbe4f216@mail.gmail.com>
-Subject: [IMPORTANT] linux-fbdev is moving to kernel.org
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-fbdev-devel@lists.sourceforge.net,
-       linux-fbdev-users@lists.sourceforge.net
-Cc: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Sun, 6 Sep 2009 11:09:52 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41008 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757974AbZIFPJw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 11:09:52 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/jg6hdn7/jp7pjzWrMD4tTqsWpUCM5mvmYDL5hC5
+	RFB5Ccu2bLFXvY
+Subject: RE: question on sched-rt group allocation cap: sched_rt_runtime_us
+From: Mike Galbraith <efault@gmx.de>
+To: Anirban Sinha <ASinha@zeugmasystems.com>
+Cc: Lucas De Marchi <lucas.de.marchi@gmail.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       ani@anirban.org
+In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C54DC482@exchange.ZeugmaSystems.local>
+References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it>
+	 <dhcf5-263-13@gated-at.bofh.it>
+	 <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com>
+	 <1252218779.6126.17.camel@marge.simson.net>
+	 <1252232289.29247.11.camel@marge.simson.net>
+	 <DDFD17CC94A9BD49A82147DDF7D545C54DC482@exchange.ZeugmaSystems.local>
+Content-Type: text/plain
+Date: Sun, 06 Sep 2009 17:09:50 +0200
+Message-Id: <1252249790.13541.28.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.65
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Sun, 2009-09-06 at 07:53 -0700, Anirban Sinha wrote:
+> 
+> 
+> 
+> > Seems kjournald can end up depending on kblockd/3, which ain't
+> > going anywhere with that 100% RT hog in the way,
+> 
+> I think in the past AKPM's response to this has been "just don't do
+> it", i.e, don't hog the CPU with an RT thread.
 
-The linux-fbdev mailing lists (linux-fbdev-devel and
-linux-fbdev-users) are being
-migrated from SourceForge.net to a single mailing list at kernel.org
-(Thanks David!).
+Oh yeah, sure.  Best to run RT oinkers on isolated cpus.  It just
+surprised me that the 100% compute RT cpu became involved in IO.
 
-Your subscriptions to the old mailing lists are not automatically
-transfered to the new mailing list.To subscribe to the new linux-fbdev
-mailing list, please send an email to majordomo@vger.kernel.org with
-the following command in the body of your email message:
+	-Mike
 
-    subscribe linux-fbdev
-
-In about a week from now, I'll setup auto-responders on the old
-mailing lists, to redirect people to the new mailing list.
-
-Sorry for any inconvenience this may cause.
-
-I haven't arranged archives of the new mailing list yet. I also
-haven't send a patch to Linus to update MAINTAINERS. I will do that in
-the coming days.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
