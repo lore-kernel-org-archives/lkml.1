@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758648AbZIFUcD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZIFUbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758648AbZIFUcD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 16:32:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758546AbZIFU3E
+	id S1758603AbZIFUbt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 16:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758548AbZIFU3I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 16:29:04 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48795 "EHLO ogre.sisk.pl"
+	Sun, 6 Sep 2009 16:29:08 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48796 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758517AbZIFU3B convert rfc822-to-8bit (ORCPT
+	id S1758532AbZIFU3C convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 16:29:01 -0400
+	Sun, 6 Sep 2009 16:29:02 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Karsten Jaeger" <lists@oss42.com>
+       "Oliver Neukum" <oliver@neukum.org>, "Paul Martin" <pm@debian.org>
 References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
 In-Reply-To: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Vm51Upp4EV.A.eTC.LfBpKB@chimera>
-Subject: [Bug #14095] Asus EeePC 1005HA-M: Suspend hangs and disables the wireless
+Message-ID: <Vm51Upp4EV.A.yPC.KfBpKB@chimera>
+Subject: [Bug #14103] cdc_acm gives I/O error
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  6 Sep 2009 19:24:56 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,10 +35,10 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14095
-Subject		: Asus EeePC 1005HA-M: Suspend hangs and disables the wireless
-Submitter	:  Karsten Jaeger <lists@oss42.com>
-Date		: 2009-08-31 10:14 (7 days old)
-References	: http://lists.alioth.debian.org/pipermail/debian-eeepc-devel/2009-August/002513.html
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14103
+Subject		: cdc_acm gives I/O error
+Submitter	: Paul Martin <pm@debian.org>
+Date		: 2009-09-01 13:30 (6 days old)
+Handled-By	: Oliver Neukum <oliver@neukum.org>
 
 
