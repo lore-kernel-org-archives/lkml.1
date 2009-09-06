@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758230AbZIFS7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbZIFS75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758230AbZIFS7k (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 14:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758211AbZIFS7c
+	id S1758265AbZIFS75 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 14:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbZIFS7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 14:59:32 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:42870 "EHLO mail.pxnet.com"
+	Sun, 6 Sep 2009 14:59:53 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:42912 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758179AbZIFS71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 14:59:27 -0400
+	id S1758236AbZIFS7u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 14:59:50 -0400
 From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 06/12] gigaset: fix device ERROR response handling
+Subject: [PATCH 02/12] gigaset: fix reject/hangup handling
 To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
        i4ldeveloper@listserv.isdn4linux.de
 CC: Hansjoerg Lipp <hjlipp@web.de>
-Message-ID: <20090906-patch-gigaset-06.tilman@imap.cc>
+Message-ID: <20090906-patch-gigaset-02.tilman@imap.cc>
 In-Reply-To: <20090906-patch-gigaset-00.tilman@imap.cc>
 References: <20090906-patch-gigaset-00.tilman@imap.cc>
 Date: Sun,  6 Sep 2009 20:58:52 +0200 (CEST)
-X-Spam-Score: -1.614 () AWL,BAYES_00,RDNS_NONE
+X-Spam-Score: -1.789 () AWL,BAYES_00,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Clear out pending command that got rejected with 'ERROR' response.
-This fixes the bug where unloading the driver module would hang
-with the message: "gigaset: not searching scheduled commands: busy"
+Signal D channel disconnect in a few cases where it was missed,
+including when an incoming call is disconnected before it was
+accepted.
 
-Impact: error handling bugfix
+Impact: error handling improvement
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/gigaset/ev-layer.c |   16 ++++++++--------
- 1 files changed, 8 insertions(+), 8 deletions(-)
+ drivers/isdn/gigaset/ev-layer.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/isdn/gigaset/ev-layer.c b/drivers/isdn/gigaset/ev-layer.c
-index ff2ec2c..2d47ff4 100644
+index 2d91049..ff2ec2c 100644
 --- a/drivers/isdn/gigaset/ev-layer.c
 +++ b/drivers/isdn/gigaset/ev-layer.c
-@@ -207,7 +207,6 @@ struct reply_t gigaset_tab_nocid[] =
- 	/* leave dle mode */
- 	{RSP_INIT,      0,  0,SEQ_DLE0,           201, 5, {0},             "^SDLE=0\r"},
- 	{RSP_OK,      201,201, -1,                202,-1},
--	//{RSP_ZDLE,    202,202,  0,                202, 0, {ACT_ERROR}},//DELETE
- 	{RSP_ZDLE,    202,202,  0,                  0, 0, {ACT_DLE0}},
- 	{RSP_NODEV,   200,249, -1,                  0, 0, {ACT_FAKEDLE0}},
- 	{RSP_ERROR,   200,249, -1,                  0, 0, {ACT_FAILDLE0}},
-@@ -265,6 +264,7 @@ struct reply_t gigaset_tab_nocid[] =
- 	{EV_SHUTDOWN,  -1, -1, -1,                 -1,-1, {ACT_SHUTDOWN}}, //FIXME
- 
- 	/* misc. */
-+	{RSP_ERROR,    -1, -1, -1,                 -1,-1, {ACT_ERROR}},
- 	{RSP_EMPTY,    -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
- 	{RSP_ZCFGT,    -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
- 	{RSP_ZCFG,     -1, -1, -1,                 -1,-1, {ACT_DEBUG}}, //FIXME
-@@ -328,10 +328,9 @@ struct reply_t gigaset_tab_cid[] =
- 	{RSP_INIT,     -1, -1,SEQ_HUP,            401, 5, {0},             "+VLS=0\r"}, /* hang up */ //-1,-1?
- 	{RSP_OK,      401,401, -1,                402, 5},
- 	{RSP_ZVLS,    402,402,  0,                403, 5},
--	{RSP_ZSAU,    403,403,ZSAU_DISCONNECT_REQ, -1,-1, {ACT_DEBUG}}, /* if not remote hup */
--	//{RSP_ZSAU,    403,403,ZSAU_NULL,          401, 0, {ACT_ERROR}}, //DELETE//FIXME -> DLE0 // should we do this _before_ hanging up for base driver?
--	{RSP_ZSAU,    403,403,ZSAU_NULL,            0, 0, {ACT_DISCONNECT}}, //FIXME -> DLE0 // should we do this _before_ hanging up for base driver?
--	{RSP_NODEV,   401,403, -1,                  0, 0, {ACT_FAKEHUP}}, //FIXME -> DLE0 // should we do this _before_ hanging up for base driver?
-+	{RSP_ZSAU,    403,403,ZSAU_DISCONNECT_REQ, -1,-1, {ACT_DEBUG}},
-+	{RSP_ZSAU,    403,403,ZSAU_NULL,            0, 0, {ACT_DISCONNECT}},
-+	{RSP_NODEV,   401,403, -1,                  0, 0, {ACT_FAKEHUP}},
- 	{RSP_ERROR,   401,401, -1,                  0, 0, {ACT_ABORTHUP}},
- 	{EV_TIMEOUT,  401,403, -1,                  0, 0, {ACT_ABORTHUP}},
- 
-@@ -1434,11 +1433,12 @@ static void do_action(int action, struct cardstate *cs,
- 		cs->gotfwver = -1;
- 		dev_err(cs->dev, "could not read firmware version.\n");
- 		break;
--#ifdef CONFIG_GIGASET_DEBUG
- 	case ACT_ERROR:
--		*p_genresp = 1;
--		*p_resp_code = RSP_ERROR;
-+		gig_dbg(DEBUG_ANY, "%s: ERROR response in ConState %d",
-+			__func__, at_state->ConState);
-+		cs->cur_at_seq = SEQ_NONE;
- 		break;
-+#ifdef CONFIG_GIGASET_DEBUG
- 	case ACT_TEST:
- 		{
- 			static int count = 3; //2; //1;
+@@ -707,6 +707,11 @@ static void disconnect(struct at_state_t **at_state_p)
+ 	if (bcs) {
+ 		/* B channel assigned: invoke hardware specific handler */
+ 		cs->ops->close_bchannel(bcs);
++		/* notify LL */
++		if (bcs->chstate & (CHS_D_UP | CHS_NOTIFY_LL)) {
++			bcs->chstate &= ~(CHS_D_UP | CHS_NOTIFY_LL);
++			gigaset_i4l_channel_cmd(bcs, ISDN_STAT_DHUP);
++		}
+ 	} else {
+ 		/* no B channel assigned: just deallocate */
+ 		spin_lock_irqsave(&cs->lock, flags);
 -- 
 1.6.2.1.214.ge986c
 
