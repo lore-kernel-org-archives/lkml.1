@@ -1,83 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZIFIlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZIFI4J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbZIFIlR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 04:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752296AbZIFIlR
+	id S1754560AbZIFI4J (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 04:56:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZIFI4I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 04:41:17 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41766
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752277AbZIFIlQ (ORCPT
+	Sun, 6 Sep 2009 04:56:08 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:36287 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752379AbZIFI4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 04:41:16 -0400
-Date: Sun, 06 Sep 2009 01:41:31 -0700 (PDT)
-Message-Id: <20090906.014131.78926800.davem@davemloft.net>
-To: mike@it-loops.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       uchiyama.toru@jp.fujitsu.com
-Subject: Re: 2.6.31-rc9 breaks gianfar
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090906072707.GA5699@trillian.comsick.at>
-References: <20090906072707.GA5699@trillian.comsick.at>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 6 Sep 2009 04:56:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=vbJqpAiCb/xM79WQLyJH4INd38zBF2fohyoaN/+v+UGKzpRJsMkR0K10LY+qrzqtgw
+         VXkPxt2Rdx7bl4ANHB3Upe86WHdcESVlUJZU0bcj46ztIrxvpy3QP028Gew7ecbSEeNB
+         CUOVxHamqsez8igbW6wgZqqmSk8+VpKwGFEnM=
+MIME-Version: 1.0
+In-Reply-To: <4AA2A257.3000409@ameritech.net>
+References: <alpine.DEB.1.10.0908270803540.3447@pc1lin.fred.org> 
+	<m3prahctv6.fsf@hase.home> <082720091839.15057.4A96D2D10002C02000003AD122230647029B0A02D2080C0A9B079D0A030EBF9F030E059B070A08@att.net> 
+	<a36005b50908271215v27f06476p5808b9fb6b19fa81@mail.gmail.com> 
+	<4AA2A257.3000409@ameritech.net>
+From: Ulrich Drepper <drepper@gmail.com>
+Date: Sun, 6 Sep 2009 01:55:48 -0700
+Message-ID: <a36005b50909060155k61129b79iab0a0e6db7008ed2@mail.gmail.com>
+Subject: Re: popen2 popen call
+To: "F. Heitkamp" <heitkamp@ameritech.net>
+Cc: Andreas Schwab <schwab@redhat.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Guntsche <mike@it-loops.com>
-Date: Sun, 6 Sep 2009 09:27:08 +0200
+On Sat, Sep 5, 2009 at 10:39, F. Heitkamp<heitkamp@ameritech.net> wrote:
+> linux-pipe.c:(.text+0x3b): warning: warning: pipe2 is not implemented and
+> will always fail
 
-Please also report networking bugs to netdev@vger.kernel.org
-and CC: the person who commited the problematic commit.
-
-> Commit 
-> 38bddf04bcfe661fbdab94888c3b72c32f6873b3 gianfar: gfar_remove needs to call unregister_netdev()
-> 
-> breaks the build of the gianfar driver because "dev" is undefined in
-> this function. To quickly test rc9 I changed this to priv->ndev but I do
-> not know if this is the correct one.
-
-Toru-chan, did you even compile test this again current kernels?
-
-I'll commit the following fix and push it to Linus, thanks.
-
->From 5db8bfee2dbb3ff28c18868081398fa6e2155053 Mon Sep 17 00:00:00 2001
-From: David S. Miller <davem@davemloft.net>
-Date: Sun, 6 Sep 2009 01:41:02 -0700
-Subject: [PATCH] gianfar: Fix build.
-
-Reported by Michael Guntsche <mike@it-loops.com>
-
---------------------
-Commit
-38bddf04bcfe661fbdab94888c3b72c32f6873b3 gianfar: gfar_remove needs to call unregister_netdev()
-
-breaks the build of the gianfar driver because "dev" is undefined in
-this function. To quickly test rc9 I changed this to priv->ndev but I do
-not know if this is the correct one.
---------------------
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- drivers/net/gianfar.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 24f7ca5..a00ec63 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -491,7 +491,7 @@ static int gfar_remove(struct of_device *ofdev)
- 
- 	dev_set_drvdata(&ofdev->dev, NULL);
- 
--	unregister_netdev(dev);
-+	unregister_netdev(priv->ndev);
- 	iounmap(priv->regs);
- 	free_netdev(priv->ndev);
- 
--- 
-1.6.4.2
-
+you will get this warning if the glibc you're using was compiled
+without appropriate kernel headers.  I.e., the definition of
+__NR_pipe2 wasn't available.
