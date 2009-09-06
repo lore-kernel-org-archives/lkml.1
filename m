@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZIFSkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZIFSmO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbZIFSkq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 14:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757970AbZIFSko
+	id S1758136AbZIFSmO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 14:42:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758108AbZIFSmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 14:40:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48473 "EHLO ogre.sisk.pl"
+	Sun, 6 Sep 2009 14:42:13 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:50905 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbZIFSko (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 14:40:44 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Gene Heskett <gene.heskett@verizon.net>
-Subject: Re: 2.6.31.rc9
-Date: Sun, 6 Sep 2009 20:41:19 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org
-References: <200909061402.21536.gene.heskett@verizon.net>
-In-Reply-To: <200909061402.21536.gene.heskett@verizon.net>
+	id S1758094AbZIFSmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 14:42:12 -0400
+Date: Sun, 6 Sep 2009 20:42:14 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       "chris.mason" <chris.mason@oracle.com>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [RFC PATCH] v2 mm: balance_dirty_pages.  reduce calls to
+	global_page_state to reduce cache references
+Message-ID: <20090906184214.GL18599@kernel.dk>
+References: <1252062330.2271.61.camel@castor>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909062041.19361.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252062330.2271.61.camel@castor>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 September 2009, Gene Heskett wrote:
-> Greetings all;
+On Fri, Sep 04 2009, Richard Kennedy wrote:
+> Reducing the number of times balance_dirty_pages calls global_page_state
+> reduces the cache references and so improves write performance on a
+> variety of workloads.
 > 
-> I went ahead and buiilt 2.6.31-rc9 & rebooted to it, but I am being plagued 
-> by segfaults, taking down knotify and kmail, and a bluetooth tool I just 
-> tried to run.
+> 'perf stats' of simple fio write tests shows the reduction in cache
+> access.
+> Where the test is fio 'write,mmap,600Mb,pre_read' on AMD AthlonX2 with
+> 3Gb memory (dirty_threshold approx 600 Mb)
+> running each test 10 times, dropping the fasted & slowest values then
+> taking 
+> the average & standard deviation
 > 
-> kmail restarted ok, but several others have reported that the exec call 
-> failed.
-> 
-> No more than I know about slabtop, it looks much like it has before.
+> 		average (s.d.) in millions (10^6)
+> 2.6.31-rc8	648.6 (14.6)
+> +patch		620.1 (16.5)
 
-Is that 64-bit or 32-bit?
+This patch looks good to me, I have workloads too here where up to 10%
+of the time is spent in balance_dirty_pages() because of this. I'll give
+this patch a go on the box and test in question tomorrow, but it looks
+promising.
 
-I don't see the problems you describe on any of my test boxes.
+-- 
+Jens Axboe
 
-Rafael
