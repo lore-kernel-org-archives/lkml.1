@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbZIFUaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbZIFUzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbZIFUaz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 16:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbZIFUax
+	id S1758358AbZIFUzf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 16:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZIFUze
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 16:30:53 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:35239 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758581AbZIFUav convert rfc822-to-8bit (ORCPT
+	Sun, 6 Sep 2009 16:55:34 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:58862 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbZIFUze (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 16:30:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=hmHydqM3aGOJM0NJY1qCykrdxyuUfCudFVc51G01WWiFnl5bcnlQXEkj/lhNMAwCEL
-         pIx8F0L5QuDBcUkYAhsXm/4/GsjT9cJRQ3yWWB5WMEa84PhkZ+AsHf5z8nvWk32eb4Ki
-         3WwG/V0ve/RTKR+5Fu7BtIS+Adx1hnWNau2AE=
+	Sun, 6 Sep 2009 16:55:34 -0400
+From: Christian =?utf-8?q?Kr=C3=A4mer?= <christian@kraemer-eu.de>
+Organization: Privat
+To: Wolfram Sang <w.sang@pengutronix.de>
+Subject: Re: yenta_socket: PCMCIA-Cards are not recognised by kernel
+Date: Sun, 6 Sep 2009 22:54:48 +0200
+User-Agent: KMail/1.9.9
+Cc: Frans Pop <elendil@planet.nl>, linux-pcmcia@lists.infradead.org,
+       Peter Stuge <peter@stuge.se>, linux-kernel@vger.kernel.org
+References: <200909021856.29565.christian@kraemer-eu.de> <200909052146.10779.christian@kraemer-eu.de> <20090906174136.GA8224@pengutronix.de>
+In-Reply-To: <20090906174136.GA8224@pengutronix.de>
 MIME-Version: 1.0
-Reply-To: q-funk@iki.fi
-In-Reply-To: <Vm51Upp4EV.A.VjD.4fBpKB@chimera>
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
-	 <Vm51Upp4EV.A.VjD.4fBpKB@chimera>
-Date: Sun, 6 Sep 2009 23:30:51 +0300
-X-Google-Sender-Auth: 5bf332769290c2f3
-Message-ID: <11fae7c70909061330h11c33ef3vc8ed4b7a0778874e@mail.gmail.com>
-Subject: Re: [Bug #13941] x86 Geode issue
-From: =?UTF-8?Q?Martin=2D=C3=89ric_Racine?= <q-funk@iki.fi>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200909062254.48253.christian@kraemer-eu.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19aoMYV/uK1bRUkRJGVQYKavPWqbSfb6MP+52T
+ jx3MoTkeZF7NvHCtPgGgTq/e1JyqhgA9xIxf5yU9c1PM5MPGDY
+ ncCyGv4YTF2h0iMlkbAADFDOurs46XR
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, it should still be listed, for as long as it hasn't been resolved.
+On Sunday 06 September 2009 19:41:36 Wolfram Sang wrote:
+> > > Uh oh. Which BIOS version do you have?
+> >
+> > The configuration interface displays: IBET41WW, 05/12/99.
+> > I know this isn't the newest version, but I don't have a floppy device
+> > for the laptop. I'll try to brun a dos cd with el torito folppy
+> > emulation, maybe i can upgrade it this way.
+>
+> Given the various issues this laptop has, this is worthwhile, me thinks.
 
-On Sun, Sep 6, 2009 at 8:24 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
+Yes, I'll try it. When the stuff with el torito won't work, I temporarily kill 
+my swap partition and install the DOS from an old Windows 9x CD from the 
+garret ;)
+
+> > Strange, I'dont use a docking station. I have not even got one.
 >
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
+> Okay, then it is just a bay.
 >
+
+The laptop has a bay, thats right.
+
+> > With regular PC Cards you mean 16 bit cards, don't you? I have only those
+> > one wlan card, but i can try to organisate one.
 >
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13941
-> Subject         : x86 Geode issue
-> Submitter       : Martin-Éric Racine <q-funk@iki.fi>
-> Date            : 2009-08-03 12:58 (35 days old)
-> References      : http://marc.info/?l=linux-kernel&m=124930434732481&w=4
->
->
->
+> Yup, I mean those. That would sort out that the TI-Controller is broken.
+> But there is more likely something wrong with the PCI-setup.
+
+I can guarantee that the controller isn't broken. Before I installed the 
+Gentoo (that is running on the laptop now) I installed my old Windows XP to 
+look whether the hardware is broken. But therewith I could get It to work both 
+with the original Atheros 5xxx driver and with the driver CD Proxim shipped 
+with this card. So I'am sure, that exacly this card could work on this 
+socket.
+
+I don't know if it's permissible with the license issues, but If you think 
+those information could help, I'll try to install it again and get those with 
+the devicemanager.
+This would take some time, but I could do it...
