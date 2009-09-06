@@ -1,76 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758095AbZIFR7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbZIFSBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758095AbZIFR7N (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 13:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758085AbZIFR7K
+	id S1758101AbZIFSBI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 14:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbZIFSBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 13:59:10 -0400
-Received: from mail.perches.com ([173.55.12.10]:1034 "EHLO mail.perches.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758080AbZIFR7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 13:59:09 -0400
-Subject: [PATCH] MAINTAINERS: Add Atheros Linux wireless drivers home page
-From: Joe Perches <joe@perches.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       Len Widra <Len.Widra@atheros.com>, Jouni Malinen <j@w1.fi>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       Werner Almesberger <werner@openmoko.org>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-       Nick Kossifidis <mickflemm@gmail.com>,
-       Bob Copeland <me@bobcopeland.com>, Greg KH <greg@kroah.com>,
-       rshlinux@gmail.com, b_yogesh_snowy@yahoo.com,
-       Michael Renzmann <mrenzmann@madwifi-project.org>,
-       Stephen Chen <Stephen.Chen@atheros.com>,
-       Paul Fertser <fercerpav@gmail.com>, Harald Welte <laforge@openmoko.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com>
-References: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 06 Sep 2009 10:59:10 -0700
-Message-Id: <1252259950.9660.179.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.90 
-Content-Transfer-Encoding: 7bit
+	Sun, 6 Sep 2009 14:01:05 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:50972 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758068AbZIFSBD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 14:01:03 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090904065535.281876981@nick.local0.net>
+References: <20090904065142.114706411@nick.local0.net>
+	 <20090904065535.281876981@nick.local0.net>
+Date: Sun, 6 Sep 2009 14:01:05 -0400
+Message-ID: <7e0fb38c0909061101t6b4f337cvf691814c28bcf50e@mail.gmail.com>
+Subject: Re: [patch 09/33] fs: dcache scale dentry refcount
+From: Eric Paris <eparis@parisplace.org>
+To: npiggin@suse.de
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-03 at 15:54 -0700, Luis R. Rodriguez wrote:
-> I'm pleased to announce the new home page to Atheros Linux wireless drivers:
-> http://wireless.kernel.org/en/users/Drivers/Atheros
+On Fri, Sep 4, 2009 at 2:51 AM, <npiggin@suse.de> wrote:
+> Make d_count non-atomic and protect it with d_lock. This allows us to
+> ensure a 0 refcount dentry remains 0 without dcache_lock. It is also
+> fairly natural when we start protecting many other dentry members with
+> d_lock.
 
-Perhaps add this to MAINTAINERS?
-
-Signed-off-by: Joe Perches <joe@perches.com>
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 8dca9d8..de922cd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -876,6 +876,7 @@ M:	"Luis R. Rodriguez" <lrodriguez@atheros.com>
- M:	Bob Copeland <me@bobcopeland.com>
- L:	linux-wireless@vger.kernel.org
- L:	ath5k-devel@lists.ath5k.org
-+W:	http://wireless.kernel.org/en/users/Drivers/Atheros
- S:	Maintained
- F:	drivers/net/wireless/ath/ath5k/
- 
-@@ -887,12 +888,14 @@ M:	Vasanthakumar Thiagarajan <vasanth@atheros.com>
- M:	Senthil Balasubramanian <senthilkumar@atheros.com>
- L:	linux-wireless@vger.kernel.org
- L:	ath9k-devel@lists.ath9k.org
-+W:	http://wireless.kernel.org/en/users/Drivers/Atheros
- S:	Supported
- F:	drivers/net/wireless/ath/ath9k/
- 
- ATHEROS AR9170 WIRELESS DRIVER
- M:	Christian Lamparter <chunkeey@web.de>
- L:	linux-wireless@vger.kernel.org
-+W:	http://wireless.kernel.org/en/users/Drivers/Atheros
- W:	http://wireless.kernel.org/en/users/Drivers/ar9170
- S:	Maintained
- F:	drivers/net/wireless/ath/ar9170/
+> +struct dentry *dget_parent(struct dentry *dentry)
+> +{
+> +       struct dentry *ret;
+> +
+> +repeat:
+> +       spin_lock(&dentry->d_lock);
+> +       ret = dentry->d_parent;
+> +       if (!ret)
+> +               goto out;
+> +       if (!spin_trylock(&ret->d_lock)) {
+> +               spin_unlock(&dentry->d_lock);
+> +               goto repeat;
+> +       }
+> +       BUG_ON(!ret->d_count);
+> +       ret->d_count++;
+> +       spin_unlock(&ret->d_lock);
+> +out:
+> +       spin_unlock(&dentry->d_lock);
+> +       return ret;
+> +}
+> +EXPORT_SYMBOL(dget_parent);
 
 
+> Index: linux-2.6/fs/notify/inotify/inotify.c
+> ===================================================================
+> --- linux-2.6.orig/fs/notify/inotify/inotify.c
+> +++ linux-2.6/fs/notify/inotify/inotify.c
+> @@ -339,18 +339,26 @@ void inotify_dentry_parent_queue_event(s
+>        if (!(dentry->d_flags & DCACHE_INOTIFY_PARENT_WATCHED))
+>                return;
+>
+> +again:
+>        spin_lock(&dentry->d_lock);
+>        parent = dentry->d_parent;
+> +       if (!spin_trylock(&parent->d_lock)) {
+> +               spin_unlock(&dentry->d_lock);
+> +               goto again;
+> +       }
+>        inode = parent->d_inode;
+>
+>        if (inotify_inode_watched(inode)) {
+> -               dget(parent);
+> +               dget_dlock(parent);
+>                spin_unlock(&dentry->d_lock);
+> +               spin_unlock(&parent->d_lock);
+>                inotify_inode_queue_event(inode, mask, cookie, name,
+>                                          dentry->d_inode);
+>                dput(parent);
+> -       } else
+> +       } else {
+>                spin_unlock(&dentry->d_lock);
+> +               spin_unlock(&parent->d_lock);
+> +       }
 
+I don't think I understand why in both of these cases you don't need
+to check for dentry->d_parent == dentry
+
+> Index: linux-2.6/fs/notify/fsnotify.c
+> ===================================================================
+> --- linux-2.6.orig/fs/notify/fsnotify.c
+> +++ linux-2.6/fs/notify/fsnotify.c
+> @@ -87,13 +87,18 @@ void __fsnotify_parent(struct dentry *de
+>        if (!(dentry->d_flags & DCACHE_FSNOTIFY_PARENT_WATCHED))
+>                return;
+>
+> +again:
+>        spin_lock(&dentry->d_lock);
+>        parent = dentry->d_parent;
+> +       if (parent != dentry && !spin_trylock(&parent->d_lock)) {
+> +               spin_unlock(&dentry->d_lock);
+> +               goto again;
+> +       }
+>        p_inode = parent->d_inode;
+>
+>        if (fsnotify_inode_watches_children(p_inode)) {
+>                if (p_inode->i_fsnotify_mask & mask) {
+> -                       dget(parent);
+> +                       dget_dlock(parent);
+>                        send = true;
+>                }
+>        } else {
+
+And yet in this case we do check for dentry->d_parent == dentry.  (my
+unknowing self thinks we'd want to check in all places)
+
+-Eric
