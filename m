@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbZIFVP6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758122AbZIFSUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758936AbZIFVP6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 17:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758897AbZIFVPz
+	id S1758122AbZIFSUU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 14:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758113AbZIFSUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 17:15:55 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49137 "EHLO ogre.sisk.pl"
+	Sun, 6 Sep 2009 14:20:18 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46800 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758900AbZIFVPw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 17:15:52 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Martin Steigerwald" <Martin@Lichtvoll.de>
-References: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera>
-In-Reply-To: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	id S1758087AbZIFSUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 14:20:17 -0400
+Date: Sun, 6 Sep 2009 11:17:01 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Sunil Mushran <sunil.mushran@oracle.com>
+Subject: Re: [patch 41/48] ocfs2: Initialize the cluster were writing to in
+ a non-sparse extend
+Message-ID: <20090906181701.GA24803@suse.de>
+References: <20090904200712.724048145@mini.kroah.org>
+ <20090904200856.335297402@mini.kroah.org>
+ <20090904210040.GA945@mail.oracle.com>
+ <20090906083249.GA20761@mail.oracle.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <hKF51Pczj6N.A.IlH.T3BpKB@chimera>
-Subject: [Bug #14105] pcmcia cards stop working after resuming from snapshot cycle (hibernation)
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sun,  6 Sep 2009 20:11:52 +0200 (CEST)
+In-Reply-To: <20090906083249.GA20761@mail.oracle.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.29 and 2.6.30.
+On Sun, Sep 06, 2009 at 01:32:50AM -0700, Joel Becker wrote:
+> On Fri, Sep 04, 2009 at 02:00:40PM -0700, Joel Becker wrote:
+> > On Fri, Sep 04, 2009 at 01:07:53PM -0700, Greg KH wrote:
+> > > 2.6.27-stable review patch.  If anyone has any objections, please let us know.
+> > > 
+> > > ------------------
+> > > From: Sunil Mushran <sunil.mushran@oracle.com>
+> > > 
+> > > commit e7432675f8ca868a4af365759a8d4c3779a3d922 upstream.
+> > > 
+> > > In a non-sparse extend, we correctly allocate (and zero) the clusters between
+> > > the old_i_size and pos, but we don't zero the portions of the cluster we're
+> > > writing to outside of pos<->len.
+> > > 
+> > > It handles clustersize > pagesize and blocksize < pagesize.
+> > > 
+> > > [Cleaned up by Joel Becker.]
+> > 
+> > Greg, et al,
+> > 	Yesterday we found a bug in this patch.  The patch still fixes
+> > the original problem, but we introduced an error in certain
+> > page_mkwrite() corner cases.  We have one more validation test and then
+> > I'm sending the fix to Linus.
+> > 	So we really want both this commit and the followup fix in
+> > -stable.  You'll be CC'd when I send Linus the pull request.
+> 
+> 	Ok, the fix is upstream, commit
+> 8379e7c46cc48f51197dd663fc6676f47f2a1e71.  It applies on top of this
+> patch, and is needed for both stable trees.
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.29 and 2.6.30.  Please verify if it still should
-be listed and let me know (either way).
+Ok, I'll queue it up.
 
+thanks,
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14105
-Subject		: pcmcia cards stop working after resuming from snapshot cycle (hibernation)
-Submitter	: Martin Steigerwald <Martin@Lichtvoll.de>
-Date		: 2009-09-01 19:44 (6 days old)
-
-
+greg k-h
