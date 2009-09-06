@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751445AbZIFEjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751560AbZIFEmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751445AbZIFEjQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 00:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751034AbZIFEjO
+	id S1751560AbZIFEmR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 00:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZIFEmQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 00:39:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42051 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750847AbZIFEjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 00:39:13 -0400
-Date: Sun, 6 Sep 2009 04:38:27 GMT
-From: "tip-bot for Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, rjw@sisk.pl, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, rjw@sisk.pl, mingo@elte.hu
-In-Reply-To: <200909050107.45175.rjw@sisk.pl>
-References: <200909050107.45175.rjw@sisk.pl>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/debug] x86: Decrease the level of some NUMA messages to KERN_DEBUG
-Message-ID: <tip-23b6c52cf558f2a1dc6c7010c601b3624eb4591f@git.kernel.org>
-Git-Commit-ID: 23b6c52cf558f2a1dc6c7010c601b3624eb4591f
-X-Mailer: tip-git-log-daemon
+	Sun, 6 Sep 2009 00:42:16 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41628 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751028AbZIFEmQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 00:42:16 -0400
+Message-ID: <4AA33D83.6000401@zytor.com>
+Date: Sat, 05 Sep 2009 21:41:39 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
+To: Borislav Petkov <petkovbb@googlemail.com>, mingo@redhat.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/cpu] x86, msr: change msr-reg.o to obj-y, and export
+ its symbols
+References: <20090904140834.GA15789@elte.hu> <tip-b19ae3999891cad21a3995c34d313dda5df014e2@git.kernel.org> <20090905095736.GA5005@liondog.tnic>
+In-Reply-To: <20090905095736.GA5005@liondog.tnic>
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 06 Sep 2009 04:38:41 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  23b6c52cf558f2a1dc6c7010c601b3624eb4591f
-Gitweb:     http://git.kernel.org/tip/23b6c52cf558f2a1dc6c7010c601b3624eb4591f
-Author:     Rafael J. Wysocki <rjw@sisk.pl>
-AuthorDate: Sat, 5 Sep 2009 01:07:45 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 6 Sep 2009 06:32:23 +0200
+On 09/05/2009 02:57 AM, Borislav Petkov wrote:
+> On Fri, Sep 04, 2009 at 05:06:47PM +0000, tip-bot for H. Peter Anvin wrote:
+>> x86, msr: change msr-reg.o to obj-y, and export its symbols
+>>
+>> Change msr-reg.o to obj-y (it will be included in virtually every
+>> kernel since it is used by the initialization code for AMD processors)
+> 
+> Yeah, about that, I'm wondering whether a more fine grained
+> Kconfig suboptions would be appropriate here. Currently,
+> <arch/x86/kernel/cpu/{intel,amd}.c> are sprinkled with the
+> 
+> if (c->x86 == XX) { apply quirks }
+> 
+> thingies and we could put those into their own files which are
+> built/linked only when enabled. Before that, you would have chosen
+> the CPU vendor and the CPU family thus pulling only the related
+> quirks/fixes. Distros will of course need to enable all of them. Then,
+> all those different families quirks should be iterated over in a manner
+> similar to the initcall mechanism.
+> 
+> Anyways, just an idea - it could be dumb overengineering but on a
+> first glance it will organize/simplify the quirks code, reduce kernel
+> image proper, get rid of Kconfig options like CONFIG_X86_F00F_BUG,
+> vendor-specific cpuinfo_x86 members like fdiv_bug, f00f_bug, coma_bug,
+> and [add another good reason here :)].
+> 
 
-x86: Decrease the level of some NUMA messages to KERN_DEBUG
+Ultimately the right thing to do would be to have the linker do these
+kinds of things.  This is easy enough when one deals with things that
+have to be linked into the kernel binary, but the msr-reg issue is that
+both the kernel proper and a module depend on the same thing... making
+it a lib means the module doesn't get it.
 
-Some NUMA messages in srat_32.c are confusing to users,
-because they seem to indicate errors, while in fact they
-reflect normal behaviour.
+All of this gets ugly, and I felt it wasn't enough code to worry about
+in this case.
 
-Decrease the level of these messages to KERN_DEBUG so that
-they don't show up unnecessarily.
+	-hpa
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-LKML-Reference: <200909050107.45175.rjw@sisk.pl>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-
----
- arch/x86/mm/srat_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/mm/srat_32.c b/arch/x86/mm/srat_32.c
-index 29a0e37..6f8aa33 100644
---- a/arch/x86/mm/srat_32.c
-+++ b/arch/x86/mm/srat_32.c
-@@ -215,7 +215,7 @@ int __init get_memcfg_from_srat(void)
- 		goto out_fail;
- 
- 	if (num_memory_chunks == 0) {
--		printk(KERN_WARNING
-+		printk(KERN_DEBUG
- 			 "could not find any ACPI SRAT memory areas.\n");
- 		goto out_fail;
- 	}
-@@ -277,7 +277,7 @@ int __init get_memcfg_from_srat(void)
- 	}
- 	return 1;
- out_fail:
--	printk(KERN_ERR "failed to get NUMA memory information from SRAT"
-+	printk(KERN_DEBUG "failed to get NUMA memory information from SRAT"
- 			" table\n");
- 	return 0;
- }
