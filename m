@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZIFRBg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758074AbZIFRCI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbZIFRBg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 13:01:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbZIFRBf
+	id S1758074AbZIFRCI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 13:02:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbZIFRCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 13:01:35 -0400
-Received: from vms173011pub.verizon.net ([206.46.173.11]:34333 "EHLO
-	vms173011pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758021AbZIFRBf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 13:01:35 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.31-rc9, my buildit26 script fails, make xconfig is broken
-Date: Sun, 06 Sep 2009 13:01:19 -0400
-User-Agent: KMail/1.12.0 (Linux/2.6.31-rc8; KDE/4.3.0; i686; ; )
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Message-id: <200909061301.19312.gene.heskett@verizon.net>
+	Sun, 6 Sep 2009 13:02:05 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48207 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758054AbZIFRCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 13:02:04 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: Zaurus suspend saga
+Date: Sun, 6 Sep 2009 19:03:10 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc8-rjw; KDE/4.3.1; x86_64; ; )
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       "linux-arm-kernel" <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
+       utx@penguin.cz
+References: <20090906052653.GB1324@ucw.cz>
+In-Reply-To: <20090906052653.GB1324@ucw.cz>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909061903.10542.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all;
+On Sunday 06 September 2009, Pavel Machek wrote:
+> Hi!
+> 
+> Even with mtd regression fixed, spitz will still not suspend/resume
+> correctly.
 
-My buildit26 script fails at the end, with this message:
+Is the regression fixed in the Linus' tree, or do you still need to apply the
+revert patch?
 
-scripts/kconfig/qconf arch/x86/Kconfig
-make[1]: *** [xconfig] Illegal instruction
-make: *** [xconfig] Error 2
-
-And I get the same error if I do it by hand.
-
-Fix?
-
-Thanks.
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The NRA is offering FREE Associate memberships to anyone who wants them.
-<https://www.nrahq.org/nrabonus/accept-membership.asp>
-
-poor power conditioning
+Rafael
