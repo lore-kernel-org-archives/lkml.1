@@ -1,120 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbZIFSBI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758104AbZIFSBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758101AbZIFSBI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 14:01:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758070AbZIFSBF
+	id S1758104AbZIFSBb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 14:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758069AbZIFSBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 14:01:05 -0400
-Received: from mail-vw0-f195.google.com ([209.85.212.195]:50972 "EHLO
-	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758068AbZIFSBD convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 14:01:03 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090904065535.281876981@nick.local0.net>
-References: <20090904065142.114706411@nick.local0.net>
-	 <20090904065535.281876981@nick.local0.net>
-Date: Sun, 6 Sep 2009 14:01:05 -0400
-Message-ID: <7e0fb38c0909061101t6b4f337cvf691814c28bcf50e@mail.gmail.com>
-Subject: Re: [patch 09/33] fs: dcache scale dentry refcount
-From: Eric Paris <eparis@parisplace.org>
-To: npiggin@suse.de
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 6 Sep 2009 14:01:31 -0400
+Received: from ns.penguin.cz ([84.21.108.25]:58895 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757970AbZIFSBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 14:01:30 -0400
+Subject: Re: Zaurus suspend saga
+From: Stanislav Brabec <utx@penguin.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com
+In-Reply-To: <200909061903.10542.rjw@sisk.pl>
+References: <20090906052653.GB1324@ucw.cz>  <200909061903.10542.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Sun, 06 Sep 2009 20:01:30 +0200
+Message-Id: <1252260090.4021.21.camel@utx.utx.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 4, 2009 at 2:51 AM, <npiggin@suse.de> wrote:
-> Make d_count non-atomic and protect it with d_lock. This allows us to
-> ensure a 0 refcount dentry remains 0 without dcache_lock. It is also
-> fairly natural when we start protecting many other dentry members with
-> d_lock.
+Rafael J. Wysocki wrote:
+> On Sunday 06 September 2009, Pavel Machek wrote:
+> > Hi!
+> > 
+> > Even with mtd regression fixed, spitz will still not suspend/resume
+> > correctly.
+> 
+> Is the regression fixed in the Linus' tree, or do you still need to apply the
+> revert patch?
 
-> +struct dentry *dget_parent(struct dentry *dentry)
-> +{
-> +       struct dentry *ret;
-> +
-> +repeat:
-> +       spin_lock(&dentry->d_lock);
-> +       ret = dentry->d_parent;
-> +       if (!ret)
-> +               goto out;
-> +       if (!spin_trylock(&ret->d_lock)) {
-> +               spin_unlock(&dentry->d_lock);
-> +               goto repeat;
-> +       }
-> +       BUG_ON(!ret->d_count);
-> +       ret->d_count++;
-> +       spin_unlock(&ret->d_lock);
-> +out:
-> +       spin_unlock(&dentry->d_lock);
-> +       return ret;
-> +}
-> +EXPORT_SYMBOL(dget_parent);
+I just tested kernel without this revert, and it seems to work. I did it
+because Pavel mentioned it and some time ago it did not work (see thread
+"2.6.31-rc1: zaurus suspend regressing" from August 2009).
+
+Please ignore the crash I reported it the last mail. It was caused by
+the eject on the PCMCIA slot from my 2.6.26 system (in 2.6.27 order of
+PCMCIA slots swapped).
+
+And here is my new console output with just plain vanilla (e07cccf4...)
+with Pavel's patch.
+
+apm-power: Requesting system suspend...
+PM: Syncing filesystems ... done.
+Freezing user space processes ... (elapsed 0.06 seconds) done.
+Freezing remaining freezable tasks ... (elapsed 0.00 seconds) done.
+hostap_cs: CS_EVENT_PM_SUSPEND
+max1111 spi2.2: spi_sync failed with -108
+max1111 spi2.2: spi_sync failed with -108
+max1111 spi2.2: spi_sync failed with -108
+max1111 spi2.2: spi_sync failed with -108
+max1111 spi2.2: spi_sync failed with -108
+sharpsl-pm sharpsl-pm: Error: AC check failed.
+sharpsl-pm sharpsl-pm: Offline Charger: Error occurred.
+sharpsl-pm sharpsl-pm: Charging Error!
 
 
-> Index: linux-2.6/fs/notify/inotify/inotify.c
-> ===================================================================
-> --- linux-2.6.orig/fs/notify/inotify/inotify.c
-> +++ linux-2.6/fs/notify/inotify/inotify.c
-> @@ -339,18 +339,26 @@ void inotify_dentry_parent_queue_event(s
->        if (!(dentry->d_flags & DCACHE_INOTIFY_PARENT_WATCHED))
->                return;
->
-> +again:
->        spin_lock(&dentry->d_lock);
->        parent = dentry->d_parent;
-> +       if (!spin_trylock(&parent->d_lock)) {
-> +               spin_unlock(&dentry->d_lock);
-> +               goto again;
-> +       }
->        inode = parent->d_inode;
->
->        if (inotify_inode_watched(inode)) {
-> -               dget(parent);
-> +               dget_dlock(parent);
->                spin_unlock(&dentry->d_lock);
-> +               spin_unlock(&parent->d_lock);
->                inotify_inode_queue_event(inode, mask, cookie, name,
->                                          dentry->d_inode);
->                dput(parent);
-> -       } else
-> +       } else {
->                spin_unlock(&dentry->d_lock);
-> +               spin_unlock(&parent->d_lock);
-> +       }
+________________________________________________________________________
+Stanislav Brabec
+http://www.penguin.cz/~utx
 
-I don't think I understand why in both of these cases you don't need
-to check for dentry->d_parent == dentry
-
-> Index: linux-2.6/fs/notify/fsnotify.c
-> ===================================================================
-> --- linux-2.6.orig/fs/notify/fsnotify.c
-> +++ linux-2.6/fs/notify/fsnotify.c
-> @@ -87,13 +87,18 @@ void __fsnotify_parent(struct dentry *de
->        if (!(dentry->d_flags & DCACHE_FSNOTIFY_PARENT_WATCHED))
->                return;
->
-> +again:
->        spin_lock(&dentry->d_lock);
->        parent = dentry->d_parent;
-> +       if (parent != dentry && !spin_trylock(&parent->d_lock)) {
-> +               spin_unlock(&dentry->d_lock);
-> +               goto again;
-> +       }
->        p_inode = parent->d_inode;
->
->        if (fsnotify_inode_watches_children(p_inode)) {
->                if (p_inode->i_fsnotify_mask & mask) {
-> -                       dget(parent);
-> +                       dget_dlock(parent);
->                        send = true;
->                }
->        } else {
-
-And yet in this case we do check for dentry->d_parent == dentry.  (my
-unknowing self thinks we'd want to check in all places)
-
--Eric
