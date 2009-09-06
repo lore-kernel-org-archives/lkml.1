@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758041AbZIFQvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758046AbZIFQvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758041AbZIFQvW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 12:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZIFQvU
+	id S1758046AbZIFQvx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 12:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754905AbZIFQvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 12:51:20 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:48873 "EHLO
+	Sun, 6 Sep 2009 12:51:51 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:48876 "EHLO
 	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754804AbZIFQvU (ORCPT
+	with ESMTP id S1757949AbZIFQvv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 12:51:20 -0400
+	Sun, 6 Sep 2009 12:51:51 -0400
 X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sun, 6 Sep 2009 18:50:56 +0200 (CEST)
+Date: Sun, 6 Sep 2009 18:51:27 +0200 (CEST)
 From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: [PATCH 5/6] firewire: reduce some memsets
+Subject: [PATCH 6/6] firewire: sbp2: fix status reception
 To: linux1394-devel@lists.sourceforge.net
 cc: linux-kernel@vger.kernel.org, PaX Team <pageexec@freemail.hu>
 In-Reply-To: <tkrat.85bb80d9295444c1@s5r6.in-berlin.de>
-Message-ID: <tkrat.1d38de48035e916f@s5r6.in-berlin.de>
+Message-ID: <tkrat.2c7e855a0f668383@s5r6.in-berlin.de>
 References: <tkrat.85bb80d9295444c1@s5r6.in-berlin.de>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; CHARSET=us-ascii
@@ -26,126 +26,68 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The 1 kBytes big config ROM was cleared to zero twice at each update.
-It is only necessary to clear the trailing unused space in the ROM, and
-only once.
+Per SBP-2 clause 5.3, a target shall store 8...32 bytes of status
+information.  Trailing zeros after the first 8 bytes don't need to be
+stored, they are implicit.  Fix the status write handler to clear all
+unwritten status data.
 
-While we are at it, replace the trivial fw_memcpy_to_be32() helper by
-its open-coded equivalent.
+While we are at it, remove the trivial fw_memcpy_from_be32() helper.
 
 Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
- drivers/firewire/core-card.c |    4 +---
- drivers/firewire/ohci.c      |   17 ++++++++++++-----
- include/linux/firewire.h     |    4 ----
- 3 files changed, 13 insertions(+), 12 deletions(-)
+ drivers/firewire/sbp2.c  |   13 +++++++------
+ include/linux/firewire.h |   10 ----------
+ 2 files changed, 7 insertions(+), 16 deletions(-)
 
-Index: linux-2.6.31-rc9/drivers/firewire/core-card.c
+Index: linux-2.6.31-rc9/drivers/firewire/sbp2.c
 ===================================================================
---- linux-2.6.31-rc9.orig/drivers/firewire/core-card.c
-+++ linux-2.6.31-rc9/drivers/firewire/core-card.c
-@@ -80,46 +80,44 @@ static int descriptor_count;
- static u32 *generate_config_rom(struct fw_card *card, size_t *config_rom_length)
- {
- 	struct fw_descriptor *desc;
- 	static u32 config_rom[256];
- 	int i, j, length;
+--- linux-2.6.31-rc9.orig/drivers/firewire/sbp2.c
++++ linux-2.6.31-rc9/drivers/firewire/sbp2.c
+@@ -425,19 +425,20 @@ static void sbp2_status_write(struct fw_
+ 	struct sbp2_logical_unit *lu = callback_data;
+ 	struct sbp2_orb *orb;
+ 	struct sbp2_status status;
+-	size_t header_size;
+ 	unsigned long flags;
  
- 	/*
- 	 * Initialize contents of config rom buffer.  On the OHCI
- 	 * controller, block reads to the config rom accesses the host
- 	 * memory, but quadlet read access the hardware bus info block
- 	 * registers.  That's just crack, but it means we should make
- 	 * sure the contents of bus info block in host memory matches
- 	 * the version stored in the OHCI registers.
- 	 */
- 
--	memset(config_rom, 0, sizeof(config_rom));
- 	config_rom[0] = BIB_CRC_LENGTH(4) | BIB_INFO_LENGTH(4) | BIB_CRC(0);
- 	config_rom[1] = 0x31333934;
- 
- 	config_rom[2] =
- 		BIB_LINK_SPEED(card->link_speed) |
- 		BIB_GENERATION(card->config_rom_generation++ % 14 + 2) |
- 		BIB_MAX_ROM(2) |
- 		BIB_MAX_RECEIVE(card->max_receive) |
- 		BIB_BMC | BIB_ISC | BIB_CMC | BIB_IMC;
- 	config_rom[3] = card->guid >> 32;
- 	config_rom[4] = card->guid;
- 
- 	/* Generate root directory. */
--	i = 5;
--	config_rom[i++] = 0;
-+	i = 6;
- 	config_rom[i++] = 0x0c0083c0; /* node capabilities */
- 	j = i + descriptor_count;
- 
- 	/* Generate root directory entries for descriptors. */
- 	list_for_each_entry (desc, &descriptor_list, link) {
- 		if (desc->immediate > 0)
- 			config_rom[i++] = desc->immediate;
- 		config_rom[i] = desc->key | (j - i);
- 		i++;
- 		j += desc->length;
+ 	if (tcode != TCODE_WRITE_BLOCK_REQUEST ||
+-	    length == 0 || length > sizeof(status)) {
++	    length < 8 || length > sizeof(status)) {
+ 		fw_send_response(card, request, RCODE_TYPE_ERROR);
+ 		return;
  	}
  
- 	/* Update root directory length. */
- 	config_rom[5] = (i - 5 - 1) << 16;
- 
-Index: linux-2.6.31-rc9/drivers/firewire/ohci.c
-===================================================================
---- linux-2.6.31-rc9.orig/drivers/firewire/ohci.c
-+++ linux-2.6.31-rc9/drivers/firewire/ohci.c
-@@ -1464,6 +1464,16 @@ static int software_reset(struct fw_ohci
- 	return -EBUSY;
- }
- 
-+static void copy_config_rom(__be32 *dest, const u32 *src, size_t length)
-+{
-+	int i;
+-	header_size = min(length, 2 * sizeof(u32));
+-	fw_memcpy_from_be32(&status, payload, header_size);
+-	if (length > header_size)
+-		memcpy(status.data, payload + 8, length - header_size);
++	status.status  = be32_to_cpup(payload);
++	status.orb_low = be32_to_cpup(payload + 4);
++	memset(status.data, 0, sizeof(status.data));
++	if (length > 8)
++		memcpy(status.data, payload + 8, length - 8);
 +
-+	for (i = 0; i < length; i++)
-+		dest[i] = cpu_to_be32(src[i]);
-+
-+	memset(&dest[length], 0, CONFIG_ROM_SIZE - length * 4);
-+}
-+
- static int ohci_enable(struct fw_card *card, u32 *config_rom, size_t length)
- {
- 	struct fw_ohci *ohci = fw_ohci(card);
-@@ -1565,8 +1575,7 @@ static int ohci_enable(struct fw_card *c
- 		if (ohci->next_config_rom == NULL)
- 			return -ENOMEM;
- 
--		memset(ohci->next_config_rom, 0, CONFIG_ROM_SIZE);
--		fw_memcpy_to_be32(ohci->next_config_rom, config_rom, length * 4);
-+		copy_config_rom(ohci->next_config_rom, config_rom, length);
- 	} else {
- 		/*
- 		 * In the suspend case, config_rom is NULL, which
-@@ -1659,9 +1668,7 @@ static int ohci_set_config_rom(struct fw
- 		ohci->next_config_rom = next_config_rom;
- 		ohci->next_config_rom_bus = next_config_rom_bus;
- 
--		memset(ohci->next_config_rom, 0, CONFIG_ROM_SIZE);
--		fw_memcpy_to_be32(ohci->next_config_rom, config_rom,
--				  length * 4);
-+		copy_config_rom(ohci->next_config_rom, config_rom, length);
- 
- 		ohci->next_header = config_rom[0];
- 		ohci->next_config_rom[0] = 0;
+ 	if (STATUS_GET_SOURCE(status) == 2 || STATUS_GET_SOURCE(status) == 3) {
+ 		fw_notify("non-orb related status write, not handled\n");
+ 		fw_send_response(card, request, RCODE_COMPLETE);
 Index: linux-2.6.31-rc9/include/linux/firewire.h
 ===================================================================
 --- linux-2.6.31-rc9.orig/include/linux/firewire.h
 +++ linux-2.6.31-rc9/include/linux/firewire.h
-@@ -30,10 +30,6 @@ static inline void fw_memcpy_from_be32(v
- 		dst[i] = be32_to_cpu(src[i]);
- }
+@@ -20,16 +20,6 @@
+ #define fw_notify(s, args...) printk(KERN_NOTICE KBUILD_MODNAME ": " s, ## args)
+ #define fw_error(s, args...) printk(KERN_ERR KBUILD_MODNAME ": " s, ## args)
  
--static inline void fw_memcpy_to_be32(void *_dst, void *_src, size_t size)
+-static inline void fw_memcpy_from_be32(void *_dst, void *_src, size_t size)
 -{
--	fw_memcpy_from_be32(_dst, _src, size);
+-	u32    *dst = _dst;
+-	__be32 *src = _src;
+-	int i;
+-
+-	for (i = 0; i < size / 4; i++)
+-		dst[i] = be32_to_cpu(src[i]);
 -}
+-
  #define CSR_REGISTER_BASE		0xfffff0000000ULL
  
  /* register offsets are relative to CSR_REGISTER_BASE */
