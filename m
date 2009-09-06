@@ -1,43 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754560AbZIFI4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZIFKL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754560AbZIFI4J (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 04:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZIFI4I
+	id S1754816AbZIFKL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 06:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZIFKLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 04:56:08 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:36287 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752379AbZIFI4I (ORCPT
+	Sun, 6 Sep 2009 06:11:24 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:1832 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754680AbZIFKLX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 04:56:08 -0400
+	Sun, 6 Sep 2009 06:11:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=vbJqpAiCb/xM79WQLyJH4INd38zBF2fohyoaN/+v+UGKzpRJsMkR0K10LY+qrzqtgw
-         VXkPxt2Rdx7bl4ANHB3Upe86WHdcESVlUJZU0bcj46ztIrxvpy3QP028Gew7ecbSEeNB
-         CUOVxHamqsez8igbW6wgZqqmSk8+VpKwGFEnM=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=pg8Ra4CZayqacOTccSBcPbIpdsuxvGVwztGp/wzPuYO6BCJfyf9o6MP+30kUYZvIq/
+         NZHI26q1ToJKmr4Q/CsfxaUvQ+ljMgrWmqc/YPyxuh0jdEFXcArOg7rIBTOkXwP7H4il
+         oANAQ1gFkizGdzAShye3aKaQMBolHuqORzxxY=
+Message-ID: <4AA38AC6.2010202@gmail.com>
+Date: Sun, 06 Sep 2009 12:11:18 +0200
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-In-Reply-To: <4AA2A257.3000409@ameritech.net>
-References: <alpine.DEB.1.10.0908270803540.3447@pc1lin.fred.org> 
-	<m3prahctv6.fsf@hase.home> <082720091839.15057.4A96D2D10002C02000003AD122230647029B0A02D2080C0A9B079D0A030EBF9F030E059B070A08@att.net> 
-	<a36005b50908271215v27f06476p5808b9fb6b19fa81@mail.gmail.com> 
-	<4AA2A257.3000409@ameritech.net>
-From: Ulrich Drepper <drepper@gmail.com>
-Date: Sun, 6 Sep 2009 01:55:48 -0700
-Message-ID: <a36005b50909060155k61129b79iab0a0e6db7008ed2@mail.gmail.com>
-Subject: Re: popen2 popen call
-To: "F. Heitkamp" <heitkamp@ameritech.net>
-Cc: Andreas Schwab <schwab@redhat.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: Pavel Machek <pavel@ucw.cz>
+CC: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>, linux-kernel@vger.kernel.org
+Subject: Re: PROBLEM: CONFIG_NO_HZ could cause software timeouts
+References: <4A9F9F64.5080305@aimvalley.nl> <4AA2ABC2.1060803@gmail.com> <20090906055841.GC1431@ucw.cz>
+In-Reply-To: <20090906055841.GC1431@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 5, 2009 at 10:39, F. Heitkamp<heitkamp@ameritech.net> wrote:
-> linux-pipe.c:(.text+0x3b): warning: warning: pipe2 is not implemented and
-> will always fail
+Pavel Machek wrote:
+> On Sat 2009-09-05 20:19:46, Marcin Slusarz wrote:
+>> Norbert van Bolhuis wrote:
+>>> The problem occurs when e.g. drivers use time_after(jiffes, timeout).
+>>>
+>>> CONFIG_NO_HZ could make jiffies advance by more than 1.
+>>> This is done by:
+>>> tick_nohz_update_jiffies->tick_do_update_jiffies64->do_timer
+>>>
+>>> If drivers use a timeout value of jiffies+1,
+>>> "time_after(jiffies, timeout)" will be true after 1 interrupt
+>>> (given that it advances jiffies by at least 2).
+>>>
+>>> This is exactly what happens in cfi_cmdset_0002.c:do_write_buffer
+>>> for our case (Powerpc MPC8313, linux-2.6.28, CONFIG_HZ=250,
+>>> CONFIG_NO_HZ=y).
+>>>
+>>> do_write_buffer does the following:
+>>>  unsigned long uWriteTimeout = ( HZ / 1000 ) + 1;
+>>>  ...
+>>>  timeo = jiffies + uWriteTimeout;
+>>>  ...
+>>>  for (;;) {
+>>>   ...
+>>>   if (time_after(jiffies, timeo) && !chip_ready(map, adr))
+>>>    break;
+>>>   if (chip_ready(map, adr)) {
+>>>    xip_enable(map, chip, adr);
+>>>    goto op_done;
+>>>   }
+>>>   UDELAY(map, chip, adr, 1);
+>>>  }
+>>>  /* software timeout */
+>>>  ret = -EIO;
+>>> opdone:
+>>>  ...
+>>>
+>>> I've seen a few software timeouts after the for-loop
+>>> looped only 13 times (= 13 us delay, i.s.o. the expected 1 ms). Typically
+>> Are you sure? UDELAY may call schedule(), which can return to this thread
+>> after much longer time than 13us...
+> 
+> Too long wait is expected, but AFAICS he's complaining about too short
+> delay and that's a hard bug.
 
-you will get this warning if the glibc you're using was compiled
-without appropriate kernel headers.  I.e., the definition of
-__NR_pipe2 wasn't available.
+Yeah, I know. But conclusion is a bit fishy - 13 iterations don't necessarily mean 13us.
+Bug might be elsewhere.
+
+Marcin
+
