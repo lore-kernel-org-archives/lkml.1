@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbZIFEpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZIFF07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752091AbZIFEpa (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 00:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbZIFEp3
+	id S1752610AbZIFF07 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 01:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZIFF06
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 00:45:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:58048 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751034AbZIFEp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 00:45:28 -0400
-Date: Sun, 6 Sep 2009 06:44:40 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Linux PCI <linux-pci@vger.kernel.org>
-Subject: Re: [PATCH 10 update 2x] PM: Measure suspend and resume times for
-	individual devices
-Message-ID: <20090906044440.GA29963@elte.hu>
-References: <Pine.LNX.4.44L0.0908292043500.26533-100000@netrider.rowland.org> <200909041642.03774.rjw@sisk.pl> <20090904191205.GA28408@elte.hu> <200909042356.59024.rjw@sisk.pl>
+	Sun, 6 Sep 2009 01:26:58 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52399 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbZIFF05 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 01:26:57 -0400
+Date: Sun, 6 Sep 2009 07:26:53 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
+       utx@penguin.cz
+Subject: Zaurus suspend saga
+Message-ID: <20090906052653.GB1324@ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200909042356.59024.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-Thanks Rafael, the code looks a lot more natural IMHO.
+Even with mtd regression fixed, spitz will still not suspend/resume
+correctly.
 
-this bit:
+I got hint that SPI suspend may be responsible...
 
-> +#ifdef DEBUG
-> +static void dbg_get_time(struct timeval *start)
-> +{
-> +	do_gettimeofday(start);
-> +}
+With 2.6.31-rc7:
 
-is a plain wrapper over gettimeofday so you might want to inline 
-it. (although GCC will do it too most of the time)
+with corgi_enter_suspend stubbed out and parts of spitz_should_wakeup
+disabled, it suspends/resumes ok. 
 
-	Ingo
+spitz_pm.c parts -- yes it controls wakeup, but it only seems to read GPIOs? 
+
+spitz_should_wakeup: printks do not signal this triggers, perhaps
+change is not strictly neccessary.
+
+sharpsl_fatal_check seems to trigger, sending machine to sleep :-(.
+
+fatal reads invalid values -- -108 -- probably because spi is not ready?
+
+is spi suspend/resume required? yes.; and yes spi is resumed too late
+ in the sequence. Or perhaps fatal battery check is way too early.
+
+Could someone confirm that simply removing sharpsl_fatal_check() fixes
+zaurus suspend on 2.6.31? 
+
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
