@@ -1,76 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754187AbZIFF6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbZIFGZM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754187AbZIFF6r (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 01:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752688AbZIFF6q
+	id S1754406AbZIFGZM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 02:25:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754320AbZIFGZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 01:58:46 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35116 "EHLO
+	Sun, 6 Sep 2009 02:25:11 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:54332 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752087AbZIFF6q (ORCPT
+	with ESMTP id S1754303AbZIFGZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 01:58:46 -0400
-Date: Sun, 6 Sep 2009 07:58:41 +0200
+	Sun, 6 Sep 2009 02:25:10 -0400
+Date: Sun, 6 Sep 2009 08:24:41 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: Marcin Slusarz <marcin.slusarz@gmail.com>
-Cc: Norbert van Bolhuis <nvbolhuis@aimvalley.nl>, linux-kernel@vger.kernel.org
-Subject: Re: PROBLEM: CONFIG_NO_HZ could cause software timeouts
-Message-ID: <20090906055841.GC1431@ucw.cz>
-References: <4A9F9F64.5080305@aimvalley.nl> <4AA2ABC2.1060803@gmail.com>
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: Valdis.Kletnieks@vt.edu, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: RCU Kconfig help text
+Message-ID: <20090906062441.GD1431@ucw.cz>
+References: <12924.1252157230@turing-police.cc.vt.edu> <20090905200145.GB7181@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AA2ABC2.1060803@gmail.com>
+In-Reply-To: <20090905200145.GB7181@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-09-05 20:19:46, Marcin Slusarz wrote:
-> Norbert van Bolhuis wrote:
+On Sat 2009-09-05 13:01:46, Paul E. McKenney wrote:
+> On Sat, Sep 05, 2009 at 09:27:10AM -0400, Valdis.Kletnieks@vt.edu wrote:
+> > init/Kconfig says:
 > > 
-> > The problem occurs when e.g. drivers use time_after(jiffes, timeout).
+> > "choice
+> >         prompt "RCU Implementation"
+> >         default TREE_RCU
 > > 
-> > CONFIG_NO_HZ could make jiffies advance by more than 1.
-> > This is done by:
-> > tick_nohz_update_jiffies->tick_do_update_jiffies64->do_timer
+> > config TREE_RCU
+> >         bool "Tree-based hierarchical RCU"
+> >         help
+> >           This option selects the RCU implementation that is
+> >           designed for very large SMP system with hundreds or
+> >           thousands of CPUs.  It also scales down nicely to
+> >           smaller systems.
 > > 
-> > If drivers use a timeout value of jiffies+1,
-> > "time_after(jiffies, timeout)" will be true after 1 interrupt
-> > (given that it advances jiffies by at least 2).
+> > config TREE_PREEMPT_RCU
+> >         bool "Preemptable tree-based hierarchical RCU"
+> >         depends on PREEMPT
+> >         help
+> >           This option selects the RCU implementation that is
+> >           designed for very large SMP systems with hundreds or
+> >           thousands of CPUs, but for which real-time response
+> >           is also required.
 > > 
-> > This is exactly what happens in cfi_cmdset_0002.c:do_write_buffer
-> > for our case (Powerpc MPC8313, linux-2.6.28, CONFIG_HZ=250,
-> > CONFIG_NO_HZ=y).
+> > endchoice"
 > > 
-> > do_write_buffer does the following:
-> >  unsigned long uWriteTimeout = ( HZ / 1000 ) + 1;
-> >  ...
-> >  timeo = jiffies + uWriteTimeout;
-> >  ...
-> >  for (;;) {
-> >   ...
-> >   if (time_after(jiffies, timeo) && !chip_ready(map, adr))
-> >    break;
-> >   if (chip_ready(map, adr)) {
-> >    xip_enable(map, chip, adr);
-> >    goto op_done;
-> >   }
-> >   UDELAY(map, chip, adr, 1);
-> >  }
-> >  /* software timeout */
-> >  ret = -EIO;
-> > opdone:
-> >  ...
+> > This leaves somebody who has a laptop wondering which choice is best for
+> > a system with only one or two cores that has CONFIG_PREEMPT defined. One
+> > choice says it scales down nicely, the other explicitly has a 'depends on
+> > PREEMPT' attached to it...
 > > 
-> > I've seen a few software timeouts after the for-loop
-> > looped only 13 times (= 13 us delay, i.s.o. the expected 1 ms). Typically
+> > (Yes, I realize in practice, the RCU sections on a laptop are probably usually
+> > so short they don't matter in practice.  I finally concluded TREE_PREEMPT was
+> > apparently a rename of CONFIG_PREEMPT_RCU and went with that since that was
+> > working for me before...)
 > 
-> Are you sure? UDELAY may call schedule(), which can return to this thread
-> after much longer time than 13us...
+> Good point -- I will add the "It also scales down nicely to smaller
+> systems" to TREE_PREEMPT_RCU.
+> 
+> For -really- small systems, TINY_RCU will hopefully be there at some
+> point, but it can only handle single-CPU systems.
 
-Too long wait is expected, but AFAICS he's complaining about too short
-delay and that's a hard bug.
+If so, call it 'UP_RCU' or 'UNIPROCESSOR_RCU'?
+								Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
