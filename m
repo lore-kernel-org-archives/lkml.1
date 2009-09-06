@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758373AbZIFTCB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZIFTaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758373AbZIFTCB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 15:02:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758220AbZIFS7i
+	id S1758233AbZIFTaY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 15:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbZIFTaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 14:59:38 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:42882 "EHLO mail.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758158AbZIFS7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 14:59:37 -0400
-From: Tilman Schmidt <tilman@imap.cc>
-Subject: [PATCH 03/12] gigaset: linearize skb
-To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       i4ldeveloper@listserv.isdn4linux.de
-CC: Hansjoerg Lipp <hjlipp@web.de>
-Message-ID: <20090906-patch-gigaset-03.tilman@imap.cc>
-In-Reply-To: <20090906-patch-gigaset-00.tilman@imap.cc>
-References: <20090906-patch-gigaset-00.tilman@imap.cc>
-Date: Sun,  6 Sep 2009 20:58:52 +0200 (CEST)
-X-Spam-Score: -1.687 () AWL,BAYES_00,RDNS_NONE
+	Sun, 6 Sep 2009 15:30:24 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56211 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758172AbZIFTaX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 15:30:23 -0400
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Wolfram Sang <w.sang@pengutronix.de>, Liam Girdwood <lrg@slimlogic.co.uk>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [PATCH] regulator: update a filename in documentation
+Date: Sun,  6 Sep 2009 21:26:23 +0200
+Message-Id: <1252265183-7626-1-git-send-email-w.sang@pengutronix.de>
+X-Mailer: git-send-email 1.6.3.3
+X-SA-Exim-Connect-IP: 92.198.50.58
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SA Timed out after 240 secs
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The code of the Gigaset driver assumes that sk_buff-s coming
-from the ISDN4Linux subsystem are always linear. Explicitly
-calling skb_linearize() is cheap if they are, but much more
-robust in case they ever aren't.
-
-Impact: robustness improvement
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
+Cc: Liam Girdwood <lrg@slimlogic.co.uk>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
 ---
- drivers/isdn/gigaset/i4l.c |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ Documentation/power/regulator/overview.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/isdn/gigaset/i4l.c b/drivers/isdn/gigaset/i4l.c
-index 9b22f9c..322f16e 100644
---- a/drivers/isdn/gigaset/i4l.c
-+++ b/drivers/isdn/gigaset/i4l.c
-@@ -51,6 +51,12 @@ static int writebuf_from_LL(int driverID, int channel, int ack,
- 		return -ENODEV;
- 	}
- 	bcs = &cs->bcs[channel];
-+
-+	/* can only handle linear sk_buffs */
-+	if (skb_linearize(skb) < 0) {
-+		dev_err(cs->dev, "%s: skb_linearize failed\n", __func__);
-+		return -ENOMEM;
-+	}
- 	len = skb->len;
+diff --git a/Documentation/power/regulator/overview.txt b/Documentation/power/regulator/overview.txt
+index 0cded69..b471575 100644
+--- a/Documentation/power/regulator/overview.txt
++++ b/Documentation/power/regulator/overview.txt
+@@ -168,4 +168,4 @@ relevant to non SoC devices and is split into the following four interfaces:-
+       userspace via sysfs. This could be used to help monitor device power
+       consumption and status.
  
- 	gig_dbg(DEBUG_LLDATA,
+-        See Documentation/ABI/testing/regulator-sysfs.txt
++        See Documentation/ABI/testing/sysfs-class-regulator
 -- 
-1.6.2.1.214.ge986c
+1.6.3.3
 
