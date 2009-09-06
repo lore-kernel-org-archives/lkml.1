@@ -1,72 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751560AbZIFEmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752091AbZIFEpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751560AbZIFEmR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 00:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZIFEmQ
+	id S1752091AbZIFEpa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 00:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751242AbZIFEp3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 00:42:16 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:41628 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751028AbZIFEmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 00:42:16 -0400
-Message-ID: <4AA33D83.6000401@zytor.com>
-Date: Sat, 05 Sep 2009 21:41:39 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sun, 6 Sep 2009 00:45:29 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:58048 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751034AbZIFEp2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 00:45:28 -0400
+Date: Sun, 6 Sep 2009 06:44:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-pm <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>, Zhang Rui <rui.zhang@intel.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Linux PCI <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 10 update 2x] PM: Measure suspend and resume times for
+	individual devices
+Message-ID: <20090906044440.GA29963@elte.hu>
+References: <Pine.LNX.4.44L0.0908292043500.26533-100000@netrider.rowland.org> <200909041642.03774.rjw@sisk.pl> <20090904191205.GA28408@elte.hu> <200909042356.59024.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Borislav Petkov <petkovbb@googlemail.com>, mingo@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/cpu] x86, msr: change msr-reg.o to obj-y, and export
- its symbols
-References: <20090904140834.GA15789@elte.hu> <tip-b19ae3999891cad21a3995c34d313dda5df014e2@git.kernel.org> <20090905095736.GA5005@liondog.tnic>
-In-Reply-To: <20090905095736.GA5005@liondog.tnic>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909042356.59024.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/05/2009 02:57 AM, Borislav Petkov wrote:
-> On Fri, Sep 04, 2009 at 05:06:47PM +0000, tip-bot for H. Peter Anvin wrote:
->> x86, msr: change msr-reg.o to obj-y, and export its symbols
->>
->> Change msr-reg.o to obj-y (it will be included in virtually every
->> kernel since it is used by the initialization code for AMD processors)
-> 
-> Yeah, about that, I'm wondering whether a more fine grained
-> Kconfig suboptions would be appropriate here. Currently,
-> <arch/x86/kernel/cpu/{intel,amd}.c> are sprinkled with the
-> 
-> if (c->x86 == XX) { apply quirks }
-> 
-> thingies and we could put those into their own files which are
-> built/linked only when enabled. Before that, you would have chosen
-> the CPU vendor and the CPU family thus pulling only the related
-> quirks/fixes. Distros will of course need to enable all of them. Then,
-> all those different families quirks should be iterated over in a manner
-> similar to the initcall mechanism.
-> 
-> Anyways, just an idea - it could be dumb overengineering but on a
-> first glance it will organize/simplify the quirks code, reduce kernel
-> image proper, get rid of Kconfig options like CONFIG_X86_F00F_BUG,
-> vendor-specific cpuinfo_x86 members like fdiv_bug, f00f_bug, coma_bug,
-> and [add another good reason here :)].
-> 
 
-Ultimately the right thing to do would be to have the linker do these
-kinds of things.  This is easy enough when one deals with things that
-have to be linked into the kernel binary, but the msr-reg issue is that
-both the kernel proper and a module depend on the same thing... making
-it a lib means the module doesn't get it.
+Thanks Rafael, the code looks a lot more natural IMHO.
 
-All of this gets ugly, and I felt it wasn't enough code to worry about
-in this case.
+this bit:
 
-	-hpa
+> +#ifdef DEBUG
+> +static void dbg_get_time(struct timeval *start)
+> +{
+> +	do_gettimeofday(start);
+> +}
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+is a plain wrapper over gettimeofday so you might want to inline 
+it. (although GCC will do it too most of the time)
 
+	Ingo
