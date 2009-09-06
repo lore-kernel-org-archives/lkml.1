@@ -1,94 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753914AbZIFDCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754128AbZIFDzt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753914AbZIFDCx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 Sep 2009 23:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbZIFDCw
+	id S1754128AbZIFDzt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 Sep 2009 23:55:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754038AbZIFDzr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 Sep 2009 23:02:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53853 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753866AbZIFDCv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 Sep 2009 23:02:51 -0400
-Date: Sat, 5 Sep 2009 20:02:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Cc: Jonathan Corbet <corbet@lwn.net>, JosephChan@via.com.tw,
-       ScottFang@viatech.com.cn, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Linux-fbdev-devel] [PATCH v2] viafb: 2D engine rewrite (and
- viafb patches in general)
-Message-Id: <20090905200233.8819cc95.akpm@linux-foundation.org>
-In-Reply-To: <4AA3048D.2090605@gmx.de>
-References: <1251666438-5448-1-git-send-email-FlorianSchandinat@gmx.de>
-	<1252097032-3568-1-git-send-email-FlorianSchandinat@gmx.de>
-	<20090905161645.74a49a84@bike.lwn.net>
-	<20090905160140.7b36527f.akpm@linux-foundation.org>
-	<4AA3048D.2090605@gmx.de>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 Sep 2009 23:55:47 -0400
+Received: from mga14.intel.com ([143.182.124.37]:54340 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752021AbZIFDzq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 Sep 2009 23:55:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="184531077"
+Date: Sun, 6 Sep 2009 11:55:37 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "chris.mason" <chris.mason@oracle.com>, linux-mm <linux-mm@kvack.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>
+Subject: Re: [RFC PATCH] v2 mm: balance_dirty_pages.  reduce calls to
+	global_page_state to reduce cache references
+Message-ID: <20090906035537.GA16063@localhost>
+References: <1252062330.2271.61.camel@castor>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252062330.2271.61.camel@castor>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 06 Sep 2009 02:38:37 +0200 Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
-
-> >>  I'm going to be doing some work here (writing a
-> >> driver for the video capture engine), and there's patches sitting in
-> >> Harald's tree and the OLPC tree.
-> > 
-> > As far as the rest of the world is concerned, that stuff doesn't exist.
+On Fri, Sep 04, 2009 at 07:05:30PM +0800, Richard Kennedy wrote:
+> Reducing the number of times balance_dirty_pages calls global_page_state
+> reduces the cache references and so improves write performance on a
+> variety of workloads.
 > 
-> I'll try to sort out the patches that still add anything to my stuff. I 
-> know Harald's tree and I know that I probably broke every of his 
-> patches. However, he seems to not have done anything for about 3 months 
-> so I rebased/rewrote my patches on linux-2.6 and started sending. I 
-> guess in the meantime I obsolated about half of his patches but there 
-> are still some things I'd like to have (PCI rework, VX855/OLPC support). 
-> Although I'm a bit unsure how to take these things, fix them to apply on 
-> top of my changes and correctly give the original author credit for it.
-
-Sure, that works.  Please coordinate with Harald of course, but we do
-that sort of thing regularly.
-
-> Do you have a pointer to the OLPC tree?
-
-I don't.
-
-> I'd really like to see VX855/OLPC support in mainline as soon as 
-> possible as I consider it a good thing to support "new" hardware early. 
-> However even if I am capable to write such support based on Haralds work 
-> I don't want to see it in mainline as long as no one with that hardware 
-> tested it.
+> 'perf stats' of simple fio write tests shows the reduction in cache
+> access.
+> Where the test is fio 'write,mmap,600Mb,pre_read' on AMD AthlonX2 with
+> 3Gb memory (dirty_threshold approx 600 Mb)
+> running each test 10 times, dropping the fasted & slowest values then
+> taking 
+> the average & standard deviation
 > 
-> >>  It seems like a central merge point
-> >> might be a nice thing to have.
-> >>
-> >> I'd be happy to run such a tree.  I'm really *not* qualified to be
-> >> passing judgment on patches to the framebuffer driver at this point,
-> >> though, so I'm not sure that I'm the best person for the job.
-> > 
-> > Send 'em over.  I haven't heard anything from the original viafb
-> > submitters for a long time.  Hopefully Florian has time to help out
-> > with some review-n-test.
+> 		average (s.d.) in millions (10^6)
+> 2.6.31-rc8	648.6 (14.6)
+> +patch		620.1 (16.5)
 > 
-> I do not object against a tree that collects all viafb patches, I even 
-> could do it. But one should really send the patches to Andrew ASAP as 
-> otherwise we may end up with a dead forest ;)
-> Actually it would be very nice to see some more activity around viafb. 
-> It might be bad if I'm the only one who patches it and who knows how it 
-> works. Discussion can be quite inspiring.
+> Achieving this reduction is by dropping clip_bdi_dirty_limit as it  
+> rereads the counters to apply the dirty_threshold and moving this check
+> up into balance_dirty_pages where it has already read the counters.
 > 
-> I'll do the things I can. But in the next few weeks I'll be probably a 
-> bit short on time. Okay I guess I won't do any big patches for a while 
-> but wait until some patches advance or receive some comments. So I still 
-> have some time to review-n-test but expect some delay. In the long run 
-> my test platform might become better as I'll be able to 'revive' some 
-> old VIA boards currently not available for testing.
+> Also by rearrange the for loop to only contain one copy of the limit
+> tests allows the pdflush test after the loop to use the local copies of
+> the counters rather than rereading them.
 > 
+> In the common case with no throttling it now calls global_page_state 5
+> fewer times and bdi_stat 2 fewer.
+> 
+> This version includes the changes suggested by 
+> Wu Fengguang <fengguang.wu@intel.com>
 
-Sounds good, thanks.  Things appear to be going OK from where I sit
-(famous last words ;))
+It seems that an redundant pages_written test can be reduced by
 
+--- linux.orig/mm/page-writeback.c	2009-09-06 11:44:39.000000000 +0800
++++ linux/mm/page-writeback.c	2009-09-06 11:44:42.000000000 +0800
+@@ -526,10 +526,6 @@ static void balance_dirty_pages(struct a
+ 		    (background_thresh + dirty_thresh) / 2)
+ 			break;
+ 
+-		/* done enough? */
+-		if (pages_written >= write_chunk)
+-			break;
+-
+ 		if (!bdi->dirty_exceeded)
+ 			bdi->dirty_exceeded = 1;
+ 
+@@ -547,7 +543,7 @@ static void balance_dirty_pages(struct a
+ 			pages_written += write_chunk - wbc.nr_to_write;
+ 			/* don't wait if we've done enough */
+ 			if (pages_written >= write_chunk)
+-				continue;
++				break;
+ 		}
+ 		congestion_wait(BLK_RW_ASYNC, HZ/10);
+ 	}
+
+Otherwise the patch looks good to me. Thank you for the nice work!
+
+Reviewed-by: Wu Fengguang <fengguang.wu@intel.com>
+
+> Signed-off-by: Richard Kennedy <richard@rsk.demon.co.uk>
+> ----
+> Thanks to everybody for the feedback & suggestions.
+> This patch is against 2.6.31-rc8
+> 
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index 81627eb..9581359 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -260,32 +260,6 @@ static void bdi_writeout_fraction(struct backing_dev_info *bdi,
+>  	}
+>  }
+>  
+> -/*
+> - * Clip the earned share of dirty pages to that which is actually available.
+> - * This avoids exceeding the total dirty_limit when the floating averages
+> - * fluctuate too quickly.
+> - */
+> -static void clip_bdi_dirty_limit(struct backing_dev_info *bdi,
+> -		unsigned long dirty, unsigned long *pbdi_dirty)
+> -{
+> -	unsigned long avail_dirty;
+> -
+> -	avail_dirty = global_page_state(NR_FILE_DIRTY) +
+> -		 global_page_state(NR_WRITEBACK) +
+> -		 global_page_state(NR_UNSTABLE_NFS) +
+> -		 global_page_state(NR_WRITEBACK_TEMP);
+> -
+> -	if (avail_dirty < dirty)
+> -		avail_dirty = dirty - avail_dirty;
+> -	else
+> -		avail_dirty = 0;
+> -
+> -	avail_dirty += bdi_stat(bdi, BDI_RECLAIMABLE) +
+> -		bdi_stat(bdi, BDI_WRITEBACK);
+> -
+> -	*pbdi_dirty = min(*pbdi_dirty, avail_dirty);
+> -}
+> -
+>  static inline void task_dirties_fraction(struct task_struct *tsk,
+>  		long *numerator, long *denominator)
+>  {
+> @@ -478,7 +452,6 @@ get_dirty_limits(unsigned long *pbackground, unsigned long *pdirty,
+>  			bdi_dirty = dirty * bdi->max_ratio / 100;
+>  
+>  		*pbdi_dirty = bdi_dirty;
+> -		clip_bdi_dirty_limit(bdi, dirty, pbdi_dirty);
+>  		task_dirty_limit(current, pbdi_dirty);
+>  	}
+>  }
+> @@ -499,7 +472,7 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  	unsigned long bdi_thresh;
+>  	unsigned long pages_written = 0;
+>  	unsigned long write_chunk = sync_writeback_pages();
+> -
+> +	int dirty_exceeded;
+>  	struct backing_dev_info *bdi = mapping->backing_dev_info;
+>  
+>  	for (;;) {
+> @@ -512,16 +485,36 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  		};
+>  
+>  		get_dirty_limits(&background_thresh, &dirty_thresh,
+> -				&bdi_thresh, bdi);
+> +				 &bdi_thresh, bdi);
+>  
+>  		nr_reclaimable = global_page_state(NR_FILE_DIRTY) +
+> -					global_page_state(NR_UNSTABLE_NFS);
+> -		nr_writeback = global_page_state(NR_WRITEBACK);
+> +			global_page_state(NR_UNSTABLE_NFS);
+> +		nr_writeback = global_page_state(NR_WRITEBACK) +
+> +			global_page_state(NR_WRITEBACK_TEMP);
+>  
+> -		bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> -		bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> +		/*
+> +		 * In order to avoid the stacked BDI deadlock we need
+> +		 * to ensure we accurately count the 'dirty' pages when
+> +		 * the threshold is low.
+> +		 *
+> +		 * Otherwise it would be possible to get thresh+n pages
+> +		 * reported dirty, even though there are thresh-m pages
+> +		 * actually dirty; with m+n sitting in the percpu
+> +		 * deltas.
+> +		 */
+> +		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+> +			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+> +			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+> +		} else if (bdi_nr_reclaimable) {
+> +			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> +			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> +		}
+>  
+> -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> +		dirty_exceeded =
+> +			(bdi_nr_reclaimable + bdi_nr_writeback >= bdi_thresh)
+> +			|| (nr_reclaimable + nr_writeback >= dirty_thresh);
+> +
+> +		if (!dirty_exceeded)
+>  			break;
+>  
+>  		/*
+> @@ -530,7 +523,11 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  		 * when the bdi limits are ramping up.
+>  		 */
+>  		if (nr_reclaimable + nr_writeback <
+> -				(background_thresh + dirty_thresh) / 2)
+> +		    (background_thresh + dirty_thresh) / 2)
+> +			break;
+> +
+> +		/* done enough? */
+> +		if (pages_written >= write_chunk)
+>  			break;
+>  
+>  		if (!bdi->dirty_exceeded)
+> @@ -548,38 +545,14 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  		if (bdi_nr_reclaimable > bdi_thresh) {
+>  			writeback_inodes(&wbc);
+>  			pages_written += write_chunk - wbc.nr_to_write;
+> -			get_dirty_limits(&background_thresh, &dirty_thresh,
+> -				       &bdi_thresh, bdi);
+> -		}
+> -
+> -		/*
+> -		 * In order to avoid the stacked BDI deadlock we need
+> -		 * to ensure we accurately count the 'dirty' pages when
+> -		 * the threshold is low.
+> -		 *
+> -		 * Otherwise it would be possible to get thresh+n pages
+> -		 * reported dirty, even though there are thresh-m pages
+> -		 * actually dirty; with m+n sitting in the percpu
+> -		 * deltas.
+> -		 */
+> -		if (bdi_thresh < 2*bdi_stat_error(bdi)) {
+> -			bdi_nr_reclaimable = bdi_stat_sum(bdi, BDI_RECLAIMABLE);
+> -			bdi_nr_writeback = bdi_stat_sum(bdi, BDI_WRITEBACK);
+> -		} else if (bdi_nr_reclaimable) {
+> -			bdi_nr_reclaimable = bdi_stat(bdi, BDI_RECLAIMABLE);
+> -			bdi_nr_writeback = bdi_stat(bdi, BDI_WRITEBACK);
+> +			/* don't wait if we've done enough */
+> +			if (pages_written >= write_chunk)
+> +				continue;
+>  		}
+> -
+> -		if (bdi_nr_reclaimable + bdi_nr_writeback <= bdi_thresh)
+> -			break;
+> -		if (pages_written >= write_chunk)
+> -			break;		/* We've done our duty */
+> -
+>  		congestion_wait(BLK_RW_ASYNC, HZ/10);
+>  	}
+>  
+> -	if (bdi_nr_reclaimable + bdi_nr_writeback < bdi_thresh &&
+> -			bdi->dirty_exceeded)
+> +	if (!dirty_exceeded && bdi->dirty_exceeded)
+>  		bdi->dirty_exceeded = 0;
+>  
+>  	if (writeback_in_progress(bdi))
+> @@ -593,10 +566,8 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  	 * In normal mode, we start background writeout at the lower
+>  	 * background_thresh, to keep the amount of dirty memory low.
+>  	 */
+> -	if ((laptop_mode && pages_written) ||
+> -			(!laptop_mode && (global_page_state(NR_FILE_DIRTY)
+> -					  + global_page_state(NR_UNSTABLE_NFS)
+> -					  > background_thresh)))
+> +	if ((laptop_mode && pages_written) || (!laptop_mode &&
+> +	     (nr_reclaimable > background_thresh)))
+>  		pdflush_operation(background_writeout, 0);
+>  }
+>  
+> 
