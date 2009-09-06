@@ -1,21 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758452AbZIFU1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758440AbZIFU1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758452AbZIFU1p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 16:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758441AbZIFU1o
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1758440AbZIFU1o (ORCPT <rfc822;w@1wt.eu>);
 	Sun, 6 Sep 2009 16:27:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48731 "EHLO ogre.sisk.pl"
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758431AbZIFU1n
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 6 Sep 2009 16:27:43 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48728 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758395AbZIFU1g convert rfc822-to-8bit (ORCPT
+	id S1758287AbZIFU1e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 16:27:36 -0400
+	Sun, 6 Sep 2009 16:27:34 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Eric Anholt" <eric@anholt.net>,
-       "ling.ma@intel.com" <ling.ma@intel.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Ma Ling" <ling.ma@intel.com>,
-       "Reinette Chatre" <reinette.chatre@intel.com>
+       "Michael S. Tsirkin" <m.s.tsirkin@gmail.com>
 References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
 In-Reply-To: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -23,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <Vm51Upp4EV.A.r-D.mgBpKB@chimera>
-Subject: [Bug #13819] system freeze when switching to console
+Message-ID: <Vm51Upp4EV.A.7CE.4gBpKB@chimera>
+Subject: [Bug #13740] X server crashes with 2.6.31-rc2 when options are changed
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sun,  6 Sep 2009 19:24:50 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -39,9 +35,9 @@ from 2.6.30.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13819
-Subject		: system freeze when switching to console
-Submitter	: Reinette Chatre <reinette.chatre@intel.com>
-Date		: 2009-07-23 17:57 (46 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13740
+Subject		: X server crashes with 2.6.31-rc2 when options are changed
+Submitter	: Michael S. Tsirkin <m.s.tsirkin@gmail.com>
+Date		: 2009-07-07 15:19 (62 days old)
 
 
