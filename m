@@ -1,113 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752663AbZIGVO0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752612AbZIGVKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752663AbZIGVO0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 17:14:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZIGVO0
+	id S1752612AbZIGVKV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 17:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZIGVKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 17:14:26 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:55470 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751875AbZIGVOY (ORCPT
+	Mon, 7 Sep 2009 17:10:20 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:51275 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751923AbZIGVKS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 17:14:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=TSczj2pmi6HTx748siGPShxzzSj9nyF0poaf+zNCfVPuZtOW9JdisclJZlYuifdWzT
-         s2EyhUx5c4xpM/sQXImHd/5F6XwShVaQ+qoAO4dcwdJIJO1PRkilVtQfM6+4DzOZemjK
-         263QoI+NMWHlOpuEbZ35UfqoLGa548s5blQVM=
-Date: Mon, 7 Sep 2009 23:14:23 +0200
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
+	Mon, 7 Sep 2009 17:10:18 -0400
+Date: Mon, 7 Sep 2009 14:14:45 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Cc: astarikovskiy@suse.de, lenb@kernel.org, linux-acpi@vger.kernel.org,
-       rjwysocki@sisk.pl
-Subject: [PATCH] Fix ACPI's EC regression from 2.6.29: use usleep() instead
-	of msleep()
-Message-ID: <20090907211423.GA2535@bizet.domek.prywatny>
+Cc: serue@us.ibm.com, Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
+       sukadev@us.ibm.com
+Subject: [RFC][v5][PATCH 3/8] Make pid_max a pid_ns property
+Message-ID: <20090907211445.GC6685@us.ibm.com>
+References: <20090907211302.GA5892@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090907211302.GA5892@us.ibm.com>
+X-Operating-System: Linux 2.0.32 on an i486
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
-
-Following patch reverts commit that changed usleep() to mleep()
-in ACPI's EC driver. That change made hotkeys on my Thinkpad T21
-unusable after resume.  
-
-This time, it's regression from 2.6.29 (it was repeadly broken and
-fixed in older kernels too).
-See http://bugzilla.kernel.org/show_bug.cgi?id=11674 for reference.
-
-I've tested this patch with 2.6.31-rc9 -- hotkeys work again.
-
-Please consider applying this to 2.6.31-tree and maybe 2.6.30-stable
-as well.
 
 
-Thanks.
+From: Serge Hallyn <serue@us.ibm.com>
+Subject: [RFC][v5][PATCH 3/8] Make pid_max a pid_ns property
 
+Remove the pid_max global, and make it a property of the
+pid_namespace.  When a pid_ns is created, it inherits
+the parent's pid_ns.
 
-commit 215c964fcccedc3f8967d57f7051e803e746a38d
-Author: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Date:   Mon Sep 7 21:13:02 2009 +0200
+Fixing up sysctl (trivial akin to ipc version, but
+potentially tedious to get right for all CONFIG*
+combinations) is left for later.
 
-    Revert "ACPI: EC: Separate delays for MSI hardware"
-    
-    This reverts commit 34ff4dbccccce54c83b1234d39b7ad9e548a75dd.
+Changelog[v2]:
+	- Port to newer kernel
+	- Make pid_max a local variable in alloc_pidmap() to simplify code/patch
 
-    Revert timeout to old value (larger than spec requires[*]) instead
-    of using vendor-dependent delays.
+Signed-off-by: Serge Hallyn <serue@us.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@us.ibm.com>
+---
+ include/linux/pid_namespace.h |    1 +
+ kernel/pid.c                  |   14 +++++++-------
+ kernel/pid_namespace.c        |    6 ++++--
+ kernel/sysctl.c               |    4 ++--
+ 4 files changed, 14 insertions(+), 11 deletions(-)
 
-    Without this revert my Thinkpad T21 stops generating hotkey events
-    after resume (with 2.6.31-rc9).  See bug #11674 for reference.
-
-    [*] ACPI spec at http://www.acpi.info/DOWNLOADS/ACPIspec30b.pdf
-    page 386, "Burst Enable Embedded Controller" defines EC's
-    response timeout as =< 50us.
-
-Signed-off-by: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-
-diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
-index 391f331..20eed99 100644
---- a/drivers/acpi/ec.c
-+++ b/drivers/acpi/ec.c
-@@ -67,7 +67,7 @@ enum ec_command {
+Index: linux-2.6/include/linux/pid_namespace.h
+===================================================================
+--- linux-2.6.orig/include/linux/pid_namespace.h	2009-08-05 13:00:21.000000000 -0700
++++ linux-2.6/include/linux/pid_namespace.h	2009-09-07 13:12:04.000000000 -0700
+@@ -30,6 +30,7 @@
+ #ifdef CONFIG_BSD_PROCESS_ACCT
+ 	struct bsd_acct_struct *bacct;
+ #endif
++	int pid_max;
+ };
  
- #define ACPI_EC_DELAY		500	/* Wait 500ms max. during EC ops */
- #define ACPI_EC_UDELAY_GLK	1000	/* Wait 1ms max. to get global lock */
--#define ACPI_EC_CDELAY		10	/* Wait 10us before polling EC */
-+#define ACPI_EC_UDELAY		100	/* Wait 100us before polling EC again */
+ extern struct pid_namespace init_pid_ns;
+Index: linux-2.6/kernel/pid.c
+===================================================================
+--- linux-2.6.orig/kernel/pid.c	2009-09-07 13:11:39.000000000 -0700
++++ linux-2.6/kernel/pid.c	2009-09-07 13:12:04.000000000 -0700
+@@ -43,8 +43,6 @@
+ static int pidhash_shift;
+ struct pid init_struct_pid = INIT_STRUCT_PID;
  
- #define ACPI_EC_STORM_THRESHOLD 8	/* number of false interrupts
- 					   per one transaction */
-@@ -236,23 +236,13 @@ static int ec_check_sci(struct acpi_ec *ec, u8 state)
- 	return 0;
- }
- 
--static void ec_delay(void)
--{
--	/* EC in MSI notebooks don't tolerate delays other than 550 usec */
--	if (EC_FLAGS_MSI)
--		udelay(ACPI_EC_DELAY);
--	else
--		/* Use shortest sleep available */
--		msleep(1);
--}
+-int pid_max = PID_MAX_DEFAULT;
 -
- static int ec_poll(struct acpi_ec *ec)
+ #define RESERVED_PIDS		300
+ 
+ int pid_max_min = RESERVED_PIDS + 1;
+@@ -78,6 +76,7 @@
+ 	.last_pid = 0,
+ 	.level = 0,
+ 	.child_reaper = &init_task,
++	.pid_max = PID_MAX_DEFAULT,
+ };
+ EXPORT_SYMBOL_GPL(init_pid_ns);
+ 
+@@ -151,6 +150,7 @@
  {
- 	unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
--	udelay(ACPI_EC_CDELAY);
-+	udelay(ACPI_EC_UDELAY);
- 	while (time_before(jiffies, delay)) {
- 		gpe_transaction(ec, acpi_ec_read_status(ec));
--		ec_delay();
-+		udelay(ACPI_EC_UDELAY);
- 		if (ec_transaction_done(ec))
- 			return 0;
- 	}
+ 	int i, offset, max_scan, pid, last = pid_ns->last_pid;
+ 	int rc = -EAGAIN;
++	int pid_max = pid_ns->pid_max;
+ 	struct pidmap *map;
+ 
+ 	pid = last + 1;
+Index: linux-2.6/kernel/pid_namespace.c
+===================================================================
+--- linux-2.6.orig/kernel/pid_namespace.c	2009-08-05 13:00:23.000000000 -0700
++++ linux-2.6/kernel/pid_namespace.c	2009-09-07 13:12:04.000000000 -0700
+@@ -87,6 +87,7 @@
+ 
+ 	kref_init(&ns->kref);
+ 	ns->level = level;
++	ns->pid_max = parent_pid_ns->pid_max;
+ 	ns->parent = get_pid_ns(parent_pid_ns);
+ 
+ 	set_bit(0, ns->pidmap[0].page);
+Index: linux-2.6/kernel/sysctl.c
+===================================================================
+--- linux-2.6.orig/kernel/sysctl.c	2009-09-07 13:10:39.000000000 -0700
++++ linux-2.6/kernel/sysctl.c	2009-09-07 13:13:23.000000000 -0700
+@@ -55,6 +55,7 @@
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
++#include <linux/pid_namespace.h>
+ 
+ #ifdef CONFIG_X86
+ #include <asm/nmi.h>
+@@ -78,7 +79,6 @@
+ extern int core_uses_pid;
+ extern int suid_dumpable;
+ extern char core_pattern[];
+-extern int pid_max;
+ extern int min_free_kbytes;
+ extern int pid_max_min, pid_max_max;
+ extern int sysctl_drop_caches;
+@@ -670,7 +670,7 @@
+ 	{
+ 		.ctl_name	= KERN_PIDMAX,
+ 		.procname	= "pid_max",
+-		.data		= &pid_max,
++		.data		= &init_pid_ns.pid_max,
+ 		.maxlen		= sizeof (int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec_minmax,
