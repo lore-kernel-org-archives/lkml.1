@@ -1,54 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751975AbZIGUgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751901AbZIGUht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751975AbZIGUgh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 16:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZIGUgg
+	id S1751901AbZIGUht (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 16:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751608AbZIGUht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 16:36:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:52274 "EHLO mx3.mail.elte.hu"
+	Mon, 7 Sep 2009 16:37:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50460 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751684AbZIGUgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 16:36:36 -0400
-Date: Mon, 7 Sep 2009 22:36:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Avi Kivity <avi@redhat.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090907203627.GA17731@elte.hu>
-References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk> <4AA54AA7.9080709@redhat.com> <20090907184640.GG18599@kernel.dk>
+	id S1751557AbZIGUhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 16:37:48 -0400
+Date: Mon, 7 Sep 2009 20:37:14 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:sched/balancing] sched: Remove short cut from select_task_rq_fair()
+Message-ID: <tip-cdd2ab3de4301728b20efd6225681d3ff591a938@git.kernel.org>
+Git-Commit-ID: cdd2ab3de4301728b20efd6225681d3ff591a938
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090907184640.GG18599@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 07 Sep 2009 20:37:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  cdd2ab3de4301728b20efd6225681d3ff591a938
+Gitweb:     http://git.kernel.org/tip/cdd2ab3de4301728b20efd6225681d3ff591a938
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Mon, 7 Sep 2009 18:12:06 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 7 Sep 2009 20:39:05 +0200
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+sched: Remove short cut from select_task_rq_fair()
 
-> Agree, I was actually looking into doing joint latency for X 
-> number of tasks for the test app. I'll try and do that and see if 
-> we can detect something from that.
+select_task_rq_fair() incorrectly skips the wake_affine()
+logic, remove this.
 
-Could you please try latest -tip:
+When prev_cpu == this_cpu, the code jumps straight to the
+wake_idle() logic, this doesn't give the wake_affine() logic
+the chance to pin the task to this cpu.
 
-   http://people.redhat.com/mingo/tip.git/README
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <new-submission>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-(c26f010 or later)
 
-Does it get any better with make -j128 build jobs? Peter just fixed 
-a bug in the SMP load-balancer that can cause interactivity problems 
-on large CPU count systems.
+---
+ kernel/sched_fair.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-	Ingo
+diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+index 2ff850f..d7fda41 100644
+--- a/kernel/sched_fair.c
++++ b/kernel/sched_fair.c
+@@ -1305,8 +1305,6 @@ static int select_task_rq_fair(struct task_struct *p, int sync)
+ 	this_rq		= cpu_rq(this_cpu);
+ 	new_cpu		= prev_cpu;
+ 
+-	if (prev_cpu == this_cpu)
+-		goto out;
+ 	/*
+ 	 * 'this_sd' is the first domain that both
+ 	 * this_cpu and prev_cpu are present in:
