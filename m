@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754080AbZIGR2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZIGR3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754080AbZIGR2H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 13:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753472AbZIGR2G
+	id S1754006AbZIGR3g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 13:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZIGR3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 13:28:06 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:48518 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbZIGR2E (ORCPT
+	Mon, 7 Sep 2009 13:29:36 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:58950 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752249AbZIGR3f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 13:28:04 -0400
-Date: Mon, 7 Sep 2009 10:27:47 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, linux-scsi@vger.kernel.org
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>
-Subject: Re: linux-next: Tree for September 7 (scsi/qla2x)
-Message-Id: <20090907102747.ac6b98ff.randy.dunlap@oracle.com>
-In-Reply-To: <20090907210206.7830ba68.sfr@canb.auug.org.au>
-References: <20090907210206.7830ba68.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Mon, 7 Sep 2009 13:29:35 -0400
+Subject: Re: [PATCH v3 0/5] kmemleak: few small cleanups and clear command
+	support
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, penberg@cs.helsinki.fi,
+       mcgrof@gmail.com
+In-Reply-To: <1252111494-7593-1-git-send-email-lrodriguez@atheros.com>
+References: <1252111494-7593-1-git-send-email-lrodriguez@atheros.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Mon, 07 Sep 2009 18:29:30 +0100
+Message-Id: <1252344570.23780.110.camel@pc1117.cambridge.arm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt002.oracle.com [141.146.116.11]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4AA54296.001C:SCFSTAT5015188,ss=1,fgs=0
+X-OriginalArrivalTime: 07 Sep 2009 17:29:31.0356 (UTC) FILETIME=[C25D61C0:01CA2FE0]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Sep 2009 21:02:06 +1000 Stephen Rothwell wrote:
-
-> Hi all,
+On Fri, 2009-09-04 at 17:44 -0700, Luis R. Rodriguez wrote:
+> Here is my third respin, this time rebased ontop of:
 > 
-> Changes since 20090904:
+> git://linux-arm.org/linux-2.6 kmemleak
+> 
+> As suggested by Catalin we now clear the list by only painting reported
+> unreferenced objects and the color we use is grey to ensure future
+> scans are possible on these same objects to account for new allocations
+> in the future referenced on the cleared objects.
+> 
+> Patch 3 is now a little different, now with a paint_ptr() and
+> a __paint_it() helper.
 
+Thanks for the patches. They look ok now, I'll merge them tomorrow to my
+kmemleak branch and give them a try.
 
-when CONFIG_MODULES=n:
+> I tested this by clearing kmemleak after bootup, then writing my
+> own buggy module which kmalloc()'d onto some internal pointer,
+> scanned, unloaded, and scanned again and then saw a new shiny
+> report come up:
 
-drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+BTW, kmemleak comes with a test module which does this.
 
-in
-	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-	    KOBJ_CHANGE, envp);
+-- 
+Catalin
 
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
