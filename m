@@ -1,138 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZIGDNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbZIGDWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758913AbZIGDNW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758885AbZIGDNP
+	id S1758838AbZIGDWl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 23:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758722AbZIGDWk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:13:15 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:61229 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758761AbZIGDNM (ORCPT
+	Sun, 6 Sep 2009 23:22:40 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35894 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758710AbZIGDWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:13:12 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Hirokazu Takata <takata@linux-m32r.org>
-Subject: [PATCH 6/6] m32r: Cleanup linker script using new linker script macros.
-Date: Sun,  6 Sep 2009 23:12:59 -0400
-Message-Id: <1252293179-13382-6-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1252293179-13382-1-git-send-email-tabbott@ksplice.com>
-References: <1252293179-13382-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Sun, 6 Sep 2009 23:22:39 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AA47C46.8070900@jp.fujitsu.com>
+Date: Mon, 07 Sep 2009 12:21:42 +0900
+From: Toru UCHIYAMA <uchiyama.toru@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: mike@it-loops.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.31-rc9 breaks gianfar
+References: <20090906072707.GA5699@trillian.comsick.at> <20090906.014131.78926800.davem@davemloft.net>
+In-Reply-To: <20090906.014131.78926800.davem@davemloft.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is largely a straightforward conversion.  One thing to note
-is that the new macros use fewer separate output sections than the old
-code; this should have no functional impact but is relevant for people
-objdumping vmlinux files.
+Hi David,
 
-Also note that it moves the .data.init_task output sections inside
-_edata.
+I'm sorry.It was my mistake.
+I will note that it is not never in the future.
+Thank you for the correction.
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
----
- arch/m32r/kernel/vmlinux.lds.S |   67 +++++----------------------------------
- 1 files changed, 9 insertions(+), 58 deletions(-)
 
-diff --git a/arch/m32r/kernel/vmlinux.lds.S b/arch/m32r/kernel/vmlinux.lds.S
-index 1984b9f..b15ed63 100644
---- a/arch/m32r/kernel/vmlinux.lds.S
-+++ b/arch/m32r/kernel/vmlinux.lds.S
-@@ -4,6 +4,7 @@
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/addrspace.h>
- #include <asm/page.h>
-+#include <asm/thread_info.h>
- 
- OUTPUT_ARCH(m32r)
- #if defined(__LITTLE_ENDIAN__)
-@@ -40,72 +41,22 @@ SECTIONS
- #endif
-   _etext = .;			/* End of text section */
- 
--  . = ALIGN(16);		/* Exception table */
--  __start___ex_table = .;
--  __ex_table : { *(__ex_table) }
--  __stop___ex_table = .;
--
-+  EXCEPTION_TABLE(16)
-   RODATA
--
--  /* writeable */
--  .data : {			/* Data */
--	DATA_DATA
--	CONSTRUCTORS
--	}
--
--  . = ALIGN(4096);
--  __nosave_begin = .;
--  .data_nosave : { *(.data.nosave) }
--  . = ALIGN(4096);
--  __nosave_end = .;
--
--  . = ALIGN(32);
--  .data.cacheline_aligned : { *(.data.cacheline_aligned) }
--
-+  RW_DATA_SECTION(32, PAGE_SIZE, THREAD_SIZE)
-   _edata = .;			/* End of data section */
- 
--  . = ALIGN(8192);		/* init_task */
--  .data.init_task : { *(.data.init_task) }
--
-   /* will be freed after init */
--  . = ALIGN(4096);		/* Init code and data */
-+  . = ALIGN(PAGE_SIZE);		/* Init code and data */
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT
--	_einittext = .;
--  }
--  .init.data : { INIT_DATA }
--  . = ALIGN(16);
--  __setup_start = .;
--  .init.setup : { *(.init.setup) }
--  __setup_end = .;
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
--  }
--  __initcall_end = .;
--  __con_initcall_start = .;
--  .con_initcall.init : { *(.con_initcall.init) }
--  __con_initcall_end = .;
--  SECURITY_INIT
--
--#ifdef CONFIG_BLK_DEV_INITRD
--  . = ALIGN(4096);
--  __initramfs_start = .;
--  .init.ramfs : { *(.init.ramfs) }
--  __initramfs_end = .;
--#endif
--
--  PERCPU(4096)
--  . = ALIGN(4096);
-+  INIT_TEXT_SECTION(PAGE_SIZE)
-+  INIT_DATA_SECTION(16)
-+  PERCPU(PAGE_SIZE)
-+  . = ALIGN(PAGE_SIZE);
-   __init_end = .;
-   /* freed after init ends here */
- 
--  __bss_start = .;		/* BSS */
--  .bss : { *(.bss) }
--  . = ALIGN(4);
--  __bss_stop = .;
-+  BSS_SECTION(0, 0, 4)
- 
-   _end = . ;
- 
+> From: Michael Guntsche <mike@it-loops.com>
+> Date: Sun, 6 Sep 2009 09:27:08 +0200
+> 
+> Please also report networking bugs to netdev@vger.kernel.org
+> and CC: the person who commited the problematic commit.
+> 
+>> Commit 
+>> 38bddf04bcfe661fbdab94888c3b72c32f6873b3 gianfar: gfar_remove needs to call unregister_netdev()
+>>
+>> breaks the build of the gianfar driver because "dev" is undefined in
+>> this function. To quickly test rc9 I changed this to priv->ndev but I do
+>> not know if this is the correct one.
+> 
+> Toru-chan, did you even compile test this again current kernels?
+> 
+> I'll commit the following fix and push it to Linus, thanks.
+> 
+>>From 5db8bfee2dbb3ff28c18868081398fa6e2155053 Mon Sep 17 00:00:00 2001
+> From: David S. Miller <davem@davemloft.net>
+> Date: Sun, 6 Sep 2009 01:41:02 -0700
+> Subject: [PATCH] gianfar: Fix build.
+> 
+> Reported by Michael Guntsche <mike@it-loops.com>
+> 
+> --------------------
+> Commit
+> 38bddf04bcfe661fbdab94888c3b72c32f6873b3 gianfar: gfar_remove needs to call unregister_netdev()
+> 
+> breaks the build of the gianfar driver because "dev" is undefined in
+> this function. To quickly test rc9 I changed this to priv->ndev but I do
+> not know if this is the correct one.
+> --------------------
+> 
+> Signed-off-by: David S. Miller <davem@davemloft.net>
+> ---
+>  drivers/net/gianfar.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
+> index 24f7ca5..a00ec63 100644
+> --- a/drivers/net/gianfar.c
+> +++ b/drivers/net/gianfar.c
+> @@ -491,7 +491,7 @@ static int gfar_remove(struct of_device *ofdev)
+>  
+>  	dev_set_drvdata(&ofdev->dev, NULL);
+>  
+> -	unregister_netdev(dev);
+> +	unregister_netdev(priv->ndev);
+>  	iounmap(priv->regs);
+>  	free_netdev(priv->ndev);
+>  
+
+
 -- 
-1.6.3.3
+-----------------------------------------------
+Toru UCHIYAMA      uchiyama.toru@jp.fujitsu.com
 
