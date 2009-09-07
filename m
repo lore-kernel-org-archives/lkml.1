@@ -1,94 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750968AbZIGGxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751086AbZIGGyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750968AbZIGGxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 02:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZIGGxX
+	id S1751086AbZIGGyv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 02:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbZIGGyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 02:53:23 -0400
-Received: from exprod7og127.obsmtp.com ([64.18.2.210]:35190 "EHLO
-	exprod7og127.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750735AbZIGGxW convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 02:53:22 -0400
-From: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>, Jiri Kosina <jkosina@suse.cz>
-CC: "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Kashyap@mail2.lsil.com" <Kashyap@mail2.lsil.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>
-Date: Mon, 7 Sep 2009 12:22:55 +0530
-Subject: RE: linux-next: manual merge of the trivial tree with the scsi tree
-Thread-Topic: linux-next: manual merge of the trivial tree with the scsi tree
-Thread-Index: Acovg9YKCt3pR8W4SZ+9B8t8Fgg5eQAA2/Wg
-Message-ID: <0D1E8821739E724A86F4D16902CE275C1C8EAE09B1@inbmail01.lsi.com>
-References: <20090907162349.3b3337e3.sfr@canb.auug.org.au>
-In-Reply-To: <20090907162349.3b3337e3.sfr@canb.auug.org.au>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
+	Mon, 7 Sep 2009 02:54:51 -0400
+Received: from mail.gmx.net ([213.165.64.20]:59541 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750778AbZIGGyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 02:54:50 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX181NGYdlqs18IkOcmK15Qp6PtgEBy85/jM83CuqNY
+	2RdT3VnUiSfv8o
+Subject: RE: question on sched-rt group allocation cap: sched_rt_runtime_us
+From: Mike Galbraith <efault@gmx.de>
+To: Anirban Sinha <ASinha@zeugmasystems.com>
+Cc: Lucas De Marchi <lucas.de.marchi@gmail.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C54DC483@exchange.ZeugmaSystems.local>
+References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it>
+	 <dhcf5-263-13@gated-at.bofh.it>
+	 <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com>
+	 <1252218779.6126.17.camel@marge.simson.net>
+	 <DDFD17CC94A9BD49A82147DDF7D545C54DC483@exchange.ZeugmaSystems.local>
+Content-Type: text/plain
+Date: Mon, 07 Sep 2009 08:54:46 +0200
+Message-Id: <1252306486.7423.72.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen,
+On Sun, 2009-09-06 at 17:18 -0700, Anirban Sinha wrote:
+> 
+> 
+> > Dunno.  Fly or die little patchlet (toss).
+> 
+> > sched: allow the user to disable RT bandwidth aggregation.
+> 
+> Hmm. Interesting. With this change, my results are as follows:
+> 
+> rt_runtime/rt_period   % of reg iterations
+> 
+> 0.2                    100%
+> 0.25                   100%
+> 0.3                    100%
+> 0.4                    100%
+> 0.5                    82%
+> 0.6                    66%
+> 0.7                    54%
+> 0.8                    46%
+> 0.9                    38.5%
+> 0.95                   32%
+> 
+> 
+> This results are on a quad core blade. Does it still makes sense
+> though?
+> Can anyone else run the same tests on a quadcore over the latest
+> kernel? I will patch our 2.6.26 kernel with upstream fixes and rerun
+> these tests on tuesday.
 
-If you are waiting for ACK, then please carry the fix with my ACK signature.
+I tested tip (v2.6.31-rc9-1357-ge6a3cd0) with a little perturbation
+measurement proglet on an isolated Q6600 core.
 
-Thanks,
-Kashyap
+10s measurement interval results:
 
------Original Message-----
-From: Stephen Rothwell [mailto:sfr@canb.auug.org.au] 
-Sent: Monday, September 07, 2009 11:54 AM
-To: Jiri Kosina
-Cc: linux-next@vger.kernel.org; linux-kernel@vger.kernel.org; Kashyap@mail2.lsil.com; Desai, Kashyap; James Bottomley; Uwe Kleine-Koenig
-Subject: linux-next: manual merge of the trivial tree with the scsi tree
+sched_rt_runtime_us  RT utilization
+950000               94.99%
+750000               75.00%
+500000               50.04%
+250000               25.02%
+ 50000                5.03%
 
-Hi Jiri,
+Seems to work fine here.
 
-Today's linux-next merge of the trivial tree got a conflict in
-drivers/scsi/mpt2sas/mpt2sas_scsih.c between commit
-155dd4c763694222c125e65438d823f58ea653bc ("[SCSI] mpt2sas: Prevent
-sending command to FW while Host Reset") from the scsi tree and commit
-8eaa1cbfd596aeb0d2fec7706faccab42eb4bf62 ("trivial: fix typos "man[ae]g?
-ment" -> "management"") from the trivial tree.
+	-Mike
 
-Just context changes.  I fixed it up (see below) and can carry the fix as
-necessary.
-
-Jiri, maybe the scsi part of that trivial patch could be sent to the scsi
-maintainer.
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc drivers/scsi/mpt2sas/mpt2sas_scsih.c
-index 774b345,e849fc7..0000000
---- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-@@@ -2584,11 -2633,14 +2584,11 @@@ _scsih_qcmd(struct scsi_cmnd *scmd, voi
-  		return 0;
-  	}
-  
-- 	/* see if we are busy with task managment stuff */
-+ 	/* see if we are busy with task management stuff */
- -	spin_lock_irqsave(&ioc->ioc_reset_in_progress_lock, flags);
- -	if (sas_target_priv_data->tm_busy ||
- -	    ioc->shost_recovery || ioc->ioc_link_reset_in_progress) {
- -		spin_unlock_irqrestore(&ioc->ioc_reset_in_progress_lock, flags);
- +	if (sas_target_priv_data->tm_busy)
- +		return SCSI_MLQUEUE_DEVICE_BUSY;
- +	else if (ioc->shost_recovery || ioc->ioc_link_reset_in_progress)
-  		return SCSI_MLQUEUE_HOST_BUSY;
- -	}
- -	spin_unlock_irqrestore(&ioc->ioc_reset_in_progress_lock, flags);
-  
-  	if (scmd->sc_data_direction == DMA_FROM_DEVICE)
-  		mpi_control = MPI2_SCSIIO_CONTROL_READ;
