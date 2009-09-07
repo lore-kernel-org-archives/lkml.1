@@ -1,49 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZIGQtL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZIGQqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752539AbZIGQtL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 12:49:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752070AbZIGQtL
+	id S1752260AbZIGQqy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 12:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751959AbZIGQqy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 12:49:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41675 "EHLO mx3.mail.elte.hu"
+	Mon, 7 Sep 2009 12:46:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:38208 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752048AbZIGQtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 12:49:10 -0400
-Date: Mon, 7 Sep 2009 18:48:52 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/6] perf_counter: Add PERF_COUNTER_IOC_SET_FILTER ioctl
-Message-ID: <20090907164852.GA6485@elte.hu>
-References: <4AA4C04D.1050201@cn.fujitsu.com> <4AA4C0B3.3070300@cn.fujitsu.com> <1252341871.7959.37.camel@laptop>
+	id S1751444AbZIGQqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 12:46:53 -0400
+Message-ID: <4AA53AB0.8030508@redhat.com>
+Date: Mon, 07 Sep 2009 19:54:08 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090707)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252341871.7959.37.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Andrea Arcangeli <aarcange@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/3] ksm: mremap use err from ksm_madvise
+References: <Pine.LNX.4.64.0909052219580.7381@sister.anvils> <Pine.LNX.4.64.0909052225250.7387@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0909052225250.7387@sister.anvils>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Mon, 2009-09-07 at 16:13 +0800, Li Zefan wrote:
-> > Allow to set profile filter via ioctl.
-> 
-> Hrm,.. not at all sure about this.. what are the ABI implications?
-
-I think the ABI should be fine if it's always a sub-set of C syntax. 
-That would be C expressions initially. Hm?
-
-	Ingo
+Hugh Dickins wrote:
+> mremap move's use of ksm_madvise() was assuming -ENOMEM on failure,
+> because ksm_madvise used to say -EAGAIN for that; but ksm_madvise now
+> says -ENOMEM (letting madvise convert that to -EAGAIN), and can also
+> say -ERESTARTSYS when signalled: so pass the error from ksm_madvise.
+>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
+>   
+Acked-by: Izik Eidus <ieidus@redhat.com>
