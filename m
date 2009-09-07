@@ -1,143 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZIGVbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752769AbZIGVcE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbZIGVbx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 17:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZIGVbw
+	id S1752769AbZIGVcE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 17:32:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752630AbZIGVcD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 17:31:52 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:31766 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752150AbZIGVbw (ORCPT
+	Mon, 7 Sep 2009 17:32:03 -0400
+Received: from mail-iw0-f204.google.com ([209.85.223.204]:56999 "EHLO
+	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752607AbZIGVcB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 17:31:52 -0400
-X-Trace: 259186587/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.94.54/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.94.54
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAPcYpUpPRV42/2dsb2JhbACBU9c1hBgF
-X-IronPort-AV: E=Sophos;i="4.44,348,1249254000"; 
-   d="scan'208";a="259186587"
-Date: Mon, 7 Sep 2009 22:31:09 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 2/8] mm: remove unused GUP flags
-In-Reply-To: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0909072230010.15430@sister.anvils>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
+	Mon, 7 Sep 2009 17:32:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=dyCvkOvbzHYiGG2pGNlsf9CdHNwEnlxFdFqE3vrOZALGLgYo+94jBGfG0ooHBQA+4n
+         eE/Mb/NNJKxuJLw/et7Ynzksp6XMCKS+zSNNRSVHrZWw0EEMseei670jTmTCyUJh/eVz
+         AR4GncGwNDhCWHoyw+rJJzCZNTDPtNr/dlRHc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1252348470.3394.30.camel@Joe-Laptop.home>
+References: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com> 
+	<1252259950.9660.179.camel@Joe-Laptop.home> <43e72e890909061226w743e84e6p17fe0d097316678e@mail.gmail.com> 
+	<1252348470.3394.30.camel@Joe-Laptop.home>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Mon, 7 Sep 2009 14:31:43 -0700
+Message-ID: <43e72e890909071431t2a9ece28u1d5b69dd73b1fe15@mail.gmail.com>
+Subject: Re: [PATCH V2] MAINTAINERS: Add Atheros Linux wireless drivers home 
+	page
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
+       Len Widra <Len.Widra@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       Bob Copeland <me@bobcopeland.com>, Greg KH <greg@kroah.com>,
+       Stephen Chen <Stephen.Chen@atheros.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Senthil Balasubramanian <senthilkumar@atheros.com>,
+       Jiri Slaby <jirislaby@gmail.com>, Jouni Malinen <jmalinen@atheros.com>,
+       Sujith Manoharan <Sujith.Manoharan@atheros.com>,
+       Vasanthakumar Thiagarajan <vasanth@atheros.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-GUP_FLAGS_IGNORE_VMA_PERMISSIONS and GUP_FLAGS_IGNORE_SIGKILL were
-flags added solely to prevent __get_user_pages() from doing some of
-what it usually does, in the munlock case: we can now remove them.
+On Mon, Sep 7, 2009 at 11:34 AM, Joe Perches<joe@perches.com> wrote:
+> On Sun, 2009-09-06 at 12:26 -0700, Luis R. Rodriguez wrote:
+>> On Sun, Sep 6, 2009 at 10:59 AM, Joe Perches<joe@perches.com> wrote:
+>> > On Thu, 2009-09-03 at 15:54 -0700, Luis R. Rodriguez wrote:
+>> >> I'm pleased to announce the new home page to Atheros Linux wireless drivers:
+>> >> http://wireless.kernel.org/en/users/Drivers/Atheros
+>> > Perhaps add this to MAINTAINERS?
+>> Fine by me, except ath5k and ath9k also have their own respective page
+>> so those can also be added.
+>
+> (cc's trimmed and maintainers added)
+>
+> Perhaps this instead:
+>
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
+Acked-by: Luis R. Rodriguez
 
- mm/internal.h |    6 ++----
- mm/memory.c   |   14 ++++----------
- mm/nommu.c    |    6 ++----
- 3 files changed, 8 insertions(+), 18 deletions(-)
+think you have to send this to John.
 
---- mm1/mm/internal.h	2009-06-25 05:18:10.000000000 +0100
-+++ mm2/mm/internal.h	2009-09-07 13:16:22.000000000 +0100
-@@ -250,10 +250,8 @@ static inline void mminit_validate_memmo
- }
- #endif /* CONFIG_SPARSEMEM */
- 
--#define GUP_FLAGS_WRITE                  0x1
--#define GUP_FLAGS_FORCE                  0x2
--#define GUP_FLAGS_IGNORE_VMA_PERMISSIONS 0x4
--#define GUP_FLAGS_IGNORE_SIGKILL         0x8
-+#define GUP_FLAGS_WRITE		0x01
-+#define GUP_FLAGS_FORCE		0x02
- 
- int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
- 		     unsigned long start, int len, int flags,
---- mm1/mm/memory.c	2009-09-05 14:40:16.000000000 +0100
-+++ mm2/mm/memory.c	2009-09-07 13:16:22.000000000 +0100
-@@ -1217,8 +1217,6 @@ int __get_user_pages(struct task_struct
- 	unsigned int vm_flags = 0;
- 	int write = !!(flags & GUP_FLAGS_WRITE);
- 	int force = !!(flags & GUP_FLAGS_FORCE);
--	int ignore = !!(flags & GUP_FLAGS_IGNORE_VMA_PERMISSIONS);
--	int ignore_sigkill = !!(flags & GUP_FLAGS_IGNORE_SIGKILL);
- 
- 	if (nr_pages <= 0)
- 		return 0;
-@@ -1244,7 +1242,7 @@ int __get_user_pages(struct task_struct
- 			pte_t *pte;
- 
- 			/* user gate pages are read-only */
--			if (!ignore && write)
-+			if (write)
- 				return i ? : -EFAULT;
- 			if (pg > TASK_SIZE)
- 				pgd = pgd_offset_k(pg);
-@@ -1278,7 +1276,7 @@ int __get_user_pages(struct task_struct
- 
- 		if (!vma ||
- 		    (vma->vm_flags & (VM_IO | VM_PFNMAP)) ||
--		    (!ignore && !(vm_flags & vma->vm_flags)))
-+		    !(vm_flags & vma->vm_flags))
- 			return i ? : -EFAULT;
- 
- 		if (is_vm_hugetlb_page(vma)) {
-@@ -1298,13 +1296,9 @@ int __get_user_pages(struct task_struct
- 
- 			/*
- 			 * If we have a pending SIGKILL, don't keep faulting
--			 * pages and potentially allocating memory, unless
--			 * current is handling munlock--e.g., on exit. In
--			 * that case, we are not allocating memory.  Rather,
--			 * we're only unlocking already resident/mapped pages.
-+			 * pages and potentially allocating memory.
- 			 */
--			if (unlikely(!ignore_sigkill &&
--					fatal_signal_pending(current)))
-+			if (unlikely(fatal_signal_pending(current)))
- 				return i ? i : -ERESTARTSYS;
- 
- 			if (write)
---- mm1/mm/nommu.c	2009-09-05 14:40:16.000000000 +0100
-+++ mm2/mm/nommu.c	2009-09-07 13:16:22.000000000 +0100
-@@ -136,7 +136,6 @@ int __get_user_pages(struct task_struct
- 	int i;
- 	int write = !!(flags & GUP_FLAGS_WRITE);
- 	int force = !!(flags & GUP_FLAGS_FORCE);
--	int ignore = !!(flags & GUP_FLAGS_IGNORE_VMA_PERMISSIONS);
- 
- 	/* calculate required read or write permissions.
- 	 * - if 'force' is set, we only require the "MAY" flags.
-@@ -150,8 +149,8 @@ int __get_user_pages(struct task_struct
- 			goto finish_or_fault;
- 
- 		/* protect what we can, including chardevs */
--		if (vma->vm_flags & (VM_IO | VM_PFNMAP) ||
--		    (!ignore && !(vm_flags & vma->vm_flags)))
-+		if ((vma->vm_flags & (VM_IO | VM_PFNMAP)) ||
-+		    !(vm_flags & vma->vm_flags))
- 			goto finish_or_fault;
- 
- 		if (pages) {
-@@ -170,7 +169,6 @@ finish_or_fault:
- 	return i ? : -EFAULT;
- }
- 
--
- /*
-  * get a list of pages in an address range belonging to the specified process
-  * and indicate the VMA that covers each page
+  Luis
