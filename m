@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZIGO7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbZIGPIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753657AbZIGO7o (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZIGO7o
+	id S1753673AbZIGPIX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 11:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZIGPIX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:59:44 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:48899 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753424AbZIGO7n (ORCPT
+	Mon, 7 Sep 2009 11:08:23 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:45444 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753511AbZIGPIW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:59:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MoLkUwAQyVqVhqMtSGF3Hq6/rdsikjXHu60pUdYkxSKYnsi5IiqXPlI5gE97+438M4
-         7mYy2gHSsvnt5Iyle4FTM1Mvz7lIBSROyFw2DyiGnsRNIP7BNNE2H1GRXuDsrjy4SroK
-         cw22g6gcJWZEs8A+5z/Zoqup+TuKdrnp9gps4=
-Date: Mon, 7 Sep 2009 18:59:40 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Youquan Song <youquan.song@intel.com>
-Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>, youqun.song@intel.com
-Subject: Re: Fix interrupt remapping hang if interrupt remapping disable in
-	BIOS
-Message-ID: <20090907145940.GD5294@lenovo>
-References: <20090907141313.GA26091@youquan-linux.bj.intel.com>
+	Mon, 7 Sep 2009 11:08:22 -0400
+Date: Mon, 7 Sep 2009 11:08:25 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: alan@linux.intel.com, <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: WARNINGs in usb-serial.c
+In-Reply-To: <E1MkcAx-0000Mx-Be@pomaz-ex.szeredi.hu>
+Message-ID: <Pine.LNX.4.44L0.0909071101010.7175-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090907141313.GA26091@youquan-linux.bj.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Youquan Song - Mon, Sep 07, 2009 at 10:13:13AM -0400]
-...  
-|  static int disable_intremap;
-|  static __init int setup_nointremap(char *str)
-| @@ -607,9 +608,14 @@ end:
-|  int __init intr_remapping_supported(void)
-|  {
-|  	struct dmar_drhd_unit *drhd;
-| -
-| +	struct acpi_table_dmar *dmar;
-| +
-|  	if (disable_intremap)
-|  		return 0;
-| +
-| +	dmar = (struct acpi_table_dmar *)dmar_tbl;
-| +	if (!(dmar->flags & 0x1))
-| +		return 0;
-|  
-|  	for_each_drhd_unit(drhd) {
-|  		struct intel_iommu *iommu = drhd->iommu;
+On Mon, 7 Sep 2009, Miklos Szeredi wrote:
 
-Hi Youquan,
+> Here's a reproducible Oops on that kernel when trying to connect with
+> wvdial.  This is a regression compared to -linus, where wvdial works
+> (most of the time anyway).
+> 
+> I can bisect it if it's not immediately obvious what is happening...
 
-perhaps we could move this test to helper function
-in dmar.c instead of plain external variable test?
+I don't think bisecting will help (or is even possible).
 
-	-- Cyrill
+> BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
+> IP: [<ffffffffa020709c>] serial_chars_in_buffer+0x47/0x5f [usbserial]
+
+It's difficult to say without an assembly listing, but I gather that
+serial_chars_in_buffer() is seeing port->serial == NULL.  Can you
+verify this?
+
+This is unexpected, because port->serial is initialized in
+usb_serial_probe() and is not set to NULL until destroy_serial(), after
+which port should not be used at all.  Can you add a
+
+#define DEBUG
+
+line at the start of usb-serial.c (before the #include lines) so that
+we can tell if destroy_serial() is getting called too early?  When you
+do, post the dmesg log showing everything from the time you start
+running your test.
+
+Alan Stern
+
