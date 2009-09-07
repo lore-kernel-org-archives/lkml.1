@@ -1,112 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752750AbZIGWO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752791AbZIGWPs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752750AbZIGWO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 18:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZIGWO5
+	id S1752791AbZIGWPs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 18:15:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752629AbZIGWPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 18:14:57 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35627 "EHLO mx2.suse.de"
+	Mon, 7 Sep 2009 18:15:47 -0400
+Received: from tundra.namei.org ([65.99.196.166]:46907 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752375AbZIGWO5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 18:14:57 -0400
-Date: Tue, 8 Sep 2009 00:14:54 +0200
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH RFC] Add locking to ext3_do_update_inode
-Message-ID: <20090907221453.GB11748@duck.suse.cz>
-References: <20090904200613.GJ17033@think>
+	id S1752531AbZIGWPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 18:15:47 -0400
+Date: Tue, 8 Sep 2009 08:15:31 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Linux Filesystem Mailing List <linux-fsdevel@vger.kernel.org>,
+       Eric Paris <eparis@redhat.com>, Mimi Zohar <zohar@us.ibm.com>
+Subject: Re: [PATCH 3/8] Simplify exec_permission_lite() further
+In-Reply-To: <alpine.LFD.2.01.0909071402510.3419@localhost.localdomain>
+Message-ID: <alpine.LRH.2.00.0909080814410.11493@tundra.namei.org>
+References: <alpine.LFD.2.01.0909071337510.3419@localhost.localdomain> <alpine.LFD.2.01.0909071401210.3419@localhost.localdomain> <alpine.LFD.2.01.0909071402220.3419@localhost.localdomain> <alpine.LFD.2.01.0909071402510.3419@localhost.localdomain>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904200613.GJ17033@think>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 04-09-09 16:06:13, Chris Mason wrote:
-> Hello everyone,
-> 
-> I've been struggling with this off and on while I've been testing the
-> data=guarded work.  The symptom is corrupted orphan lists and inodes
-> with the wrong i_size stored on disk.  I was convinced the
-> data=guarded code was just missing a call to ext3_mark_inode_dirty, but
-> tracing showed the i_disksize I was sending to ext3_mark_inode_dirty
-> wasn't actually making it to the drive.
-> 
-> ext3_mark_inode_dirty can be called without locks held (atime updates
-> and a few others), so the data=guarded code uses locks while updating
-> the in-memory inode, and then calls ext3_mark_inode_dirty
-> without any locks held.
-> 
-> But, ext3_mark_inode_dirty has no internal locking to make sure that
-> only one CPU is updating the buffer head at a time.  Generally this
-> works out ok because everyone that changes the inode then calls
-> ext3_mark_inode_dirty themselves.  Even though it races, eventually
-> someone updates the buffer heads and things move on.
-> 
-> But there is still a risk of the wrong values getting in, and the
-> data=guarded code seems to hit the race very often.
-> 
-> Since everyone that changes the inode also logs it, it should be
-> possible to fix this with some memory barriers.  I'll leave that as an
-> exercise to the reader and lock the buffer head instead.
->
-> It it probably a good idea to have a different patch series for lockless
-> bit flipping on the ext3 i_state field.  ext3_do_update_inode &= clears
-> EXT3_STATE_NEW without any locks held.
-> 
-> Signed-off-by: Chris Mason <chris.mason@oracle.com>
-  The patch looks good. I've added it to my tree...
+On Mon, 7 Sep 2009, Linus Torvalds wrote:
 
-								Honza
+> Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-> index 00f5dc1..6a0a056 100644
-> --- a/fs/ext3/inode.c
-> +++ b/fs/ext3/inode.c
-> @@ -3466,6 +3479,10 @@ static int ext3_do_update_inode(handle_t *handle,
->  	struct buffer_head *bh = iloc->bh;
->  	int err = 0, rc, block;
->  
-> +again:
-> +	/* we can't allow multiple procs in here at once, its a bit racey */
-> +	lock_buffer(bh);
-> +
->  	/* For fields not not tracking in the in-memory inode,
->  	 * initialise them to zero for new inodes. */
->  	if (ei->i_state & EXT3_STATE_NEW)
-> @@ -3525,16 +3542,20 @@ static int ext3_do_update_inode(handle_t *handle,
->  			       /* If this is the first large file
->  				* created, add a flag to the superblock.
->  				*/
-> +				unlock_buffer(bh);
->  				err = ext3_journal_get_write_access(handle,
->  						EXT3_SB(sb)->s_sbh);
->  				if (err)
->  					goto out_brelse;
-> +
->  				ext3_update_dynamic_rev(sb);
->  				EXT3_SET_RO_COMPAT_FEATURE(sb,
->  					EXT3_FEATURE_RO_COMPAT_LARGE_FILE);
->  				handle->h_sync = 1;
->  				err = ext3_journal_dirty_metadata(handle,
->  						EXT3_SB(sb)->s_sbh);
-> +				/* get our lock and start over */
-> +				goto again;
->  			}
->  		}
->  	}
-> @@ -3557,6 +3578,7 @@ static int ext3_do_update_inode(handle_t *handle,
->  		raw_inode->i_extra_isize = cpu_to_le16(ei->i_extra_isize);
->  
->  	BUFFER_TRACE(bh, "call ext3_journal_dirty_metadata");
-> +	unlock_buffer(bh);
->  	rc = ext3_journal_dirty_metadata(handle, bh);
->  	if (!err)
->  		err = rc;
+Looks ok to me, but I'd be interested in any comments from others on the 
+cc list.
+
+Reviewed-by: James Morris <jmorris@namei.org>
+
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+James Morris
+<jmorris@namei.org>
