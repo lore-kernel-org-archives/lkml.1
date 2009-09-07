@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393AbZIGIly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZIGI7g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752393AbZIGIly (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 04:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752106AbZIGIlx
+	id S1752591AbZIGI7g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 04:59:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZIGI7f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 04:41:53 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:56536 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751789AbZIGIlx (ORCPT
+	Mon, 7 Sep 2009 04:59:35 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:49901 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752470AbZIGI7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 04:41:53 -0400
-To: akpm@linux-foundation.org
-CC: Valdis.Kletnieks@vt.edu, hugh.dickins@tiscali.co.uk, miklos@szeredi.hu,
-       akpm@linux-foundation.org, matthew@wil.cx, agruen@suse.de,
-       viro@zeniv.linux.org.uk, hch@lst.de, linux-kernel@vger.kernel.org
-In-reply-to: <E1MkZk0-00006N-So@pomaz-ex.szeredi.hu> (message from Miklos
-	Szeredi on Mon, 07 Sep 2009 10:38:24 +0200)
-Subject: [patch 2/2] vfs: revert /proc/mounts to old behavior for unreachable mountpoints
-References: <2818.1252160549@turing-police.cc.vt.edu> <1252312254.4733.12.camel@tucsk> <E1MkZk0-00006N-So@pomaz-ex.szeredi.hu>
-Message-Id: <E1MkZn7-00007W-4B@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 07 Sep 2009 10:41:37 +0200
+	Mon, 7 Sep 2009 04:59:34 -0400
+Date: Mon, 7 Sep 2009 10:59:28 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Subject: Re: linux-next: tip tree build warnings
+Message-ID: <20090907105928.2646cb11@skybase>
+In-Reply-To: <20090903121326.GA4724@osiris.boeblingen.de.ibm.com>
+References: <20090903182510.8fd4d4d1.sfr@canb.auug.org.au>
+	<20090903083844.GA9912@elte.hu>
+	<20090903121326.GA4724@osiris.boeblingen.de.ibm.com>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Miklos Szeredi <mszeredi@suse.cz>
+On Thu, 3 Sep 2009 14:13:26 +0200
+Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-"vfs: fix d_path() for unreachable paths" prefixes unreachable paths
-with "(unreachable)" in the result of getcwd(2), /proc/*/mounts,
-/proc/*/cwd, /proc/*/fd/*, etc...
+> On Thu, Sep 03, 2009 at 10:38:44AM +0200, Ingo Molnar wrote:
+> > * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> > > cputime_t is variously "u64", "unsigned long long" and "unsigned 
+> > > long" on different architectures.
+> > 
+> > Should be unsigned long i think. Most architectures use it as 
+> > unsigned long via include/asm-generic/cputime.h, except these three:
+> > 
+> >  arch/ia64/include/asm/cputime.h:typedef u64 cputime_t;
+> >  arch/powerpc/include/asm/cputime.h:typedef u64 cputime_t;
+> >  arch/s390/include/asm/cputime.h:typedef unsigned long long cputime_t;
+> > 
+> > Or we could eliminate the type altogether as well and standardize on 
+> > u64. Thomas?
+> 
+> s390 uses 64 bit cputime_t because we want the high resolution also in
+> 32 bit kernels. So standardizing on u64 would be the preferred solution
+> for us.
 
-Hugh Dickins reported that an old version of gnome-vfs-daemon crashes
-because it finds an entry in /proc/mounts where the mountpoint is
-unreachable.
+The cputime_t type serves/served two purposes: 1) make it clear that
+this is NOT a jiffie value, it is an architecture defined type with
+architecture dependent semantic, 2) by redefining cputime_t to a
+structure with a single embedded unsigned long I have been able to
+identify all places in the kernel that do not use the proper cputime
+functions. I'm not sure if we need 2) anymore.
 
-This patch reverts /proc/mounts to the old behavior (or rather a less
-crazy version of the old behavior).
+-- 
+blue skies,
+   Martin.
 
-Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Reported-by: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
----
- fs/namespace.c |   57 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 56 insertions(+), 1 deletion(-)
+"Reality continues to ruin my life." - Calvin.
 
-Index: linux-2.6/fs/namespace.c
-===================================================================
---- linux-2.6.orig/fs/namespace.c	2009-09-04 15:25:36.000000000 +0200
-+++ linux-2.6/fs/namespace.c	2009-09-04 15:40:25.000000000 +0200
-@@ -789,6 +789,61 @@ static void show_type(struct seq_file *m
- 	}
- }
- 
-+/*
-+ * Same as d_path() except it doesn't stick "(unreachable)" in front
-+ * of unreachable paths.
-+ */
-+static char *d_path_compat(struct path *path, char *buf, int buflen)
-+{
-+	char *res;
-+	struct path root;
-+	struct path tmp;
-+
-+	read_lock(&current->fs->lock);
-+	root = current->fs->root;
-+	path_get(&root);
-+	read_unlock(&current->fs->lock);
-+	spin_lock(&dcache_lock);
-+	tmp = root;
-+	res = __d_path(path, &tmp, buf, buflen);
-+	if (!IS_ERR(res) &&
-+	    (tmp.mnt != root.mnt || tmp.dentry != root.dentry)) {
-+		/*
-+		 * Unreachable path found, redo with the global root
-+		 * so we get a normal looking path.
-+		 */
-+		res = __d_path(path, &tmp, buf, buflen);
-+	}
-+	spin_unlock(&dcache_lock);
-+	path_put(&root);
-+
-+	return res;
-+}
-+
-+/*
-+ * Some old programs break if /proc/mounts contains a mountpoint
-+ * beginning with "(unreachable)".  Revert this back to the old way of
-+ * displaying the path from the global root instead.
-+ */
-+static int show_path_old(struct seq_file *m, struct path *path, char *esc)
-+{
-+	char *buf;
-+	size_t size = seq_get_buf(m, &buf);
-+	int res = -1;
-+
-+	if (size) {
-+		char *p = d_path_compat(path, buf, size);
-+		if (!IS_ERR(p)) {
-+			char *end = mangle_path(buf, p, esc);
-+			if (end)
-+				res = end - buf;
-+		}
-+	}
-+	seq_commit(m, res);
-+
-+	return res;
-+}
-+
- static int show_vfsmnt(struct seq_file *m, void *v)
- {
- 	struct vfsmount *mnt = list_entry(v, struct vfsmount, mnt_list);
-@@ -797,7 +852,7 @@ static int show_vfsmnt(struct seq_file *
- 
- 	mangle(m, mnt->mnt_devname ? mnt->mnt_devname : "none");
- 	seq_putc(m, ' ');
--	seq_path(m, &mnt_path, " \t\n\\");
-+	show_path_old(m, &mnt_path, " \t\n\\");
- 	seq_putc(m, ' ');
- 	show_type(m, mnt->mnt_sb);
- 	seq_puts(m, __mnt_is_readonly(mnt) ? " ro" : " rw");
