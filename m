@@ -1,80 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758933AbZIGFht@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758908AbZIGFid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758933AbZIGFht (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 01:37:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758908AbZIGFhs
+	id S1758908AbZIGFid (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 01:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbZIGFic
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 01:37:48 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46723 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758823AbZIGFhs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 01:37:48 -0400
-Date: Mon, 7 Sep 2009 01:37:33 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Greg Ungerer <gerg@snapgear.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg Ungerer <gerg@uclinux.org>
-Subject: Re: [PATCH] m68knommu: Clean up linker script using new linker script
- macros.
-In-Reply-To: <4AA49946.2000804@snapgear.com>
-Message-ID: <alpine.DEB.1.10.0909070135040.17860@dr-wily.mit.edu>
-References: <1252293044-13102-1-git-send-email-tabbott@ksplice.com> <4AA49946.2000804@snapgear.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Mon, 7 Sep 2009 01:38:32 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:36276 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758804AbZIGFic (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 01:38:32 -0400
+Date: Mon, 7 Sep 2009 00:38:33 -0500
+From: Bob Tracy <rct@gherkin.frus.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Michal Schmidt <mschmidt@redhat.com>
+Subject: Re: [Bug #14136] readcd Oops
+Message-ID: <20090907053833.GA15287@gherkin.frus.com>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <Vm51Upp4EV.A.p8B.DfBpKB@chimera>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Vm51Upp4EV.A.p8B.DfBpKB@chimera>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Sep 2009, Greg Ungerer wrote:
-
-> This fails for me with:
+On Sun, Sep 06, 2009 at 07:24:57PM +0200, Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
 > 
->   LD      vmlinux
-> /usr/local/bin/m68k-uclinux-ld:arch/m68knommu/kernel/vmlinux.lds:287: syntax
-> error
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
 > 
-> due to PAGE_SIZE evaluating to:
 > 
->   . = ALIGN((1UL << (12)));
-> 
-> The linker doesn't like the 'UL' suffix.
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14136
+> Subject		: readcd Oops
+> Submitter	: Bob Tracy <rct@gherkin.frus.com>
+> Date		: 2009-09-03 3:39 (4 days old)
+> References	: http://marc.info/?l=linux-kernel&m=125195043617418&w=4
+> Handled-By	: Michal Schmidt <mschmidt@redhat.com>
+> Patch		: http://patchwork.kernel.org/patch/45347/
 
-Yeah, sorry, I didn't have a cross-compiler for this one to test.  The fix 
-is to use _AC(1,UL), like most of the other architectures (including m68k 
-with an mmu) do.
+I ack'd the fix a few days ago: please remove this bug entry from the
+list of 2.6.30 regressions.
 
-	-Tim Abbott
-
-m68knommu: Make PAGE_SIZE available to assembly files.
-
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
----
- arch/m68k/include/asm/page_no.h |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/m68k/include/asm/page_no.h b/arch/m68k/include/asm/page_no.h
-index 9aa3f90..1f31b06 100644
---- a/arch/m68k/include/asm/page_no.h
-+++ b/arch/m68k/include/asm/page_no.h
-@@ -1,10 +1,12 @@
- #ifndef _M68KNOMMU_PAGE_H
- #define _M68KNOMMU_PAGE_H
- 
-+#include <linux/const.h>
-+
- /* PAGE_SHIFT determines the page size */
- 
- #define PAGE_SHIFT	(12)
--#define PAGE_SIZE	(1UL << PAGE_SHIFT)
-+#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
- #define PAGE_MASK	(~(PAGE_SIZE-1))
- 
- #include <asm/setup.h>
--- 
-1.6.3.3
-
+--Bob
