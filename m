@@ -1,42 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753262AbZIGL5u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753295AbZIGMD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753262AbZIGL5u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 07:57:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753054AbZIGL5t
+	id S1753295AbZIGMD4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 08:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZIGMDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 07:57:49 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:44948 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752691AbZIGL5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 07:57:48 -0400
-Date: Mon, 7 Sep 2009 13:57:51 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090907115750.GW18599@kernel.dk>
-References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk>
+	Mon, 7 Sep 2009 08:03:55 -0400
+Received: from alpha.arachsys.com ([91.203.57.7]:58625 "EHLO
+	alpha.arachsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753228AbZIGMDy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 08:03:54 -0400
+X-Greylist: delayed 1148 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Sep 2009 08:03:54 EDT
+Date: Mon, 7 Sep 2009 12:59:27 +0100
+From: Chris Webb <chris@arachsys.com>
+To: linux-scsi@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>, Ric Wheeler <rwheeler@redhat.com>,
+       Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+Message-ID: <20090907115927.GU8710@arachsys.com>
+References: <4A950FA6.4020408@redhat.com> <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090907094953.GP18599@kernel.dk>
+In-Reply-To: <20090907114442.GG18831@arachsys.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07 2009, Jens Axboe wrote:
-> Scheduler       Runtime         Max lat     Avg lat     Std dev
-> ----------------------------------------------------------------
-> CFS             100             951         462         267
-> CFS-x2          100             983         484         308
-> BFS
-> BFS-x2
+Chris Webb <chris@arachsys.com> writes:
 
-Those numbers are buggy, btw, it's not nearly as bad. But responsiveness
-under compile load IS bad though, the test app just didn't quantify it
-correctly. I'll see if I can get it working properly.
+> I have a bitmap on the array, but sometimes when I remove and re-add a
+> failed component, it doesn't seem to use the bitmap and does a lengthy full
+> recovery instead. One example that's ongoing at the moment:-
+> 
+>       [=>...................]  recovery =  5.7% (40219648/703205312) finish=7546.3min speed=1463K/sec
+>       bitmap: 34/126 pages [136KB], 8192KB chunk
+> 
+> which is rather painful and has to be throttled back with speed_limit_max to
+> avoid the virtual machines running on top of it from having extremely poor IO
+> latency.
 
--- 
-Jens Axboe
+I've also noticed that during this recovery, I'm seeing lots of timeouts but
+they don't seem to interrupt the resync:
 
+  05:47:39 ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+  05:47:39 ata5.00: cmd ec/00:01:00:00:00/00:00:00:00:00/00 tag 0 pio 512 in
+  05:47:39         res 40/00:00:00:4f:c2/00:00:00:00:00/40 Emask 0x4 (timeout)
+  05:47:39 ata5.00: status: { DRDY }
+  05:47:39 ata5: hard resetting link
+  05:47:49 ata5: softreset failed (device not ready)
+  05:47:49 ata5: hard resetting link
+  05:47:49 ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  05:47:49 ata5.00: configured for UDMA/133
+  05:47:49 ata5: EH complete
+  
+  08:17:39 ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+  08:17:39 ata5.00: cmd ec/00:01:00:00:00/00:00:00:00:00/00 tag 0 pio 512 in
+  08:17:39         res 40/00:00:35:83:f8/00:00:4d:00:00/40 Emask 0x4 (timeout)
+  08:17:39 ata5.00: status: { DRDY }
+  08:17:39 ata5: hard resetting link
+  08:17:49 ata5: softreset failed (device not ready)
+  08:17:49 ata5: hard resetting link
+  08:17:49 ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  08:17:49 ata5.00: configured for UDMA/133
+  08:17:49 ata5: EH complete
+  
+  10:22:39 ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+  10:22:39 ata5.00: cmd ec/00:01:00:00:00/00:00:00:00:00/00 tag 0 pio 512 in
+  10:22:39         res 40/00:00:00:4f:c2/00:00:00:00:00/40 Emask 0x4 (timeout)
+  10:22:39 ata5.00: status: { DRDY }
+  10:22:39 ata5: hard resetting link
+  10:22:49 ata5: softreset failed (device not ready)
+  10:22:49 ata5: hard resetting link
+  10:22:50 ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  10:22:51 ata5.00: configured for UDMA/133
+  10:22:51 ata5: EH complete
+
+Cheers,
+
+Chris.
