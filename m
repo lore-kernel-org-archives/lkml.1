@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751290AbZIGTaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZIGTpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751290AbZIGTaB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 15:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZIGTaB
+	id S1751584AbZIGTpc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 15:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZIGTpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 15:30:01 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56240 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbZIGTaA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 15:30:00 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4AA55EE5.10102@s5r6.in-berlin.de>
-Date: Mon, 07 Sep 2009 21:28:37 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090630 SeaMonkey/1.1.17
+	Mon, 7 Sep 2009 15:45:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:60602 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751368AbZIGTpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 15:45:31 -0400
+Date: Mon, 7 Sep 2009 21:45:31 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
+       david@fromorbit.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 3/8] writeback: switch to per-bdi threads for flushing
+	data v2
+Message-ID: <20090907194531.GD29103@duck.suse.cz>
+References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com> <1252050406-22467-4-git-send-email-jens.axboe@oracle.com> <20090904105403.GD19857@duck.suse.cz> <20090904115858.GT18599@kernel.dk> <20090904120407.GV18599@kernel.dk> <20090907183659.GB29103@duck.suse.cz> <20090907184517.GF18599@kernel.dk>
 MIME-Version: 1.0
-To: pageexec@freemail.hu
-CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH 2/6] firewire: ohci: fix Self ID Count register mask (safeguard
- against buffer overflow)
-References: <tkrat.85bb80d9295444c1@s5r6.in-berlin.de>, <tkrat.e40ffd9ba52485e5@s5r6.in-berlin.de> <4AA5575E.6620.3D14E038@pageexec.freemail.hu>
-In-Reply-To: <4AA5575E.6620.3D14E038@pageexec.freemail.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090907184517.GF18599@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pageexec@freemail.hu wrote:
-> On 6 Sep 2009 at 18:49, Stefan Richter wrote:
+On Mon 07-09-09 20:45:18, Jens Axboe wrote:
+> On Mon, Sep 07 2009, Jan Kara wrote:
+> >   Hi Jens,
+> > 
+> >   now I've found just two minor things (see below). Besides them the only
+> > thing which is blocking my ack is a way to effectively lookup a BDI from a
+> > superblock so that we can reasonably effectively fsync a superblock...
 > 
-> added stable as .30 is affected, possibly older kernels as well, i didn't check.
+> Can we side step that as an inclusion criteria, please? I'd really like
+> to work on adding that quick lookup, but I'd also hate to potentiall
+> destabilize anything at this point. So we can probably quite easily make
+> .32 as well for that, but I'd rather not risk doing a version and
+> include that from the beginning. OK?
+  Well, for now I thought about a simple hack like a pointer to
+backing_dev_info in a superblock. That should work for every filesystem
+right now and shouldn't be too complex...
+  But if you promise you'll fix that up before 2.6.32 is released, I'm OK
+with your patch as is. I'll give your patches some testing with some less
+usual benchmarks this week and if that works out fine you have my ack.
 
-The mistake which is fixed here is present since firewire-ohci was added 
-in 2.6.22.  However, for a smooth submission to stable, the patched file...
-
->> --- linux-2.6.31-rc9.orig/drivers/firewire/ohci.c
->> +++ linux-2.6.31-rc9/drivers/firewire/ohci.c
-
-...has to be drivers/firewire/fw-ohci.c in kernels before 2.6.31-rc1.
-
-As hinted at in the changelog, I personally don't consider the fix 
-urgent because there are a few more self ID consistency checks in place 
-which catch a variety of real and theoretical corruptions, but I don't 
-claim that I'm appropriately aware of all possibilities.
+									Honza
 -- 
-Stefan Richter
--=====-==--= =--= --===
-http://arcgraph.de/sr/
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
