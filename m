@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751524AbZIGHTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753657AbZIGO7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751524AbZIGHTu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 03:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751083AbZIGHTu
+	id S1753657AbZIGO7o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZIGO7o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 03:19:50 -0400
-Received: from mga01.intel.com ([192.55.52.88]:44692 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbZIGHTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 03:19:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,345,1249282800"; 
-   d="scan'208";a="724524111"
-Date: Mon, 7 Sep 2009 10:58:07 -0400
-From: Youquan Song <youquan.song@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>, youquan.song@intel.com
-Subject: [PATCH] interrupt remapping: Disallow interrupt remapping if not all ioapic under interrupt remapping
-Message-ID: <20090907145807.GA30942@youquan-linux.bj.intel.com>
-Mime-Version: 1.0
+	Mon, 7 Sep 2009 10:59:44 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:48899 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753424AbZIGO7n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 10:59:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MoLkUwAQyVqVhqMtSGF3Hq6/rdsikjXHu60pUdYkxSKYnsi5IiqXPlI5gE97+438M4
+         7mYy2gHSsvnt5Iyle4FTM1Mvz7lIBSROyFw2DyiGnsRNIP7BNNE2H1GRXuDsrjy4SroK
+         cw22g6gcJWZEs8A+5z/Zoqup+TuKdrnp9gps4=
+Date: Mon, 7 Sep 2009 18:59:40 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Youquan Song <youquan.song@intel.com>
+Cc: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>, youqun.song@intel.com
+Subject: Re: Fix interrupt remapping hang if interrupt remapping disable in
+	BIOS
+Message-ID: <20090907145940.GD5294@lenovo>
+References: <20090907141313.GA26091@youquan-linux.bj.intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090907141313.GA26091@youquan-linux.bj.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Current kernel enable interrupt remapping only when all the vt-d unit support
-interrupt remapping. So it is reasonable we should also disallow enabling
-intr-remapping if there any io-apics that are not listed under vt-d units. 
-Otherwise we can run into issues.
+[Youquan Song - Mon, Sep 07, 2009 at 10:13:13AM -0400]
+...  
+|  static int disable_intremap;
+|  static __init int setup_nointremap(char *str)
+| @@ -607,9 +608,14 @@ end:
+|  int __init intr_remapping_supported(void)
+|  {
+|  	struct dmar_drhd_unit *drhd;
+| -
+| +	struct acpi_table_dmar *dmar;
+| +
+|  	if (disable_intremap)
+|  		return 0;
+| +
+| +	dmar = (struct acpi_table_dmar *)dmar_tbl;
+| +	if (!(dmar->flags & 0x1))
+| +		return 0;
+|  
+|  	for_each_drhd_unit(drhd) {
+|  		struct intel_iommu *iommu = drhd->iommu;
 
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com> 
-Signed-off-by: Youquan Song <youquan.song@intel.com>
----
+Hi Youquan,
 
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index 7b287cb..a8a4383 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -570,9 +570,6 @@ int __init dmar_table_init(void)
- 		printk(KERN_INFO PREFIX "No ATSR found\n");
- #endif
- 
--#ifdef CONFIG_INTR_REMAP
--	parse_ioapics_under_ir();
--#endif
- 	return 0;
- }
- 
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index 4f5b871..ebfa47b 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -626,6 +626,11 @@ int __init enable_intr_remapping(int eim)
- 	struct dmar_drhd_unit *drhd;
- 	int setup = 0;
- 
-+	if (parse_ioapics_under_ir() != 1) {
-+		printk(KERN_INFO "Not enable interrupt remapping\n");
-+		return -1;
-+	}
-+
- 	for_each_drhd_unit(drhd) {
- 		struct intel_iommu *iommu = drhd->iommu;
- 
+perhaps we could move this test to helper function
+in dmar.c instead of plain external variable test?
+
+	-- Cyrill
