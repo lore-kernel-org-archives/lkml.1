@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752349AbZIGI3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbZIGId4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752349AbZIGI3P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 04:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZIGI3P
+	id S1752293AbZIGId4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 04:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZIGIdz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 04:29:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:58087 "EHLO smtps.tip.net.au"
+	Mon, 7 Sep 2009 04:33:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37455 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbZIGI3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 04:29:14 -0400
-Date: Mon, 7 Sep 2009 18:29:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Catalin Marinas <catalin.marinas@arm.com>, npiggin@suse.de
-Subject: Re: linux-next: slab tree build failure
-Message-Id: <20090907182905.30c8dffd.sfr@canb.auug.org.au>
-In-Reply-To: <1252309426.4964.3.camel@penberg-laptop>
-References: <20090907153723.0c984c83.sfr@canb.auug.org.au>
-	<84144f020909062310u37ecdddfw31c6cc9a22ccabd9@mail.gmail.com>
-	<20090907173108.3c0148d7.sfr@canb.auug.org.au>
-	<1252309426.4964.3.camel@penberg-laptop>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	id S1751687AbZIGIdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 04:33:55 -0400
+Subject: Re: vfs-fix-d_path-for-unreachable-paths.patch
+From: Miklos Szeredi <mszeredi@suse.cz>
+To: Valdis.Kletnieks@vt.edu
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>, miklos@szeredi.hu,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>, Andreas Gruenbacher <agruen@suse.de>,
+       Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@lst.de>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <2818.1252160549@turing-police.cc.vt.edu>
+References: <2818.1252160549@turing-police.cc.vt.edu>
+Content-Type: text/plain
+Date: Mon, 07 Sep 2009 10:30:54 +0200
+Message-Id: <1252312254.4733.12.camel@tucsk>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__7_Sep_2009_18_29_05_+1000_mfp==fP+KY5fscA_"
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__7_Sep_2009_18_29_05_+1000_mfp==fP+KY5fscA_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2009-09-05 at 10:22 -0400, Valdis.Kletnieks@vt.edu wrote:
+> Somebody is buggy here, but I'm not sure who. The initrd for leaving a dangling
+> reference, the patch for breaking /proc/mounts, or /sbin/restorecon and the
+> shutdown script for being far too trusting of what the kernel tells it?
+> 
 
-Hi Pekka,
+Hugh Dickins reported a similar issue, where gnome-vfs chokes on
+that /proc/mounts line as well.
 
-On Mon, 07 Sep 2009 10:43:46 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wr=
-ote:
->
-> Aah, let me guess, CONFIG_SLQB? I guess I'll just rebase the damn tree
+I think the conclusion is that this change in /proc/mounts is not going
+to work.  There are two solutions:
 
-That would be my guess.
+ 1) leave out unreachable mounts from /proc/PID/mounts altogether
+ 2) completely revert /proc/PID/mounts to the old behavior
 
-> and make it non-default. We need that anyway if we want to merge it to
-> 2.6.32. I'll take a stab at it later this evening (my time zone).
+The first option is much less likely to break something than the current
+patch, but it's still an ABI change.
 
-OK.  This breakage still needs to be fixed in the wireless tree, though.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+So I think it's better to go with the second option.  Patches coming
+up...
 
---Signature=_Mon__7_Sep_2009_18_29_05_+1000_mfp==fP+KY5fscA_
-Content-Type: application/pgp-signature
+Thanks,
+Miklos
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkqkxFEACgkQjjKRsyhoI8wH4ACgjCwi+SlqTLKcKEztjW8Dq2x4
-4WMAoLPOCom0uFL2lN2rGSVVA9LoGjCK
-=8Jo7
------END PGP SIGNATURE-----
-
---Signature=_Mon__7_Sep_2009_18_29_05_+1000_mfp==fP+KY5fscA_--
