@@ -1,156 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758770AbZIGDH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758785AbZIGDIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758770AbZIGDH6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758630AbZIGDH6
+	id S1758785AbZIGDIi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 23:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbZIGDIh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:07:58 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60440 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758616AbZIGDH5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:07:57 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Chris Zankel <chris@zankel.net>
-Subject: [PATCH] xtensa: Cleanup linker script using new linker script macros.
-Date: Sun,  6 Sep 2009 23:07:46 -0400
-Message-Id: <1252292866-12734-1-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Sun, 6 Sep 2009 23:08:37 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54048 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758630AbZIGDIg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 23:08:36 -0400
+Date: Mon, 7 Sep 2009 13:08:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Maciej Sosnowski <maciej.sosnowski@intel.com>
+Subject: linux-next: async_tx tree build failure
+Message-Id: <20090907130831.c0180edd.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__7_Sep_2009_13_08_31_+1000_paBU3T4VOmcVUmk4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Chris Zankel <chris@zankel.net>
----
- arch/xtensa/kernel/vmlinux.lds.S |   75 +++++++-------------------------------
- 1 files changed, 14 insertions(+), 61 deletions(-)
+--Signature=_Mon__7_Sep_2009_13_08_31_+1000_paBU3T4VOmcVUmk4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/arch/xtensa/kernel/vmlinux.lds.S b/arch/xtensa/kernel/vmlinux.lds.S
-index 41c159c..12778a4 100644
---- a/arch/xtensa/kernel/vmlinux.lds.S
-+++ b/arch/xtensa/kernel/vmlinux.lds.S
-@@ -15,6 +15,8 @@
-  */
- 
- #include <asm-generic/vmlinux.lds.h>
-+#include <asm/page.h>
-+#include <asm/thread_info.h>
- 
- #include <variant/core.h>
- #include <platform/hardware.h>
-@@ -107,41 +109,18 @@ SECTIONS
- 
-   .fixup   : { *(.fixup) }
- 
--  . = ALIGN(16);
--
--  __ex_table : {
--    __start___ex_table = .;
--    *(__ex_table)
--    __stop___ex_table = .;
--  }
--
-+  EXCEPTION_TABLE(16)
-   /* Data section */
- 
--  . = ALIGN(XCHAL_ICACHE_LINESIZE);
-   _fdata = .;
--  .data :
--  {
--    DATA_DATA
--    CONSTRUCTORS
--    . = ALIGN(XCHAL_ICACHE_LINESIZE);
--    *(.data.cacheline_aligned)
--  }
--
-+  RW_DATA_SECTION(XCHAL_ICACHE_LINESIZE, PAGE_SIZE, THREAD_SIZE)
-   _edata = .;
- 
--  /* The initial task */
--  . = ALIGN(8192);
--  .data.init_task : { *(.data.init_task) }
--
-   /* Initialization code and data: */
- 
--  . = ALIGN(1 << 12);
-+  . = ALIGN(PAGE_SIZE);
-   __init_begin = .;
--  .init.text : {
--  	_sinittext = .;
--	INIT_TEXT
--	_einittext = .;
--  }
-+  INIT_TEXT_SECTION(PAGE_SIZE)
- 
-   .init.data :
-   {
-@@ -168,36 +147,15 @@ SECTIONS
- 		   .DebugInterruptVector.text);
-   
-     __boot_reloc_table_end = ABSOLUTE(.) ;
--  }
- 
--  . = ALIGN(XCHAL_ICACHE_LINESIZE);
--
--  __setup_start = .;
--  .init.setup : { *(.init.setup) }
--  __setup_end = .;
--
--  __initcall_start = .;
--  .initcall.init : {
--	INITCALLS
-+    INIT_SETUP(XCHAL_ICACHE_LINESIZE)
-+    INIT_CALLS
-+    CON_INITCALL
-+    SECURITY_INITCALL
-+    INIT_RAM_FS
-   }
--  __initcall_end = .;
--
--  __con_initcall_start = .;
--  .con_initcall.init : { *(.con_initcall.init) }
--  __con_initcall_end = .;
--
--  SECURITY_INIT
--
--
--#ifdef CONFIG_BLK_DEV_INITRD
--  . = ALIGN(4096);
--  __initramfs_start =.;
--  .init.ramfs : { *(.init.ramfs) }
--  __initramfs_end = .;
--#endif
--
--  PERCPU(4096)
- 
-+  PERCPU(PAGE_SIZE)
- 
-   /* We need this dummy segment here */
- 
-@@ -252,16 +210,11 @@ SECTIONS
- 		  .DoubleExceptionVector.literal)
- 
-   . = (LOADADDR( .DoubleExceptionVector.text ) + SIZEOF( .DoubleExceptionVector.text ) + 3) & ~ 3;
--  . = ALIGN(1 << 12);
-+  . = ALIGN(PAGE_SIZE);
- 
-   __init_end = .;
- 
--  . = ALIGN(8192);
--
--  /* BSS section */
--  _bss_start = .;
--  .bss : { *(.bss.page_aligned) *(.bss) }
--  _bss_end = .;
-+  BSS_SECTION(0, 8192, 0)
- 
-   _end = .;
- 
--- 
-1.6.3.3
+Hi Dan,
 
+Today's linux-next build (x86_64 allmodconfig) failed like this:
+
+drivers/dma/ioat/dma_v2.c: In function 'ioat2_enumerate_channels':
+drivers/dma/ioat/dma_v2.c:346: error: too few arguments to function 'i7300_=
+idle_platform_probe'
+
+Caused by commit feed1bce2e6dc7e3307f122ac95be6741840bee8 ("ioat2,3:
+convert to a true ring buffer").
+
+I have used the version of the async_tc tree from next-20090904 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__7_Sep_2009_13_08_31_+1000_paBU3T4VOmcVUmk4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqkeS8ACgkQjjKRsyhoI8xgbwCfReFQ59qazenRoPlYTtyFwCFR
+7z4AninUeLnVje/2GhZdaYRHEw0fnHiS
+=lfdO
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__7_Sep_2009_13_08_31_+1000_paBU3T4VOmcVUmk4--
