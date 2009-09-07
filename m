@@ -1,68 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753563AbZIGOwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751552AbZIGHOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753563AbZIGOwh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbZIGOwg
+	id S1751552AbZIGHOc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 03:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZIGHOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:52:36 -0400
-Received: from mail-qy0-f190.google.com ([209.85.221.190]:40913 "EHLO
-	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752625AbZIGOwf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:52:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=mcRJAjqr5c+cAOiPPG6Eb+1KuOubvgMT/VvOKU6iyn3gNljnAhFtlBHYnHbpRmoMyl
-         q+9aTYdNQY7F64MjUz0NvL90fNHJV1+xm3VVYPuzHr++IGmr7+NDVmuKlJbNlzn9C4GI
-         UNz0xzxqOCBrA0KQVUaLdhwEY18/GWdiz7UIM=
-MIME-Version: 1.0
-In-Reply-To: <1252332440.17852.58.camel@dax.rpnet.com>
-References: <20090906052653.GB1324@ucw.cz> <1252276145.17852.15.camel@dax.rpnet.com> 
-	<20090907113132.GM23450@elf.ucw.cz> <1252329025.1861.6.camel@hammer.suse.cz> 
-	<1252332440.17852.58.camel@dax.rpnet.com>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Mon, 7 Sep 2009 22:52:18 +0800
-Message-ID: <f17812d70909070752k5a90f5fcv5078ffe3a5ccba91@mail.gmail.com>
-Subject: Re: Zaurus suspend saga
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: Stanislav Brabec <utx@penguin.cz>, Pavel Machek <pavel@ucw.cz>,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+	Mon, 7 Sep 2009 03:14:31 -0400
+Received: from mga09.intel.com ([134.134.136.24]:28031 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751347AbZIGHOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 03:14:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,345,1249282800"; 
+   d="scan'208";a="446245491"
+Date: Mon, 7 Sep 2009 10:52:52 -0400
+From: Youquan Song <youquan.song@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       suresh.b.siddha@intel.com, youquan.song@intel.com
+Subject: [PATCH] interrupt remapping: Fix interrupt remapping hang if interrupt remapping disable in BIOS
+Message-ID: <20090907145252.GA30436@youquan-linux.bj.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 7, 2009 at 10:07 PM, Richard Purdie<rpurdie@rpsys.net> wrote:
-> On Mon, 2009-09-07 at 15:10 +0200, Stanislav Brabec wrote:
->> Pavel Machek wrote:
->> >
->> > > Sadly lack of time means I've lost track of the Zaurus kernels but this
->> > > sounds like all accesses to the SSP buses now go through the SPI layer
->> > > and when it was converted nobody thought about the impact this would
->> > > have on the Zaurus charger code.
->> >
->> >Unfortunately... Do you have any idea when this conversion took place?
->>
->> In past, MAX1111 driver was embedded in the Zaurus specific code. Now
->> MAX1111 is a generic SPI driver and spitz_pm.c calls it.
->>
->> Maybe it will still work with CONFIG_CORGI_SSP_DEPRECATED.
->
-> I was thinking about this. The SSP interface is ridiculously simple and
-> it might be worth just adding some SSP access code into the Zaurus
-> offline code so it can access the MAX1111 without the rest of the system
-> running. That would solve a lot of the problems.
->
+BIOS clear DMAR table INTR_REMAP flag to disable interrupt remapping. Current
+kernel only check interrupt remapping(IR) flag in DRHD's extended capability 
+register to decide interrupt remapping support or not. But IR flag will not 
+affected by BIOS setting. 
 
-That simple SSP API made a lot of headaches as well. Now there are three
-clearly separated individual drivers even on a single SPI bus controlling the
-LCD, backlight and the MAX1111 sensor instead of all those dirty tricks
-messing up. And it was really a painful memory to touch that part of the
-code and get it cleaned up.
+So though BIOS disable interrupt remapping feature, However, 
+intr_remapping_supported function will report interrupt supported. On this 
+cases, it will continue to enable interrupt remapping which will cause kernel 
+hang. This bug exist on almost platform support interrupt remapping.      
+
+This patch add DMAR table INTR_REMAP flag check before enable interrup remapping
+
+Signed-off-by: Youquan, Song <youquan.song@intel.com>
+---
+
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index a8a4383..78f4ca8 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -43,7 +43,7 @@
+  */
+ LIST_HEAD(dmar_drhd_units);
+ 
+-static struct acpi_table_header * __initdata dmar_tbl;
++struct acpi_table_header * __initdata dmar_tbl;
+ static acpi_size dmar_tbl_size;
+ 
+ static void __init dmar_register_drhd_unit(struct dmar_drhd_unit *drhd)
+diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
+index ebfa47b..97d1561 100644
+--- a/drivers/pci/intr_remapping.c
++++ b/drivers/pci/intr_remapping.c
+@@ -16,6 +16,7 @@
+ static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
+ static int ir_ioapic_num;
+ int intr_remapping_enabled;
++extern struct acpi_table_header *__initdata dmar_tbl;
+ 
+ static int disable_intremap;
+ static __init int setup_nointremap(char *str)
+@@ -607,9 +608,14 @@ end:
+ int __init intr_remapping_supported(void)
+ {
+ 	struct dmar_drhd_unit *drhd;
+-
++	struct acpi_table_dmar *dmar;
++
+ 	if (disable_intremap)
+ 		return 0;
++
++	dmar = (struct acpi_table_dmar *)dmar_tbl;
++	if (!(dmar->flags & 0x1))
++		return 0;
+ 
+ 	for_each_drhd_unit(drhd) {
+ 		struct intel_iommu *iommu = drhd->iommu;
