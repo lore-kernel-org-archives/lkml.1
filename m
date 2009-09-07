@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbZIGQzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754046AbZIGRAC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbZIGQzz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 12:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753547AbZIGQzy
+	id S1754046AbZIGRAC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 13:00:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753122AbZIGRAB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 12:55:54 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54448 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbZIGQzy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 12:55:54 -0400
-Subject: Re: [PATCH 4/6] perf_counter: Add PERF_COUNTER_IOC_SET_FILTER ioctl
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tom Zanussi <tzanussi@gmail.com>, Jason Baron <jbaron@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090907164852.GA6485@elte.hu>
-References: <4AA4C04D.1050201@cn.fujitsu.com>
-	 <4AA4C0B3.3070300@cn.fujitsu.com> <1252341871.7959.37.camel@laptop>
-	 <20090907164852.GA6485@elte.hu>
-Content-Type: text/plain
-Date: Mon, 07 Sep 2009 18:55:45 +0200
-Message-Id: <1252342545.7959.42.camel@laptop>
+	Mon, 7 Sep 2009 13:00:01 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:55191 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752095AbZIGRAA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 13:00:00 -0400
+Date: Mon, 7 Sep 2009 18:59:56 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Cc: "sdhci-devel@lists.ossman.eu" <sdhci-devel@lists.ossman.eu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: sdhci can turn off irq up to 200 ms
+Message-ID: <20090907185956.3f53440c@mjolnir.ossman.eu>
+In-Reply-To: <4AA4D8BA.602@parrot.com>
+References: <4A4B6184.7000903@parrot.com>
+	<4A55C631.7030103@parrot.com>
+	<20090906152537.15303d69@mjolnir.ossman.eu>
+	<4AA4D8BA.602@parrot.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-5586-1252342801-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-07 at 18:48 +0200, Ingo Molnar wrote:
-> * Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Mon, 2009-09-07 at 16:13 +0800, Li Zefan wrote:
-> > > Allow to set profile filter via ioctl.
-> > 
-> > Hrm,.. not at all sure about this.. what are the ABI implications?
-> 
-> I think the ABI should be fine if it's always a sub-set of C syntax. 
-> That would be C expressions initially. Hm?
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Right, so I've no clue what filter expressions look like, and the
-changelog doesn't help us at all. It doesn't mention its a well
-considered decision to henceforth freeze the expression syntax.
+--=_freyr.ossman.eu-5586-1252342801-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Of course, since filters so far only work with tracepoint things, and
-since you can only come by tracepoint things through debugfs, and since
-anything debugfs is basically a free-for-all ABI-less world, we might be
-good, but then this is a very ill-defined ioctl() indeed.
+On Mon, 7 Sep 2009 11:56:10 +0200
+Matthieu CASTET <matthieu.castet@parrot.com> wrote:
 
-So please, consider this well -- there might not be a second chance.
+> Pierre Ossman a =C3=A9crit :
+> >=20
+> > I seem to recall having problems with jiffies not updating with those
+> > locks held (or perhaps it was when inside the isr).
+> >=20
+> > What arch have you been testing this on?
+> It have been tested on arm.
+>=20
 
+Things might be different there. I suggest you also try to get it
+tested on x86, where this driver sees most of its use.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-5586-1252342801-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEARECAAYFAkqlPA8ACgkQ7b8eESbyJLhOlgCg4XiY5Ew7tyqBkxQRlK9zhq1v
+/C8An2SKn3VY84zyfnlmIxFD1SNmSruh
+=Y1ie
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-5586-1252342801-0001-2--
