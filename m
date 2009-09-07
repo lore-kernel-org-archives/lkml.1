@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZIGOTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZIGOWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753498AbZIGOTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZIGOTj
+	id S1753469AbZIGOWS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZIGOWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:19:39 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:38907 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753372AbZIGOTj (ORCPT
+	Mon, 7 Sep 2009 10:22:17 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48001 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752282AbZIGOWR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:19:39 -0400
-Date: Mon, 7 Sep 2009 16:19:41 +0200
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] platform_driver_register:  warn if probe is in
-	.init.text
-Message-ID: <20090907141941.GA19380@pengutronix.de>
-References: <20090616182310.GC13048@pengutronix.de> <1245418939-20758-1-git-send-email-u.kleine-koenig@pengutronix.de> <20090619141128.GA11506@suse.de> <20090619144354.GA20985@pengutronix.de> <20090629075535.GA20155@pengutronix.de> <20090711033459.GC1344@suse.de> <20090711100014.GA9540@pengutronix.de> <20090711170548.GC5205@suse.de>
+	Mon, 7 Sep 2009 10:22:17 -0400
+Date: Mon, 7 Sep 2009 10:21:50 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Greg Ungerer <gerg@snapgear.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg Ungerer <gerg@uclinux.org>
+Subject: Re: [PATCH] m68knommu: Clean up linker script using new linker script
+ macros.
+In-Reply-To: <4AA4B104.7040507@snapgear.com>
+Message-ID: <alpine.DEB.1.10.0909071017001.17860@dr-wily.mit.edu>
+References: <1252293044-13102-1-git-send-email-tabbott@ksplice.com> <4AA49946.2000804@snapgear.com> <alpine.DEB.1.10.0909070135040.17860@dr-wily.mit.edu> <4AA4B104.7040507@snapgear.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090711170548.GC5205@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+On Mon, 7 Sep 2009, Greg Ungerer wrote:
 
-On Sat, Jul 11, 2009 at 10:05:48AM -0700, Greg KH wrote:
-> On Sat, Jul 11, 2009 at 12:00:14PM +0200, Uwe Kleine-König wrote:
-> > Hi Greg,
-> > 
-> > > > Are you conviced and took the patch or did you give up to convince me?
-> > > 
-> > > Heh, no, sorry, it got burried in my queue.
-> > > 
-> > > > I still think the patch is correct and I'd like to have it applied.
-> > > 
-> > > Ok, let's test it out in the linux-next tree for a while to make sure it
-> > > works properly.  Care to send me an updated version?
-> > I updated to latest Linus' master.  It applies to linux-next from
-> > Fri Jul 10 14:44:30 2009 +1000 as is.
+> Now, back to the original patch. Now fails with another syntax error
+> at the last line in this:
 > 
-> Thanks, I'll apply it later today to my trees.
-ping?!
+>  .init : {
+>   . = ALIGN((1 << (12)));
+>   __init_begin = .;
+>   . = ALIGN((1 << (12))); .init.text : AT(ADDR(.init.text) - 0) { _sinittext =
+> .; *(.init.text) *(.devinit.text) *(.cpuinit.text) *(.meminit.text) _einittext
+> = .; }
 
-> > Back some time I sent a series that fixes many of these bugs.  I will
-> > update it later today and resend.
-> 
-> Thanks, that would be good to have, to keep the noise down for devices
-> we already know about.
+Oops.  The ".init : { }" wrapping the new macros there should have been 
+removed.
 
-Best regards
-Uwe
+The following patch should fix this issue (obviously, you'll want to 
+squash it with the original patch, but I figure sending the diff will be 
+easier to review).
 
+	-Tim Abbott
+
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+---
+ arch/m68knommu/kernel/vmlinux.lds.S |   14 ++++++--------
+ 1 files changed, 6 insertions(+), 8 deletions(-)
+
+diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
+index 979acb5..c380040 100644
+--- a/arch/m68knommu/kernel/vmlinux.lds.S
++++ b/arch/m68knommu/kernel/vmlinux.lds.S
+@@ -154,14 +154,12 @@ SECTIONS {
+ 		_edata = . ;
+ 	} > DATA
+ 
+-	.init : {
+-		. = ALIGN(PAGE_SIZE);
+-		__init_begin = .;
+-		INIT_TEXT_SECTION(PAGE_SIZE)
+-		INIT_DATA_SECTION(16)
+-		. = ALIGN(PAGE_SIZE);
+-		__init_end = .;
+-	} > INIT
++	. = ALIGN(PAGE_SIZE);
++	__init_begin = .;
++	INIT_TEXT_SECTION(PAGE_SIZE) > INIT
++	INIT_DATA_SECTION(16) > INIT
++	. = ALIGN(PAGE_SIZE);
++	__init_end = .;
+ 
+ 	/DISCARD/ : {
+ 		EXIT_TEXT
 -- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+1.6.3.3
+
