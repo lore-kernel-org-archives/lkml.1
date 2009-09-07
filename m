@@ -1,98 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbZIGJvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752676AbZIGJwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752660AbZIGJvu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 05:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZIGJvt
+	id S1752676AbZIGJwd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 05:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752386AbZIGJwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 05:51:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:12904 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752204AbZIGJvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 05:51:48 -0400
-Date: Mon, 7 Sep 2009 11:51:48 +0200
-From: Karel Zak <kzak@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       util-linux-ng@vger.kernel.org
-Subject: [ANNOUNCE] util-linux-ng v2.16.1
-Message-ID: <20090907095148.GC7904@nb.net.home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 7 Sep 2009 05:52:33 -0400
+Received: from mail.free-electrons.com ([88.191.76.200]:58661 "EHLO
+	mail.free-electrons.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752008AbZIGJwc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 05:52:32 -0400
+From: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+To: avictor.za@gmail.com
+Cc: linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com,
+       nicolas.ferre@atmel.com,
+       Albin Tonnerre <albin.tonnerre@free-electrons.com>
+Subject: [PATCH v2] Add poll_get_char and poll_put_char uart_ops to atmel_serial.
+Date: Mon,  7 Sep 2009 11:52:50 +0200
+Message-Id: <1252317170-9782-1-git-send-email-albin.tonnerre@free-electrons.com>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <cd73a99e0909062322j683952e6m803dd6b703bf758d@mail.gmail.com>
+References: <cd73a99e0909062322j683952e6m803dd6b703bf758d@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch allows using KGDB over the console with the atmel_serial
+driver.
 
+Signed-off-by: Albin Tonnerre <albin.tonnerre@free-electrons.com>
+---
+changes: Use register access macros instead of __raw_readl/writel
 
-The stable util-linux-ng 2.16.1 release is available at
+ drivers/serial/atmel_serial.c |   22 ++++++++++++++++++++++
+ 1 files changed, 22 insertions(+), 0 deletions(-)
 
-   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
-
-(Note, 2.16.1 is stable maintenance release.)
-
-Feedback and bug reports, as always, are welcomed.
-
-	Karel
-
-
-Util-linux-ng 2.16.1 Release Notes
-==================================
-
-Changes since v2.16
--------------------
-
- For more details see ChangeLog files at:
- ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
-
-build-sys:
-   - don't distribute generated *.pc files  [Karel Zak]
-cal:
-   - fix (harmless) typo  [Peter Breitenlohner]
-   - fix broken computation for Sep 1752  [Peter Breitenlohner]
-dmesg:
-   - add -r to help output  [Karel Zak]
-docs:
-   - update "The Perfect Patch" URL  [Karel Zak]
-   - update AUTHORS file  [Karel Zak]
-libblkid:
-   - add *.ko.gz support to modules.dep parser  [Karel Zak]
-   - allow linking with uClibc  [Daniel Mierswa]
-   - fix FALSE definition  [Karel Zak]
-   - fix buffer overflow in blkid_encode_string()  [Florian Zumbiehl]
-   - fix cache->probe memory leak  [Karel Zak]
-   - fix ext2 detection on systems with ext4 only  [Karel Zak]
-mkswap:
-   - fix memory leaks, cleanup check_blocks()  [Karel Zak]
-   - unbreak -c ("check") option.  [Peter De Wachter]
-mount:
-   - add info about ext{3,4} barriers to mount.8  [Karel Zak]
-   - clean up mount.8  [Karel Zak]
-   - mention mtab for single mount point mount in mount.8  [Peter Volkov]
-pg:
-   - compiler warning with NLS disabled  [Peter Breitenlohner]
-po:
-   - fix grammar glitch in german translation  [Hendrik Lönngren]
-   - merge changes  [Karel Zak]
-   - update ja.po (from translationproject.org)  [Makoto Kato]
-scriptreplay:
-   - fix typo in error message  [Karel Zak]
-tailf:
-   - report inotify_add_watch() problems  [Karel Zak]
-
-
-cal.1 cfdisk.8 chfn.1 chsh.1 ctrlaltdel.8 cytune.8 ddate.1 delpart.8 dmesg.1
-elvtune.8 fdformat.8 fdisk.8 fsck.8 fsck.minix.8 fstab.5 getopt.1 hexdump.1
-hwclock.8 initctl.8 ionice.1 ipcmk.1 ipcrm.1 ipcs.1 isosize.8 kill.1 last.1
-ldattach.8: losetup.8: lscpu.1: mcookie.1: mesg.1: mkfs.8: mkfs.bfs.8:
-mkfs.minix.8: mkswap.8: more.1: addpart.8: blockdev.8: mount.8: namei.1:
-newgrp.1: partx.8: pg.1: pivot_root.8: rdev.8: readprofile.1: rename.1:
-renice.1: reset.1: rtcwake.8: scriptreplay.1: setarch.8: setsid.1: setterm.1:
-sfdisk.8: shutdown.8: simpleinit.8: swapon.8: switch_root.8: tunelp.8: ul.1:
-umount.8: uuidd.8: uuidgen.1: vipw.8: whereis.1: write.1:
-
-   - formatting  [Peter Breitenlohner]
-
+diff --git a/drivers/serial/atmel_serial.c b/drivers/serial/atmel_serial.c
+index 607d43a..c562883 100644
+--- a/drivers/serial/atmel_serial.c
++++ b/drivers/serial/atmel_serial.c
+@@ -1213,6 +1213,24 @@ static int atmel_verify_port(struct uart_port *port, struct serial_struct *ser)
+ 	return ret;
+ }
+ 
++#ifdef CONFIG_CONSOLE_POLL
++static int atmel_poll_get_char(struct uart_port *port)
++{
++	while (!(UART_GET_CSR(port) & ATMEL_US_RXRDY))
++		barrier();
++
++	return UART_GET_CHAR(port);
++}
++
++static void atmel_poll_put_char(struct uart_port *port, unsigned char ch)
++{
++	while (!(UART_GET_CSR(port) & ATMEL_US_TXRDY))
++		barrier();
++
++	UART_PUT_CHAR(port, ch);
++}
++#endif
++
+ static struct uart_ops atmel_pops = {
+ 	.tx_empty	= atmel_tx_empty,
+ 	.set_mctrl	= atmel_set_mctrl,
+@@ -1232,6 +1250,10 @@ static struct uart_ops atmel_pops = {
+ 	.config_port	= atmel_config_port,
+ 	.verify_port	= atmel_verify_port,
+ 	.pm		= atmel_serial_pm,
++#ifdef CONFIG_CONSOLE_POLL
++	.poll_get_char	= atmel_poll_get_char,
++	.poll_put_char	= atmel_poll_put_char,
++#endif
+ };
+ 
+ /*
 -- 
- Karel Zak  <kzak@redhat.com>
+1.6.3.3
+
