@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZIGUqo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752138AbZIGU5L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751954AbZIGUqo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 16:46:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751750AbZIGUqn
+	id S1752138AbZIGU5L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 16:57:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZIGU5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 16:46:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49553 "EHLO kernel.dk"
+	Mon, 7 Sep 2009 16:57:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37255 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751612AbZIGUqn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 16:46:43 -0400
-Date: Mon, 7 Sep 2009 22:46:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Avi Kivity <avi@redhat.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
+	id S1751689AbZIGU5K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 16:57:10 -0400
+Date: Mon, 7 Sep 2009 22:57:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Felix Fietkau <nbd@openwrt.org>
 Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090907204645.GK18599@kernel.dk>
-References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk> <4AA54AA7.9080709@redhat.com> <20090907184640.GG18599@kernel.dk> <20090907203627.GA17731@elte.hu>
+Message-ID: <20090907205701.GA8590@elte.hu>
+References: <20090906205952.GA6516@elte.hu> <200909071716.57722.mb@bu3sch.de> <20090907182629.GA3484@elte.hu> <200909072051.13748.mb@bu3sch.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090907203627.GA17731@elte.hu>
+In-Reply-To: <200909072051.13748.mb@bu3sch.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07 2009, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > Agree, I was actually looking into doing joint latency for X 
-> > number of tasks for the test app. I'll try and do that and see if 
-> > we can detect something from that.
-> 
-> Could you please try latest -tip:
-> 
->    http://people.redhat.com/mingo/tip.git/README
-> 
-> (c26f010 or later)
-> 
-> Does it get any better with make -j128 build jobs? Peter just fixed 
 
-The compile 'problem' is on my workstation, which is a dual core Intel
-core 2. I use -j4 on that typically. On the bigger boxes, I don't notice
-any interactivity problems, largely because I don't run anything latency
-sensitive on those :-)
+* Michael Buesch <mb@bu3sch.de> wrote:
 
-> a bug in the SMP load-balancer that can cause interactivity problems 
-> on large CPU count systems.
+> On Monday 07 September 2009 20:26:29 Ingo Molnar wrote:
+> > Could you profile it please? Also, what's the context-switch rate?
+> 
+> As far as I can tell, the broadcom mips architecture does not have 
+> profiling support. It does only have some proprietary profiling 
+> registers that nobody wrote kernel support for, yet.
 
-Worth trying on the dual core box?
+Well, what does 'vmstat 1' show - how many context switches are 
+there per second on the iperf server? In theory if it's a truly 
+saturated box, there shouldnt be many - just a single iperf task 
+running at 100% CPU utilization or so.
 
--- 
-Jens Axboe
+(Also, if there's hrtimer support for that board then perfcounters 
+could be used to profile it.)
 
+	Ingo
