@@ -1,53 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbZIGSiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754242AbZIGSpT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754258AbZIGSiW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 14:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZIGSiW
+	id S1754242AbZIGSpT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 14:45:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754144AbZIGSpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 14:38:22 -0400
-Received: from mx1-old.redhat.com ([66.187.233.31]:40081 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752045AbZIGSiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 14:38:21 -0400
+	Mon, 7 Sep 2009 14:45:17 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57127 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753387AbZIGSpP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 14:45:15 -0400
+Date: Mon, 7 Sep 2009 20:45:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       tytso@mit.edu, akpm@linux-foundation.org
+Subject: Re: [PATCH 3/8] writeback: switch to per-bdi threads for flushing
+	data v2
+Message-ID: <20090907184517.GF18599@kernel.dk>
+References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com> <1252050406-22467-4-git-send-email-jens.axboe@oracle.com> <20090904105403.GD19857@duck.suse.cz> <20090904115858.GT18599@kernel.dk> <20090904120407.GV18599@kernel.dk> <20090907183659.GB29103@duck.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Pavel Machek <pavel@ucw.cz>
-X-Fcc: ~/Mail/linus
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kconfig CROSS_COMPILE option
-In-Reply-To: Pavel Machek's message of  Monday, 7 September 2009 15:09:04 +0200 <20090907130402.GB1595@ucw.cz>
-References: <20090905002947.A4C678BEB1@magilla.sf.frob.com>
-	<20090907130402.GB1595@ucw.cz>
-X-Windows: the first fully modular software disaster.
-Message-Id: <20090907183801.379228BF3F@magilla.sf.frob.com>
-Date: Mon,  7 Sep 2009 11:38:01 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090907183659.GB29103@duck.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes that would be very nice. Editing Makefile every time I
-> crosscomppile for arm sucks.
+On Mon, Sep 07 2009, Jan Kara wrote:
+>   Hi Jens,
+> 
+>   now I've found just two minor things (see below). Besides them the only
+> thing which is blocking my ack is a way to effectively lookup a BDI from a
+> superblock so that we can reasonably effectively fsync a superblock...
 
-The other trick I can recommend is to write a GNUmakefile containing:
+Can we side step that as an inclusion criteria, please? I'd really like
+to work on adding that quick lookup, but I'd also hate to potentiall
+destabilize anything at this point. So we can probably quite easily make
+.32 as well for that, but I'd rather not risk doing a version and
+include that from the beginning. OK?
 
-ARCH=foo
-CROSS_COMPILE=foo-linux-
-include Makefile
+> > +	/*
+> > +	 * Check for periodic writeback, kupdated() style
+> > +	 */
+> > +	if (!wrote)
+> > +		wrote = wb_check_old_data_flush(wb);
+>   Why is here the !wrote check? It would feel safer if we just did
+> wrote += wb_check_old_data_flush(wb);
+>   Otherwise we cannot guarantee syncing of inodes every writeback_interval.
 
-(GNU make reads GNUmakefile in preference to Makefile.)
-But this manual hackery is still not nearly as nice as the automagic way.
+Yes good point, that check should not be there or the logic is still
+broken wrt old data flushing. Will fix that, thanks!
 
-> But... do we need an option for subarch, too? And will Kconfig system
-> handle that?
+> > +		/*
+> > +		 * If work allocation fails, do the writes inline. We drop
+> > +		 * the lock and restart the list writeout. This should be OK,
+> > +		 * since this happens rarely and because the writeout should
+> > +		 * eventually make more free memory available.
+> > +		 */
+> > +		work = bdi_alloc_work(wbc);
+> > +		if (!work) {
+> > +			struct writeback_control __wbc = *wbc;
+> >
+> > -			cond_resched();
+> > +			/*
+> > +			 * Not a data integrity writeout, just continue
+> > +			 */
+> > +			if (!must_wait)
+> > +				continue;
+> >  
+> > -			spin_lock(&inode_lock);
+> > +			spin_unlock(&bdi_lock);
+> > +			__wbc = *wbc;
+>   You initialize the variable twice...
 
-I'm not sure I follow exactly what your concern is.  I am mostly familiar
-with doing x86 and powerpc builds.  For both of those, the kernel config
-sets whether it's the 32-bit or 64-bit world.
+Indeed, the latter should just go. Good spotting, fixed.
 
+-- 
+Jens Axboe
 
-Thanks,
-Roland
