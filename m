@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZIGOWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbZIGO0J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbZIGOWS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZIGOWR
+	id S1753530AbZIGO0J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:26:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZIGO0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:22:17 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:48001 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752282AbZIGOWR (ORCPT
+	Mon, 7 Sep 2009 10:26:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:56405 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753394AbZIGO0I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:22:17 -0400
-Date: Mon, 7 Sep 2009 10:21:50 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Greg Ungerer <gerg@snapgear.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Greg Ungerer <gerg@uclinux.org>
-Subject: Re: [PATCH] m68knommu: Clean up linker script using new linker script
- macros.
-In-Reply-To: <4AA4B104.7040507@snapgear.com>
-Message-ID: <alpine.DEB.1.10.0909071017001.17860@dr-wily.mit.edu>
-References: <1252293044-13102-1-git-send-email-tabbott@ksplice.com> <4AA49946.2000804@snapgear.com> <alpine.DEB.1.10.0909070135040.17860@dr-wily.mit.edu> <4AA4B104.7040507@snapgear.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Mon, 7 Sep 2009 10:26:08 -0400
+Subject: Re: [rfc] lru_add_drain_all() vs isolation
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090907141818.GA8394@redhat.com>
+References: <dhcf5-263-13@gated-at.bofh.it>
+	 <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com>
+	 <1252218779.6126.17.camel@marge.simson.net>
+	 <1252232289.29247.11.camel@marge.simson.net>
+	 <DDFD17CC94A9BD49A82147DDF7D545C54DC482@exchange.ZeugmaSystems.local>
+	 <1252249790.13541.28.camel@marge.simson.net>
+	 <1252311463.7586.26.camel@marge.simson.net>
+	 <1252321596.7959.6.camel@laptop> <20090907133544.GA6365@redhat.com>
+	 <1252331599.7959.33.camel@laptop>  <20090907141818.GA8394@redhat.com>
+Content-Type: text/plain
+Date: Mon, 07 Sep 2009 16:25:54 +0200
+Message-Id: <1252333554.7959.35.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Sep 2009, Greg Ungerer wrote:
+On Mon, 2009-09-07 at 16:18 +0200, Oleg Nesterov wrote:
 
-> Now, back to the original patch. Now fails with another syntax error
-> at the last line in this:
+> > flush_workqueue() could limit itself to cpus that had work queued since
+> > the last flush_workqueue() invocation, etc.
 > 
->  .init : {
->   . = ALIGN((1 << (12)));
->   __init_begin = .;
->   . = ALIGN((1 << (12))); .init.text : AT(ADDR(.init.text) - 0) { _sinittext =
-> .; *(.init.text) *(.devinit.text) *(.cpuinit.text) *(.meminit.text) _einittext
-> = .; }
+> But "work queued since the last flush_workqueue() invocation" just means
+> "has work queued". Please note that flush_cpu_workqueue() does nothing
+> if there are no works, except it does lock/unlock of cwq->lock.
+> 
+> IIRC, flush_cpu_workqueue() has to lock/unlock to avoid the races with
+> CPU hotplug, but _perhaps_ flush_workqueue() can do the check lockless.
+> 
+> Afaics, we can add the workqueue_struct->cpu_map_has_works to help
+> flush_workqueue(), but this means we should complicate insert_work()
+> and run_workqueue() which should set/clear the bit. But given that
+> flush_workqueue() should be avoided anyway, I am not sure.
 
-Oops.  The ".init : { }" wrapping the new macros there should have been 
-removed.
+Ah, indeed. Then nothing new would be needed here, since it will indeed
+not interrupt processing on the remote cpus that never queued any work.
 
-The following patch should fix this issue (obviously, you'll want to 
-squash it with the original patch, but I figure sending the diff will be 
-easier to review).
 
-	-Tim Abbott
-
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
----
- arch/m68knommu/kernel/vmlinux.lds.S |   14 ++++++--------
- 1 files changed, 6 insertions(+), 8 deletions(-)
-
-diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
-index 979acb5..c380040 100644
---- a/arch/m68knommu/kernel/vmlinux.lds.S
-+++ b/arch/m68knommu/kernel/vmlinux.lds.S
-@@ -154,14 +154,12 @@ SECTIONS {
- 		_edata = . ;
- 	} > DATA
- 
--	.init : {
--		. = ALIGN(PAGE_SIZE);
--		__init_begin = .;
--		INIT_TEXT_SECTION(PAGE_SIZE)
--		INIT_DATA_SECTION(16)
--		. = ALIGN(PAGE_SIZE);
--		__init_end = .;
--	} > INIT
-+	. = ALIGN(PAGE_SIZE);
-+	__init_begin = .;
-+	INIT_TEXT_SECTION(PAGE_SIZE) > INIT
-+	INIT_DATA_SECTION(16) > INIT
-+	. = ALIGN(PAGE_SIZE);
-+	__init_end = .;
- 
- 	/DISCARD/ : {
- 		EXIT_TEXT
--- 
-1.6.3.3
 
