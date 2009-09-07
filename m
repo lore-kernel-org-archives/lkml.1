@@ -1,58 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZIGR3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754124AbZIGRip@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754006AbZIGR3g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 13:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZIGR3g
+	id S1754124AbZIGRip (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 13:38:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZIGRip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 13:29:36 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:58950 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752249AbZIGR3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 13:29:35 -0400
-Subject: Re: [PATCH v3 0/5] kmemleak: few small cleanups and clear command
-	support
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, penberg@cs.helsinki.fi,
-       mcgrof@gmail.com
-In-Reply-To: <1252111494-7593-1-git-send-email-lrodriguez@atheros.com>
-References: <1252111494-7593-1-git-send-email-lrodriguez@atheros.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Mon, 07 Sep 2009 18:29:30 +0100
-Message-Id: <1252344570.23780.110.camel@pc1117.cambridge.arm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Sep 2009 17:29:31.0356 (UTC) FILETIME=[C25D61C0:01CA2FE0]
+	Mon, 7 Sep 2009 13:38:45 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52915 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753545AbZIGRio (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 13:38:44 -0400
+Date: Mon, 7 Sep 2009 19:38:46 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090907173846.GB18599@kernel.dk>
+References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk> <20090907115750.GW18599@kernel.dk> <20090907141458.GD24507@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090907141458.GD24507@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-04 at 17:44 -0700, Luis R. Rodriguez wrote:
-> Here is my third respin, this time rebased ontop of:
+On Mon, Sep 07 2009, Ingo Molnar wrote:
 > 
-> git://linux-arm.org/linux-2.6 kmemleak
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
 > 
-> As suggested by Catalin we now clear the list by only painting reported
-> unreferenced objects and the color we use is grey to ensure future
-> scans are possible on these same objects to account for new allocations
-> in the future referenced on the cleared objects.
+> > On Mon, Sep 07 2009, Jens Axboe wrote:
+> > > Scheduler       Runtime         Max lat     Avg lat     Std dev
+> > > ----------------------------------------------------------------
+> > > CFS             100             951         462         267
+> > > CFS-x2          100             983         484         308
+> > > BFS
+> > > BFS-x2
+> > 
+> > Those numbers are buggy, btw, it's not nearly as bad. But 
+> > responsiveness under compile load IS bad though, the test app just 
+> > didn't quantify it correctly. I'll see if I can get it working 
+> > properly.
 > 
-> Patch 3 is now a little different, now with a paint_ptr() and
-> a __paint_it() helper.
+> What's the default latency target on your box:
+> 
+>   cat /proc/sys/kernel/sched_latency_ns
+> 
+> ?
 
-Thanks for the patches. They look ok now, I'll merge them tomorrow to my
-kmemleak branch and give them a try.
+It's off right now, but it is set to whatever is the default. I don't
+touch it.
 
-> I tested this by clearing kmemleak after bootup, then writing my
-> own buggy module which kmalloc()'d onto some internal pointer,
-> scanned, unloaded, and scanned again and then saw a new shiny
-> report come up:
+> And yes, it would be wonderful to get a test-app from you that would 
+> express the kind of pain you are seeing during compile jobs.
 
-BTW, kmemleak comes with a test module which does this.
+I was hoping this one would, but it's not showing anything. I even added
+support for doing the ping and wakeup over a socket, to see if the pipe
+test was doing well because of the sync wakeup we do there. The net
+latency is a little worse, but still good. So no luck in making that app
+so far.
 
 -- 
-Catalin
+Jens Axboe
 
