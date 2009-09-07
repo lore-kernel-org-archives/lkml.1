@@ -1,58 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753511AbZIGR40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753451AbZIGSYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753511AbZIGR40 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 13:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZIGR4Z
+	id S1753451AbZIGSYg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 14:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZIGSYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 13:56:25 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:22225 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752070AbZIGR4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 13:56:25 -0400
-Message-ID: <4AA54AA7.9080709@redhat.com>
-Date: Mon, 07 Sep 2009 21:02:15 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Mon, 7 Sep 2009 14:24:35 -0400
+Received: from [65.98.92.6] ([65.98.92.6]:4173 "EHLO b32.net"
+	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752174AbZIGSYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 14:24:35 -0400
+From: Kevin Cernekee <cernekee@gmail.com>
+To: ralf@linux-mips.org
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org
+Date: Mon, 7 Sep 2009 11:11:31 -0700
+Subject: [PATCHv2] MIPS: Machine check exception in kmap_coherent()
+Message-Id: <2c228c5e48509b7c8296a6c50af3ad73@localhost>
+In-Reply-To: <20090907102613.GA25295@linux-mips.org>
+References: <20090907102613.GA25295@linux-mips.org>
+User-Agent: vim 7.1
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk>
-In-Reply-To: <20090907094953.GP18599@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/07/2009 12:49 PM, Jens Axboe wrote:
->
-> I ran a simple test as well, since I was curious to see how it performed
-> wrt interactiveness. One of my pet peeves with the current scheduler is
-> that I have to nice compile jobs, or my X experience is just awful while
-> the compile is running.
->    
+Create an extra set of fixmap entries for use in interrupt handlers.
+This prevents fixmap VA conflicts between copy_user_highpage() running
+in user context, and local_r4k_flush_cache_page() invoked from an SMP
+IPI.
 
-I think the problem is that CFS is optimizing for the wrong thing.  It's 
-trying to be fair to tasks, but these are meaningless building blocks of 
-jobs, which is what the user sees and measures.  Your make -j128 
-dominates your interactive task by two orders of magnitude.  If the 
-scheduler attempts to bridge this gap using heuristics, it will fail 
-badly when it misdetects since it will starve the really important 
-100-thread job for a task that was misdetected as interactive.
+Signed-off-by: Kevin Cernekee <cernekee@gmail.com>
+---
+ arch/mips/include/asm/fixmap.h |    4 ++--
+ arch/mips/mm/init.c            |    6 +++++-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
 
-I think that bash (and the GUI shell) should put any new job (for bash, 
-a pipeline; for the GUI, an application launch from the menu) in a 
-scheduling group of its own.  This way it will have equal weight in the 
-scheduler's eyes with interactive tasks; one will not dominate the 
-other.  Of course if the cpu is free the compile job is welcome to use 
-all 128 threads.
-
-(similarly, different login sessions should be placed in different jobs 
-to avoid a heavily multithreaded screensaver from overwhelming ed).
-
+diff --git a/arch/mips/include/asm/fixmap.h b/arch/mips/include/asm/fixmap.h
+index 0f5caa1..dd924b9 100644
+--- a/arch/mips/include/asm/fixmap.h
++++ b/arch/mips/include/asm/fixmap.h
+@@ -48,9 +48,9 @@ enum fixed_addresses {
+ #define FIX_N_COLOURS 8
+ 	FIX_CMAP_BEGIN,
+ #ifdef CONFIG_MIPS_MT_SMTC
+-	FIX_CMAP_END = FIX_CMAP_BEGIN + (FIX_N_COLOURS * NR_CPUS),
++	FIX_CMAP_END = FIX_CMAP_BEGIN + (FIX_N_COLOURS * NR_CPUS * 2),
+ #else
+-	FIX_CMAP_END = FIX_CMAP_BEGIN + FIX_N_COLOURS,
++	FIX_CMAP_END = FIX_CMAP_BEGIN + (FIX_N_COLOURS * 2),
+ #endif
+ #ifdef CONFIG_HIGHMEM
+ 	/* reserved pte's for temporary kernel mappings */
+diff --git a/arch/mips/mm/init.c b/arch/mips/mm/init.c
+index 0e82050..43ebe65 100644
+--- a/arch/mips/mm/init.c
++++ b/arch/mips/mm/init.c
+@@ -27,6 +27,7 @@
+ #include <linux/swap.h>
+ #include <linux/proc_fs.h>
+ #include <linux/pfn.h>
++#include <linux/hardirq.h>
+ 
+ #include <asm/asm-offsets.h>
+ #include <asm/bootinfo.h>
+@@ -132,7 +133,10 @@ void *kmap_coherent(struct page *page, unsigned long addr)
+ 	inc_preempt_count();
+ 	idx = (addr >> PAGE_SHIFT) & (FIX_N_COLOURS - 1);
+ #ifdef CONFIG_MIPS_MT_SMTC
+-	idx += FIX_N_COLOURS * smp_processor_id();
++	idx += FIX_N_COLOURS * smp_processor_id() +
++		(in_interrupt() ? (FIX_N_COLOURS * NR_CPUS) : 0);
++#else
++	idx += in_interrupt() ? FIX_N_COLOURS : 0;
+ #endif
+ 	vaddr = __fix_to_virt(FIX_CMAP_END - idx);
+ 	pte = mk_pte(page, PAGE_KERNEL);
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+1.6.3.1
 
