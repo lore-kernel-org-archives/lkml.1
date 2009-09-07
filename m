@@ -1,65 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758757AbZIGDAf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbZIGDKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758757AbZIGDAf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:00:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbZIGDAe
+	id S1758814AbZIGDKH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 23:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758752AbZIGDKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:00:34 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53780 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753111AbZIGDAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:00:34 -0400
-Date: Mon, 7 Sep 2009 13:00:24 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Robert Love <robert.w.love@intel.com>
-Subject: linux-next: scsi tree build warnings
-Message-Id: <20090907130024.d67c032d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__7_Sep_2009_13_00_24_+1000_=CTRovQU6tJUWo/C"
+	Sun, 6 Sep 2009 23:10:06 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60797 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758721AbZIGDKF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 Sep 2009 23:10:05 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
+       Bryan Wu <cooloney@kernel.org>, uclinux-dist-devel@blackfin.uclinux.org
+Subject: [PATCH] blackfin: Cleanup linker script using new linker script macros.
+Date: Sun,  6 Sep 2009 23:05:53 -0400
+Message-Id: <1252292753-11792-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__7_Sep_2009_13_00_24_+1000_=CTRovQU6tJUWo/C
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Bryan Wu <cooloney@kernel.org>
+Cc: uclinux-dist-devel@blackfin.uclinux.org
+Cc: Sam Ravnborg <sam@ravnborg.org>
+---
+ arch/blackfin/kernel/vmlinux.lds.S |   54 +++--------------------------------
+ 1 files changed, 5 insertions(+), 49 deletions(-)
 
-Hi James,
+diff --git a/arch/blackfin/kernel/vmlinux.lds.S b/arch/blackfin/kernel/vmlinux.lds.S
+index 6ac307c..91f5057 100644
+--- a/arch/blackfin/kernel/vmlinux.lds.S
++++ b/arch/blackfin/kernel/vmlinux.lds.S
+@@ -96,8 +96,7 @@ SECTIONS
+ 	{
+ 		__sdata = .;
+ 		/* This gets done first, so the glob doesn't suck it in */
+-		. = ALIGN(32);
+-		*(.data.cacheline_aligned)
++		CACHELINE_ALIGNED_DATA(32)
+ 
+ #if !L1_DATA_A_LENGTH
+ 		. = ALIGN(32);
+@@ -116,12 +115,7 @@ SECTIONS
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 
+-		/* make sure the init_task is aligned to the
+-		 * kernel thread size so we can locate the kernel
+-		 * stack properly and quickly.
+-		 */
+-		. = ALIGN(THREAD_SIZE);
+-		*(.init_task.data)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 
+ 		__edata = .;
+ 	}
+@@ -134,39 +128,10 @@ SECTIONS
+ 	. = ALIGN(PAGE_SIZE);
+ 	___init_begin = .;
+ 
+-	.init.text :
+-	{
+-		. = ALIGN(PAGE_SIZE);
+-		__sinittext = .;
+-		INIT_TEXT
+-		__einittext = .;
+-	}
+-	.init.data :
+-	{
+-		. = ALIGN(16);
+-		INIT_DATA
+-	}
+-	.init.setup :
+-	{
+-		. = ALIGN(16);
+-		___setup_start = .;
+-		*(.init.setup)
+-		___setup_end = .;
+-	}
+-	.initcall.init :
+-	{
+-		___initcall_start = .;
+-		INITCALLS
+-		___initcall_end = .;
+-	}
+-	.con_initcall.init :
+-	{
+-		___con_initcall_start = .;
+-		*(.con_initcall.init)
+-		___con_initcall_end = .;
+-	}
++	INIT_TEXT_SECTION(PAGE_SIZE)
++	. = ALIGN(16);
++	INIT_DATA_SECTION(16)
+ 	PERCPU(4)
+-	SECURITY_INIT
+ 
+ 	/* we have to discard exit text and such at runtime, not link time, to
+ 	 * handle embedded cross-section references (alt instructions, bug
+@@ -181,15 +146,6 @@ SECTIONS
+ 		EXIT_DATA
+ 	}
+ 
+-	.init.ramfs :
+-	{
+-		. = ALIGN(4);
+-		___initramfs_start = .;
+-		*(.init.ramfs)
+-		. = ALIGN(4);
+-		___initramfs_end = .;
+-	}
+-
+ 	__l1_lma_start = .;
+ 
+ 	.text_l1 L1_CODE_START : AT(LOADADDR(.init.ramfs) + SIZEOF(.init.ramfs))
+-- 
+1.6.3.3
 
-Today's linux-next build (x86_64 allmodconfig) produced these warnings:
-
-usr/include/scsi/fc/fc_els.h:165: found __[us]{8,16,32,64} type without #in=
-clude <linux/types.h>
-usr/include/scsi/fc/fc_fs.h:32: found __[us]{8,16,32,64} type without #incl=
-ude <linux/types.h>
-usr/include/scsi/fc/fc_gs.h:29: found __[us]{8,16,32,64} type without #incl=
-ude <linux/types.h>
-usr/include/scsi/fc/fc_ns.h:71: found __[us]{8,16,32,64} type without #incl=
-ude <linux/types.h>
-
-Introduced by commit 171bb4f9f6a20d405a3cb5111ce92ad83aae2302 ("[SCSI]
-libfc: Export FC headers").
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__7_Sep_2009_13_00_24_+1000_=CTRovQU6tJUWo/C
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqkd0gACgkQjjKRsyhoI8xdTQCgmn5p2bILNPvJHq+/hdByqcdh
-VYkAni1niZBynwgNcM/CMV46s4yHmn0/
-=YuWS
------END PGP SIGNATURE-----
-
---Signature=_Mon__7_Sep_2009_13_00_24_+1000_=CTRovQU6tJUWo/C--
