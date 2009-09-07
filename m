@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZIGVLG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZIGVL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752661AbZIGVLG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 17:11:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZIGVLF
+	id S1752746AbZIGVL2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 17:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZIGVL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 17:11:05 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:35970 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbZIGVLE (ORCPT
+	Mon, 7 Sep 2009 17:11:28 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:51821 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751589AbZIGVL1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 17:11:04 -0400
-Date: Mon, 7 Sep 2009 14:15:29 -0700
+	Mon, 7 Sep 2009 17:11:27 -0400
+Date: Mon, 7 Sep 2009 14:15:54 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: serue@us.ibm.com, Oren Laadan <orenl@cs.columbia.edu>,
@@ -20,8 +20,8 @@ Cc: serue@us.ibm.com, Oren Laadan <orenl@cs.columbia.edu>,
        torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
        hpa@zytor.com, Containers <containers@lists.linux-foundation.org>,
        sukadev@us.ibm.com
-Subject: [RFC][v5][PATCH 5/8]: Add target_pids parameter to alloc_pid()
-Message-ID: <20090907211529.GE6685@us.ibm.com>
+Subject: [RFC][v5][PATCH 6/8]: Add target_pids parameter to copy_process()
+Message-ID: <20090907211553.GF6685@us.ibm.com>
 References: <20090907211302.GA5892@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,83 +35,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-Subject: [RFC][v5][PATCH 5/8]: Add target_pids parameter to alloc_pid()
+Subject: [RFC][v5][PATCH 6/8]: Add target_pids parameter to copy_process()
 
-This parameter is currently NULL, but will be used in a follow-on patch.
+Add a 'target_pids' parameter to copy_process().  The new parameter will be
+used in a follow-on patch when clone_with_pids() is implemented.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 Reviewed-by: Oren Laadan <orenl@cs.columbia.edu>
 ---
- include/linux/pid.h |    2 +-
- kernel/fork.c       |    3 ++-
- kernel/pid.c        |    9 +++++++--
- 3 files changed, 10 insertions(+), 4 deletions(-)
+ kernel/fork.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
 
-Index: linux-mmotm/include/linux/pid.h
-===================================================================
---- linux-mmotm.orig/include/linux/pid.h	2009-09-05 20:58:11.000000000 -0700
-+++ linux-mmotm/include/linux/pid.h	2009-09-05 21:19:16.000000000 -0700
-@@ -119,7 +119,7 @@
- extern struct pid *find_ge_pid(int nr, struct pid_namespace *);
- int next_pidmap(struct pid_namespace *pid_ns, int last);
- 
--extern struct pid *alloc_pid(struct pid_namespace *ns);
-+extern struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids);
- extern void free_pid(struct pid *pid);
- 
- /*
 Index: linux-mmotm/kernel/fork.c
 ===================================================================
---- linux-mmotm.orig/kernel/fork.c	2009-09-05 21:15:33.000000000 -0700
-+++ linux-mmotm/kernel/fork.c	2009-09-05 21:19:16.000000000 -0700
-@@ -983,6 +983,7 @@
+--- linux-mmotm.orig/kernel/fork.c	2009-09-05 21:19:16.000000000 -0700
++++ linux-mmotm/kernel/fork.c	2009-09-05 21:19:58.000000000 -0700
+@@ -978,12 +978,12 @@
+ 					unsigned long stack_size,
+ 					int __user *child_tidptr,
+ 					struct pid *pid,
++					pid_t *target_pids,
+ 					int trace)
+ {
  	int retval;
  	struct task_struct *p;
  	int cgroup_callbacks_done = 0;
-+	pid_t *target_pids = NULL;
+-	pid_t *target_pids = NULL;
  
  	if ((clone_flags & (CLONE_NEWNS|CLONE_FS)) == (CLONE_NEWNS|CLONE_FS))
  		return ERR_PTR(-EINVAL);
-@@ -1159,7 +1160,7 @@
- 		goto bad_fork_cleanup_io;
+@@ -1365,7 +1365,7 @@
+ 	struct pt_regs regs;
  
- 	if (pid != &init_struct_pid) {
--		pid = alloc_pid(p->nsproxy->pid_ns);
-+		pid = alloc_pid(p->nsproxy->pid_ns, target_pids);
- 		if (IS_ERR(pid)) {
- 			retval = PTR_ERR(pid);
- 			goto bad_fork_cleanup_io;
-Index: linux-mmotm/kernel/pid.c
-===================================================================
---- linux-mmotm.orig/kernel/pid.c	2009-09-05 21:19:11.000000000 -0700
-+++ linux-mmotm/kernel/pid.c	2009-09-05 21:19:16.000000000 -0700
-@@ -268,13 +268,14 @@
- 	call_rcu(&pid->rcu, delayed_put_pid);
- }
+ 	task = copy_process(CLONE_VM, 0, idle_regs(&regs), 0, NULL,
+-			    &init_struct_pid, 0);
++			    &init_struct_pid, NULL, 0);
+ 	if (!IS_ERR(task))
+ 		init_idle(task, cpu);
  
--struct pid *alloc_pid(struct pid_namespace *ns)
-+struct pid *alloc_pid(struct pid_namespace *ns, pid_t *target_pids)
- {
- 	struct pid *pid;
- 	enum pid_type type;
- 	int i, nr;
- 	struct pid_namespace *tmp;
- 	struct upid *upid;
-+	int tpid;
+@@ -1388,6 +1388,7 @@
+ 	struct task_struct *p;
+ 	int trace = 0;
+ 	long nr;
++	pid_t *target_pids = NULL;
  
- 	pid = kmem_cache_alloc(ns->pid_cachep, GFP_KERNEL);
- 	if (!pid) {
-@@ -284,7 +285,11 @@
+ 	/*
+ 	 * Do some preliminary argument and permissions checking before we
+@@ -1428,7 +1429,7 @@
+ 		trace = tracehook_prepare_clone(clone_flags);
  
- 	tmp = ns;
- 	for (i = ns->level; i >= 0; i--) {
--		nr = alloc_pidmap(tmp, 0);
-+		tpid = 0;
-+		if (target_pids)
-+			tpid = target_pids[i];
-+
-+		nr = alloc_pidmap(tmp, tpid);
- 		if (nr < 0)
- 			goto out_free;
- 
+ 	p = copy_process(clone_flags, stack_start, regs, stack_size,
+-			 child_tidptr, NULL, trace);
++			 child_tidptr, NULL, target_pids, trace);
+ 	/*
+ 	 * Do this prior waking up the new thread - the thread pointer
+ 	 * might get invalid after that point, if the thread exits quickly.
