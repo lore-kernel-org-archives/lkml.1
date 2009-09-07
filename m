@@ -1,128 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbZIGAlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbZIGAlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758397AbZIGAlL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 20:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758332AbZIGAlK
+	id S1758506AbZIGAlt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 20:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758362AbZIGAlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 20:41:10 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47097 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756499AbZIGAlJ (ORCPT
+	Sun, 6 Sep 2009 20:41:49 -0400
+Received: from mail-pz0-f192.google.com ([209.85.222.192]:61073 "EHLO
+	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758332AbZIGAls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 20:41:09 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Mon, 7 Sep 2009 09:38:56 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Craig-Wood <nick@craig-wood.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Reading /proc/kcore causes a BUG()
-Message-Id: <20090907093856.5c453d3f.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090904103156.a04179f3.akpm@linux-foundation.org>
-References: <20090903113428.GA6986@craig-wood.com>
-	<84144f020909030514k1d9fe596pf2c4d8ffa45f7af@mail.gmail.com>
-	<20090904090642.f727458b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090904090039.GA25804@craig-wood.com>
-	<20090904181645.d114d1c9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090904103156.a04179f3.akpm@linux-foundation.org>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 6 Sep 2009 20:41:48 -0400
+Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
+Mime-Version: 1.0 (Apple Message framework v1075.2)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Anirban Sinha <ani@anirban.org>
+In-Reply-To: <1252249790.13541.28.camel@marge.simson.net>
+Date: Sun, 6 Sep 2009 17:41:47 -0700
+Cc: Anirban Sinha <ASinha@zeugmasystems.com>,
+       Lucas De Marchi <lucas.de.marchi@gmail.com>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>
 Content-Transfer-Encoding: 7bit
+Message-Id: <71F08B76-1EC2-4868-BFF5-944B3F83A9F1@anirban.org>
+References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it> <dhcf5-263-13@gated-at.bofh.it> <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com> <1252218779.6126.17.camel@marge.simson.net> <1252232289.29247.11.camel@marge.simson.net> <DDFD17CC94A9BD49A82147DDF7D545C54DC482@exchange.ZeugmaSystems.local> <1252249790.13541.28.camel@marge.simson.net>
+To: Mike Galbraith <efault@gmx.de>
+X-Mailer: Apple Mail (2.1075.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 Sep 2009 10:31:56 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> On Fri, 4 Sep 2009 18:16:45 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > On Fri, 4 Sep 2009 10:00:39 +0100
-> > Nick Craig-Wood <nick@craig-wood.com> wrote:
-> > 
-> > > On Fri, Sep 04, 2009 at 09:06:42AM +0900, KAMEZAWA Hiroyuki wrote:
-> > > > On Thu, 3 Sep 2009 15:14:55 +0300
-> > > > Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > > > > On Thu, Sep 3, 2009 at 2:34 PM, Nick Craig-Wood<nick@craig-wood.com> wrote:
-> > > > > > Is a fix for this going to make 2.6.31?
-> > > > > >
-> > > > > > To replicate
-> > > > > >
-> > > > > > __cat /proc/kcore >/dev/null
-> > > > > >
-> > > > > > See also
-> > > > > >
-> > > > > > __http://bugzilla.kernel.org/show_bug.cgi?id=13850
-> > > [snip]
-> > > > > > I tried this on the latest git checkout (as of 2009-09-03 11:00 GMT)
-> > > > > > under Xen as a domU. __The bugzilla report states it happens on non xen
-> > > > > > machines also.
-> 
-> Is this a regression?  I've lost track..
-> 
-regression. (this comes from new per-cpu area implemantation, which uses
-vmalloc area with memory holes.)
+On 2009-09-06, at 8:09 AM, Mike Galbraith wrote:
 
+> On Sun, 2009-09-06 at 07:53 -0700, Anirban Sinha wrote:
+>>
+>>
+>>
+>>> Seems kjournald can end up depending on kblockd/3, which ain't
+>>> going anywhere with that 100% RT hog in the way,
+>>
+>> I think in the past AKPM's response to this has been "just don't do
+>> it", i.e, don't hog the CPU with an RT thread.
+>
+> Oh yeah, sure.  Best to run RT oinkers on isolated cpus.
 
-> > > > > > I know reading /proc/kcore isn't such a good idea, but badly written
-> > > > > > backup scripts are triggering this on our customer's servers :-(
-> > > > > 
-> > > > > AFAICT the bug was fixed but I can't seem to find the patches in
-> > > > > Linus' git either. Lets CC Andrew and Hiroyuki-san.
-> > > > 
-> > > > Ah, it's now tested under mmotm. please wait.
-> > > 
-> > > I tried mmotm but I couldn't get it to boot under Xen :-(
-> > > 
-> > > If you send me a patch against latest git I'm willing to test it (I
-> > > tried to extract the relevant patch from mmotm but failed dismally)
-> > > 
-> > > Thanks
-> > > 
-> > 
-> > If you already downloaded mmotm, use these patches.
-> > 
-> > vmalloc-unmap-vmalloc-area-after-hiding-it.patch
-> > kcore-fix-vread-vwrite-to-be-aware-of-holes.patch
-> > kcore-fix-vread-vwrite-to-be-aware-of-holes-update.patch
-> > kcore-proc-kcore-should-use-vread.patch
-> > 
-> > All I tested was x86-32/x86-64. then more tests are welcomed.
-> 
-> That's a lot of stuff for 2.6.31.  Is there some simple quickfix we can do?
-> 
-I don't like this patch. But here, my 1st version which wasn't sent out.
--Kame
-==
-/proc/kcore may access in memory holes in vmalloc area. skip it
-by using copy_from_user().
+Correct. Unfortunately at some places, the application coders do  
+stupid things and then the onus falls on the kernel guys to make  
+things 'just work'.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- fs/proc/kcore.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+I would not have any problems if such a cap mechanism did not exist at  
+all. However, since we do have such a tuning knob. I would say that  
+let's make it do what it is supposed to do. In the documentation it  
+says  "0.05s to be used by SCHED_OTHER". Unfortunately, it never hints  
+that if your thread is tied to the RT core, you are screwed. The  
+bandwidth accumulation logic would virtually kill all the remaining  
+SCHED_OTHER threads, much before that 95% cap is reached. Somewhere it  
+doesn't quite seem right. At the very very least, can we have this  
+clearly written in sched-rt-group.txt?
 
-Index: linux-2.6.31-rc8/fs/proc/kcore.c
-===================================================================
---- linux-2.6.31-rc8.orig/fs/proc/kcore.c
-+++ linux-2.6.31-rc8/fs/proc/kcore.c
-@@ -361,7 +361,9 @@ read_kcore(struct file *file, char __use
- 				/* don't dump ioremap'd stuff! (TA) */
- 				if (m->flags & VM_IOREMAP)
- 					continue;
--				memcpy(elf_buf + (vmstart - start),
-+				/* we may access memory holes */
-+				__copy_from_user_inatomic(
-+					elf_buf + (vmstart - start),
- 					(char *)vmstart, vmsize);
- 			}
- 			read_unlock(&vmlist_lock);
+Cheers,
 
+Ani
 
-
-
-
-
+  
