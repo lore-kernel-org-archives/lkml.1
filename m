@@ -1,84 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZIGJtx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752660AbZIGJvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbZIGJtx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 05:49:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZIGJtw
+	id S1752660AbZIGJvu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 05:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752493AbZIGJvt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 05:49:52 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:60397 "EHLO kernel.dk"
+	Mon, 7 Sep 2009 05:51:49 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12904 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752485AbZIGJtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 05:49:51 -0400
-Date: Mon, 7 Sep 2009 11:49:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090907094953.GP18599@kernel.dk>
-References: <20090906205952.GA6516@elte.hu>
+	id S1752204AbZIGJvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 05:51:48 -0400
+Date: Mon, 7 Sep 2009 11:51:48 +0200
+From: Karel Zak <kzak@redhat.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [ANNOUNCE] util-linux-ng v2.16.1
+Message-ID: <20090907095148.GC7904@nb.net.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090906205952.GA6516@elte.hu>
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 06 2009, Ingo Molnar wrote:
-> So ... to get to the numbers - i've tested both BFS and the tip of 
-> the latest upstream scheduler tree on a testbox of mine. I 
-> intentionally didnt test BFS on any really large box - because you 
-> described its upper limit like this in the announcement:
-
-I ran a simple test as well, since I was curious to see how it performed
-wrt interactiveness. One of my pet peeves with the current scheduler is
-that I have to nice compile jobs, or my X experience is just awful while
-the compile is running.
-
-Now, this test case is something that attempts to see what
-interactiveness would be like. It'll run a given command line while at
-the same time logging delays. The delays are measured as follows:
-
-- The app creates a pipe, and forks a child that blocks on reading from
-  that pipe.
-- The app sleeps for a random period of time, anywhere between 100ms
-  and 2s. When it wakes up, it gets the current time and writes that to
-  the pipe.
-- The child then gets woken, checks the time on its own, and logs the
-  difference between the two.
-
-The idea here being that the delay between writing to the pipe and the
-child reading the data and comparing should (in some way) be indicative
-of how responsive the system would seem to a user.
-
-The test app was quickly hacked up, so don't put too much into it. The
-test run is a simple kernel compile, using -jX where X is the number of
-threads in the system. The files are cache hot, so little IO is done.
-The -x2 run is using the double number of processes as we have threads,
-eg -j128 on a 64 thread box.
-
-And I have to apologize for using a large system to test this on, I
-realize it's out of the scope of BFS, but it's just easier to fire one
-of these beasts up than it is to sacrifice my notebook or desktop
-machine... So it's a 64 thread box. CFS -jX runtime is the baseline at
-100, lower number means faster and vice versa. The latency numbers are
-in msecs.
 
 
-Scheduler       Runtime         Max lat     Avg lat     Std dev
-----------------------------------------------------------------
-CFS             100             951         462         267
-CFS-x2          100             983         484         308
-BFS
-BFS-x2
+The stable util-linux-ng 2.16.1 release is available at
 
-And unfortunately this is where it ends for now, since BFS doesn't boot
-on the two boxes I tried. It hard hangs right after disk detection. But
-the latency numbers look pretty appalling for CFQ, so it's a bit of a
-shame that I did not get to compare. I'll try again later with a newer
-revision, when available.
+   ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+
+(Note, 2.16.1 is stable maintenance release.)
+
+Feedback and bug reports, as always, are welcomed.
+
+	Karel
+
+
+Util-linux-ng 2.16.1 Release Notes
+==================================
+
+Changes since v2.16
+-------------------
+
+ For more details see ChangeLog files at:
+ ftp://ftp.kernel.org/pub/linux/utils/util-linux-ng/v2.16/
+
+build-sys:
+   - don't distribute generated *.pc files  [Karel Zak]
+cal:
+   - fix (harmless) typo  [Peter Breitenlohner]
+   - fix broken computation for Sep 1752  [Peter Breitenlohner]
+dmesg:
+   - add -r to help output  [Karel Zak]
+docs:
+   - update "The Perfect Patch" URL  [Karel Zak]
+   - update AUTHORS file  [Karel Zak]
+libblkid:
+   - add *.ko.gz support to modules.dep parser  [Karel Zak]
+   - allow linking with uClibc  [Daniel Mierswa]
+   - fix FALSE definition  [Karel Zak]
+   - fix buffer overflow in blkid_encode_string()  [Florian Zumbiehl]
+   - fix cache->probe memory leak  [Karel Zak]
+   - fix ext2 detection on systems with ext4 only  [Karel Zak]
+mkswap:
+   - fix memory leaks, cleanup check_blocks()  [Karel Zak]
+   - unbreak -c ("check") option.  [Peter De Wachter]
+mount:
+   - add info about ext{3,4} barriers to mount.8  [Karel Zak]
+   - clean up mount.8  [Karel Zak]
+   - mention mtab for single mount point mount in mount.8  [Peter Volkov]
+pg:
+   - compiler warning with NLS disabled  [Peter Breitenlohner]
+po:
+   - fix grammar glitch in german translation  [Hendrik Lönngren]
+   - merge changes  [Karel Zak]
+   - update ja.po (from translationproject.org)  [Makoto Kato]
+scriptreplay:
+   - fix typo in error message  [Karel Zak]
+tailf:
+   - report inotify_add_watch() problems  [Karel Zak]
+
+
+cal.1 cfdisk.8 chfn.1 chsh.1 ctrlaltdel.8 cytune.8 ddate.1 delpart.8 dmesg.1
+elvtune.8 fdformat.8 fdisk.8 fsck.8 fsck.minix.8 fstab.5 getopt.1 hexdump.1
+hwclock.8 initctl.8 ionice.1 ipcmk.1 ipcrm.1 ipcs.1 isosize.8 kill.1 last.1
+ldattach.8: losetup.8: lscpu.1: mcookie.1: mesg.1: mkfs.8: mkfs.bfs.8:
+mkfs.minix.8: mkswap.8: more.1: addpart.8: blockdev.8: mount.8: namei.1:
+newgrp.1: partx.8: pg.1: pivot_root.8: rdev.8: readprofile.1: rename.1:
+renice.1: reset.1: rtcwake.8: scriptreplay.1: setarch.8: setsid.1: setterm.1:
+sfdisk.8: shutdown.8: simpleinit.8: swapon.8: switch_root.8: tunelp.8: ul.1:
+umount.8: uuidd.8: uuidgen.1: vipw.8: whereis.1: write.1:
+
+   - formatting  [Peter Breitenlohner]
 
 -- 
-Jens Axboe
-
+ Karel Zak  <kzak@redhat.com>
