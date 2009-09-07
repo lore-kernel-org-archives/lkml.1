@@ -1,93 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758838AbZIGDWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbZIGDZU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758838AbZIGDWl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758722AbZIGDWk
+	id S1758866AbZIGDZU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 23:25:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758763AbZIGDZT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:22:40 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35894 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758710AbZIGDWj (ORCPT
+	Sun, 6 Sep 2009 23:25:19 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:52785 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758754AbZIGDZS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:22:39 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Message-ID: <4AA47C46.8070900@jp.fujitsu.com>
-Date: Mon, 07 Sep 2009 12:21:42 +0900
-From: Toru UCHIYAMA <uchiyama.toru@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+	Sun, 6 Sep 2009 23:25:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=yDhnFYFQrE9nkNQYPexZEznq2RO5s/pU2FM/cLXJTJ3cVaL7EbFHPOtTriWK1VVkOp
+         BhEOJz6rMiOVvquEFKzZiTdQO8Out4V/46lqC2PE7zRdqFoc93uoF9guOdCpxuHRG1pC
+         EcYfuzx/Tc0ICOWX59Q5of1QezfHYCoCyk8IQ=
+Message-ID: <4AA47DF8.80302@gmail.com>
+Date: Mon, 07 Sep 2009 00:28:56 -0300
+From: "Tomas M." <tmezzadra@gmail.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: mike@it-loops.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.31-rc9 breaks gianfar
-References: <20090906072707.GA5699@trillian.comsick.at> <20090906.014131.78926800.davem@davemloft.net>
-In-Reply-To: <20090906.014131.78926800.davem@davemloft.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [Bug #13836] suspend script fails, related to stdout?
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <Vm51Upp4EV.A.b4D.bgBpKB@chimera>
+In-Reply-To: <Vm51Upp4EV.A.b4D.bgBpKB@chimera>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+tested rc9 and its still there.
 
-I'm sorry.It was my mistake.
-I will note that it is not never in the future.
-Thank you for the correction.
-
-
-> From: Michael Guntsche <mike@it-loops.com>
-> Date: Sun, 6 Sep 2009 09:27:08 +0200
-> 
-> Please also report networking bugs to netdev@vger.kernel.org
-> and CC: the person who commited the problematic commit.
-> 
->> Commit 
->> 38bddf04bcfe661fbdab94888c3b72c32f6873b3 gianfar: gfar_remove needs to call unregister_netdev()
->>
->> breaks the build of the gianfar driver because "dev" is undefined in
->> this function. To quickly test rc9 I changed this to priv->ndev but I do
->> not know if this is the correct one.
-> 
-> Toru-chan, did you even compile test this again current kernels?
-> 
-> I'll commit the following fix and push it to Linus, thanks.
-> 
->>From 5db8bfee2dbb3ff28c18868081398fa6e2155053 Mon Sep 17 00:00:00 2001
-> From: David S. Miller <davem@davemloft.net>
-> Date: Sun, 6 Sep 2009 01:41:02 -0700
-> Subject: [PATCH] gianfar: Fix build.
-> 
-> Reported by Michael Guntsche <mike@it-loops.com>
-> 
-> --------------------
-> Commit
-> 38bddf04bcfe661fbdab94888c3b72c32f6873b3 gianfar: gfar_remove needs to call unregister_netdev()
-> 
-> breaks the build of the gianfar driver because "dev" is undefined in
-> this function. To quickly test rc9 I changed this to priv->ndev but I do
-> not know if this is the correct one.
-> --------------------
-> 
-> Signed-off-by: David S. Miller <davem@davemloft.net>
-> ---
->  drivers/net/gianfar.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-> index 24f7ca5..a00ec63 100644
-> --- a/drivers/net/gianfar.c
-> +++ b/drivers/net/gianfar.c
-> @@ -491,7 +491,7 @@ static int gfar_remove(struct of_device *ofdev)
->  
->  	dev_set_drvdata(&ofdev->dev, NULL);
->  
-> -	unregister_netdev(dev);
-> +	unregister_netdev(priv->ndev);
->  	iounmap(priv->regs);
->  	free_netdev(priv->ndev);
->  
-
-
--- 
------------------------------------------------
-Toru UCHIYAMA      uchiyama.toru@jp.fujitsu.com
-
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13836
+> Subject		: suspend script fails, related to stdout?
+> Submitter	: Tomas M. <tmezzadra@gmail.com>
+> Date		: 2009-07-17 21:24 (52 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124785853811667&w=4
+>
+>
+>   
