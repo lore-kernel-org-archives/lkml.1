@@ -1,51 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZIGHj0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbZIGHm3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbZIGHj0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 03:39:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751813AbZIGHjZ
+	id S1751813AbZIGHm3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 03:42:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751443AbZIGHm3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 03:39:25 -0400
-Received: from cantor.suse.de ([195.135.220.2]:44693 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417AbZIGHjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 03:39:25 -0400
-Date: Mon, 7 Sep 2009 09:39:27 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 04/33] fs: brlock vfsmount_lock
-Message-ID: <20090907073927.GG1875@wotan.suse.de>
-References: <20090904065142.114706411@nick.local0.net> <20090904065534.447753909@nick.local0.net> <20090904151908.GX18599@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904151908.GX18599@kernel.dk>
-User-Agent: Mutt/1.5.9i
+	Mon, 7 Sep 2009 03:42:29 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62243 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751219AbZIGHm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 03:42:28 -0400
+Message-ID: <4AA4B905.8010801@cn.fujitsu.com>
+Date: Mon, 07 Sep 2009 15:40:53 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+MIME-Version: 1.0
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [RFC] IO scheduler based IO controller V9
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04, 2009 at 05:19:09PM +0200, Jens Axboe wrote:
-> On Fri, Sep 04 2009, npiggin@suse.de wrote:
-> > Index: linux-2.6/fs/namei.c
-> > ===================================================================
-> > --- linux-2.6.orig/fs/namei.c
-> > +++ linux-2.6/fs/namei.c
-> > @@ -679,15 +679,16 @@ int follow_up(struct path *path)
-> >  {
-> >  	struct vfsmount *parent;
-> >  	struct dentry *mountpoint;
-> > -	spin_lock(&vfsmount_lock);
-> > +
-> > +	vfsmount_read_unlock();
-> >  	parent = path->mnt->mnt_parent;
-> >  	if (parent == path->mnt) {
-> > -		spin_unlock(&vfsmount_lock);
-> > +		vfsmount_read_unlock();
-> >  		return 0;
-> 
-> Hmm, that looks a bit off.
+Hi Vivek,
 
-Thanks Jens, good catch. Yes I haven't actually even tested NFS or
-NFSD yet, which I should do soon because they do some interesting
-things with the dcache.
+I happened to encount a bug when i test IO Controller V9.
+When there are three tasks to run concurrently in three group,
+that is, one is parent group, and other two tasks are running 
+in two different child groups respectively to read or write 
+files in some disk, say disk "hdb", The task may hang up, and 
+other tasks which access into "hdb" will also hang up.
+
+The bug only happens when using AS io scheduler.
+The following scirpt can reproduce this bug in my box.
+
+===========
+#!/bin/sh
+
+mkdir /cgroup
+mount -t cgroup -o io,blkio io  /cgroup
+
+echo anticipatory > /sys/block/hdb/queue/scheduler
+
+mkdir /cgroup/test1
+echo 100 > /cgroup/test1/io.weight
+
+mkdir /cgroup/test2
+echo 400 > /cgroup/test2/io.weight
+
+mkdir /cgroup/test2/test3
+echo 400 > /cgroup/test2/test3/io.weight
+
+mkdir /cgroup/test2/test4
+echo 400 > /cgroup/test2/test4/io.weight
+
+#./rwio -r -f /hdb2/2000M.3 &
+dd if=/hdb2/2000M.3 of=/dev/null &
+pid4=$!
+echo $pid4 > /cgroup/test2/test3/tasks
+echo "pid4: $pid4"
+
+#./rwio -r -f /hdb2/2000M.1 &
+dd if=/hdb2/2000M.1 of=/dev/null &
+pid1=$!
+echo $pid1 > /cgroup/test1/tasks
+echo "pid1 $pid1"
+
+#./rwio -r -f /hdb2/2000M.2 &
+dd if=/hdb2/2000M.2 of=/dev/null &
+pid2=$!
+echo $pid2 > /cgroup/test2/test4/tasks
+echo "pid2 $pid2"
+
+sleep 20
+
+for ((;1;))
+{
+        ps -p $pid1 > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+                break
+        fi
+
+        kill -9 $pid1 > /dev/null 2>&1
+}
+for ((;1;))
+{
+        ps -p $pid2 > /dev/null 2>&1
+        if [ $? -ne 0 ]; then
+                break
+        fi
+
+        kill -9 $pid2 > /dev/null 2>&1
+}
+
+
+kill -9 $pid4 > /dev/null 2>&1
+
+rmdir /cgroup/test2/test3
+rmdir /cgroup/test2/test4
+rmdir /cgroup/test2
+rmdir /cgroup/test1
+
+umount /cgroup
+rmdir /cgroup
+
