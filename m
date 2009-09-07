@@ -1,83 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753434AbZIGOHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZIGOIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753434AbZIGOHY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753367AbZIGOHX
+	id S1753442AbZIGOIT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZIGOIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:07:23 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:54761 "EHLO dan.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753331AbZIGOHX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:07:23 -0400
-Subject: Re: Zaurus suspend saga
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Pavel Machek <pavel@ucw.cz>, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-In-Reply-To: <1252329025.1861.6.camel@hammer.suse.cz>
-References: <20090906052653.GB1324@ucw.cz>
-	 <1252276145.17852.15.camel@dax.rpnet.com>
-	 <20090907113132.GM23450@elf.ucw.cz>
-	 <1252329025.1861.6.camel@hammer.suse.cz>
-Content-Type: text/plain
-Date: Mon, 07 Sep 2009 15:07:20 +0100
-Message-Id: <1252332440.17852.58.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 7 Sep 2009 10:08:19 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:44273 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753213AbZIGOIS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 10:08:18 -0400
+Message-ID: <4AA513AA.3010206@nokia.com>
+Date: Mon, 07 Sep 2009 17:07:38 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: chris.mason@oracle.com, david@fromorbit.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC][PATCH] mm: write_cache_pages be more sequential
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Sep 2009 14:07:13.0188 (UTC) FILETIME=[7F73EE40:01CA2FC4]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-07 at 15:10 +0200, Stanislav Brabec wrote:
-> Pavel Machek wrote: 
-> > 
-> > > Sadly lack of time means I've lost track of the Zaurus kernels but this
-> > > sounds like all accesses to the SSP buses now go through the SPI layer
-> > > and when it was converted nobody thought about the impact this would
-> > > have on the Zaurus charger code.
-> >
-> >Unfortunately... Do you have any idea when this conversion took place?
-> 
-> In past, MAX1111 driver was embedded in the Zaurus specific code. Now
-> MAX1111 is a generic SPI driver and spitz_pm.c calls it.
-> 
-> Maybe it will still work with CONFIG_CORGI_SSP_DEPRECATED.
+>From 6f3bb7c26936c45d810048f59c369e8d5a5623fc Mon Sep 17 00:00:00 2001
+From: Adrian Hunter <adrian.hunter@nokia.com>
+Date: Mon, 7 Sep 2009 10:49:11 +0300
+Subject: [PATCH] mm: write_cache_pages be more sequential
 
-I was thinking about this. The SSP interface is ridiculously simple and
-it might be worth just adding some SSP access code into the Zaurus
-offline code so it can access the MAX1111 without the rest of the system
-running. That would solve a lot of the problems.
+If a file is written to sequentially, then writeback
+should write the pages sequentially also.  However,
+that does not always happen.  For example:
 
-Its not as if any other hardware is going to come along and reuse this
-as the Zaurus hardware line is dead.
+1) user writes pages 0, 1 and 2 but 2 is incomplete
+2) write_cache_pages writes pages 0, 1 and 2 and sets
+writeback_index to 3
+3) user finishes writing page 2 and writes pages 3 and 4
+4) write_cache_pages writes pages 3 and 4, and then cycles
+back and writes page 2 again.
 
-> - The measurement code should work without turning LED on (bootloader
-> can do it). SPITZ_SCP_JK_A should connect dummy load. I guess it should
-> be enough for measurement. But comments in the source tree say that is
-> did not work. I am not sure why.
+So the pages are written out in the order 0, 1, 2, 3 ,4 ,2
+instead of 0, 1, 2, 2, 3, 4.
 
-If you find out let me know. The need for that still puzzles me but it
-wouldn't work without it!
+This situation was noticed on UBIFS because it writes
+directly from writepage.  Hence if there is an unexpected
+power-loss, a file will end up with a hole even though
+the file was written sequentially by the user.
 
-> - It would be nice to have "small travel charger heuristic": Turn fast
-> charging on, charger "disappears", switch to slow charging, charger
-> "appears" => stay in slow charging mode, and retry after some time, or
-> after going to suspend, reset the flag when charger is removed.
-> 
-> - sysfs interface for charging would be nice. For example: Cyril has an
-> external battery pack and he wants to disable charging of internal
-> battery from the external battery.
+Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+---
+ mm/page-writeback.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-All nice to have if we can get the original code working again first!
-
-Cheers,
-
-Richard
-
-
-
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 81627eb..7410b7a 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -960,6 +960,8 @@ int write_cache_pages(struct address_space *mapping,
+ 	pagevec_init(&pvec, 0);
+ 	if (wbc->range_cyclic) {
+ 		writeback_index = mapping->writeback_index; /* prev offset */
++		if (writeback_index)
++			writeback_index -= 1;
+ 		index = writeback_index;
+ 		if (index == 0)
+ 			cycled = 1;
+-- 
+1.5.6.3
