@@ -1,61 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758977AbZIGGKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758965AbZIGGQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758977AbZIGGKT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 02:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758950AbZIGGKS
+	id S1758965AbZIGGQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 02:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbZIGGQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 02:10:18 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:57136 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758947AbZIGGKR convert rfc822-to-8bit (ORCPT
+	Mon, 7 Sep 2009 02:16:25 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:35952 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758856AbZIGGQY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 02:10:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=L6yiaCbl06Bojco15iYgf5mUr+8J6HQjWIRW1WYOoCZWrl8zBS6TiV3FevqdO3JepK
-         KpXrn8tNrv/FMUAShiCWWqbh8QkQ5wHz+7b6AC9Oca2GKeKyAtHZCHZJWZfj0w9Jsvjd
-         /Kc0bLRqoWtYkRdKdKRDiWnPefqJWfV5HmSKQ=
-MIME-Version: 1.0
-In-Reply-To: <20090907153723.0c984c83.sfr@canb.auug.org.au>
-References: <20090907153723.0c984c83.sfr@canb.auug.org.au>
-Date: Mon, 7 Sep 2009 09:10:18 +0300
-X-Google-Sender-Auth: 57b3790180b1a2f7
-Message-ID: <84144f020909062310u37ecdddfw31c6cc9a22ccabd9@mail.gmail.com>
-Subject: Re: linux-next: slab tree build failure
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Catalin Marinas <catalin.marinas@arm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 7 Sep 2009 02:16:24 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 7 Sep 2009 15:14:22 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Nick Craig-Wood <nick@craig-wood.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Reading /proc/kcore causes a BUG()
+Message-Id: <20090907151422.4d42e382.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090907093856.5c453d3f.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090903113428.GA6986@craig-wood.com>
+	<84144f020909030514k1d9fe596pf2c4d8ffa45f7af@mail.gmail.com>
+	<20090904090642.f727458b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904090039.GA25804@craig-wood.com>
+	<20090904181645.d114d1c9.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904103156.a04179f3.akpm@linux-foundation.org>
+	<20090907093856.5c453d3f.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Mon, 7 Sep 2009 09:38:56 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > That's a lot of stuff for 2.6.31.  Is there some simple quickfix we can do?
+> > 
+> I don't like this patch. But here, my 1st version which wasn't sent out.
+> -Kame
 
-On Mon, Sep 7, 2009 at 8:37 AM, Stephen Rothwell<sfr@canb.auug.org.au> wrote:
-> Hi all,
->
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
->
-> net/wireless/scan.c: In function 'cfg80211_inform_bss':
-> net/wireless/scan.c:499: error: implicit declaration of function 'kmemleak_ignore'
->
-> Caused by commit 74ce35c0d2261896ed4d49799311a894520f7a94 ("cfg80211:
-> clear cfg80211_inform_bss() from kmemleak reports") from the wireless
-> tree (which should have included linux/kmemleak.h into
-> net/wireless/scan.c).  Some interaction with the slab tree has exposed
-> this.
->
-> I have reverted the above commit for today.
+Fixed warnings. (I confirmed this patch works well on x86-64.)
+==
+To access vmalloc area which may have memory holes, copy_from_user is
+useful. By this, 
+ # cat /proc/kcore > /dev/null
+will not panic.
 
-AFAICT, you're interested in kmemleak.git, not slab.git. Catalin?
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ fs/proc/kcore.c |    8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
 
-                                Pekka
+Index: linux-2.6.31-rc8/fs/proc/kcore.c
+===================================================================
+--- linux-2.6.31-rc8.orig/fs/proc/kcore.c
++++ linux-2.6.31-rc8/fs/proc/kcore.c
+@@ -361,7 +361,13 @@ read_kcore(struct file *file, char __use
+ 				/* don't dump ioremap'd stuff! (TA) */
+ 				if (m->flags & VM_IOREMAP)
+ 					continue;
+-				memcpy(elf_buf + (vmstart - start),
++				/*
++				 * we may access memory holes, then use
++				 * ex_table. checking return value just for
++				 * avoid warnings.
++				 */
++				vmsize = __copy_from_user_inatomic(
++					elf_buf + (vmstart - start),
+ 					(char *)vmstart, vmsize);
+ 			}
+ 			read_unlock(&vmlist_lock);
+
