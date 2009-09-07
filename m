@@ -1,99 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752294AbZIGW1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZIGWa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752294AbZIGW1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 18:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZIGW1T
+	id S1752744AbZIGWa1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 18:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752477AbZIGWa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 18:27:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:9737 "EHLO mx1.redhat.com"
+	Mon, 7 Sep 2009 18:30:27 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:35991 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751122AbZIGW1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 18:27:19 -0400
-Subject: Re: [PATCH 1/5] debugfs - Fix mount directory of debugfs by
- default in events.txt
-From: Steven Rostedt <srostedt@redhat.com>
-To: Greg KH <greg@kroah.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, leemgs1@gmail.com,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       mathieu.desnoyers@polymtl.ca, Christoph Hellwig <hch@infradead.org>
-In-Reply-To: <20090907213047.GA28651@kroah.com>
-References: <1252327037.2153.96.camel@centos51>
-	 <1252327737.7959.22.camel@laptop> <20090907185513.GA27876@kroah.com>
-	 <1252350914.7503.24.camel@twins>  <20090907213047.GA28651@kroah.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 07 Sep 2009 18:27:00 -0400
-Message-Id: <1252362420.2964.53.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1751965AbZIGWa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 18:30:26 -0400
+Date: Tue, 8 Sep 2009 00:30:28 +0200
+From: Jan Kara <jack@suse.cz>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, tytso@mit.edu
+Subject: Re: [PATCH RFC] Add locking to ext3_do_update_inode
+Message-ID: <20090907223028.GC11748@duck.suse.cz>
+References: <20090904200613.GJ17033@think>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904200613.GJ17033@think>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-07 at 14:30 -0700, Greg KH wrote:
+  Hi,
 
-> > 
-> > From what people tell me it wasn't a clear consensus.
+On Fri 04-09-09 16:06:13, Chris Mason wrote:
+> I've been struggling with this off and on while I've been testing the
+> data=guarded work.  The symptom is corrupted orphan lists and inodes
+> with the wrong i_size stored on disk.  I was convinced the
+> data=guarded code was just missing a call to ext3_mark_inode_dirty, but
+> tracing showed the i_disksize I was sending to ext3_mark_inode_dirty
+> wasn't actually making it to the drive.
 > 
-> Specifics please.
-
-Well I still avoid it. I've been broken into telling people publicly to
-mount it in /sys/kernel/debug, but I've never done it myself.
-
+> ext3_mark_inode_dirty can be called without locks held (atime updates
+> and a few others), so the data=guarded code uses locks while updating
+> the in-memory inode, and then calls ext3_mark_inode_dirty
+> without any locks held.
 > 
-> > > So what is the problem?
-> > 
-> > Its not related to sysfs in any way I can discover,
+> But, ext3_mark_inode_dirty has no internal locking to make sure that
+> only one CPU is updating the buffer head at a time.  Generally this
+> works out ok because everyone that changes the inode then calls
+> ext3_mark_inode_dirty themselves.  Even though it races, eventually
+> someone updates the buffer heads and things move on.
 > 
-> So, other filesystems are mounted in sysfs, and in /proc for many years.
+> But there is still a risk of the wrong values getting in, and the
+> data=guarded code seems to hit the race very often.
 > 
-> > its not consistent with most of the other virtual fs',
-> 
-> What do you mean by this?
-> 
-> > and its way too much typing.
-> 
-> tab completion is your friend, as is environment variables.  Don't
-> choose stuff just because you are lazy :)
+> Since everyone that changes the inode also logs it, it should be
+> possible to fix this with some memory barriers.  I'll leave that as an
+> exercise to the reader and lock the buffer head instead.
+  One more thing - Ted, I believe ext4 needs a similar patch.
 
-/sy <tab> k <tab> d <tab>
+> It it probably a good idea to have a different patch series for lockless
+> bit flipping on the ext3 i_state field.  ext3_do_update_inode &= clears
+> EXT3_STATE_NEW without any locks held.
+  Yeah, the locking around handling of i_state and i_flags is kind of
+unclean...
 
-   or
-
-/deb <tab>
-
-I like the second one much better.
-
-> 
-> > we don't mount /dev, /proc, /sys in weird places either, so why should
-> > we mount /debug in a cumbersome location.
-> 
-> Because it is a _kernel_ debug thing, not a system-level debug thing.
-> What would userspace developers think about /debug ?  Why would they
-> care about such a thing?
-> 
-> As much as we tend to ignore it, kernel developers are not the primary,
-> or only, users of Linux :)
-
-Actually this is a very good point. I think that the tracing system has
-matured beyond a "debug" level and is being enabled on production
-systems. Both fedora and debian are now shipping kernels with it
-enabled. Perhaps we should create another pseudo fs that can be like
-debugfs but for stable ABIs. A new interface could start out in debugfs,
-but when it has reached a stable interface, then it could be moved to
-another location to signal this.
-
-/proc has been criticized for the pollution of non process related
-information. This happened because there was no place else to place it.
-Then came /sys which was suppose to take over this, but IMHO, it is too
-over-engineered and too complex to use (I still stumble over kobjects).
-I found that debugfs was a nice and simple interface to use. What about
-creating a new fs that works like debugfs but is for stable interfaces
-and can be mounted at root?
-
-   /kernel?
-
-
--- Steve
-
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
