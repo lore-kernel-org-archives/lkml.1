@@ -1,54 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752727AbZIGKPX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZIGKTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752727AbZIGKPX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 06:15:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752515AbZIGKPW
+	id S1752815AbZIGKTs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 06:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZIGKTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 06:15:22 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:54515 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbZIGKPW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 06:15:22 -0400
-Subject: Re: [PATCH] regulator: update a filename in documentation
-From: Liam Girdwood <lrg@slimlogic.co.uk>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-In-Reply-To: <1252265183-7626-1-git-send-email-w.sang@pengutronix.de>
-References: <1252265183-7626-1-git-send-email-w.sang@pengutronix.de>
-Content-Type: text/plain
-Date: Mon, 07 Sep 2009 11:15:22 +0100
-Message-Id: <1252318522.5876.1.camel@odin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Sep 2009 06:19:47 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:48670 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752648AbZIGKTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 06:19:46 -0400
+Date: Mon, 7 Sep 2009 13:15:37 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: "Ira W. Snyder" <iws@ovro.caltech.edu>
+Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
+       s.hetze@linux-ag.com
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+Message-ID: <20090907101537.GH3031@redhat.com>
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090903183945.GF28651@ovro.caltech.edu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-06 at 21:26 +0200, Wolfram Sang wrote:
-> Signed-off-by: Wolfram Sang <w.sang@pengutronix.de>
-> Cc: Liam Girdwood <lrg@slimlogic.co.uk>
-> Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> ---
->  Documentation/power/regulator/overview.txt |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+On Thu, Sep 03, 2009 at 11:39:45AM -0700, Ira W. Snyder wrote:
+> On Thu, Aug 27, 2009 at 07:07:50PM +0300, Michael S. Tsirkin wrote:
+> > What it is: vhost net is a character device that can be used to reduce
+> > the number of system calls involved in virtio networking.
+> > Existing virtio net code is used in the guest without modification.
+> > 
+> > There's similarity with vringfd, with some differences and reduced scope
+> > - uses eventfd for signalling
+> > - structures can be moved around in memory at any time (good for migration)
+> > - support memory table and not just an offset (needed for kvm)
+> > 
+> > common virtio related code has been put in a separate file vhost.c and
+> > can be made into a separate module if/when more backends appear.  I used
+> > Rusty's lguest.c as the source for developing this part : this supplied
+> > me with witty comments I wouldn't be able to write myself.
+> > 
+> > What it is not: vhost net is not a bus, and not a generic new system
+> > call. No assumptions are made on how guest performs hypercalls.
+> > Userspace hypervisors are supported as well as kvm.
+> > 
+> > How it works: Basically, we connect virtio frontend (configured by
+> > userspace) to a backend. The backend could be a network device, or a
+> > tun-like device. In this version I only support raw socket as a backend,
+> > which can be bound to e.g. SR IOV, or to macvlan device.  Backend is
+> > also configured by userspace, including vlan/mac etc.
+> > 
+> > Status:
+> > This works for me, and I haven't see any crashes.
+> > I have done some light benchmarking (with v4), compared to userspace, I
+> > see improved latency (as I save up to 4 system calls per packet) but not
+> > bandwidth/CPU (as TSO and interrupt mitigation are not supported).  For
+> > ping benchmark (where there's no TSO) troughput is also improved.
+> > 
+> > Features that I plan to look at in the future:
+> > - tap support
+> > - TSO
+> > - interrupt mitigation
+> > - zero copy
+> > 
 > 
-> diff --git a/Documentation/power/regulator/overview.txt b/Documentation/power/regulator/overview.txt
-> index 0cded69..b471575 100644
-> --- a/Documentation/power/regulator/overview.txt
-> +++ b/Documentation/power/regulator/overview.txt
-> @@ -168,4 +168,4 @@ relevant to non SoC devices and is split into the following four interfaces:-
->        userspace via sysfs. This could be used to help monitor device power
->        consumption and status.
->  
-> -        See Documentation/ABI/testing/regulator-sysfs.txt
-> +        See Documentation/ABI/testing/sysfs-class-regulator
+> Hello Michael,
+> 
+> I've started looking at vhost with the intention of using it over PCI to
+> connect physical machines together.
+> 
+> The part that I am struggling with the most is figuring out which parts
+> of the rings are in the host's memory, and which parts are in the
+> guest's memory.
 
-Applied.
+All rings are in guest's memory, to match existing virtio code.  vhost
+assumes that the memory space of the hypervisor userspace process covers
+the whole of guest memory. And there's a translation table.
+Ring addresses are userspace addresses, they do not undergo translation.
 
-Thanks
+> If I understand everything correctly, the rings are all userspace
+> addresses, which means that they can be moved around in physical memory,
+> and get pushed out to swap.
 
-Liam
+Unless they are locked, yes.
 
+> AFAIK, this is impossible to handle when
+> connecting two physical systems, you'd need the rings available in IO
+> memory (PCI memory), so you can ioreadXX() them instead. To the best of
+> my knowledge, I shouldn't be using copy_to_user() on an __iomem address.
+> Also, having them migrate around in memory would be a bad thing.
+> 
+> Also, I'm having trouble figuring out how the packet contents are
+> actually copied from one system to the other. Could you point this out
+> for me?
+
+The code in net/packet/af_packet.c does it when vhost calls sendmsg.
+
+> Is there somewhere I can find the userspace code (kvm, qemu, lguest,
+> etc.) code needed for interacting with the vhost misc device so I can
+> get a better idea of how userspace is supposed to work?
+
+Look in archives for kvm@vger.kernel.org. the subject is qemu-kvm: vhost net.
+
+> (Features
+> negotiation, etc.)
+> 
+> Thanks,
+> Ira
+
+That's not yet implemented as there are no features yet.  I'm working on
+tap support, which will add a feature bit.  Overall, qemu does an ioctl
+to query supported features, and then acks them with another ioctl.  I'm
+also trying to avoid duplicating functionality available elsewhere.  So
+that to check e.g. TSO support, you'd just look at the underlying
+hardware device you are binding to.
+
+-- 
+MST
