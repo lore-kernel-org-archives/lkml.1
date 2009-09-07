@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752764AbZIGMl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbZIGMtF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752764AbZIGMl4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 08:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZIGMlz
+	id S1752080AbZIGMtF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 08:49:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZIGMtE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 08:41:55 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:46472 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751191AbZIGMly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 08:41:54 -0400
-Date: Mon, 7 Sep 2009 08:41:54 -0400 (EDT)
-From: Miroslav Rezanina <mrezanin@redhat.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com,
-       Gianluca Guida <gianluca.guida@citrix.com>
-Message-ID: <1864241231.701071252327314933.JavaMail.root@zmail06.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <4A8D7C26.5020902@goop.org>
-Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Mon, 7 Sep 2009 08:49:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:47610 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750750AbZIGMtE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 08:49:04 -0400
+Subject: Re: [PATCH 1/5] debugfs - Fix mount directory of debugfs by
+ default in events.txt
+From: Peter Zijlstra <peterz@infradead.org>
+To: leemgs1@gmail.com
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>,
+       mathieu.desnoyers@polymtl.ca, Steven Rostedt <srostedt@redhat.com>
+In-Reply-To: <1252327037.2153.96.camel@centos51>
+References: <1252327037.2153.96.camel@centos51>
+Content-Type: text/plain
+Date: Mon, 07 Sep 2009 14:48:57 +0200
+Message-Id: <1252327737.7959.22.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.5.5.72]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
------ "Jeremy Fitzhardinge" <jeremy@goop.org> wrote:
-
-> From: "Jeremy Fitzhardinge" <jeremy@goop.org>
-> To: "Miroslav Rezanina" <mrezanin@redhat.com>
-> Cc: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com, "Gianluca Guida" <gianluca.guida@citrix.com>
-> Sent: Thursday, August 20, 2009 6:39:02 PM GMT +01:00 Amsterdam / Berlin / Bern / Rome / Stockholm / Vienna
-> Subject: Re: [PATCH][v2.6.29][XEN] Return unused memory to hypervisor
->
-> On 08/20/09 00:47, Miroslav Rezanina wrote:
-> > there is handled e820 map in guest. However, this patch informs 
-> > hypervisor, that guest uses less memory than was assigned to it. 
-> > If hypervisor is not informed, memory is reserved for guest that
-> > do not need it. If hypervisor is informed, he decrease memory
-> > reservation for guest and unused memory is marked as free 
-> > for use by other guests.
-> >   
+On Mon, 2009-09-07 at 21:37 +0900, GeunSik Lim wrote:
 > 
-> Yes.  But the guest will modify its own e820 map for a number of
-> reasons; for example: reducing its own memory, or clearing a space
-> for
-> the PCI hole.  In general we want to free any underlying pages which
-> don't correspond to E820_RAM regions.
+> >From 99e8ab48d783e619329c31e8f91e4384729a2e8b Mon Sep 17 00:00:00 2001
+> From: GeunSik,Lim <leemgs1@gmail.com>
+> Date: Mon, 7 Sep 2009 20:34:19 +0900
+> Subject: [PATCH 1/5] Fix mount directory of debugfs by default in events.txt
 > 
->     J
-> --
+> We need common default directory of denbugfs for consistency.
+> (debugfs's default directory is /sys/kernel/debug/ by debugfs.)
 
-Hi Jeremy,
-can you give me a practical example, where e820 map can have "hole" inside,
-i.e. there will be block of memory not listed in e820 map that have listed 
-memory before and after it?
-As I checked the source code, there is always removed memory from some point
-till end of map, not from one adress till another. And I can't image how would
-be such a case handled. Of course, there can be some special regions, as the PCI
-hole, but these are marked as "Reserved".
-There can be "reserved and returned" some inside memory, but this is already
-handled  by balloon driver. My patch returns memory that this driver can't use.
-Regards,
-Mirek
--- 
-Miroslav Rezanina
-Software Engineer - Virtualization Team - XEN kernel
+I'd rather we fix that brain-dead default.
 
