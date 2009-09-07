@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbZIGDI4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbZIGDJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758801AbZIGDI4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:08:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbZIGDI4
+	id S1758810AbZIGDJm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 23:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758731AbZIGDJl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:08:56 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60584 "EHLO
+	Sun, 6 Sep 2009 23:09:41 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60685 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758721AbZIGDIz (ORCPT
+	by vger.kernel.org with ESMTP id S1758697AbZIGDJk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:08:55 -0400
+	Sun, 6 Sep 2009 23:09:40 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Subject: [PATCH] um: Clean up linker script using standard macros.
-Date: Sun,  6 Sep 2009 23:08:32 -0400
-Message-Id: <1252292912-12838-1-git-send-email-tabbott@ksplice.com>
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: Cleanup linker script using new linker script macros.
+Date: Sun,  6 Sep 2009 23:09:01 -0400
+Message-Id: <1252292941-12903-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
@@ -26,154 +26,156 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: user-mode-linux-devel@lists.sourceforge.net
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/um/include/asm/common.lds.S |   29 ++++++-----------------------
- arch/um/kernel/dyn.lds.S         |    9 ++-------
- arch/um/kernel/uml.lds.S         |   26 ++++++--------------------
- 3 files changed, 14 insertions(+), 50 deletions(-)
+ arch/powerpc/kernel/vmlinux.lds.S |   69 ++++++++-----------------------------
+ 1 files changed, 15 insertions(+), 54 deletions(-)
 
-diff --git a/arch/um/include/asm/common.lds.S b/arch/um/include/asm/common.lds.S
-index cb02486..3e1ea07 100644
---- a/arch/um/include/asm/common.lds.S
-+++ b/arch/um/include/asm/common.lds.S
-@@ -16,11 +16,7 @@
+diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
+index 8ef8a14..c5e176c 100644
+--- a/arch/powerpc/kernel/vmlinux.lds.S
++++ b/arch/powerpc/kernel/vmlinux.lds.S
+@@ -6,6 +6,7 @@
+ #include <asm/page.h>
+ #include <asm-generic/vmlinux.lds.h>
+ #include <asm/cache.h>
++#include <asm/thread_info.h>
  
-   . = ALIGN(4096);
-   .note : { *(.note.*) }
--  __ex_table : {
--	__start___ex_table = .;
--	*(__ex_table)
--	__stop___ex_table = .;
--  }
-+  EXCEPTION_TABLE(0)
+ ENTRY(_stext)
  
-   BUG_TABLE
+@@ -77,12 +78,7 @@ SECTIONS
+ 	/* Read-only data */
+ 	RODATA
  
-@@ -43,28 +39,17 @@
-   }
- 	
-   .init.setup : {
--	__setup_start = .;
--	*(.init.setup)
--	__setup_end = .;
-+	INIT_SETUP(0)
-   }
+-	/* Exception & bug tables */
+-	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+-		__start___ex_table = .;
+-		*(__ex_table)
+-		__stop___ex_table = .;
+-	}
++	EXCEPTION_TABLE(0)
  
--  . = ALIGN(32);
--  .data.percpu : {
--	__per_cpu_start = . ;
--	*(.data.percpu)
--	__per_cpu_end = . ;
--  }
-+  PERCPU(32)
- 	
-   .initcall.init : {
--	__initcall_start = .;
--	INITCALLS
--	__initcall_end = .;
-+	INIT_CALLS
-   }
+ 	NOTES :kernel :notes
  
-   .con_initcall.init : {
--	__con_initcall_start = .;
--	*(.con_initcall.init)
--	__con_initcall_end = .;
-+	CON_INITCALL
-   }
+@@ -99,12 +95,7 @@ SECTIONS
+  */
+ 	. = ALIGN(PAGE_SIZE);
+ 	__init_begin = .;
+-
+-	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-		_sinittext = .;
+-		INIT_TEXT
+-		_einittext = .;
+-	} :kernel
++	INIT_TEXT_SECTION(PAGE_SIZE) :kernel
  
-   .uml.initcall.init : {
-@@ -118,9 +103,7 @@
+ 	/* .exit.text is discarded at runtime, not link time,
+ 	 * to deal with references from __bug_table
+@@ -128,23 +119,16 @@ SECTIONS
+ #endif
+ 	}
  
-    . = ALIGN(4096);
-   .init.ramfs : {
--	__initramfs_start = .;
--	*(.init.ramfs)
--	__initramfs_end = .;
-+	INIT_RAM_FS
-   }
+-	. = ALIGN(16);
+ 	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-		__setup_start = .;
+-		*(.init.setup)
+-		__setup_end = .;
++		INIT_SETUP(16)
+ 	}
  
-   /* Sections to be discarded */
-diff --git a/arch/um/kernel/dyn.lds.S b/arch/um/kernel/dyn.lds.S
-index 9975e1a..9b8c26e 100644
---- a/arch/um/kernel/dyn.lds.S
-+++ b/arch/um/kernel/dyn.lds.S
-@@ -16,11 +16,7 @@ SECTIONS
-   _text = .;
-   _stext = .;
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT
--	_einittext = .;
--  }
-+  INIT_TEXT_SECTION(PAGE_SIZE)
+ 	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-		__initcall_start = .;
+-		INITCALLS
+-		__initcall_end = .;
+-		}
++		INIT_CALLS
++	}
  
-   . = ALIGN(PAGE_SIZE);
+ 	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-		__con_initcall_start = .;
+-		*(.con_initcall.init)
+-		__con_initcall_end = .;
++		CON_INITCALL
+ 	}
  
-@@ -96,8 +92,7 @@ SECTIONS
-   .init_array     : { *(.init_array) }
-   .fini_array     : { *(.fini_array) }
-   .data           : {
--    . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
--    *(.data.init_task)
-+    INIT_TASK_DATA(KERNEL_STACK_SIZE)
-     . = ALIGN(KERNEL_STACK_SIZE);
-     *(.data.init_irqstack)
-     DATA_DATA
-diff --git a/arch/um/kernel/uml.lds.S b/arch/um/kernel/uml.lds.S
-index 11b8352..dd0890c 100644
---- a/arch/um/kernel/uml.lds.S
-+++ b/arch/um/kernel/uml.lds.S
-@@ -22,11 +22,7 @@ SECTIONS
-   _text = .;
-   _stext = .;
-   __init_begin = .;
--  .init.text : {
--	_sinittext = .;
--	INIT_TEXT
--	_einittext = .;
--  }
-+  INIT_TEXT_SECTION(PAGE_SIZE)
-   . = ALIGN(PAGE_SIZE);
+ 	SECURITY_INIT
+@@ -175,14 +159,10 @@ SECTIONS
+ 		__stop___fw_ftr_fixup = .;
+ 	}
+ #endif
+-#ifdef CONFIG_BLK_DEV_INITRD
+-	. = ALIGN(PAGE_SIZE);
+ 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
++		INIT_RAM_FS
+ 	}
+-#endif
++
+ 	PERCPU(PAGE_SIZE)
  
-   .text      :
-@@ -52,8 +48,7 @@ SECTIONS
-   init.data : { INIT_DATA }
-   .data    :
-   {
--    . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
--    *(.data.init_task)
-+    INIT_TASK_DATA(KERNEL_STACK_SIZE)
-     . = ALIGN(KERNEL_STACK_SIZE);
-     *(.data.init_irqstack)
-     DATA_DATA
-@@ -81,19 +76,10 @@ SECTIONS
-   _edata  =  .;
-   PROVIDE (edata = .);
-   . = ALIGN(PAGE_SIZE);
--  .sbss      :
--  {
--   __bss_start = .;
--   PROVIDE(_bss_start = .);
--   *(.sbss)
--   *(.scommon)
--  }
--  .bss       :
--  {
--   *(.dynbss)
--   *(.bss)
--   *(COMMON)
--  }
-+  __bss_start = .;
-+  PROVIDE(_bss_start = .);
-+  SBSS(0)
-+  BSS(0)
-   _end = .;
-   PROVIDE (end = .);
+ 	. = ALIGN(8);
+@@ -250,50 +230,31 @@ SECTIONS
+ 	PROVIDE32 (edata = .);
  
+ 	/* The initial task and kernel stack */
+-#ifdef CONFIG_PPC32
+-	. = ALIGN(8192);
+-#else
+-	. = ALIGN(16384);
+-#endif
+ 	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
+-		*(.data.init_task)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
+-		*(.data.page_aligned)
++		PAGE_ALIGNED_DATA(PAGE_SIZE)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
+-		*(.data.cacheline_aligned)
++		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
+-		*(.data.read_mostly)
++		READ_MOSTLY_DATA(L1_CACHE_BYTES)
+ 	}
+ 
+-	. = ALIGN(PAGE_SIZE);
+ 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+-		__nosave_begin = .;
+-		*(.data.nosave)
+-		. = ALIGN(PAGE_SIZE);
+-		__nosave_end = .;
++		NOSAVE_DATA
+ 	}
+ 
+ /*
+  * And finally the bss
+  */
+ 
+-	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
+-		__bss_start = .;
+-		*(.sbss) *(.scommon)
+-		*(.dynbss)
+-		*(.bss)
+-		*(COMMON)
+-		__bss_stop = .;
+-	}
++	BSS_SECTION(0, 0, 0)
+ 
+ 	. = ALIGN(PAGE_SIZE);
+ 	_end = . ;
 -- 
 1.6.3.3
 
