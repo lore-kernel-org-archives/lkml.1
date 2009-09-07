@@ -1,124 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752815AbZIGKTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752841AbZIGKUv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752815AbZIGKTs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 06:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZIGKTr
+	id S1752841AbZIGKUv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 06:20:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752762AbZIGKUu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 06:19:47 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:48670 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbZIGKTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 06:19:46 -0400
-Date: Mon, 7 Sep 2009 13:15:37 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-Cc: netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       gregory.haskins@gmail.com, Rusty Russell <rusty@rustcorp.com.au>,
-       s.hetze@linux-ag.com
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20090907101537.GH3031@redhat.com>
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu>
+	Mon, 7 Sep 2009 06:20:50 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:22156 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752658AbZIGKUt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 06:20:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=a2eNOySd6T8h+V+oEVh8eqYCSg6QncTDfpqFsLpzdjSCRG5LBCaSLBAJjVHVhpvCP8
+         Uqs89UHDnGqY9r7NvJhmVj90IWNVTSixlVFGTMrAQNgtxsjfzKcLg/MP2T+gkqenfIOD
+         z0IHqzarm163YgOgv587BOFzST4+8DD1LF8rA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090903183945.GF28651@ovro.caltech.edu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090905150658.GA13387@ghostprotocols.net>
+References: <20090904235527.520961911@goodmis.org>
+	 <20090905150658.GA13387@ghostprotocols.net>
+Date: Mon, 7 Sep 2009 12:20:50 +0200
+X-Google-Sender-Auth: 8aaf3f42f382024d
+Message-ID: <4de7f8a60909070320j692d746drb06bd635ca7f7c55@mail.gmail.com>
+Subject: Re: [PATCH 00/18] tracing/ring-buffer: fixes for latency tracer 
+	[2.6.32]
+From: Jan Blunck <jblunck@suse.de>
+To: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <williams@redhat.com>,
+       linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 03, 2009 at 11:39:45AM -0700, Ira W. Snyder wrote:
-> On Thu, Aug 27, 2009 at 07:07:50PM +0300, Michael S. Tsirkin wrote:
-> > What it is: vhost net is a character device that can be used to reduce
-> > the number of system calls involved in virtio networking.
-> > Existing virtio net code is used in the guest without modification.
-> > 
-> > There's similarity with vringfd, with some differences and reduced scope
-> > - uses eventfd for signalling
-> > - structures can be moved around in memory at any time (good for migration)
-> > - support memory table and not just an offset (needed for kvm)
-> > 
-> > common virtio related code has been put in a separate file vhost.c and
-> > can be made into a separate module if/when more backends appear.  I used
-> > Rusty's lguest.c as the source for developing this part : this supplied
-> > me with witty comments I wouldn't be able to write myself.
-> > 
-> > What it is not: vhost net is not a bus, and not a generic new system
-> > call. No assumptions are made on how guest performs hypercalls.
-> > Userspace hypervisors are supported as well as kvm.
-> > 
-> > How it works: Basically, we connect virtio frontend (configured by
-> > userspace) to a backend. The backend could be a network device, or a
-> > tun-like device. In this version I only support raw socket as a backend,
-> > which can be bound to e.g. SR IOV, or to macvlan device.  Backend is
-> > also configured by userspace, including vlan/mac etc.
-> > 
-> > Status:
-> > This works for me, and I haven't see any crashes.
-> > I have done some light benchmarking (with v4), compared to userspace, I
-> > see improved latency (as I save up to 4 system calls per packet) but not
-> > bandwidth/CPU (as TSO and interrupt mitigation are not supported).  For
-> > ping benchmark (where there's no TSO) troughput is also improved.
-> > 
-> > Features that I plan to look at in the future:
-> > - tap support
-> > - TSO
-> > - interrupt mitigation
-> > - zero copy
-> > 
-> 
-> Hello Michael,
-> 
-> I've started looking at vhost with the intention of using it over PCI to
-> connect physical machines together.
-> 
-> The part that I am struggling with the most is figuring out which parts
-> of the rings are in the host's memory, and which parts are in the
-> guest's memory.
+On Sat, Sep 5, 2009 at 5:06 PM, Arnaldo Carvalho de Melo<acme@redhat.com> wrote:
+>
+> I did a quick port to tip/rt/head and couldn't reproduce the problems I
+> was experiencing, thanks!
+>
+> I've put the ported patch series at:
+>
+> http://userweb.kernel.org/~acme/rostedt-rb-rt
+>
 
-All rings are in guest's memory, to match existing virtio code.  vhost
-assumes that the memory space of the hypervisor userspace process covers
-the whole of guest memory. And there's a translation table.
-Ring addresses are userspace addresses, they do not undergo translation.
+Nice, this also seems to fix my problem with the hanging wakup
+selftest. At least the system continues to boot. However, I still get
+this:
 
-> If I understand everything correctly, the rings are all userspace
-> addresses, which means that they can be moved around in physical memory,
-> and get pushed out to swap.
+[   13.739115] Testing tracer sched_switch: PASSED
+[   14.002071] Testing tracer function: PASSED
+[   14.158816] Testing dynamic ftrace: PASSED
+[   14.512524] Testing tracer irqsoff: PASSED
+[   14.693519] Testing tracer preemptoff: PASSED
+[   14.853519] Testing tracer preemptirqsoff: PASSED
+[   15.013506] Testing tracer wakeup:
+[   15.134004] hrtimer: interrupt too slow, forcing clock min delta to
+27508383 ns
+[   15.134010] hrtimer: interrupt too slow, forcing clock min delta to
+27544629 ns
+[   15.134016] hrtimer: interrupt too slow, forcing clock min delta to
+27543582 ns
+[   15.134022] hrtimer: interrupt too slow, forcing clock min delta to
+27543372 ns
+[   15.134028] hrtimer: interrupt too slow, forcing clock min delta to
+27543162 ns
+[   15.134034] hrtimer: interrupt too slow, forcing clock min delta to
+27542325 ns
+[   15.134040] hrtimer: interrupt too slow, forcing clock min delta to
+27542952 ns
+[   15.134046] hrtimer: interrupt too slow, forcing clock min delta to
+27543579 ns
+[   15.134052] hrtimer: interrupt too slow, forcing clock min delta to
+27543582 ns
+[   15.134058] hrtimer: interrupt too slow, forcing clock min delta to
+27543789 ns
+[   15.134063] hrtimer: interrupt too slow, forcing clock min delta to
+27543372 ns
+[   15.134070] hrtimer: interrupt too slow, forcing clock min delta to
+27542532 ns
+[   15.134076] hrtimer: interrupt too slow, forcing clock min delta to
+27542745 ns
+[   15.134082] hrtimer: interrupt too slow, forcing clock min delta to
+27543372 ns
+[   15.134088] hrtimer: interrupt too slow, forcing clock min delta to
+27542742 ns
+[   15.134094] hrtimer: interrupt too slow, forcing clock min delta to
+27542325 ns
+[   15.134101] hrtimer: interrupt too slow, forcing clock min delta to
+27544419 ns
+[   15.134107] hrtimer: interrupt too slow, forcing clock min delta to
+27544419 ns
+[   15.134113] hrtimer: interrupt too slow, forcing clock min delta to
+27544209 ns
+[   15.134119] hrtimer: interrupt too slow, forcing clock min delta to
+27544419 ns
+[   15.134126] hrtimer: interrupt too slow, forcing clock min delta to
+27544419 ns
+[   15.134132] hrtimer: interrupt too slow, forcing clock min delta to
+27544422 ns
+[   15.134161] hrtimer: interrupt too slow, forcing clock min delta to
+27492249 ns
+[   15.133993] hrtimer: interrupt too slow, forcing clock min delta to
+28730742 ns
+[   15.810670] PASSED
+[   15.865758] Testing tracer wakeup_rt: PASSED
 
-Unless they are locked, yes.
+And this time I have lockdep really disabled.
 
-> AFAIK, this is impossible to handle when
-> connecting two physical systems, you'd need the rings available in IO
-> memory (PCI memory), so you can ioreadXX() them instead. To the best of
-> my knowledge, I shouldn't be using copy_to_user() on an __iomem address.
-> Also, having them migrate around in memory would be a bad thing.
-> 
-> Also, I'm having trouble figuring out how the packet contents are
-> actually copied from one system to the other. Could you point this out
-> for me?
-
-The code in net/packet/af_packet.c does it when vhost calls sendmsg.
-
-> Is there somewhere I can find the userspace code (kvm, qemu, lguest,
-> etc.) code needed for interacting with the vhost misc device so I can
-> get a better idea of how userspace is supposed to work?
-
-Look in archives for kvm@vger.kernel.org. the subject is qemu-kvm: vhost net.
-
-> (Features
-> negotiation, etc.)
-> 
-> Thanks,
-> Ira
-
-That's not yet implemented as there are no features yet.  I'm working on
-tap support, which will add a feature bit.  Overall, qemu does an ioctl
-to query supported features, and then acks them with another ioctl.  I'm
-also trying to avoid duplicating functionality available elsewhere.  So
-that to check e.g. TSO support, you'd just look at the underlying
-hardware device you are binding to.
-
--- 
-MST
+Jan
