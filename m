@@ -1,83 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZIGLfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbZIGLeb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbZIGLfT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 07:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753114AbZIGLfS
+	id S1753185AbZIGLeb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 07:34:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZIGLea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 07:35:18 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50789 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752952AbZIGLfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 07:35:17 -0400
-Date: Mon, 7 Sep 2009 13:31:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@Opfer-Online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
+	Mon, 7 Sep 2009 07:34:30 -0400
+Received: from ns.penguin.cz ([84.21.108.25]:60579 "EHLO ns.penguin.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752684AbZIGLea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 07:34:30 -0400
+Subject: Re: Zaurus suspend saga
+From: Stanislav Brabec <utx@penguin.cz>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Eric Miao <eric.y.miao@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
+       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
+       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
        thommycheck@gmail.com,
        linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
        dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       utx@penguin.cz
-Subject: Re: Zaurus suspend saga
-Message-ID: <20090907113132.GM23450@elf.ucw.cz>
-References: <20090906052653.GB1324@ucw.cz> <1252276145.17852.15.camel@dax.rpnet.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252276145.17852.15.camel@dax.rpnet.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+       Andrea Adami <andrea.adami@gmail.com>
+In-Reply-To: <20090907110307.GK23450@elf.ucw.cz>
+References: <20090906052653.GB1324@ucw.cz>
+	 <1252276145.17852.15.camel@dax.rpnet.com>
+	 <f17812d70909061806y651c390w1faa5364f0fb6ddc@mail.gmail.com>
+	 <20090907110307.GK23450@elf.ucw.cz>
+Content-Type: text/plain
+Date: Mon, 07 Sep 2009 13:34:29 +0200
+Message-Id: <1252323270.14911.20.camel@hammer.suse.cz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.27.90 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Pavel Machek wrote:
 
-> > fatal reads invalid values -- -108 -- probably because spi is not ready?
-> > 
-> > is spi suspend/resume required? yes.; and yes spi is resumed too late
-> >  in the sequence. Or perhaps fatal battery check is way too early.
-> > 
-> > Could someone confirm that simply removing sharpsl_fatal_check() fixes
-> > zaurus suspend on 2.6.31? 
+> Yep, zaurus is currently pretty broken; I don't think charging from
+> Linux works at all, so I simply power down back to bootloader for
+> charge.
 > 
-> Sadly lack of time means I've lost track of the Zaurus kernels but this
-> sounds like all accesses to the SSP buses now go through the SPI layer
-> and when it was converted nobody thought about the impact this would
-> have on the Zaurus charger code.
-
-Unfortunately... Do you have any idea when this conversion took place?
-
-> If suspend/resume is broken in this way, it also means the charger code
-> is also likely to be totally broken/malfunctioning since it won't be
-> able to read from the ADC either.
-
-Yes. Seems like low-level zaurus code is FUBAR.
-
-> Either:
+> Anyway, suspend/resume is currently more important for me than charge,
+> and I'd like to get at least that to work.
 > 
-> a) Someone steps up and finds a way to partially resume the kernel so
-> the "offline" charging code can work and access SPI
+> Could we apply the trivial patch from "zaurus c3000 aka spitz: fix
+> resume" , and preferably push it to linus for 2.6.31? One version
+> where kernel suspends/resumes would be good. 
 
-> b) We find some other way to allow the SPI interface to be accessed by
-> the charger code without resuming the whole kernel (the way it used to
-> work)
+I vote for applying Pavel's patch, as it fixes suspend/resume. Emergency
+suspend may happen later, when SPI will be fully resumed. If future
+fixes provide early SPI resume, then this patch may be reverted.
 
-Doing that in a hacky way should be rather easy... just calling spi
-resume manually. But...
+Tested-by: Stanislav Brabec <utx@penguin.cz>
 
-> c) We rip the whole thing out and stop supporting "offline" charging.
+...
 
-How much faster is offline charge, compared to online charging? I have
-impression that online charging basically does not charge anything...
+Remaining Zaurus SL-C3200 problems in the current vanilla (regressions
+are compared with 2.6.26-RP):
 
-> I'd hate to see c) happen but I doubt I'm going to find time to rewrite
-> that code any time soon and nobody else even seems to have grasped how
-> deep this problem really is :(.
 
-Well, I have a bit of time now and then...
-									Pavel
+Offline charging. (regression)
+
+Offline charging does not work.
+
+Richard provided exact analysis of the problem.
+
+
+Serial after resume. (regression)
+
+Resume on serial port does not work. Reason unknown.
+
+
+Call eject on HDD CF slot, then access. (probably in all kernels)
+
+Instead of an error, it causes overwriting of partition table. It does
+never happen in a normal work.
+
+
+USB host does not work (regression), USB OTG switching is not
+implemented (not yet implemented)
+
+Reason unknown, but it may be caused by a lacking or incomplete platform
+description.
+
+
+Noisy touchscreen. (at least partially regression)
+
+Touchscreen is noisy. I the latest versions, it even reads intermediate
+values before the new value settles.
+
+Possible fix: Do not read hundreds times in second, but only once in the
+gap between two display refreshes.
+
+
+Bad MTD partition table. (not yet implemented)
+
+SL-C3100 and SL-C3200 differs in the NAND partition table. To get a
+correct table, NAND config has to be read. Andrea Adami works on
+kexecboot, that will be able to provide the NAND-configured table
+instead of guessing using hardwired model->partition table list.
+
+
+Missing driver for remote. (outside vanilla tree)
+
+The driver exists outside the kernel tree, but it's ugly. I plan to
+finish my "resistor matrix keyboard device" driver.
+
+
+Sound codec on low frequencies. (not yet tested in 2.6.31)
+
+It works, but sound is very distorted.
+
+Possible reason: bad timing of chip auto suspend
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Stanislav Brabec
+http://www.penguin.cz/~utx
+
