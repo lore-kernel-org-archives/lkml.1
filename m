@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751350AbZIGTZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751290AbZIGTaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751350AbZIGTZH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 15:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751166AbZIGTZH
+	id S1751290AbZIGTaB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 15:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750780AbZIGTaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 15:25:07 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:53826 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1750998AbZIGTZG (ORCPT
+	Mon, 7 Sep 2009 15:30:01 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:56240 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750724AbZIGTaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 15:25:06 -0400
-Date: Mon, 7 Sep 2009 15:25:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Miklos Szeredi <miklos@szeredi.hu>
-cc: alan@linux.intel.com, <gregkh@suse.de>, <linux-usb@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: WARNINGs in usb-serial.c
-In-Reply-To: <E1MkiMA-0000vX-5L@pomaz-ex.szeredi.hu>
-Message-ID: <Pine.LNX.4.44L0.0909071509250.9972-100000@netrider.rowland.org>
+	Mon, 7 Sep 2009 15:30:00 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4AA55EE5.10102@s5r6.in-berlin.de>
+Date: Mon, 07 Sep 2009 21:28:37 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.22) Gecko/20090630 SeaMonkey/1.1.17
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: pageexec@freemail.hu
+CC: linux1394-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: [PATCH 2/6] firewire: ohci: fix Self ID Count register mask (safeguard
+ against buffer overflow)
+References: <tkrat.85bb80d9295444c1@s5r6.in-berlin.de>, <tkrat.e40ffd9ba52485e5@s5r6.in-berlin.de> <4AA5575E.6620.3D14E038@pageexec.freemail.hu>
+In-Reply-To: <4AA5575E.6620.3D14E038@pageexec.freemail.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Sep 2009, Miklos Szeredi wrote:
-
-> > This is unexpected, because port->serial is initialized in
-> > usb_serial_probe() and is not set to NULL until destroy_serial(), after
-> > which port should not be used at all.  Can you add a
-> > 
-> > #define DEBUG
-> > 
-> > line at the start of usb-serial.c (before the #include lines) so that
-> > we can tell if destroy_serial() is getting called too early?  When you
-> > do, post the dmesg log showing everything from the time you start
-> > running your test.
+pageexec@freemail.hu wrote:
+> On 6 Sep 2009 at 18:49, Stefan Richter wrote:
 > 
-> drivers/usb/serial/usb-serial.c: serial_install
-> drivers/usb/serial/usb-serial.c: serial_open - port 0
-...
-> PPP generic driver version 2.4.2
-> drivers/usb/serial/usb-serial.c: serial_ioctl - port 0, cmd 0x5401
-> drivers/usb/serial/usb-serial.c: serial_open - port 0
-> drivers/usb/serial/usb-serial.c: serial_tiocmset - port 0
-> drivers/usb/serial/usb-serial.c: serial_ioctl - port 0, cmd 0x5401
-> drivers/usb/serial/usb-serial.c: serial_ioctl - port 0, cmd 0x5404
-> drivers/usb/serial/usb-serial.c: serial_chars_in_buffer = port 0
-> drivers/usb/serial/usb-serial.c: serial_set_termios - port 0
-> drivers/usb/serial/usb-serial.c: serial_open - port 0
+> added stable as .30 is affected, possibly older kernels as well, i didn't check.
 
-This is the third open with no intervening closes.  At this point
-port->port.count should be equal to 3 (it gets incremented in
-serial_open() and decremented when serial_close() calls
-tty_port_close_start()).
+The mistake which is fixed here is present since firewire-ohci was added 
+in 2.6.22.  However, for a smooth submission to stable, the patched file...
 
-> drivers/usb/serial/usb-serial.c: destroy_serial - GSM modem (1-port)
-> drivers/usb/serial/usb-serial.c: return_serial
-> drivers/usb/serial/usb-serial.c: serial_close - port 0
+>> --- linux-2.6.31-rc9.orig/drivers/firewire/ohci.c
+>> +++ linux-2.6.31-rc9/drivers/firewire/ohci.c
 
-I don't understand this.  How did we get to destroy_serial()?  It is
-called from only one place: usb_serial_put().  That in turn is called
-from only a few places, of which the most important are
-serial_release() and usb_serial_disconnect().  But neither of them
-shows up in the debugging log.
+...has to be drivers/firewire/fw-ohci.c in kernels before 2.6.31-rc1.
 
-We need more debugging info.  You can try printing the value of 
-port->port.count just before the end of serial_open() and at the start 
-of serial_close().  You can also add a WARN() at the start of 
-destroy_serial() so that the stack dump will show how we got there.
-
-> drivers/usb/serial/usb-serial.c: serial_chars_in_buffer = port 0
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000018
-> IP: [<ffffffffa01ca09c>] serial_chars_in_buffer+0x47/0x5f [usbserial]
-
-Now this is understandable.  Since destroy_serial() was called too 
-soon, anything afterward will try to follow a NULL pointer.
-
-Alan Stern
-
+As hinted at in the changelog, I personally don't consider the fix 
+urgent because there are a few more self ID consistency checks in place 
+which catch a variety of real and theoretical corruptions, but I don't 
+claim that I'm appropriately aware of all possibilities.
+-- 
+Stefan Richter
+-=====-==--= =--= --===
+http://arcgraph.de/sr/
