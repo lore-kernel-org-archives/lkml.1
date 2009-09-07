@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZIGIWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752228AbZIGIYQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752199AbZIGIWg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 04:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZIGIWg
+	id S1752228AbZIGIYQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 04:24:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751871AbZIGIYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 04:22:36 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:59959 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751871AbZIGIWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 04:22:35 -0400
-Date: Mon, 7 Sep 2009 18:22:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tejun Heo <tj@kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: manual merge of the percpu tree with Linus' tree
-Message-Id: <20090907182229.734c31d2.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	Mon, 7 Sep 2009 04:24:15 -0400
+Received: from mail.gmx.net ([213.165.64.20]:60443 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751770AbZIGIYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 04:24:15 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19J7/wrz2hJuxB6Yp+VPo8FzkXMq3MLAQ5+sT7hMC
+	Q+SO6BYbRi2Uxb
+Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ani <asinha@zeugmasystems.com>,
+       Lucas De Marchi <lucas.de.marchi@gmail.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <1252310374.7564.6.camel@twins>
+References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it>
+	 <dhcf5-263-13@gated-at.bofh.it>
+	 <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com>
+	 <1252218779.6126.17.camel@marge.simson.net> <1252310374.7564.6.camel@twins>
+Content-Type: text/plain
+Date: Mon, 07 Sep 2009 10:24:14 +0200
+Message-Id: <1252311854.7586.31.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__7_Sep_2009_18_22_29_+1000_4_uh0S8_iFiKIt3e"
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__7_Sep_2009_18_22_29_+1000_4_uh0S8_iFiKIt3e
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-09-07 at 09:59 +0200, Peter Zijlstra wrote:
+> On Sun, 2009-09-06 at 08:32 +0200, Mike Galbraith wrote:
+> > On Sat, 2009-09-05 at 19:32 -0700, Ani wrote: 
+> > > On Sep 5, 3:50 pm, Lucas De Marchi <lucas.de.mar...@gmail.com> wrote:
+> > > >
+> > > > Indeed. I've tested this same test program in a single core machine and it
+> > > > produces the expected behavior:
+> > > >
+> > > > rt_runtime_us / rt_period_us     % loops executed in SCHED_OTHER
+> > > > 95%                              4.48%
+> > > > 60%                              54.84%
+> > > > 50%                              86.03%
+> > > > 40%                              OTHER completed first
+> > > >
+> > > 
+> > > Hmm. This does seem to indicate that there is some kind of
+> > > relationship with SMP. So I wonder whether there is a way to turn this
+> > > 'RT bandwidth accumulation' heuristic off.
+> > 
+> > No there isn't..
+> 
+> Actually there is, use cpusets to carve the system into partitions.
 
-Hi all,
+Yeah, I stand corrected.  I tend to think in terms of the dirt simplest
+configuration only.
 
-Today's linux-next merge of the percpu tree got a conflict in mm/percpu.c
-between commit 04a13c7c632e1fe04a5f6e6c83565d2559e37598 ("percpu: don't
-assume existence of cpu0") from Linus' tree and commit pcpu_chunk_page_occu=
-pied ("percpu: drop pcpu_chunk->page[]") from the percpu tree.
+	-Mike
 
-I *think* the changes in the percpu tree supercede those in Linus' tree,
-so I have used those.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__7_Sep_2009_18_22_29_+1000_4_uh0S8_iFiKIt3e
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqkwsUACgkQjjKRsyhoI8wxLQCfXhHLFOID5aHVu8nGQ4Zngt93
-HcwAoLDHefgqqjxiln4eMftZicxjsjb8
-=8J/L
------END PGP SIGNATURE-----
-
---Signature=_Mon__7_Sep_2009_18_22_29_+1000_4_uh0S8_iFiKIt3e--
