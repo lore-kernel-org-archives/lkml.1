@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753699AbZIGPKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753742AbZIGPOi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753699AbZIGPKg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 11:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZIGPKf
+	id S1753742AbZIGPOi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 11:14:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZIGPOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 11:10:35 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52167 "EHLO mx2.suse.de"
+	Mon, 7 Sep 2009 11:14:37 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52274 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753527AbZIGPKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 11:10:34 -0400
-Date: Mon, 7 Sep 2009 17:10:33 +0200 (CEST)
+	id S1753527AbZIGPOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 11:14:36 -0400
+Date: Mon, 7 Sep 2009 17:14:38 +0200 (CEST)
 From: Jiri Kosina <jkosina@suse.cz>
 X-X-Sender: jkosina@wotan.suse.de
 To: Stephen Rothwell <sfr@canb.auug.org.au>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org, Kashyap@suse.de,
-       Desai <kashyap.desai@lsi.com>,
-       Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>
-Subject: Re: linux-next: manual merge of the trivial tree with the scsi
- tree
-In-Reply-To: <20090907162349.3b3337e3.sfr@canb.auug.org.au>
-Message-ID: <alpine.LNX.2.00.0909071708400.23856@wotan.suse.de>
-References: <20090907162349.3b3337e3.sfr@canb.auug.org.au>
+       Russell King <rmk@arm.linux.org.uk>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Joe Perches <joe@perches.com>, wanzongshun <mcuos.com@gmail.com>
+Subject: Re: linux-next: manual merge of the trivial tree with the arm tree
+In-Reply-To: <20090907163201.72adc3f6.sfr@canb.auug.org.au>
+Message-ID: <alpine.LNX.2.00.0909071713210.23856@wotan.suse.de>
+References: <20090907163201.72adc3f6.sfr@canb.auug.org.au>
 User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -31,66 +29,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Mon, 7 Sep 2009, Stephen Rothwell wrote:
 
-> Hi Jiri,
-> 
 > Today's linux-next merge of the trivial tree got a conflict in
-> drivers/scsi/mpt2sas/mpt2sas_scsih.c between commit
-> 155dd4c763694222c125e65438d823f58ea653bc ("[SCSI] mpt2sas: Prevent
-> sending command to FW while Host Reset") from the scsi tree and commit
-> 8eaa1cbfd596aeb0d2fec7706faccab42eb4bf62 ("trivial: fix typos "man[ae]g?
-> ment" -> "management"") from the trivial tree.
+> arch/arm/mach-w90x900/w90p910.c between commit
+> 35c9221acb133ecc9abd701a1fb6fa909d177a77 ("ARM: 5682/1: Add cpu.c and
+> dev.c and modify some files of w90p910 platform") from the arm tree and
+> commit 6f8fadf4a5c43f9f10f1910c71d8d9ff0b0a26ca ("trivial: remove
+> unnecessary semicolons") from the trivial tree.
 > 
-> Just context changes.  I fixed it up (see below) and can carry the fix as
-> necessary.
-> 
-> Jiri, maybe the scsi part of that trivial patch could be sent to the scsi
-> maintainer.
+> The former commit moved the code changed by the latter into a different
+> file (arch/arm/mach-w90x900/cpu.c - and removed the old file).  Its not
+> important enough to fix it there (so I just removed this file), but maybe
+> the part of the trivial commit touching this file could be sent to the
+> arm maintainer.
 
-Sure, here we go. James, could you please apply? (I have already dropped 
-it from trivial queue). Thanks.
+Sure, here we go. Russel, could you please apply this on top of your 
+current tree? (I have already dropped the bits touching arch/arm from 
+trivial queue). Thanks.
 
 
 
+From: Joe Perches <joe@perches.com>
+Subject: trivial: remove unnecessary semicolons
 
-From: Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>
-Subject: trivial: fix typos "man[ae]g?ment" -> "management"
-
-Signed-off-by: Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>
+Signed-off-by: Joe Perches <joe@perches.com>
 Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 
-diff --git a/drivers/scsi/mpt2sas/mpt2sas_base.h b/drivers/scsi/mpt2sas/mpt2sas_base.h
-index 286c185..fa85253 100644
---- a/drivers/scsi/mpt2sas/mpt2sas_base.h
-+++ b/drivers/scsi/mpt2sas/mpt2sas_base.h
-@@ -434,7 +434,7 @@ typedef void (*MPT_ADD_SGE)(void *paddr, u32 flags_length, dma_addr_t dma_addr);
-  * @ioc_reset_in_progress: host reset in progress
-  * @ioc_reset_in_progress_lock:
-  * @ioc_link_reset_in_progress: phy/hard reset in progress
-- * @ignore_loginfos: ignore loginfos during task managment
-+ * @ignore_loginfos: ignore loginfos during task management
-  * @remove_host: flag for when driver unloads, to avoid sending dev resets
-  * @wait_for_port_enable_to_complete:
-  * @msix_enable: flag indicating msix is enabled
-diff --git a/drivers/scsi/mpt2sas/mpt2sas_scsih.c b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-index 2a01a5f..e849fc7 100644
---- a/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-+++ b/drivers/scsi/mpt2sas/mpt2sas_scsih.c
-@@ -2633,7 +2633,7 @@ _scsih_qcmd(struct scsi_cmnd *scmd, void (*done)(struct scsi_cmnd *))
- 		return 0;
- 	}
+---
+
+diff --git a/arch/arm/mach-at91/at91cap9_devices.c b/arch/arm/mach-at91/at91cap9_devices.c
+index 412aa49..799c11e 100644
+--- a/arch/arm/mach-at91/at91cap9_devices.c
++++ b/arch/arm/mach-at91/at91cap9_devices.c
+@@ -171,7 +171,7 @@ void __init at91_add_device_usba(struct usba_platform_data *data)
+ 	 */
+ 	usba_udc_data.pdata.vbus_pin = -EINVAL;
+ 	usba_udc_data.pdata.num_ep = ARRAY_SIZE(usba_udc_ep);
+-	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));;
++	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));
  
--	/* see if we are busy with task managment stuff */
-+	/* see if we are busy with task management stuff */
- 	spin_lock_irqsave(&ioc->ioc_reset_in_progress_lock, flags);
- 	if (sas_target_priv_data->tm_busy ||
- 	    ioc->shost_recovery || ioc->ioc_link_reset_in_progress) {
-@@ -5857,7 +5857,7 @@ _scsih_init(void)
- 	 /* queuecommand callback hander */
- 	scsi_io_cb_idx = mpt2sas_base_register_callback_handler(_scsih_io_done);
+ 	if (data && data->vbus_pin > 0) {
+ 		at91_set_gpio_input(data->vbus_pin, 0);
+diff --git a/arch/arm/mach-at91/at91sam9rl_devices.c b/arch/arm/mach-at91/at91sam9rl_devices.c
+index 7281865..e87237b 100644
+--- a/arch/arm/mach-at91/at91sam9rl_devices.c
++++ b/arch/arm/mach-at91/at91sam9rl_devices.c
+@@ -99,7 +99,7 @@ void __init at91_add_device_usba(struct usba_platform_data *data)
+ 	 */
+ 	usba_udc_data.pdata.vbus_pin = -EINVAL;
+ 	usba_udc_data.pdata.num_ep = ARRAY_SIZE(usba_udc_ep);
+-	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));;
++	memcpy(usba_udc_data.ep, usba_udc_ep, sizeof(usba_udc_ep));
  
--	/* task managment callback handler */
-+	/* task management callback handler */
- 	tm_cb_idx = mpt2sas_base_register_callback_handler(_scsih_tm_done);
+ 	if (data && data->vbus_pin > 0) {
+ 		at91_set_gpio_input(data->vbus_pin, 0);
+diff --git a/arch/arm/mach-w90x900/w90p910.c b/arch/arm/mach-w90x900/w90p910.c
+index 1c97e49..0399a24 100644
+--- a/arch/arm/mach-w90x900/w90p910.c
++++ b/arch/arm/mach-w90x900/w90p910.c
+@@ -62,7 +62,7 @@ static DEFINE_CLK(atapi, 6);
+ static DEFINE_CLK(emc, 7);
+ static DEFINE_CLK(usbd, 8);
+ static DEFINE_CLK(usbh, 9);
+-static DEFINE_CLK(g2d, 10);;
++static DEFINE_CLK(g2d, 10);
+ static DEFINE_CLK(pwm, 18);
+ static DEFINE_CLK(ps2, 24);
+ static DEFINE_CLK(kpi, 25);
+diff --git a/arch/arm/plat-mxc/irq.c b/arch/arm/plat-mxc/irq.c
+index 8aee763..c2106d5 100644
+--- a/arch/arm/plat-mxc/irq.c
++++ b/arch/arm/plat-mxc/irq.c
+@@ -53,7 +53,7 @@ int imx_irq_set_priority(unsigned char irq, unsigned char prio)
+ 	unsigned int mask = 0x0F << irq % 8 * 4;
  
- 	/* base internal commands callback handler */
+ 	if (irq >= MXC_INTERNAL_IRQS)
+-		return -EINVAL;;
++		return -EINVAL;
+ 
+ 	temp = __raw_readl(avic_base + AVIC_NIPRIORITY(irq / 8));
+ 	temp &= ~mask;
 
