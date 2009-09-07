@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752035AbZIGUiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751926AbZIGUiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752035AbZIGUiB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 16:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZIGUiA
+	id S1751926AbZIGUiO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 16:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZIGUiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 16:38:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50472 "EHLO hera.kernel.org"
+	Mon, 7 Sep 2009 16:38:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50478 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751986AbZIGUiA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 16:38:00 -0400
-Date: Mon, 7 Sep 2009 20:37:28 GMT
+	id S1751675AbZIGUiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 16:38:08 -0400
+Date: Mon, 7 Sep 2009 20:37:41 GMT
 From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
@@ -18,34 +18,29 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:sched/balancing] sched: Deal with low-load in wake_affine()
-Message-ID: <tip-71a29aa7b600595d0ef373ea605ac656876d1f2f@git.kernel.org>
-Git-Commit-ID: 71a29aa7b600595d0ef373ea605ac656876d1f2f
+Subject: [tip:sched/balancing] sched: enable SD_WAKE_IDLE
+Message-ID: <tip-a8fae3ec5f118dc92517dcbed3ecf69ddb641d0f@git.kernel.org>
+Git-Commit-ID: a8fae3ec5f118dc92517dcbed3ecf69ddb641d0f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 07 Sep 2009 20:37:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 07 Sep 2009 20:37:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  71a29aa7b600595d0ef373ea605ac656876d1f2f
-Gitweb:     http://git.kernel.org/tip/71a29aa7b600595d0ef373ea605ac656876d1f2f
+Commit-ID:  a8fae3ec5f118dc92517dcbed3ecf69ddb641d0f
+Gitweb:     http://git.kernel.org/tip/a8fae3ec5f118dc92517dcbed3ecf69ddb641d0f
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Mon, 7 Sep 2009 18:28:05 +0200
+AuthorDate: Mon, 7 Sep 2009 18:32:32 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 7 Sep 2009 20:39:06 +0200
+CommitDate: Mon, 7 Sep 2009 22:00:17 +0200
 
-sched: Deal with low-load in wake_affine()
+sched: enable SD_WAKE_IDLE
 
-wake_affine() would always fail under low-load situations where
-both prev and this were idle, because adding a single task will
-always be a significant imbalance, even if there's nothing
-around that could balance it.
-
-Deal with this by allowing imbalance when there's nothing you
-can do about it.
+Now that SD_WAKE_IDLE doesn't make pipe-test suck anymore,
+enable it by default for MC, CPU and NUMA domains.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 LKML-Reference: <new-submission>
@@ -53,29 +48,51 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sched_fair.c |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/topology.h |    2 +-
+ include/linux/topology.h        |    6 +++---
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index d7fda41..cc97ea4 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1262,7 +1262,17 @@ wake_affine(struct sched_domain *this_sd, struct rq *this_rq,
- 	tg = task_group(p);
- 	weight = p->se.load.weight;
- 
--	balanced = 100*(tl + effective_load(tg, this_cpu, weight, weight)) <=
-+	/*
-+	 * In low-load situations, where prev_cpu is idle and this_cpu is idle
-+	 * due to the sync cause above having dropped tl to 0, we'll always have
-+	 * an imbalance, but there's really nothing you can do about that, so
-+	 * that's good too.
-+	 *
-+	 * Otherwise check if either cpus are near enough in load to allow this
-+	 * task to be woken on this_cpu.
-+	 */
-+	balanced = !tl ||
-+		100*(tl + effective_load(tg, this_cpu, weight, weight)) <=
- 		imbalance*(load + effective_load(tg, prev_cpu, 0, weight));
- 
- 	/*
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index ef7bc7f..26d06e0 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -152,7 +152,7 @@ extern unsigned long node_remap_size[];
+ 				| 0*SD_POWERSAVINGS_BALANCE		\
+ 				| 0*SD_SHARE_PKG_RESOURCES		\
+ 				| 1*SD_SERIALIZE			\
+-				| 0*SD_WAKE_IDLE_FAR			\
++				| 1*SD_WAKE_IDLE_FAR			\
+ 				| 0*SD_PREFER_SIBLING			\
+ 				,					\
+ 	.last_balance		= jiffies,				\
+diff --git a/include/linux/topology.h b/include/linux/topology.h
+index 66774fd..85e8cf7 100644
+--- a/include/linux/topology.h
++++ b/include/linux/topology.h
+@@ -129,7 +129,7 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_BALANCE_NEWIDLE			\
+ 				| 1*SD_BALANCE_EXEC			\
+ 				| 1*SD_BALANCE_FORK			\
+-				| 0*SD_WAKE_IDLE			\
++				| 1*SD_WAKE_IDLE			\
+ 				| 1*SD_WAKE_AFFINE			\
+ 				| 1*SD_WAKE_BALANCE			\
+ 				| 0*SD_SHARE_CPUPOWER			\
+@@ -163,7 +163,7 @@ int arch_update_cpu_topology(void);
+ 				| 1*SD_BALANCE_NEWIDLE			\
+ 				| 1*SD_BALANCE_EXEC			\
+ 				| 1*SD_BALANCE_FORK			\
+-				| 0*SD_WAKE_IDLE			\
++				| 1*SD_WAKE_IDLE			\
+ 				| 0*SD_WAKE_AFFINE			\
+ 				| 1*SD_WAKE_BALANCE			\
+ 				| 0*SD_SHARE_CPUPOWER			\
+@@ -198,7 +198,7 @@ int arch_update_cpu_topology(void);
+ 				| 0*SD_POWERSAVINGS_BALANCE		\
+ 				| 0*SD_SHARE_PKG_RESOURCES		\
+ 				| 1*SD_SERIALIZE			\
+-				| 0*SD_WAKE_IDLE_FAR			\
++				| 1*SD_WAKE_IDLE_FAR			\
+ 				| 0*SD_PREFER_SIBLING			\
+ 				,					\
+ 	.last_balance		= jiffies,				\
