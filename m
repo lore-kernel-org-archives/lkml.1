@@ -1,66 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753354AbZIGNqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZIGNvH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753354AbZIGNqS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 09:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZIGNqS
+	id S1753359AbZIGNvH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 09:51:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZIGNvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 09:46:18 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40003 "EHLO smtps.tip.net.au"
+	Mon, 7 Sep 2009 09:51:06 -0400
+Received: from dan.rpsys.net ([93.97.175.187]:52584 "EHLO dan.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752911AbZIGNqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 09:46:17 -0400
-Date: Mon, 7 Sep 2009 23:46:12 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Len Brown <lenb@kernel.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>, linux-acpi@vger.kernel.org
-Subject: Re: linux-next: acpi tree build failure
-Message-Id: <20090907234612.078bb650.sfr@canb.auug.org.au>
-In-Reply-To: <20090901125748.fb33b2ea.sfr@canb.auug.org.au>
-References: <20090901125748.fb33b2ea.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	id S1752565AbZIGNvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 09:51:05 -0400
+Subject: Re: [PATCH 2/2] leds: Add WM831x status LED driver
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
+In-Reply-To: <20090907132212.GA1739@ucw.cz>
+References: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+	 <1252156161-10062-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+	 <20090907132212.GA1739@ucw.cz>
+Content-Type: text/plain
+Date: Mon, 07 Sep 2009 14:51:24 +0100
+Message-Id: <1252331484.17852.50.camel@dax.rpnet.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__7_Sep_2009_23_46_12_+1000_uwDRFl0FO9wdFu.Z"
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__7_Sep_2009_23_46_12_+1000_uwDRFl0FO9wdFu.Z
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-09-07 at 15:22 +0200, Pavel Machek wrote:
+> On Sat 2009-09-05 14:09:21, Mark Brown wrote:
+> > The WM831x devices feature two software controlled status LEDs with
+> > hardware assisted blinking.
+> > 
+> > The device can also autonomously control the LEDs based on a selection
+> > of sources.  This can be configured at boot time using either platform
+> > data or the chip OTP.  A sysfs file in the style of that for triggers
+> > allowing the control source to be configured at run time.  Triggers
+> > can't be used here since they can't depend on the implementation details
+> > of a specific LED type.
+> 
+> I believe people *were* doing that with triggers in other drivers...?
 
-Hi Len,
+We did talk about allowing the LED triggers to choose whether they were
+visible to a given LED. At present the mechanism doesn't exist because
+we've never had a user.
 
-On Tue, 1 Sep 2009 12:57:48 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
->=20
-> drivers/acpi/als.c: In function 'acpi_als_get_mappings':
-> drivers/acpi/als.c:173: error: expected ')' before 'PREFIX'
-> drivers/acpi/als.c: In function 'acpi_als_add':
-> drivers/acpi/als.c:347: error: expected ')' before 'PREFIX'
->=20
-> I have used the version of the acpi tree from next-20090831 for today.
+It would just be a case of adding a new optional function to the trigger
+to say whether it supported a given LED or not and calling that function
+from led_trigger_show().
 
-This is still there ...
---=20
+I've queued this driver but that would be a nice enhancement.
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__7_Sep_2009_23_46_12_+1000_uwDRFl0FO9wdFu.Z
-Content-Type: application/pgp-signature
+Richard
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
 
-iEYEARECAAYFAkqlDqQACgkQjjKRsyhoI8zmWwCeLP7SHdPhmL5wXiAmckS1pqmL
-b00AoIXmUtD0/Lk8Y93ki4RAkNW0Wode
-=ZjjG
------END PGP SIGNATURE-----
-
---Signature=_Mon__7_Sep_2009_23_46_12_+1000_uwDRFl0FO9wdFu.Z--
