@@ -1,65 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbZIGAlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbZIGAvN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758506AbZIGAlt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 20:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758362AbZIGAlt
+	id S1758549AbZIGAvN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 20:51:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbZIGAvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 20:41:49 -0400
-Received: from mail-pz0-f192.google.com ([209.85.222.192]:61073 "EHLO
-	mail-pz0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758332AbZIGAls (ORCPT
+	Sun, 6 Sep 2009 20:51:12 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34447 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758459AbZIGAvK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 20:41:48 -0400
-Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
-Mime-Version: 1.0 (Apple Message framework v1075.2)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Anirban Sinha <ani@anirban.org>
-In-Reply-To: <1252249790.13541.28.camel@marge.simson.net>
-Date: Sun, 6 Sep 2009 17:41:47 -0700
-Cc: Anirban Sinha <ASinha@zeugmasystems.com>,
-       Lucas De Marchi <lucas.de.marchi@gmail.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>
+	Sun, 6 Sep 2009 20:51:10 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Mon, 7 Sep 2009 09:49:12 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: nishimura@mxp.nes.nec.co.jp
+Cc: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>
+Subject: Re: [mmotm][BUGFIX][PATCH] memcg: fix softlimit css refcnt
+ handling(yet another one)
+Message-Id: <20090907094912.5cbbbaa5.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090907080403.5e4510b3.d-nishimura@mtf.biglobe.ne.jp>
+References: <20090902093438.eed47a57.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902134114.b6f1a04d.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090902182923.c6d98fd6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+	<20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
+	<20090904142143.15ffcb53.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+	<20090904163758.a5604fee.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090904190726.6442f3df.d-nishimura@mtf.biglobe.ne.jp>
+	<20090907080403.5e4510b3.d-nishimura@mtf.biglobe.ne.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <71F08B76-1EC2-4868-BFF5-944B3F83A9F1@anirban.org>
-References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it> <dhcf5-263-13@gated-at.bofh.it> <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com> <1252218779.6126.17.camel@marge.simson.net> <1252232289.29247.11.camel@marge.simson.net> <DDFD17CC94A9BD49A82147DDF7D545C54DC482@exchange.ZeugmaSystems.local> <1252249790.13541.28.camel@marge.simson.net>
-To: Mike Galbraith <efault@gmx.de>
-X-Mailer: Apple Mail (2.1075.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 7 Sep 2009 08:04:03 +0900
+Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
 
-On 2009-09-06, at 8:09 AM, Mike Galbraith wrote:
+> On Fri, 4 Sep 2009 19:07:26 +0900
+> Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
+> 
+> > On Fri, 4 Sep 2009 16:37:58 +0900
+> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > 
+> > > On Fri, 4 Sep 2009 15:40:50 +0900
+> > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > Ah, one more question. What memory.usage_in_bytes shows in that case ?
+> > > > > If not zero, charge/uncharge coalescing is guilty.
+> > > > > 
+> > > > usage_in_bytes is 0.
+> > > > I've confirmed by crash command that the mem_cgroup has extra ref counts.
+> > > > 
+> > > > I'll dig more..
+> > > > 
+> > > BTW, do you use softlimit ? I found this but...Hmm
+> > > 
+> > No.
+> > I'm sorry I can't access my machine, so can't test this.
+> > 
+> > 
+> > But I think this patch itself is needed and looks good.
+> > 
+> I've found the cause of the issue.
+> 
+> Andrew, could you add this one after KAMEZAWA-san's
+> memory-controller-soft-limit-reclaim-on-contention-v9-fix-softlimit-css-refcnt-handling.patch ?
+> 
+> ===
+> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+> refcount of the "victim" should be decremented before exiting the loop.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Nice!
 
-> On Sun, 2009-09-06 at 07:53 -0700, Anirban Sinha wrote:
->>
->>
->>
->>> Seems kjournald can end up depending on kblockd/3, which ain't
->>> going anywhere with that 100% RT hog in the way,
->>
->> I think in the past AKPM's response to this has been "just don't do
->> it", i.e, don't hog the CPU with an RT thread.
->
-> Oh yeah, sure.  Best to run RT oinkers on isolated cpus.
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Correct. Unfortunately at some places, the application coders do  
-stupid things and then the onus falls on the kernel guys to make  
-things 'just work'.
+> ---
+>  mm/memcontrol.c |    8 ++++++--
+>  1 files changed, 6 insertions(+), 2 deletions(-)
+> 
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index ac51294..011aba6 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -1133,8 +1133,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+>  				 * anything, it might because there are
+>  				 * no reclaimable pages under this hierarchy
+>  				 */
+> -				if (!check_soft || !total)
+> +				if (!check_soft || !total) {
+> +					css_put(&victim->css);
+>  					break;
+> +				}
+>  				/*
+>  				 * We want to do more targetted reclaim.
+>  				 * excess >> 2 is not to excessive so as to
+> @@ -1142,8 +1144,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+>  				 * coming back to reclaim from this cgroup
+>  				 */
+>  				if (total >= (excess >> 2) ||
+> -					(loop > MEM_CGROUP_MAX_RECLAIM_LOOPS))
+> +					(loop > MEM_CGROUP_MAX_RECLAIM_LOOPS)) {
+> +					css_put(&victim->css);
+>  					break;
+> +				}
+>  			}
+>  		}
+>  		if (!mem_cgroup_local_usage(&victim->stat)) {
+> 
 
-I would not have any problems if such a cap mechanism did not exist at  
-all. However, since we do have such a tuning knob. I would say that  
-let's make it do what it is supposed to do. In the documentation it  
-says  "0.05s to be used by SCHED_OTHER". Unfortunately, it never hints  
-that if your thread is tied to the RT core, you are screwed. The  
-bandwidth accumulation logic would virtually kill all the remaining  
-SCHED_OTHER threads, much before that 95% cap is reached. Somewhere it  
-doesn't quite seem right. At the very very least, can we have this  
-clearly written in sched-rt-group.txt?
-
-Cheers,
-
-Ani
-
-  
