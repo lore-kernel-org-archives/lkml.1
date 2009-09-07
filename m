@@ -1,33 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752940AbZIGMhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZIGMiE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752940AbZIGMhr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 08:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZIGMhp
+	id S1753150AbZIGMiE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 08:38:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750951AbZIGMiD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 08:37:45 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:41244 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbZIGMhn (ORCPT
+	Mon, 7 Sep 2009 08:38:03 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:61234 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752577AbZIGMiA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 08:37:43 -0400
+	Mon, 7 Sep 2009 08:38:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:reply-to:to:cc:content-type:organization:date
          :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=WSCSGqV7tGsUDTAhFDrKNs/8FbZbK3SKJnHkB7SCDK+BsdNYynGcgZHeYMwJ63g7i8
-         wfh9IsfaYMoYo4FQhpr6IQjv4GkB6S8R1c9eFYo5WNR3GLnEE5R9g85CdS3NjhWrRDM8
-         updWbxj0/opCG11y7ePi0AbgM0DqGipZ0P4Ro=
-Subject: [PATCH 2/5] debugfs - Change debuhgfs directory of
-	trace-events-sample.h
+        b=Q4U+m5Ef11Ku+jQocx89HnD9Bs8Hv6WOCh27mzXuLPVwZdFzf/t2PYQLXnIbTmLWDb
+         hBgWBppj3lElX1djHhCwJXJx8+mq4H0otY72h8PMyZ5MArXmIGjeXunwbum6fTuhxLO3
+         MUd7bn/kQfmwJ2WfytNTuw1XsJnES5B0gi5e4=
+Subject: [PATCH 3/5] debugfs - Change debugfs directory of IWMC3200.
 From: GeunSik Lim <leemgs1@gmail.com>
 Reply-To: leemgs1@gmail.com
 To: Greg KH <greg@kroah.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, yi.zhu@intel.com
 Content-Type: text/plain
 Organization: Private
-Date: Mon, 07 Sep 2009 21:37:37 +0900
-Message-Id: <1252327057.2153.97.camel@centos51>
+Date: Mon, 07 Sep 2009 21:37:53 +0900
+Message-Id: <1252327073.2153.98.camel@centos51>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
@@ -37,30 +35,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
->From cca4be191d4007f0997117c5e29fa2da73081a25 Mon Sep 17 00:00:00 2001
+>From 7dcf9fd3b060ced7fa0c19d056e9aedbf74ae1d9 Mon Sep 17 00:00:00 2001
 From: GeunSik,Lim <leemgs1@gmail.com>
-Date: Mon, 7 Sep 2009 20:39:18 +0900
-Subject: [PATCH 2/5] Change debuhgfs directory of trace-events-sample.h
+Date: Mon, 7 Sep 2009 20:46:13 +0900
+Subject: [PATCH 3/5] Change debugfs directory of IWMC3200.
 
-Default directory of debug filesystem for ftrace is /sys/kernel/debug/.
+Change default debugfs directory that mount for debugging
+IWMC3200(Intel Wireless Multicomm 3200 WiFi driver).
 
-       Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+As we all know, We need change default directory for consistency of
+debugfs by Greg.K.H
+
+Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
 ---
- samples/trace_events/trace-events-sample.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/net/wireless/iwmc3200wifi/Kconfig |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/samples/trace_events/trace-events-sample.h b/samples/trace_events/trace-events-sample.h
-index f24ae37..6af3732 100644
---- a/samples/trace_events/trace-events-sample.h
-+++ b/samples/trace_events/trace-events-sample.h
-@@ -1,6 +1,6 @@
- /*
-  * If TRACE_SYSTEM is defined, that will be the directory created
-- * in the ftrace directory under /debugfs/tracing/events/<system>
-+ * in the ftrace directory under /sys/kernel/debug/tracing/events/<system>
-  *
-  * The define_trace.h below will also look for a file name of
-  * TRACE_SYSTEM.h where TRACE_SYSTEM is what is defined here.
+diff --git a/drivers/net/wireless/iwmc3200wifi/Kconfig b/drivers/net/wireless/iwmc3200wifi/Kconfig
+index 030401d..ec5379d 100644
+--- a/drivers/net/wireless/iwmc3200wifi/Kconfig
++++ b/drivers/net/wireless/iwmc3200wifi/Kconfig
+@@ -25,8 +25,8 @@ config IWM_DEBUG
+ 	  To see the list of debug modules and levels, see iwm/debug.h
+ 
+ 	  For example, if you want the full MLME debug output:
+-	  echo 0xff > /debug/iwm/phyN/debug/mlme
++	  echo 0xff > /sys/kernel/debug/iwm/phyN/debug/mlme
+ 
+ 	  Or, if you want the full debug, for all modules:
+-	  echo 0xff > /debug/iwm/phyN/debug/level
+-	  echo 0xff > /debug/iwm/phyN/debug/modules
++	  echo 0xff > /sys/kernel/debug/iwm/phyN/debug/level
++	  echo 0xff > /sys/kernel/debug/iwm/phyN/debug/modules
 -- 
 1.6.3.1
 
