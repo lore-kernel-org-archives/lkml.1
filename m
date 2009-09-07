@@ -1,55 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751584AbZIGTpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751679AbZIGTrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751584AbZIGTpc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 15:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751427AbZIGTpc
+	id S1751679AbZIGTrk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 15:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751525AbZIGTrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 15:45:32 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:60602 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751368AbZIGTpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 15:45:31 -0400
-Date: Mon, 7 Sep 2009 21:45:31 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       david@fromorbit.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH 3/8] writeback: switch to per-bdi threads for flushing
-	data v2
-Message-ID: <20090907194531.GD29103@duck.suse.cz>
-References: <1252050406-22467-1-git-send-email-jens.axboe@oracle.com> <1252050406-22467-4-git-send-email-jens.axboe@oracle.com> <20090904105403.GD19857@duck.suse.cz> <20090904115858.GT18599@kernel.dk> <20090904120407.GV18599@kernel.dk> <20090907183659.GB29103@duck.suse.cz> <20090907184517.GF18599@kernel.dk>
+	Mon, 7 Sep 2009 15:47:39 -0400
+Received: from mail-yw0-f141.google.com ([209.85.211.141]:47250 "EHLO
+	mail-yw0-f141.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbZIGTrj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 15:47:39 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090907184517.GF18599@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Date: Mon, 7 Sep 2009 12:47:41 -0700 (PDT)
+In-Reply-To: <cVZ3a-71r-5@gated-at.bofh.it>
+X-IP: 82.0.91.38
+References: <cT8cF-7kN-7@gated-at.bofh.it> <cVZ3a-71r-5@gated-at.bofh.it>
+User-Agent: G2/1.0
+X-HTTP-Via: 1.1 home (squid/3.0.STABLE8)
+X-HTTP-UserAgent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.2) 
+	Gecko/20090810 Ubuntu/9.10 (karmic) Firefox/3.5.2,gzip(gfe),gzip(gfe)
+Message-ID: <10928a87-c449-4401-8765-9e297ca13a0b@y9g2000yqn.googlegroups.com>
+Subject: Re: sdhci can turn off irq up to 200 ms
+From: Daniel J Blueman <daniel.blueman@gmail.com>
+To: Matthieu CASTET <matthieu.castet@parrot.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 07-09-09 20:45:18, Jens Axboe wrote:
-> On Mon, Sep 07 2009, Jan Kara wrote:
-> >   Hi Jens,
-> > 
-> >   now I've found just two minor things (see below). Besides them the only
-> > thing which is blocking my ack is a way to effectively lookup a BDI from a
-> > superblock so that we can reasonably effectively fsync a superblock...
-> 
-> Can we side step that as an inclusion criteria, please? I'd really like
-> to work on adding that quick lookup, but I'd also hate to potentiall
-> destabilize anything at this point. So we can probably quite easily make
-> .32 as well for that, but I'd rather not risk doing a version and
-> include that from the beginning. OK?
-  Well, for now I thought about a simple hack like a pointer to
-backing_dev_info in a superblock. That should work for every filesystem
-right now and shouldn't be too complex...
-  But if you promise you'll fix that up before 2.6.32 is released, I'm OK
-with your patch as is. I'll give your patches some testing with some less
-usual benchmarks this week and if that works out fine you have my ack.
+On Jul 9, 11:30 am, Matthieu CASTET <matthieu.cas...@parrot.com>
+wrote:
+> Matthieu CASTET a écrit :
+>
+> > Hi,
+>
+> > sdhci code got tasklets (sdhci_tasklet_card and sdhci_tasklet_finish),
+> > that does :
+> > {
+> > spin_lock_irqsave
+>
+> > if (cond) {
+> > sdhci_reset
+> > sdhci_reset
+> > }
+>
+> > spin_unlock_irqrestore
+> > }
+>
+> > The problem is that sdhci_reset [1] does busy pooling on a register up
+> > to a timeout of 100 ms.
+> > That's not low latency friendly.
+>
+> > On our system, we saw that sdhci_reset take 1 ms. That should be because
+> > we enter in mdelay, even if the hardware clears the bit faster.
+> > I wonder why there is an mdelay(1). Using cpu_relax and
+> > time_is_after_jiffies should make sdhci_reset faster.
+>
+> In case somebody cares, here a patch that reduce on our hardware
+> sdhci_reset from 1 ms to 30 us.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+On my Core2Duo, cpu_relax (implementing rep;nop) takes 3.2ns, but a
+(synchronous) read over the PCI bus takes 0.5-1us, so it's hard to say
+how much benefit the cpu_relax call will give, or am I missing
+something?
+
+If the code is reading from a memory location, or perhaps writing to
+non-writethrough memory, it's a different story.
+
+Daniel
+--
+Daniel J Blueman
