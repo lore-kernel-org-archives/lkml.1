@@ -1,254 +1,200 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752713AbZIGVlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752679AbZIGVtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752713AbZIGVlf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 17:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZIGVle
+	id S1752679AbZIGVtn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 17:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752482AbZIGVtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 17:41:34 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:22633 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752216AbZIGVld (ORCPT
+	Mon, 7 Sep 2009 17:49:43 -0400
+Received: from mail-yw0-f175.google.com ([209.85.211.175]:47626 "EHLO
+	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752368AbZIGVtm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 17:41:33 -0400
-X-Trace: 255835785/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.94.54/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.94.54
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AugEAMoapUpPRV42/2dsb2JhbACBU9dBhBgF
-X-IronPort-AV: E=Sophos;i="4.44,348,1249254000"; 
-   d="scan'208";a="255835785"
-Date: Mon, 7 Sep 2009 22:40:49 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 8/8] mm: FOLL flags for GUP flags
-In-Reply-To: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
-Message-ID: <Pine.LNX.4.64.0909072239390.15430@sister.anvils>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
+	Mon, 7 Sep 2009 17:49:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=R8m8yD/8k5v2yNbZwfUEkz+xGirnIK/HvQgdp0IhaOVUON0kgN6BcjVWAOJfjDNwUh
+         Hmu1uRtS7zcWkWpzYlnJjQxx8FvCGiszy6X7QM/46aQJbBE6Gj8bD7KY6IVOxNMIYHyc
+         9J0iEl1nbFf5qWrAsKxh0UcF8Ci6xMBCrrxgo=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4A9549E5.5020002@gmail.com>
+References: <4A8B5113.20102@cn.fujitsu.com> <1251093523.7538.118.camel@twins>
+	 <4A922F82.9080000@cn.fujitsu.com> <1251096925.7538.121.camel@twins>
+	 <4A9251EB.8040805@gmail.com>
+	 <dd18b0c30908241219mdb76311t9334929f34f2c4c3@mail.gmail.com>
+	 <20090825085919.GB14003@elte.hu> <4A94803A.5060408@gmail.com>
+	 <20090826073351.GE23435@elte.hu> <4A9549E5.5020002@gmail.com>
+Date: Mon, 7 Sep 2009 14:49:44 -0700
+Message-ID: <dd18b0c30909071449q6834e847yb0f27ec971c9564a@mail.gmail.com>
+Subject: Re: system gets stuck in a lock during boot
+From: Justin Mattock <justinmattock@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__get_user_pages() has been taking its own GUP flags, then processing
-them into FOLL flags for follow_page().  Though oddly named, the FOLL
-flags are more widely used, so pass them to __get_user_pages() now.
-Sorry, VM flags, VM_FAULT flags and FAULT_FLAGs are still distinct.
+On Wed, Aug 26, 2009 at 7:42 AM, Justin P.
+Mattock<justinmattock@gmail.com> wrote:
+> Ingo Molnar wrote:
+>>
+>> * Justin P. Mattock<justinmattock@gmail.com>  wrote:
+>>
+>>
+>>>
+>>> Ingo Molnar wrote:
+>>>
+>>>>
+>>>> * Justin Mattock<justinmattock@gmail.com>   wrote:
+>>>>
+>>>>
+>>>>
+>>>>>
+>>>>> O.K. I feel better, deleted
+>>>>> my system, and threw in a minimal built system
+>>>>> with only the bare essentials to boot.
+>>>>> (just to make sure things are correct).
+>>>>>
+>>>>> unfortunately after building rc6 I'm still hitting
+>>>>> this. really am not sure why this is happening.
+>>>>>
+>>>>>
+>>>>
+>>>> Could you please double-check the bisection result by doing this:
+>>>>
+>>>>   git revert af6af30c0f
+>>>>
+>>>> on the latest kernel and seeing whether that fixes the lockup?
+>>>>
+>>>> Bisections are very efficient and hence very sensitive as well to
+>>>> minimal errors. Just one small mistake near the end of a bisection
+>>>> can blame the wrong commit.
+>>>>
+>>>> So the best way to double-check such 100%-triggerable crashes is to
+>>>> do the revert. I tried the revert and it can be done fine here.
+>>>>
+>>>> [ _If_ that does not fix the bug then to save time you can
+>>>>     'backtrack' the bisection, instead of re-doing it completely.
+>>>>     I.e. you have your bisection log, re-check the final steps going
+>>>>     backwards. Once you find a discrepancy (i.e. a 'bad' point that
+>>>>     is 'good' or the other way around), redo the bisection log
+>>>>     commands up to that point and continue it up to the end. ]
+>>>>
+>>>>        Ingo
+>>>>
+>>>>
+>>>>
+>>>
+>>> shoot, I did not see your post here. when looking at my bisect
+>>> log, I guess after a git bisect reset it clears?
+>>>
+>>> Anyways after git bisect had finished I looked manually at the
+>>> commits that it had generated the one which I had sent in a post
+>>> previously, and this one:
+>>>
+>>>  9424edc2da097c8589fcc24a72552d33e54be161
+>>>
+>>
+>> (this commit has no effect on your kernel image, at all.)
+>>
+>>
+>
+> yep. but it was worth a try.
+>>>
+>>> at the time looking at the commit, I see this to be more of the
+>>> cause because of it being related to elf as so forth, but as soon
+>>> as I reverted this on rc6 made no difference.(the previous commit
+>>> fixes this for me, on a regular tar.ball as well as in git.
+>>>
+>>> I think at this point since this system is a fresh from scratch
+>>> build, I think something might be wrong that I'm doing (all the
+>>> CFLAGS, and such are in a previous post).
+>>>
+>>> At the moment I don't have a problem applying a patch to the
+>>> kernel for this. especially since I'm the only one that seems to
+>>> be hitting this, then if more and more reports of this happen then
+>>> we can go from there.
+>>>
+>>
+>> What would be nice is to verify your bisection end result, i.e. do
+>> what i suggested:
+>>
+>>
+>
+> yeah I've done this on both kernels three to be exact, and all boot after
+> reverting
+> Fix perf-tracepoint OOPS.
+>
+> As for my system, I'm still convinced that I might be doing something wrong
+> over here.
+>
+>>>> Could you please double-check the bisection result by doing this:
+>>>>
+>>>>   git revert af6af30c0f
+>>>>
+>>>> on the latest kernel and seeing whether that fixes the lockup?
+>>>>
+>>
+>> if this doesnt fix it on latest -git then this commit is not the
+>> cause of the lockup.
+>>
+>>        Ingo
+>>
+>>
+>
+> This commit(Fix perf-tracepoint OOPS.)does fix my stuckage, but I'm left, as
+> well as others asking
+> the question of why.
+> In any case I still think I'm setting something wrong with either gcc, or
+> something
+> that might be causing this from userland.
+>
+> Justin P. Mattock
+>
 
-(The patch to __get_user_pages() looks peculiar, with both gup_flags
-and foll_flags: the gup_flags remain constant; but as before there's
-an exceptional case, out of scope of the patch, in which foll_flags
-per page have FOLL_WRITE masked off.)
+O.k. here something awkward about this issue I was
+experiencing. at the moment I have two imac's
+here the descriptions:
 
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
----
+imac A) the one with the problem
 
- include/linux/mm.h |    1 
- mm/internal.h      |    6 -----
- mm/memory.c        |   44 ++++++++++++++++++-------------------------
- mm/mlock.c         |    4 +--
- mm/nommu.c         |   16 +++++++--------
- 5 files changed, 31 insertions(+), 40 deletions(-)
+OS: built from the clfs book
+x86_64 multilib with only lib64
 
---- mm7/include/linux/mm.h	2009-09-07 13:16:39.000000000 +0100
-+++ mm8/include/linux/mm.h	2009-09-07 13:17:07.000000000 +0100
-@@ -1248,6 +1248,7 @@ struct page *follow_page(struct vm_area_
- #define FOLL_TOUCH	0x02	/* mark page accessed */
- #define FOLL_GET	0x04	/* do get_page on page */
- #define FOLL_DUMP	0x08	/* give error on hole if it would be zero */
-+#define FOLL_FORCE	0x10	/* get_user_pages read/write w/o permission */
- 
- typedef int (*pte_fn_t)(pte_t *pte, pgtable_t token, unsigned long addr,
- 			void *data);
---- mm7/mm/internal.h	2009-09-07 13:16:39.000000000 +0100
-+++ mm8/mm/internal.h	2009-09-07 13:17:07.000000000 +0100
-@@ -250,12 +250,8 @@ static inline void mminit_validate_memmo
- }
- #endif /* CONFIG_SPARSEMEM */
- 
--#define GUP_FLAGS_WRITE		0x01
--#define GUP_FLAGS_FORCE		0x02
--#define GUP_FLAGS_DUMP		0x04
--
- int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
--		     unsigned long start, int len, int flags,
-+		     unsigned long start, int len, unsigned int foll_flags,
- 		     struct page **pages, struct vm_area_struct **vmas);
- 
- #define ZONE_RECLAIM_NOSCAN	-2
---- mm7/mm/memory.c	2009-09-07 13:17:01.000000000 +0100
-+++ mm8/mm/memory.c	2009-09-07 13:17:07.000000000 +0100
-@@ -1209,27 +1209,29 @@ no_page_table:
- }
- 
- int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
--		     unsigned long start, int nr_pages, int flags,
-+		     unsigned long start, int nr_pages, unsigned int gup_flags,
- 		     struct page **pages, struct vm_area_struct **vmas)
- {
- 	int i;
--	unsigned int vm_flags = 0;
--	int write = !!(flags & GUP_FLAGS_WRITE);
--	int force = !!(flags & GUP_FLAGS_FORCE);
-+	unsigned long vm_flags;
- 
- 	if (nr_pages <= 0)
- 		return 0;
-+
-+	VM_BUG_ON(!!pages != !!(gup_flags & FOLL_GET));
-+
- 	/* 
- 	 * Require read or write permissions.
--	 * If 'force' is set, we only require the "MAY" flags.
-+	 * If FOLL_FORCE is set, we only require the "MAY" flags.
- 	 */
--	vm_flags  = write ? (VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
--	vm_flags &= force ? (VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
-+	vm_flags  = (gup_flags & FOLL_WRITE) ?
-+			(VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
-+	vm_flags &= (gup_flags & FOLL_FORCE) ?
-+			(VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
- 	i = 0;
- 
- 	do {
- 		struct vm_area_struct *vma;
--		unsigned int foll_flags;
- 
- 		vma = find_extend_vma(mm, start);
- 		if (!vma && in_gate_area(tsk, start)) {
-@@ -1241,7 +1243,7 @@ int __get_user_pages(struct task_struct
- 			pte_t *pte;
- 
- 			/* user gate pages are read-only */
--			if (write)
-+			if (gup_flags & FOLL_WRITE)
- 				return i ? : -EFAULT;
- 			if (pg > TASK_SIZE)
- 				pgd = pgd_offset_k(pg);
-@@ -1278,22 +1280,15 @@ int __get_user_pages(struct task_struct
- 		    !(vm_flags & vma->vm_flags))
- 			return i ? : -EFAULT;
- 
--		foll_flags = FOLL_TOUCH;
--		if (pages)
--			foll_flags |= FOLL_GET;
--		if (flags & GUP_FLAGS_DUMP)
--			foll_flags |= FOLL_DUMP;
--		if (write)
--			foll_flags |= FOLL_WRITE;
--
- 		if (is_vm_hugetlb_page(vma)) {
- 			i = follow_hugetlb_page(mm, vma, pages, vmas,
--					&start, &nr_pages, i, foll_flags);
-+					&start, &nr_pages, i, gup_flags);
- 			continue;
- 		}
- 
- 		do {
- 			struct page *page;
-+			unsigned int foll_flags = gup_flags;
- 
- 			/*
- 			 * If we have a pending SIGKILL, don't keep faulting
-@@ -1302,9 +1297,6 @@ int __get_user_pages(struct task_struct
- 			if (unlikely(fatal_signal_pending(current)))
- 				return i ? i : -ERESTARTSYS;
- 
--			if (write)
--				foll_flags |= FOLL_WRITE;
--
- 			cond_resched();
- 			while (!(page = follow_page(vma, start, foll_flags))) {
- 				int ret;
-@@ -1416,12 +1408,14 @@ int get_user_pages(struct task_struct *t
- 		unsigned long start, int nr_pages, int write, int force,
- 		struct page **pages, struct vm_area_struct **vmas)
- {
--	int flags = 0;
-+	int flags = FOLL_TOUCH;
- 
-+	if (pages)
-+		flags |= FOLL_GET;
- 	if (write)
--		flags |= GUP_FLAGS_WRITE;
-+		flags |= FOLL_WRITE;
- 	if (force)
--		flags |= GUP_FLAGS_FORCE;
-+		flags |= FOLL_FORCE;
- 
- 	return __get_user_pages(tsk, mm, start, nr_pages, flags, pages, vmas);
- }
-@@ -1448,7 +1442,7 @@ struct page *get_dump_page(unsigned long
- 	struct page *page;
- 
- 	if (__get_user_pages(current, current->mm, addr, 1,
--			GUP_FLAGS_FORCE | GUP_FLAGS_DUMP, &page, &vma) < 1)
-+			FOLL_FORCE | FOLL_DUMP | FOLL_GET, &page, &vma) < 1)
- 		return NULL;
- 	if (page == ZERO_PAGE(0)) {
- 		page_cache_release(page);
---- mm7/mm/mlock.c	2009-09-07 13:16:15.000000000 +0100
-+++ mm8/mm/mlock.c	2009-09-07 13:17:07.000000000 +0100
-@@ -166,9 +166,9 @@ static long __mlock_vma_pages_range(stru
- 	VM_BUG_ON(end   > vma->vm_end);
- 	VM_BUG_ON(!rwsem_is_locked(&mm->mmap_sem));
- 
--	gup_flags = 0;
-+	gup_flags = FOLL_TOUCH | FOLL_GET;
- 	if (vma->vm_flags & VM_WRITE)
--		gup_flags = GUP_FLAGS_WRITE;
-+		gup_flags |= FOLL_WRITE;
- 
- 	while (nr_pages > 0) {
- 		int i;
---- mm7/mm/nommu.c	2009-09-07 13:16:22.000000000 +0100
-+++ mm8/mm/nommu.c	2009-09-07 13:17:07.000000000 +0100
-@@ -128,20 +128,20 @@ unsigned int kobjsize(const void *objp)
- }
- 
- int __get_user_pages(struct task_struct *tsk, struct mm_struct *mm,
--		     unsigned long start, int nr_pages, int flags,
-+		     unsigned long start, int nr_pages, int foll_flags,
- 		     struct page **pages, struct vm_area_struct **vmas)
- {
- 	struct vm_area_struct *vma;
- 	unsigned long vm_flags;
- 	int i;
--	int write = !!(flags & GUP_FLAGS_WRITE);
--	int force = !!(flags & GUP_FLAGS_FORCE);
- 
- 	/* calculate required read or write permissions.
--	 * - if 'force' is set, we only require the "MAY" flags.
-+	 * If FOLL_FORCE is set, we only require the "MAY" flags.
- 	 */
--	vm_flags  = write ? (VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
--	vm_flags &= force ? (VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
-+	vm_flags  = (foll_flags & FOLL_WRITE) ?
-+			(VM_WRITE | VM_MAYWRITE) : (VM_READ | VM_MAYREAD);
-+	vm_flags &= (foll_flags & FOLL_FORCE) ?
-+			(VM_MAYREAD | VM_MAYWRITE) : (VM_READ | VM_WRITE);
- 
- 	for (i = 0; i < nr_pages; i++) {
- 		vma = find_vma(mm, start);
-@@ -183,9 +183,9 @@ int get_user_pages(struct task_struct *t
- 	int flags = 0;
- 
- 	if (write)
--		flags |= GUP_FLAGS_WRITE;
-+		flags |= FOLL_WRITE;
- 	if (force)
--		flags |= GUP_FLAGS_FORCE;
-+		flags |= FOLL_FORCE;
- 
- 	return __get_user_pages(tsk, mm, start, nr_pages, flags, pages, vmas);
- }
+built everything with these flags:
+CFLAGS="-m64 -mtune=core2 -march=core2
+-mfpmath=both -O2 -pipe -fomit-frame-pointer
+-fstack-protection"
+CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
+while compiling everything with
+gcc version: 4.5.0 20090730
+
+
+imac B) the one that works
+
+OS: clfs(just built a few days ago)
+x86_64 pure64 bit build
+(lib with a symlink to lib64)
+CFLAGS="-m64 -mtune=core2 -march=core2
+ -O2 -pipe -fomit-frame-pointer"
+CXXFLAGS="${CFLAGS}" MAKEOPTS="{-j3}"
+gcc version: 4.4.1 (GCC for Cross-LFS 4.4.1.20090722)
+
+The only things I can think of is either I hit something
+because of gcc, something goes wrong with the libraries,
+or there something happening with either the option
+of mfpmath=both or stackprotection.
+
+At this point since the kernel seems to be running fine,
+is to just trash the system that has this issue and just leave
+it at, I was hitting some weird anomaly.
+
+
+-- 
+Justin P. Mattock
