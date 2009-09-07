@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758810AbZIGDJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758832AbZIGDKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758810AbZIGDJm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758731AbZIGDJl
+	id S1758832AbZIGDKV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 23:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758772AbZIGDKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:09:41 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60685 "EHLO
+	Sun, 6 Sep 2009 23:10:19 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60810 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758697AbZIGDJk (ORCPT
+	by vger.kernel.org with ESMTP id S1758761AbZIGDKP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:09:40 -0400
+	Sun, 6 Sep 2009 23:10:15 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Cleanup linker script using new linker script macros.
-Date: Sun,  6 Sep 2009 23:09:01 -0400
-Message-Id: <1252292941-12903-1-git-send-email-tabbott@ksplice.com>
+       Kyle McMartin <kyle@mcmartin.ca>, Helge Deller <deller@gmx.de>,
+       linux-parisc@vger.kernel.org
+Subject: [PATCH 1/2] parisc: Clean up linker script using new linker script macros.
+Date: Sun,  6 Sep 2009 23:09:41 -0400
+Message-Id: <1252292982-12969-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
@@ -25,157 +25,149 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch has the (likely harmless) side effect of moving
+.data.init_task inside the _edata.
+
+It also changes the alignment of .data.init_task from 16384 to
+THREAD_SIZE, which can in some configurations be larger than 16384.  I
+believe that this change fixes a potential bug on those
+configurations.
+
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Cc: Kyle McMartin <kyle@mcmartin.ca>
+Cc: Helge Deller <deller@gmx.de>
+Cc: linux-parisc@vger.kernel.org
 Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/powerpc/kernel/vmlinux.lds.S |   69 ++++++++-----------------------------
- 1 files changed, 15 insertions(+), 54 deletions(-)
+ arch/parisc/kernel/vmlinux.lds.S |   79 ++------------------------------------
+ 1 files changed, 4 insertions(+), 75 deletions(-)
 
-diff --git a/arch/powerpc/kernel/vmlinux.lds.S b/arch/powerpc/kernel/vmlinux.lds.S
-index 8ef8a14..c5e176c 100644
---- a/arch/powerpc/kernel/vmlinux.lds.S
-+++ b/arch/powerpc/kernel/vmlinux.lds.S
-@@ -6,6 +6,7 @@
- #include <asm/page.h>
- #include <asm-generic/vmlinux.lds.h>
- #include <asm/cache.h>
-+#include <asm/thread_info.h>
- 
- ENTRY(_stext)
- 
-@@ -77,12 +78,7 @@ SECTIONS
- 	/* Read-only data */
- 	RODATA
- 
--	/* Exception & bug tables */
--	__ex_table : AT(ADDR(__ex_table) - LOAD_OFFSET) {
+diff --git a/arch/parisc/kernel/vmlinux.lds.S b/arch/parisc/kernel/vmlinux.lds.S
+index fd2cc4f..b2916d8 100644
+--- a/arch/parisc/kernel/vmlinux.lds.S
++++ b/arch/parisc/kernel/vmlinux.lds.S
+@@ -77,13 +77,7 @@ SECTIONS
+ 	 */
+ 	. = ALIGN(PAGE_SIZE);
+ 	data_start = .;
+-	. = ALIGN(16);
+-	/* Exception table */
+-	__ex_table : {
 -		__start___ex_table = .;
 -		*(__ex_table)
 -		__stop___ex_table = .;
 -	}
-+	EXCEPTION_TABLE(0)
++	EXCEPTION_TABLE(16)
  
- 	NOTES :kernel :notes
+ 	NOTES
  
-@@ -99,12 +95,7 @@ SECTIONS
-  */
- 	. = ALIGN(PAGE_SIZE);
- 	__init_begin = .;
+@@ -94,23 +88,8 @@ SECTIONS
+ 		__stop___unwind = .;
+ 	}
+ 
+-	/* rarely changed data like cpu maps */
+-	. = ALIGN(16);
+-	.data.read_mostly : {
+-		*(.data.read_mostly)
+-	}
 -
--	.init.text : AT(ADDR(.init.text) - LOAD_OFFSET) {
+-	. = ALIGN(L1_CACHE_BYTES);
+ 	/* Data */
+-	.data : {
+-		DATA_DATA
+-		CONSTRUCTORS
+-	}
+-
+-	. = ALIGN(L1_CACHE_BYTES);
+-	.data.cacheline_aligned : {
+-		*(.data.cacheline_aligned)
+-	}
++	RW_DATA_SECTION(L1_CACHE_BYTES, PAGE_SIZE, THREAD_SIZE)
+ 
+ 	/* PA-RISC locks requires 16-byte alignment */
+ 	. = ALIGN(16);
+@@ -118,17 +97,6 @@ SECTIONS
+ 		*(.data.lock_aligned)
+ 	}
+ 
+-	/* nosave data is really only used for software suspend...it's here
+-	 * just in case we ever implement it
+-	 */
+-	. = ALIGN(PAGE_SIZE);
+-	__nosave_begin = .;
+-	.data_nosave : {
+-		*(.data.nosave)
+-	}
+-	. = ALIGN(PAGE_SIZE);
+-	__nosave_end = .;
+-
+ 	/* End of data section */
+ 	_edata = .;
+ 
+@@ -147,14 +115,6 @@ SECTIONS
+ 	}
+ 	__bss_stop = .;
+ 
+-
+-	/* assembler code expects init_task to be 16k aligned */
+-	. = ALIGN(16384);
+-	/* init_task */
+-	.data.init_task : {
+-		*(.data.init_task)
+-	}
+-
+ #ifdef CONFIG_64BIT
+ 	. = ALIGN(16);
+ 	/* Linkage tables */
+@@ -172,31 +132,8 @@ SECTIONS
+ 	/* reserve space for interrupt stack by aligning __init* to 16k */
+ 	. = ALIGN(16384);
+ 	__init_begin = .;
+-	.init.text : { 
 -		_sinittext = .;
 -		INIT_TEXT
 -		_einittext = .;
--	} :kernel
-+	INIT_TEXT_SECTION(PAGE_SIZE) :kernel
- 
- 	/* .exit.text is discarded at runtime, not link time,
- 	 * to deal with references from __bug_table
-@@ -128,23 +119,16 @@ SECTIONS
- #endif
- 	}
- 
+-	}
+-	.init.data : {
+-		INIT_DATA
+-	}
 -	. = ALIGN(16);
- 	.init.setup : AT(ADDR(.init.setup) - LOAD_OFFSET) {
+-	.init.setup : {
 -		__setup_start = .;
 -		*(.init.setup)
 -		__setup_end = .;
-+		INIT_SETUP(16)
- 	}
- 
- 	.initcall.init : AT(ADDR(.initcall.init) - LOAD_OFFSET) {
+-	}
+-	.initcall.init : {
 -		__initcall_start = .;
 -		INITCALLS
 -		__initcall_end = .;
--		}
-+		INIT_CALLS
-+	}
- 
- 	.con_initcall.init : AT(ADDR(.con_initcall.init) - LOAD_OFFSET) {
+-	}
+-	.con_initcall.init : {
 -		__con_initcall_start = .;
 -		*(.con_initcall.init)
 -		__con_initcall_end = .;
-+		CON_INITCALL
- 	}
+-	}
+-	SECURITY_INIT
++	INIT_TEXT_SECTION(16384)
++	INIT_DATA_SECTION(16)
  
- 	SECURITY_INIT
-@@ -175,14 +159,10 @@ SECTIONS
- 		__stop___fw_ftr_fixup = .;
+ 	/* alternate instruction replacement.  This is a mechanism x86 uses
+ 	 * to detect the CPU type and replace generic instruction sequences
+@@ -222,14 +159,6 @@ SECTIONS
+ 	.exit.data : {
+ 		EXIT_DATA
  	}
- #endif
 -#ifdef CONFIG_BLK_DEV_INITRD
 -	. = ALIGN(PAGE_SIZE);
- 	.init.ramfs : AT(ADDR(.init.ramfs) - LOAD_OFFSET) {
+-	.init.ramfs : {
 -		__initramfs_start = .;
 -		*(.init.ramfs)
 -		__initramfs_end = .;
-+		INIT_RAM_FS
- 	}
--#endif
-+
- 	PERCPU(PAGE_SIZE)
- 
- 	. = ALIGN(8);
-@@ -250,50 +230,31 @@ SECTIONS
- 	PROVIDE32 (edata = .);
- 
- 	/* The initial task and kernel stack */
--#ifdef CONFIG_PPC32
--	. = ALIGN(8192);
--#else
--	. = ALIGN(16384);
--#endif
- 	.data.init_task : AT(ADDR(.data.init_task) - LOAD_OFFSET) {
--		*(.data.init_task)
-+		INIT_TASK_DATA(THREAD_SIZE)
- 	}
- 
--	. = ALIGN(PAGE_SIZE);
- 	.data.page_aligned : AT(ADDR(.data.page_aligned) - LOAD_OFFSET) {
--		*(.data.page_aligned)
-+		PAGE_ALIGNED_DATA(PAGE_SIZE)
- 	}
- 
--	. = ALIGN(L1_CACHE_BYTES);
- 	.data.cacheline_aligned : AT(ADDR(.data.cacheline_aligned) - LOAD_OFFSET) {
--		*(.data.cacheline_aligned)
-+		CACHELINE_ALIGNED_DATA(L1_CACHE_BYTES)
- 	}
- 
--	. = ALIGN(L1_CACHE_BYTES);
- 	.data.read_mostly : AT(ADDR(.data.read_mostly) - LOAD_OFFSET) {
--		*(.data.read_mostly)
-+		READ_MOSTLY_DATA(L1_CACHE_BYTES)
- 	}
- 
--	. = ALIGN(PAGE_SIZE);
- 	.data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
--		__nosave_begin = .;
--		*(.data.nosave)
--		. = ALIGN(PAGE_SIZE);
--		__nosave_end = .;
-+		NOSAVE_DATA
- 	}
- 
- /*
-  * And finally the bss
-  */
- 
--	.bss : AT(ADDR(.bss) - LOAD_OFFSET) {
--		__bss_start = .;
--		*(.sbss) *(.scommon)
--		*(.dynbss)
--		*(.bss)
--		*(COMMON)
--		__bss_stop = .;
 -	}
-+	BSS_SECTION(0, 0, 0)
+-#endif
  
+ 	PERCPU(PAGE_SIZE)
  	. = ALIGN(PAGE_SIZE);
- 	_end = . ;
 -- 
 1.6.3.3
 
