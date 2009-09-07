@@ -1,74 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753442AbZIGOIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbZIGGeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753442AbZIGOIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZIGOIT
+	id S1759019AbZIGGeu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 02:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbZIGGet
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:08:19 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:44273 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753213AbZIGOIS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:08:18 -0400
-Message-ID: <4AA513AA.3010206@nokia.com>
-Date: Mon, 07 Sep 2009 17:07:38 +0300
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: chris.mason@oracle.com, david@fromorbit.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [RFC][PATCH] mm: write_cache_pages be more sequential
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 Sep 2009 14:07:13.0188 (UTC) FILETIME=[7F73EE40:01CA2FC4]
+	Mon, 7 Sep 2009 02:34:49 -0400
+Received: from mga01.intel.com ([192.55.52.88]:15810 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758954AbZIGGet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 02:34:49 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,344,1249282800"; 
+   d="scan'208";a="491119478"
+Date: Mon, 7 Sep 2009 10:13:13 -0400
+From: Youquan Song <youquan.song@intel.com>
+To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       Suresh Siddha <suresh.b.siddha@intel.com>, youqun.song@intel.com
+Subject: Fix interrupt remapping hang if interrupt remapping disable in BIOS
+Message-ID: <20090907141313.GA26091@youquan-linux.bj.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 6f3bb7c26936c45d810048f59c369e8d5a5623fc Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Mon, 7 Sep 2009 10:49:11 +0300
-Subject: [PATCH] mm: write_cache_pages be more sequential
+BIOS clear DMAR table INTR_REMAP flag to disable interrupt remapping. Current
+kernel only check interrupt remapping(IR) flag in DRHD's extended capability 
+register to decide interrupt remapping support or not. But IR flag will not 
+affected by BIOS setting. 
 
-If a file is written to sequentially, then writeback
-should write the pages sequentially also.  However,
-that does not always happen.  For example:
+So though BIOS disable interrupt remapping feature, However, 
+intr_remapping_supported function will report interrupt supported. On this 
+cases, it will continue to enable interrupt remapping result kernel hang. 
+This bug exists on most platforms support interrupt remapping.      
 
-1) user writes pages 0, 1 and 2 but 2 is incomplete
-2) write_cache_pages writes pages 0, 1 and 2 and sets
-writeback_index to 3
-3) user finishes writing page 2 and writes pages 3 and 4
-4) write_cache_pages writes pages 3 and 4, and then cycles
-back and writes page 2 again.
+This patch add DMAR table INTR_REMAP flag check before enable interrup remapping
 
-So the pages are written out in the order 0, 1, 2, 3 ,4 ,2
-instead of 0, 1, 2, 2, 3, 4.
-
-This situation was noticed on UBIFS because it writes
-directly from writepage.  Hence if there is an unexpected
-power-loss, a file will end up with a hole even though
-the file was written sequentially by the user.
-
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+Signed-off-by: Youquan Song <youquan.song@intel.com>
 ---
- mm/page-writeback.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 81627eb..7410b7a 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -960,6 +960,8 @@ int write_cache_pages(struct address_space *mapping,
- 	pagevec_init(&pvec, 0);
- 	if (wbc->range_cyclic) {
- 		writeback_index = mapping->writeback_index; /* prev offset */
-+		if (writeback_index)
-+			writeback_index -= 1;
- 		index = writeback_index;
- 		if (index == 0)
- 			cycled = 1;
--- 
-1.5.6.3
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index a8a4383..78f4ca8 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -43,7 +43,7 @@
+  */
+ LIST_HEAD(dmar_drhd_units);
+ 
+-static struct acpi_table_header * __initdata dmar_tbl;
++struct acpi_table_header * __initdata dmar_tbl;
+ static acpi_size dmar_tbl_size;
+ 
+ static void __init dmar_register_drhd_unit(struct dmar_drhd_unit *drhd)
+diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
+index ebfa47b..97d1561 100644
+--- a/drivers/pci/intr_remapping.c
++++ b/drivers/pci/intr_remapping.c
+@@ -16,6 +16,7 @@
+ static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
+ static int ir_ioapic_num;
+ int intr_remapping_enabled;
++extern struct acpi_table_header *__initdata dmar_tbl;
+ 
+ static int disable_intremap;
+ static __init int setup_nointremap(char *str)
+@@ -607,9 +608,14 @@ end:
+ int __init intr_remapping_supported(void)
+ {
+ 	struct dmar_drhd_unit *drhd;
+-
++	struct acpi_table_dmar *dmar;
++
+ 	if (disable_intremap)
+ 		return 0;
++
++	dmar = (struct acpi_table_dmar *)dmar_tbl;
++	if (!(dmar->flags & 0x1))
++		return 0;
+ 
+ 	for_each_drhd_unit(drhd) {
+ 		struct intel_iommu *iommu = drhd->iommu;
