@@ -1,57 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZIGPRw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753836AbZIGPSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZIGPRw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 11:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZIGPRw
+	id S1753836AbZIGPSs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 11:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZIGPSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 11:17:52 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:56276 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753679AbZIGPRv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 11:17:51 -0400
-Date: Mon, 7 Sep 2009 16:17:27 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Joe Perches <joe@perches.com>,
-       wanzongshun <mcuos.com@gmail.com>
-Subject: Re: linux-next: manual merge of the trivial tree with the arm tree
-Message-ID: <20090907151727.GD6538@flint.arm.linux.org.uk>
-References: <20090907163201.72adc3f6.sfr@canb.auug.org.au> <alpine.LNX.2.00.0909071713210.23856@wotan.suse.de>
+	Mon, 7 Sep 2009 11:18:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:33914 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753669AbZIGPSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 11:18:47 -0400
+Date: Mon, 7 Sep 2009 17:18:44 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Michal Hocko <mhocko@suse.cz>, Ingo Molnar <mingo@redhat.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       "H . Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] x86: increase MIN_GAP to include randomized stack
+In-Reply-To: <1252057020-5207-1-git-send-email-mhocko@suse.cz>
+Message-ID: <alpine.LNX.2.00.0909071717130.23856@wotan.suse.de>
+References: <1252057020-5207-1-git-send-email-mhocko@suse.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0909071713210.23856@wotan.suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 05:14:38PM +0200, Jiri Kosina wrote:
-> On Mon, 7 Sep 2009, Stephen Rothwell wrote:
-> 
-> > Today's linux-next merge of the trivial tree got a conflict in
-> > arch/arm/mach-w90x900/w90p910.c between commit
-> > 35c9221acb133ecc9abd701a1fb6fa909d177a77 ("ARM: 5682/1: Add cpu.c and
-> > dev.c and modify some files of w90p910 platform") from the arm tree and
-> > commit 6f8fadf4a5c43f9f10f1910c71d8d9ff0b0a26ca ("trivial: remove
-> > unnecessary semicolons") from the trivial tree.
-> > 
-> > The former commit moved the code changed by the latter into a different
-> > file (arch/arm/mach-w90x900/cpu.c - and removed the old file).  Its not
-> > important enough to fix it there (so I just removed this file), but maybe
-> > the part of the trivial commit touching this file could be sent to the
-> > arm maintainer.
-> 
-> Sure, here we go. Russel, could you please apply this on top of your 
-> current tree? (I have already dropped the bits touching arch/arm from 
-> trivial queue). Thanks.
+On Fri, 4 Sep 2009, Michal Hocko wrote:
 
-I'll have to split it up further, since I keep each platform class who
-choses to send their stuff via me in separate branches.
+> Currently we are not including randomized stack size when calculating
+> mmap_base address in arch_pick_mmap_layout for topdown case. This might
+> cause that mmap_base starts in the stack reserved area because stack is
+> randomized by 1GB for 64b (8MB for 32b) and the minimum gap is 128MB.
+> 
+> If the stack really grows down to mmap_base then we can get silent mmap
+> region overwrite by the stack values.
+> 
+> Let's include maximum stack randomization size into MIN_GAP which is
+> used as the low bound for the gap in mmap.
+> 
+> Signed-off-by: Michal Hocko <mhocko@suse.cz>
+> ---
+>  arch/x86/mm/mmap.c |   21 +++++++++++++++++++--
+>  1 files changed, 19 insertions(+), 2 deletions(-)
+> 
+> I wasn't sure about STACK_RND_MASK because it is defined also in 
+> arch/x86/include/asm/elf.h and I couldn't find a common header file for 
+> both of them. If you have any idea I would like to help with that.
+> Or should we just let it for later cleanup?
+
+What will break if we include <asm/elf.h> from mmap.c?
+
+> I think that this is also stable material and I will repost it to 
+> stable@kernel.org once you ack it.
+> 
+> Changes from v1:
+> Fixed unsigned int overflow in MIN_GAP calculation.
+> 
+> 
+> diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
+> index 1658296..ac41955 100644
+> --- a/arch/x86/mm/mmap.c
+> +++ b/arch/x86/mm/mmap.c
+> @@ -30,12 +30,29 @@
+>  #include <linux/limits.h>
+>  #include <linux/sched.h>
+>  
+> +/* 1GB for 64bit, 8MB for 32bit definition taken from arch/x86/include/asm/elf.h */
+> +#ifndef STACK_RND_MASK
+> +#define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
+> +#endif
+> +
+> +static unsigned int stack_maxrandom_size(void)
+> +{
+> +	unsigned int max = 0;
+> +	if ((current->flags & PF_RANDOMIZE) &&
+> +		!(current->personality & ADDR_NO_RANDOMIZE)) {
+> +		max = ((-1U) & STACK_RND_MASK) << PAGE_SHIFT;
+> +	}
+> +
+> +	return max;
+> +}
+> +
+> +
+>  /*
+>   * Top of mmap area (just below the process stack).
+>   *
+> - * Leave an at least ~128 MB hole.
+> + * Leave an at least ~128 MB hole with possible stack randomization.
+>   */
+> -#define MIN_GAP (128*1024*1024)
+> +#define MIN_GAP (128*1024*1024UL + stack_maxrandom_size())
+>  #define MAX_GAP (TASK_SIZE/6*5)
+
+Apart from doubling the STACK_RND_MASK definition
+
+	Acked-by: Jiri Kosina <jkosina@suse.cz>
+
+Thanks,
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Jiri Kosina
+SUSE Labs
