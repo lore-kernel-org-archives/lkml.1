@@ -1,120 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753185AbZIGLeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbZIGLft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753185AbZIGLeb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 07:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752952AbZIGLea
+	id S1753159AbZIGLft (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 07:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZIGLfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 07:34:30 -0400
-Received: from ns.penguin.cz ([84.21.108.25]:60579 "EHLO ns.penguin.cz"
+	Mon, 7 Sep 2009 07:35:48 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53240 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752684AbZIGLea (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 07:34:30 -0400
-Subject: Re: Zaurus suspend saga
-From: Stanislav Brabec <utx@penguin.cz>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, Richard Purdie <rpurdie@rpsys.net>,
-       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
-       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
-       thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-In-Reply-To: <20090907110307.GK23450@elf.ucw.cz>
-References: <20090906052653.GB1324@ucw.cz>
-	 <1252276145.17852.15.camel@dax.rpnet.com>
-	 <f17812d70909061806y651c390w1faa5364f0fb6ddc@mail.gmail.com>
-	 <20090907110307.GK23450@elf.ucw.cz>
-Content-Type: text/plain
-Date: Mon, 07 Sep 2009 13:34:29 +0200
-Message-Id: <1252323270.14911.20.camel@hammer.suse.cz>
+	id S1752988AbZIGLfs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 07:35:48 -0400
+Date: Mon, 7 Sep 2009 13:35:49 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Eric Paris <eparis@redhat.com>
+Cc: Eric Paris <eparis@parisplace.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 09/33] fs: dcache scale dentry refcount
+Message-ID: <20090907113549.GA19521@wotan.suse.de>
+References: <20090904065142.114706411@nick.local0.net> <20090904065535.281876981@nick.local0.net> <7e0fb38c0909061101t6b4f337cvf691814c28bcf50e@mail.gmail.com> <20090907074431.GH1875@wotan.suse.de> <1252322481.2367.7.camel@dhcp231-106.rdu.redhat.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.27.90 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252322481.2367.7.camel@dhcp231-106.rdu.redhat.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-
-> Yep, zaurus is currently pretty broken; I don't think charging from
-> Linux works at all, so I simply power down back to bootloader for
-> charge.
+On Mon, Sep 07, 2009 at 07:21:21AM -0400, Eric Paris wrote:
+> On Mon, 2009-09-07 at 09:44 +0200, Nick Piggin wrote:
+> > On Sun, Sep 06, 2009 at 02:01:05PM -0400, Eric Paris wrote:
+> > > On Fri, Sep 4, 2009 at 2:51 AM, <npiggin@suse.de> wrote:
+> > > 
+> > > And yet in this case we do check for dentry->d_parent == dentry.  (my
+> > > unknowing self thinks we'd want to check in all places)
+> > 
+> > I think you're right, I think we need checks there too...
+> > 
+> > BTW Is there a way to test the fsnotify code? I thought inotify was
+> > supposed to be implemented with fsnotify, but I see quite a lot
+> > of duplicated (or very similar) code... We've also still got
+> > inotify calls in fs/ (inotify_umount_inodes). and CONFIG_INOTIFY and
+> > CONFIG_FSNOTIFY conditionals in there too. Would it be possible to
+> > move that out into fsnotify calls? (fsnotify_inode_init_once or
+> > whatever).
+> > 
+> > (Sorry to hijack your good review comments :))
 > 
-> Anyway, suspend/resume is currently more important for me than charge,
-> and I'd like to get at least that to work.
-> 
-> Could we apply the trivial patch from "zaurus c3000 aka spitz: fix
-> resume" , and preferably push it to linus for 2.6.31? One version
-> where kernel suspends/resumes would be good. 
+> Actually inotify.c in linux-next is dead code which I plan to remove
+> in .32.  In .31 inotify.c is used by the audit subsystem but inotify as
+> seen by userspace is implemented on top of fsnotify.
 
-I vote for applying Pavel's patch, as it fixes suspend/resume. Emergency
-suspend may happen later, when SPI will be fully resumed. If future
-fixes provide early SPI resume, then this patch may be reverted.
-
-Tested-by: Stanislav Brabec <utx@penguin.cz>
-
-...
-
-Remaining Zaurus SL-C3200 problems in the current vanilla (regressions
-are compared with 2.6.26-RP):
+Ah, fine. That explains why I had the check in fsnotify but not inotify.
 
 
-Offline charging. (regression)
+> I'll try to pull down the whole patch series and test for any problems.
 
-Offline charging does not work.
+I guess I should make it available as a git tree or at least a
+patch rollup. People have spotted a few problems and I've found
+a few more in testing more filesystems, so maybe hold off testing
+and I'll get something newer out soon. It would be very appreciated
+though.
 
-Richard provided exact analysis of the problem.
-
-
-Serial after resume. (regression)
-
-Resume on serial port does not work. Reason unknown.
-
-
-Call eject on HDD CF slot, then access. (probably in all kernels)
-
-Instead of an error, it causes overwriting of partition table. It does
-never happen in a normal work.
-
-
-USB host does not work (regression), USB OTG switching is not
-implemented (not yet implemented)
-
-Reason unknown, but it may be caused by a lacking or incomplete platform
-description.
-
-
-Noisy touchscreen. (at least partially regression)
-
-Touchscreen is noisy. I the latest versions, it even reads intermediate
-values before the new value settles.
-
-Possible fix: Do not read hundreds times in second, but only once in the
-gap between two display refreshes.
-
-
-Bad MTD partition table. (not yet implemented)
-
-SL-C3100 and SL-C3200 differs in the NAND partition table. To get a
-correct table, NAND config has to be read. Andrea Adami works on
-kexecboot, that will be able to provide the NAND-configured table
-instead of guessing using hardwired model->partition table list.
-
-
-Missing driver for remote. (outside vanilla tree)
-
-The driver exists outside the kernel tree, but it's ugly. I plan to
-finish my "resistor matrix keyboard device" driver.
-
-
-Sound codec on low frequencies. (not yet tested in 2.6.31)
-
-It works, but sound is very distorted.
-
-Possible reason: bad timing of chip auto suspend
-
-
--- 
-Stanislav Brabec
-http://www.penguin.cz/~utx
+Thanks,
+Nick
 
