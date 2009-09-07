@@ -1,123 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbZIGNK0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbZIGNL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753121AbZIGNK0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 09:10:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751863AbZIGNK0
+	id S1753183AbZIGNL6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 09:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZIGNL5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 09:10:26 -0400
-Received: from ns.penguin.cz ([84.21.108.25]:34149 "EHLO ns.penguin.cz"
+	Mon, 7 Sep 2009 09:11:57 -0400
+Received: from thunk.org ([69.25.196.29]:44360 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751483AbZIGNKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 09:10:25 -0400
-Subject: Re: Zaurus suspend saga
-From: Stanislav Brabec <utx@penguin.cz>
+	id S1751446AbZIGNL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 09:11:56 -0400
+Date: Mon, 7 Sep 2009 09:10:26 -0400
+From: Theodore Tso <tytso@mit.edu>
 To: Pavel Machek <pavel@ucw.cz>
-Cc: Richard Purdie <rpurdie@rpsys.net>, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-In-Reply-To: <20090907113132.GM23450@elf.ucw.cz>
-References: <20090906052653.GB1324@ucw.cz>
-	 <1252276145.17852.15.camel@dax.rpnet.com>
-	 <20090907113132.GM23450@elf.ucw.cz>
-Content-Type: text/plain; charset="ISO-8859-2"
-Date: Mon, 07 Sep 2009 15:10:25 +0200
-Message-Id: <1252329025.1861.6.camel@hammer.suse.cz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.90 
-Content-Transfer-Encoding: 8bit
+Cc: Ric Wheeler <rwheeler@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+       Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
+       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
+       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
+       Florian Weimer <fweimer@bfk.de>,
+       Goswin von Brederlow <goswin-v-b@web.de>,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org, corbet@lwn.net
+Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe
+	width, writes in storage
+Message-ID: <20090907131026.GC32427@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
+	Ric Wheeler <rwheeler@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
+	Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
+	Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
+	NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
+	Florian Weimer <fweimer@bfk.de>,
+	Goswin von Brederlow <goswin-v-b@web.de>,
+	kernel list <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
+	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+	linux-ext4@vger.kernel.org, corbet@lwn.net
+References: <4A9BCDFE.50008@rtr.ca> <20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com> <m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com> <m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com> <m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com> <20090907114534.GP23450@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090907114534.GP23450@elf.ucw.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote: 
+On Mon, Sep 07, 2009 at 01:45:34PM +0200, Pavel Machek wrote:
 > 
-> > Sadly lack of time means I've lost track of the Zaurus kernels but this
-> > sounds like all accesses to the SSP buses now go through the SPI layer
-> > and when it was converted nobody thought about the impact this would
-> > have on the Zaurus charger code.
->
->Unfortunately... Do you have any idea when this conversion took place?
+> Yes, but ext3 was designed to handle the partial write  (according to
+> tytso).
 
-In past, MAX1111 driver was embedded in the Zaurus specific code. Now
-MAX1111 is a generic SPI driver and spitz_pm.c calls it.
+I'm not sure what made you think that I said that.  In practice things
+usually work out, as a conseuqence of the fact that ext3 uses physical
+block journaling, but it's not perfect, becase...
 
-Maybe it will still work with CONFIG_CORGI_SSP_DEPRECATED.
-
-> > c) We rip the whole thing out and stop supporting "offline" charging.
+> > Also, when you enable the write cache (MD or not) you are buffering 
+> > multiple MB's of data that can go away on power loss. Far greater (10x) 
+> > the exposure that the partial RAID rewrite case worries about.
 > 
-> How much faster is offline charge, compared to online charging? I have
-> impression that online charging basically does not charge anything...
+> Yes, that's what barriers are for. Except that they are not there on
+> MD0/MD5/MD6. They actually work on local sata drives...
 
-I think that online charging works, but it seems to be slower. I am not
-sure, whether it is a hardware or software issue. You can control
-charging speed by software, but the final word has the charging chip.
+Yes, but ext3 does not enable barriers by default (the patch has been
+submitted but akpm has balked because he doesn't like the performance
+degredation and doesn't believe that Chris Mason's "workload of doom"
+is a common case).  Note though that it is possible for dirty blocks
+to remain in the track buffer for *minutes* without being written to
+spinning rust platters without a barrier.
 
-Here are control wires:
-SPITZ_SCP_JK_A: output = turns dummy load to 1 kOhm resistor
-SPITZ_SCP_JK_B: output = high charging current
-SPITZ_SCP_CHRG_ON: output = charging on
-SPITZ_SCP_ADC_TEMP_ON: output = turns battery sensor on/off
-SPITZ_GPIO_CHRG_FULL input = charging complete
-SPITZ_GPIO_AC_IN input = AC adapter is present
+See Chris Mason's report of this phenonmenon here:
 
-MAX1111 inputs:
-MAX1111_ACIN_VOLT: Voltage in AC input (after pass of input circuit,
-                   before tha final diode)
-MAX1111_BATT_TEMP: Battery temperature sensor
-MAX1111_BATT_VOLT: Battery voltage
+	http://lkml.org/lkml/2009/3/30/297
 
-Here are notes from the design:
-Pre-charge = 102mA
-Fast charge = 680mA
-Fast charge set ON = 105mA
-Iterm = 55mA
+Here's Chris Mason "barrier test" which will corrupt ext3 filesystems
+50% of the time after a power drop if the filesystem is mounted with
+barriers disabled (which is the default; use the mount option
+barrier=1 to enable barriers):
 
-Thresholds:
-SPITZ_GPIO_AC_IN:     4.2V (IC charging circuit)
-SPITZ_GPIO_FATAL_BAT: 3.0V (voltage detector IC on battery)
-PXA270 batt fault:    2.8V (voltage on the main non-regulated power)
-CF/SD:                2.8V (voltage required for CF/SD activation, I am
-                            not sure, why it is done, because 2.8V is
-                            outside of spec anyway)
+	http://lkml.indiana.edu/hypermail/linux/kernel/0805.2/1518.html
 
-When I measured my battery, Linux 2.6.26 went to emergency sleep at
-3.4V.
+(Yes, ext4 has barriers enabled by default.)
 
-Note that battery thresholds probably should not be hardwired in
-spitz_pm.c but read from the NAND configuration instead (Andrea Adami
-knows, how it can be done).
-
-Here is the datasheet of the charging circuit:
-http://www.penguin.cz/~utx/zaurus/datasheets/power/charging/sc801.pdf
-
-There were more problems in the charging code even before:
-
-- The measurement code should work without turning LED on (bootloader
-can do it). SPITZ_SCP_JK_A should connect dummy load. I guess it should
-be enough for measurement. But comments in the source tree say that is
-did not work. I am not sure why.
-
-- It would be nice to have "small travel charger heuristic": Turn fast
-charging on, charger "disappears", switch to slow charging, charger
-"appears" => stay in slow charging mode, and retry after some time, or
-after going to suspend, reset the flag when charger is removed.
-
-- sysfs interface for charging would be nice. For example: Cyril has an
-external battery pack and he wants to disable charging of internal
-battery from the external battery.
-
--- 
-Best Regards / S pozdravem,
-
-Stanislav Brabec
-software developer
----------------------------------------------------------------------
-SUSE LINUX, s. r. o.                          e-mail: sbrabec@suse.cz
-Lihovarská 1060/12           tel: +420 284 028 966, +49 911 740538747
-190 00 Praha 9                                  fax: +420 284 028 951
-Czech Republic                                    http://www.suse.cz/
-
-
+							- Ted
