@@ -1,135 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751293AbZIGHBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751461AbZIGHHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751293AbZIGHBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 03:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZIGHBR
+	id S1751461AbZIGHHS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 03:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751339AbZIGHHR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 03:01:17 -0400
-Received: from mail.netone.net.tr ([193.192.98.182]:57849 "EHLO
-	mail.turknet.net.tr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZIGHBQ (ORCPT
+	Mon, 7 Sep 2009 03:07:17 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:37084 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751284AbZIGHHQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 03:01:16 -0400
-From: Tarkan Erimer <tarkan.erimer@turknet.net.tr>
-To: Takashi Iwai <tiwai@suse.de>
-Subject: Re: [BUG] Sound related problem with Linux-2.6.31-rc8-git1-rt9
-Date: Mon, 7 Sep 2009 10:01:15 +0300
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc8-git1; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <200909041445.29212.tarkan.erimer@turknet.net.tr> <s5heiqlhjbj.wl%tiwai@suse.de>
-In-Reply-To: <s5heiqlhjbj.wl%tiwai@suse.de>
+	Mon, 7 Sep 2009 03:07:16 -0400
+Message-ID: <4AA4B104.7040507@snapgear.com>
+Date: Mon, 07 Sep 2009 17:06:44 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Tim Abbott <tabbott@ksplice.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg Ungerer <gerg@uclinux.org>
+Subject: Re: [PATCH] m68knommu: Clean up linker script using new linker script
+ macros.
+References: <1252293044-13102-1-git-send-email-tabbott@ksplice.com> <4AA49946.2000804@snapgear.com> <alpine.DEB.1.10.0909070135040.17860@dr-wily.mit.edu>
+In-Reply-To: <alpine.DEB.1.10.0909070135040.17860@dr-wily.mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909071001.15718.tarkan.erimer@turknet.net.tr>
-X-OriginalArrivalTime: 07 Sep 2009 07:01:16.0921 (UTC) FILETIME=[FEBB0E90:01CA2F88]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 September 2009 11:44:32 am Takashi Iwai wrote:
-> At Fri, 4 Sep 2009 14:45:28 +0300,
-> 
-> Tarkan Erimer wrote:
-> > When I ran a movie, I got these errors in dmesg. Also, sound began to
-> > skip too fastly. My audio device is:
-> >
-> > tarkane@tarkane:~$ lspci | grep -i audio
-> > 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
-> > Definition Audio Controller (rev 01)
-> >
-> >
-> > Tarkan Erimer
-> >
-> >
-> > [81001.954666] BUG: unable to handle kernel NULL pointer dereference at
-> > 00000000000000a8
-> > [81001.954677] IP: [<ffffffffa010f4b5>] snd_pcm_period_elapsed+0x11/0x1ec
-> > [snd_pcm]
-> > [81001.954701] PGD 1a028067 PUD 1a022067 PMD 0
-> > [81001.954708] Oops: 0000 [#1] PREEMPT SMP
-> > [81001.954713] last sysfs file:
-> > /sys/devices/pci0000:00/0000:00:1d.7/usb5/5-8/5-8:1.0/host5/target5:0:0/5
-> >:0:0:0/block/sdb/size [81001.954718] CPU 1
-> > [81001.954721] Modules linked in: nls_iso8859_1 nls_cp437 vfat fat
-> > usb_storage nfs lockd fscache nfs_acl auth_rpcgss sunrpc xt_multiport
-> > iptable_filter ip_tables x_tables binfmt_misc bridge stp llc bnep
-> > xfrm_user xfrm4_tunnel tunnel4 ipcomp xfrm_ipcomp esp4 ah4 deflate ctr
-> > twofish twofish_common camellia serpent blowfish cast5 des_generic cbc
-> > aes_x86_64 aes_generic xcbc rmd160 sha256_generic sha1_generic
-> > crypto_null af_key xfs exportfs btrfs zlib_deflate crc32c libcrc32c
-> > snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm_oss
-> > snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi
-> > snd_seq_midi_event snd_seq snd_timer iTCO_wdt snd_seq_device
-> > iTCO_vendor_support snd soundcore snd_page_alloc psmouse serio_raw pcspkr
-> > usbhid ehci_hcd uhci_hcd tg3 floppy
-> > [81001.954806] Pid: 2180, comm: hd-audio0 Not tainted 2.6.31-rc8-git1 #4
-> > HP Compaq dc7600 Small Form Factor
-> > [81001.954810] RIP: 0010:[<ffffffffa010f4b5>]  [<ffffffffa010f4b5>]
-> > snd_pcm_period_elapsed+0x11/0x1ec [snd_pcm]
-> > [81001.954827] RSP: 0018:ffff88003a0cddd0  EFLAGS: 00010282
-> > [81001.954831] RAX: 0000000000000000 RBX: ffff88003a1cf9e0 RCX:
-> > 0000000000000000
-> > [81001.954834] RDX: 0000000000000001 RSI: 0000000000000003 RDI:
-> > 0000000000000000
-> > [81001.954837] RBP: 0000000000000004 R08: ffff88003a1cf9e0 R09:
-> > 00000000ffffffff
-> > [81001.954841] R10: 0000000000000013 R11: ffffffff81033a48 R12:
-> > ffff88003a49cc48
-> > [81001.954844] R13: 0000000000000000 R14: ffff88003a49cc00 R15:
-> > ffffffffa014c092
-> > [81001.954849] FS:  0000000000000000(0000) GS:ffff8800017f8000(0000)
-> > knlGS:0000000000000000
-> > [81001.954853] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-> > [81001.954856] CR2: 00000000000000a8 CR3: 000000001a01b000 CR4:
-> > 00000000000006a0
-> > [81001.954860] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
-> > 0000000000000000
-> > [81001.954863] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7:
-> > 0000000000000400
-> > [81001.954868] Process hd-audio0 (pid: 2180, threadinfo ffff88003a0cc000,
-> > task ffff88003f197750)
-> > [81001.954870] Stack:
-> > [81001.954872]  0000000000000000 ffff88003a1cf9e0 0000000000000004
-> > ffff88003a49cc48
-> > [81001.954878] <0> 0000000000000000 ffff88003a49cc00 ffffffffa014c092
-> > ffffffffa014c11c
-> > [81001.954884] <0> ffff88003a0cdec8 ffffc9000260c100 ffff88003a49cdf0
-> > ffff88003a49cdf8
-> > [81001.954892] Call Trace:
-> > [81001.954905]  [<ffffffffa014c092>] ? azx_irq_pending_work+0x0/0xbc
-> > [snd_hda_intel]
-> > [81001.954914]  [<ffffffffa014c11c>] ? azx_irq_pending_work+0x8a/0xbc
-> > [snd_hda_intel]
-> > [81001.954923]  [<ffffffff81051f35>] ? worker_thread+0x1cb/0x268
-> > [81001.954928]  [<ffffffff81056355>] ? autoremove_wake_function+0x0/0x2e
-> > [81001.954933]  [<ffffffff81051d6a>] ? worker_thread+0x0/0x268
-> > [81001.954938]  [<ffffffff81055f9c>] ? kthread+0x8b/0x93
-> > [81001.954944]  [<ffffffff81011c5a>] ? child_rip+0xa/0x20
-> > [81001.954949]  [<ffffffff81055f11>] ? kthread+0x0/0x93
-> > [81001.954953]  [<ffffffff81011c50>] ? child_rip+0x0/0x20
-> > [81001.954955] Code: 01 00 00 31 c9 ba 01 00 00 00 be 06 00 00 00 e8 5d
-> > 7c f2 e0 31 c9 89 c8 5f c3 41 57 41 56 41 55 41 54 55 53 48 83 ec 08 49
-> > 89 fd <4c> 8b bf a8 00 00 00 49 8b 87 b0 02 00 00 48 85 c0 74 02 ff d0
-> > [81001.955011] RIP  [<ffffffffa010f4b5>]
-> > snd_pcm_period_elapsed+0x11/0x1ec [snd_pcm]
-> > [81001.955026]  RSP <ffff88003a0cddd0>
-> > [81001.955029] CR2: 00000000000000a8
-> > [81001.955033] ---[ end trace 552f354de445b720 ]---
-> 
-> It's the first case of such a report.  Might be some races.
-> Did you set CONFIG_SND_DEBUG=y?
-> 
-> 
-> thanks,
-> 
-> Takashi
->
+Hi Tim,
 
-Thanks for your respond. 
+Tim Abbott wrote:
+> On Mon, 7 Sep 2009, Greg Ungerer wrote:
+> 
+>> This fails for me with:
+>>
+>>   LD      vmlinux
+>> /usr/local/bin/m68k-uclinux-ld:arch/m68knommu/kernel/vmlinux.lds:287: syntax
+>> error
+>>
+>> due to PAGE_SIZE evaluating to:
+>>
+>>   . = ALIGN((1UL << (12)));
+>>
+>> The linker doesn't like the 'UL' suffix.
+> 
+> Yeah, sorry, I didn't have a cross-compiler for this one to test.  The fix 
+> is to use _AC(1,UL), like most of the other architectures (including m68k 
+> with an mmu) do.
 
-No, I didn't. But; today, I will try with CONFIG_SND_DEBUG=y and then will try 
-to reproduce the problem.
+Yep, that fixes that. I'll push this patch into the for-linus
+branch of the m68knommu git tree.
 
-Tarkan
+Now, back to the original patch. Now fails with another syntax error
+at the last line in this:
+
+  .init : {
+   . = ALIGN((1 << (12)));
+   __init_begin = .;
+   . = ALIGN((1 << (12))); .init.text : AT(ADDR(.init.text) - 0) { 
+_sinittext = .; *(.init.text) *(.devinit.text) *(.cpuinit.text) 
+*(.meminit.text) _einittext = .; }
+
+Regards
+Greg
+
+
+
+> 	-Tim Abbott
+> 
+> m68knommu: Make PAGE_SIZE available to assembly files.
+> 
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> ---
+>  arch/m68k/include/asm/page_no.h |    4 +++-
+>  1 files changed, 3 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/m68k/include/asm/page_no.h b/arch/m68k/include/asm/page_no.h
+> index 9aa3f90..1f31b06 100644
+> --- a/arch/m68k/include/asm/page_no.h
+> +++ b/arch/m68k/include/asm/page_no.h
+> @@ -1,10 +1,12 @@
+>  #ifndef _M68KNOMMU_PAGE_H
+>  #define _M68KNOMMU_PAGE_H
+>  
+> +#include <linux/const.h>
+> +
+>  /* PAGE_SHIFT determines the page size */
+>  
+>  #define PAGE_SHIFT	(12)
+> -#define PAGE_SIZE	(1UL << PAGE_SHIFT)
+> +#define PAGE_SIZE	(_AC(1,UL) << PAGE_SHIFT)
+>  #define PAGE_MASK	(~(PAGE_SIZE-1))
+>  
+>  #include <asm/setup.h>
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
