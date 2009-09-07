@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbZIGShm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754258AbZIGSiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754272AbZIGShm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 14:37:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZIGShl
+	id S1754258AbZIGSiW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 14:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753385AbZIGSiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 14:37:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57693 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754243AbZIGShk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 14:37:40 -0400
-Date: Mon, 7 Sep 2009 11:37:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Carlos R. Mafra" <crmafra2@gmail.com>, Ma Ling <ling.ma@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Zhao Yakui <yakui.zhao@intel.com>, Eric Anholt <eric@anholt.net>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bisected] Output to external monitor is broken (Re: Linux
- 2.6.31-rc9)
-In-Reply-To: <20090906142206.GA4449@Pilar.aei.mpg.de>
-Message-ID: <alpine.LFD.2.01.0909071125430.25628@localhost.localdomain>
-References: <alpine.LFD.2.01.0909051645430.3329@localhost.localdomain> <20090906142206.GA4449@Pilar.aei.mpg.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 7 Sep 2009 14:38:22 -0400
+Received: from mx1-old.redhat.com ([66.187.233.31]:40081 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752045AbZIGSiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 14:38:21 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Pavel Machek <pavel@ucw.cz>
+X-Fcc: ~/Mail/linus
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig CROSS_COMPILE option
+In-Reply-To: Pavel Machek's message of  Monday, 7 September 2009 15:09:04 +0200 <20090907130402.GB1595@ucw.cz>
+References: <20090905002947.A4C678BEB1@magilla.sf.frob.com>
+	<20090907130402.GB1595@ucw.cz>
+X-Windows: the first fully modular software disaster.
+Message-Id: <20090907183801.379228BF3F@magilla.sf.frob.com>
+Date: Mon,  7 Sep 2009 11:38:01 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Yes that would be very nice. Editing Makefile every time I
+> crosscomppile for arm sucks.
 
-[ Just adding all the right people to the email participants line.
-  Eric, Jesse, Zhao, Ma Ling - should I just revert that commit?
+The other trick I can recommend is to write a GNUmakefile containing:
 
-  Carlos - can you also do the full dmesg _with_ the corruption? I realize 
-  that your screen is unreadable, but if you can just log in blindly, and
-  do a "dmesg > saved-dmesg-file" and then do a clean reboot? No need for 
-  a serial console or anything fancy - I assume the machine is still 
-  working, just with bad output.
+ARCH=foo
+CROSS_COMPILE=foo-linux-
+include Makefile
 
-  It might also be a good idea to boot with "drm.debug=15" to enable much 
-  more debugging output.
-			- Linus ]
+(GNU make reads GNUmakefile in preference to Makefile.)
+But this manual hackery is still not nearly as nice as the automagic way.
 
-On Sun, 6 Sep 2009, Carlos R. Mafra wrote:
->
-> On Sat  5.Sep'09 at 16:54:27 -0700, Linus Torvalds wrote:
-> > Go wild, and please give this a final round of testing.
-> 
-> The output from my Vaio laptop to the external monitor (LG Flatron M228WD) 
-> is broken now. The screen is all messed-up once the boot messages from the
-> kernel appear on it (see the picture at the link below).
-> 
-> I bisected it down to f8aed700c6ec46ddade6570004ce25332283b306 ("drm/i915:
-> Set crtc/clone mask in different output devices"). I doubled checked
-> that reverting this commit from 2.6.31-rc9 fixes the problem.
-> 
-> The picture of the bad output is here:
-> http://www.aei.mpg.de/~crmafra/bad_output.jpg
-> 
-> as well as my config:
-> http://www.aei.mpg.de/~crmafra/config-2.6.31-rc9.txt
-> 
-> and dmesg (with the above commit reverted):
-> http://www.aei.mpg.de/~crmafra/dmesg-2.6.31-rc9+revert.txt
-> 
-> (the vga=0x0364 in the command line does not work since I
-> enabled KMS, so I get a prompt in the beginning from which I 
-> choose vga=0. But the above regression is not affected by this
-> choice because the command line was always the same during 
-> bisection)
-> 
-> If there is anything else I can do, just let me know.
-> 
-> 
-> 
-> 
+> But... do we need an option for subarch, too? And will Kconfig system
+> handle that?
+
+I'm not sure I follow exactly what your concern is.  I am mostly familiar
+with doing x86 and powerpc builds.  For both of those, the kernel config
+sets whether it's the 32-bit or 64-bit world.
+
+
+Thanks,
+Roland
