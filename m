@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbZIGO0J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753551AbZIGO3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753530AbZIGO0J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:26:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZIGO0I
+	id S1753551AbZIGO3L (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753254AbZIGO3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:26:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56405 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753394AbZIGO0I (ORCPT
+	Mon, 7 Sep 2009 10:29:11 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:62480 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753149AbZIGO3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:26:08 -0400
-Subject: Re: [rfc] lru_add_drain_all() vs isolation
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090907141818.GA8394@redhat.com>
-References: <dhcf5-263-13@gated-at.bofh.it>
-	 <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com>
-	 <1252218779.6126.17.camel@marge.simson.net>
-	 <1252232289.29247.11.camel@marge.simson.net>
-	 <DDFD17CC94A9BD49A82147DDF7D545C54DC482@exchange.ZeugmaSystems.local>
-	 <1252249790.13541.28.camel@marge.simson.net>
-	 <1252311463.7586.26.camel@marge.simson.net>
-	 <1252321596.7959.6.camel@laptop> <20090907133544.GA6365@redhat.com>
-	 <1252331599.7959.33.camel@laptop>  <20090907141818.GA8394@redhat.com>
-Content-Type: text/plain
-Date: Mon, 07 Sep 2009 16:25:54 +0200
-Message-Id: <1252333554.7959.35.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 7 Sep 2009 10:29:10 -0400
+Message-ID: <4AA518B3.40401@nokia.com>
+Date: Mon, 07 Sep 2009 17:29:07 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] mm: write_cache_pages be more sequential
+References: <4AA513AA.3010206@nokia.com> <20090907141548.GA28054@wotan.suse.de>
+In-Reply-To: <20090907141548.GA28054@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 Sep 2009 14:28:42.0323 (UTC) FILETIME=[7FD65230:01CA2FC7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-07 at 16:18 +0200, Oleg Nesterov wrote:
-
-> > flush_workqueue() could limit itself to cpus that had work queued since
-> > the last flush_workqueue() invocation, etc.
+Nick Piggin wrote:
+> On Mon, Sep 07, 2009 at 05:07:38PM +0300, Adrian Hunter wrote:
+>> >From 6f3bb7c26936c45d810048f59c369e8d5a5623fc Mon Sep 17 00:00:00 2001
+>> From: Adrian Hunter <adrian.hunter@nokia.com>
+>> Date: Mon, 7 Sep 2009 10:49:11 +0300
+>> Subject: [PATCH] mm: write_cache_pages be more sequential
+>>
+>> If a file is written to sequentially, then writeback
+>> should write the pages sequentially also.  However,
+>> that does not always happen.  For example:
+>>
+>> 1) user writes pages 0, 1 and 2 but 2 is incomplete
+>> 2) write_cache_pages writes pages 0, 1 and 2 and sets
+>> writeback_index to 3
+>> 3) user finishes writing page 2 and writes pages 3 and 4
+>> 4) write_cache_pages writes pages 3 and 4, and then cycles
+>> back and writes page 2 again.
+>>
+>> So the pages are written out in the order 0, 1, 2, 3 ,4 ,2
+>> instead of 0, 1, 2, 2, 3, 4.
 > 
-> But "work queued since the last flush_workqueue() invocation" just means
-> "has work queued". Please note that flush_cpu_workqueue() does nothing
-> if there are no works, except it does lock/unlock of cwq->lock.
+> Why does page 2 get set dirty if the write was incomplete?
+
+I meant that only part of the page was written. e.g.
+write 10240 bytes, wait for writeback, then write another
+10240 bytes.  The pages will be written out in the order
+0, 1, 2, 3, 4, 2
+
+>> This situation was noticed on UBIFS because it writes
+>> directly from writepage.  Hence if there is an unexpected
+>> power-loss, a file will end up with a hole even though
+>> the file was written sequentially by the user.
+>>
+>> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+>> ---
+>> mm/page-writeback.c |    2 ++
+>> 1 files changed, 2 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+>> index 81627eb..7410b7a 100644
+>> --- a/mm/page-writeback.c
+>> +++ b/mm/page-writeback.c
+>> @@ -960,6 +960,8 @@ int write_cache_pages(struct address_space *mapping,
+>> 	pagevec_init(&pvec, 0);
+>> 	if (wbc->range_cyclic) {
+>> 		writeback_index = mapping->writeback_index; /* prev offset */
+>> +		if (writeback_index)
+>> +			writeback_index -= 1;
+>> 		index = writeback_index;
+>> 		if (index == 0)
+>> 			cycled = 1;
 > 
-> IIRC, flush_cpu_workqueue() has to lock/unlock to avoid the races with
-> CPU hotplug, but _perhaps_ flush_workqueue() can do the check lockless.
-> 
-> Afaics, we can add the workqueue_struct->cpu_map_has_works to help
-> flush_workqueue(), but this means we should complicate insert_work()
-> and run_workqueue() which should set/clear the bit. But given that
-> flush_workqueue() should be avoided anyway, I am not sure.
+> Doesn't this just break range_cyclic? range_cyclic is supposed to
+> work across calls to write_cache_pages, and it's there I guess so
+> background writeout will be able to eventually get around to writing
+> all pages relatively fairly in the presence of redirtying operations.
 
-Ah, indeed. Then nothing new would be needed here, since it will indeed
-not interrupt processing on the remote cpus that never queued any work.
-
-
-
+I do not immediately see how it breaks range_cyclic.  Can you give an
+example?
