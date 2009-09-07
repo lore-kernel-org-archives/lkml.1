@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751733AbZIGTNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbZIGTPZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751733AbZIGTNz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 15:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbZIGTNy
+	id S1751572AbZIGTPZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 15:15:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750869AbZIGTPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 15:13:54 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:58902 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbZIGTNx (ORCPT
+	Mon, 7 Sep 2009 15:15:24 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50340 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750774AbZIGTPY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 15:13:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=XALlWAQQpBCo/mZtHWVT8rcqkuiQuMtEoRJh39glSZNbz903ozzfCggTpqspelT46E
-         86p478G8Kv6yRYFkl9BmaIlb8uDqQnmZ7pBH8o8BbwFM0RXShnDxufVmpZENsHfI0JgK
-         S6VBJljzqvVqiPoxZz74Mfbw8JKMnSqXjLOhw=
-Date: Mon, 7 Sep 2009 21:12:19 +0200
-From: "Carlos R. Mafra" <crmafra2@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Ma Ling <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Zhao Yakui <yakui.zhao@intel.com>, Eric Anholt <eric@anholt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Bisected] Output to external monitor is broken (Re: Linux
-	2.6.31-rc9)
-Message-ID: <20090907191219.GA5015@Pilar.aei.mpg.de>
-References: <alpine.LFD.2.01.0909051645430.3329@localhost.localdomain> <20090906142206.GA4449@Pilar.aei.mpg.de> <alpine.LFD.2.01.0909071125430.25628@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909071125430.25628@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 7 Sep 2009 15:15:24 -0400
+Subject: Re: [PATCH 1/5] debugfs - Fix mount directory of debugfs by
+ default in events.txt
+From: Peter Zijlstra <peterz@infradead.org>
+To: Greg KH <greg@kroah.com>
+Cc: leemgs1@gmail.com, linux-kernel <linux-kernel@vger.kernel.org>,
+       mathieu.desnoyers@polymtl.ca, Steven Rostedt <srostedt@redhat.com>,
+       Christoph Hellwig <hch@infradead.org>
+In-Reply-To: <20090907185513.GA27876@kroah.com>
+References: <1252327037.2153.96.camel@centos51>
+	 <1252327737.7959.22.camel@laptop>  <20090907185513.GA27876@kroah.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Mon, 07 Sep 2009 21:15:14 +0200
+Message-Id: <1252350914.7503.24.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon  7.Sep'09 at 11:37:39 -0700, Linus Torvalds wrote:
->   Carlos - can you also do the full dmesg _with_ the corruption? I realize 
->   that your screen is unreadable, but if you can just log in blindly, and
->   do a "dmesg > saved-dmesg-file" and then do a clean reboot? No need for 
->   a serial console or anything fancy - I assume the machine is still 
->   working, just with bad output.
+On Mon, 2009-09-07 at 11:55 -0700, Greg KH wrote:
+> On Mon, Sep 07, 2009 at 02:48:57PM +0200, Peter Zijlstra wrote:
+> > On Mon, 2009-09-07 at 21:37 +0900, GeunSik Lim wrote:
+> > > 
+> > > >From 99e8ab48d783e619329c31e8f91e4384729a2e8b Mon Sep 17 00:00:00 2001
+> > > From: GeunSik,Lim <leemgs1@gmail.com>
+> > > Date: Mon, 7 Sep 2009 20:34:19 +0900
+> > > Subject: [PATCH 1/5] Fix mount directory of debugfs by default in events.txt
+> > > 
+> > > We need common default directory of denbugfs for consistency.
+> > > (debugfs's default directory is /sys/kernel/debug/ by debugfs.)
+> > 
+> > I'd rather we fix that brain-dead default.
 > 
->   It might also be a good idea to boot with "drm.debug=15" to enable much 
->   more debugging output.
-> 			- Linus ]
+> Um, why is that "brain-dead"?  It was discussed many times when debugfs
+> first came out and this was what was decided on.
 
-I am no longer at the institute with the monitor to test, but I've already
-uploaded similar debug info to the bugzilla upon ykzhao's request this
-morning (but I think you were not Cc:-ed on that request, though).
+>From what people tell me it wasn't a clear consensus.
 
-http://bugzilla.kernel.org/show_bug.cgi?id=14139
+> So what is the problem?
 
-PS: The external monitor is unreadable, but the laptop's screen is still good.
+Its not related to sysfs in any way I can discover, its not consistent
+with most of the other virtual fs', and its way too much typing.
+
+we don't mount /dev, /proc, /sys in weird places either, so why should
+we mount /debug in a cumbersome location.
+
+
