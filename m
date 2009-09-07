@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758850AbZIGDK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbZIGDLJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758850AbZIGDK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758752AbZIGDKZ
+	id S1758806AbZIGDLJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 Sep 2009 23:11:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758644AbZIGDLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:10:25 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60830 "EHLO
+	Sun, 6 Sep 2009 23:11:08 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:60973 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758772AbZIGDKW (ORCPT
+	by vger.kernel.org with ESMTP id S1753089AbZIGDLH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:10:22 -0400
+	Sun, 6 Sep 2009 23:11:07 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Michal Simek <monstr@monstr.eu>, microblaze-uclinux@itee.uq.edu.au
-Subject: [PATCH] microblaze: Cleanup linker script using new linker script macros.
-Date: Sun,  6 Sep 2009 23:10:10 -0400
-Message-Id: <1252293010-13038-1-git-send-email-tabbott@ksplice.com>
+       Greg Ungerer <gerg@uclinux.org>
+Subject: [PATCH] m68knommu: Clean up linker script using new linker script macros.
+Date: Sun,  6 Sep 2009 23:10:44 -0400
+Message-Id: <1252293044-13102-1-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
@@ -24,110 +24,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wasn't able to further clean up the linker script using the
-INIT_DATA_SECTION macro because of the FIXME comment for the
-.init.ramfs section; when that is resolved we should convert
-microblaze to use INIT_DATA_SECTION.
-
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: microblaze-uclinux@itee.uq.edu.au
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Greg Ungerer <gerg@uclinux.org>
 ---
- arch/microblaze/kernel/vmlinux.lds.S |   39 +++++++---------------------------
- 1 files changed, 8 insertions(+), 31 deletions(-)
+ arch/m68knommu/kernel/vmlinux.lds.S |   37 +++++++---------------------------
+ 1 files changed, 8 insertions(+), 29 deletions(-)
 
-diff --git a/arch/microblaze/kernel/vmlinux.lds.S b/arch/microblaze/kernel/vmlinux.lds.S
-index d34d38d..5e95ee0 100644
---- a/arch/microblaze/kernel/vmlinux.lds.S
-+++ b/arch/microblaze/kernel/vmlinux.lds.S
-@@ -13,6 +13,8 @@ OUTPUT_ARCH(microblaze)
- ENTRY(_start)
+diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
+index b7fe505..979acb5 100644
+--- a/arch/m68knommu/kernel/vmlinux.lds.S
++++ b/arch/m68knommu/kernel/vmlinux.lds.S
+@@ -8,6 +8,8 @@
+  */
  
  #include <asm-generic/vmlinux.lds.h>
 +#include <asm/page.h>
 +#include <asm/thread_info.h>
  
- jiffies = jiffies_64 + 4;
+ #if defined(CONFIG_RAMKERNEL)
+ #define	RAM_START	CONFIG_KERNELBASE
+@@ -147,40 +149,17 @@ SECTIONS {
+ 		. = ALIGN(4);
+ 		_sdata = . ;
+ 		DATA_DATA
+-		. = ALIGN(32);
+-		*(.data.cacheline_aligned)
+-		. = ALIGN(8192) ;
+-		*(.data.init_task)
++		CACHELINE_ALIGNED_DATA(32)
++		INIT_TASK_DATA(THREAD_SIZE)
+ 		_edata = . ;
+ 	} > DATA
  
-@@ -39,12 +41,7 @@ SECTIONS {
- 
- 	. = ALIGN(16);
- 	RODATA
--	. = ALIGN(16);
--	__ex_table : {
--		__start___ex_table = .;
--		*(__ex_table)
--		__stop___ex_table = .;
--	}
-+	EXCEPTION_TABLE(16)
- 
- 	/*
- 	 * sdata2 section can go anywhere, but must be word aligned
-@@ -61,12 +58,7 @@ SECTIONS {
- 	}
- 
- 	_sdata = . ;
--	.data ALIGN (4096) : { /* page aligned when MMU used - origin 0x4 */
--		DATA_DATA
--		CONSTRUCTORS
--	}
--	. = ALIGN(32);
--	.data.cacheline_aligned : { *(.data.cacheline_aligned) }
-+	RW_DATA_SECTION(32, PAGE_SIZE, THREAD_SIZE)
- 	_edata = . ;
- 
- 	/* Reserve some low RAM for r0 based memory references */
-@@ -74,10 +66,6 @@ SECTIONS {
- 	r0_ram = . ;
- 	. = . +  4096;	/* a page should be enough */
- 
--	/* The initial task */
--	. = ALIGN(8192);
--	.data.init_task : { *(.data.init_task) }
--
- 	/* Under the microblaze ABI, .sdata and .sbss must be contiguous */
- 	. = ALIGN(8);
- 	.sdata : {
-@@ -96,12 +84,7 @@ SECTIONS {
- 
- 	__init_begin = .;
- 
--	. = ALIGN(4096);
--	.init.text : {
--		_sinittext = . ;
+ 	.init : {
+-		. = ALIGN(4096);
++		. = ALIGN(PAGE_SIZE);
+ 		__init_begin = .;
+-		_sinittext = .;
 -		INIT_TEXT
 -		_einittext = .;
--	}
-+	INIT_TEXT_SECTION(PAGE_SIZE)
- 
- 	.init.data : {
- 		INIT_DATA
-@@ -115,21 +98,15 @@ SECTIONS {
- 	}
- 
- 	.init.setup : {
+-		INIT_DATA
+-		. = ALIGN(16);
 -		__setup_start = .;
 -		*(.init.setup)
 -		__setup_end = .;
-+		INIT_SETUP(0)
- 	}
- 
- 	.initcall.init : {
 -		__initcall_start = .;
 -		INITCALLS
 -		__initcall_end = .;
-+		INIT_CALLS
- 	}
- 
- 	.con_initcall.init : {
 -		__con_initcall_start = .;
 -		*(.con_initcall.init)
 -		__con_initcall_end = .;
-+		CON_INITCALL
- 	}
+-		__security_initcall_start = .;
+-		*(.security_initcall.init)
+-		__security_initcall_end = .;
+-#ifdef CONFIG_BLK_DEV_INITRD
+-		. = ALIGN(4);
+-		__initramfs_start = .;
+-		*(.init.ramfs)
+-		__initramfs_end = .;
+-#endif
+-		. = ALIGN(4096);
++		INIT_TEXT_SECTION(PAGE_SIZE)
++		INIT_DATA_SECTION(16)
++		. = ALIGN(PAGE_SIZE);
+ 		__init_end = .;
+ 	} > INIT
  
- 	SECURITY_INIT
 -- 
 1.6.3.3
 
