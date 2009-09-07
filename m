@@ -1,88 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753183AbZIGNL6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbZIGNMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753183AbZIGNL6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 09:11:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752441AbZIGNL5
+	id S1753281AbZIGNMW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 09:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753081AbZIGNMV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 09:11:57 -0400
-Received: from thunk.org ([69.25.196.29]:44360 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751446AbZIGNL4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 09:11:56 -0400
-Date: Mon, 7 Sep 2009 09:10:26 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
-       Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-       NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-       Florian Weimer <fweimer@bfk.de>,
-       Goswin von Brederlow <goswin-v-b@web.de>,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-       linux-ext4@vger.kernel.org, corbet@lwn.net
-Subject: Re: wishful thinking about atomic, multi-sector or full MD stripe
-	width, writes in storage
-Message-ID: <20090907131026.GC32427@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Pavel Machek <pavel@ucw.cz>,
-	Ric Wheeler <rwheeler@redhat.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-	Christoph Hellwig <hch@infradead.org>, Mark Lord <lkml@rtr.ca>,
-	Michael Tokarev <mjt@tls.msk.ru>, david@lang.hm,
-	NeilBrown <neilb@suse.de>, Rob Landley <rob@landley.net>,
-	Florian Weimer <fweimer@bfk.de>,
-	Goswin von Brederlow <goswin-v-b@web.de>,
-	kernel list <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com,
-	rdunlap@xenotime.net, linux-doc@vger.kernel.org,
-	linux-ext4@vger.kernel.org, corbet@lwn.net
-References: <4A9BCDFE.50008@rtr.ca> <20090831132139.GA5425@infradead.org> <4A9F230F.40707@redhat.com> <m3ab1cp9ii.fsf@intrepid.localdomain> <4A9FA5F2.9090704@redhat.com> <m3ljkwnoct.fsf@intrepid.localdomain> <4A9FC9B3.1080809@redhat.com> <m3ab1cnn7y.fsf@intrepid.localdomain> <4A9FCF6B.1080704@redhat.com> <20090907114534.GP23450@elf.ucw.cz>
+	Mon, 7 Sep 2009 09:12:21 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:34135 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752441AbZIGNMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 09:12:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=Gy5z/wok3ywvQ8XdL6kEvZceZOTVjuMM7Hl+MrIPbyKEp9HcAC4yvKOBCBak8Z/R5Y
+         5voScC/NibWYxo3Pr6VT3Sn+ZYiHoa4UI6M9fh7+gBM0s0JbN7mo0aZinVu1E7fRXLyA
+         H3U9AQsP8NolDCuA/MnQo+LdOZ8YDl92UgcCA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090907114534.GP23450@elf.ucw.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <4AA4FA5B.8030804@googlemail.com>
+References: <4AA4FA5B.8030804@googlemail.com>
+Date: Mon, 7 Sep 2009 09:12:23 -0400
+X-Google-Sender-Auth: 0bf927a22a74c5ff
+Message-ID: <b6c5339f0909070612q11b96e02m978564f7b89c5954@mail.gmail.com>
+Subject: Re: Bugzilla kernel bug 13948
+From: Bob Copeland <me@bobcopeland.com>
+To: Gonsolo <gonsolo@gmail.com>
+Cc: mick@madwifi-project.org, rjw@sisk.pl, linville@tuxdriver.com,
+       torvalds@osdl.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 01:45:34PM +0200, Pavel Machek wrote:
-> 
-> Yes, but ext3 was designed to handle the partial write  (according to
-> tytso).
+On Mon, Sep 7, 2009 at 8:19 AM, Gonsolo<gonsolo@gmail.com> wrote:
+> Hi.
+>
+> Is this going to be in 2.6.31?
+> http://bugzilla.kernel.org/show_bug.cgi?id=13948
+> It seems that a patch is available but it doesn't show up in mainline.
 
-I'm not sure what made you think that I said that.  In practice things
-usually work out, as a conseuqence of the fact that ext3 uses physical
-block journaling, but it's not perfect, becase...
+No it will not.  We were too late to send the patch before "last call"
+in the network subsystem.  It should be in 2.6.31.1 though.
 
-> > Also, when you enable the write cache (MD or not) you are buffering 
-> > multiple MB's of data that can go away on power loss. Far greater (10x) 
-> > the exposure that the partial RAID rewrite case worries about.
-> 
-> Yes, that's what barriers are for. Except that they are not there on
-> MD0/MD5/MD6. They actually work on local sata drives...
-
-Yes, but ext3 does not enable barriers by default (the patch has been
-submitted but akpm has balked because he doesn't like the performance
-degredation and doesn't believe that Chris Mason's "workload of doom"
-is a common case).  Note though that it is possible for dirty blocks
-to remain in the track buffer for *minutes* without being written to
-spinning rust platters without a barrier.
-
-See Chris Mason's report of this phenonmenon here:
-
-	http://lkml.org/lkml/2009/3/30/297
-
-Here's Chris Mason "barrier test" which will corrupt ext3 filesystems
-50% of the time after a power drop if the filesystem is mounted with
-barriers disabled (which is the default; use the mount option
-barrier=1 to enable barriers):
-
-	http://lkml.indiana.edu/hypermail/linux/kernel/0805.2/1518.html
-
-(Yes, ext4 has barriers enabled by default.)
-
-							- Ted
+-- 
+Bob Copeland %% www.bobcopeland.com
