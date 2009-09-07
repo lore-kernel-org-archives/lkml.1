@@ -1,62 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZIGNvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZIGNxi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbZIGNvH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 09:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753213AbZIGNvG
+	id S1753374AbZIGNxi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 09:53:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753264AbZIGNxh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 09:51:06 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:52584 "EHLO dan.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752565AbZIGNvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 09:51:05 -0400
-Subject: Re: [PATCH 2/2] leds: Add WM831x status LED driver
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       linux-kernel@vger.kernel.org, Samuel Ortiz <sameo@linux.intel.com>
-In-Reply-To: <20090907132212.GA1739@ucw.cz>
-References: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <1252156161-10062-2-git-send-email-broonie@opensource.wolfsonmicro.com>
-	 <20090907132212.GA1739@ucw.cz>
+	Mon, 7 Sep 2009 09:53:37 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42387 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbZIGNxg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 09:53:36 -0400
+Subject: Re: [rfc] lru_add_drain_all() vs isolation
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090907133544.GA6365@redhat.com>
+References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it>
+	 <dhcf5-263-13@gated-at.bofh.it>
+	 <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com>
+	 <1252218779.6126.17.camel@marge.simson.net>
+	 <1252232289.29247.11.camel@marge.simson.net>
+	 <DDFD17CC94A9BD49A82147DDF7D545C54DC482@exchange.ZeugmaSystems.local>
+	 <1252249790.13541.28.camel@marge.simson.net>
+	 <1252311463.7586.26.camel@marge.simson.net>
+	 <1252321596.7959.6.camel@laptop>  <20090907133544.GA6365@redhat.com>
 Content-Type: text/plain
-Date: Mon, 07 Sep 2009 14:51:24 +0100
-Message-Id: <1252331484.17852.50.camel@dax.rpnet.com>
+Date: Mon, 07 Sep 2009 15:53:19 +0200
+Message-Id: <1252331599.7959.33.camel@laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-07 at 15:22 +0200, Pavel Machek wrote:
-> On Sat 2009-09-05 14:09:21, Mark Brown wrote:
-> > The WM831x devices feature two software controlled status LEDs with
-> > hardware assisted blinking.
-> > 
-> > The device can also autonomously control the LEDs based on a selection
-> > of sources.  This can be configured at boot time using either platform
-> > data or the chip OTP.  A sysfs file in the style of that for triggers
-> > allowing the control source to be configured at run time.  Triggers
-> > can't be used here since they can't depend on the implementation details
-> > of a specific LED type.
+On Mon, 2009-09-07 at 15:35 +0200, Oleg Nesterov wrote:
+> On 09/07, Peter Zijlstra wrote:
+> >
+> > On Mon, 2009-09-07 at 10:17 +0200, Mike Galbraith wrote:
+> >
+> > > [  774.651779] SysRq : Show Blocked State
+> > > [  774.655770]   task                        PC stack   pid father
+> > > [  774.655770] evolution.bin D ffff8800bc1575f0     0  7349   6459 0x00000000
+> > > [  774.676008]  ffff8800bc3c9d68 0000000000000086 ffff8800015d9340 ffff8800bb91b780
+> > > [  774.676008]  000000000000dd28 ffff8800bc3c9fd8 0000000000013340 0000000000013340
+> > > [  774.676008]  00000000000000fd ffff8800015d9340 ffff8800bc1575f0 ffff8800bc157888
+> > > [  774.676008] Call Trace:
+> > > [  774.676008]  [<ffffffff812c4a11>] schedule_timeout+0x2d/0x20c
+> > > [  774.676008]  [<ffffffff812c4891>] wait_for_common+0xde/0x155
+> > > [  774.676008]  [<ffffffff8103f1cd>] ? default_wake_function+0x0/0x14
+> > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
+> > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
+> > > [  774.676008]  [<ffffffff812c49ab>] wait_for_completion+0x1d/0x1f
+> > > [  774.676008]  [<ffffffff8105fdf5>] flush_work+0x7f/0x93
+> > > [  774.676008]  [<ffffffff8105f870>] ? wq_barrier_func+0x0/0x14
+> > > [  774.676008]  [<ffffffff81060109>] schedule_on_each_cpu+0xb4/0xed
+> > > [  774.676008]  [<ffffffff810c0c78>] lru_add_drain_all+0x15/0x17
+> > > [  774.676008]  [<ffffffff810d1dbd>] sys_mlock+0x2e/0xde
+> > > [  774.676008]  [<ffffffff8100bc1b>] system_call_fastpath+0x16/0x1b
+> >
+> > FWIW, something like the below (prone to explode since its utterly
+> > untested) should (mostly) fix that one case. Something similar needs to
+> > be done for pretty much all machine wide workqueue thingies, possibly
+> > also flush_workqueue().
 > 
-> I believe people *were* doing that with triggers in other drivers...?
+> Failed to google the previous discussion. Could you please point me?
+> What is the problem?
 
-We did talk about allowing the LED triggers to choose whether they were
-visible to a given LED. At present the mechanism doesn't exist because
-we've never had a user.
+Ah, the general problem is that when we carve up the machine into
+partitions using cpusets, we still get machine wide tickles on all cpus
+from workqueue stuff like schedule_on_each_cpu() and flush_workqueue(),
+even if some cpus don't actually used their workqueue.
 
-It would just be a case of adding a new optional function to the trigger
-to say whether it supported a given LED or not and calling that function
-from led_trigger_show().
+So the below limits lru_add_drain() activity to cpus that actually have
+pages in their per-cpu lists.
 
-I've queued this driver but that would be a nice enhancement.
+flush_workqueue() could limit itself to cpus that had work queued since
+the last flush_workqueue() invocation, etc.
 
-Cheers,
+This avoids un-needed disruption of these cpus.
 
-Richard
+Christoph wants this because he's running cpu-bound userspace and simply
+doesn't care to donate a few cycles to the kernel maintenance when not
+needed (every tiny bit helps in completing the HPC job sooner).
 
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+Mike ran into this because he's starving a partitioned cpu using an RT
+task -- which currently starves the other cpus because the workqueues
+don't get to run and everybody waits...
+
+The lru_add_drain_all() thing is just one of the many cases, and the
+below won't fully solve Mike's problem since the cpu could still have
+pending work on the per-cpu list from starting the RT task.. but its
+showing the direction on how improve things.
+
+> > +struct sched_work_struct {
+> > +	struct work_struct work;
+> > +	work_func_t func;
+> > +	atomic_t *count;
+> > +	struct completion *completion;
+> > +};
+> 
+> (not that it matters, but perhaps sched_work_struct should have a single
+>  pointer to the struct which contains func,count,comletion).
+
+Sure, it more-or-less grew while writing, I always forget completions
+don't count.
+
+> > -int schedule_on_each_cpu(work_func_t func)
+> > +int schedule_on_mask(const struct cpumask *mask, work_func_t func)
+> 
+> Looks like a usefule helper. But,
+> 
+> > +	for_each_cpu(cpu, mask) {
+> > +		struct sched_work_struct *work = per_cpu_ptr(works, cpu);
+> > +		work->count = &count;
+> > +		work->completion = &completion;
+> > +		work->func = func;
+> >
+> > -		INIT_WORK(work, func);
+> > -		schedule_work_on(cpu, work);
+> > +		INIT_WORK(&work->work, do_sched_work);
+> > +		schedule_work_on(cpu, &work->work);
+> 
+> This means the caller must ensure CPU online and can't go away. Otherwise
+> we can hang forever.
+> 
+> schedule_on_each_cpu() is fine, it calls us under get_online_cpus().
+> But,
+> 
+> >  int lru_add_drain_all(void)
+> >  {
+> > -	return schedule_on_each_cpu(lru_add_drain_per_cpu);
+> > +	return schedule_on_mask(lru_drain_mask, lru_add_drain_per_cpu);
+> >  }
+> 
+> This doesn't look safe.
+> 
+> Looks like, schedule_on_mask() should take get_online_cpus(), do
+> cpus_and(mask, mask, online_cpus), then schedule works.
+> 
+> If we don't care the work can migrate to another CPU, schedule_on_mask()
+> can do put_online_cpus() before wait_for_completion().
+
+Ah, right. Like said, I only quickly hacked this up as an example on how
+to improve isolation between cpus and limit unneeded work in the hope
+someone would pick this up and maybe tackle other sites as well.
 
