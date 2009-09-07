@@ -1,78 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbZIGJIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752517AbZIGJH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbZIGJIB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 05:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752559AbZIGJIA
+	id S1752517AbZIGJH5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 05:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752347AbZIGJH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 05:08:00 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:58993 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752352AbZIGJH6 (ORCPT
+	Mon, 7 Sep 2009 05:07:56 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:39514 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752227AbZIGJH4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 05:07:58 -0400
-X-Sasl-enc: D6I6BPpPZdBuBl1cjRF7pz+/35E+xUpzwvjIKi5QJBa1 1252314480
-Message-ID: <4AA4CD64.4070501@imap.cc>
-Date: Mon, 07 Sep 2009 11:07:48 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 7 Sep 2009 05:07:56 -0400
+Date: Mon, 7 Sep 2009 10:07:57 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: Andrey Panin <pazke@centrinvest.ru>
+Cc: Richard Purdie <rpurdie@rpsys.net>, linux-kernel@vger.kernel.org,
+       Samuel Ortiz <sameo@linux.intel.com>
+Subject: Re: [PATCH 2/2] leds: Add WM831x status LED driver
+Message-ID: <20090907090757.GB21558@rakim.wolfsonmicro.main>
+References: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1252156161-10062-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <20090907072507.GA19269@centrinvest.ru>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       i4ldeveloper@listserv.isdn4linux.de, Hansjoerg Lipp <hjlipp@web.de>
-Subject: Re: [PATCH 00/12] Gigaset driver patches for 2.6.32
-References: <20090906-patch-gigaset-00.tilman@imap.cc> <1252286806.2139.1.camel@desktop>
-In-Reply-To: <1252286806.2139.1.camel@desktop>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD186AE84D3A1C12F84327F27"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090907072507.GA19269@centrinvest.ru>
+X-Cookie: BOFH excuse
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD186AE84D3A1C12F84327F27
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Mon, Sep 07, 2009 at 11:25:07AM +0400, Andrey Panin wrote:
+> On 248, 09 05, 2009 at 02:09:21PM +0100, Mark Brown wrote:
 
-Daniel,
+> > +	if (res == NULL) {
+> > +		dev_err(&pdev->dev, "No I/O resource\n");
+> > +		ret = -EINVAL;
+> > +		goto err;
 
-thanks for taking a look at my patches.
+> Why not return -EINVAL right here ?
 
-On Sun, 06 Sep 2009 18:26:46 -0700, Daniel Walker wrote:
-> patches 6,7,10, and 12 all have checkpatch errors. Could you fix those?=
-=20
+For consistency with the rest of the function which uses this style for
+unwinding (though I see there's a cut'n'pasted return early on which
+it'd be nice to clean up).
 
-I have reissued patch 7, exchanging the "static" and "inline" keywords
-as requested.
+> > +err_led:
+> > +	led_classdev_unregister(&drvdata->cdev);
 
-The other patches I'd much prefer to keep as they are. The "ERRORs"
-checkpatch.pl reported for them are results of keeping to the existing
-formatting of the patched files. Completely reformatting them would
-cloud the actual changes made by the patches.
+> This line looks useless and possibly unsafe, led device was not registered.
 
-Thanks,
-Tilman
+True.
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+> Also this part of code can be removed if you move next line up.
 
-
---------------enigD186AE84D3A1C12F84327F27
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4-svn0 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iD8DBQFKpM1tQ3+did9BuFsRApyRAJ4tTHKus3ztRLVl+u+xccLjaQ6bLgCfSraV
-c5zwxvy3a+E3cJOc+5RMOdo=
-=Y6NB
------END PGP SIGNATURE-----
-
---------------enigD186AE84D3A1C12F84327F27--
+I'd prefer to keep the unwinding at the end, it makes the initialisation
+much easier to modify.
