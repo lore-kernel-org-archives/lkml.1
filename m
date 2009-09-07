@@ -1,70 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZIGI7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZIGJAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbZIGI7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 04:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZIGI7f
+	id S1752593AbZIGJAA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 05:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZIGI77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 04:59:35 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:49901 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752470AbZIGI7e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 04:59:34 -0400
-Date: Mon, 7 Sep 2009 10:59:28 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Subject: Re: linux-next: tip tree build warnings
-Message-ID: <20090907105928.2646cb11@skybase>
-In-Reply-To: <20090903121326.GA4724@osiris.boeblingen.de.ibm.com>
-References: <20090903182510.8fd4d4d1.sfr@canb.auug.org.au>
-	<20090903083844.GA9912@elte.hu>
-	<20090903121326.GA4724@osiris.boeblingen.de.ibm.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 Sep 2009 04:59:59 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:42881 "EHLO mail.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752148AbZIGI76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 04:59:58 -0400
+From: Tilman Schmidt <tilman@imap.cc>
+Subject: [PATCH 07/12 v2] gigaset: improve error recovery
+To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       i4ldeveloper@listserv.isdn4linux.de
+CC: Hansjoerg Lipp <hjlipp@web.de>, Daniel Walker <dwalker@fifo99.com>
+Message-ID: <20090906-patch-gigaset-07-v2.tilman@imap.cc>
+In-Reply-To: <20090906-patch-gigaset-07.tilman@imap.cc>
+References: <20090906-patch-gigaset-07.tilman@imap.cc>
+Date: Mon,  7 Sep 2009 10:59:43 +0200 (CEST)
+X-Spam-Score: -1.809 () AWL,BAYES_00,RDNS_NONE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Sep 2009 14:13:26 +0200
-Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+When the Gigaset base stops responding, try resetting the USB
+connection to recover.
 
-> On Thu, Sep 03, 2009 at 10:38:44AM +0200, Ingo Molnar wrote:
-> > * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> > > cputime_t is variously "u64", "unsigned long long" and "unsigned 
-> > > long" on different architectures.
-> > 
-> > Should be unsigned long i think. Most architectures use it as 
-> > unsigned long via include/asm-generic/cputime.h, except these three:
-> > 
-> >  arch/ia64/include/asm/cputime.h:typedef u64 cputime_t;
-> >  arch/powerpc/include/asm/cputime.h:typedef u64 cputime_t;
-> >  arch/s390/include/asm/cputime.h:typedef unsigned long long cputime_t;
-> > 
-> > Or we could eliminate the type altogether as well and standardize on 
-> > u64. Thomas?
-> 
-> s390 uses 64 bit cputime_t because we want the high resolution also in
-> 32 bit kernels. So standardizing on u64 would be the preferred solution
-> for us.
+Impact: error handling improvement
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+---
+ drivers/isdn/gigaset/bas-gigaset.c |   69 +++++++++++++++++++++++------------
+ 1 files changed, 45 insertions(+), 24 deletions(-)
 
-The cputime_t type serves/served two purposes: 1) make it clear that
-this is NOT a jiffie value, it is an architecture defined type with
-architecture dependent semantic, 2) by redefining cputime_t to a
-structure with a single embedded unsigned long I have been able to
-identify all places in the kernel that do not use the proper cputime
-functions. I'm not sure if we need 2) anymore.
-
+diff --git a/drivers/isdn/gigaset/bas-gigaset.c b/drivers/isdn/gigaset/bas-gigaset.c
+index 9e7108a..44bcfd9 100644
+--- a/drivers/isdn/gigaset/bas-gigaset.c
++++ b/drivers/isdn/gigaset/bas-gigaset.c
+@@ -134,6 +134,7 @@ struct bas_cardstate {
+ #define BS_ATRDPEND	0x040	/* urb_cmd_in in use */
+ #define BS_ATWRPEND	0x080	/* urb_cmd_out in use */
+ #define BS_SUSPEND	0x100	/* USB port suspended */
++#define BS_RESETTING	0x200	/* waiting for HD_RESET_INTERRUPT_PIPE_ACK */
+ 
+ 
+ static struct gigaset_driver *driver = NULL;
+@@ -319,6 +320,21 @@ static int gigaset_set_line_ctrl(struct cardstate *cs, unsigned cflag)
+ 	return -EINVAL;
+ }
+ 
++/* set/clear bits in base connection state, return previous state
++ */
++static inline int update_basstate(struct bas_cardstate *ucs,
++				  int set, int clear)
++{
++	unsigned long flags;
++	int state;
++
++	spin_lock_irqsave(&ucs->lock, flags);
++	state = ucs->basstate;
++	ucs->basstate = (state & ~clear) | set;
++	spin_unlock_irqrestore(&ucs->lock, flags);
++	return state;
++}
++
+ /* error_hangup
+  * hang up any existing connection because of an unrecoverable error
+  * This function may be called from any context and takes care of scheduling
+@@ -350,12 +366,9 @@ static inline void error_hangup(struct bc_state *bcs)
+  */
+ static inline void error_reset(struct cardstate *cs)
+ {
+-	/* close AT command channel to recover (ignore errors) */
+-	req_submit(cs->bcs, HD_CLOSE_ATCHANNEL, 0, BAS_TIMEOUT);
+-
+-	//FIXME try to recover without bothering the user
+-	dev_err(cs->dev,
+-	    "unrecoverable error - please disconnect Gigaset base to reset\n");
++	/* reset interrupt pipe to recover (ignore errors) */
++	update_basstate(cs->hw.bas, BS_RESETTING, 0);
++	req_submit(cs->bcs, HD_RESET_INTERRUPT_PIPE, 0, BAS_TIMEOUT);
+ }
+ 
+ /* check_pending
+@@ -398,8 +411,13 @@ static void check_pending(struct bas_cardstate *ucs)
+ 	case HD_DEVICE_INIT_ACK:		/* no reply expected */
+ 		ucs->pending = 0;
+ 		break;
+-	/* HD_READ_ATMESSAGE, HD_WRITE_ATMESSAGE, HD_RESET_INTERRUPTPIPE
+-	 * are handled separately and should never end up here
++	case HD_RESET_INTERRUPT_PIPE:
++		if (!(ucs->basstate & BS_RESETTING))
++			ucs->pending = 0;
++		break;
++	/*
++	 * HD_READ_ATMESSAGE and HD_WRITE_ATMESSAGE are handled separately
++	 * and should never end up here
+ 	 */
+ 	default:
+ 		dev_warn(&ucs->interface->dev,
+@@ -449,21 +467,6 @@ static void cmd_in_timeout(unsigned long data)
+ 	error_reset(cs);
+ }
+ 
+-/* set/clear bits in base connection state, return previous state
+- */
+-inline static int update_basstate(struct bas_cardstate *ucs,
+-				  int set, int clear)
+-{
+-	unsigned long flags;
+-	int state;
+-
+-	spin_lock_irqsave(&ucs->lock, flags);
+-	state = ucs->basstate;
+-	ucs->basstate = (state & ~clear) | set;
+-	spin_unlock_irqrestore(&ucs->lock, flags);
+-	return state;
+-}
+-
+ /* read_ctrl_callback
+  * USB completion handler for control pipe input
+  * called by the USB subsystem in interrupt context
+@@ -762,7 +765,8 @@ static void read_int_callback(struct urb *urb)
+ 		break;
+ 
+ 	case HD_RESET_INTERRUPT_PIPE_ACK:
+-		gig_dbg(DEBUG_USBREQ, "HD_RESET_INTERRUPT_PIPE_ACK");
++		update_basstate(ucs, 0, BS_RESETTING);
++		dev_notice(cs->dev, "interrupt pipe reset\n");
+ 		break;
+ 
+ 	case HD_SUSPEND_END:
+@@ -1429,6 +1433,7 @@ static void req_timeout(unsigned long data)
+ 
+ 	case HD_CLOSE_ATCHANNEL:
+ 		dev_err(bcs->cs->dev, "timeout closing AT channel\n");
++		error_reset(bcs->cs);
+ 		break;
+ 
+ 	case HD_CLOSE_B2CHANNEL:
+@@ -1438,6 +1443,13 @@ static void req_timeout(unsigned long data)
+ 		error_reset(bcs->cs);
+ 		break;
+ 
++	case HD_RESET_INTERRUPT_PIPE:
++		/* error recovery escalation */
++		dev_err(bcs->cs->dev,
++			"reset interrupt pipe timeout, attempting USB reset\n");
++		usb_queue_reset_device(bcs->cs->hw.bas->interface);
++		break;
++
+ 	default:
+ 		dev_warn(bcs->cs->dev, "request 0x%02x timed out, clearing\n",
+ 			 pending);
+@@ -1930,6 +1942,15 @@ static int gigaset_write_cmd(struct cardstate *cs,
+ 		goto notqueued;
+ 	}
+ 
++	/* translate "+++" escape sequence sent as a single separate command
++	 * into "close AT channel" command for error recovery
++	 * The next command will reopen the AT channel automatically.
++	 */
++	if (len == 3 && !memcmp(buf, "+++", 3)) {
++		rc = req_submit(cs->bcs, HD_CLOSE_ATCHANNEL, 0, BAS_TIMEOUT);
++		goto notqueued;
++	}
++
+ 	if (len > IF_WRITEBUF)
+ 		len = IF_WRITEBUF;
+ 	if (!(cb = kmalloc(sizeof(struct cmdbuf_t) + len, GFP_ATOMIC))) {
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+1.6.2.1.214.ge986c
 
