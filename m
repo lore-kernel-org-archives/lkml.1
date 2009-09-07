@@ -1,111 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753526AbZIGOpP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753598AbZIGOqr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753526AbZIGOpP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:45:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZIGOpO
+	id S1753598AbZIGOqr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:46:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZIGOqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:45:14 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:51283 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751197AbZIGOpN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:45:13 -0400
-Date: Mon, 7 Sep 2009 16:45:14 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] mm: write_cache_pages be more sequential
-Message-ID: <20090907144514.GC28054@wotan.suse.de>
-References: <4AA513AA.3010206@nokia.com> <20090907141548.GA28054@wotan.suse.de> <4AA518B3.40401@nokia.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA518B3.40401@nokia.com>
-User-Agent: Mutt/1.5.9i
+	Mon, 7 Sep 2009 10:46:47 -0400
+Received: from mail-qy0-f190.google.com ([209.85.221.190]:51121 "EHLO
+	mail-qy0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbZIGOqq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 10:46:46 -0400
+X-Greylist: delayed 48818 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Sep 2009 10:46:46 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=R37L4M4RMZl4MeHf/bLxjtz6UnUEoFEbLhTQc/79FnWIfv/u9iw0Y2Mj9x/hzM28qS
+         XL18JIHsQr+Hj6mW/Yvus9bd6F+3IkD2sLbyQmbh6w2l7XWpXrTB1tsco7wgC2hn/dw2
+         Nps//SfnALSq+o37P5FkC7oPNN2z4BVORW8VA=
+MIME-Version: 1.0
+In-Reply-To: <1252329025.1861.6.camel@hammer.suse.cz>
+References: <20090906052653.GB1324@ucw.cz> <1252276145.17852.15.camel@dax.rpnet.com> 
+	<20090907113132.GM23450@elf.ucw.cz> <1252329025.1861.6.camel@hammer.suse.cz>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Mon, 7 Sep 2009 22:46:26 +0800
+Message-ID: <f17812d70909070746t65a94d2ald5e88cdf241c7da@mail.gmail.com>
+Subject: Re: Zaurus suspend saga
+To: Stanislav Brabec <utx@penguin.cz>
+Cc: Pavel Machek <pavel@ucw.cz>, Richard Purdie <rpurdie@rpsys.net>,
+       lenz@cs.wisc.edu, kernel list <linux-kernel@vger.kernel.org>,
+       Dirk@opfer-online.de, arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>,
+       thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
+       Andrea Adami <andrea.adami@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 05:29:07PM +0300, Adrian Hunter wrote:
-> Nick Piggin wrote:
-> >On Mon, Sep 07, 2009 at 05:07:38PM +0300, Adrian Hunter wrote:
-> >>>From 6f3bb7c26936c45d810048f59c369e8d5a5623fc Mon Sep 17 00:00:00 2001
-> >>From: Adrian Hunter <adrian.hunter@nokia.com>
-> >>Date: Mon, 7 Sep 2009 10:49:11 +0300
-> >>Subject: [PATCH] mm: write_cache_pages be more sequential
-> >>
-> >>If a file is written to sequentially, then writeback
-> >>should write the pages sequentially also.  However,
-> >>that does not always happen.  For example:
-> >>
-> >>1) user writes pages 0, 1 and 2 but 2 is incomplete
-> >>2) write_cache_pages writes pages 0, 1 and 2 and sets
-> >>writeback_index to 3
-> >>3) user finishes writing page 2 and writes pages 3 and 4
-> >>4) write_cache_pages writes pages 3 and 4, and then cycles
-> >>back and writes page 2 again.
-> >>
-> >>So the pages are written out in the order 0, 1, 2, 3 ,4 ,2
-> >>instead of 0, 1, 2, 2, 3, 4.
-> >
-> >Why does page 2 get set dirty if the write was incomplete?
-> 
-> I meant that only part of the page was written. e.g.
-> write 10240 bytes, wait for writeback, then write another
-> 10240 bytes.  The pages will be written out in the order
-> 0, 1, 2, 3, 4, 2
+2009/9/7 Stanislav Brabec <utx@penguin.cz>:
+> Pavel Machek wrote:
+>>
+>> > Sadly lack of time means I've lost track of the Zaurus kernels but this
+>> > sounds like all accesses to the SSP buses now go through the SPI layer
+>> > and when it was converted nobody thought about the impact this would
+>> > have on the Zaurus charger code.
+>>
+>>Unfortunately... Do you have any idea when this conversion took place?
+>
+> In past, MAX1111 driver was embedded in the Zaurus specific code. Now
+> MAX1111 is a generic SPI driver and spitz_pm.c calls it.
+>
+> Maybe it will still work with CONFIG_CORGI_SSP_DEPRECATED.
+>
 
-OK...
-
-
-> >>This situation was noticed on UBIFS because it writes
-> >>directly from writepage.  Hence if there is an unexpected
-> >>power-loss, a file will end up with a hole even though
-> >>the file was written sequentially by the user.
-> >>
-> >>Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
-> >>---
-> >>mm/page-writeback.c |    2 ++
-> >>1 files changed, 2 insertions(+), 0 deletions(-)
-> >>
-> >>diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-> >>index 81627eb..7410b7a 100644
-> >>--- a/mm/page-writeback.c
-> >>+++ b/mm/page-writeback.c
-> >>@@ -960,6 +960,8 @@ int write_cache_pages(struct address_space *mapping,
-> >>	pagevec_init(&pvec, 0);
-> >>	if (wbc->range_cyclic) {
-> >>		writeback_index = mapping->writeback_index; /* prev offset */
-> >>+		if (writeback_index)
-> >>+			writeback_index -= 1;
-> >>		index = writeback_index;
-> >>		if (index == 0)
-> >>			cycled = 1;
-> >
-> >Doesn't this just break range_cyclic? range_cyclic is supposed to
-> >work across calls to write_cache_pages, and it's there I guess so
-> >background writeout will be able to eventually get around to writing
-> >all pages relatively fairly in the presence of redirtying operations.
-> 
-> I do not immediately see how it breaks range_cyclic.  Can you give an
-> example?
-
-Oh, I must be dyslexic, I read it as writeback_index = -1; :P
-But I think it can still cause some subtle problems with error
-cases.
-
-I guess you could just make the done_index assignment more logical
-and make it page->index. Then add a comment when assigning to
-writeback_index that you want to start up again at the previously
-written page to help this case.
-
-Also, check to ensure the error cases are going to still work correctly.
-Eg. you might want to increment done_index in the case of error.
-
-I guess it is a reasonable workaround for the problem. It is a bit
-unsatisfying to special case on a page basis like this, but anyway
-I don't think there should be a realistic downside in practice.
-
+Nope. The CONFIG_CORGI_SSP_DEPRECATED is not supposed to work.
