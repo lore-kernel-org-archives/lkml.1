@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759019AbZIGGeu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753386AbZIGOPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759019AbZIGGeu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 02:34:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758982AbZIGGet
+	id S1753386AbZIGOPN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752282AbZIGOPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 02:34:49 -0400
-Received: from mga01.intel.com ([192.55.52.88]:15810 "EHLO mga01.intel.com"
+	Mon, 7 Sep 2009 10:15:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51211 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758954AbZIGGet (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 02:34:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,344,1249282800"; 
-   d="scan'208";a="491119478"
-Date: Mon, 7 Sep 2009 10:13:13 -0400
-From: Youquan Song <youquan.song@intel.com>
-To: mingo@elte.hu, hpa@zytor.com, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>, youqun.song@intel.com
-Subject: Fix interrupt remapping hang if interrupt remapping disable in BIOS
-Message-ID: <20090907141313.GA26091@youquan-linux.bj.intel.com>
-Mime-Version: 1.0
+	id S1751863AbZIGOPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 10:15:11 -0400
+Date: Mon, 7 Sep 2009 16:14:58 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090907141458.GD24507@elte.hu>
+References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk> <20090907115750.GW18599@kernel.dk>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090907115750.GW18599@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BIOS clear DMAR table INTR_REMAP flag to disable interrupt remapping. Current
-kernel only check interrupt remapping(IR) flag in DRHD's extended capability 
-register to decide interrupt remapping support or not. But IR flag will not 
-affected by BIOS setting. 
 
-So though BIOS disable interrupt remapping feature, However, 
-intr_remapping_supported function will report interrupt supported. On this 
-cases, it will continue to enable interrupt remapping result kernel hang. 
-This bug exists on most platforms support interrupt remapping.      
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-This patch add DMAR table INTR_REMAP flag check before enable interrup remapping
+> On Mon, Sep 07 2009, Jens Axboe wrote:
+> > Scheduler       Runtime         Max lat     Avg lat     Std dev
+> > ----------------------------------------------------------------
+> > CFS             100             951         462         267
+> > CFS-x2          100             983         484         308
+> > BFS
+> > BFS-x2
+> 
+> Those numbers are buggy, btw, it's not nearly as bad. But 
+> responsiveness under compile load IS bad though, the test app just 
+> didn't quantify it correctly. I'll see if I can get it working 
+> properly.
 
-Signed-off-by: Youquan Song <youquan.song@intel.com>
----
+What's the default latency target on your box:
 
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index a8a4383..78f4ca8 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -43,7 +43,7 @@
-  */
- LIST_HEAD(dmar_drhd_units);
- 
--static struct acpi_table_header * __initdata dmar_tbl;
-+struct acpi_table_header * __initdata dmar_tbl;
- static acpi_size dmar_tbl_size;
- 
- static void __init dmar_register_drhd_unit(struct dmar_drhd_unit *drhd)
-diff --git a/drivers/pci/intr_remapping.c b/drivers/pci/intr_remapping.c
-index ebfa47b..97d1561 100644
---- a/drivers/pci/intr_remapping.c
-+++ b/drivers/pci/intr_remapping.c
-@@ -16,6 +16,7 @@
- static struct ioapic_scope ir_ioapic[MAX_IO_APICS];
- static int ir_ioapic_num;
- int intr_remapping_enabled;
-+extern struct acpi_table_header *__initdata dmar_tbl;
- 
- static int disable_intremap;
- static __init int setup_nointremap(char *str)
-@@ -607,9 +608,14 @@ end:
- int __init intr_remapping_supported(void)
- {
- 	struct dmar_drhd_unit *drhd;
--
-+	struct acpi_table_dmar *dmar;
-+
- 	if (disable_intremap)
- 		return 0;
-+
-+	dmar = (struct acpi_table_dmar *)dmar_tbl;
-+	if (!(dmar->flags & 0x1))
-+		return 0;
- 
- 	for_each_drhd_unit(drhd) {
- 		struct intel_iommu *iommu = drhd->iommu;
+  cat /proc/sys/kernel/sched_latency_ns
+
+?
+
+And yes, it would be wonderful to get a test-app from you that would 
+express the kind of pain you are seeing during compile jobs.
+
+	Ingo
