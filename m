@@ -1,84 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbZIGD4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754146AbZIGEvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758864AbZIGD4O (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 Sep 2009 23:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758813AbZIGD4N
+	id S1754146AbZIGEvn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 00:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZIGEvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 Sep 2009 23:56:13 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:54831 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758809AbZIGD4N convert rfc822-to-8bit (ORCPT
+	Mon, 7 Sep 2009 00:51:42 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:56748 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbZIGEvm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 Sep 2009 23:56:13 -0400
+	Mon, 7 Sep 2009 00:51:42 -0400
+Date: Mon, 7 Sep 2009 10:21:37 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp,
+       Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [mmotm][BUGFIX][PATCH] memcg: fix softlimit css refcnt
+ handling(yet another one)
+Message-ID: <20090907045137.GE8315@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090903141727.ccde7e91.nishimura@mxp.nes.nec.co.jp>
+ <20090904131835.ac2b8cc8.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090904141157.4640ec1e.nishimura@mxp.nes.nec.co.jp>
+ <20090904142143.15ffcb53.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090904142654.08dd159f.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090904154050.25873aa5.nishimura@mxp.nes.nec.co.jp>
+ <20090904163758.a5604fee.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090904190726.6442f3df.d-nishimura@mtf.biglobe.ne.jp>
+ <20090907080403.5e4510b3.d-nishimura@mtf.biglobe.ne.jp>
+ <20090907094912.5cbbbaa5.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090906205952.GA6516@elte.hu>
-References: <20090906205952.GA6516@elte.hu>
-Date: Mon, 7 Sep 2009 13:50:16 +1000
-X-Google-Sender-Auth: eff67ef9f92dae4a
-Message-ID: <7574305f0909062050k4b0d4dd2pf9e71724caf8a189@mail.gmail.com>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-From: Con Kolivas <kernel@kolivas.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090907094912.5cbbbaa5.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/7 Ingo Molnar <mingo@elte.hu>:
-> hi Con,
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-09-07 09:49:12]:
 
-Sigh..
+> > From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > refcount of the "victim" should be decremented before exiting the loop.
+> > 
+> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> Nice!
+> 
+> Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> > ---
+> >  mm/memcontrol.c |    8 ++++++--
+> >  1 files changed, 6 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > index ac51294..011aba6 100644
+> > --- a/mm/memcontrol.c
+> > +++ b/mm/memcontrol.c
+> > @@ -1133,8 +1133,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+> >  				 * anything, it might because there are
+> >  				 * no reclaimable pages under this hierarchy
+> >  				 */
+> > -				if (!check_soft || !total)
+> > +				if (!check_soft || !total) {
+> > +					css_put(&victim->css);
+> >  					break;
+> > +				}
+> >  				/*
+> >  				 * We want to do more targetted reclaim.
+> >  				 * excess >> 2 is not to excessive so as to
+> > @@ -1142,8 +1144,10 @@ static int mem_cgroup_hierarchical_reclaim(struct mem_cgroup *root_mem,
+> >  				 * coming back to reclaim from this cgroup
+> >  				 */
+> >  				if (total >= (excess >> 2) ||
+> > -					(loop > MEM_CGROUP_MAX_RECLAIM_LOOPS))
+> > +					(loop > MEM_CGROUP_MAX_RECLAIM_LOOPS)) {
+> > +					css_put(&victim->css);
+> >  					break;
+> > +				}
+> >  			}
+> >  		}
+> >  		if (!mem_cgroup_local_usage(&victim->stat)) {
 
-Well hello there.
-
->
-> I've read your BFS announcement/FAQ with great interest:
->
->    http://ck.kolivas.org/patches/bfs/bfs-faq.txt
-
-> I understand that BFS is still early code and that you are not
-> targeting BFS for mainline inclusion - but BFS is an interesting
-> and bold new approach, cutting a _lot_ of code out of
-> kernel/sched*.c, so it raised my curiosity and interest :-)
-
-Hard to keep a project under wraps and get an audience at the same
-time, it is. I do realise it was inevitable LKML would invade my
-personal space no matter how much I didn't want it to, but it would be
-rude of me to not respond.
-
-> In the announcement and on your webpage you have compared BFS to
-> the mainline scheduler in various workloads - showing various
-> improvements over it. I have tried and tested BFS and ran a set of
-> benchmarks - this mail contains the results and my (quick)
-> findings.
-
-/me sees Ingo run off to find the right combination of hardware and
-benchmark to prove his point.
-
-[snip lots of bullshit meaningless benchmarks showing how great cfs is
-and/or how bad bfs is, along with telling people they should use these
-artificial benchmarks to determine how good it is, demonstrating yet
-again why benchmarks fail the desktop]
-
-I'm not interested in a long protracted discussion about this since
-I'm too busy to live linux the way full time developers do, so I'll
-keep it short, and perhaps you'll understand my intent better if the
-FAQ wasn't clear enough.
+Good catch! Sorry for the late response I've been away
 
 
-Do you know what a normal desktop PC looks like? No, a more realistic
-question based on what you chose to benchmark to prove your point
-would be: Do you know what normal people actually do on them?
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+ 
 
-
-Feel free to treat the question as rhetorical.
-
-Regards,
--ck
-
-/me checks on his distributed computing client's progress, fires up
-his next H264 encode, changes music tracks and prepares to have his
-arse whooped on quakelive.
+-- 
+	Balbir
