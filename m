@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752701AbZIGJ5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZIGK10@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752701AbZIGJ5U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 05:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZIGJ5U
+	id S1752934AbZIGK10 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 06:27:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbZIGK1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 05:57:20 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:5570 "EHLO mx1.redhat.com"
+	Mon, 7 Sep 2009 06:27:25 -0400
+Received: from fanny.its.uu.se ([130.238.4.241]:53650 "EHLO fanny.its.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752516AbZIGJ5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 05:57:19 -0400
-Message-ID: <4AA4D95E.40105@redhat.com>
-Date: Mon, 07 Sep 2009 17:58:54 +0800
-From: Amerigo Wang <amwang@redhat.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090719)
-MIME-Version: 1.0
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [RFC Patch 0/5] gcov: integrate gcov into kbuild
-References: <20090904012755.3749.69645.sendpatchset@localhost.localdomain> <4AA4C354.4040002@linux.vnet.ibm.com>
-In-Reply-To: <4AA4C354.4040002@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752771AbZIGK1X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 06:27:23 -0400
+X-Greylist: delayed 1684 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 Sep 2009 06:27:23 EDT
+Date: Mon, 7 Sep 2009 11:59:16 +0200 (MEST)
+Message-Id: <200909070959.n879xGui019854@pilspetsen.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Lennert Buytenhek <buytenh@marvell.com>
+Subject: [PATCH 2.6.31-rc9] mv643xx_eth.c: remove unused txq_set_wrr()
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Oberparleiter wrote:
-> Amerigo Wang wrote:
->> This patchset is mainly to integrate gcov into kbuild system, so that
->> we can use "make foo/bar.c.gcov" to get the gcov files.
->> Also moves the useful scripts in gcov.txt into tools/gcov/ direcotry.
-> 
-> Interesting approach - this should definitely make it more easy for 
-> developers to get coverage data for their code. A couple of 
-> thoughts/observations:
+The txq_set_wrr() function in drivers/net/mv643xx_eth.c is
+unused, not even referenced under #if 0 or something like that,
+which results in a compile-time warning:
 
+drivers/net/mv643xx_eth.c:1070: warning: 'txq_set_wrr' defined but not used
 
-Thanks!
+Fix: remove it.
 
-> 
-> - does not work when compiling with a separate build directory (make O=)
-> 
-> /sys/kernel/debug/gcov//mnt/out//mnt/linux-2.6.gcno:cannot open graph file
-> make[2]: *** [init/main.c.gcov] Error 1
-> make[1]: *** [init/main.c.gcov] Error 2
-> make: *** [sub-make] Error 2
-> 
-> This is most likely due to target_base_name being an absolute path 
-> (relative to srctree) in case build and source directories are different.
-> 
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+---
+ drivers/net/mv643xx_eth.c |   34 ----------------------------------
+ 1 file changed, 34 deletions(-)
 
-
-Hmm, yeah, I will fix it.
-
-> - gcov call should use option -p, otherwise gcov may overwrite .gcov 
-> files if a .c file includes two .h files from different directories.
-
-
-Ok.
-
-> - an option to generate .gcov files for all .c files in a subdirectory 
-> would be nice
-
-Nice idea! I will add this.
-
-
-Thank you, I will update and resend them!
+--- linux-2.6.31-rc9/drivers/net/mv643xx_eth.c.~1~	2009-09-06 12:20:57.000000000 +0200
++++ linux-2.6.31-rc9/drivers/net/mv643xx_eth.c	2009-09-07 11:36:32.000000000 +0200
+@@ -1066,40 +1066,6 @@ static void txq_set_fixed_prio_mode(stru
+ 	}
+ }
+ 
+-static void txq_set_wrr(struct tx_queue *txq, int weight)
+-{
+-	struct mv643xx_eth_private *mp = txq_to_mp(txq);
+-	int off;
+-	u32 val;
+-
+-	/*
+-	 * Turn off fixed priority mode.
+-	 */
+-	off = 0;
+-	switch (mp->shared->tx_bw_control) {
+-	case TX_BW_CONTROL_OLD_LAYOUT:
+-		off = TXQ_FIX_PRIO_CONF;
+-		break;
+-	case TX_BW_CONTROL_NEW_LAYOUT:
+-		off = TXQ_FIX_PRIO_CONF_MOVED;
+-		break;
+-	}
+-
+-	if (off) {
+-		val = rdlp(mp, off);
+-		val &= ~(1 << txq->index);
+-		wrlp(mp, off, val);
+-
+-		/*
+-		 * Configure WRR weight for this queue.
+-		 */
+-
+-		val = rdlp(mp, off);
+-		val = (val & ~0xff) | (weight & 0xff);
+-		wrlp(mp, TXQ_BW_WRR_CONF(txq->index), val);
+-	}
+-}
+-
+ 
+ /* mii management interface *************************************************/
+ static irqreturn_t mv643xx_eth_err_irq(int irq, void *dev_id)
