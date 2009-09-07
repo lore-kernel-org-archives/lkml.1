@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbZIGHnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZIGHoa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751922AbZIGHnr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 03:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbZIGHnq
+	id S1751970AbZIGHoa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 03:44:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751895AbZIGHoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 03:43:46 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50980 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751444AbZIGHnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 03:43:46 -0400
-Subject: Re: linux-next: slab tree build failure
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Catalin Marinas <catalin.marinas@arm.com>, npiggin@suse.de
-In-Reply-To: <20090907173108.3c0148d7.sfr@canb.auug.org.au>
-References: <20090907153723.0c984c83.sfr@canb.auug.org.au>
-	 <84144f020909062310u37ecdddfw31c6cc9a22ccabd9@mail.gmail.com>
-	 <20090907173108.3c0148d7.sfr@canb.auug.org.au>
-Date: Mon, 07 Sep 2009 10:43:46 +0300
-Message-Id: <1252309426.4964.3.camel@penberg-laptop>
+	Mon, 7 Sep 2009 03:44:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44882 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751548AbZIGHo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 03:44:29 -0400
+Date: Mon, 7 Sep 2009 09:44:31 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Eric Paris <eparis@parisplace.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 09/33] fs: dcache scale dentry refcount
+Message-ID: <20090907074431.GH1875@wotan.suse.de>
+References: <20090904065142.114706411@nick.local0.net> <20090904065535.281876981@nick.local0.net> <7e0fb38c0909061101t6b4f337cvf691814c28bcf50e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <7e0fb38c0909061101t6b4f337cvf691814c28bcf50e@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+On Sun, Sep 06, 2009 at 02:01:05PM -0400, Eric Paris wrote:
+> On Fri, Sep 4, 2009 at 2:51 AM, <npiggin@suse.de> wrote:
+> 
+> And yet in this case we do check for dentry->d_parent == dentry.  (my
+> unknowing self thinks we'd want to check in all places)
 
-On Mon, 7 Sep 2009 09:10:18 +0300 Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > AFAICT, you're interested in kmemleak.git, not slab.git. Catalin?
+I think you're right, I think we need checks there too...
 
-On Mon, 2009-09-07 at 17:31 +1000, Stephen Rothwell wrote:
-> I first got the error after merging the slab tree ... the kmemleak tree
-> is merged much later.
+BTW Is there a way to test the fsnotify code? I thought inotify was
+supposed to be implemented with fsnotify, but I see quite a lot
+of duplicated (or very similar) code... We've also still got
+inotify calls in fs/ (inotify_umount_inodes). and CONFIG_INOTIFY and
+CONFIG_FSNOTIFY conditionals in there too. Would it be possible to
+move that out into fsnotify calls? (fsnotify_inode_init_once or
+whatever).
 
-Aah, let me guess, CONFIG_SLQB? I guess I'll just rebase the damn tree
-and make it non-default. We need that anyway if we want to merge it to
-2.6.32. I'll take a stab at it later this evening (my time zone).
+(Sorry to hijack your good review comments :))
 
-			Pekka
+Thanks,
+Nick
 
