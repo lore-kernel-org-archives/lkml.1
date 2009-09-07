@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752805AbZIGW7K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752813AbZIGXMe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752805AbZIGW7K (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 18:59:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZIGW7J
+	id S1752813AbZIGXMe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 19:12:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752718AbZIGXMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 18:59:09 -0400
-Received: from mail-iw0-f204.google.com ([209.85.223.204]:35045 "EHLO
-	mail-iw0-f204.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752220AbZIGW7I (ORCPT
+	Mon, 7 Sep 2009 19:12:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42193 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752645AbZIGXMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 18:59:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:cc:content-type;
-        b=XQ1ocD15whtgfKNGTZjQodm1XXo4zAxQfwEODsQ/UMbOD0+0/3Ekf3+UQEtEQQjwyf
-         UGnQScPjLGNlk7UDgFBkkCtgoe8JLLoEqGvlAHX9LIRaLsENH/Mt39k5YTg5VQhgNKFP
-         iglaBICeJPTF2TuSLEdBFzyoab6A5OqAyr4fo=
-MIME-Version: 1.0
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 7 Sep 2009 15:58:50 -0700
-Message-ID: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com>
-Subject: Stop using tasklets for bottom halves
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Matt Smith <Matt.Smith@atheros.com>, Kevin Hayes <kevin@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
-Content-Type: text/plain; charset=UTF-8
+	Mon, 7 Sep 2009 19:12:33 -0400
+Date: Mon, 7 Sep 2009 20:12:05 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg KH <greg@kroah.com>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org, swetland@google.com
+Subject: Re: Staging tree status for the .32 kernel merge
+Message-ID: <20090907201205.23173985@caramujo.chehab.org>
+In-Reply-To: <20090906052819.GE1324@ucw.cz>
+References: <20090903041429.GA29875@kroah.com>
+	<20090906052819.GE1324@ucw.cz>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A while ago I had read about an effort to consider removing tasklets
-[1] or at least trying to not use them. I'm unaware of the progress in
-this respect but since reading that article have always tried to
-evaluate whether or not we need tasklets on wireless drivers. I have
-also wondered whether work in irq context in other parts of the kernel
-can be moved to process context, a curious example being timers. I'll
-personally be trying to using only process context on bottom halves on
-future drivers but I figured it may be a good time to ask how serious
-was avoiding tasklets or using wrappers in the future to avoid irq
-context is or is it advised. Do we have a general agreement this is a
-good step forward to take? Has anyone made tests or changes on a
-specific driver from irq context to process context and proven there
-are no significant advantages of using irq context where you would
-have expected it?
+Em Sun, 6 Sep 2009 07:28:19 +0200
+Pavel Machek <pavel@ucw.cz> escreveu:
 
-Wireless in particular should IMHO not require taskets for anything
-time sensitive that I can think about except perhaps changing channels
-quickly and to do that appropriately also process pending RX frames
-prior to a switch. It remains to be seen experimentally whether or not
-using a workqueue for RX processing would affect the time to switch
-channels negatively but I doubt it would be significant. I hope to
-test that with ath9k_htc.
+> Hi!
+> 
+> > 	  Note, Pavel has been adding some of the Dream hardware
+> > 	  drivers, which are separate from the core Android drivers.  I
+> > 	  have no objection to those, but they should work to get merged
+> > 	  to their "correct" places in the tree in another release or
+> > 	  so.
+> 
+> Well, some of those drivers should be moderately easy (touchscreen),
+> but some (camera) will take longer than that. For example camera --
+> contains _lots_ of code, and uses obsolete v4l api.
 
-What about gigabit or 10 Gigabit Ethernet drivers ? Do they face any
-challenges which would yet need to be proven would not face issues
-when processing bottom halves in process context?
+The usage of the obsolete V4L API is a problem since we aren't accepting any
+drivers with the old API for a long time, doing large efforts to convert the
+few remaining ones to V4L2 API.
 
-[1] http://lwn.net/Articles/239633/
+This probably means also that they are not using the current V4L framework. Are
+they already somewhere at the staging tree?
 
-  Luis
+
+
+Cheers,
+Mauro
