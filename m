@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753616AbZIGOhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753635AbZIGOlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753616AbZIGOhR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 10:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZIGOhR
+	id S1753635AbZIGOlu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 10:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZIGOlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 10:37:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53500 "EHLO
+	Mon, 7 Sep 2009 10:41:49 -0400
+Received: from casper.infradead.org ([85.118.1.10]:45254 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753383AbZIGOhQ (ORCPT
+	with ESMTP id S1753423AbZIGOls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 10:37:16 -0400
-Date: Mon, 7 Sep 2009 07:40:39 -0700
+	Mon, 7 Sep 2009 10:41:48 -0400
+Date: Mon, 7 Sep 2009 07:45:07 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Nikos Chantziaras <realnc@arcor.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090907074039.1b6bc1ac@infradead.org>
-In-Reply-To: <h81v7t$p6e$1@ger.gmane.org>
-References: <20090906205952.GA6516@elte.hu>
-	<h81v7t$p6e$1@ger.gmane.org>
+To: Markus Tornqvist <mjt@nysv.org>
+Cc: Ingo Molnar <mingo@elte.hu>, mjt@nysv.org, Frans Pop <elendil@planet.nl>,
+       kernel@kolivas.org, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, efault@gmx.de
+Subject: Re: [quad core results] BFS vs. mainline scheduler benchmarks and
+ measurements
+Message-ID: <20090907074507.7f00a3ec@infradead.org>
+In-Reply-To: <20090907131905.GP28624@nysv.org>
+References: <20090907121613.GA32097@elte.hu>
+	<20090907131905.GP28624@nysv.org>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -30,19 +33,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Sep 2009 06:38:36 +0300
-Nikos Chantziaras <realnc@arcor.de> wrote:
-
-> On 09/06/2009 11:59 PM, Ingo Molnar wrote:
-> >[...]
-> > Also, i'd like to outline that i agree with the general goals
-> > described by you in the BFS announcement - small desktop systems
-> > matter more than large systems. We find it critically important
-> > that the mainline Linux scheduler performs well on those systems
-> > too - and if you (or anyone else) can reproduce suboptimal behavior
-> > please let the scheduler folks know so that we can fix/improve it.
+On Mon, 7 Sep 2009 16:41:51 +0300
+> >It shows similar curves and behavior to the 8-core results i posted 
+> >- BFS is slower than mainline in virtually every measurement. The 
+> >ratios are different for different parts of the graphs - but the 
+> >trend is similar.
 > 
-> BFS improved behavior of many applications on my Intel Core 2 box in
-> a way that can't be benchmarked.  Examples:
+> Dude, not cool.
+> 
+> 1. Quad HT is not the same as a 4-core desktop, you're doing it with
+> 8 cores 
 
-Have you tried to see if latencytop catches such latencies ?
+4 cores, 8 threads. Which is basically the standard desktop cpu going
+forward... (4 cores already is today, 8 threads is that any day now)
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
