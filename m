@@ -1,41 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752678AbZIIA1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752012AbZIHXQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752678AbZIIA1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 20:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZIIA1y
+	id S1752012AbZIHXQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 19:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZIHXQ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 20:27:54 -0400
-Received: from mail.qau.edu.pk ([121.52.146.212]:56260 "EHLO qau.edu.pk"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752169AbZIIA1x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 20:27:53 -0400
-Message-ID: <3326.213.37.214.189.1252451776.squirrel@mail.qau.edu.pk>
-Date: Wed, 9 Sep 2009 04:16:16 +0500 (PKT)
-Subject: Lieber Freund!!!
-From: "Luther Zihiri" <redboathfinancia@aim.com>
-Reply-To: lutherzhiri@aim.com
-User-Agent: SquirrelMail/1.4.6
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-X-Priority: 3 (Normal)
-Importance: Normal
-X-NAIMIME-Disclaimer: 1
-X-NAIMIME-Modified: 1
-To: unlisted-recipients:; (no To-header on input)
+	Tue, 8 Sep 2009 19:16:57 -0400
+Received: from outbound-mail-154.bluehost.com ([67.222.39.34]:51651 "HELO
+	outbound-mail-154.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750910AbZIHXQ4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 19:16:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=rwX4lXkn9ru8DHkG6rd8DbjeH4yS2s1D3MITbpf3kYN5GjB+BWvJbjBOWePWP+MmVozrgUkXKxZMt2h8BH53Rl+JlJm8Aw0rBvTqrZnOSezWnLl66MS5tUMDNX6FcXDg;
+Date: Tue, 8 Sep 2009 16:16:57 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: reinette chatre <reinette.chatre@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
+       "bugzilla-daemon@bugzilla.kernel.org" 
+	<bugzilla-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug #13819] system freeze when switching to console
+Message-ID: <20090908161657.0f21c7fb@jbarnes-g45>
+In-Reply-To: <1252449461.30150.61.camel@rc-desk>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
+	<Vm51Upp4EV.A.r-D.mgBpKB@chimera>
+	<1252427375.14735.130.camel@rc-desk>
+	<alpine.LFD.2.01.0909080943030.7458@localhost.localdomain>
+	<1252431375.14735.139.camel@rc-desk>
+	<alpine.LFD.2.01.0909081039300.7458@localhost.localdomain>
+	<1252449461.30150.61.camel@rc-desk>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n890S916024425
 
-Lieber Freund!!!
-Ich vermute das diese E-Mail eine Ãœberraschung fÃ¼r Sie sein wird, aber esist wahr.Ich bin bei einer routinen ÃœberprÃ¼fung in meiner Bank (StandardBank von SÃ¼d Afrika) wo ich arbeite, auf einem Konto gestoÃŸen, was nichtin anspruch genommen worden ist, wo derzeit $12,500,000(zwÃ¶lfmillionenfÃ¼nfhundert US Dollar) gutgeschrieben sind.
-Dieses Konto gehÃ¶rte Herrn Manfred Becker, der ein Kunde in unsere Bankwar, der leider verstorben ist. Herr Becker war ein gebÃ¼rtigerDeutscher.Damit es mir mÃ¶glich ist dieses Geld $12,500,000 inanspruchzunehmen, benÃ¶tige ich die zusammenarbeit eines AuslÃ¤ndischen Partners wieSie,den ich als Verwandter und Erbe des verstorbenen Herrn Beckervorstellen kann,damit wir das Geld inanspruch nehmen kÃ¶nnen.
-FÃ¼r diese UnterstÃ¼tzung erhalten Sie 30% der Erbschaftsumme und dierestlichen 70% teile ich mir mit meinen zwei Arbeitskollegen, die mich beidieser Transaktion ebenfalls unterstÃ¼tzen.Wenn Sie interessiert sind,kÃ¶nnen Sie mir bitte eine E-Mail schicken, damit ich Ihnen mehr Detailszukommen lassen kann.
-Schicken Sie bitte Ihre Antwort auf diese E-Mail Adresse:(lutherzhiri@aim.com )
-Mit freundlichen GrÃ¼ÃŸen
-Herr Luther Zihiri.
+On Tue, 08 Sep 2009 15:37:41 -0700
+reinette chatre <reinette.chatre@intel.com> wrote:
 
+> On Tue, 2009-09-08 at 11:06 -0700, Linus Torvalds wrote:
+> > so this is TOTALLY UNTESTED!
+> 
+> I understand that the discussion is still going on whether this is the
+> right thing to do. Even so, I thought you may like to know that with
+> this patch I can again switch to console, back again, hibernate, and
+> shut down .. all without crashing my system.
+> 
+> Tested-by: Reinette Chatre <reinette.chatre@intel.com>
+> 
+> Thank you very much!
 
-This is Virus Free Email Scanned by QAU's McAfee Virus Scanner""THIS COMMUNICATION MAY CONTAIN CONFIDENTIAL AND/OR OTHERWISE PROPRIETARY MATERIALand is thus for use only by the intended recipient. If you received this in error, please contact the sender and delete the e-mailand its attachments from all computers."www.qau.edu.pkÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Do you see "hardware wedged" messages in your log after using Linus's
+patch?  That's what I'd expect...  ah no I see we don't call the
+routine that requires interrupts in that path like I thought.
+
+So Linus's patch is fine with me.
+
+Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+Sorry Linus, you were right; I was making this more complicated than it
+had to be.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
