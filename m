@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752596AbZIHWxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbZIHWxv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752596AbZIHWxs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 18:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZIHWxs
+	id S1752613AbZIHWxv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 18:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751822AbZIHWxu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 18:53:48 -0400
-Received: from mail-in-17.arcor-online.net ([151.189.21.57]:54374 "EHLO
-	mail-in-17.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751284AbZIHWxr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 18:53:47 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-03.arcor-online.net 959CF2C2A24
-Message-ID: <4AA6E07C.9030801@arcor.de>
-Date: Wed, 09 Sep 2009 01:53:48 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+	Tue, 8 Sep 2009 18:53:50 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37308 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752591AbZIHWxt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 18:53:49 -0400
+Date: Tue, 8 Sep 2009 15:53:49 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+       akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+       josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+       tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org
+Subject: [PATCH tip/core/rcu 0/3] increase rcutorture intensity and fix a
+	couple resulting bugs
+Message-ID: <20090908225349.GA19524@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
 MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu>	<h81v7t$p6e$1@ger.gmane.org>	<20090907074039.1b6bc1ac@infradead.org>	<4AA6056A.4020106@arcor.de>	<20090908013800.296a5fb5@infradead.org>	<4AA62E4E.4040700@arcor.de> <20090908072046.3932fd50@infradead.org>
-In-Reply-To: <20090908072046.3932fd50@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/08/2009 05:20 PM, Arjan van de Ven wrote:
-> On Tue, 08 Sep 2009 13:13:34 +0300
-> Nikos Chantziaras<realnc@arcor.de>  wrote:
->
->> On 09/08/2009 11:38 AM, Arjan van de Ven wrote:
->>> On Tue, 08 Sep 2009 10:19:06 +0300
->>> Nikos Chantziaras<realnc@arcor.de>   wrote:
->>>
->>>> latencytop has this to say:
->>>>
->>>>      http://foss.math.aegean.gr/~realnc/pics/latop1.png
->>>>
->>>> Though I don't really understand what this tool is trying to tell
->>>> me, I hope someone does.
->>>
->>> despite the untranslated content, it is clear that you have
->>> scheduler delays (either due to scheduler bugs or cpu contention)
->>> of upto 68 msecs... Second in line is your binary AMD graphics
->>> driver that is chewing up 14% of your total latency...
->>
->> I've now used a correctly installed and up-to-date version of
->> latencytop and repeated the test.  Also, I got rid of AMD's binary
->> blob and used kernel DRM drivers for my graphics card to throw fglrx
->> out of the equation (which btw didn't help; the exact same problems
->> occur).
->>
->> Here the result:
->>
->>       http://foss.math.aegean.gr/~realnc/pics/latop2.png
->>
->> Again: this is on an Intel Core 2 Duo CPU.
->
->
-> so we finally have objective numbers!
->
-> now the interesting part is also WHERE the latency hits. Because
-> fundamentally, if you oversubscribe the CPU, you WILL get scheduling
-> latency.. simply you have more to run than there is CPU.
+This patch series increases the intensity of rcutorture testing for
+TREE_PREEMPT_RCU and provides fixes for a couple resulting bugs.
 
-Sounds plausible.  However, with mainline this latency is very, very 
-noticeable.  With BFS I need to look really hard to detect it or do 
-outright silly things, like a "make -j50".  (At first I wrote "-j20" 
-here but then went ahead an tested it just for kicks, and BFS would 
-still let me use the GUI smoothly, LOL.  So then I corrected it to 
-"-j50"...)
+o	Make rcutorture's RCU read-side critical sections occasionally
+	spin for a few tens of milliseconds, which greatly increases
+	the probability that they will be preempted and that quiescent
+	states will be forced.  Yes, this does uncover some bugs in
+	TREE_PREEMPT_RCU (though TREE_RCU passes with flying colors).
+
+o	Fix a bug where rnp->gpnum was not being updated.  This
+	increases TREE_PREEMPT_RCU's reliability considerably, though
+	bugs still remain.
+
+o	Make the initialization of multi-node trees of rcu_node
+	structures unconditionally acquire rnp->lock.  This simplifies
+	the code a bit and will make it easier to allow grace-period
+	initialization become preemptable, should this be needed.
+
+Next steps include applying review comments, adding expedited grace
+periods, and chasing down remaining bugs.  Longer term, RCU priority
+boosting.
+
+ b/kernel/rcutorture.c |   16 +++++++++-------
+ b/kernel/rcutree.c    |    7 +++++--
+ kernel/rcutree.c      |   42 ++++++++++++------------------------------
+ 3 files changed, 26 insertions(+), 39 deletions(-)
