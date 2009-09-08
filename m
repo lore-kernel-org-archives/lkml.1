@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbZIHOEp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbZIHOOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbZIHOEp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 10:04:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753832AbZIHOEo
+	id S1754588AbZIHOOB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 10:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZIHOOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 10:04:44 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:36330 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752251AbZIHOEo (ORCPT
+	Tue, 8 Sep 2009 10:14:00 -0400
+Received: from mail.deathmatch.net ([72.66.92.28]:1944 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754465AbZIHOOA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 10:04:44 -0400
-Date: Tue, 8 Sep 2009 10:03:42 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm <linux-mm@kvack.org>, Oleg Nesterov <onestero@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] lru_add_drain_all() vs isolation
-In-Reply-To: <1252411520.7746.68.camel@twins>
-Message-ID: <alpine.DEB.1.10.0909081000100.15723@V090114053VZO-1>
-References: <20090908190148.0CC9.A69D9226@jp.fujitsu.com>  <1252405209.7746.38.camel@twins>  <20090908193712.0CCF.A69D9226@jp.fujitsu.com> <1252411520.7746.68.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 8 Sep 2009 10:14:00 -0400
+Date: Tue, 8 Sep 2009 10:11:48 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Denis Kirjanov <kirjanov@gmail.com>
+Cc: michael <michael@panicking.kicks-ass.org>,
+       Xavier Bestel <xavier.bestel@free.fr>, devel@driverdev.osuosl.org,
+       b_yogesh_snowy@yahoo.com, Dan Williams <dcbw@redhat.com>,
+       Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       Len Widra <Len.Widra@atheros.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Stephen Chen <Stephen.Chen@atheros.com>,
+       Jouni Malinen <j@w1.fi>, Nick Kossifidis <mickflemm@gmail.com>,
+       Paul Fertser <fercerpav@gmail.com>, Harald Welte <laforge@openmoko.org>,
+       Witold Sowa <witold.sowa@gmail.com>,
+       Michael Renzmann <mrenzmann@madwifi-project.org>,
+       Werner Almesberger <werner@openmoko.org>
+Subject: Re: Atheros Linux wireless drivers home page - and two new driver
+	projects
+Message-ID: <20090908141148.GB13550@hash.localnet>
+References: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com> <1252065236.14338.179.camel@skunk> <1252080405.24673.11.camel@mj> <1252081080.31087.7.camel@skunk> <43e72e890909040951y6a1e639bl771a63389665ca2a@mail.gmail.com> <1252101647.11934.0.camel@bip> <4AA24FAB.20700@panicking.kicks-ass.org> <a872555b0909072350qf105990q3efb99a8bbb2d0bc@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a872555b0909072350qf105990q3efb99a8bbb2d0bc@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Sep 2009, Peter Zijlstra wrote:
+On Tue, Sep 08, 2009 at 10:50:46AM +0400, Denis Kirjanov wrote:
+> Good time of day.
+> Do I need to use wireless-testing tree ?
 
-> This is about avoiding work when there is non, clearly when an
-> application does use the kernel it creates work.
+For what goal?  Generally speaking, no you do
+not need to use wireless-testing, unless you wish
+to test or contribute, in which cases the answer
+is "yes."
 
-Hmmm. The lru draining in page migration is to reduce the number of pages
-that are not on the lru to increase the chance of page migration to be
-successful. A page on a per cpu list cannot be drained.
+-Bob
 
-Reducing the number of cpus where we perform the drain results in
-increased likelyhood that we cannot migrate a page because its on the per
-cpu lists of a cpu not covered.
-
-On the other hand if the cpu is offline then we know that it has no per
-cpu pages. That is why I found the idea of the OFFLINE
-scheduler attractive.
