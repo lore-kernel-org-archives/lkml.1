@@ -1,84 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754418AbZIHKye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754369AbZIHKyN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754418AbZIHKye (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 06:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbZIHKyc
+	id S1754369AbZIHKyN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 06:54:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZIHKyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 06:54:32 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:30072 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754403AbZIHKyb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 06:54:31 -0400
-Subject: Re: [PATCH 1/8] writeback: get rid of generic_sync_sb_inodes()
- export
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz
-In-Reply-To: <20090908104111.GS18599@kernel.dk>
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com>
-	 <1252401791-22463-2-git-send-email-jens.axboe@oracle.com>
-	 <4AA631AA.6000803@gmail.com>  <20090908104111.GS18599@kernel.dk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Sep 2009 13:52:30 +0300
-Message-Id: <1252407150.5060.51.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 08 Sep 2009 10:52:40.0812 (UTC) FILETIME=[7C9672C0:01CA3072]
+	Tue, 8 Sep 2009 06:54:12 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:39371 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754269AbZIHKyL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 06:54:11 -0400
+Date: Tue, 8 Sep 2009 11:54:15 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org
+Subject: Re: iwlagn: order 2 page allocation failures
+Message-ID: <20090908105415.GD28127@csn.ul.ie>
+References: <200909060941.01810.elendil@planet.nl> <84144f020909060114s74de2d2y850745dd82ece753@mail.gmail.com> <200909061028.48442.elendil@planet.nl> <1252226116.11274.10.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1252226116.11274.10.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 12:41 +0200, Jens Axboe wrote:
-> On Tue, Sep 08 2009, Artem Bityutskiy wrote:
-> > Hi Jens,
-> >
-> > On 09/08/2009 12:23 PM, Jens Axboe wrote:
-> >>   	int i, err;
-> >>   	struct ubifs_info *c = sb->s_fs_info;
-> >> -	struct writeback_control wbc = {
-> >> -		.sync_mode   = WB_SYNC_ALL,
-> >> -		.range_start = 0,
-> >> -		.range_end   = LLONG_MAX,
-> >> -		.nr_to_write = LONG_MAX,
-> >> -	};
-> >>
-> >>   	/*
-> >>   	 * Zero @wait is just an advisory thing to help the file system shove
-> >> @@ -462,7 +456,7 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
-> >>   	 * the user be able to get more accurate results of 'statfs()' after
-> >>   	 * they synchronize the file system.
-> >>   	 */
-> >> -	generic_sync_sb_inodes(sb,&wbc);
-> >> +	sync_inodes_sb(sb);
-> >
-> > This call is unnecessary and I've removed it and the patch is sitting in
-> > linux-next for long time:
-> > http://git.infradead.org/ubifs-2.6.git/commit/887ee17117fd23e962332b353d250ac9e090b20f
-> >
-> > Stephen e-mailed about the conflict recently. Could we please resolve the
-> > conflict? I guess if you pick up my patch then git will be able to resolve
-> > stuff automatically.
+On Sun, Sep 06, 2009 at 11:35:16AM +0300, Pekka Enberg wrote:
+> On Sun, 2009-09-06 at 10:28 +0200, Frans Pop wrote:
+> > On Sunday 06 September 2009, Pekka Enberg wrote:
+> > > On Sun, Sep 6, 2009 at 10:40 AM, Frans Pop<elendil@planet.nl> wrote:
+> > > > Got a couple of page allocation failures today while viewing fairly
+> > > > large images. System was struggling for a bit to reorganize memory
+> > > > and swap, but nothing really serious. Everything recovered fairly
+> > > > quickly.
+> > > >
+> > > > Anything to look into?
+> > > >
+> > > > System: HP 2510p; 2.6.31-rc7-56-g7c0a57d; Debian stable, KDE desktop
+> > > >
+> > > > 10:00.0 Network controller [0280]: Intel Corporation PRO/Wireless
+> > > > 4965 AG or AGN [Kedron] Network Connection [8086:4229] (rev 61)
+> > >
+> > > Can you post your .config, please?
+> > 
+> > Attached. Thanks.
 > 
-> Would seem weird for me to carry your patch. As the issue is resolved in
-> -next, I'd say we just let whomever gets to merge last resolve it at
-> their end.
+> OK, so SLUB_DEBUG_ON is disabled so it's probably not a SLUB problem.
+> Mel, there's quite a few page allocation failure reports recently which
+> makes me wonder if we broke something with the page allocator
+> optimization patches? Do you think the anti-fragmentation fixlet you did
+> for nommu would help here?
+> 
 
-That's Linus. Do you think it is nice to send him a pull request which
-for sure requires requires manual work?
+No, because that change only affected the case where the system had very
+little memory. The last time that there was a sudden major increase in
+allocation failures, it was actually was page reclaim was broken -
+specifically kswapd was no longer doing the job that was expected of it.
+The symptoms where applications stalling because they were entering
+direct reclaim. I haven't looked very closely at this bug report yet
+(catching up from being offline the last 5 days).
 
-But well, if you do not want to carry my patch, then I'll have to
-re-base my tree later, fix stuff, and send a pull request. I mean,
-your stuff will for sure be merged first, because I send pull requests
-late, just because UBIFS is a minor thing in the kernel.
+Have there been any reclaim changes that might account for something like this?
 
-:-(
+My feeling is also that a number of these page allocation failures have
+been related to wireless drivers. Is that accurate? If so, have there
+been changes made to the wireless stack in this cycle that would have
+increased the order of pages allocated?
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
