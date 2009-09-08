@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754411AbZIHK51@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbZIHLAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754411AbZIHK51 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 06:57:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbZIHK50
+	id S1754395AbZIHLAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 07:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZIHLAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 06:57:26 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:39069 "EHLO kernel.dk"
+	Tue, 8 Sep 2009 07:00:40 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:41830 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754247AbZIHK5Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 06:57:25 -0400
-Date: Tue, 8 Sep 2009 12:57:28 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Artem Bityutskiy <dedekind1@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 1/8] writeback: get rid of generic_sync_sb_inodes()
-	export
-Message-ID: <20090908105728.GU18599@kernel.dk>
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-2-git-send-email-jens.axboe@oracle.com> <4AA631AA.6000803@gmail.com> <20090908104111.GS18599@kernel.dk> <1252407150.5060.51.camel@localhost>
+	id S1754029AbZIHLAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 07:00:38 -0400
+Date: Tue, 8 Sep 2009 12:00:41 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Theodore Tso <tytso@mit.edu>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@skynet.ie>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>
+Subject: Re: ipw2200: firmware DMA loading rework
+Message-ID: <20090908110041.GE28127@csn.ul.ie>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <1251430951.3704.181.camel@debian> <200908301437.42133.bzolnier@gmail.com> <200909021948.13262.bzolnier@gmail.com> <43e72e890909021102g7f844c79xefccf305f5f5c5b6@mail.gmail.com> <20090903124913.GA26110@csn.ul.ie> <20090905142837.GI16217@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <1252407150.5060.51.camel@localhost>
+In-Reply-To: <20090905142837.GI16217@mit.edu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08 2009, Artem Bityutskiy wrote:
-> On Tue, 2009-09-08 at 12:41 +0200, Jens Axboe wrote:
-> > On Tue, Sep 08 2009, Artem Bityutskiy wrote:
-> > > Hi Jens,
-> > >
-> > > On 09/08/2009 12:23 PM, Jens Axboe wrote:
-> > >>   	int i, err;
-> > >>   	struct ubifs_info *c = sb->s_fs_info;
-> > >> -	struct writeback_control wbc = {
-> > >> -		.sync_mode   = WB_SYNC_ALL,
-> > >> -		.range_start = 0,
-> > >> -		.range_end   = LLONG_MAX,
-> > >> -		.nr_to_write = LONG_MAX,
-> > >> -	};
-> > >>
-> > >>   	/*
-> > >>   	 * Zero @wait is just an advisory thing to help the file system shove
-> > >> @@ -462,7 +456,7 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
-> > >>   	 * the user be able to get more accurate results of 'statfs()' after
-> > >>   	 * they synchronize the file system.
-> > >>   	 */
-> > >> -	generic_sync_sb_inodes(sb,&wbc);
-> > >> +	sync_inodes_sb(sb);
-> > >
-> > > This call is unnecessary and I've removed it and the patch is sitting in
-> > > linux-next for long time:
-> > > http://git.infradead.org/ubifs-2.6.git/commit/887ee17117fd23e962332b353d250ac9e090b20f
-> > >
-> > > Stephen e-mailed about the conflict recently. Could we please resolve the
-> > > conflict? I guess if you pick up my patch then git will be able to resolve
-> > > stuff automatically.
-> > 
-> > Would seem weird for me to carry your patch. As the issue is resolved in
-> > -next, I'd say we just let whomever gets to merge last resolve it at
-> > their end.
+On Sat, Sep 05, 2009 at 10:28:37AM -0400, Theodore Tso wrote:
+> On Thu, Sep 03, 2009 at 01:49:14PM +0100, Mel Gorman wrote:
+> > > 
+> > > This looks very similar to the kmemleak ext4 reports upon a mount. If
+> > > it is the same issue, which from the trace it seems it is, then this
+> > > is due to an extra kmalloc() allocation and this apparently will not
+> > > get fixed on 2.6.31 due to the closeness of the merge window and the
+> > > non-criticalness this issue has been deemed.
 > 
-> That's Linus. Do you think it is nice to send him a pull request which
-> for sure requires requires manual work?
+> No, it's a different problem.
+> 
+> > I suspect the more pressing concern is why is this kmalloc() resulting in
+> > an order-5 allocation request? What size is the buffer being requested?
+> > Was that expected?  What is the contents of /proc/slabinfo in case a buffer
+> > that should have required order-1 or order-2 is using a higher order for
+> > some reason.
+> 
+> It's allocating 68,000 bytes for the mb_history structure, which is
+> used for debugging purposes.  That's why it's optional and we continue
+> if it's not allocated.  We should fix it to use vmalloc()
 
-No, that's not what I wrote, you should never send Linus a pull request
-that requires manual merging. One of us gets to resolve it, depending on
-who gets to send the latter pull request.
+You could call with kmalloc(FLAGS|GFP_NOWARN) with a fallback to
+vmalloc() and a disable if vmalloc() fails as well.  Maybe check out what
+kernel/profile.c#profile_init() to allocate a large buffer and do something
+similar?
 
-> But well, if you do not want to carry my patch, then I'll have to
-> re-base my tree later, fix stuff, and send a pull request. I mean,
-> your stuff will for sure be merged first, because I send pull requests
-> late, just because UBIFS is a minor thing in the kernel.
+> and I'm
+> inclined to turn it off by default since it's not worth the overhead,
+> and most ext4 users won't find it useful or interesting.
+> 
 
-You don't have to rebase, if my work is merged first then you just merge
-Linus' tree into yours and fixup the conflict before asking Linus to
-pull.
-
-It's a trivial conflict, I don't understand what the fuzz is about.
+I can't comment as I don't know what sort of debugging it's useful for.
 
 -- 
-Jens Axboe
-
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
