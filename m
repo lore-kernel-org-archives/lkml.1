@@ -1,141 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753955AbZIHHsa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbZIHHtx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753955AbZIHHsa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 03:48:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZIHHsa
+	id S1753989AbZIHHtx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 03:49:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753798AbZIHHtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 03:48:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51771 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753910AbZIHHs3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 03:48:29 -0400
-Date: Tue, 8 Sep 2009 09:48:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Michael Buesch <mb@bu3sch.de>
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Felix Fietkau <nbd@openwrt.org>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090908074825.GA11413@elte.hu>
-References: <20090906205952.GA6516@elte.hu> <200909071716.57722.mb@bu3sch.de> <20090907182629.GA3484@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090907182629.GA3484@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 8 Sep 2009 03:49:52 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:41174 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753929AbZIHHtv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 03:49:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=m0hmX+Xji4Thc5Fy5SnR0GjI8jPDykc0TLK4OHkWsEH/ipBvGuhIrBbMgwxqvvV35i
+         RGVFMikfkMyvZE/fJfaiqG9pY3b0KM1nwtTwHWm9tRlE5/OHtmIhDQzwXeuTct4NSxu8
+         DuWAmQ4GY6EH1i57jtP3gzerTMFq9oiBI5fDM=
+Date: Tue, 8 Sep 2009 16:49:41 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Wu Fengguang <fengguang.wu@intel.com>
+Subject: [PATCH v2] [mmotm] trace bio queueing trial only when it occurs
+Message-Id: <20090908164941.c4f51208.minchan.kim@barrios-desktop>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+ * Add history that why it is breaked in changelog.
 
-> That's interesting. I tried to reproduce it on x86, but the 
-> profile does not show any scheduler overhead at all on the server:
+Thanks for careful review, Wu, Li.
 
-I've now simulated a saturated iperf server by adding an 
-udelay(3000) to e1000_intr() in via the patch below.
+== CUT_HERE ==
 
-There's no idle time left that way:
+If BIO is discarded or cross over end of device,
+BIO queueing trial doesn't occur.
 
- Cpu(s):  0.0%us,  2.6%sy,  0.0%ni,  0.0%id,  0.0%wa, 93.2%hi,  4.2%si,  0.0%st
- Mem:   1021044k total,    93400k used,   927644k free,     5068k buffers
- Swap:  8193140k total,        0k used,  8193140k free,    25404k cached
+Actually the trace was called just before make_request at first:
+[PATCH] Block queue IO tracing support (blktrace) as of 2006-03-23
+      2056a782f8e7e65fd4bfd027506b4ce1c5e9ccd4
 
-  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND                    
- 1604 mingo     20   0 38300  956  724 S 99.4  0.1   3:15.07 iperf                      
-  727 root      15  -5     0    0    0 S  0.2  0.0   0:00.41 kondemand/0                
- 1226 root      20   0  6452  336  240 S  0.2  0.0   0:00.06 irqbalance                 
- 1387 mingo     20   0 78872 1988 1300 S  0.2  0.2   0:00.23 sshd                       
- 1657 mingo     20   0 12752 1128  800 R  0.2  0.1   0:01.34 top                        
-    1 root      20   0 10320  684  572 S  0.0  0.1   0:01.79 init                       
-    2 root      15  -5     0    0    0 S  0.0  0.0   0:00.00 kthreadd                   
+And then 2 patches added some checks between them:
+[PATCH] md: check bio address after mapping through partitions
+        5ddfe9691c91a244e8d1be597b6428fcefd58103,
+[BLOCK] Don't allow empty barriers to be passed down to 
+queues that don't grok them
+        51fd77bd9f512ab6cc9df0733ba1caaab89eb957
 
-And the server is only able to saturate half of the 1 gigabit 
-bandwidth:
+It breaks original goal.
+Let's trace it only when it happens.
 
- Client connecting to t, TCP port 5001
- TCP window size: 16.0 KByte (default)
- ------------------------------------------------------------
- [  3] local 10.0.1.19 port 50836 connected with 10.0.1.14 port 5001
- [ ID] Interval       Transfer     Bandwidth
- [  3]  0.0-10.0 sec    504 MBytes    423 Mbits/sec
- ------------------------------------------------------------
- Client connecting to t, TCP port 5001
- TCP window size: 16.0 KByte (default)
- ------------------------------------------------------------
- [  3] local 10.0.1.19 port 50837 connected with 10.0.1.14 port 5001
- [ ID] Interval       Transfer     Bandwidth
- [  3]  0.0-10.0 sec    502 MBytes    420 Mbits/sec
+Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+---
+ block/blk-core.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 5b59592..1a0cfd5 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1463,8 +1463,6 @@ static inline void __generic_make_request(struct bio *bio)
+ 		if (old_sector != -1)
+ 			trace_block_remap(q, bio, old_dev, old_sector);
+
+-		trace_block_bio_queue(q, bio);
+-
+ 		old_sector = bio->bi_sector;
+ 		old_dev = bio->bi_bdev->bd_dev;
+
+@@ -1477,6 +1475,8 @@ static inline void __generic_make_request(struct bio *bio)
+ 			goto end_io;
+ 		}
+
++		trace_block_bio_queue(q, bio);
++
+ 		ret = q->make_request_fn(q, bio);
+ 	} while (ret);
+
+--
+1.6.4
 
 
-perf top is showing:
 
-------------------------------------------------------------------------------
-   PerfTop:   28517 irqs/sec  kernel:99.4% [100000 cycles],  (all, 1 CPUs)
-------------------------------------------------------------------------------
-
-             samples    pcnt   kernel function
-             _______   _____   _______________
-
-           139553.00 - 93.2% : delay_tsc
-             2098.00 -  1.4% : hmac_digest
-              561.00 -  0.4% : ip_call_ra_chain
-              335.00 -  0.2% : neigh_alloc
-              279.00 -  0.2% : __hash_conntrack
-              257.00 -  0.2% : dev_activate
-              186.00 -  0.1% : proc_tcp_available_congestion_control
-              178.00 -  0.1% : e1000_get_regs
-              167.00 -  0.1% : tcp_event_data_recv
-
-delay_tsc() dominates, as expected. Still zero scheduler overhead 
-and the contex-switch rate is well below 1000 per sec.
-
-Then i booted v2.6.30 vanilla, added the udelay(3000) and got:
-
- [  5] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 47026
- [  5]  0.0-10.0 sec    493 MBytes    412 Mbits/sec
- [  4] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 47027
- [  4]  0.0-10.0 sec    520 MBytes    436 Mbits/sec
- [  5] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 47028
- [  5]  0.0-10.0 sec    506 MBytes    424 Mbits/sec
- [  4] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 47029
- [  4]  0.0-10.0 sec    496 MBytes    415 Mbits/sec
-
-i.e. essentially the same throughput. (and this shows that using .30 
-versus .31 did not materially impact iperf performance in this test, 
-under these conditions and with this hardware)
-
-The i applied the BFS patch to v2.6.30 and used the same 
-udelay(3000) hack and got:
-
-No measurable change in throughput.
-
-Obviously, this test is not equivalent to your test - but it does 
-show that even saturated iperf is getting scheduled just fine. (or, 
-rather, does not get scheduled all that much.)
-
-[  5] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 38505
-[  5]  0.0-10.1 sec    481 MBytes    401 Mbits/sec
-[  4] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 38506
-[  4]  0.0-10.0 sec    505 MBytes    423 Mbits/sec
-[  5] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 38507
-[  5]  0.0-10.0 sec    508 MBytes    426 Mbits/sec
-[  4] local 10.0.1.14 port 5001 connected with 10.0.1.19 port 38508
-[  4]  0.0-10.0 sec    486 MBytes    406 Mbits/sec
-
-So either your MIPS system has some unexpected dependency on the 
-scheduler, or there's something weird going on.
-
-Mind poking on this one to figure out whether it's all repeatable 
-and why that slowdown happens? Multiple attempts to reproduce it 
-failed here for me.
-
-	Ingo
+-- 
+Kind regards,
+Minchan Kim
