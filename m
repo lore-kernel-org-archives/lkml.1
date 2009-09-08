@@ -1,49 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbZIHS5O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751779AbZIHS5n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751762AbZIHS5O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 14:57:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZIHS5N
+	id S1751779AbZIHS5n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 14:57:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZIHS5m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 14:57:13 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56621 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbZIHS5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 14:57:12 -0400
-Message-ID: <4AA6A8FC.9080301@redhat.com>
-Date: Tue, 08 Sep 2009 14:57:00 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Tue, 8 Sep 2009 14:57:42 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:57561 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbZIHS5l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 14:57:41 -0400
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       David Howells <dhowells@redhat.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 3/8] mm: add get_dump_page
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072231120.15430@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0909072231120.15430@sister.anvils>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Date: Tue, 8 Sep 2009 19:57:42 +0100
+X-Google-Sender-Auth: 3bd2b658ed8dee32
+Message-ID: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
+Subject: Machine resumes straight after suspend to RAM (or disk)
+From: Alex Bennee <kernel-hacker@bennee.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=0016364c7a4d853ae60473158ae9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> In preparation for the next patch, add a simple get_dump_page(addr)
-> interface for the CONFIG_ELF_CORE dumpers to use, instead of calling
-> get_user_pages() directly.  They're not interested in errors: they
-> just want to use holes as much as possible, to save space and make
-> sure that the data is aligned where the headers said it would be.
-> 
-> Oh, and don't use that horrid DUMP_SEEK(off) macro!
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+--0016364c7a4d853ae60473158ae9
+Content-Type: text/plain; charset=ISO-8859-1
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Hi,
+
+I thought I'd enable suspend and resume on my desktop machine so I
+could save myself some time in the morning when I restart the machine.
+The machine is fairly standard Intel Core Duo based system (lspci
+attached). However when I execute pm-suspend (or Gentoo's own
+hibernate-script) the system does suspend but resumes immediately. To
+add insult to injury the ethernet doesn't come back properly and needs
+a reboot to reset it.
+
+I've played about a little with the ACPI debug stuff but it's easy to
+overflow the dmesg buffer. The relevant section around the
+suspend/resume looks like:
+
+[ 1025.178019] Disabling non-boot CPUs ...
+[ 1025.182071] kvm: disabling virtualization on CPU1
+[ 1025.227729] CPU 1 is now offline
+[ 1025.227731] SMP alternatives: switching to UP code
+[ 1025.232627] CPU0 attaching NULL sched-domain.
+[ 1025.232630] CPU1 attaching NULL sched-domain.
+[ 1025.232634] CPU0 attaching NULL sched-domain.
+[ 1025.232771] CPU1 is down
+[ 1025.233264] acpi_suspend_enter acpi_state=3
+[ 1025.233276] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Entry
+[ 1025.233286] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Exit- AE_OK
+[ 1025.233290] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Entry
+[ 1025.233299] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Exit- AE_OK
+[ 1025.233303] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Entry
+[ 1025.233311] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Exit- AE_OK
+[ 1025.233315] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Entry
+[ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
+    : ----Exit- AE_OK
+[ 1025.233319] evxfevnt-0074 [ffff8800b70d8000] [05] enable
+    : ----Entry
+[ 1025.233319] evxfevnt-0086 [ffff8800b70d8000] [05] enable
+    : System is already in ACPI mode
+[ 1025.233319] evxfevnt-0101 [ffff8800b70d8000] [05] enable
+    : ----Exit- AE_OK
+[ 1025.233319] evxfevnt-0397 [ffff8800b70d8000] [05] clear_event
+    : ----Entry
+[ 1025.233319] evxfevnt-0413 [ffff8800b70d8000] [05] clear_event
+    : ----Exit- AE_OK
+[ 1025.233319] evxfevnt-0831 [ffff8800b70d8000] [05] disable_all_gpes
+    : ----Entry
+[ 1025.233319] evgpeblk-0144 [ffff8800b70d8000] [07] ev_walk_gpe_list
+    : ----Entry
+[ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [07] ev_walk_gpe_list
+    : ----Exit- AE_OK
+[ 1025.233319] evgpeblk-0144 [ffff8800b70d8000] [07] ev_walk_gpe_list
+    : ----Entry
+[ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [07] ev_walk_gpe_list
+    : ----Exit- AE_OK
+[ 1025.233319] evxfevnt-0841 [ffff8800b70d8000] [05] disable_all_gpes
+    : ----Exit- AE_OK
+[ 1025.233319] Back to C!
+[ 1025.233319] CPU0: Thermal LVT vector (0xfa) already installed
+[ 1025.233319] Enabling non-boot CPUs ...
+[ 1025.233319] SMP alternatives: switching to SMP code
+[ 1025.237548] Booting processor 1 APIC 0x1 ip 0x6000
+[ 1025.232536] Initializing CPU#1
+[ 1025.232536] Calibrating delay using timer specific routine..
+4245.78 BogoMIPS (lpj=8491564)
+
+Unfortunately the ACPI stuff is all Greek to me. If anyone wants
+additional debug information then please let me know.
+
+So any ideas?
 
 -- 
-All rights reversed.
+Alex, homepage: http://www.bennee.com/~alex/
+http://www.half-llama.co.uk
+
+--0016364c7a4d853ae60473158ae9
+Content-Type: application/octet-stream; name="lspci.out"
+Content-Disposition: attachment; filename="lspci.out"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fzd070e00
+
+MDA6MDAuMCBIb3N0IGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI5NDVHL0daL1AvUEwgTWVt
+b3J5IENvbnRyb2xsZXIgSHViIChyZXYgMDIpCglTdWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0ZXIg
+SW5jLiBEZXZpY2UgODE3YQoJRmxhZ3M6IGJ1cyBtYXN0ZXIsIGZhc3QgZGV2c2VsLCBsYXRlbmN5
+IDAKCUNhcGFiaWxpdGllczogW2UwXSBWZW5kb3IgU3BlY2lmaWMgSW5mb3JtYXRpb24gPD8+CglL
+ZXJuZWwgZHJpdmVyIGluIHVzZTogYWdwZ2FydC1pbnRlbAoKMDA6MDIuMCBWR0EgY29tcGF0aWJs
+ZSBjb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4Mjk0NUcvR1ogSW50ZWdyYXRlZCBHcmFw
+aGljcyBDb250cm9sbGVyIChyZXYgMDIpIChwcm9nLWlmIDAwIFtWR0EgY29udHJvbGxlcl0pCglT
+dWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0ZXIgSW5jLiBEZXZpY2UgODE3YQoJRmxhZ3M6IGJ1cyBt
+YXN0ZXIsIGZhc3QgZGV2c2VsLCBsYXRlbmN5IDAsIElSUSAxNgoJTWVtb3J5IGF0IGRmZDAwMDAw
+ICgzMi1iaXQsIG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTUxMktdCglJL08gcG9ydHMgYXQgYjgw
+MCBbc2l6ZT04XQoJTWVtb3J5IGF0IGMwMDAwMDAwICgzMi1iaXQsIHByZWZldGNoYWJsZSkgW3Np
+emU9MjU2TV0KCU1lbW9yeSBhdCBkZmQ4MDAwMCAoMzItYml0LCBub24tcHJlZmV0Y2hhYmxlKSBb
+c2l6ZT0yNTZLXQoJQ2FwYWJpbGl0aWVzOiBbOTBdIE1lc3NhZ2UgU2lnbmFsbGVkIEludGVycnVw
+dHM6IE1hc2stIDY0Yml0LSBDb3VudD0xLzEgRW5hYmxlLQoJQ2FwYWJpbGl0aWVzOiBbZDBdIFBv
+d2VyIE1hbmFnZW1lbnQgdmVyc2lvbiAyCglLZXJuZWwgZHJpdmVyIGluIHVzZTogaTkxNQoKMDA6
+MWIuMCBBdWRpbyBkZXZpY2U6IEludGVsIENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkp
+IEhpZ2ggRGVmaW5pdGlvbiBBdWRpbyBDb250cm9sbGVyIChyZXYgMDEpCglTdWJzeXN0ZW06IEFT
+VVNUZUsgQ29tcHV0ZXIgSW5jLiBEZXZpY2UgODFmNgoJRmxhZ3M6IGJ1cyBtYXN0ZXIsIGZhc3Qg
+ZGV2c2VsLCBsYXRlbmN5IDAsIElSUSAxOQoJTWVtb3J5IGF0IGRmZGY4MDAwICg2NC1iaXQsIG5v
+bi1wcmVmZXRjaGFibGUpIFtzaXplPTE2S10KCUNhcGFiaWxpdGllczogWzUwXSBQb3dlciBNYW5h
+Z2VtZW50IHZlcnNpb24gMgoJQ2FwYWJpbGl0aWVzOiBbNjBdIE1lc3NhZ2UgU2lnbmFsbGVkIElu
+dGVycnVwdHM6IE1hc2stIDY0Yml0KyBDb3VudD0xLzEgRW5hYmxlLQoJQ2FwYWJpbGl0aWVzOiBb
+NzBdIEV4cHJlc3MgUm9vdCBDb21wbGV4IEludGVncmF0ZWQgRW5kcG9pbnQsIE1TSSAwMAoJS2Vy
+bmVsIGRyaXZlciBpbiB1c2U6IEhEQSBJbnRlbAoJS2VybmVsIG1vZHVsZXM6IHNuZC1oZGEtaW50
+ZWwKCjAwOjFjLjAgUENJIGJyaWRnZTogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZh
+bWlseSkgUENJIEV4cHJlc3MgUG9ydCAxIChyZXYgMDEpIChwcm9nLWlmIDAwIFtOb3JtYWwgZGVj
+b2RlXSkKCUZsYWdzOiBidXMgbWFzdGVyLCBmYXN0IGRldnNlbCwgbGF0ZW5jeSAwCglCdXM6IHBy
+aW1hcnk9MDAsIHNlY29uZGFyeT0wMiwgc3Vib3JkaW5hdGU9MDIsIHNlYy1sYXRlbmN5PTAKCUkv
+TyBiZWhpbmQgYnJpZGdlOiAwMDAwZTAwMC0wMDAwZWZmZgoJTWVtb3J5IGJlaGluZCBicmlkZ2U6
+IGRmZjAwMDAwLWRmZmZmZmZmCglQcmVmZXRjaGFibGUgbWVtb3J5IGJlaGluZCBicmlkZ2U6IDAw
+MDAwMDAwZGVmMDAwMDAtMDAwMDAwMDBkZWZmZmZmZgoJQ2FwYWJpbGl0aWVzOiBbNDBdIEV4cHJl
+c3MgUm9vdCBQb3J0IChTbG90LSksIE1TSSAwMAoJQ2FwYWJpbGl0aWVzOiBbODBdIE1lc3NhZ2Ug
+U2lnbmFsbGVkIEludGVycnVwdHM6IE1hc2stIDY0Yml0LSBDb3VudD0xLzEgRW5hYmxlKwoJQ2Fw
+YWJpbGl0aWVzOiBbOTBdIFN1YnN5c3RlbTogQVNVU1RlSyBDb21wdXRlciBJbmMuIERldmljZSA4
+MTc5CglDYXBhYmlsaXRpZXM6IFthMF0gUG93ZXIgTWFuYWdlbWVudCB2ZXJzaW9uIDIKCUtlcm5l
+bCBkcml2ZXIgaW4gdXNlOiBwY2llcG9ydC1kcml2ZXIKCjAwOjFkLjAgVVNCIENvbnRyb2xsZXI6
+IEludGVsIENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkpIFVTQiBVSENJIENvbnRyb2xs
+ZXIgIzEgKHJldiAwMSkgKHByb2ctaWYgMDAgW1VIQ0ldKQoJU3Vic3lzdGVtOiBBU1VTVGVLIENv
+bXB1dGVyIEluYy4gRGV2aWNlIDgxNzkKCUZsYWdzOiBidXMgbWFzdGVyLCBtZWRpdW0gZGV2c2Vs
+LCBsYXRlbmN5IDAsIElSUSAyMAoJSS9PIHBvcnRzIGF0IGI4ODAgW3NpemU9MzJdCglLZXJuZWwg
+ZHJpdmVyIGluIHVzZTogdWhjaV9oY2QKCUtlcm5lbCBtb2R1bGVzOiB1aGNpLWhjZAoKMDA6MWQu
+MSBVU0IgQ29udHJvbGxlcjogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkg
+VVNCIFVIQ0kgQ29udHJvbGxlciAjMiAocmV2IDAxKSAocHJvZy1pZiAwMCBbVUhDSV0pCglTdWJz
+eXN0ZW06IEFTVVNUZUsgQ29tcHV0ZXIgSW5jLiBEZXZpY2UgODE3OQoJRmxhZ3M6IGJ1cyBtYXN0
+ZXIsIG1lZGl1bSBkZXZzZWwsIGxhdGVuY3kgMCwgSVJRIDE3CglJL08gcG9ydHMgYXQgYmMwMCBb
+c2l6ZT0zMl0KCUtlcm5lbCBkcml2ZXIgaW4gdXNlOiB1aGNpX2hjZAoJS2VybmVsIG1vZHVsZXM6
+IHVoY2ktaGNkCgowMDoxZC4yIFVTQiBDb250cm9sbGVyOiBJbnRlbCBDb3Jwb3JhdGlvbiA4Mjgw
+MUcgKElDSDcgRmFtaWx5KSBVU0IgVUhDSSBDb250cm9sbGVyICMzIChyZXYgMDEpIChwcm9nLWlm
+IDAwIFtVSENJXSkKCVN1YnN5c3RlbTogQVNVU1RlSyBDb21wdXRlciBJbmMuIERldmljZSA4MTc5
+CglGbGFnczogYnVzIG1hc3RlciwgbWVkaXVtIGRldnNlbCwgbGF0ZW5jeSAwLCBJUlEgMTgKCUkv
+TyBwb3J0cyBhdCBjMDAwIFtzaXplPTMyXQoJS2VybmVsIGRyaXZlciBpbiB1c2U6IHVoY2lfaGNk
+CglLZXJuZWwgbW9kdWxlczogdWhjaS1oY2QKCjAwOjFkLjMgVVNCIENvbnRyb2xsZXI6IEludGVs
+IENvcnBvcmF0aW9uIDgyODAxRyAoSUNINyBGYW1pbHkpIFVTQiBVSENJIENvbnRyb2xsZXIgIzQg
+KHJldiAwMSkgKHByb2ctaWYgMDAgW1VIQ0ldKQoJU3Vic3lzdGVtOiBBU1VTVGVLIENvbXB1dGVy
+IEluYy4gRGV2aWNlIDgxNzkKCUZsYWdzOiBidXMgbWFzdGVyLCBtZWRpdW0gZGV2c2VsLCBsYXRl
+bmN5IDAsIElSUSAxOQoJSS9PIHBvcnRzIGF0IGMwODAgW3NpemU9MzJdCglLZXJuZWwgZHJpdmVy
+IGluIHVzZTogdWhjaV9oY2QKCUtlcm5lbCBtb2R1bGVzOiB1aGNpLWhjZAoKMDA6MWQuNyBVU0Ig
+Q29udHJvbGxlcjogSW50ZWwgQ29ycG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkgVVNCMiBF
+SENJIENvbnRyb2xsZXIgKHJldiAwMSkgKHByb2ctaWYgMjAgW0VIQ0ldKQoJU3Vic3lzdGVtOiBB
+U1VTVGVLIENvbXB1dGVyIEluYy4gRGV2aWNlIDgxNzkKCUZsYWdzOiBidXMgbWFzdGVyLCBtZWRp
+dW0gZGV2c2VsLCBsYXRlbmN5IDAsIElSUSAyMAoJTWVtb3J5IGF0IGRmZGZmYzAwICgzMi1iaXQs
+IG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTFLXQoJQ2FwYWJpbGl0aWVzOiBbNTBdIFBvd2VyIE1h
+bmFnZW1lbnQgdmVyc2lvbiAyCglDYXBhYmlsaXRpZXM6IFs1OF0gRGVidWcgcG9ydDogQkFSPTEg
+b2Zmc2V0PTAwYTAKCUtlcm5lbCBkcml2ZXIgaW4gdXNlOiBlaGNpX2hjZAoJS2VybmVsIG1vZHVs
+ZXM6IGVoY2ktaGNkCgowMDoxZS4wIFBDSSBicmlkZ2U6IEludGVsIENvcnBvcmF0aW9uIDgyODAx
+IFBDSSBCcmlkZ2UgKHJldiBlMSkgKHByb2ctaWYgMDEgW1N1YnRyYWN0aXZlIGRlY29kZV0pCglG
+bGFnczogYnVzIG1hc3RlciwgZmFzdCBkZXZzZWwsIGxhdGVuY3kgMAoJQnVzOiBwcmltYXJ5PTAw
+LCBzZWNvbmRhcnk9MDEsIHN1Ym9yZGluYXRlPTAxLCBzZWMtbGF0ZW5jeT0zMgoJSS9PIGJlaGlu
+ZCBicmlkZ2U6IDAwMDBkMDAwLTAwMDBkZmZmCglNZW1vcnkgYmVoaW5kIGJyaWRnZTogZGZlMDAw
+MDAtZGZlZmZmZmYKCUNhcGFiaWxpdGllczogWzUwXSBTdWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0
+ZXIgSW5jLiBEZXZpY2UgODE3OQoKMDA6MWYuMCBJU0EgYnJpZGdlOiBJbnRlbCBDb3Jwb3JhdGlv
+biA4MjgwMUdCL0dSIChJQ0g3IEZhbWlseSkgTFBDIEludGVyZmFjZSBCcmlkZ2UgKHJldiAwMSkK
+CVN1YnN5c3RlbTogQVNVU1RlSyBDb21wdXRlciBJbmMuIERldmljZSA4MTc5CglGbGFnczogYnVz
+IG1hc3RlciwgbWVkaXVtIGRldnNlbCwgbGF0ZW5jeSAwCglDYXBhYmlsaXRpZXM6IFtlMF0gVmVu
+ZG9yIFNwZWNpZmljIEluZm9ybWF0aW9uIDw/PgoKMDA6MWYuMSBJREUgaW50ZXJmYWNlOiBJbnRl
+bCBDb3Jwb3JhdGlvbiA4MjgwMUcgKElDSDcgRmFtaWx5KSBJREUgQ29udHJvbGxlciAocmV2IDAx
+KSAocHJvZy1pZiA4YSBbTWFzdGVyIFNlY1AgUHJpUF0pCglTdWJzeXN0ZW06IEFTVVNUZUsgQ29t
+cHV0ZXIgSW5jLiBEZXZpY2UgODE3OQoJRmxhZ3M6IGJ1cyBtYXN0ZXIsIG1lZGl1bSBkZXZzZWws
+IGxhdGVuY3kgMCwgSVJRIDE4CglJL08gcG9ydHMgYXQgMDFmMCBbc2l6ZT04XQoJSS9PIHBvcnRz
+IGF0IDAzZjQgW3NpemU9MV0KCUkvTyBwb3J0cyBhdCAwMTcwIFtzaXplPThdCglJL08gcG9ydHMg
+YXQgMDM3NCBbc2l6ZT0xXQoJSS9PIHBvcnRzIGF0IGZmYTAgW3NpemU9MTZdCglLZXJuZWwgZHJp
+dmVyIGluIHVzZTogUElJWF9JREUKCjAwOjFmLjIgSURFIGludGVyZmFjZTogSW50ZWwgQ29ycG9y
+YXRpb24gODI4MDFHQi9HUi9HSCAoSUNINyBGYW1pbHkpIFNBVEEgSURFIENvbnRyb2xsZXIgKHJl
+diAwMSkgKHByb2ctaWYgOGYgW01hc3RlciBTZWNQIFNlY08gUHJpUCBQcmlPXSkKCVN1YnN5c3Rl
+bTogQVNVU1RlSyBDb21wdXRlciBJbmMuIERldmljZSAyNjAxCglGbGFnczogYnVzIG1hc3Rlciwg
+NjZNSHosIG1lZGl1bSBkZXZzZWwsIGxhdGVuY3kgMCwgSVJRIDE3CglJL08gcG9ydHMgYXQgY2Mw
+MCBbc2l6ZT04XQoJSS9PIHBvcnRzIGF0IGM4ODAgW3NpemU9NF0KCUkvTyBwb3J0cyBhdCBjODAw
+IFtzaXplPThdCglJL08gcG9ydHMgYXQgYzQ4MCBbc2l6ZT00XQoJSS9PIHBvcnRzIGF0IGM0MDAg
+W3NpemU9MTZdCglDYXBhYmlsaXRpZXM6IFs3MF0gUG93ZXIgTWFuYWdlbWVudCB2ZXJzaW9uIDIK
+CUtlcm5lbCBkcml2ZXIgaW4gdXNlOiBhdGFfcGlpeAoKMDA6MWYuMyBTTUJ1czogSW50ZWwgQ29y
+cG9yYXRpb24gODI4MDFHIChJQ0g3IEZhbWlseSkgU01CdXMgQ29udHJvbGxlciAocmV2IDAxKQoJ
+U3Vic3lzdGVtOiBBU1VTVGVLIENvbXB1dGVyIEluYy4gRGV2aWNlIDgxNzkKCUZsYWdzOiBtZWRp
+dW0gZGV2c2VsLCBJUlEgMTcKCUkvTyBwb3J0cyBhdCAwNDAwIFtzaXplPTMyXQoJS2VybmVsIGRy
+aXZlciBpbiB1c2U6IGk4MDFfc21idXMKCjAxOjAyLjAgRmlyZVdpcmUgKElFRUUgMTM5NCk6IFZJ
+QSBUZWNobm9sb2dpZXMsIEluYy4gVlQ2MzA2IEZpcmUgSUkgSUVFRSAxMzk0IE9IQ0kgTGluayBM
+YXllciBDb250cm9sbGVyIChyZXYgYzApIChwcm9nLWlmIDEwIFtPSENJXSkKCVN1YnN5c3RlbTog
+QVNVU1RlSyBDb21wdXRlciBJbmMuIERldmljZSA4MWZlCglGbGFnczogYnVzIG1hc3RlciwgbWVk
+aXVtIGRldnNlbCwgbGF0ZW5jeSA2NCwgSVJRIDE5CglNZW1vcnkgYXQgZGZlZmY4MDAgKDMyLWJp
+dCwgbm9uLXByZWZldGNoYWJsZSkgW3NpemU9MktdCglJL08gcG9ydHMgYXQgZGMwMCBbc2l6ZT0x
+MjhdCglDYXBhYmlsaXRpZXM6IFs1MF0gUG93ZXIgTWFuYWdlbWVudCB2ZXJzaW9uIDIKCUtlcm5l
+bCBkcml2ZXIgaW4gdXNlOiBmaXJld2lyZV9vaGNpCglLZXJuZWwgbW9kdWxlczogZmlyZXdpcmUt
+b2hjaQoKMDI6MDAuMCBFdGhlcm5ldCBjb250cm9sbGVyOiBSZWFsdGVrIFNlbWljb25kdWN0b3Ig
+Q28uLCBMdGQuIFJUTDgxMTEvODE2OEIgUENJIEV4cHJlc3MgR2lnYWJpdCBFdGhlcm5ldCBjb250
+cm9sbGVyIChyZXYgMDIpCglTdWJzeXN0ZW06IEFTVVNUZUsgQ29tcHV0ZXIgSW5jLiBEZXZpY2Ug
+ODFhYQoJRmxhZ3M6IGJ1cyBtYXN0ZXIsIGZhc3QgZGV2c2VsLCBsYXRlbmN5IDAsIElSUSAyNQoJ
+SS9PIHBvcnRzIGF0IGU4MDAgW3NpemU9MjU2XQoJTWVtb3J5IGF0IGRmZmZmMDAwICg2NC1iaXQs
+IG5vbi1wcmVmZXRjaGFibGUpIFtzaXplPTRLXQoJTWVtb3J5IGF0IGRlZmYwMDAwICg2NC1iaXQs
+IHByZWZldGNoYWJsZSkgW3NpemU9NjRLXQoJRXhwYW5zaW9uIFJPTSBhdCBkZmZjMDAwMCBbZGlz
+YWJsZWRdIFtzaXplPTEyOEtdCglDYXBhYmlsaXRpZXM6IFs0MF0gUG93ZXIgTWFuYWdlbWVudCB2
+ZXJzaW9uIDIKCUNhcGFiaWxpdGllczogWzUwXSBNZXNzYWdlIFNpZ25hbGxlZCBJbnRlcnJ1cHRz
+OiBNYXNrLSA2NGJpdC0gQ291bnQ9MS8xIEVuYWJsZSsKCUNhcGFiaWxpdGllczogWzcwXSBFeHBy
+ZXNzIEVuZHBvaW50LCBNU0kgMDgKCUNhcGFiaWxpdGllczogW2IwXSBNU0ktWDogRW5hYmxlLSBN
+YXNrLSBUYWJTaXplPTIKCUNhcGFiaWxpdGllczogW2QwXSBWaXRhbCBQcm9kdWN0IERhdGEgPD8+
+CglLZXJuZWwgZHJpdmVyIGluIHVzZTogcjgxNjkKCg==
+--0016364c7a4d853ae60473158ae9--
