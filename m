@@ -1,55 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752201AbZIHUeI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbZIHU6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752201AbZIHUeI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 16:34:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751688AbZIHUeI
+	id S1752268AbZIHU6H (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 16:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZIHU6G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 16:34:08 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:44902 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751089AbZIHUeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 16:34:07 -0400
-Date: Tue, 8 Sep 2009 22:34:10 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090908203409.GJ18599@kernel.dk>
-References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk> <20090907115750.GW18599@kernel.dk> <20090907141458.GD24507@elte.hu> <20090907173846.GB18599@kernel.dk> <20090907204458.GJ18599@kernel.dk> <20090908091304.GQ18599@kernel.dk> <1252423398.7746.97.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252423398.7746.97.camel@twins>
+	Tue, 8 Sep 2009 16:58:06 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:22535 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751168AbZIHU6F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 16:58:05 -0400
+X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 16:58:03 EDT
+X-SourceIP: 84.113.196.60
+Subject: Re: ipw2200: firmware DMA loading rework
+From: Simon Kitching <simon.kitching@chello.at>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Theodore Tso <tytso@mit.edu>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Mel Gorman <mel@skynet.ie>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       James Ketrenos <jketreno@linux.intel.com>,
+       "Chatre, Reinette" <reinette.chatre@intel.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw2100-devel@lists.sourceforge.net" 
+	<ipw2100-devel@lists.sourceforge.net>
+In-Reply-To: <20090908110041.GE28127@csn.ul.ie>
+References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
+	 <1251430951.3704.181.camel@debian> <200908301437.42133.bzolnier@gmail.com>
+	 <200909021948.13262.bzolnier@gmail.com>
+	 <43e72e890909021102g7f844c79xefccf305f5f5c5b6@mail.gmail.com>
+	 <20090903124913.GA26110@csn.ul.ie> <20090905142837.GI16217@mit.edu>
+	 <20090908110041.GE28127@csn.ul.ie>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 22:39:26 +0200
+Message-Id: <1252442366.9812.3.camel@simon-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08 2009, Peter Zijlstra wrote:
-> On Tue, 2009-09-08 at 11:13 +0200, Jens Axboe wrote:
-> > And here's a newer version.
+On Tue, 2009-09-08 at 12:00 +0100, Mel Gorman wrote:
+> On Sat, Sep 05, 2009 at 10:28:37AM -0400, Theodore Tso wrote:
+> > On Thu, Sep 03, 2009 at 01:49:14PM +0100, Mel Gorman wrote:
+> > > > 
+> > > > This looks very similar to the kmemleak ext4 reports upon a mount. If
+> > > > it is the same issue, which from the trace it seems it is, then this
+> > > > is due to an extra kmalloc() allocation and this apparently will not
+> > > > get fixed on 2.6.31 due to the closeness of the merge window and the
+> > > > non-criticalness this issue has been deemed.
+> > 
+> > No, it's a different problem.
+> > 
+> > > I suspect the more pressing concern is why is this kmalloc() resulting in
+> > > an order-5 allocation request? What size is the buffer being requested?
+> > > Was that expected?  What is the contents of /proc/slabinfo in case a buffer
+> > > that should have required order-1 or order-2 is using a higher order for
+> > > some reason.
+> > 
+> > It's allocating 68,000 bytes for the mb_history structure, which is
+> > used for debugging purposes.  That's why it's optional and we continue
+> > if it's not allocated.  We should fix it to use vmalloc()
 > 
-> I tinkered a bit with your proglet and finally found the problem.
+> You could call with kmalloc(FLAGS|GFP_NOWARN) with a fallback to
+> vmalloc() and a disable if vmalloc() fails as well.  Maybe check out what
+> kernel/profile.c#profile_init() to allocate a large buffer and do something
+> similar?
 > 
-> You used a single pipe per child, this means the loop in run_child()
-> would consume what it just wrote out until it got force preempted by the
-> parent which would also get woken.
+> > and I'm
+> > inclined to turn it off by default since it's not worth the overhead,
+> > and most ext4 users won't find it useful or interesting.
+> > 
 > 
-> This results in the child spinning a while (its full quota) and only
-> reporting the last timestamp to the parent.
+> I can't comment as I don't know what sort of debugging it's useful for.
+> 
 
-Oh doh, that's not well thought out. Well it was a quick hack :-)
-Thanks for the fixup, now it's at least usable to some degree.
+Perhaps this is a suitable use for the new proposed flex_array? From an
+initial glance, I can't see why the allocated memory has to be
+contiguous..
 
-> Since consumer (parent) is a single thread the program basically
-> measures the worst delay in a thundering herd wakeup of N children.
+http://lwn.net/Articles/345273/
 
-Yes, it's really meant to measure how long it takes to wake a group of
-processes, assuming that this is where things fall down on the 'box
-loaded, switch desktop' case. Now whether that's useful or not or
-whether this test app is worth the bits it takes up on the hard drive,
-is another question.
-
--- 
-Jens Axboe
+Cheers, Simon
 
