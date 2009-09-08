@@ -1,55 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752102AbZIHUrd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752243AbZIHUts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752102AbZIHUrd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 16:47:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZIHUrc
+	id S1752243AbZIHUts (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 16:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZIHUtr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 16:47:32 -0400
-Received: from mail-qy0-f181.google.com ([209.85.221.181]:37324 "EHLO
-	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbZIHUrb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 16:47:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=tGBOMgTzdruxOjnF9tUCkloRJTKFFPm1VYpy0mzhLQrzOsHkqiFkq+KBKPuNXYWvdi
-         v29rUaQun/h4h7RpTQIx2I5hv2G7wZym9pvYCArojqsnARuibq4e4uuo+/7ZTxc0Llvk
-         iyqwv37+iwv41UtS3P3++bMw42n9y8EymXoIY=
-Subject: Re: Machine resumes straight after suspend to RAM (or disk)
-From: Maxim Levitsky <maximlevitsky@gmail.com>
-To: Alex Bennee <kernel-hacker@bennee.com>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
-References: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Tue, 08 Sep 2009 23:47:27 +0300
-Message-Id: <1252442847.16422.0.camel@maxim-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.27.92 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 16:49:47 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:56821 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751708AbZIHUtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 16:49:47 -0400
+Date: Tue, 8 Sep 2009 16:48:54 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, roland@redhat.com, rth@redhat.com,
+       mingo@elte.hu
+Subject: Re: [PATCH 0/4] RFC: jump label - (tracepoint optimizations)
+Message-ID: <20090908204853.GC2641@redhat.com>
+References: <cover.1252007851.git.jbaron@redhat.com> <20090907154824.GA1085@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090907154824.GA1085@Krystal>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 19:57 +0100, Alex Bennee wrote: 
-> Hi,
+On Mon, Sep 07, 2009 at 11:48:24AM -0400, Mathieu Desnoyers wrote:
+> >                ".pushsection __jump_table,  \"a\" \n\t"                \
+> >                _ASM_PTR "1b, %l[" #label "], %c0 \n\t"                 \
+> >                ".popsection \n\t"                                      \
+> >                : :  "i" (__sjstrtab_##tag) :  : label)
+> > 
 > 
-> I thought I'd enable suspend and resume on my desktop machine so I
-> could save myself some time in the morning when I restart the machine.
-> The machine is fairly standard Intel Core Duo based system (lspci
-> attached). However when I execute pm-suspend (or Gentoo's own
-> hibernate-script) the system does suspend but resumes immediately. To
-> add insult to injury the ethernet doesn't come back properly and needs
-> a reboot to reset it.
+> Supporting multiple labels to create a real jump table would be a
+> nice-to-have as future enhancement too. This could be called
+> STATIC_JUMP_TABLE(). Actually, the STATIC_JUMP_IF could probably be
+> implemented in terms of STATIC_JUMP_TABLE.
 > 
-> I've played about a little with the ACPI debug stuff but it's easy to
-> overflow the dmesg buffer. The relevant section around the
-> suspend/resume looks like:
+> > #else
+> > 
+> > #define STATIC_JUMP_IF(tag, label, cond)        \
+> >         if (unlikely(cond))                     \
+> >                 goto label;
+> > 
+> 
+> Hrm, however, it's not clear to me how the STATIC_JUMP_TABLE() fallback
+> would look like. In the case of STATIC_JUMP_IF, it's a simple if (),
+> which makes support of compilers lacking static jump support easy. We
+> could probably use a switch statement to replace the STATIC_JUMP_TABLE
+> though.
+> 
 
-Try to unload ehci_hcd before suspend.
+right - if we have more labels passed into STATIC_JUMP_TABLE(), we can
+probably do a case statement with a 'goto' to the correct label.
 
-Best regards,
-Maxim Levitsky
+> > #endif /* !HAVE_STATIC_JUMP */
+> > 
+> > 
+> > which can be used as:
+> > 
+> >         STATIC_JUMP_IF(trace, trace_label, jump_enabled);
+> >         printk("not doing tracing\n");
+> > if (0) {
+> > trace_label:
+> >         printk("doing tracing: %d\n", file);
+> > }
+> > 
+> 
+> Hrm. Is there any way to make this a bit prettier ? Given modifications
+> are made to gcc anyway...
+> 
+> Maybe:
+> 
+> static_jump_if (trace, jump_enabled) {
+>  ...
+> 
+> } else {
+>  ...
+> }
+> 
+> And for the jump table:
+> 
+> static_jump_table (trace, jump_select) {
+>   case 0: ...
+>           break;
+>   case 1: ...
+>           break;
+>   default:
+>           ...
+> }
+> 
+
+hmmm...yes, I agree it would be nice if the code looked a little prettier.
+However, short of additional gcc changes i'm not sure how to do that.
+perhaps, somebody has some better ideas? Note also, that the
+'STATIC_JUMP_IF()' as defined implements both:
+
+if () { }
+
+and:
+
+if () { } else { }
+
+I'm not sure the code is that hideous as proposed. However, I definitely
+would be interested it other opinions? Also, in this case note that the
+STATIC_JUMP_IF() is only added to 1 place in the code, and doesn't
+affect any of the normal tracepoint API.
+
+> 
+> > ---------------------------------------
+> > 
+> > Thus, if 'HAVE_STATIC_JUMP' is defined (which will depend ultimately on the
+> > existence of 'asm goto' in the compiler version), we simply have a no-op
+> > followed by a jump around the dormant (disabled) tracing code.
+> 
+> Hrm, why don't we collapse that into a single 5-bytes jump instruction
+> instead ?
+
+that might be nice, but would require more complex compiler support. I'm
+not sure if the extra complexity is worth the 2-byte i-cache savings?
+That is, I think we're getting the majority of the savings with the
+proposed solution.
+
+thanks,
+
+-Jason
 
