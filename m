@@ -1,202 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754497AbZIHMKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754486AbZIHMMF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754497AbZIHMKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 08:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZIHMKf
+	id S1754486AbZIHMMF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 08:12:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZIHMME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 08:10:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:46019
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754131AbZIHMKd (ORCPT
+	Tue, 8 Sep 2009 08:12:04 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:54463 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754262AbZIHMMD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 08:10:33 -0400
-Date: Tue, 08 Sep 2009 05:10:49 -0700 (PDT)
-Message-Id: <20090908.051049.141136997.davem@davemloft.net>
-To: linux-kernel@vger.kernel.org
-CC: a.p.zijlstra@chello.nl, mingo@elte.hu, jens.axboe@oracle.com
-Subject: [PATCH 2/2]: perf: Allocate mmap buffer using vmalloc_user().
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 08:12:03 -0400
+Message-ID: <4AA64A11.7090804@gmail.com>
+Date: Tue, 08 Sep 2009 14:12:01 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+MIME-Version: 1.0
+To: Jike Song <albcamus@gmail.com>
+CC: Parag Warudkar <parag.lkml@gmail.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: BUG UNIX: Poison overwritten with 2.6.31-rc6-00223-g6c30c53
+References: <alpine.DEB.2.00.0909072323350.3940@parag-desktop>	 <df9815e70909072151l2686231en76773418aaf9deeb@mail.gmail.com>	 <4AA609E8.3060408@gmail.com> <df9815e70909080109r3d61ee76v3dcba41dbd87b998@mail.gmail.com>
+In-Reply-To: <df9815e70909080109r3d61ee76v3dcba41dbd87b998@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 08 Sep 2009 14:12:03 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jike Song a écrit :
+> On Tue, Sep 8, 2009 at 3:38 PM, Eric Dumazet<eric.dumazet@gmail.com> wrote:
+>> We decrement a refcnt while object already freed.
+>>
+>> (SLUB DEBUG poisons the zone with 0x6B pattern)
+>>
+>> You might add this patch to trigger a WARN_ON when refcnt >= 0x60000000U
+>> in sk_free() : We'll see the path trying to delete an already freed sock
+>>
+>> diff --git a/net/core/sock.c b/net/core/sock.c
+>> index 7633422..1cb85ff 100644
+>> --- a/net/core/sock.c
+>> +++ b/net/core/sock.c
+>> @@ -1058,6 +1058,7 @@ static void __sk_free(struct sock *sk)
+>>
+>>  void sk_free(struct sock *sk)
+>>  {
+>> +       WARN_ON(atomic_read(&sk->sk_wmem_alloc) >= 0x60000000U);
+>>        /*
+>>         * We substract one from sk_wmem_alloc and can know if
+>>        * some packets are still in some tx queue.
+>>
+>>
+> 
+> The output of dmesg with this patch appllied is attached.
+> 
+> 
 
-This is necessary to make the mmap ring buffer work properly
-on platforms where D-cache aliasing is an issue.
+Unfortunatly this WARN_ON was not triggered,
+maybe freeing comes from sock_wfree()
 
-vmalloc_user() ensures that the kernel side mapping is SHMLBA
-aligned, and on platforms with D-cache aliasing matters the
-presence of VM_SHARED will similarly SHMLBA align the user
-side mapping.
+Could you try this patch instead ?
 
-Thus the kernel and the user will be writing to the same D-cache
-aliases and we'll avoid inconsistencies and corruption.
+Thanks
 
-The only trick with this change is that vfree() cannot be invoked
-from interrupt context, and thus it's not allowed from RCU callbacks.
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 7633422..30469dc 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -1058,6 +1058,7 @@ static void __sk_free(struct sock *sk)
 
-We deal with this by using schedule_work().
-
-Since the ring buffer is now completely linear even on the kernel
-side, several simplifications are probably now possible in the code
-where we add entries to the ring.
-
-With help from Peter Zijlstra.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
----
- include/linux/perf_counter.h |    1 +
- kernel/perf_counter.c        |   70 ++++++++++++++++++++++-------------------
- 2 files changed, 39 insertions(+), 32 deletions(-)
-
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index b53f700..c445b4e 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -503,6 +503,7 @@ struct file;
- 
- struct perf_mmap_data {
- 	struct rcu_head			rcu_head;
-+	struct work_struct		work;
- 	int				nr_pages;	/* nr of data pages  */
- 	int				writable;	/* are we writable   */
- 	int				nr_locked;	/* nr pages mlocked  */
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index f274e19..71da651 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -23,6 +23,7 @@
- #include <linux/hardirq.h>
- #include <linux/rculist.h>
- #include <linux/uaccess.h>
-+#include <linux/vmalloc.h>
- #include <linux/syscalls.h>
- #include <linux/anon_inodes.h>
- #include <linux/kernel_stat.h>
-@@ -2091,7 +2092,7 @@ static int perf_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 		goto unlock;
- 
- 	if (vmf->pgoff == 0) {
--		vmf->page = virt_to_page(data->user_page);
-+		vmf->page = vmalloc_to_page(data->user_page);
- 	} else {
- 		int nr = vmf->pgoff - 1;
- 
-@@ -2101,7 +2102,7 @@ static int perf_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
- 		if (vmf->flags & FAULT_FLAG_WRITE)
- 			goto unlock;
- 
--		vmf->page = virt_to_page(data->data_pages[nr]);
-+		vmf->page = vmalloc_to_page(data->data_pages[nr]);
- 	}
- 
- 	get_page(vmf->page);
-@@ -2115,10 +2116,34 @@ unlock:
- 	return ret;
- }
- 
-+static void perf_mmap_unmark_page(void *addr)
-+{
-+	struct page *page = vmalloc_to_page(addr);
-+
-+	page->mapping = NULL;
-+}
-+
-+static void perf_mmap_data_free_work(struct work_struct *work)
-+{
-+	struct perf_mmap_data *data;
-+	void *base;
-+	int i;
-+
-+	data = container_of(work, struct perf_mmap_data, work);
-+
-+	base = data->user_page;
-+	for (i = 0; i < data->nr_pages + 1; i++)
-+		perf_mmap_unmark_page(base + (i * PAGE_SIZE));
-+
-+	vfree(base);
-+	kfree(data);
-+}
-+
- static int perf_mmap_data_alloc(struct perf_counter *counter, int nr_pages)
+ void sk_free(struct sock *sk)
  {
- 	struct perf_mmap_data *data;
- 	unsigned long size;
-+	void *all_buf;
- 	int i;
- 
- 	WARN_ON(atomic_read(&counter->mmap_count));
-@@ -2130,15 +2155,16 @@ static int perf_mmap_data_alloc(struct perf_counter *counter, int nr_pages)
- 	if (!data)
- 		goto fail;
- 
--	data->user_page = (void *)get_zeroed_page(GFP_KERNEL);
--	if (!data->user_page)
--		goto fail_user_page;
-+	INIT_WORK(&data->work, perf_mmap_data_free_work);
- 
--	for (i = 0; i < nr_pages; i++) {
--		data->data_pages[i] = (void *)get_zeroed_page(GFP_KERNEL);
--		if (!data->data_pages[i])
--			goto fail_data_pages;
--	}
-+	all_buf = vmalloc_user((nr_pages + 1) * PAGE_SIZE);
-+	if (!all_buf)
-+		goto fail_all_buf;
-+
-+	data->user_page = all_buf;
-+
-+	for (i = 0; i < nr_pages; i++)
-+		data->data_pages[i] = all_buf + ((i + 1) * PAGE_SIZE);
- 
- 	data->nr_pages = nr_pages;
- 	atomic_set(&data->lock, -1);
-@@ -2147,39 +2173,19 @@ static int perf_mmap_data_alloc(struct perf_counter *counter, int nr_pages)
- 
- 	return 0;
- 
--fail_data_pages:
--	for (i--; i >= 0; i--)
--		free_page((unsigned long)data->data_pages[i]);
--
--	free_page((unsigned long)data->user_page);
--
--fail_user_page:
-+fail_all_buf:
- 	kfree(data);
- 
- fail:
- 	return -ENOMEM;
- }
- 
--static void perf_mmap_free_page(unsigned long addr)
--{
--	struct page *page = virt_to_page((void *)addr);
--
--	page->mapping = NULL;
--	__free_page(page);
--}
--
- static void __perf_mmap_data_free(struct rcu_head *rcu_head)
- {
- 	struct perf_mmap_data *data;
--	int i;
- 
- 	data = container_of(rcu_head, struct perf_mmap_data, rcu_head);
--
--	perf_mmap_free_page((unsigned long)data->user_page);
--	for (i = 0; i < data->nr_pages; i++)
--		perf_mmap_free_page((unsigned long)data->data_pages[i]);
--
--	kfree(data);
-+	schedule_work(&data->work);
- }
- 
- static void perf_mmap_data_free(struct perf_counter *counter)
--- 
-1.6.4.2
++	WARN_ON(atomic_read(&sk->sk_wmem_alloc) >= 0x60000000U);
+ 	/*
+ 	 * We substract one from sk_wmem_alloc and can know if
+ 	* some packets are still in some tx queue.
+@@ -1220,6 +1221,7 @@ void sock_wfree(struct sk_buff *skb)
+ 	struct sock *sk = skb->sk;
+ 	int res;
 
++	WARN_ON(atomic_read(&sk->sk_wmem_alloc) >= 0x60000000U);
+ 	/* In case it might be waiting for more memory. */
+ 	res = atomic_sub_return(skb->truesize, &sk->sk_wmem_alloc);
+ 	if (!sock_flag(sk, SOCK_USE_WRITE_QUEUE))
