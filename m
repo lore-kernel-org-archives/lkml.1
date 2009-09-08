@@ -1,46 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZIHD4y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752210AbZIHEKy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbZIHD4y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 23:56:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753443AbZIHD4y
+	id S1752210AbZIHEKy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 00:10:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbZIHEKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 23:56:54 -0400
-Received: from mail-qy0-f181.google.com ([209.85.221.181]:45042 "EHLO
-	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753420AbZIHD4x (ORCPT
+	Tue, 8 Sep 2009 00:10:54 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:55936 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751394AbZIHEKx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 23:56:53 -0400
+	Tue, 8 Sep 2009 00:10:53 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:x-x-sender:to:cc:subject:message-id:user-agent
-         :mime-version:content-type;
-        b=stV4N8p2LNecsUhfCpN+rEt0AxfUF6f3mkp1bV16ZaLqL+GhIzYK5W070zKCdRsXCh
-         o7SH/5zvAjkl30Dndc/raUIZli720aIHyLslqW95n5vxqY9dBQ45Vf8pTidVPhcUt6xU
-         0IgvWYGoJHnGy5UsGTa9U2VCqWCQK+q5NJJNM=
-Date: Mon, 7 Sep 2009 23:56:48 -0400 (EDT)
-From: Parag Warudkar <parag.lkml@gmail.com>
-X-X-Sender: parag@parag-desktop
-To: albcamus@gmail.com
-cc: linux-kernel@vger.kernel.org
-Subject: Re: BUG UNIX: Poison overwritten with 2.6.31-rc6-00223-g6c30c53
-Message-ID: <alpine.DEB.2.00.0909072323350.3940@parag-desktop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UTM8k39MQPQJEuEJxPt5giskW/ekJgPWWxEhCMD05iWY0iLSECl+AbhN6MSJfQdQsJ
+         vyiy7cVV35NdQQyAIDFwOMuuGARkXdqGrQbNwt1Mqs51frV8ycpb3Jkz4ee0jSHJSBQk
+         6ZbYkW8obyIRbrTOSJZ6d7eksxZFL35eUzHmc=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4AA5BB3E.4050808@cn.fujitsu.com>
+References: <20090908093416.5a2f98b6.minchan.kim@barrios-desktop>
+	 <20090908005520.GA7967@localhost> <4AA5BB3E.4050808@cn.fujitsu.com>
+Date: Tue, 8 Sep 2009 13:10:55 +0900
+Message-ID: <28c262360909072110j8ef5962h7231be5c03d68da3@mail.gmail.com>
+Subject: Re: [PATCH] trace bio queueing trial only when it occurs
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 8, 2009 at 11:02 AM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+> Wu Fengguang wrote:
+>> Minchan,
+>>
+>> I tend to agree with the change, but somehow confused by blkparse(1):
+>>
+>>         Q -- queued   This notes *intent* to queue i/o at the given location.  No real requests exists yet.
+>>
+>> Li Zefan has been working on blktrace and he can tell more.
+>>
+>
+> I work on ftrace-plugin blktrace and blk TRACE_EVENT, but don't know
+> much about the old blktrace history. ;)
+>
+> I think the manpage says it's called before ->make_request_fn(), so
+> "No real requests exist yet".
+>
+> Actually the trace was called just before make_request at first:
+>        2056a782f8e7e65fd4bfd027506b4ce1c5e9ccd4
+>
+> And then 2 patches added some checks between them:
+>        5ddfe9691c91a244e8d1be597b6428fcefd58103
+>        51fd77bd9f512ab6cc9df0733ba1caaab89eb957
+>
+> It seems to me it makes sense to have this patch.
 
-On Thu, Aug 27, 2009 at 4:45 PM, Jike Song<albcamus@gmail.com> wrote:
->> hi, I hit this with vnc. Below is part of dmesg :
+Thanks for good information.
+Yes. It seems above 2 patches seem to break the rule.
+Could I add your ACK?
 
-> Still producible in 2.6.31-rc9, anybody helps?
+>> Thanks,
+>> Fengguang
+>>
+>> On Tue, Sep 08, 2009 at 08:34:16AM +0800, Minchan Kim wrote:
+>>> It got lost in LKML mail storm.
+>>> I resend this.
+>>> Wu, Could you review this patch, please?
+>>>
+>>> == CUT_HERE ==
+>>>
+>>> If BIO is discarded or cross over end of device,
+>>> BIO queueing trial doesn't occur.
+>>>
+>>> Let's trace it only when it happens.
+>>>
+>>> Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+>>> ---
+>>>  block/blk-core.c |    4 ++--
+>>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/block/blk-core.c b/block/blk-core.c
+>>> index 5b59592..1a0cfd5 100644
+>>> --- a/block/blk-core.c
+>>> +++ b/block/blk-core.c
+>>> @@ -1463,8 +1463,6 @@ static inline void __generic_make_request(struct bio *bio)
+>>>              if (old_sector != -1)
+>>>                      trace_block_remap(q, bio, old_dev, old_sector);
+>>>
+>>> -            trace_block_bio_queue(q, bio);
+>>> -
+>>>              old_sector = bio->bi_sector;
+>>>              old_dev = bio->bi_bdev->bd_dev;
+>>>
+>>> @@ -1477,6 +1475,8 @@ static inline void __generic_make_request(struct bio *bio)
+>>>                      goto end_io;
+>>>              }
+>>>
+>>> +            trace_block_bio_queue(q, bio);
+>>> +
+>>>              ret = q->make_request_fn(q, bio);
+>>>      } while (ret);
+>>>
+>>> --
+>>> 1.6.4
+>>>
+>>>
+>>>
+>
 
-How does one go about reproducing this? You said VNC triggers this but 
-what VNC version, server or client? What distro and what needs to be done 
-with VNC to trigger this problem? I ask since I use VNC myself and test -git kernels 
-and have not encountered this issue.
 
-Parag
 
+-- 
+Kind regards,
+Minchan Kim
