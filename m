@@ -1,124 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754417AbZIHNnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZIHNqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754417AbZIHNnD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 09:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZIHNnC
+	id S1754484AbZIHNqi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 09:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753845AbZIHNqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 09:43:02 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56413 "EHLO mx1.redhat.com"
+	Tue, 8 Sep 2009 09:46:38 -0400
+Received: from fifo99.com ([67.223.236.141]:45651 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753755AbZIHNnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 09:43:00 -0400
-Date: Tue, 8 Sep 2009 09:42:44 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: riel@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
-       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-Message-ID: <20090908134244.GA15974@redhat.com>
-References: <20090904231129.GA3689@redhat.com> <20090907.200222.193693062.ryov@valinux.co.jp> <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090908.120119.71095369.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753800AbZIHNqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 09:46:37 -0400
+Subject: Re: [PATCH 3/8] writeback: switch to per-bdi threads for flushing
+ data
+From: Daniel Walker <dwalker@fifo99.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+In-Reply-To: <1252401791-22463-4-git-send-email-jens.axboe@oracle.com>
+References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com>
+	 <1252401791-22463-4-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 06:46:46 -0700
+Message-Id: <1252417606.14793.3.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 12:01:19PM +0900, Ryo Tsuruta wrote:
-> Hi Rik,
-> 
-> Rik van Riel <riel@redhat.com> wrote:
-> > Ryo Tsuruta wrote:
-> > 
-> > > However, if you want to get fairness in a case like this, a new
-> > > bandwidth control policy which controls accurately according to
-> > > assigned weights can be added to dm-ioband.
-> > 
-> > Are you saying that dm-ioband is purposely unfair,
-> > until a certain load level is reached?
-> 
-> Not unfair, dm-ioband(weight policy) is intentionally designed to
-> use bandwidth efficiently, weight policy tries to give spare bandwidth
-> of inactive groups to active groups.
-> 
+On Tue, 2009-09-08 at 11:23 +0200, Jens Axboe wrote:
+> This gets rid of pdflush for bdi writeout and kupdated style cleaning.
+> pdflush writeout suffers from lack of locality and also requires more
+> threads to handle the same workload, since it has to work in a
+> non-blocking fashion against each queue. This also introduces lumpy
+> behaviour and potential request starvation, since pdflush can be starved
+> for queue access if others are accessing it. A sample ffsb workload that
+> does random writes to files is about 8% faster here on a simple SATA drive
+> during the benchmark phase. File layout also seems a LOT more smooth in
+> vmstat:
 
-This group is running a sequential reader. How can you call it an inactive
-group?
 
-I think that whole problem is that like CFQ you have not taken care of
-idling into account.
+This patch has a checkpatch error, and couple of warnings.. Here's one
+of the warnings which I though was concerning..
 
-Your solution seems to be designed only for processes doing bulk IO over
-a very long period of time. I think it limits the usefulness of solution
-severely.
+WARNING: trailing semicolon indicates no statements, indent implies
+otherwise
+#388: FILE: fs/fs-writeback.c:177:
++               } else if (wb->task);
++                       wake_up_process(wb->task);
 
-> > > We regarded reducing throughput loss rather than reducing duration
-> > > as the design of dm-ioband. Of course, it is possible to make a new
-> > > policy which reduces duration.
-> > 
-> > ... while also reducing overall system throughput
-> > by design?
-> 
-> I think it reduces system throughput compared to the current
-> implementation, because it causes more overhead to do fine grained
-> control. 
-> 
-> > Why are you even bothering to submit this to the
-> > linux-kernel mailing list, when there is a codebase
-> > available that has no throughput or fairness regressions?
-> > (Vivek's io scheduler based io controler)
-> 
-> I think there are some advantages to dm-ioband. That's why I post
-> dm-ioband to the mailing list.
-> 
-> - dm-ioband supports not only proportional weight policy but also rate
->   limiting policy. Besides, new policies can be added to dm-ioband if
->   a user wants to control bandwidth by his or her own policy.
+I suppose that could be a defect .. btw, patch 7 of 8 also has a few
+trivial warnings.
 
-I think we can easily extent io scheduler based controller to also support
-max rate per group policy also. That should not be too hard. It is a
-matter of only keeping track of io rate per group and if a group is
-exceeding the rate, then schedule it out and move on to next group.
+Daniel
 
-I can do that once proportional weight solution is stablized and gets
-merged. 
-
-So its not an advantage of dm-ioband.
-
-> - The dm-ioband driver can be replaced without stopping the system by
->   using device-mapper's facility. It's easy to maintain.
-
-We talked about this point in the past also. In io scheduler based
-controller, just move all the tasks to root group and you got a system
-not doing any io control.
-
-By the way why would one like to do that? 
-
-So this is also not an advantage.
-
-> - dm-ioband can use without cgroup. (I remember Vivek said it's not an
->   advantage.)
-
-I think this is more of a disadvantage than advantage. We have a very well
-defined functionality of cgroup in kernel to group the tasks. Now you are
-coming up with your own method of grouping the tasks which will make life
-even more confusing for users and application writers.
-
-I don't understand what is that core requirement of yours which is not met
-by io scheduler based io controller. range policy control you have
-implemented recently. I don't think that removing dm-ioband module
-dynamically is core requirement. Also whatever you can do with additional 
-grouping mechanism, you can do with cgroup also.
-
-So if there is any of your core functionality which is not fulfilled by
-io scheduler based controller, please let me know. I will be happy to look
-into it and try to provide that feature. But looking at above list, I am
-not convinced that any of the above is a compelling argument for dm-ioband
-inclusion.
-
-Thanks
-Vivek
