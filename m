@@ -1,92 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753815AbZIHGz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753760AbZIHG6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753815AbZIHGz1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 02:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZIHGz0
+	id S1753760AbZIHG6K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 02:58:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZIHG6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 02:55:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47670 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753467AbZIHGzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 02:55:25 -0400
-Date: Tue, 8 Sep 2009 08:55:19 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: lookeylam <lookeylam@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: About CPU's Load Balance and CFS functions
-Message-ID: <20090908065519.GC6505@elte.hu>
-References: <200909071614346093582@gmail.com> <1252351192.7503.29.camel@twins>
+	Tue, 8 Sep 2009 02:58:09 -0400
+Received: from mga07.intel.com ([143.182.124.22]:14932 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753602AbZIHG6J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 02:58:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="asc'?scan'208";a="185104725"
+Date: Tue, 8 Sep 2009 14:58:08 +0800
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
+To: "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ma Ling <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Zhao Yakui <yakui.zhao@intel.com>, Eric Anholt <eric@anholt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bisected] Output to external monitor is broken (Re: Linux
+ 2.6.31-rc9)
+Message-ID: <20090908065808.GA30390@zhen-devel.sh.intel.com>
+Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
+Mail-Followup-To: "Carlos R. Mafra" <crmafra2@gmail.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ma Ling <ling.ma@intel.com>,
+	Jesse Barnes <jbarnes@virtuousgeek.org>,
+	Zhao Yakui <yakui.zhao@intel.com>, Eric Anholt <eric@anholt.net>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0909051645430.3329@localhost.localdomain>
+ <20090906142206.GA4449@Pilar.aei.mpg.de>
+ <alpine.LFD.2.01.0909071125430.25628@localhost.localdomain>
+ <20090907191219.GA5015@Pilar.aei.mpg.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="IS0zKkzwUGydFO0o"
 Content-Disposition: inline
-In-Reply-To: <1252351192.7503.29.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090907191219.GA5015@Pilar.aei.mpg.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+--IS0zKkzwUGydFO0o
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 2009-09-07 at 16:14 +0800, lookeylam wrote:
-> > Hello:
-> >          I am  not sure this  is the right maillist to ask this
-> > question. I just have a try.
-> >          I have a test on Dell 1950 with 8 cpus on board for testing
-> > the apache by ab command. And I find that in 
-> >          linux 2.6.18. The processes forked by apache are not well
-> > distributed on these 8 cpus.
-> >          linux 2.6.23 is a little better than 2.6.18, but still some
-> > cpus are running busy and some cpus remains idle.
-> >          While in  2.6.30, these 8 cpus are well used and the
-> > percentage of each cpu is nearly the same. And when I 
-> >          start the control group with cpuset type with
-> > sched_relax_domain_level( with value 3,4,5). The result of ab is 50ms
-> > better than test results without control group. 
-> >         
-> >          I attribute this situation to to load_balance but not CFS,
-> > because CFS is just a scheduler for orgnizing the process inside one
-> > cpu, while load_balance is the main character to control the process
-> > and load between different cpus.
-> >          But when i give out this conclusion, I confuse about the
-> > differences of these three kernels of load_balance.
-> >          
-> >          My questions are the above conclusion  is right or not? How
-> > would these situation happen and why? I read the code of the kernel
-> > but I am still not sure.
-> 
-> load-balancing is generally considered part of the scheduler as a 
-> whole, while CFS is indeed the cpu scheduler, it and the 
-> load-balancer are related because they do have to work together.
-> 
-> Now, in the past 3+years the load-balancer has undergone 
-> significant changes too -- and we're now again poking at it, .32 
-> will likely have quite radical changes to the whole load balancer.
-> 
-> The sched_relax_domain_level knob is one that controls one of the 
-> coupling mechanisms, namely wake on idle, that is, we try and push 
-> newly woken tasks away to idle cpus. The level you put in there is 
-> related to the sched_domain level.
-> 
-> Normally we don't try and push newly woken tasks too far away, 
-> because that'll increase the remote access penalty for related 
-> tasks, but some workloads have lots of very short running 
-> unrelated tasks which do benefit from this.
-> 
-> Anyway, I would suggest you keep an eye out for scheduler patches 
-> if you're interested in this, all the scheduler development 
-> happens in -tip.
+On 2009.09.07 21:12:19 +0200, Carlos R. Mafra wrote:
+>=20
+> I am no longer at the institute with the monitor to test, but I've already
+> uploaded similar debug info to the bugzilla upon ykzhao's request this
+> morning (but I think you were not Cc:-ed on that request, though).
+>=20
+> http://bugzilla.kernel.org/show_bug.cgi?id=3D14139
+>=20
+> PS: The external monitor is unreadable, but the laptop's screen is still =
+good.
 
-Which can be tested via:
+Carlos, I've just taken a look at that one, there're some drawbacks in
+it, but can't understand why it caused break for you. It'll be great if
+you can test with this one.=20
 
-  http://people.redhat.com/mingo/tip.git/README
+=46rom f3932299964b2616d42d7fcf734bd880009ab206 Mon Sep 17 00:00:00 2001
+=46rom: Zhenyu Wang <zhenyuw@linux.intel.com>
+Date: Tue, 8 Sep 2009 14:52:25 +0800
+Subject: [PATCH] drm/i915: fix mask bits setting
 
-	Ingo
+eDP is exclusive connector too, and add missing crtc_mask
+setting for TV.
+
+Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+---
+ drivers/gpu/drm/i915/intel_dp.c  |    2 +-
+ drivers/gpu/drm/i915/intel_drv.h |    1 +
+ drivers/gpu/drm/i915/intel_tv.c  |    1 +
+ 3 files changed, 3 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/intel_dp.c b/drivers/gpu/drm/i915/intel_d=
+p.c
+index f2afc4a..2b914d7 100644
+--- a/drivers/gpu/drm/i915/intel_dp.c
++++ b/drivers/gpu/drm/i915/intel_dp.c
+@@ -1263,7 +1263,7 @@ intel_dp_init(struct drm_device *dev, int output_reg)
+=20
+ 	if (IS_eDP(intel_output)) {
+ 		intel_output->crtc_mask =3D (1 << 1);
+-		intel_output->clone_mask =3D (1 << INTEL_OUTPUT_EDP);
++		intel_output->clone_mask =3D (1 << INTEL_EDP_CLONE_BIT);
+ 	} else
+ 		intel_output->crtc_mask =3D (1 << 0) | (1 << 1);
+ 	connector->interlace_allowed =3D true;
+diff --git a/drivers/gpu/drm/i915/intel_drv.h b/drivers/gpu/drm/i915/intel_=
+drv.h
+index 25aa6fa..26a6227 100644
+--- a/drivers/gpu/drm/i915/intel_drv.h
++++ b/drivers/gpu/drm/i915/intel_drv.h
+@@ -74,6 +74,7 @@
+ #define INTEL_LVDS_CLONE_BIT 14
+ #define INTEL_DVO_TMDS_CLONE_BIT 15
+ #define INTEL_DVO_LVDS_CLONE_BIT 16
++#define INTEL_EDP_CLONE_BIT 17
+=20
+ #define INTEL_DVO_CHIP_NONE 0
+ #define INTEL_DVO_CHIP_LVDS 1
+diff --git a/drivers/gpu/drm/i915/intel_tv.c b/drivers/gpu/drm/i915/intel_t=
+v.c
+index 2fbe13a..5b1c9e9 100644
+--- a/drivers/gpu/drm/i915/intel_tv.c
++++ b/drivers/gpu/drm/i915/intel_tv.c
+@@ -1730,6 +1730,7 @@ intel_tv_init(struct drm_device *dev)
+ 	drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc=
+);
+ 	tv_priv =3D (struct intel_tv_priv *)(intel_output + 1);
+ 	intel_output->type =3D INTEL_OUTPUT_TVOUT;
++	intel_output->crtc_mask =3D (1 << 0) | (1 << 1);
+ 	intel_output->clone_mask =3D (1 << INTEL_TV_CLONE_BIT);
+ 	intel_output->enc.possible_crtcs =3D ((1 << 0) | (1 << 1));
+ 	intel_output->enc.possible_clones =3D (1 << INTEL_OUTPUT_TVOUT);
+--=20
+1.6.3.3
+
+--=20
+Open Source Technology Center, Intel ltd.
+
+$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
+
+--IS0zKkzwUGydFO0o
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqmAH8ACgkQsQQaM014GCcL2QCdHaR08dJEiJRc69o0V+iD0bM9
+qwwAoIJpsW+MOr+Erl8sFUUxiz//bXg7
+=9/3G
+-----END PGP SIGNATURE-----
+
+--IS0zKkzwUGydFO0o--
