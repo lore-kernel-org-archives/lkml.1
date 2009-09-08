@@ -1,91 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754574AbZIHORY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751360AbZIHOVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754574AbZIHORY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 10:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZIHORX
+	id S1751360AbZIHOVR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 10:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751086AbZIHOVR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 10:17:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57921 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754465AbZIHORX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 10:17:23 -0400
-Date: Tue, 8 Sep 2009 07:20:46 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Nikos Chantziaras <realnc@arcor.de>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090908072046.3932fd50@infradead.org>
-In-Reply-To: <4AA62E4E.4040700@arcor.de>
-References: <20090906205952.GA6516@elte.hu>
-	<h81v7t$p6e$1@ger.gmane.org>
-	<20090907074039.1b6bc1ac@infradead.org>
-	<4AA6056A.4020106@arcor.de>
-	<20090908013800.296a5fb5@infradead.org>
-	<4AA62E4E.4040700@arcor.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 8 Sep 2009 10:21:17 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58056 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750897AbZIHOVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 10:21:16 -0400
+Date: Tue, 8 Sep 2009 16:21:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 3/8] writeback: switch to per-bdi threads for flushing
+	data
+Message-ID: <20090908142118.GZ18599@kernel.dk>
+References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-4-git-send-email-jens.axboe@oracle.com> <1252417606.14793.3.camel@desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252417606.14793.3.camel@desktop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Sep 2009 13:13:34 +0300
-Nikos Chantziaras <realnc@arcor.de> wrote:
-
-> On 09/08/2009 11:38 AM, Arjan van de Ven wrote:
-> > On Tue, 08 Sep 2009 10:19:06 +0300
-> > Nikos Chantziaras<realnc@arcor.de>  wrote:
-> >
-> >> latencytop has this to say:
-> >>
-> >>     http://foss.math.aegean.gr/~realnc/pics/latop1.png
-> >>
-> >> Though I don't really understand what this tool is trying to tell
-> >> me, I hope someone does.
-> >
-> > despite the untranslated content, it is clear that you have
-> > scheduler delays (either due to scheduler bugs or cpu contention)
-> > of upto 68 msecs... Second in line is your binary AMD graphics
-> > driver that is chewing up 14% of your total latency...
+On Tue, Sep 08 2009, Daniel Walker wrote:
+> On Tue, 2009-09-08 at 11:23 +0200, Jens Axboe wrote:
+> > This gets rid of pdflush for bdi writeout and kupdated style cleaning.
+> > pdflush writeout suffers from lack of locality and also requires more
+> > threads to handle the same workload, since it has to work in a
+> > non-blocking fashion against each queue. This also introduces lumpy
+> > behaviour and potential request starvation, since pdflush can be starved
+> > for queue access if others are accessing it. A sample ffsb workload that
+> > does random writes to files is about 8% faster here on a simple SATA drive
+> > during the benchmark phase. File layout also seems a LOT more smooth in
+> > vmstat:
 > 
-> I've now used a correctly installed and up-to-date version of
-> latencytop and repeated the test.  Also, I got rid of AMD's binary
-> blob and used kernel DRM drivers for my graphics card to throw fglrx
-> out of the equation (which btw didn't help; the exact same problems
-> occur).
 > 
-> Here the result:
+> This patch has a checkpatch error, and couple of warnings.. Here's one
+> of the warnings which I though was concerning..
 > 
->      http://foss.math.aegean.gr/~realnc/pics/latop2.png
+> WARNING: trailing semicolon indicates no statements, indent implies
+> otherwise
+> #388: FILE: fs/fs-writeback.c:177:
+> +               } else if (wb->task);
+> +                       wake_up_process(wb->task);
 > 
-> Again: this is on an Intel Core 2 Duo CPU.
+> I suppose that could be a defect .. btw, patch 7 of 8 also has a few
+> trivial warnings.
 
+Oops yes, that was added between -v18 and -19 with the moving of that
+code. Will fix that up, thanks for spotting that.
 
-so we finally have objective numbers!
-
-now the interesting part is also WHERE the latency hits. Because
-fundamentally, if you oversubscribe the CPU, you WILL get scheduling
-latency.. simply you have more to run than there is CPU.
-
-Now the scheduler impacts this latency in two ways
-* Deciding how long apps run before someone else gets to take over
-  ("time slicing")
-* Deciding who gets to run first/more; eg priority between apps
-
-the first one more or less controls the maximum, while the second one
-controls which apps get to enjoy this maximum.
-
-latencytop shows you both, but it is interesting to see how much the
-apps get that you care about latency for....
-
-
+I'll check the series for checkpatch cleanliness. I did at some point,
+but that was a few revisions ago.
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Jens Axboe
+
