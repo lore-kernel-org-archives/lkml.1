@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbZIHTBG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751979AbZIHTEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751935AbZIHTBG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:01:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZIHTBG
+	id S1751979AbZIHTEP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZIHTEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:01:06 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39417 "EHLO mail.dvmed.net"
+	Tue, 8 Sep 2009 15:04:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58438 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751548AbZIHTBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:01:05 -0400
-Message-ID: <4AA6A9E8.9000407@garzik.org>
-Date: Tue, 08 Sep 2009 15:00:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1750971AbZIHTEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:04:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Justin Piszcz <jpiszcz@lucidpixels.com>
+Subject: Re: [Bug #13949] Cryptoloop stuck I/O issue on partition or loopback device
+Date: Tue, 8 Sep 2009 21:05:13 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Felix Blyakher <felixb@sgi.com>
+References: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera> <20090907152553.GA21768@infradead.org> <alpine.DEB.2.00.0909081029050.7636@p34.internal.lan>
+In-Reply-To: <alpine.DEB.2.00.0909081029050.7636@p34.internal.lan>
 MIME-Version: 1.0
-To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
-CC: Serge Belyshev <belyshev@depni.sinp.msu.ru>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: Epic regression in throughput since v2.6.23
-References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru> <4807377b0909081047kfad088j694bd2b806075c5f@mail.gmail.com>
-In-Reply-To: <4807377b0909081047kfad088j694bd2b806075c5f@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Message-Id: <200909082105.13124.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/08/2009 01:47 PM, Jesse Brandeburg wrote:
-> On Tue, Sep 8, 2009 at 5:57 AM, Serge
-> Belyshev<belyshev@depni.sinp.msu.ru>  wrote:
->>
->> Hi. I've done measurments of time taken by make -j4 kernel build
->> on a quadcore box.  Results are interesting: mainline kernel
->> has regressed since v2.6.23 release by more than 10%.
->
-> Is this related to why I now have to double the amount of threads X I
-> pass to make -jX, in order to use all my idle time for a kernel
-> compile?  I had noticed (without measuring exactly) that it seems with
-> each kernel released in this series mentioned, I had to increase my
-> number of worker threads, my common working model now is (cpus * 2) in
-> order to get zero idle time.
+On Tuesday 08 September 2009, Justin Piszcz wrote:
+> 
+> On Mon, 7 Sep 2009, Christoph Hellwig wrote:
+> 
+> > On Sun, Sep 06, 2009 at 08:11:51PM +0200, Rafael J. Wysocki wrote:
+> >> This message has been generated automatically as a part of a report
+> >> of regressions introduced between 2.6.29 and 2.6.30.
+> >>
+> >> The following bug entry is on the current list of known regressions
+> >> introduced between 2.6.29 and 2.6.30.  Please verify if it still should
+> >> be listed and let me know (either way).
+> >
+> > While this still isn't fixed it has been tracked down to a regression
+> > in the loop driver.  Care to adjust the subject?
+> >
+> 
+> Unsure how to edit on the kernel bugtracker but updating this thread to 
+> correct the subject.
 
-You will almost certainly see idle CPUs/threads with "make -jN_CPUS" due 
-to processes waiting for I/O.
+I've changed the subject and moved the bug to I/O & storage.
 
-If you're curious, there is also room for experimenting with make's "-l" 
-argument, which caps the number of jobs based on load average rather 
-than a static number of job slots.
-
-	Jeff
-
-
+Thanks,
+Rafael
