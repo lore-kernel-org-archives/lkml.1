@@ -1,71 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751655AbZIHTYw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbZIHT0N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751655AbZIHTYw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:24:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750880AbZIHTYv
+	id S1751950AbZIHT0N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:26:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZIHT0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:24:51 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:38271 "EHLO mx1.redhat.com"
+	Tue, 8 Sep 2009 15:26:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:40426 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750777AbZIHTYv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:24:51 -0400
-Message-ID: <4AA6AF58.3050501@redhat.com>
-Date: Tue, 08 Sep 2009 15:24:08 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1751213AbZIHT0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:26:11 -0400
+Message-ID: <4AA6AFCE.5080406@garzik.org>
+Date: Tue, 08 Sep 2009 15:26:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-CC: vgoyal@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
-       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-References: <20090904231129.GA3689@redhat.com>	<20090907.200222.193693062.ryov@valinux.co.jp>	<4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp>
-In-Reply-To: <20090908.120119.71095369.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: Epic regression in throughput since v2.6.23
+References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru>	<4807377b0909081047kfad088j694bd2b806075c5f@mail.gmail.com>	<4AA6A9E8.9000407@garzik.org> <87ab15i6q4.fsf@depni.sinp.msu.ru>
+In-Reply-To: <87ab15i6q4.fsf@depni.sinp.msu.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryo Tsuruta wrote:
-> Rik van Riel <riel@redhat.com> wrote:
+On 09/08/2009 03:20 PM, Serge Belyshev wrote:
+> Jeff Garzik<jeff@garzik.org>  writes:
+>
+>> You will almost certainly see idle CPUs/threads with "make -jN_CPUS"
+>> due to processes waiting for I/O.
+>
+> Just to clarify: I have excluded all I/O effects in my plots completely
+> by building completely from tmpfs. Also, before each actual measurment
+> there was a thrown-off "pre-caching" one.  And my box has 8GB of RAM.
 
->> Are you saying that dm-ioband is purposely unfair,
->> until a certain load level is reached?
-> 
-> Not unfair, dm-ioband(weight policy) is intentionally designed to
-> use bandwidth efficiently, weight policy tries to give spare bandwidth
-> of inactive groups to active groups.
+You could always one-up that by using ramfs ;)
 
-This sounds good, except that the lack of anticipation
-means that a group with just one task doing reads will
-be considered "inactive" in-between reads.
+	Jeff
 
-This means writes can always get in-between two reads,
-sometimes multiple writes at a time, really disadvantaging
-a group that is doing just disk reads.
 
-This is a problem, because reads are generally more time
-sensitive than writes.
 
->>> We regarded reducing throughput loss rather than reducing duration
->>> as the design of dm-ioband. Of course, it is possible to make a new
->>> policy which reduces duration.
->> ... while also reducing overall system throughput
->> by design?
-> 
-> I think it reduces system throughput compared to the current
-> implementation, because it causes more overhead to do fine grained
-> control. 
-
-Except that the io scheduler based io controller seems
-to be able to enforce fairness while not reducing
-throughput.
-
-Dm-ioband would have to address these issues to be a
-serious contender, IMHO.
-
--- 
-All rights reversed.
