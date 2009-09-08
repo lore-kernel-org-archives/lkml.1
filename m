@@ -1,42 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750778AbZIHO1l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750852AbZIHO3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750778AbZIHO1l (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 10:27:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750719AbZIHO1k
+	id S1750852AbZIHO3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 10:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750721AbZIHO3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 10:27:40 -0400
-Received: from netsys.kaist.ac.kr ([143.248.239.50]:57718 "EHLO
-	netsys.kaist.ac.kr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbZIHO1k (ORCPT
+	Tue, 8 Sep 2009 10:29:19 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:52629 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750719AbZIHO3S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 10:27:40 -0400
-From: "Junhee Lee" <junhee@netsys.kaist.ac.kr>
-To: <linux-kernel@vger.kernel.org>
-Subject: microsecond event scheduling in an application
-Date: Tue, 8 Sep 2009 23:27:40 +0900
-Message-ID: <015f01ca3090$85e8a280$91b9e780$@kaist.ac.kr>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-Index: AcowkIPBzI9zOqJORxyOWEwDWhKexA==
-Content-Language: ko
-x-cr-hashedpuzzle: AkbU BHZv CaaR CoVn DYRY EVHj F9vi GNzK G/qr HQIX H6Ln IAlq Jk+o LBBw LeYT Le7T;1;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA=;Sosha1_v1;7;{0290781C-5ACA-4336-A175-D1C12D99C824};agB1AG4AaABlAGUAQABuAGUAdABzAHkAcwAuAGsAYQBpAHMAdAAuAGEAYwAuAGsAcgA=;Tue, 08 Sep 2009 14:27:37 GMT;bQBpAGMAcgBvAHMAZQBjAG8AbgBkACAAZQB2AGUAbgB0ACAAcwBjAGgAZQBkAHUAbABpAG4AZwAgAGkAbgAgAGEAbgAgAGEAcABwAGwAaQBjAGEAdABpAG8AbgA=
-x-cr-puzzleid: {0290781C-5ACA-4336-A175-D1C12D99C824}
+	Tue, 8 Sep 2009 10:29:18 -0400
+Subject: [PATCH take 3][RFC] fat: Save FAT root directory timestamps to
+	volume label
+From: =?ISO-8859-1?Q?J=F6rg?= Schummer <ext-jorg.2.schummer@nokia.com>
+To: hirofumi@mail.parknet.co.jp
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+References: <1248274841-3586-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+	 <1248428635-26073-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+	 <87fxclmhxy.fsf@devron.myhome.or.jp>
+	 <1248691635.4618.43.camel@jorg-desktop>
+	 <87ljmas5ym.fsf@devron.myhome.or.jp>
+	 <1249375357.5736.53.camel@jorg-desktop>
+	 <87zlafswci.fsf@devron.myhome.or.jp>
+In-Reply-To: <87zlafswci.fsf@devron.myhome.or.jp>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 08 Sep 2009 17:28:51 +0300
+Message-Id: <1252420131.5782.2.camel@jorg-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 08 Sep 2009 14:28:52.0688 (UTC) FILETIME=[B06DA500:01CA3090]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am working on event scheduler which handles events in microsecond level.
-Actual this program is a network emulator using simulation codes.
-I'd like to expect that network emulator is working as simulation behaviors.
-Thus high resolution timer interrupt is required.
-But high resolution timer interrupt derived by high tick frequency (jiffies
-clock) must effect the system performance. 
-Are there any comments or ways to support microsecond event scheduling
-without performance degradation?
+On Tue, 2009-08-04 at 12:32 +0200, ext OGAWA Hirofumi wrote: 
+> Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
+> 
+> > On Mon, 2009-07-27 at 13:47 +0200, ext OGAWA Hirofumi wrote:
+> >> Jörg Schummer <ext-jorg.2.schummer@nokia.com> writes:
+> >
+> >> BTW, the patch has several bugs. fat_get_label_entry() doesn't check
+> >> IS_FREE(), is it right? fat_create_label_entry() doesn't initialize all
+> >> timestamp in the case of msdos. spin_lock() usage is wrong. and more...
+> >
+> > After reviewing the patch again, I did notice some additional problems
+> > (I suppose that was the "and more..."). If and when I have time again, I
+> > might take a closer look at it again.
+> >
+> > Thanks for your help until now!
 
-Regards 
+Hello,
+
+on the off-chance that somebody would like to use this mechanism, I did
+a 3rd take of the patch. I tried to fix the problems of the previous
+patch and additionally added the functionality to correct the root dir
+timestamp's mtime and atime somewhat based on contained directory
+entries' ctime.
+
+Any comments are welcome, but especially I'd like to ask if it is safe /
+good / doable to call 
+
+  remove_inode_hash(inode);
+  fat_attach(inode, i_pos);
+  insert_inode_hash(inode);
+
+inside fat_write_inode .
+
+Thanks for any feedback!
+Jörg
 
 
