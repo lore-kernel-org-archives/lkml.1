@@ -1,53 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751781AbZIHRvu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752034AbZIHRyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751781AbZIHRvu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 13:51:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZIHRvu
+	id S1752034AbZIHRyR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 13:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZIHRyQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 13:51:50 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53508 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751750AbZIHRvt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 13:51:49 -0400
-Date: Tue, 8 Sep 2009 18:53:06 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: linux-ide@vger.kernel.org,
-       Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: Limiting DMA speeds for individual IDE drives
-Message-ID: <20090908185306.0f30c07b@lxorguk.ukuu.org.uk>
-In-Reply-To: <Pine.LNX.4.44L0.0909081157520.2653-100000@iolanthe.rowland.org>
-References: <Pine.LNX.4.44L0.0909081157520.2653-100000@iolanthe.rowland.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 13:54:16 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1348 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751972AbZIHRyP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 13:54:15 -0400
+Date: Tue, 8 Sep 2009 13:54:00 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Nauman Rafique <nauman@google.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090908175400.GE15974@redhat.com>
+References: <20090904231129.GA3689@redhat.com> <20090907.200222.193693062.ryov@valinux.co.jp> <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp> <20090908134244.GA15974@redhat.com> <e98e18940909080930o40008d5dnc823db96687654af@mail.gmail.com> <4AA68AA5.10505@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA68AA5.10505@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I've got a situation where a drive claims to be capable of supporting
-> UDMA/100, but it's in a noisy environment and gets lots of errors at
-> that speed.  I'd like to limit it to UDMA/66 or even UDMA/33.
+On Tue, Sep 08, 2009 at 12:47:33PM -0400, Rik van Riel wrote:
+> Nauman Rafique wrote:
+>
+>> I think this is probably the key deal breaker. dm-ioband has no
+>> mechanism to anticipate or idle for a reader task. Without such a
+>> mechanism, a proportional division scheme cannot work for tasks doing
+>> reads. 
+>
+> That is a really big issue, since most reads tend to be synchronous
+> (the application is waiting for the read), while many writes are not
+> (the application is doing something else while the data is written).
+>
+> Having writes take precedence over reads will really screw over the
+> readers, while not benefitting the writers all that much.
+>
 
-That should never occur with a proper cable and I would be concerned the
-fault might be something more problematic such as speed misconfiguration
-or an incompatibility. Which driver is in use ?
+I ran a test to show how readers can be starved in certain cases. I launched
+one reader and three writers. I ran this test twice. First without dm-ioband
+and then with dm-ioband.
 
-> The hdparm command should be able to do this but I can't run it until 
-> the system has booted, by which time a bunch of CRC and possibly other 
-> errors have already occurred.  Ideally it should be possible to limit 
+Following are few lines from the script to launch readers and writers.
 
-Only the data transfers are CRC protected and at high speed, but noise at
-low speed would be a real concern as the commands are sent low speed but
-without protection on PATA devices - so a bit flip can send a DMA to the
-wrong sector.
+**************************************************************
+sync
+echo 3 > /proc/sys/vm/drop_caches
 
-> the speed starting as early as device detection, but I can't find any 
-> way to do it.  Is there support for such a thing or will I have to hack 
-> it in?
+# Launch writers on sdd2
+dd if=/dev/zero of=/mnt/sdd2/writezerofile1 bs=4K count=262144 &
 
-You can disallow DMA but not clip DMA to UDMA33 with the old driver. You
-could disallow DMA at boot and reallow it with a speed set by hdparm in
-your boot scripts...
+# Launch  writers on sdd1
+dd if=/dev/zero of=/mnt/sdd1/writezerofile1 bs=4K count=262144 &
+dd if=/dev/zero of=/mnt/sdd1/writezerofile2 bs=4K count=262144 &
+
+echo "sleeping for 5 seconds"
+sleep 5
+
+# launch reader on sdd1
+time dd if=/mnt/sdd1/testzerofile1 of=/dev/zero &
+echo "launched reader $!"
+*********************************************************************
+
+Without dm-ioband, reader finished in roughly 5 seconds.
+
+289533952 bytes (290 MB) copied, 5.16765 s, 56.0 MB/s
+real	0m5.300s
+user	0m0.098s
+sys	0m0.492s
+
+With dm-ioband, reader took, more than 2 minutes to finish.
+
+289533952 bytes (290 MB) copied, 122.386 s, 2.4 MB/s
+
+real	2m2.569s
+user	0m0.107s
+sys	0m0.548s
+
+I had created ioband1 on /dev/sdd1 and ioband2 on /dev/sdd2 with weights
+200 and 100 respectively.
+
+Thanks
+Vivek
