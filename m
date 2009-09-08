@@ -1,94 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbZIHU6H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752102AbZIHUrd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752268AbZIHU6H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 16:58:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZIHU6G
+	id S1752102AbZIHUrd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 16:47:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZIHUrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 16:58:06 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:22535 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751168AbZIHU6F (ORCPT
+	Tue, 8 Sep 2009 16:47:32 -0400
+Received: from mail-qy0-f181.google.com ([209.85.221.181]:37324 "EHLO
+	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbZIHUrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 16:58:05 -0400
-X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 16:58:03 EDT
-X-SourceIP: 84.113.196.60
-Subject: Re: ipw2200: firmware DMA loading rework
-From: Simon Kitching <simon.kitching@chello.at>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Theodore Tso <tytso@mit.edu>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-In-Reply-To: <20090908110041.GE28127@csn.ul.ie>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera>
-	 <1251430951.3704.181.camel@debian> <200908301437.42133.bzolnier@gmail.com>
-	 <200909021948.13262.bzolnier@gmail.com>
-	 <43e72e890909021102g7f844c79xefccf305f5f5c5b6@mail.gmail.com>
-	 <20090903124913.GA26110@csn.ul.ie> <20090905142837.GI16217@mit.edu>
-	 <20090908110041.GE28127@csn.ul.ie>
-Content-Type: text/plain
-Date: Tue, 08 Sep 2009 22:39:26 +0200
-Message-Id: <1252442366.9812.3.camel@simon-laptop>
+	Tue, 8 Sep 2009 16:47:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=tGBOMgTzdruxOjnF9tUCkloRJTKFFPm1VYpy0mzhLQrzOsHkqiFkq+KBKPuNXYWvdi
+         v29rUaQun/h4h7RpTQIx2I5hv2G7wZym9pvYCArojqsnARuibq4e4uuo+/7ZTxc0Llvk
+         iyqwv37+iwv41UtS3P3++bMw42n9y8EymXoIY=
+Subject: Re: Machine resumes straight after suspend to RAM (or disk)
+From: Maxim Levitsky <maximlevitsky@gmail.com>
+To: Alex Bennee <kernel-hacker@bennee.com>
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
+References: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Sep 2009 23:47:27 +0300
+Message-Id: <1252442847.16422.0.camel@maxim-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.27.92 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 12:00 +0100, Mel Gorman wrote:
-> On Sat, Sep 05, 2009 at 10:28:37AM -0400, Theodore Tso wrote:
-> > On Thu, Sep 03, 2009 at 01:49:14PM +0100, Mel Gorman wrote:
-> > > > 
-> > > > This looks very similar to the kmemleak ext4 reports upon a mount. If
-> > > > it is the same issue, which from the trace it seems it is, then this
-> > > > is due to an extra kmalloc() allocation and this apparently will not
-> > > > get fixed on 2.6.31 due to the closeness of the merge window and the
-> > > > non-criticalness this issue has been deemed.
-> > 
-> > No, it's a different problem.
-> > 
-> > > I suspect the more pressing concern is why is this kmalloc() resulting in
-> > > an order-5 allocation request? What size is the buffer being requested?
-> > > Was that expected?  What is the contents of /proc/slabinfo in case a buffer
-> > > that should have required order-1 or order-2 is using a higher order for
-> > > some reason.
-> > 
-> > It's allocating 68,000 bytes for the mb_history structure, which is
-> > used for debugging purposes.  That's why it's optional and we continue
-> > if it's not allocated.  We should fix it to use vmalloc()
+On Tue, 2009-09-08 at 19:57 +0100, Alex Bennee wrote: 
+> Hi,
 > 
-> You could call with kmalloc(FLAGS|GFP_NOWARN) with a fallback to
-> vmalloc() and a disable if vmalloc() fails as well.  Maybe check out what
-> kernel/profile.c#profile_init() to allocate a large buffer and do something
-> similar?
+> I thought I'd enable suspend and resume on my desktop machine so I
+> could save myself some time in the morning when I restart the machine.
+> The machine is fairly standard Intel Core Duo based system (lspci
+> attached). However when I execute pm-suspend (or Gentoo's own
+> hibernate-script) the system does suspend but resumes immediately. To
+> add insult to injury the ethernet doesn't come back properly and needs
+> a reboot to reset it.
 > 
-> > and I'm
-> > inclined to turn it off by default since it's not worth the overhead,
-> > and most ext4 users won't find it useful or interesting.
-> > 
-> 
-> I can't comment as I don't know what sort of debugging it's useful for.
-> 
+> I've played about a little with the ACPI debug stuff but it's easy to
+> overflow the dmesg buffer. The relevant section around the
+> suspend/resume looks like:
 
-Perhaps this is a suitable use for the new proposed flex_array? From an
-initial glance, I can't see why the allocated memory has to be
-contiguous..
+Try to unload ehci_hcd before suspend.
 
-http://lwn.net/Articles/345273/
-
-Cheers, Simon
+Best regards,
+Maxim Levitsky
 
