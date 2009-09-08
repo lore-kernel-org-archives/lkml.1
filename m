@@ -1,66 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZIHFJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753489AbZIHGFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZIHFJm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 01:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbZIHFJm
+	id S1753489AbZIHGFp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 02:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZIHGFo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 01:09:42 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:39823 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750959AbZIHFJl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 01:09:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=O8WFvn+kjjQypF9lwyX9MLcxAuK/A/wvFMtcfQyKI11GOJ7YYA+u5r780EfBs1L9ac
-         AX1Gk5RG1z8sVW8GiRe8ZN95XJEq9bMeFUjJmTG2TBZF+6smYuq/xiTHW7LGrvewT8Ou
-         K/BUKOtCk0tNoDVnpNabI/Hf7wIjWarTqmAuw=
-MIME-Version: 1.0
-In-Reply-To: <20090907204913.2aef5c49@infradead.org>
-References: <3877989d0909071926q77aac67cj532137513710025d@mail.gmail.com>
-	 <20090907204913.2aef5c49@infradead.org>
-Date: Tue, 8 Sep 2009 13:09:44 +0800
-Message-ID: <3877989d0909072209g454d92feuc0d3cdbd95a13a9c@mail.gmail.com>
-Subject: Re: [RFC PATCH] C2 could be mapped to C3 so need a flush cache
-From: Luming Yu <luming.yu@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 8 Sep 2009 02:05:44 -0400
+Received: from mga09.intel.com ([134.134.136.24]:7491 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753319AbZIHGFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 02:05:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,351,1249282800"; 
+   d="scan'208";a="446535032"
+Subject: Re: [Bisected] Output to external monitor is broken (Re: Linux
+	2.6.31-rc9)
+From: ykzhao <yakui.zhao@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Carlos R. Mafra" <crmafra2@gmail.com>
+Cc: "Ma, Ling" <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Eric Anholt <eric@anholt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.2.01.0909071125430.25628@localhost.localdomain>
+References: <alpine.LFD.2.01.0909051645430.3329@localhost.localdomain>
+	 <20090906142206.GA4449@Pilar.aei.mpg.de>
+	 <alpine.LFD.2.01.0909071125430.25628@localhost.localdomain>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Tue, 08 Sep 2009 14:05:33 +0800
+Message-Id: <1252389933.3609.145.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 8, 2009 at 11:49 AM, Arjan van de Ven<arjan@infradead.org> wrote:
-> On Tue, 8 Sep 2009 10:26:06 +0800
-> Luming Yu <luming.yu@gmail.com> wrote:
->
->> Hi there,
->>
->> I came across acpi_idle_enter_simple, noticed it looks like a bug if
->> we don't flush cache for C2.
->> Because some platforms just map C2 to C3.
->
-> I think you are confusing ACPI C3 with HW C3.
->
-> Only for ACPI C3 class do you need to flush the cache for this case.
-> For HW C3, if you would need to flush the cache, the BIOS would assign
-> it ACPI C3 class.
->
+On Tue, 2009-09-08 at 02:37 +0800, Linus Torvalds wrote:
+> [ Just adding all the right people to the email participants line.
+>   Eric, Jesse, Zhao, Ma Ling - should I just revert that commit?
+If it is nearly the release window, this commit can be reverted.
 
-There is no confusion,I just extend the existing kernel logic as below
-to cover cache flush..
+Of course I will try to debug this issue.
 
-"
-"/*
- * Some BIOS implementations switch to C3 in the published C2 state.
- * This seems to be a common problem on AMD boxen, but other vendors
- * are affected too. We pick the most conservative approach: we assume
- * that the local APIC stops in both C2 and C3.
- */
-static void lapic_timer_check_state
+After comparing the dmesg on the failing/working kernel, it seems that
+there is no difference about the display setting. Pipe A is used by VGA
+and the mode is 1680x1050(the Clock is 119Mhz). Pipe B is used by LVDS
+and the mode is 1280x800(68.8Mhz).
 
-"
+In fact the commit(f8aed700) is to set the pipe_clone bit for the output
+device. This is to check whether the one pipe can be shared by several
+output devices.
+And on the Carlos's laptop there are two pipes and two output device.
+There is no issue about sharing pipe.
+
+I test the 2.6.31-rc9 kernel on three laptops and try several external
+monitors. In my test there is no issue reported by Carlos.
+
+Hi, Carlos
+    Will you please attach the intel_reg_dump on the failing/working
+kernel? 
+    The intel_reg_dump tool can be found in xf86-video-intel driver.
+
+Thanks.
+> 
+>   Carlos - can you also do the full dmesg _with_ the corruption? I realize 
+>   that your screen is unreadable, but if you can just log in blindly, and
+>   do a "dmesg > saved-dmesg-file" and then do a clean reboot? No need for 
+>   a serial console or anything fancy - I assume the machine is still 
+>   working, just with bad output.
+> 
+>   It might also be a good idea to boot with "drm.debug=15" to enable much 
+>   more debugging output.
+> 			- Linus ]
+> 
+> On Sun, 6 Sep 2009, Carlos R. Mafra wrote:
+> >
+> > On Sat  5.Sep'09 at 16:54:27 -0700, Linus Torvalds wrote:
+> > > Go wild, and please give this a final round of testing.
+> > 
+> > The output from my Vaio laptop to the external monitor (LG Flatron M228WD) 
+> > is broken now. The screen is all messed-up once the boot messages from the
+> > kernel appear on it (see the picture at the link below).
+> > 
+> > I bisected it down to f8aed700c6ec46ddade6570004ce25332283b306 ("drm/i915:
+> > Set crtc/clone mask in different output devices"). I doubled checked
+> > that reverting this commit from 2.6.31-rc9 fixes the problem.
+> > 
+> > The picture of the bad output is here:
+> > http://www.aei.mpg.de/~crmafra/bad_output.jpg
+> > 
+> > as well as my config:
+> > http://www.aei.mpg.de/~crmafra/config-2.6.31-rc9.txt
+> > 
+> > and dmesg (with the above commit reverted):
+> > http://www.aei.mpg.de/~crmafra/dmesg-2.6.31-rc9+revert.txt
+> > 
+> > (the vga=0x0364 in the command line does not work since I
+> > enabled KMS, so I get a prompt in the beginning from which I 
+> > choose vga=0. But the above regression is not affected by this
+> > choice because the command line was always the same during 
+> > bisection)
+> > 
+> > If there is anything else I can do, just let me know.
+> > 
+> > 
+> > 
+> > 
+
