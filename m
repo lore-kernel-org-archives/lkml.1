@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751436AbZIHQJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751481AbZIHQLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751436AbZIHQJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 12:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750847AbZIHQJ1
+	id S1751481AbZIHQLg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 12:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZIHQLg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 12:09:27 -0400
-Received: from kroah.org ([198.145.64.141]:57940 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbZIHQJ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 12:09:26 -0400
-Date: Tue, 8 Sep 2009 09:06:58 -0700
-From: Greg KH <greg@kroah.com>
-To: Joe Peterson <joe@skyrush.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-next: manual merge of the tty tree with the  tree
-Message-ID: <20090908160658.GA4739@kroah.com>
-References: <20090907191347.fe010955.sfr@canb.auug.org.au>
- <alpine.LFD.2.01.0909071104340.25628@localhost.localdomain>
- <4AA58160.7080908@skyrush.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA58160.7080908@skyrush.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 8 Sep 2009 12:11:36 -0400
+Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:57629 "EHLO
+	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751141AbZIHQLf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 12:11:35 -0400
+Subject: Re: [PATCH v3 2/5] kmemleak: add clear command support
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, penberg@cs.helsinki.fi,
+       mcgrof@gmail.com
+In-Reply-To: <1252111494-7593-3-git-send-email-lrodriguez@atheros.com>
+References: <1252111494-7593-1-git-send-email-lrodriguez@atheros.com>
+	 <1252111494-7593-3-git-send-email-lrodriguez@atheros.com>
+Content-Type: text/plain
+Organization: ARM Ltd
+Date: Tue, 08 Sep 2009 17:11:28 +0100
+Message-Id: <1252426288.12145.112.camel@pc1117.cambridge.arm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 08 Sep 2009 16:11:29.0141 (UTC) FILETIME=[05F5D250:01CA309F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 03:55:44PM -0600, Joe Peterson wrote:
-> Linus Torvalds wrote:
-> > Hmm. I think that the "honor opost flag for echoes" patch is actually 
-> > wrong.
-> > 
-> > We check O_OPOST() in the _caller_ for the regular write case, and that
-> > test actually looks like this:
-> > 
-> > 	if (O_OPOST(tty) && !(test_bit(TTY_HW_COOK_OUT, &tty->flags))) {
-> > 
-> > so at a minimum, if we add it to process_output() we should likely add it 
-> > in the same format. But if we need that test, I'd rather do it in the 
-> > caller anyway, like we already do for regular writes.
-> 
-> Yes, very true.  The old opost() function also contained the O_OPOST
-> check (i.e. causing a double check for normal writes), and you are right
-> that we should not reintroduce it (and it makes sense for the caller to
-> check it).
-> 
-> There is only the one case in which the O_OPOST check is needed before
-> calling do_output_char() (in process_echoes()), so we could just inline
-> the test there.  Take a look at my new attached patch (untested also).
-> I'll test and resubmit, assuming there are no objections.
+On Fri, 2009-09-04 at 17:44 -0700, Luis R. Rodriguez wrote:
+>  /*
+> + * We use grey instead of black to ensure we can do future
+> + * scans on the same objects. If we did not do future scans
+> + * these black objects could potentially contain references to
+> + * newly allocated objects in the future and we'd end up with
+> + * false positives.
+> + */
+> +static void kmemleak_clear(void)
+> +{
+> +	struct kmemleak_object *object;
+> +	unsigned long flags;
+> +
+> +	stop_scan_thread();
+> +
+> +	rcu_read_lock();
+> +	list_for_each_entry_rcu(object, &object_list, object_list) {
+> +		spin_lock_irqsave(&object->lock, flags);
+> +		if ((object->flags & OBJECT_REPORTED) &&
+> +		    unreferenced_object(object))
+> +			object->min_count = -1;
+> +		spin_unlock_irqrestore(&object->lock, flags);
+> +	}
+> +	rcu_read_unlock();
+> +
+> +	start_scan_thread();
+> +}
 
-Thanks for doing this, I'll drop the patch from my tree and wait for you
-to test and resubmit this.
+Do we need to stop and start the scanning thread here? When starting it,
+it will trigger a memory scan automatically. I don't think we want this
+as a side-effect, so I dropped these lines from your patch.
 
-thanks,
+Also you set min_count to -1 here which means black object, so a
+subsequent patch corrects it. I'll set min_count to 0 here in case
+anyone bisects over it.
 
-greg k-h
+-- 
+Catalin
+
