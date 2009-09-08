@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751872AbZIHTAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751935AbZIHTBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751872AbZIHTAQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZIHTAP
+	id S1751935AbZIHTBG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZIHTBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:00:15 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:39833 "EHLO mx1.redhat.com"
+	Tue, 8 Sep 2009 15:01:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39417 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751383AbZIHTAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:00:14 -0400
-Message-ID: <4AA6A989.60907@redhat.com>
-Date: Tue, 08 Sep 2009 14:59:21 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1751548AbZIHTBF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:01:05 -0400
+Message-ID: <4AA6A9E8.9000407@garzik.org>
+Date: Tue, 08 Sep 2009 15:00:56 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-CC: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       Jeff Chua <jeff.chua.linux@gmail.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 4/8] mm: FOLL_DUMP replace FOLL_ANON
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072233240.15430@sister.anvils>
-In-Reply-To: <Pine.LNX.4.64.0909072233240.15430@sister.anvils>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jesse Brandeburg <jesse.brandeburg@gmail.com>
+CC: Serge Belyshev <belyshev@depni.sinp.msu.ru>, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: Epic regression in throughput since v2.6.23
+References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru> <4807377b0909081047kfad088j694bd2b806075c5f@mail.gmail.com>
+In-Reply-To: <4807377b0909081047kfad088j694bd2b806075c5f@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> The "FOLL_ANON optimization" and its use_zero_page() test have caused
-> confusion and bugs: why does it test VM_SHARED? for the very good but
-> unsatisfying reason that VMware crashed without.  As we look to maybe
-> reinstating anonymous use of the ZERO_PAGE, we need to sort this out.
-> 
-> Easily done: it's silly for __get_user_pages() and follow_page() to
-> be guessing whether it's safe to assume that they're being used for
-> a coredump (which can take a shortcut snapshot where other uses must
-> handle a fault) - just tell them with GUP_FLAGS_DUMP and FOLL_DUMP.
-> 
-> get_dump_page() doesn't even want a ZERO_PAGE: an error suits fine.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+On 09/08/2009 01:47 PM, Jesse Brandeburg wrote:
+> On Tue, Sep 8, 2009 at 5:57 AM, Serge
+> Belyshev<belyshev@depni.sinp.msu.ru>  wrote:
+>>
+>> Hi. I've done measurments of time taken by make -j4 kernel build
+>> on a quadcore box.  Results are interesting: mainline kernel
+>> has regressed since v2.6.23 release by more than 10%.
+>
+> Is this related to why I now have to double the amount of threads X I
+> pass to make -jX, in order to use all my idle time for a kernel
+> compile?  I had noticed (without measuring exactly) that it seems with
+> each kernel released in this series mentioned, I had to increase my
+> number of worker threads, my common working model now is (cpus * 2) in
+> order to get zero idle time.
 
-Acked-by: Rik van Riel <riel@redhat.com>
+You will almost certainly see idle CPUs/threads with "make -jN_CPUS" due 
+to processes waiting for I/O.
 
--- 
-All rights reversed.
+If you're curious, there is also room for experimenting with make's "-l" 
+argument, which caps the number of jobs based on load average rather 
+than a static number of job slots.
+
+	Jeff
+
+
