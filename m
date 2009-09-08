@@ -1,70 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752398AbZIHVqw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752356AbZIHVnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752398AbZIHVqw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 17:46:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751768AbZIHVqw
+	id S1752356AbZIHVnQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 17:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZIHVnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 17:46:52 -0400
-Received: from mail-yx0-f176.google.com ([209.85.210.176]:51703 "EHLO
-	mail-yx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751662AbZIHVqv (ORCPT
+	Tue, 8 Sep 2009 17:43:16 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:36176 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751284AbZIHVnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 17:46:51 -0400
-X-Greylist: delayed 362 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 17:46:51 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=bhezbhUz1HzBH+YerLasFHvVHkh7vraRdNA+5zrS0jo+avHWQDRhqERBGF9i7MixJn
-         PQuhxujc8emnaNgnZM5wRmd/c0c+t/ICtylC7q1lcLJqZoyqaSLAIuiVyjMmm2zrGx4s
-         WWVPF8OxM83kFn/1YERXb4WIYhieoNsbuVVLw=
-MIME-Version: 1.0
-In-Reply-To: <200909082311.52229.elendil@planet.nl>
-References: <20090906205952.GA6516@elte.hu>
-	 <20090908013133.59203403@infradead.org>
-	 <200909082222.44828.elendil@planet.nl>
-	 <200909082311.52229.elendil@planet.nl>
-Date: Wed, 9 Sep 2009 06:40:45 +0900
-Message-ID: <49b7c2350909081440s527caeb4r25671f991a18109e@mail.gmail.com>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Frans Pop <elendil@planet.nl>
-Cc: Arjan van de Ven <arjan@infradead.org>, realnc@arcor.de,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Tue, 8 Sep 2009 17:43:15 -0400
+Subject: Re: [boot crash] Re: [tip:timers/core] clocksource: Resolve cpu
+ hotplug dead lock with TSC unstable
+From: john stultz <johnstul@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090903185806.GA5949@elte.hu>
+References: <tip-7285dd7fd375763bfb8ab1ac9cf3f1206f503c16@git.kernel.org>
+	 <20090831101928.4c00c797@skybase>
+	 <alpine.LFD.2.00.0908311754590.19335@localhost.localdomain>
+	 <20090903181743.GA22431@elte.hu>  <20090903185806.GA5949@elte.hu>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 14:43:13 -0700
+Message-Id: <1252446193.3376.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 9, 2009 at 6:11 AM, Frans Pop<elendil@planet.nl> wrote:
->> Would it be possible to have a command line switch that allows to start
->> the old textual mode?
-> I got a private reply suggesting that --nogui might work, and it does.
-Um. You means that you tested with runlevel 3(multiuser mode). Is it right?
-Frans. Can you share me your linux distribution for this test?
-I want to check with same conditions(e.g:linux distribution like
-fedora 11,ubuntu9.04 , runlevel, and so on.).
-> Thanks a lot Nikos!
->> Looks like the man page needs updating too :-)
-> So this definitely needs attention :-P
-> Support of the standard -h and --help options would be great too.
-> Cheers,
-> FJP
-> --
+On Thu, 2009-09-03 at 20:58 +0200, Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > i tried to bisect it but it's inconclusive:
+> > 
+> >  # bad:  [32beef9c] Merge branch 'perfcounters/core'
+> >  # bad:  [b6413360] manual merge of x86/platform
+> >  # bad:  [d9e5f39a] Merge branch 'auto-oprofile-next' into auto-latest
+> >  # bad:  [cbaff272] Merge branch 'auto-timers-next' into auto-latest
+> > 
+> > as the bisection comes up with that merge commit. Perhaps the 
+> > combination of the x86/platform changes and the clocksource 
+> > changes triggered it?
+> 
+> That seems to be the case - i just tested a combination merge of 
+> tip:auto-timers-next and tip:auto-x86-next and the result crashed in 
+> a similar way too.
+> 
+> Since normal bisection cannot find such breakages, i did a topical 
+> bisection (merging the finegrained tip:x86/* topics into the timer 
+> tree gradually and testing each merge).
+> 
+> That way i could exclude: x86/platform, x86/pat, x86/asm, x86/apic, 
+> x86/percpu, x86/cpu, x86/mm and arrived to x86/tsc - which contains 
+> a single commit:
+> 
+>   d3b8f88: x86: Make tsc=reliable override boot time stability checks
+> 
+> Reverting that commit from tip:master gives me a non-crashing 
+> bootup.
 
-Thanks,
-GeunSik Lim.
+Huh. Does dropping the last chunk of the patch make the issue go away?
+
+I'm suspecting fixing the bug Thomas noticed in the tsc_unstable
+assignment (we set tsc_unstable before calling mark_tsc_unstable,
+causing the TSC rating to not change) that I included in this patch is
+colliding with the clocksource rework from Martin.
+
+Although I'm not sure I see that in the backtrace, so I'm likely wrong.
+Hrmm..
+
+-john
 
 
 
--- 
-Regards,
-GeunSik Lim ( Samsung Electronics )
-Blog : http://blog.naver.com/invain/
-e-Mail: geunsik.lim@samsung.com
-           leemgs@gmail.com , leemgs1@gmail.com
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+
