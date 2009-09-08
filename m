@@ -1,64 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZIHONj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754595AbZIHOOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbZIHONj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 10:13:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZIHONi
+	id S1754595AbZIHOOu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 10:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZIHOOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 10:13:38 -0400
-Received: from g4t0014.houston.hp.com ([15.201.24.17]:44419 "EHLO
-	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbZIHONi (ORCPT
+	Tue, 8 Sep 2009 10:14:49 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52553 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753788AbZIHOOt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 10:13:38 -0400
-Subject: Re: [stable] [PATCH] hugetlb: restore interleaving of bootmem huge
- pages
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Eric Whitney <eric.whitney@hp.com>, Adam Litke <agl@us.ibm.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>, David Rientjes <rientjes@google.com>,
-       Andy Whitcroft <apw@canonical.com>, stable <stable@kernel.org>
-In-Reply-To: <20090908103233.GA28127@csn.ul.ie>
-References: <1247860154.11565.45.camel@useless.americas.hpqcorp.net>
-	 <20090903203339.GB7467@kroah.com>  <20090908103233.GA28127@csn.ul.ie>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Tue, 08 Sep 2009 10:13:35 -0400
-Message-Id: <1252419215.5214.19.camel@useless.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 10:14:49 -0400
+Date: Tue, 8 Sep 2009 07:13:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Nick Piggin <npiggin@suse.de>
+cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 7/8] mm: reinstate ZERO_PAGE
+In-Reply-To: <20090908073119.GA29902@wotan.suse.de>
+Message-ID: <alpine.LFD.2.01.0909080712200.7458@localhost.localdomain>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072238320.15430@sister.anvils> <20090908073119.GA29902@wotan.suse.de>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 11:32 +0100, Mel Gorman wrote:
-> On Thu, Sep 03, 2009 at 01:33:39PM -0700, Greg KH wrote:
-> > On Fri, Jul 17, 2009 at 03:49:14PM -0400, Lee Schermerhorn wrote:
-> > > PATCH fix distribution of bootmem huge pages
-> > > 
-> > > Against: 2.6.31-rc3
-> > > 
-> > > For stable, applicable back through 2.6.27
-> > > 
-> > > [A version of this patch has been added to the -mm tree.  That patch
-> > > won't apply cleanly to mainline nor stable trees because of function
-> > > renaming.  This one should.]
-> > 
-> > What is the git commit id of this patch that is in Linus's tree?
-> > 
+
+
+On Tue, 8 Sep 2009, Nick Piggin wrote:
 > 
-> I can only find it in mmotm. It doesn't appear to have been merged to
-> mainline at all. Lee, what happened with this? Did it get held off until
-> post-2.6.31 for merging to mainline?
+> Without looking closely, why is it a big problem to have a
+> !HAVE PTE SPECIAL case? Couldn't it just be a check for
+> pfn == zero_pfn that is conditionally compiled away for pte
+> special architectures anyway?
 
-Mel:
+At least traditionally, there wasn't a single zero_pfn, but multiple (for 
+VIPT caches that have performance issues with aliases). But yeah, we could 
+check just the pfn number, and allow any architecture to do it.
 
-This patch, along with the interleaving of freeing persistent huge pages
-are still in mmotm, awaiting the merge window.  I had sent out another
-version suitable for mainline and stable--same patch with conflicts
-resolved--but, apparently it didn't make mainline yet.
-
-Lee
-
+			Linus
