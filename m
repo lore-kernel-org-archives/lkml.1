@@ -1,68 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbZIHCM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZIHCRi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753279AbZIHCM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 22:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753147AbZIHCM1
+	id S1753308AbZIHCRi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 22:17:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZIHCRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 22:12:27 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:45786 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753046AbZIHCM0 (ORCPT
+	Mon, 7 Sep 2009 22:17:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48402 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753084AbZIHCRg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 22:12:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=m6lJF1Qr9dWe1Z8E12SgZQw/QCMTVBKWW97AlpQKc+QrnXPb6LmGtwl5Qs+ewJ2+hr
-         o1cVt8rK4lN13QdVKzegJodpOvlZXdRS8xPsVy8M7EJpaStWVGHB9zID/xQqsMqNyImD
-         uM4vgj+fgO0hewbTE3een3BeDIcIoki0ysjGQ=
-Date: Tue, 8 Sep 2009 04:12:25 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/6] perf trace: Add filter support
-Message-ID: <20090908021224.GD6312@nowhere>
-References: <4AA4C04D.1050201@cn.fujitsu.com> <20090908000219.GB6312@nowhere> <4AA5AE29.6020107@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA5AE29.6020107@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 7 Sep 2009 22:17:36 -0400
+Subject: Re: Stop using tasklets for bottom halves
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Matt Smith <Matt.Smith@atheros.com>, Kevin Hayes <kevin@atheros.com>,
+       Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
+       Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
+In-Reply-To: <20090907171406.6a4b6116@nehalam>
+References: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com>
+	 <20090907171406.6a4b6116@nehalam>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 07 Sep 2009 22:17:34 -0400
+Message-Id: <1252376254.21261.2052.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 09:06:49AM +0800, Li Zefan wrote:
-> >> An example:
-> >>
-> >>  #./perf record -f -e irq:irq_handler_entry:irq==18:record
-> >>  or
-> >>  #./perf record -f -e irq:irq_handler_entry:irq==18 -R
-> >>  ^C
-> > 
-> > We may want to write complex filters. While looking at this patchset,
-> > that seems possible this way, but the raw line may become unreadable:
-> > 
-> > perf record -f -e irq:irq_handler_entry:"irq==18 && (name == 'foo' || bar == 'blah')":record
-> > 
-> > May be we should add an option to let one also set the filters seperately then
-> > we could do:
-> > 
-> > perf record -f -e -R irq:irq_handler_entry --filter "irq==18 && (name == 'foo' || bar == 'blah')"
-> > 
+On Mon, 2009-09-07 at 17:14 -0700, Stephen Hemminger wrote:
+> On Mon, 7 Sep 2009 15:58:50 -0700
+> "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
 > 
-> I had the same idea. ;)
+> > A while ago I had read about an effort to consider removing tasklets
+> > [1] or at least trying to not use them. I'm unaware of the progress in
+> > this respect but since reading that article have always tried to
+> > evaluate whether or not we need tasklets on wireless drivers. I have
+> > also wondered whether work in irq context in other parts of the kernel
+> > can be moved to process context, a curious example being timers. I'll
+> > personally be trying to using only process context on bottom halves on
+> > future drivers but I figured it may be a good time to ask how serious
+> > was avoiding tasklets or using wrappers in the future to avoid irq
+> > context is or is it advised. Do we have a general agreement this is a
+> > good step forward to take? Has anyone made tests or changes on a
+> > specific driver from irq context to process context and proven there
+> > are no significant advantages of using irq context where you would
+> > have expected it?
+> > 
+> > Wireless in particular should IMHO not require taskets for anything
+> > time sensitive that I can think about except perhaps changing channels
+> > quickly and to do that appropriately also process pending RX frames
+> > prior to a switch. It remains to be seen experimentally whether or not
+> > using a workqueue for RX processing would affect the time to switch
+> > channels negatively but I doubt it would be significant. I hope to
+> > test that with ath9k_htc.
+> > 
+> > What about gigabit or 10 Gigabit Ethernet drivers ? Do they face any
+> > challenges which would yet need to be proven would not face issues
+> > when processing bottom halves in process context?
+> > 
+> > [1] http://lwn.net/Articles/239633/
+> > 
+> >   Luis
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe netdev" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
 > 
-> But using this option, is it possible to specify different filters
-> for different events? like this:
+> Why not use NAPI, which is soft irq? Almost all 1G and 10G drivers
+> use NAPI.
 > 
-> perf record -f -e -R irq:irq_handler_entry --filter "irq==18"
-> -e irq:softirq_entry --filter "vec==1"
-> 
+> Process context is too slow.
 
+Well, I'm hoping to prove the opposite. I'm working on some stuff that I
+plan to present at Linux Plumbers. I've been too distracted by other
+things, but hopefully I'll have some good numbers to present by then.
 
-Exactly how I was imagining it :)
+-- Steve
+
 
