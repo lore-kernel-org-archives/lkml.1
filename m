@@ -1,71 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZIHIMf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbZIHINx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754012AbZIHIMf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 04:12:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753665AbZIHIMf
+	id S1753999AbZIHINx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 04:13:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753728AbZIHINw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 04:12:35 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47144 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753660AbZIHIMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 04:12:33 -0400
-Date: Tue, 8 Sep 2009 18:12:21 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jayamohan Kallickal <jayamohank@serverengines.com>,
-       Mike Christie <michaelc@cs.wisc.edu>
-Subject: Re: linux-next: scsi-post-merge tree build failure
-Message-Id: <20090908181221.e8f98215.sfr@canb.auug.org.au>
-In-Reply-To: <20090907200646.c6d6fadc.sfr@canb.auug.org.au>
-References: <20090907200646.c6d6fadc.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__8_Sep_2009_18_12_21_+1000_w38OKG8Im0F/5/uf"
+	Tue, 8 Sep 2009 04:13:52 -0400
+Received: from mail-in-10.arcor-online.net ([151.189.21.50]:38151 "EHLO
+	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753400AbZIHINv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 04:13:51 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-03.arcor-online.net 0215E2C2F1E
+Message-ID: <4AA6123F.7020704@arcor.de>
+Date: Tue, 08 Sep 2009 11:13:51 +0300
+From: Nikos Chantziaras <realnc@arcor.de>
+Organization: Lucas Barks
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Pekka Pietikainen <pp@ee.oulu.fi>, Michael Buesch <mb@bu3sch.de>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Felix Fietkau <nbd@openwrt.org>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+References: <20090906205952.GA6516@elte.hu> <200909071716.57722.mb@bu3sch.de> <20090907182629.GA3484@elte.hu> <200909072051.13748.mb@bu3sch.de> <20090907205701.GA8590@elte.hu> <20090907232415.GA17182@ee.oulu.fi> <20090908080427.GA7070@elte.hu>
+In-Reply-To: <20090908080427.GA7070@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__8_Sep_2009_18_12_21_+1000_w38OKG8Im0F/5/uf
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-Hi James,
-
-On Mon, 7 Sep 2009 20:06:46 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
+On 09/08/2009 11:04 AM, Ingo Molnar wrote:
 >
-> Today's linux-next build (powerpc allyesconfig) failed like this:
->=20
-> drivers/scsi/be2iscsi/be_main.c: In function 'hwi_write_buffer':
-> drivers/scsi/be2iscsi/be_main.c:1481: error: implicit declaration of func=
-tion 'virt_to_bus'
->=20
-> Caused by commit 9316dc3deb9675c674f96a0c6fb74ccc6c497fae ("[SCSI]
-> be2iscsi: add 10Gbps iSCSI - BladeEngine 2 driver") which I have reverted
-> for today.
+> * Pekka Pietikainen<pp@ee.oulu.fi>  wrote:
+>
+>> On Mon, Sep 07, 2009 at 10:57:01PM +0200, Ingo Molnar wrote:
+>>>>> Could you profile it please? Also, what's the context-switch rate?
+>>>>
+>>>> As far as I can tell, the broadcom mips architecture does not have
+>>>> profiling support. It does only have some proprietary profiling
+>>>> registers that nobody wrote kernel support for, yet.
+>>> Well, what does 'vmstat 1' show - how many context switches are
+>>> there per second on the iperf server? In theory if it's a truly
+>>> saturated box, there shouldnt be many - just a single iperf task
+>>
+>> Yay, finally something that's measurable in this thread \o/
+>
+> My initial posting in this thread contains 6 separate types of
+> measurements, rather extensive ones. Out of those, 4 measurements
+> were latency oriented, two were throughput oriented. Plenty of data,
+> plenty of results, and very good reproducability.
 
-The driver needs to depend on CONFIG_VIRT_TO_BUS if it needs to use
-virt_to_bus().  That will prevent it from building on some platforms
-(like powerpc) that do not implement virt_to_bus() and its brothers.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__8_Sep_2009_18_12_21_+1000_w38OKG8Im0F/5/uf
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqmEeUACgkQjjKRsyhoI8xisACggxjl8Iyepl2j15PlvzaKEnQt
-xvYAnRXrTaDUHRv9VV/iV0mdkanIi7et
-=vBCQ
------END PGP SIGNATURE-----
-
---Signature=_Tue__8_Sep_2009_18_12_21_+1000_w38OKG8Im0F/5/uf--
+None of which involve latency-prone GUI applications running on cheap 
+commodity hardware though.  I listed examples where mainline seems to 
+behave sub-optimal and ways to reproduce them but this doesn't seem to 
+be an area of interest.
