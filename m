@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754217AbZIHNl7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753995AbZIHNSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754217AbZIHNl7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 09:41:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753816AbZIHNl6
+	id S1753995AbZIHNSh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 09:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753544AbZIHNSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 09:41:58 -0400
-Received: from nbd.name ([88.198.39.176]:48920 "EHLO ds10.mine.nu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753580AbZIHNl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 09:41:58 -0400
-X-Greylist: delayed 1921 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 09:41:58 EDT
-Message-ID: <4AA6579C.2080607@openwrt.org>
-Date: Tue, 08 Sep 2009 15:09:48 +0200
-From: Felix Fietkau <nbd@openwrt.org>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: Ingo Molnar <mingo@elte.hu>, Michael Buesch <mb@bu3sch.de>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu>	 <200909071716.57722.mb@bu3sch.de> <20090907182629.GA3484@elte.hu>	 <20090908074825.GA11413@elte.hu> <1252403400.4950.81.camel@pasglop>
-In-Reply-To: <1252403400.4950.81.camel@pasglop>
-X-Enigmail-Version: 0.96.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 Sep 2009 09:18:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:53312 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752912AbZIHNSf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 09:18:35 -0400
+Subject: Re: Stop using tasklets for bottom halves
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Stephen Hemminger <shemminger@vyatta.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Matt Smith <Matt.Smith@atheros.com>, Kevin Hayes <kevin@atheros.com>,
+       Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
+       Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
+In-Reply-To: <43e72e890909072116v33ecafc4ma7f5a68825f14e9@mail.gmail.com>
+References: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com>
+	 <20090907171406.6a4b6116@nehalam>
+	 <1252376254.21261.2052.camel@gandalf.stny.rr.com>
+	 <43e72e890909072116v33ecafc4ma7f5a68825f14e9@mail.gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 08 Sep 2009 09:18:34 -0400
+Message-Id: <1252415914.13628.8.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Tue, 2009-09-08 at 09:48 +0200, Ingo Molnar wrote:
->> So either your MIPS system has some unexpected dependency on the 
->> scheduler, or there's something weird going on.
->> 
->> Mind poking on this one to figure out whether it's all repeatable 
->> and why that slowdown happens? Multiple attempts to reproduce it 
->> failed here for me.
-> 
-> Could it be the scheduler using constructs that don't do well on MIPS ? 
-> 
-> I remember at some stage we spotted an expensive multiply in there,
-> maybe there's something similar, or some unaligned or non-cache friendly
-> vs. the MIPS cache line size data structure, that sort of thing ...
-> 
-> Is this a SW loaded TLB ? Does it misses on kernel space ? That could
-> also be some differences in how many pages are touched by each scheduler
-> causing more TLB pressure. This will be mostly invisible on x86.
-The TLB is SW loaded, yes. However it should not do any misses on kernel
-space, since the whole segment is in a wired TLB entry.
+On Mon, 2009-09-07 at 21:16 -0700, Luis R. Rodriguez wrote:
+> On Mon, Sep 7, 2009 at 7:17 PM, Steven Rostedt<rostedt@goodmis.org> wrote:
 
-- Felix
+> >>
+> >> Process context is too slow.
+> >
+> > Well, I'm hoping to prove the opposite. I'm working on some stuff that I
+> > plan to present at Linux Plumbers. I've been too distracted by other
+> > things, but hopefully I'll have some good numbers to present by then.
+> 
+> What day in specific was this planned for at Plumbers?
+
+Wednesday, during the networking session.
+
+  http://linuxplumbersconf.org/ocw/proposals/53
+
+-- Steve
+
+
