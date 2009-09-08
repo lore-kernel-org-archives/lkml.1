@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751684AbZIHRYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751895AbZIHReU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751684AbZIHRYx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 13:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZIHRYw
+	id S1751895AbZIHReU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 13:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751740AbZIHReU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 13:24:52 -0400
-Received: from outbound-mail-109.bluehost.com ([69.89.22.9]:41752 "HELO
-	outbound-mail-109.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750912AbZIHRYv (ORCPT
+	Tue, 8 Sep 2009 13:34:20 -0400
+Received: from mail-pz0-f184.google.com ([209.85.222.184]:51457 "EHLO
+	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbZIHReT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 13:24:51 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=GAhUcXOx47hq8Se2T+QrYkdLKxtFsdWB1klaxcfL5KctaK/y1f04JLOWhMg+DKOWNkrC5O1D/WnSUibGnO1zrV4p9uGU9H0qpTsKVpBD85YEPZidG0gdufd+hHnyzZ3e;
-Date: Tue, 8 Sep 2009 10:24:18 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Eric Anholt" <eric@anholt.net>,
-       "ling.ma@intel.com" <ling.ma@intel.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Reinette Chatre" <reinette.chatre@intel.com>
-Subject: Re: [Bug #13819] system freeze when switching to console
-Message-ID: <20090908102418.673504ae@jbarnes-g45>
-In-Reply-To: <Vm51Upp4EV.A.r-D.mgBpKB@chimera>
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
-	<Vm51Upp4EV.A.r-D.mgBpKB@chimera>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Sep 2009 13:34:19 -0400
+Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
+Mime-Version: 1.0 (Apple Message framework v1075.2)
+Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
+From: Anirban Sinha <ani@anirban.org>
+In-Reply-To: <20090906132104.GK14492@gandalf.sssup.it>
+Date: Tue, 8 Sep 2009 10:26:29 -0700
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       a.p.zijlstra@chello.nl, Anirban Sinha <ASinha@zeugmasystems.com>,
+       Dario Faggioli <raistlin@linux.it>
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Message-Id: <72BC67CD-0486-4557-8D45-58211311EFE2@anirban.org>
+References: <DDFD17CC94A9BD49A82147DDF7D545C501F0F575@exchange.ZeugmaSystems.local> <20090905204037.GE4953@gandalf.sssup.it> <DDFD17CC94A9BD49A82147DDF7D545C54DC481@exchange.ZeugmaSystems.local> <D0B95E79-EDEC-487A-B8AB-0D90E4E81A9E@anirban.org> <20090906132104.GK14492@gandalf.sssup.it>
+To: Fabio Checconi <fchecconi@gmail.com>
+X-Mailer: Apple Mail (2.1075.2)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun,  6 Sep 2009 19:24:50 +0200 (CEST)
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me
-> know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13819
-> Subject		: system freeze when switching to console
-> Submitter	: Reinette Chatre <reinette.chatre@intel.com>
-> Date		: 2009-07-23 17:57 (46 days old)
 
-So simply switching VTs causes this problem too?  Based on your initial
-description it sounds like a panic (keyboard LEDs were flashing).  If
-it happens at VT switch time you should be able to capture the panic
-output with netconsole like Linus mentioned.
+> Looking at the git history, there have been several bugfixes to the rt
+> bandwidth code from 2.6.26, one of them seems to be strictly related  
+> to
+> runtime accounting with your setup:
+>
+>    commit f6121f4f8708195e88cbdf8dd8d171b226b3f858
+>    Author: Dario Faggioli <raistlin@linux.it>
+>    Date:   Fri Oct 3 17:40:46 2008 +0200
+>
+>        sched_rt.c: resch needed in rt_rq_enqueue() for the root rt_rq
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+Hmm. Indeed there did seem to have quite a few fixes to the accounting  
+logic. I back-patched our 2.6.26 kernel with the upstream patches that  
+seemed relevant and my test code now yields reasonable results.  
+Applying the above patch did not fix it though which kind of makes  
+sense since from the commit log it seems that the patch fixed cases  
+when the RT task was getting *less* CPU than it's bandwidth allocation  
+as opposed to more as in my case. I haven't bisected the patchet to  
+figure out exactly which one fixed it but I intend to do it later just  
+for fun.
+
+For completeness, these are the results after applying the upstream  
+patches *and* disabling bandwidth borrowing logic on my 2.6.26 kernel  
+running on a quad core blade with CONFIG_GROUP_SCHED turned off (100HZ  
+jiffies):
+
+rt_runtime/
+rt_period       % of SCHED_OTHER iterations
+
+.40                100%
+.50                74%
+.60                47%
+.70                31%
+.80                18%
+.90                 8%
+.95                4%
+
+--Ani
+
