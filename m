@@ -1,55 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752145AbZIHT61@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbZIHTzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752145AbZIHT61 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:58:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZIHT60
+	id S1751846AbZIHTzn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZIHTzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:58:26 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:35764 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752063AbZIHT6Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:58:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=qmXgiUFApkD7gU9OTxkmtnEc9ZjsepH64l4WpClUvT5rs7edTf1EQ/M7A975f/zysY
-         1jq2W8at4fpIq5srlHEk29fQmSmNkq2MTCHTtcieP5aFFcV7wWh3w1Id8AzygQmoKZY9
-         n0lkClskGvOgJ8ZUa3iPybiJ5tWAe5DIhkpRg=
-Message-ID: <4AA6B5D4.4040802@gmail.com>
-Date: Tue, 08 Sep 2009 21:51:48 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 8 Sep 2009 15:55:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42730 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750910AbZIHTzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:55:42 -0400
+Date: Tue, 8 Sep 2009 21:55:45 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [PATCH v2] [mmotm] trace bio queueing trial only when it occurs
+Message-ID: <20090908195545.GE18599@kernel.dk>
+References: <20090908164941.c4f51208.minchan.kim@barrios-desktop>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "linux.kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: [Bug #13733] 2.6.31-rc2: irq 16: nobody cared
-References: <dhwns-J2-13@gated-at.bofh.it> <dhwxb-O6-7@gated-at.bofh.it>
-In-Reply-To: <dhwxb-O6-7@gated-at.bofh.it>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090908164941.c4f51208.minchan.kim@barrios-desktop>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/06/2009 10:30 PM, Rafael J. Wysocki wrote:
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13733
-> Subject		: 2.6.31-rc2: irq 16: nobody cared
-> Submitter	: Niel Lambrechts<niel.lambrechts@gmail.com>
-> Date		: 2009-07-06 18:32 (63 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124690524027166&w=4
+On Tue, Sep 08 2009, Minchan Kim wrote:
+> 
+>  * Add history that why it is breaked in changelog.
+> 
+> Thanks for careful review, Wu, Li.
 
-Hi Rafael,
+Applied to for-2.6.32.
 
-This is still present in 2.6.31-rc9-pae.
+-- 
+Jens Axboe
 
-To test, I removed ehci_hcd, hibernated/resumed and the problem did not appear. But when I first plugged in a USB mouse after the system was up and before ehci_hcd was loaded the error occurred again.
-
-Regards,
-Niel
