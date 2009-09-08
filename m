@@ -1,92 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752055AbZIHRzU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751988AbZIHRu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752055AbZIHRzU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 13:55:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZIHRzU
+	id S1751988AbZIHRu5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 13:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZIHRu5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 13:55:20 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47149 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751954AbZIHRzT (ORCPT
+	Tue, 8 Sep 2009 13:50:57 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:32970 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751740AbZIHRu4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 13:55:19 -0400
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-From: Peter Zijlstra <peterz@infradead.org>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Artem Bityutskiy <dedekind1@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, "Theodore Ts'o" <tytso@mit.edu>,
-       Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <1252431974.7746.151.camel@twins>
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com>
-	 <1252401791-22463-9-git-send-email-jens.axboe@oracle.com>
-	 <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins>
-	 <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins>
-	 <20090908172842.GC2975@think>  <1252431974.7746.151.camel@twins>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 08 Sep 2009 19:55:01 +0200
-Message-Id: <1252432501.7746.156.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Tue, 8 Sep 2009 13:50:56 -0400
+Date: Tue, 8 Sep 2009 19:55:50 +0200
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Shane Arnold <clontarf_x@iinet.net.au>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bringing up secondary rtl8169-based interface causes network
+	hang/dma issues
+Message-ID: <20090908175550.GA30098@electric-eye.fr.zoreil.com>
+References: <4AA6506A.7040900@iinet.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA6506A.7040900@iinet.net.au>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 19:46 +0200, Peter Zijlstra wrote:
-> On Tue, 2009-09-08 at 13:28 -0400, Chris Mason wrote:
-> > > Right, so what can we do to make it useful? I think the intent is to
-> > > limit the number of pages in writeback and provide some progress
-> > > feedback to the vm.
-> > > 
-> > > Going by your experience we're failing there.
-> > 
-> > Well, congestion_wait is a stop sign but not a queue.  So, if you're
-> > being nice and honoring congestion but another process (say O_DIRECT
-> > random writes) doesn't, then you back off forever and none of your IO
-> > gets done.
-> > 
-> > To get around this, you can add code to make sure that you do
-> > _some_ io, but this isn't enough for your work to get done
-> > quickly, and you do end up waiting in get_request() so the async
-> > benefits of using the congestion test go away.
-> > 
-> > If we changed everyone to honor congestion, we end up with a poll model
-> > because a ton of congestion_wait() callers create a thundering herd.
-> > 
-> > So, we could add a queue, and then congestion_wait() would look a lot
-> > like get_request_wait().  I'd rather that everyone just used
-> > get_request_wait, and then have us fix any latency problems in the
-> > elevator.
-> 
-> Except you'd need to lift it to the BDI layer, because not all backing
-> devices are a block device.
-> 
-> Making it into a per-bdi queue sounds good to me though.
-> 
-> > For me, perfect would be one or more threads per-bdi doing the
-> > writeback, and never checking for congestion (like what Jens' code
-> > does).  The congestion_wait inside balance_dirty_pages() is really just
-> > a schedule_timeout(), on a fully loaded box the congestion doesn't go
-> > away anyway.  We should switch that to a saner system of waiting for
-> > progress on the bdi writeback + dirty thresholds.
-> 
-> Right, one of the things we could possibly do is tie into
-> __bdi_writeout_inc() and test levels there once every so often and then
-> flip a bit when we're low enough to stop writing.
+Shane Arnold <clontarf_x@iinet.net.au> :
+[...]
+> The issue I am having is when bringing up a second Ethernet interface  
+> that uses the rtl8169 driver, it seems to cause network issues. I lose  
+> all network connectivity to the machine, and I simultaneously see a DMA  
+> error occur for my primary IDE drive.
+>
+> Two interfaces:
+>
+> Quote:
+> eth0 (rtl8168 (using rtl8169 driver) - Onboard PCI-E Gigabit Ethernet)
+> eth1 (rtl8169 (using rtl8169 driver) - RTL8169 PCI Gigabit Ethernet)
+                       ^^^^^^^
+Do you mean the in-kernel r8169 driver or Realtek's one ?
 
-I think I'm somewhat confused here though..
+> The chipset running the IDE drive that experiences the DMA crash is:
+>
+> Quote:
+> ATI Technologies Inc SB700/SB800 IDE Controller (atiixp)
+> Vitals:
+>
+> Debian 5.0.1 @ Kernel 2.6.30
+>
+> 00:00.0 Host bridge: Advanced Micro Devices [AMD] RS780 Host Bridge
+> 00:01.0 PCI bridge: ASUSTeK Computer Inc. Device 9602
+> 00:06.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge  
+> (PCIE port 2)
+> 00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA  
+> Controller [IDE mode]
+> 00:12.0 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI0  
+> Controller
+> 00:12.1 USB Controller: ATI Technologies Inc SB700 USB OHCI1 Controller
+> 00:12.2 USB Controller: ATI Technologies Inc SB700/SB800 USB EHCI Controller
+> 00:13.0 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI0  
+> Controller
+> 00:13.1 USB Controller: ATI Technologies Inc SB700 USB OHCI1 Controller
+> 00:13.2 USB Controller: ATI Technologies Inc SB700/SB800 USB EHCI Controller
+> 00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 3a)
+> 00:14.1 IDE interface: ATI Technologies Inc SB700/SB800 IDE Controller
+> 00:14.3 ISA bridge: ATI Technologies Inc SB700/SB800 LPC host controller
+> 00:14.4 PCI bridge: ATI Technologies Inc SBx00 PCI to PCI Bridge
+> 00:14.5 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI2  
+> Controller
+> 00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]  
+> HyperTransport Technology Configuration
+> 00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]  
+> Address Map
+> 00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]  
+> DRAM Controller
+> 00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron]  
+> Miscellaneous Control
+> 01:05.0 VGA compatible controller: ATI Technologies Inc Radeon HD 3200  
+> Graphics
+> 02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.  
+> RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
+> 03:07.0 Multimedia audio controller: Creative Labs SB Audigy (rev 04)
+> 03:07.1 Input device controller: Creative Labs SB Audigy Game Port (rev 04)
+> 03:07.2 FireWire (IEEE 1394): Creative Labs SB Audigy FireWire Port (rev 04)
 
-There's kernel threads doing writeout, and there's apps getting stuck in
-balance_dirty_pages().
+The second (PCI only ?) network card is plugged and lspci does not display
+it, right ?
 
-If we want all writeout to be done by kernel threads (bdi/pd-flush like
-things) then we still need to manage the actual apps and delay them.
+> The output from kern.log is as follows (right after bringing the link up)
 
-As things stand now, we kick pdflush into action when dirty levels are
-above the background level, and start writing out from the app task when
-we hit the full dirty level.
+Please send a complete dmesg from boot and the content of /proc/interrupts
+once the link is brought up.
 
-Moving all writeout to a kernel thread sounds good from writing linear
-stuff pov, but what do we make apps wait on then?
+[...]
+> If you guys need any package versions just ask. Also feel free to point  
+> me in the direction of a better place to post this issue.
+
+It is suggested to send network related problems to netdev@vger.kernel.org
+
+-- 
+Ueimor
