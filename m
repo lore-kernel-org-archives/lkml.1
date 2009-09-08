@@ -1,128 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752304AbZIHVTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752241AbZIHV26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752304AbZIHVTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 17:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZIHVTk
+	id S1752241AbZIHV26 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 17:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZIHV25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 17:19:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47122 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751750AbZIHVTj (ORCPT
+	Tue, 8 Sep 2009 17:28:57 -0400
+Received: from mail-in-16.arcor-online.net ([151.189.21.56]:59173 "EHLO
+	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751168AbZIHV25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 17:19:39 -0400
-Date: Tue, 8 Sep 2009 23:19:33 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Richard Purdie <rpurdie@rpsys.net>, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-Subject: Re: Zaurus suspend saga
-Message-ID: <20090908211933.GB17228@elf.ucw.cz>
-References: <20090906052653.GB1324@ucw.cz> <1252276145.17852.15.camel@dax.rpnet.com> <20090907113132.GM23450@elf.ucw.cz> <1252329025.1861.6.camel@hammer.suse.cz>
+	Tue, 8 Sep 2009 17:28:57 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-14.arcor-online.net 4C03A28ACC3
+Message-ID: <4AA6CC99.6010701@arcor.de>
+Date: Wed, 09 Sep 2009 00:28:57 +0300
+From: Nikos Chantziaras <realnc@arcor.de>
+Organization: Lucas Barks
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252329025.1861.6.camel@hammer.suse.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Theodore Tso <tytso@mit.edu>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+References: <20090906205952.GA6516@elte.hu> <h81v7t$p6e$1@ger.gmane.org> <20090907074039.1b6bc1ac@infradead.org> <4AA6056A.4020106@arcor.de> <20090908013800.296a5fb5@infradead.org> <4AA62E4E.4040700@arcor.de> <20090908120311.GK22901@mit.edu>
+In-Reply-To: <20090908120311.GK22901@mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 09/08/2009 03:03 PM, Theodore Tso wrote:
+> On Tue, Sep 08, 2009 at 01:13:34PM +0300, Nikos Chantziaras wrote:
+>>> despite the untranslated content, it is clear that you have scheduler
+>>> delays (either due to scheduler bugs or cpu contention) of upto 68
+>>> msecs... Second in line is your binary AMD graphics driver that is
+>>> chewing up 14% of your total latency...
+>>
+>> I've now used a correctly installed and up-to-date version of latencytop
+>> and repeated the test.  Also, I got rid of AMD's binary blob and used
+>> kernel DRM drivers for my graphics card to throw fglrx out of the
+>> equation (which btw didn't help; the exact same problems occur).
+>>
+>> Here the result:
+>>
+>>      http://foss.math.aegean.gr/~realnc/pics/latop2.png
+>
+> This was with an unmodified 2.6.31-rcX kernel?
 
-> > > c) We rip the whole thing out and stop supporting "offline" charging.
-> > 
-> > How much faster is offline charge, compared to online charging? I have
-> > impression that online charging basically does not charge anything...
-> 
-> I think that online charging works, but it seems to be slower. I am not
-> sure, whether it is a hardware or software issue. You can control
-> charging speed by software, but the final word has the charging
-> chip.
-
-Well, overnight charge (online) seems to result in pretty much empty
-battery...
-
-
-> Here are control wires:
-> SPITZ_SCP_JK_A: output = turns dummy load to 1 kOhm resistor
-> SPITZ_SCP_JK_B: output = high charging current
-> SPITZ_SCP_CHRG_ON: output = charging on
-> SPITZ_SCP_ADC_TEMP_ON: output = turns battery sensor on/off
-> SPITZ_GPIO_CHRG_FULL input = charging complete
-> SPITZ_GPIO_AC_IN input = AC adapter is present
-
-Is CHRG_ON pin reversed?
-
-static void spitz_charge(int on)
-{
-	if (on) {
-		if (sharpsl_pm.flags & SHARPSL_SUSPENDED) {
-			gpio_set_value(SPITZ_GPIO_JK_B, 1);
-			gpio_set_value(SPITZ_GPIO_CHRG_ON, 0);
-		} else {
-			gpio_set_value(SPITZ_GPIO_JK_B, 0);
-			gpio_set_value(SPITZ_GPIO_CHRG_ON, 0);
-		}
-	} else {
-		gpio_set_value(SPITZ_GPIO_JK_B, 0);
-		gpio_set_value(SPITZ_GPIO_CHRG_ON, 1);
-	}
-}
+Yes (-rc9).  I also tested with 2.6.30.5 and getting the same results.
 
 
-> MAX1111 inputs:
-> MAX1111_ACIN_VOLT: Voltage in AC input (after pass of input circuit,
->                    before tha final diode)
-> MAX1111_BATT_TEMP: Battery temperature sensor
-> MAX1111_BATT_VOLT: Battery voltage
-> 
-> Here are notes from the design:
-> Pre-charge = 102mA
+> Does Latencytop do anything useful on a BFS-patched kernel?
 
-> Fast charge = 680mA
-> Fast charge set ON = 105mA
-
-I'm quite confused:
-
-> SPITZ_SCP_JK_B: output = high charging current
-
-Is JK_B active low?
-
-> Iterm = 55mA
-> 
-> Thresholds:
-> SPITZ_GPIO_AC_IN:     4.2V (IC charging circuit)
-> SPITZ_GPIO_FATAL_BAT: 3.0V (voltage detector IC on battery)
-> PXA270 batt fault:    2.8V (voltage on the main non-regulated power)
-> CF/SD:                2.8V (voltage required for CF/SD activation, I am
->                             not sure, why it is done, because 2.8V is
->                             outside of spec anyway)
-
-> - It would be nice to have "small travel charger heuristic": Turn fast
-> charging on, charger "disappears", switch to slow charging, charger
-> "appears" => stay in slow charging mode, and retry after some time, or
-> after going to suspend, reset the flag when charger is removed.
-
-Yes, I have similar "travel charger" (from single AA in fact), too,
-and yes getting that heuristic would be cool. But for now, I'd settle
-with /sys control enabling that.
-
-> - sysfs interface for charging would be nice. For example: Cyril has an
-> external battery pack and he wants to disable charging of internal
-> battery from the external battery.
-
-Yes, more debug info in sysfs and some controls would be nice.
-
-BTW... /sys/class/leds/spitz:amber:charge seems to have life of its
-own. I can't manually change the brightness; also changing trigger
-does not work -- it still displays charging status. What is going on?
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Nope.  BFS does not support any form of tracing yet.  latencytop runs 
+but only shows a blank list.  All I can say is that a BFS patched kernel 
+with the same .config fixes all visible latency issues.
