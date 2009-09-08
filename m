@@ -1,46 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755549AbZJADrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755549AbZJADrQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 30 Sep 2009 23:47:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755534AbZJADrQ
+	id S1752608AbZIHWyh (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Tue, 8 Sep 2009 18:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZIHWyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 30 Sep 2009 23:47:16 -0400
-Received: from smtp-out-042.synserver.de ([212.40.180.42]:1063 "HELO
-	smtp-out-042.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755524AbZJADrP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 30 Sep 2009 23:47:15 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 11811
-Date: Thu, 1 Oct 2009 05:47:16 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [Kernel BUG] ext4 for v2.6.32 round II
-Message-ID: <20091001034716.GA2008@phenom2.trippelsdorf.de>
-References: <E1Msrgx-0001br-MP@closure.thunk.org>
- <20091001014128.GA2092@phenom2.trippelsdorf.de>
- <alpine.LFD.2.01.0909301847030.6996@localhost.localdomain>
- <20091001021531.GA2025@phenom2.trippelsdorf.de>
- <20091001030151.GR24383@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20091001030151.GR24383@mit.edu>
+	Tue, 8 Sep 2009 18:54:36 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:37395 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751822AbZIHWyg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 18:54:36 -0400
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, laijs@cn.fujitsu.com, dipankar@in.ibm.com,
+   akpm@linux-foundation.org, mathieu.desnoyers@polymtl.ca,
+   josht@linux.vnet.ibm.com, dvhltc@us.ibm.com, niv@us.ibm.com,
+   tglx@linutronix.de, peterz@infradead.org, rostedt@goodmis.org,
+   "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: [PATCH tip/core/rcu 2/3] Need to update rnp->gpnum if preemptable RCU is to be reliable.
+Date: Tue,  8 Sep 2009 15:54:36 -0700
+Message-Id: <12524504771622-git-send-email->
+X-Mailer: git-send-email 1.5.2.5
+In-Reply-To: <20090908225349.GA19524@linux.vnet.ibm.com>
+References: <20090908225349.GA19524@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 30, 2009 at 11:01:51PM -0400, Theodore Tso wrote:
-> Hi Markus, 
-> 
-> I'm pretty sure the following should fix your problems; can you
-> confirm?
+From: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Yes, everything is fine again.
-Thank you.
+Without this patch, tasks preempted in RCU read-side critical sections
+can fail to block the grace period, given that rnp->gpnum is used to
+determine which rnp->blocked_tasks[] element the preempted task is
+enqueued on.  Before the patch, rnp->gpnum is always zero, so preempted
+tasks are always enqueued on rnp->blocked_tasks[0], which is correct
+only when the current CPU has not checked into the current grace period
+and the grace-period number is even, or, similarly, if the current CPU
+-has- checked into the current grace period and the grace-period number
+is odd.
 
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+---
+ kernel/rcutree.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/rcutree.c b/kernel/rcutree.c
+index 71bc797..03866bd 100644
+--- a/kernel/rcutree.c
++++ b/kernel/rcutree.c
+@@ -627,6 +627,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 	/* Special-case the common single-level case. */
+ 	if (NUM_RCU_NODES == 1) {
+ 		rnp->qsmask = rnp->qsmaskinit;
++		rnp->gpnum = rsp->gpnum;
+ 		rsp->signaled = RCU_SIGNAL_INIT; /* force_quiescent_state OK. */
+ 		spin_unlock_irqrestore(&rnp->lock, flags);
+ 		return;
+@@ -652,8 +653,10 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 	 */
+ 
+ 	rnp_end = rsp->level[NUM_RCU_LVLS - 1];
+-	for (rnp_cur = &rsp->node[0]; rnp_cur < rnp_end; rnp_cur++)
++	for (rnp_cur = &rsp->node[0]; rnp_cur < rnp_end; rnp_cur++) {
+ 		rnp_cur->qsmask = rnp_cur->qsmaskinit;
++		rnp->gpnum = rsp->gpnum;
++	}
+ 
+ 	/*
+ 	 * Now set up the leaf nodes.  Here we must be careful.  First,
+@@ -674,6 +677,7 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
+ 	for (; rnp_cur < rnp_end; rnp_cur++) {
+ 		spin_lock(&rnp_cur->lock);	/* irqs already disabled. */
+ 		rnp_cur->qsmask = rnp_cur->qsmaskinit;
++		rnp->gpnum = rsp->gpnum;
+ 		spin_unlock(&rnp_cur->lock);	/* irqs already disabled. */
+ 	}
+ 
 -- 
-Markus
+1.5.2.5
+
