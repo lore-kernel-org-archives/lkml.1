@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZIHVxL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752080AbZIHWAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbZIHVxL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 17:53:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbZIHVxL
+	id S1752080AbZIHWAt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 18:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751542AbZIHWAs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 17:53:11 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48490 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752111AbZIHVxK (ORCPT
+	Tue, 8 Sep 2009 18:00:48 -0400
+Received: from mail-in-14.arcor-online.net ([151.189.21.54]:49838 "EHLO
+	mail-in-14.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751089AbZIHWAr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 17:53:10 -0400
-Date: Tue, 8 Sep 2009 23:53:07 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stanislav Brabec <utx@penguin.cz>
-Cc: Richard Purdie <rpurdie@rpsys.net>, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.miao@marvell.com,
-       Andrea Adami <andrea.adami@gmail.com>
-Subject: Re: Zaurus suspend saga
-Message-ID: <20090908215306.GC17228@elf.ucw.cz>
-References: <20090906052653.GB1324@ucw.cz> <1252276145.17852.15.camel@dax.rpnet.com> <20090907113132.GM23450@elf.ucw.cz> <1252329025.1861.6.camel@hammer.suse.cz>
+	Tue, 8 Sep 2009 18:00:47 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-16.arcor-online.net AEF9B25729D
+Message-ID: <4AA6D40F.6040600@arcor.de>
+Date: Wed, 09 Sep 2009 01:00:47 +0300
+From: Nikos Chantziaras <realnc@arcor.de>
+Organization: Lucas Barks
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252329025.1861.6.camel@hammer.suse.cz>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Juergen Beisert <jbe@pengutronix.de>
+CC: linux-kernel@vger.kernel.org, Arjan van de Ven <arjan@infradead.org>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+References: <20090906205952.GA6516@elte.hu> <20090908013800.296a5fb5@infradead.org> <4AA62E4E.4040700@arcor.de> <200909081332.46129.jbe@pengutronix.de>
+In-Reply-To: <200909081332.46129.jbe@pengutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On 09/08/2009 02:32 PM, Juergen Beisert wrote:
+> On Dienstag, 8. September 2009, Nikos Chantziaras wrote:
+>> On 09/08/2009 11:38 AM, Arjan van de Ven wrote:
+>>> On Tue, 08 Sep 2009 10:19:06 +0300
+>>>
+>>> Nikos Chantziaras<realnc@arcor.de>   wrote:
+>>>> latencytop has this to say:
+>>>>
+>>>>      http://foss.math.aegean.gr/~realnc/pics/latop1.png
+>>>>
+>>>> Though I don't really understand what this tool is trying to tell me,
+>>>> I hope someone does.
+>>>
+>>> despite the untranslated content, it is clear that you have scheduler
+>>> delays (either due to scheduler bugs or cpu contention) of upto 68
+>>> msecs... Second in line is your binary AMD graphics driver that is
+>>> chewing up 14% of your total latency...
+>>
+>> I've now used a correctly installed and up-to-date version of latencytop
+>> and repeated the test.  Also, I got rid of AMD's binary blob and used
+>> kernel DRM drivers for my graphics card to throw fglrx out of the
+>> equation (which btw didn't help; the exact same problems occur).
+>>
+>> Here the result:
+>>
+>>       http://foss.math.aegean.gr/~realnc/pics/latop2.png
+>>
+>> Again: this is on an Intel Core 2 Duo CPU.
+>
+> Just an idea: Maybe some system management code hits you?
 
-> - It would be nice to have "small travel charger heuristic": Turn fast
-> charging on, charger "disappears", switch to slow charging, charger
-> "appears" => stay in slow charging mode, and retry after some time, or
-> after going to suspend, reset the flag when charger is removed.
-
-Can you try to get that working?
-
-With my AA charger, I get "AC Status: 0", as long as battery is not
-full. It draws power for it (and battery percentage goes higher) but
-it is not even detected as charger :-(. [But charge LED is lit. WTF?]
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I'm not sure what is meant with "system management code."
