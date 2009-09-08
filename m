@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZIHBHz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZIHBXL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbZIHBHz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 21:07:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZIHBHy
+	id S1753047AbZIHBXL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 21:23:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZIHBXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 21:07:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62307 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752911AbZIHBHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 21:07:54 -0400
-Message-ID: <4AA5AE29.6020107@cn.fujitsu.com>
-Date: Tue, 08 Sep 2009 09:06:49 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Mon, 7 Sep 2009 21:23:10 -0400
+Received: from kroah.org ([198.145.64.141]:57232 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751941AbZIHBXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 21:23:10 -0400
+Date: Mon, 7 Sep 2009 18:14:58 -0700
+From: Greg KH <greg@kroah.com>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
+Subject: Re: Staging tree status for the .32 kernel merge
+Message-ID: <20090908011458.GA29317@kroah.com>
+References: <20090903041429.GA29875@kroah.com>
+ <20090907202134.4feebe6f@caramujo.chehab.org>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/6] perf trace: Add filter support
-References: <4AA4C04D.1050201@cn.fujitsu.com> <20090908000219.GB6312@nowhere>
-In-Reply-To: <20090908000219.GB6312@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090907202134.4feebe6f@caramujo.chehab.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> An example:
->>
->>  #./perf record -f -e irq:irq_handler_entry:irq==18:record
->>  or
->>  #./perf record -f -e irq:irq_handler_entry:irq==18 -R
->>  ^C
+On Mon, Sep 07, 2009 at 08:21:34PM -0300, Mauro Carvalho Chehab wrote:
+> Em Wed, 2 Sep 2009 21:14:30 -0700
 > 
-> We may want to write complex filters. While looking at this patchset,
-> that seems possible this way, but the raw line may become unreadable:
+> > 	- go7007.  Ugh.  Unless someone steps up now to take this over,
+> > 	  it's going to be removed in .33.  There is no hardware made
+> > 	  with this anymore, and no specs around that I know of, and the
+> > 	  code isn't the nicest in the world.
 > 
-> perf record -f -e irq:irq_handler_entry:"irq==18 && (name == 'foo' || bar == 'blah')":record
-> 
-> May be we should add an option to let one also set the filters seperately then
-> we could do:
-> 
-> perf record -f -e -R irq:irq_handler_entry --filter "irq==18 && (name == 'foo' || bar == 'blah')"
-> 
+> I think nobody will cry if you remove this one. This is an old hardware, and not
+> manufactured anymore. The chipset of the compression hardware is
+> obsolete and orphaned, as the audio/video unit were sold to another company.
 
-I had the same idea. ;)
+I agree.  I do have a device around here, but it was only for testing,
+the company who produced it said they could not release the specs due to
+ownership issues.
 
-But using this option, is it possible to specify different filters
-for different events? like this:
+> > 	- udlfb.  Video over USB, it doesn't get anymore whacked than
+> > 	  that.  This is still being developed but the developer doesn't
+> > 	  like to do incremental updates for some odd reason.  Hopefully
+> > 	  he pops up again with an update.  But for now, it is quite
+> > 	  workable for a number of developers.
+> 
+> Is this a video streaming driver (like other V4L2 drivers) or a video adapter
+> driver?
 
-perf record -f -e -R irq:irq_handler_entry --filter "irq==18"
--e irq:softirq_entry --filter "vec==1"
+Video adapter driver, it's a frame buffer driver, sorry for any
+confusion.
 
+thanks,
+
+greg k-h
