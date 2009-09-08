@@ -1,46 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752516AbZIHWm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752587AbZIHWxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752516AbZIHWm0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 18:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZIHWmZ
+	id S1752587AbZIHWxQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 18:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZIHWxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 18:42:25 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:58131 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751089AbZIHWmY (ORCPT
+	Tue, 8 Sep 2009 18:53:15 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:41364 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751089AbZIHWxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 18:42:24 -0400
-Date: Tue, 8 Sep 2009 18:41:14 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-In-Reply-To: <20090908222036.GM6753@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.10.0909081839090.7733@V090114053VZO-1>
-References: <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1> <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <4AA00400.1030005@gmail.com> <alpine.DEB.1.10.0909031731540.24199@V090114053VZO-1>
- <20090903231757.GP6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909041140040.9781@V090114053VZO-1> <20090904204335.GG6751@linux.vnet.ibm.com> <alpine.DEB.1.10.0909081555410.26382@V090114053VZO-1> <20090908222036.GM6753@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 8 Sep 2009 18:53:15 -0400
+Message-ID: <4AA6DF50.3030603@zytor.com>
+Date: Tue, 08 Sep 2009 15:48:48 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] char/tty_io: fix legacy pty name when more than 256
+ pty devices are requested
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>
+In-Reply-To: <20090908144942.76ddf0e7@caramujo.chehab.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Sep 2009, Paul E. McKenney wrote:
+On 09/08/2009 10:49 AM, Mauro Carvalho Chehab wrote:
+> 
+> It is important to preserve the old nomenclature for tty/pty devices for the
+> first 256 devices, to avoid breakage on existing applications and with udev.
+> 
+> So, in order to allow more pty devices, the nomenclature were extended for
+> the devices with minor 256 or above. For those, the nomenclature will be:
+> 	ttyf0000-ttfpffff	(pty slave)
+> 	ptyf0000-ttyfffff	(pty master)
+> 
 
-> Are you saying that people have already asked you for additional
-> variants of SLAB_DESTROY_BY_RCU?  If so, please don't keep them a secret!
-> Otherwise, experience indicates that it is best to wait for the new uses,
-> because they usually aren't quite what one might expect.
+This would seem to be a somewhat silly way to extend it, especially
+given the arbitrary artificial limit of just over 2^16 entries.
 
-No direct request but I have seen the network developers discover these
-features and their caching benefits over the last year. It is likely that
-they will try to push it into more components of the net subsystem.
+If you're going to do this, I would suggest using the following
+namespace, as such:
+
+	[pt]ty[p-za-e][0-9a-f]+
+
+	sprintf(name, "%cty%c%x", slave ? 't' : 'p',
+		"pqrstuvwxyzabcde"[(index >> 4) & 15],
+		((index >> 4) & ~15) | (index & 15));
+
+No arbitrary limits, and it still extends the existing namespace with
+some reasonable continuity.  It means bits [7:4] are weirdly encoded,
+but we get straightforward backwards compatibility as a result.
+
+	-hpa
