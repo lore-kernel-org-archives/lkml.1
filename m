@@ -1,94 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753591AbZIHERA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbZIHEYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753591AbZIHERA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 00:17:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753361AbZIHEQ7
+	id S1753589AbZIHEYP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 00:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZIHEYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 00:16:59 -0400
-Received: from mail-iw0-f175.google.com ([209.85.223.175]:44499 "EHLO
-	mail-iw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751631AbZIHEQ6 convert rfc822-to-8bit (ORCPT
+	Tue, 8 Sep 2009 00:24:14 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:60048 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751788AbZIHEYN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 00:16:58 -0400
+	Tue, 8 Sep 2009 00:24:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=U9F5R7Q9DV2/8TsGquCA0QcK6xbzA7Y2m14BXKKx2oHuIRxBqWutZtkNx97rjmYG2x
-         xvFX6r6UESQOdBk5qEb166uSe3fODXiCpdr3wDvS8ILcx3NPC6LjDS+ckrY7hLZOfet+
-         lEbxFXDo68J6AaV6ySz0P4aLI9SiYs50WHa1U=
+        b=FAbI6dMZGE4/rxevA/vU3QaMdKzl6pqXF12OhT9xGZTxtg31V4pTAm8v5j40BTVMrP
+         VoN3TqmaMbpY3fpJ1qPLi0jg7vr385X+ldHvSsNcgxDiu+tYaWfats5cL5GieWlkltO/
+         p2LfK/Z81yaBI5Uhq1OE2iTAHygok1QJ2nYc0=
 MIME-Version: 1.0
-In-Reply-To: <1252376254.21261.2052.camel@gandalf.stny.rr.com>
-References: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com> 
-	<20090907171406.6a4b6116@nehalam> <1252376254.21261.2052.camel@gandalf.stny.rr.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 7 Sep 2009 21:16:38 -0700
-Message-ID: <43e72e890909072116v33ecafc4ma7f5a68825f14e9@mail.gmail.com>
-Subject: Re: Stop using tasklets for bottom halves
-To: rostedt@goodmis.org
-Cc: Stephen Hemminger <shemminger@vyatta.com>, Ingo Molnar <mingo@elte.hu>,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Matt Smith <Matt.Smith@atheros.com>, Kevin Hayes <kevin@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20090908041345.GA16315@localhost>
+References: <20090908093416.5a2f98b6.minchan.kim@barrios-desktop>
+	 <20090908005520.GA7967@localhost> <4AA5BB3E.4050808@cn.fujitsu.com>
+	 <28c262360909072110j8ef5962h7231be5c03d68da3@mail.gmail.com>
+	 <20090908041345.GA16315@localhost>
+Date: Tue, 8 Sep 2009 13:24:15 +0900
+Message-ID: <28c262360909072124q2fdb8d64g88144e0898801ad@mail.gmail.com>
+Subject: Re: [PATCH] trace bio queueing trial only when it occurs
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 7, 2009 at 7:17 PM, Steven Rostedt<rostedt@goodmis.org> wrote:
-> On Mon, 2009-09-07 at 17:14 -0700, Stephen Hemminger wrote:
->> On Mon, 7 Sep 2009 15:58:50 -0700
->> "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+On Tue, Sep 8, 2009 at 1:13 PM, Wu Fengguang<fengguang.wu@intel.com> wrote:
+> On Tue, Sep 08, 2009 at 12:10:55PM +0800, Minchan Kim wrote:
+>> On Tue, Sep 8, 2009 at 11:02 AM, Li Zefan<lizf@cn.fujitsu.com> wrote:
+>> > Wu Fengguang wrote:
+>> >> Minchan,
+>> >>
+>> >> I tend to agree with the change, but somehow confused by blkparse(1):
+>> >>
+>> >>         Q -- queued   This notes *intent* to queue i/o at the given location.  No real requests exists yet.
+>> >>
+>> >> Li Zefan has been working on blktrace and he can tell more.
+>> >>
+>> >
+>> > I work on ftrace-plugin blktrace and blk TRACE_EVENT, but don't know
+>> > much about the old blktrace history. ;)
+>> >
+>> > I think the manpage says it's called before ->make_request_fn(), so
+>> > "No real requests exist yet".
+>> >
+>> > Actually the trace was called just before make_request at first:
+>> >        2056a782f8e7e65fd4bfd027506b4ce1c5e9ccd4
+>> >
+>> > And then 2 patches added some checks between them:
+>> >        5ddfe9691c91a244e8d1be597b6428fcefd58103
+>> >        51fd77bd9f512ab6cc9df0733ba1caaab89eb957
+>> >
+>> > It seems to me it makes sense to have this patch.
 >>
->> > A while ago I had read about an effort to consider removing tasklets
->> > [1] or at least trying to not use them. I'm unaware of the progress in
->> > this respect but since reading that article have always tried to
->> > evaluate whether or not we need tasklets on wireless drivers. I have
->> > also wondered whether work in irq context in other parts of the kernel
->> > can be moved to process context, a curious example being timers. I'll
->> > personally be trying to using only process context on bottom halves on
->> > future drivers but I figured it may be a good time to ask how serious
->> > was avoiding tasklets or using wrappers in the future to avoid irq
->> > context is or is it advised. Do we have a general agreement this is a
->> > good step forward to take? Has anyone made tests or changes on a
->> > specific driver from irq context to process context and proven there
->> > are no significant advantages of using irq context where you would
->> > have expected it?
->> >
->> > Wireless in particular should IMHO not require taskets for anything
->> > time sensitive that I can think about except perhaps changing channels
->> > quickly and to do that appropriately also process pending RX frames
->> > prior to a switch. It remains to be seen experimentally whether or not
->> > using a workqueue for RX processing would affect the time to switch
->> > channels negatively but I doubt it would be significant. I hope to
->> > test that with ath9k_htc.
->> >
->> > What about gigabit or 10 Gigabit Ethernet drivers ? Do they face any
->> > challenges which would yet need to be proven would not face issues
->> > when processing bottom halves in process context?
->> >
->> > [1] http://lwn.net/Articles/239633/
->> >
->> > Â  Luis
->> > --
->> > To unsubscribe from this list: send the line "unsubscribe netdev" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at Â http://vger.kernel.org/majordomo-info.html
->>
->> Why not use NAPI, which is soft irq? Almost all 1G and 10G drivers
->> use NAPI.
->>
->> Process context is too slow.
+>> Thanks for good information.
+>> Yes. It seems above 2 patches seem to break the rule.
+>> Could I add your ACK?
 >
-> Well, I'm hoping to prove the opposite. I'm working on some stuff that I
-> plan to present at Linux Plumbers. I've been too distracted by other
-> things, but hopefully I'll have some good numbers to present by then.
+> Sure, thanks!
+>
+> Acked-by: Wu Fengguang <fengguang.wu@intel.com>
 
-What day in specific was this planned for at Plumbers?
+Thanks for careful review, Wu.
 
-  Luis
+
+
+-- 
+Kind regards,
+Minchan Kim
