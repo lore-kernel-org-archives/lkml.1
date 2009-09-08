@@ -1,121 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753321AbZIHMjC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753357AbZIHMmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753321AbZIHMjC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 08:39:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZIHMjB
+	id S1753357AbZIHMmP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 08:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZIHMmO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 08:39:01 -0400
-Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:23930
-	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751050AbZIHMjA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 08:39:00 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AiwBAEPtpUrLO2ZB/2dsb2JhbAAI2nuEGAWBVGQ
-X-IronPort-AV: E=Sophos;i="4.44,352,1249228800"; 
-   d="scan'208";a="500744296"
-Message-ID: <4AA6506A.7040900@iinet.net.au>
-Date: Tue, 08 Sep 2009 20:39:06 +0800
-From: Shane Arnold <clontarf_x@iinet.net.au>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Bringing up secondary rtl8169-based interface causes network hang/dma
- issues
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 8 Sep 2009 08:42:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52584 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751075AbZIHMmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 08:42:14 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18/Sk4Lciw/shSLlpqr2LZzs8s3YXeVEZSSBxrYTz
+	fSHPBSnKnRgdNT
+Subject: Re: [tip:sched/core] sched: Ensure that a child can't gain time
+ over it's parent after fork()
+From: Mike Galbraith <efault@gmx.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
+In-Reply-To: <20090908115300.GW18599@kernel.dk>
+References: <tip-b5d9d734a53e0204aab0089079cbde2a1285a38f@git.kernel.org>
+	 <20090908114927.GA1649@elte.hu>  <20090908115300.GW18599@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 14:42:13 +0200
+Message-Id: <1252413733.11445.0.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Also posted at:
-http://www.linuxquestions.org/questions/linux-networking-3/rtl8169-hanging-networkdma-issues-on-secondary-interface-ifup-753532/
+On Tue, 2009-09-08 at 13:53 +0200, Jens Axboe wrote:
+> On Tue, Sep 08 2009, Ingo Molnar wrote:
+> > 
+> > * tip-bot for Mike Galbraith <efault@gmx.de> wrote:
+> > 
+> > > Commit-ID:  b5d9d734a53e0204aab0089079cbde2a1285a38f
+> > > Gitweb:     http://git.kernel.org/tip/b5d9d734a53e0204aab0089079cbde2a1285a38f
+> > > Author:     Mike Galbraith <efault@gmx.de>
+> > > AuthorDate: Tue, 8 Sep 2009 11:12:28 +0200
+> > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > CommitDate: Tue, 8 Sep 2009 13:15:34 +0200
+> > > 
+> > > sched: Ensure that a child can't gain time over it's parent after fork()
+> > 
+> > > This improves latencies of make -j<n> kernel build workloads.
+> > > 
+> > > Reported-by: Jens Axboe <jens.axboe@oracle.com>
+> > 
+> > Jens, mind trying this patch (or latest tip:master) with your make 
+> > -j4 workload, does it improve in any way?
+> 
+> Already booted it, makes no real difference... I'm trying with NO_HZ
+> disabled now to see if that changes the picture.
 
-Hi All,
+Oh well, BTTODB.  Thanks for trying it out.
 
-The issue I am having is when bringing up a second Ethernet interface 
-that uses the rtl8169 driver, it seems to cause network issues. I lose 
-all network connectivity to the machine, and I simultaneously see a DMA 
-error occur for my primary IDE drive.
-
-Two interfaces:
-
-Quote:
-eth0 (rtl8168 (using rtl8169 driver) - Onboard PCI-E Gigabit Ethernet)
-eth1 (rtl8169 (using rtl8169 driver) - RTL8169 PCI Gigabit Ethernet)
-The chipset running the IDE drive that experiences the DMA crash is:
-
-Quote:
-ATI Technologies Inc SB700/SB800 IDE Controller (atiixp)
-Vitals:
-
-Debian 5.0.1 @ Kernel 2.6.30
-
-00:00.0 Host bridge: Advanced Micro Devices [AMD] RS780 Host Bridge
-00:01.0 PCI bridge: ASUSTeK Computer Inc. Device 9602
-00:06.0 PCI bridge: Advanced Micro Devices [AMD] RS780 PCI to PCI bridge 
-(PCIE port 2)
-00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA 
-Controller [IDE mode]
-00:12.0 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI0 
-Controller
-00:12.1 USB Controller: ATI Technologies Inc SB700 USB OHCI1 Controller
-00:12.2 USB Controller: ATI Technologies Inc SB700/SB800 USB EHCI Controller
-00:13.0 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI0 
-Controller
-00:13.1 USB Controller: ATI Technologies Inc SB700 USB OHCI1 Controller
-00:13.2 USB Controller: ATI Technologies Inc SB700/SB800 USB EHCI Controller
-00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 3a)
-00:14.1 IDE interface: ATI Technologies Inc SB700/SB800 IDE Controller
-00:14.3 ISA bridge: ATI Technologies Inc SB700/SB800 LPC host controller
-00:14.4 PCI bridge: ATI Technologies Inc SBx00 PCI to PCI Bridge
-00:14.5 USB Controller: ATI Technologies Inc SB700/SB800 USB OHCI2 
-Controller
-00:18.0 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] 
-HyperTransport Technology Configuration
-00:18.1 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] 
-Address Map
-00:18.2 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] 
-DRAM Controller
-00:18.3 Host bridge: Advanced Micro Devices [AMD] K8 [Athlon64/Opteron] 
-Miscellaneous Control
-01:05.0 VGA compatible controller: ATI Technologies Inc Radeon HD 3200 
-Graphics
-02:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. 
-RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
-03:07.0 Multimedia audio controller: Creative Labs SB Audigy (rev 04)
-03:07.1 Input device controller: Creative Labs SB Audigy Game Port (rev 04)
-03:07.2 FireWire (IEEE 1394): Creative Labs SB Audigy FireWire Port (rev 04)
-
-The output from kern.log is as follows (right after bringing the link up)
-
-Sep 8 19:36:42 wdhq kernel: r8169: eth1: link up
-Sep 8 19:36:45 wdhq kernel: hda: ide_dma_intr: bad DMA status (0x76)
-Sep 8 19:36:45 wdhq kernel: hda: dma_intr: status=0x50 { DriveReady 
-SeekComplete }
-Sep 8 19:36:45 wdhq kernel: hda: possibly failed opcode: 0x35
-Sep 8 19:36:45 wdhq kernel: hda: ide_dma_intr: bad DMA status (0x76)
-Sep 8 19:36:45 wdhq kernel: hda: dma_intr: status=0x50 { DriveReady 
-SeekComplete }
-Sep 8 19:36:45 wdhq kernel: hda: possibly failed opcode: 0x35
-Sep 8 19:36:45 wdhq kernel: hda: ide_dma_intr: bad DMA status (0x76)
-Sep 8 19:36:45 wdhq kernel: hda: dma_intr: status=0x50 { DriveReady 
-SeekComplete }
-Sep 8 19:36:45 wdhq kernel: hda: possibly failed opcode: 0x35
-Sep 8 19:36:45 wdhq kernel: hda: ide_dma_intr: bad DMA status (0x76)
-Sep 8 19:36:45 wdhq kernel: hda: dma_intr: status=0x50 { DriveReady 
-SeekComplete }
-Sep 8 19:36:45 wdhq kernel: hda: possibly failed opcode: 0x35
-Sep 8 19:36:46 wdhq kernel: hda: ide_dma_intr: bad DMA status (0x76)
-Sep 8 19:36:46 wdhq kernel: hda: dma_intr: status=0x50 { DriveReady 
-SeekComplete }
-Sep 8 19:36:46 wdhq kernel: hda: possibly failed opcode: 0x35
-Sep 8 19:36:46 wdhq kernel: hda: DMA disabled
-Sep 8 19:36:46 wdhq kernel: hdb: DMA disabled
-Sep 8 19:36:46 wdhq kernel: ide0: reset: success
-
-If you guys need any package versions just ask. Also feel free to point 
-me in the direction of a better place to post this issue.
-
-HELP! I want to be able to multihome but this is stopping me :(
+	-Mike
 
