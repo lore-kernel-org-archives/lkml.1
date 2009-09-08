@@ -1,109 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751916AbZIHThV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751836AbZIHTlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751916AbZIHThV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751162AbZIHThU
+	id S1751836AbZIHTlq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZIHTlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:37:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58543 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbZIHThT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:37:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Alex Bennee <kernel-hacker@bennee.com>
-Subject: Re: Machine resumes straight after suspend to RAM (or disk)
-Date: Tue, 8 Sep 2009 21:38:15 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-References: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
-In-Reply-To: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+	Tue, 8 Sep 2009 15:41:46 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:43174 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751528AbZIHTlp (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:41:45 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Beth Kon <eak@us.ibm.com>
+Cc: rostedt@goodmis.org, avi@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Wierdness - linux-next KVM patch breaks Dell Latitude D820, KVM not in kernel
+In-Reply-To: Your message of "Tue, 08 Sep 2009 09:32:46 EDT."
+             <4AA65CFE.50402@us.ibm.com>
+From: Valdis.Kletnieks@vt.edu
+References: <3850.1252332427@turing-police.cc.vt.edu>
+            <4AA65CFE.50402@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1252438888_3318P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909082138.15312.rjw@sisk.pl>
+Date: Tue, 08 Sep 2009 15:41:28 -0400
+Message-ID: <22130.1252438888@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 September 2009, Alex Bennee wrote:
-> Hi,
-> 
-> I thought I'd enable suspend and resume on my desktop machine so I
-> could save myself some time in the morning when I restart the machine.
-> The machine is fairly standard Intel Core Duo based system (lspci
-> attached). However when I execute pm-suspend (or Gentoo's own
-> hibernate-script) the system does suspend but resumes immediately. To
-> add insult to injury the ethernet doesn't come back properly and needs
-> a reboot to reset it.
-> 
-> I've played about a little with the ACPI debug stuff but it's easy to
-> overflow the dmesg buffer. The relevant section around the
-> suspend/resume looks like:
-> 
-> [ 1025.178019] Disabling non-boot CPUs ...
-> [ 1025.182071] kvm: disabling virtualization on CPU1
-> [ 1025.227729] CPU 1 is now offline
-> [ 1025.227731] SMP alternatives: switching to UP code
-> [ 1025.232627] CPU0 attaching NULL sched-domain.
-> [ 1025.232630] CPU1 attaching NULL sched-domain.
-> [ 1025.232634] CPU0 attaching NULL sched-domain.
-> [ 1025.232771] CPU1 is down
-> [ 1025.233264] acpi_suspend_enter acpi_state=3
-> [ 1025.233276] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Entry
-> [ 1025.233286] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Exit- AE_OK
-> [ 1025.233290] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Entry
-> [ 1025.233299] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Exit- AE_OK
-> [ 1025.233303] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Entry
-> [ 1025.233311] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Exit- AE_OK
-> [ 1025.233315] evgpeblk-0144 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Entry
-> [ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [05] ev_walk_gpe_list
->     : ----Exit- AE_OK
-> [ 1025.233319] evxfevnt-0074 [ffff8800b70d8000] [05] enable
->     : ----Entry
-> [ 1025.233319] evxfevnt-0086 [ffff8800b70d8000] [05] enable
->     : System is already in ACPI mode
-> [ 1025.233319] evxfevnt-0101 [ffff8800b70d8000] [05] enable
->     : ----Exit- AE_OK
-> [ 1025.233319] evxfevnt-0397 [ffff8800b70d8000] [05] clear_event
->     : ----Entry
-> [ 1025.233319] evxfevnt-0413 [ffff8800b70d8000] [05] clear_event
->     : ----Exit- AE_OK
-> [ 1025.233319] evxfevnt-0831 [ffff8800b70d8000] [05] disable_all_gpes
->     : ----Entry
-> [ 1025.233319] evgpeblk-0144 [ffff8800b70d8000] [07] ev_walk_gpe_list
->     : ----Entry
-> [ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [07] ev_walk_gpe_list
->     : ----Exit- AE_OK
-> [ 1025.233319] evgpeblk-0144 [ffff8800b70d8000] [07] ev_walk_gpe_list
->     : ----Entry
-> [ 1025.233319] evgpeblk-0178 [ffff8800b70d8000] [07] ev_walk_gpe_list
->     : ----Exit- AE_OK
-> [ 1025.233319] evxfevnt-0841 [ffff8800b70d8000] [05] disable_all_gpes
->     : ----Exit- AE_OK
-> [ 1025.233319] Back to C!
-> [ 1025.233319] CPU0: Thermal LVT vector (0xfa) already installed
-> [ 1025.233319] Enabling non-boot CPUs ...
-> [ 1025.233319] SMP alternatives: switching to SMP code
-> [ 1025.237548] Booting processor 1 APIC 0x1 ip 0x6000
-> [ 1025.232536] Initializing CPU#1
-> [ 1025.232536] Calibrating delay using timer specific routine..
-> 4245.78 BogoMIPS (lpj=8491564)
-> 
-> Unfortunately the ACPI stuff is all Greek to me. If anyone wants
-> additional debug information then please let me know.
-> 
-> So any ideas?
+--==_Exmh_1252438888_3318P
+Content-Type: text/plain; charset="us-ascii"
+Content-Id: <22124.1252438888.1@turing-police.cc.vt.edu>
 
-What's in /proc/acpi/wakeup after a clean boot?
+On Tue, 08 Sep 2009 09:32:46 EDT, Beth Kon said:
 
-Rafael
+> > 3) no KVM in this kernel:
+> > % grep KVM .config
+> > CONFIG_HAVE_KVM=y
+> > ## CONFIG_KVM is not set
+> >   
+> Hi Vladis. I'm at a loss regarding my patch being the problem if it is 
+> really the case that CONFIG_KVM is not set.  Are you sure that is the 
+> config being used?
+
+Yeah, I was quite confused by the bisect results as well, I may end up
+re-doing it just to make sure I didn't screw something up along the way (since
+I started it with -rc7/HEAD as the good/bad, but most of the resulting
+kernels reported a pre-rc7 release (a 2.6.28 at one point, IIRC, and it
+finished at 31-rc2.
+
+%  pwd
+/usr/src/valdis/linux-next
+% grep KVM .config
+CONFIG_HAVE_KVM=y
+# CONFIG_KVM is not set
+
+>                    My only other thought (assuming somehow CONFIG_KVM 
+> *is* set) is to be sure your repository also has 
+> b4eba884776b5ab77fef1febbd3203e54a66d0bd.
+
+Yes, that commit is also in the repository, though I'm not sure what
+difference it makes since it hits arch/x86/kvm/x86.c which isn't even built
+in my .config.  I'm also confused why the trace.o module *did* get rebuilt
+when it doesn't look like it would have needed it, and why that seems to have
+been the critical issue.
+
+Oh well.. off to go re-do the bisect, I guess.  Wish me luck. ;)
+
+--==_Exmh_1252438888_3318P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKprNocC3lWbTT17ARAvldAKDMGfnbfKOyXHjKbyChxfutgmvoygCg+X7H
+JcfV11OjgVoGtZ5yinogmMw=
+=Ugjc
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1252438888_3318P--
