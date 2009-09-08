@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZIHBXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753208AbZIHBX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753047AbZIHBXL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 21:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752458AbZIHBXK
+	id S1753208AbZIHBX4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 21:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752948AbZIHBXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 21:23:10 -0400
-Received: from kroah.org ([198.145.64.141]:57232 "EHLO coco.kroah.org"
+	Mon, 7 Sep 2009 21:23:55 -0400
+Received: from mga11.intel.com ([192.55.52.93]:63405 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751941AbZIHBXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 21:23:10 -0400
-Date: Mon, 7 Sep 2009 18:14:58 -0700
-From: Greg KH <greg@kroah.com>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org
-Subject: Re: Staging tree status for the .32 kernel merge
-Message-ID: <20090908011458.GA29317@kroah.com>
-References: <20090903041429.GA29875@kroah.com>
- <20090907202134.4feebe6f@caramujo.chehab.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090907202134.4feebe6f@caramujo.chehab.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	id S1752862AbZIHBXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 21:23:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,349,1249282800"; 
+   d="scan'208";a="491358167"
+Subject: Re: [PATCH 3/5] debugfs - Change debugfs directory of IWMC3200.
+From: Zhu Yi <yi.zhu@intel.com>
+To: "leemgs1@gmail.com" <leemgs1@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1252327073.2153.98.camel@centos51>
+References: <1252327073.2153.98.camel@centos51>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 09:23:45 +0800
+Message-Id: <1252373025.5650.37.camel@debian>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 08:21:34PM -0300, Mauro Carvalho Chehab wrote:
-> Em Wed, 2 Sep 2009 21:14:30 -0700
+On Mon, 2009-09-07 at 20:37 +0800, GeunSik Lim wrote:
+> From: GeunSik,Lim <leemgs1@gmail.com>
+> Date: Mon, 7 Sep 2009 20:46:13 +0900
+> Subject: [PATCH 3/5] Change debugfs directory of IWMC3200.
 > 
-> > 	- go7007.  Ugh.  Unless someone steps up now to take this over,
-> > 	  it's going to be removed in .33.  There is no hardware made
-> > 	  with this anymore, and no specs around that I know of, and the
-> > 	  code isn't the nicest in the world.
+> Change default debugfs directory that mount for debugging
+> IWMC3200(Intel Wireless Multicomm 3200 WiFi driver).
 > 
-> I think nobody will cry if you remove this one. This is an old hardware, and not
-> manufactured anymore. The chipset of the compression hardware is
-> obsolete and orphaned, as the audio/video unit were sold to another company.
-
-I agree.  I do have a device around here, but it was only for testing,
-the company who produced it said they could not release the specs due to
-ownership issues.
-
-> > 	- udlfb.  Video over USB, it doesn't get anymore whacked than
-> > 	  that.  This is still being developed but the developer doesn't
-> > 	  like to do incremental updates for some odd reason.  Hopefully
-> > 	  he pops up again with an update.  But for now, it is quite
-> > 	  workable for a number of developers.
+> As we all know, We need change default directory for consistency of
+> debugfs by Greg.K.H
 > 
-> Is this a video streaming driver (like other V4L2 drivers) or a video adapter
-> driver?
+> Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
 
-Video adapter driver, it's a frame buffer driver, sorry for any
-confusion.
+Acked-by: Zhu Yi <yi.zhu@intel.com>
 
-thanks,
+Thanks,
+-yi
 
-greg k-h
