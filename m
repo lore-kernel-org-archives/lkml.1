@@ -1,55 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752165AbZIHSGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZIHSGo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752165AbZIHSGi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 14:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752022AbZIHSGi
+	id S1752199AbZIHSGo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 14:06:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZIHSGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 14:06:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50928 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752144AbZIHSGg convert rfc822-to-8bit (ORCPT
+	Tue, 8 Sep 2009 14:06:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37271 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752169AbZIHSGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 14:06:36 -0400
-Date: Tue, 8 Sep 2009 15:06:13 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: =?UTF-8?B?THVrw6HFoQ==?= Karas <lukas.karas@centrum.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix saa7134-input.c for IR controller over i2c
-Message-ID: <20090908150613.49bc72eb@caramujo.chehab.org>
-In-Reply-To: <200909081148.23791.lukas.karas@centrum.cz>
-References: <200909081148.23791.lukas.karas@centrum.cz>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Tue, 8 Sep 2009 14:06:41 -0400
+Date: Tue, 8 Sep 2009 11:06:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: reinette chatre <reinette.chatre@intel.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
+       "bugzilla-daemon@bugzilla.kernel.org" 
+	<bugzilla-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug #13819] system freeze when switching to console
+In-Reply-To: <1252431375.14735.139.camel@rc-desk>
+Message-ID: <alpine.LFD.2.01.0909081039300.7458@localhost.localdomain>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>  <Vm51Upp4EV.A.r-D.mgBpKB@chimera> <1252427375.14735.130.camel@rc-desk>  <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain> <1252431375.14735.139.camel@rc-desk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 8 Sep 2009 11:48:23 +0200
-Lukáš Karas <lukas.karas@centrum.cz> escreveu:
-
-> Hi All, 
-> I have DVB card with IR controller connected over i2c bus (this card is 
-> supported by module saa7134). This IR controller work mostly fine, bud when I 
-> execute 
-> rmmod ir-kbd-i2c and modprobe ir-kbd-i2c again, IR controller stops working.
-> I found problem in aa7134-input.c, metod saa7134_probe_i2c_ir. 
-
->  #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 30)
->  	memset(&info, 0, sizeof(struct i2c_board_info));
-> -	memset(&init_data, 0, sizeof(struct IR_i2c_init_data));
-> +	init_data = kzalloc(sizeof(struct IR_i2c_init_data), GFP_KERNEL);
-
-you need to free it at the proper places. Anyway, we have already a fix for it at:
-
-http://git.kernel.org/?p=linux/kernel/git/mchehab/linux-next.git;a=commit;h=3a7ec2c0d6fdda454d5588c03208ddfcbe16ac18
-
-(I'll probably rework on it a little bit to remove the memset's and to fix a typo)
 
 
+On Tue, 8 Sep 2009, reinette chatre wrote:
+> 
+> As you can see from the kernel version it is not a build of a vanilla
+> kernel. It only contains changes related to the wireless networking work
+> I am doing.
+> 
+> Here is the output:
 
-Cheers,
-Mauro
+Thanks, this is great. It pinpoints the problem very effectively.
+
+> [  352.803960] BUG: unable to handle kernel NULL pointer dereference at 0000000000000084
+> [  352.804006] IP: [<ffffffffa03ecaab>] i915_driver_irq_handler+0x26b/0xd20 [i915]
+
+The code here is
+
+	  16:	48 8b 80 00 01 00 00 	mov    0x100(%rax),%rax
+	  1d:	48 8b 50 08          	mov    0x8(%rax),%rdx
+	  21:	48 85 d2             	test   %rdx,%rdx
+	  24:	74 11                	je     0x37
+	  26:	49 8b 44 24 78       	mov    0x78(%r12),%rax
+	  2b:*	8b 80 84 00 00 00    	mov    0x84(%rax),%eax     <-- trapping instruction
+	  31:	89 82 08 08 00 00    	mov    %eax,0x808(%rdx)
+	  37:	f6 45 a0 02          	testb  $0x2,-0x60(%rbp)
+
+and that "testb $0x2, -0x60(%rbp)" seems to be the
+
+	if (iir & I915_USER_INTERRUPT) {
+
+test if I'm reading things right. Although it could also be the
+
+	if (eir & I915_ERROR_MEMORY_REFRESH) {
+
+thing. The disassembly is totally impossible to read, because the stupid 
+i915 driver is chock-full of crap like
+
+	if (IS_G4X(dev)) {
+		..
+
+which expands to insane amounts of code that check the PCI ID's one by 
+one.
+
+Intel guys: could you _please_ stop doing that. Create a capability mask 
+in the device or something, so that you can test for "is this a G4x" with 
+a single bit test, rather than have code like this:
+
+        mov    0x31c(%rsi),%eax
+        cmp    $0x2982,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2972,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2992,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x29a2,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2a02,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2a12,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2a42,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2e02,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2e12,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2e22,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x2e32,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+        cmp    $0x42,%eax
+        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
+
+for that IS_G4X() thing (I'm not kidding - that's exactly a hundred bytes 
+of code for that _stupid_ test, and it's inlined!)
+
+Anyway, we're getting that DRM irq, and it has a normal IRQ stack trace:
+
+> [  352.804006] Process Xorg (pid: 4424, threadinfo ffff8800b6b1a000, task ffff880037373c00)
+> [  352.804006] Call Trace:
+> [  352.804006]  <IRQ> 
+> [  352.804006]  [<ffffffff8106db7d>] ? mark_held_locks+0x6d/0x90
+> [  352.804006]  [<ffffffff81098ee8>] handle_IRQ_event+0x68/0x170
+> [  352.804006]  [<ffffffff8109ac01>] handle_edge_irq+0xc1/0x160
+> [  352.804006]  [<ffffffff8100e76f>] handle_irq+0x1f/0x30
+> [  352.804006]  [<ffffffff8100dc6a>] do_IRQ+0x6a/0xf0
+> [  352.804006]  [<ffffffff8100c793>] ret_from_intr+0x0/0xf
+
+.. but it happened just as we're tearing down the DRM irq handling:
+
+> [  352.804006]  <EOI> 
+> [  352.804006]  [<ffffffff81070b88>] ? lock_acquire+0xe8/0x100
+> [  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+> [  352.804006]  [<ffffffff8132d7b5>] ? mutex_lock_nested+0x45/0x320
+> [  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+> [  352.804006]  [<ffffffff8106de85>] ? trace_hardirqs_on_caller+0x145/0x190
+> [  352.804006]  [<ffffffff8106dedd>] ? trace_hardirqs_on+0xd/0x10
+> [  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+> [  352.804006]  [<ffffffffa03f3335>] ? i915_gem_idle+0x225/0x330 [i915]
+> [  352.804006]  [<ffffffffa03f34c7>] ? i915_gem_leavevt_ioctl+0x37/0x50 [i915]
+> [  352.804006]  [<ffffffffa03bdafd>] ? drm_ioctl+0x17d/0x3c0 [drm]
+> [  352.804006]  [<ffffffffa03f3490>] ? i915_gem_leavevt_ioctl+0x0/0x50 [i915]
+
+so what is going on is that the i915 driver has obviously torn down some 
+state before it uninstalls the irq, so the irq happens when the state has 
+already been torn down, and the irq handler is not ready for that.
+
+This patch *may* fix it - simply by getting rid of the irq early. However, 
+I did not check whether maybe something in i915_gem_idle() actually needs 
+the interrupt to be able to happen, so this is TOTALLY UNTESTED!
+
+		Linus
+---
+ drivers/gpu/drm/i915/i915_gem.c |    6 +-----
+ 1 files changed, 1 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+index 7edb5b9..80e5ba4 100644
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -4232,15 +4232,11 @@ int
+ i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
+ 		       struct drm_file *file_priv)
+ {
+-	int ret;
+-
+ 	if (drm_core_check_feature(dev, DRIVER_MODESET))
+ 		return 0;
+ 
+-	ret = i915_gem_idle(dev);
+ 	drm_irq_uninstall(dev);
+-
+-	return ret;
++	return i915_gem_idle(dev);
+ }
+ 
+ void
