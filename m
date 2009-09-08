@@ -1,85 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753808AbZIHHId@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZIHHK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753808AbZIHHId (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 03:08:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZIHHId
+	id S1753858AbZIHHK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 03:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZIHHK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 03:08:33 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:40166 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753636AbZIHHIc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 03:08:32 -0400
-Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
-Mime-Version: 1.0 (Apple Message framework v1075.2)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Anirban Sinha <ani@anirban.org>
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C54DC487@exchange.ZeugmaSystems.local>
-Date: Tue, 8 Sep 2009 00:08:31 -0700
-Cc: Anirban Sinha <ani@anirban.org>
-Content-Transfer-Encoding: 7bit
-Message-Id: <9039A647-41AF-43C0-9376-F21E664F61E5@anirban.org>
-References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it> <dhcf5-263-13@gated-at.bofh.it> <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com> <1252218779.6126.17.camel@marge.simson.net> <1252310374.7564.6.camel@twins> <DDFD17CC94A9BD49A82147DDF7D545C54DC487@exchange.ZeugmaSystems.local>
-To: Anirban Sinha <ASinha@zeugmasystems.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Dario Faggioli <raistlin@linux.it>
-X-Mailer: Apple Mail (2.1075.2)
+	Tue, 8 Sep 2009 03:10:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41358 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753562AbZIHHKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 03:10:25 -0400
+Date: Tue, 8 Sep 2009 09:10:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: rostedt@goodmis.org, Stephen Hemminger <shemminger@vyatta.com>,
+       "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Matt Smith <Matt.Smith@atheros.com>, Kevin Hayes <kevin@atheros.com>,
+       Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
+       Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
+Subject: Re: Stop using tasklets for bottom halves
+Message-ID: <20090908071005.GA10273@elte.hu>
+References: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com> <20090907171406.6a4b6116@nehalam> <1252376254.21261.2052.camel@gandalf.stny.rr.com> <200909080650.43181.mb@bu3sch.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200909080650.43181.mb@bu3sch.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On 2009-09-07, at 9:42 AM, Anirban Sinha wrote:
+* Michael Buesch <mb@bu3sch.de> wrote:
 
->
->
->
-> -----Original Message-----
-> From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
-> Sent: Mon 9/7/2009 12:59 AM
-> To: Mike Galbraith
-> Cc: Anirban Sinha; Lucas De Marchi; linux-kernel@vger.kernel.org;  
-> Ingo Molnar
-> Subject: Re: question on sched-rt group allocation cap:  
-> sched_rt_runtime_us
->
-> On Sun, 2009-09-06 at 08:32 +0200, Mike Galbraith wrote:
-> > On Sat, 2009-09-05 at 19:32 -0700, Ani wrote:
-> > > On Sep 5, 3:50 pm, Lucas De Marchi <lucas.de.mar...@gmail.com>  
-> wrote:
-> > > >
-> > > > Indeed. I've tested this same test program in a single core  
-> machine and it
-> > > > produces the expected behavior:
-> > > >
-> > > > rt_runtime_us / rt_period_us     % loops executed in SCHED_OTHER
-> > > > 95%                              4.48%
-> > > > 60%                              54.84%
-> > > > 50%                              86.03%
-> > > > 40%                              OTHER completed first
-> > > >
-> > >
-> > > Hmm. This does seem to indicate that there is some kind of
-> > > relationship with SMP. So I wonder whether there is a way to  
-> turn this
-> > > 'RT bandwidth accumulation' heuristic off.
-> >
-> > No there isn't..
->
-> Actually there is, use cpusets to carve the system into partitions.
+> There are two things that I noticed. When looking at the "idle" 
+> percentage in "top" it regressed quite a bit when using threaded 
+> IRQ handlers. It shows about 8% less idle. This is with threaded 
+> IRQs patched in, but without WQ TX mechanism. Applying the WQ TX 
+> mechanism does not show any noticeable effect in "top".
+> 
+> I'm not quite sure where the 8% slowdown on threaded IRQ handlers 
+> come from. I'm not really certain that it's _really_ a regression 
+> and not just a statistics accounting quirk. Why does threaded IRQs 
+> slow down stuff and threaded TX does not at all? That does not 
+> make sense at all to me.
 
-hmm. ok. I looked at the code a little bit. It seems to me that the  
-'borrowing' of RT runtimes occurs only from rt runqueues belonging to  
-the same root domain. And partition_sched_domains() is the only  
-external interface that can be used to create root domain out of a CPU  
-set. But then I think it needs to have CGROUPS/USER groups enabled?  
-Right?
+Do you have an x86 box to test it on?
 
---Ani
+If yes then perfcounters can be used for _much_ more precise 
+measurements that you can trust. Do something like this:
 
+   perf stat -a --repeat 3 sleep 1
 
->
->
->
+The '-a/--all' option will measure all CPUs - everything: IRQ 
+context, irqs-off region, etc. That output will be comparable before 
+your threaded patch and after the patch.
 
+Here's an example. I started one infinite loop on a testbox, which 
+is using 100% of a single CPU. The system-wide stats look like this:
+
+ # perf stat -a --repeat 3 sleep 1
+
+ Performance counter stats for 'sleep 1' (3 runs):
+
+   16003.320239  task-clock-msecs         #     15.993 CPUs    ( +-   0.044% )
+             94  context-switches         #      0.000 M/sec   ( +-  11.373% )
+              3  CPU-migrations           #      0.000 M/sec   ( +-  25.000% )
+            170  page-faults              #      0.000 M/sec   ( +-  0.518% )
+     3294001334  cycles                   #    205.832 M/sec   ( +-  0.896% )
+     1088670782  instructions             #      0.331 IPC     ( +-  0.905% )
+        1720926  cache-references         #      0.108 M/sec   ( +-  1.880% )
+          61253  cache-misses             #      0.004 M/sec   ( +-  4.401% )
+
+    1.000623219  seconds time elapsed   ( +-   0.002% )
+
+the instructions count or the cycle count will go up or down, 
+precisely according to how the threaded handlers. These stats are 
+not time sampled but 'real', so they reflect reality and show 
+whether your workload had to spend more (or less) cycles / 
+instructions /etc.
+
+I started a second loop in addition to the first one, and perf stat 
+now gives me this output:
+
+ # perf stat -a --repeat 3 sleep 1
+
+ Performance counter stats for 'sleep 1' (3 runs):
+
+   16003.289509  task-clock-msecs         #     15.994 CPUs    ( +-   0.046% )
+             88  context-switches         #      0.000 M/sec   ( +-  15.933% )
+              2  CPU-migrations           #      0.000 M/sec   ( +-  14.286% )
+            188  page-faults              #      0.000 M/sec   ( +-   9.414% )
+     6481963224  cycles                   #    405.039 M/sec   ( +-   0.011% )
+     2152924468  instructions             #      0.332 IPC     ( +-   0.054% )
+         397564  cache-references         #      0.025 M/sec   ( +-   1.217% )
+          59835  cache-misses             #      0.004 M/sec   ( +-   3.732% )
+
+    1.000576354  seconds time elapsed   ( +-   0.005% )
+
+Compare the two results:
+
+ before:
+     6481963224  cycles                   #    405.039 M/sec   ( +-   0.011% )
+     2152924468  instructions             #      0.332 IPC     ( +-   0.054% )
+
+ after:
+     3294001334  cycles                   #    205.832 M/sec   ( +-  0.896% )
+     1088670782  instructions             #      0.331 IPC     ( +-  0.905% )
+
+The cycles/sec doubled - as expected. You could do the same with 
+your test and not have to rely in the very imprecise (and often 
+misleading) 'top' statistics for kernel development.
+
+The IPC (instructions per cycle) factor stayed roughly constant - 
+showing that both workloads can push the same amount of instructions 
+when normalized to a single CPU. If a workload becomes very 
+cache-missy or executes a lot of system calls then the IPC factor 
+goes down - if it becomes more optimal 'tight' code then the IPC 
+factor goes up.)
+
+(The cache-miss rate was very low in both cases - it's a simple 
+infinite loop i tested.)
+
+Furthermore the error bars in the rightmost column help you know 
+whether any difference in results is statistically significant, or 
+within the noise level.
+
+Hope this helps,
+
+	Ingo
