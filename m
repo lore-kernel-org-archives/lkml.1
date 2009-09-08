@@ -1,79 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754395AbZIHLAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZIHLCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754395AbZIHLAl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 07:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754276AbZIHLAk
+	id S1754424AbZIHLCH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 07:02:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZIHLCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 07:00:40 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41830 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754029AbZIHLAi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 07:00:38 -0400
-Date: Tue, 8 Sep 2009 12:00:41 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Theodore Tso <tytso@mit.edu>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       Zhu Yi <yi.zhu@intel.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Mel Gorman <mel@skynet.ie>,
-       "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       James Ketrenos <jketreno@linux.intel.com>,
-       "Chatre, Reinette" <reinette.chatre@intel.com>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw2100-devel@lists.sourceforge.net" 
-	<ipw2100-devel@lists.sourceforge.net>
-Subject: Re: ipw2200: firmware DMA loading rework
-Message-ID: <20090908110041.GE28127@csn.ul.ie>
-References: <riPp5fx5ECC.A.2IG.qsGlKB@chimera> <1251430951.3704.181.camel@debian> <200908301437.42133.bzolnier@gmail.com> <200909021948.13262.bzolnier@gmail.com> <43e72e890909021102g7f844c79xefccf305f5f5c5b6@mail.gmail.com> <20090903124913.GA26110@csn.ul.ie> <20090905142837.GI16217@mit.edu>
+	Tue, 8 Sep 2009 07:02:07 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:30830 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754274AbZIHLCF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 07:02:05 -0400
+Message-ID: <4AA63992.7040200@gmail.com>
+Date: Tue, 08 Sep 2009 14:01:38 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090905142837.GI16217@mit.edu>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 1/8] writeback: get rid of generic_sync_sb_inodes() export
+References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-2-git-send-email-jens.axboe@oracle.com> <4AA631AA.6000803@gmail.com> <20090908104111.GS18599@kernel.dk> <1252407150.5060.51.camel@localhost> <20090908105728.GU18599@kernel.dk>
+In-Reply-To: <20090908105728.GU18599@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 08 Sep 2009 11:01:48.0677 (UTC) FILETIME=[C3240350:01CA3073]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 05, 2009 at 10:28:37AM -0400, Theodore Tso wrote:
-> On Thu, Sep 03, 2009 at 01:49:14PM +0100, Mel Gorman wrote:
-> > > 
-> > > This looks very similar to the kmemleak ext4 reports upon a mount. If
-> > > it is the same issue, which from the trace it seems it is, then this
-> > > is due to an extra kmalloc() allocation and this apparently will not
-> > > get fixed on 2.6.31 due to the closeness of the merge window and the
-> > > non-criticalness this issue has been deemed.
-> 
-> No, it's a different problem.
-> 
-> > I suspect the more pressing concern is why is this kmalloc() resulting in
-> > an order-5 allocation request? What size is the buffer being requested?
-> > Was that expected?  What is the contents of /proc/slabinfo in case a buffer
-> > that should have required order-1 or order-2 is using a higher order for
-> > some reason.
-> 
-> It's allocating 68,000 bytes for the mb_history structure, which is
-> used for debugging purposes.  That's why it's optional and we continue
-> if it's not allocated.  We should fix it to use vmalloc()
+On 09/08/2009 01:57 PM, Jens Axboe wrote:
+>> But well, if you do not want to carry my patch, then I'll have to
+>> re-base my tree later, fix stuff, and send a pull request. I mean,
+>> your stuff will for sure be merged first, because I send pull requests
+>> late, just because UBIFS is a minor thing in the kernel.
+>
+> You don't have to rebase, if my work is merged first then you just merge
+> Linus' tree into yours and fixup the conflict before asking Linus to
+> pull.
 
-You could call with kmalloc(FLAGS|GFP_NOWARN) with a fallback to
-vmalloc() and a disable if vmalloc() fails as well.  Maybe check out what
-kernel/profile.c#profile_init() to allocate a large buffer and do something
-similar?
+I thought Linus asked to avoid merge commits in pull requests at some
+point, no? So I thought that I'd re-base then, which Linus also
+dislikes :-)
 
-> and I'm
-> inclined to turn it off by default since it's not worth the overhead,
-> and most ext4 users won't find it useful or interesting.
-> 
+> It's a trivial conflict, I don't understand what the fuzz is about.
 
-I can't comment as I don't know what sort of debugging it's useful for.
+Well, I was just thinking how to avoid merge commits. But I guess I can
+do what you suggest.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
