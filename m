@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751395AbZIHOpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751473AbZIHOrJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751395AbZIHOpT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 10:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZIHOpS
+	id S1751473AbZIHOrJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 10:47:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZIHOrI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 10:45:18 -0400
-Received: from bu3sch.de ([62.75.166.246]:42996 "EHLO vs166246.vserver.de"
+	Tue, 8 Sep 2009 10:47:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8348 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750722AbZIHOpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 10:45:18 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Date: Tue, 8 Sep 2009 16:45:16 +0200
-User-Agent: KMail/1.9.9
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Felix Fietkau <nbd@openwrt.org>
-References: <20090906205952.GA6516@elte.hu> <20090907182629.GA3484@elte.hu> <20090908074825.GA11413@elte.hu>
-In-Reply-To: <20090908074825.GA11413@elte.hu>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	id S1750843AbZIHOrH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 10:47:07 -0400
+Date: Tue, 8 Sep 2009 16:46:55 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv2 0/3] tracing - adding common method for
+	reading/parsing user input
+Message-ID: <20090908144655.GD3177@jolsa.lab.eng.brq.redhat.com>
+References: <1252113181-3325-1-git-send-email-jolsa@redhat.com> <1252418499.13628.31.camel@gandalf.stny.rr.com> <20090908143711.GC3177@jolsa.lab.eng.brq.redhat.com> <1252421070.15626.2.camel@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909081645.18505.mb@bu3sch.de>
+In-Reply-To: <1252421070.15626.2.camel@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 September 2009 09:48:25 Ingo Molnar wrote:
-> Mind poking on this one to figure out whether it's all repeatable 
-> and why that slowdown happens?
+On Tue, Sep 08, 2009 at 10:44:30AM -0400, Steven Rostedt wrote:
+> On Tue, 2009-09-08 at 16:37 +0200, Jiri Olsa wrote:
+> > On Tue, Sep 08, 2009 at 10:01:39AM -0400, Steven Rostedt wrote:
+> 
+> > 
+> > ok, so are you going to take your patch, or should I do the changes you
+> > proposed and send it out again?
+> 
+> Yeah, I may forward port my patch. But I may take some things from your
+> patch and apply them too. I'll put your name in the change log too ;-)
+> 
+> Thanks,
+> 
+> -- Steve
+> 
+> 
+ok, cool :)
 
-I repeated the test several times, because I couldn't really believe that
-there's such a big difference for me, but the results were the same.
-I don't really know what's going on nor how to find out what's going on.
-
--- 
-Greetings, Michael.
+thanks,
+jirka
