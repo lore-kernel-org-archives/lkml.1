@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbZIHKGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754127AbZIHKHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754086AbZIHKGV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 06:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZIHKGU
+	id S1754127AbZIHKHj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 06:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZIHKHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 06:06:20 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39886 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753961AbZIHKGT (ORCPT
+	Tue, 8 Sep 2009 06:07:39 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:53680 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753969AbZIHKHi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 06:06:19 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [rfc] lru_add_drain_all() vs isolation
-Cc: kosaki.motohiro@jp.fujitsu.com, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Oleg Nesterov <onestero@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <1252398006.7746.3.camel@twins>
-References: <20090908085344.0CBD.A69D9226@jp.fujitsu.com> <1252398006.7746.3.camel@twins>
-Message-Id: <20090908190148.0CC9.A69D9226@jp.fujitsu.com>
+	Tue, 8 Sep 2009 06:07:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=DxOKcM4pmncOcYwOxYN6BAOfO04zefGCsmOiDNTe1oMupbEhOfn8sJASyhDFpWVunQ
+         mcPlBDXmizOgXS0AA3wCkDNshlnkByWSRIyhlK+6Kl5oGSNgxN6fAl/0OoWvzu5PqLXZ
+         xZAjnsqYxalZBTciY1XrJ4Kjv/TkihoTHiuY0=
+Date: Tue, 8 Sep 2009 12:06:31 +0200
+From: "Carlos R. Mafra" <crmafra2@gmail.com>
+To: ykzhao <yakui.zhao@intel.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Ma, Ling" <ling.ma@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Eric Anholt <eric@anholt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bisected] Output to external monitor is broken (Re: Linux
+	2.6.31-rc9)
+Message-ID: <20090908100631.GB4094@Pilar.aei.mpg.de>
+References: <alpine.LFD.2.01.0909051645430.3329@localhost.localdomain> <20090906142206.GA4449@Pilar.aei.mpg.de> <alpine.LFD.2.01.0909071125430.25628@localhost.localdomain> <20090907191219.GA5015@Pilar.aei.mpg.de> <1252385988.3609.126.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue,  8 Sep 2009 19:06:17 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252385988.3609.126.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 2009-09-08 at 08:56 +0900, KOSAKI Motohiro wrote:
-> > Hi Peter,
-> > 
-> > > On Mon, 2009-09-07 at 10:17 +0200, Mike Galbraith wrote:
-> > > 
-> > > > [  774.651779] SysRq : Show Blocked State
-> > > > [  774.655770]   task                        PC stack   pid father
-> > > > [  774.655770] evolution.bin D ffff8800bc1575f0     0  7349   6459 0x00000000
-> > > > [  774.676008]  ffff8800bc3c9d68 0000000000000086 ffff8800015d9340 ffff8800bb91b780
-> > > > [  774.676008]  000000000000dd28 ffff8800bc3c9fd8 0000000000013340 0000000000013340
-> > > > [  774.676008]  00000000000000fd ffff8800015d9340 ffff8800bc1575f0 ffff8800bc157888
-> > > > [  774.676008] Call Trace:
-> > > > [  774.676008]  [<ffffffff812c4a11>] schedule_timeout+0x2d/0x20c
-> > > > [  774.676008]  [<ffffffff812c4891>] wait_for_common+0xde/0x155
-> > > > [  774.676008]  [<ffffffff8103f1cd>] ? default_wake_function+0x0/0x14
-> > > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
-> > > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
-> > > > [  774.676008]  [<ffffffff812c49ab>] wait_for_completion+0x1d/0x1f
-> > > > [  774.676008]  [<ffffffff8105fdf5>] flush_work+0x7f/0x93
-> > > > [  774.676008]  [<ffffffff8105f870>] ? wq_barrier_func+0x0/0x14
-> > > > [  774.676008]  [<ffffffff81060109>] schedule_on_each_cpu+0xb4/0xed
-> > > > [  774.676008]  [<ffffffff810c0c78>] lru_add_drain_all+0x15/0x17
-> > > > [  774.676008]  [<ffffffff810d1dbd>] sys_mlock+0x2e/0xde
-> > > > [  774.676008]  [<ffffffff8100bc1b>] system_call_fastpath+0x16/0x1b
-> > > 
-> > > FWIW, something like the below (prone to explode since its utterly
-> > > untested) should (mostly) fix that one case. Something similar needs to
-> > > be done for pretty much all machine wide workqueue thingies, possibly
-> > > also flush_workqueue().
-> > 
-> > Can you please explain reproduce way and problem detail?
-> > 
-> > AFAIK, mlock() call lru_add_drain_all() _before_ grab semaphoe. Then,
-> > it doesn't cause any deadlock.
-> 
-> Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
-> cpu0 does mlock()->lru_add_drain_all(), which does
-> schedule_on_each_cpu(), which then waits for all cpus to complete the
-> work. Except that cpu1, which is busy with the RT task, will never run
-> keventd until the RT load goes away.
-> 
-> This is not so much an actual deadlock as a serious starvation case.
+On Tue  8.Sep'09 at 12:59:48 +0800, ykzhao wrote:
+> Will you please connect the external monitor after the system is already
+> booted and then enter the X-mode to see whether the external monitor can
+> work well?
+> Do you have opportunity to try another external monitor and see whether
+> this issue still happens?
 
-This seems flush_work vs RT-thread problem, not only lru_add_drain_all().
-Why other workqueue flusher doesn't affect this issue?
+The patch proposed in http://marc.info/?l=linux-kernel&m=125239311508274&w=2
+already fixed the problem here. So I guess I can skip the above procedures
+now? :-)
 
+If you still want me to do it (as well as the intel_reg_dump thing) I'll
+do it, but I wanted to ask first.
+ 
+> It will be great if you can attach the output of dmesg with the boot
+> option of "drm.debug=15" on the failing/working kernel when you can use
+> the monitor.
 
-
-
+Yes, this morning I put this one is in the bugzilla before testing 
+the patch :-)
