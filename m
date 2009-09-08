@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754005AbZIHIUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbZIHI2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754005AbZIHIUO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 04:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZIHIUM
+	id S1753959AbZIHI2u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 04:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753485AbZIHI2u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 04:20:12 -0400
-Received: from viefep16-int.chello.at ([62.179.121.36]:22051 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753850AbZIHIUL (ORCPT
+	Tue, 8 Sep 2009 04:28:50 -0400
+Received: from mail-px0-f196.google.com ([209.85.216.196]:35453 "EHLO
+	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbZIHI2t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 04:20:11 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [rfc] lru_add_drain_all() vs isolation
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm <linux-mm@kvack.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Oleg Nesterov <onestero@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090908085344.0CBD.A69D9226@jp.fujitsu.com>
-References: <1252311463.7586.26.camel@marge.simson.net>
-	 <1252321596.7959.6.camel@laptop>
-	 <20090908085344.0CBD.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Tue, 08 Sep 2009 10:20:06 +0200
-Message-Id: <1252398006.7746.3.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 04:28:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NHvElQL7RPQTYUN6gySbhOrLWtx9kr+F50/ehKBwtFQUWo0XR3sW+GN87EfsAxjCvU
+         7YQRupa0OjDvg7AB1p802aGsFl2+Ze1th3BpTLFiwX0+71pfUUzeZaOoOQI2nJO1hTKj
+         1i2bXoC2UgnGqeGyjDEHuPZxhhRQwqY6FgfQc=
+MIME-Version: 1.0
+In-Reply-To: <20090908005236.1fbfdd13@infradead.org>
+References: <3877989d0909071926q77aac67cj532137513710025d@mail.gmail.com>
+	 <20090907204913.2aef5c49@infradead.org>
+	 <3877989d0909072209g454d92feuc0d3cdbd95a13a9c@mail.gmail.com>
+	 <20090908005236.1fbfdd13@infradead.org>
+Date: Tue, 8 Sep 2009 16:20:52 +0800
+Message-ID: <3877989d0909080120w78fce005le465828a5e1ae2b7@mail.gmail.com>
+Subject: Re: [RFC PATCH] C2 could be mapped to C3 so need a flush cache
+From: Luming Yu <luming.yu@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 08:56 +0900, KOSAKI Motohiro wrote:
-> Hi Peter,
-> 
-> > On Mon, 2009-09-07 at 10:17 +0200, Mike Galbraith wrote:
-> > 
-> > > [  774.651779] SysRq : Show Blocked State
-> > > [  774.655770]   task                        PC stack   pid father
-> > > [  774.655770] evolution.bin D ffff8800bc1575f0     0  7349   6459 0x00000000
-> > > [  774.676008]  ffff8800bc3c9d68 0000000000000086 ffff8800015d9340 ffff8800bb91b780
-> > > [  774.676008]  000000000000dd28 ffff8800bc3c9fd8 0000000000013340 0000000000013340
-> > > [  774.676008]  00000000000000fd ffff8800015d9340 ffff8800bc1575f0 ffff8800bc157888
-> > > [  774.676008] Call Trace:
-> > > [  774.676008]  [<ffffffff812c4a11>] schedule_timeout+0x2d/0x20c
-> > > [  774.676008]  [<ffffffff812c4891>] wait_for_common+0xde/0x155
-> > > [  774.676008]  [<ffffffff8103f1cd>] ? default_wake_function+0x0/0x14
-> > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
-> > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
-> > > [  774.676008]  [<ffffffff812c49ab>] wait_for_completion+0x1d/0x1f
-> > > [  774.676008]  [<ffffffff8105fdf5>] flush_work+0x7f/0x93
-> > > [  774.676008]  [<ffffffff8105f870>] ? wq_barrier_func+0x0/0x14
-> > > [  774.676008]  [<ffffffff81060109>] schedule_on_each_cpu+0xb4/0xed
-> > > [  774.676008]  [<ffffffff810c0c78>] lru_add_drain_all+0x15/0x17
-> > > [  774.676008]  [<ffffffff810d1dbd>] sys_mlock+0x2e/0xde
-> > > [  774.676008]  [<ffffffff8100bc1b>] system_call_fastpath+0x16/0x1b
-> > 
-> > FWIW, something like the below (prone to explode since its utterly
-> > untested) should (mostly) fix that one case. Something similar needs to
-> > be done for pretty much all machine wide workqueue thingies, possibly
-> > also flush_workqueue().
-> 
-> Can you please explain reproduce way and problem detail?
-> 
-> AFAIK, mlock() call lru_add_drain_all() _before_ grab semaphoe. Then,
-> it doesn't cause any deadlock.
+On Tue, Sep 8, 2009 at 3:52 PM, Arjan van de Ven<arjan@infradead.org> wrote:
+> On Tue, 8 Sep 2009 13:09:44 +0800
+> Luming Yu <luming.yu@gmail.com> wrote:
+>
+>> On Tue, Sep 8, 2009 at 11:49 AM, Arjan van de
+>> Ven<arjan@infradead.org> wrote:
+>> > On Tue, 8 Sep 2009 10:26:06 +0800
+>> > Luming Yu <luming.yu@gmail.com> wrote:
+>> >
+>> >> Hi there,
+>> >>
+>> >> I came across acpi_idle_enter_simple, noticed it looks like a bug
+>> >> if we don't flush cache for C2.
+>> >> Because some platforms just map C2 to C3.
+>> >
+>> > I think you are confusing ACPI C3 with HW C3.
+>> >
+>> > Only for ACPI C3 class do you need to flush the cache for this case.
+>> > For HW C3, if you would need to flush the cache, the BIOS would
+>> > assign it ACPI C3 class.
+>> >
+>>
+>> There is no confusion,I just extend the existing kernel logic as below
+>> to cover cache flush..
+>>
+>> "
+>> "/*
+>>  * Some BIOS implementations switch to C3 in the published C2 state.
+>>  * This seems to be a common problem on AMD boxen, but other vendors
+>>  * are affected too. We pick the most conservative approach: we assume
+>>  * that the local APIC stops in both C2 and C3.
+>>  */
+>> static void lapic_timer_check_state
+>>
+>> "
+>
+> unlike lapic behavior, the cache flush behavior is very explicit in the
+> ACPI spec. In fact, it is the DEFINITION of ACPI C3. Local apic
+> behavior otoh isn't anywhere near the acpi spec in this regard.
+> (yes I know of the value of specs, but this one is rather clear).
 
-Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
-cpu0 does mlock()->lru_add_drain_all(), which does
-schedule_on_each_cpu(), which then waits for all cpus to complete the
-work. Except that cpu1, which is busy with the RT task, will never run
-keventd until the RT load goes away.
+The patch is not going to break Any SPECs. It is just trying to save
+those box that doing ACPI C3 under the name of ACPI C2.
+However, for correctly implemented system, the redundant flush
+is a problem, although is at minimal level.  if the redundant flush were
+at entry point to C3 or C1, I would reject this kind patch by my self.
 
-This is not so much an actual deadlock as a serious starvation case.
+>
+> Do you have an example of a specific machine where this is fscked up?
+> (if so, it's blacklist worthy.. probably worth blacklisting just
+> outright doing C states on it)
 
+Those boxes that have c2 lapic timer stop issue is supposed to need this patch.
+But I don't have such kind of system. So test and comments are needed
+by those who actually have such kind of box.
