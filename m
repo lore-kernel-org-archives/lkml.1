@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZIHST3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752222AbZIHSTl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbZIHST3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 14:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752037AbZIHST2
+	id S1752222AbZIHSTl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 14:19:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZIHSTk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 14:19:28 -0400
-Received: from a-pb-sasl-quonix.pobox.com ([208.72.237.25]:39010 "EHLO
-	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752002AbZIHST2 (ORCPT
+	Tue, 8 Sep 2009 14:19:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38711 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbZIHSTj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 14:19:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:cc:subject
-	:references:from:date:in-reply-to:message-id:mime-version
-	:content-type; q=dns; s=sasl; b=cPZQUqzWj++IrwidX9dSExvrgXygq0kw
-	k7yR0kxdckWbM2rURg3Zk1biMhBDHpZ+8GKrb0RFhlm1GEworR0DLpQwp++JS9HW
-	Hur1y1Ggub0VEy9OT5XbRTLMuMTkRnpPVoENvxmhlrcQBFUyo5nKS+mT+ahHKahl
-	2AKsyee0Exc=
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
-       Containers <containers@lists.linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v5][PATCH 8/8]: Define clone_with_pids() syscall
-References: <20090907211302.GA5892@us.ibm.com>
- <20090907211700.GH6685@us.ibm.com>
-From: Nathan Lynch <ntl@pobox.com>
-Date: Tue, 08 Sep 2009 13:19:08 -0500
-In-Reply-To: <20090907211700.GH6685@us.ibm.com> (Sukadev Bhattiprolu's
- message of "Mon\, 7 Sep 2009 14\:17\:00 -0700")
-Message-ID: <m3zl95l2oz.fsf@pobox.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Tue, 8 Sep 2009 14:19:39 -0400
+Date: Tue, 8 Sep 2009 14:19:37 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+Message-ID: <20090908181937.GA11545@infradead.org>
+References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-9-git-send-email-jens.axboe@oracle.com> <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think> <20090908180601.GN22901@mit.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Pobox-Relay-ID: 210627D6-9CA4-11DE-B505-A13518FFA523-04752483!a-pb-sasl-quonix.pobox.com
+Content-Disposition: inline
+In-Reply-To: <20090908180601.GN22901@mit.edu>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suka,
+On Tue, Sep 08, 2009 at 02:06:01PM -0400, Theodore Tso wrote:
+> Well, we can mostly do this now, using the XFS hack:
+> 
+>       wbc->nr_to_write *= 4;
+> 
+> Which is another way of saying, we *know* the page writeback routines
+> are on crack, so we'll ignore their suggestion of how many pages to
+> write, and we'll try to write more than what they asked us to write.
+> 
+> (This wasn't a proposed change; it's in Linux 2.6 mainline already;
+> see fs/xfs/linux-2.6/xfs_aops.c, in xfs_vm_writepage).  The fact that
+> filesystems are playing games like this should be a clear indication
+> that things are badly broken above....
 
-I ran across an issue with this on ppc64.
+Note that we did not put in this hack behind anyones back.  The first
+version from Chris was posted on fsdevel, lkml, the ext3 list and so on:
 
-> +static pid_t *copy_target_pids(void __user *upid_setp)
-> +{
-> +	int j;
-> +	int rc;
-> +	int size;
-> +	int unum_pids;		/* # of pids specified by user */
-> +	int knum_pids;		/* # of pids needed in kernel */
-> +	pid_t *target_pids;
-> +	struct pid_set pid_set;
-> +
-> +	if (!upid_setp)
-> +		return NULL;
-> +
-> +	rc = copy_from_user(&pid_set, upid_setp, sizeof(pid_set));
+	http://lkml.org/lkml/2008/10/9/237
 
-This doesn't work on a 64-bit kernel when the process is 32-bit and uses
-the definition of struct pid_set provided in types.h:
 
-+struct pid_set {
-+	int num_pids;
-+	pid_t *pids;
-+};
+An when we finally decided that we absolute need it it also made another
+roundtrip to linux-mm to hope that we'd get something better from the VM
+people:
 
-Shouldn't the pids field be u64 or some other type of fixed size?
+	http://article.gmane.org/gmane.comp.file-systems.xfs.general/29663
+
