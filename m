@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751610AbZIHS4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbZIHS5O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751610AbZIHS4x (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 14:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZIHS4x
+	id S1751762AbZIHS5O (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 14:57:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751711AbZIHS5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 14:56:53 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47944 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751219AbZIHS4w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 14:56:52 -0400
-Date: Tue, 8 Sep 2009 15:56:22 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH RFC] char/tty_io: fix legacy pty name when more than 256
- pty devices are requested
-Message-ID: <20090908155622.2308dc90@caramujo.chehab.org>
-In-Reply-To: <20090908185926.042ba9aa@lxorguk.ukuu.org.uk>
-References: <20090908144942.76ddf0e7@caramujo.chehab.org>
-	<20090908185926.042ba9aa@lxorguk.ukuu.org.uk>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 Sep 2009 14:57:13 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:56621 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751689AbZIHS5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 14:57:12 -0400
+Message-ID: <4AA6A8FC.9080301@redhat.com>
+Date: Tue, 08 Sep 2009 14:57:00 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       David Howells <dhowells@redhat.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 3/8] mm: add get_dump_page
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072231120.15430@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0909072231120.15430@sister.anvils>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Tue, 8 Sep 2009 18:59:26 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> escreveu:
-
-> > So, in order to allow more pty devices, the nomenclature were extended for
-> > the devices with minor 256 or above. For those, the nomenclature will be:
-> > 	ttyf0000-ttfpffff	(pty slave)
-> > 	ptyf0000-ttyfffff	(pty master)
-> > 
-> > Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Hugh Dickins wrote:
+> In preparation for the next patch, add a simple get_dump_page(addr)
+> interface for the CONFIG_ELF_CORE dumpers to use, instead of calling
+> get_user_pages() directly.  They're not interested in errors: they
+> just want to use holes as much as possible, to save space and make
+> sure that the data is aligned where the headers said it would be.
 > 
-> This fine and the namespace is free - but you need to update
-> Documentation/devices.txt as well please.
+> Oh, and don't use that horrid DUMP_SEEK(off) macro!
+> 
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-Thanks for review. I'll document it and send a version 2 of the patch with the
-devices.txt updated accordingly.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-
-
-Cheers,
-Mauro
+-- 
+All rights reversed.
