@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZIHUFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752007AbZIHUMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752106AbZIHUFZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 16:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbZIHUFY
+	id S1752007AbZIHUMq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 16:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZIHUMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 16:05:24 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:20508 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751362AbZIHUFY (ORCPT
+	Tue, 8 Sep 2009 16:12:45 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:6759 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751283AbZIHUMp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 16:05:24 -0400
+	Tue, 8 Sep 2009 16:12:45 -0400
+Message-ID: <4AA6BAA5.1080609@codemonkey.ws>
+Date: Tue, 08 Sep 2009 15:12:21 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-In-Reply-To: <200909082138.15312.rjw@sisk.pl>
-References: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
-	 <200909082138.15312.rjw@sisk.pl>
-Date: Tue, 8 Sep 2009 21:05:25 +0100
-X-Google-Sender-Auth: 2dfd8e1748089e16
-Message-ID: <b2cdc9f30909081305u61b896c1kff8caab3e003412e@mail.gmail.com>
-Subject: Re: Machine resumes straight after suspend to RAM (or disk)
-From: Alex Bennee <kernel-hacker@bennee.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Glauber Costa <glommer@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH v2 1/2] keep guest wallclock in sync with host clock
+References: <1251902098-8660-1-git-send-email-glommer@redhat.com> <1251902098-8660-2-git-send-email-glommer@redhat.com> <20090908184159.GC19318@amt.cnet> <20090908193752.GH9013@mothafucka.localdomain> <20090908200004.GA20785@amt.cnet>
+In-Reply-To: <20090908200004.GA20785@amt.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/8 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Tuesday 08 September 2009, Alex Bennee wrote:
->> Hi,
+Marcelo Tosatti wrote:
 >>
->> I thought I'd enable suspend and resume on my desktop machine so I
->> could save myself some time in the morning when I restart the machine.
->> The machine is fairly standard Intel Core Duo based system (lspci
->> attached). However when I execute pm-suspend (or Gentoo's own
->> hibernate-script) the system does suspend but resumes immediately.
-<snip>
->>
->> So any ideas?
+>> Simple question: How do I run ntp in guests without network?
+>>     
 >
-> What's in /proc/acpi/wakeup after a clean boot?
+> You don't.
+>   
+Why bother doing this in the kernel?  Isn't this the sort of thing 
+vmchannel is supposed to handle.  openvm-tools does this.
 
-21:03 alex@danny/x86_64 [~] >cat /proc/acpi/wakeup
-Device	S-state	  Status   Sysfs node
-P0P1	  S4	 disabled
-P0P3	  S4	 disabled  pci:0000:00:1e.0
-P0P4	  S4	 disabled  pci:0000:00:1c.0
-P0P5	  S4	 disabled
-P0P6	  S4	 disabled
-P0P7	  S4	 disabled
-P0P8	  S4	 disabled
-P0P9	  S4	 disabled
-PS2K	  S4	 disabled  pnp:00:09
-PS2M	  S4	 disabled  pnp:00:0a
-MC97	  S4	 disabled
-USB1	  S4	 disabled  pci:0000:00:1d.0
-USB2	  S4	 disabled  pci:0000:00:1d.1
-USB3	  S4	 disabled  pci:0000:00:1d.2
-USB4	  S4	 disabled  pci:0000:00:1d.3
-EUSB	  S4	 disabled  pci:0000:00:1d.7
+/me ducks
 
+Regards,
 
--- 
-Alex, homepage: http://www.bennee.com/~alex/
-http://www.half-llama.co.uk
+Anthony Liguori
+
+> --
+> To unsubscribe from this list: send the line "unsubscribe kvm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
+
