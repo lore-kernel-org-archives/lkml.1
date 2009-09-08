@@ -1,101 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZIHPjN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751365AbZIHPjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751353AbZIHPjN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 11:39:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZIHPjM
+	id S1751365AbZIHPjw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 11:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750990AbZIHPjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 11:39:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63861 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751195AbZIHPjJ (ORCPT
+	Tue, 8 Sep 2009 11:39:51 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:45736 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbZIHPjv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 11:39:09 -0400
-Subject: Re: [PATCH 00/18] tracing/ring-buffer: fixes for latency tracer 
- [2.6.32]
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Jan Blunck <jblunck@suse.de>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Clark Williams <williams@redhat.com>,
-       linux-rt-users@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <4de7f8a60909080742m3497f6cfo6cce42b1dcee09ab@mail.gmail.com>
-References: <20090904235527.520961911@goodmis.org>
-	 <20090905150658.GA13387@ghostprotocols.net>
-	 <4de7f8a60909070320j692d746drb06bd635ca7f7c55@mail.gmail.com>
-	 <4de7f8a60909080742m3497f6cfo6cce42b1dcee09ab@mail.gmail.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 08 Sep 2009 11:39:10 -0400
-Message-Id: <1252424350.15626.9.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 11:39:51 -0400
+Date: Tue, 8 Sep 2009 16:39:49 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
+Cc: hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH take 3][RFC] fat: Save FAT root directory timestamps to volume label
+Message-ID: <20090908153949.GD5579@shareable.org>
+References: <1252420131.5782.2.camel@jorg-desktop> <1252420448-7282-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252420448-7282-1-git-send-email-ext-jorg.2.schummer@nokia.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 16:42 +0200, Jan Blunck wrote:
-> On Mon, Sep 7, 2009 at 12:20 PM, Jan Blunck<jblunck@suse.de> wrote:
-> > On Sat, Sep 5, 2009 at 5:06 PM, Arnaldo Carvalho de Melo<acme@redhat.com> wrote:
-> >>
-> >> I did a quick port to tip/rt/head and couldn't reproduce the problems I
-> >> was experiencing, thanks!
-> >>
-> >> I've put the ported patch series at:
-> >>
-> >> http://userweb.kernel.org/~acme/rostedt-rb-rt
-> >>
+Jorg Schummer wrote:
+> Standard FAT implementations cannot store any of the FAT root directory's
+> timestamps. This commit adds the mount option 'rootts', which allows saving
+> the FAT root directory timestamps as the timestamps of the FAT volume label
+> directory entry. At least Mac OS X is known to support the same mechanism
+> and interoperate with this commit.
 > 
-> Besides the problem with the wakeup tracer I see traces with
-> preemptirqsoff that I think are invalid:
+> When mounting, the following values can be specified for the 'rootts' mount
+> option:
 > 
-> # tracer: preemptirqsoff
-> #
-> # preemptirqsoff latency trace v1.1.5 on 2.6.31-rc8-rt9-rt_trace
-> # --------------------------------------------------------------------
-> # latency: 332 us, #4/4, CPU#24 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:32)
-> #    -----------------
-> #    | task: -0 (uid:0 nice:0 policy:0 rt_prio:0)
-> #    -----------------
-> #  => started at: start_secondary
-> #  => ended at:   start_secondary
-> #
-> #
-> #                  _------=> CPU#
-> #                 / _-----=> irqs-off
-> #                | / _----=> need-resched
-> #                || / _---=> hardirq/softirq
-> #                ||| / _--=> preempt-depth
-> #                |||| /
-> #                |||||     delay
-> #  cmd     pid   ||||| time  |   caller
-> #     \   /      |||||   \   |   /
->   <idle>-0      24.N.1    0us : cpu_idle <-start_secondary
->   <idle>-0      24dN.1    1us!: tick_nohz_stop_idle <-tick_nohz_restart_sched_ti
-> ck
->   <idle>-0      24dN.1  332us+: cpu_idle <-start_secondary
->   <idle>-0      24dN.1  336us : trace_preempt_on <-start_secondary
+>   "rootts=ignore"   ignores root directory timestamps. All timestamps are
+>                     reset to 0 (1/1/1970). This has been the FAT behaviour
+>                     prior to this patch.
 > 
-> I have set kernel.ftrace_enabled = 1 but still not a single function
-> is recorded in tick_nohz_stop_idle().
+>   "rootts=preserve" tries to load and save the root directory's timestamps
+>                     if a volume label entry exists. The mtime and atime are
+>                     corrected based on root directory entries' ctime. This
+>                     is the default.
 > 
-> Any ideas?
+>   "rootts=save"     tries to load and save the root directory's timestamps.
+>                     The mtime and atime are corrected based on root
+>                     directory entries' ctime. If the root directory was
+>                     accessed but no volume label entry exists, the label
+>                     "NO NAME" is created.
 
-Which arch is this for? When the system goes into idle, it usually
-disables preemption and maybe interrupts. But the idle call in assembly
-will enable interrupts. And when an interrupt happens it comes out.
+Does Mac OS X do the same "NO NAME" thing?
 
-There should be callbacks in cpu_idle to disable latency tracing. These
-functions are called stop_critical_timings and start_critical_timings.
-You'll see these calls in both process_64.c and process_32.c in the x86
-arch.
-
-Is you set up not calling cpu_idle?
-
--- Steve
-
-
+-- Jamie
