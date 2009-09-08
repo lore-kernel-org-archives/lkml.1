@@ -1,231 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbZIHXmn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752539AbZIHXpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752520AbZIHXmn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 19:42:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751819AbZIHXmm
+	id S1752539AbZIHXpM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 19:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZIHXpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 19:42:42 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:53712 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751651AbZIHXml (ORCPT
+	Tue, 8 Sep 2009 19:45:11 -0400
+Received: from outbound-mail-123.bluehost.com ([67.222.38.23]:49870 "HELO
+	outbound-mail-123.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752090AbZIHXpK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 19:42:41 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: [long] Another BFS versus CFS shakedown
-Date: Wed, 9 Sep 2009 01:42:39 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jens Axboe <jens.axboe@oracle.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="utf-8"
+	Tue, 8 Sep 2009 19:45:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=F0Mq4rA3kDhlDCH4nc7ps8PYfhqS/7w2mpiEfxfsaKDnYW1bnEQ+NTf1GAH+xFTFZtkj23y4G2HV0W7iJH7zfUbIK+ocvH4f/mZj2BPvOuAD24RjXdTBchrLHytQuJDH;
+Date: Tue, 8 Sep 2009 16:45:10 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: reinette chatre <reinette.chatre@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
+       "bugzilla-daemon@bugzilla.kernel.org" 
+	<bugzilla-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug #13819] system freeze when switching to console
+Message-ID: <20090908164510.6ae1e4c9@jbarnes-g45>
+In-Reply-To: <alpine.LFD.2.01.0909081617100.7458@localhost.localdomain>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
+	<Vm51Upp4EV.A.r-D.mgBpKB@chimera>
+	<1252427375.14735.130.camel@rc-desk>
+	<alpine.LFD.2.01.0909080943030.7458@localhost.localdomain>
+	<1252431375.14735.139.camel@rc-desk>
+	<alpine.LFD.2.01.0909081039300.7458@localhost.localdomain>
+	<20090908112014.002a35af@jbarnes-g45>
+	<alpine.LFD.2.01.0909081219130.7458@localhost.localdomain>
+	<20090908123151.1f2b18fe@jbarnes-g45>
+	<alpine.LFD.2.01.0909081502510.7458@localhost.localdomain>
+	<20090908151135.7ba64801@jbarnes-g45>
+	<alpine.LFD.2.01.0909081617100.7458@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909090142.41738.elendil@planet.nl>
-X-OriginalArrivalTime: 08 Sep 2009 23:42:43.0700 (UTC) FILETIME=[0FA7AB40:01CA30DE]
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've also run some tests and have very consciously tried to pay attention 
-to interactivity, while also trying to get some "hard" data.
+On Tue, 8 Sep 2009 16:36:06 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-I've only BCCed Con on this mail as I get the impression he'll not be 
-interested in following the LKML thread.
+> 
+> 
+> On Tue, 8 Sep 2009, Jesse Barnes wrote:
+> > > This regression is almost two months old, and apparently the
+> > > Intel graphics people DID ABSOLUTELY NOTHING about it during
+> > > those two months, because they couldn't be bothered to look at it.
+> > 
+> > Yeah sorry, this is the first I've seen of it...  I usually troll
+> > the regressions lists but I must have missed this one.
+> 
+> Hmm. We must have screwed up something, because this was bisected to
+> the intel DRI commits back in July. See
+> 
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=13819#c4
+> 
+> and while there was some confusion about exactly which commit caused 
+> it - probably because the irq thing obviously depends on timing - 
+> Reinette had a list of three commits that he used to be able to
+> revert to get things going:
+> 
+>    drm/i915: Don't update display FIFO watermark on IGDNG
+>    drm/i915: add FIFO watermark support
+>    drm/i915: enable error detection & state collection
+> 
+> So Andrew assigned it to DRI, and Rafael has had both Eric and Ma
+> Ling on the cc for his regression reports because of the bisection.
+> And that has been going on for a long time, I just checked:
+> 
+>     Date: Sun, 26 Jul 2009 22:28:26 +0200 (CEST)
+>     From: Rafael J. Wysocki <rjw@sisk.pl>
+>     To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+>     Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, Eric
+> Anholt <eric@anholt.net>, "ling.ma@intel.com" <ling.ma@intel.com>,
+> Linus Torvalds <torvalds@linux-foundation.org>, Ma Ling
+> <ling.ma@intel.com>, Reinette Chatre <reinette.chatre@intel.com>
+> Subject: [Bug #13819] system freeze when switching to console
+> 
+> If you didn't see it, then that means that we have screw-ups with the 
+> bugzilla thing. You're actually listed as a "Reviewed-by" on the
+> commit that the fixed-up bisection blamed - And I get the feeling
+> that Rafael's bugzilla "bugme" scripts may only pick up
+> "Signed-off-by:" lines.
 
-Con: you are very welcome to follow up either privately or to lkml if you 
-do want to follow up on any of the results.
+Reinette actually mailed me offlist about this; we corresponded
+privately about this issue a month ago; I lost track of it while on
+vacation (yeah I'm not on the cc lists for the bz or regression
+updates).  Totally my fault.
 
-System info
------------
-HP 2510p Core2 Duo 1.33GHz 2GB notebook
-Debian stable ("Lenny"), KDE desktop environment
-Wireless networking (iwlagn)
-Notebook is in a docking station with a second (main) display connected
-using "old" style X and graphics drivers (no KMS)
+Anyway the bisects look like they might just be lucky; it sounds like
+this wasn't a KMS related issue at all...
 
-CFS was tested with 2.6.31-rc9
-BFS was tested with 2.6.30.5 + the bfs-209 patch
+> We have other bugs on the regression list that are even older (no,
+> I'm not proud of them):
+> 
+> 	http://bugzilla.kernel.org/show_bug.cgi?id=13740
 
-In both cases I've not done anything special with kernel configs. I've 
-just used my old .30 config as base for BFS, and my current .31 one for 
-CFS. I can't remember making any changes since .30, which was confirmed
-by a quick look at the diff.
+This one looks gfx related, upstream bug is
+https://bugs.freedesktop.org/show_bug.cgi?id=23096.
 
-Kernel configs + test script and logs available at:
-http://alioth.debian.org/~fjp/tmp/linux_BFSvsCFS/
+The graphics group tracks freedesktop.org bugs on a weekly basis since
+that's where a vast majority of our bugs our filed (often from OSVs);
+I'll get the kernel bugzilla stuff included in our future scrubs so we
+don't miss stuff like this.
 
-BFS general impression
-----------------------
-I've used BFS for over a day yesterday and today, and in general I'm very 
-impressed. During normal use (coding and testing a shell script that's 
-CPU/memory heavy + normal mail/news/browser + amarok) I've not seen any 
-strange issues. My notebook even suspended and resumed (StR) without any 
-problems.
-
-With CFS I regularly have short freezes of the mouse cursor or when 
-typing. I think that it's related to KDE's news reader knode updating 
-from my local news server. With CFS I also saw such freezes a few times, 
-but they _seemed_ less frequent and less severe. No hard data though.
-
-But this evening, while I was preparing and running the tests, I've had 4 
-freezes of the desktop. The first two times it was only a partial freeze: 
-taskbar was frozen, but I could still switch apps and use the graphical 
-console; the last two times it was a full freeze of the display and 
-keyboard (incl. e.g. numlock), but in the background everything continued 
-to run normally and I could log in over SSH without any problem. On 
-reboot some file systems did fail to unmount though.
-
-Normally my desktop and X.Org are 100% reliable.
-
-
-Test description
-----------------
-I've done two tests. The first consisted of:
-- playing Marillion's "B'Sides Themselves" in amarok from an NFS share
-- having the game "Chromium B.S.U." displaying it's opening graphics on
-  the laptop display; this has very smoothly flowing graphics and is
-  thus a nice visual reference for latency issues; the game itself is
-  quite fast-paced and can get starved quite easily
-- the two tasks above resulted in ~10% overall CPU usage
-- running a script with kernel compiles and that script I had been
-  working on
-
-The script was invoked as:
-./scheduler-tests 2>&1 | tee `uname -r`.log
-
-The main steps in the script are:
-- stop cron; clear ccache; prepare for kernel build (allnoconfig)
-- 3 x make -j4 kernel build; 2 with 'time', 1 with Jens' 'latt' [1]
-- 3 x make -j2 kernel build; 2 with 'time', 1 with Jens' 'latt' [1]
-- 4 runs of my own script [2], the last two in parallel
-
-[1] I used Peter's version from:
-    http://marc.info/?l=linux-kernel&m=125242343131497&w=2
-[2] The script produces .dot files showing graphs of Debian package
-    depencies: http://alioth.debian.org/~fjp/debtree/
-    It very inefficiently queries the package management databases
-    and forks insane numbers of sub shells, but the output is great ;-)
-
-Disclaimer: I have no idea what the numbers from 'latt' mean or how 
-reliable they are.
-
-The second test was:
-- still playing Marillion
-- playing a movie that's streamed from vlc on my server to vlc on the
-  laptop display of the notebook, with sound muted
-- running a make -j4 kernel compile
-- actually playing Chromium
-
-Test results
-------------
-Right, let's get down to the meat after that long intro.
-Challenger goes first.
-
-                	  BFS				  CFS
-		=========================	==========================
-make -j4 (1)	real	2m40.232s		real	2m41.907s
-	time	user	3m25.617s		user	3m15.792s
-		sys	0m34.450s		sys	0m33.534s
-
-make -j4 (2)	real	2m16.196s		real	2m19.140s
-	time	user	3m16.212s		user	3m6.052s
-		sys	0m32.770s		sys	0m31.930s
-
-make -j4 (3)	Entries: 3088 (clients=8)	Entries: 3168 (clients=8)
-	latt	Max	    19066 usec		Max	    23665 usec
-		Avg	       73 usec		Avg	     8637 usec
-		Stdev	      694 usec		Stdev	     7565 usec
----------------
-make -j2 (1)	real	2m14.962s		real	2m32.508s
-	time	user	3m8.740s		user	3m8.320s
-		sys	0m32.470s		sys	0m31.554s
-
-make -j2 (2)	real	2m15.650s		real	2m33.396s
-	time	user	3m8.428s		user	3m3.147s
-		sys	0m31.490s		sys	0m31.566s
-
-make -j2 (3)	Entries: 1568 (clients=4)	Entries: 1732 (clients=4)
-	latt	Max	     8064 usec		Max	    24859 usec
-		Avg	       78 usec		Avg	     9431 usec
-		Stdev	      393 usec		Stdev	     7431 usec
----------------
-debtree (1)	real	1m31.299s		real	1m8.275s
-	time	user	1m13.973s		user	0m46.395s
-		sys	0m19.653s		sys	0m14.277s
-
-debtree (2)	real	1m27.140s		real	1m3.181s
-	time	user	1m15.441s		user	0m46.223s
-		sys	0m19.765s		sys	0m14.097s
-
-Difference between (1) and (2) is probably that for (1) the cache was 
-still empty, while during (2) all needed data was already in memory.
-
-debtree (3)	This is mostly as background for (4) which ran in parallel.
-	time	Results are not fully comparable due to timing issues!
-		real	1m20.773s		real	1m6.512s
-		user	1m5.460s		user	0m46.251s
-		sys	0m17.813s		sys	0m13.361s
-
-debtree (4)	Entries: 160 (clients=4)	Entries: 192 (clients=4)
-	latt	Max	      134 usec		Max	    21214 usec
-		Avg	       27 usec		Avg	    12139 usec
-		Stdev	       17 usec		Stdev	     6707 usec
-
-Observations during scripted tests
-----------------------------------
-- music play was never a problem
-- with CFS the Chromium opening graphics stayed smooth and at close to
-  normal speed, some minor slowdown only during -j4 kernel builds
-- with BFS there was a very notable slowdown and sometimes short skips
-  in the Chromium opening graphics during -j4 compiles; during -j2
-  compiles it stayed smooth, with maybe a very slight slowdown
-- with CFS overall CPU usage is horrible during -j2 kernel compiles:
-  top -d1 shows idle of between 5 and 30% (!), probably averaging around
-  15% and that's with amarok and chromium running as well; for -j4 it is
-  close to 100% full time;
-- BFS shows very close to 100% with both -j2 and -j4
-
-Observations during interactive tests
--------------------------------------
-Unfortunately the desktop froze completely with BFS very shortly after I
-started the test, so observations are not completely reliable.
-
-- with CFS the movie showed major skips during -j4 compile and Chromium
-  was only barely playable (and zero fun); with compile at nice -n 10
-  Chromium was a lot more playable, but movie still skipped a lot
-- with BFS I only had a _very_ short observation period, but the movie
-  seemed to play almost completely normally, even _without_ niceing -j4;
-  at the same time the game was similar to CFS after nicing the build
-
-Very Rough Conclusions
-----------------------
-* BFS is faster in real time for both -j4 and -j2 kernel compiles, but
-  uses more resources getting there
-* CFS might have done better if it'd been using CPUs at 100%
-* BFS is indeed more efficient at -j2 than -j4 on a system with 2 cores,
-  but when running more tasks than cores slowdown in interactive tasks
-* BFS does significantly worse running my script, which means that I lost
-  time doing my development work yesterday and today :-(
-* BFS shows significantly better "latt" figures
-* But at the same time only BFS showed notable slowdown in Chromium during
-  kernel compiles
-* BFS seems to distribute capacity much more equally and fluently: when
-  there is too much work and no priorities are assigned, all tasks suffer,
-  but none are starved
-* there is certainly room for improvement in CFS; the under-usage of the
-  CPUs and movie skips are quite bad
-
-With BFS I suspect that running the kernel builds niced, which I normally 
-do, would have shown perfect Chromium behavior.
-
-
-I won't have opportunity to do follow-up testing in the very short term, 
-but am in general prepared to spend more time on this in the coming 
-months.
-
-Hope this is of value.
-
-Cheers,
-FJP
+-- 
+Jesse Barnes, Intel Open Source Technology Center
