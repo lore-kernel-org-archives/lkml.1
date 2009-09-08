@@ -1,114 +1,491 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752901AbZIHXMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752919AbZIHXKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752901AbZIHXMM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 19:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZIHXML
+	id S1752919AbZIHXKY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 19:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZIHXKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 19:12:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49060 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752770AbZIHXMK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 19:12:10 -0400
-Date: Tue, 8 Sep 2009 16:11:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Knut Petersen <Knut_Petersen@t-online.de>
-cc: airlied@linux.ie, linux-kernel@vger.kernel.org
-Subject: Re: Regression DRM/i915/KMS: VGA connector unusable after 2.6.31-rc8-git1,
- DVI connector ok
-In-Reply-To: <4AA6D858.6040505@t-online.de>
-Message-ID: <alpine.LFD.2.01.0909081607400.7458@localhost.localdomain>
-References: <4AA6D858.6040505@t-online.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Sep 2009 19:10:23 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:48954 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752891AbZIHXKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 19:10:18 -0400
+Date: Wed, 9 Sep 2009 01:13:34 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [PATCH 25/23] io-controller: fix queue vs group fairness
+Message-ID: <20090908231334.GJ17468@gandalf.sssup.it>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <20090908222827.GC3558@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090908222827.GC3558@redhat.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-
-On Wed, 9 Sep 2009, Knut Petersen wrote:
+> From: Vivek Goyal <vgoyal@redhat.com>
+> Date: Tue, Sep 08, 2009 06:28:27PM -0400
+>
 > 
-> During the release cycle of the 2.6.31-rc* kernels KMS started to work
-> on my computer.
+> o I found an issue during test and that is if there is a mix of queue and group
+...
+>  So we need to keep track of process io queue's vdisktime, even it after got
+>  deleted from io scheduler's service tree and use that same vdisktime if that
+>  queue gets backlogged again. But trusting a ioq's vdisktime is bad because
+>  it can lead to issues if a service tree min_vtime wrap around takes place 
+>  between two requests of the queue. (Agreed that it can be not that easy to
+>  hit but it is possible).
 > 
-> Booting with a monitor attached to both the VAG and the DVI connectors, 
-> kernel 2.6.31-rc8-git1 detects both monitors correctly and sets the 
-> native video mode.
+>  Hence, keep a cache of io queues serviced recently and when a queue gets
+>  backlogged, if it is found in cache, use that vdisktime otherwise assign
+>  a new vdisktime. This cache of io queues (idle tree), is basically the idea
+>  implemented by BFQ guys. I had gotten rid of idle trees in V9 and now I am
+>  bringing it back. (Now I understand it better. :-)).
 > 
-> Booting the same configuration with kernel 2.6.31-rc8-git2 ... -rc9-git1 
-> gives a different result: the DVI-attached monitor is still working 
-> perfectly, the VGA-attached monitor does not detect a valid video signal 
-> and switches off.
+>  There is one good side affect of keeping the cache of recently service io
+>  queues. Now CFQ can differentiate between streaming readers and new processes
+>  doing IO. Now for a new queue (which is not in the cache), we can assign a
+>  lower vdisktime and for a streaming reader, we assign vdisktime based on disk
+>  time used. This way small file readers or the processes doing small amount
+>  of IO will have reduced latencies at the cost of little reduced throughput of
+>  streaming readers.
+> 
 
-I just pushed out something that may fix it. It was reported to fix 
-another situation that sounds _somewhat_ similar (ie VGA out on a mobile 
-chipset)
+  just a little note: this patch seems to introduce a special case for
+vdisktime = 0, assigning it the meaning of "bad timestamp," but the virtual
+time space wraps, so 0 is a perfectly legal value, which can be reached by
+service.  I have no idea if it can produce visible effects, but it doesn't
+seem to be correct.
 
-It's commit 7c8460d: "drm/i915: fix mask bits setting", but it may take a 
-few minutes to mirror out to the public machines, so if you don't see it 
-yet, here's the patch if you want to try.
 
-			Linus
-
----
->From 7c8460db30dfd085ef3837c8fb02ecf2e718b983 Mon Sep 17 00:00:00 2001
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-Date: Tue, 8 Sep 2009 14:52:25 +0800
-Subject: [PATCH] drm/i915: fix mask bits setting
-
-eDP is exclusive connector too, and add missing crtc_mask
-setting for TV.
-
-This fixes
-
-	http://bugzilla.kernel.org/show_bug.cgi?id=14139
-
-Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
-Reported-and-tested-by: Carlos R. Mafra <crmafra2@gmail.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- drivers/gpu/drm/i915/intel_dp.c  |    2 +-
- drivers/gpu/drm/i915/intel_drv.h |    1 +
- drivers/gpu/drm/i915/intel_tv.c  |    1 +
- 3 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/gpu/drm/i915/intel_dp.c b/drivers/gpu/drm/i915/intel_dp.c
-index f2afc4a..2b914d7 100644
---- a/drivers/gpu/drm/i915/intel_dp.c
-+++ b/drivers/gpu/drm/i915/intel_dp.c
-@@ -1263,7 +1263,7 @@ intel_dp_init(struct drm_device *dev, int output_reg)
- 
- 	if (IS_eDP(intel_output)) {
- 		intel_output->crtc_mask = (1 << 1);
--		intel_output->clone_mask = (1 << INTEL_OUTPUT_EDP);
-+		intel_output->clone_mask = (1 << INTEL_EDP_CLONE_BIT);
- 	} else
- 		intel_output->crtc_mask = (1 << 0) | (1 << 1);
- 	connector->interlace_allowed = true;
-diff --git a/drivers/gpu/drm/i915/intel_drv.h b/drivers/gpu/drm/i915/intel_drv.h
-index 25aa6fa..26a6227 100644
---- a/drivers/gpu/drm/i915/intel_drv.h
-+++ b/drivers/gpu/drm/i915/intel_drv.h
-@@ -74,6 +74,7 @@
- #define INTEL_LVDS_CLONE_BIT 14
- #define INTEL_DVO_TMDS_CLONE_BIT 15
- #define INTEL_DVO_LVDS_CLONE_BIT 16
-+#define INTEL_EDP_CLONE_BIT 17
- 
- #define INTEL_DVO_CHIP_NONE 0
- #define INTEL_DVO_CHIP_LVDS 1
-diff --git a/drivers/gpu/drm/i915/intel_tv.c b/drivers/gpu/drm/i915/intel_tv.c
-index 2fbe13a..5b1c9e9 100644
---- a/drivers/gpu/drm/i915/intel_tv.c
-+++ b/drivers/gpu/drm/i915/intel_tv.c
-@@ -1730,6 +1730,7 @@ intel_tv_init(struct drm_device *dev)
- 	drm_mode_connector_attach_encoder(&intel_output->base, &intel_output->enc);
- 	tv_priv = (struct intel_tv_priv *)(intel_output + 1);
- 	intel_output->type = INTEL_OUTPUT_TVOUT;
-+	intel_output->crtc_mask = (1 << 0) | (1 << 1);
- 	intel_output->clone_mask = (1 << INTEL_TV_CLONE_BIT);
- 	intel_output->enc.possible_crtcs = ((1 << 0) | (1 << 1));
- 	intel_output->enc.possible_clones = (1 << INTEL_OUTPUT_TVOUT);
+> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+> ---
+>  block/cfq-iosched.c |    2 
+>  block/elevator-fq.c |  252 ++++++++++++++++++++++++++++++++++++++++++++++++----
+>  block/elevator-fq.h |    9 +
+>  3 files changed, 246 insertions(+), 17 deletions(-)
+> 
+> Index: linux16/block/elevator-fq.c
+> ===================================================================
+> --- linux16.orig/block/elevator-fq.c	2009-09-08 15:44:21.000000000 -0400
+> +++ linux16/block/elevator-fq.c	2009-09-08 15:47:45.000000000 -0400
+> @@ -52,6 +52,8 @@ static struct kmem_cache *elv_ioq_pool;
+>  #define elv_log_entity(entity, fmt, args...)
+>  #endif
+>  
+> +static void check_idle_tree_release(struct io_service_tree *st);
+> +
+>  static inline struct io_queue *ioq_of(struct io_entity *entity)
+>  {
+>  	if (entity->my_sd == NULL)
+> @@ -109,6 +111,11 @@ elv_prio_to_slice(struct elv_fq_data *ef
+>  	return elv_weight_slice(efqd, elv_ioq_sync(ioq), ioq->entity.weight);
+>  }
+>  
+> +static inline int vdisktime_gt(u64 a, u64 b)
+> +{
+> +	return (s64)(a - b) > 0;
+> +}
+> +
+>  static inline u64 max_vdisktime(u64 min_vdisktime, u64 vdisktime)
+>  {
+>  	s64 delta = (s64)(vdisktime - min_vdisktime);
+> @@ -145,6 +152,7 @@ static void update_min_vdisktime(struct 
+>  	}
+>  
+>  	st->min_vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
+> +	check_idle_tree_release(st);
+>  }
+>  
+>  static inline struct io_entity *parent_entity(struct io_entity *entity)
+> @@ -411,27 +419,46 @@ static void place_entity(struct io_servi
+>  	struct rb_node *parent;
+>  	struct io_entity *entry;
+>  	int nr_active = st->nr_active - 1;
+> +	struct io_queue *ioq = ioq_of(entity);
+> +	int sync = 1;
+> +
+> +	if (ioq)
+> +		sync = elv_ioq_sync(ioq);
+> +
+> +	if (add_front || !nr_active) {
+> +		vdisktime = st->min_vdisktime;
+> +		goto done;
+> +	}
+> +
+> +	if (sync && entity->vdisktime
+> +	    && vdisktime_gt(entity->vdisktime, st->min_vdisktime)) {
+> +		/* vdisktime still in future. Use old vdisktime */
+> +		vdisktime = entity->vdisktime;
+> +		goto done;
+> +	}
+>  
+>  	/*
+> -	 * Currently put entity at the end of last entity. This probably will
+> -	 * require adjustments as we move along
+> +	 * Effectively a new queue. Assign sync queue a lower vdisktime so
+> +	 * we can achieve better latencies for small file readers. For async
+> +	 * queues, put them at the end of the existing queue.
+> +	 * Group entities are always considered sync.
+>  	 */
+> -	if (io_entity_class_idle(entity)) {
+> -		vdisktime = elv_delta_fair(ELV_IDLE_DELAY, entity);
+> -		parent = rb_last(&st->active);
+> -		if (parent) {
+> -			entry = rb_entry(parent, struct io_entity, rb_node);
+> -			vdisktime += entry->vdisktime;
+> -		}
+> -	} else if (!add_front && nr_active) {
+> -		parent = rb_last(&st->active);
+> -		if (parent) {
+> -			entry = rb_entry(parent, struct io_entity, rb_node);
+> -			vdisktime = entry->vdisktime;
+> -		}
+> -	} else
+> +	if (sync) {
+>  		vdisktime = st->min_vdisktime;
+> +		goto done;
+> +	}
+>  
+> +	/*
+> +	 * Put entity at the end of the tree. Effectively async queues use
+> +	 * this path.
+> +	 */
+> +	parent = rb_last(&st->active);
+> +	if (parent) {
+> +		entry = rb_entry(parent, struct io_entity, rb_node);
+> +		vdisktime = entry->vdisktime;
+> +	} else
+> +		vdisktime = st->min_vdisktime;
+> +done:
+>  	entity->vdisktime = max_vdisktime(st->min_vdisktime, vdisktime);
+>  	elv_log_entity(entity, "place_entity: vdisktime=%llu"
+>  			" min_vdisktime=%llu", entity->vdisktime,
+> @@ -447,6 +474,122 @@ static inline void io_entity_update_prio
+>  		 */
+>  		init_io_entity_service_tree(entity, parent_entity(entity));
+>  		entity->ioprio_changed = 0;
+> +
+> +		/*
+> +		 * Assign this entity a fresh vdisktime instead of using
+> +		 * previous one as prio class will lead to service tree
+> +		 * change and this vdisktime will not be valid on new
+> +		 * service tree.
+> +		 *
+> +		 * TODO: Handle the case of only prio change.
+> +		 */
+> +		entity->vdisktime = 0;
+> +	}
+> +}
+> +
+> +static void
+> +__dequeue_io_entity_idle(struct io_service_tree *st, struct io_entity *entity)
+> +{
+> +	if (st->rb_leftmost_idle == &entity->rb_node) {
+> +		struct rb_node *next_node;
+> +
+> +		next_node = rb_next(&entity->rb_node);
+> +		st->rb_leftmost_idle = next_node;
+> +	}
+> +
+> +	rb_erase(&entity->rb_node, &st->idle);
+> +	RB_CLEAR_NODE(&entity->rb_node);
+> +}
+> +
+> +static void dequeue_io_entity_idle(struct io_entity *entity)
+> +{
+> +	struct io_queue *ioq = ioq_of(entity);
+> +
+> +	__dequeue_io_entity_idle(entity->st, entity);
+> +	entity->on_idle_st = 0;
+> +	if (ioq)
+> +		elv_put_ioq(ioq);
+> +}
+> +
+> +static void
+> +__enqueue_io_entity_idle(struct io_service_tree *st, struct io_entity *entity)
+> +{
+> +	struct rb_node **node = &st->idle.rb_node;
+> +	struct rb_node *parent = NULL;
+> +	struct io_entity *entry;
+> +	int leftmost = 1;
+> +
+> +	while (*node != NULL) {
+> +		parent = *node;
+> +		entry = rb_entry(parent, struct io_entity, rb_node);
+> +
+> +		if (vdisktime_gt(entry->vdisktime, entity->vdisktime))
+> +			node = &parent->rb_left;
+> +		else {
+> +			node = &parent->rb_right;
+> +			leftmost = 0;
+> +		}
+> +	}
+> +
+> +	/*
+> +	 * Maintain a cache of leftmost tree entries (it is frequently
+> +	 * used)
+> +	 */
+> +	if (leftmost)
+> +		st->rb_leftmost_idle = &entity->rb_node;
+> +
+> +	rb_link_node(&entity->rb_node, parent, node);
+> +	rb_insert_color(&entity->rb_node, &st->idle);
+> +}
+> +
+> +static void enqueue_io_entity_idle(struct io_entity *entity)
+> +{
+> +	struct io_queue *ioq = ioq_of(entity);
+> +	struct io_group *parent_iog;
+> +
+> +	/*
+> +	 * Don't put an entity on idle tree if it has been marked for deletion.
+> +	 * We are not expecting more io from this entity. No need to cache it
+> +	 */
+> +
+> +	if (entity->exiting)
+> +		return;
+> +
+> +	/*
+> +	 * If parent group is exiting, don't put on idle tree. May be task got
+> +	 * moved to a different cgroup and original cgroup got deleted
+> +	 */
+> +	parent_iog = iog_of(parent_entity(entity));
+> +	if (parent_iog->entity.exiting)
+> +		return;
+> +
+> +	if (ioq)
+> +		elv_get_ioq(ioq);
+> +	__enqueue_io_entity_idle(entity->st, entity);
+> +	entity->on_idle_st = 1;
+> +}
+> +
+> +static void check_idle_tree_release(struct io_service_tree *st)
+> +{
+> +	struct io_entity *leftmost;
+> +
+> +	if (!st->rb_leftmost_idle)
+> +		return;
+> +
+> +	leftmost = rb_entry(st->rb_leftmost_idle, struct io_entity, rb_node);
+> +
+> +	if (vdisktime_gt(st->min_vdisktime, leftmost->vdisktime))
+> +		dequeue_io_entity_idle(leftmost);
+> +}
+> +
+> +static void flush_idle_tree(struct io_service_tree *st)
+> +{
+> +	struct io_entity *entity;
+> +
+> +	while(st->rb_leftmost_idle) {
+> +		entity = rb_entry(st->rb_leftmost_idle, struct io_entity,
+> +					rb_node);
+> +		dequeue_io_entity_idle(entity);
+>  	}
+>  }
+>  
+> @@ -483,6 +626,9 @@ static void dequeue_io_entity(struct io_
+>  	st->nr_active--;
+>  	sd->nr_active--;
+>  	debug_update_stats_dequeue(entity);
+> +
+> +	if (vdisktime_gt(entity->vdisktime, st->min_vdisktime))
+> +		enqueue_io_entity_idle(entity);
+>  }
+>  
+>  static void
+> @@ -524,6 +670,16 @@ static void enqueue_io_entity(struct io_
+>  	struct io_service_tree *st;
+>  	struct io_sched_data *sd = io_entity_sched_data(entity);
+>  
+> +	if (entity->on_idle_st)
+> +		dequeue_io_entity_idle(entity);
+> +	else
+> +		/*
+> +		 * This entity was not in idle tree cache. Zero out vdisktime
+> +		 * so that we don't rely on old vdisktime instead assign a
+> +		 * fresh one.
+> +		 */
+> +		entity->vdisktime = 0;
+> +
+>  	io_entity_update_prio(entity);
+>  	st = entity->st;
+>  	st->nr_active++;
+> @@ -574,6 +730,8 @@ static void requeue_io_entity(struct io_
+>  	struct io_service_tree *st = entity->st;
+>  	struct io_entity *next_entity;
+>  
+> +	entity->vdisktime = 0;
+> +
+>  	if (add_front) {
+>  		next_entity = __lookup_next_io_entity(st);
+>  
+> @@ -1937,11 +2095,18 @@ static void io_free_root_group(struct el
+>  {
+>  	struct io_group *iog = e->efqd->root_group;
+>  	struct io_cgroup *iocg = &io_root_cgroup;
+> +	struct io_service_tree *st;
+> +	int i;
+>  
+>  	spin_lock_irq(&iocg->lock);
+>  	hlist_del_rcu(&iog->group_node);
+>  	spin_unlock_irq(&iocg->lock);
+>  
+> +	for (i = 0; i < IO_IOPRIO_CLASSES; i++) {
+> +		st = iog->sched_data.service_tree + i;
+> +		flush_idle_tree(st);
+> +	}
+> +
+>  	put_io_group_queues(e, iog);
+>  	elv_put_iog(iog);
+>  }
+> @@ -2039,9 +2204,29 @@ EXPORT_SYMBOL(elv_put_iog);
+>   */
+>  static void __io_destroy_group(struct elv_fq_data *efqd, struct io_group *iog)
+>  {
+> +	struct io_service_tree *st;
+> +	int i;
+> +	struct io_entity *entity = &iog->entity;
+> +
+> +	/*
+> +	 * Mark io group for deletion so that no new entry goes in
+> +	 * idle tree. Any active queue which is removed from active
+> +	 * tree will not be put in to idle tree.
+> +	 */
+> +	entity->exiting = 1;
+> +
+> +	/* We flush idle tree now, and don't put things in there any more. */
+> +	for (i = 0; i < IO_IOPRIO_CLASSES; i++) {
+> +		st = iog->sched_data.service_tree + i;
+> +		flush_idle_tree(st);
+> +	}
+> +
+>  	hlist_del(&iog->elv_data_node);
+>  	put_io_group_queues(efqd->eq, iog);
+>  
+> +	if (entity->on_idle_st)
+> +		dequeue_io_entity_idle(entity);
+> +
+>  	/*
+>  	 * Put the reference taken at the time of creation so that when all
+>  	 * queues are gone, group can be destroyed.
+> @@ -2374,7 +2559,13 @@ static struct io_group *io_alloc_root_gr
+>  static void io_free_root_group(struct elevator_queue *e)
+>  {
+>  	struct io_group *iog = e->efqd->root_group;
+> +	struct io_service_tree *st;
+> +	int i;
+>  
+> +	for (i = 0; i < IO_IOPRIO_CLASSES; i++) {
+> +		st = iog->sched_data.service_tree + i;
+> +		flush_idle_tree(st);
+> +	}
+>  	put_io_group_queues(e, iog);
+>  	kfree(iog);
+>  }
+> @@ -3257,6 +3448,35 @@ done:
+>  		elv_schedule_dispatch(q);
+>  }
+>  
+> +/*
+> + * The process associted with ioq (in case of cfq), is going away. Mark it
+> + * for deletion.
+> + */
+> +void elv_exit_ioq(struct io_queue *ioq)
+> +{
+> +	struct io_entity *entity = &ioq->entity;
+> +
+> +	/*
+> +	 * Async ioq's belong to io group and are cleaned up once group is
+> +	 * being deleted. Not need to do any cleanup here even if cfq has
+> +	 * dropped the reference to the queue
+> +	 */
+> +	if (!elv_ioq_sync(ioq))
+> +		return;
+> +
+> +	/*
+> + 	 * This queue is still under service. Just mark it so that once all
+> +	 * the IO from queue is done, it is not put back in idle tree.
+> +	 */
+> +	if (entity->on_st) {
+> +		entity->exiting = 1;
+> +		return;
+> +	} else if(entity->on_idle_st) {
+> +		/* Remove ioq from idle tree */
+> +		dequeue_io_entity_idle(entity);
+> +	}
+> +}
+> +EXPORT_SYMBOL(elv_exit_ioq);
+>  static void elv_slab_kill(void)
+>  {
+>  	/*
+> Index: linux16/block/cfq-iosched.c
+> ===================================================================
+> --- linux16.orig/block/cfq-iosched.c	2009-09-08 15:43:36.000000000 -0400
+> +++ linux16/block/cfq-iosched.c	2009-09-08 15:47:45.000000000 -0400
+> @@ -1138,6 +1138,7 @@ static void cfq_exit_cfqq(struct cfq_dat
+>  		elv_schedule_dispatch(cfqd->queue);
+>  	}
+>  
+> +	elv_exit_ioq(cfqq->ioq);
+>  	cfq_put_queue(cfqq);
+>  }
+>  
+> @@ -1373,6 +1374,7 @@ static void changed_cgroup(struct io_con
+>  		 */
+>  		if (iog != __iog) {
+>  			cic_set_cfqq(cic, NULL, 1);
+> +			elv_exit_ioq(sync_cfqq->ioq);
+>  			cfq_put_queue(sync_cfqq);
+>  		}
+>  	}
+> Index: linux16/block/elevator-fq.h
+> ===================================================================
+> --- linux16.orig/block/elevator-fq.h	2009-09-08 15:43:36.000000000 -0400
+> +++ linux16/block/elevator-fq.h	2009-09-08 15:47:45.000000000 -0400
+> @@ -33,6 +33,10 @@ struct io_service_tree {
+>  	u64 min_vdisktime;
+>  	struct rb_node *rb_leftmost;
+>  	unsigned int nr_active;
+> +
+> +        /* A cache of io entities which were served and expired */
+> +        struct rb_root idle;
+> +        struct rb_node *rb_leftmost_idle;
+>  };
+>  
+>  struct io_sched_data {
+> @@ -44,9 +48,12 @@ struct io_sched_data {
+>  struct io_entity {
+>  	struct rb_node rb_node;
+>  	int on_st;
+> +	int on_idle_st;
+>  	u64 vdisktime;
+>  	unsigned int weight;
+>  	struct io_entity *parent;
+> +	/* This io entity (queue or group) has been marked for deletion */
+> +	unsigned int exiting;
+>  
+>  	struct io_sched_data *my_sd;
+>  	struct io_service_tree *st;
+> @@ -572,7 +579,7 @@ extern struct io_queue *elv_alloc_ioq(st
+>  extern void elv_free_ioq(struct io_queue *ioq);
+>  extern struct io_group *ioq_to_io_group(struct io_queue *ioq);
+>  extern int elv_iog_should_idle(struct io_queue *ioq);
+> -
+> +extern void elv_exit_ioq(struct io_queue *ioq);
+>  #else /* CONFIG_ELV_FAIR_QUEUING */
+>  static inline struct elv_fq_data *
+>  elv_alloc_fq_data(struct request_queue *q, struct elevator_queue *e)
