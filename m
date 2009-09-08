@@ -1,53 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZIHXGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbZIHXFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752845AbZIHXGM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 19:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZIHXGL
+	id S1752712AbZIHXFP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 19:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZIHXFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 19:06:11 -0400
-Received: from kroah.org ([198.145.64.141]:59003 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbZIHXGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 19:06:10 -0400
-Date: Tue, 8 Sep 2009 16:04:16 -0700
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, stable-review@kernel.org,
-       linux-kernel@vger.kernel.org, stable-review@linux.kernel.org
-Subject: Re: 2.6.27 maintenance plans after 2.6.32 is released
-Message-ID: <20090908230416.GA8283@kroah.com>
-References: <43e72e890909081230h420c2abi125a6fbfc2777250@mail.gmail.com>
- <43e72e890909081244m4083a1bcq30cf1306ce566726@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <43e72e890909081244m4083a1bcq30cf1306ce566726@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Tue, 8 Sep 2009 19:05:14 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:35128 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751972AbZIHXFN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 19:05:13 -0400
+Date: Tue, 8 Sep 2009 16:05:09 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sage Weil <sage@newdream.net>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 18/20] ceph: ioctls
+Message-Id: <20090908160509.bcf511dc.randy.dunlap@oracle.com>
+In-Reply-To: <1252450601-17610-19-git-send-email-sage@newdream.net>
+References: <1252450601-17610-1-git-send-email-sage@newdream.net>
+	<1252450601-17610-4-git-send-email-sage@newdream.net>
+	<1252450601-17610-5-git-send-email-sage@newdream.net>
+	<1252450601-17610-6-git-send-email-sage@newdream.net>
+	<1252450601-17610-7-git-send-email-sage@newdream.net>
+	<1252450601-17610-8-git-send-email-sage@newdream.net>
+	<1252450601-17610-9-git-send-email-sage@newdream.net>
+	<1252450601-17610-10-git-send-email-sage@newdream.net>
+	<1252450601-17610-11-git-send-email-sage@newdream.net>
+	<1252450601-17610-12-git-send-email-sage@newdream.net>
+	<1252450601-17610-13-git-send-email-sage@newdream.net>
+	<1252450601-17610-14-git-send-email-sage@newdream.net>
+	<1252450601-17610-15-git-send-email-sage@newdream.net>
+	<1252450601-17610-16-git-send-email-sage@newdream.net>
+	<1252450601-17610-17-git-send-email-sage@newdream.net>
+	<1252450601-17610-18-git-send-email-sage@newdream.net>
+	<1252450601-17610-19-git-send-email-sage@newdream.net>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt014.oracle.com [141.146.116.23]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4AA6E327.011D:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 12:44:23PM -0700, Luis R. Rodriguez wrote:
-> On Tue, Sep 8, 2009 at 12:30 PM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
-> > I was curious if 2.6.27 is planned to be supported after 2.6.32 is
-> > released, or will that be dropped in favor for 2.6.28 as the last
-> > supported kernel. How does dropping an old kernel for stable
-> > maintenance consideration typically work?
+On Tue,  8 Sep 2009 15:56:39 -0700 Sage Weil wrote:
 
-.27 is a "long term" support kernel that I've decided to keep going for
-a variety of reasons.  .28 and .29 are currently no longer maintained.
+> A few Ceph ioctls for getting and setting file layout (striping)
+> parameters.
+> 
+> Signed-off-by: Sage Weil <sage@newdream.net>
+> ---
+>  fs/ceph/ioctl.c |   98 +++++++++++++++++++++++++++++++++++++++++++++++++++++++
+>  fs/ceph/ioctl.h |   20 +++++++++++
+>  2 files changed, 118 insertions(+), 0 deletions(-)
+>  create mode 100644 fs/ceph/ioctl.c
+>  create mode 100644 fs/ceph/ioctl.h
 
-So .27 is "special" right now, and seems to be working well.  I keep
-revaluating if it's worth keeping going, and so far, it seems like it
-is, if for nothing else, personal reasons as I have a few servers based
-on it :)
 
-For .30, we will probably do a few more releases once .31 is out, and
-then drop it as well.
+> diff --git a/fs/ceph/ioctl.h b/fs/ceph/ioctl.h
+> new file mode 100644
+> index 0000000..56f5e2c
+> --- /dev/null
+> +++ b/fs/ceph/ioctl.h
+> @@ -0,0 +1,20 @@
+> +#ifndef FS_CEPH_IOCTL_H
+> +#define FS_CEPH_IOCTL_H
+> +
+> +#include <linux/ioctl.h>
+> +#include <linux/types.h>
+> +
+> +#define CEPH_IOCTL_MAGIC 0x97
+> +
+> +/* just use u64 to align sanely on all archs */
+> +struct ceph_ioctl_layout {
+> +	__u64 stripe_unit, stripe_count, object_size;
+> +	__u64 data_pool;
+> +};
+> +
+> +#define CEPH_IOC_GET_LAYOUT _IOR(CEPH_IOCTL_MAGIC, 1,		\
+> +				   struct ceph_ioctl_layout)
+> +#define CEPH_IOC_SET_LAYOUT _IOW(CEPH_IOCTL_MAGIC, 2,		\
+> +				   struct ceph_ioctl_layout)
+> +
+> +#endif
+> -- 
 
-I'm confused as to what .32 has to do with any of this, that's months
-away...
+Please also update Documentation/ioctl/ioctl-number.txt
 
-thanks,
 
-greg k-h
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
