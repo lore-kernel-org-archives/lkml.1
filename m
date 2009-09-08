@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752489AbZIHW0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZIHW0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752489AbZIHW0X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 18:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752472AbZIHW0X
+	id S1752521AbZIHW0h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 18:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZIHW0h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 18:26:23 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:35543 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752310AbZIHW0W (ORCPT
+	Tue, 8 Sep 2009 18:26:37 -0400
+Received: from outbound-mail-112.bluehost.com ([69.89.24.2]:39604 "HELO
+	outbound-mail-112.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752503AbZIHW0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 18:26:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=YUTAxsPUiT1DxCBRuOuCMfmED3P7YPsUqaMV1mv+8iAT0GxPorbFnGspxtnX4EZHh
-	oCvUci8dNfmQ7cZIcLaYA==
-Date: Tue, 8 Sep 2009 15:26:18 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
-In-Reply-To: <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com> <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com> <1251129384.22398.7166.camel@nimitz> <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com>
- <1251150156.22398.8289.camel@nimitz> <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Tue, 8 Sep 2009 18:26:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=Hy32hrKcbKVWe9OPE4hKSni2fyh1u/wKvM88s7EICaxE4VJWzmy8b8GQpEbTbkvw7odrzVVMe6q5coD+fJhmLUDjUzWy3XBzTdZm+1EnJQ3GU55AkoM4c5CeIruEuDPW;
+Date: Tue, 8 Sep 2009 15:26:36 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Knut Petersen <Knut_Petersen@t-online.de>
+Cc: Linus Torvalds <torvalds@osdl.org>, airlied@linux.ie,
+       linux-kernel@vger.kernel.org, intel-gfx@lists.freedesktop.org
+Subject: Re: Regression DRM/i915/KMS: VGA connector unusable after
+ 2.6.31-rc8-git1, DVI connector ok
+Message-ID: <20090908152636.701feffb@jbarnes-g45>
+In-Reply-To: <4AA6D858.6040505@t-online.de>
+References: <4AA6D858.6040505@t-online.de>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 24 Aug 2009, David Rientjes wrote:
+cc'ing the intel-gfx list.
 
-> I'm starting to think that maybe an `unsigned int flags' is eventually 
-> going to need to be added anyway: one reason is to serve this purpose of 
-> identifying arrays that are stored in the base structure.  Another 
-> possible reason is to identify flex arrays that want the poison behavior 
-> to identify use-uninitialized and use-after-free and would be passed such 
-> as flex_array_alloc(size, total, FLEX_ARRAY_POISON, gfp) to isolate arrays 
-> that may, as you said, store elements of types other than void * or those 
-> significantly small enough that they would collide with the poison values 
-> at a higher probability.
+On Wed, 09 Sep 2009 00:19:04 +0200
+Knut Petersen <Knut_Petersen@t-online.de> wrote:
+
+> Hi everybody!
 > 
+> During the release cycle of the 2.6.31-rc* kernels KMS started to work
+> on my computer.
+> 
+> Booting with a monitor attached to both the VAG and the DVI
+> connectors, kernel 2.6.31-rc8-git1
+> detects both monitors correctly and sets the native video mode.
+> 
+> Booting the same configuration with kernel 2.6.31-rc8-git2 ...
+> -rc9-git1 gives a different result:
+> the DVI-attached monitor is still working perfectly, the VGA-attached
+> monitor does not detect a
+> valid video signal and switches off.
+> 
+> Hardware: AOpen i915GMm-hfs,  Pentium-M 1.86 MHz,  2GB RAM
+> The Aopen i915GMm-hfs is a  desktop board with a mobile Chipset:
+> 
+> 00:00.0 Host bridge: Intel Corporation Mobile 915GM/PM/GMS/910GML
+> Express Processor to DRAM Controller (rev 04)
+> 00:02.0 VGA compatible controller: Intel Corporation Mobile
+> 915GM/GMS/910GML Express Graphics Controller (rev 04)
+> 00:02.1 Display controller: Intel Corporation Mobile 915GM/GMS/910GML
+> Express Graphics Controller (rev 04)
+> 
+> Config: AGP/DRM/I915 all compiled into kernel, KMS enabled.
+> 
+> Log_Broken contains the result of "cat boot.msg | grep -i drm" of a
+> boot with 2.6.31-rc8-git2,
+> Log_OK contains the result of "cat boot.msg | grep -i drm" of a boot
+> with 2.6.31-rc8-git1
+> 
+> As a black monitor is not a nice gift I think this should be fixed
+> before the final release of 2.6.31.
+> 
+> cu,
+>  Knut
 
-I was looking at converting a vmalloc'd array somewhere (anywhere, really) 
-to use flex array instead.
 
-The cgroup pidarray can't be converted because it sorts the array, for 
-which flex array lacks support (and isn't really in its scope since the 
-mapping from index to element is then pointless).  An alternative 
-implementation like flex list, which I've already eluded to, seems more 
-appropriate.
-
-I also looked at oprofile's event_buffer, which vmalloc's elements of size 
-unsigned long up to a certain threshold.  Flex array could accomodate 
-261,632 such elements on x86_64 and the buffer threshold defaults to 
-131,072, so it was looking like a good candidate.
-
-The problem is that it copies the entire array to userspace up to a 
-certain element when reading the oprofile `buffer' file.  That's not 
-possible with flex array without vmalloc'ing memory of size buffer_pos * 
-sizeof(unsigned long) and memcpy'ing the elements into it.  So using flex 
-array in this case is pointless (and considerably slower on every read).
-
-I'm struggling to find other examples.  Dave, do you know of any 
-subsystems in the kernel that can readily be converted to using flex 
-array?
+-- 
+Jesse Barnes, Intel Open Source Technology Center
