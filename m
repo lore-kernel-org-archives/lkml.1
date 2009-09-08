@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZIHUB3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752106AbZIHUFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbZIHUB3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 16:01:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZIHUB2
+	id S1752106AbZIHUFZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 16:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751675AbZIHUFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 16:01:28 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:65530 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751542AbZIHUB1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 16:01:27 -0400
-Date: Tue, 8 Sep 2009 17:00:04 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Glauber Costa <glommer@redhat.com>
-Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [PATCH v2 1/2] keep guest wallclock in sync with host clock
-Message-ID: <20090908200004.GA20785@amt.cnet>
-References: <1251902098-8660-1-git-send-email-glommer@redhat.com> <1251902098-8660-2-git-send-email-glommer@redhat.com> <20090908184159.GC19318@amt.cnet> <20090908193752.GH9013@mothafucka.localdomain>
+	Tue, 8 Sep 2009 16:05:24 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:20508 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751362AbZIHUFY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 16:05:24 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090908193752.GH9013@mothafucka.localdomain>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200909082138.15312.rjw@sisk.pl>
+References: <b2cdc9f30909081157r3087f707ve3a0cff77f46941a@mail.gmail.com>
+	 <200909082138.15312.rjw@sisk.pl>
+Date: Tue, 8 Sep 2009 21:05:25 +0100
+X-Google-Sender-Auth: 2dfd8e1748089e16
+Message-ID: <b2cdc9f30909081305u61b896c1kff8caab3e003412e@mail.gmail.com>
+Subject: Re: Machine resumes straight after suspend to RAM (or disk)
+From: Alex Bennee <kernel-hacker@bennee.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 04:37:52PM -0300, Glauber Costa wrote:
-> On Tue, Sep 08, 2009 at 03:41:59PM -0300, Marcelo Tosatti wrote:
-> > On Wed, Sep 02, 2009 at 10:34:57AM -0400, Glauber Costa wrote:
-> > > KVM clock is great to avoid drifting in guest VMs running ontop of kvm.
-> > > However, the current mechanism will not propagate changes in wallclock value
-> > > upwards. This effectively means that in a large pool of VMs that need accurate timing,
-> > > all of them has to run NTP, instead of just the host doing it.
-> > > 
-> > > Since the host updates information in the shared memory area upon msr writes,
-> > > this patch introduces a worker that writes to that msr, and calls do_settimeofday
-> > > at fixed intervals, with second resolution. A interval of 0 determines that we
-> > > are not interested in this behaviour. A later patch will make this optional at
-> > > runtime
-> > > 
-> > > Signed-off-by: Glauber Costa <glommer@redhat.com>
-> > 
-> > As mentioned before, ntp already does this (and its not that heavy is
-> > it?).
-> > 
-> > For example, if ntp running on the host, it avoids stepping the clock
-> > backwards by slow adjustment, while the periodic frequency adjustment on
-> > the guest bypasses that.
-> 
-> Simple question: How do I run ntp in guests without network?
+2009/9/8 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Tuesday 08 September 2009, Alex Bennee wrote:
+>> Hi,
+>>
+>> I thought I'd enable suspend and resume on my desktop machine so I
+>> could save myself some time in the morning when I restart the machine.
+>> The machine is fairly standard Intel Core Duo based system (lspci
+>> attached). However when I execute pm-suspend (or Gentoo's own
+>> hibernate-script) the system does suspend but resumes immediately.
+<snip>
+>>
+>> So any ideas?
+>
+> What's in /proc/acpi/wakeup after a clean boot?
 
-You don't.
+21:03 alex@danny/x86_64 [~] >cat /proc/acpi/wakeup
+Device	S-state	  Status   Sysfs node
+P0P1	  S4	 disabled
+P0P3	  S4	 disabled  pci:0000:00:1e.0
+P0P4	  S4	 disabled  pci:0000:00:1c.0
+P0P5	  S4	 disabled
+P0P6	  S4	 disabled
+P0P7	  S4	 disabled
+P0P8	  S4	 disabled
+P0P9	  S4	 disabled
+PS2K	  S4	 disabled  pnp:00:09
+PS2M	  S4	 disabled  pnp:00:0a
+MC97	  S4	 disabled
+USB1	  S4	 disabled  pci:0000:00:1d.0
+USB2	  S4	 disabled  pci:0000:00:1d.1
+USB3	  S4	 disabled  pci:0000:00:1d.2
+USB4	  S4	 disabled  pci:0000:00:1d.3
+EUSB	  S4	 disabled  pci:0000:00:1d.7
 
+
+-- 
+Alex, homepage: http://www.bennee.com/~alex/
+http://www.half-llama.co.uk
