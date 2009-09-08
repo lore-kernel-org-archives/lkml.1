@@ -1,170 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZIHSGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752099AbZIHSOM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752199AbZIHSGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 14:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZIHSGn
+	id S1752099AbZIHSOM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 14:14:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751894AbZIHSOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 14:06:43 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37271 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752169AbZIHSGl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 14:06:41 -0400
-Date: Tue, 8 Sep 2009 11:06:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: reinette chatre <reinette.chatre@intel.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
-       "bugzilla-daemon@bugzilla.kernel.org" 
-	<bugzilla-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug #13819] system freeze when switching to console
-In-Reply-To: <1252431375.14735.139.camel@rc-desk>
-Message-ID: <alpine.LFD.2.01.0909081039300.7458@localhost.localdomain>
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>  <Vm51Upp4EV.A.r-D.mgBpKB@chimera> <1252427375.14735.130.camel@rc-desk>  <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain> <1252431375.14735.139.camel@rc-desk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 8 Sep 2009 14:14:12 -0400
+Received: from kroah.org ([198.145.64.141]:36915 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751916AbZIHSOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 14:14:11 -0400
+Date: Tue, 8 Sep 2009 11:11:09 -0700
+From: Greg KH <greg@kroah.com>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-rt@pengutronix.de,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [RT + staging] buildfailures
+Message-ID: <20090908181109.GB21413@kroah.com>
+References: <1244929118-23326-1-git-send-email-u.kleine-koenig@pengutronix.de>
+ <20090614112802.GA4502@kroah.com>
+ <20090614230044.GA21624@pengutronix.de>
+ <20090622151515.GA16627@pengutronix.de>
+ <20090907162029.GA855@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090907162029.GA855@pengutronix.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 8 Sep 2009, reinette chatre wrote:
+On Mon, Sep 07, 2009 at 06:20:29PM +0200, Uwe Kleine-König wrote:
+> Hello,
 > 
-> As you can see from the kernel version it is not a build of a vanilla
-> kernel. It only contains changes related to the wireless networking work
-> I am doing.
+> I just tried to compile 2.6.31-rc8-rt9 on amd64 and got the following
+> compiler errors in drivers/staging:
 > 
-> Here is the output:
+>  - drivers/staging/comedi:
+> 
+> 	  CC [M]  drivers/staging/comedi/drivers/quatech_daqp_cs.o
+> 	drivers/staging/comedi/drivers/quatech_daqp_cs.c: In function ‘daqp_interrupt’:
+> 	drivers/staging/comedi/drivers/quatech_daqp_cs.c:308: error: implicit declaration of function ‘up’
+> 	drivers/staging/comedi/drivers/quatech_daqp_cs.c: In function ‘daqp_ai_insn_read’:
+> 	drivers/staging/comedi/drivers/quatech_daqp_cs.c:421: error: implicit declaration of function ‘sema_init’
+> 	drivers/staging/comedi/drivers/quatech_daqp_cs.c:434: error: implicit declaration of function ‘down_interruptible’
+> 
+>    Possible fix: #include <linux/semaphore.h> in
+>    drivers/staging/comedi/comedidev.h
 
-Thanks, this is great. It pinpoints the problem very effectively.
+Patches welcome :)
 
-> [  352.803960] BUG: unable to handle kernel NULL pointer dereference at 0000000000000084
-> [  352.804006] IP: [<ffffffffa03ecaab>] i915_driver_irq_handler+0x26b/0xd20 [i915]
+>  - drivers/staging/rt2870:
+> 	  CC [M]  drivers/staging/rt2870/common/2870_rtmp_init.o
+> 	drivers/staging/rt2870/common/2870_rtmp_init.c: In function ‘CreateThreads’:
+> 	drivers/staging/rt2870/common/2870_rtmp_init.c:754: error: implicit declaration of function ‘semaphore_init_locked’
+> 
+>    with PREEMPT_RT semaphore_init_locked doesn't exist.  The driver
+>    needs to be converted to use mutexes instead.
+> 
+>    Hhhhm, tglx introduced these in
+> 
+> 	041e313 (staging: Bulk convert the semaphore mess)
+> 
+>    !?
+> 
+>    drivers/staging/rt3070/common/2870_rtmp_init.c includes
+>    ../../rt2870/common/2870_rtmp_init.c, so RT3070 has the same problem.
 
-The code here is
+Then he might want to resolve them, as this code has changed a _lot_ in
+the linux-next tree :)
 
-	  16:	48 8b 80 00 01 00 00 	mov    0x100(%rax),%rax
-	  1d:	48 8b 50 08          	mov    0x8(%rax),%rdx
-	  21:	48 85 d2             	test   %rdx,%rdx
-	  24:	74 11                	je     0x37
-	  26:	49 8b 44 24 78       	mov    0x78(%r12),%rax
-	  2b:*	8b 80 84 00 00 00    	mov    0x84(%rax),%eax     <-- trapping instruction
-	  31:	89 82 08 08 00 00    	mov    %eax,0x808(%rdx)
-	  37:	f6 45 a0 02          	testb  $0x2,-0x60(%rbp)
+thanks,
 
-and that "testb $0x2, -0x60(%rbp)" seems to be the
-
-	if (iir & I915_USER_INTERRUPT) {
-
-test if I'm reading things right. Although it could also be the
-
-	if (eir & I915_ERROR_MEMORY_REFRESH) {
-
-thing. The disassembly is totally impossible to read, because the stupid 
-i915 driver is chock-full of crap like
-
-	if (IS_G4X(dev)) {
-		..
-
-which expands to insane amounts of code that check the PCI ID's one by 
-one.
-
-Intel guys: could you _please_ stop doing that. Create a capability mask 
-in the device or something, so that you can test for "is this a G4x" with 
-a single bit test, rather than have code like this:
-
-        mov    0x31c(%rsi),%eax
-        cmp    $0x2982,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2972,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2992,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x29a2,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2a02,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2a12,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2a42,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2e02,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2e12,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2e22,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x2e32,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-        cmp    $0x42,%eax
-        je     0xffffffff8124b669 <i915_driver_irq_handler+177>
-
-for that IS_G4X() thing (I'm not kidding - that's exactly a hundred bytes 
-of code for that _stupid_ test, and it's inlined!)
-
-Anyway, we're getting that DRM irq, and it has a normal IRQ stack trace:
-
-> [  352.804006] Process Xorg (pid: 4424, threadinfo ffff8800b6b1a000, task ffff880037373c00)
-> [  352.804006] Call Trace:
-> [  352.804006]  <IRQ> 
-> [  352.804006]  [<ffffffff8106db7d>] ? mark_held_locks+0x6d/0x90
-> [  352.804006]  [<ffffffff81098ee8>] handle_IRQ_event+0x68/0x170
-> [  352.804006]  [<ffffffff8109ac01>] handle_edge_irq+0xc1/0x160
-> [  352.804006]  [<ffffffff8100e76f>] handle_irq+0x1f/0x30
-> [  352.804006]  [<ffffffff8100dc6a>] do_IRQ+0x6a/0xf0
-> [  352.804006]  [<ffffffff8100c793>] ret_from_intr+0x0/0xf
-
-.. but it happened just as we're tearing down the DRM irq handling:
-
-> [  352.804006]  <EOI> 
-> [  352.804006]  [<ffffffff81070b88>] ? lock_acquire+0xe8/0x100
-> [  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
-> [  352.804006]  [<ffffffff8132d7b5>] ? mutex_lock_nested+0x45/0x320
-> [  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
-> [  352.804006]  [<ffffffff8106de85>] ? trace_hardirqs_on_caller+0x145/0x190
-> [  352.804006]  [<ffffffff8106dedd>] ? trace_hardirqs_on+0xd/0x10
-> [  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
-> [  352.804006]  [<ffffffffa03f3335>] ? i915_gem_idle+0x225/0x330 [i915]
-> [  352.804006]  [<ffffffffa03f34c7>] ? i915_gem_leavevt_ioctl+0x37/0x50 [i915]
-> [  352.804006]  [<ffffffffa03bdafd>] ? drm_ioctl+0x17d/0x3c0 [drm]
-> [  352.804006]  [<ffffffffa03f3490>] ? i915_gem_leavevt_ioctl+0x0/0x50 [i915]
-
-so what is going on is that the i915 driver has obviously torn down some 
-state before it uninstalls the irq, so the irq happens when the state has 
-already been torn down, and the irq handler is not ready for that.
-
-This patch *may* fix it - simply by getting rid of the irq early. However, 
-I did not check whether maybe something in i915_gem_idle() actually needs 
-the interrupt to be able to happen, so this is TOTALLY UNTESTED!
-
-		Linus
----
- drivers/gpu/drm/i915/i915_gem.c |    6 +-----
- 1 files changed, 1 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 7edb5b9..80e5ba4 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -4232,15 +4232,11 @@ int
- i915_gem_leavevt_ioctl(struct drm_device *dev, void *data,
- 		       struct drm_file *file_priv)
- {
--	int ret;
--
- 	if (drm_core_check_feature(dev, DRIVER_MODESET))
- 		return 0;
- 
--	ret = i915_gem_idle(dev);
- 	drm_irq_uninstall(dev);
--
--	return ret;
-+	return i915_gem_idle(dev);
- }
- 
- void
+greg k-h
