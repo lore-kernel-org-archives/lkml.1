@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZIHX1B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752546AbZIHXdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752479AbZIHX1B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 19:27:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751952AbZIHX1A
+	id S1752546AbZIHXdy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 19:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZIHXdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 19:27:00 -0400
-Received: from mga03.intel.com ([143.182.124.21]:48614 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbZIHX07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 19:26:59 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="185466169"
-Subject: Re: [Bug #13819] system freeze when switching to console
-From: reinette chatre <reinette.chatre@intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
-       "bugzilla-daemon@bugzilla.kernel.org" 
-	<bugzilla-daemon@bugzilla.kernel.org>
-In-Reply-To: <20090908161657.0f21c7fb@jbarnes-g45>
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
-	 <Vm51Upp4EV.A.r-D.mgBpKB@chimera>	<1252427375.14735.130.camel@rc-desk>
-	 <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain>
-	 <1252431375.14735.139.camel@rc-desk>
-	 <alpine.LFD.2.01.0909081039300.7458@localhost.localdomain>
-	 <1252449461.30150.61.camel@rc-desk>  <20090908161657.0f21c7fb@jbarnes-g45>
-Content-Type: text/plain
-Date: Tue, 08 Sep 2009 16:27:01 -0700
-Message-Id: <1252452421.30150.65.camel@rc-desk>
+	Tue, 8 Sep 2009 19:33:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:42736 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752093AbZIHXdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 19:33:53 -0400
+Date: Tue, 8 Sep 2009 20:33:23 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] char/tty_io: fix legacy pty name when more than 256
+ pty devices are requested
+Message-ID: <20090908203323.486c129c@caramujo.chehab.org>
+In-Reply-To: <4AA6DF50.3030603@zytor.com>
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>
+	<4AA6DF50.3030603@zytor.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 16:16 -0700, Jesse Barnes wrote:
+Em Tue, 08 Sep 2009 15:48:48 -0700
+"H. Peter Anvin" <hpa@zytor.com> escreveu:
 
-> Do you see "hardware wedged" messages in your log after using Linus's
-> patch?  That's what I'd expect...  ah no I see we don't call the
-> routine that requires interrupts in that path like I thought.
+> On 09/08/2009 10:49 AM, Mauro Carvalho Chehab wrote:
+> > 
+> > It is important to preserve the old nomenclature for tty/pty devices for the
+> > first 256 devices, to avoid breakage on existing applications and with udev.
+> > 
+> > So, in order to allow more pty devices, the nomenclature were extended for
+> > the devices with minor 256 or above. For those, the nomenclature will be:
+> > 	ttyf0000-ttfpffff	(pty slave)
+> > 	ptyf0000-ttyfffff	(pty master)
+> > 
+> 
+> This would seem to be a somewhat silly way to extend it, especially
+> given the arbitrary artificial limit of just over 2^16 entries.
 
-I can confirm that. While using this patch, when I am in X and then
-switch to console and back to X there are no new messages (checked with
-dmesg).
+> If you're going to do this, I would suggest using the following
+> namespace, as such:
+> 
+> 	[pt]ty[p-za-e][0-9a-f]+
 
-Reinette
+To be backward compatible, the format should be, at least:
+
+ 	[pt]ty[p-za-e][0-9a-f].+
+
+otherwise, it can potentially break backward compatibility, as the first 10 devices will be like:
+	/dev/ttyp0
+	/dev/ttyp1
+	...
+
+instead of:
+
+	/dev/ttyp00
+	/dev/ttyp01
+
+> 
+> 	sprintf(name, "%cty%c%x", slave ? 't' : 'p',
+> 		"pqrstuvwxyzabcde"[(index >> 4) & 15],
+> 		((index >> 4) & ~15) | (index & 15));
+
+We may use this, instead:
+
+ 	sprintf(name, "%cty%c%02x", slave ? 't' : 'p',
+ 		"pqrstuvwxyzabcde"[(index >> 4) & 15],
+ 		((index >> 4) & ~15) | (index & 15));
+
+> No arbitrary limits, and it still extends the existing namespace with
+> some reasonable continuity.  It means bits [7:4] are weirdly encoded,
+> but we get straightforward backwards compatibility as a result.
+
+But it will also be a little more weird.
+> 
 
 
+
+
+Cheers,
+Mauro
