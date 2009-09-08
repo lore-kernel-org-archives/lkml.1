@@ -1,58 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZIHNSq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZIHNFQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZIHNSq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 09:18:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754073AbZIHNSo
+	id S1753687AbZIHNFQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 09:05:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZIHNFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 09:18:44 -0400
-Received: from depni.sinp.msu.ru ([213.131.7.21]:52031 "EHLO depni.sinp.msu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082AbZIHNSn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 09:18:43 -0400
-X-Greylist: delayed 1291 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 09:18:43 EDT
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Epic regression in throughput since v2.6.23
-References: <20090906205952.GA6516@elte.hu>
-Date: Tue, 08 Sep 2009 12:57:09 +0000
-In-Reply-To: <20090906205952.GA6516@elte.hu> (Ingo Molnar's message of "Sun, 6
-	Sep 2009 22:59:52 +0200")
-Message-ID: <87hbvdiogq.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
+	Tue, 8 Sep 2009 09:05:15 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:35482 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbZIHNFN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 09:05:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=w4P7YuJ0hidVCZKUGLD1OYmOgTNKK/eWad4LFsVNL9hLhugEEiSnBQe/73YhIHhFka
+         jIF2nL6nqrfddGW9g6UA+oTeao8h358z+GCD5FL5ONZDl2IEUohQmtny7ld66OmWq8ZB
+         cKZ46AYTWSaLH0F9AUI3i/fmEEbh5bu8MqDBQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20090903083600.GA7235@n2100.arm.linux.org.uk>
+References: <200908061208.22131.laurent.pinchart@ideasonboard.com>
+	 <e06498070908250553h5971102x6da7004495abb911@mail.gmail.com>
+	 <20090901132824.GN19719@n2100.arm.linux.org.uk>
+	 <200909011543.48439.laurent.pinchart@ideasonboard.com>
+	 <20090902151044.GG30183@localhost>
+	 <20090903083600.GA7235@n2100.arm.linux.org.uk>
+Date: Tue, 8 Sep 2009 09:05:14 -0400
+Message-ID: <e06498070909080605sf11681en7ac55ddc024332e4@mail.gmail.com>
+Subject: Re: How to efficiently handle DMA and cache on ARMv7 ? (was "Is 
+	get_user_pages() enough to prevent pages from being swapped out ?")
+From: Steven Walter <stevenrwalter@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Imre Deak <imre.deak@nokia.com>,
+       ext Laurent Pinchart <laurent.pinchart@ideasonboard.com>,
+       David Xiao <dxiao@broadcom.com>, Ben Dooks <ben-linux@fluff.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Robin Holt <holt@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       v4l2_linux <linux-media@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Sep 3, 2009 at 4:36 AM, Russell King - ARM
+Linux<linux@arm.linux.org.uk> wrote:
+> On Wed, Sep 02, 2009 at 06:10:44PM +0300, Imre Deak wrote:
+>> To my understanding buffers returned by dma_alloc_*, kmalloc, vmalloc
+>> are ok:
+>
+> For dma_map_*, the only pages/addresses which are valid to pass are
+> those returned by get_free_pages() or kmalloc.  Everything else is
+> not permitted.
+>
+> Use of vmalloc'd and dma_alloc_* pages with the dma_map_* APIs is invalid
+> use of the DMA API.  See the notes in the DMA-mapping.txt document
+> against "dma_map_single".
 
-Hi. I've done measurments of time taken by make -j4 kernel build
-on a quadcore box.  Results are interesting: mainline kernel
-has regressed since v2.6.23 release by more than 10%.
+Actually, DMA-mapping.txt seems to explicitly say that it's allowed to
+use pages allocated by vmalloc:
 
-The following graph is time taken by "make -j4" (median over 9 runs)
-versus kernel version.  The huge (10%) regressions since v2.6.23 is
-apparent.  Note that tip/master c26f010 is better than current mainline.
-Also note that BFS is significantly better than both and shows the same
-throughput as vanilla v2.6.23:
+"It is possible to DMA to the _underlying_ memory mapped into a
+vmalloc() area, but this requires walking page tables to get the
+physical addresses, and then translating each of those pages back to a
+kernel address using something like __va()."
 
-http://img403.imageshack.us/img403/7029/epicmakej4.png
+>> For user mappings I think you'd have to do an additional flush for
+>> the direct mapping, while the user mapping is flushed in dma_map_*.
+>
+> I will not accept a patch which adds flushing of anything other than
+> the kernel direct mapping in the dma_map_* functions, so please find
+> a different approach.
 
-
-The following plot is a detailed comparison of time taken versus number
-of parallel jobs. Note that at "make -j4" (which equals number of hardware
-threads), BFS has the minimum (best performance), 
-and tip/master -- maximum (worst).  I've also tested mainline v2.6.31
-(not shown on the graph) which produces similar, albeit a bit slower,
-results as the tip/master.
-
-http://img179.imageshack.us/img179/5335/epicbfstip.png
-
-
-Conclusion are
-1) mainline has severely regressed since v2.6.23
-2) BFS shows optimal performance at make -jN where N equals number of
-   h/w threads, while current mainline scheduler performance is far from
-   optimal in this case.
+What's the concern here?  Just the performance overhead of the checks
+and additional flushes?  It seems much more desirable for the
+dma_map_* API to take care of potential cache aliases than to require
+every driver to manage it for itself.  After all, part of the purpose
+of the DMA API is to manage the cache maintenance around DMAs in an
+architecture-independent way.
+-- 
+-Steven Walter <stevenrwalter@gmail.com>
