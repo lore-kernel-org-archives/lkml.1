@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZIHQLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751612AbZIHQM5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751544AbZIHQLt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 12:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZIHQLs
+	id S1751612AbZIHQM5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 12:12:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751555AbZIHQM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 12:11:48 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:51670 "EHLO mail.vyatta.com"
+	Tue, 8 Sep 2009 12:12:56 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:51727 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750991AbZIHQLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 12:11:47 -0400
-Date: Tue, 8 Sep 2009 09:11:43 -0700
+	id S1750777AbZIHQMz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 12:12:55 -0400
+Date: Tue, 8 Sep 2009 09:12:52 -0700
 From: Stephen Hemminger <shemminger@vyatta.com>
 To: rostedt@goodmis.org
 Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Ingo Molnar <mingo@elte.hu>,
@@ -21,7 +21,7 @@ Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
        Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
 Subject: Re: Stop using tasklets for bottom halves
-Message-ID: <20090908091143.1e613963@nehalam>
+Message-ID: <20090908091252.3e931e0d@nehalam>
 In-Reply-To: <1252376254.21261.2052.camel@gandalf.stny.rr.com>
 References: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com>
 	<20090907171406.6a4b6116@nehalam>
@@ -86,11 +86,12 @@ Steven Rostedt <rostedt@goodmis.org> wrote:
 > plan to present at Linux Plumbers. I've been too distracted by other
 > things, but hopefully I'll have some good numbers to present by then.
 > 
+> -- Steve
+> 
+> 
 
-
-That's great, does it keep the good properties of NAPI (irq disabling
-and throttling?)
-
-
+A good performance test is changing the behaviour of loopback
+device and running lmbench.  This checks overhead without the specter
+of real hardware.
 
 -- 
