@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751557AbZIHRd2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751684AbZIHRYx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751557AbZIHRd2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 13:33:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZIHRd1
+	id S1751684AbZIHRYx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 13:24:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750932AbZIHRYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 13:33:27 -0400
-Received: from mailhost.ics.forth.gr ([139.91.157.55]:38712 "EHLO
-	mailhost.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751517AbZIHRd0 (ORCPT
+	Tue, 8 Sep 2009 13:24:52 -0400
+Received: from outbound-mail-109.bluehost.com ([69.89.22.9]:41752 "HELO
+	outbound-mail-109.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750912AbZIHRYv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 13:33:26 -0400
-X-Greylist: delayed 586 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 13:33:26 EDT
-X-DKIM: Sendmail DKIM Filter v2.8.2 mailhost.ics.forth.gr n88HNdhi011050
-X-AuditID: 8b5b9d37-a0cc3bb000007f62-05-4aa6931a1759 
-Message-ID: <4AA69319.7070004@ics.forth.gr>
-Date: Tue, 08 Sep 2009 20:23:37 +0300
-From: Manolis Marazakis <maraz@ics.forth.gr>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Manolis Marazakis <maraz@ics.forth.gr>
-Subject: availability of the FileMark benchmark?
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 8 Sep 2009 13:24:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=GAhUcXOx47hq8Se2T+QrYkdLKxtFsdWB1klaxcfL5KctaK/y1f04JLOWhMg+DKOWNkrC5O1D/WnSUibGnO1zrV4p9uGU9H0qpTsKVpBD85YEPZidG0gdufd+hHnyzZ3e;
+Date: Tue, 8 Sep 2009 10:24:18 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Eric Anholt" <eric@anholt.net>,
+       "ling.ma@intel.com" <ling.ma@intel.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Reinette Chatre" <reinette.chatre@intel.com>
+Subject: Re: [Bug #13819] system freeze when switching to console
+Message-ID: <20090908102418.673504ae@jbarnes-g45>
+In-Reply-To: <Vm51Upp4EV.A.r-D.mgBpKB@chimera>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
+	<Vm51Upp4EV.A.r-D.mgBpKB@chimera>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun,  6 Sep 2009 19:24:50 +0200 (CEST)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Hello,
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.30.  Please verify if it still should be listed and let me
+> know (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13819
+> Subject		: system freeze when switching to console
+> Submitter	: Reinette Chatre <reinette.chatre@intel.com>
+> Date		: 2009-07-23 17:57 (46 days old)
 
-I am writing to inquire about the availability of the FileMark 
-benchmark, as described in the paper "Filesystem Performance and 
-Scalability in Linux 2.4.17" (Freenix Track at USENIX Annual Technical 
-Conference, 2002). It does not appear in /filemark.sf.net, which the 
-reference given in this paper./
-
-FileMark caught my eye, as I have been thinking about a multi-threaded 
-variant of the PostMark benchmark.
-
-Best regards,
-
-Manolis Marazakis.
+So simply switching VTs causes this problem too?  Based on your initial
+description it sounds like a panic (keyboard LEDs were flashing).  If
+it happens at VT switch time you should be able to capture the panic
+output with netconsole like Linus mentioned.
 
 -- 
-Research and Development Engineer,
-Computer Architecture and VLSI Systems Laboratory,
-Institute of Computer Science,
-Foundation for Research and Technology - Hellas (FORTH),
-100, Nikolaou Plastira Ave, Vassilika Vouton,
-Heraklion, Greece GR-70013.
-
-
+Jesse Barnes, Intel Open Source Technology Center
