@@ -1,51 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbZIHOOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZIHONj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbZIHOOB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 10:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbZIHOOA
+	id S1754562AbZIHONj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 10:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbZIHONi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 10:14:00 -0400
-Received: from mail.deathmatch.net ([72.66.92.28]:1944 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754465AbZIHOOA (ORCPT
+	Tue, 8 Sep 2009 10:13:38 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:44419 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754371AbZIHONi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 10:14:00 -0400
-Date: Tue, 8 Sep 2009 10:11:48 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Denis Kirjanov <kirjanov@gmail.com>
-Cc: michael <michael@panicking.kicks-ass.org>,
-       Xavier Bestel <xavier.bestel@free.fr>, devel@driverdev.osuosl.org,
-       b_yogesh_snowy@yahoo.com, Dan Williams <dcbw@redhat.com>,
-       Stefan Lippers-Hollmann <s.L-H@gmx.de>,
-       Len Widra <Len.Widra@atheros.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, Stephen Chen <Stephen.Chen@atheros.com>,
-       Jouni Malinen <j@w1.fi>, Nick Kossifidis <mickflemm@gmail.com>,
-       Paul Fertser <fercerpav@gmail.com>, Harald Welte <laforge@openmoko.org>,
-       Witold Sowa <witold.sowa@gmail.com>,
-       Michael Renzmann <mrenzmann@madwifi-project.org>,
-       Werner Almesberger <werner@openmoko.org>
-Subject: Re: Atheros Linux wireless drivers home page - and two new driver
-	projects
-Message-ID: <20090908141148.GB13550@hash.localnet>
-References: <43e72e890909031554v1343bcfdu8ed6e23d0b1df832@mail.gmail.com> <1252065236.14338.179.camel@skunk> <1252080405.24673.11.camel@mj> <1252081080.31087.7.camel@skunk> <43e72e890909040951y6a1e639bl771a63389665ca2a@mail.gmail.com> <1252101647.11934.0.camel@bip> <4AA24FAB.20700@panicking.kicks-ass.org> <a872555b0909072350qf105990q3efb99a8bbb2d0bc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a872555b0909072350qf105990q3efb99a8bbb2d0bc@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 8 Sep 2009 10:13:38 -0400
+Subject: Re: [stable] [PATCH] hugetlb: restore interleaving of bootmem huge
+ pages
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Eric Whitney <eric.whitney@hp.com>, Adam Litke <agl@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Rientjes <rientjes@google.com>,
+       Andy Whitcroft <apw@canonical.com>, stable <stable@kernel.org>
+In-Reply-To: <20090908103233.GA28127@csn.ul.ie>
+References: <1247860154.11565.45.camel@useless.americas.hpqcorp.net>
+	 <20090903203339.GB7467@kroah.com>  <20090908103233.GA28127@csn.ul.ie>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Tue, 08 Sep 2009 10:13:35 -0400
+Message-Id: <1252419215.5214.19.camel@useless.americas.hpqcorp.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 10:50:46AM +0400, Denis Kirjanov wrote:
-> Good time of day.
-> Do I need to use wireless-testing tree ?
+On Tue, 2009-09-08 at 11:32 +0100, Mel Gorman wrote:
+> On Thu, Sep 03, 2009 at 01:33:39PM -0700, Greg KH wrote:
+> > On Fri, Jul 17, 2009 at 03:49:14PM -0400, Lee Schermerhorn wrote:
+> > > PATCH fix distribution of bootmem huge pages
+> > > 
+> > > Against: 2.6.31-rc3
+> > > 
+> > > For stable, applicable back through 2.6.27
+> > > 
+> > > [A version of this patch has been added to the -mm tree.  That patch
+> > > won't apply cleanly to mainline nor stable trees because of function
+> > > renaming.  This one should.]
+> > 
+> > What is the git commit id of this patch that is in Linus's tree?
+> > 
+> 
+> I can only find it in mmotm. It doesn't appear to have been merged to
+> mainline at all. Lee, what happened with this? Did it get held off until
+> post-2.6.31 for merging to mainline?
 
-For what goal?  Generally speaking, no you do
-not need to use wireless-testing, unless you wish
-to test or contribute, in which cases the answer
-is "yes."
+Mel:
 
--Bob
+This patch, along with the interleaving of freeing persistent huge pages
+are still in mmotm, awaiting the merge window.  I had sent out another
+version suitable for mainline and stable--same patch with conflicts
+resolved--but, apparently it didn't make mainline yet.
+
+Lee
 
