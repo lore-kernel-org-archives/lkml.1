@@ -1,44 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754188AbZIHKLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754086AbZIHKGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754188AbZIHKLu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 06:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754062AbZIHKLu
+	id S1754086AbZIHKGV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 06:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZIHKGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 06:11:50 -0400
-Received: from build.ossfans.org ([67.223.233.67]:35712 "EHLO
-	build.ossfans.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753796AbZIHKLt (ORCPT
+	Tue, 8 Sep 2009 06:06:20 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:39886 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753961AbZIHKGT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 06:11:49 -0400
-X-Greylist: delayed 442 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 06:11:49 EDT
-Date: Tue, 8 Sep 2009 14:04:29 +0400
-From: Sergey Lapin <slapin@ossfans.org>
-To: linux-kernel@vger.kernel.org
-Subject: fbcon and framebuffer app
-Message-ID: <20090908100429.GB5235@build.ossfans.org>
+	Tue, 8 Sep 2009 06:06:19 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [rfc] lru_add_drain_all() vs isolation
+Cc: kosaki.motohiro@jp.fujitsu.com, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1252398006.7746.3.camel@twins>
+References: <20090908085344.0CBD.A69D9226@jp.fujitsu.com> <1252398006.7746.3.camel@twins>
+Message-Id: <20090908190148.0CC9.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue,  8 Sep 2009 19:06:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, all!
+> On Tue, 2009-09-08 at 08:56 +0900, KOSAKI Motohiro wrote:
+> > Hi Peter,
+> > 
+> > > On Mon, 2009-09-07 at 10:17 +0200, Mike Galbraith wrote:
+> > > 
+> > > > [  774.651779] SysRq : Show Blocked State
+> > > > [  774.655770]   task                        PC stack   pid father
+> > > > [  774.655770] evolution.bin D ffff8800bc1575f0     0  7349   6459 0x00000000
+> > > > [  774.676008]  ffff8800bc3c9d68 0000000000000086 ffff8800015d9340 ffff8800bb91b780
+> > > > [  774.676008]  000000000000dd28 ffff8800bc3c9fd8 0000000000013340 0000000000013340
+> > > > [  774.676008]  00000000000000fd ffff8800015d9340 ffff8800bc1575f0 ffff8800bc157888
+> > > > [  774.676008] Call Trace:
+> > > > [  774.676008]  [<ffffffff812c4a11>] schedule_timeout+0x2d/0x20c
+> > > > [  774.676008]  [<ffffffff812c4891>] wait_for_common+0xde/0x155
+> > > > [  774.676008]  [<ffffffff8103f1cd>] ? default_wake_function+0x0/0x14
+> > > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
+> > > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
+> > > > [  774.676008]  [<ffffffff812c49ab>] wait_for_completion+0x1d/0x1f
+> > > > [  774.676008]  [<ffffffff8105fdf5>] flush_work+0x7f/0x93
+> > > > [  774.676008]  [<ffffffff8105f870>] ? wq_barrier_func+0x0/0x14
+> > > > [  774.676008]  [<ffffffff81060109>] schedule_on_each_cpu+0xb4/0xed
+> > > > [  774.676008]  [<ffffffff810c0c78>] lru_add_drain_all+0x15/0x17
+> > > > [  774.676008]  [<ffffffff810d1dbd>] sys_mlock+0x2e/0xde
+> > > > [  774.676008]  [<ffffffff8100bc1b>] system_call_fastpath+0x16/0x1b
+> > > 
+> > > FWIW, something like the below (prone to explode since its utterly
+> > > untested) should (mostly) fix that one case. Something similar needs to
+> > > be done for pretty much all machine wide workqueue thingies, possibly
+> > > also flush_workqueue().
+> > 
+> > Can you please explain reproduce way and problem detail?
+> > 
+> > AFAIK, mlock() call lru_add_drain_all() _before_ grab semaphoe. Then,
+> > it doesn't cause any deadlock.
+> 
+> Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
+> cpu0 does mlock()->lru_add_drain_all(), which does
+> schedule_on_each_cpu(), which then waits for all cpus to complete the
+> work. Except that cpu1, which is busy with the RT task, will never run
+> keventd until the RT load goes away.
+> 
+> This is not so much an actual deadlock as a serious starvation case.
 
-I have special framebuffer device (128x128x2bpp display via external
-framebuffer interface on OMAP3), which works quite well, switching off
-backlight with fbcon on, and blanking. A problem is that I need
-to run graphics application on a framebuffer. But I also need blanking
-on inactivity. Application works perfectly until blanking occurs,
-then display is zeroed-out and application still redraws regions it
-changes. This is ok while not really clean, but also, when activity
-is recieved, backlight is on, but screen is not redrawn, since
-application is not aware of blanking, so I have to force it to readraw
-all screen.
-So, how this should be fixed? I want to keep fbcon
-auto-blanking functionality and tty, so removing fbcon is not an option.
+This seems flush_work vs RT-thread problem, not only lru_add_drain_all().
+Why other workqueue flusher doesn't affect this issue?
 
-Thanks beforehand,
-S.
+
+
 
