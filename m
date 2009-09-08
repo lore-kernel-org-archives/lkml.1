@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbZIHI2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZIHI3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753944AbZIHI2L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 04:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZIHI2K
+	id S1754025AbZIHI3S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 04:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZIHI3S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 04:28:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47339 "EHLO
+	Tue, 8 Sep 2009 04:29:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47346 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750843AbZIHI2K (ORCPT
+	with ESMTP id S1753388AbZIHI3R (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 04:28:10 -0400
-Date: Tue, 8 Sep 2009 01:31:33 -0700
+	Tue, 8 Sep 2009 04:29:17 -0400
+Date: Tue, 8 Sep 2009 01:32:40 -0700
 From: Arjan van de Ven <arjan@infradead.org>
-To: Nikos Chantziaras <realnc@arcor.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090908013133.59203403@infradead.org>
-In-Reply-To: <4AA6056A.4020106@arcor.de>
-References: <20090906205952.GA6516@elte.hu>
-	<h81v7t$p6e$1@ger.gmane.org>
-	<20090907074039.1b6bc1ac@infradead.org>
-	<4AA6056A.4020106@arcor.de>
+To: Luming Yu <luming.yu@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Len Brown <lenb@kernel.org>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
+Subject: Re: [RFC PATCH] C2 could be mapped to C3 so need a flush cache
+Message-ID: <20090908013240.51e39d1e@infradead.org>
+In-Reply-To: <3877989d0909080120w78fce005le465828a5e1ae2b7@mail.gmail.com>
+References: <3877989d0909071926q77aac67cj532137513710025d@mail.gmail.com>
+	<20090907204913.2aef5c49@infradead.org>
+	<3877989d0909072209g454d92feuc0d3cdbd95a13a9c@mail.gmail.com>
+	<20090908005236.1fbfdd13@infradead.org>
+	<3877989d0909080120w78fce005le465828a5e1ae2b7@mail.gmail.com>
 Organization: Intel
 X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
 Mime-Version: 1.0
@@ -32,22 +35,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 Sep 2009 10:19:06 +0300
-Nikos Chantziaras <realnc@arcor.de> wrote:
+On Tue, 8 Sep 2009 16:20:52 +0800
+Luming Yu <luming.yu@gmail.com> wrote:
 
-> latencytop has this to say:
+> > Do you have an example of a specific machine where this is fscked
+> > up? (if so, it's blacklist worthy.. probably worth blacklisting just
+> > outright doing C states on it)
 > 
->    http://foss.math.aegean.gr/~realnc/pics/latop1.png
-> 
-> Though I don't really understand what this tool is trying to tell me,
-> I hope someone does.
+> Those boxes that have c2 lapic timer stop issue is supposed to need
+> this patch. But I don't have such kind of system. So test and
+> comments are needed by those who actually have such kind of box.
 
-unfortunately this is both an older version of latencytop, and it's
-incorrectly installed ;-(
-Latencytop is supposed to translate those cryptic strings to english,
-but due to not being correctly installed, it does not do this ;(
+I find that highly unlikely; this software cache flush codepath hasn't
+applied to any CPU sold in the last few years....
 
-the latest version of latencytop also has a GUI (thanks to Ben) 
 
 -- 
 Arjan van de Ven 	Intel Open Source Technology Centre
