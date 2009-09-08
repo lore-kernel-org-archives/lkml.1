@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752469AbZIHWUg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZIHWWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752469AbZIHWUg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 18:20:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752310AbZIHWUf
+	id S1752434AbZIHWWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 18:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbZIHWWQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 18:20:35 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:39443 "EHLO e7.ny.us.ibm.com"
+	Tue, 8 Sep 2009 18:22:16 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:12985 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751819AbZIHWUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 18:20:34 -0400
-Date: Tue, 8 Sep 2009 15:20:36 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-Message-ID: <20090908222036.GM6753@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1> <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1> <4AA00400.1030005@gmail.com> <alpine.DEB.1.10.0909031731540.24199@V090114053VZO-1> <20090903231757.GP6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909041140040.9781@V090114053VZO-1> <20090904204335.GG6751@linux.vnet.ibm.com> <alpine.DEB.1.10.0909081555410.26382@V090114053VZO-1>
+	id S1751900AbZIHWWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 18:22:16 -0400
+Message-ID: <4AA6D8D0.9050509@redhat.com>
+Date: Tue, 08 Sep 2009 18:21:04 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0909081555410.26382@V090114053VZO-1>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+CC: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 5/8] mm: follow_hugetlb_page flags
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072235360.15430@sister.anvils>
+In-Reply-To: <Pine.LNX.4.64.0909072235360.15430@sister.anvils>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 03:57:04PM -0400, Christoph Lameter wrote:
-> On Fri, 4 Sep 2009, Paul E. McKenney wrote:
+Hugh Dickins wrote:
+> follow_hugetlb_page() shouldn't be guessing about the coredump case
+> either: pass the foll_flags down to it, instead of just the write bit.
 > 
-> > We have gotten along fine with only SLAB_DESTROY_BY_RCU for almost
-> > five years, so I think we are plenty fine with what we have.  So, as
-> > you say, "as the need arises".
+> Remove that obscure huge_zeropage_ok() test.  The decision is easy,
+> though unlike the non-huge case - here vm_ops->fault is always set.
+> But we know that a fault would serve up zeroes, unless there's
+> already a hugetlbfs pagecache page to back the range.
 > 
-> These were the glory years where SLAB_DESTROY_BY_RCU was only used for
-> anonymous vmas. Now Eric has picked it up for the net subsystem. You may
-> see the RCU use proliferate.
+> (Alternatively, since hugetlb pages aren't swapped out under pressure,
+> you could save more dump space by arguing that a page not yet faulted
+> into this process cannot be relevant to the dump; but that would be
+> more surprising.)
 > 
-> The kmem_cache_destroy rcu barriers did not matter until
-> SLAB_DESTROY_BY_RCU spread.
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
-Certainly it is true that increased use of RCU has resulted in new
-requirements, which have in turn led to any number of changes over
-the years.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Are you saying that people have already asked you for additional
-variants of SLAB_DESTROY_BY_RCU?  If so, please don't keep them a secret!
-Otherwise, experience indicates that it is best to wait for the new uses,
-because they usually aren't quite what one might expect.
-
-							Thanx, Paul
+-- 
+All rights reversed.
