@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752028AbZIHTe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752062AbZIHThy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752028AbZIHTe7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZIHTe6
+	id S1752062AbZIHThy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:37:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZIHThy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:34:58 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:2047 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752008AbZIHTe6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:34:58 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 8 Sep 2009 15:37:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:30372 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751994AbZIHThx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:37:53 -0400
+Date: Tue, 8 Sep 2009 16:37:52 -0300
+From: Glauber Costa <glommer@redhat.com>
+To: Marcelo Tosatti <mtosatti@redhat.com>
+Cc: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: Re: [PATCH v2 1/2] keep guest wallclock in sync with host clock
+Message-ID: <20090908193752.GH9013@mothafucka.localdomain>
+References: <1251902098-8660-1-git-send-email-glommer@redhat.com> <1251902098-8660-2-git-send-email-glommer@redhat.com> <20090908184159.GC19318@amt.cnet>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: question on sched-rt group allocation cap: sched_rt_runtime_us
-Date: Tue, 8 Sep 2009 12:34:55 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501F0F6A8@exchange.ZeugmaSystems.local>
-In-Reply-To: <1252436788.6923.14.camel@marge.simson.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: question on sched-rt group allocation cap: sched_rt_runtime_us
-Thread-Index: Acowt5cv4q1a326FRuSrtKBP3yRarQAA7rsQ
-References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it> <dhcf5-263-13@gated-at.bofh.it> <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com> <1252218779.6126.17.camel@marge.simson.net> <DDFD17CC94A9BD49A82147DDF7D545C54DC48B@exchange.ZeugmaSystems.local> <217247FB-ED91-4A24-B698-71CEEFA58636@anirban.org> <1252436788.6923.14.camel@marge.simson.net>
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Mike Galbraith" <efault@gmx.de>, "Anirban Sinha" <ani@anirban.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>,
-       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Dario Faggioli" <raistlin@linux.it>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090908184159.GC19318@amt.cnet>
+X-ChuckNorris: True
+User-Agent: Jack Bauer
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 08, 2009 at 03:41:59PM -0300, Marcelo Tosatti wrote:
+> On Wed, Sep 02, 2009 at 10:34:57AM -0400, Glauber Costa wrote:
+> > KVM clock is great to avoid drifting in guest VMs running ontop of kvm.
+> > However, the current mechanism will not propagate changes in wallclock value
+> > upwards. This effectively means that in a large pool of VMs that need accurate timing,
+> > all of them has to run NTP, instead of just the host doing it.
+> > 
+> > Since the host updates information in the shared memory area upon msr writes,
+> > this patch introduces a worker that writes to that msr, and calls do_settimeofday
+> > at fixed intervals, with second resolution. A interval of 0 determines that we
+> > are not interested in this behaviour. A later patch will make this optional at
+> > runtime
+> > 
+> > Signed-off-by: Glauber Costa <glommer@redhat.com>
+> 
+> As mentioned before, ntp already does this (and its not that heavy is
+> it?).
+> 
+> For example, if ntp running on the host, it avoids stepping the clock
+> backwards by slow adjustment, while the periodic frequency adjustment on
+> the guest bypasses that.
 
->Maybe.  Short term hack.  My current thoughts on the subject, after
-some
->testing, is that the patchlet should just die, and pondering the larger
->solution should happen.
+Simple question: How do I run ntp in guests without network?
 
-Just curious, what is the larger solution? When everyone adapts using
-control-groups? 
