@@ -1,51 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754253AbZIHKQO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754244AbZIHKUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754253AbZIHKQO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 06:16:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZIHKQN
+	id S1754244AbZIHKUV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 06:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZIHKUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 06:16:13 -0400
-Received: from server1.wserver.cz ([82.113.45.157]:49418 "EHLO
-	server1.wserver.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754153AbZIHKQM (ORCPT
+	Tue, 8 Sep 2009 06:20:20 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:22315 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753932AbZIHKUU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 06:16:12 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: jbarnes@virtuousgeek.org
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] X86: pci quirks, fix pci refcounting
-Date: Tue,  8 Sep 2009 12:16:18 +0200
-Message-Id: <1252404978-14977-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.3.3
+	Tue, 8 Sep 2009 06:20:20 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [rfc] lru_add_drain_all() vs isolation
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm <linux-mm@kvack.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090908190148.0CC9.A69D9226@jp.fujitsu.com>
+References: <20090908085344.0CBD.A69D9226@jp.fujitsu.com>
+	 <1252398006.7746.3.camel@twins>
+	 <20090908190148.0CC9.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 12:20:09 +0200
+Message-Id: <1252405209.7746.38.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stanse found a pci reference leak in quirk_amd_nb_node.
-Instead of putting nb_ht, there is a put of dev passed as
-an argument.
+On Tue, 2009-09-08 at 19:06 +0900, KOSAKI Motohiro wrote:
+> > On Tue, 2009-09-08 at 08:56 +0900, KOSAKI Motohiro wrote:
+> > > Hi Peter,
+> > > 
+> > > > On Mon, 2009-09-07 at 10:17 +0200, Mike Galbraith wrote:
+> > > > 
+> > > > > [  774.651779] SysRq : Show Blocked State
+> > > > > [  774.655770]   task                        PC stack   pid father
+> > > > > [  774.655770] evolution.bin D ffff8800bc1575f0     0  7349   6459 0x00000000
+> > > > > [  774.676008]  ffff8800bc3c9d68 0000000000000086 ffff8800015d9340 ffff8800bb91b780
+> > > > > [  774.676008]  000000000000dd28 ffff8800bc3c9fd8 0000000000013340 0000000000013340
+> > > > > [  774.676008]  00000000000000fd ffff8800015d9340 ffff8800bc1575f0 ffff8800bc157888
+> > > > > [  774.676008] Call Trace:
+> > > > > [  774.676008]  [<ffffffff812c4a11>] schedule_timeout+0x2d/0x20c
+> > > > > [  774.676008]  [<ffffffff812c4891>] wait_for_common+0xde/0x155
+> > > > > [  774.676008]  [<ffffffff8103f1cd>] ? default_wake_function+0x0/0x14
+> > > > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
+> > > > > [  774.676008]  [<ffffffff810c0e63>] ? lru_add_drain_per_cpu+0x0/0x10
+> > > > > [  774.676008]  [<ffffffff812c49ab>] wait_for_completion+0x1d/0x1f
+> > > > > [  774.676008]  [<ffffffff8105fdf5>] flush_work+0x7f/0x93
+> > > > > [  774.676008]  [<ffffffff8105f870>] ? wq_barrier_func+0x0/0x14
+> > > > > [  774.676008]  [<ffffffff81060109>] schedule_on_each_cpu+0xb4/0xed
+> > > > > [  774.676008]  [<ffffffff810c0c78>] lru_add_drain_all+0x15/0x17
+> > > > > [  774.676008]  [<ffffffff810d1dbd>] sys_mlock+0x2e/0xde
+> > > > > [  774.676008]  [<ffffffff8100bc1b>] system_call_fastpath+0x16/0x1b
+> > > > 
+> > > > FWIW, something like the below (prone to explode since its utterly
+> > > > untested) should (mostly) fix that one case. Something similar needs to
+> > > > be done for pretty much all machine wide workqueue thingies, possibly
+> > > > also flush_workqueue().
+> > > 
+> > > Can you please explain reproduce way and problem detail?
+> > > 
+> > > AFAIK, mlock() call lru_add_drain_all() _before_ grab semaphoe. Then,
+> > > it doesn't cause any deadlock.
+> > 
+> > Suppose you have 2 cpus, cpu1 is busy doing a SCHED_FIFO-99 while(1),
+> > cpu0 does mlock()->lru_add_drain_all(), which does
+> > schedule_on_each_cpu(), which then waits for all cpus to complete the
+> > work. Except that cpu1, which is busy with the RT task, will never run
+> > keventd until the RT load goes away.
+> > 
+> > This is not so much an actual deadlock as a serious starvation case.
+> 
+> This seems flush_work vs RT-thread problem, not only lru_add_drain_all().
+> Why other workqueue flusher doesn't affect this issue?
 
-http://stanse.fi.muni.cz/
+flush_work() will only flush workqueues on which work has been enqueued
+as Oleg pointed out.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- arch/x86/kernel/quirks.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The problem is with lru_add_drain_all() enqueueing work on all
+workqueues.
 
-diff --git a/arch/x86/kernel/quirks.c b/arch/x86/kernel/quirks.c
-index af71d06..6c3b2c6 100644
---- a/arch/x86/kernel/quirks.c
-+++ b/arch/x86/kernel/quirks.c
-@@ -508,7 +508,7 @@ static void __init quirk_amd_nb_node(struct pci_dev *dev)
- 
- 	pci_read_config_dword(nb_ht, 0x60, &val);
- 	set_dev_node(&dev->dev, val & 7);
--	pci_dev_put(dev);
-+	pci_dev_put(nb_ht);
- }
- 
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, PCI_DEVICE_ID_AMD_K8_NB,
--- 
-1.6.3.3
+There is nothing that makes lru_add_drain_all() the only such site, its
+the one Mike posted to me, and my patch was a way to deal with that.
+
+I also explained that its not only RT related in that the HPC folks also
+want to avoid unneeded work -- for them its not starvation but a
+performance issue.
+
+In generic we should avoid doing work when there is no work to be done.
 
