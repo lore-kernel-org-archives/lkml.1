@@ -1,66 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753879AbZIHHTI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZIHHbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753879AbZIHHTI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 03:19:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753763AbZIHHTH
+	id S1753899AbZIHHbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 03:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZIHHbT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 03:19:07 -0400
-Received: from mail-in-06.arcor-online.net ([151.189.21.46]:43392 "EHLO
-	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753690AbZIHHTG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 03:19:06 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-14.arcor-online.net 7A1EB28B16C
-Message-ID: <4AA6056A.4020106@arcor.de>
-Date: Tue, 08 Sep 2009 10:19:06 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu>	<h81v7t$p6e$1@ger.gmane.org> <20090907074039.1b6bc1ac@infradead.org>
-In-Reply-To: <20090907074039.1b6bc1ac@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 03:31:19 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54517 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753757AbZIHHbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 03:31:18 -0400
+Date: Tue, 8 Sep 2009 09:31:19 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 7/8] mm: reinstate ZERO_PAGE
+Message-ID: <20090908073119.GA29902@wotan.suse.de>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072238320.15430@sister.anvils>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0909072238320.15430@sister.anvils>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/07/2009 05:40 PM, Arjan van de Ven wrote:
-> On Mon, 07 Sep 2009 06:38:36 +0300
-> Nikos Chantziaras<realnc@arcor.de>  wrote:
->
->> On 09/06/2009 11:59 PM, Ingo Molnar wrote:
->>> [...]
->>> Also, i'd like to outline that i agree with the general goals
->>> described by you in the BFS announcement - small desktop systems
->>> matter more than large systems. We find it critically important
->>> that the mainline Linux scheduler performs well on those systems
->>> too - and if you (or anyone else) can reproduce suboptimal behavior
->>> please let the scheduler folks know so that we can fix/improve it.
->>
->> BFS improved behavior of many applications on my Intel Core 2 box in
->> a way that can't be benchmarked.  Examples:
->
-> Have you tried to see if latencytop catches such latencies ?
+On Mon, Sep 07, 2009 at 10:39:34PM +0100, Hugh Dickins wrote:
+> KAMEZAWA Hiroyuki has observed customers of earlier kernels taking
+> advantage of the ZERO_PAGE: which we stopped do_anonymous_page() from
+> using in 2.6.24.  And there were a couple of regression reports on LKML.
+> 
+> Following suggestions from Linus, reinstate do_anonymous_page() use of
+> the ZERO_PAGE; but this time avoid dirtying its struct page cacheline
+> with (map)count updates - let vm_normal_page() regard it as abnormal.
+> 
+> Use it only on arches which __HAVE_ARCH_PTE_SPECIAL (x86, s390, sh32,
+> most powerpc): that's not essential, but minimizes additional branches
+> (keeping them in the unlikely pte_special case); and incidentally
+> excludes mips (some models of which needed eight colours of ZERO_PAGE
+> to avoid costly exceptions).
 
-I've just tried it.
+Without looking closely, why is it a big problem to have a
+!HAVE PTE SPECIAL case? Couldn't it just be a check for
+pfn == zero_pfn that is conditionally compiled away for pte
+special architectures anyway?
 
-I start latencytop and then mplayer on a video that doesn't max out the 
-CPU (needs about 20-30% of a single core (out of 2 available)).  Then, 
-while the video is playing, I press Alt+Tab repeatedly which makes the 
-desktop compositor kick-in and stay active (it lays out all windows as a 
-"flip-switch", similar to the Microsoft Vista Aero alt+tab effect). 
-Repeatedly pressing alt+tab results in the compositor (in this case KDE 
-4.3.1) keep doing processing.  With the mainline scheduler, mplayer 
-starts dropping frames and skip sound like crazy for the whole duration 
-of this exercise.
+If zero page is such a good idea, I don't see the logic of
+limiting it like thisa. Your patch looks pretty clean though.
 
-latencytop has this to say:
+At any rate, I think it might be an idea to cc linux-arch. 
 
-   http://foss.math.aegean.gr/~realnc/pics/latop1.png
-
-Though I don't really understand what this tool is trying to tell me, I 
-hope someone does.
+> 
+> Don't be fanatical about avoiding ZERO_PAGE updates: get_user_pages()
+> callers won't want to make exceptions for it, so increment its count
+> there.  Changes to mlock and migration? happily seems not needed.
+> 
+> In most places it's quicker to check pfn than struct page address:
+> prepare a __read_mostly zero_pfn for that.  Does get_dump_page()
+> still need its ZERO_PAGE check? probably not, but keep it anyway.
+> 
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> ---
+> I have not studied the performance of this at all: I'd rather it go
+> into mmotm where others may decide whether it's a good thing or not.
+> 
+>  mm/memory.c |   53 +++++++++++++++++++++++++++++++++++++++++---------
+>  1 file changed, 44 insertions(+), 9 deletions(-)
+> 
+> --- mm6/mm/memory.c	2009-09-07 13:16:53.000000000 +0100
+> +++ mm7/mm/memory.c	2009-09-07 13:17:01.000000000 +0100
+> @@ -107,6 +107,17 @@ static int __init disable_randmaps(char
+>  }
+>  __setup("norandmaps", disable_randmaps);
+>  
+> +static unsigned long zero_pfn __read_mostly;
+> +
+> +/*
+> + * CONFIG_MMU architectures set up ZERO_PAGE in their paging_init()
+> + */
+> +static int __init init_zero_pfn(void)
+> +{
+> +	zero_pfn = page_to_pfn(ZERO_PAGE(0));
+> +	return 0;
+> +}
+> +core_initcall(init_zero_pfn);
+>  
+>  /*
+>   * If a p?d_bad entry is found while walking page tables, report
+> @@ -499,7 +510,9 @@ struct page *vm_normal_page(struct vm_ar
+>  	if (HAVE_PTE_SPECIAL) {
+>  		if (likely(!pte_special(pte)))
+>  			goto check_pfn;
+> -		if (!(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
+> +		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
+> +			return NULL;
+> +		if (pfn != zero_pfn)
+>  			print_bad_pte(vma, addr, pte, NULL);
+>  		return NULL;
+>  	}
+> @@ -1144,9 +1157,14 @@ struct page *follow_page(struct vm_area_
+>  		goto no_page;
+>  	if ((flags & FOLL_WRITE) && !pte_write(pte))
+>  		goto unlock;
+> +
+>  	page = vm_normal_page(vma, address, pte);
+> -	if (unlikely(!page))
+> -		goto bad_page;
+> +	if (unlikely(!page)) {
+> +		if ((flags & FOLL_DUMP) ||
+> +		    pte_pfn(pte) != zero_pfn)
+> +			goto bad_page;
+> +		page = pte_page(pte);
+> +	}
+>  
+>  	if (flags & FOLL_GET)
+>  		get_page(page);
+> @@ -2085,10 +2103,19 @@ gotten:
+>  
+>  	if (unlikely(anon_vma_prepare(vma)))
+>  		goto oom;
+> -	VM_BUG_ON(old_page == ZERO_PAGE(0));
+> -	new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
+> -	if (!new_page)
+> -		goto oom;
+> +
+> +	if (pte_pfn(orig_pte) == zero_pfn) {
+> +		new_page = alloc_zeroed_user_highpage_movable(vma, address);
+> +		if (!new_page)
+> +			goto oom;
+> +	} else {
+> +		new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
+> +		if (!new_page)
+> +			goto oom;
+> +		cow_user_page(new_page, old_page, address, vma);
+> +	}
+> +	__SetPageUptodate(new_page);
+> +
+>  	/*
+>  	 * Don't let another task, with possibly unlocked vma,
+>  	 * keep the mlocked page.
+> @@ -2098,8 +2125,6 @@ gotten:
+>  		clear_page_mlock(old_page);
+>  		unlock_page(old_page);
+>  	}
+> -	cow_user_page(new_page, old_page, address, vma);
+> -	__SetPageUptodate(new_page);
+>  
+>  	if (mem_cgroup_newpage_charge(new_page, mm, GFP_KERNEL))
+>  		goto oom_free_new;
+> @@ -2594,6 +2619,15 @@ static int do_anonymous_page(struct mm_s
+>  	spinlock_t *ptl;
+>  	pte_t entry;
+>  
+> +	if (HAVE_PTE_SPECIAL && !(flags & FAULT_FLAG_WRITE)) {
+> +		entry = pte_mkspecial(pfn_pte(zero_pfn, vma->vm_page_prot));
+> +		ptl = pte_lockptr(mm, pmd);
+> +		spin_lock(ptl);
+> +		if (!pte_none(*page_table))
+> +			goto unlock;
+> +		goto setpte;
+> +	}
+> +
+>  	/* Allocate our own private page. */
+>  	pte_unmap(page_table);
+>  
+> @@ -2617,6 +2651,7 @@ static int do_anonymous_page(struct mm_s
+>  
+>  	inc_mm_counter(mm, anon_rss);
+>  	page_add_new_anon_rmap(page, vma, address);
+> +setpte:
+>  	set_pte_at(mm, address, page_table, entry);
+>  
+>  	/* No need to invalidate - it was non-present before */
