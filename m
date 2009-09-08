@@ -1,57 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZIHIme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754071AbZIHIn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754085AbZIHIme (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 04:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZIHImd
+	id S1754071AbZIHIn7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 04:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZIHIn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 04:42:33 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:42684 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753986AbZIHImd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 04:42:33 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Anirban Sinha <ani@anirban.org>
-Cc: Anirban Sinha <ASinha@zeugmasystems.com>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Dario Faggioli <raistlin@linux.it>
-In-Reply-To: <9039A647-41AF-43C0-9376-F21E664F61E5@anirban.org>
-References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it>
-	 <dhcf5-263-13@gated-at.bofh.it>
-	 <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com>
-	 <1252218779.6126.17.camel@marge.simson.net> <1252310374.7564.6.camel@twins>
-	 <DDFD17CC94A9BD49A82147DDF7D545C54DC487@exchange.ZeugmaSystems.local>
-	 <9039A647-41AF-43C0-9376-F21E664F61E5@anirban.org>
-Content-Type: text/plain
-Date: Tue, 08 Sep 2009 10:42:27 +0200
-Message-Id: <1252399347.7746.19.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 04:43:58 -0400
+Received: from nat.scz.novell.com ([213.151.88.252]:37372 "EHLO dhcp35"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753261AbZIHIn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 04:43:58 -0400
+From: Michal Hocko <mhocko@suse.cz>
+To: Ingo Molnar <mingo@redhat.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       "H . Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Jiri Kosina <jkosina@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v3] x86: increase MIN_GAP to include randomized stack
+Date: Tue,  8 Sep 2009 10:43:57 +0200
+Message-Id: <1252399437-1852-1-git-send-email-mhocko@suse.cz>
+X-Mailer: git-send-email 1.6.3.3
+In-Reply-To: <20090908073230.GB22397@tiehlicka.suse.cz>
+References: <20090908073230.GB22397@tiehlicka.suse.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 00:08 -0700, Anirban Sinha wrote:
+Currently we are not including randomized stack size when calculating
+mmap_base address in arch_pick_mmap_layout for topdown case. This might
+cause that mmap_base starts in the stack reserved area because stack is
+randomized by 1GB for 64b (8MB for 32b) and the minimum gap is 128MB.
 
-> > Actually there is, use cpusets to carve the system into partitions.
-> 
-> hmm. ok. I looked at the code a little bit. It seems to me that the  
-> 'borrowing' of RT runtimes occurs only from rt runqueues belonging to  
-> the same root domain. And partition_sched_domains() is the only  
-> external interface that can be used to create root domain out of a CPU  
-> set. But then I think it needs to have CGROUPS/USER groups enabled?  
-> Right?
+If the stack really grows down to mmap_base then we can get silent mmap
+region overwrite by the stack values.
 
-No you need cpusets, you create a partition by disabling load-balancing
-on the top set, thereby only allowing load-balancing withing the
-children.
+Let's include maximum stack randomization size into MIN_GAP which is
+used as the low bound for the gap in mmap.
 
-The runtime sharing is a form of load-balancing.
+Signed-off-by: Michal Hocko <mhocko@suse.cz>
+---
+ arch/x86/mm/mmap.c |   25 +++++++++++++++++++++++--
+ 1 files changed, 23 insertions(+), 2 deletions(-)
 
-CONFIG_CPUSETS=y
+I think that this is also stable material and I will repost it to 
+stable@kernel.org once you ack it.
 
-Documentation/cgroups/cpusets.txt
+Changes from v2:
+STACK_RND_MASK has to be defined for CONFIG_X86_32 as well.
+
+Changes from v1:
+Fixed unsigned int overflow in MIN_GAP calculation.
+
+
+diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
+index 1658296..a4566a8 100644
+--- a/arch/x86/mm/mmap.c
++++ b/arch/x86/mm/mmap.c
+@@ -30,12 +30,33 @@
+ #include <linux/limits.h>
+ #include <linux/sched.h>
+ 
++/* 1GB for 64bit, 8MB for 32bit definition taken from arch/x86/include/asm/elf.h */
++#ifndef STACK_RND_MASK
++#ifdef CONFIG_X86_64
++#define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
++#else
++#define STACK_RND_MASK (0x7ff)
++#endif
++#endif
++
++static unsigned int stack_maxrandom_size(void)
++{
++	unsigned int max = 0;
++	if ((current->flags & PF_RANDOMIZE) &&
++		!(current->personality & ADDR_NO_RANDOMIZE)) {
++		max = ((-1U) & STACK_RND_MASK) << PAGE_SHIFT;
++	}
++
++	return max;
++}
++
++
+ /*
+  * Top of mmap area (just below the process stack).
+  *
+- * Leave an at least ~128 MB hole.
++ * Leave an at least ~128 MB hole with possible stack randomization.
+  */
+-#define MIN_GAP (128*1024*1024)
++#define MIN_GAP (128*1024*1024UL + stack_maxrandom_size())
+ #define MAX_GAP (TASK_SIZE/6*5)
+ 
+ /*
+-- 
+1.6.3.3
 
