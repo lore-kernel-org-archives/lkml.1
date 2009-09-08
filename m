@@ -1,179 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753899AbZIHHbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZIHHcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753899AbZIHHbU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 03:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZIHHbT
+	id S1753905AbZIHHcb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 03:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753806AbZIHHcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 03:31:19 -0400
-Received: from cantor.suse.de ([195.135.220.2]:54517 "EHLO mx1.suse.de"
+	Tue, 8 Sep 2009 03:32:31 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54536 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753757AbZIHHbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 03:31:18 -0400
-Date: Tue, 8 Sep 2009 09:31:19 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH 7/8] mm: reinstate ZERO_PAGE
-Message-ID: <20090908073119.GA29902@wotan.suse.de>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072238320.15430@sister.anvils>
-Mime-Version: 1.0
+	id S1753562AbZIHHca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 03:32:30 -0400
+Date: Tue, 8 Sep 2009 09:32:31 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Jiri Kosina <jkosina@suse.cz>, Ingo Molnar <mingo@redhat.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       "H . Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2] x86: increase MIN_GAP to include randomized stack
+Message-ID: <20090908073230.GB22397@tiehlicka.suse.cz>
+References: <1252057020-5207-1-git-send-email-mhocko@suse.cz>
+ <alpine.LNX.2.00.0909071717130.23856@wotan.suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0909072238320.15430@sister.anvils>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <alpine.LNX.2.00.0909071717130.23856@wotan.suse.de>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 10:39:34PM +0100, Hugh Dickins wrote:
-> KAMEZAWA Hiroyuki has observed customers of earlier kernels taking
-> advantage of the ZERO_PAGE: which we stopped do_anonymous_page() from
-> using in 2.6.24.  And there were a couple of regression reports on LKML.
+On Mon 07-09-09 17:18:44, Jiri Kosina wrote:
+> On Fri, 4 Sep 2009, Michal Hocko wrote:
 > 
-> Following suggestions from Linus, reinstate do_anonymous_page() use of
-> the ZERO_PAGE; but this time avoid dirtying its struct page cacheline
-> with (map)count updates - let vm_normal_page() regard it as abnormal.
+> > Currently we are not including randomized stack size when calculating
+> > mmap_base address in arch_pick_mmap_layout for topdown case. This might
+> > cause that mmap_base starts in the stack reserved area because stack is
+> > randomized by 1GB for 64b (8MB for 32b) and the minimum gap is 128MB.
+> > 
+> > If the stack really grows down to mmap_base then we can get silent mmap
+> > region overwrite by the stack values.
+> > 
+> > Let's include maximum stack randomization size into MIN_GAP which is
+> > used as the low bound for the gap in mmap.
+> > 
+> > Signed-off-by: Michal Hocko <mhocko@suse.cz>
+> > ---
+> >  arch/x86/mm/mmap.c |   21 +++++++++++++++++++--
+> >  1 files changed, 19 insertions(+), 2 deletions(-)
+> > 
+> > I wasn't sure about STACK_RND_MASK because it is defined also in 
+> > arch/x86/include/asm/elf.h and I couldn't find a common header file for 
+> > both of them. If you have any idea I would like to help with that.
+> > Or should we just let it for later cleanup?
 > 
-> Use it only on arches which __HAVE_ARCH_PTE_SPECIAL (x86, s390, sh32,
-> most powerpc): that's not essential, but minimizes additional branches
-> (keeping them in the unlikely pte_special case); and incidentally
-> excludes mips (some models of which needed eight colours of ZERO_PAGE
-> to avoid costly exceptions).
+> What will break if we include <asm/elf.h> from mmap.c?
 
-Without looking closely, why is it a big problem to have a
-!HAVE PTE SPECIAL case? Couldn't it just be a check for
-pfn == zero_pfn that is conditionally compiled away for pte
-special architectures anyway?
+I have tried that and as far as compilation went it was OK... Except for
+one thing which I haven't noticed before as well. STACK_RND_MASK is not
+defined outside of CONFIG_X86_64 (in <arch/elf.h>).
 
-If zero page is such a good idea, I don't see the logic of
-limiting it like thisa. Your patch looks pretty clean though.
+One possible way to fix this is to update the original patch with:
 
-At any rate, I think it might be an idea to cc linux-arch. 
+diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
+index ac41955..a4566a8 100644
+--- a/arch/x86/mm/mmap.c
++++ b/arch/x86/mm/mmap.c
+@@ -32,7 +32,11 @@
+ 
+ /* 1GB for 64bit, 8MB for 32bit definition taken from arch/x86/include/asm/elf.h */
+ #ifndef STACK_RND_MASK
++#ifdef CONFIG_X86_64
+ #define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
++#else
++#define STACK_RND_MASK (0x7ff)
++#endif
+ #endif
+ 
+ static unsigned int stack_maxrandom_size(void)
+
+This, however, doesn't look very nice. If there is no objection I would
+define STACK_RND_MASK in <arch/elf.h> also out of CONFIG_X86_64 and
+remove this definition from mmap.c completely. What do you think?
 
 > 
-> Don't be fanatical about avoiding ZERO_PAGE updates: get_user_pages()
-> callers won't want to make exceptions for it, so increment its count
-> there.  Changes to mlock and migration? happily seems not needed.
+> > I think that this is also stable material and I will repost it to 
+> > stable@kernel.org once you ack it.
+> > 
+> > Changes from v1:
+> > Fixed unsigned int overflow in MIN_GAP calculation.
+> > 
+> > 
+> > diff --git a/arch/x86/mm/mmap.c b/arch/x86/mm/mmap.c
+> > index 1658296..ac41955 100644
+> > --- a/arch/x86/mm/mmap.c
+> > +++ b/arch/x86/mm/mmap.c
+> > @@ -30,12 +30,29 @@
+> >  #include <linux/limits.h>
+> >  #include <linux/sched.h>
+> >  
+> > +/* 1GB for 64bit, 8MB for 32bit definition taken from arch/x86/include/asm/elf.h */
+> > +#ifndef STACK_RND_MASK
+> > +#define STACK_RND_MASK (test_thread_flag(TIF_IA32) ? 0x7ff : 0x3fffff)
+> > +#endif
+> > +
+> > +static unsigned int stack_maxrandom_size(void)
+> > +{
+> > +	unsigned int max = 0;
+> > +	if ((current->flags & PF_RANDOMIZE) &&
+> > +		!(current->personality & ADDR_NO_RANDOMIZE)) {
+> > +		max = ((-1U) & STACK_RND_MASK) << PAGE_SHIFT;
+> > +	}
+> > +
+> > +	return max;
+> > +}
+> > +
+> > +
+> >  /*
+> >   * Top of mmap area (just below the process stack).
+> >   *
+> > - * Leave an at least ~128 MB hole.
+> > + * Leave an at least ~128 MB hole with possible stack randomization.
+> >   */
+> > -#define MIN_GAP (128*1024*1024)
+> > +#define MIN_GAP (128*1024*1024UL + stack_maxrandom_size())
+> >  #define MAX_GAP (TASK_SIZE/6*5)
 > 
-> In most places it's quicker to check pfn than struct page address:
-> prepare a __read_mostly zero_pfn for that.  Does get_dump_page()
-> still need its ZERO_PAGE check? probably not, but keep it anyway.
+> Apart from doubling the STACK_RND_MASK definition
 > 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> ---
-> I have not studied the performance of this at all: I'd rather it go
-> into mmotm where others may decide whether it's a good thing or not.
+> 	Acked-by: Jiri Kosina <jkosina@suse.cz>
 > 
->  mm/memory.c |   53 +++++++++++++++++++++++++++++++++++++++++---------
->  1 file changed, 44 insertions(+), 9 deletions(-)
+> Thanks,
 > 
-> --- mm6/mm/memory.c	2009-09-07 13:16:53.000000000 +0100
-> +++ mm7/mm/memory.c	2009-09-07 13:17:01.000000000 +0100
-> @@ -107,6 +107,17 @@ static int __init disable_randmaps(char
->  }
->  __setup("norandmaps", disable_randmaps);
->  
-> +static unsigned long zero_pfn __read_mostly;
-> +
-> +/*
-> + * CONFIG_MMU architectures set up ZERO_PAGE in their paging_init()
-> + */
-> +static int __init init_zero_pfn(void)
-> +{
-> +	zero_pfn = page_to_pfn(ZERO_PAGE(0));
-> +	return 0;
-> +}
-> +core_initcall(init_zero_pfn);
->  
->  /*
->   * If a p?d_bad entry is found while walking page tables, report
-> @@ -499,7 +510,9 @@ struct page *vm_normal_page(struct vm_ar
->  	if (HAVE_PTE_SPECIAL) {
->  		if (likely(!pte_special(pte)))
->  			goto check_pfn;
-> -		if (!(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
-> +		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
-> +			return NULL;
-> +		if (pfn != zero_pfn)
->  			print_bad_pte(vma, addr, pte, NULL);
->  		return NULL;
->  	}
-> @@ -1144,9 +1157,14 @@ struct page *follow_page(struct vm_area_
->  		goto no_page;
->  	if ((flags & FOLL_WRITE) && !pte_write(pte))
->  		goto unlock;
-> +
->  	page = vm_normal_page(vma, address, pte);
-> -	if (unlikely(!page))
-> -		goto bad_page;
-> +	if (unlikely(!page)) {
-> +		if ((flags & FOLL_DUMP) ||
-> +		    pte_pfn(pte) != zero_pfn)
-> +			goto bad_page;
-> +		page = pte_page(pte);
-> +	}
->  
->  	if (flags & FOLL_GET)
->  		get_page(page);
-> @@ -2085,10 +2103,19 @@ gotten:
->  
->  	if (unlikely(anon_vma_prepare(vma)))
->  		goto oom;
-> -	VM_BUG_ON(old_page == ZERO_PAGE(0));
-> -	new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
-> -	if (!new_page)
-> -		goto oom;
-> +
-> +	if (pte_pfn(orig_pte) == zero_pfn) {
-> +		new_page = alloc_zeroed_user_highpage_movable(vma, address);
-> +		if (!new_page)
-> +			goto oom;
-> +	} else {
-> +		new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
-> +		if (!new_page)
-> +			goto oom;
-> +		cow_user_page(new_page, old_page, address, vma);
-> +	}
-> +	__SetPageUptodate(new_page);
-> +
->  	/*
->  	 * Don't let another task, with possibly unlocked vma,
->  	 * keep the mlocked page.
-> @@ -2098,8 +2125,6 @@ gotten:
->  		clear_page_mlock(old_page);
->  		unlock_page(old_page);
->  	}
-> -	cow_user_page(new_page, old_page, address, vma);
-> -	__SetPageUptodate(new_page);
->  
->  	if (mem_cgroup_newpage_charge(new_page, mm, GFP_KERNEL))
->  		goto oom_free_new;
-> @@ -2594,6 +2619,15 @@ static int do_anonymous_page(struct mm_s
->  	spinlock_t *ptl;
->  	pte_t entry;
->  
-> +	if (HAVE_PTE_SPECIAL && !(flags & FAULT_FLAG_WRITE)) {
-> +		entry = pte_mkspecial(pfn_pte(zero_pfn, vma->vm_page_prot));
-> +		ptl = pte_lockptr(mm, pmd);
-> +		spin_lock(ptl);
-> +		if (!pte_none(*page_table))
-> +			goto unlock;
-> +		goto setpte;
-> +	}
-> +
->  	/* Allocate our own private page. */
->  	pte_unmap(page_table);
->  
-> @@ -2617,6 +2651,7 @@ static int do_anonymous_page(struct mm_s
->  
->  	inc_mm_counter(mm, anon_rss);
->  	page_add_new_anon_rmap(page, vma, address);
-> +setpte:
->  	set_pte_at(mm, address, page_table, entry);
->  
->  	/* No need to invalidate - it was non-present before */
+> -- 
+> Jiri Kosina
+> SUSE Labs
+
+-- 
+Michal Hocko
+L3 team 
+SUSE LINUX s.r.o.
+Lihovarska 1060/12
+190 00 Praha 9    
+Czech Republic
