@@ -1,53 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZIHLCH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754462AbZIHLDM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbZIHLCH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 07:02:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZIHLCH
+	id S1754462AbZIHLDM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 07:03:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbZIHLDL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 07:02:07 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:30830 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754274AbZIHLCF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 07:02:05 -0400
-Message-ID: <4AA63992.7040200@gmail.com>
-Date: Tue, 08 Sep 2009 14:01:38 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 8 Sep 2009 07:03:11 -0400
+Received: from areca.com.tw ([220.130.178.142]:27518 "EHLO areca.com.tw"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754233AbZIHLDK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 07:03:10 -0400
+Reply-To: <nick.cheng@areca.com.tw>
+From: "Nick Cheng" <nick.cheng@areca.com.tw>
+To: <linux-scsi@vger.kernel.org>
+Cc: <kewei@marvell.com>, <James.Bottomley@HansenPartnership.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: [PATCH] SCSI: Support Areca SAS/SATA HBA, ARC-1300/1320 on mvsas of  kernel version 2.6.31-rc9
+Date: Tue, 8 Sep 2009 19:03:07 +0800
+Organization: Areca
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 1/8] writeback: get rid of generic_sync_sb_inodes() export
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-2-git-send-email-jens.axboe@oracle.com> <4AA631AA.6000803@gmail.com> <20090908104111.GS18599@kernel.dk> <1252407150.5060.51.camel@localhost> <20090908105728.GU18599@kernel.dk>
-In-Reply-To: <20090908105728.GU18599@kernel.dk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 08 Sep 2009 11:01:48.0677 (UTC) FILETIME=[C3240350:01CA3073]
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook, Build 11.0.5510
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+thread-index: Acowc/JWqUJly33gTDCpllU+Tsu/7Q==
+Message-ID: <SERVER-ARECAehBAKbi000035ec@areca.com.tw>
+X-OriginalArrivalTime: 08 Sep 2009 10:47:11.0328 (UTC) FILETIME=[B8332E00:01CA3071]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/08/2009 01:57 PM, Jens Axboe wrote:
->> But well, if you do not want to carry my patch, then I'll have to
->> re-base my tree later, fix stuff, and send a pull request. I mean,
->> your stuff will for sure be merged first, because I send pull requests
->> late, just because UBIFS is a minor thing in the kernel.
->
-> You don't have to rebase, if my work is merged first then you just merge
-> Linus' tree into yours and fixup the conflict before asking Linus to
-> pull.
+From: Nick Cheng<nick.cheng@areca.com.tw>
 
-I thought Linus asked to avoid merge commits in pull requests at some
-point, no? So I thought that I'd re-base then, which Linus also
-dislikes :-)
+This is support for Areca SAS/SATA HBA, ARC-1300/1320, which quipped with
+88SE6440/88SE9480 respectively.
+Signed-off-by: Nick Cheng< nick.cheng@areca.com.tw >
+---
+drivers/scsi/mvsas/mv_defs.h |    4 ++++
+drivers/scsi/mvsas/mv_init.c  |    4 ++++
+2 files changed, 8 insertions(+), 0 deletions(-)
+diff --git a/drivers/scsi/mvsas/mv_defs.h b/drivers/scsi/mvsas/mv_defs.h
+index f8cb9de..1849da1 100644
+--- a/drivers/scsi/mvsas/mv_defs.h
++++ b/drivers/scsi/mvsas/mv_defs.h
+@@ -25,6 +25,8 @@
+ #ifndef _MV_DEFS_H_
+ #define _MV_DEFS_H_
+ 
++#define PCI_DEVICE_ID_ARECA_1300	0x1300
++#define PCI_DEVICE_ID_ARECA_1320	0x1320
+ 
+ enum chip_flavors {
+ 	chip_6320,
+@@ -32,6 +34,8 @@ enum chip_flavors {
+ 	chip_6485,
+ 	chip_9480,
+ 	chip_9180,
++	chip_1300,
++	chip_1320
+ };
+ 
+ /* driver compile-time configuration */
+diff --git a/drivers/scsi/mvsas/mv_init.c b/drivers/scsi/mvsas/mv_init.c
+index 8646a19..c790d45 100644
+--- a/drivers/scsi/mvsas/mv_init.c
++++ b/drivers/scsi/mvsas/mv_init.c
+@@ -32,6 +32,8 @@ static const struct mvs_chip_info mvs_chips[] = {
+ 	[chip_6485] =	{ 1, 8, 0x800, 33, 32, 10, &mvs_64xx_dispatch, },
+ 	[chip_9180] =	{ 2, 4, 0x800, 17, 64,  9, &mvs_94xx_dispatch, },
+ 	[chip_9480] =	{ 2, 4, 0x800, 17, 64,  9, &mvs_94xx_dispatch, },
++	[chip_1300] =	{ 1, 4, 0x400, 17, 16,  9, &mvs_64xx_dispatch, },
++	[chip_1320] =	{ 2, 4, 0x800, 17, 64,  9, &mvs_94xx_dispatch, },
+ };
+ 
+ #define SOC_SAS_NUM 2
+@@ -653,6 +655,8 @@ static struct pci_device_id __devinitdata
+mvs_pci_table[] = {
+ 	{ PCI_VDEVICE(MARVELL, 0x6485), chip_6485 },
+ 	{ PCI_VDEVICE(MARVELL, 0x9480), chip_9480 },
+ 	{ PCI_VDEVICE(MARVELL, 0x9180), chip_9180 },
++	{ PCI_VDEVICE(ARECA, PCI_DEVICE_ID_ARECA_1300), chip_1300 },
++	{ PCI_VDEVICE(ARECA, PCI_DEVICE_ID_ARECA_1320), chip_1320 },
+ 
+ 	{ }	/* terminate list */
+ };
 
-> It's a trivial conflict, I don't understand what the fuzz is about.
-
-Well, I was just thinking how to avoid merge commits. But I guess I can
-do what you suggest.
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
