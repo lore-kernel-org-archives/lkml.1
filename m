@@ -1,103 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751122AbZIHPjC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZIHPjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751122AbZIHPjC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 11:39:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750971AbZIHPjA
+	id S1751353AbZIHPjN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 11:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZIHPjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 11:39:00 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:20314 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbZIHPjA (ORCPT
+	Tue, 8 Sep 2009 11:39:12 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63861 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751195AbZIHPjJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 11:39:00 -0400
-Date: Tue, 08 Sep 2009 11:38:40 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Luming Yu <luming.yu@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>
-Subject: Re: [RFC PATCH] C2 could be mapped to C3 so need a flush cache
-In-reply-to: <3877989d0909071926q77aac67cj532137513710025d@mail.gmail.com>
-Message-id: <alpine.LFD.2.00.0909081126080.6720@localhost.localdomain>
-References: <3877989d0909071926q77aac67cj532137513710025d@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Sep 2009 11:39:09 -0400
+Subject: Re: [PATCH 00/18] tracing/ring-buffer: fixes for latency tracer 
+ [2.6.32]
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Jan Blunck <jblunck@suse.de>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Clark Williams <williams@redhat.com>,
+       linux-rt-users@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <4de7f8a60909080742m3497f6cfo6cce42b1dcee09ab@mail.gmail.com>
+References: <20090904235527.520961911@goodmis.org>
+	 <20090905150658.GA13387@ghostprotocols.net>
+	 <4de7f8a60909070320j692d746drb06bd635ca7f7c55@mail.gmail.com>
+	 <4de7f8a60909080742m3497f6cfo6cce42b1dcee09ab@mail.gmail.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 08 Sep 2009 11:39:10 -0400
+Message-Id: <1252424350.15626.9.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Sep 2009, Luming Yu wrote:
+On Tue, 2009-09-08 at 16:42 +0200, Jan Blunck wrote:
+> On Mon, Sep 7, 2009 at 12:20 PM, Jan Blunck<jblunck@suse.de> wrote:
+> > On Sat, Sep 5, 2009 at 5:06 PM, Arnaldo Carvalho de Melo<acme@redhat.com> wrote:
+> >>
+> >> I did a quick port to tip/rt/head and couldn't reproduce the problems I
+> >> was experiencing, thanks!
+> >>
+> >> I've put the ported patch series at:
+> >>
+> >> http://userweb.kernel.org/~acme/rostedt-rb-rt
+> >>
+> 
+> Besides the problem with the wakeup tracer I see traces with
+> preemptirqsoff that I think are invalid:
+> 
+> # tracer: preemptirqsoff
+> #
+> # preemptirqsoff latency trace v1.1.5 on 2.6.31-rc8-rt9-rt_trace
+> # --------------------------------------------------------------------
+> # latency: 332 us, #4/4, CPU#24 | (M:preempt VP:0, KP:0, SP:0 HP:0 #P:32)
+> #    -----------------
+> #    | task: -0 (uid:0 nice:0 policy:0 rt_prio:0)
+> #    -----------------
+> #  => started at: start_secondary
+> #  => ended at:   start_secondary
+> #
+> #
+> #                  _------=> CPU#
+> #                 / _-----=> irqs-off
+> #                | / _----=> need-resched
+> #                || / _---=> hardirq/softirq
+> #                ||| / _--=> preempt-depth
+> #                |||| /
+> #                |||||     delay
+> #  cmd     pid   ||||| time  |   caller
+> #     \   /      |||||   \   |   /
+>   <idle>-0      24.N.1    0us : cpu_idle <-start_secondary
+>   <idle>-0      24dN.1    1us!: tick_nohz_stop_idle <-tick_nohz_restart_sched_ti
+> ck
+>   <idle>-0      24dN.1  332us+: cpu_idle <-start_secondary
+>   <idle>-0      24dN.1  336us : trace_preempt_on <-start_secondary
+> 
+> I have set kernel.ftrace_enabled = 1 but still not a single function
+> is recorded in tick_nohz_stop_idle().
+> 
+> Any ideas?
 
-> Hi there,
-> 
-> I came across acpi_idle_enter_simple, noticed it looks like a bug if
-> we don't flush cache for C2.
-> Because some platforms just map C2 to C3.
-> 
-> Please review. If make sense, please apply.
-> 
-> Ps. The patch is enclosed in attachment. The inlined one
-> is c&p of it for reading.
-> 
-> 
-> Thanks,
-> Luming
-> 
-> Signed-off-by: Yu Luming <luming.yu@intel.com>
-> 
->  processor_idle.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-> index 0efa59e..4fa9582 100644
-> --- a/drivers/acpi/processor_idle.c
-> +++ b/drivers/acpi/processor_idle.c
-> @@ -893,7 +893,7 @@ static int acpi_idle_enter_simple(struct
-> cpuidle_device *dev,
->  	 */
->  	lapic_timer_state_broadcast(pr, cx, 1);
-> 
-> -	if (cx->type == ACPI_STATE_C3)
-> +	if (cx->type == ACPI_STATE_C3 || cx->type == ACPI_STATE_C2)
->  		ACPI_FLUSH_CPU_CACHE();
-> 
->  	kt1 = ktime_get_real();
-> 
+Which arch is this for? When the system goes into idle, it usually
+disables preemption and maybe interrupts. But the idle call in assembly
+will enable interrupts. And when an interrupt happens it comes out.
 
-Thanks for noticing this inconsistency, Luming.
+There should be callbacks in cpu_idle to disable latency tracing. These
+functions are called stop_critical_timings and start_critical_timings.
+You'll see these calls in both process_64.c and process_32.c in the x86
+arch.
 
-I agree with Arjan on this one -- the cache flush
-semantics regarding C2-type and C3-type are very clear,
-and we should not add the C3-type overhead to C2-type
-unless we can absolutely prove we need it.
-(And if we did so, do it with a black-list, rather than
-penalizing every system)
+Is you set up not calling cpu_idle?
 
-The reason I feel this way, is basically I expect
-that Windows got this part right.
-
-Our issues with timers and C-states crept into an ad-hoc
-defintion of the C-state types because Linux uses
-the timer hardware differently than Windows does.
-
-Finally, the happy news here is that the very latest
-processors don't require C3-type overhead at all,
-even when their BIOS claims that they do.  They
-declare ACPI C3-type for hardware C2-type states
-just to satisfy the installed base that expect there
-to be 3 c-state types.
-
-We've discussed moving Linux to a native C-state
-driver on this latest hardware, to escape from
-the extra overhead that legacy compatibility carries,
-and I think it would be a good idea.
-(ie. on your NHM, there would be no flush, even
- for a state that the BIOS calls a C3-type, because
- it is really a hardware C2-type)
-
-cheers,
-Len Brown, Intel Open Source Technology Center
+-- Steve
 
 
