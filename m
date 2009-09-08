@@ -1,221 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZIHR3P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbZIHRgP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751931AbZIHR3P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 13:29:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751292AbZIHR3O
+	id S1751948AbZIHRgP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 13:36:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751784AbZIHRgP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 13:29:14 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:49883 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750912AbZIHR3N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 13:29:13 -0400
-Date: Tue, 8 Sep 2009 13:28:42 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Artem Bityutskiy <dedekind1@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, "Theodore Ts'o" <tytso@mit.edu>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090908172842.GC2975@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, david@fromorbit.com,
-	hch@infradead.org, akpm@linux-foundation.org, jack@suse.cz,
-	Theodore Ts'o <tytso@mit.edu>,
-	Wu Fengguang <fengguang.wu@intel.com>
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com>
- <1252401791-22463-9-git-send-email-jens.axboe@oracle.com>
- <4AA633FD.3080006@gmail.com>
- <1252425983.7746.120.camel@twins>
- <20090908162936.GA2975@think>
- <1252428983.7746.140.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252428983.7746.140.camel@twins>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4AA6944E.00ED:SCFSTAT5015188,ss=1,fgs=0
+	Tue, 8 Sep 2009 13:36:15 -0400
+Received: from mga02.intel.com ([134.134.136.20]:45165 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751494AbZIHRgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 13:36:13 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,353,1249282800"; 
+   d="scan'208";a="446719678"
+Subject: Re: [Bug #13819] system freeze when switching to console
+From: reinette chatre <reinette.chatre@intel.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
+       "bugzilla-daemon@bugzilla.kernel.org" 
+	<bugzilla-daemon@bugzilla.kernel.org>
+In-Reply-To: <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>
+	 <Vm51Upp4EV.A.r-D.mgBpKB@chimera> <1252427375.14735.130.camel@rc-desk>
+	 <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 10:36:15 -0700
+Message-Id: <1252431375.14735.139.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 06:56:23PM +0200, Peter Zijlstra wrote:
-> On Tue, 2009-09-08 at 12:29 -0400, Chris Mason wrote:
+On Tue, 2009-09-08 at 10:00 -0700, Linus Torvalds wrote:
 > 
-> > > I'm still not convinced this knob is worth the patch and I'm inclined to
-> > > flat out NAK it..
-> > > 
-> > > The whole point of MAX_WRITEBACK_PAGES seems to occasionally check the
-> > > dirty stats again and not write out too much.
+> On Tue, 8 Sep 2009, reinette chatre wrote:
+> 
+> > On Sun, 2009-09-06 at 10:24 -0700, Rafael J. Wysocki wrote:
+> > > Please verify if it still should be listed and let me know
+> > > (either way).
 > > 
-> > The problem is that 'too much' is a very abstract thing.  When a process
-> > is stuck in balance_dirty_pages, we want them to do the minimal amount
-> > of work (or waiting) required to get them safely back inside file_write().
+> > Issue is still present in 2.6.31-rc8.
 > 
-> >From the VMs POV I think we'd like to keep near the dirty limit as that
-> maximizes the write cache efficiency. Of course that needs to be
-> balanced against write out efficiency.
-> 
-> > > Clearly the current limit isn't sufficient for some people,
-> > >  - xfs/btrfs seem generally stuck in balance_dirty_pages()'s
-> > > congestion_wait()
-> > >  - ext4 generates inconveniently small extents
-> > 
-> > This is actually two different side of the same problem.  The filesystem
-> > knows that bytes 0-N in the file are setup for delayed allocation.
-> > Writepage is called on byte 0, and now the filesystem gets to decide how
-> > big an extent to make.
-> > 
-> > It could decide to make an extent based on the total number of bytes
-> > under delayed allocation, and hope the caller of writepage will be kind
-> > enough to send down the pages contiguously afterward (xfs), or it could
-> > make a smaller extent based on something closer to the total number of
-> > bytes this particular writepages() call plans on writing (I guess what
-> > ext4 is doing).
-> > 
-> > Either way, if pdflush or the bdi thread or whoever ends up switching to
-> > another file during a big streaming write, the end result is that we
-> > fragment.  We may fragment the file (ext4) or we may fragment the
-> > writeback (xfs), but the end result isn't good.
-> 
-> OK, so what we want is for a way to re-enter the whole
-> writeback_inodes() path onto the same file, right?
+> Is there any chance that you could connect a serial line to the machine? 
 
-It would help.
+The system does not have a serial console, but I was able to set up
+netconsole. For what it is worth, I did not do this until now because
+(1) I was able to bisect the problem, and (2) I asked driver developers
+directly how I can help to debug this and I received no response.
 
-> 
-> That would result in the writeback continuing where it left off last.
-> 
-> Wu, can we make writeback_inodes() do something like that? Pass some
-> magic along in wbc maybe?
-> 
-> > Looking at two xfs examples, this is the IO for two concurrent streaming
-> > writers (two different files) on 2.6.31-rc8 (pdflush is doing all the IO
-> > in this graph, sorry the legend colors wrapped on me).  If you squint,
-> > you can kind of see the fingers of IO as pdflush switches between files.
-> > 
-> > http://oss.oracle.com/~mason/seekwatcher/xfs-tag.png
-> > 
-> > And here is the IO when XFS forces nr_to_write much higher with a patch
-> > from Christoph:
-> > 
-> > http://oss.oracle.com/~mason/seekwatcher/xfs-extend-tag.png
-> > 
-> > These graphs would look the same no matter what I did with
-> > congestion_wait().  The first graph is slower just because pdflush
-> > switches from one file to another.
-> > 
-> > > 
-> > > 
-> > > The first seems to suggest to me the number isn't well balanced against
-> > > whatever drives congestion_wait() (that thing still gives me a
-> > > head-ache).
-> > > 
-> > > # git grep clear_bdi_congested
-> > > drivers/block/pktcdvd.c:                clear_bdi_congested(&pd->disk->queue->backing_dev_info,
-> > > fs/fuse/dev.c:                  clear_bdi_congested(&fc->bdi, BLK_RW_SYNC);
-> > > fs/fuse/dev.c:                  clear_bdi_congested(&fc->bdi, BLK_RW_ASYNC);
-> > > fs/nfs/write.c:         clear_bdi_congested(&nfss->backing_dev_info, BLK_RW_ASYNC);
-> > > include/linux/backing-dev.h:void clear_bdi_congested(struct backing_dev_info *bdi, int sync);
-> > > include/linux/blkdev.h: clear_bdi_congested(&q->backing_dev_info, sync);
-> > > mm/backing-dev.c:void clear_bdi_congested(struct backing_dev_info *bdi, int sync)
-> > > mm/backing-dev.c:EXPORT_SYMBOL(clear_bdi_congested);
-> > > 
-> > > Suggests that regular block devices don't even manage device congestion
-> > > and it reverts to a simple timeout -- should we fix that?
-> > 
-> > Look for blk_clear_queue_congested().  It is managed, I personally don't
-> > think it is very useful.  But, that's a different thread ;)
-> 
-> Ah, how blind I am ;-)
-> 
-> Right, so what can we do to make it useful? I think the intent is to
-> limit the number of pages in writeback and provide some progress
-> feedback to the vm.
-> 
-> Going by your experience we're failing there.
+As you can see from the kernel version it is not a build of a vanilla
+kernel. It only contains changes related to the wireless networking work
+I am doing.
 
-Well, congestion_wait is a stop sign but not a queue.  So, if you're
-being nice and honoring congestion but another process (say O_DIRECT
-random writes) doesn't, then you back off forever and none of your IO
-gets done.
+Here is the output:
 
-To get around this, you can add code to make sure that you do
-_some_ io, but this isn't enough for your work to get done
-quickly, and you do end up waiting in get_request() so the async
-benefits of using the congestion test go away.
+[  352.803652] render error detected, EIR: 0x00000010
+[  352.803684]   IPEIR: 0x00000000
+[  352.803709]   IPEHR: 0x01000000
+[  352.803732]   INSTDONE: 0xfffffffe
+[  352.803754]   INSTPS: 0x0001e000
+[  352.803776]   INSTDONE1: 0xffffffff
+[  352.803801]   ACTHD: 0x0480a3c8
+[  352.803823] page table error
+[  352.803846]   PGTBL_ER: 0x00100000
+[  352.803870] [drm:i915_handle_error] *ERROR* EIR stuck: 0x00000010, masking
+[  352.803960] BUG: unable to handle kernel NULL pointer dereference at 0000000000000084
+[  352.804006] IP: [<ffffffffa03ecaab>] i915_driver_irq_handler+0x26b/0xd20 [i915]
+[  352.804006] PGD b5d00067 PUD b9753067 PMD 0 
+[  352.804006] Oops: 0000 [#1] SMP 
+[  352.804006] last sysfs file: /sys/class/power_supply/BAT0/energy_full
+[  352.804006] CPU 0 
+[  352.804006] Modules linked in: i915 drm i2c_algo_bit i2c_core ipv6 acpi_cpufreq cpufreq_userspace cpufreq_powersave cpufreq_ondemand cpufreq_conservative cpufreq_stats freq_table container sbs sbshc arc4 ecb joydev af_packet pcmcia psmouse sony_laptop serio_raw yenta_socket rsrc_nonstatic pcmcia_core pcspkr iTCO_wdt iTCO_vendor_support rfkill intel_agp button battery tpm_infineon tpm tpm_bios processor video output ac evdev ext3 jbd mbcache sr_mod sg cdrom sd_mod ahci libata scsi_mod ehci_hcd uhci_hcd usbcore thermal fan thermal_sys [last unloaded: cfg80211]
+[  352.804006] Pid: 4424, comm: Xorg Not tainted 2.6.31-rc8-wl-50925-gdcecd82-dirty #57 VGN-Z540N
+[  352.804006] RIP: 0010:[<ffffffffa03ecaab>]  [<ffffffffa03ecaab>] i915_driver_irq_handler+0x26b/0xd20 [i915]
+[  352.804006] RSP: 0018:ffff880001e9de58  EFLAGS: 00010082
+[  352.804006] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+[  352.804006] RDX: ffffc9000007d898 RSI: 0000000000000001 RDI: ffffffff8132f0f8
+[  352.804006] RBP: ffff880001e9dee8 R08: 0000000000000002 R09: ffff880037373c38
+[  352.804006] R10: 0000000000000000 R11: 0000000000000001 R12: ffff8800b57fe000
+[  352.804006] R13: 000000000000001f R14: ffff8800b57fe000 R15: ffff8800b9746000
+[  352.804006] FS:  00007fcc05d20700(0000) GS:ffff880001e9a000(0000) knlGS:0000000000000000
+[  352.804006] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+[  352.804006] CR2: 0000000000000084 CR3: 00000000b50c3000 CR4: 00000000000006f0
+[  352.804006] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+[  352.804006] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+[  352.804006] Process Xorg (pid: 4424, threadinfo ffff8800b6b1a000, task ffff880037373c00)
+[  352.804006] Stack:
+[  352.804006]  ffffffff8106db7d 0000000000000086 ffff88009a5ce040 ffff8800b57fe158
+[  352.804006] <0> ffff8800b57fe1a8 ffff8800b57fe110 0004000000008000 0000000400440202
+[  352.804006] <0> 0000000000000086 0044020200000000 0000001000040000 0000000000000040
+[  352.804006] Call Trace:
+[  352.804006]  <IRQ> 
+[  352.804006]  [<ffffffff8106db7d>] ? mark_held_locks+0x6d/0x90
+[  352.804006]  [<ffffffff81098ee8>] handle_IRQ_event+0x68/0x170
+[  352.804006]  [<ffffffff8109ac01>] handle_edge_irq+0xc1/0x160
+[  352.804006]  [<ffffffff8100e76f>] handle_irq+0x1f/0x30
+[  352.804006]  [<ffffffff8100dc6a>] do_IRQ+0x6a/0xf0
+[  352.804006]  [<ffffffff8100c793>] ret_from_intr+0x0/0xf
+[  352.804006]  <EOI> 
+[  352.804006]  [<ffffffff81070b88>] ? lock_acquire+0xe8/0x100
+[  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+[  352.804006]  [<ffffffff8132d7b5>] ? mutex_lock_nested+0x45/0x320
+[  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+[  352.804006]  [<ffffffff8106de85>] ? trace_hardirqs_on_caller+0x145/0x190
+[  352.804006]  [<ffffffff8106dedd>] ? trace_hardirqs_on+0xd/0x10
+[  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+[  352.804006]  [<ffffffffa03f3335>] ? i915_gem_idle+0x225/0x330 [i915]
+[  352.804006]  [<ffffffffa03f34c7>] ? i915_gem_leavevt_ioctl+0x37/0x50 [i915]
+[  352.804006]  [<ffffffffa03bdafd>] ? drm_ioctl+0x17d/0x3c0 [drm]
+[  352.804006]  [<ffffffffa03f3490>] ? i915_gem_leavevt_ioctl+0x0/0x50 [i915]
+[  352.804006]  [<ffffffff810d0ad5>] ? do_wp_page+0x185/0x7a0
+[  352.804006]  [<ffffffff811a9a33>] ? __up_read+0x23/0xb0
+[  352.804006]  [<ffffffff810ff17d>] ? vfs_ioctl+0x7d/0xa0
+[  352.804006]  [<ffffffff810ff2ba>] ? do_vfs_ioctl+0x8a/0x5c0
+[  352.804006]  [<ffffffff8105fec6>] ? up_read+0x26/0x30
+[  352.804006]  [<ffffffff8100c829>] ? retint_swapgs+0xe/0x13
+[  352.804006]  [<ffffffff810ff889>] ? sys_ioctl+0x99/0xa0
+[  352.804006]  [<ffffffff8100bd6b>] ? system_call_fastpath+0x16/0x1b
+[  352.804006] Code: 00 8b 18 49 8b 87 b0 05 00 00 48 8b 80 20 02 00 00 48 85 c0 74 21 48 8b 80 00 01 00 00 48 8b 50 08 48 85 d2 74 11 49 8b 44 24 78 <8b> 80 84 00 00 00 89 82 08 08 00 00 f6 45 a0 02 0f 85 47 03 00 
+[  352.804006] RIP  [<ffffffffa03ecaab>] i915_driver_irq_handler+0x26b/0xd20 [i915]
+[  352.804006]  RSP <ffff880001e9de58>
+[  352.804006] CR2: 0000000000000084
+[  352.804006] ---[ end trace 756dbe26c2f29fdd ]---
+[  352.804006] Kernel panic - not syncing: Fatal exception in interrupt
+[  352.804006] Pid: 4424, comm: Xorg Tainted: G      D    2.6.31-rc8-wl-50925-gdcecd82-dirty #57
+[  352.804006] Call Trace:
+[  352.804006]  <IRQ>  [<ffffffff8132ba7f>] panic+0xa0/0x170
+[  352.804006]  [<ffffffff8132f0f8>] ? _spin_unlock_irqrestore+0x58/0x60
+[  352.804006]  [<ffffffff81041b35>] ? release_console_sem+0x1f5/0x240
+[  352.804006]  [<ffffffff81041e05>] ? console_unblank+0x75/0x90
+[  352.804006]  [<ffffffff813306c4>] oops_end+0xd4/0xe0
+[  352.804006]  [<ffffffff810279d8>] no_context+0xe8/0x260
+[  352.804006]  [<ffffffff81027ca5>] __bad_area_nosemaphore+0x155/0x1f0
+[  352.804006]  [<ffffffff8106ca5d>] ? trace_hardirqs_off+0xd/0x10
+[  352.804006]  [<ffffffff8132f0f8>] ? _spin_unlock_irqrestore+0x58/0x60
+[  352.804006]  [<ffffffff8103bb58>] ? try_to_wake_up+0xe8/0x210
+[  352.804006]  [<ffffffff81027d4e>] bad_area_nosemaphore+0xe/0x10
+[  352.804006]  [<ffffffff8133204e>] do_page_fault+0x29e/0x350
+[  352.804006]  [<ffffffff8132f8af>] page_fault+0x1f/0x30
+[  352.804006]  [<ffffffff8132f0f8>] ? _spin_unlock_irqrestore+0x58/0x60
+[  352.804006]  [<ffffffffa03ecaab>] ? i915_driver_irq_handler+0x26b/0xd20 [i915]
+[  352.804006]  [<ffffffffa03ec9cb>] ? i915_driver_irq_handler+0x18b/0xd20 [i915]
+[  352.804006]  [<ffffffff8106db7d>] ? mark_held_locks+0x6d/0x90
+[  352.804006]  [<ffffffff81098ee8>] handle_IRQ_event+0x68/0x170
+[  352.804006]  [<ffffffff8109ac01>] handle_edge_irq+0xc1/0x160
+[  352.804006]  [<ffffffff8100e76f>] handle_irq+0x1f/0x30
+[  352.804006]  [<ffffffff8100dc6a>] do_IRQ+0x6a/0xf0
+[  352.804006]  [<ffffffff8100c793>] ret_from_intr+0x0/0xf
+[  352.804006]  <EOI>  [<ffffffff81070b88>] ? lock_acquire+0xe8/0x100
+[  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+[  352.804006]  [<ffffffff8132d7b5>] ? mutex_lock_nested+0x45/0x320
+[  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+[  352.804006]  [<ffffffff8106de85>] ? trace_hardirqs_on_caller+0x145/0x190
+[  352.804006]  [<ffffffff8106dedd>] ? trace_hardirqs_on+0xd/0x10
+[  352.804006]  [<ffffffffa03c0b85>] ? drm_irq_uninstall+0x65/0x180 [drm]
+[  352.804006]  [<ffffffffa03f3335>] ? i915_gem_idle+0x225/0x330 [i915]
+[  352.804006]  [<ffffffffa03f34c7>] ? i915_gem_leavevt_ioctl+0x37/0x50 [i915]
+[  352.804006]  [<ffffffffa03bdafd>] ? drm_ioctl+0x17d/0x3c0 [drm]
+[  352.804006]  [<ffffffffa03f3490>] ? i915_gem_leavevt_ioctl+0x0/0x50 [i915]
+[  352.804006]  [<ffffffff810d0ad5>] ? do_wp_page+0x185/0x7a0
+[  352.804006]  [<ffffffff811a9a33>] ? __up_read+0x23/0xb0
+[  352.804006]  [<ffffffff810ff17d>] ? vfs_ioctl+0x7d/0xa0
+[  352.804006]  [<ffffffff810ff2ba>] ? do_vfs_ioctl+0x8a/0x5c0
+[  352.804006]  [<ffffffff8105fec6>] ? up_read+0x26/0x30
+[  352.804006]  [<ffffffff8100c829>] ? retint_swapgs+0xe/0x13
+[  352.804006]  [<ffffffff810ff889>] ? sys_ioctl+0x99/0xa0
+[  352.804006]  [<ffffffff8100bd6b>] ? system_call_fastpath+0x16/0x1b
 
-If we changed everyone to honor congestion, we end up with a poll model
-because a ton of congestion_wait() callers create a thundering herd.
-
-So, we could add a queue, and then congestion_wait() would look a lot
-like get_request_wait().  I'd rather that everyone just used
-get_request_wait, and then have us fix any latency problems in the
-elevator.
-
-For me, perfect would be one or more threads per-bdi doing the
-writeback, and never checking for congestion (like what Jens' code
-does).  The congestion_wait inside balance_dirty_pages() is really just
-a schedule_timeout(), on a fully loaded box the congestion doesn't go
-away anyway.  We should switch that to a saner system of waiting for
-progress on the bdi writeback + dirty thresholds.
-
-Btrfs would love to be able to send down a bio non-blocking.  That would
-let me get rid of the congestion check I have today (I think Jens said
-that would be an easy change and then I talked him into some small mods
-of the writeback path).
-
-> 
-> > > Now, suppose it were to do something useful, I'd think we'd want to
-> > > limit write-out to whatever it takes so saturate the BDI.
-> > 
-> > If we don't want a blanket increase, 
-> 
-> The thing is, this sysctl seems an utter cop out, we can't even explain
-> how to calculate a number that'll work for a situation, the best we can
-> do is say, prod at it and pray -- that's not good.
-> 
-> Last time I also asked if an increased number is good for every
-> situation, I have a machine with a RAID5 array and USB storage, will it
-> harm either situation?
-
-If the goal is to make sure that pdflush or balance_dirty_pages only
-does IO until some condition is met, we should add a flag to the bdi
-that gets set when that condition is met.  Things will go a lot more
-smoothly than magic numbers.
-
-Then we can add the fs_hint as another change so the FS can tell
-write_cache_pages callers how to do optimal IO based on its allocation
-decisions.
-
-> 
-> > I'd suggest that we just give the
-> > FS a way to say: 'I know nr_to_write is only 32, but if you just write a
-> > few blocks more, the system will be better off'.
-> > 
-> > Something like wbc->fs_write_hint
-> > 
-> > This way, when the FS allocates a great big contiguous delalloc extent,
-> > it can set the wbc to reflect that we've got cheap and easy IO here.
-> 
-> I think that's certainly a possibility.
-> 
-> What's the down-side of allocating extents based on the available dirty
-> pages instead of the current write-out request? As long as we're good at
-> generating sequential IO in general (yeah, I know we suck now) it
-> doesn't really matter when it will be filled, as we know it will
-> eventually be.
-
-I'm guessing the small extents from ext4 come from tuning the allocator
-for writeback performance instead of anti-fragmentation.  But I'm
-guessing.
-
--chris
 
