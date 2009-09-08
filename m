@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbZIHJPU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZIHJX4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754104AbZIHJPU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 05:15:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753993AbZIHJPT
+	id S1754141AbZIHJX4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 05:23:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754093AbZIHJXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 05:15:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23925 "EHLO mx1.redhat.com"
+	Tue, 8 Sep 2009 05:23:55 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:56751 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753930AbZIHJPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 05:15:18 -0400
-Date: Tue, 8 Sep 2009 11:14:01 +0200 (CEST)
-From: John Kacur <jkacur@redhat.com>
-X-X-Sender: jkacur@localhost.localdomain
-To: lkml <linux-kernel@vger.kernel.org>
-cc: Thomas Gleixner <tglx@linuxtronix.de>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>, John Kacur <jkacur@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novells.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Jon Masters <jcm@redhat.com>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Mark Knecht <markknecht@gmail.com>
-Subject: [ANNOUNCE] 2.6.31-rc9-rt9.1
-Message-ID: <alpine.LFD.2.00.0909081049430.31237@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+	id S1753974AbZIHJXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 05:23:54 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: [PATCH 0/8] Per-bdi writeback flusher threads v19
+Date: Tue,  8 Sep 2009 11:23:03 +0200
+Message-Id: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.6.4.1.207.g68ea
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While Thomas Gleixner is on vacation, we decided to release another 
-incremental real-time kernel. This is for those of you who want to run 
-Linus' latest release, but still want the real-time patches.
+Hi,
 
-So, this is simply a merge of 2.6.31-rc8-rt9 with 2.6.31-rc9.
-In addition, we added the tracing / ring-buffer patches for the latency 
-tracer from Steven Rostedt, modified by Arnaldo Carvalho de Melo 
-for real-time. In addition, Clark Williams added an extra commit to 
-clean-up some compile problems.
+This is the 19th release of the writeback patchset. Changes since
+v18 include:
 
-There were a few other patches that we could have added, but 
-since the purpose of this is just to keep the current -rt code running on 
-the latest release from Linus, we decided to play it conservatively - 
-we'll let Thomas do the heavy lifting we he comes back from vacation.
+- Switch unpin_sb_for_writeback() to using put_super() instead of
+  __put_super_and_need_start(). This means making put_super()
+  non-static, but we don't have to export it.
+- Always check and clean old data.
+- Don't copy *wbc twice in wb_do_writeback().
+- Tweak 'when to break' logic in wb_writeback().
+- Get rid of wb_start_writeback() and bdi_sched_work(), fold them into
+  bdi_queue_work().
 
-You can download it at the following locations:
+Thanks to Jan Kara and Christoph Hellwig for their suggestions and
+review!
 
-Git location:
-git://git.kernel.org/pub/scm/linux/kernel/git/clrkwllms/rt-linux.git
-Git branch: linux-2.6.31-rc9-rt9.1
+ b/block/blk-core.c                 |    1 
+ b/drivers/block/aoe/aoeblk.c       |    1 
+ b/drivers/char/mem.c               |    1 
+ b/drivers/staging/pohmelfs/inode.c |    9 
+ b/fs/btrfs/disk-io.c               |    1 
+ b/fs/buffer.c                      |    2 
+ b/fs/char_dev.c                    |    1 
+ b/fs/configfs/inode.c              |    1 
+ b/fs/fs-writeback.c                | 1058 +++++++++++++++++++++--------
+ b/fs/fuse/inode.c                  |    1 
+ b/fs/hugetlbfs/inode.c             |    1 
+ b/fs/nfs/client.c                  |    1 
+ b/fs/ocfs2/dlm/dlmfs.c             |    1 
+ b/fs/ramfs/inode.c                 |    1 
+ b/fs/super.c                       |    5 
+ b/fs/sync.c                        |   20 
+ b/fs/sysfs/inode.c                 |    1 
+ b/fs/ubifs/budget.c                |   16 
+ b/fs/ubifs/super.c                 |    9 
+ b/include/linux/backing-dev.h      |   55 +
+ b/include/linux/fs.h               |    9 
+ b/include/linux/writeback.h        |   24 
+ b/kernel/cgroup.c                  |    1 
+ b/kernel/sysctl.c                  |    8 
+ b/mm/Makefile                      |    2 
+ b/mm/backing-dev.c                 |  380 ++++++++++
+ b/mm/page-writeback.c              |  188 -----
+ b/mm/swap_state.c                  |    1 
+ b/mm/vmscan.c                      |    2 
+ mm/pdflush.c                       |  269 -------
+ 30 files changed, 1292 insertions(+), 778 deletions(-)
 
-Or in patch form here:
-http://www.kernel.org/pub/linux/kernel/people/clrkwllms/rt-unofficial/patch-2.6.31-rc9-rt9.1.bz2
-
-As usual, please report any problems to linux-kernel@vger.kernel.org and 
-you can cc linux-rt-users@vger.kernel.org too.
-
-Enjoy!
-
-John Kacur
-Clark Williams
+-- 
+Jens Axboe
 
