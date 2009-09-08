@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZIHK3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754280AbZIHKca@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754259AbZIHK3M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 06:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZIHK3M
+	id S1754280AbZIHKca (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 06:32:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZIHKc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 06:29:12 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:55804 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753788AbZIHK3L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 06:29:11 -0400
-Message-ID: <4AA631AA.6000803@gmail.com>
-Date: Tue, 08 Sep 2009 13:27:54 +0300
-From: Artem Bityutskiy <dedekind1@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 8 Sep 2009 06:32:29 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:51706 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753590AbZIHKc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 06:32:29 -0400
+Date: Tue, 8 Sep 2009 11:32:33 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Greg KH <greg@kroah.com>
+Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Eric Whitney <eric.whitney@hp.com>, Adam Litke <agl@us.ibm.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>, David Rientjes <rientjes@google.com>,
+       Andy Whitcroft <apw@canonical.com>, stable <stable@kernel.org>
+Subject: Re: [stable] [PATCH] hugetlb: restore interleaving of bootmem huge
+	pages
+Message-ID: <20090908103233.GA28127@csn.ul.ie>
+References: <1247860154.11565.45.camel@useless.americas.hpqcorp.net> <20090903203339.GB7467@kroah.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 1/8] writeback: get rid of generic_sync_sb_inodes() export
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-2-git-send-email-jens.axboe@oracle.com>
-In-Reply-To: <1252401791-22463-2-git-send-email-jens.axboe@oracle.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 08 Sep 2009 10:28:09.0178 (UTC) FILETIME=[0F6CEBA0:01CA306F]
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090903203339.GB7467@kroah.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+On Thu, Sep 03, 2009 at 01:33:39PM -0700, Greg KH wrote:
+> On Fri, Jul 17, 2009 at 03:49:14PM -0400, Lee Schermerhorn wrote:
+> > PATCH fix distribution of bootmem huge pages
+> > 
+> > Against: 2.6.31-rc3
+> > 
+> > For stable, applicable back through 2.6.27
+> > 
+> > [A version of this patch has been added to the -mm tree.  That patch
+> > won't apply cleanly to mainline nor stable trees because of function
+> > renaming.  This one should.]
+> 
+> What is the git commit id of this patch that is in Linus's tree?
+> 
 
-On 09/08/2009 12:23 PM, Jens Axboe wrote:
->   	int i, err;
->   	struct ubifs_info *c = sb->s_fs_info;
-> -	struct writeback_control wbc = {
-> -		.sync_mode   = WB_SYNC_ALL,
-> -		.range_start = 0,
-> -		.range_end   = LLONG_MAX,
-> -		.nr_to_write = LONG_MAX,
-> -	};
->
->   	/*
->   	 * Zero @wait is just an advisory thing to help the file system shove
-> @@ -462,7 +456,7 @@ static int ubifs_sync_fs(struct super_block *sb, int wait)
->   	 * the user be able to get more accurate results of 'statfs()' after
->   	 * they synchronize the file system.
->   	 */
-> -	generic_sync_sb_inodes(sb,&wbc);
-> +	sync_inodes_sb(sb);
-
-This call is unnecessary and I've removed it and the patch is sitting in
-linux-next for long time:
-http://git.infradead.org/ubifs-2.6.git/commit/887ee17117fd23e962332b353d250ac9e090b20f
-
-Stephen e-mailed about the conflict recently. Could we please resolve the
-conflict? I guess if you pick up my patch then git will be able to resolve
-stuff automatically.
+I can only find it in mmotm. It doesn't appear to have been merged to
+mainline at all. Lee, what happened with this? Did it get held off until
+post-2.6.31 for merging to mainline?
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
