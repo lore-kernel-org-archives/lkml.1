@@ -1,161 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751970AbZIHRri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZIHRqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751970AbZIHRri (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 13:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZIHRrh
+	id S1751913AbZIHRqZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 13:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751846AbZIHRqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 13:47:37 -0400
-Received: from mail-pz0-f201.google.com ([209.85.222.201]:50812 "EHLO
-	mail-pz0-f201.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751089AbZIHRrg (ORCPT
+	Tue, 8 Sep 2009 13:46:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40154 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751651AbZIHRqY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 13:47:36 -0400
-Subject: Re: question on sched-rt group allocation cap: sched_rt_runtime_us
-Mime-Version: 1.0 (Apple Message framework v1075.2)
-Content-Type: text/plain; charset=us-ascii; format=flowed; delsp=yes
-From: Anirban Sinha <ani@anirban.org>
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C54DC48B@exchange.ZeugmaSystems.local>
-Date: Tue, 8 Sep 2009 10:41:38 -0700
-Cc: Anirban Sinha <ani@anirban.org>, Anirban Sinha <ASinha@zeugmasystems.com>
+	Tue, 8 Sep 2009 13:46:24 -0400
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+From: Peter Zijlstra <peterz@infradead.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, "Theodore Ts'o" <tytso@mit.edu>,
+       Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <20090908172842.GC2975@think>
+References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com>
+	 <1252401791-22463-9-git-send-email-jens.axboe@oracle.com>
+	 <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins>
+	 <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins>
+	 <20090908172842.GC2975@think>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Message-Id: <217247FB-ED91-4A24-B698-71CEEFA58636@anirban.org>
-References: <dgRNo-3uc-5@gated-at.bofh.it> <dhb9j-1hp-5@gated-at.bofh.it> <dhcf5-263-13@gated-at.bofh.it> <36bbf267-be27-4c9e-b782-91ed32a1dfe9@g1g2000pra.googlegroups.com> <1252218779.6126.17.camel@marge.simson.net> <DDFD17CC94A9BD49A82147DDF7D545C54DC48B@exchange.ZeugmaSystems.local>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Dario Faggioli <raistlin@linux.it>
-X-Mailer: Apple Mail (2.1075.2)
+Date: Tue, 08 Sep 2009 19:46:14 +0200
+Message-Id: <1252431974.7746.151.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 2009-09-08 at 13:28 -0400, Chris Mason wrote:
+> > Right, so what can we do to make it useful? I think the intent is to
+> > limit the number of pages in writeback and provide some progress
+> > feedback to the vm.
+> > 
+> > Going by your experience we're failing there.
+> 
+> Well, congestion_wait is a stop sign but not a queue.  So, if you're
+> being nice and honoring congestion but another process (say O_DIRECT
+> random writes) doesn't, then you back off forever and none of your IO
+> gets done.
+> 
+> To get around this, you can add code to make sure that you do
+> _some_ io, but this isn't enough for your work to get done
+> quickly, and you do end up waiting in get_request() so the async
+> benefits of using the congestion test go away.
+> 
+> If we changed everyone to honor congestion, we end up with a poll model
+> because a ton of congestion_wait() callers create a thundering herd.
+> 
+> So, we could add a queue, and then congestion_wait() would look a lot
+> like get_request_wait().  I'd rather that everyone just used
+> get_request_wait, and then have us fix any latency problems in the
+> elevator.
 
-On 2009-09-08, at 10:32 AM, Anirban Sinha wrote:
+Except you'd need to lift it to the BDI layer, because not all backing
+devices are a block device.
 
->
->
->
-> -----Original Message-----
-> From: Mike Galbraith [mailto:efault@gmx.de]
-> Sent: Sat 9/5/2009 11:32 PM
-> To: Anirban Sinha
-> Cc: Lucas De Marchi; linux-kernel@vger.kernel.org; Peter Zijlstra;  
-> Ingo Molnar
-> Subject: Re: question on sched-rt group allocation cap:  
-> sched_rt_runtime_us
->
-> On Sat, 2009-09-05 at 19:32 -0700, Ani wrote:
-> > On Sep 5, 3:50 pm, Lucas De Marchi <lucas.de.mar...@gmail.com>  
-> wrote:
-> > >
-> > > Indeed. I've tested this same test program in a single core  
-> machine and it
-> > > produces the expected behavior:
-> > >
-> > > rt_runtime_us / rt_period_us     % loops executed in SCHED_OTHER
-> > > 95%                              4.48%
-> > > 60%                              54.84%
-> > > 50%                              86.03%
-> > > 40%                              OTHER completed first
-> > >
-> >
-> > Hmm. This does seem to indicate that there is some kind of
-> > relationship with SMP. So I wonder whether there is a way to turn  
-> this
-> > 'RT bandwidth accumulation' heuristic off.
->
-> No there isn't, but maybe there should be, since this isn't the first
-> time it's come up.  One pro argument is that pinned tasks are  
-> thoroughly
-> screwed when an RT hog lands on their runqueue.  On the con side, the
-> whole RT bandwidth restriction thing is intended (AFAIK) to allow an
-> admin to regain control should RT app go insane, which the default 5%
-> aggregate accomplishes just fine.
->
-> Dunno.  Fly or die little patchlet (toss).
+Making it into a per-bdi queue sounds good to me though.
 
-So it would be nice to have a knob like this when CGROUPS is disabled  
-(it say 'say N  when unsure' :)). CPUSETS depends on CGROUPS.
+> For me, perfect would be one or more threads per-bdi doing the
+> writeback, and never checking for congestion (like what Jens' code
+> does).  The congestion_wait inside balance_dirty_pages() is really just
+> a schedule_timeout(), on a fully loaded box the congestion doesn't go
+> away anyway.  We should switch that to a saner system of waiting for
+> progress on the bdi writeback + dirty thresholds.
 
+Right, one of the things we could possibly do is tie into
+__bdi_writeout_inc() and test levels there once every so often and then
+flip a bit when we're low enough to stop writing.
 
->
-> sched: allow the user to disable RT bandwidth aggregation.
->
-> Signed-off-by: Mike Galbraith <efault@gmx.de>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Btrfs would love to be able to send down a bio non-blocking.  That would
+> let me get rid of the congestion check I have today (I think Jens said
+> that would be an easy change and then I talked him into some small mods
+> of the writeback path).
 
+Wont that land us into trouble because the amount of writeback will
+become unwieldy?
 
-Verified-by: Anirban Sinha <asinha@zeugmasystems.com>
+> > > > Now, suppose it were to do something useful, I'd think we'd want to
+> > > > limit write-out to whatever it takes so saturate the BDI.
+> > > 
+> > > If we don't want a blanket increase, 
+> > 
+> > The thing is, this sysctl seems an utter cop out, we can't even explain
+> > how to calculate a number that'll work for a situation, the best we can
+> > do is say, prod at it and pray -- that's not good.
+> > 
+> > Last time I also asked if an increased number is good for every
+> > situation, I have a machine with a RAID5 array and USB storage, will it
+> > harm either situation?
+> 
+> If the goal is to make sure that pdflush or balance_dirty_pages only
+> does IO until some condition is met, we should add a flag to the bdi
+> that gets set when that condition is met.  Things will go a lot more
+> smoothly than magic numbers.
 
+Agreed - and from what I can make out, that really is the only goal
+here.
 
-> LKML-Reference: <new-submission>
->
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index 8736ba1..6e6d4c7 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1881,6 +1881,7 @@ static inline unsigned int  
-> get_sysctl_timer_migration(void)
->  #endif
->  extern unsigned int sysctl_sched_rt_period;
->  extern int sysctl_sched_rt_runtime;
-> +extern int sysctl_sched_rt_bandwidth_aggregate;
->
->  int sched_rt_handler(struct ctl_table *table, int write,
->                 struct file *filp, void __user *buffer, size_t *lenp,
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index c512a02..ca6a378 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -864,6 +864,12 @@ static __read_mostly int scheduler_running;
->   */
->  int sysctl_sched_rt_runtime = 950000;
->
-> +/*
-> + * aggregate bandwidth, ie allow borrowing from neighbors when
-> + * bandwidth for an individual runqueue is exhausted.
-> + */
-> +int sysctl_sched_rt_bandwidth_aggregate = 1;
-> +
->  static inline u64 global_rt_period(void)
->  {
->         return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index 2eb4bd6..75daf88 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -495,6 +495,9 @@ static int balance_runtime(struct rt_rq *rt_rq)
->  {
->         int more = 0;
->
-> +       if (!sysctl_sched_rt_bandwidth_aggregate)
-> +               return 0;
-> +
->         if (rt_rq->rt_time > rt_rq->rt_runtime) {
->                 spin_unlock(&rt_rq->rt_runtime_lock);
->                 more = do_balance_runtime(rt_rq);
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index cdbe8d0..0ad08e5 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -368,6 +368,14 @@ static struct ctl_table kern_table[] = {
->         },
->         {
->                 .ctl_name       = CTL_UNNUMBERED,
-> +               .procname       = "sched_rt_bandwidth_aggregate",
-> +               .data           =  
-> &sysctl_sched_rt_bandwidth_aggregate,
-> +               .maxlen         = sizeof(int),
-> +               .mode           = 0644,
-> +               .proc_handler   = &sched_rt_handler,
-> +       },
-> +       {
-> +               .ctl_name       = CTL_UNNUMBERED,
->                 .procname       = "sched_compat_yield",
->                 .data           = &sysctl_sched_compat_yield,
->                 .maxlen         = sizeof(unsigned int),
->
->
->
->
+> Then we can add the fs_hint as another change so the FS can tell
+> write_cache_pages callers how to do optimal IO based on its allocation
+> decisions.
 
+I think you lost me here, but I think you mean to provide some FS
+specific feedback to the generic write page routines -- whatever
+works ;-)
