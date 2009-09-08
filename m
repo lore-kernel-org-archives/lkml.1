@@ -1,87 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752157AbZIHSPZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752146AbZIHSSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752157AbZIHSPZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 14:15:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752107AbZIHSPY
+	id S1752146AbZIHSSc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 14:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752002AbZIHSSb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 14:15:24 -0400
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:48033 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752022AbZIHSPX (ORCPT
+	Tue, 8 Sep 2009 14:18:31 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:60028 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751944AbZIHSSa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 14:15:23 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-02.arcor-online.net 202223FE166
-Message-ID: <4AA69F3A.4090600@arcor.de>
-Date: Tue, 08 Sep 2009 21:15:22 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+	Tue, 8 Sep 2009 14:18:30 -0400
+Date: Tue, 8 Sep 2009 14:18:33 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: linux-ide@vger.kernel.org,
+       Kernel development list <linux-kernel@vger.kernel.org>
+Subject: Re: Limiting DMA speeds for individual IDE drives
+In-Reply-To: <20090908185306.0f30c07b@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0909081409040.2653-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: linux-kernel@vger.kernel.org, Jens Axboe <jens.axboe@oracle.com>,
-       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu> <h81v7t$p6e$1@ger.gmane.org> <20090907110146.GB6393@nowhere>
-In-Reply-To: <20090907110146.GB6393@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/07/2009 02:01 PM, Frederic Weisbecker wrote:
-> On Mon, Sep 07, 2009 at 06:38:36AM +0300, Nikos Chantziaras wrote:
->> Unfortunately, I can't come up with any way to somehow benchmark all of
->> this.  There's no benchmark for "fluidity" and "responsiveness". Running
->> the Doom 3 benchmark, or any other benchmark, doesn't say anything about
->> responsiveness, it only measures how many frames were calculated in a
->> specific period of time.  How "stable" (with no stalls) those frames were
->> making it to the screen is not measurable.
->
->
-> That looks eventually benchmarkable. This is about latency.
-> For example, you could try to run high load tasks in the
-> background and then launch a task that wakes up in middle/large
-> periods to do something. You could measure the time it takes to wake
-> it up to perform what it wants.
->
-> We have some events tracing infrastructure in the kernel that can
-> snapshot the wake up and sched switch events.
->
-> Having CONFIG_EVENT_TRACING=y should be sufficient for that.
->
-> You just need to mount a debugfs point, say in /debug.
->
-> Then you can activate these sched events by doing:
->
-> echo 0>  /debug/tracing/tracing_on
-> echo 1>  /debug/tracing/events/sched/sched_switch/enable
-> echo 1>  /debug/tracing/events/sched/sched_wake_up/enable
->
-> #Launch your tasks
->
-> echo 1>  /debug/tracing/tracing_on
->
-> #Wait for some time
->
-> echo 0>  /debug/tracing/tracing_off
->
-> That will require some parsing of the result in /debug/tracing/trace
-> to get the delays between wake_up events and switch in events
-> for the task that periodically wakes up and then produce some
-> statistics such as the average or the maximum latency.
->
-> That's a bit of a rough approach to measure such latencies but that
-> should work.
+On Tue, 8 Sep 2009, Alan Cox wrote:
 
-I've tried this with 2.6.31-rc9 while running mplayer and alt+tabbing 
-repeatedly to the point where mplayer starts to stall and drop frames. 
-This produced a 4.1MB trace file (132k bzip2'ed):
+> > I've got a situation where a drive claims to be capable of supporting
+> > UDMA/100, but it's in a noisy environment and gets lots of errors at
+> > that speed.  I'd like to limit it to UDMA/66 or even UDMA/33.
+> 
+> That should never occur with a proper cable and I would be concerned the
+> fault might be something more problematic such as speed misconfiguration
+> or an incompatibility. Which driver is in use ?
 
-     http://foss.math.aegean.gr/~realnc/kernel/trace1.bz2
+The cable indeed is likely to be at fault.  The same drive worked okay
+at the higher speed with a different cable (which unfortunately is
+unavailable for use in the final deployment).  This is using the old
+IDE driver.  Here's an extract from the log, with
+ide-core.ignore_cable=0 specified on the command line:
 
-Uncompressed for online viewing:
+Linux version 2.6.27-gentoo-r10 (root@raise) (gcc version 4.1.2 (Gentoo 4.1.2 p1.0.2)) #1 SMP PREEMPT Tue Apr 21 15:06:03 UTC 2009
+...
+Uniform Multi-Platform E-IDE driver
+piix 0000:00:1f.1: IDE controller (0x8086:0x24cb rev 0x02)
+pci 0000:00:1f.1: PCI INT A -> GSI 18 (level, low) -> IRQ 18
+piix 0000:00:1f.1: IDE port disabled
+piix 0000:00:1f.1: not 100% native mode: will probe irqs later
+ide: ignoring cable detection for ide0
+    ide0: BM-DMA at 0xf000-0xf007
+Probing IDE interface ide0...
+hda: STEC MACH-8 SSD, ATA DISK drive
+hda: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+hda: UDMA/100 mode selected
+ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+ide_generic: please use "probe_mask=0x3f" module parameter for probing all legacy ISA IDE ports
+ide_generic: I/O resource 0x1F0-0x1F7 not free.
+ide_generic: I/O resource 0x170-0x177 not free.
+hda: max request size: 512KiB
+hda: 60789456 sectors (31124 MB), CHS=16383/255/63
+hda: cache flushes not supported
+ hda: hda1 hda2 hda3
+...
+hda: dma_intr: status=0x51 { DriveReady SeekComplete Error }
+hda: dma_intr: error=0xc4 { DriveStatusError BadCRC UncorrectableError }, LBAsect=14823116, sector=14823116
+ide: failed opcode was: unknown
+hda: dma_intr: status=0x51 { DriveReady SeekComplete Error }
+hda: dma_intr: error=0xc4 { DriveStatusError BadCRC UncorrectableError }, LBAsect=15133492, sector=15133492
+ide: failed opcode was: unknown
+hda: dma_intr: status=0x51 { DriveReady SeekComplete Error }
+hda: dma_intr: error=0xc4 { DriveStatusError BadCRC UncorrectableError }, LBAsect=9478100, sector=9478100
+ide: failed opcode was: unknown
+Etc.; you get the idea...
 
-     http://foss.math.aegean.gr/~realnc/kernel/trace1
 
-I must admit that I don't know what it is I'm looking at :P
+> > The hdparm command should be able to do this but I can't run it until 
+> > the system has booted, by which time a bunch of CRC and possibly other 
+> > errors have already occurred.  Ideally it should be possible to limit 
+> 
+> Only the data transfers are CRC protected and at high speed, but noise at
+> low speed would be a real concern as the commands are sent low speed but
+> without protection on PATA devices - so a bit flip can send a DMA to the
+> wrong sector.
+> 
+> > the speed starting as early as device detection, but I can't find any 
+> > way to do it.  Is there support for such a thing or will I have to hack 
+> > it in?
+> 
+> You can disallow DMA but not clip DMA to UDMA33 with the old driver. You
+> could disallow DMA at boot and reallow it with a speed set by hdparm in
+> your boot scripts...
+
+
+On Tue, 8 Sep 2009, Frederik Deweerdt wrote:
+
+> Does passing ide=nodma at bootime, and then having init set the DMA at
+> the right speed, would work?
+
+I'll recommend trying that out.  Thanks to both of you for the advice.
+
+Alan Stern
+
