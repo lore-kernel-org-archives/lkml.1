@@ -1,57 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753023AbZIHAul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753128AbZIHAwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753023AbZIHAul (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 20:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752899AbZIHAuk
+	id S1753128AbZIHAwR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 20:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZIHAwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 20:50:40 -0400
-Received: from mga01.intel.com ([192.55.52.88]:29616 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752872AbZIHAuj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 20:50:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,349,1249282800"; 
-   d="scan'208";a="491351461"
-Subject: Re: linux-next: acpi tree build failure
-From: Zhang Rui <rui.zhang@intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Len Brown <lenb@kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-In-Reply-To: <20090907234612.078bb650.sfr@canb.auug.org.au>
-References: <20090901125748.fb33b2ea.sfr@canb.auug.org.au>
-	 <20090907234612.078bb650.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Tue, 08 Sep 2009 08:47:49 +0800
-Message-Id: <1252370869.3483.420.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Mon, 7 Sep 2009 20:52:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59297 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752872AbZIHAwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 Sep 2009 20:52:16 -0400
+Message-ID: <4AA5AA0F.4060104@cn.fujitsu.com>
+Date: Tue, 08 Sep 2009 08:49:19 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>, Jason Baron <jbaron@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 4/6] perf_counter: Add PERF_COUNTER_IOC_SET_FILTER ioctl
+References: <4AA4C04D.1050201@cn.fujitsu.com>	 <4AA4C0B3.3070300@cn.fujitsu.com> <1252341871.7959.37.camel@laptop>	 <20090907164852.GA6485@elte.hu> <1252342545.7959.42.camel@laptop>
+In-Reply-To: <1252342545.7959.42.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-len,
-
-please revert the two ALS patches.
-
-thanks,
-rui
-
-On Mon, 2009-09-07 at 21:46 +0800, Stephen Rothwell wrote:
-> Hi Len,
+Peter Zijlstra wrote:
+> On Mon, 2009-09-07 at 18:48 +0200, Ingo Molnar wrote:
+>> * Peter Zijlstra <peterz@infradead.org> wrote:
+>>
+>>> On Mon, 2009-09-07 at 16:13 +0800, Li Zefan wrote:
+>>>> Allow to set profile filter via ioctl.
+>>> Hrm,.. not at all sure about this.. what are the ABI implications?
+>> I think the ABI should be fine if it's always a sub-set of C syntax. 
+>> That would be C expressions initially. Hm?
 > 
-> On Tue, 1 Sep 2009 12:57:48 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > Today's linux-next build (x86_64 allmodconfig) failed like this:
-> > 
-> > drivers/acpi/als.c: In function 'acpi_als_get_mappings':
-> > drivers/acpi/als.c:173: error: expected ')' before 'PREFIX'
-> > drivers/acpi/als.c: In function 'acpi_als_add':
-> > drivers/acpi/als.c:347: error: expected ')' before 'PREFIX'
-> > 
-> > I have used the version of the acpi tree from next-20090831 for today.
+> Right, so I've no clue what filter expressions look like, and the
+> changelog doesn't help us at all. It doesn't mention its a well
+> considered decision to henceforth freeze the expression syntax.
 > 
-> This is still there ...
+> Of course, since filters so far only work with tracepoint things, and
+> since you can only come by tracepoint things through debugfs, and since
+> anything debugfs is basically a free-for-all ABI-less world, we might be
+> good, but then this is a very ill-defined ioctl() indeed.
+> 
+> So please, consider this well -- there might not be a second chance.
+> 
+
+Ok, the expressions are:
+
+  1. S = opr1 op opr2	(op: ==, !=, <, <=, >, >=.
+			 opr1 should be a field in the format file)
+  2. E = S1 op S2	(op: ||, &&)
+  3. E = E1 op E2	(op: ||, &&)
+  4. () can be used
+
+I don't the syntax will be changed, but we may extend it, like
+adding not ! operator. Like, for a func ptr, besides "func==0xccee4400",
+we may want to allow "func==foo". Those extentions are ok for the
+ABI, right?
 
