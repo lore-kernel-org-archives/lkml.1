@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751787AbZIHQyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751832AbZIHRAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751787AbZIHQyk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 12:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751429AbZIHQyk
+	id S1751832AbZIHRAz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 13:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751792AbZIHRAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 12:54:40 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:58396 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751131AbZIHQyj (ORCPT
+	Tue, 8 Sep 2009 13:00:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42781 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751443AbZIHRAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 12:54:39 -0400
-X-IronPort-AV: E=Sophos;i="4.44,353,1249272000"; 
-   d="scan'208";a="4068110"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Arnd Bergmann" <arnd@arndb.de>
-Subject: Re: asm-generic update candidates?
-Date: Tue, 8 Sep 2009 12:58:50 -0400
-User-Agent: KMail/1.9.5
-CC: "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-References: <200909031729.52538.rgetz@blackfin.uclinux.org> <200909041539.28384.rgetz@blackfin.uclinux.org> <200909081455.45576.arnd@arndb.de>
-In-Reply-To: <200909081455.45576.arnd@arndb.de>
+	Tue, 8 Sep 2009 13:00:53 -0400
+Date: Tue, 8 Sep 2009 10:00:07 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: reinette chatre <reinette.chatre@intel.com>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
+       bugzilla-daemon@bugzilla.kernel.org
+Subject: Re: [Bug #13819] system freeze when switching to console
+In-Reply-To: <1252427375.14735.130.camel@rc-desk>
+Message-ID: <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera>  <Vm51Upp4EV.A.r-D.mgBpKB@chimera> <1252427375.14735.130.camel@rc-desk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-ID: <200909081258.50345.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 08 Sep 2009 16:54:41.0473 (UTC) FILETIME=[0F1C4B10:01CA30A5]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 8 Sep 2009 08:55, Arnd Bergmann pondered:
-> On Friday 04 September 2009, Robin Getz wrote:
-> > I also noticed in Linus's latest (last commit 
-> > 37d0892c5a94e208cf863e3b7bac014edee4346d):
-> > 
-> > cat arch/microblaze/include/asm/ipc.h
-> > #include <asm-generic/ipc.h>
-> > 
-> > but: ls include/asm-generic/ipc.h
-> > ls: cannot access include/asm-generic/ipc.h: No such file or directory
+
+
+On Tue, 8 Sep 2009, reinette chatre wrote:
+
+> On Sun, 2009-09-06 at 10:24 -0700, Rafael J. Wysocki wrote:
+> > Please verify if it still should be listed and let me know
+> > (either way).
 > 
-> Adrian Bunk killed that file in asm/ back in 2007, he probably crossed
-> patches with the microblaze architecture.
+> Issue is still present in 2.6.31-rc8.
 
-Ok - that got me doing a quick look:
+Is there any chance that you could connect a serial line to the machine? 
+Your report about blinking keyboard led's means that there's an oops, but 
+since the display isn't in textmode (and the oops obviously happens when 
+trying to enter it), we don't know what it is.
 
-asm-generic/compat_signal.h doesn't exist?
-arch/parisc/include/asm/compat_signal.h:#include <asm-generic/compat_signal.h>
+A serial line (along with a kernel compiled with serial console support, 
+of course, and a kernel command line option like "console=ttyS0,115400 
+console=tty0") would get that. You'd just need another machine with a 
+terminal program like minicom..
 
-asm-generic/cpumask.h doesn't exist?
-arch/frv/include/asm/cpumask.h:#include <asm-generic/cpumask.h>
-arch/xtensa/include/asm/cpumask.h:#include <asm-generic/cpumask.h>
+The network console could also work out, but serial lines tend to be more 
+reliable if you have them. But in the absense of serial lines, see the
+Documentation/networking/netconsole.txt file for some details. The setup 
+is more complicated, but on the other hand it's a lot more dynamic, and in 
+your case - since the box works until you try to switch to text-mode, I 
+suspect the network console dynamic run-time setup would be easy for you 
+to use.
 
-asm-generic/ipc.h doesn't exist?
-arch/microblaze/include/asm/ipc.h:#include <asm-generic/ipc.h>
-arch/mn10300/include/asm/ipc.h:#include <asm-generic/ipc.h>
+(For other examples of using netconsole with that dynamic mode, just 
+google for "sys/kernel/config/netconsole" and you'll find a number of docs 
+that explain how to find the MAC address for setup etc).
 
-asm-generic/rmap.h doesn't exist?
-arch/xtensa/include/asm/rmap.h:#include <asm-generic/rmap.h>
-
-
-Maybe checkpatch (or something else?) needs something to make sure all 
-referenced files are actually in the tree or in the patch?
+		Linus
