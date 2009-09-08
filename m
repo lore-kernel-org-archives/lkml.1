@@ -1,95 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752393AbZIHXgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752488AbZIHXhc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752393AbZIHXgL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 19:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752140AbZIHXgL
+	id S1752488AbZIHXhc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 19:37:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZIHXhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 19:36:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38331 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752036AbZIHXgJ (ORCPT
+	Tue, 8 Sep 2009 19:37:32 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49668 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752187AbZIHXhb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 19:36:09 -0400
-Date: Tue, 8 Sep 2009 16:36:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-cc: reinette chatre <reinette.chatre@intel.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
-       "bugzilla-daemon@bugzilla.kernel.org" 
-	<bugzilla-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug #13819] system freeze when switching to console
-In-Reply-To: <20090908151135.7ba64801@jbarnes-g45>
-Message-ID: <alpine.LFD.2.01.0909081617100.7458@localhost.localdomain>
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <Vm51Upp4EV.A.r-D.mgBpKB@chimera> <1252427375.14735.130.camel@rc-desk> <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain> <1252431375.14735.139.camel@rc-desk> <alpine.LFD.2.01.0909081039300.7458@localhost.localdomain>
- <20090908112014.002a35af@jbarnes-g45> <alpine.LFD.2.01.0909081219130.7458@localhost.localdomain> <20090908123151.1f2b18fe@jbarnes-g45> <alpine.LFD.2.01.0909081502510.7458@localhost.localdomain> <20090908151135.7ba64801@jbarnes-g45>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Sep 2009 19:37:31 -0400
+Subject: Re: [PATCH tip/core/rcu 0/3] increase rcutorture intensity and fix
+ a couple resulting bugs
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org
+In-Reply-To: <20090908225349.GA19524@linux.vnet.ibm.com>
+References: <20090908225349.GA19524@linux.vnet.ibm.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 08 Sep 2009 19:37:30 -0400
+Message-Id: <1252453051.20985.9.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 8 Sep 2009, Jesse Barnes wrote:
-> > This regression is almost two months old, and apparently the Intel 
-> > graphics people DID ABSOLUTELY NOTHING about it during those two
-> > months, because they couldn't be bothered to look at it.
+On Tue, 2009-09-08 at 15:53 -0700, Paul E. McKenney wrote:
+> This patch series increases the intensity of rcutorture testing for
+> TREE_PREEMPT_RCU and provides fixes for a couple resulting bugs.
 > 
-> Yeah sorry, this is the first I've seen of it...  I usually troll the
-> regressions lists but I must have missed this one.
+> o	Make rcutorture's RCU read-side critical sections occasionally
+> 	spin for a few tens of milliseconds, which greatly increases
+> 	the probability that they will be preempted and that quiescent
+> 	states will be forced.  Yes, this does uncover some bugs in
+> 	TREE_PREEMPT_RCU (though TREE_RCU passes with flying colors).
+> 
+> o	Fix a bug where rnp->gpnum was not being updated.  This
+> 	increases TREE_PREEMPT_RCU's reliability considerably, though
+> 	bugs still remain.
+> 
+> o	Make the initialization of multi-node trees of rcu_node
+> 	structures unconditionally acquire rnp->lock.  This simplifies
+> 	the code a bit and will make it easier to allow grace-period
+> 	initialization become preemptable, should this be needed.
+> 
+> Next steps include applying review comments, adding expedited grace
+> periods, and chasing down remaining bugs.  Longer term, RCU priority
+> boosting.
 
-Hmm. We must have screwed up something, because this was bisected to the 
-intel DRI commits back in July. See
+Hi Paul,
 
-	http://bugzilla.kernel.org/show_bug.cgi?id=13819#c4
+These patches look decent to me.
 
-and while there was some confusion about exactly which commit caused 
-it - probably because the irq thing obviously depends on timing - 
-Reinette had a list of three commits that he used to be able to revert to 
-get things going:
+If it makes you feel comfy:
 
-   drm/i915: Don't update display FIFO watermark on IGDNG
-   drm/i915: add FIFO watermark support
-   drm/i915: enable error detection & state collection
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
 
-So Andrew assigned it to DRI, and Rafael has had both Eric and Ma Ling on 
-the cc for his regression reports because of the bisection. And that has 
-been going on for a long time, I just checked:
+-- Steve
 
-    Date: Sun, 26 Jul 2009 22:28:26 +0200 (CEST)
-    From: Rafael J. Wysocki <rjw@sisk.pl>
-    To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-    Cc: Kernel Testers List <kernel-testers@vger.kernel.org>, Eric Anholt <eric@anholt.net>, "ling.ma@intel.com" <ling.ma@intel.com>,
-        Linus Torvalds <torvalds@linux-foundation.org>, Ma Ling <ling.ma@intel.com>, Reinette Chatre <reinette.chatre@intel.com>
-    Subject: [Bug #13819] system freeze when switching to console
 
-If you didn't see it, then that means that we have screw-ups with the 
-bugzilla thing. You're actually listed as a "Reviewed-by" on the commit 
-that the fixed-up bisection blamed - And I get the feeling that Rafael's 
-bugzilla "bugme" scripts may only pick up "Signed-off-by:" lines.
-
-The point is: this bug has been in bisected in bugzilla for a month and a 
-half, and had at least two Intel DRI people cc'd on the weekly reminder 
-reports, along with being
-
-	Assigned To:  	drivers_video-dri@kernel-bugs.osdl.org
-
-We have other bugs on the regression list that are even older (no, I'm not 
-proud of them):
-
-	http://bugzilla.kernel.org/show_bug.cgi?id=13809
-	http://bugzilla.kernel.org/show_bug.cgi?id=13740
-	http://bugzilla.kernel.org/show_bug.cgi?id=13733
-	http://bugzilla.kernel.org/show_bug.cgi?id=13645
-
-but they aren't bisected and it's not nearly as clear what is going on 
-there. The last one in particular I don't know if it even happens any 
-more and the first one seems to be fixed in -rc5, or at least the 
-reporter couldn't reproduce it any more..
-
-		Linus
