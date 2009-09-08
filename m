@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752960AbZIHXCO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752845AbZIHXGM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752960AbZIHXCO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 19:02:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752939AbZIHXCF
+	id S1752845AbZIHXGM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 19:06:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752553AbZIHXGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 19:02:05 -0400
-Received: from mailout03.t-online.de ([194.25.134.81]:51685 "EHLO
-	mailout03.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752882AbZIHXBt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 19:01:49 -0400
-Message-ID: <4AA6E21C.9030909@t-online.de>
-Date: Wed, 09 Sep 2009 01:00:44 +0200
-From: Knut Petersen <Knut_Petersen@t-online.de>
-User-Agent: Thunderbird 1.5.0.14 (X11/20060911)
+	Tue, 8 Sep 2009 19:06:11 -0400
+Received: from kroah.org ([198.145.64.141]:59003 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752549AbZIHXGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 19:06:10 -0400
+Date: Tue, 8 Sep 2009 16:04:16 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, stable-review@kernel.org,
+       linux-kernel@vger.kernel.org, stable-review@linux.kernel.org
+Subject: Re: 2.6.27 maintenance plans after 2.6.32 is released
+Message-ID: <20090908230416.GA8283@kroah.com>
+References: <43e72e890909081230h420c2abi125a6fbfc2777250@mail.gmail.com>
+ <43e72e890909081244m4083a1bcq30cf1306ce566726@mail.gmail.com>
 MIME-Version: 1.0
-To: "Carlos R. Mafra" <crmafra2@gmail.com>
-CC: Linus Torvalds <torvalds@osdl.org>, airlied@linux.ie,
-       linux-kernel@vger.kernel.org,
-       intel-gfx <intel-gfx@lists.freedesktop.org>
-Subject: Re: Regression DRM/i915/KMS: VGA connector unusable after	2.6.31-rc8-git1,
- DVI connector ok
-References: <4AA6D858.6040505@t-online.de> <20090908222821.GA10175@Pilar.aei.mpg.de>
-In-Reply-To: <20090908222821.GA10175@Pilar.aei.mpg.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-ID: rAQjb+Z6rhs-UiC74tyLT-HDmvR81KHoBVyjwzfaoe-xMmuRrnAWVGsnBZPhszWZBa
-X-TOI-MSGID: f0a549b6-10f1-42d2-b8eb-81aea8e1ce3b
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <43e72e890909081244m4083a1bcq30cf1306ce566726@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Carlos R. Mafra schrieb:
-> On Wed  9.Sep'09 at  0:19:04 +0200, Knut Petersen wrote:
->   
->> Hi everybody!
->>
->> During the release cycle of the 2.6.31-rc* kernels KMS started to work
->> on my computer.
->>
->> Booting with a monitor attached to both the VAG and the DVI connectors,
->> kernel 2.6.31-rc8-git1
->> detects both monitors correctly and sets the native video mode.
->>
->> Booting the same configuration with kernel 2.6.31-rc8-git2 ... -rc9-git1
->> gives a different result:
->> the DVI-attached monitor is still working perfectly, the VGA-attached
->> monitor does not detect a
->> valid video signal and switches off.
->>     
->
-> I had a similar problem between -rc8 and -rc9, and the patch here
->
-> http://marc.info/?l=linux-kernel&m=125239311508274&w=2
->
-> fixed it for me.
->
->   
+On Tue, Sep 08, 2009 at 12:44:23PM -0700, Luis R. Rodriguez wrote:
+> On Tue, Sep 8, 2009 at 12:30 PM, Luis R. Rodriguez<mcgrof@gmail.com> wrote:
+> > I was curious if 2.6.27 is planned to be supported after 2.6.32 is
+> > released, or will that be dropped in favor for 2.6.28 as the last
+> > supported kernel. How does dropping an old kernel for stable
+> > maintenance consideration typically work?
 
-I tested that patch with kernel 2.6.31-rc9-git1 and it solves my problem.
+.27 is a "long term" support kernel that I've decided to keep going for
+a variety of reasons.  .28 and .29 are currently no longer maintained.
 
-Carlos, Jesse: Thanks a lot for that quick response!
+So .27 is "special" right now, and seems to be working well.  I keep
+revaluating if it's worth keeping going, and so far, it seems like it
+is, if for nothing else, personal reasons as I have a few servers based
+on it :)
 
-cu,
- Knut
+For .30, we will probably do a few more releases once .31 is out, and
+then drop it as well.
+
+I'm confused as to what .32 has to do with any of this, that's months
+away...
+
+thanks,
+
+greg k-h
