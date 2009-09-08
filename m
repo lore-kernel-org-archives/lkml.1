@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751679AbZIHQk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750985AbZIHQmL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751679AbZIHQk0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 12:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751312AbZIHQkZ
+	id S1750985AbZIHQmL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 12:42:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751050AbZIHQmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 12:40:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60660 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750901AbZIHQkY (ORCPT
+	Tue, 8 Sep 2009 12:42:10 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:12967 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750940AbZIHQmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 12:40:24 -0400
-Subject: Re: Stop using tasklets for bottom halves
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Michael Buesch <mb@bu3sch.de>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Matt Smith <Matt.Smith@atheros.com>, Kevin Hayes <kevin@atheros.com>,
-       Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
-       Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
-In-Reply-To: <20090908091143.1e613963@nehalam>
-References: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com>
-	 <20090907171406.6a4b6116@nehalam>
-	 <1252376254.21261.2052.camel@gandalf.stny.rr.com>
-	 <20090908091143.1e613963@nehalam>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 08 Sep 2009 12:40:23 -0400
-Message-Id: <1252428023.15626.30.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 12:42:09 -0400
+X-Trace: 259558730/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.112.247/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.112.247
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ArMEAIMlpkpPRXD3/2dsb2JhbACBU91QhBgF
+X-IronPort-AV: E=Sophos;i="4.44,353,1249254000"; 
+   d="scan'208";a="259558730"
+Date: Tue, 8 Sep 2009 17:40:50 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Nick Piggin <npiggin@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH 7/8] mm: reinstate ZERO_PAGE
+In-Reply-To: <20090908153441.GB29902@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0909081735230.18233@sister.anvils>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
+ <Pine.LNX.4.64.0909072238320.15430@sister.anvils> <20090908073119.GA29902@wotan.suse.de>
+ <Pine.LNX.4.64.0909081258160.25652@sister.anvils> <20090908153441.GB29902@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 09:11 -0700, Stephen Hemminger wrote:
-
-> > > Process context is too slow.
-> > 
-> > Well, I'm hoping to prove the opposite. I'm working on some stuff that I
-> > plan to present at Linux Plumbers. I've been too distracted by other
-> > things, but hopefully I'll have some good numbers to present by then.
-> > 
+On Tue, 8 Sep 2009, Nick Piggin wrote:
+> On Tue, Sep 08, 2009 at 01:17:01PM +0100, Hugh Dickins wrote:
+> > By the way, in compiling that list of "special" architectures,
+> > I was surprised not to find ia64 amongst them.  Not that it
+> > matters to me, but I thought the Fujitsu guys were usually
+> > keen on Itanium - do they realize that the special test is
+> > excluding it, or do they have their own special patch for it?
 > 
+> I don't understand your question. Are you asking whether they
+> know your patch will not enable zero pages on ia64?
+
+That's what I was meaning to ask, yes; but wondering whether
+perhaps they've already got their own patch to enable pte_special
+on ia64, and just haven't got around to sending it in yet.
+
 > 
-> That's great, does it keep the good properties of NAPI (irq disabling
-> and throttling?)
+> I guess pte special was primarily driven by gup_fast, which in
+> turn was driven primarily by DB2 9.5, which I think might be
+> only available on x86 and ibm's architectures.
+> 
+> But I admit to being a curious as to when I'll see a gup_fast
+> patch come out of SGI or HP or Fujitsu :)
 
-Not exactly sure what you mean by throttling, but I'm assuming it will.
+Yes, me too!
 
-As for irqs disabling, I'm trying to avoid doing that. Note, the device
-will have its interrupts disabled, but not all other devices will.
-
--- Steve
-
-
+Hugh
