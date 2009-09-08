@@ -1,74 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbZIHLb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbZIHLcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754466AbZIHLb1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 07:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbZIHLb1
+	id S1754488AbZIHLcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 07:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZIHLcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 07:31:27 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:62433 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752979AbZIHLb0 (ORCPT
+	Tue, 8 Sep 2009 07:32:18 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:34125 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754304AbZIHLcR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 07:31:26 -0400
-X-Trace: 259417358/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.8.207/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.8.207
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEANrcpUpQKQjP/2dsb2JhbACBU9hNhBgF
-X-IronPort-AV: E=Sophos;i="4.44,352,1249254000"; 
-   d="scan'208";a="259417358"
-Date: Tue, 8 Sep 2009 12:30:39 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hiroaki Wakabayashi <primulaelatior@gmail.com>,
-       Lee Schermerhorn <lee.schermerhorn@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 1/8] mm: munlock use follow_page
-In-Reply-To: <20090908115825.edb06814.kamezawa.hiroyu@jp.fujitsu.com>
-Message-ID: <Pine.LNX.4.64.0909081227010.25652@sister.anvils>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
- <Pine.LNX.4.64.0909072227140.15430@sister.anvils>
- <20090908115825.edb06814.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 8 Sep 2009 07:32:17 -0400
+Message-ID: <4AA64097.9030208@gmail.com>
+Date: Tue, 08 Sep 2009 14:31:35 +0300
+From: Artem Bityutskiy <dedekind1@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, hch@infradead.org,
+       akpm@linux-foundation.org, jack@suse.cz
+Subject: Re: [PATCH 1/8] writeback: get rid of generic_sync_sb_inodes() export
+References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-2-git-send-email-jens.axboe@oracle.com> <4AA631AA.6000803@gmail.com> <20090908104111.GS18599@kernel.dk> <1252407150.5060.51.camel@localhost> <20090908105728.GU18599@kernel.dk> <4AA63992.7040200@gmail.com> <20090908110536.GV18599@kernel.dk>
+In-Reply-To: <20090908110536.GV18599@kernel.dk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 08 Sep 2009 11:31:46.0674 (UTC) FILETIME=[F2D49520:01CA3077]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Sep 2009, KAMEZAWA Hiroyuki wrote:
-> On Mon, 7 Sep 2009 22:29:55 +0100 (BST)
-> Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
-> >  void munlock_vma_pages_range(struct vm_area_struct *vma,
-> > -			   unsigned long start, unsigned long end)
-> > +			     unsigned long start, unsigned long end)
-> >  {
-> > +	unsigned long addr;
-> > +
-> > +	lru_add_drain();
-> >  	vma->vm_flags &= ~VM_LOCKED;
-> > -	__mlock_vma_pages_range(vma, start, end, 0);
-> > +
-> > +	for (addr = start; addr < end; addr += PAGE_SIZE) {
-> > +		struct page *page = follow_page(vma, addr, FOLL_GET);
-> > +		if (page) {
-> > +			lock_page(page);
-> > +			if (page->mapping)
-> > +				munlock_vma_page(page);
-> 
-> Could you add "please see __mlock_vma_pages_range() to see why" or some here ?
+On 09/08/2009 02:05 PM, Jens Axboe wrote:
+> Just don't worry about it, things are fine as-is. When the conflict
+> happens with the mainline tree, fix it up. If it was a more involved
+> depdency chain, we could do something more about it. But for this, I'd
+> say it's a lot more work to attempt to "fix" something that is a 10s
+> merge issue at pull time.
 
-Why the test on page->mapping?
-Right, I'll add some such comment on that.
-Waiting a day or two to see what else comes up.
+All right, I'll do this, thanks.
 
-Thanks,
-Hugh
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
