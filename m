@@ -1,48 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751950AbZIHT0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751987AbZIHT1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751950AbZIHT0N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZIHT0M
+	id S1751987AbZIHT1S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZIHT1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:26:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:40426 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751213AbZIHT0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:26:11 -0400
-Message-ID: <4AA6AFCE.5080406@garzik.org>
-Date: Tue, 08 Sep 2009 15:26:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Tue, 8 Sep 2009 15:27:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34675 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751956AbZIHT1R (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:27:17 -0400
+Date: Tue, 8 Sep 2009 12:26:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: reinette chatre <reinette.chatre@intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Eric Anholt <eric@anholt.net>, "Ma, Ling" <ling.ma@intel.com>,
+       "bugzilla-daemon@bugzilla.kernel.org" 
+	<bugzilla-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug #13819] system freeze when switching to console
+In-Reply-To: <20090908112014.002a35af@jbarnes-g45>
+Message-ID: <alpine.LFD.2.01.0909081219130.7458@localhost.localdomain>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <Vm51Upp4EV.A.r-D.mgBpKB@chimera> <1252427375.14735.130.camel@rc-desk> <alpine.LFD.2.01.0909080943030.7458@localhost.localdomain> <1252431375.14735.139.camel@rc-desk> <alpine.LFD.2.01.0909081039300.7458@localhost.localdomain>
+ <20090908112014.002a35af@jbarnes-g45>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: Epic regression in throughput since v2.6.23
-References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru>	<4807377b0909081047kfad088j694bd2b806075c5f@mail.gmail.com>	<4AA6A9E8.9000407@garzik.org> <87ab15i6q4.fsf@depni.sinp.msu.ru>
-In-Reply-To: <87ab15i6q4.fsf@depni.sinp.msu.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/08/2009 03:20 PM, Serge Belyshev wrote:
-> Jeff Garzik<jeff@garzik.org>  writes:
->
->> You will almost certainly see idle CPUs/threads with "make -jN_CPUS"
->> due to processes waiting for I/O.
->
-> Just to clarify: I have excluded all I/O effects in my plots completely
-> by building completely from tmpfs. Also, before each actual measurment
-> there was a thrown-off "pre-caching" one.  And my box has 8GB of RAM.
-
-You could always one-up that by using ramfs ;)
-
-	Jeff
 
 
+On Tue, 8 Sep 2009, Jesse Barnes wrote:
+> 
+> Theoretically i915_gem_idle should prevent any user interrupts from
+> coming in.
 
+That is _entirely_ immaterial.
+
+The thing is, interrupts can be shared. So it does not matter ONE WHIT 
+that you are trying to idle the hardware - there may be _other_ hardware 
+in the machine that is not idle, and that raises the same shared 
+interrupt. End result: the irq handler will be called, whether your 
+particular hardware is idle or not.
+
+So if you tear down data structures that the interrupt handler needs, you 
+_ABSOLUTELY_ must first unregister the whole interrupt.
+
+Also, even if there are no shared interrupts or any other devices, there 
+can easily be old pending interrupts still queued up on IO-APIC's etc. So 
+even though you quiesce the hardware, there is no guarantee that there 
+aren't some pending interrupts that happened just before you turned off 
+the interrupt from the hardware side, and are still "en route" to the CPU.
+
+Which gets us exactly the same rule as if there were shared interrupts: if 
+your interrupt handler depends on some data structure, you must tear down 
+the interrupt handler _before_ you tear down the data structures it 
+depends on (and in the reverse order when setting things up, of course).
+
+> If we uninstall the IRQ first we i915_gem_idle probably
+> won't work anymore, since it queues an interrupt and waits for it.
+
+So then you'd better fix that. Because the code as is is very 
+fundamentally buggy.
+
+> Eric, any thoughts on this?  We shouldn't be racing to queue new work
+> after the idle call since we suspend GEM at that point, so we must be
+> failing to manage our active lists properly somehow?
+
+See my previous email. The bug is that you do
+
+  i915_gem_cleanup_ringbuffer ->
+    i915_gem_cleanup_hws ->
+      dev_priv->hw_status_page = NULL;
+
+while interrupts are still enabled and coming in. And the interrupt path 
+wants to access that hw_status_page. Which you just destroyed.
+
+			Linus
