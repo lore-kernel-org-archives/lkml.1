@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753574AbZIHFOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753460AbZIHFFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753574AbZIHFOK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 01:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753467AbZIHFOJ
+	id S1753460AbZIHFFP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 01:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752751AbZIHFFP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 01:14:09 -0400
-Received: from ns1.primeinteractive.net ([195.95.205.253]:53138 "EHLO
-	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753376AbZIHFOI (ORCPT
+	Tue, 8 Sep 2009 01:05:15 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:50736 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752200AbZIHFFO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 01:14:08 -0400
-X-Greylist: delayed 463 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 01:14:08 EDT
-Message-ID: <4AA5E5F3.30309@primeinteractive.net>
-Date: Tue, 08 Sep 2009 07:04:52 +0200
-From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: ext4+quota+nfs issue
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 8 Sep 2009 01:05:14 -0400
+Date: Tue, 08 Sep 2009 14:05:16 +0900 (JST)
+Message-Id: <20090908.140516.104049366.ryov@valinux.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: riel@redhat.com, vgoyal@redhat.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
+       akpm@linux-foundation.org, nauman@google.com,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com
+Subject: Re: Regarding dm-ioband tests
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090908032254.GJ8315@balbir.in.ibm.com>
+References: <4AA51065.6050000@redhat.com>
+	<20090908.120119.71095369.ryov@valinux.co.jp>
+	<20090908032254.GJ8315@balbir.in.ibm.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hi Balbir,
 
-recently we have build and started to use raid storage with formatted 
-capacity of 4.5T (ext4 formatted, default params).
-FS has quota turned on and is exported via NFS to nodes.
-If we turn qouta on on this FS and are trying to use it over NFS we get 
-the following:
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * Ryo Tsuruta <ryov@valinux.co.jp> [2009-09-08 12:01:19]:
+> 
+> > I think there are some advantages to dm-ioband. That's why I post
+> > dm-ioband to the mailing list.
+> > 
+> > - dm-ioband supports not only proportional weight policy but also rate
+> >   limiting policy. Besides, new policies can be added to dm-ioband if
+> >   a user wants to control bandwidth by his or her own policy.
+> > - The dm-ioband driver can be replaced without stopping the system by
+> >   using device-mapper's facility. It's easy to maintain.
+> > - dm-ioband can use without cgroup. (I remember Vivek said it's not an
+> >   advantage.)
+> 
+> But don't you need page_cgroup for IO tracking?
 
-------------[ cut here ]------------
-WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
-Hardware name: S3210SH
-Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc 
-coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd 
-floppy usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
-Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
-Call Trace:
-  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
-  [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
-  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
-  [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
-  [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
-  [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
-  [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
-  [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
-  [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
-  [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
-  [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
-  [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
-  [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
-  [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
-  [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
-  [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
-  [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
-  [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
-  [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
-  [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
-  [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
-  [<ffffffff80292110>] ? pdflush+0x120/0x230
-  [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
-  [<ffffffff80291ff0>] ? pdflush+0x0/0x230
-  [<ffffffff80261154>] ? kthread+0x64/0xc0
-  [<ffffffff8020d13a>] ? child_rip+0xa/0x20
-  [<ffffffff802610f0>] ? kthread+0x0/0xc0
-  [<ffffffff8020d130>] ? child_rip+0x0/0x20
----[ end trace cb54e6523e9ab60d ]---
+It is not necessary when controlling bandwidth on a per partition
+basis or on a IO thread basis like Xen blkback kernel thread.
 
-fstab entry:
-/dev/sdb1              /mnt/storage    ext4            
-noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0
-
-qith quotaoff on tihs FS, warnings stop.
-
-Question is if it's safe to use quotas with this problem (warning) or 
-not. Can't afford data damage.
+Here are configration examples.
+http://sourceforge.net/apps/trac/ioband/wiki/dm-ioband/man/examples
 
 Thanks,
-
-Pavol Cvengros
+Ryo Tsuruta
