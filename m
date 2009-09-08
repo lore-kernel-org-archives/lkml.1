@@ -1,39 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751846AbZIHTzn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750934AbZIHT6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751846AbZIHTzn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:55:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751414AbZIHTzn
+	id S1750934AbZIHT6N (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZIHT6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:55:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42730 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750910AbZIHTzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:55:42 -0400
-Date: Tue, 8 Sep 2009 21:55:45 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH v2] [mmotm] trace bio queueing trial only when it occurs
-Message-ID: <20090908195545.GE18599@kernel.dk>
-References: <20090908164941.c4f51208.minchan.kim@barrios-desktop>
+	Tue, 8 Sep 2009 15:58:12 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:53533 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750934AbZIHT6L (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:58:11 -0400
+Date: Tue, 8 Sep 2009 15:57:04 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+cc: Eric Dumazet <eric.dumazet@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Dangaard Brouer <hawk@comx.dk>,
+       Linux Netdev List <netdev@vger.kernel.org>,
+       Netfilter Developers <netfilter-devel@vger.kernel.org>
+Subject: Re: [PATCH] slub: fix slab_pad_check()
+In-Reply-To: <20090904204335.GG6751@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.1.10.0909081555410.26382@V090114053VZO-1>
+References: <4A9F7283.1090306@gmail.com> <alpine.DEB.1.10.0909031244230.27903@V090114053VZO-1> <4A9FCDC6.3060003@gmail.com> <alpine.DEB.1.10.0909031335430.29881@V090114053VZO-1> <4A9FDA72.8060001@gmail.com> <alpine.DEB.1.10.0909031414310.29881@V090114053VZO-1>
+ <4AA00400.1030005@gmail.com> <alpine.DEB.1.10.0909031731540.24199@V090114053VZO-1> <20090903231757.GP6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909041140040.9781@V090114053VZO-1> <20090904204335.GG6751@linux.vnet.ibm.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090908164941.c4f51208.minchan.kim@barrios-desktop>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08 2009, Minchan Kim wrote:
-> 
->  * Add history that why it is breaked in changelog.
-> 
-> Thanks for careful review, Wu, Li.
+On Fri, 4 Sep 2009, Paul E. McKenney wrote:
 
-Applied to for-2.6.32.
+> We have gotten along fine with only SLAB_DESTROY_BY_RCU for almost
+> five years, so I think we are plenty fine with what we have.  So, as
+> you say, "as the need arises".
 
--- 
-Jens Axboe
+These were the glory years where SLAB_DESTROY_BY_RCU was only used for
+anonymous vmas. Now Eric has picked it up for the net subsystem. You may
+see the RCU use proliferate.
+
+The kmem_cache_destroy rcu barriers did not matter until
+SLAB_DESTROY_BY_RCU spread.
+
 
