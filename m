@@ -1,134 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751753AbZIHTV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751785AbZIHTUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751753AbZIHTV5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 15:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751385AbZIHTV4
+	id S1751785AbZIHTUV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 15:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751284AbZIHTUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 15:21:56 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:63659 "EHLO mx1.redhat.com"
+	Tue, 8 Sep 2009 15:20:20 -0400
+Received: from depni.sinp.msu.ru ([213.131.7.21]:52915 "EHLO depni.sinp.msu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbZIHTV4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 15:21:56 -0400
-Date: Tue, 8 Sep 2009 15:19:41 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [RFC] IO scheduler based IO controller V9
-Message-ID: <20090908191941.GF15974@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com>
+	id S1750934AbZIHTUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 15:20:19 -0400
+From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jesse Brandeburg <jesse.brandeburg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: Epic regression in throughput since v2.6.23
+References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru>
+	<4807377b0909081047kfad088j694bd2b806075c5f@mail.gmail.com>
+	<4AA6A9E8.9000407@garzik.org>
+Date: Tue, 08 Sep 2009 19:20:19 +0000
+In-Reply-To: <4AA6A9E8.9000407@garzik.org> (Jeff Garzik's message of "Tue, 08
+	Sep 2009 15:00:56 -0400")
+Message-ID: <87ab15i6q4.fsf@depni.sinp.msu.ru>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA4B905.8010801@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 03:40:53PM +0800, Gui Jianfeng wrote:
-> Hi Vivek,
-> 
-> I happened to encount a bug when i test IO Controller V9.
-> When there are three tasks to run concurrently in three group,
-> that is, one is parent group, and other two tasks are running 
-> in two different child groups respectively to read or write 
-> files in some disk, say disk "hdb", The task may hang up, and 
-> other tasks which access into "hdb" will also hang up.
-> 
-> The bug only happens when using AS io scheduler.
-> The following scirpt can reproduce this bug in my box.
-> 
+Jeff Garzik <jeff@garzik.org> writes:
 
-Hi Gui,
+> You will almost certainly see idle CPUs/threads with "make -jN_CPUS"
+> due to processes waiting for I/O.
 
-I tried reproducing this on my system and can't reproduce it. All the
-three processes get killed and system does not hang.
-
-Can you please dig deeper a bit into it. 
-
-- If whole system hangs or it is just IO to disk seems to be hung.
-- Does io scheduler switch on the device work
-- If the system is not hung, can you capture the blktrace on the device.
-  Trace might give some idea, what's happening.
-
-Thanks
-Vivek
- 
-> ===========
-> #!/bin/sh
-> 
-> mkdir /cgroup
-> mount -t cgroup -o io,blkio io  /cgroup
-> 
-> echo anticipatory > /sys/block/hdb/queue/scheduler
-> 
-> mkdir /cgroup/test1
-> echo 100 > /cgroup/test1/io.weight
-> 
-> mkdir /cgroup/test2
-> echo 400 > /cgroup/test2/io.weight
-> 
-> mkdir /cgroup/test2/test3
-> echo 400 > /cgroup/test2/test3/io.weight
-> 
-> mkdir /cgroup/test2/test4
-> echo 400 > /cgroup/test2/test4/io.weight
-> 
-> #./rwio -r -f /hdb2/2000M.3 &
-> dd if=/hdb2/2000M.3 of=/dev/null &
-> pid4=$!
-> echo $pid4 > /cgroup/test2/test3/tasks
-> echo "pid4: $pid4"
-> 
-> #./rwio -r -f /hdb2/2000M.1 &
-> dd if=/hdb2/2000M.1 of=/dev/null &
-> pid1=$!
-> echo $pid1 > /cgroup/test1/tasks
-> echo "pid1 $pid1"
-> 
-> #./rwio -r -f /hdb2/2000M.2 &
-> dd if=/hdb2/2000M.2 of=/dev/null &
-> pid2=$!
-> echo $pid2 > /cgroup/test2/test4/tasks
-> echo "pid2 $pid2"
-> 
-> sleep 20
-> 
-> for ((;1;))
-> {
->         ps -p $pid1 > /dev/null 2>&1
->         if [ $? -ne 0 ]; then
->                 break
->         fi
-> 
->         kill -9 $pid1 > /dev/null 2>&1
-> }
-> for ((;1;))
-> {
->         ps -p $pid2 > /dev/null 2>&1
->         if [ $? -ne 0 ]; then
->                 break
->         fi
-> 
->         kill -9 $pid2 > /dev/null 2>&1
-> }
-> 
-> 
-> kill -9 $pid4 > /dev/null 2>&1
-> 
-> rmdir /cgroup/test2/test3
-> rmdir /cgroup/test2/test4
-> rmdir /cgroup/test2
-> rmdir /cgroup/test1
-> 
-> umount /cgroup
-> rmdir /cgroup
+Just to clarify: I have excluded all I/O effects in my plots completely
+by building completely from tmpfs. Also, before each actual measurment
+there was a thrown-off "pre-caching" one.  And my box has 8GB of RAM.
