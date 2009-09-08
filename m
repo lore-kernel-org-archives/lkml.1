@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752213AbZIHSZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752274AbZIHS2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752213AbZIHSZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 14:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZIHSZl
+	id S1752274AbZIHS2j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 14:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752163AbZIHS2j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 14:25:41 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:36921 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752070AbZIHSZk (ORCPT
+	Tue, 8 Sep 2009 14:28:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46262 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751991AbZIHS2i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 14:25:40 -0400
-Date: Tue, 8 Sep 2009 11:25:41 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>
-Subject: Re: linux-next: Tree for September 7 (scsi/qla2x)
-Message-ID: <20090908182541.GB44157@plap4-2.local>
-References: <20090907210206.7830ba68.sfr@canb.auug.org.au>
- <20090907102747.ac6b98ff.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090907102747.ac6b98ff.randy.dunlap@oracle.com>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 08 Sep 2009 18:25:14.0414 (UTC) FILETIME=[B5654CE0:01CA30B1]
+	Tue, 8 Sep 2009 14:28:38 -0400
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+From: Peter Zijlstra <peterz@infradead.org>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Artem Bityutskiy <dedekind1@gmail.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       david@fromorbit.com, hch@infradead.org, akpm@linux-foundation.org,
+       jack@suse.cz, "Theodore Ts'o" <tytso@mit.edu>,
+       Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <20090908175756.GG2975@think>
+References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com>
+	 <1252401791-22463-9-git-send-email-jens.axboe@oracle.com>
+	 <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins>
+	 <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins>
+	 <20090908172842.GC2975@think> <1252431974.7746.151.camel@twins>
+	 <20090908175756.GG2975@think>
+Content-Type: text/plain
+Date: Tue, 08 Sep 2009 20:28:30 +0200
+Message-Id: <1252434510.7035.4.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Sep 2009, Randy Dunlap wrote:
-
-> On Mon, 7 Sep 2009 21:02:06 +1000 Stephen Rothwell wrote:
+On Tue, 2009-09-08 at 13:57 -0400, Chris Mason wrote:
+> Going back to the streaming writer case, pretend the FS just created a
+> nice fat 256MB extent out of dealloc pages, but after we wrote the first
+> 4k, we dropped below the dirty threshold and IO is no longer "required".
 > 
-> > Hi all,
-> > 
-> > Changes since 20090904:
+> It would be silly to just write 4k.  We know we have a contiguous
+> area 256MB long on disk and 256MB of dirty pages.  In this case, pdflush
+> (or Jens' bdi threads) want to write some large portion of that 256MB.
 > 
-> 
-> when CONFIG_MODULES=n:
-> 
-> drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> 
-> in
-> 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> 	    KOBJ_CHANGE, envp);
+> You might argue a balance_dirty_pages callers wants to return quickly,
+> but even then we'd want to write at least 128k.
 
-Argg...  Some history here...  During several unwelcome
-hardware/firmware events (ISP system error, mailbox command timeouts,
-etc), the qla2xxx driver can store a 'firmware-dump' (essentially a
-snapshot of the current state of the ISP firmware).  This snapshot is
-then captured via a user-space tool querying a driver sysfs-node
-hanging off of a scsi_host's device tree:
+Sure and that's no problem at all,.. I'm thinking something like a
+fraction of the dirty limit, maybe something like
+(dirty_ratio-background_ratio) / 4 as chunk size. That gives a sizable
+amount and scales with the writeback cache stuff.
 
-	/sys/class/scsi_host/host4/device/fw_dump
+Esp if we move all write activity into the bdi threads and have the
+application tasks wait. In that case we can release the app tasks to
+generate more dirty pages while still writing out data in a linear
+fashion.
 
-The dump is then used by our firmware engineering group to help triage
-the issue.
-
-This recent change:
-
-	commit 10a71b40153a19279428053ad9743e15ef414148
-	Author: Andrew Vasquez <andrew.vasquez@qlogic.com>
-	Date:   Tue Aug 25 11:36:15 2009 -0700
-
-	    [SCSI] qla2xxx: Add firmware-dump kobject uevent notification.
-
-	    Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
-	    Signed-off-by: Giridhar Malavali <giridhar.malavali@qlogic.com>
-	    Signed-off-by: James Bottomley <James.Bottomley@suse.de>
-
-attempted to help 'automate' the task of retrieval by signaling udev
-to automatically run the 'retrieval' script anytime the driver
-captured the firmware-dump.  Here's a snippet of the udev rule:
-
-	# qla2xxx driver
-	KERNEL=="qla2xxx", SUBSYSTEM=="module", ACTION=="change", RUN+="qla2xxx_udev.sh"
-
-Any suggestions here on an alternate driver-specific kobject an LLD
-can/should use for something like this?  I looked previously at other
-callers of kobject_uevent_env(), but didn't really see a simlar
-usage-pattern of a driver wanting to signal events to userspace...
-
-Thanks, AV
