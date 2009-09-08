@@ -1,74 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZIHGyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753787AbZIHGy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbZIHGyG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 02:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753736AbZIHGyF
+	id S1753787AbZIHGy5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 02:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZIHGy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 02:54:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42081 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753719AbZIHGyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 02:54:04 -0400
-Date: Tue, 8 Sep 2009 08:53:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/6] perf trace: Add filter support
-Message-ID: <20090908065355.GB6505@elte.hu>
-References: <4AA4C04D.1050201@cn.fujitsu.com> <20090908000219.GB6312@nowhere> <4AA5AE29.6020107@cn.fujitsu.com> <20090908021224.GD6312@nowhere>
+	Tue, 8 Sep 2009 02:54:57 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:57164 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753408AbZIHGy4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 02:54:56 -0400
+Message-ID: <4AA5FF9D.10703@snapgear.com>
+Date: Tue, 08 Sep 2009 16:54:21 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090908021224.GD6312@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Tim Abbott <tabbott@ksplice.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Greg Ungerer <gerg@uclinux.org>
+Subject: Re: [PATCH] m68knommu: Clean up linker script using new linker script
+ macros.
+References: <1252293044-13102-1-git-send-email-tabbott@ksplice.com> <4AA49946.2000804@snapgear.com> <alpine.DEB.1.10.0909070135040.17860@dr-wily.mit.edu> <4AA4B104.7040507@snapgear.com> <alpine.DEB.1.10.0909071017001.17860@dr-wily.mit.edu>
+In-Reply-To: <alpine.DEB.1.10.0909071017001.17860@dr-wily.mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Tim,
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Tue, Sep 08, 2009 at 09:06:49AM +0800, Li Zefan wrote:
-> > >> An example:
-> > >>
-> > >>  #./perf record -f -e irq:irq_handler_entry:irq==18:record
-> > >>  or
-> > >>  #./perf record -f -e irq:irq_handler_entry:irq==18 -R
-> > >>  ^C
-> > > 
-> > > We may want to write complex filters. While looking at this patchset,
-> > > that seems possible this way, but the raw line may become unreadable:
-> > > 
-> > > perf record -f -e irq:irq_handler_entry:"irq==18 && (name == 'foo' || bar == 'blah')":record
-> > > 
-> > > May be we should add an option to let one also set the filters seperately then
-> > > we could do:
-> > > 
-> > > perf record -f -e -R irq:irq_handler_entry --filter "irq==18 && (name == 'foo' || bar == 'blah')"
-> > > 
-> > 
-> > I had the same idea. ;)
-> > 
-> > But using this option, is it possible to specify different filters
-> > for different events? like this:
-> > 
-> > perf record -f -e -R irq:irq_handler_entry --filter "irq==18"
-> > -e irq:softirq_entry --filter "vec==1"
-> > 
+Tim Abbott wrote:
+> On Mon, 7 Sep 2009, Greg Ungerer wrote:
 > 
+>> Now, back to the original patch. Now fails with another syntax error
+>> at the last line in this:
+>>
+>>  .init : {
+>>   . = ALIGN((1 << (12)));
+>>   __init_begin = .;
+>>   . = ALIGN((1 << (12))); .init.text : AT(ADDR(.init.text) - 0) { _sinittext =
+>> .; *(.init.text) *(.devinit.text) *(.cpuinit.text) *(.meminit.text) _einittext
+>> = .; }
 > 
-> Exactly how I was imagining it :)
+> Oops.  The ".init : { }" wrapping the new macros there should have been 
+> removed.
+> 
+> The following patch should fix this issue (obviously, you'll want to 
+> squash it with the original patch, but I figure sending the diff will be 
+> easier to review).
 
-Yes, that looks like a nice syntax. First the event, then the 
-conditions that restrict its output.
+Ok, yes, that fixes that problem. I had to also make THREAD_SIZE
+available to the linker with:
 
-	Ingo
+diff --git a/arch/m68k/include/asm/thread_info_no.h 
+b/arch/m68k/include/asm/thre
+index c2bde5e..a6512bf 100644
+--- a/arch/m68k/include/asm/thread_info_no.h
++++ b/arch/m68k/include/asm/thread_info_no.h
+@@ -12,8 +12,6 @@
+
+  #ifdef __KERNEL__
+
+-#ifndef __ASSEMBLY__
+-
+  /*
+   * Size of kernel stack for each process. This must be a power of 2...
+   */
+@@ -28,6 +26,8 @@
+   */
+  #define THREAD_SIZE (PAGE_SIZE<<THREAD_SIZE_ORDER)
+
++#ifndef __ASSEMBLY__
++
+  /*
+   * low level task data.
+   */
+
+
+But now the bss section doesn't looked properly aligned (at
+least it is not on a page boundary any longer after the init.data):
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+   0 .text         00124ab8  40020000  40020000  00002000  2**4
+                   CONTENTS, ALLOC, LOAD, READONLY, CODE
+   1 .data         00011540  40144ac0  40144ac0  00126ac0  2**4
+                   CONTENTS, ALLOC, LOAD, DATA
+   2 .init.text    0000a96c  40156000  40156000  00138000  2**2
+                   CONTENTS, ALLOC, LOAD, READONLY, CODE
+   3 .init.data    00000b7c  4016096c  4016096c  0014296c  2**2
+                   CONTENTS, ALLOC, LOAD, DATA
+   4 .bss          0000a9e8  401614f0  401614f0  001434e8  2**4
+                   ALLOC
+   5 .comment      00001c8c  00000000  00000000  001434e8  2**0
+                   CONTENTS, READONLY
+
+Seems kind of odd because:
+
+40156000 A __init_begin
+40162000 A __init_end
+401614f0 B _sbss
+
+The resulting kernels don't boot.
+
+Regards
+Greg
+
+
+
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> ---
+>  arch/m68knommu/kernel/vmlinux.lds.S |   14 ++++++--------
+>  1 files changed, 6 insertions(+), 8 deletions(-)
+> 
+> diff --git a/arch/m68knommu/kernel/vmlinux.lds.S b/arch/m68knommu/kernel/vmlinux.lds.S
+> index 979acb5..c380040 100644
+> --- a/arch/m68knommu/kernel/vmlinux.lds.S
+> +++ b/arch/m68knommu/kernel/vmlinux.lds.S
+> @@ -154,14 +154,12 @@ SECTIONS {
+>  		_edata = . ;
+>  	} > DATA
+>  
+> -	.init : {
+> -		. = ALIGN(PAGE_SIZE);
+> -		__init_begin = .;
+> -		INIT_TEXT_SECTION(PAGE_SIZE)
+> -		INIT_DATA_SECTION(16)
+> -		. = ALIGN(PAGE_SIZE);
+> -		__init_end = .;
+> -	} > INIT
+> +	. = ALIGN(PAGE_SIZE);
+> +	__init_begin = .;
+> +	INIT_TEXT_SECTION(PAGE_SIZE) > INIT
+> +	INIT_DATA_SECTION(16) > INIT
+> +	. = ALIGN(PAGE_SIZE);
+> +	__init_end = .;
+>  
+>  	/DISCARD/ : {
+>  		EXIT_TEXT
+
+-- 
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
