@@ -1,71 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751481AbZIHQLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751544AbZIHQLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751481AbZIHQLg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 12:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZIHQLg
+	id S1751544AbZIHQLt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 12:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZIHQLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 12:11:36 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:57629 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751141AbZIHQLf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 12:11:35 -0400
-Subject: Re: [PATCH v3 2/5] kmemleak: add clear command support
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: "Luis R. Rodriguez" <lrodriguez@Atheros.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, penberg@cs.helsinki.fi,
-       mcgrof@gmail.com
-In-Reply-To: <1252111494-7593-3-git-send-email-lrodriguez@atheros.com>
-References: <1252111494-7593-1-git-send-email-lrodriguez@atheros.com>
-	 <1252111494-7593-3-git-send-email-lrodriguez@atheros.com>
-Content-Type: text/plain
-Organization: ARM Ltd
-Date: Tue, 08 Sep 2009 17:11:28 +0100
-Message-Id: <1252426288.12145.112.camel@pc1117.cambridge.arm.com>
+	Tue, 8 Sep 2009 12:11:48 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:51670 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750991AbZIHQLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 12:11:47 -0400
+Date: Tue, 8 Sep 2009 09:11:43 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: rostedt@goodmis.org
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Matt Smith <Matt.Smith@atheros.com>, Kevin Hayes <kevin@atheros.com>,
+       Bob Copeland <me@bobcopeland.com>, Jouni Malinen <j@w1.fi>,
+       Ivan Seskar <Seskar@winlab.rutgers.edu>, ic.felix@gmail.com
+Subject: Re: Stop using tasklets for bottom halves
+Message-ID: <20090908091143.1e613963@nehalam>
+In-Reply-To: <1252376254.21261.2052.camel@gandalf.stny.rr.com>
+References: <43e72e890909071558s637b45c7i10807587dc40e8c4@mail.gmail.com>
+	<20090907171406.6a4b6116@nehalam>
+	<1252376254.21261.2052.camel@gandalf.stny.rr.com>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 Sep 2009 16:11:29.0141 (UTC) FILETIME=[05F5D250:01CA309F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-04 at 17:44 -0700, Luis R. Rodriguez wrote:
->  /*
-> + * We use grey instead of black to ensure we can do future
-> + * scans on the same objects. If we did not do future scans
-> + * these black objects could potentially contain references to
-> + * newly allocated objects in the future and we'd end up with
-> + * false positives.
-> + */
-> +static void kmemleak_clear(void)
-> +{
-> +	struct kmemleak_object *object;
-> +	unsigned long flags;
-> +
-> +	stop_scan_thread();
-> +
-> +	rcu_read_lock();
-> +	list_for_each_entry_rcu(object, &object_list, object_list) {
-> +		spin_lock_irqsave(&object->lock, flags);
-> +		if ((object->flags & OBJECT_REPORTED) &&
-> +		    unreferenced_object(object))
-> +			object->min_count = -1;
-> +		spin_unlock_irqrestore(&object->lock, flags);
-> +	}
-> +	rcu_read_unlock();
-> +
-> +	start_scan_thread();
-> +}
+On Mon, 07 Sep 2009 22:17:34 -0400
+Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Do we need to stop and start the scanning thread here? When starting it,
-it will trigger a memory scan automatically. I don't think we want this
-as a side-effect, so I dropped these lines from your patch.
+> On Mon, 2009-09-07 at 17:14 -0700, Stephen Hemminger wrote:
+> > On Mon, 7 Sep 2009 15:58:50 -0700
+> > "Luis R. Rodriguez" <mcgrof@gmail.com> wrote:
+> > 
+> > > A while ago I had read about an effort to consider removing tasklets
+> > > [1] or at least trying to not use them. I'm unaware of the progress in
+> > > this respect but since reading that article have always tried to
+> > > evaluate whether or not we need tasklets on wireless drivers. I have
+> > > also wondered whether work in irq context in other parts of the kernel
+> > > can be moved to process context, a curious example being timers. I'll
+> > > personally be trying to using only process context on bottom halves on
+> > > future drivers but I figured it may be a good time to ask how serious
+> > > was avoiding tasklets or using wrappers in the future to avoid irq
+> > > context is or is it advised. Do we have a general agreement this is a
+> > > good step forward to take? Has anyone made tests or changes on a
+> > > specific driver from irq context to process context and proven there
+> > > are no significant advantages of using irq context where you would
+> > > have expected it?
+> > > 
+> > > Wireless in particular should IMHO not require taskets for anything
+> > > time sensitive that I can think about except perhaps changing channels
+> > > quickly and to do that appropriately also process pending RX frames
+> > > prior to a switch. It remains to be seen experimentally whether or not
+> > > using a workqueue for RX processing would affect the time to switch
+> > > channels negatively but I doubt it would be significant. I hope to
+> > > test that with ath9k_htc.
+> > > 
+> > > What about gigabit or 10 Gigabit Ethernet drivers ? Do they face any
+> > > challenges which would yet need to be proven would not face issues
+> > > when processing bottom halves in process context?
+> > > 
+> > > [1] http://lwn.net/Articles/239633/
+> > > 
+> > >   Luis
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe netdev" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > 
+> > Why not use NAPI, which is soft irq? Almost all 1G and 10G drivers
+> > use NAPI.
+> > 
+> > Process context is too slow.
+> 
+> Well, I'm hoping to prove the opposite. I'm working on some stuff that I
+> plan to present at Linux Plumbers. I've been too distracted by other
+> things, but hopefully I'll have some good numbers to present by then.
+> 
 
-Also you set min_count to -1 here which means black object, so a
-subsequent patch corrects it. I'll set min_count to 0 here in case
-anyone bisects over it.
+
+That's great, does it keep the good properties of NAPI (irq disabling
+and throttling?)
+
+
 
 -- 
-Catalin
-
