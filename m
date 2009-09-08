@@ -1,203 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZIHCjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZIHCsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbZIHCjh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 Sep 2009 22:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753282AbZIHCjg
+	id S1753463AbZIHCsV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 Sep 2009 22:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZIHCsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 Sep 2009 22:39:36 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:48518 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753237AbZIHCjg (ORCPT
+	Mon, 7 Sep 2009 22:48:20 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:46353 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753282AbZIHCsU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 Sep 2009 22:39:36 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 8 Sep 2009 11:37:34 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 7/8] mm: reinstate ZERO_PAGE
-Message-Id: <20090908113734.869cdad7.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0909072238320.15430@sister.anvils>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
-	<Pine.LNX.4.64.0909072238320.15430@sister.anvils>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 7 Sep 2009 22:48:20 -0400
+Subject: Re: [PATCH] tracing/filters: use strcmp() instead of strncmp()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A221B41.4030907@cn.fujitsu.com>
+References: <4A221B41.4030907@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 07 Sep 2009 22:48:21 -0400
+Message-Id: <1252378101.21261.2057.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 Sep 2009 22:39:34 +0100 (BST)
-Hugh Dickins <hugh.dickins@tiscali.co.uk> wrote:
+Li,
 
-> KAMEZAWA Hiroyuki has observed customers of earlier kernels taking
-> advantage of the ZERO_PAGE: which we stopped do_anonymous_page() from
-> using in 2.6.24.  And there were a couple of regression reports on LKML.
-> 
-> Following suggestions from Linus, reinstate do_anonymous_page() use of
-> the ZERO_PAGE; but this time avoid dirtying its struct page cacheline
-> with (map)count updates - let vm_normal_page() regard it as abnormal.
-> 
-> Use it only on arches which __HAVE_ARCH_PTE_SPECIAL (x86, s390, sh32,
-> most powerpc): that's not essential, but minimizes additional branches
-> (keeping them in the unlikely pte_special case); and incidentally
-> excludes mips (some models of which needed eight colours of ZERO_PAGE
-> to avoid costly exceptions).
-> 
-> Don't be fanatical about avoiding ZERO_PAGE updates: get_user_pages()
-> callers won't want to make exceptions for it, so increment its count
-> there.  Changes to mlock and migration? happily seems not needed.
-> 
-> In most places it's quicker to check pfn than struct page address:
-> prepare a __read_mostly zero_pfn for that.  Does get_dump_page()
-> still need its ZERO_PAGE check? probably not, but keep it anyway.
-> 
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+I'm going through some old email, and I came across this patch. It seems
+that it never got applied. Could you port this to the latest -tip tree
+and resend it.
 
-A nitpick but this was a concern you shown, IIUC.
-
-== __get_user_pages()..
-
-                        if (pages) {
-                                pages[i] = page;
-
-                                flush_anon_page(vma, page, start);
-                                flush_dcache_page(page);
-                        }
-==
-
-This part will call flush_dcache_page() even when ZERO_PAGE is found.
-
-Don't we need to mask this ?
+Sorry about missing it.
 
 Thanks,
--Kame
+
+-- Steve
 
 
-
-
+On Sun, 2009-05-31 at 13:53 +0800, Li Zefan wrote:
+> Trace filter is not working normally:
+> 
+>   # echo 'name == et' > tracing/events/irq/irq_handler_entry/filter
+>   # echo 1 > tracing/events/irq/irq_handler_entry/enable
+>   # cat trace_pipe
+>       <idle>-0     [001]  1363.423175: irq_handler_entry: irq=18 handler=eth0
+>       <idle>-0     [001]  1363.934528: irq_handler_entry: irq=18 handler=eth0
+> 
+> It's because we pass to trace_define_field() the information of
+> __str_loc_##item, but not the actual string, so pred->str_len == field->size
+> == sizeof(unsigned short), thus it always compare at most 2 bytes when
+> filtering on __string() field.
+> 
+> Since __string() is dynamic size, we are not able to set field->size to
+> string length. Alternatively this patch uses strcmp() instead of strncmp(),
+> for both static strings and dynamic strings. strncmp() is not necessary,
+> since strings passed to it are already guaranteed to be NULL-terminated.
+> 
+> [ Impact: make filter facility working normally for dynamic strings ]
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 > ---
-> I have not studied the performance of this at all: I'd rather it go
-> into mmotm where others may decide whether it's a good thing or not.
+>  kernel/trace/trace.h               |    1 -
+>  kernel/trace/trace_events_filter.c |    7 ++-----
+>  2 files changed, 2 insertions(+), 6 deletions(-)
 > 
->  mm/memory.c |   53 +++++++++++++++++++++++++++++++++++++++++---------
->  1 file changed, 44 insertions(+), 9 deletions(-)
-> 
-> --- mm6/mm/memory.c	2009-09-07 13:16:53.000000000 +0100
-> +++ mm7/mm/memory.c	2009-09-07 13:17:01.000000000 +0100
-> @@ -107,6 +107,17 @@ static int __init disable_randmaps(char
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 6e735d4..ec8970b 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -758,7 +758,6 @@ struct filter_pred {
+>  	filter_pred_fn_t fn;
+>  	u64 val;
+>  	char str_val[MAX_FILTER_STR_VAL];
+> -	int str_len;
+>  	char *field_name;
+>  	int offset;
+>  	int not;
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index a854eed..8362586 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -158,7 +158,7 @@ static int filter_pred_string(struct filter_pred *pred, void *event,
+>  	char *addr = (char *)(event + pred->offset);
+>  	int cmp, match;
+>  
+> -	cmp = strncmp(addr, pred->str_val, pred->str_len);
+> +	cmp = strcmp(addr, pred->str_val);
+>  
+>  	match = (!cmp) ^ pred->not;
+>  
+> @@ -182,7 +182,7 @@ static int filter_pred_strloc(struct filter_pred *pred, void *event,
+>  	char *addr = (char *)(event + str_loc);
+>  	int cmp, match;
+>  
+> -	cmp = strncmp(addr, pred->str_val, pred->str_len);
+> +	cmp = strcmp(addr, pred->str_val);
+>  
+>  	match = (!cmp) ^ pred->not;
+>  
+> @@ -341,7 +341,6 @@ static void filter_clear_pred(struct filter_pred *pred)
+>  {
+>  	kfree(pred->field_name);
+>  	pred->field_name = NULL;
+> -	pred->str_len = 0;
 >  }
->  __setup("norandmaps", disable_randmaps);
 >  
-> +static unsigned long zero_pfn __read_mostly;
-> +
-> +/*
-> + * CONFIG_MMU architectures set up ZERO_PAGE in their paging_init()
-> + */
-> +static int __init init_zero_pfn(void)
-> +{
-> +	zero_pfn = page_to_pfn(ZERO_PAGE(0));
-> +	return 0;
-> +}
-> +core_initcall(init_zero_pfn);
->  
->  /*
->   * If a p?d_bad entry is found while walking page tables, report
-> @@ -499,7 +510,9 @@ struct page *vm_normal_page(struct vm_ar
->  	if (HAVE_PTE_SPECIAL) {
->  		if (likely(!pte_special(pte)))
->  			goto check_pfn;
-> -		if (!(vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP)))
-> +		if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
-> +			return NULL;
-> +		if (pfn != zero_pfn)
->  			print_bad_pte(vma, addr, pte, NULL);
->  		return NULL;
+>  static int filter_set_pred(struct filter_pred *dest,
+> @@ -576,7 +575,6 @@ static int filter_add_pred(struct filter_parse_state *ps,
+>  			fn = filter_pred_string;
+>  		else
+>  			fn = filter_pred_strloc;
+> -		pred->str_len = field->size;
+>  		if (pred->op == OP_NE)
+>  			pred->not = 1;
+>  		return filter_add_pred_fn(ps, call, pred, fn);
+> @@ -957,7 +955,6 @@ static struct filter_pred *create_pred(int op, char *operand1, char *operand2)
 >  	}
-> @@ -1144,9 +1157,14 @@ struct page *follow_page(struct vm_area_
->  		goto no_page;
->  	if ((flags & FOLL_WRITE) && !pte_write(pte))
->  		goto unlock;
-> +
->  	page = vm_normal_page(vma, address, pte);
-> -	if (unlikely(!page))
-> -		goto bad_page;
-> +	if (unlikely(!page)) {
-> +		if ((flags & FOLL_DUMP) ||
-> +		    pte_pfn(pte) != zero_pfn)
-> +			goto bad_page;
-> +		page = pte_page(pte);
-> +	}
 >  
->  	if (flags & FOLL_GET)
->  		get_page(page);
-> @@ -2085,10 +2103,19 @@ gotten:
+>  	strcpy(pred->str_val, operand2);
+> -	pred->str_len = strlen(operand2);
 >  
->  	if (unlikely(anon_vma_prepare(vma)))
->  		goto oom;
-> -	VM_BUG_ON(old_page == ZERO_PAGE(0));
-> -	new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
-> -	if (!new_page)
-> -		goto oom;
-> +
-> +	if (pte_pfn(orig_pte) == zero_pfn) {
-> +		new_page = alloc_zeroed_user_highpage_movable(vma, address);
-> +		if (!new_page)
-> +			goto oom;
-> +	} else {
-> +		new_page = alloc_page_vma(GFP_HIGHUSER_MOVABLE, vma, address);
-> +		if (!new_page)
-> +			goto oom;
-> +		cow_user_page(new_page, old_page, address, vma);
-> +	}
-> +	__SetPageUptodate(new_page);
-> +
->  	/*
->  	 * Don't let another task, with possibly unlocked vma,
->  	 * keep the mlocked page.
-> @@ -2098,8 +2125,6 @@ gotten:
->  		clear_page_mlock(old_page);
->  		unlock_page(old_page);
->  	}
-> -	cow_user_page(new_page, old_page, address, vma);
-> -	__SetPageUptodate(new_page);
+>  	pred->op = op;
 >  
->  	if (mem_cgroup_newpage_charge(new_page, mm, GFP_KERNEL))
->  		goto oom_free_new;
-> @@ -2594,6 +2619,15 @@ static int do_anonymous_page(struct mm_s
->  	spinlock_t *ptl;
->  	pte_t entry;
->  
-> +	if (HAVE_PTE_SPECIAL && !(flags & FAULT_FLAG_WRITE)) {
-> +		entry = pte_mkspecial(pfn_pte(zero_pfn, vma->vm_page_prot));
-> +		ptl = pte_lockptr(mm, pmd);
-> +		spin_lock(ptl);
-> +		if (!pte_none(*page_table))
-> +			goto unlock;
-> +		goto setpte;
-> +	}
-> +
->  	/* Allocate our own private page. */
->  	pte_unmap(page_table);
->  
-> @@ -2617,6 +2651,7 @@ static int do_anonymous_page(struct mm_s
->  
->  	inc_mm_counter(mm, anon_rss);
->  	page_add_new_anon_rmap(page, vma, address);
-> +setpte:
->  	set_pte_at(mm, address, page_table, entry);
->  
->  	/* No need to invalidate - it was non-present before */
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
