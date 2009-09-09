@@ -1,65 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752407AbZIIM6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbZIINMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752407AbZIIM6I (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 08:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZIIM6H
+	id S1752320AbZIINMk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 09:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751950AbZIINMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 08:58:07 -0400
-Received: from mga03.intel.com ([143.182.124.21]:39623 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751242AbZIIM6G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 08:58:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="185680982"
-Date: Wed, 9 Sep 2009 20:57:55 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "jack@suse.cz" <jack@suse.cz>, "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090909125755.GA24130@localhost>
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-9-git-send-email-jens.axboe@oracle.com> <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think> <20090909092901.GA24185@localhost> <20090909122805.GA30238@infradead.org> <20090909123223.GB23006@localhost> <20090909123746.GB18599@kernel.dk>
+	Wed, 9 Sep 2009 09:12:40 -0400
+Received: from mx1.auerswald.de ([212.185.163.234]:42030 "EHLO
+	mail.auerswald.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751698AbZIINMj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 09:12:39 -0400
+X-Greylist: delayed 607 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Sep 2009 09:12:39 EDT
+From: Wolfgang =?iso-8859-15?q?M=FCes?= <wolfgang.mues@auerswald.de>
+Organization: Auerswald GmbH & Co. KG
+To: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mmc@vger.kernel.org
+Subject: [PATCH] mmc_spi: fail gracefully if host or card do not support the switch command
+Date: Wed, 9 Sep 2009 14:02:30 +0100
+User-Agent: KMail/1.9.10
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090909123746.GB18599@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200909091502.30345.wolfgang.mues@auerswald.de>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 08:37:46PM +0800, Jens Axboe wrote:
-> On Wed, Sep 09 2009, Wu Fengguang wrote:
-> > On Wed, Sep 09, 2009 at 08:28:06PM +0800, Christoph Hellwig wrote:
-> > > On Wed, Sep 09, 2009 at 05:29:01PM +0800, Wu Fengguang wrote:
-> > > > It seems that balance_dirty_pages() is not coupled with MAX_WRITEBACK_PAGES. 
-> > > > Instead it uses the much smaller (ratelimit_pages + ratelimit_pages / 2).
-> > > 
-> > > With Jen's writeback patches applied balance_dirty_pages does not start
-> > > writeback itself anymore but calls bdi_start_writeback to let the
-> > > flusher thread do it.
-> > > 
-> > > it would be good if we do any writeback tuning ontop of these patches..
-> > 
-> > Ah OK. I'm using latest linux-next and expected his patches to be there..
-> 
-> They are there, have been for months! But I think Christoph is a little
-> confused, we'll still do writeback inline from balance_dirty_pages(). It
-> does writeback_inodes_wbc(), which does not schedule async writeout.
-> 
-> So if your patches are based and tested off -next, you should be good.
+From: Wolfgang Muees <wolfgang.mues@auerswald.de>
 
-Just found that I was in the wrong branch..  Now I see
-writeback_inodes_wbc(), thanks.
+Some time ago, I have send a patch to the mmc_spi subsystem changing the error 
+codes. This was after a discussion with Pierre about using EINVAL only for 
+non-recoverable errors. This patch was accepted as
 
-Thanks,
-Fengguang
+http://git.kernel.org/linus/fdd858db7113ca64132de390188d7ca00701013d
 
+Unfortunately, several weeks later, I realized that this patch has opened a 
+little can of worms because there are SD cards on the market which
+
+a) claim that they support the switch command
+AND
+b) refuse to execute this command if operating in SPI mode.
+
+So, such a card would get unusuable in an embedded linux system in SPI mode, 
+because the init sequence terminates with an error.
+
+This patch adds the missing error codes to the caller of the switch command
+and restores the old bahaviour to fail gracefully if these commands can not
+execute.
+
+This patch should go into 2.6.31 to show up in embedded systems ASAP.
+
+Signed-off-by: Wolfgang Muees <wolfgang.mues@auerswald.de>
+
+---
+diff -uprN 2_6_31_rc8/drivers/mmc/core/mmc.c 2_6_31_rc8_switch/drivers/mmc/core/mmc.c
+--- 2_6_31_rc8/drivers/mmc/core/mmc.c	2009-08-28 02:59:04.000000000 +0200
++++ 2_6_31_rc8_switch/drivers/mmc/core/mmc.c	2009-09-09 14:44:45.000000000 +0200
+@@ -180,11 +180,11 @@ static int mmc_read_ext_csd(struct mmc_c
+
+ 	err = mmc_send_ext_csd(card, ext_csd);
+ 	if (err) {
+-		/*
+-		 * We all hosts that cannot perform the command
+-		 * to fail more gracefully
+-		 */
+-		if (err != -EINVAL)
++		/* If the host or the card can't do the switch,
++		 * fail more gracefully. */
++		if ((err != -EINVAL)
++		 && (err != -ENOSYS)
++		 && (err != -EFAULT))
+ 			goto out;
+
+ 		/*
+diff -uprN 2_6_31_rc8/drivers/mmc/core/sd.c 2_6_31_rc8_switch/drivers/mmc/core/sd.c
+--- 2_6_31_rc8/drivers/mmc/core/sd.c	2009-08-28 02:59:04.000000000 +0200
++++ 2_6_31_rc8_switch/drivers/mmc/core/sd.c	2009-09-09 14:45:34.000000000 +0200
+@@ -210,11 +210,11 @@ static int mmc_read_switch(struct mmc_ca
+
+ 	err = mmc_sd_switch(card, 0, 0, 1, status);
+ 	if (err) {
+-		/*
+-		 * We all hosts that cannot perform the command
+-		 * to fail more gracefully
+-		 */
+-		if (err != -EINVAL)
++		/* If the host or the card can't do the switch,
++		 * fail more gracefully. */
++		if ((err != -EINVAL)
++		 && (err != -ENOSYS)
++		 && (err != -EFAULT))
+ 			goto out;
+
+ 		printk(KERN_WARNING "%s: problem reading switch "
+---
+regards
+
+i. A. Wolfgang Mües
+-- 
+Auerswald GmbH & Co. KG
+Hardware Development
+Telefon: +49 (0)5306 9219 0
+Telefax: +49 (0)5306 9219 94 
+E-Mail: Wolfgang.Mues@Auerswald.de
+Web: http://www.auerswald.de
+ 
+--------------------------------------------------------------
+Auerswald GmbH & Co. KG, Vor den Grashöfen 1, 38162 Cremlingen
+Registriert beim AG Braunschweig HRA 13289
+p.h.G Auerswald Geschäftsführungsges. mbH
+Registriert beim AG Braunschweig HRB 7463
+Geschäftsführer: Dipl-Ing. Gerhard Auerswald
