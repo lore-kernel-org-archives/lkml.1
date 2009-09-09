@@ -1,124 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbZIIAIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbZIIAFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752293AbZIIAIP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 20:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZIIAIO
+	id S1752506AbZIIAFo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 20:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZIIAFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 20:08:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36841 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751972AbZIIAIO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 20:08:14 -0400
-Date: Tue, 8 Sep 2009 17:06:49 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: tomaz.mertelj@guest.arnes.si
-Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] hwmon: Driver for Texas Instruments amc6821 chip
-Message-Id: <20090908170649.855dd1ff.akpm@linux-foundation.org>
-In-Reply-To: <20090905_120834_010267.tomaz.mertelj@guest.arnes.si>
-References: <20090905_120834_010267.tomaz.mertelj@guest.arnes.si>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Tue, 8 Sep 2009 20:05:43 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:59765 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751822AbZIIAFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 20:05:43 -0400
+Date: Wed, 9 Sep 2009 02:09:00 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, vgoyal@redhat.com,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
+       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090909000900.GK17468@gandalf.sssup.it>
+References: <20090904231129.GA3689@redhat.com> <20090907.200222.193693062.ryov@valinux.co.jp> <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp> <4AA6AF58.3050501@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA6AF58.3050501@redhat.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 Sep 2009 14:08:34 +0200
-tomaz.mertelj@guest.arnes.si wrote:
+Hi,
 
-> +	int temp1_input;
-> +	int temp1_min;
-> +	int temp1_max;
-> +	int temp1_crit;
-> +
-> +	int temp2_input;
-> +	int temp2_min;
-> +	int temp2_max;
-> +	int temp2_crit;
-> +
-> +	u16 fan1_input;
-> +	u16 fan1_min;
-> +	u16 fan1_max;
-> +	u8 fan1_div;
-> +
-> +	u8 pwm1;
-> +	u8 temp1_auto_point_temp[3];
-> +	u8 temp2_auto_point_temp[3];
-> +	u8 pwm1_auto_point_pwm[3];
-> +	u8 pwm1_enable;
-> +	u8 pwm1_auto_channels_temp;
-> +
-> +	u8 stat1;
-> +	u8 stat2;
-> +};
-> +
-> +
-> +#define get_temp_para(name) \
-> +static ssize_t get_##name(\
-> +		struct device *dev,\
-> +		struct device_attribute *devattr,\
-> +		char *buf)\
-> +{\
-> +	struct amc6821_data *data = amc6821_update_device(dev);\
-> +	return sprintf(buf, "%d\n", data->name * 1000);\
-> +}
-> +
-> +get_temp_para(temp1_input);
-> +get_temp_para(temp1_min);
-> +get_temp_para(temp1_max);
-> +get_temp_para(temp2_input);
-> +get_temp_para(temp2_min);
-> +get_temp_para(temp2_max);
-> +get_temp_para(temp1_crit);
-> +get_temp_para(temp2_crit);
-> +
-> +#define set_temp_para(name, reg)\
-> +static ssize_t set_##name(\
-> +		struct device *dev,\
-> +		struct device_attribute *attr,\
-> +		const char *buf,\
-> +		size_t count)\
-> +{ \
-> +	struct i2c_client *client = to_i2c_client(dev); \
-> +	struct amc6821_data *data = i2c_get_clientdata(client); \
-> +	int val = simple_strtol(buf, NULL, 10); \
-> +	\
-> +	mutex_lock(&data->update_lock); \
-> +	data->name = SENSORS_LIMIT(val / 1000, -128, 127); \
-> +	if (i2c_smbus_write_byte_data(client, reg, data->name)) {\
-> +		dev_err(&client->dev, "Register write error, aborting.\n");\
-> +		count = -EIO;\
-> +	} \
-> +	mutex_unlock(&data->update_lock); \
-> +	return count; \
-> +}
+> From: Rik van Riel <riel@redhat.com>
+> Date: Tue, Sep 08, 2009 03:24:08PM -0400
+>
+> Ryo Tsuruta wrote:
+> >Rik van Riel <riel@redhat.com> wrote:
+> 
+> >>Are you saying that dm-ioband is purposely unfair,
+> >>until a certain load level is reached?
+> >
+> >Not unfair, dm-ioband(weight policy) is intentionally designed to
+> >use bandwidth efficiently, weight policy tries to give spare bandwidth
+> >of inactive groups to active groups.
+> 
+> This sounds good, except that the lack of anticipation
+> means that a group with just one task doing reads will
+> be considered "inactive" in-between reads.
+> 
 
-I'm wondering if these functions need to be so huge.  Couldn't you do
-
-#define set_temp_para(name, reg)\
-static ssize_t set_##name(\
-		struct device *dev,\
-		struct device_attribute *attr,\
-		const char *buf,\
-		size_t count)\
-{\
-	return set_helper(dev, attr, buf, count, &dev->name);\
-}
-
-And then do all the real work in a common function?  Rather than
-expanding tens of copies of the same thing?
-
-Also, the checkpatch warning
-
-WARNING: consider using strict_strtol in preference to simple_strtol
-#381: FILE: drivers/hwmon/amc6821.c:228:
-+       int val = simple_strtol(buf, NULL, 10); \
-
-is valid.  The problem with simple_strtol() is that it will treat input
-of the form "43foo" as "43".  Even though the input was invalid.  A
-minor thing, but easily fixed too.
-
-
+  anticipation helps in achieving fairness, but CFQ currently disables
+idling for nonrot+NCQ media, to avoid the resulting throughput loss on
+some SSDs.  Are we really sure that we want to introduce anticipation
+everywhere, not only to improve throughput on rotational media, but to
+achieve fairness too?
