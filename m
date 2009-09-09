@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbZIIN30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbZIINdX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752450AbZIIN30 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 09:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752057AbZIIN30
+	id S1753095AbZIINdX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 09:33:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZIINdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 09:29:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51733 "EHLO mx1.suse.de"
+	Wed, 9 Sep 2009 09:33:22 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51894 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbZIIN3Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 09:29:25 -0400
-Date: Wed, 9 Sep 2009 06:23:40 -0700
+	id S1752527AbZIINdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 09:33:21 -0400
+Date: Wed, 9 Sep 2009 06:28:56 -0700
 From: Greg KH <gregkh@suse.de>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 00/48] 2.6.27.32-stable review
-Message-ID: <20090909132340.GA12391@suse.de>
-References: <20090909030843.GC10608@suse.de>
- <20090909073150.44F8C12B5F@gandalf.tls.msk.ru>
+To: Arkadiusz Miskiewicz <arekm@pld-linux.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.27.32
+Message-ID: <20090909132856.GA12498@suse.de>
+References: <20090909040829.GA9657@kroah.com>
+ <h87kdq$us2$1@ger.gmane.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090909073150.44F8C12B5F@gandalf.tls.msk.ru>
+In-Reply-To: <h87kdq$us2$1@ger.gmane.org>
 User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 11:31:50AM +0400, Michael Tokarev wrote:
-> > On Tue, Sep 08, 2009 at 09:47:51AM -0500, Jayson King wrote:
-> > > Greetings,
-> > > 
-> > > Patch 41/48 (ocfs2: Initialize the...) of this series causes a build 
-> > > failure:
-> > > 
-> > > fs/ocfs2/aops.c: In function `ocfs2_write_cluster':
-> > > fs/ocfs2/aops.c:1286: error: `should_zero' undeclared (first use in this function)
-> > > fs/ocfs2/aops.c:1286: error: (Each undeclared identifier is reported only once
-> > > fs/ocfs2/aops.c:1286: error: for each function it appears in.)
-> > > fs/ocfs2/aops.c: In function `ocfs2_write_cluster_by_desc':
-> ... 
-> > > 
-> > > A line from the upstream patch is missing in this patch:
-> > > 
-> > >   static int ocfs2_write_cluster(struct address_space *mapping,
-> > >                      u32 phys, unsigned int unwritten,
-> > > +                   unsigned int should_zero,
-> > >                      struct ocfs2_alloc_context *data_ac,
-> > >                      struct ocfs2_alloc_context *meta_ac,
-> > >                      struct ocfs2_write_ctxt *wc, u32 cpos,
-> > >                      loff_t user_pos, unsigned user_len)
-> > > 
-> > > 
-> > > Attached is the corrected patch with the above line placed back in.
-> > 
-> > There was an add-on ocfs2 patch that should have now resolved this
-> > issue.  If you still have this problem with the released kernel, please
-> > let me know.
+On Wed, Sep 09, 2009 at 09:10:50AM +0200, Arkadiusz Miskiewicz wrote:
+> Greg KH wrote:
 > 
-> Well, with just-released 2.6.27.32 exactly the same issue occurs.
-> I used patch-2.6.27.32.bz2 on top of linux-2.6.26.tar.bz2, not
-> the tarball (linux-2.6.27.32.tar.bz2).
+> > I'm announcing the release of the 2.6.27.32 kernel.  All users of the
+> > 2.6.27 kernel series are very strongly encouraged to upgrade.
 > 
+>   CC [M]  fs/ocfs2/aops.o
 > fs/ocfs2/aops.c: In function 'ocfs2_write_cluster':
-> fs/ocfs2/aops.c:1286: error: 'should_zero' undeclared (first use in this function)
-> fs/ocfs2/aops.c:1286: error: (Each undeclared identifier is reported only once
+> fs/ocfs2/aops.c:1286: error: 'should_zero' undeclared (first use in this 
+> function)
+> fs/ocfs2/aops.c:1286: error: (Each undeclared identifier is reported only 
+> once
 > fs/ocfs2/aops.c:1286: error: for each function it appears in.)
 > fs/ocfs2/aops.c: In function 'ocfs2_write_cluster_by_desc':
-> fs/ocfs2/aops.c:1360: warning: passing argument 4 of 'ocfs2_write_cluster' makes pointer from integer without a cast
-> fs/ocfs2/aops.c:1360: warning: passing argument 6 of 'ocfs2_write_cluster' from incompatible pointer type
-> fs/ocfs2/aops.c:1360: warning: passing argument 7 of 'ocfs2_write_cluster' makes integer from pointer without a cast
-> fs/ocfs2/aops.c:1360: error: too many arguments to function 'ocfs2_write_cluster'
-> 
-> Which add-on you're referring to?  In the stable-queue/releases/2.6.27.32/
-> I only see two patches related to ocfs:
->  ocfs2-initialize-the-cluster-we-re-writing-to-in-a-non-sparse-extend.patch
->  ocfs2-ocfs2_write_begin_nolock-should-handle-len-0.patch
-> Neither of which looks like an addon, and only one (the first)
-> has references to this "should_zero" variable.
+> fs/ocfs2/aops.c:1360: warning: passing argument 4 of 'ocfs2_write_cluster' 
+> makes pointer from integer without a cast
+> fs/ocfs2/aops.c:1235: note: expected 'struct ocfs2_alloc_context *' but 
+> argument is of type 'unsigned int'
+> fs/ocfs2/aops.c:1360: warning: passing argument 6 of 'ocfs2_write_cluster' 
+> from incompatible pointer type
+> fs/ocfs2/aops.c:1235: note: expected 'struct ocfs2_write_ctxt *' but 
+> argument is of type 'struct ocfs2_alloc_context *'
+> fs/ocfs2/aops.c:1360: warning: passing argument 7 of 'ocfs2_write_cluster' 
+> makes integer from pointer without a cast
+> fs/ocfs2/aops.c:1235: note: expected 'u32' but argument is of type 'struct 
+> ocfs2_write_ctxt *'
+> fs/ocfs2/aops.c:1360: error: too many arguments to function 
+> 'ocfs2_write_cluster'
+> make[2]: *** [fs/ocfs2/aops.o] Error 1
 
-I thought the second one would solve the problem.
+Yes, this was just reported :)
 
-What happened here, I took the upstream patch, was it incorrect?  If so,
-was there a patch, also upstream, that fixed this problem?
+Do you have a proposed fix that is also upstream?
 
-totally confused,
+thanks,
 
 greg k-h
