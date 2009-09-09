@@ -1,58 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZIIRoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZIIRpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753112AbZIIRoo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbZIIRon
+	id S1753549AbZIIRpH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZIIRpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:44:43 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:36636 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752322AbZIIRon (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:44:43 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: paulmck@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
-       dipankar@in.ibm.com, akpm@linux-foundation.org,
-       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
-       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
-       peterz@infradead.org, rostedt@goodmis.org
-Subject: Re: [PATCH tip/core/rcu 0/3] increase rcutorture intensity and fix a couple resulting bugs
-In-Reply-To: Your message of "Tue, 08 Sep 2009 15:53:49 PDT."
-             <20090908225349.GA19524@linux.vnet.ibm.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20090908225349.GA19524@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1252518239_3993P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 09 Sep 2009 13:43:59 -0400
-Message-ID: <21629.1252518239@turing-police.cc.vt.edu>
+	Wed, 9 Sep 2009 13:45:06 -0400
+Received: from mail-px0-f194.google.com ([209.85.216.194]:62924 "EHLO
+	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbZIIRpE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 13:45:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=xdmGp+KKj9FWUCwCau4FveUl5jUk+nZOAu1a+GKs2SXQnS6lvkdgC3RsMDTj8mqL+b
+         TIwGAkwTypzZPHdTiX7mFTyb0Zxc9kNPkzwRfoDd1nk4UjCkDjPQZjKT6sIoROVAw/5h
+         4H3QvJLLXxF5PUCmHkHwhe2RIhzfOu4JkHAz8=
+MIME-Version: 1.0
+In-Reply-To: <4AA7C38E.8020306@redhat.com>
+References: <4AA5E5F3.30309@primeinteractive.net>
+	 <4AA72C14.1020005@primeinteractive.net>
+	 <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
+	 <4AA7C38E.8020306@redhat.com>
+Date: Wed, 9 Sep 2009 10:45:06 -0700
+Message-ID: <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
+Subject: Re: ext4+quota+nfs issue
+From: Justin Maggard <jmaggard10@gmail.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Jiri Kosina <jkosina@suse.cz>,
+       Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
+       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1252518239_3993P
-Content-Type: text/plain; charset=us-ascii
+On Wed, Sep 9, 2009 at 8:02 AM, Eric Sandeen<sandeen@redhat.com> wrote:
+>> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
+>>
+>>> Hi,
+>>>
+>>> can somebody who is aware of ext4 and quota have a look on this one?
+>>>
+>
+> This was also just reported at:
+>
+> https://bugzilla.redhat.com/show_bug.cgi?id=521914
+>
+> -Eric
+>
 
-On Tue, 08 Sep 2009 15:53:49 PDT, "Paul E. McKenney" said:
-> This patch series increases the intensity of rcutorture testing for
-> TREE_PREEMPT_RCU and provides fixes for a couple resulting bugs.
+I've seen exactly the same thing myself as well, but on local I/O.
+The only difference I was able to find between filesystems I saw this
+on, versus filesystems that I didn't see this on, was how it was
+created.  The filesystems without this issue were made using
+mkfs.ext4, and the ones that _did_ have the issue were created with
+mkfs.ext3, and then mounted -t ext4.  Pavol, can you check your
+filesystem features from "dumpe2fs -h [your_device]"?
 
-Minor bisection nit - should patch 1/3 be renumbered to 3/3, so the two bugfix
-patches go in before the patch that makes the unpatched bugs visible? Otherwise
-if a bisect waypoint happens to land on 1/3, oddness can happen...
-
---==_Exmh_1252518239_3993P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKp+lfcC3lWbTT17ARAinAAKDN+oXINgzwGmuadA4MPq1xHcvQUwCfTDyC
-AMGzmjhfajGubRxtP37mZ9o=
-=oJgN
------END PGP SIGNATURE-----
-
---==_Exmh_1252518239_3993P--
+-Justin
