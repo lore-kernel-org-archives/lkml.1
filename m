@@ -1,64 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZIIOeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZIIOh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbZIIOeJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZIIOeI
+	id S1753325AbZIIOh7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZIIOh7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:34:08 -0400
-Received: from bar.sig21.net ([80.81.252.164]:53363 "EHLO bar.sig21.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752090AbZIIOeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:34:07 -0400
-Date: Wed, 9 Sep 2009 16:33:55 +0200
-From: Johannes Stezenbach <js@sig21.net>
-To: Wolfram Sang <w.sang@pengutronix.de>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
-       Denys Vlasenko <vda.linux@googlemail.com>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org,
-       Arjan van de Ven <arjan@linux.intel.com>,
-       Tim Bird <tim.bird@am.sony.com>, kernel@pengutronix.de
-Subject: Re: New fast(?)-boot results on ARM
-Message-ID: <20090909143354.GA15973@sig21.net>
-References: <20090814170228.GM13320@pengutronix.de>
- <1158166a0908141304y70300ab3p899b0d4609efded9@mail.gmail.com>
- <20090814204305.GA31727@pengutronix.de>
- <20090815103532.GA5596@sig21.net>
- <20090904161626.GD3207@pengutronix.de>
+	Wed, 9 Sep 2009 10:37:59 -0400
+Received: from mail-qy0-f192.google.com ([209.85.221.192]:58315 "EHLO
+	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753159AbZIIOh6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 10:37:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=V5LBToJOYi1SeGgqrgzV9VGobXeXgzkb6uaNZuNsvtvG4Ai1Qsy0INTJkaftX4d/Lk
+         YmSHNo3kej3b38dwGAHD+xIlPUFGCqSzy4z6dXb1JeJMTWjWWdVZYl/GdWpK516SVpc3
+         Ab2qRTOzaA0+LFsBuFRFcVmK7nSMsVNaz7F0o=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090904161626.GD3207@pengutronix.de>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Spam-21-Score: -3.5 (---)
-X-Spam-21-Report: No, score=-3.5 required=5.0 tests=ALL_TRUSTED=-1.8,AWL=0.898,BAYES_00=-2.599 autolearn=no
+In-Reply-To: <20090909075024.GA1400@ucw.cz>
+References: <20090909075024.GA1400@ucw.cz>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Wed, 9 Sep 2009 22:37:41 +0800
+Message-ID: <f17812d70909090737n4315d0cbh82c0a63e9222fdb5@mail.gmail.com>
+Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
+To: Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sorry for slow reply.
+On Wed, Sep 9, 2009 at 3:50 PM, Pavel Machek<pavel@ucw.cz> wrote:
+> Hi, Linus!
+>
+> Spitz resume was broken for year or likely two, and it would be very
+> nice to fix it for 2.6.31 release. One liner is below, and it really
+> can not harm. It already is in Eric's fix queue, so pulling that for
+> .31 should work, too.
+>
 
-On Fri, Sep 04, 2009 at 06:16:26PM +0200, Wolfram Sang wrote:
-> 
-> > Now that microcom is in Debian sid (thanks!), where can I find ptx_ts?
-> > It seems to be quite useful.
-> 
-> Back from the holidays, so here it is:
-> 
-> http://pengutronix.de/software/ptx_ts/index_en.html
-> 
-> Hope it can be useful...
-
-Yes, it is.  Thanks!
-
-BTW, some feedback about microcom:
-
-- the choice of ^\ as an escape charater is unfortunate since that
-  is usually mapped to set SIGQUIT in the tty; a btter choice would
-  be ^] (like telnet) or ^A (like minicom)
-- typing the escape character immediate causes the menu to be displayed,
-  so one cannot send a break sequence for SysRq without cluttering up the screen
-
-Would you take patches for that?
-
-
-Johannes
+This should be sitting in rmk's git tree and I'm not sure if Russell
+has sent the pull request already.
