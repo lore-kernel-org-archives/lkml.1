@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753176AbZIIOJc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbZIIOLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753176AbZIIOJc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:09:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZIIOJc
+	id S1753194AbZIIOLr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZIIOLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:09:32 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:50259 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751768AbZIIOJb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:09:31 -0400
-Date: Wed, 9 Sep 2009 10:08:23 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, linux-mm <linux-mm@kvack.org>,
-       Oleg Nesterov <onestero@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [rfc] lru_add_drain_all() vs isolation
-In-Reply-To: <20090909131945.0CF5.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0909091005010.28070@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909081110450.30203@V090114053VZO-1> <alpine.DEB.1.10.0909081124240.30203@V090114053VZO-1> <20090909131945.0CF5.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Sep 2009 10:11:46 -0400
+Received: from fifo99.com ([67.223.236.141]:57272 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbZIIOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 10:11:46 -0400
+Subject: Re: [PATCH 2/2] tracing/events: Add kexec tracepoints
+From: Daniel Walker <dwalker@fifo99.com>
+To: rostedt@goodmis.org
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Eric Biederman <ebiederm@xmission.com>
+In-Reply-To: <1252496788.27001.0.camel@gandalf.stny.rr.com>
+References: <4AA70198.9070500@cn.fujitsu.com>  <4AA701B3.704@cn.fujitsu.com>
+	 <1252459241.14793.40.camel@desktop>  <4AA70451.6050307@cn.fujitsu.com>
+	 <1252472376.14793.85.camel@desktop>
+	 <1252496788.27001.0.camel@gandalf.stny.rr.com>
+Content-Type: text/plain
+Date: Wed, 09 Sep 2009 07:12:08 -0700
+Message-Id: <1252505528.14793.93.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009, KOSAKI Motohiro wrote:
+On Wed, 2009-09-09 at 07:46 -0400, Steven Rostedt wrote:
+> On Tue, 2009-09-08 at 21:59 -0700, Daniel Walker wrote:
+> > On Wed, 2009-09-09 at 09:26 +0800, Li Zefan wrote:
+> > > Daniel Walker wrote:
+> > > > On Wed, 2009-09-09 at 09:15 +0800, Li Zefan wrote:
+> > > >> +       TP_STRUCT__entry(
+> > > >> +               __string(       msg,    msg     )
+> > > >> +       ),
+> > > > 
+> > > > Why the funny spacing here?
+> > > > 
+> > > 
+> > > To make the code better-looking.
+> > > 
+> > > This is the coding-style we use for the code in
+> > > include/trace/events/*.
+> > 
+> > It's part of Linux right? We already have a coding style ..
+> 
+> It's a special macro. What are you now, part of the style police?
 
-> Christoph, I'd like to discuss a bit related (and almost unrelated) thing.
-> I think page migration don't need lru_add_drain_all() as synchronous, because
-> page migration have 10 times retry.
+I'm just like everyone else, someone who asks questions and makes
+comments .. By using a different style than what the rest of Linux uses
+your putting yourself at a disadvantage since you can't easily use
+checkpatch on that code (even the stuff that is compliant) ..
 
-True this is only an optimization that increases the chance of isolation
-being successful. You dont need draining at all.
+Not to mention people might start sending you clean ups that you maybe
+won't accept. You could always modify checkpatch to recognize your
+style.
 
-> Then asynchronous lru_add_drain_all() cause
->
->   - if system isn't under heavy pressure, retry succussfull.
->   - if system is under heavy pressure or RT-thread work busy busy loop, retry failure.
->
-> I don't think this is problematic bahavior. Also, mlock can use asynchrounous lru drain.
->
-> What do you think?
-
-The retries can be very fast if the migrate pages list is small. The
-migrate attempts may be finished before the IPI can be processed by the
-other cpus.
-
+Daniel
 
