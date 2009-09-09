@@ -1,78 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbZIIK7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752048AbZIILDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752111AbZIIK7J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 06:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZIIK7J
+	id S1752048AbZIILDf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 07:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZIILDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 06:59:09 -0400
-Received: from cantor.suse.de ([195.135.220.2]:46141 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZIIK7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 06:59:08 -0400
-Date: Wed, 9 Sep 2009 12:59:10 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: linux-kernel@vger.kernel.org
-Subject: What's in hid.git for 2.6.32
-Message-ID: <alpine.LNX.2.00.0909091146430.23856@wotan.suse.de>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Wed, 9 Sep 2009 07:03:35 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:50450 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751607AbZIILDe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 07:03:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=klXZeroOMo27OHCNTQlOraFcuCKdMVA2Go84WoU3IsuuHEwlOZIFmdS0sWAzM77IFS
+         XsLVwlBETJP9BZzHTEw8T2wBsCTHpE5m/m6hpdiNL6AE1TX50ttj54/VLOcCGX4zdao7
+         um9K25SkMoCHSJkptOG1NAv6NqyTgdYZLc9eg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Wed, 9 Sep 2009 07:03:36 -0400
+Message-ID: <194f62550909090403x16e61cc1g3a23593085de0b@mail.gmail.com>
+Subject: Howto switch off ext4's delayed allocation?
+From: Clemens Eisserer <linuxhippy@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-below is a summary of what is queued in HID tree for the upcoming merge 
-window. Apart from new support for quite some quirky hardware and simple 
-code fixes, I have rewritten the debugging stub (which is used very often 
-to diagnose problems with faulty devices) to use debugfs, to make life 
-easier both for developers and users reporting problems with their 
-devices.
+Every since switching to ext4, I suffer fromt he empty files problem
+after crashes.
+Since GEM/KMS was included, as well as the changes to the usb-serial
+subsystem I experience crashes from time to time.
 
-Bruno Premont (1):
-      HID: driver for Twinhan USB 6253:0100 remote control
+As far as I understand this is caused by delayed allocation.
+I really enjoy the performance benefits of ext4, and I know
+applications should be fixed - but having this problem seen with so
+many apps I doubt it will ever happen. (Kwrite, bash itself, umtsmon,
+...).
 
-H Hartley Sweeten (1):
-      HID: local function should be static
+Is there any way to disable delayed allocation? (running 2.6.31rc8)
 
-Henning Glawe (1):
-      HID: ignore Philips IEEE802.15.4 RF Dongle
-
-Jan Scholz (1):
-      HID: completely remove apple mightymouse from blacklist
-
-Jarod Wilson (1):
-      HID: ignore all recent SoundGraph iMON devices
-
-Jiri Kosina (6):
-      HID: use debugfs for report dumping descriptor
-      HID: use debugfs for events/reports dumping
-      HID: fix debugfs build with !CONFIG_DEBUG_FS
-      HID: fix memory leak on error path in debug code
-      HID: add force feedback support for Logitech WingMan Formula Force GP
-      HID: support larger reports than 64 bytes in hiddev
-
-Julia Lawall (2):
-      HID: Drop NULL test on list_entry result
-      HID: fix memory leak on error patch in debug code
-
-Peter Huewe (1):
-      HID: adding __init/__exit macros to module init/exit functions
-
-Rafi Rubin (1):
-      HID: ntrig tool separation and pen usages
-
-Robert Schedel (1):
-      HID: Support new variants of Samsung USB IR receiver (0419:0001)
-
-Roel Kluin (1):
-      HID: fix overrun in quirks initialization
-
-Ruben Aos Garralda (1):
-      HID: add rumble support for Thrustmaster Dual Trigger 3-in-1
-
-Sergey Senozhatsky (1):
-      HID: Avoid double spin_lock_init on usbhid->lock
-
+Thank you in advance, Clemens
