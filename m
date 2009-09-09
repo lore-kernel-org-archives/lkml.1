@@ -1,143 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZIIU3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754093AbZIIUe2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbZIIU3a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 16:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZIIU33
+	id S1754093AbZIIUe2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 16:34:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZIIUe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 16:29:29 -0400
-Received: from nox.protox.org ([88.191.38.29]:52614 "EHLO nox.protox.org"
+	Wed, 9 Sep 2009 16:34:27 -0400
+Received: from nox.protox.org ([88.191.38.29]:47365 "EHLO nox.protox.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752953AbZIIU31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 16:29:27 -0400
+	id S1752924AbZIIUe0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 16:34:26 -0400
 From: Jerome Glisse <jglisse@redhat.com>
 To: airlied@gmail.com
 Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
        Jerome Glisse <jglisse@redhat.com>
-Subject: [PATCH] drm/radeon/kms: wait for cp idle before stopping it.
-Date: Wed,  9 Sep 2009 22:23:45 +0200
-Message-Id: <1252527825-2279-1-git-send-email-jglisse@redhat.com>
+Subject: [PATCH] drm/radeon/kms: R3XX/R4XX AGP asic use PCI GART not PCIE GART
+Date: Wed,  9 Sep 2009 22:24:01 +0200
+Message-Id: <1252527841-2317-1-git-send-email-jglisse@redhat.com>
 X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we stop CP and that it's still processing thing GPU hang might
-happen, this patch wait for CP idle (the wait can timeout) so we
-can avoid shutting down CP at bad time. This is especialy usefull
-when reseting the GPU as it seems GPU reset fails to properly reset
-CP when the CP wasn't stop after being idle.
+R3XX/R4XX AGP asic use the old PCI GART block, not the new PCIE GART.
+Make sure we pick the right GART when disabling AGP.
 
 Signed-off-by: Jerome Glisse <jglisse@redhat.com>
 ---
- drivers/gpu/drm/radeon/r100.c  |   18 ++++++++++++
- drivers/gpu/drm/radeon/r100d.h |   60 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 78 insertions(+), 0 deletions(-)
+ drivers/gpu/drm/radeon/r300.c          |    6 ++++++
+ drivers/gpu/drm/radeon/r420.c          |    9 +++++++--
+ drivers/gpu/drm/radeon/radeon.h        |    4 ++++
+ drivers/gpu/drm/radeon/radeon_device.c |    5 +----
+ 4 files changed, 18 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/gpu/drm/radeon/r100.c b/drivers/gpu/drm/radeon/r100.c
-index 4ceb675..4dd5ca5 100644
---- a/drivers/gpu/drm/radeon/r100.c
-+++ b/drivers/gpu/drm/radeon/r100.c
-@@ -490,6 +490,21 @@ int r100_copy_blit(struct radeon_device *rdev,
- /*
-  * CP
-  */
-+static int r100_cp_wait_for_idle(struct radeon_device *rdev)
-+{
-+	unsigned i;
-+	u32 tmp;
-+
-+	for (i = 0; i < rdev->usec_timeout; i++) {
-+		tmp = RREG32(R_000E40_RBBM_STATUS);
-+		if (!G_000E40_CP_CMDSTRM_BUSY(tmp)) {
-+			return 0;
-+		}
-+		udelay(1);
+diff --git a/drivers/gpu/drm/radeon/r300.c b/drivers/gpu/drm/radeon/r300.c
+index a5f82f7..9c17b78 100644
+--- a/drivers/gpu/drm/radeon/r300.c
++++ b/drivers/gpu/drm/radeon/r300.c
+@@ -181,6 +181,12 @@ int r300_gart_enable(struct radeon_device *rdev)
+ 		rdev->asic->gart_set_page = &rv370_pcie_gart_set_page;
+ 		return rv370_pcie_gart_enable(rdev);
+ 	}
++	if (rdev->flags & RADEON_IS_PCI) {
++		rdev->asic->gart_disable = &r100_pci_gart_disable;
++		rdev->asic->gart_tlb_flush = &r100_pci_gart_tlb_flush;
++		rdev->asic->gart_set_page = &r100_pci_gart_set_page;
++		return r100_pci_gart_enable(rdev);
 +	}
-+	return -1;
-+}
-+
- void r100_ring_start(struct radeon_device *rdev)
- {
- 	int r;
-@@ -718,6 +733,9 @@ int r100_cp_init(struct radeon_device *rdev, unsigned ring_size)
+ 	return r100_pci_gart_enable(rdev);
+ }
  
- void r100_cp_fini(struct radeon_device *rdev)
+diff --git a/drivers/gpu/drm/radeon/r420.c b/drivers/gpu/drm/radeon/r420.c
+index 97426a6..029cee2 100644
+--- a/drivers/gpu/drm/radeon/r420.c
++++ b/drivers/gpu/drm/radeon/r420.c
+@@ -100,8 +100,13 @@ int r420_mc_init(struct radeon_device *rdev)
+ 
+ void r420_mc_fini(struct radeon_device *rdev)
  {
-+	if (r100_cp_wait_for_idle(rdev)) {
-+		DRM_ERROR("Wait for CP idle timeout, shutting down CP.\n");
+-	rv370_pcie_gart_disable(rdev);
+-	radeon_gart_table_vram_free(rdev);
++	if (rdev->flags & RADEON_IS_PCIE) {
++		rv370_pcie_gart_disable(rdev);
++		radeon_gart_table_vram_free(rdev);
++	} else {
++		r100_pci_gart_disable(rdev);
++		radeon_gart_table_ram_free(rdev);
 +	}
- 	/* Disable ring */
- 	r100_cp_disable(rdev);
- 	radeon_ring_fini(rdev);
-diff --git a/drivers/gpu/drm/radeon/r100d.h b/drivers/gpu/drm/radeon/r100d.h
-index 6da7d92..1d951ab 100644
---- a/drivers/gpu/drm/radeon/r100d.h
-+++ b/drivers/gpu/drm/radeon/r100d.h
-@@ -73,4 +73,64 @@
- #define CP_PACKET0_GET_ONE_REG_WR(h) (((h) >> 15) & 1)
- #define CP_PACKET3_GET_OPCODE(h) (((h) >> 8) & 0xFF)
+ 	radeon_gart_fini(rdev);
+ }
  
-+/* Registers */
-+#define R_000E40_RBBM_STATUS                         0x000E40
-+#define   S_000E40_CMDFIFO_AVAIL(x)                    (((x) & 0x7F) << 0)
-+#define   G_000E40_CMDFIFO_AVAIL(x)                    (((x) >> 0) & 0x7F)
-+#define   C_000E40_CMDFIFO_AVAIL                       0xFFFFFF80
-+#define   S_000E40_HIRQ_ON_RBB(x)                      (((x) & 0x1) << 8)
-+#define   G_000E40_HIRQ_ON_RBB(x)                      (((x) >> 8) & 0x1)
-+#define   C_000E40_HIRQ_ON_RBB                         0xFFFFFEFF
-+#define   S_000E40_CPRQ_ON_RBB(x)                      (((x) & 0x1) << 9)
-+#define   G_000E40_CPRQ_ON_RBB(x)                      (((x) >> 9) & 0x1)
-+#define   C_000E40_CPRQ_ON_RBB                         0xFFFFFDFF
-+#define   S_000E40_CFRQ_ON_RBB(x)                      (((x) & 0x1) << 10)
-+#define   G_000E40_CFRQ_ON_RBB(x)                      (((x) >> 10) & 0x1)
-+#define   C_000E40_CFRQ_ON_RBB                         0xFFFFFBFF
-+#define   S_000E40_HIRQ_IN_RTBUF(x)                    (((x) & 0x1) << 11)
-+#define   G_000E40_HIRQ_IN_RTBUF(x)                    (((x) >> 11) & 0x1)
-+#define   C_000E40_HIRQ_IN_RTBUF                       0xFFFFF7FF
-+#define   S_000E40_CPRQ_IN_RTBUF(x)                    (((x) & 0x1) << 12)
-+#define   G_000E40_CPRQ_IN_RTBUF(x)                    (((x) >> 12) & 0x1)
-+#define   C_000E40_CPRQ_IN_RTBUF                       0xFFFFEFFF
-+#define   S_000E40_CFRQ_IN_RTBUF(x)                    (((x) & 0x1) << 13)
-+#define   G_000E40_CFRQ_IN_RTBUF(x)                    (((x) >> 13) & 0x1)
-+#define   C_000E40_CFRQ_IN_RTBUF                       0xFFFFDFFF
-+#define   S_000E40_CF_PIPE_BUSY(x)                     (((x) & 0x1) << 14)
-+#define   G_000E40_CF_PIPE_BUSY(x)                     (((x) >> 14) & 0x1)
-+#define   C_000E40_CF_PIPE_BUSY                        0xFFFFBFFF
-+#define   S_000E40_ENG_EV_BUSY(x)                      (((x) & 0x1) << 15)
-+#define   G_000E40_ENG_EV_BUSY(x)                      (((x) >> 15) & 0x1)
-+#define   C_000E40_ENG_EV_BUSY                         0xFFFF7FFF
-+#define   S_000E40_CP_CMDSTRM_BUSY(x)                  (((x) & 0x1) << 16)
-+#define   G_000E40_CP_CMDSTRM_BUSY(x)                  (((x) >> 16) & 0x1)
-+#define   C_000E40_CP_CMDSTRM_BUSY                     0xFFFEFFFF
-+#define   S_000E40_E2_BUSY(x)                          (((x) & 0x1) << 17)
-+#define   G_000E40_E2_BUSY(x)                          (((x) >> 17) & 0x1)
-+#define   C_000E40_E2_BUSY                             0xFFFDFFFF
-+#define   S_000E40_RB2D_BUSY(x)                        (((x) & 0x1) << 18)
-+#define   G_000E40_RB2D_BUSY(x)                        (((x) >> 18) & 0x1)
-+#define   C_000E40_RB2D_BUSY                           0xFFFBFFFF
-+#define   S_000E40_RB3D_BUSY(x)                        (((x) & 0x1) << 19)
-+#define   G_000E40_RB3D_BUSY(x)                        (((x) >> 19) & 0x1)
-+#define   C_000E40_RB3D_BUSY                           0xFFF7FFFF
-+#define   S_000E40_SE_BUSY(x)                          (((x) & 0x1) << 20)
-+#define   G_000E40_SE_BUSY(x)                          (((x) >> 20) & 0x1)
-+#define   C_000E40_SE_BUSY                             0xFFEFFFFF
-+#define   S_000E40_RE_BUSY(x)                          (((x) & 0x1) << 21)
-+#define   G_000E40_RE_BUSY(x)                          (((x) >> 21) & 0x1)
-+#define   C_000E40_RE_BUSY                             0xFFDFFFFF
-+#define   S_000E40_TAM_BUSY(x)                         (((x) & 0x1) << 22)
-+#define   G_000E40_TAM_BUSY(x)                         (((x) >> 22) & 0x1)
-+#define   C_000E40_TAM_BUSY                            0xFFBFFFFF
-+#define   S_000E40_TDM_BUSY(x)                         (((x) & 0x1) << 23)
-+#define   G_000E40_TDM_BUSY(x)                         (((x) >> 23) & 0x1)
-+#define   C_000E40_TDM_BUSY                            0xFF7FFFFF
-+#define   S_000E40_PB_BUSY(x)                          (((x) & 0x1) << 24)
-+#define   G_000E40_PB_BUSY(x)                          (((x) >> 24) & 0x1)
-+#define   C_000E40_PB_BUSY                             0xFEFFFFFF
-+#define   S_000E40_GUI_ACTIVE(x)                       (((x) & 0x1) << 31)
-+#define   G_000E40_GUI_ACTIVE(x)                       (((x) >> 31) & 0x1)
-+#define   C_000E40_GUI_ACTIVE                          0x7FFFFFFF
-+
+diff --git a/drivers/gpu/drm/radeon/radeon.h b/drivers/gpu/drm/radeon/radeon.h
+index 24574bc..fe86b20 100644
+--- a/drivers/gpu/drm/radeon/radeon.h
++++ b/drivers/gpu/drm/radeon/radeon.h
+@@ -935,5 +935,9 @@ static inline void radeon_ring_write(struct radeon_device *rdev, uint32_t v)
+ 
+ /* r100,rv100,rs100,rv200,rs200,r200,rv250,rs300,rv280 */
+ void r100_cp_disable(struct radeon_device *rdev);
++void r100_pci_gart_disable(struct radeon_device *rdev);
++int r100_pci_gart_set_page(struct radeon_device *rdev, int i, uint64_t addr);
++int r100_pci_gart_enable(struct radeon_device *rdev);
++void r100_pci_gart_tlb_flush(struct radeon_device *rdev);
+ 
  #endif
+diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
+index f2469c5..da8646a 100644
+--- a/drivers/gpu/drm/radeon/radeon_device.c
++++ b/drivers/gpu/drm/radeon/radeon_device.c
+@@ -499,10 +499,7 @@ int radeon_device_init(struct radeon_device *rdev,
+ 
+ 	if (radeon_agpmode == -1) {
+ 		rdev->flags &= ~RADEON_IS_AGP;
+-		if (rdev->family > CHIP_RV515 ||
+-		    rdev->family == CHIP_RV380 ||
+-		    rdev->family == CHIP_RV410 ||
+-		    rdev->family == CHIP_R423) {
++		if (rdev->family >= CHIP_RV515) {
+ 			DRM_INFO("Forcing AGP to PCIE mode\n");
+ 			rdev->flags |= RADEON_IS_PCIE;
+ 		} else {
 -- 
 1.6.4.1
 
