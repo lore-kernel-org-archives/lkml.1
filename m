@@ -1,93 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZIISwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZIISzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753792AbZIISwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZIISwX
+	id S1754029AbZIISzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752931AbZIISzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:52:23 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:54864 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752590AbZIISwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:52:21 -0400
-Message-ID: <4AA7F965.6020408@garzik.org>
-Date: Wed, 09 Sep 2009 14:52:21 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Wed, 9 Sep 2009 14:55:20 -0400
+Received: from zcars04e.nortel.com ([47.129.242.56]:63313 "EHLO
+	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752721AbZIISzT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 14:55:19 -0400
+Message-ID: <4AA7F9E5.4070506@nortel.com>
+Date: Wed, 09 Sep 2009 12:54:29 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: tfjellstrom@shaw.ca
-CC: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
-References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca>
-In-Reply-To: <200909091030.13147.tfjellstrom@shaw.ca>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Daniel Walker <dwalker@fifo99.com>
+CC: Jack Steiner <steiner@sgi.com>, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: SGU UV Add volatile to macros that access chipset
+ registers
+References: <20090909154246.GA26716@sgi.com>	 <1252512600.14793.125.camel@desktop>  <20090909180110.GA10311@sgi.com> <1252519885.14793.135.camel@desktop>
+In-Reply-To: <1252519885.14793.135.camel@desktop>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+X-OriginalArrivalTime: 09 Sep 2009 18:55:17.0166 (UTC) FILETIME=[12552CE0:01CA317F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2009 12:30 PM, Thomas Fjellstrom wrote:
-> No errors on that disk. Other than the one above, and its more of a warning.
-> However, I just rebooted to add some extra drives, thinking everything was
-> working a little better now that I've updated to 2.6.31-rc9, I'm treated to
-> the following two messages right after boot (and a system lockup to boot):
->
-> kernel: [  971.033138] ------------[ cut here ]------------
-> kernel: [  971.033211] WARNING: at drivers/ata/libata-core.c:4913
-> __ata_qc_complete+0x5a/0xe1 [libata]()
-> kernel: [  971.033217] Hardware name: GA-MA790FXT-UD5P
-> kernel: [  971.033221] Modules linked in: powernow_k8 cpufreq_conservative
-> cpufreq_stats cpufreq_userspace cpufreq_powersave kvm_amd kvm nfsd exportfs
-> nfs lockd fscache nfs_acl auth_rpcgss sunrpc bridge stp it87 hwmon_vid adt7473
-> firewire_sbp2 loop md_mod snd_hda_codec_realtek snd_hda_intel snd_hda_codec
-> snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_midi snd_rawmidi
-> snd_seq_midi_event snd_seq snd_timer snd_seq_device snd amd64_edac_mod
-> edac_core i2c_piix4 soundcore snd_page_alloc i2c_core evdev wmi parport_pc
-> button parport processor ext3 jbd mbcache dm_mod sg sr_mod cdrom sd_mod
-> crc_t10dif usbhid ata_generic ide_pci_generic hid mvsas firewire_ohci libsas
-> firewire_core crc_itu_t scsi_transport_sas r8169 atiixp ide_core floppy ahci
-> mii ohci_hcd libata ehci_hcd scsi_mod thermal fan thermal_sys [last unloaded:
-> scsi_wait_scan]
-> kernel: [  971.033337] Pid: 0, comm: swapper Not tainted 2.6.31-rc9 #2
-> kernel: [  971.033342] Call Trace:
-> kernel: [  971.033346]<IRQ>   [<ffffffffa00562ca>] ?
-> __ata_qc_complete+0x5a/0xe1 [libata]
-> kernel: [  971.033434]  [<ffffffffa00562ca>] ? __ata_qc_complete+0x5a/0xe1
-> [libata]
-> kernel: [  971.033446]  [<ffffffff8104aca0>] ? warn_slowpath_common+0x77/0xa3
-> kernel: [  971.033455]  [<ffffffff81038d06>] ? enqueue_task+0x5c/0x65
-> kernel: [  971.033496]  [<ffffffffa00562ca>] ? __ata_qc_complete+0x5a/0xe1
-> [libata]
-> kernel: [  971.033519]  [<ffffffffa00f7b59>] ? sas_ata_task_done+0x178/0x210
-> [libsas]
-> kernel: [  971.033528]  [<ffffffff8115ead1>] ? blk_run_queue+0x21/0x35
-> kernel: [  971.033548]  [<ffffffffa010e2ce>] ? mvs_slot_complete+0x3df/0x41b
-> [mvsas]
-> kernel: [  971.033565]  [<ffffffffa010e39c>] ? mvs_int_rx+0x92/0x101 [mvsas]
-> kernel: [  971.033583]  [<ffffffffa01112ba>] ? mvs_int_full+0x25/0x88 [mvsas]
-> kernel: [  971.033600]  [<ffffffffa011134e>] ? mvs_64xx_isr+0x31/0x40 [mvsas]
-> kernel: [  971.033617]  [<ffffffffa010d0e5>] ? mvs_interrupt+0x61/0x78 [mvsas]
-> kernel: [  971.033625]  [<ffffffff8108aaac>] ? handle_IRQ_event+0x58/0x135
-> kernel: [  971.033633]  [<ffffffff8108c1a1>] ? handle_fasteoi_irq+0x7d/0xb5
-> kernel: [  971.033642]  [<ffffffff8101388d>] ? handle_irq+0x17/0x1d
-
-That warning is triggered when an ata_queued_cmd is passed to completion 
-without the ATA_QCFLAG_ACTIVE flag being set (which indicates the qc was 
-started with some activity).
-
-That possibly indicates the low-level driver (or libsas) was passing an 
-already-completed cmd to libata.
+On 09/09/2009 12:11 PM, Daniel Walker wrote:
+> On Wed, 2009-09-09 at 13:01 -0500, Jack Steiner wrote:
+>> Volatile is being added to the accessor functions that are used to
+>> read/write memory-mapped I/O registers located within the UV chipset.
+>> The use of volatile is hidden within the functions and is not exposed
+>> to the users of the functions.
+>>
+>> Note that the use is limited to the accessor functions in the header
+>> file. No .c files are changed or need to know about volatile.
+>>
+>>
+>> This seems to be consistent with other uses of volatile within the kernel.
+> 
+> The document that I cited specifically addresses memory accessors as not
+> needing the volatile keyword .. So your still not addressing exactly why
+> your code needs it .. Are your accessors special in some way? Is there
+> some defect your seeing without the volatile keyword?
 
 
-> The added hard drives are connected to a Supermicro AOC-SASLP-MV8, which is
-> based on a marvel MV64460/64461/64462 chipset, which uses the sata_mv driver.
+>From that document:
 
-Surely you mean 'mvsas' driver?
+"There are still a few rare situations where volatile makes sense in the
+kernel:
 
-	Jeff
+  - The above-mentioned accessor functions might use volatile on
+    architectures where direct I/O memory access does work.
+    Essentially, each accessor call becomes a little critical section
+    on its own and ensures that the access happens as expected by the
+    programmer."
 
 
+However, the fact that these functions are returning volatile pointers
+is a bit sketchy.  Normally accesses to such memory would be wrapped
+entirely in a read/write function which would handle the volatility
+internally to the function.
 
+In this case there's no point in the function returning a "volatile
+unsigned long *" if it's going to be cast to a volatile pointer before
+being dereferenced.
+
+Chris
