@@ -1,129 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZIIJK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752625AbZIIJKn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752279AbZIIJK2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 05:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZIIJK1
+	id S1752625AbZIIJKn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 05:10:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752452AbZIIJKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 05:10:27 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:56506 "EHLO bamako.nerim.net"
+	Wed, 9 Sep 2009 05:10:42 -0400
+Received: from mga09.intel.com ([134.134.136.24]:4383 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751979AbZIIJKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 05:10:25 -0400
-Date: Wed, 9 Sep 2009 11:10:26 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Crane Cai <crane.cai@amd.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-i2c@vger.kernel.org>
-Subject: Re: [PATCH v2] I2C: Add support for new AMD SMBus devices
-Message-ID: <20090909111026.21e85f54@hyperion.delvare>
-In-Reply-To: <20090811014921.GB29858@crane-desktop>
-References: <20090811014921.GB29858@crane-desktop>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752441AbZIIJKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 05:10:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,357,1249282800"; 
+   d="scan'208";a="446955387"
+Date: Wed, 9 Sep 2009 11:12:42 +0200
+From: Samuel Ortiz <sameo@linux.intel.com>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: Pavel Machek <pavel@ucw.cz>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] leds: Add WM831x status LED driver
+Message-ID: <20090909091239.GA4292@sortiz.org>
+References: <1252156161-10062-1-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <1252156161-10062-2-git-send-email-broonie@opensource.wolfsonmicro.com>
+ <20090907132212.GA1739@ucw.cz>
+ <1252331484.17852.50.camel@dax.rpnet.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252331484.17852.50.camel@dax.rpnet.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Resending with fixed LKML address.]
+Hi Richard,
 
-Hi Crane,
-
-Sorry for the late reply.
-
-On Tue, 11 Aug 2009 09:49:21 +0800, Crane Cai wrote:
-> AMD newer SMBus device uses the piix4 driver, and device is added by vendor ID
-> and class code. This method will include AMD old SMBus controller in, and need
-> to filter it out.
-
-This is better, however I still have concerns:
-
-* Your device ID comparison is fragile. Are you absolutely certain that
-  you know _all_ the SMBus devices that were released by AMD in the
-  past? If anything, I'd rather have a single comparison on the first
-  device ID that _will_ be supported by the i2c-piix4 driver.
-
-* Are you absolutely certain that AMD will never ever release an
-  incompatible SMBus device in the future? I doubt it. In the past,
-  various vendors have changed their implementations. Intel changed
-  twice (i2c-piix4 -> i2c-i801 -> i2c-isch), AMD once already
-  (i2c-amd756 -> i2c-amd8111), VIA once (i2c-via -> i2c-viapro), nVidia
-  once (i2c-amd756 -> i2c-nforce2), etc. If history repeats itself (and
-  it often does), I wouldn't be surprised to see future AMD SMBus chips
-  not compatible with the i2c-piix4 driver, while with your patch
-  applied, the driver would claim to support them. Binding a driver to
-  an unsupported chip can have unpredictable, potentially bad
-  consequences, and I'd rather have the driver not bind immediately to
-  new supported devices than bind to unsupported ones.
-
-* With your patch, the i2c-piix4 driver would load automatically on
-  systems which do not need it (all old AMD-based PC systems.) While a
-  minor issue, this is still a waste of boot time and memory for these
-  users. I am not aware of any precedent of this.
-
-So, all in all, I'd rather simply add the IDs of new supported devices
-as they are released, rather than implement this broad matching
-mechanism.
-
-If AMD is bored with adding new device IDs to Linux drivers all the
-time (and I certainly am) then the cleanest solution is to simply not
-allocate new device IDs for fully compatible (if not even completely
-identical silicon-wise) devices. For example, AMD could allocate a
-single PCI device ID for their PIIX4-compatible SMBus chips, we name it
-PCI_DEVICE_ID_AMD_SMBUS_PIIX4 for example, and all future compatible
-chips use this device ID. You can use the revision ID field if you want
-to be able to differentiate between the various incarnations.
-
+On Mon, Sep 07, 2009 at 02:51:24PM +0100, Richard Purdie wrote:
+> On Mon, 2009-09-07 at 15:22 +0200, Pavel Machek wrote:
+> > On Sat 2009-09-05 14:09:21, Mark Brown wrote:
+> > > The WM831x devices feature two software controlled status LEDs with
+> > > hardware assisted blinking.
+> > > 
+> > > The device can also autonomously control the LEDs based on a selection
+> > > of sources.  This can be configured at boot time using either platform
+> > > data or the chip OTP.  A sysfs file in the style of that for triggers
+> > > allowing the control source to be configured at run time.  Triggers
+> > > can't be used here since they can't depend on the implementation details
+> > > of a specific LED type.
+> > 
+> > I believe people *were* doing that with triggers in other drivers...?
 > 
-> Signed-off-by: Crane Cai <crane.cai@amd.com>
-> ---
->  drivers/i2c/busses/i2c-piix4.c |   17 +++++++++++++++--
->  1 files changed, 15 insertions(+), 2 deletions(-)
+> We did talk about allowing the LED triggers to choose whether they were
+> visible to a given LED. At present the mechanism doesn't exist because
+> we've never had a user.
 > 
-> diff --git a/drivers/i2c/busses/i2c-piix4.c b/drivers/i2c/busses/i2c-piix4.c
-> index 0249a7d..2539282 100644
-> --- a/drivers/i2c/busses/i2c-piix4.c
-> +++ b/drivers/i2c/busses/i2c-piix4.c
-> @@ -232,6 +232,14 @@ static int __devinit piix4_setup_sb800(struct pci_dev *PIIX4_dev,
->  	unsigned short smba_idx = 0xcd6;
->  	u8 smba_en_lo, smba_en_hi, i2ccfg, i2ccfg_offset = 0x10, smb_en = 0x2c;
->  
-> +	/* Filter AMD old SMBus controller out */
-> +	if (PIIX4_dev->vendor == PCI_VENDOR_ID_AMD &&
-> +	    (PIIX4_dev->device <= PCI_DEVICE_ID_AMD_8111_SMBUS &&
-> +	     PIIX4_dev->device >= PCI_DEVICE_ID_AMD_VIPER_740B)) {
-> +		dev_info(&PIIX4_dev->dev, "Does not support this chip.\n");
-> +		return -ENODEV;
-> +	}
-> +
->  	/* SB800 SMBus does not support forcing address */
->  	if (force || force_addr) {
->  		dev_err(&PIIX4_dev->dev, "SB800 SMBus does not support "
-> @@ -479,6 +487,10 @@ static struct pci_device_id piix4_ids[] = {
->  	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP300_SMBUS) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS) },
-> +	/* AMD Generic, PCI class code and Vendor ID for SMBus */
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_ANY_ID),
-> +	  .class = PCI_CLASS_SERIAL_SMBUS << 8,
-> +	  .class_mask = 0xffffff },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
->  		     PCI_DEVICE_ID_SERVERWORKS_OSB4) },
->  	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
-> @@ -499,9 +511,10 @@ static int __devinit piix4_probe(struct pci_dev *dev,
->  {
->  	int retval;
->  
-> -	if ((dev->vendor == PCI_VENDOR_ID_ATI) &&
-> +	if (((dev->vendor == PCI_VENDOR_ID_ATI) &&
->  	    (dev->device == PCI_DEVICE_ID_ATI_SBX00_SMBUS) &&
-> -	    (dev->revision >= 0x40))
-> +	    (dev->revision >= 0x40)) ||
-> +	    dev->vendor == PCI_VENDOR_ID_AMD)
->  		/* base address location etc changed in SB800 */
->  		retval = piix4_setup_sb800(dev, id);
->  	else
+> It would just be a case of adding a new optional function to the trigger
+> to say whether it supported a given LED or not and calling that function
+> from led_trigger_show().
+> 
+> I've queued this driver but that would be a nice enhancement.
+Unless you're basing your tree on linux-next, you may have issues applying
+this patch since the wm831x header is not in Linus tree yet.
+If you have troubles with this patch, let me know and I'll queue it.
 
+Cheers,
+Samuel.
+
+
+> Cheers,
+> 
+> Richard
+> 
+> -- 
+> Richard Purdie
+> Intel Open Source Technology Centre
+> 
 
 -- 
-Jean Delvare
+Intel Open Source Technology Centre
+http://oss.intel.com/
