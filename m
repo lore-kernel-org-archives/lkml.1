@@ -1,92 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754043AbZIISUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbZIISXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754043AbZIISUw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbZIISUv
+	id S1754053AbZIISXB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZIISXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:20:51 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40134 "EHLO e3.ny.us.ibm.com"
+	Wed, 9 Sep 2009 14:23:00 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:56165 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753702AbZIISUv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:20:51 -0400
-Date: Wed, 9 Sep 2009 11:20:51 -0700
-From: "Darrick J. Wong" <djwong@us.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, lenb@kernel.org,
-       rui.zhang@intel.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH v3] hwmon driver for ACPI 4.0 power meters
-Message-ID: <20090909182051.GA26158@tux1.beaverton.ibm.com>
-Reply-To: djwong@us.ibm.com
-References: <200908202049.n7KKnKO7015060@imap1.linux-foundation.org> <20090820211557.GA8431@elf.ucw.cz> <20090820213755.GB10521@tux1.beaverton.ibm.com> <20090821091939.GC21167@elf.ucw.cz> <20090821184718.GD23397@tux1.beaverton.ibm.com> <20090821221705.GA2108@elf.ucw.cz> <20090822011744.GH10521@tux1.beaverton.ibm.com> <20090821140159.GB1328@ucw.cz> <20090908202410.GS10521@tux1.beaverton.ibm.com> <20090909080637.GA28353@elf.ucw.cz>
+	id S1752502AbZIISXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 14:23:00 -0400
+Date: Wed, 9 Sep 2009 11:23:00 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, rostedt@goodmis.org
+Subject: Re: [PATCH tip/core/rcu 0/3] increase rcutorture intensity and fix
+	a couple resulting bugs
+Message-ID: <20090909182300.GE6749@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090908225349.GA19524@linux.vnet.ibm.com> <21629.1252518239@turing-police.cc.vt.edu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090909080637.GA28353@elf.ucw.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <21629.1252518239@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 10:06:38AM +0200, Pavel Machek wrote:
-
-> > +Description
-> > +-----------
-> > +
-> > +This driver implements sensor reading support for the power meters exposed in
-> > +the ACPI 4.0 spec (Chapter 10.4).  These devices have a simple set of
-> > +features--a power meter that returns average power use over a configurable
-> > +interval, an optional capping mechanism, and a couple of trip points.
+On Wed, Sep 09, 2009 at 01:43:59PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 08 Sep 2009 15:53:49 PDT, "Paul E. McKenney" said:
+> > This patch series increases the intensity of rcutorture testing for
+> > TREE_PREEMPT_RCU and provides fixes for a couple resulting bugs.
 > 
-> So where do we get the average power?
+> Minor bisection nit - should patch 1/3 be renumbered to 3/3, so the two bugfix
+> patches go in before the patch that makes the unpatched bugs visible? Otherwise
+> if a bisect waypoint happens to land on 1/3, oddness can happen...
 
-/sys/class/hwmon/hwmonX/device/powerX_average.  Most of the hwmon driver
-documentation assumes the reader has read the contents of
-Documentation/hwmon/sysfs-interface, but I suppose it wouldn't be too
-difficult to call that out explicitly.
+Agreed.  That said, the larger series of patches that this patchset
+is part of has several other similar bisection issues.  My guess is that
+the larger series will be refactored at some point.
 
-(Actually I think you're really supposed to use libsensors and not access sysfs
-directly.)
+Besides which, I expect to be sending in more bug fixes...
 
-> > +Special Features
-> > +----------------
-> > +
-> > +The power[1-*]_is_battery knob indicates if the power supply is a battery.
-> > +Both power[1-*]_average_{min,max} must be set before the trip
-> > points will work.
-> 
-> How do trip points work? It is not explained here.
-
-Will add that too.
-
-> > +config ACPI_POWER_METER
-> > +	tristate "ACPI 4.0 power meter"
-> > +	depends on HWMON
-> > +	default m
-> 
-> default M is "evil".
-
-I'll change it to Y, but I wonder why you think default M is evil...?
-
-> > +	  devices.  Say Y (or M) if you have an Intel or AMD computer with
-> > +	  a power meter.
-> 
-> WTF? Neither Intel nor AMD makes _computers_.
-
-I'll change that to "a computer with ACPI firmware."
-
-> > +	  To compile this driver as a module, choose M here:
-> > +	  the module will be called power-meter.
-> 
-> .ko.
-
-The other config options in drivers/acpi/Kconfig omit the .ko; I was trying to
-be consistent with them.
-
-> > +#define POWER_CAP_NAME		"power1_cap"
-> 
-> I did not see power cap explained.
-
-I'll add that, thanks for the continued review!
-
---D
+							Thanx, Paul
