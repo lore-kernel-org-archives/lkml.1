@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753855AbZIIRfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbZIIRe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753855AbZIIRfi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbZIIRfh
+	id S1753890AbZIIRe6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZIIRe6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:35:37 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:39456 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753447AbZIIRfg (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:35:36 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Beth Kon <eak@us.ibm.com>, rostedt@goodmis.org, avi@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Wierdness - linux-next KVM patch breaks Dell Latitude D820, KVM not in kernel
-In-Reply-To: Your message of "Tue, 08 Sep 2009 15:41:28 EDT."
-             <22130.1252438888@turing-police.cc.vt.edu>
-From: Valdis.Kletnieks@vt.edu
-References: <3850.1252332427@turing-police.cc.vt.edu> <4AA65CFE.50402@us.ibm.com>
-            <22130.1252438888@turing-police.cc.vt.edu>
+	Wed, 9 Sep 2009 13:34:58 -0400
+Received: from mail.gmx.net ([213.165.64.20]:46552 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753855AbZIIRe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 13:34:57 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/JbP4PiSHJqKMwvk9g58GS2jVFmleoKrw4H4YODY
+	MOc2BHhsCJ00Y4
+Subject: Re: [tip:sched/core] sched: Keep kthreads at default priority
+From: Mike Galbraith <efault@gmx.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+In-Reply-To: <1252516001.22918.6.camel@laptop>
+References: <1252486344.28645.18.camel@marge.simson.net>
+	 <tip-61cbe54d9479ad98283b2dda686deae4c34b2d59@git.kernel.org>
+	 <20090909172916.949DA526EC9@mailhub.coreip.homeip.net>
+	 <1252516001.22918.6.camel@laptop>
+Content-Type: text/plain
+Date: Wed, 09 Sep 2009 19:34:56 +0200
+Message-Id: <1252517696.6220.9.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1252517689_3993P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-Date: Wed, 09 Sep 2009 13:34:50 -0400
-Message-ID: <21211.1252517690@turing-police.cc.vt.edu>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1252517689_3993P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 2009-09-09 at 19:06 +0200, Peter Zijlstra wrote:
+> On Wed, 2009-09-09 at 09:55 -0700, Dmitry Torokhov wrote:
+> > On Wed, Sep 09, 2009 at 03:37:34PM +0000, tip-bot for Mike Galbraith wrote:
+> > > 
+> > > diff --git a/kernel/kthread.c b/kernel/kthread.c
+> > > index eb8751a..5fe7099 100644
+> > > --- a/kernel/kthread.c
+> > > +++ b/kernel/kthread.c
+> > > @@ -16,8 +16,6 @@
+> > >  #include <linux/mutex.h>
+> > >  #include <trace/events/sched.h>
+> > >  
+> > > -#define KTHREAD_NICE_LEVEL (-5)
+> > > -
+> > 
+> > Why don't we just redefine it to 0? We may find out later that we'd
+> > still prefer to have kernel threads have boost.
+> 
+> Seems sensible, also the traditional reasoning behind this nice level is
+> that kernel threads do work on behalf of multiple tasks. Its a kind of
+> prio ceiling thing.
 
-On Tue, 08 Sep 2009 15:41:28 EDT, Valdis.Kletnieks@vt.edu said:
+True.  None of our current threads are heavy enough to matter much.
 
-> Yeah, I was quite confused by the bisect results as well, I may end up
-> re-doing it just to make sure I didn't screw something up along the way (since
-> I started it with -rc7/HEAD as the good/bad, but most of the resulting
-> kernels reported a pre-rc7 release (a 2.6.28 at one point, IIRC, and it
-> finished at 31-rc2.
+	-Mike
 
-I've become convinced that Something Really Bad happened to the KVM tree in
-linux-next on its way to my laptop - after 2 bisects, it reported I had some
-2,000 commits left to check.  So I ran 'git bisect visualize' to sanity check.
-
-And *every single one* of those 4,000 commits between 'good' and 'bad' was a
-KVM commit, stretching all the way back to 2007.  Unless that's an artifact
-of the way linux-next is built, I would have expected only "new-ish" commits
-to be in the bisect window, and not just out of one tree...
-
-So I ended up doing a 'WTF?', an 'rm -r', and am cloning over today's linux-next
-and will see if that brings me any better joy.
-
-
-
---==_Exmh_1252517689_3993P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFKp+c5cC3lWbTT17ARAqnbAKDYmiK0kIdJ1TF4JsKXOTdzrz+1ygCg6Q8k
-wDbwLoFNPavRZXenal8Flfw=
-=ZrGG
------END PGP SIGNATURE-----
-
---==_Exmh_1252517689_3993P--
