@@ -1,103 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752472AbZIIERw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752605AbZIIETa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752472AbZIIERw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 00:17:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751530AbZIIERv
+	id S1752605AbZIIETa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 00:19:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZIIET3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 00:17:51 -0400
-Received: from ns1.primeinteractive.net ([195.95.205.253]:48599 "EHLO
-	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbZIIERv (ORCPT
+	Wed, 9 Sep 2009 00:19:29 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38714 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751087AbZIIET3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 00:17:51 -0400
-Message-ID: <4AA72C14.1020005@primeinteractive.net>
-Date: Wed, 09 Sep 2009 06:16:20 +0200
-From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
+	Wed, 9 Sep 2009 00:19:29 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: rostedt@goodmis.org
+Subject: Re: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on oops
+Cc: kosaki.motohiro@jp.fujitsu.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1252464784.12982.4.camel@gandalf.stny.rr.com>
+References: <4AA715A3.8040108@cn.fujitsu.com> <1252464784.12982.4.camel@gandalf.stny.rr.com>
+Message-Id: <20090909122425.0CEF.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: ext4+quota+nfs issue
-References: <4AA5E5F3.30309@primeinteractive.net>
-In-Reply-To: <4AA5E5F3.30309@primeinteractive.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  9 Sep 2009 13:19:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+> On Wed, 2009-09-09 at 10:40 +0800, Li Zefan wrote:
+> 
+> > > I have another silly question.
+> > > Why should we call tracing_off() in oops_enter()?
+> > > 
+> > 
+> > I guess it's because trace outputs generated during oops can
+> > overwrite/mess up those generated before oops?
+> > 
+> > It was added by this commit, but I can't find trace_printk_on_oops.
+> 
+> That's because Thomas did not bother looking up the actual variable he
+> was talking about. s/trace_printk_on_oops/ftrace_dump_on_oops/
 
-can somebody who is aware of ext4 and quota have a look on this one?
+After a bit thinking, I think ftrace_dump_on_oops and kernel dump with panic have
+very similar requirement.
+Then, I think we can reuse this infrastructure for kernel dump.
+
+Requirement
+  - Need to know why the problem occur.
+  - Need to don't logging oops (panic) internal.
+
+Unfortunately, panic() call panic_notifier after crash_kexec().
+it mean tracing_off() was not called when panic on the machine w/ kernel-dump.
+
+	NORET_TYPE void panic(const char * fmt, ...)
+	{
+	(snip)
+	        crash_kexec(NULL);
+	(snip)
+	        atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
+
+I think we can insert tracing_off() into panic() directly. it only
+bit mask operation, it mean it don't have side effect risk.
+
+Perhaps, There are other kernel dump specific requrement. but I guess
+it's very small. Maybe it can be handled by trace_die_handler() or something like.
+
+What do you think?
 
 
-Thanks,
+> 
+> -- Steve
+> 
+> > 
+> > commit bdff78707f3ce47e891f3201c9666122a70556ce
+> > Author: Thomas Gleixner <tglx@linutronix.de>
+> > Date:   Fri Jul 24 15:30:45 2009 -0400
+> > 
+> >     trace: stop tracer in oops_enter()
+> > 
+> >     If trace_printk_on_oops is set we lose interesting trace information
+> >     when the tracer is enabled across oops handling and printing. We want
+> >     the trace which might give us information _WHY_ we oopsed.
+> > 
+> 
 
-P.
 
-On 8. 9. 2009 7:04, Pavol Cvengros wrote:
-> Hello,
->
-> recently we have build and started to use raid storage with formatted 
-> capacity of 4.5T (ext4 formatted, default params).
-> FS has quota turned on and is exported via NFS to nodes.
-> If we turn qouta on on this FS and are trying to use it over NFS we 
-> get the following:
->
-> ------------[ cut here ]------------
-> WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
-> Hardware name: S3210SH
-> Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc 
-> coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd 
-> floppy usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
-> Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
-> Call Trace:
->  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
->  [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
->  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
->  [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
->  [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
->  [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
->  [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
->  [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
->  [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
->  [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
->  [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
->  [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
->  [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
->  [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
->  [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
->  [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
->  [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
->  [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
->  [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
->  [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
->  [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
->  [<ffffffff80292110>] ? pdflush+0x120/0x230
->  [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
->  [<ffffffff80291ff0>] ? pdflush+0x0/0x230
->  [<ffffffff80261154>] ? kthread+0x64/0xc0
->  [<ffffffff8020d13a>] ? child_rip+0xa/0x20
->  [<ffffffff802610f0>] ? kthread+0x0/0xc0
->  [<ffffffff8020d130>] ? child_rip+0x0/0x20
-> ---[ end trace cb54e6523e9ab60d ]---
->
-> fstab entry:
-> /dev/sdb1              /mnt/storage    ext4            
-> noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0 
->
->
-> qith quotaoff on tihs FS, warnings stop.
->
-> Question is if it's safe to use quotas with this problem (warning) or 
-> not. Can't afford data damage.
->
-> Thanks,
->
-> Pavol Cvengros
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe 
-> linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
