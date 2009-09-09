@@ -1,86 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZIITEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753664AbZIITKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753453AbZIITEX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 15:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZIITEW
+	id S1753664AbZIITKb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 15:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753293AbZIITKb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 15:04:22 -0400
-Received: from ns1.coraid.com ([12.51.113.4]:49944 "EHLO coraid.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752923AbZIITEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 15:04:22 -0400
-From: Ed Cashin <ecashin@coraid.com>
-X-Mailer: nedmail
-Date: Wed, 9 Sep 2009 15:03:16 -0400
-To: ecashin@coraid.com, jens.axboe@oracle.com, akpm@linux-foundation.org,
-       apw@canonical.com, bonbons@linux-vserver.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
-Message-ID: <5fb8536c1ae8ccd0a333b6ffb6a209ff@coraid.com>
-In-Reply-To: <61768ed9922a0f0bb1af3e1fe14bde00@coraid.com>
-References: <200909021955.n82JtkrI032267@imap1.linux-foundation.org>
-	<20090903063539.GH12579@kernel.dk>
-	<2339aa04a4e8fb440a52624273728352@coraid.com>
-	<20090904183525.GB18599@kernel.dk>
-	<f48e25c99e41e375f2ddd85989cd39e1@coraid.com>
-	<20090905051735.GH18599@kernel.dk>
-	<366469f19c41e0150028b886f6859019@coraid.com>
-	<20090908193540.GB18599@kernel.dk>
-	<60772f633c524ba873f569966fccd6ce@coraid.com>
-	<61768ed9922a0f0bb1af3e1fe14bde00@coraid.com>
+	Wed, 9 Sep 2009 15:10:31 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:16149 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753109AbZIITKa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 15:10:30 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=w4iE+TBsmj5y1WloLYF40w==:17 a=Z3xBQACwSvrYKmY-uMAA:9
+ a=6BTIFVOXGCeBCliVElQA:7 a=XoOFQUhB0dvOR_0HlLp0oE1coZIA:4
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
+Date: Wed, 9 Sep 2009 13:10:26 -0600
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, "linux-scsi" <linux-scsi@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca> <4AA7F965.6020408@garzik.org>
+In-Reply-To: <4AA7F965.6020408@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909091310.26058.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-aoe: end barrier bios with EOPNOTSUPP
+On Wed September 9 2009, Jeff Garzik wrote:
+> On 09/09/2009 12:30 PM, Thomas Fjellstrom wrote:
+> > No errors on that disk. Other than the one above, and its more of a
+> > warning. However, I just rebooted to add some extra drives, thinking
+> > everything was working a little better now that I've updated to
+> > 2.6.31-rc9, I'm treated to the following two messages right after boot
+> > (and a system lockup to boot):
+> >
+> > kernel: [  971.033138] ------------[ cut here ]------------
+> > kernel: [  971.033211] WARNING: at drivers/ata/libata-core.c:4913
+> > __ata_qc_complete+0x5a/0xe1 [libata]()
+> > kernel: [  971.033217] Hardware name: GA-MA790FXT-UD5P
+> > kernel: [  971.033221] Modules linked in: powernow_k8
+> > cpufreq_conservative cpufreq_stats cpufreq_userspace cpufreq_powersave
+> > kvm_amd kvm nfsd exportfs nfs lockd fscache nfs_acl auth_rpcgss sunrpc
+> > bridge stp it87 hwmon_vid adt7473 firewire_sbp2 loop md_mod
+> > snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_hwdep snd_pcm_oss
+> > snd_mixer_oss snd_pcm snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq
+> > snd_timer snd_seq_device snd amd64_edac_mod edac_core i2c_piix4 soundcore
+> > snd_page_alloc i2c_core evdev wmi parport_pc button parport processor
+> > ext3 jbd mbcache dm_mod sg sr_mod cdrom sd_mod crc_t10dif usbhid
+> > ata_generic ide_pci_generic hid mvsas firewire_ohci libsas firewire_core
+> > crc_itu_t scsi_transport_sas r8169 atiixp ide_core floppy ahci mii
+> > ohci_hcd libata ehci_hcd scsi_mod thermal fan thermal_sys [last unloaded:
+> > scsi_wait_scan]
+> > kernel: [  971.033337] Pid: 0, comm: swapper Not tainted 2.6.31-rc9 #2
+> > kernel: [  971.033342] Call Trace:
+> > kernel: [  971.033346]<IRQ>   [<ffffffffa00562ca>] ?
+> > __ata_qc_complete+0x5a/0xe1 [libata]
+> > kernel: [  971.033434]  [<ffffffffa00562ca>] ?
+> > __ata_qc_complete+0x5a/0xe1 [libata]
+> > kernel: [  971.033446]  [<ffffffff8104aca0>] ?
+> > warn_slowpath_common+0x77/0xa3 kernel: [  971.033455] 
+> > [<ffffffff81038d06>] ? enqueue_task+0x5c/0x65 kernel: [  971.033496] 
+> > [<ffffffffa00562ca>] ? __ata_qc_complete+0x5a/0xe1 [libata]
+> > kernel: [  971.033519]  [<ffffffffa00f7b59>] ?
+> > sas_ata_task_done+0x178/0x210 [libsas]
+> > kernel: [  971.033528]  [<ffffffff8115ead1>] ? blk_run_queue+0x21/0x35
+> > kernel: [  971.033548]  [<ffffffffa010e2ce>] ?
+> > mvs_slot_complete+0x3df/0x41b [mvsas]
+> > kernel: [  971.033565]  [<ffffffffa010e39c>] ? mvs_int_rx+0x92/0x101
+> > [mvsas] kernel: [  971.033583]  [<ffffffffa01112ba>] ?
+> > mvs_int_full+0x25/0x88 [mvsas] kernel: [  971.033600] 
+> > [<ffffffffa011134e>] ? mvs_64xx_isr+0x31/0x40 [mvsas] kernel: [ 
+> > 971.033617]  [<ffffffffa010d0e5>] ? mvs_interrupt+0x61/0x78 [mvsas]
+> > kernel: [  971.033625]  [<ffffffff8108aaac>] ?
+> > handle_IRQ_event+0x58/0x135 kernel: [  971.033633]  [<ffffffff8108c1a1>]
+> > ? handle_fasteoi_irq+0x7d/0xb5 kernel: [  971.033642] 
+> > [<ffffffff8101388d>] ? handle_irq+0x17/0x1d
+> 
+> That warning is triggered when an ata_queued_cmd is passed to completion
+> without the ATA_QCFLAG_ACTIVE flag being set (which indicates the qc was
+> started with some activity).
+> 
+> That possibly indicates the low-level driver (or libsas) was passing an
+> already-completed cmd to libata.
+> 
+> > The added hard drives are connected to a Supermicro AOC-SASLP-MV8, which
+> > is based on a marvel MV64460/64461/64462 chipset, which uses the sata_mv
+> > driver.
+> 
+> Surely you mean 'mvsas' driver?
 
-BugLink: http://bugzilla.kernel.org/show_bug.cgi?id=13942
+Yes, sorry I did mean mvsas.
 
-Bruno Premont noticed that aoe throws a BUG during umount of an XFS in
-2.6.31:
+I am more concerned about the actual oops/BUG rather than the warning though. 
+Unless the problem causing the warning is also causing the oops.
 
-[ 5259.349897] aoe: bi_io_vec is NULL
-[ 5259.349940] ------------[ cut here ]------------
-[ 5259.349958] kernel BUG at /usr/src/linux-2.6/drivers/block/aoe/aoeblk.c:177!
-[ 5259.349990] invalid opcode: 0000 [#1]
+> 	Jeff
+> 
 
-The bio in question is a barrier.  Jens Axboe suggested that such bios
-need to be recognized and ended with -EOPNOTSUPP by any driver that
-provides its own ->make_request_fn handler and does not handle
-barriers.
 
-In testing the changes below eliminate the BUG.
-
-Signed-off-by: Ed L. Cashin <ecashin@coraid.com>
----
-After this patch has been reviewed I plan to add this patch to
-the aoe quilt tree for linux-next.
-
- drivers/block/aoe/aoeblk.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
-index 2307a27..22efb33 100644
---- a/drivers/block/aoe/aoeblk.c
-+++ b/drivers/block/aoe/aoeblk.c
-@@ -172,6 +172,9 @@ aoeblk_make_request(struct request_queue *q, struct bio *bio)
- 		BUG();
- 		bio_endio(bio, -ENXIO);
- 		return 0;
-+	} else if (bio_barrier(bio)) {
-+		bio_endio(bio, -EOPNOTSUPP);
-+		return 0;
- 	} else if (bio->bi_io_vec == NULL) {
- 		printk(KERN_ERR "aoe: bi_io_vec is NULL\n");
- 		BUG();
 -- 
-1.5.6.5
-
-
--- 
-  Ed Cashin <ecashin@coraid.com>
-  http://noserose.net/e/
-  http://www.coraid.com/
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
