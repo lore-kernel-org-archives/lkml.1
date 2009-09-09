@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752198AbZIIGFK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751905AbZIIGNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752198AbZIIGFK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 02:05:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751923AbZIIGFK
+	id S1751905AbZIIGNS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 02:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751486AbZIIGNR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 02:05:10 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:41422 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895AbZIIGFJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 02:05:09 -0400
-Date: Wed, 09 Sep 2009 15:05:11 +0900 (JST)
-Message-Id: <20090909.150511.112608142.ryov@valinux.co.jp>
-To: dhaval@linux.vnet.ibm.com
-Cc: vgoyal@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
-       akpm@linux-foundation.org, nauman@google.com,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090908170649.GC8828@linux.vnet.ibm.com>
-References: <20090908.120119.71095369.ryov@valinux.co.jp>
-	<20090908134244.GA15974@redhat.com>
-	<20090908170649.GC8828@linux.vnet.ibm.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 02:13:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52006 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751481AbZIIGNR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 02:13:17 -0400
+Date: Wed, 9 Sep 2009 08:13:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Con Kolivas <kernel@kolivas.org>,
+       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090909061308.GA28109@elte.hu>
+References: <20090906205952.GA6516@elte.hu> <20090907094953.GP18599@kernel.dk> <20090907115750.GW18599@kernel.dk> <20090907141458.GD24507@elte.hu> <20090907173846.GB18599@kernel.dk> <20090907204458.GJ18599@kernel.dk> <20090908091304.GQ18599@kernel.dk> <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090908203409.GJ18599@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > > - dm-ioband can use without cgroup. (I remember Vivek said it's not an
-> > >   advantage.)
+* Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Tue, Sep 08 2009, Peter Zijlstra wrote:
+> > On Tue, 2009-09-08 at 11:13 +0200, Jens Axboe wrote:
+> > > And here's a newer version.
 > > 
-> > I think this is more of a disadvantage than advantage. We have a very well
-> > defined functionality of cgroup in kernel to group the tasks. Now you are
-> > coming up with your own method of grouping the tasks which will make life
-> > even more confusing for users and application writers.
+> > I tinkered a bit with your proglet and finally found the 
+> > problem.
+> > 
+> > You used a single pipe per child, this means the loop in 
+> > run_child() would consume what it just wrote out until it got 
+> > force preempted by the parent which would also get woken.
+> > 
+> > This results in the child spinning a while (its full quota) and 
+> > only reporting the last timestamp to the parent.
+> 
+> Oh doh, that's not well thought out. Well it was a quick hack :-) 
+> Thanks for the fixup, now it's at least usable to some degree.
 
-I know that cgroup is a very well defined functionality, that is why
-dm-ioband also supports throttling per cgroup. But how are we supposed
-to do throttling on the system which doesn't support cgroup?
-As I wrote in another mail to Vivek, I would like to make use of
-dm-ioband on RHEL 5.x. 
-And I don't think that the grouping methods are not complicated, just
-stack a new device on the existing device and assign bandwidth to it,
-that is the same method as other device-mapper targets, if you would
-like to assign bandwidth per thread, then register the thread's ID to
-the device and assign bandwidth to it as well. I don't think it makes
-users confused.
+What kind of latencies does it report on your box?
 
-> I would tend to agree with this. With other resource management
-> controllers using cgroups, having dm-ioband use something different will
-> require a different set of userspace tools/libraries to be used.
-> Something that will severly limit its usefulness froma programmer's
-> perspective.
+Our vanilla scheduler default latency targets are:
 
-Once we create a dm-ioband device, the device can be configured
-through the cgroup interface. I think it will not severly limit its
-usefulness.
+  single-core: 20 msecs
+    dual-core: 40 msecs
+    quad-core: 60 msecs
+    opto-core: 80 msecs
 
-Thanks,
-Ryo Tsuruta
+You can enable CONFIG_SCHED_DEBUG=y and set it directly as well via 
+/proc/sys/kernel/sched_latency_ns:
+
+   echo 10000000 > /proc/sys/kernel/sched_latency_ns
+
+	Ingo
