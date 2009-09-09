@@ -1,99 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752360AbZIICAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZIICE0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752360AbZIICAb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750893AbZIICAa
+	id S1752610AbZIICE0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:04:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZIICE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:00:30 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:50382 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750778AbZIICAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:00:30 -0400
-Date: Wed, 9 Sep 2009 04:03:45 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, paolo.valente@unimore.it, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH 25/23] io-controller: fix queue vs group fairness
-Message-ID: <20090909020345.GL17468@gandalf.sssup.it>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <20090908222827.GC3558@redhat.com> <20090908231334.GJ17468@gandalf.sssup.it> <20090909013205.GB3594@redhat.com>
+	Tue, 8 Sep 2009 22:04:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35903 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbZIICEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 22:04:25 -0400
+Subject: Re: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on
+ oops
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AA7092C.4070706@cn.fujitsu.com>
+References: <4AA70198.9070500@cn.fujitsu.com>
+	 <1252460079.11070.1.camel@gandalf.stny.rr.com>
+	 <4AA706BE.1090204@cn.fujitsu.com>
+	 <1252460523.11070.3.camel@gandalf.stny.rr.com>
+	 <4AA7092C.4070706@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 08 Sep 2009 22:04:27 -0400
+Message-Id: <1252461867.11070.6.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909013205.GB3594@redhat.com>
-User-Agent: Mutt/1.4.2.3i
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Vivek Goyal <vgoyal@redhat.com>
-> Date: Tue, Sep 08, 2009 09:32:05PM -0400
->
-> On Wed, Sep 09, 2009 at 01:13:34AM +0200, Fabio Checconi wrote:
-> > Hi,
+On Wed, 2009-09-09 at 09:47 +0800, Li Zefan wrote:
+> Steven Rostedt wrote:
+> > On Wed, 2009-09-09 at 09:37 +0800, Li Zefan wrote:
+> >> Steven Rostedt wrote:
+> >>> On Wed, 2009-09-09 at 09:15 +0800, Li Zefan wrote:
+> >>>> Currently we always disable tracing on oops, and this patch
+> >>>> adds a sysctl so one can choose to enable it.
+> >>> Hmm, we already have a way to enable it.
+> >>>
+> >>> # echo 1 > /debug/tracing/tracing_on
+> >>>
+> >> What I want is a way to not disable it when an oops happened. :)
+> >>
 > > 
-> > > From: Vivek Goyal <vgoyal@redhat.com>
-> > > Date: Tue, Sep 08, 2009 06:28:27PM -0400
-> > >
-> > > 
-> > > o I found an issue during test and that is if there is a mix of queue and group
-> > ...
-> > >  So we need to keep track of process io queue's vdisktime, even it after got
-> > >  deleted from io scheduler's service tree and use that same vdisktime if that
-> > >  queue gets backlogged again. But trusting a ioq's vdisktime is bad because
-> > >  it can lead to issues if a service tree min_vtime wrap around takes place 
-> > >  between two requests of the queue. (Agreed that it can be not that easy to
-> > >  hit but it is possible).
-> > > 
-> > >  Hence, keep a cache of io queues serviced recently and when a queue gets
-> > >  backlogged, if it is found in cache, use that vdisktime otherwise assign
-> > >  a new vdisktime. This cache of io queues (idle tree), is basically the idea
-> > >  implemented by BFQ guys. I had gotten rid of idle trees in V9 and now I am
-> > >  bringing it back. (Now I understand it better. :-)).
-> > > 
-> > >  There is one good side affect of keeping the cache of recently service io
-> > >  queues. Now CFQ can differentiate between streaming readers and new processes
-> > >  doing IO. Now for a new queue (which is not in the cache), we can assign a
-> > >  lower vdisktime and for a streaming reader, we assign vdisktime based on disk
-> > >  time used. This way small file readers or the processes doing small amount
-> > >  of IO will have reduced latencies at the cost of little reduced throughput of
-> > >  streaming readers.
-> > > 
+> > Ah, I misunderstood. May I ask a silly question?
 > > 
-> >   just a little note: this patch seems to introduce a special case for
-> > vdisktime = 0, assigning it the meaning of "bad timestamp," but the virtual
-> > time space wraps, so 0 is a perfectly legal value, which can be reached by
-> > service.  I have no idea if it can produce visible effects, but it doesn't
-> > seem to be correct.
-> > 
+> > Why?
 > > 
 > 
-> Hi Fabio,
+> Otherwise we won't get trace output from trae_crash_kexec if
+> crash_kexec() is not called by panic(). For example:
 > 
-> You are right that technically during wrap arounds one can hit value 0 as
-> legal value. But I think it is hard to hit at the same time, the only side
-> affect of it will be that a queue will be either placed favorably (in case of
-> sync queues) or at the end of tree (if it is async queue).
-> 
-> Async queues anyway go at the end after every dispatch round. So only side
-> affect is that once during wrap around cycle a sync queue will be placed
-> favorably and can gain share once in a dispatch round.
-> 
-> I think it is not a big issue at this point of time. But if it becomes
-> significant, I can introduce a new variable or start passing function
-> parameter to denote whether we found the queue in cache or not.
-> 
-> But if you think that it is absolutely no no, let me know....
-> 
+>   oops_begin()
+> ->trace_off()
+> ->panic_on_oops
+> ->kexec_should_crash()
+> ->crash_kexec()
 
-I don't think it's an issue at all, just wanted to make sure it gets
-noticed, because timestamping bugs may be hard to hit but often are
-hard to debug.  Maybe it deserves a line of comment...
+OK, but I'm not exactly sure what you final goal is here. To have a
+something to search for in the ring buffer after the crash? Maybe
+instead we can add a "trace_oops" event? Just put it before the
+tracing_off call.
+
+-- Steve
+
+
