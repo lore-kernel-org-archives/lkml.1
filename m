@@ -1,107 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZIIBQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752911AbZIIBQq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbZIIBQS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 21:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751989AbZIIBQR
+	id S1752911AbZIIBQq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 21:16:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZIIBQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 21:16:17 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60298 "EHLO song.cn.fujitsu.com"
+	Tue, 8 Sep 2009 21:16:45 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52770 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751015AbZIIBQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 21:16:17 -0400
-Message-ID: <4AA70198.9070500@cn.fujitsu.com>
-Date: Wed, 09 Sep 2009 09:15:04 +0800
+	id S1752841AbZIIBQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 21:16:44 -0400
+Message-ID: <4AA701B3.704@cn.fujitsu.com>
+Date: Wed, 09 Sep 2009 09:15:31 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
 To: Ingo Molnar <mingo@elte.hu>
 CC: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on oops
+       LKML <linux-kernel@vger.kernel.org>,
+       Eric Biederman <ebiederm@xmission.com>
+Subject: [PATCH 2/2] tracing/events: Add kexec tracepoints
+References: <4AA70198.9070500@cn.fujitsu.com>
+In-Reply-To: <4AA70198.9070500@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently we always disable tracing on oops, and this patch
-adds a sysctl so one can choose to enable it.
+When panic, save in ring buffer the time when crash happened,
+the panic message, etc. And the data can be retrieved from
+core dump file using flight-recorder, which is going to be a
+module of the crash utility.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Also if we implement flight-recorder in perf tool, those trace
+outputs can be used by perf tool.
+
 ---
- include/linux/kernel.h     |    2 ++
- kernel/panic.c             |    3 ++-
- kernel/sysctl.c            |   10 ++++++++++
- kernel/trace/ring_buffer.c |    2 ++
- 4 files changed, 16 insertions(+), 1 deletions(-)
+ include/trace/events/kexec.h |   51 ++++++++++++++++++++++++++++++++++++++++++
+ kernel/kexec.c               |    4 +++
+ kernel/panic.c               |    4 +++
+ 3 files changed, 59 insertions(+), 0 deletions(-)
+ create mode 100644 include/trace/events/kexec.h
 
-diff --git a/include/linux/kernel.h b/include/linux/kernel.h
-index f61039e..5c4528f 100644
---- a/include/linux/kernel.h
-+++ b/include/linux/kernel.h
-@@ -516,12 +516,14 @@ static inline char *pack_hex_byte(char *buf, u8 byte)
-  * Most likely, you want to use tracing_on/tracing_off.
-  */
- #ifdef CONFIG_RING_BUFFER
-+extern int trace_on_oops;
- void tracing_on(void);
- void tracing_off(void);
- /* trace_off_permanent stops recording with no way to bring it back */
- void tracing_off_permanent(void);
- int tracing_is_on(void);
- #else
-+#define trace_on_oops 0
- static inline void tracing_on(void) { }
- static inline void tracing_off(void) { }
- static inline void tracing_off_permanent(void) { }
+diff --git a/include/trace/events/kexec.h b/include/trace/events/kexec.h
+new file mode 100644
+index 0000000..c1d740a
+--- /dev/null
++++ b/include/trace/events/kexec.h
+@@ -0,0 +1,51 @@
++#undef TRACE_SYSTEM
++#define TRACE_SYSTEM kexec
++
++#if !defined(_TRACE_KEXEC_H) || defined(TRACE_HEADER_MULTI_READ)
++#define _TRACE_KEXEC_H
++
++#include <linux/kexec.h>
++#include <linux/tracepoint.h>
++
++TRACE_EVENT(panic,
++
++	TP_PROTO(const char *msg),
++
++	TP_ARGS(msg),
++
++	TP_STRUCT__entry(
++		__string(	msg,	msg	)
++	),
++
++	TP_fast_assign(
++		__assign_str(msg, msg);
++	),
++
++	TP_printk("%s", __get_str(msg))
++);
++
++TRACE_EVENT(crash_kexec,
++
++	TP_PROTO(struct kimage *image, struct pt_regs *regs),
++
++	TP_ARGS(image, regs),
++
++	TP_STRUCT__entry(
++		__field(	void *,	image	)
++		__field(	void *, ip	)
++	),
++
++	TP_fast_assign(
++		__entry->image	= image;
++		__entry->ip	= regs ?
++			(void *)instruction_pointer(regs) : NULL;
++	),
++
++	TP_printk("image=%p, ip=%p", __entry->image, __entry->ip)
++);
++
++#endif /* _TRACE_KEXEC_H */
++
++/* This part must be outside protection */
++#include <trace/define_trace.h>
++
+diff --git a/kernel/kexec.c b/kernel/kexec.c
+index f336e21..3d7eda7 100644
+--- a/kernel/kexec.c
++++ b/kernel/kexec.c
+@@ -38,6 +38,8 @@
+ #include <asm/system.h>
+ #include <asm/sections.h>
+ 
++#include <trace/events/kexec.h>
++
+ /* Per cpu memory for storing cpu states in case of system crash. */
+ note_buf_t* crash_notes;
+ 
+@@ -1073,6 +1075,8 @@ void crash_kexec(struct pt_regs *regs)
+ 	if (mutex_trylock(&kexec_mutex)) {
+ 		if (kexec_crash_image) {
+ 			struct pt_regs fixed_regs;
++
++			trace_crash_kexec(kexec_crash_image, regs);
+ 			crash_setup_regs(&fixed_regs, regs);
+ 			crash_save_vmcoreinfo();
+ 			machine_crash_shutdown(&fixed_regs);
 diff --git a/kernel/panic.c b/kernel/panic.c
-index 512ab73..22ec502 100644
+index 22ec502..c3baa23 100644
 --- a/kernel/panic.c
 +++ b/kernel/panic.c
-@@ -301,7 +301,8 @@ int oops_may_print(void)
-  */
- void oops_enter(void)
- {
--	tracing_off();
-+	if (!trace_on_oops)
-+		tracing_off();
- 	/* can't trust the integrity of the kernel anymore: */
- 	debug_locks_off();
- 	do_oops_enter_exit();
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index cdbe8d0..a768c15 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -537,6 +537,16 @@ static struct ctl_table kern_table[] = {
- 		.proc_handler	= &stack_trace_sysctl,
- 	},
- #endif
-+#ifdef CONFIG_RING_BUFFER
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "trace_on_oops",
-+		.data		= &trace_on_oops,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+#endif
- #ifdef CONFIG_TRACING
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 454e74e..fc10962 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -155,6 +155,8 @@ static unsigned long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
+@@ -23,6 +23,9 @@
+ #include <linux/nmi.h>
+ #include <linux/dmi.h>
  
- #define BUF_PAGE_HDR_SIZE offsetof(struct buffer_data_page, data)
- 
-+int trace_on_oops;
++#define CREATE_TRACE_POINTS
++#include <trace/events/kexec.h>
 +
- /**
-  * tracing_on - enable all tracing buffers
-  *
+ int panic_on_oops;
+ static unsigned long tainted_mask;
+ static int pause_on_oops;
+@@ -69,6 +72,7 @@ NORET_TYPE void panic(const char * fmt, ...)
+ 	va_start(args, fmt);
+ 	vsnprintf(buf, sizeof(buf), fmt, args);
+ 	va_end(args);
++	trace_panic(buf);
+ 	printk(KERN_EMERG "Kernel panic - not syncing: %s\n",buf);
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+ 	dump_stack();
 -- 
 1.6.3
+
