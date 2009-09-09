@@ -1,115 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZIIWEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754494AbZIIWFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZIIWEM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 18:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbZIIWEJ
+	id S1754494AbZIIWFh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 18:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbZIIWFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 18:04:09 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:24522 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753804AbZIIWEH (ORCPT
+	Wed, 9 Sep 2009 18:05:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33518 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753545AbZIIWFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 18:04:07 -0400
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/4] compcache: in-memory compressed swapping v2
-Date: Thu, 10 Sep 2009 03:32:55 +0530
-User-Agent: KMail/1.12.0 (Linux/2.6.30.5-43.fc11.x86_64; KDE/4.3.0; x86_64; ; )
-Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-mm-cc@laptop.org
-References: <200909100215.36350.ngupta@vflare.org>
-In-Reply-To: <200909100215.36350.ngupta@vflare.org>
-MIME-Version: 1.0
-Message-Id: <200909100332.55910.ngupta@vflare.org>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 9 Sep 2009 18:05:33 -0400
+Date: Wed, 9 Sep 2009 15:03:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, jack@suse.cz, stable@kernel.org
+Subject: Re: [PATCH] fs: Make sure data stored into inode is properly seen
+ before unlocking new inode
+Message-Id: <20090909150334.68fcde88.akpm@linux-foundation.org>
+In-Reply-To: <1252410063-26872-1-git-send-email-jack@suse.cz>
+References: <1252410063-26872-1-git-send-email-jack@suse.cz>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue,  8 Sep 2009 13:41:03 +0200
+Jan Kara <jack@suse.cz> wrote:
 
-Project home: http://compcache.googlecode.com/
+> In theory it could happen that on one CPU we initialize a new inode but clearing
+> of I_NEW | I_LOCK gets reordered before some of the initialization. Thus on
+> another CPU we return not fully uptodate inode from iget_locked().
+> 
+> This seems to fix a corruption issue on ext3 mounted over NFS.
+> 
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> ---
+>  fs/inode.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+>   Since Al doesn't seem to be online, does anybody else have opinion on this
+> patch? I can merge it via my tree but I'd like to get a review from someone
+> else.
 
-* Changelog: v2 vs initial revision
- - Use 'struct page' instead of 32-bit PFNs in ramzswap driver and xvmalloc.
-   This is to make these 64-bit safe.
- - xvmalloc is no longer a separate module and does not export any symbols.
-   Its compiled directly with ramzswap block driver. This is to avoid any
-   last bit of confusion with any other allocator.
- - set_swap_free_notify() now accepts block_device as parameter instead of
-   swp_entry_t (interface cleanup).
- - Fix: Make sure ramzswap disksize matches usable pages in backing swap file.
-   This caused initialization error in case backing swap file had intra-page
-   fragmentation.
+I'll merge it for 2.6.31.
 
-It creates RAM based block devices which can be used (only) as swap disks.
-Pages swapped to these disks are compressed and stored in memory itself. This
-is a big win over swapping to slow hard-disk which are typically used as swap
-disk. For flash, these suffer from wear-leveling issues when used as swap disk
-- so again its helpful. For swapless systems, it allows more apps to run for a
-given amount of memory.
+Please always remember -stable kernels when preparing bugfixes!  This
+one should have had a Cc:stable in the changelog and in the email
+headers.
 
-It can create multiple ramzswap devices (/dev/ramzswapX, X = 0, 1, 2, ...).
-Each of these devices can have separate backing swap (file or disk partition)
-which is used when incompressible page is found or memory limit for device is
-reached.
+> diff --git a/fs/inode.c b/fs/inode.c
+> index 901bad1..e9a8e77 100644
+> --- a/fs/inode.c
+> +++ b/fs/inode.c
+> @@ -696,6 +696,7 @@ void unlock_new_inode(struct inode *inode)
+>  	 * just created it (so there can be no old holders
+>  	 * that haven't tested I_LOCK).
+>  	 */
+> +	smp_mb();
+>  	WARN_ON((inode->i_state & (I_LOCK|I_NEW)) != (I_LOCK|I_NEW));
+>  	inode->i_state &= ~(I_LOCK|I_NEW);
+>  	wake_up_inode(inode);
 
-A separate userspace utility called rzscontrol is used to manage individual
-ramzswap devices.
+But an uncommented barrier is always a hard thing for a reader to
+understand.  Let's add something to help people.  How's this look?
 
-* Testing notes
+--- a/fs/inode.c~fs-make-sure-data-stored-into-inode-is-properly-seen-before-unlocking-new-inode-fix
++++ a/fs/inode.c
+@@ -697,12 +697,13 @@ void unlock_new_inode(struct inode *inod
+ 	}
+ #endif
+ 	/*
+-	 * This is special!  We do not need the spinlock
+-	 * when clearing I_LOCK, because we're guaranteed
+-	 * that nobody else tries to do anything about the
+-	 * state of the inode when it is locked, as we
+-	 * just created it (so there can be no old holders
+-	 * that haven't tested I_LOCK).
++	 * This is special!  We do not need the spinlock when clearing I_LOCK,
++	 * because we're guaranteed that nobody else tries to do anything about
++	 * the state of the inode when it is locked, as we just created it (so
++	 * there can be no old holders that haven't tested I_LOCK).
++	 * However we must emit the memory barrier so that other CPUs reliably
++	 * see the clearing of I_LOCK after the other inode initialisation has
++	 * completed.
+ 	 */
+ 	smp_mb();
+ 	WARN_ON((inode->i_state & (I_LOCK|I_NEW)) != (I_LOCK|I_NEW));
+_
 
-Tested on x86, x64, ARM
-ARM:
- - Cortex-A8 (Beagleboard)
- - ARM11 (Android G1)
- - OMAP2420 (Nokia N810)
-
-* Performance
-
-All performance numbers/plots can be found at:
-http://code.google.com/p/compcache/wiki/Performance
-
-Below is a summary of this data:
-
-General:
- - Swap R/W times are reduced from milliseconds (in case of hard disks)
-down to microseconds.
-
-Positive cases:
- - Shows 33% improvement in 'scan' benchmark which allocates given amount
-of memory and linearly reads/writes to this region. This benchmark also
-exposes bottlenecks in ramzswap code (global mutex) due to which this gain
-is so small.
- - On Linux thin clients, it gives the effect of nearly doubling the amount of
-memory.
-
-Negative cases:
-Any workload that has active working set w.r.t. filesystem cache that is
-nearly equal to amount of RAM while has minimal anonymous memory requirement,
-is expected to suffer maximum loss in performance with ramzswap enabled.
-
-Iozone filesystem benchmark can simulate exactly this kind of workload.
-As expected, this test shows performance loss of ~25% with ramzswap.
-
-(Sorry for long patch[2/4] but its now very hard to split it up).
-
- Documentation/blockdev/00-INDEX       |    2 +
- Documentation/blockdev/ramzswap.txt   |   50 ++
- drivers/block/Kconfig                 |   22 +
- drivers/block/Makefile                |    1 +
- drivers/block/ramzswap/Makefile       |    3 +
- drivers/block/ramzswap/ramzswap_drv.c | 1529 +++++++++++++++++++++++++++++++++
- drivers/block/ramzswap/ramzswap_drv.h |  183 ++++
- drivers/block/ramzswap/xvmalloc.c     |  533 ++++++++++++
- drivers/block/ramzswap/xvmalloc.h     |   30 +
- drivers/block/ramzswap/xvmalloc_int.h |   86 ++
- include/linux/ramzswap_ioctl.h        |   51 ++
- include/linux/swap.h                  |    5 +
- mm/swapfile.c                         |   34 +
- 13 files changed, 2529 insertions(+), 0 deletions(-)
