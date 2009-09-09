@@ -1,121 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZIINer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753007AbZIINvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbZIINer (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 09:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZIINer
+	id S1753007AbZIINvi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 09:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752469AbZIINvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 09:34:47 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:31685 "EHLO mx1.redhat.com"
+	Wed, 9 Sep 2009 09:51:38 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10405 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752835AbZIINeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 09:34:46 -0400
-Date: Wed, 9 Sep 2009 09:34:27 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: balbir@linux.vnet.ibm.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
-       akpm@linux-foundation.org, nauman@google.com,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com
-Subject: Re: Regarding dm-ioband tests
-Message-ID: <20090909133427.GA8256@redhat.com>
-References: <20090908032254.GJ8315@balbir.in.ibm.com> <20090908.140516.104049366.ryov@valinux.co.jp> <20090908134915.GB15974@redhat.com> <20090909.141748.189706141.ryov@valinux.co.jp>
+	id S1752102AbZIINvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 09:51:37 -0400
+Date: Wed, 9 Sep 2009 15:46:38 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, rjw@sisk.pl, laijs@cn.fujitsu.com,
+       akpm@linux-foundation.org, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/1] sched: fix cpu_down deadlock
+Message-ID: <20090909134557.GA21616@redhat.com>
+References: <4AA0FEBF.7040104@gmail.com> <1252496510-11898-1-git-send-email-jirislaby@gmail.com> <1252497225.7235.3.camel@laptop> <4AA79E4F.7010900@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090909.141748.189706141.ryov@valinux.co.jp>
+In-Reply-To: <4AA79E4F.7010900@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 02:17:48PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
-> Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > It is not necessary when controlling bandwidth on a per partition
-> > > basis or on a IO thread basis like Xen blkback kernel thread.
-> > > 
-> > > Here are configration examples.
-> > > http://sourceforge.net/apps/trac/ioband/wiki/dm-ioband/man/examples
-> > > 
-> > 
-> > For partition based control, where a thread or group of threads is doing
-> > IO to a specific parition, why can't you simply create different cgroups
-> > for each partition and move threads in those partitions.
-> > 
-> > 
-> > 			root
-> > 		 	/ | \
-> > 		    sda1 sda2 sda3
+On 09/09, Jiri Slaby wrote:
+>
+> On 09/09/2009 01:53 PM, Peter Zijlstra wrote:
+> > On Wed, 2009-09-09 at 13:41 +0200, Jiri Slaby wrote:
+> >> Jiri Slaby wrote:
+> >>> Thanks, in the end I found it manually. Goddammit! It's an -mm thing:
+> >>> cpu_hotplug-dont-affect-current-tasks-affinity.patch
 > >
-> > Above are three groups and move threads doing IO into those groups and
-> > problem is solved. In fact that's what one will do for KVM virtual
-> > machines. Move all the qemu helper threds doing IO for a virtual machine
-> > instance into a specific group and control the IO.
-> > 
-> > Why do you have to come up with additional complicated grouping mechanism?
-> 
-> I don't get why you think it's complicated, your io-controller also
-> provides the same grouping machanism which assigns bandwidth per
-> device by io.policy file. What's the difference?
+> > Is there a git tree with -mm in some place? I can't seem to find that
+> > patch in my inbox.
+> >
+> > All I can find is some comments from Oleg that the patch looks funny.
+>
+> Yes, here:
+> git://git.zen-sources.org/zen/mmotm.git
+>
+> Actually I found Oleg came up with better solution to add
+> move_task_off_dead_cpu to take_cpu_down.
+>
+> A discussion regarding this is at:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0907.3/02278.html
+>
+> So what's the status of the patches, please?
 
-I am using purely cgroup based interface. This makes life easier for user
-space tools and libraries like libcgroup and should also help libvirt. Now
-they can treat all the resource controllers in kernel in a uniform way
-(through cgroup interface).
+This patch depends on another one, please see
 
-With-in cgroups, there are controller specific files and libcgroup is
-aware of that. So libcgroup can be modified to take care of special
-syntax of io.policy file. But this is not too big a deviation in overall
-picture.
+	"[PATCH] cpusets: rework guarantee_online_cpus() to fix deadlock with cpu_down()"
+	http://marc.info/?t=124910242400002
 
-dm-ioband is coming up with a whole new way of configuring and managing
-groups and now these user space tools shall have to be modified to take
-care of this new way only for io controller.
+	(as the changelog says, the patch is not complete: we need
+	 ->cpumask_lock every time we update cs->allowed, but this
+	 should be trivial)
 
-The point is there is no need. You seem to be introducing this new
-interface because you want to use this module with RHEL5 which does not
-have cgroup support. 
+In short: cpuset_lock() is buggy. But more importantly it is afaics unneeded,
+and imho should die. I seem to answer all Lai's questions, but the patch was
+ignored by maintainers.
 
-I think this is hard to sell argument that upstream should also introduce
-a new interface just because one wants to use the module with older
-releases of kernel which did not have cgroup support.
+I noticed another race in update_cpumask() which I was going to fix, but since
+maintainers ignore me I lost the motivtion ;) Besides, currently I dont have
+the time anyway.
 
-Taking this new interface solves your case but will make life harder for user
-space tools, libraries and applications making use of cgroups and various
-resource controllers.
+So I think the original patch which creates the kthread is the best option.
 
-> The thread grouping
-> machianism is also not special, it is the same concept as cgroup.
-> These mechanisms are necessary to make use of dm-ioband on the systems
-> which doesn't support cgroup such as RHEL 5.x. As you know, dm-ioband
-> also supports cgroup, the configurations you mentioned above can apply
-> to the system by dm-ioband.
+Oleg.
 
-dm-ioband also supports cgroup but there is additional step required and
-that is passing all the cgroup ids to various ioband devices. This
-requires knowledge of all the ioband devices and how these have been
-created and usage of dm tools. 
-
-The only place where it helps a bit is that once the configuration is
-done, one can move the tasks in groups to arbitrarily group them instead
-of grouping these on pid, gid etc....
-
-So it still does not solve the issue of dm-ioband being so different from
-rest of the controllers and introducing a new interface for creation and
-management of groups.
-
-> I think it's not bad to have several ways
-> to setup.
-
-It is not bad if there is a proper justification for new interface and why
-existing standard mechanism does not meet that requirement.
-
-In this case you are saying that in general cgroup mechanism is sufficient
-to take care of grouping of tasks but it is not available in older kernels
-hence let us introduce a new interface in upstream kernels. I think this does
-not work. This brings in unnecessary overhead of maintaining anohter interface
-for upstream and upstream does not benefit from this interface.
-
-Thanks
-Vivek
