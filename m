@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753076AbZIIBfM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752995AbZIIBgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753076AbZIIBfM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 21:35:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZIIBfL
+	id S1752995AbZIIBgW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 21:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZIIBgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 21:35:11 -0400
-Received: from mail-px0-f177.google.com ([209.85.216.177]:49801 "EHLO
-	mail-px0-f177.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbZIIBfK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 21:35:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
-        b=czWPev843Ua4hACswUrDAw+5An6NUbLr6bWBihhfq6++O6Vh8joee1vpX0jPzRnR31
-         4tZV7vt/kaBgI+GbDuD7RxDYfCeJeg/adWjSc9qqP9fS8X3g/n8AhldL2tyZQ9HNdoL/
-         93XHPWL80adScY+6WOXRiXkVDSpq/o7tOrPc0=
+	Tue, 8 Sep 2009 21:36:22 -0400
+Received: from nbd.name ([88.198.39.176]:36069 "EHLO ds10.mine.nu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751819AbZIIBgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 21:36:21 -0400
+Message-ID: <4AA70688.5000203@openwrt.org>
+Date: Wed, 09 Sep 2009 03:36:08 +0200
+From: Felix Fietkau <nbd@openwrt.org>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-In-Reply-To: <20090907130831.c0180edd.sfr@canb.auug.org.au>
-References: <20090907130831.c0180edd.sfr@canb.auug.org.au>
-Date: Tue, 8 Sep 2009 18:35:12 -0700
-X-Google-Sender-Auth: c4f2509f6690e3dc
-Message-ID: <e9c3a7c20909081835t3cafea3cmb518f83ef12d3599@mail.gmail.com>
-Subject: Re: linux-next: async_tx tree build failure
-From: Dan Williams <dan.j.williams@intel.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Maciej Sosnowski <maciej.sosnowski@intel.com>
+To: Ralf Baechle <ralf@linux-mips.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Michael Buesch <mb@bu3sch.de>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+References: <20090906205952.GA6516@elte.hu> <200909071716.57722.mb@bu3sch.de> <20090907182629.GA3484@elte.hu> <20090908074825.GA11413@elte.hu> <1252403400.4950.81.camel@pasglop> <20090908130943.GA10637@linux-mips.org>
+In-Reply-To: <20090908130943.GA10637@linux-mips.org>
+X-Enigmail-Version: 0.96.0
 Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 6, 2009 at 8:08 PM, Stephen Rothwell<sfr@canb.auug.org.au> wrote:
-> Hi Dan,
->
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
->
-> drivers/dma/ioat/dma_v2.c: In function 'ioat2_enumerate_channels':
-> drivers/dma/ioat/dma_v2.c:346: error: too few arguments to function 'i7300_idle_platform_probe'
->
-> Caused by commit feed1bce2e6dc7e3307f122ac95be6741840bee8 ("ioat2,3:
-> convert to a true ring buffer").
->
-> I have used the version of the async_tc tree from next-20090904 for today.
+Ralf Baechle wrote:
+>> I remember at some stage we spotted an expensive multiply in there,
+>> maybe there's something similar, or some unaligned or non-cache friendly
+>> vs. the MIPS cache line size data structure, that sort of thing ...
+>> 
+>> Is this a SW loaded TLB ? Does it misses on kernel space ? That could
+>> also be some differences in how many pages are touched by each scheduler
+>> causing more TLB pressure. This will be mostly invisible on x86.
+> 
+> Software refilled.  No misses ever for kernel space or low-mem; think of
+> it as low-mem and kernel executable living in a 512MB page that is mapped
+> by a mechanism outside the TLB.  Vmalloc ranges are TLB mapped.  Ioremap
+> address ranges only if above physical address 512MB.
+> 
+> An emulated unaligned load/store is very expensive; one that is encoded
+> properly by GCC for __attribute__((packed)) is only 1 cycle and 1
+> instruction ( = 4 bytes) extra.
+CFS definitely isn't causing any emulated unaligned load/stores on these
+devices, we've tested that.
 
-Thanks for the report, I have pushed out a fix for this and some other
-fallout from adding CONFIG_I7300_IDLE=y to my build tests.
-
-Regards,
-Dan
+- Felix
