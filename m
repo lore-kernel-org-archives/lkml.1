@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752536AbZIIIAv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZIIOXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752536AbZIIIAv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 04:00:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZIIIAu
+	id S1753283AbZIIOXG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZIIOXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 04:00:50 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:57266 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752107AbZIIIAu (ORCPT
+	Wed, 9 Sep 2009 10:23:05 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42484 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753117AbZIIOXE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 04:00:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=nHYKyJNkxhB/d0VIkxnPiG7ypmp1jQTTiGDyD0iP8prlr2+GFhfEcCCku3bOvl6XCc
-         Ry7UKz4+fbq71piULc4uJfFfg5TDOkdwIEqOk7vxOGEoJ2H4S0wHC2yO7mdnvEAsMeBs
-         /lEuLyYYsBQHk//IMYEbtUZmcq8590EquTvdE=
-Message-ID: <4AA760B6.6070601@gmail.com>
-Date: Wed, 09 Sep 2009 10:00:54 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.5 Thunderbird/3.0b3
+	Wed, 9 Sep 2009 10:23:04 -0400
+Date: Wed, 9 Sep 2009 10:01:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, swetland@google.com
+Subject: Re: Staging tree status for the .32 kernel merge
+Message-ID: <20090909080132.GA1548@ucw.cz>
+References: <20090903041429.GA29875@kroah.com> <20090906052819.GE1324@ucw.cz> <1252338939.2139.21.camel@desktop> <20090909095702.GB28615@elf.ucw.cz> <1252505941.14793.97.camel@desktop>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: clocksource: !keventd_up() && schedule_work() == oops
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252505941.14793.97.camel@desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed 2009-09-09 07:19:01, Daniel Walker wrote:
+> On Wed, 2009-09-09 at 11:57 +0200, Pavel Machek wrote:
+> > Hi!
+> > 
+> > > > > 	  Note, Pavel has been adding some of the Dream hardware
+> > > > > 	  drivers, which are separate from the core Android drivers.  I
+> > > > > 	  have no objection to those, but they should work to get merged
+> > > > > 	  to their "correct" places in the tree in another release or
+> > > > > 	  so.
+> > > > 
+> > > > Well, some of those drivers should be moderately easy (touchscreen),
+> > > > but some (camera) will take longer than that. For example camera --
+> > > > contains _lots_ of code, and uses obsolete v4l api.
+> > > > 
+> > > > Plus, I really need to get recent kernel to boot and then get arch/arm
+> > > > pieces merged....
+> > > 
+> > > I've got a tree with a lot of the arch/arm/msm pieces isolated, doesn't
+> > > boot yet .. I had to drop certain parts like the key pad support since
+> > > it had a big generic change attached to it .. It's all part of a git
+> > > tree which I can expose if you want to look at it.
+> > 
+> > Yes, minimal, but booting version would be very welcome. I tried to
+> > produce exactly that few times, but did not succeed (yet).
+> 
+> Last night I discovered maybe a better tree to use ..
+> 
+> https://www.codeaurora.org/gitweb/quic/kernel/?p=bryanh/linux-2.6.git;a=summary
+> 
+> It's based off a newer kernel 2.6.31-rc6 . I have a feeling it's minus a
+> lot of the google stuff.
 
-I started to see oopses on boot in qemu machine because keventd is
-created in kernel_init/do_basic_setup, but schedule_work is done earlier
-in kernel_init/smp_init[1] when the tsc is unstable during this early phase.
+Big question is... 'does it boot?' :-). The rest should be easy.
 
-It looks like "clocksource: Resolve cpu hotplug dead lock with TSC
-unstable" is the culprit.
-
-Creating its own either singlethread or "multithread" workqueue won't
-work either (we do not have singlethread_cpu and cpu_populated_map).
-Checking !keventd_up() in the clocksource code looks to me like a hack.
-Any ideas, please?
-
-[1]
-kernel_init/smp_init/cpu_up/native_cpu_up/check_tsc_sync_source/mark_tsc_unstable/clocksource_mark_unstable/__clocksource_unstable
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
