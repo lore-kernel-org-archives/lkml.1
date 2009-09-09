@@ -1,91 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZIIS60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZIITDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752724AbZIIS60 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZIIS60
+	id S1753392AbZIITDN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 15:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZIITDM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:58:26 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:48714 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752261AbZIIS6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:58:25 -0400
-Date: Wed, 9 Sep 2009 21:01:42 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Rik van Riel <riel@redhat.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
-       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-Message-ID: <20090909190142.GI17468@gandalf.sssup.it>
-References: <20090904231129.GA3689@redhat.com> <20090907.200222.193693062.ryov@valinux.co.jp> <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp> <4AA6AF58.3050501@redhat.com> <20090909000900.GK17468@gandalf.sssup.it> <20090909020620.GC3594@redhat.com> <20090909154126.GG17468@gandalf.sssup.it> <20090909173003.GE8256@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909173003.GE8256@redhat.com>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 9 Sep 2009 15:03:12 -0400
+Received: from ns1.primeinteractive.net ([195.95.205.253]:59364 "EHLO
+	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752764AbZIITDL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 15:03:11 -0400
+Message-ID: <4AA7FBD7.9080406@primeinteractive.net>
+Date: Wed, 09 Sep 2009 21:02:47 +0200
+From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Justin Maggard <jmaggard10@gmail.com>
+CC: Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext4+quota+nfs issue
+References: <4AA5E5F3.30309@primeinteractive.net>	 <4AA72C14.1020005@primeinteractive.net>	 <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>	 <4AA7C38E.8020306@redhat.com> <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
+In-Reply-To: <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Vivek Goyal <vgoyal@redhat.com>
-> Date: Wed, Sep 09, 2009 01:30:03PM -0400
+On 9/9/2009 7:45 PM, Justin Maggard wrote:
+> On Wed, Sep 9, 2009 at 8:02 AM, Eric Sandeen<sandeen@redhat.com>  wrote:
+>    
+>>> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
+>>>
+>>>        
+>>>> Hi,
+>>>>
+>>>> can somebody who is aware of ext4 and quota have a look on this one?
+>>>>
+>>>>          
+>> This was also just reported at:
+>>
+>> https://bugzilla.redhat.com/show_bug.cgi?id=521914
+>>
+>> -Eric
+>>
+>>      
+> I've seen exactly the same thing myself as well, but on local I/O.
+> The only difference I was able to find between filesystems I saw this
+> on, versus filesystems that I didn't see this on, was how it was
+> created.  The filesystems without this issue were made using
+> mkfs.ext4, and the ones that _did_ have the issue were created with
+> mkfs.ext3, and then mounted -t ext4.  Pavol, can you check your
+> filesystem features from "dumpe2fs -h [your_device]"?
 >
-> On Wed, Sep 09, 2009 at 05:41:26PM +0200, Fabio Checconi wrote:
-> > > From: Vivek Goyal <vgoyal@redhat.com>
-> > > Date: Tue, Sep 08, 2009 10:06:20PM -0400
-> > >
-...
-> > This is good, however tuning will not be an easy task (at least, in my
-> > experience with BFQ it has been a problem): while for throughput usually
-> > there are tradeoffs, as soon as a queue/group idles and then timeouts,
-> > from the fairness perspective the results soon become almost random
-> > (i.e., depending on the rate of successful anticipations, but in the
-> > common case they are unpredictable)...
-> 
-> I am lost in last few lines. I guess you are suggesting that static tuning
-> is hard and dynamically adjusting idling has limitations that it might not
-> be accurate all the time?
-> 
+> -Justin
+> --
+>    
 
-Yes, this was the problem, at least for me.  As soon as there were
-unsuccessful anticipations there was no graceful degradation of
-fairness, and bandwidth distribution became almost random.  In
-this situation all the complexity of CFQ/BFQ/io-controller seems
-overkill; NCQ+SSD is or will be quite a common usage scenario
-triggering it.
+here is the dump....
 
+host_stor0 ~ # dumpe2fs -h /dev/sdb1
+dumpe2fs 1.41.9 (22-Aug-2009)
+Filesystem volume name: <none>
+Last mounted on: <not available>
+Filesystem UUID:          f8aef49b-1903-4e25-9a7b-a3f5557107fb
+Filesystem magic number:  0xEF53
+Filesystem revision #:    1 (dynamic)
+Filesystem features:      has_journal ext_attr resize_inode dir_index 
+filetype needs_recovery extent flex_bg sparse_super large_file huge_file 
+uninit_bg dir_nlink extra_isize
+Filesystem flags:         signed_directory_hash
+Default mount options:    (none)
+Filesystem state:         clean
+Errors behavior:          Continue
+Filesystem OS type:       Linux
+Inode count:              305176576
+Block count:              1220689911
+Reserved block count:     12206899
+Free blocks:              977820919
+Free inodes:              250981592
+First block:              0
+Block size:               4096
+Fragment size:            4096
+Reserved GDT blocks:      732
+Blocks per group:         32768
+Fragments per group:      32768
+Inodes per group:         8192
+Inode blocks per group:   512
+Flex block group size:    16
+Filesystem created:       Tue Jun 30 20:04:20 2009
+Last mount time:          Tue Aug 18 12:21:18 2009
+Last write time:          Tue Aug 18 12:21:18 2009
+Mount count:              10
+Maximum mount count:      -1
+Last checked:             Tue Jun 30 20:04:20 2009
+Check interval:           0 (<none>)
+Lifetime writes:          73 GB
+Reserved blocks uid:      0 (user root)
+Reserved blocks gid:      0 (group root)
+First inode:              11
+Inode size:               256
+Required extra isize:     28
+Desired extra isize:      28
+Journal inode:            8
+Default directory hash:   half_md4
+Directory Hash Seed:      317c2fc4-9c86-42ca-a3c3-0d6c632dcb46
+Journal backup:           inode blocks
+Journal size:             128M
 
-> I will explain how things are working in current set of io scheduler
-> patches.
-> 
-> Currently on top of queue idling, I have implemented group idling also.
-> Queue idling is dynamic and io scheduler like CFQ keeps track of
-> traffic pattern on the queue and disables/enables idling dynamically. So
-> in this case fairness depends on rate of successful anticipations by the
-> io scheduler.
-> 
-> Group idling currently is static in nature and purely implemented in
-> elevator fair queuing layer. Group idling kicks in only when a group is
-> empty at the time of queue expiration and underlying ioscheduler has not
-> chosen to enable idling on the queue. This provides us the gurantee that
-> group will keep on getting its fair share of disk as long as a new request
-> comes in the group with-in that idling period.
-> 
-> Implementing group idling ensures that it does not bog down the io scheduler
-> and with-in group queue switching can still be very fast (no idling on many of
-> the queues by cfq).
-> 
-> Now in case of SSD if group idling is really hurting somebody, I would
-> expect him to set it to either 1 or 0. You might get better throughput
-> but then expect fairness for the group only if the group is continuously
-> backlogged. (Something what dm-ioband guys seem to be doing).
-> 
-> So do you think that adjusting this "group_idling" tunable is too
-> complicated and there are better ways to handle it in case of SSD+NCQ?
-> 
-
-Unfortunately I am not aware of any reasonable and working method to
-properly handle this issue; anyway adjusting the tunable is something
-that needs a lot of care.
+P.
