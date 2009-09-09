@@ -1,87 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZIIBFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZIIBHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbZIIBFp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 21:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750764AbZIIBFo
+	id S1752831AbZIIBHo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 21:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750852AbZIIBHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 21:05:44 -0400
-Received: from mga03.intel.com ([143.182.124.21]:57420 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750721AbZIIBFo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 21:05:44 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="185493540"
-Subject: Re: [Intel-gfx] Regression DRM/i915/KMS: VGA connector unusable
-	after 2.6.31-rc8-git1, DVI connector ok
-From: ykzhao <yakui.zhao@intel.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Knut Petersen <Knut_Petersen@t-online.de>
-Cc: Knut Petersen <Knut_Petersen@t-online.de>,
-       "airlied@linux.ie" <airlied@linux.ie>,
-       Linus Torvalds <torvalds@osdl.org>,
-       "intel-gfx@lists.freedesktop.org" <intel-gfx@lists.freedesktop.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090908152636.701feffb@jbarnes-g45>
-References: <4AA6D858.6040505@t-online.de>
-	 <20090908152636.701feffb@jbarnes-g45>
+	Tue, 8 Sep 2009 21:07:43 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:36418 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750764AbZIIBHm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 21:07:42 -0400
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V3.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Brian King <brking@linux.vnet.ibm.com>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>, Matthew Wilcox <matthew@wil.cx>,
+       Roland Dreier <rdreier@cisco.com>, Bart Van Assche <bvanassche@acm.org>,
+       Robert Love <robert.w.love@intel.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>
+In-Reply-To: <4AA03A9F.2040500@linux.vnet.ibm.com>
+References: <1252006675.18725.20.camel@ank32.eng.vmware.com>
+	 <4AA03A9F.2040500@linux.vnet.ibm.com>
 Content-Type: text/plain
-Organization: Intel Open Source Technology Center
-Date: Wed, 09 Sep 2009 09:05:33 +0800
-Message-Id: <1252458334.3609.146.camel@localhost.localdomain>
+Organization: VMware INC.
+Date: Tue, 08 Sep 2009 18:07:45 -0700
+Message-Id: <1252458465.24914.65.camel@ank32.eng.vmware.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 06:26 +0800, Jesse Barnes wrote:
-> cc'ing the intel-gfx list.
+Hi all,
+
+Thanks for taking another look. I have addressed all of Eike and Bryan's
+comments except the host_lock one, see below for details. 
+Also I have rolled out a v4 patch with all the changes, which I will
+send out separately. 
+
+On Thu, 2009-09-03 at 14:52 -0700, Brian King wrote:
+> Alok Kataria wrote:
+> > +
+> > +struct pvscsi_adapter {
+> > +	char			*mmioBase;
+> > +	unsigned int		irq;
+> > +	u8			rev;
+> > +	bool			use_msi;
+> > +	bool			use_msix;
+> > +	bool			use_msg;
+> > +
+> > +	spinlock_t		hw_lock;
 > 
-> On Wed, 09 Sep 2009 00:19:04 +0200
-> Knut Petersen <Knut_Petersen@t-online.de> wrote:
+> Why not just use host_lock in the scsi_host structure?
 > 
-> > Hi everybody!
-> > 
-> > During the release cycle of the 2.6.31-rc* kernels KMS started to work
-> > on my computer.
-> > 
-> > Booting with a monitor attached to both the VAG and the DVI
-> > connectors, kernel 2.6.31-rc8-git1
-> > detects both monitors correctly and sets the native video mode.
-> > 
-> > Booting the same configuration with kernel 2.6.31-rc8-git2 ...
-> > -rc9-git1 gives a different result:
-> > the DVI-attached monitor is still working perfectly, the VGA-attached
-> > monitor does not detect a
-> > valid video signal and switches off.
-> > 
-> > Hardware: AOpen i915GMm-hfs,  Pentium-M 1.86 MHz,  2GB RAM
-> > The Aopen i915GMm-hfs is a  desktop board with a mobile Chipset:
-> > 
-> > 00:00.0 Host bridge: Intel Corporation Mobile 915GM/PM/GMS/910GML
-> > Express Processor to DRAM Controller (rev 04)
-> > 00:02.0 VGA compatible controller: Intel Corporation Mobile
-> > 915GM/GMS/910GML Express Graphics Controller (rev 04)
-> > 00:02.1 Display controller: Intel Corporation Mobile 915GM/GMS/910GML
-> > Express Graphics Controller (rev 04)
-> > 
-> > Config: AGP/DRM/I915 all compiled into kernel, KMS enabled.
-> > 
-> > Log_Broken contains the result of "cat boot.msg | grep -i drm" of a
-> > boot with 2.6.31-rc8-git2,
-> > Log_OK contains the result of "cat boot.msg | grep -i drm" of a boot
-> > with 2.6.31-rc8-git1
-> > 
-> > As a black monitor is not a nice gift I think this should be fixed
-> > before the final release of 2.6.31.
-Will you please try the latest git tree and see whether the issue can
-still be reproduced?
-Thanks.
-> > 
-> > cu,
-> >  Knut
+
+I agree with Chetan here, lets keep these locks separate. 
+
+> > +
+> > +/*
+> > + * Map all data buffers for a command into PCI space and
+> > + * setup the scatter/gather list if needed.
+> > + */
+> > +static void pvscsi_map_buffers(struct pvscsi_adapter *adapter,
+> > +			       struct pvscsi_ctx *ctx,
+> > +			       struct scsi_cmnd *cmd, PVSCSIRingReqDesc *e)
+> > +{
+> > +	unsigned count;
+> > +	unsigned bufflen = scsi_bufflen(cmd);
+> > +	struct scatterlist *sg;
+> > +
+> > +	e->dataLen = bufflen;
+> > +	e->dataAddr = 0;
+> > +	if (bufflen == 0)
+> > +		return;
+> > +
+> > +	sg = scsi_sglist(cmd);
+> > +	count = scsi_sg_count(cmd);
+> > +	if (count != 0) {
+> > +		int segs = pci_map_sg(adapter->dev, sg, count,
+> > +				      cmd->sc_data_direction);
+> 
+> Should use scsi_dma_map here instead.
+
+Done. 
+> > +		if (segs > 1) {
+> > +			pvscsi_create_sg(ctx, sg, segs);
+> > +
+> > +			e->flags |= PVSCSI_FLAG_CMD_WITH_SG_LIST;
+> > +			ctx->sglPA = pci_map_single(adapter->dev, ctx->sgl,
+> > +						    SGL_SIZE, PCI_DMA_TODEVICE);
+> > +			e->dataAddr = ctx->sglPA;
+> > +		} else
+> > +			e->dataAddr = sg_dma_address(sg);
+> > +	} else {
+> > +		/*
+> > +		 * In case there is no S/G list, scsi_sglist points
+> > +		 * directly to the buffer.
+> > +		 */
+> > +		ctx->dataPA = pci_map_single(adapter->dev, sg, bufflen,
+> > +					     cmd->sc_data_direction);
+> > +		e->dataAddr = ctx->dataPA;
+> > +	}
+> > +}
+> > +
+> > +static void pvscsi_unmap_buffers(const struct pvscsi_adapter *adapter,
+> > +				 struct pvscsi_ctx *ctx)
+> > +{
+> > +	struct scsi_cmnd *cmd;
+> > +	unsigned bufflen;
+> > +
+> > +	cmd = ctx->cmd;
+> > +	bufflen = scsi_bufflen(cmd);
+> > +
+> > +	if (bufflen != 0) {
+> > +		unsigned count = scsi_sg_count(cmd);
+> > +
+> > +		if (count != 0) {
+> > +			pci_unmap_sg(adapter->dev, scsi_sglist(cmd), count,
+> > +				     cmd->sc_data_direction);
+> 
+> Use scsi_dma_unmap here instead.
+Done.
+> 
+> > +			if (ctx->sglPA) {
+> > +				pci_unmap_single(adapter->dev, ctx->sglPA,
+> > +						 SGL_SIZE, PCI_DMA_TODEVICE);
+> > +				ctx->sglPA = 0;
+> > +			}
+> > +		} else
+> > +			pci_unmap_single(adapter->dev, ctx->dataPA, bufflen,
+> > +					 cmd->sc_data_direction);
+> > +	}
+> > +	if (cmd->sense_buffer)
+> > +		pci_unmap_single(adapter->dev, ctx->sensePA,
+> > +				 SCSI_SENSE_BUFFERSIZE, PCI_DMA_FROMDEVICE);
+> > +}
+> > +
 > 
 > 
+
+Thanks,
+Alok
 
