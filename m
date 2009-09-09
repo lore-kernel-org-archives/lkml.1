@@ -1,54 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZIISBP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753868AbZIISDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753682AbZIISBP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:01:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZIISBO
+	id S1753868AbZIISDO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753396AbZIISDO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:01:14 -0400
-Received: from relay2.sgi.com ([192.48.179.30]:34268 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752373AbZIISBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:01:14 -0400
-Date: Wed, 9 Sep 2009 13:01:10 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: SGU UV Add volatile to macros that access chipset registers
-Message-ID: <20090909180110.GA10311@sgi.com>
-References: <20090909154246.GA26716@sgi.com> <1252512600.14793.125.camel@desktop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252512600.14793.125.camel@desktop>
-User-Agent: Mutt/1.4.2.2i
+	Wed, 9 Sep 2009 14:03:14 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39032 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752469AbZIISDN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 14:03:13 -0400
+Message-ID: <4AA7ED79.7080402@zytor.com>
+Date: Wed, 09 Sep 2009 11:01:29 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+CC: Arnd Bergmann <arnd@arndb.de>, Nathan Lynch <ntl@pobox.com>,
+       linux-kernel@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, mingo@elte.hu,
+       torvalds@linux-foundation.org, Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+Subject: Re: [RFC][v5][PATCH 8/8]: Define clone_with_pids() syscall
+References: <20090907211302.GA5892@us.ibm.com> <20090907211700.GH6685@us.ibm.com> <m3zl95l2oz.fsf@pobox.com> <200909091419.50496.arnd@arndb.de> <4AA7CF1F.3020408@zytor.com> <20090909180303.GA21048@us.ibm.com>
+In-Reply-To: <20090909180303.GA21048@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 09:10:00AM -0700, Daniel Walker wrote:
-> On Wed, 2009-09-09 at 10:42 -0500, Jack Steiner wrote:
-> > Add "volatile" to the SGI UV read/write macros that are used to access chipset
-> > memory mapped registers.
+On 09/09/2009 11:03 AM, Sukadev Bhattiprolu wrote:
 > 
-> There is a considerable document regarding the usage of volatile in the
-> kernel (Documentation/volatile-considered-harmful.txt). Considering that
-> document, can you give a more descriptive reason why your using
-> "volatile" here ?
+> C90 or C99 below should work. Is it ok to use a data structure that is
+> not in C89 ? 
 > 
 
-I knew that "volatile" would catch someone's attention  :-)
+C89 is the same as C90 (C89 refers to the ANSI standard, C90 to the ISO
+standard, but they're functionally identical.)
 
+> BTW, would it work if we defined 
+> 
+> 	struct pid_set {
+> 		u64 pids;
+> 		int num_pids;
+> 	}
+> 
+> where ->pids can be still be a pointer ? The data structure would
+> have the same size on all architectures.
+> 
 
-Volatile is being added to the accessor functions that are used to
-read/write memory-mapped I/O registers located within the UV chipset.
-The use of volatile is hidden within the functions and is not exposed
-to the users of the functions.
+It would rather suck in terms of usability, though.
 
-Note that the use is limited to the accessor functions in the header
-file. No .c files are changed or need to know about volatile.
+	-hpa
 
-
-This seems to be consistent with other uses of volatile within the kernel.
-
-
---- jack
