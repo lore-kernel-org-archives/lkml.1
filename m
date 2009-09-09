@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZIIRii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZIIRoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753858AbZIIRii (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZIIRih
+	id S1753112AbZIIRoo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752586AbZIIRon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:38:37 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:46980 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753317AbZIIRih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:38:37 -0400
-Message-ID: <4AA7E82B.3080203@redhat.com>
-Date: Wed, 09 Sep 2009 20:38:51 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Valdis.Kletnieks@vt.edu
-CC: Beth Kon <eak@us.ibm.com>, rostedt@goodmis.org,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Wierdness - linux-next KVM patch breaks Dell Latitude D820, KVM
- not in kernel
-References: <3850.1252332427@turing-police.cc.vt.edu> <4AA65CFE.50402@us.ibm.com>            <22130.1252438888@turing-police.cc.vt.edu> <21211.1252517690@turing-police.cc.vt.edu>
-In-Reply-To: <21211.1252517690@turing-police.cc.vt.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Sep 2009 13:44:43 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:36636 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752322AbZIIRon (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 13:44:43 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: paulmck@linux.vnet.ibm.com
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, laijs@cn.fujitsu.com,
+       dipankar@in.ibm.com, akpm@linux-foundation.org,
+       mathieu.desnoyers@polymtl.ca, josht@linux.vnet.ibm.com,
+       dvhltc@us.ibm.com, niv@us.ibm.com, tglx@linutronix.de,
+       peterz@infradead.org, rostedt@goodmis.org
+Subject: Re: [PATCH tip/core/rcu 0/3] increase rcutorture intensity and fix a couple resulting bugs
+In-Reply-To: Your message of "Tue, 08 Sep 2009 15:53:49 PDT."
+             <20090908225349.GA19524@linux.vnet.ibm.com>
+From: Valdis.Kletnieks@vt.edu
+References: <20090908225349.GA19524@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1252518239_3993P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 09 Sep 2009 13:43:59 -0400
+Message-ID: <21629.1252518239@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2009 08:34 PM, Valdis.Kletnieks@vt.edu wrote:
-> On Tue, 08 Sep 2009 15:41:28 EDT, Valdis.Kletnieks@vt.edu said:
->
->    
->> Yeah, I was quite confused by the bisect results as well, I may end up
->> re-doing it just to make sure I didn't screw something up along the way (since
->> I started it with -rc7/HEAD as the good/bad, but most of the resulting
->> kernels reported a pre-rc7 release (a 2.6.28 at one point, IIRC, and it
->> finished at 31-rc2.
->>      
-> I've become convinced that Something Really Bad happened to the KVM tree in
-> linux-next on its way to my laptop - after 2 bisects, it reported I had some
-> 2,000 commits left to check.  So I ran 'git bisect visualize' to sanity check.
->
-> And *every single one* of those 4,000 commits between 'good' and 'bad' was a
-> KVM commit, stretching all the way back to 2007.  Unless that's an artifact
-> of the way linux-next is built, I would have expected only "new-ish" commits
-> to be in the bisect window, and not just out of one tree...
->
-> So I ended up doing a 'WTF?', an 'rm -r', and am cloning over today's linux-next
-> and will see if that brings me any better joy.
->
->    
+--==_Exmh_1252518239_3993P
+Content-Type: text/plain; charset=us-ascii
 
-Oh, it's an artifact of kvm.git, not linux-next.  I really should feed 
-something better to -next.
+On Tue, 08 Sep 2009 15:53:49 PDT, "Paul E. McKenney" said:
+> This patch series increases the intensity of rcutorture testing for
+> TREE_PREEMPT_RCU and provides fixes for a couple resulting bugs.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Minor bisection nit - should patch 1/3 be renumbered to 3/3, so the two bugfix
+patches go in before the patch that makes the unpatched bugs visible? Otherwise
+if a bisect waypoint happens to land on 1/3, oddness can happen...
 
+--==_Exmh_1252518239_3993P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFKp+lfcC3lWbTT17ARAinAAKDN+oXINgzwGmuadA4MPq1xHcvQUwCfTDyC
+AMGzmjhfajGubRxtP37mZ9o=
+=oJgN
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1252518239_3993P--
