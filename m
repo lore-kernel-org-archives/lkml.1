@@ -1,45 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752770AbZIIAtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZIIAwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752770AbZIIAtT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 20:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751560AbZIIAtT
+	id S1752809AbZIIAwi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 20:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZIIAwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 20:49:19 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56788 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751013AbZIIAtS (ORCPT
+	Tue, 8 Sep 2009 20:52:37 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:34542 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750751AbZIIAwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 20:49:18 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: akpm@linux-foundation.org
-Subject: Re: mmotm 2009-09-03-16-35 uploaded
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <200909032340.n83Ne6E6004708@imap1.linux-foundation.org>
-References: <200909032340.n83Ne6E6004708@imap1.linux-foundation.org>
-Message-Id: <20090909094529.0CD6.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  9 Sep 2009 09:49:15 +0900 (JST)
+	Tue, 8 Sep 2009 20:52:36 -0400
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: ath5k-devel@venema.h4ckr.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, me@bobcopeland.com,
+       lrodriguez@atheros.com, mickflemm@gmail.com, jirislaby@gmail.com,
+       linville@tuxdriver.com, johannes@sipsolutions.net,
+       Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+Subject: [PATCH] ath5k: do not free irq after resume when card has been removed
+Date: Tue,  8 Sep 2009 21:52:31 -0300
+Message-Id: <1252457551-4909-1-git-send-email-cascardo@holoscopio.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+ath5k will try to request irq when resuming and fails if the device
+(like a PCMCIA card) has been removed. The driver remove function will,
+then, be called, trying to free the failed requested irq, resulting in
+a warning.
 
-This release doesn't boot on my ia64 test box.
-After following two patches reverted, booting was successful.
+This solves this issue defining a new flag for the status bitmap to
+indicate when irq has been successfully requested and does not try to
+release it if not.
 
-	page-allocator-change-migratetype-for-all-pageblocks-within-a-high-order-page-during-__rmqueue_fallback.patch 
-	Kamezawa-san's kcore patch series
+Signed-off-by: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+---
+ drivers/net/wireless/ath/ath5k/base.c |   13 +++++++++++--
+ drivers/net/wireless/ath/ath5k/base.h |    3 ++-
+ 2 files changed, 13 insertions(+), 3 deletions(-)
 
-
-Mel, Kamezawa-san, Can you please gime me any advise?
-
-
-
+diff --git a/drivers/net/wireless/ath/ath5k/base.c b/drivers/net/wireless/ath/ath5k/base.c
+index 029c1bc..c5e2d5b 100644
+--- a/drivers/net/wireless/ath/ath5k/base.c
++++ b/drivers/net/wireless/ath/ath5k/base.c
+@@ -553,6 +553,7 @@ ath5k_pci_probe(struct pci_dev *pdev,
+ 		ATH5K_ERR(sc, "request_irq failed\n");
+ 		goto err_free;
+ 	}
++	__set_bit(ATH_STAT_IRQREQUESTED, sc->status);
+ 
+ 	/* Initialize device */
+ 	sc->ah = ath5k_hw_attach(sc, id->driver_data);
+@@ -628,6 +629,7 @@ ath5k_pci_probe(struct pci_dev *pdev,
+ err_ah:
+ 	ath5k_hw_detach(sc->ah);
+ err_irq:
++	__clear_bit(ATH_STAT_IRQREQUESTED, sc->status);
+ 	free_irq(pdev->irq, sc);
+ err_free:
+ 	ieee80211_free_hw(hw);
+@@ -650,7 +652,10 @@ ath5k_pci_remove(struct pci_dev *pdev)
+ 	ath5k_debug_finish_device(sc);
+ 	ath5k_detach(pdev, hw);
+ 	ath5k_hw_detach(sc->ah);
+-	free_irq(pdev->irq, sc);
++	if (test_bit(ATH_STAT_IRQREQUESTED, sc->status)) {
++		__clear_bit(ATH_STAT_IRQREQUESTED, sc->status);
++		free_irq(pdev->irq, sc);
++	}
+ 	pci_iounmap(pdev, sc->iobase);
+ 	pci_release_region(pdev, 0);
+ 	pci_disable_device(pdev);
+@@ -666,7 +671,10 @@ ath5k_pci_suspend(struct pci_dev *pdev, pm_message_t state)
+ 
+ 	ath5k_led_off(sc);
+ 
+-	free_irq(pdev->irq, sc);
++	if (test_bit(ATH_STAT_IRQREQUESTED, sc->status)) {
++		__clear_bit(ATH_STAT_IRQREQUESTED, sc->status);
++		free_irq(pdev->irq, sc);
++	}
+ 	pci_save_state(pdev);
+ 	pci_disable_device(pdev);
+ 	pci_set_power_state(pdev, PCI_D3hot);
+@@ -699,6 +707,7 @@ ath5k_pci_resume(struct pci_dev *pdev)
+ 		ATH5K_ERR(sc, "request_irq failed\n");
+ 		goto err_no_irq;
+ 	}
++	__set_bit(ATH_STAT_IRQREQUESTED, sc->status);
+ 
+ 	ath5k_led_enable(sc);
+ 	return 0;
+diff --git a/drivers/net/wireless/ath/ath5k/base.h b/drivers/net/wireless/ath/ath5k/base.h
+index f9b7f2f..4a71437 100644
+--- a/drivers/net/wireless/ath/ath5k/base.h
++++ b/drivers/net/wireless/ath/ath5k/base.h
+@@ -137,12 +137,13 @@ struct ath5k_softc {
+ 	size_t			desc_len;	/* size of TX/RX descriptors */
+ 	u16			cachelsz;	/* cache line size */
+ 
+-	DECLARE_BITMAP(status, 5);
++	DECLARE_BITMAP(status, 6);
+ #define ATH_STAT_INVALID	0		/* disable hardware accesses */
+ #define ATH_STAT_MRRETRY	1		/* multi-rate retry support */
+ #define ATH_STAT_PROMISC	2
+ #define ATH_STAT_LEDSOFT	3		/* enable LED gpio status */
+ #define ATH_STAT_STARTED	4		/* opened & irqs enabled */
++#define ATH_STAT_IRQREQUESTED	5		/* irq requested */
+ 
+ 	unsigned int		filter_flags;	/* HW flags, AR5K_RX_FILTER_* */
+ 	unsigned int		curmode;	/* current phy mode */
+-- 
+1.6.3.3
 
