@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZIIUrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754157AbZIIUtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754141AbZIIUrj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 16:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753915AbZIIUri
+	id S1754157AbZIIUtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 16:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753953AbZIIUtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 16:47:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55693 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753031AbZIIUri (ORCPT
+	Wed, 9 Sep 2009 16:49:18 -0400
+Received: from g4t0017.houston.hp.com ([15.201.24.20]:17718 "EHLO
+	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbZIIUtR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 16:47:38 -0400
-Date: Wed, 9 Sep 2009 13:46:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: kosaki.motohiro@jp.fujitsu.com, hugh@veritas.com, jpirko@redhat.com,
-       linux-kernel@vger.kernel.org, oleg@redhat.com, linux-mm@kvack.org,
-       mingo@elte.hu
-Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
-Message-Id: <20090909134643.5479b09e.akpm@linux-foundation.org>
-In-Reply-To: <20090907115430.6C16.A69D9226@jp.fujitsu.com>
-References: <20090617132118.ef839ad7.akpm@linux-foundation.org>
-	<20090618095705.99D2.A69D9226@jp.fujitsu.com>
-	<20090907115430.6C16.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 Sep 2009 16:49:17 -0400
+Subject: [PATCH 0/2] PCI Hotplug: internal interface cleanups
+To: jbarnes@virtuousgeek.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Wed, 09 Sep 2009 14:49:25 -0600
+Message-ID: <20090909204738.11037.26974.stgit@bob.kio>
+User-Agent: StGit/0.14.3.386.gb02d
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon,  7 Sep 2009 11:58:36 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+This is a re-post of an old patch series that wasn't picked up last
+time due to being too late in the merge window.
 
-> > Grr, my fault.
-> > I recognize it. sorry.
-> 
-> I've finished my long pending homework ;)
-> 
-> Andrew, can you please replace following patch with getrusage-fill-ru_maxrss-value.patch
-> and getrusage-fill-ru_maxrss-value-update.patch?
-> 
-> 
-> 
-> ChangeLog
->  ===============================
->   o Merge getrusage-fill-ru_maxrss-value.patch and getrusage-fill-ru_maxrss-value-update.patch
->   o rewrote test programs (older version hit FreeBSD bug and it obfuscate testcase intention, thanks Hugh)
+It removes a bunch of copy/paste code in acpiphp by simplifying some
+internal interfaces.
 
-The code changes are unaltered, so I merely updated the changelog.
+Please consider this for .32.
 
-The changelog had lots of ^------- lines in it.  But those are
-conventionally the end-of-changelog separator so I rewrote them to
-^=======
+Thanks!
+
+---
+
+Alex Chiang (2):
+      PCI Hotplug: acpiphp: find bridges the easy way
+      PCI Hotplug: convert acpi_pci_detect_ejectable() to take an acpi_handle
+
+
+ drivers/pci/hotplug/acpi_pcihp.c   |    9 +--
+ drivers/pci/hotplug/acpiphp_glue.c |  104 +++++++++---------------------------
+ drivers/pci/hotplug/pciehp_acpi.c  |    5 +-
+ include/linux/pci_hotplug.h        |    2 -
+ 4 files changed, 34 insertions(+), 86 deletions(-)
 
