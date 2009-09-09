@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753383AbZIIQ4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZIIQ6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753383AbZIIQ4u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 12:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752886AbZIIQ4t
+	id S1753351AbZIIQ6G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 12:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZIIQ6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 12:56:49 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:54703 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752845AbZIIQ4t (ORCPT
+	Wed, 9 Sep 2009 12:58:05 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45604 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752743AbZIIQ6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 12:56:49 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V4.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Rolf Eike Beer <eike-kernel@sf-tec.de>
-Cc: Daniel Walker <dwalker@fifo99.com>,
-       James Bottomley <James.Bottomley@suse.de>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@emulex.com>,
-       Matthew Wilcox <matthew@wil.cx>, Roland Dreier <rdreier@cisco.com>,
-       Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>
-In-Reply-To: <200909090754.22778.eike-kernel@sf-tec.de>
-References: <1252458903.24914.73.camel@ank32.eng.vmware.com>
-	 <1252459596.14793.46.camel@desktop>
-	 <1252472481.2508.20.camel@ank32.eng.vmware.com>
-	 <200909090754.22778.eike-kernel@sf-tec.de>
+	Wed, 9 Sep 2009 12:58:04 -0400
+Subject: Re: [PATCH] ftrace.h: TP_fast_assign - use do {} while (0);
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Joe Perches <joe@perches.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1252514933.28130.45.camel@Joe-Laptop.home>
+References: <1252514933.28130.45.camel@Joe-Laptop.home>
 Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 09 Sep 2009 09:56:52 -0700
-Message-Id: <1252515412.16631.6.camel@ank32.eng.vmware.com>
+Organization: Kihon Technologies Inc.
+Date: Wed, 09 Sep 2009 12:58:05 -0400
+Message-Id: <1252515485.27001.25.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Eike,
-
-On Tue, 2009-09-08 at 22:54 -0700, Rolf Eike Beer wrote:
-> Alok Kataria wrote:
+On Wed, 2009-09-09 at 09:48 -0700, Joe Perches wrote:
+> Perhaps this is a more kernel style standard way to allow
+> local variables in TP_fast_assign.
 > 
-> > +/* Command line parameters */
-> > +static int pvscsi_ring_pages     = PVSCSI_DEFAULT_NUM_PAGES_PER_RING;
-> > +static int pvscsi_msg_ring_pages = PVSCSI_DEFAULT_NUM_PAGES_MSG_RING;
-> > +static int pvscsi_cmd_per_lun    = PVSCSI_DEFAULT_QUEUE_DEPTH;
-> > +static int pvscsi_disable_msi;
-> > +static int pvscsi_disable_msix;
-> > +static int pvscsi_use_msg        = true;
+> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commitdiff;h=a9c1c3abe1160a5632e48c929b02b740556bf423
 > 
-> Should be bool.
-
-Yeah, could be done, though I think I will do this later as an
-incremental change or piggyback it if something else comes up.
-
+> Signed-off-by: Joe Perches <joe@perches.com>
 > 
-> Do I get annoying? ;)
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index f64fbaa..4c99bdc 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -142,7 +142,7 @@
+>  #define TP_printk(fmt, args...) "%s, %s\n", #fmt, __stringify(args)
+>  
+>  #undef TP_fast_assign
+> -#define TP_fast_assign(args...) args
+> +#define TP_fast_assign(args...) do { args } while (0);
+>  
+>  #undef TP_perf_assign
+>  #define TP_perf_assign(args...)
 
-:) Do you want the truth ? ;).
+This is not a normal macro that is used globally. I like the referenced
+commit better, because it shows where it is used what is happening.
+Note, TP_fast_assign is just a parameter into another macro, and using
+do { } while (0) is not really going to help change anything. This
+doesn't even remove a checkpatch warning.
 
-Actually its good that the code is being reviewed in so much details.
-Thanks for your time on this.
+-- Steve
 
---Alok 
-
-> 
-> Eike
 
