@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbZIIRe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753858AbZIIRii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753890AbZIIRe6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbZIIRe6
+	id S1753858AbZIIRii (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZIIRih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:34:58 -0400
-Received: from mail.gmx.net ([213.165.64.20]:46552 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753855AbZIIRe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:34:57 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/JbP4PiSHJqKMwvk9g58GS2jVFmleoKrw4H4YODY
-	MOc2BHhsCJ00Y4
-Subject: Re: [tip:sched/core] sched: Keep kthreads at default priority
-From: Mike Galbraith <efault@gmx.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-In-Reply-To: <1252516001.22918.6.camel@laptop>
-References: <1252486344.28645.18.camel@marge.simson.net>
-	 <tip-61cbe54d9479ad98283b2dda686deae4c34b2d59@git.kernel.org>
-	 <20090909172916.949DA526EC9@mailhub.coreip.homeip.net>
-	 <1252516001.22918.6.camel@laptop>
-Content-Type: text/plain
-Date: Wed, 09 Sep 2009 19:34:56 +0200
-Message-Id: <1252517696.6220.9.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
+	Wed, 9 Sep 2009 13:38:37 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:46980 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753317AbZIIRih (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 13:38:37 -0400
+Message-ID: <4AA7E82B.3080203@redhat.com>
+Date: Wed, 09 Sep 2009 20:38:51 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Beth Kon <eak@us.ibm.com>, rostedt@goodmis.org,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Wierdness - linux-next KVM patch breaks Dell Latitude D820, KVM
+ not in kernel
+References: <3850.1252332427@turing-police.cc.vt.edu> <4AA65CFE.50402@us.ibm.com>            <22130.1252438888@turing-police.cc.vt.edu> <21211.1252517690@turing-police.cc.vt.edu>
+In-Reply-To: <21211.1252517690@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 19:06 +0200, Peter Zijlstra wrote:
-> On Wed, 2009-09-09 at 09:55 -0700, Dmitry Torokhov wrote:
-> > On Wed, Sep 09, 2009 at 03:37:34PM +0000, tip-bot for Mike Galbraith wrote:
-> > > 
-> > > diff --git a/kernel/kthread.c b/kernel/kthread.c
-> > > index eb8751a..5fe7099 100644
-> > > --- a/kernel/kthread.c
-> > > +++ b/kernel/kthread.c
-> > > @@ -16,8 +16,6 @@
-> > >  #include <linux/mutex.h>
-> > >  #include <trace/events/sched.h>
-> > >  
-> > > -#define KTHREAD_NICE_LEVEL (-5)
-> > > -
-> > 
-> > Why don't we just redefine it to 0? We may find out later that we'd
-> > still prefer to have kernel threads have boost.
-> 
-> Seems sensible, also the traditional reasoning behind this nice level is
-> that kernel threads do work on behalf of multiple tasks. Its a kind of
-> prio ceiling thing.
+On 09/09/2009 08:34 PM, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 08 Sep 2009 15:41:28 EDT, Valdis.Kletnieks@vt.edu said:
+>
+>    
+>> Yeah, I was quite confused by the bisect results as well, I may end up
+>> re-doing it just to make sure I didn't screw something up along the way (since
+>> I started it with -rc7/HEAD as the good/bad, but most of the resulting
+>> kernels reported a pre-rc7 release (a 2.6.28 at one point, IIRC, and it
+>> finished at 31-rc2.
+>>      
+> I've become convinced that Something Really Bad happened to the KVM tree in
+> linux-next on its way to my laptop - after 2 bisects, it reported I had some
+> 2,000 commits left to check.  So I ran 'git bisect visualize' to sanity check.
+>
+> And *every single one* of those 4,000 commits between 'good' and 'bad' was a
+> KVM commit, stretching all the way back to 2007.  Unless that's an artifact
+> of the way linux-next is built, I would have expected only "new-ish" commits
+> to be in the bisect window, and not just out of one tree...
+>
+> So I ended up doing a 'WTF?', an 'rm -r', and am cloning over today's linux-next
+> and will see if that brings me any better joy.
+>
+>    
 
-True.  None of our current threads are heavy enough to matter much.
+Oh, it's an artifact of kvm.git, not linux-next.  I really should feed 
+something better to -next.
 
-	-Mike
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
