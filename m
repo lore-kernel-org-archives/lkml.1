@@ -1,48 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZIITcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZIITea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbZIITcx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 15:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbZIITcw
+	id S1753642AbZIITea (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 15:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZIITea
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 15:32:52 -0400
-Received: from mail.deathmatch.net ([72.66.92.28]:3715 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752593AbZIITcv (ORCPT
+	Wed, 9 Sep 2009 15:34:30 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:26487 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbZIITe3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 15:32:51 -0400
-Date: Wed, 9 Sep 2009 15:31:40 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
-Cc: ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       lrodriguez@atheros.com, mickflemm@gmail.com, jirislaby@gmail.com,
-       linville@tuxdriver.com, johannes@sipsolutions.net
-Subject: Re: [PATCH] ath5k: do not free irq after resume when card has been
-	removed
-Message-ID: <20090909193140.GA17717@hash.localnet>
-References: <1252457551-4909-1-git-send-email-cascardo@holoscopio.com> <20090909033237.GC13550@hash.localnet> <20090909175006.GA7945@vespa.holoscopio.com>
+	Wed, 9 Sep 2009 15:34:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=wSQwXKnXOZ/7wkQA/Y9fjo/D0fDv2MnJVluvndF5QJbyKHu59kxjq+CXhY8Vh5xm6
+	63/zvsd30UX5HquimZfug==
+Date: Wed, 9 Sep 2009 12:34:27 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
+In-Reply-To: <1252524157.14385.37942.camel@nimitz>
+Message-ID: <alpine.DEB.1.00.0909091229300.32267@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com> <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com> <1251129384.22398.7166.camel@nimitz> <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com>
+ <1251150156.22398.8289.camel@nimitz> <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com> <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com> <1252510129.14385.37045.camel@nimitz> <alpine.DEB.1.00.0909091217570.32267@chino.kir.corp.google.com>
+ <1252524157.14385.37942.camel@nimitz>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909175006.GA7945@vespa.holoscopio.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 02:50:06PM -0300, Thadeu Lima de Souza Cascardo wrote:
-> This is against v2.6.31-rc9, so I get a warning with a version that's
-> about to get stable. Sorry I am late in the release cycle.
+On Wed, 9 Sep 2009, Dave Hansen wrote:
 
-Ok yes, that makes sense then.
+> It shouldn't be too hard to do that, though.  Although a bit silly to
+> have make a copy_to_user() call for each ->parts[] page, it would be
+> pretty easy to implement.  
+> 
 
-> Since this is warning, is this worth backporting to rc?
-
-It's too late probably, but we can send it to stable for 2.6.31.1.
-
-Thank you for the patch by the way, just keep in mind that wireless
-patches should be against the wireless-testing kernel in the future.
-
--- 
-Bob Copeland %% www.bobcopeland.com
-
+Right, but the event buffer becomes slower as a whole because of the 
+multiple copy_to_user() on read, indirection into each flex_array_part, 
+and add_event_entry() would now require a memcpy.
