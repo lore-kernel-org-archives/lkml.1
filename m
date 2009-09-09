@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZIIVVA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZIIVPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754341AbZIIVVA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 17:21:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbZIIVU7
+	id S1754283AbZIIVPl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 17:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZIIVPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 17:20:59 -0400
-Received: from cardinal.lizella.net ([216.23.247.74]:38639 "EHLO
-	cardinal.lizella.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753806AbZIIVU6 (ORCPT
+	Wed, 9 Sep 2009 17:15:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53716 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754195AbZIIVPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 17:20:58 -0400
-X-Greylist: delayed 499 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Sep 2009 17:20:58 EDT
-Date: Wed, 9 Sep 2009 16:12:42 -0500
-From: Robby Workman <rworkman@slackbuilds.org>
-To: Alex Bennee <kernel-hacker@bennee.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: r8169 ethernet hangs after a pm-suspend (and resume)
-Message-ID: <20090909161242.4be7f0d6@liberty.rlwhome.lan>
-In-Reply-To: <20090909205556.3FCBD591@cardinal.lizella.net>
-References: <dipDf-1v7-5@gated-at.bofh.it>
-	<20090909205556.3FCBD591@cardinal.lizella.net>
-Organization: SlackBuilds.org
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-slackware-linux-gnu)
-X-Operating-System: Slackware Linux
+	Wed, 9 Sep 2009 17:15:40 -0400
+Date: Wed, 9 Sep 2009 14:15:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Valdis.Kletnieks@vt.edu, hugh.dickins@tiscali.co.uk, miklos@szeredi.hu,
+       matthew@wil.cx, agruen@suse.de, viro@zeniv.linux.org.uk, hch@lst.de,
+       linux-kernel@vger.kernel.org,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Subject: Re: [patch 1/2] vfs: seq_file: add helpers for data filling
+Message-Id: <20090909141500.5f635c56.akpm@linux-foundation.org>
+In-Reply-To: <E1MkZk0-00006N-So@pomaz-ex.szeredi.hu>
+References: <2818.1252160549@turing-police.cc.vt.edu>
+	<1252312254.4733.12.camel@tucsk>
+	<E1MkZk0-00006N-So@pomaz-ex.szeredi.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -30,89 +31,109 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Replying again to fix CC's - sorry for the extra noise.
+On Mon, 07 Sep 2009 10:38:24 +0200
+Miklos Szeredi <miklos@szeredi.hu> wrote:
 
-On Wed, 9 Sep 2009 20:55:56 +0000
-rworkman@cardinal.lizella.net (Robby Workman) wrote:
+> Add two helpers that allow access to the seq_file's own buffer, but
+> hides the internal details of seq_files.
+> 
+> This allows easier implementation of special purpose filling
+> functions.  It also cleans up some existing functions which duplicated
+> the seq_file logic.
 
-> In linux.kernel, you wrote:
-> > I've just recently gotten suspend working on my system.
-> > Unfortunately after the resume event I loose access to the network.
-> > As far as the system is concerned the network is configured properly
-> > but every attempt to ping local nodes fails with "Host not
-> > reachable".
-> >
-> > If also seen an oops or two but I don't know id that is related:
-> >
-> > [  289.816066] ------------[ cut here ]------------
-> > [  289.816077] WARNING: at net/sched/sch_generic.c:246
-> > dev_watchdog+0x132/0x1da()
-> > [  289.816080] Hardware name: System Product Name
-> > [  289.816083] NETDEV WATCHDOG: eth0 (r8169): transmit queue 0 timed
-> > out
-> > [  289.816085] Modules linked in: nls_iso8859_1 nls_cp437 vfat fat
-> > joydev usb_storage usbhid usb_libusual bridge stp llc bnep rfcomm
-> > l2cap bluetooth ipv6 snd_pcm_oss snd_mixer_oss snd_seq_oss
-> > snd_seq_midi_event snd_seq snd_seq_device kvm_intel kvm acpi_cpufreq
-> > snd_hda_codec_analog uhci_hcd usbcore snd_hda_intel snd_hda_codec
-> > firewire_ohci snd_hwdep snd_pcm snd_timer snd firewire_core
-> > crc_itu_t soundcore snd_page_alloc ide_cd_mod pcspkr evdev cdrom
-> > thermal processor nls_base unix [last unloaded: ehci_hcd]
-> > [  289.816135] Pid: 0, comm: swapper Not tainted
-> > 2.6.31-rc9-ajb-00012-g3ff323f-dirty #84
-> > [  289.816138] Call Trace:
-> > [  289.816140]  <IRQ>  [<ffffffff812aef27>] ?
-> > dev_watchdog+0x132/0x1da [  289.816152]  [<ffffffff8103eb72>]
-> > warn_slowpath_common+0x7c/0xa9 [  289.816157]  [<ffffffff8103ec1e>]
-> > warn_slowpath_fmt+0x69/0x6b [  289.816165]  [<ffffffffa0124cbb>] ?
-> > uhci_scan_schedule+0x194/0x86a [uhci_hcd]
-> > [  289.816169]  [<ffffffff81048fbc>] ? lock_timer_base+0x2b/0x4f
-> > [  289.816174]  [<ffffffff81049699>] ? mod_timer+0x111/0x123
-> > [  289.816180]  [<ffffffffa0125d9a>] ?
-> > uhci_hub_status_data+0x16e/0x17d [uhci_hcd]
-> > [  289.816185]  [<ffffffff8129d98d>] ? netdev_drivername+0x48/0x4f
-> > [  289.816189]  [<ffffffff812aef27>] dev_watchdog+0x132/0x1da
-> > [  289.816211]  [<ffffffffa00f0233>] ?
-> > usb_hcd_poll_rh_status+0x144/0x153 [usbcore]
-> > [  289.816215]  [<ffffffff812aedf5>] ? dev_watchdog+0x0/0x1da
-> > [  289.816220]  [<ffffffff81048d76>] run_timer_softirq+0x198/0x20d
-> > [  289.816226]  [<ffffffff8101d0c6>] ? lapic_next_event+0x1d/0x21
-> > [  289.816231]  [<ffffffff8104464f>] __do_softirq+0xd6/0x19a
-> > [  289.816235]  [<ffffffff8100c19c>] call_softirq+0x1c/0x28
-> > [  289.816239]  [<ffffffff8100d51d>] do_softirq+0x39/0x77
-> > [  289.816243]  [<ffffffff8104430c>] irq_exit+0x44/0x7e
-> > [  289.816248]  [<ffffffff8130b164>]
-> > smp_apic_timer_interrupt+0x8d/0x9b
-> > [  289.816253]  [<ffffffff8100bb73>] apic_timer_interrupt+0x13/0x20
-> > [  289.816256]  <EOI>  [<ffffffff810117ac>] ? mwait_idle+0xb9/0xf0
-> > [  289.816264]  [<ffffffff81309645>] ?
-> > atomic_notifier_call_chain+0x13/0x15
-> > [  289.816268]  [<ffffffff8100a30a>] ? cpu_idle+0x57/0x98
-> > [  289.816273]  [<ffffffff812f5422>] ? rest_init+0x66/0x68
-> > [  289.816278]  [<ffffffff815319da>] ? start_kernel+0x343/0x34e
-> > [  289.816283]  [<ffffffff8153103a>] ?
-> > x86_64_start_reservations+0xaa/0xae
-> > [  289.816287]  [<ffffffff8153111f>] ? x86_64_start_kernel+0xe1/0xe8
-> > [  289.816290] ---[ end trace 01c3a2a7a5f34536 ]---
-> > [  290.635368] r8169: eth0: link up
-> > [  314.635844] r8169: eth0: link up
-> >
-> > I'm currently running 2.6.31-rc9-ajb-00012-g3ff323f-dirty and am
-> > willing to test any patches that might be going.
-> 
-> 
-> I recall experiencing something similar when I was on 2.6.27.x,
-> but I thought it had gone away in 2.6.29.x; perhaps I forgot to 
-> actually remove my workaround though...  
-> 
-> In case you aren't aware, the workaround (assuming your system
-> uses the pm-utils stuff to suspend) is to do this:
-> 
-> Edit (or create) /etc/pm/defaults to add the following line:
->   SUSPEND_MODULES="r8169"
-> 
-> That will cause the r8169 module to be unloaded on sleep and
-> reloaded on wakeup.  That being said, I agree that the *real*
-> fix is in the kernel driver.
-> 
-> -RW
+This patch conflicts with
+seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch,
+below.
+
+I reworked your patch so that it removes the effects of
+seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch
+and so that your patch is staged after
+seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch.
+
+Your patch appears to fix the same thing as
+seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch,
+so I _could_ have just dropped
+seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch. 
+However it's unclear to me at thsi stage that your patch will be
+merged.
+
+
+I have a mountain of VFS patches piled up here:
+
+vfs-fix-vfs_rename_dir-for-fs_rename_does_d_move-filesystems.patch
+raw-fix-rawctl-compat-ioctls-breakage-on-amd64-and-itanic.patch
+vfs-improve-comment-describing-fget_light.patch
+libfs-make-simple_read_from_buffer-conventional.patch
+fs-inodec-add-dev-id-and-inode-number-for-debugging-in-init_special_inode.patch
+vfs-split-generic_forget_inode-so-that-hugetlbfs-does-not-have-to-copy-it.patch
+fs-fix-overflow-in-sys_mount-for-in-kernel-calls.patch
+vfs-optimization-for-touch_atime.patch
+vfs-optimize-touch_time-too.patch
+vfs-optimize-touch_time-too-fix.patch
+ecryptfs-another-lockdep-issue.patch
+vfs-explicitly-cast-s_maxbytes-in-fiemap_check_ranges.patch
+vfs-change-sb-s_maxbytes-to-a-loff_t.patch
+vfs-remove-redundant-position-check-in-do_sendfile.patch
+#vfs-fix-d_path-for-unreachable-paths.patch: Valdis.Kletnieks@vt.edu issues
+fs-remove-unneeded-dcache_unhashed-tricks.patch
+fs-improve-remountro-vs-buffercache-coherency.patch
+fs-improve-remountro-vs-buffercache-coherency-fix.patch
+#
+#
+#fs-new-truncate-helpers.patch and friends: TBU?
+fs-new-truncate-helpers.patch
+fs-use-new-truncate-helpers.patch
+fs-introduce-new-truncate-sequence.patch
+fs-convert-simple-fs-to-new-truncate.patch
+tmpfs-convert-to-use-the-new-truncate-convention.patch
+#ext2-convert-to-use-the-new-truncate-convention.patch: Jan wanted update. Nick agreed
+ext2-convert-to-use-the-new-truncate-convention.patch
+ext2-convert-to-use-the-new-truncate-convention-fix.patch
+fat-convert-to-use-the-new-truncate-convention.patch
+btrfs-convert-to-use-the-new-truncate-convention.patch
+jfs-convert-to-use-the-new-truncate-convention.patch
+udf-convert-to-use-the-new-truncate-convention.patch
+minix-convert-to-use-the-new-truncate-convention.patch
+#
+seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch
+vfs-seq_file-add-helpers-for-data-filling.patch
+vfs-revert-proc-mounts-to-old-behavior-for-unreachable-mountpoints.patch
+
+
+We're going to have to work out what to do if viro remains disappeared. I
+guess I'll just send them all out to you guys to review during the merge
+window and we'll go through them.
+
+
+
+
+
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+
+seq_path_root() is returning a return value of successful __d_path()
+instead of returning a negative value when mangle_path() failed.
+
+This is not a bug so far because nobody is using return value of
+seq_path_root().
+
+Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ fs/seq_file.c |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff -puN fs/seq_file.c~seq_file-return-a-negative-error-code-when-seq_path_root-fails fs/seq_file.c
+--- a/fs/seq_file.c~seq_file-return-a-negative-error-code-when-seq_path_root-fails
++++ a/fs/seq_file.c
+@@ -470,6 +470,7 @@ int seq_path_root(struct seq_file *m, st
+ 				m->count = s - m->buf;
+ 				return 0;
+ 			}
++			err = -ENAMETOOLONG;
+ 		}
+ 	}
+ 	m->count = m->size;
+_
+
