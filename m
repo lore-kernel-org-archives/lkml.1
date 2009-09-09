@@ -1,67 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZIIXEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZIIXG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbZIIXEO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 19:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZIIXEO
+	id S1754515AbZIIXG1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 19:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752645AbZIIXG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 19:04:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:8968 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752354AbZIIXEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 19:04:13 -0400
-Date: Thu, 10 Sep 2009 00:58:34 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       dhowells@redhat.com, roland@redhat.com, jmorris@namei.org,
-       tom.horsley@att.net, linux-kernel@vger.kernel.org, stable@kernel.org
-Subject: Re: [PATCH v3] exec: do not sleep in TASK_TRACED under
-	->cred_guard_mutex
-Message-ID: <20090909225834.GA14785@redhat.com>
-References: <20090904133956.GA9232@redhat.com> <20090903160514.GA23646@redhat.com> <20090903200924.E46DF47C94@magilla.sf.frob.com> <32710.1252075656@redhat.com> <20090904154947.GA17048@redhat.com> <20090904172648.GA25841@redhat.com> <20090904124230.5b7258c9.akpm@linux-foundation.org> <20090904213337.GA5021@redhat.com> <20090909175749.541b6aa9@dhcp-100-2-144.bos.redhat.com>
+	Wed, 9 Sep 2009 19:06:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39039 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752634AbZIIXGZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 19:06:25 -0400
+Date: Wed, 9 Sep 2009 16:06:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.31
+Message-ID: <alpine.LFD.2.01.0909091529530.7458@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909175749.541b6aa9@dhcp-100-2-144.bos.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09, Chuck Ebbert wrote:
->
-> On Fri, 4 Sep 2009 23:33:37 +0200
-> Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > On 09/04, Andrew Morton wrote:
-> > >
-> > > On Fri, 4 Sep 2009 19:26:48 +0200
-> > > Oleg Nesterov <oleg@redhat.com> wrote:
-> > >
-> > > > Tom Horsley reports that his debugger hangs when it tries to read
-> > > > /proc/pid_of_tracee/maps, this happens since
-> > > >
-> > > > 	"mm_for_maps: take ->cred_guard_mutex to fix the race with exec"
-> > > > 	04b836cbf19e885f8366bccb2e4b0474346c02d
-> > > >
-> > > > commit in 2.6.31.
->
-> >
-> > > I see a Cc:stable in the mail headers, but not in the changelog.  I
-> > > don't think the patch is applicable to -stable unless we miss 2.6.31.
-> >
-> > -stable has the same problems but I agree, it can live without this fix.
-> >
->
-> That patch was backported in 2.6.30.5 -- are you sure -stable doesn't need
-> this fix?
 
-No, I am not sure, that is why I cc'ed -stable.
+Ok, there's just a few final commits since -rc9 to fix a couple of last 
+regressions and problems, and now the final 2.6.31 is out there. The small 
+diffstat and shortlog is below, the full log and diff from 2.6.30 are 
+being uploaded to kernel.org (and then mirrored out) as I write this.
 
-But otoh the problem is minor, both tracer and tracee can be killed.
+In general, the full set of 2.6.30->31 changes are too numerous to list, 
+but as usual, you'll find some high-level overviews on kernelnewbies.org. 
 
-I dunno. I don't know if gdb or any other "important" application
-read /proc/pid/maps after PTRACE_EVENT_EXEC...
+One of the more painful changes has been the new cleaned-up fsnotify 
+backend that takes care of both inotify and dnotify (and shrinks the inode 
+while doing so), but its teething problems have hopefully been sorted out.
 
-Oleg.
+There's also been lots of work on KMS - both lots of updates on the intel 
+side (displayport support, next-gen IGD etc), and obviously the whole new 
+(and still experimental) radeon KMS code.
 
+There's also a fair chunk of new debugging/peformance counter stuff: 
+memory leak detection ("kmemleak"), memory usage checking ("kmemcheck") 
+and performance counters ("perf_counter"). Those new debugging features 
+are not likely usable under any real load, but are good for finding kernel 
+bugs at a huge performance cost.
+
+The performance counters are a nice and easy-to-use alternative to things 
+like oprofile, allowing you easy access to some pretty powerful profiling 
+of hardware (and sw) events.
+
+What else? Lots and lots of driver work. Over 70% of all of the 2.6.30 to 
+2.6.31 patch is under drivers/, and there's another 6%+ in firmware/ and 
+sound/. That's not entirely unusual, but it does seem to be growing. My 
+rough rule of thumb used to be "50% drivers, 50% everything else", but 
+that's clearly not true any more (and hasn't been for a while - we've been 
+60%+ since after 2.6.27 - I think the whole 'staging' thing is what moved 
+things up by several percentage points).
+
+If you ignore drivers/ (and firmware/ and sound/) about half the remaining 
+changes are to arch/ code (with ARM leading the way with its insane number 
+of platforms, but mips, powerpc, sh, and x86 are up there too), and the 
+rest being filesystem updates (VFS layer: mostly that fsnotify thing, but 
+also: btrfs, cifs, ext3, fuse, gfs2, nfs, nilfs, xfs) and with a spinkling 
+of Documentation, kernel and perf-tools updates.
+
+And as usual, this obviously means that the merge window for 2.6.32 is 
+open. But give me a day or so before bombarding me with merge requests: I 
+like to encourage even developers to first give the plain new release a 
+go, and not immediately start the crazy flood of patches.
+
+			Linus
+
+---
+ Makefile                             |    2 +-
+ drivers/block/aoe/aoe.h              |    2 +-
+ drivers/block/aoe/aoeblk.c           |   12 +++++--
+ drivers/block/aoe/aoedev.c           |    1 +
+ drivers/char/agp/intel-agp.c         |    8 ++++-
+ drivers/gpu/drm/i915/i915_gem.c      |   19 +++++-----
+ drivers/gpu/drm/i915/intel_display.c |   16 ++++++++-
+ drivers/gpu/drm/i915/intel_dp.c      |    2 +-
+ drivers/gpu/drm/i915/intel_drv.h     |    1 +
+ drivers/gpu/drm/i915/intel_tv.c      |    1 +
+ drivers/gpu/drm/radeon/r300.c        |    2 +-
+ drivers/gpu/drm/radeon/radeon_asic.h |    6 ++--
+ drivers/gpu/drm/radeon/rs600.c       |   65 ++++++++++++++++++++++++++++++++++
+ drivers/gpu/drm/radeon/rs690.c       |   64 ---------------------------------
+ drivers/gpu/drm/radeon/rv515.c       |    2 +-
+ drivers/ide/ide-cs.c                 |    1 +
+ drivers/net/gianfar.c                |    2 +-
+ fs/namei.c                           |   22 ++++++++----
+ security/integrity/ima/ima_main.c    |    6 +++-
+ 19 files changed, 139 insertions(+), 95 deletions(-)
+
+Chris Wilson (1):
+      drm/i915: Unref old_obj on get_fence_reg() error path
+
+Dave Airlie (1):
+      drm/radeon/kms: add LTE/GTE discard + rv515 two sided stencil register.
+
+David S. Miller (1):
+      gianfar: Fix build.
+
+Ed L. Cashin (1):
+      aoe: allocate unused request_queue for sysfs
+
+Jesse Barnes (1):
+      drm/i915: increase default latency constant (v2 w/comment)
+
+Linus Torvalds (2):
+      i915: disable interrupts before tearing down GEM state
+      Linux 2.6.31
+
+Mimi Zohar (1):
+      IMA: update ima_counts_put
+
+Wolfram Sang (1):
+      pcmcia: add CNF-CDROM-ID for ide
+
+Zhenyu Wang (2):
+      agp/intel: support for new chip variant of IGDNG mobile
+      drm/i915: fix mask bits setting
