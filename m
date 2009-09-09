@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZIICK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbZIICAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZIICK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751304AbZIICK2
+	id S1752653AbZIICAw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZIICAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:10:28 -0400
-Received: from bld-mail16.adl2.internode.on.net ([150.101.137.101]:51440 "EHLO
-	mail.internode.on.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751192AbZIICK2 (ORCPT
+	Tue, 8 Sep 2009 22:00:51 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:35163 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbZIICAv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:10:28 -0400
-X-Greylist: delayed 916 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 Sep 2009 22:10:27 EDT
-Date: Wed, 9 Sep 2009 11:53:59 +1000
-From: Dave Chinner <david@fromorbit.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Chris Mason <chris.mason@oracle.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, hch@infradead.org,
-       akpm@linux-foundation.org, jack@suse.cz,
-       "Theodore Ts'o" <tytso@mit.edu>, Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090909015359.GC7146@discord.disaster>
-References: <1252401791-22463-1-git-send-email-jens.axboe@oracle.com> <1252401791-22463-9-git-send-email-jens.axboe@oracle.com> <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252428983.7746.140.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 8 Sep 2009 22:00:51 -0400
+Subject: Re: [PATCH 2/2] tracing/filters: use strcmp() instead of strncmp()
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AA70315.7010600@cn.fujitsu.com>
+References: <4A1F9FAC.6020506@cn.fujitsu.com>
+	 <c62985530905290651id2435bfx7f57ec561fe366e3@mail.gmail.com>
+	 <4A20F71F.6030703@cn.fujitsu.com> <20090530135236.GB5969@nowhere>
+	 <4A223F7E.3090203@cn.fujitsu.com> <20090531132853.GA6013@nowhere>
+	 <4A236B0B.3000604@cn.fujitsu.com> <20090601130928.GA6000@nowhere>
+	 <4A247875.9010507@cn.fujitsu.com>
+	 <1252379033.21261.2060.camel@gandalf.stny.rr.com>
+	 <4AA70315.7010600@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 08 Sep 2009 22:00:52 -0400
+Message-Id: <1252461652.11070.4.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 06:56:23PM +0200, Peter Zijlstra wrote:
-> On Tue, 2009-09-08 at 12:29 -0400, Chris Mason wrote:
-> > Either way, if pdflush or the bdi thread or whoever ends up switching to
-> > another file during a big streaming write, the end result is that we
-> > fragment.  We may fragment the file (ext4) or we may fragment the
-> > writeback (xfs), but the end result isn't good.
+On Wed, 2009-09-09 at 09:21 +0800, Li Zefan wrote:
+> > Not sure this is an issue. I may be a little out of context here, but
+> > isn't addr coming from the event? The event is made in the kernel and
+> > should be fine?
+> > 
+> > What ever the case, the bug you originally mentioned is still there (I
+> > just tried it out on the latest tip). That is, name == et will match
+> > "eth0".
+> > 
 > 
-> OK, so what we want is for a way to re-enter the whole
-> writeback_inodes() path onto the same file, right?
+> Strange. I fixed it with this commit:
+> 
+> ========
+> commit 7d536cb3fb9993bdcd5a2fbaa6b0670ded4e101c
+> Author: Li Zefan <lizf@cn.fujitsu.com>
+> Date:   Thu Jul 16 10:54:02 2009 +0800
+> 
+>     tracing/events: record the size of dynamic arrays
 
-No, that would take use back to the Bad Old Days where one large
-file write can starve out the other 10,000 small files that need to
-be written. The old writeback code used to end up in this way
-because it didn't rotate large files to the back of the dirty inode
-queue once wbc->nr_to_write was exhausted. This could cause files
-not to be written back for tens of minutes....
+My fault, I booted into the wrong (older) kernel when I did my test.
 
-Cheers,
+Sorry for the noise.
 
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+-- Steve
+
+
