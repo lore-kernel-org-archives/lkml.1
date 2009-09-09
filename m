@@ -1,111 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbZIIUKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754082AbZIIUMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbZIIUKq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 16:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZIIUKp
+	id S1754082AbZIIUMO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 16:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753850AbZIIUMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 16:10:45 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:4275 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752809AbZIIUKo (ORCPT
+	Wed, 9 Sep 2009 16:12:14 -0400
+Received: from mail-in-05.arcor-online.net ([151.189.21.45]:57981 "EHLO
+	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752612AbZIIUMN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 16:10:44 -0400
-Subject: [PATCH] mmap:  avoid unnecessary anon_vma lock acquisition in
- vma_adjust()
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, stable <stable@kernel.org>,
-       Eric Whitney <eric.whitney@hp.com>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Wed, 09 Sep 2009 16:10:46 -0400
-Message-Id: <1252527046.4102.162.camel@useless.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 9 Sep 2009 16:12:13 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-06.arcor-online.net 4702B39A826
+Message-ID: <4AA80C1E.2080901@arcor.de>
+Date: Wed, 09 Sep 2009 23:12:14 +0300
+From: Nikos Chantziaras <realnc@arcor.de>
+Organization: Lucas Barks
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+References: <20090907173846.GB18599@kernel.dk> <20090907204458.GJ18599@kernel.dk> <20090908091304.GQ18599@kernel.dk> <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu>
+In-Reply-To: <20090909180404.GA11027@elte.hu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 09/09/2009 09:04 PM, Ingo Molnar wrote:
+> [...]
+> * Jens Axboe<jens.axboe@oracle.com>  wrote:
+>
+>> On Wed, Sep 09 2009, Jens Axboe wrote:
+>>  [...]
+>> BFS210 runs on the laptop (dual core intel core duo). With make -j4
+>> running, I clock the following latt -c8 'sleep 10' latencies:
+>>
+>> -rc9
+>>
+>>          Max                17895 usec
+>>          Avg                 8028 usec
+>>          Stdev               5948 usec
+>>          Stdev mean           405 usec
+>>
+>>          Max                17896 usec
+>>          Avg                 4951 usec
+>>          Stdev               6278 usec
+>>          Stdev mean           427 usec
+>>
+>>          Max                17885 usec
+>>          Avg                 5526 usec
+>>          Stdev               6819 usec
+>>          Stdev mean           464 usec
+>>
+>> -rc9 + mike
+>>
+>>          Max                 6061 usec
+>>          Avg                 3797 usec
+>>          Stdev               1726 usec
+>>          Stdev mean           117 usec
+>>
+>>          Max                 5122 usec
+>>          Avg                 3958 usec
+>>          Stdev               1697 usec
+>>          Stdev mean           115 usec
+>>
+>>          Max                 6691 usec
+>>          Avg                 2130 usec
+>>          Stdev               2165 usec
+>>          Stdev mean           147 usec
+>
+> At least in my tests these latencies were mainly due to a bug in
+> latt.c - i've attached the fixed version.
+>
+> The other reason was wakeup batching. If you do this:
+>
+>     echo 0>  /proc/sys/kernel/sched_wakeup_granularity_ns
+>
+> ... then you can switch on insta-wakeups on -tip too.
+>
+> With a dual-core box and a make -j4 background job running, on
+> latest -tip i get the following latencies:
+>
+>   $ ./latt -c8 sleep 30
+>   Entries: 656 (clients=8)
+>
+>   Averages:
+>   ------------------------------
+>   	Max	      158 usec
+> 	Avg	       12 usec
+> 	Stdev	       10 usec
 
-Against:  2.6.31-rc6
-
-We noticed very erratic behavior [throughput] with the AIM7 shared
-workload running on recent distro [SLES11] and mainline kernels on
-an 8-socket, 32-core, 256GB x86_64 platform.  On the SLES11 kernel
-[2.6.27.19+] with Barcelona processors, as we increased the load
-[10s of thousands of tasks], the throughput would vary between two
-"plateaus"--one at ~65K jobs per minute and one at ~130K jpm.  The
-simple patch below causes the results to smooth out at the ~130k
-plateau.
-
-But wait, there's more:
-
-We do not see this behavior on smaller platforms--e.g., 4 socket/8
-core.  This could be the result of the larger number of cpus on
-the larger platform--a scalability issue--or it could be the result
-of the larger number of interconnect "hops" between some nodes in
-this platform and how the tasks for a given load end up distributed
-over the nodes' cpus and memories--a stochastic NUMA effect.
-
-The variability in the results are less pronounced [on the same
-platform] with Shanghai processors and with mainline kernels.  With
-31-rc6 on Shanghai processors and 288 file systems on 288 fibre
-attached storage volumes, the curves [jpm vs load] are both quite
-flat with the patched kernel consistently producing ~3.9% better
-throughput [~80K jpm vs ~77K jpm] than the unpatched kernel.
-
-Profiling indicated that the "slow" runs were incurring high[er]
-contention on an anon_vma lock in vma_adjust(), apparently called
-from the sbrk() system call.
-
-The patch:
-
-A comment in mm/mmap.c:vma_adjust() suggests that we don't really
-need the anon_vma lock when we're only adjusting the end of a vma,
-as is the case for brk().  The comment questions whether it's worth
-while to optimize for this case.  Apparently, on the newer, larger
-x86_64 platforms, with interesting NUMA topologies, it is worth
-while--especially considering that the patch [if correct!] is 
-quite simple.
-
-We can detect this condition--no overlap with next vma--by noting
-a NULL "importer".  The anon_vma pointer will also be NULL in this
-case, so simply avoid loading vma->anon_vma to avoid the lock.
-However, we apparently DO need to take the anon_vma lock when
-we're inserting a vma ['insert' non-NULL] even when we have no
-overlap [NULL "importer"], so we need to check for 'insert', as well.
-
-I have tested with and without the 'file || ' test in the patch.
-This does not seem to matter for stability nor performance.  I
-left this check/filter in, so we only optimize away the
-anon_vma lock acquisition when adjusting the end of a non-
-importing, non-inserting, anon vma.
-
-If accepted, this patch may benefit the stable tree as well.
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-
- mm/mmap.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.31-rc6/mm/mmap.c
-===================================================================
---- linux-2.6.31-rc6.orig/mm/mmap.c	2009-08-19 14:34:13.000000000 -0400
-+++ linux-2.6.31-rc6/mm/mmap.c	2009-08-19 14:53:24.000000000 -0400
-@@ -573,9 +573,9 @@ again:			remove_next = 1 + (end > next->
- 
- 	/*
- 	 * When changing only vma->vm_end, we don't really need
--	 * anon_vma lock: but is that case worth optimizing out?
-+	 * anon_vma lock.
- 	 */
--	if (vma->anon_vma)
-+	if ((file || insert || importer) && vma->anon_vma)
- 		anon_vma = vma->anon_vma;
- 	if (anon_vma) {
- 		spin_lock(&anon_vma->lock);
+With your version of latt.c, I get these results with 2.6-tip vs 
+2.6.31-rc9-bfs:
 
 
+(mainline)
+Averages:
+------------------------------
+         Max            50 usec
+         Avg            12 usec
+         Stdev           3 usec
+
+
+(BFS)
+Averages:
+------------------------------
+         Max           474 usec
+         Avg            11 usec
+         Stdev          16 usec
+
+
+However, the interactivity problems still remain.  Does that mean it's 
+not a latency issue?
