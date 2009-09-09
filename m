@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZIIDsB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752907AbZIIDt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752934AbZIIDsB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 23:48:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZIIDsA
+	id S1752907AbZIIDt0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 23:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZIIDtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 23:48:00 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34080 "EHLO smtps.tip.net.au"
+	Tue, 8 Sep 2009 23:49:25 -0400
+Received: from mail.perches.com ([173.55.12.10]:1061 "EHLO mail.perches.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752812AbZIIDr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 23:47:59 -0400
-Date: Wed, 9 Sep 2009 13:47:52 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Siarhei Liakh <sliakh.lkml@gmail.com>, Xuxian Jiang <jiang@cs.ncsu.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>
-Subject: linux-next: rr tree build failure
-Message-Id: <20090909134752.f5b8c2e7.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	id S1752198AbZIIDtZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 23:49:25 -0400
+Subject: Re: [PATCH v2 2/5] Use new __init_task_data macro in arch
+ init_task.c files.
+From: Joe Perches <joe@perches.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Tim Abbott <tabbott@ksplice.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <1252467842.14793.66.camel@desktop>
+References: <1252464546-26394-1-git-send-email-tabbott@ksplice.com>
+	 <1252464546-26394-3-git-send-email-tabbott@ksplice.com>
+	 <1252465099.14793.49.camel@desktop>
+	 <1252465417.28130.3.camel@Joe-Laptop.home>
+	 <1252465625.14793.52.camel@desktop>
+	 <1252465802.28130.9.camel@Joe-Laptop.home>
+	 <1252466482.14793.60.camel@desktop>
+	 <1252467119.28130.21.camel@Joe-Laptop.home>
+	 <1252467842.14793.66.camel@desktop>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 08 Sep 2009 20:49:27 -0700
+Message-Id: <1252468167.28130.23.camel@Joe-Laptop.home>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9"
+X-Mailer: Evolution 2.27.92 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Tue, 2009-09-08 at 20:44 -0700, Daniel Walker wrote:
+> It does little good to argue with me..
 
-Hi Rusty,
+We agree.  That's great.  cheers, Joe
 
-Today's linux-next build (powerpc ppc64_defconfig) failed like this:
 
-kernel/module.c: In function 'set_section_ro_nx':
-kernel/module.c:1549: error: implicit declaration of function 'set_memory_r=
-o'
-kernel/module.c:1560: error: implicit declaration of function 'set_memory_n=
-x'
-kernel/module.c: In function 'unset_section_ro_nx':
-kernel/module.c:1575: error: implicit declaration of function 'set_memory_r=
-w'
 
-Caused by commit 25306e21864c2a220d6fa2e0632425028aa9626c
-("module:ro-nx-protection") which uses these interfaces that are only
-defined on x86 ...
-
-I have used the version of the rr tree from next-20090908 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqnJWgACgkQjjKRsyhoI8xXbACgq+Bc+RmETT3Uq4IoAtIOuRig
-XqwAnjUO3zqhuK7pBh8LFfL3qnsuTiq/
-=uYv4
------END PGP SIGNATURE-----
-
---Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9--
