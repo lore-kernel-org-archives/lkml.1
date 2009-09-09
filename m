@@ -1,72 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752610AbZIICE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZIICGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752610AbZIICE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751462AbZIICE0
+	id S1752786AbZIICGT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZIICGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:04:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:35903 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbZIICEZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:04:25 -0400
-Subject: Re: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on
- oops
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AA7092C.4070706@cn.fujitsu.com>
-References: <4AA70198.9070500@cn.fujitsu.com>
-	 <1252460079.11070.1.camel@gandalf.stny.rr.com>
-	 <4AA706BE.1090204@cn.fujitsu.com>
-	 <1252460523.11070.3.camel@gandalf.stny.rr.com>
-	 <4AA7092C.4070706@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 08 Sep 2009 22:04:27 -0400
-Message-Id: <1252461867.11070.6.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 8 Sep 2009 22:06:18 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:54445 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751290AbZIICGR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 22:06:17 -0400
+Message-ID: <4AA70D4F.3040503@cn.fujitsu.com>
+Date: Wed, 09 Sep 2009 10:05:03 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
+References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com> <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com> <1251129384.22398.7166.camel@nimitz> <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com> <1251150156.22398.8289.camel@nimitz> <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com> <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 09:47 +0800, Li Zefan wrote:
-> Steven Rostedt wrote:
-> > On Wed, 2009-09-09 at 09:37 +0800, Li Zefan wrote:
-> >> Steven Rostedt wrote:
-> >>> On Wed, 2009-09-09 at 09:15 +0800, Li Zefan wrote:
-> >>>> Currently we always disable tracing on oops, and this patch
-> >>>> adds a sysctl so one can choose to enable it.
-> >>> Hmm, we already have a way to enable it.
-> >>>
-> >>> # echo 1 > /debug/tracing/tracing_on
-> >>>
-> >> What I want is a way to not disable it when an oops happened. :)
-> >>
-> > 
-> > Ah, I misunderstood. May I ask a silly question?
-> > 
-> > Why?
-> > 
-> 
-> Otherwise we won't get trace output from trae_crash_kexec if
-> crash_kexec() is not called by panic(). For example:
-> 
->   oops_begin()
-> ->trace_off()
-> ->panic_on_oops
-> ->kexec_should_crash()
-> ->crash_kexec()
+> I'm struggling to find other examples.  Dave, do you know of any 
+> subsystems in the kernel that can readily be converted to using flex 
+> array?
 
-OK, but I'm not exactly sure what you final goal is here. To have a
-something to search for in the ring buffer after the crash? Maybe
-instead we can add a "trace_oops" event? Just put it before the
-tracing_off call.
-
--- Steve
-
+Actually I'm planing to try to convert to use flex array in
+kernel/trace/ftrace.c, and it needs some change in flex array,
+and I'll have to check if it will have a performance effect
+or not.
 
