@@ -1,112 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZIITDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753453AbZIITEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZIITDN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 15:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZIITDM
+	id S1753453AbZIITEX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 15:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZIITEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 15:03:12 -0400
-Received: from ns1.primeinteractive.net ([195.95.205.253]:59364 "EHLO
-	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752764AbZIITDL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 15:03:11 -0400
-Message-ID: <4AA7FBD7.9080406@primeinteractive.net>
-Date: Wed, 09 Sep 2009 21:02:47 +0200
-From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
+	Wed, 9 Sep 2009 15:04:22 -0400
+Received: from ns1.coraid.com ([12.51.113.4]:49944 "EHLO coraid.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752923AbZIITEW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 15:04:22 -0400
+From: Ed Cashin <ecashin@coraid.com>
+X-Mailer: nedmail
+Date: Wed, 9 Sep 2009 15:03:16 -0400
+To: ecashin@coraid.com, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       apw@canonical.com, bonbons@linux-vserver.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
+Message-ID: <5fb8536c1ae8ccd0a333b6ffb6a209ff@coraid.com>
+In-Reply-To: <61768ed9922a0f0bb1af3e1fe14bde00@coraid.com>
+References: <200909021955.n82JtkrI032267@imap1.linux-foundation.org>
+	<20090903063539.GH12579@kernel.dk>
+	<2339aa04a4e8fb440a52624273728352@coraid.com>
+	<20090904183525.GB18599@kernel.dk>
+	<f48e25c99e41e375f2ddd85989cd39e1@coraid.com>
+	<20090905051735.GH18599@kernel.dk>
+	<366469f19c41e0150028b886f6859019@coraid.com>
+	<20090908193540.GB18599@kernel.dk>
+	<60772f633c524ba873f569966fccd6ce@coraid.com>
+	<61768ed9922a0f0bb1af3e1fe14bde00@coraid.com>
 MIME-Version: 1.0
-To: Justin Maggard <jmaggard10@gmail.com>
-CC: Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org
-Subject: Re: ext4+quota+nfs issue
-References: <4AA5E5F3.30309@primeinteractive.net>	 <4AA72C14.1020005@primeinteractive.net>	 <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>	 <4AA7C38E.8020306@redhat.com> <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
-In-Reply-To: <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/9/2009 7:45 PM, Justin Maggard wrote:
-> On Wed, Sep 9, 2009 at 8:02 AM, Eric Sandeen<sandeen@redhat.com>  wrote:
->    
->>> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
->>>
->>>        
->>>> Hi,
->>>>
->>>> can somebody who is aware of ext4 and quota have a look on this one?
->>>>
->>>>          
->> This was also just reported at:
->>
->> https://bugzilla.redhat.com/show_bug.cgi?id=521914
->>
->> -Eric
->>
->>      
-> I've seen exactly the same thing myself as well, but on local I/O.
-> The only difference I was able to find between filesystems I saw this
-> on, versus filesystems that I didn't see this on, was how it was
-> created.  The filesystems without this issue were made using
-> mkfs.ext4, and the ones that _did_ have the issue were created with
-> mkfs.ext3, and then mounted -t ext4.  Pavol, can you check your
-> filesystem features from "dumpe2fs -h [your_device]"?
->
-> -Justin
-> --
->    
+aoe: end barrier bios with EOPNOTSUPP
 
-here is the dump....
+BugLink: http://bugzilla.kernel.org/show_bug.cgi?id=13942
 
-host_stor0 ~ # dumpe2fs -h /dev/sdb1
-dumpe2fs 1.41.9 (22-Aug-2009)
-Filesystem volume name: <none>
-Last mounted on: <not available>
-Filesystem UUID:          f8aef49b-1903-4e25-9a7b-a3f5557107fb
-Filesystem magic number:  0xEF53
-Filesystem revision #:    1 (dynamic)
-Filesystem features:      has_journal ext_attr resize_inode dir_index 
-filetype needs_recovery extent flex_bg sparse_super large_file huge_file 
-uninit_bg dir_nlink extra_isize
-Filesystem flags:         signed_directory_hash
-Default mount options:    (none)
-Filesystem state:         clean
-Errors behavior:          Continue
-Filesystem OS type:       Linux
-Inode count:              305176576
-Block count:              1220689911
-Reserved block count:     12206899
-Free blocks:              977820919
-Free inodes:              250981592
-First block:              0
-Block size:               4096
-Fragment size:            4096
-Reserved GDT blocks:      732
-Blocks per group:         32768
-Fragments per group:      32768
-Inodes per group:         8192
-Inode blocks per group:   512
-Flex block group size:    16
-Filesystem created:       Tue Jun 30 20:04:20 2009
-Last mount time:          Tue Aug 18 12:21:18 2009
-Last write time:          Tue Aug 18 12:21:18 2009
-Mount count:              10
-Maximum mount count:      -1
-Last checked:             Tue Jun 30 20:04:20 2009
-Check interval:           0 (<none>)
-Lifetime writes:          73 GB
-Reserved blocks uid:      0 (user root)
-Reserved blocks gid:      0 (group root)
-First inode:              11
-Inode size:               256
-Required extra isize:     28
-Desired extra isize:      28
-Journal inode:            8
-Default directory hash:   half_md4
-Directory Hash Seed:      317c2fc4-9c86-42ca-a3c3-0d6c632dcb46
-Journal backup:           inode blocks
-Journal size:             128M
+Bruno Premont noticed that aoe throws a BUG during umount of an XFS in
+2.6.31:
 
-P.
+[ 5259.349897] aoe: bi_io_vec is NULL
+[ 5259.349940] ------------[ cut here ]------------
+[ 5259.349958] kernel BUG at /usr/src/linux-2.6/drivers/block/aoe/aoeblk.c:177!
+[ 5259.349990] invalid opcode: 0000 [#1]
+
+The bio in question is a barrier.  Jens Axboe suggested that such bios
+need to be recognized and ended with -EOPNOTSUPP by any driver that
+provides its own ->make_request_fn handler and does not handle
+barriers.
+
+In testing the changes below eliminate the BUG.
+
+Signed-off-by: Ed L. Cashin <ecashin@coraid.com>
+---
+After this patch has been reviewed I plan to add this patch to
+the aoe quilt tree for linux-next.
+
+ drivers/block/aoe/aoeblk.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
+index 2307a27..22efb33 100644
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@ -172,6 +172,9 @@ aoeblk_make_request(struct request_queue *q, struct bio *bio)
+ 		BUG();
+ 		bio_endio(bio, -ENXIO);
+ 		return 0;
++	} else if (bio_barrier(bio)) {
++		bio_endio(bio, -EOPNOTSUPP);
++		return 0;
+ 	} else if (bio->bi_io_vec == NULL) {
+ 		printk(KERN_ERR "aoe: bi_io_vec is NULL\n");
+ 		BUG();
+-- 
+1.5.6.5
+
+
+-- 
+  Ed Cashin <ecashin@coraid.com>
+  http://noserose.net/e/
+  http://www.coraid.com/
