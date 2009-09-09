@@ -1,49 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbZIITsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZIIUFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbZIITsu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 15:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZIITsu
+	id S1753648AbZIIUFi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 16:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZIIUFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 15:48:50 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51283 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752660AbZIITst (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 15:48:49 -0400
-Date: Wed, 9 Sep 2009 21:48:52 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Theodore Tso <tytso@mit.edu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/core] sched: Turn off child_runs_first
-Message-ID: <20090909194849.GA499@atrey.karlin.mff.cuni.cz>
-References: <1252486344.28645.18.camel@marge.simson.net> <tip-2bba22c50b06abe9fd0d23933b1e64d35b419262@git.kernel.org> <20090909175724.GY22901@mit.edu> <20090909180856.GA7323@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909180856.GA7323@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 9 Sep 2009 16:05:37 -0400
+Received: from mga14.intel.com ([143.182.124.37]:25958 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752660AbZIIUFg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 16:05:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="185854547"
+Subject: Re: iwlagn: order 2 page allocation failures
+From: reinette chatre <reinette.chatre@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "Krauss, Assaf" <assaf.krauss@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Abbas, Mohamed" <mohamed.abbas@intel.com>
+In-Reply-To: <20090909165545.GK24614@csn.ul.ie>
+References: <200909060941.01810.elendil@planet.nl>
+	 <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie>
+	 <200909091759.33655.elendil@planet.nl>  <20090909165545.GK24614@csn.ul.ie>
+Content-Type: text/plain
+Date: Wed, 09 Sep 2009 13:05:38 -0700
+Message-Id: <1252526738.30150.91.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Mel and Frans, 
 
-> > > It hurts 'optimal' make -j<NR_CPUS> workloads as make jobs
-> > > get preempted by child tasks, reducing parallelism.
-> > 
-> > Wasn't one of the reasons why we historically did child_runs_first 
-> > was so that for fork/exit workloads, the child has a chance to 
-> > exec the new process?  If the parent runs first, then more pages 
-> > will probably need to be COW'ed.
-> 
-> That kind of workload should be using vfork() anyway, and be even 
-> faster because it can avoid the fork overhead, right?
+Thank you very much for digging into this.
 
-Well.. one should not have to update userspace to keep
-performance.... and vfork is extremely ugly interface.
+On Wed, 2009-09-09 at 09:55 -0700, Mel Gorman wrote:
+> Conceivably a better candidate for this problem is commit
+> 4752c93c30441f98f7ed723001b1a5e3e5619829 introduced in May 2009. If there
+> are less than RX_QUEUE_SIZE/2 left, it starts replenishing buffers. Mohamed,
+> is it absolutly necessary it use GFP_ATOMIC there? If an allocation fails,
+> does it always mean frames are dropped or could it just replenish what it
+> can and try again later printing a warning only if allocation failures are
+> resulting in packet loss?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I agree that this patch may be the reason we are seeing this issue. We
+would like to keep using GFP_ATOMIC here, but it is not necessary for an
+allocation failure to be so noisy since the function doing the
+allocation (iwl_rx_allocate) is always followed by a call to
+iwl_rx_queue_restock which will schedule a refill if the buffers are
+running low. We can thus use ___GFP_NOWARN for the allocations in
+iwl_rx_allocate and leave it to the restocking to find the needed memory
+when it tried its allocations using GFP_KERNEL.
+
+I do think it is useful to let user know about these allocation
+failures, even if it does not result in packet loss. Wrapping it in
+net_ratelimit() will help though.
+
+How about the patch below?
+
+diff --git a/drivers/net/wireless/iwlwifi/iwl-rx.c b/drivers/net/wireless/iwlwifi/iwl-rx.c
+index b90adcb..f0ee72e 100644
+--- a/drivers/net/wireless/iwlwifi/iwl-rx.c
++++ b/drivers/net/wireless/iwlwifi/iwl-rx.c
+@@ -252,10 +252,11 @@ void iwl_rx_allocate(struct iwl_priv *priv, gfp_t priority)
+ 
+ 		/* Alloc a new receive buffer */
+ 		skb = alloc_skb(priv->hw_params.rx_buf_size + 256,
+-						priority);
++				priority | __GFP_NOWARN);
+ 
+ 		if (!skb) {
+-			IWL_CRIT(priv, "Can not allocate SKB buffers\n");
++			if (net_ratelimit())
++				IWL_CRIT(priv, "Can not allocate SKB buffer.\n");
+ 			/* We don't reschedule replenish work here -- we will
+ 			 * call the restock method and if it still needs
+ 			 * more buffers it will schedule replenish */
+diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+index 0909668..5d9fb78 100644
+--- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
++++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
+@@ -1147,10 +1147,10 @@ static void iwl3945_rx_allocate(struct iwl_priv *priv, gfp_t priority)
+ 		spin_unlock_irqrestore(&rxq->lock, flags);
+ 
+ 		/* Alloc a new receive buffer */
+-		skb = alloc_skb(priv->hw_params.rx_buf_size, priority);
++		skb = alloc_skb(priv->hw_params.rx_buf_size, priority | __GFP_NOWARN);
+ 		if (!skb) {
+ 			if (net_ratelimit())
+-				IWL_CRIT(priv, ": Can not allocate SKB buffers\n");
++				IWL_CRIT(priv, "Can not allocate SKB buffer.\n");
+ 			/* We don't reschedule replenish work here -- we will
+ 			 * call the restock method and if it still needs
+ 			 * more buffers it will schedule replenish */
+
+
