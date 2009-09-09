@@ -1,63 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZIIRpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753533AbZIIRuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbZIIRpH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752569AbZIIRpG
+	id S1753533AbZIIRuJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752520AbZIIRuI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:45:06 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:62924 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752488AbZIIRpE (ORCPT
+	Wed, 9 Sep 2009 13:50:08 -0400
+Received: from liberdade.minaslivre.org ([72.232.18.203]:33170 "EHLO
+	liberdade.minaslivre.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752488AbZIIRuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:45:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=xdmGp+KKj9FWUCwCau4FveUl5jUk+nZOAu1a+GKs2SXQnS6lvkdgC3RsMDTj8mqL+b
-         TIwGAkwTypzZPHdTiX7mFTyb0Zxc9kNPkzwRfoDd1nk4UjCkDjPQZjKT6sIoROVAw/5h
-         4H3QvJLLXxF5PUCmHkHwhe2RIhzfOu4JkHAz8=
+	Wed, 9 Sep 2009 13:50:07 -0400
+Date: Wed, 9 Sep 2009 14:50:06 -0300
+From: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: ath5k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       lrodriguez@atheros.com, mickflemm@gmail.com, jirislaby@gmail.com,
+       linville@tuxdriver.com, johannes@sipsolutions.net
+Subject: Re: [PATCH] ath5k: do not free irq after resume when card has been
+	removed
+Message-ID: <20090909175006.GA7945@vespa.holoscopio.com>
+References: <1252457551-4909-1-git-send-email-cascardo@holoscopio.com> <20090909033237.GC13550@hash.localnet>
 MIME-Version: 1.0
-In-Reply-To: <4AA7C38E.8020306@redhat.com>
-References: <4AA5E5F3.30309@primeinteractive.net>
-	 <4AA72C14.1020005@primeinteractive.net>
-	 <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
-	 <4AA7C38E.8020306@redhat.com>
-Date: Wed, 9 Sep 2009 10:45:06 -0700
-Message-ID: <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
-Subject: Re: ext4+quota+nfs issue
-From: Justin Maggard <jmaggard10@gmail.com>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Jiri Kosina <jkosina@suse.cz>,
-       Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
-       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="FL5UXtIhxfXey3p5"
+Content-Disposition: inline
+In-Reply-To: <20090909033237.GC13550@hash.localnet>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 9, 2009 at 8:02 AM, Eric Sandeen<sandeen@redhat.com> wrote:
->> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
->>
->>> Hi,
->>>
->>> can somebody who is aware of ext4 and quota have a look on this one?
->>>
->
-> This was also just reported at:
->
-> https://bugzilla.redhat.com/show_bug.cgi?id=521914
->
-> -Eric
->
 
-I've seen exactly the same thing myself as well, but on local I/O.
-The only difference I was able to find between filesystems I saw this
-on, versus filesystems that I didn't see this on, was how it was
-created.  The filesystems without this issue were made using
-mkfs.ext4, and the ones that _did_ have the issue were created with
-mkfs.ext3, and then mounted -t ext4.  Pavol, can you check your
-filesystem features from "dumpe2fs -h [your_device]"?
+--FL5UXtIhxfXey3p5
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
--Justin
+On Tue, Sep 08, 2009 at 11:32:37PM -0400, Bob Copeland wrote:
+> On Tue, Sep 08, 2009 at 09:52:31PM -0300, Thadeu Lima de Souza Cascardo w=
+rote:
+> > ath5k will try to request irq when resuming and fails if the device
+> > (like a PCMCIA card) has been removed.
+>=20
+> That's not true, ath5k no longer requests an irq when resuming.
+>=20
+
+I've just saw there's a commit by you in the next tree that just removes
+the irq requesting and releasing in resume/suspend functions.
+
+> > This solves this issue defining a new flag for the status bitmap to
+> > indicate when irq has been successfully requested and does not try to
+> > release it if not.
+>=20
+> I'd rather not fix it with a status bit.  What kernel is this against?
+>=20
+
+This is against v2.6.31-rc9, so I get a warning with a version that's
+about to get stable. Sorry I am late in the release cycle.
+
+I've used a status bit because the drivers I took a look at did
+release/request irq in suspend/resume. I couldn't find a message about
+not doing it was the right thing which I thought I saw in the latest
+updates to v2.6.31-rcX. I guess it was something just like your commit
+which I did see some weeks ago.
+
+Since this is warning, is this worth backporting to rc?
+
+> --=20
+> Bob Copeland %% www.bobcopeland.com
+>=20
+
+Regards,
+Cascardo.
+
+--FL5UXtIhxfXey3p5
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqn6s4ACgkQyTpryRcqtS3r7ACggq2iFrVoYpQdP2BEPEYEyML/
+gxoAnj5GftdMAESCK2EoNVe5a4FmYxYE
+=wJs1
+-----END PGP SIGNATURE-----
+
+--FL5UXtIhxfXey3p5--
