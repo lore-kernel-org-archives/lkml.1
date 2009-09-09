@@ -1,106 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZIISqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753792AbZIISwX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753721AbZIISqH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZIISqG
+	id S1753792AbZIISwX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:52:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752617AbZIISwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:46:06 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:40394 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753105AbZIISqF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:46:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=ir+B5p8c8agRFOcprUiLwnacfG+LtT60SaYBXG6BChGPrlhQBesYNyO3o9cdPFR1va
-         jjAdCob0+26TkVXG9sEl7yaqm7+BMruPiO1AIk07KeTRAo0VvzDlcU6gfGOBKzaVvr4l
-         x1EMiVizDXsTnn5D+SyJ8L3GpDYPdXO1T2v8E=
+	Wed, 9 Sep 2009 14:52:23 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54864 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752590AbZIISwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 14:52:21 -0400
+Message-ID: <4AA7F965.6020408@garzik.org>
+Date: Wed, 09 Sep 2009 14:52:21 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Date: Wed, 9 Sep 2009 20:46:07 +0200
-Message-ID: <c67e3dc60909091146j4aeaf422v4e0543eff87c7f9a@mail.gmail.com>
-Subject: TCP kernel tables overflowing after sustained 1000 new connections 
-	per second
-From: Paul Sheer <paulsheer@gmail.com>
-To: linux-kernel@vger.kernel.org, roque@di.fc.ul.pt
-Content-Type: text/plain; charset=ISO-8859-1
+To: tfjellstrom@shaw.ca
+CC: linux-kernel@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: 2.6.31-rc9 kernel BUG and mvsas
+References: <200909090414.41274.tfjellstrom@shaw.ca> <200909091030.13147.tfjellstrom@shaw.ca>
+In-Reply-To: <200909091030.13147.tfjellstrom@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am developing a high-performance application, and testing against Apache.
-It makes 1000 new connections to Apache per second.
+On 09/09/2009 12:30 PM, Thomas Fjellstrom wrote:
+> No errors on that disk. Other than the one above, and its more of a warning.
+> However, I just rebooted to add some extra drives, thinking everything was
+> working a little better now that I've updated to 2.6.31-rc9, I'm treated to
+> the following two messages right after boot (and a system lockup to boot):
+>
+> kernel: [  971.033138] ------------[ cut here ]------------
+> kernel: [  971.033211] WARNING: at drivers/ata/libata-core.c:4913
+> __ata_qc_complete+0x5a/0xe1 [libata]()
+> kernel: [  971.033217] Hardware name: GA-MA790FXT-UD5P
+> kernel: [  971.033221] Modules linked in: powernow_k8 cpufreq_conservative
+> cpufreq_stats cpufreq_userspace cpufreq_powersave kvm_amd kvm nfsd exportfs
+> nfs lockd fscache nfs_acl auth_rpcgss sunrpc bridge stp it87 hwmon_vid adt7473
+> firewire_sbp2 loop md_mod snd_hda_codec_realtek snd_hda_intel snd_hda_codec
+> snd_hwdep snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_midi snd_rawmidi
+> snd_seq_midi_event snd_seq snd_timer snd_seq_device snd amd64_edac_mod
+> edac_core i2c_piix4 soundcore snd_page_alloc i2c_core evdev wmi parport_pc
+> button parport processor ext3 jbd mbcache dm_mod sg sr_mod cdrom sd_mod
+> crc_t10dif usbhid ata_generic ide_pci_generic hid mvsas firewire_ohci libsas
+> firewire_core crc_itu_t scsi_transport_sas r8169 atiixp ide_core floppy ahci
+> mii ohci_hcd libata ehci_hcd scsi_mod thermal fan thermal_sys [last unloaded:
+> scsi_wait_scan]
+> kernel: [  971.033337] Pid: 0, comm: swapper Not tainted 2.6.31-rc9 #2
+> kernel: [  971.033342] Call Trace:
+> kernel: [  971.033346]<IRQ>   [<ffffffffa00562ca>] ?
+> __ata_qc_complete+0x5a/0xe1 [libata]
+> kernel: [  971.033434]  [<ffffffffa00562ca>] ? __ata_qc_complete+0x5a/0xe1
+> [libata]
+> kernel: [  971.033446]  [<ffffffff8104aca0>] ? warn_slowpath_common+0x77/0xa3
+> kernel: [  971.033455]  [<ffffffff81038d06>] ? enqueue_task+0x5c/0x65
+> kernel: [  971.033496]  [<ffffffffa00562ca>] ? __ata_qc_complete+0x5a/0xe1
+> [libata]
+> kernel: [  971.033519]  [<ffffffffa00f7b59>] ? sas_ata_task_done+0x178/0x210
+> [libsas]
+> kernel: [  971.033528]  [<ffffffff8115ead1>] ? blk_run_queue+0x21/0x35
+> kernel: [  971.033548]  [<ffffffffa010e2ce>] ? mvs_slot_complete+0x3df/0x41b
+> [mvsas]
+> kernel: [  971.033565]  [<ffffffffa010e39c>] ? mvs_int_rx+0x92/0x101 [mvsas]
+> kernel: [  971.033583]  [<ffffffffa01112ba>] ? mvs_int_full+0x25/0x88 [mvsas]
+> kernel: [  971.033600]  [<ffffffffa011134e>] ? mvs_64xx_isr+0x31/0x40 [mvsas]
+> kernel: [  971.033617]  [<ffffffffa010d0e5>] ? mvs_interrupt+0x61/0x78 [mvsas]
+> kernel: [  971.033625]  [<ffffffff8108aaac>] ? handle_IRQ_event+0x58/0x135
+> kernel: [  971.033633]  [<ffffffff8108c1a1>] ? handle_fasteoi_irq+0x7d/0xb5
+> kernel: [  971.033642]  [<ffffffff8101388d>] ? handle_irq+0x17/0x1d
 
-After 16 seconds the test grinds to a halt. A Linux kernel problem. There are
-several hurdles to overcome when trying to sustain such through-put. Some
-are configuration issues, others I believe are real problems with the kernel
-internals. I'll discuss these all below.
+That warning is triggered when an ata_queued_cmd is passed to completion 
+without the ATA_QCFLAG_ACTIVE flag being set (which indicates the qc was 
+started with some activity).
 
-Configuration:
-
-These are the relavent kernel configuration parameters:
-
- /proc/sys/net/ipv4/tcp_tw_recycle
- /proc/sys/net/ipv4/tcp_tw_reuse
- /proc/sys/net/ipv4/tcp_max_tw_buckets
- /proc/sys/net/ipv4/ip_local_port_range
- /proc/sys/net/ipv4/tcp_timestamps
- /proc/sys/net/ipv4/tcp_fin_timeout
- /proc/sys/net/ipv4/tcp_orphan_retries
- /proc/sys/net/ipv4/tcp_rfc1337
- /proc/sys/net/ipv4/tcp_max_orphans
- /proc/sys/net/ipv4/tcp_max_syn_backlog
- /proc/sys/net/ipv4/tcp_mem
-
-On a gigabit local LAN I can set the timeouts very low to encourage
-port reuse. A well known configuration issue with all OS's - just search
-for MyOS+TIMED_WAIT on google. No problems here.
+That possibly indicates the low-level driver (or libsas) was passing an 
+already-completed cmd to libata.
 
 
-The second problem is the ip_conntrack module.
+> The added hard drives are connected to a Supermicro AOC-SASLP-MV8, which is
+> based on a marvel MV64460/64461/64462 chipset, which uses the sata_mv driver.
 
-If you don't know that your distribution has enabled this module
-by default, it not easy to work out that it has internal tables
-that max out at 16384.  So this explains why my system
-stops accepting connections after exactly 16 seconds.
-If you stop the application, give it a few minutes, try again,
-then you can do another 16 seconds of flat out load for it
-grinds to a halt again. Doing an rm on the module ko and
-rebooting fixed *this* problem.
+Surely you mean 'mvsas' driver?
 
-The third problem seems to be connected to /proc/net/tcp6
-
-look at the output of the script
-
-while true ; do echo "`date`: `cat /proc/net/tcp6 | wc -l`  vs  `cat
-/proc/net/tcp | wc -l`" ; sleep 1 ; done
-
-while I run my load test:
+	Jeff
 
 
- Wed Sep  9 20:39:26 SAST 2009: 5  vs  20
- Wed Sep  9 20:39:27 SAST 2009: 5  vs  20
- Wed Sep  9 20:39:28 SAST 2009: 5  vs  20
- Wed Sep  9 20:39:29 SAST 2009: 5  vs  20
- Wed Sep  9 20:39:31 SAST 2009: 1233  vs  20
- Wed Sep  9 20:39:32 SAST 2009: 2640  vs  21
- Wed Sep  9 20:39:33 SAST 2009: 4190  vs  20
- Wed Sep  9 20:39:34 SAST 2009: 5813  vs  20
- Wed Sep  9 20:39:35 SAST 2009: 7527  vs  20
- Wed Sep  9 20:39:37 SAST 2009: 9568  vs  44
- Wed Sep  9 20:39:38 SAST 2009: 11819  vs  21
- Wed Sep  9 20:39:40 SAST 2009: 14510  vs  21
- Wed Sep  9 20:39:42 SAST 2009: 16971  vs  20
- Wed Sep  9 20:39:44 SAST 2009: 16971  vs  20
- Wed Sep  9 20:39:46 SAST 2009: 17013  vs  20
- Wed Sep  9 20:39:48 SAST 2009: 17013  vs  20
- Wed Sep  9 20:39:50 SAST 2009: 17013  vs  20
 
-So it is clear "something" is filling up in tcp_ipv6.c
-
-any ideas Pedro?
-anyone?
-
-Many thanks.
-
--paul
