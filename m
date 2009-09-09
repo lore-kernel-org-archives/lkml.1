@@ -1,54 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753499AbZIIRTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZIIRUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753499AbZIIRTP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752373AbZIIRTO
+	id S1753839AbZIIRUB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZIIRUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:19:14 -0400
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:63038 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752012AbZIIRTO (ORCPT
+	Wed, 9 Sep 2009 13:20:00 -0400
+Received: from ns1.primeinteractive.net ([195.95.205.253]:55587 "EHLO
+	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbZIIRT6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:19:14 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: iwlagn: order 2 page allocation failures
-Date: Wed, 9 Sep 2009 19:19:12 +0200
-User-Agent: KMail/1.9.9
-Cc: Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
-       Assaf Krauss <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Mohamed Abbas <mohamed.abbas@intel.com>
-References: <200909060941.01810.elendil@planet.nl> <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie>
-In-Reply-To: <20090909165545.GK24614@csn.ul.ie>
+	Wed, 9 Sep 2009 13:19:58 -0400
+Message-ID: <4AA7E3A6.8050404@primeinteractive.net>
+Date: Wed, 09 Sep 2009 19:19:34 +0200
+From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Jan Kara <jack@suse.cz>
+CC: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext4+quota+nfs issue
+References: <4AA5E5F3.30309@primeinteractive.net> <4AA72C14.1020005@primeinteractive.net> <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz> <20090909144622.GB7949@duck.suse.cz>
+In-Reply-To: <20090909144622.GB7949@duck.suse.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909091919.16461.elendil@planet.nl>
-X-OriginalArrivalTime: 09 Sep 2009 17:19:17.0032 (UTC) FILETIME=[A9067A80:01CA3171]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 September 2009, you wrote:
-> The problem with this theory is that the patches have been in since Nov
-> 2008 but reports are only showing up now.  Frans, how sure are you that
-> this is a recent problem? Is it readily reproducible?
+On 9/9/2009 4:46 PM, Jan Kara wrote:
+> On Wed 09-09-09 11:42:03, Jiri Kosina wrote:
+>    
+>> [ adding relevant CCs ]
+>>      
+>    Thanks.
+>
+>    
+>> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
+>>      
+>>>> recently we have build and started to use raid storage with formatted
+>>>> capacity of 4.5T (ext4 formatted, default params).
+>>>> FS has quota turned on and is exported via NFS to nodes.
+>>>> If we turn qouta on on this FS and are trying to use it over NFS we get the
+>>>> following:
+>>>>
+>>>> ------------[ cut here ]------------
+>>>> WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
+>>>> Hardware name: S3210SH
+>>>> Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc
+>>>> coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd floppy
+>>>> usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
+>>>> Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
+>>>> Call Trace:
+>>>>   [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+>>>>   [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
+>>>>   [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+>>>>   [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
+>>>>   [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
+>>>>   [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
+>>>>   [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
+>>>>   [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
+>>>>   [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
+>>>>   [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
+>>>>   [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
+>>>>   [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
+>>>>   [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
+>>>>   [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
+>>>>   [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
+>>>>   [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
+>>>>   [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
+>>>>   [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
+>>>>   [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
+>>>>   [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
+>>>>   [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
+>>>>   [<ffffffff80292110>] ? pdflush+0x120/0x230
+>>>>   [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
+>>>>   [<ffffffff80291ff0>] ? pdflush+0x0/0x230
+>>>>   [<ffffffff80261154>] ? kthread+0x64/0xc0
+>>>>   [<ffffffff8020d13a>] ? child_rip+0xa/0x20
+>>>>   [<ffffffff802610f0>] ? kthread+0x0/0xc0
+>>>>   [<ffffffff8020d130>] ? child_rip+0x0/0x20
+>>>> ---[ end trace cb54e6523e9ab60d ]---
+>>>>
+>>>> fstab entry:
+>>>> /dev/sdb1              /mnt/storage    ext4
+>>>> noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0
+>>>>
+>>>> qith quotaoff on tihs FS, warnings stop.
+>>>>
+>>>> Question is if it's safe to use quotas with this problem (warning) or not.
+>>>> Can't afford data damage.
+>>>>          
+>    The warning definitely doesn't directly indicate a danger of data loss.
+> But there *is* some bug causing that ext4 asks for more quota space than
+> it has reserved.
+>    From your report it seems it is easily reproducible, right? Do you have
+> an easy way to trigger this warning - by some test script or so?
+>
+> 								Honza
+>    
+really easy to reproduce, our storage is on live production so I can't 
+experiment with kernel but it's enough to do quotaon and system will get 
+"spammed" with these warning on every file access..
 
-The only thing I can say here is that I've never seen the issue before 
-(and thanks to logcheck I certainly would have).
-The laptop is in constant use, but I rarely stress the memory like that. 
-Swap is almost always at 0.
+P.
 
-I would have to make an effort to try and reproduce it, probably by again 
-creating some very large images and loading those in konqueror, maybe 
-while streaming a movie over wireless or something.
-
-Thanks for your efforts,
-FJP
