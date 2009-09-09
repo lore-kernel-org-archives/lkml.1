@@ -1,113 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752969AbZIIOcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZIIOch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752969AbZIIOcT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZIIOcS
+	id S1753316AbZIIOch (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZIIOcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:32:18 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:48299 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752016AbZIIOcS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:32:18 -0400
-Date: Wed, 9 Sep 2009 10:31:59 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: riel@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
-       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-Message-ID: <20090909143159.GC8256@redhat.com>
-References: <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp> <20090908134244.GA15974@redhat.com> <20090909.190146.59669568.ryov@valinux.co.jp>
+	Wed, 9 Sep 2009 10:32:36 -0400
+Received: from mail-yw0-f173.google.com ([209.85.211.173]:38024 "EHLO
+	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753051AbZIIOcf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 10:32:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=vAXsa85XUBILxvuZA6yrwigFyPNtQZaUrDx3I7jnMZwfIvCU4dvX2VPTNK2CWYuC9Y
+         O3giwDg2CD4x9l0h3K16QxdCvcE5CPB5/Z0+PwVRojUEEq5LvVeqJTID5NB9NkluXtPt
+         lQ5n0EzSzS5MhKwTpP23VvtA8QeZf/MspNIPw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909.190146.59669568.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090909134752.f5b8c2e7.sfr@canb.auug.org.au>
+References: <20090909134752.f5b8c2e7.sfr@canb.auug.org.au>
+Date: Wed, 9 Sep 2009 10:32:38 -0400
+Message-ID: <817ecb6f0909090732j6b1e097dobcb59af8147e30cf@mail.gmail.com>
+Subject: Re: linux-next: rr tree build failure
+From: Siarhei Liakh <sliakh.lkml@gmail.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Xuxian Jiang <jiang@cs.ncsu.edu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 07:01:46PM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
-> Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > I think there are some advantages to dm-ioband. That's why I post
-> > > dm-ioband to the mailing list.
-> > > 
-> > > - dm-ioband supports not only proportional weight policy but also rate
-> > >   limiting policy. Besides, new policies can be added to dm-ioband if
-> > >   a user wants to control bandwidth by his or her own policy.
-> > 
-> > I think we can easily extent io scheduler based controller to also support
-> > max rate per group policy also. That should not be too hard. It is a
-> > matter of only keeping track of io rate per group and if a group is
-> > exceeding the rate, then schedule it out and move on to next group.
-> > 
-> > I can do that once proportional weight solution is stablized and gets
-> > merged. 
-> > 
-> > So its not an advantage of dm-ioband.
-> 
-> O.K.
-> 
-> > > - The dm-ioband driver can be replaced without stopping the system by
-> > >   using device-mapper's facility. It's easy to maintain.
-> > 
-> > We talked about this point in the past also. In io scheduler based
-> > controller, just move all the tasks to root group and you got a system
-> > not doing any io control.
-> > 
-> > By the way why would one like to do that? 
-> > 
-> > So this is also not an advantage.
-> 
-> My point is that dm-ioband can be updated for improvements and
-> bug-fixing without stopping the system.
-> 
-> > > - dm-ioband can use without cgroup. (I remember Vivek said it's not an
-> > >   advantage.)
-> > 
-> > I think this is more of a disadvantage than advantage. We have a very well
-> > defined functionality of cgroup in kernel to group the tasks. Now you are
-> > coming up with your own method of grouping the tasks which will make life
-> > even more confusing for users and application writers.
-> > 
-> > I don't understand what is that core requirement of yours which is not met
-> > by io scheduler based io controller. range policy control you have
-> > implemented recently. I don't think that removing dm-ioband module
-> > dynamically is core requirement. Also whatever you can do with additional 
-> > grouping mechanism, you can do with cgroup also.
-> > 
-> > So if there is any of your core functionality which is not fulfilled by
-> > io scheduler based controller, please let me know. I will be happy to look
-> > into it and try to provide that feature. But looking at above list, I am
-> > not convinced that any of the above is a compelling argument for dm-ioband
-> > inclusion.
-> 
-> As I wrote in another email, I would like to make use of dm-ioband on
-> the system which doesn't support cgroup such as RHEL.
+On Tue, Sep 8, 2009 at 11:47 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> Hi Rusty,
+>
+> Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+>
+> kernel/module.c: In function 'set_section_ro_nx':
+> kernel/module.c:1549: error: implicit declaration of function 'set_memory_ro'
+> kernel/module.c:1560: error: implicit declaration of function 'set_memory_nx'
+> kernel/module.c: In function 'unset_section_ro_nx':
+> kernel/module.c:1575: error: implicit declaration of function 'set_memory_rw'
+>
+> Caused by commit 25306e21864c2a220d6fa2e0632425028aa9626c
+> ("module:ro-nx-protection") which uses these interfaces that are only
+> defined on x86 ...
 
-For supporting io controller mechanism in older kernels which don't have
-cgroup interface support, I think one needs to maintain out of the tree
-module. Upstream does not benefit from it.
+Looks like I have made some bad assumptions. I will re-write the
+original patch to be x86-only.
 
-> In addition,
-> there are devices which doesn't use standard IO schedulers, and
-> dm-ioband can work on even such devices.
-
-This is a interesting use case. Few thoughts.
-
-- Can't io scheduling mechanism of these devices make use of elevator and
-  elevator fair queuing interfaces to take advantage of io controlling
-  mechanism. It should not be too difficult. Look at noop. It has
-  just 131 lines of code and it now supports hierarchical io scheduling.
- 
-  This will come with request queue and its merging and plug/unplug
-  mechanism. Is that an issue?
-
-- If not, then yes, for these corner cases, io scheduler based controller
-  does not work as it is.
-
-Thanks
-Vivek
+Sorry for breaking the build.
