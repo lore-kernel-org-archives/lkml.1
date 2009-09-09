@@ -1,106 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZIIRUB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753862AbZIIRUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753839AbZIIRUB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:20:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753737AbZIIRUA
+	id S1753862AbZIIRUs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZIIRUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:20:00 -0400
-Received: from ns1.primeinteractive.net ([195.95.205.253]:55587 "EHLO
-	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753601AbZIIRT6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:19:58 -0400
-Message-ID: <4AA7E3A6.8050404@primeinteractive.net>
-Date: Wed, 09 Sep 2009 19:19:34 +0200
-From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Jiri Kosina <jkosina@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Subject: Re: ext4+quota+nfs issue
-References: <4AA5E5F3.30309@primeinteractive.net> <4AA72C14.1020005@primeinteractive.net> <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz> <20090909144622.GB7949@duck.suse.cz>
-In-Reply-To: <20090909144622.GB7949@duck.suse.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 Sep 2009 13:20:47 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1174 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753485AbZIIRUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 13:20:46 -0400
+Date: Wed, 9 Sep 2009 13:20:39 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
+Message-ID: <20090909132039.1ca47cd4@tlielax.poochiereds.net>
+In-Reply-To: <alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
+References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
+	<20090905071052.50501826@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1>
+	<20090909125352.1c7b57d2@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 9/9/2009 4:46 PM, Jan Kara wrote:
-> On Wed 09-09-09 11:42:03, Jiri Kosina wrote:
->    
->> [ adding relevant CCs ]
->>      
->    Thanks.
->
->    
->> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
->>      
->>>> recently we have build and started to use raid storage with formatted
->>>> capacity of 4.5T (ext4 formatted, default params).
->>>> FS has quota turned on and is exported via NFS to nodes.
->>>> If we turn qouta on on this FS and are trying to use it over NFS we get the
->>>> following:
->>>>
->>>> ------------[ cut here ]------------
->>>> WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
->>>> Hardware name: S3210SH
->>>> Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc
->>>> coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd floppy
->>>> usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
->>>> Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
->>>> Call Trace:
->>>>   [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
->>>>   [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
->>>>   [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
->>>>   [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
->>>>   [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
->>>>   [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
->>>>   [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
->>>>   [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
->>>>   [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
->>>>   [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
->>>>   [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
->>>>   [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
->>>>   [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
->>>>   [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
->>>>   [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
->>>>   [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
->>>>   [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
->>>>   [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
->>>>   [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
->>>>   [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
->>>>   [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
->>>>   [<ffffffff80292110>] ? pdflush+0x120/0x230
->>>>   [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
->>>>   [<ffffffff80291ff0>] ? pdflush+0x0/0x230
->>>>   [<ffffffff80261154>] ? kthread+0x64/0xc0
->>>>   [<ffffffff8020d13a>] ? child_rip+0xa/0x20
->>>>   [<ffffffff802610f0>] ? kthread+0x0/0xc0
->>>>   [<ffffffff8020d130>] ? child_rip+0x0/0x20
->>>> ---[ end trace cb54e6523e9ab60d ]---
->>>>
->>>> fstab entry:
->>>> /dev/sdb1              /mnt/storage    ext4
->>>> noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0
->>>>
->>>> qith quotaoff on tihs FS, warnings stop.
->>>>
->>>> Question is if it's safe to use quotas with this problem (warning) or not.
->>>> Can't afford data damage.
->>>>          
->    The warning definitely doesn't directly indicate a danger of data loss.
-> But there *is* some bug causing that ext4 asks for more quota space than
-> it has reserved.
->    From your report it seems it is easily reproducible, right? Do you have
-> an easy way to trigger this warning - by some test script or so?
->
-> 								Honza
->    
-really easy to reproduce, our storage is on live production so I can't 
-experiment with kernel but it's enough to do quotaon and system will get 
-"spammed" with these warning on every file access..
+On Wed, 9 Sep 2009 13:07:52 -0400 (EDT)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-P.
+> On Wed, 9 Sep 2009, Jeff Layton wrote:
+> 
+> > My suspicion would be that the server needs to perform an oplock break
+> > to another client before it can send the response. The only way I know
+> > how to tell that is to sniff all SMB traffic on the server and watch
+> > for oplock break calls to other clients when these stalls occur.
+> 
+> That could be tested by switching them off right? If I do
+> 
+> echo 0 >/proc/fs/cifs/OplockEnabled
+> 
+> and then remount the volume it should switch off oplocks?
+> 
+> This has no effect on the stalls.
+> 
 
+That'll stop your client from requesting oplocks, but that won't
+prevent others from doing so. If my suspicion is correct, then another
+client is holding an oplock and the server needs to break it before it
+can reply to yours.
+
+Unfortunately I doubt there's much you can do from your client to
+prevent that (if that is the case). There may be a way to turn off
+oplocks on the server side, but that may very well be even worse for
+performance.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
