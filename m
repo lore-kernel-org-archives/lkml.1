@@ -1,42 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754415AbZIIV3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754419AbZIIVcL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754415AbZIIV3d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 17:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZIIV3c
+	id S1754419AbZIIVcL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 17:32:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754215AbZIIVcK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 17:29:32 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35816 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754265AbZIIV3c (ORCPT
+	Wed, 9 Sep 2009 17:32:10 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:56131 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754282AbZIIVcJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 17:29:32 -0400
-Date: Wed, 9 Sep 2009 23:29:28 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>, rui.zhang@intel.com,
-       lenb@kernel.org
-Subject: Re: [PATCH v4] hwmon driver for ACPI 4.0 power meters
-Message-ID: <20090909212928.GB7248@elf.ucw.cz>
-References: <200908202049.n7KKnKO7015060@imap1.linux-foundation.org> <20090820211557.GA8431@elf.ucw.cz> <20090820213755.GB10521@tux1.beaverton.ibm.com> <20090821091939.GC21167@elf.ucw.cz> <20090821184718.GD23397@tux1.beaverton.ibm.com> <20090821221705.GA2108@elf.ucw.cz> <20090822011744.GH10521@tux1.beaverton.ibm.com> <20090821140159.GB1328@ucw.cz> <20090908202410.GS10521@tux1.beaverton.ibm.com> <20090909182347.GB26158@tux1.beaverton.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909182347.GB26158@tux1.beaverton.ibm.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 9 Sep 2009 17:32:09 -0400
+Subject: Re: ext4+quota+nfs issue
+From: Mingming <cmm@us.ibm.com>
+To: Eric Sandeen <sandeen@redhat.com>
+Cc: Jiri Kosina <jkosina@suse.cz>,
+       Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
+       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org
+In-Reply-To: <4AA7C38E.8020306@redhat.com>
+References: <4AA5E5F3.30309@primeinteractive.net>
+	 <4AA72C14.1020005@primeinteractive.net>
+	 <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
+	 <4AA7C38E.8020306@redhat.com>
+Content-Type: text/plain
+Date: Wed, 09 Sep 2009 14:32:09 -0700
+Message-Id: <1252531929.19097.174.camel@mingming-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +config ACPI_POWER_METER
-> +	tristate "ACPI 4.0 power meter"
-> +	depends on HWMON
-> +	default y
+On Wed, 2009-09-09 at 10:02 -0500, Eric Sandeen wrote:
+> Jiri Kosina wrote:
+> > [ adding relevant CCs ]
+> > 
+> > On Wed, 9 Sep 2009, Pavol Cvengros wrote:
+> > 
+> >> Hi,
+> >>
+> >> can somebody who is aware of ext4 and quota have a look on this one?
+> >>
+> 
+> This was also just reported at:
+> 
+> https://bugzilla.redhat.com/show_bug.cgi?id=521914
+> 
 
-Should not really be default y, see the other mail.
+Checked the bugzilla, it seems the fs enabled quota, but no user quota
+limit is specified. Is this the case with the ext4 quota+ nfs issue too?
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If no user quota is specified, then IS_NOQUOTA() should avoid doing
+quota reservation/claim at all. Not sure what is missing... I will check
+if I could reproduce this on local filesystem...
+
+Thanks,
+Mingming
+> -Eric
+> 
+> >> Thanks,
+> >>
+> >> P.
+> >>
+> >> On 8. 9. 2009 7:04, Pavol Cvengros wrote:
+> >>> Hello,
+> >>>
+> >>> recently we have build and started to use raid storage with formatted
+> >>> capacity of 4.5T (ext4 formatted, default params).
+> >>> FS has quota turned on and is exported via NFS to nodes.
+> >>> If we turn qouta on on this FS and are trying to use it over NFS we get the
+> >>> following:
+> >>>
+> >>> ------------[ cut here ]------------
+> >>> WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
+> >>> Hardware name: S3210SH
+> >>> Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc
+> >>> coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd floppy
+> >>> usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
+> >>> Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
+> >>> Call Trace:
+> >>>  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+> >>>  [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
+> >>>  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+> >>>  [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
+> >>>  [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
+> >>>  [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
+> >>>  [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
+> >>>  [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
+> >>>  [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
+> >>>  [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
+> >>>  [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
+> >>>  [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
+> >>>  [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
+> >>>  [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
+> >>>  [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
+> >>>  [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
+> >>>  [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
+> >>>  [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
+> >>>  [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
+> >>>  [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
+> >>>  [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
+> >>>  [<ffffffff80292110>] ? pdflush+0x120/0x230
+> >>>  [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
+> >>>  [<ffffffff80291ff0>] ? pdflush+0x0/0x230
+> >>>  [<ffffffff80261154>] ? kthread+0x64/0xc0
+> >>>  [<ffffffff8020d13a>] ? child_rip+0xa/0x20
+> >>>  [<ffffffff802610f0>] ? kthread+0x0/0xc0
+> >>>  [<ffffffff8020d130>] ? child_rip+0x0/0x20
+> >>> ---[ end trace cb54e6523e9ab60d ]---
+> >>>
+> >>> fstab entry:
+> >>> /dev/sdb1              /mnt/storage    ext4
+> >>> noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0 
+> >>>
+> >>> qith quotaoff on tihs FS, warnings stop.
+> >>>
+> >>> Question is if it's safe to use quotas with this problem (warning) or not.
+> >>> Can't afford data damage.
+> >>>
+> >>> Thanks,
+> >>>
+> >>> Pavol Cvengros
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
