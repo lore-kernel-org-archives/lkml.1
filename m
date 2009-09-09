@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752597AbZIICnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752355AbZIICsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752597AbZIICnN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751662AbZIICnN
+	id S1752355AbZIICsl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZIICsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:43:13 -0400
-Received: from vms173009pub.verizon.net ([206.46.173.9]:15385 "EHLO
-	vms173009pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751003AbZIICnM (ORCPT
+	Tue, 8 Sep 2009 22:48:40 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45594 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751184AbZIICsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:43:12 -0400
-Date: Tue, 08 Sep 2009 22:42:58 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: Zhang Rui <rui.zhang@intel.com>, linux-acpi <linux-acpi@vger.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 1/3] ACPI: introduce ACPI ALS driver
-In-reply-to: <200908041730.40850.bjorn.helgaas@hp.com>
-Message-id: <alpine.LFD.2.00.0909082238390.20206@localhost.localdomain>
-References: <1249290664.2670.252.camel@rzhang-dt>
- <200908041730.40850.bjorn.helgaas@hp.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 Sep 2009 22:48:40 -0400
+From: Tim Abbott <tabbott@ksplice.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@redhat.com>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>
+Subject: [PATCH 1/5] x86: fix fragile computation of vsyscall address
+Date: Tue,  8 Sep 2009 22:48:14 -0400
+Message-Id: <1252464498-26293-1-git-send-email-tabbott@ksplice.com>
+X-Mailer: git-send-email 1.6.3.3
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For the record, new code from Intel OTC  should have the GPL below.
+From: Anders Kaseorg <andersk@ksplice.com>
 
-It is optional to add your own name on the copyright
-in addition to the corporate one.  In general, I recommend
-against it -- because it serves just to get random e-mail
-sent to your (eventually stale) e-mail address --
-and the people who have useful feedback on your code
-already know how to send you e-mail.
+Previously, the address of the vsyscall page (VSYSCALL_PHYS_ADDR,
+VSYSCALL_VIRT_ADDR) was computed by arithmetic on the address of the
+last section.  This leads to bugs when new sections are inserted, such
+as the one fixed by commit d312ceda567ab91acd756cde95ac5fbc6b40ed40.
+Let's compute it from the current address instead.
 
-cheers,
--Len
+Signed-off-by: Anders Kaseorg <andersk@ksplice.com>
+Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+---
+ arch/x86/kernel/vmlinux.lds.S |   19 +++++++------------
+ 1 files changed, 7 insertions(+), 12 deletions(-)
 
-
-/*
- * <insert one-line description of what the program does>
- * Copyright (c) 2009, Intel Corporation.
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms and conditions of the GNU General Public License,
- * version 2, as published by the Free Software Foundation.
- *
- * This program is distributed in the hope it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along with
- * this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
- *
- */
-
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 9fc1782..e771251 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -135,24 +135,21 @@ SECTIONS
+ #ifdef CONFIG_X86_64
+ 
+ #define VSYSCALL_ADDR (-10*1024*1024)
+-#define VSYSCALL_PHYS_ADDR ((LOADADDR(.data) + SIZEOF(.data) + \
+-                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
+-#define VSYSCALL_VIRT_ADDR ((ADDR(.data) + SIZEOF(.data) + \
+-                            PAGE_SIZE - 1) & ~(PAGE_SIZE - 1))
+ 
+-#define VLOAD_OFFSET (VSYSCALL_ADDR - VSYSCALL_PHYS_ADDR)
++#define VLOAD_OFFSET (VSYSCALL_ADDR - __vsyscall_0 + LOAD_OFFSET)
+ #define VLOAD(x) (ADDR(x) - VLOAD_OFFSET)
+ 
+-#define VVIRT_OFFSET (VSYSCALL_ADDR - VSYSCALL_VIRT_ADDR)
++#define VVIRT_OFFSET (VSYSCALL_ADDR - __vsyscall_0)
+ #define VVIRT(x) (ADDR(x) - VVIRT_OFFSET)
+ 
++	. = ALIGN(4096);
++	__vsyscall_0 = .;
++
+ 	. = VSYSCALL_ADDR;
+-	.vsyscall_0 : AT(VSYSCALL_PHYS_ADDR) {
++	.vsyscall_0 : AT(VLOAD(.vsyscall_0)) {
+ 		*(.vsyscall_0)
+ 	} :user
+ 
+-	__vsyscall_0 = VSYSCALL_VIRT_ADDR;
+-
+ 	. = ALIGN(CONFIG_X86_L1_CACHE_BYTES);
+ 	.vsyscall_fn : AT(VLOAD(.vsyscall_fn)) {
+ 		*(.vsyscall_fn)
+@@ -192,11 +189,9 @@ SECTIONS
+ 		*(.vsyscall_3)
+ 	}
+ 
+-	. = VSYSCALL_VIRT_ADDR + PAGE_SIZE;
++	. = __vsyscall_0 + PAGE_SIZE;
+ 
+ #undef VSYSCALL_ADDR
+-#undef VSYSCALL_PHYS_ADDR
+-#undef VSYSCALL_VIRT_ADDR
+ #undef VLOAD_OFFSET
+ #undef VLOAD
+ #undef VVIRT_OFFSET
+-- 
+1.6.3.3
 
