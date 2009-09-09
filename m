@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753785AbZIIQgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753543AbZIIR0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753785AbZIIQgH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 12:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753312AbZIIQgH
+	id S1753543AbZIIR0M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbZIIR0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 12:36:07 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:52748 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753305AbZIIQgG (ORCPT
+	Wed, 9 Sep 2009 13:26:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:40921 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752546AbZIIR0L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 12:36:06 -0400
-Date: Wed, 9 Sep 2009 17:36:08 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: What's in sound git tree for 2.6.32
-Message-ID: <20090909163608.GA28313@sirena.org.uk>
-References: <s5hljkoyu5s.wl%tiwai@suse.de>
+	Wed, 9 Sep 2009 13:26:11 -0400
+Message-ID: <4AA7DA4E.8010504@zytor.com>
+Date: Wed, 09 Sep 2009 09:39:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hljkoyu5s.wl%tiwai@suse.de>
-X-Cookie: Read terms and conditions.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Ingo Molnar <mingo@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
+       x86@kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Print amd virtualization features in /proc/cpuinfo
+References: <1249996732-13794-1-git-send-email-joerg.roedel@amd.com> <20090909161643.GB15711@amd.com>
+In-Reply-To: <20090909161643.GB15711@amd.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 06:11:59PM +0200, Takashi Iwai wrote:
+On 09/09/2009 09:16 AM, Joerg Roedel wrote:
+> Hi Ingo,
+> 
+> do you have any objections against this patch? Please let me know so I
+> can fix them.
+> 
+> Thanks,
+> 
+> 	Joerg
 
-> ASoC has really many changes, including the update of DaVinci, imx,
-> blackfin and other machine drivers together with tons of new codecs.
-> Also the common register cache helper is there.
+These features should be table-driven like the ones already in
+scattered_cpuid_features() instead of open-coded.
 
-The most noticable changes in the ASoC core for this release are:
+	-hpa
 
- - Redone power sequencing code, giving shorter power sequences which
-   should reduce the effect of any artifacts that exist.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
- - Reporting of power management decisions via debugfs, enabling much
-   easier diagnosis of path setup problems.
-
- - Beginning of work to factor out the register access and caching code
-   from the individual CODEC drivers into a shared file.  This needs to
-   be rolled out over more CODEC drivers.
