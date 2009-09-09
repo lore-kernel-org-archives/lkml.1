@@ -1,77 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754320AbZIIVxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754353AbZIIV6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754320AbZIIVxt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 17:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752924AbZIIVxs
+	id S1754353AbZIIV6p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 17:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZIIV6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 17:53:48 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:58816 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752594AbZIIVxs convert rfc822-to-8bit (ORCPT
+	Wed, 9 Sep 2009 17:58:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47771 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752470AbZIIV6o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 17:53:48 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=D0zbhINAm8pwpv+WagJzEnTH86t77uGtmMrn6nujEErygJIL4IUJgpKqjlfUpJ1zN
-	xfyThaR0QIAS/Fo/9eo4g==
-MIME-Version: 1.0
-In-Reply-To: <1252505941.14793.97.camel@desktop>
-References: <20090903041429.GA29875@kroah.com> <20090906052819.GE1324@ucw.cz>
-	 <1252338939.2139.21.camel@desktop> <20090909095702.GB28615@elf.ucw.cz>
-	 <1252505941.14793.97.camel@desktop>
-Date: Wed, 9 Sep 2009 14:53:45 -0700
-Message-ID: <a55d774e0909091453l5f658212wa3fe3df685a353c@mail.gmail.com>
-Subject: Re: Staging tree status for the .32 kernel merge
-From: Brian Swetland <swetland@google.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, devel@driverdev.osuosl.org,
-       "Huntsman, Bryan" <bryanh@quicinc.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-System-Of-Record: true
+	Wed, 9 Sep 2009 17:58:44 -0400
+Date: Wed, 9 Sep 2009 14:56:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: mel@csn.ul.ie, greg@kroah.com, eric.whitney@hp.com, agl@us.ibm.com,
+       linux-kernel@vger.kernel.org, andi@firstfloor.org, rientjes@google.com,
+       apw@canonical.com, stable@kernel.org
+Subject: Re: [stable] [PATCH] hugetlb: restore interleaving of bootmem huge
+ pages
+Message-Id: <20090909145628.66829d5f.akpm@linux-foundation.org>
+In-Reply-To: <1252419215.5214.19.camel@useless.americas.hpqcorp.net>
+References: <1247860154.11565.45.camel@useless.americas.hpqcorp.net>
+	<20090903203339.GB7467@kroah.com>
+	<20090908103233.GA28127@csn.ul.ie>
+	<1252419215.5214.19.camel@useless.americas.hpqcorp.net>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 9, 2009 at 7:19 AM, Daniel Walker<dwalker@fifo99.com> wrote:
-> On Wed, 2009-09-09 at 11:57 +0200, Pavel Machek wrote:
->> Hi!
->> > > >           Note, Pavel has been adding some of the Dream hardware
->> > > >           drivers, which are separate from the core Android drivers.  I
->> > > >           have no objection to those, but they should work to get merged
->> > > >           to their "correct" places in the tree in another release or
->> > > >           so.
->> > >
->> > > Well, some of those drivers should be moderately easy (touchscreen),
->> > > but some (camera) will take longer than that. For example camera --
->> > > contains _lots_ of code, and uses obsolete v4l api.
->> > >
->> > > Plus, I really need to get recent kernel to boot and then get arch/arm
->> > > pieces merged....
->> >
->> > I've got a tree with a lot of the arch/arm/msm pieces isolated, doesn't
->> > boot yet .. I had to drop certain parts like the key pad support since
->> > it had a big generic change attached to it .. It's all part of a git
->> > tree which I can expose if you want to look at it.
->>
->> Yes, minimal, but booting version would be very welcome. I tried to
->> produce exactly that few times, but did not succeed (yet).
->
-> Last night I discovered maybe a better tree to use ..
->
-> https://www.codeaurora.org/gitweb/quic/kernel/?p=bryanh/linux-2.6.git;a=summary
->
-> It's based off a newer kernel 2.6.31-rc6 . I have a feeling it's minus a
-> lot of the google stuff.
+On Tue, 08 Sep 2009 10:13:35 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-That would be somewhat surprising, since the qct/quicinc folks support
-the full android stack on top of their kernels (though we're not
-entirely converged at this point).
+> On Tue, 2009-09-08 at 11:32 +0100, Mel Gorman wrote:
+> > On Thu, Sep 03, 2009 at 01:33:39PM -0700, Greg KH wrote:
+> > > On Fri, Jul 17, 2009 at 03:49:14PM -0400, Lee Schermerhorn wrote:
+> > > > PATCH fix distribution of bootmem huge pages
+> > > > 
+> > > > Against: 2.6.31-rc3
+> > > > 
+> > > > For stable, applicable back through 2.6.27
+> > > > 
+> > > > [A version of this patch has been added to the -mm tree.  That patch
+> > > > won't apply cleanly to mainline nor stable trees because of function
+> > > > renaming.  This one should.]
+> > > 
+> > > What is the git commit id of this patch that is in Linus's tree?
+> > > 
+> > 
+> > I can only find it in mmotm. It doesn't appear to have been merged to
+> > mainline at all. Lee, what happened with this? Did it get held off until
+> > post-2.6.31 for merging to mainline?
+> 
+> Mel:
+> 
+> This patch, along with the interleaving of freeing persistent huge pages
+> are still in mmotm, awaiting the merge window.  I had sent out another
+> version suitable for mainline and stable--same patch with conflicts
+> resolved--but, apparently it didn't make mainline yet.
+> 
 
-Not sure if their tree has full support for devices like
-dream/sapphire/etc -- I believe they primarily verify on their SURF
-platform.  Added Bryan to the CC so he can comment.
+I queued the original patch for 2.6.31 and -stable.
 
-Brian
+For 2.6.32 I queued a patch which reverts this same patch to make way
+for all the new stuff.
+
+It would have been better had the 2.6.31 minipatch come out first!
