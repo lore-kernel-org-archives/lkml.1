@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752853AbZIIOsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZIIPH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752853AbZIIOsh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZIIOsh
+	id S1753435AbZIIPH4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 11:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752608AbZIIPHz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:48:37 -0400
-Received: from fifo99.com ([67.223.236.141]:48331 "EHLO fifo99.com"
+	Wed, 9 Sep 2009 11:07:55 -0400
+Received: from mga14.intel.com ([143.182.124.37]:65365 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751344AbZIIOsg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:48:36 -0400
-Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
-From: Daniel Walker <dwalker@fifo99.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
-       utx@penguin.cz, Russell King <rmk@arm.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090909075024.GA1400@ucw.cz>
-References: <20090909075024.GA1400@ucw.cz>
-Content-Type: text/plain
-Date: Wed, 09 Sep 2009 07:49:00 -0700
-Message-Id: <1252507740.14793.115.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1752592AbZIIPHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 11:07:54 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="185728202"
+Message-Id: <20090909145141.293229693@intel.com>
+User-Agent: quilt/0.46-1
+Date: Wed, 09 Sep 2009 22:51:41 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Dave Chinner <david@fromorbit.com>
+CC: Chris Mason <chris.mason@oracle.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Christoph Hellwig <hch@infradead.org>
+CC: jack@suse.cz
+CC: Artem Bityutskiy <dedekind1@gmail.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       <linux-fsdevel@vger.kernel.org>
+Subject: [RFC][PATCH 0/7] some random writeback fixes
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 09:50 +0200, Pavel Machek wrote:
-> Hi, Linus!
-> 
-> Spitz resume was broken for year or likely two, and it would be very
-> nice to fix it for 2.6.31 release. One liner is below, and it really
-> can not harm. It already is in Eric's fix queue, so pulling that for
-> .31 should work, too.
-> 
-> Do you think you could take it?
+Hi all,
 
-One checkpatch error here..
+These are some writeback fixes based on the latest linux-next without
+the vm.max_writeback_mb knob, since I'm not aware of any strong reasons
+for introducing it. Instead, the MAX_WRITEBACK_PAGES is directly increased
+to 64MB.
 
-ERROR: trailing whitespace
-#77: FILE: arch/arm/mach-pxa/sharpsl_pm.c:681:
-+^Iif ((!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_LOCK)) || $
+Other patches are straightforward. Needs more tests but it's enough to show
+the basic ideas. Comments are welcome!
 
-total: 1 errors, 0 warnings, 10 lines checked
-
-
-Daniel
+Thanks,
+Fengguang
+-- 
 
