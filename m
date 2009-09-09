@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751519AbZIIEpy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752832AbZIIJS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751519AbZIIEpy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 00:45:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZIIEpy
+	id S1752832AbZIIJS1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 05:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752792AbZIIJS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 00:45:54 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:7728 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751117AbZIIEpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 00:45:53 -0400
-Message-ID: <4AA732C7.70003@redhat.com>
-Date: Wed, 09 Sep 2009 00:44:55 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Wed, 9 Sep 2009 05:18:26 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:56782 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752795AbZIIJSZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 05:18:25 -0400
+Message-ID: <4AA73309.8030302@zytor.com>
+Date: Tue, 08 Sep 2009 21:46:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 25/23] io-controller: fix queue vs group fairness
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <20090908222827.GC3558@redhat.com>
-In-Reply-To: <20090908222827.GC3558@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] char/tty_io: fix legacy pty name when more than 256
+ pty devices are requested
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>	<4AA6DF50.3030603@zytor.com>	<20090908203323.486c129c@caramujo.chehab.org>	<4AA6F63F.7090009@zytor.com> <20090908235441.04549a29@caramujo.chehab.org>
+In-Reply-To: <20090908235441.04549a29@caramujo.chehab.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> o I found an issue during test and that is if there is a mix of queue and group
->   at same level, there can be fairness issue. For example, consider following
->   case.
+On 09/08/2009 07:54 PM, Mauro Carvalho Chehab wrote:
+>>
+>> IMO, no less weird than a random shift from one naming algorithm to
+>> another in the middle of the sequence.
+> 
+> Ok, your algorithm will be fully compatible with the old naming system, as
+> you're encoding the nibbles on this order:
+> 	[7:4][3:0][*:8]
+> 
 
-Acked-by: Rik van Riel <riel@redhat.com>
+Actually it's [7:4][*:8][3:0].  It was the easiest way to get backwards
+compatibility, since it allowed for the use of s[n]printf().  It's not
+by any means the only possibility, but I think the easiest one to describe.
 
-(assuming the cleanups are done in V10 - the artifact of
-  a wraparound hitting exactly 0 should not be an issue)
+> From one side, I liked the idea of not having any arbitrary maximum limit, but
+> from other side, It seems easier to implement than to describe it in English,
+> at devices.txt. Maybe the solution is to explain it by examples.
+> 
+> Also, if we look at the current device designation, we already have some rule
+> changes. 
+
+That doesn't mean it's a good idea.
+
 
 -- 
-All rights reversed.
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
