@@ -1,200 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZIICtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbZIICuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752779AbZIICtt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZIICts
+	id S1752645AbZIICuk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZIICuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:49:48 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45823 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752441AbZIICtp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:49:45 -0400
-From: Tim Abbott <tabbott@ksplice.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [PATCH v2 5/5] Use macros for .data.page_aligned section.
-Date: Tue,  8 Sep 2009 22:49:06 -0400
-Message-Id: <1252464546-26394-6-git-send-email-tabbott@ksplice.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1252464546-26394-1-git-send-email-tabbott@ksplice.com>
-References: <1252464546-26394-1-git-send-email-tabbott@ksplice.com>
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+	Tue, 8 Sep 2009 22:50:39 -0400
+Received: from mx1-old.redhat.com ([66.187.233.31]:34684 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751344AbZIICui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 22:50:38 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: John Reiser <jreiser@bitwagon.com>
+X-Fcc: ~/Mail/linus
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
+       David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-fsdevel@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: binfmt_elf PT_INTERP gets EFAULT if no PROT_WRITE
+In-Reply-To: John Reiser's message of  Tuesday, 8 September 2009 17:26:59 -0700 <4AA6F653.1010007@bitwagon.com>
+References: <4AA6F653.1010007@bitwagon.com>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20090909024940.850948BECA@magilla.sf.frob.com>
+Date: Tue,  8 Sep 2009 19:49:40 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes the remaining direct references to
-.data.page_aligned in C and assembly code to use the macros in
-include/linux/linkage.h.
+Good catch, John.  But I prefer a different fix.  
 
-Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+I've reproduced the bug with the test case John included,
+and verified that my change fixes it too.
+
+
+Thanks,
+Roland
+
 ---
- arch/avr32/mm/init.c                        |    4 +---
- arch/powerpc/kernel/vdso.c                  |    3 ++-
- arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
- arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
- arch/s390/kernel/vdso.c                     |    2 +-
- arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
- arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
- arch/x86/include/asm/cache.h                |    4 +++-
- arch/x86/kernel/head_32.S                   |    2 +-
- 9 files changed, 16 insertions(+), 11 deletions(-)
+[PATCH] binfmt_elf: fix PT_INTERP bss handling
 
-diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
-index e819fa6..cc60d10 100644
---- a/arch/avr32/mm/init.c
-+++ b/arch/avr32/mm/init.c
-@@ -24,11 +24,9 @@
- #include <asm/setup.h>
- #include <asm/sections.h>
- 
--#define __page_aligned	__attribute__((section(".data.page_aligned")))
--
- DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
- 
--pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned;
-+pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned_data;
- 
- struct page *empty_zero_page;
- EXPORT_SYMBOL(empty_zero_page);
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index ad06d5c..f075591 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -1,3 +1,4 @@
-+
- /*
-  *    Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
-  *			 <benh@kernel.crashing.org>
-@@ -74,7 +75,7 @@ static int vdso_ready;
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data;
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /* Format of the patch table */
-diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-index 556f0ca..6e8f507 100644
---- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-index 0529cb9..b8553d6 100644
---- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
-index 45e1708..45a3e9a 100644
---- a/arch/s390/kernel/vdso.c
-+++ b/arch/s390/kernel/vdso.c
-@@ -75,7 +75,7 @@ __setup("vdso=", vdso_setup);
- static union {
- 	struct vdso_data	data;
- 	u8			page[PAGE_SIZE];
--} vdso_data_store __attribute__((__section__(".data.page_aligned")));
-+} vdso_data_store __page_aligned_data;
- struct vdso_data *vdso_data = &vdso_data_store.data;
- 
- /*
-diff --git a/arch/s390/kernel/vdso32/vdso32_wrapper.S b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-index 61639a8..ae42f8c 100644
---- a/arch/s390/kernel/vdso32/vdso32_wrapper.S
-+++ b/arch/s390/kernel/vdso32/vdso32_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso32_start, vdso32_end
- 	.balign PAGE_SIZE
-diff --git a/arch/s390/kernel/vdso64/vdso64_wrapper.S b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-index d8e2ac1..c245842 100644
---- a/arch/s390/kernel/vdso64/vdso64_wrapper.S
-+++ b/arch/s390/kernel/vdso64/vdso64_wrapper.S
-@@ -1,7 +1,8 @@
- #include <linux/init.h>
-+#include <linux/linkage.h>
- #include <asm/page.h>
- 
--	.section ".data.page_aligned"
-+	__PAGE_ALIGNED_DATA
- 
- 	.globl vdso64_start, vdso64_end
- 	.balign PAGE_SIZE
-diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
-index 5d367ca..549860d 100644
---- a/arch/x86/include/asm/cache.h
-+++ b/arch/x86/include/asm/cache.h
-@@ -1,6 +1,8 @@
- #ifndef _ASM_X86_CACHE_H
- #define _ASM_X86_CACHE_H
- 
-+#include <linux/linkage.h>
-+
- /* L1 cache line size */
- #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
- #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
-@@ -13,7 +15,7 @@
- #ifdef CONFIG_SMP
- #define __cacheline_aligned_in_smp					\
- 	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
--	__attribute__((__section__(".data.page_aligned")))
-+	__page_aligned_data
- #endif
- #endif
- 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index d41beee..3eba3ab 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -626,7 +626,7 @@ ENTRY(empty_zero_page)
-  * This starts the data section.
-  */
- #ifdef CONFIG_X86_PAE
--.section ".data.page_aligned","wa"
-+__PAGE_ALIGNED_DATA
- 	/* Page-aligned for the benefit of paravirt? */
- 	.align PAGE_SIZE_asm
- ENTRY(swapper_pg_dir)
--- 
-1.6.3.3
+In fs/binfmt_elf.c, load_elf_interp() calls padzero() for .bss even if
+the PT_LOAD has no PROT_WRITE and no .bss.  This generates EFAULT.
 
+Here is a small test case.  (Yes, there are other, useful PT_INTERP
+which have only .text and no .data/.bss.)
+
+	----- ptinterp.S
+	_start: .globl _start
+		 nop
+		 int3
+	-----
+	$ gcc -m32 -nostartfiles -nostdlib -o ptinterp ptinterp.S
+	$ gcc -m32 -Wl,--dynamic-linker=ptinterp -o hello hello.c
+	$ ./hello
+	Segmentation fault  # during execve() itself
+
+	After applying the patch:
+	$ ./hello
+	Trace trap  # user-mode execution after execve() finishes
+
+If the ELF headers are actually self-inconsistent, then dying is fine.
+But having no PROT_WRITE segment is perfectly normal and correct if
+there is no segment with p_memsz > p_filesz (i.e. bss).  John Reiser
+suggested checking for PROT_WRITE in the bss logic.  I think it makes
+most sense to simply apply the bss logic only when there is bss.
+
+This patch looks less trivial than it is due to some reindentation.
+It just moves the "if (last_bss > elf_bss) {" test up to include the
+partial-page bss logic as well as the more-pages bss logic.
+
+Reported-by: John Reiser <jreiser@bitwagon.com>
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ fs/binfmt_elf.c |   28 ++++++++++++++--------------
+ 1 files changed, 14 insertions(+), 14 deletions(-)
+
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index b7c1603..7c1e65d 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -501,22 +501,22 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+ 		}
+ 	}
+ 
+-	/*
+-	 * Now fill out the bss section.  First pad the last page up
+-	 * to the page boundary, and then perform a mmap to make sure
+-	 * that there are zero-mapped pages up to and including the 
+-	 * last bss page.
+-	 */
+-	if (padzero(elf_bss)) {
+-		error = -EFAULT;
+-		goto out_close;
+-	}
++	if (last_bss > elf_bss) {
++		/*
++		 * Now fill out the bss section.  First pad the last page up
++		 * to the page boundary, and then perform a mmap to make sure
++		 * that there are zero-mapped pages up to and including the
++		 * last bss page.
++		 */
++		if (padzero(elf_bss)) {
++			error = -EFAULT;
++			goto out_close;
++		}
+ 
+-	/* What we have mapped so far */
+-	elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
++		/* What we have mapped so far */
++		elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
+ 
+-	/* Map the last of the bss segment */
+-	if (last_bss > elf_bss) {
++		/* Map the last of the bss segment */
+ 		down_write(&current->mm->mmap_sem);
+ 		error = do_brk(elf_bss, last_bss - elf_bss);
+ 		up_write(&current->mm->mmap_sem);
