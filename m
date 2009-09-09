@@ -1,83 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752368AbZIIKSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752526AbZIIKjE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752368AbZIIKSA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 06:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZIIKR7
+	id S1752526AbZIIKjE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 06:39:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZIIKjE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 06:17:59 -0400
-Received: from mail-in-16.arcor-online.net ([151.189.21.56]:55630 "EHLO
-	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751525AbZIIKR6 (ORCPT
+	Wed, 9 Sep 2009 06:39:04 -0400
+Received: from web180408.mail.gq1.yahoo.com ([67.195.15.90]:33894 "HELO
+	web180408.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751705AbZIIKjD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 06:17:58 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-04.arcor-online.net 5202B33AA81
-Message-ID: <4AA780D7.7040609@arcor.de>
-Date: Wed, 09 Sep 2009 13:17:59 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+	Wed, 9 Sep 2009 06:39:03 -0400
+X-Greylist: delayed 609 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Sep 2009 06:39:03 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=bellsouth.net;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Reply-To:Subject:To:MIME-Version:Content-Type;
+  b=rk15JCJx32gFfLLKwQd2G3Vq7IyGbjMSGkCtv6I/Fdsdkec8fBOOxDETTZVWDJq4cluWf/pOvRuHl7gkQRcZwHpwaIHtRKevmdW5vLKSPzWnHbxazmKaXW8l2BJWRtFbNM4In6o2PtlkGtBrLZ9rxQApCfjJgdTpaZ2ZikgleH0=;
+Message-ID: <331925.27042.qm@web180408.mail.gq1.yahoo.com>
+X-YMail-OSG: odAC9hAVM1kpCYWeTQL2NGZykm23pN8EDaXxEpDxOkFsdzZlu_uzLG45ljV_YKFYVdV_r4mNXxZVWHPqMX3.MNtShlkiDpIHcbAyUB02CCwkXFF2YZBOeoMqyBbQ_N1MpEyvBPiELqI6WK75Lnp_jHGJuRutLRUGmN6meTBG0FGbw1zww_LqJ6slQECMQizXHAqhH4DKgns00Q2bEphCBv2cVzhxJE_vtPs5j40RlrfCI1saQzwXm.XypUAyhSO1luPUg2zo4Z5lTTK_hDqnJqqGjXtLDzqimbDhfbbLmS1mYH1EiX63bYFMDvWS2NuejUZw4kAXAM5BqrUIToqoY94PYBTDbaSCClZSu19RYNCOThRQWJ.Qu0QYOcaGaKuCM69wDiBIBr0_WQUiJnOn1e0-
+X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
+Date: Wed, 9 Sep 2009 03:27:26 -0700 (PDT)
+From: Irish News Center <promonoticen@bellsouth.net>
+Reply-To: irln.derekwhite@live.com
+Subject: File For Claims/Final Notification
+To: undisclosed recipients:;
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       Jens Axboe <jens.axboe@oracle.com>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <20090906205952.GA6516@elte.hu>	 <20090907094953.GP18599@kernel.dk> <20090907115750.GW18599@kernel.dk>	 <20090907141458.GD24507@elte.hu> <20090907173846.GB18599@kernel.dk>	 <20090907204458.GJ18599@kernel.dk> <20090908091304.GQ18599@kernel.dk>	 <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk>	 <20090909061308.GA28109@elte.hu>	 <1252486344.28645.18.camel@marge.simson.net>  <4AA76FD2.1050103@arcor.de> <1252487869.7746.181.camel@twins> <4AA7780A.3000008@arcor.de>
-In-Reply-To: <4AA7780A.3000008@arcor.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2009 12:40 PM, Nikos Chantziaras wrote:
-> On 09/09/2009 12:17 PM, Peter Zijlstra wrote:
->> On Wed, 2009-09-09 at 12:05 +0300, Nikos Chantziaras wrote:
->>
->>> Thank you for mentioning min_granularity. After:
->>>
->>> echo 10000000> /proc/sys/kernel/sched_latency_ns
->>> echo 2000000> /proc/sys/kernel/sched_min_granularity_ns
->>
->> You might also want to do:
->>
->> echo 2000000> /proc/sys/kernel/sched_wakeup_granularity_ns
->>
->> That affects when a newly woken task will preempt an already running
->> task.
->
-> Lowering wakeup_granularity seems to make things worse in an interesting
-> way:
->
-> With low wakeup_granularity, the video itself will start skipping if I
-> move the window around. However, the window manager's effect of moving a
-> window around is smooth.
->
-> With high wakeup_granularity, the video itself will not skip while
-> moving the window around. But this time, the window manager's effect of
-> the window move is skippy.
->
-> (I should point out that only with the BFS-patched kernel can I have a
-> smooth video *and* a smooth window-moving effect at the same time.)
-> Mainline seems to prioritize one of the two according to whether
-> wakeup_granularity is raised or lowered. However, I have not tested
-> Mike's patch yet (but will do so ASAP.)
-
-I've tested Mike's patch and it achieves the same effect as raising 
-sched_min_granularity.
-
-To round it up:
-
-By testing various values for sched_latency_ns, sched_min_granularity_ns 
-and sched_wakeup_granularity_ns, I can achieve three results:
-
-   1. Fluid animations for the foreground app, skippy ones for
-      the rest (video plays nicely, rest of the desktop lags.)
-
-   2. Fluid animations for the background apps, a skippy one for
-      the one in the foreground (dekstop behaves nicely, video lags.)
-
-   3. Equally skippy/jerky behavior for all of them.
-
-Unfortunately, a "4. Equally fluid behavior for all of them" cannot be 
-achieved with mainline, unless I missed some other tweak.
+You've earned 750,000 Pounds.Send Information: Name; Age; Country.
