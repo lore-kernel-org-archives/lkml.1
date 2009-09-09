@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZIISCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753682AbZIISBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZIISCL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZIISCK
+	id S1753682AbZIISBP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZIISBO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:02:10 -0400
-Received: from baron.coraid.com ([12.51.113.4]:34649 "EHLO coraid.com"
+	Wed, 9 Sep 2009 14:01:14 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:34268 "EHLO relay.sgi.com"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752572AbZIISCJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:02:09 -0400
-From: Ed Cashin <ecashin@coraid.com>
-X-Mailer: nedmail
-Date: Wed, 9 Sep 2009 14:00:51 -0400
-To: alan@lxorguk.ukuu.org.uk, ecashin@coraid.com, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, apw@canonical.com, bonbons@linux-vserver.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
-Message-ID: <30b7855d211ab5b6bef6fe2cd9b76295@coraid.com>
-In-Reply-To: <20090909180804.3e62331a@lxorguk.ukuu.org.uk>
-References: <200909021955.n82JtkrI032267@imap1.linux-foundation.org>
-	<20090903063539.GH12579@kernel.dk>
-	<2339aa04a4e8fb440a52624273728352@coraid.com>
-	<20090904183525.GB18599@kernel.dk>
-	<f48e25c99e41e375f2ddd85989cd39e1@coraid.com>
-	<20090905051735.GH18599@kernel.dk>
-	<366469f19c41e0150028b886f6859019@coraid.com>
-	<20090908193540.GB18599@kernel.dk>
-	<60772f633c524ba873f569966fccd6ce@coraid.com>
-	<20090909180804.3e62331a@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+	id S1752373AbZIISBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 14:01:14 -0400
+Date: Wed, 9 Sep 2009 13:01:10 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: SGU UV Add volatile to macros that access chipset registers
+Message-ID: <20090909180110.GA10311@sgi.com>
+References: <20090909154246.GA26716@sgi.com> <1252512600.14793.125.camel@desktop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252512600.14793.125.camel@desktop>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed Sep  9 13:06:42 EDT 2009, alan@lxorguk.ukuu.org.uk wrote:
-> > The bio in question is a barrier.  Jens Axboe suggested that such bios
-> > need to be recognized and ended with -EOPNOTSUPP by any driver that
-> > provides its own ->make_request_fn handler and does not handle
-> > barriers.
-> > 
-> > In testing the changes below eliminate the BUG.
+On Wed, Sep 09, 2009 at 09:10:00AM -0700, Daniel Walker wrote:
+> On Wed, 2009-09-09 at 10:42 -0500, Jack Steiner wrote:
+> > Add "volatile" to the SGI UV read/write macros that are used to access chipset
+> > memory mapped registers.
 > 
-> Presumably AoE should actually issue an ATA cache flush for this case ?
+> There is a considerable document regarding the usage of volatile in the
+> kernel (Documentation/volatile-considered-harmful.txt). Considering that
+> document, can you give a more descriptive reason why your using
+> "volatile" here ?
+> 
 
-Yes.  The aoe driver juggles a set of in-process I/O operations that
-have been sent to the AoE target but have not yet received responses.
+I knew that "volatile" would catch someone's attention  :-)
 
-To implement the barrier, it would stop generating new AoE write
-commands, wait for AoE write responses for all the outstanding write
-commands, issue the ATA cache flush command, wait for the response to
-the flush, and then resume normal activity.
 
--- 
-  Ed
+Volatile is being added to the accessor functions that are used to
+read/write memory-mapped I/O registers located within the UV chipset.
+The use of volatile is hidden within the functions and is not exposed
+to the users of the functions.
+
+Note that the use is limited to the accessor functions in the header
+file. No .c files are changed or need to know about volatile.
+
+
+This seems to be consistent with other uses of volatile within the kernel.
+
+
+--- jack
