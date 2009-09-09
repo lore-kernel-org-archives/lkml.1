@@ -1,39 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754559AbZIIXd6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754565AbZIIXee@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754559AbZIIXd6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 19:33:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbZIIXd6
+	id S1754565AbZIIXee (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 19:34:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbZIIXed
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 19:33:58 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:56629 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752766AbZIIXd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 19:33:57 -0400
+	Wed, 9 Sep 2009 19:34:33 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:35652 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752849AbZIIXec (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 19:34:32 -0400
+Message-ID: <4AA83B88.2020104@codemonkey.ws>
+Date: Wed, 09 Sep 2009 18:34:32 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Christoph Hellwig <hch@infradead.org>
+CC: akataria@vmware.com, James Bottomley <James.Bottomley@suse.de>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V4.
+References: <1252458903.24914.73.camel@ank32.eng.vmware.com> <4AA8177A.2020606@codemonkey.ws> <1252533093.24633.40.camel@ank32.eng.vmware.com> <4AA8284A.3010908@codemonkey.ws> <20090909230854.GA4495@infradead.org>
+In-Reply-To: <20090909230854.GA4495@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-ID: <19112.15202.318732.299671@cargo.ozlabs.ibm.com>
-Date: Thu, 10 Sep 2009 09:33:54 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.31
-In-Reply-To: <alpine.LFD.2.01.0909091529530.7458@localhost.localdomain>
-References: <alpine.LFD.2.01.0909091529530.7458@localhost.localdomain>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds writes:
+Christoph Hellwig wrote:
+> On Wed, Sep 09, 2009 at 05:12:26PM -0500, Anthony Liguori wrote:
+>   
+>> Alok Kataria wrote:
+>>     
+>>> I see your point, but the ring logic or the ABI that we use to
+>>> communicate between the hypervisor and guest is not shared between our
+>>> storage and network drivers. As a result, I don't see any benefit of
+>>> separating out this ring handling mechanism, on the contrary it might
+>>> just add some overhead of translating between various layers for our
+>>> SCSI driver.
+>>>   
+>>>       
+>> But if you separate out the ring logic, it allows the scsi logic to be  
+>> shared by other paravirtual device drivers.  This is significant and  
+>> important from a Linux point of view.
+>>     
+>
+> As someone who has been hacking on a virtio scsi prototype I don't think
+> it's a good idea.  The vmware driver is a horrible design and I don't
+> think it should be merged.
 
-> There's also a fair chunk of new debugging/peformance counter stuff: 
-> memory leak detection ("kmemleak"), memory usage checking ("kmemcheck") 
-> and performance counters ("perf_counter"). Those new debugging features 
-> are not likely usable under any real load, but are good for finding kernel 
-> bugs at a huge performance cost.
+What are the issues with the design compared to how you're approaching 
+virtio-scsi?
 
-Just to be clear, that last sentence applies to kmemleak and
-kmemcheck, but not perf_counters, right?
+>   Besides beeing a ugly driver and ABI we
+> really should not support this kind of closed protocol development.
+>   
 
-Paul.
+I don't see how a VMM that doesn't share the source code for it's 
+backends or doesn't implement standard ABIs is any different than the 
+hundreds of hardware vendors that behave exactly the same way.
+
+We haven't even been successful in getting the Xen folks to present 
+their work on lkml before shipping it to their users.  Why would we 
+expect more from VMware if we're willing to merge the Xen stuff?
+
+Regards,
+
+Anthony Liguori
+
+
