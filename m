@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753111AbZIILz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753150AbZIIMCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753111AbZIILz4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 07:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753068AbZIILzz
+	id S1753150AbZIIMCU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 08:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbZIIMCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 07:55:55 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:55442 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753047AbZIILzz (ORCPT
+	Wed, 9 Sep 2009 08:02:19 -0400
+Received: from alpha.arachsys.com ([91.203.57.7]:38220 "EHLO
+	alpha.arachsys.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751725AbZIIMCS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 07:55:55 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Date: Wed, 9 Sep 2009 13:55:54 +0200
-User-Agent: KMail/1.9.9
-Cc: Arjan van de Ven <arjan@infradead.org>, realnc@arcor.de,
-       linux-kernel@vger.kernel.org
-References: <20090906205952.GA6516@elte.hu> <200909082222.44828.elendil@planet.nl> <1252489988.26522.46.camel@pasglop>
-In-Reply-To: <1252489988.26522.46.camel@pasglop>
+	Wed, 9 Sep 2009 08:02:18 -0400
+Date: Wed, 9 Sep 2009 13:02:18 +0100
+From: Chris Webb <chris@arachsys.com>
+To: linux-scsi@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>, Ric Wheeler <rwheeler@redhat.com>,
+       Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+Message-ID: <20090909120218.GB21829@arachsys.com>
+References: <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909091355.56335.elendil@planet.nl>
-X-OriginalArrivalTime: 09 Sep 2009 11:55:56.0828 (UTC) FILETIME=[7D9A45C0:01CA3144]
+In-Reply-To: <20090907115927.GU8710@arachsys.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 September 2009, Benjamin Herrenschmidt wrote:
-> On Tue, 2009-09-08 at 22:22 +0200, Frans Pop wrote:
-> > Arjan van de Ven wrote:
-> > > the latest version of latencytop also has a GUI (thanks to Ben)
-> >
-> > That looks nice, but...
-> >
-> > I kind of miss the split screen feature where latencytop would show
-> > both the overall figures + the ones for the currently most affected
-> > task. Downside of that last was that I never managed to keep the
-> > display on a specific task.
->
-> Any idea of how to present it ? I'm happy to spend 5mn improving the
-> GUI :-)
+Chris Webb <chris@arachsys.com> writes:
 
-I'd say add an extra horizontal split in the second column, so you'd get 
-three areas in the right column:
-- top for the global target (permanently)
-- middle for current, either:
-  - "current most lagging" if "Global" is selected in left column
-  - selected process if a specific target is selected in left column
-- bottom for backtrace
+> I've also noticed that during this recovery, I'm seeing lots of timeouts but
+> they don't seem to interrupt the resync:
+> 
+>   05:47:39 ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+>   05:47:39 ata5.00: cmd ec/00:01:00:00:00/00:00:00:00:00/00 tag 0 pio 512 in
+>   05:47:39         res 40/00:00:00:4f:c2/00:00:00:00:00/40 Emask 0x4 (timeout)
+>   05:47:39 ata5.00: status: { DRDY }
+>   05:47:39 ata5: hard resetting link
+>   05:47:49 ata5: softreset failed (device not ready)
+>   05:47:49 ata5: hard resetting link
+>   05:47:49 ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>   05:47:49 ata5.00: configured for UDMA/133
+>   05:47:49 ata5: EH complete
+>   
+>   08:17:39 ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+>   08:17:39 ata5.00: cmd ec/00:01:00:00:00/00:00:00:00:00/00 tag 0 pio 512 in
+>   08:17:39         res 40/00:00:35:83:f8/00:00:4d:00:00/40 Emask 0x4 (timeout)
+>   08:17:39 ata5.00: status: { DRDY }
+>   08:17:39 ata5: hard resetting link
+>   08:17:49 ata5: softreset failed (device not ready)
+>   08:17:49 ata5: hard resetting link
+>   08:17:49 ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>   08:17:49 ata5.00: configured for UDMA/133
+>   08:17:49 ata5: EH complete
+>   
+>   10:22:39 ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+>   10:22:39 ata5.00: cmd ec/00:01:00:00:00/00:00:00:00:00/00 tag 0 pio 512 in
+>   10:22:39         res 40/00:00:00:4f:c2/00:00:00:00:00/40 Emask 0x4 (timeout)
+>   10:22:39 ata5.00: status: { DRDY }
+>   10:22:39 ata5: hard resetting link
+>   10:22:49 ata5: softreset failed (device not ready)
+>   10:22:49 ata5: hard resetting link
+>   10:22:50 ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+>   10:22:51 ata5.00: configured for UDMA/133
+>   10:22:51 ata5: EH complete
 
-Maybe with that setup "Global" in the left column should be renamed to 
-something like "Dynamic".
+... the difference being that a timeout which causes a super_written failure
+seems to return an I/O error whereas the others don't:
 
-The backtrace area would show selection from either top or middle areas 
-(so selecting a cause in top or middle area should unselect causes in the 
-other).
+  ata5.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x6 frozen
+  ata5.00: cmd ea/00:00:00:00:00/00:00:00:00:00/a0 tag 0
+          res 40/00:00:00:00:00/00:00:00:00:00/a0 Emask 0x4 (timeout)
+  ata5.00: status: { DRDY }
+  ata5: hard resetting link
+  ata5: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+  ata5.00: configured for UDMA/133
+  ata5: EH complete
+  end_request: I/O error, dev sde, sector 1465147272
+  md: super_written gets error=-5, uptodate=0
+  raid10: Disk failure on sde3, disabling device.
+
+I wonder what's different about these two timeouts such that one causes an I/O
+error and the other just causes a retry after reset? Presumably if the latter
+was also just a retry, everything would be (closer to being) fine.
 
 Cheers,
-FJP
+
+Chris.
