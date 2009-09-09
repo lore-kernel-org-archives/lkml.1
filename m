@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZIICxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbZIICyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752744AbZIICxG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZIICxF
+	id S1752766AbZIICyk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZIICyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:53:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51245 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751922AbZIICxF (ORCPT
+	Tue, 8 Sep 2009 22:54:39 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:54849 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbZIICyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:53:05 -0400
-Subject: Re: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on
- oops
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AA715A3.8040108@cn.fujitsu.com>
-References: <4AA7092C.4070706@cn.fujitsu.com>
-	 <1252461867.11070.6.camel@gandalf.stny.rr.com>
-	 <20090909113231.0CE6.A69D9226@jp.fujitsu.com>
-	 <4AA715A3.8040108@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 08 Sep 2009 22:53:04 -0400
-Message-Id: <1252464784.12982.4.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 22:54:38 -0400
+Date: Wed, 9 Sep 2009 11:54:35 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Tim Abbott <tabbott@ksplice.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Chris Zankel <chris@zankel.net>
+Subject: Re: [PATCH v2 3/5] Use macros for .bss.page_aligned section.
+Message-ID: <20090909025435.GA23049@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Tim Abbott <tabbott@ksplice.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Sam Ravnborg <sam@ravnborg.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+	Chris Zankel <chris@zankel.net>
+References: <1252464546-26394-1-git-send-email-tabbott@ksplice.com> <1252464546-26394-4-git-send-email-tabbott@ksplice.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252464546-26394-4-git-send-email-tabbott@ksplice.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 10:40 +0800, Li Zefan wrote:
-
-> > I have another silly question.
-> > Why should we call tracing_off() in oops_enter()?
-> > 
+On Tue, Sep 08, 2009 at 10:49:04PM -0400, Tim Abbott wrote:
+> This patch changes the remaining direct references to
+> .bss.page_aligned in C and assembly code to use the macros in
+> include/linux/linkage.h.
 > 
-> I guess it's because trace outputs generated during oops can
-> overwrite/mess up those generated before oops?
+> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Ingo Molnar <mingo@redhat.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Chris Zankel <chris@zankel.net>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> ---
+>  arch/sh/kernel/irq.c      |    6 ++----
+>  arch/x86/kernel/head_32.S |    2 +-
+>  arch/x86/kernel/head_64.S |    2 +-
+>  arch/xtensa/kernel/head.S |    2 +-
+>  4 files changed, 5 insertions(+), 7 deletions(-)
 > 
-> It was added by this commit, but I can't find trace_printk_on_oops.
-
-That's because Thomas did not bother looking up the actual variable he
-was talking about. s/trace_printk_on_oops/ftrace_dump_on_oops/
-
--- Steve
-
-> 
-> commit bdff78707f3ce47e891f3201c9666122a70556ce
-> Author: Thomas Gleixner <tglx@linutronix.de>
-> Date:   Fri Jul 24 15:30:45 2009 -0400
-> 
->     trace: stop tracer in oops_enter()
-> 
->     If trace_printk_on_oops is set we lose interesting trace information
->     when the tracer is enabled across oops handling and printing. We want
->     the trace which might give us information _WHY_ we oopsed.
-> 
-
+Acked-by: Paul Mundt <lethal@linux-sh.org>
