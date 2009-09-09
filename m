@@ -1,82 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753022AbZIILsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753035AbZIILwF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753022AbZIILsG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 07:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752768AbZIILsF
+	id S1753035AbZIILwF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 07:52:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751986AbZIILwE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 07:48:05 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:59933 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752607AbZIILsE (ORCPT
+	Wed, 9 Sep 2009 07:52:04 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:49037 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751789AbZIILwC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 07:48:04 -0400
-Subject: Re: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on
- oops
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090909122425.0CEF.A69D9226@jp.fujitsu.com>
-References: <4AA715A3.8040108@cn.fujitsu.com>
-	 <1252464784.12982.4.camel@gandalf.stny.rr.com>
-	 <20090909122425.0CEF.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 09 Sep 2009 07:48:05 -0400
-Message-Id: <1252496885.27001.1.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Wed, 9 Sep 2009 07:52:02 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-06.arcor-online.net 7858B39A991
+Message-ID: <4AA796E2.405@arcor.de>
+Date: Wed, 09 Sep 2009 14:52:02 +0300
+From: Nikos Chantziaras <realnc@arcor.de>
+Organization: Lucas Barks
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Jens Axboe <jens.axboe@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+References: <20090906205952.GA6516@elte.hu>	 <20090907094953.GP18599@kernel.dk> <20090907115750.GW18599@kernel.dk>	 <20090907141458.GD24507@elte.hu> <20090907173846.GB18599@kernel.dk>	 <20090907204458.GJ18599@kernel.dk>  <20090908091304.GQ18599@kernel.dk> <1252423398.7746.97.camel@twins>
+In-Reply-To: <1252423398.7746.97.camel@twins>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 13:19 +0900, KOSAKI Motohiro wrote:
-> > On Wed, 2009-09-09 at 10:40 +0800, Li Zefan wrote:
-> > 
-> > > > I have another silly question.
-> > > > Why should we call tracing_off() in oops_enter()?
-> > > > 
-> > > 
-> > > I guess it's because trace outputs generated during oops can
-> > > overwrite/mess up those generated before oops?
-> > > 
-> > > It was added by this commit, but I can't find trace_printk_on_oops.
-> > 
-> > That's because Thomas did not bother looking up the actual variable he
-> > was talking about. s/trace_printk_on_oops/ftrace_dump_on_oops/
-> 
-> After a bit thinking, I think ftrace_dump_on_oops and kernel dump with panic have
-> very similar requirement.
-> Then, I think we can reuse this infrastructure for kernel dump.
-> 
-> Requirement
->   - Need to know why the problem occur.
->   - Need to don't logging oops (panic) internal.
-> 
-> Unfortunately, panic() call panic_notifier after crash_kexec().
-> it mean tracing_off() was not called when panic on the machine w/ kernel-dump.
-> 
-> 	NORET_TYPE void panic(const char * fmt, ...)
-> 	{
-> 	(snip)
-> 	        crash_kexec(NULL);
-> 	(snip)
-> 	        atomic_notifier_call_chain(&panic_notifier_list, 0, buf);
-> 
-> I think we can insert tracing_off() into panic() directly. it only
-> bit mask operation, it mean it don't have side effect risk.
-> 
-> Perhaps, There are other kernel dump specific requrement. but I guess
-> it's very small. Maybe it can be handled by trace_die_handler() or something like.
-> 
-> What do you think?
+On 09/08/2009 06:23 PM, Peter Zijlstra wrote:
+> On Tue, 2009-09-08 at 11:13 +0200, Jens Axboe wrote:
+>> And here's a newer version.
+>
+> I tinkered a bit with your proglet and finally found the problem.
+>
+> You used a single pipe per child, this means the loop in run_child()
+> would consume what it just wrote out until it got force preempted by the
+> parent which would also get woken.
+>
+> This results in the child spinning a while (its full quota) and only
+> reporting the last timestamp to the parent.
+>
+> Since consumer (parent) is a single thread the program basically
+> measures the worst delay in a thundering herd wakeup of N children.
+>
+> The below version yields:
+>
+> idle
+>
+> [root@opteron sched]# ./latt -c8 sleep 30
+> Entries: 664 (clients=8)
+>
+> Averages:
+> ------------------------------
+>          Max           128 usec
+>          Avg            26 usec
+>          Stdev          16 usec
+>
+>
+> make -j4
+>
+> [root@opteron sched]# ./latt -c8 sleep 30
+> Entries: 648 (clients=8)
+>
+> Averages:
+> ------------------------------
+>          Max         20861 usec
+>          Avg          3763 usec
+>          Stdev        4637 usec
+>
+>
+> Mike's patch, make -j4
+>
+> [root@opteron sched]# ./latt -c8 sleep 30
+> Entries: 648 (clients=8)
+>
+> Averages:
+> ------------------------------
+>          Max         17854 usec
+>          Avg          6298 usec
+>          Stdev        4735 usec
 
-Yes, a tracing_off() should be in the beginning of panic. I had a patch
-to do this, but I never sent it out :-/
+I've run two tests with this tool.  One with mainline (2.6.31-rc9) and 
+one patched with 2.6.31-rc9-sched-bfs-210.patch.
 
--- Steve
+Before running this test, I disabled the cron daemon in order not to 
+have something pop-up in the background out of a sudden.
+
+The test consisted of starting a "make -j2" in the kernel tree inside a 
+3GB tmpfs mountpoint and then running 'latt "mplayer -vo gl2 -framedrop 
+videofile.mkv"'  (mplayer in this case is a single-threaded 
+application.)  Caches were warmed-up first; the results below are from 
+the second run of each test.
+
+The kernel .config file used by the running kernels and also for "make 
+-j2" is:
+
+   http://foss.math.aegean.gr/~realnc/kernel/config-2.6.31-rc9-latt-test
+
+The video file used for mplayer is:
+
+   http://foss.math.aegean.gr/~realnc/vids/3DMark2000.mkv (100MB)
+   (The reason this was used is that it's a 60FPS video,
+   therefore very smooth and makes all skips stand out
+   clearly.)
 
 
+Results for mainline:
+
+   Averages:
+   ------------------------------
+           Max         29930 usec
+           Avg         11043 usec
+           Stdev        5752 usec
+
+
+Results for BFS:
+
+   Averages:
+   ------------------------------
+           Max         14017 usec
+           Avg            49 usec
+           Stdev         697 usec
+
+
+One thing that's worth noting is that with mainline, mplayer would 
+occasionally spit this out:
+
+    YOUR SYSTEM IS TOO SLOW TO PLAY THIS
+
+which doesn't happen with BFS.
