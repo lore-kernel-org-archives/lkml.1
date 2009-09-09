@@ -1,89 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZIIOwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752034AbZIIKxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753296AbZIIOwv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZIIOwv
+	id S1752034AbZIIKxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 06:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZIIKxa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:52:51 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:55628 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750940AbZIIOwu (ORCPT
+	Wed, 9 Sep 2009 06:53:30 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:43031 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750934AbZIIKxa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:52:50 -0400
-Date: Wed, 9 Sep 2009 16:21:22 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: vgoyal@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
-       akpm@linux-foundation.org, nauman@google.com,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-Message-ID: <20090909105122.GF8828@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090908.120119.71095369.ryov@valinux.co.jp> <20090908134244.GA15974@redhat.com> <20090908170649.GC8828@linux.vnet.ibm.com> <20090909.150511.112608142.ryov@valinux.co.jp>
+	Wed, 9 Sep 2009 06:53:30 -0400
+Message-ID: <4AA78926.9030001@gmail.com>
+Date: Wed, 09 Sep 2009 12:53:26 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909.150511.112608142.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH] proc: Documents guest column in /proc/stat
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 09 Sep 2009 12:53:26 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 03:05:11PM +0900, Ryo Tsuruta wrote:
-> Hi,
-> 
-> Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > > > - dm-ioband can use without cgroup. (I remember Vivek said it's not an
-> > > >   advantage.)
-> > > 
-> > > I think this is more of a disadvantage than advantage. We have a very well
-> > > defined functionality of cgroup in kernel to group the tasks. Now you are
-> > > coming up with your own method of grouping the tasks which will make life
-> > > even more confusing for users and application writers.
-> 
-> I know that cgroup is a very well defined functionality, that is why
-> dm-ioband also supports throttling per cgroup. But how are we supposed
-> to do throttling on the system which doesn't support cgroup?
-> As I wrote in another mail to Vivek, I would like to make use of
-> dm-ioband on RHEL 5.x. 
+We added a new column in cpuX lines of /proc/stat, to show
+the amount of time spent by a cpu servicing a guest, without
+updating Documentation/filesystems/proc.txt
 
-Hi Ryo,
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+---
 
-I am not sure that upstream should really be worrying about RHEL 5.x.
-cgroups is a relatively mature solution and is available in most (if not
-all) community distros today. We really should not be looking at another
-grouping solution if the sole reason is that then dm-ioband can be used
-on RHEL 5.x. The correct solution would be to maintain a separate patch
-for RHEL 5.x then and not to burden the upstream kernel.
+diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+index ffead13..1c96cb6 100644
+--- a/Documentation/filesystems/proc.txt
++++ b/Documentation/filesystems/proc.txt
+@@ -1032,9 +1032,9 @@ Various pieces   of  information about  kernel activity  are  available in the
+ since the system first booted.  For a quick look, simply cat the file:
+ 
+   > cat /proc/stat
+-  cpu  2255 34 2290 22625563 6290 127 456 0
+-  cpu0 1132 34 1441 11311718 3675 127 438 0
+-  cpu1 1123 0 849 11313845 2614 0 18 0
++  cpu  2255 34 2290 22625563 6290 127 456 0 0
++  cpu0 1132 34 1441 11311718 3675 127 438 0 0
++  cpu1 1123 0 849 11313845 2614 0 18 0 0
+   intr 114930548 113199788 3 0 5 263 0 4 [... lots more numbers ...]
+   ctxt 1990473
+   btime 1062191376
+@@ -1056,6 +1056,7 @@ second).  The meanings of the columns are as follows, from left to right:
+ - irq: servicing interrupts
+ - softirq: servicing softirqs
+ - steal: involuntary wait
++- guest: running a guest
+ 
+ The "intr" line gives counts of interrupts  serviced since boot time, for each
+ of the  possible system interrupts.   The first  column  is the  total of  all
 
-> And I don't think that the grouping methods are not complicated, just
-> stack a new device on the existing device and assign bandwidth to it,
-> that is the same method as other device-mapper targets, if you would
-> like to assign bandwidth per thread, then register the thread's ID to
-> the device and assign bandwidth to it as well. I don't think it makes
-> users confused.
-> 
-> > I would tend to agree with this. With other resource management
-> > controllers using cgroups, having dm-ioband use something different will
-> > require a different set of userspace tools/libraries to be used.
-> > Something that will severly limit its usefulness froma programmer's
-> > perspective.
-> 
-> Once we create a dm-ioband device, the device can be configured
-> through the cgroup interface. I think it will not severly limit its
-> usefulness.
-> 
-
-My objection is slightly different. My objection is that there are too
-many interfaces to do the same thing. Which one of these is the
-recommended one? WHich one is going to be supported? If we say that
-cgroups is not the preferred interface, do the application developers
-need to use yet another library for io control along with cpu/memory
-control?
-
-thanks,
--- 
-regards,
-Dhaval
