@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753802AbZIITVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbZIITUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753802AbZIITVc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 15:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZIITVb
+	id S1753677AbZIITUb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 15:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753141AbZIITUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 15:21:31 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:40614 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752007AbZIITVb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 15:21:31 -0400
-Date: Wed, 9 Sep 2009 15:20:03 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 00/48] 2.6.27.32-stable review
-Message-ID: <20090909152003.75b8eecf@dhcp-100-2-144.bos.redhat.com>
-In-Reply-To: <20090909183640.GA17027@suse.de>
-References: <20090909030843.GC10608@suse.de>
-	<20090909073150.44F8C12B5F@gandalf.tls.msk.ru>
-	<20090909132340.GA12391@suse.de>
-	<20090909182802.GA12456@mail.oracle.com>
-	<20090909183640.GA17027@suse.de>
-Organization: Red Hat, Inc.
+	Wed, 9 Sep 2009 15:20:31 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:41482 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753090AbZIITUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 15:20:30 -0400
+Date: Wed, 9 Sep 2009 14:20:30 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: SGU UV Add volatile to macros that access chipset registers
+Message-ID: <20090909192030.GA10530@sgi.com>
+References: <20090909154246.GA26716@sgi.com> <1252512600.14793.125.camel@desktop> <20090909180110.GA10311@sgi.com> <1252519885.14793.135.camel@desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252519885.14793.135.camel@desktop>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009 11:36:40 -0700
-Greg KH <gregkh@suse.de> wrote:
-
+On Wed, Sep 09, 2009 at 11:11:25AM -0700, Daniel Walker wrote:
+> On Wed, 2009-09-09 at 13:01 -0500, Jack Steiner wrote:
+> > On Wed, Sep 09, 2009 at 09:10:00AM -0700, Daniel Walker wrote:
+> > > On Wed, 2009-09-09 at 10:42 -0500, Jack Steiner wrote:
+> > > > Add "volatile" to the SGI UV read/write macros that are used to access chipset
+> > > > memory mapped registers.
+> > > 
+> > > There is a considerable document regarding the usage of volatile in the
+> > > kernel (Documentation/volatile-considered-harmful.txt). Considering that
+> > > document, can you give a more descriptive reason why your using
+> > > "volatile" here ?
+> > > 
+> > 
+> > I knew that "volatile" would catch someone's attention  :-)
+> > 
+> > 
+> > Volatile is being added to the accessor functions that are used to
+> > read/write memory-mapped I/O registers located within the UV chipset.
+> > The use of volatile is hidden within the functions and is not exposed
+> > to the users of the functions.
+> > 
+> > Note that the use is limited to the accessor functions in the header
+> > file. No .c files are changed or need to know about volatile.
+> > 
+> > 
+> > This seems to be consistent with other uses of volatile within the kernel.
 > 
-> Very wierd.  I used the same patch to pick from :(
-> 
-> I'll go fix this up and do a new release for the .27 tree.  Thanks for
-> working it out for me.
-> 
+> The document that I cited specifically addresses memory accessors as not
+> needing the volatile keyword .. So your still not addressing exactly why
+> your code needs it .. Are your accessors special in some way? Is there
+> some defect your seeing without the volatile keyword?
 
-I diagnosed this and sent the fix to you on Saturday:
+The code is not yet in the kernel but the function that exposed the bug
+was one that had multiple access to the chipset RTC clock. This
+is a free running clock that counts at nsec rate. The compiler optimized
+the function so that a single read of the clock was done. This broken
+the timing that was trying to measure elapsed time.
 
-http://patchwork.kernel.org/patch/45946
+I scanned the standard header files and see numerous instances where inline
+functions use volatile. The usage of volatile in the UV macros (at least to
+me) seems consistent:
+
+	mmio_config_xxx()
+	native_apic_mem_xxx()
+	readb(), etc.
+	bit_ops functions
+	etc...
+
+What am I missing?
