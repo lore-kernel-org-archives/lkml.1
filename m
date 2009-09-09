@@ -1,110 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZIIPDG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753389AbZIIPEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbZIIPDG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 11:03:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZIIPDG
+	id S1753389AbZIIPEP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 11:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752587AbZIIPEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 11:03:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:18036 "EHLO mx1.redhat.com"
+	Wed, 9 Sep 2009 11:04:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:41457 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751599AbZIIPDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 11:03:04 -0400
-Message-ID: <4AA7C38E.8020306@redhat.com>
-Date: Wed, 09 Sep 2009 10:02:38 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	id S1752646AbZIIPEO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 11:04:14 -0400
+Date: Wed, 9 Sep 2009 16:04:19 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Frans Pop <elendil@planet.nl>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org
+Subject: Re: iwlagn: order 2 page allocation failures
+Message-ID: <20090909150418.GI24614@csn.ul.ie>
+References: <200909060941.01810.elendil@planet.nl> <84144f020909060114s74de2d2y850745dd82ece753@mail.gmail.com> <200909061028.48442.elendil@planet.nl> <1252226116.11274.10.camel@penberg-laptop> <20090908105415.GD28127@csn.ul.ie> <84144f020909080411n4e010308qa153039bee1b8336@mail.gmail.com> <20090908141701.GB2617@tuxdriver.com> <4AA67139.80301@lwfinger.net>
 MIME-Version: 1.0
-To: Jiri Kosina <jkosina@suse.cz>
-CC: Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
-       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
-       linux-ext4@vger.kernel.org
-Subject: Re: ext4+quota+nfs issue
-References: <4AA5E5F3.30309@primeinteractive.net> <4AA72C14.1020005@primeinteractive.net> <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <4AA67139.80301@lwfinger.net>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Kosina wrote:
-> [ adding relevant CCs ]
+On Tue, Sep 08, 2009 at 09:59:05AM -0500, Larry Finger wrote:
+> John W. Linville wrote:
+> > On Tue, Sep 08, 2009 at 02:11:35PM +0300, Pekka Enberg wrote:
+> >> On Tue, Sep 8, 2009 at 1:54 PM, Mel Gorman<mel@csn.ul.ie> wrote:
+> >>> My feeling is also that a number of these page allocation failures have
+> >>> been related to wireless drivers. Is that accurate? If so, have there
+> >>> been changes made to the wireless stack in this cycle that would have
+> >>> increased the order of pages allocated?
+> >> That's my general feeling as well. We have linux-wireless CC'd so
+> >> maybe this rings a bell for them.
+> > 
+> > AFAIK, this is only the second separate report.  The other related
+> > to ipw2200, which actually shares no code with the iwlagn driver and
+> > is not based on the mac80211 stack.
 > 
-> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
+> A previous issue concerned the interaction between wireless and SLUB
+> debugging that caused O(0) allocations to get bumped to O(1), but that
+
+Ok, but now they are getting bumped to order-2 because that is the allocation
+failure that's happening here. That's pretty risky for a __GFP_HIGH|__GFP_COMP
+allocation - i.e. high-priority and atomic allocation.
+
+> was not relevant to this case either. I'm not aware of any other page
+> allocation problems with wireless.
 > 
->> Hi,
->>
->> can somebody who is aware of ext4 and quota have a look on this one?
->>
 
-This was also just reported at:
+Are atomic order-2 allocations really expected in wireless or has something
+else changed recently? Other than slub-debug, what options have been
+recently added that can push kmalloc() requests up slightly and possible
+make an order-1 allocation an order-2? If it's not in wireless, has there
+been additional padding added to skbuffs in the networking layer that might
+have pushed an allocation over an order-1 boundary increasing the size of
+the allocation to order-2?
 
-https://bugzilla.redhat.com/show_bug.cgi?id=521914
+The reporter says that the machine grinds for a bit and recovers which
+is consistent with kswapd kicking in to reclaim the contiguous pages but
+it's hardly desirable.
 
--Eric
+Franz, in the full dmesg was there any mention of "SLUB: Unable to allocate
+memory on node"? If so, could you post the contents of that as well because
+it should tell us more about the slab allocation that failed which vaguely
+looks like the path that went splat. Also, did you have any slub debug
+options enabled on the command line?
 
->> Thanks,
->>
->> P.
->>
->> On 8. 9. 2009 7:04, Pavol Cvengros wrote:
->>> Hello,
->>>
->>> recently we have build and started to use raid storage with formatted
->>> capacity of 4.5T (ext4 formatted, default params).
->>> FS has quota turned on and is exported via NFS to nodes.
->>> If we turn qouta on on this FS and are trying to use it over NFS we get the
->>> following:
->>>
->>> ------------[ cut here ]------------
->>> WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
->>> Hardware name: S3210SH
->>> Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc
->>> coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd floppy
->>> usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
->>> Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
->>> Call Trace:
->>>  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
->>>  [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
->>>  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
->>>  [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
->>>  [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
->>>  [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
->>>  [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
->>>  [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
->>>  [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
->>>  [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
->>>  [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
->>>  [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
->>>  [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
->>>  [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
->>>  [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
->>>  [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
->>>  [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
->>>  [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
->>>  [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
->>>  [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
->>>  [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
->>>  [<ffffffff80292110>] ? pdflush+0x120/0x230
->>>  [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
->>>  [<ffffffff80291ff0>] ? pdflush+0x0/0x230
->>>  [<ffffffff80261154>] ? kthread+0x64/0xc0
->>>  [<ffffffff8020d13a>] ? child_rip+0xa/0x20
->>>  [<ffffffff802610f0>] ? kthread+0x0/0xc0
->>>  [<ffffffff8020d130>] ? child_rip+0x0/0x20
->>> ---[ end trace cb54e6523e9ab60d ]---
->>>
->>> fstab entry:
->>> /dev/sdb1              /mnt/storage    ext4
->>> noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0 
->>>
->>> qith quotaoff on tihs FS, warnings stop.
->>>
->>> Question is if it's safe to use quotas with this problem (warning) or not.
->>> Can't afford data damage.
->>>
->>> Thanks,
->>>
->>> Pavol Cvengros
+Thanks
 
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
