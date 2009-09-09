@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753194AbZIIOLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753263AbZIIOSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753194AbZIIOLr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZIIOLq
+	id S1753263AbZIIOSi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbZIIOSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:11:46 -0400
-Received: from fifo99.com ([67.223.236.141]:57272 "EHLO fifo99.com"
+	Wed, 9 Sep 2009 10:18:37 -0400
+Received: from fifo99.com ([67.223.236.141]:49032 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750839AbZIIOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:11:46 -0400
-Subject: Re: [PATCH 2/2] tracing/events: Add kexec tracepoints
+	id S1751786AbZIIOSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 10:18:37 -0400
+Subject: Re: Staging tree status for the .32 kernel merge
 From: Daniel Walker <dwalker@fifo99.com>
-To: rostedt@goodmis.org
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Eric Biederman <ebiederm@xmission.com>
-In-Reply-To: <1252496788.27001.0.camel@gandalf.stny.rr.com>
-References: <4AA70198.9070500@cn.fujitsu.com>  <4AA701B3.704@cn.fujitsu.com>
-	 <1252459241.14793.40.camel@desktop>  <4AA70451.6050307@cn.fujitsu.com>
-	 <1252472376.14793.85.camel@desktop>
-	 <1252496788.27001.0.camel@gandalf.stny.rr.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       devel@driverdev.osuosl.org, swetland@google.com
+In-Reply-To: <20090909095702.GB28615@elf.ucw.cz>
+References: <20090903041429.GA29875@kroah.com>
+	 <20090906052819.GE1324@ucw.cz> <1252338939.2139.21.camel@desktop>
+	 <20090909095702.GB28615@elf.ucw.cz>
 Content-Type: text/plain
-Date: Wed, 09 Sep 2009 07:12:08 -0700
-Message-Id: <1252505528.14793.93.camel@desktop>
+Date: Wed, 09 Sep 2009 07:19:01 -0700
+Message-Id: <1252505941.14793.97.camel@desktop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -31,35 +28,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 07:46 -0400, Steven Rostedt wrote:
-> On Tue, 2009-09-08 at 21:59 -0700, Daniel Walker wrote:
-> > On Wed, 2009-09-09 at 09:26 +0800, Li Zefan wrote:
-> > > Daniel Walker wrote:
-> > > > On Wed, 2009-09-09 at 09:15 +0800, Li Zefan wrote:
-> > > >> +       TP_STRUCT__entry(
-> > > >> +               __string(       msg,    msg     )
-> > > >> +       ),
-> > > > 
-> > > > Why the funny spacing here?
-> > > > 
-> > > 
-> > > To make the code better-looking.
-> > > 
-> > > This is the coding-style we use for the code in
-> > > include/trace/events/*.
-> > 
-> > It's part of Linux right? We already have a coding style ..
+On Wed, 2009-09-09 at 11:57 +0200, Pavel Machek wrote:
+> Hi!
 > 
-> It's a special macro. What are you now, part of the style police?
+> > > > 	  Note, Pavel has been adding some of the Dream hardware
+> > > > 	  drivers, which are separate from the core Android drivers.  I
+> > > > 	  have no objection to those, but they should work to get merged
+> > > > 	  to their "correct" places in the tree in another release or
+> > > > 	  so.
+> > > 
+> > > Well, some of those drivers should be moderately easy (touchscreen),
+> > > but some (camera) will take longer than that. For example camera --
+> > > contains _lots_ of code, and uses obsolete v4l api.
+> > > 
+> > > Plus, I really need to get recent kernel to boot and then get arch/arm
+> > > pieces merged....
+> > 
+> > I've got a tree with a lot of the arch/arm/msm pieces isolated, doesn't
+> > boot yet .. I had to drop certain parts like the key pad support since
+> > it had a big generic change attached to it .. It's all part of a git
+> > tree which I can expose if you want to look at it.
+> 
+> Yes, minimal, but booting version would be very welcome. I tried to
+> produce exactly that few times, but did not succeed (yet).
 
-I'm just like everyone else, someone who asks questions and makes
-comments .. By using a different style than what the rest of Linux uses
-your putting yourself at a disadvantage since you can't easily use
-checkpatch on that code (even the stuff that is compliant) ..
+Last night I discovered maybe a better tree to use ..
 
-Not to mention people might start sending you clean ups that you maybe
-won't accept. You could always modify checkpatch to recognize your
-style.
+https://www.codeaurora.org/gitweb/quic/kernel/?p=bryanh/linux-2.6.git;a=summary
+
+It's based off a newer kernel 2.6.31-rc6 . I have a feeling it's minus a
+lot of the google stuff.
 
 Daniel
 
