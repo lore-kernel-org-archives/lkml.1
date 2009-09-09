@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753503AbZIIPWD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753478AbZIIP2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753503AbZIIPWD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 11:22:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZIIPWD
+	id S1753478AbZIIP2x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 11:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbZIIP2w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 11:22:03 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:40184 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753083AbZIIPWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 11:22:01 -0400
-Date: Wed, 9 Sep 2009 16:22:06 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [Bug #14141] order 2 page allocation failures
-Message-ID: <20090909152206.GJ24614@csn.ul.ie>
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <Vm51Upp4EV.A.RWB.7eBpKB@chimera>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Vm51Upp4EV.A.RWB.7eBpKB@chimera>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Wed, 9 Sep 2009 11:28:52 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:48703 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752774AbZIIP2w (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 11:28:52 -0400
+Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com>
+	 <1251129384.22398.7166.camel@nimitz>
+	 <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com>
+	 <1251150156.22398.8289.camel@nimitz>
+	 <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com>
+	 <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Wed, 09 Sep 2009 08:28:49 -0700
+Message-Id: <1252510129.14385.37045.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 06, 2009 at 07:24:58PM +0200, Rafael J. Wysocki wrote:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
-> 
-> The following bug entry is on the current list of known regressions
-> from 2.6.30.  Please verify if it still should be listed and let me know
-> (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14141
-> Subject		: order 2 page allocation failures
-> Submitter	: Frans Pop <elendil@planet.nl>
-> Date		: 2009-09-06 7:40 (1 days old)
-> References	: http://marc.info/?l=linux-kernel&m=125222287419691&w=4
-> Handled-By	: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
+On Tue, 2009-09-08 at 15:26 -0700, David Rientjes wrote:
+> I'm struggling to find other examples.  Dave, do you know of any 
+> subsystems in the kernel that can readily be converted to using flex 
+> array?
 
-AFAIK, this is still a problem. Have requested more information in
-relation to the bug. 
+I don't know of any offhand.  Someone mentioned oprofile buffers at some
+point, but I looked through it and it didn't pop out at me.
 
-As an aside, the subject seems to have lost the iwlagn aspect of this
-bug.
+-- Dave
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
