@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZIIC3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZIICds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbZIIC3N (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751417AbZIIC3M
+	id S1752354AbZIICds (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZIICdr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:29:12 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:62929 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751308AbZIIC3M (ORCPT
+	Tue, 8 Sep 2009 22:33:47 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:34772 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751094AbZIICdr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:29:12 -0400
-Subject: Re: [BUG] lockup with the latest kernel
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Tejun Heo <tj@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0908281428180.3647@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0908191134260.12663@gandalf.stny.rr.com>
-	 <alpine.DEB.2.00.0908271836140.26718@gandalf.stny.rr.com>
-	 <4A9744F4.7010208@kernel.org>
-	 <alpine.LFD.2.00.0908272059320.7223@eeepc.linux-foundation.org>
-	 <alpine.DEB.2.00.0908281213180.3647@gandalf.stny.rr.com>
-	 <alpine.DEB.2.00.0908281428180.3647@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Tue, 08 Sep 2009 22:29:13 -0400
-Message-Id: <1252463353.11070.12.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 8 Sep 2009 22:33:47 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: rostedt@goodmis.org
+Subject: Re: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on oops
+Cc: kosaki.motohiro@jp.fujitsu.com, Li Zefan <lizf@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1252461867.11070.6.camel@gandalf.stny.rr.com>
+References: <4AA7092C.4070706@cn.fujitsu.com> <1252461867.11070.6.camel@gandalf.stny.rr.com>
+Message-Id: <20090909113231.0CE6.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed,  9 Sep 2009 11:33:46 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-08-28 at 14:33 -0400, Steven Rostedt wrote:
-> On Fri, 28 Aug 2009, Steven Rostedt wrote:
-> > On Thu, 27 Aug 2009, Linus Torvalds wrote:
-> > > > ...
-> > > > >> [13288.222084] EIP: 0060:[<c0110821>] EFLAGS: 00000002 CPU: 0
-> > > > >> [13288.222084] EIP is at default_send_IPI_mask_logical+0x53/0x92
+> On Wed, 2009-09-09 at 09:47 +0800, Li Zefan wrote:
+> > Steven Rostedt wrote:
+> > > On Wed, 2009-09-09 at 09:37 +0800, Li Zefan wrote:
+> > >> Steven Rostedt wrote:
+> > >>> On Wed, 2009-09-09 at 09:15 +0800, Li Zefan wrote:
+> > >>>> Currently we always disable tracing on oops, and this patch
+> > >>>> adds a sysctl so one can choose to enable it.
+> > >>> Hmm, we already have a way to enable it.
+> > >>>
+> > >>> # echo 1 > /debug/tracing/tracing_on
+> > >>>
+> > >> What I want is a way to not disable it when an oops happened. :)
+> > >>
 > > > 
-> > > Is this one perhaps fixed by b04e6373d694 ("x86: don't call 
-> > > '->send_IPI_mask()' with an empty mask")
+> > > Ah, I misunderstood. May I ask a silly question?
 > > > 
-> > > It sounds a _lot_ like that bug. Older dual-cpu x86 box, and APIC getting 
-> > > confused by the occasional empty CPU mask, and then subsequent IPI's will 
-> > > hang.
+> > > Why?
+> > > 
 > > 
-> > I'll update my box to that kernel and see what happens and let you know.
+> > Otherwise we won't get trace output from trae_crash_kexec if
+> > crash_kexec() is not called by panic(). For example:
+> > 
+> >   oops_begin()
+> > ->trace_off()
+> > ->panic_on_oops
+> > ->kexec_should_crash()
+> > ->crash_kexec()
 > 
-> I checked out the commit at b04e6373d694, compiled and booted that kernel. 
-> So far, so good. It survived logging into a gnome session (sometimes locks 
-> up there), and a full kernel compile (usually locks up there too). But 
-> there's been rare times that it would take days before hitting the bug.
-> 
-> I'll keep it in this kernel for a while and if it lasts the week, I'll 
-> consider it fixed. This box acts as my email, dhcp and web server, as well 
-> as one of the boxes in my distcc farm, thus it gets a bit of use. It will 
-> not be idle during this time period.
+> OK, but I'm not exactly sure what you final goal is here. To have a
+> something to search for in the ring buffer after the crash? Maybe
+> instead we can add a "trace_oops" event? Just put it before the
+> tracing_off call.
 
-Just an update.
+I have another silly question.
+Why should we call tracing_off() in oops_enter()?
 
-The box currently has an uptime of 11 days. I have not hit the bug at
-all, and it has survived numerous compiles (both locally and as a distcc
-server). It has been serving up my email and web pages without a hitch.
+1. Oops behavior depend on panic_on_oops sysctl.
+   Should we disable trace both case?
+2. Can I think the code treat to save oops in tracing code?
+   or it have more deeper intention?
 
-I'd say that commit fixed the bug. (knock on wood).
 
--- Steve
+Can anyone please explain it?
 
-(or it could have been the penguins:
 
-  http://rostedt.homelinux.com/gallery2/main.php?g2_itemId=7860 )
 
 
