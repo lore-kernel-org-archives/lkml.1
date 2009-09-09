@@ -1,47 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZIIABR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbZIIAIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbZIIABR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 20:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZIIABR
+	id S1752293AbZIIAIP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 20:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752039AbZIIAIO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 20:01:17 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:45688 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751362AbZIIABQ (ORCPT
+	Tue, 8 Sep 2009 20:08:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36841 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751972AbZIIAIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 20:01:16 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net 9DB683CA1F8
-Message-ID: <4AA6F04D.4020605@arcor.de>
-Date: Wed, 09 Sep 2009 03:01:17 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: [long] Another BFS versus CFS shakedown
-References: <200909090142.41738.elendil@planet.nl>
-In-Reply-To: <200909090142.41738.elendil@planet.nl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Tue, 8 Sep 2009 20:08:14 -0400
+Date: Tue, 8 Sep 2009 17:06:49 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tomaz.mertelj@guest.arnes.si
+Cc: lm-sensors@lm-sensors.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] hwmon: Driver for Texas Instruments amc6821 chip
+Message-Id: <20090908170649.855dd1ff.akpm@linux-foundation.org>
+In-Reply-To: <20090905_120834_010267.tomaz.mertelj@guest.arnes.si>
+References: <20090905_120834_010267.tomaz.mertelj@guest.arnes.si>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2009 02:42 AM, Frans Pop wrote:
-> But this evening, while I was preparing and running the tests, I've had 4
-> freezes of the desktop.
+On Sat, 5 Sep 2009 14:08:34 +0200
+tomaz.mertelj@guest.arnes.si wrote:
 
-Unfortunately BFS doesn't provide a reliable way (yet?) to run such 
-tests on it.  This might be the cause for the hangs (from bfs-faq.txt):
+> +	int temp1_input;
+> +	int temp1_min;
+> +	int temp1_max;
+> +	int temp1_crit;
+> +
+> +	int temp2_input;
+> +	int temp2_min;
+> +	int temp2_max;
+> +	int temp2_crit;
+> +
+> +	u16 fan1_input;
+> +	u16 fan1_min;
+> +	u16 fan1_max;
+> +	u8 fan1_div;
+> +
+> +	u8 pwm1;
+> +	u8 temp1_auto_point_temp[3];
+> +	u8 temp2_auto_point_temp[3];
+> +	u8 pwm1_auto_point_pwm[3];
+> +	u8 pwm1_enable;
+> +	u8 pwm1_auto_channels_temp;
+> +
+> +	u8 stat1;
+> +	u8 stat2;
+> +};
+> +
+> +
+> +#define get_temp_para(name) \
+> +static ssize_t get_##name(\
+> +		struct device *dev,\
+> +		struct device_attribute *devattr,\
+> +		char *buf)\
+> +{\
+> +	struct amc6821_data *data = amc6821_update_device(dev);\
+> +	return sprintf(buf, "%d\n", data->name * 1000);\
+> +}
+> +
+> +get_temp_para(temp1_input);
+> +get_temp_para(temp1_min);
+> +get_temp_para(temp1_max);
+> +get_temp_para(temp2_input);
+> +get_temp_para(temp2_min);
+> +get_temp_para(temp2_max);
+> +get_temp_para(temp1_crit);
+> +get_temp_para(temp2_crit);
+> +
+> +#define set_temp_para(name, reg)\
+> +static ssize_t set_##name(\
+> +		struct device *dev,\
+> +		struct device_attribute *attr,\
+> +		const char *buf,\
+> +		size_t count)\
+> +{ \
+> +	struct i2c_client *client = to_i2c_client(dev); \
+> +	struct amc6821_data *data = i2c_get_clientdata(client); \
+> +	int val = simple_strtol(buf, NULL, 10); \
+> +	\
+> +	mutex_lock(&data->update_lock); \
+> +	data->name = SENSORS_LIMIT(val / 1000, -128, 127); \
+> +	if (i2c_smbus_write_byte_data(client, reg, data->name)) {\
+> +		dev_err(&client->dev, "Register write error, aborting.\n");\
+> +		count = -EIO;\
+> +	} \
+> +	mutex_unlock(&data->update_lock); \
+> +	return count; \
+> +}
 
-   Currently known problems?
-   [...]
-   3. Stuck tasks after extensive use of trace functions
-   (ptrace etc.).
-   [...]
-   5. More likely to show up bugs in *other* code due to
-   being much more aggressive at using multiple CPUs so
-   race conditions will show up more frequently.
+I'm wondering if these functions need to be so huge.  Couldn't you do
+
+#define set_temp_para(name, reg)\
+static ssize_t set_##name(\
+		struct device *dev,\
+		struct device_attribute *attr,\
+		const char *buf,\
+		size_t count)\
+{\
+	return set_helper(dev, attr, buf, count, &dev->name);\
+}
+
+And then do all the real work in a common function?  Rather than
+expanding tens of copies of the same thing?
+
+Also, the checkpatch warning
+
+WARNING: consider using strict_strtol in preference to simple_strtol
+#381: FILE: drivers/hwmon/amc6821.c:228:
++       int val = simple_strtol(buf, NULL, 10); \
+
+is valid.  The problem with simple_strtol() is that it will treat input
+of the form "43foo" as "43".  Even though the input was invalid.  A
+minor thing, but easily fixed too.
+
+
