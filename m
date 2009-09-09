@@ -1,56 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752506AbZIIAFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZIIAUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752506AbZIIAFo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 20:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZIIAFn
+	id S1752502AbZIIAUY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 20:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbZIIAUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 20:05:43 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:59765 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751822AbZIIAFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 20:05:43 -0400
-Date: Wed, 9 Sep 2009 02:09:00 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Ryo Tsuruta <ryov@valinux.co.jp>, vgoyal@redhat.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
-       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-Message-ID: <20090909000900.GK17468@gandalf.sssup.it>
-References: <20090904231129.GA3689@redhat.com> <20090907.200222.193693062.ryov@valinux.co.jp> <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp> <4AA6AF58.3050501@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA6AF58.3050501@redhat.com>
-User-Agent: Mutt/1.4.2.3i
+	Tue, 8 Sep 2009 20:20:23 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:55754 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751662AbZIIAUX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 20:20:23 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=CqGUEF1DnS6fOueoOguH/AN4SJqxFCBrU/YYy4uWl617bkclC/1H0etobvQ41/a3N
+	LyCRIcSbleVWzlKKnqtPw==
+Date: Tue, 8 Sep 2009 17:20:16 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Jonathan Corbet <corbet@lwn.net>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [PATCH] Document flexible arrays
+In-Reply-To: <20090908175603.2bb02032@bike.lwn.net>
+Message-ID: <alpine.DEB.1.00.0909081714150.6263@chino.kir.corp.google.com>
+References: <20090908175603.2bb02032@bike.lwn.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, 8 Sep 2009, Jonathan Corbet wrote:
 
-> From: Rik van Riel <riel@redhat.com>
-> Date: Tue, Sep 08, 2009 03:24:08PM -0400
->
-> Ryo Tsuruta wrote:
-> >Rik van Riel <riel@redhat.com> wrote:
+> Document the flex_array library.
 > 
-> >>Are you saying that dm-ioband is purposely unfair,
-> >>until a certain load level is reached?
-> >
-> >Not unfair, dm-ioband(weight policy) is intentionally designed to
-> >use bandwidth efficiently, weight policy tries to give spare bandwidth
-> >of inactive groups to active groups.
+> A brief document on how to use flexible arrays, derived from an article
+> first published on LWN.
 > 
-> This sounds good, except that the lack of anticipation
-> means that a group with just one task doing reads will
-> be considered "inactive" in-between reads.
-> 
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 
-  anticipation helps in achieving fairness, but CFQ currently disables
-idling for nonrot+NCQ media, to avoid the resulting throughput loss on
-some SSDs.  Are we really sure that we want to introduce anticipation
-everywhere, not only to improve throughput on rotational media, but to
-achieve fairness too?
+Hmm, there are a number of changes in -mm that conflict with the 
+description given in this document (element poisoning, DEFINE_FLEX_ARRAY, 
+array shrinking, etc).  Perhaps this could be based on the -mm behavior 
+and get pushed through Andrew so that it's consistent when merged for 
+2.6.32?
+
+Thanks for writing this up, it's very descriptive and understandable.  I 
+think there's some question right now about whether flex arrays will be 
+very popular given we haven't identified any potential users at the 
+moment, though.  Adding this documentation may help in getting new code to 
+use it and inspire existing code to convert, so I think it's a good idea 
+if flex arrays are indeed here to stay.
