@@ -1,23 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752718AbZIICt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752779AbZIICtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752718AbZIICt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZIICt0
+	id S1752779AbZIICtt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752575AbZIICts
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:49:26 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45740 "EHLO
+	Tue, 8 Sep 2009 22:49:48 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45823 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752664AbZIICtZ (ORCPT
+	by vger.kernel.org with ESMTP id S1752441AbZIICtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:49:25 -0400
+	Tue, 8 Sep 2009 22:49:45 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Tim Abbott <tabbott@ksplice.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: [PATCH v2 4/5] powerpc: remove unused __page_aligned definition.
-Date: Tue,  8 Sep 2009 22:49:05 -0400
-Message-Id: <1252464546-26394-5-git-send-email-tabbott@ksplice.com>
+       Paul Mackerras <paulus@samba.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [PATCH v2 5/5] Use macros for .data.page_aligned section.
+Date: Tue,  8 Sep 2009 22:49:06 -0400
+Message-Id: <1252464546-26394-6-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1252464546-26394-1-git-send-email-tabbott@ksplice.com>
 References: <1252464546-26394-1-git-send-email-tabbott@ksplice.com>
@@ -27,37 +31,170 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is already an architecture-independent __page_aligned_data macro
-for this purpose, so removing the powerpc-specific macro should be
-harmless.
+This patch changes the remaining direct references to
+.data.page_aligned in C and assembly code to use the macros in
+include/linux/linkage.h.
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Paul Mackerras <paulus@samba.org>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/powerpc/include/asm/page_64.h |    8 --------
- 1 files changed, 0 insertions(+), 8 deletions(-)
+ arch/avr32/mm/init.c                        |    4 +---
+ arch/powerpc/kernel/vdso.c                  |    3 ++-
+ arch/powerpc/kernel/vdso32/vdso32_wrapper.S |    3 ++-
+ arch/powerpc/kernel/vdso64/vdso64_wrapper.S |    3 ++-
+ arch/s390/kernel/vdso.c                     |    2 +-
+ arch/s390/kernel/vdso32/vdso32_wrapper.S    |    3 ++-
+ arch/s390/kernel/vdso64/vdso64_wrapper.S    |    3 ++-
+ arch/x86/include/asm/cache.h                |    4 +++-
+ arch/x86/kernel/head_32.S                   |    2 +-
+ 9 files changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 5817a3b..22e4795 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -152,14 +152,6 @@ do {						\
+diff --git a/arch/avr32/mm/init.c b/arch/avr32/mm/init.c
+index e819fa6..cc60d10 100644
+--- a/arch/avr32/mm/init.c
++++ b/arch/avr32/mm/init.c
+@@ -24,11 +24,9 @@
+ #include <asm/setup.h>
+ #include <asm/sections.h>
  
- #endif /* !CONFIG_HUGETLB_PAGE */
- 
--#ifdef MODULE
--#define __page_aligned __attribute__((__aligned__(PAGE_SIZE)))
--#else
--#define __page_aligned \
--	__attribute__((__aligned__(PAGE_SIZE), \
--		__section__(".data.page_aligned")))
--#endif
+-#define __page_aligned	__attribute__((section(".data.page_aligned")))
 -
- #define VM_DATA_DEFAULT_FLAGS \
- 	(test_thread_flag(TIF_32BIT) ? \
- 	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+ DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
+ 
+-pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned;
++pgd_t swapper_pg_dir[PTRS_PER_PGD] __page_aligned_data;
+ 
+ struct page *empty_zero_page;
+ EXPORT_SYMBOL(empty_zero_page);
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index ad06d5c..f075591 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -1,3 +1,4 @@
++
+ /*
+  *    Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
+  *			 <benh@kernel.crashing.org>
+@@ -74,7 +75,7 @@ static int vdso_ready;
+ static union {
+ 	struct vdso_data	data;
+ 	u8			page[PAGE_SIZE];
+-} vdso_data_store __attribute__((__section__(".data.page_aligned")));
++} vdso_data_store __page_aligned_data;
+ struct vdso_data *vdso_data = &vdso_data_store.data;
+ 
+ /* Format of the patch table */
+diff --git a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+index 556f0ca..6e8f507 100644
+--- a/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
++++ b/arch/powerpc/kernel/vdso32/vdso32_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso32_start, vdso32_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+index 0529cb9..b8553d6 100644
+--- a/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
++++ b/arch/powerpc/kernel/vdso64/vdso64_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso64_start, vdso64_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/s390/kernel/vdso.c b/arch/s390/kernel/vdso.c
+index 45e1708..45a3e9a 100644
+--- a/arch/s390/kernel/vdso.c
++++ b/arch/s390/kernel/vdso.c
+@@ -75,7 +75,7 @@ __setup("vdso=", vdso_setup);
+ static union {
+ 	struct vdso_data	data;
+ 	u8			page[PAGE_SIZE];
+-} vdso_data_store __attribute__((__section__(".data.page_aligned")));
++} vdso_data_store __page_aligned_data;
+ struct vdso_data *vdso_data = &vdso_data_store.data;
+ 
+ /*
+diff --git a/arch/s390/kernel/vdso32/vdso32_wrapper.S b/arch/s390/kernel/vdso32/vdso32_wrapper.S
+index 61639a8..ae42f8c 100644
+--- a/arch/s390/kernel/vdso32/vdso32_wrapper.S
++++ b/arch/s390/kernel/vdso32/vdso32_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso32_start, vdso32_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/s390/kernel/vdso64/vdso64_wrapper.S b/arch/s390/kernel/vdso64/vdso64_wrapper.S
+index d8e2ac1..c245842 100644
+--- a/arch/s390/kernel/vdso64/vdso64_wrapper.S
++++ b/arch/s390/kernel/vdso64/vdso64_wrapper.S
+@@ -1,7 +1,8 @@
+ #include <linux/init.h>
++#include <linux/linkage.h>
+ #include <asm/page.h>
+ 
+-	.section ".data.page_aligned"
++	__PAGE_ALIGNED_DATA
+ 
+ 	.globl vdso64_start, vdso64_end
+ 	.balign PAGE_SIZE
+diff --git a/arch/x86/include/asm/cache.h b/arch/x86/include/asm/cache.h
+index 5d367ca..549860d 100644
+--- a/arch/x86/include/asm/cache.h
++++ b/arch/x86/include/asm/cache.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_X86_CACHE_H
+ #define _ASM_X86_CACHE_H
+ 
++#include <linux/linkage.h>
++
+ /* L1 cache line size */
+ #define L1_CACHE_SHIFT	(CONFIG_X86_L1_CACHE_SHIFT)
+ #define L1_CACHE_BYTES	(1 << L1_CACHE_SHIFT)
+@@ -13,7 +15,7 @@
+ #ifdef CONFIG_SMP
+ #define __cacheline_aligned_in_smp					\
+ 	__attribute__((__aligned__(1 << (INTERNODE_CACHE_SHIFT))))	\
+-	__attribute__((__section__(".data.page_aligned")))
++	__page_aligned_data
+ #endif
+ #endif
+ 
+diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
+index d41beee..3eba3ab 100644
+--- a/arch/x86/kernel/head_32.S
++++ b/arch/x86/kernel/head_32.S
+@@ -626,7 +626,7 @@ ENTRY(empty_zero_page)
+  * This starts the data section.
+  */
+ #ifdef CONFIG_X86_PAE
+-.section ".data.page_aligned","wa"
++__PAGE_ALIGNED_DATA
+ 	/* Page-aligned for the benefit of paravirt? */
+ 	.align PAGE_SIZE_asm
+ ENTRY(swapper_pg_dir)
 -- 
 1.6.3.3
 
