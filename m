@@ -1,102 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZIIWtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZIIXEO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbZIIWtQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 18:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZIIWtQ
+	id S1754444AbZIIXEO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 19:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZIIXEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 18:49:16 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:52337 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752602AbZIIWtP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 18:49:15 -0400
-From: Chetan.Loke@Emulex.Com
-To: <akataria@vmware.com>
-CC: <brking@linux.vnet.ibm.com>, <James.Bottomley@suse.de>,
-       <eike-kernel@sf-tec.de>, <matthew@wil.cx>, <rdreier@cisco.com>,
-       <bvanassche@acm.org>, <robert.w.love@intel.com>,
-       <randy.dunlap@oracle.com>, <michaelc@cs.wisc.edu>,
-       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
-       <pv-drivers@vmware.com>
-Date: Wed, 9 Sep 2009 15:48:38 -0700
-Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA - V3.
-Thread-Topic: [PATCH] SCSI driver for VMware's virtual HBA - V3.
-Thread-Index: Acow6fLRT41oDWMjT+e69A7rLm4InwAsy7Kw
-Message-ID: <412A05BA40734D4887DBC67661F433080FF72C2B@EXMAIL.ad.emulex.com>
-References: <1252006675.18725.20.camel@ank32.eng.vmware.com>
-	 <4AA03A9F.2040500@linux.vnet.ibm.com>
-	 <412A05BA40734D4887DBC67661F433080FF72585@EXMAIL.ad.emulex.com>
- <1252458467.24914.66.camel@ank32.eng.vmware.com>
-In-Reply-To: <1252458467.24914.66.camel@ank32.eng.vmware.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Wed, 9 Sep 2009 19:04:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8968 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752354AbZIIXEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 19:04:13 -0400
+Date: Thu, 10 Sep 2009 00:58:34 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       dhowells@redhat.com, roland@redhat.com, jmorris@namei.org,
+       tom.horsley@att.net, linux-kernel@vger.kernel.org, stable@kernel.org
+Subject: Re: [PATCH v3] exec: do not sleep in TASK_TRACED under
+	->cred_guard_mutex
+Message-ID: <20090909225834.GA14785@redhat.com>
+References: <20090904133956.GA9232@redhat.com> <20090903160514.GA23646@redhat.com> <20090903200924.E46DF47C94@magilla.sf.frob.com> <32710.1252075656@redhat.com> <20090904154947.GA17048@redhat.com> <20090904172648.GA25841@redhat.com> <20090904124230.5b7258c9.akpm@linux-foundation.org> <20090904213337.GA5021@redhat.com> <20090909175749.541b6aa9@dhcp-100-2-144.bos.redhat.com>
 MIME-Version: 1.0
-X-OriginalArrivalTime: 09 Sep 2009 22:48:39.0864 (UTC) FILETIME=[AC975380:01CA319F]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090909175749.541b6aa9@dhcp-100-2-144.bos.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Alok Kataria [mailto:akataria@vmware.com]
-> Sent: Tuesday, September 08, 2009 9:08 PM
-> To: Loke,Chetan
-> Cc: brking@linux.vnet.ibm.com; James.Bottomley@suse.de; eike-kernel@sf-
-> tec.de; matthew@wil.cx; rdreier@cisco.com; bvanassche@acm.org;
-> robert.w.love@intel.com; randy.dunlap@oracle.com; michaelc@cs.wisc.edu;
-> linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; akpm@linux-
-> foundation.org; pv-drivers@vmware.com
-> Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA - V3.
-> 
-> Hi Chetan,
-> 
-> > Alok,
+On 09/09, Chuck Ebbert wrote:
+>
+> On Fri, 4 Sep 2009 23:33:37 +0200
+> Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > On 09/04, Andrew Morton wrote:
+> > >
+> > > On Fri, 4 Sep 2009 19:26:48 +0200
+> > > Oleg Nesterov <oleg@redhat.com> wrote:
+> > >
+> > > > Tom Horsley reports that his debugger hangs when it tries to read
+> > > > /proc/pid_of_tracee/maps, this happens since
+> > > >
+> > > > 	"mm_for_maps: take ->cred_guard_mutex to fix the race with exec"
+> > > > 	04b836cbf19e885f8366bccb2e4b0474346c02d
+> > > >
+> > > > commit in 2.6.31.
+>
 > >
-> > (This is just a optimization.You don't need it in order to get your
-> > code merged upstream.You can always patch it later on)In fact hw_lock
-> > should be split into two locks -
+> > > I see a Cc:stable in the mail headers, but not in the changelog.  I
+> > > don't think the patch is applicable to -stable unless we miss 2.6.31.
 > >
-> > req_path_lock(aka tx_lock) and
-> > cmpl_path_lock(aka rx_lock).
+> > -stable has the same problems but I agree, it can live without this fix.
 > >
-> > You can then have a full-duplex channel.
-> >
-> > Revised-code -
-> > 	::pvscsi_acquire_context->spin_lock_irqsave(tx_lock)
-> > 	::pvscsi_isr->spin_lock_irqsave(rx_lock)
-> > 	::some_future_napi_style_pvrx_poll_func->spin_lock_irqsave(rx_lock)
-> >
-> > 	::for aborts synchronize on the rx_lock so that you know what's
-> > completed and what's not.
-> >
-> 
+>
+> That patch was backported in 2.6.30.5 -- are you sure -stable doesn't need
+> this fix?
 
+No, I am not sure, that is why I cc'ed -stable.
 
+But otoh the problem is minor, both tracer and tracee can be killed.
 
-> I agree about the optimization. Though IMO this will be more attractive
-> once we have a device which supports multiple queue pairs.
+I dunno. I don't know if gdb or any other "important" application
+read /proc/pid/maps after PTRACE_EVENT_EXEC...
 
-lpfc driver has native multi-ring support. It won't create hundred's of ring-pairs but the stuff that's present is good enough to start with(at least for this generation).
+Oleg.
 
-
-> Anyways, let me keep this on my plate, I will check how much of an
-> benefit this gets us and will decide if this should be done, but as you
-> suggested this is for later.
-> 
-
-I keep forgetting that this is a pv-driver.So, to reap the benefits of the multi-ring arch, the plumbing should be present in your hypervisor/kernel and NOT in the guest-world.
-
-
-> Thanks for taking a look.
-No worries.
-
-
-> 
-> --Alok
-
-
-Chetan
