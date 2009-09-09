@@ -1,59 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZIIM24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753209AbZIIMXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbZIIM24 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 08:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZIIM2z
+	id S1753209AbZIIMXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 08:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZIIMXi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 08:28:55 -0400
-Received: from mail-qy0-f194.google.com ([209.85.221.194]:42547 "EHLO
-	mail-qy0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752283AbZIIM2z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 08:28:55 -0400
-X-Greylist: delayed 316 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Sep 2009 08:28:55 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=DgFKSzITBHbeXXhMZJgxlBM6MX7yK5+ZabhMPs1RGpmv0YZovu1C/bmi0/TeJSd/gK
-         TR4jzntpDUPTHdzrDobxtUnLxoDaHCgOde11u9HQPJY40kBTHhqu8z24C9+cckorafhe
-         C+G4YEYwub3HbOr/OqcldKZXQJYYMl2ZthtAs=
-Message-ID: <4AA79E4F.7010900@gmail.com>
-Date: Wed, 09 Sep 2009 14:23:43 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.5 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: rjw@sisk.pl, laijs@cn.fujitsu.com, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 1/1] sched: fix cpu_down deadlock
-References: <4AA0FEBF.7040104@gmail.com>	 <1252496510-11898-1-git-send-email-jirislaby@gmail.com> <1252497225.7235.3.camel@laptop>
-In-Reply-To: <1252497225.7235.3.camel@laptop>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 08:23:38 -0400
+Received: from mail.ijs.si ([193.2.4.66]:53057 "EHLO mail.ijs.si"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752160AbZIIMXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 08:23:37 -0400
+Message-Id: <5.1.0.14.2.20090909140903.038dbd90@pop3.arnes.si>
+X-Mailer: QUALCOMM Windows Eudora Version 5.1
+Date: Wed, 09 Sep 2009 14:24:05 +0200
+To: Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+From: Tomaz Mertelj <tomaz.mertelj@guest.arnes.si>
+Subject: Re: [lm-sensors] [PATCH] hwmon: Driver for Texas Instruments 
+  amc6821 chip
+Cc: linux-kernel@vger.kernel.org, lm-sensors@lm-sensors.org
+In-Reply-To: <20090909093435.60531d95@hyperion.delvare>
+References: <20090908170649.855dd1ff.akpm@linux-foundation.org>
+ <20090905_120834_010267.tomaz.mertelj@guest.arnes.si>
+ <20090908170649.855dd1ff.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2009 01:53 PM, Peter Zijlstra wrote:
-> On Wed, 2009-09-09 at 13:41 +0200, Jiri Slaby wrote:
->> Jiri Slaby wrote:
->>> Thanks, in the end I found it manually. Goddammit! It's an -mm thing:
->>> cpu_hotplug-dont-affect-current-tasks-affinity.patch
-> 
-> Is there a git tree with -mm in some place? I can't seem to find that
-> patch in my inbox.
-> 
-> All I can find is some comments from Oleg that the patch looks funny.
+At 09:34 9. 9. 2009 +0200, Jean Delvare wrote:
+> > I'm wondering if these functions need to be so huge.  Couldn't you do
+> >
+> > #define set_temp_para(name, reg)\
+> > static ssize_t set_##name(\
+> >               struct device *dev,\
+> >               struct device_attribute *attr,\
+> >               const char *buf,\
+> >               size_t count)\
+> > {\
+> >       return set_helper(dev, attr, buf, count, &dev->name);\
+> > }
+> >
+> > And then do all the real work in a common function?  Rather than
+> > expanding tens of copies of the same thing?
+>
+>Yes please. We got rid of macro-generated callbacks in most hwmon
+>drivers a couple years ago already.
 
-Yes, here:
-git://git.zen-sources.org/zen/mmotm.git
+I do not like macro-generated callbacks myself as well. However, I was 
+impatient to get the
+driver working and since I have seen similar things in a few other drivers ...
 
-Actually I found Oleg came up with better solution to add
-move_task_off_dead_cpu to take_cpu_down.
+I would prefer a single callback (would require some more work):
 
-A discussion regarding this is at:
-http://lkml.indiana.edu/hypermail/linux/kernel/0907.3/02278.html
+static ssize_t set_temp(
+         struct device *dev,
+         struct device_attribute *attr,
+         const char *buf,
+         size_t count)
+{
+         struct i2c_client *client = to_i2c_client(dev);
+         struct amc6821_data *data = i2c_get_clientdata(client);
+         int nr = to_sensor_dev_attr(attr)->index;
+         int val = simple_strtol(buf, NULL, 10);
+         val = SENSORS_LIMIT(val / 1000, -128, 127);
+         int *pvar;
+         u8 reg;
 
-So what's the status of the patches, please?
+         switch (nr) {
+         case GET_SET_TEMP1_MIN:
+                 pvar=&data->temp1_min;
+                 reg=AMC6821_REG_LTEMP_LIMIT_MIN;
+                 break;
+         case ...
+
+         ...
+
+         default:
+                 dev_dbg(dev, "Unknown attr->index (%d)\n", nr);
+                 return SOME_ERROR;
+         }
+         mutex_lock(&data->update_lock);
+         *pvar=val;
+         if (i2c_smbus_write_byte_data(client, reg, *pvar)) {
+                 dev_err(&client->dev, "Register write error, aborting.\n");
+                 count = -EIO;
+         }
+         mutex_unlock(&data->update_lock);
+         return count;
+}
+
+
+static SENSOR_DEVICE_ATTR(temp1_min, S_IRUGO | S_IWUSR, get_temp,
+         set_temp, GET_SET_TEMP1_MIN);
+...
+
+
+
+> >
+> > Also, the checkpatch warning
+> >
+> > WARNING: consider using strict_strtol in preference to simple_strtol
+> > #381: FILE: drivers/hwmon/amc6821.c:228:
+> > +       int val = simple_strtol(buf, NULL, 10); \
+> >
+> > is valid.  The problem with simple_strtol() is that it will treat input
+> > of the form "43foo" as "43".  Even though the input was invalid.  A
+> > minor thing, but easily fixed too.
+>
+>Is there any legitimate use of simple_strtol then? I'm wondering why we
+>don't just get rid of it and rename strict_strtol to just strtol.
+
+I have seen simple_strtol in many hwmon drivers so I thought there might be 
+a reason to do it this way?
+
+
+***********************************************************************************
+Tomaz Mertelj
+E-mail: tomaz.mertelj@guest.arnes.si    Home page: 
+http://optlab.ijs.si/tmertelj
+
+
+Staniceva 14
+1000 Ljubljana
+Slovenia
+***********************************************************************************
+
+
+
