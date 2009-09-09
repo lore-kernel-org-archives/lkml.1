@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZIITWk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753475AbZIIT0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZIITWk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 15:22:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753134AbZIITWk
+	id S1753475AbZIIT0R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 15:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbZIIT0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 15:22:40 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:36734 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752505AbZIITWj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 15:22:39 -0400
-Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.1.00.0909091217570.32267@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com>
-	 <1251129384.22398.7166.camel@nimitz>
-	 <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com>
-	 <1251150156.22398.8289.camel@nimitz>
-	 <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com>
-	 <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com>
-	 <1252510129.14385.37045.camel@nimitz>
-	 <alpine.DEB.1.00.0909091217570.32267@chino.kir.corp.google.com>
-Content-Type: text/plain
-Date: Wed, 09 Sep 2009 12:22:37 -0700
-Message-Id: <1252524157.14385.37942.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 15:26:17 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:24381 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752453AbZIIT0Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 15:26:16 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Cf3hUCDR6DrbzVC3u6wc8tZFub9AakzoDVtEkUzSVNL6nTgoZ4WujaMJWLRrJKYWf
+	CjA99v5hQvomozhrRlelQ==
+Date: Wed, 9 Sep 2009 12:26:13 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Jonathan Corbet <corbet@lwn.net>
+cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Hansen <haveblue@us.ibm.com>
+Subject: Re: [PATCH] Document flexible arrays
+In-Reply-To: <20090909071352.33d204b1@bike.lwn.net>
+Message-ID: <alpine.DEB.1.00.0909091222310.32267@chino.kir.corp.google.com>
+References: <20090908175603.2bb02032@bike.lwn.net> <alpine.DEB.1.00.0909081714150.6263@chino.kir.corp.google.com> <20090909071352.33d204b1@bike.lwn.net>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 12:18 -0700, David Rientjes wrote:
-> On Wed, 9 Sep 2009, Dave Hansen wrote:
-> > I don't know of any offhand.  Someone mentioned oprofile buffers at some
-> > point, but I looked through it and it didn't pop out at me.
+On Wed, 9 Sep 2009, Jonathan Corbet wrote:
+
+> > Hmm, there are a number of changes in -mm that conflict with the 
+> > description given in this document (element poisoning, DEFINE_FLEX_ARRAY, 
+> > array shrinking, etc).  Perhaps this could be based on the -mm behavior 
+> > and get pushed through Andrew so that it's consistent when merged for 
+> > 2.6.32?
 > 
-> Their length and element size fit the prerequisites of using flex array, 
-> but they cannot be copied to userspace as a string the way we can with 
-> vmalloc'd memory.
+> I've seen those patches going by.  The problem is that documenting
+> existing, in-mainline APIs is challenging enough; trying to document
+> maybe-next-release versions is a recipe for frustration.  So I'd really
+> rather start with a document that describes the current state of the
+> art; I promise I'll update it when the other changes go in.
+> 
 
-It shouldn't be too hard to do that, though.  Although a bit silly to
-have make a copy_to_user() call for each ->parts[] page, it would be
-pretty easy to implement.  
-
--- Dave
-
+If you're going to push it yourself, I guess that's fine.  But if it's 
+going through -mm, I don't think it would be helpful for the documentation 
+to be inconsistent with the library in that kernel.  I'll probably be 
+forced to update it myself when the changes are merged by Linus.
