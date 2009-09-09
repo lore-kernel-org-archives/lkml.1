@@ -1,49 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZIIOh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbZIIOiJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbZIIOh7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZIIOh7
+	id S1753361AbZIIOiJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:38:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZIIOiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:37:59 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:58315 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753159AbZIIOh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:37:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=V5LBToJOYi1SeGgqrgzV9VGobXeXgzkb6uaNZuNsvtvG4Ai1Qsy0INTJkaftX4d/Lk
-         YmSHNo3kej3b38dwGAHD+xIlPUFGCqSzy4z6dXb1JeJMTWjWWdVZYl/GdWpK516SVpc3
-         Ab2qRTOzaA0+LFsBuFRFcVmK7nSMsVNaz7F0o=
+	Wed, 9 Sep 2009 10:38:07 -0400
+Received: from mga14.intel.com ([143.182.124.37]:55541 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753333AbZIIOiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 10:38:04 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="185715917"
+Date: Wed, 9 Sep 2009 22:37:53 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Chris Mason <chris.mason@oracle.com>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "Theodore Ts'o" <tytso@mit.edu>
+Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
+Message-ID: <20090909143753.GA2071@localhost>
+References: <1252401791-22463-9-git-send-email-jens.axboe@oracle.com> <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins> <20090908172842.GC2975@think> <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz>
 MIME-Version: 1.0
-In-Reply-To: <20090909075024.GA1400@ucw.cz>
-References: <20090909075024.GA1400@ucw.cz>
-From: Eric Miao <eric.y.miao@gmail.com>
-Date: Wed, 9 Sep 2009 22:37:41 +0800
-Message-ID: <f17812d70909090737n4315d0cbh82c0a63e9222fdb5@mail.gmail.com>
-Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
-To: Pavel Machek <pavel@ucw.cz>, Russell King <linux@arm.linux.org.uk>
-Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090909142315.GA7949@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 9, 2009 at 3:50 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> Hi, Linus!
->
-> Spitz resume was broken for year or likely two, and it would be very
-> nice to fix it for 2.6.31 release. One liner is below, and it really
-> can not harm. It already is in Eric's fix queue, so pulling that for
-> .31 should work, too.
->
+On Wed, Sep 09, 2009 at 10:23:15PM +0800, Jan Kara wrote:
+> On Tue 08-09-09 20:32:26, Peter Zijlstra wrote:
+> > On Tue, 2009-09-08 at 19:55 +0200, Peter Zijlstra wrote:
+> > > 
+> > > I think I'm somewhat confused here though..
+> > > 
+> > > There's kernel threads doing writeout, and there's apps getting stuck in
+> > > balance_dirty_pages().
+> > > 
+> > > If we want all writeout to be done by kernel threads (bdi/pd-flush like
+> > > things) then we still need to manage the actual apps and delay them.
+> > > 
+> > > As things stand now, we kick pdflush into action when dirty levels are
+> > > above the background level, and start writing out from the app task when
+> > > we hit the full dirty level.
+> > > 
+> > > Moving all writeout to a kernel thread sounds good from writing linear
+> > > stuff pov, but what do we make apps wait on then?
+> > 
+> > OK, so like said in the previous email, we could have these app tasks
+> > simply sleep on a waitqueue which gets periodic wakeups from
+> > __bdi_writeback_inc() every time the dirty threshold drops.
+> > 
+> > The woken tasks would then check their bdi dirty limit (its task
+> > dependent) against the current values and either go back to sleep or
+> > back to work.
+>   Well, what I imagined we could do is:
+> Have a per-bdi variable 'pages_written' - that would reflect the amount of
+> pages written to the bdi since boot (OK, we'd have to handle overflows but
+> that's doable).
+> 
+> There will be a per-bdi variable 'pages_waited'. When a thread should sleep
+> in balance_dirty_pages() because we are over limits, it kicks writeback thread
+> and does:
+>   to_wait =  max(pages_waited, pages_written) + sync_dirty_pages() (or
+> whatever number we decide)
+>   pages_waited = to_wait
+>   sleep until pages_written reaches to_wait or we drop below dirty limits.
+> 
+> That will make sure each thread will sleep until writeback threads have done
+> their duty for the writing thread.
+> 
+> If we make sure sleeping threads are properly ordered on the wait queue,
+> we could always wakeup just the first one and thus avoid the herding
+> effect. When we drop below dirty limits, we would just wakeup the whole
+> waitqueue.
+> 
+> Does this sound reasonable?
 
-This should be sitting in rmk's git tree and I'm not sure if Russell
-has sent the pull request already.
+Yup! I have a similar idea: for each chunk the kernel writeback thread
+synced, it 'honours' so many pages of quota to some waiting/sleeping
+dirtier task to consume (so that it can continue dirty so many pages).
+
+This makes it possible to control the relative/absolute writeback
+bandwidth for each dirtier tasks. Something like IO controller.
+
+Thanks,
+Fengguang
+
+> > The only problem would be the mass wakeups when lots of tasks are
+> > blocked on dirty, but I'm guessing there's no way around that anyway,
+> > and its better to have a limited number of writers than have everybody
+> > write something, which would result in massive write fragmentation.
+> 
+> 								Honza
+> -- 
+> Jan Kara <jack@suse.cz>
+> SUSE Labs, CR
