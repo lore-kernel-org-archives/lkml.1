@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZIINPI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752339AbZIINT6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752260AbZIINPI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 09:15:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZIINPH
+	id S1752339AbZIINT6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 09:19:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752060AbZIINT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 09:15:07 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:36935 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750910AbZIINPG (ORCPT
+	Wed, 9 Sep 2009 09:19:57 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:57559 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750910AbZIINT4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 09:15:06 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-References: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com>
-	<200908312119.12121.rjw@sisk.pl>
-	<c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
-	<c4e36d110909031529q77b53122kdb85785ba293c478@mail.gmail.com>
-	<20090903232317.GA6760@lst.de> <87ljkvmt71.fsf@devron.myhome.or.jp>
-	<c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
-	<87iqfx5mss.fsf@devron.myhome.or.jp>
-	<c4e36d110909051253s5c5e9d96x3ebdc444231b5776@mail.gmail.com>
-	<873a7157zu.fsf@devron.myhome.or.jp>
-	<c4e36d110909080110t21dd1402l35bf50360ba0b525@mail.gmail.com>
-Date: Wed, 09 Sep 2009 22:15:01 +0900
-In-Reply-To: <c4e36d110909080110t21dd1402l35bf50360ba0b525@mail.gmail.com>
-	(Zdenek Kabelac's message of "Tue, 8 Sep 2009 10:10:32 +0200")
-Message-ID: <87pra05kfe.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
+	Wed, 9 Sep 2009 09:19:56 -0400
+Date: Wed, 9 Sep 2009 15:20:00 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Roland McGrath <roland@redhat.com>
+cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig CROSS_COMPILE option
+In-Reply-To: <20090907183801.379228BF3F@magilla.sf.frob.com>
+Message-ID: <alpine.LRH.2.00.0909091514460.3208@vixen.sonytel.be>
+References: <20090905002947.A4C678BEB1@magilla.sf.frob.com> <20090907130402.GB1595@ucw.cz> <20090907183801.379228BF3F@magilla.sf.frob.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zdenek Kabelac <zdenek.kabelac@gmail.com> writes:
+On Mon, 7 Sep 2009, Roland McGrath wrote:
+> > Yes that would be very nice. Editing Makefile every time I
+> > crosscomppile for arm sucks.
+> 
+> The other trick I can recommend is to write a GNUmakefile containing:
+> 
+> ARCH=foo
+> CROSS_COMPILE=foo-linux-
+> include Makefile
 
-> Just a side note - Could be there any connection with my previous report?
->
-> http://lkml.org/lkml/2009/8/28/90
+Woow, that's shorter than mine :-)
 
-As far as I can see, it doesn't seem related problem to this. It seems
-mmc's driver problem (or problem of unusual device).
+--------------------------------------------------------------------------------
 
-Thanks.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+MAKEARGS = ARCH=powerpc CROSS_COMPILE=ppu- CC="ppu-gcc43 -m32 -mcpu=440"
+
+MAKEFLAGS += --no-print-directory
+
+.PHONY: all $(MAKECMDGOALS)
+
+all	:= $(filter-out all Makefile,$(MAKECMDGOALS))
+
+all:
+	$(MAKE) $(MAKEARGS) $(all) -f Makefile
+
+Makefile:;
+
+$(all) %/: all
+	@:
+
+--------------------------------------------------------------------------------
+
+Note that in this example I also have to override CC, as (1) ppu-gcc is gcc
+version 4.1.1, i.e. too old and (2) ppu-gcc43 defaults to -m64 and -mcpu=cell.
+
+> (GNU make reads GNUmakefile in preference to Makefile.)
+> But this manual hackery is still not nearly as nice as the automagic way.
+
+Indeed, putting everything in .config would be more convenient.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
