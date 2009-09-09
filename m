@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751687AbZIIE1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751519AbZIIEpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751687AbZIIE1T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 00:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751445AbZIIE1S
+	id S1751519AbZIIEpy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 00:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZIIEpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 00:27:18 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40690 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751432AbZIIE1S (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 00:27:18 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [rfc] lru_add_drain_all() vs isolation
-Cc: kosaki.motohiro@jp.fujitsu.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Galbraith <efault@gmx.de>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm <linux-mm@kvack.org>, Oleg Nesterov <onestero@redhat.com>,
-       lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.DEB.1.10.0909081124240.30203@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909081110450.30203@V090114053VZO-1> <alpine.DEB.1.10.0909081124240.30203@V090114053VZO-1>
-Message-Id: <20090909131945.0CF5.A69D9226@jp.fujitsu.com>
+	Wed, 9 Sep 2009 00:45:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:7728 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751117AbZIIEpx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 00:45:53 -0400
+Message-ID: <4AA732C7.70003@redhat.com>
+Date: Wed, 09 Sep 2009 00:44:55 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 25/23] io-controller: fix queue vs group fairness
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <20090908222827.GC3558@redhat.com>
+In-Reply-To: <20090908222827.GC3558@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed,  9 Sep 2009 13:27:17 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The usefulness of a scheme like this requires:
-> 
-> 1. There are cpus that continually execute user space code
->    without system interaction.
-> 
-> 2. There are repeated VM activities that require page isolation /
->    migration.
-> 
-> The first page isolation activity will then clear the lru caches of the
-> processes doing number crunching in user space (and therefore the first
-> isolation will still interrupt). The second and following isolation will
-> then no longer interrupt the processes.
-> 
-> 2. is rare. So the question is if the additional code in the LRU handling
-> can be justified. If lru handling is not time sensitive then yes.
+Vivek Goyal wrote:
+> o I found an issue during test and that is if there is a mix of queue and group
+>   at same level, there can be fairness issue. For example, consider following
+>   case.
 
-Christoph, I'd like to discuss a bit related (and almost unrelated) thing.
-I think page migration don't need lru_add_drain_all() as synchronous, because
-page migration have 10 times retry.
+Acked-by: Rik van Riel <riel@redhat.com>
 
-Then asynchronous lru_add_drain_all() cause
+(assuming the cleanups are done in V10 - the artifact of
+  a wraparound hitting exactly 0 should not be an issue)
 
-  - if system isn't under heavy pressure, retry succussfull.
-  - if system is under heavy pressure or RT-thread work busy busy loop, retry failure.
-
-I don't think this is problematic bahavior. Also, mlock can use asynchrounous lru drain.
-
-What do you think?
-
-
+-- 
+All rights reversed.
