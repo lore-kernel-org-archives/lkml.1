@@ -1,167 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754210AbZIIUta@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbZIIUum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754210AbZIIUta (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 16:49:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754194AbZIIUt3
+	id S1754198AbZIIUum (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 16:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZIIUul
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 16:49:29 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:14699 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754168AbZIIUt1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 16:49:27 -0400
-Subject: [PATCH 2/2] PCI Hotplug: convert acpi_pci_detect_ejectable() to take
-	an acpi_handle
-To: jbarnes@virtuousgeek.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Date: Wed, 09 Sep 2009 14:49:35 -0600
-Message-ID: <20090909204935.11037.98403.stgit@bob.kio>
-In-Reply-To: <20090909204738.11037.26974.stgit@bob.kio>
-References: <20090909204738.11037.26974.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
+	Wed, 9 Sep 2009 16:50:41 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60085 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754067AbZIIUul (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 16:50:41 -0400
+Date: Wed, 9 Sep 2009 22:50:43 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikos Chantziaras <realnc@arcor.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090909205043.GI18599@kernel.dk>
+References: <20090908091304.GQ18599@kernel.dk> <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu> <4AA80C1E.2080901@arcor.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA80C1E.2080901@arcor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_pci_detect_ejectable() goes through effort to convert its
-struct pci_bus arg to an acpi_handle, but every time we use this
-interface, we already have the handle available.
+On Wed, Sep 09 2009, Nikos Chantziaras wrote:
+> On 09/09/2009 09:04 PM, Ingo Molnar wrote:
+>> [...]
+>> * Jens Axboe<jens.axboe@oracle.com>  wrote:
+>>
+>>> On Wed, Sep 09 2009, Jens Axboe wrote:
+>>>  [...]
+>>> BFS210 runs on the laptop (dual core intel core duo). With make -j4
+>>> running, I clock the following latt -c8 'sleep 10' latencies:
+>>>
+>>> -rc9
+>>>
+>>>          Max                17895 usec
+>>>          Avg                 8028 usec
+>>>          Stdev               5948 usec
+>>>          Stdev mean           405 usec
+>>>
+>>>          Max                17896 usec
+>>>          Avg                 4951 usec
+>>>          Stdev               6278 usec
+>>>          Stdev mean           427 usec
+>>>
+>>>          Max                17885 usec
+>>>          Avg                 5526 usec
+>>>          Stdev               6819 usec
+>>>          Stdev mean           464 usec
+>>>
+>>> -rc9 + mike
+>>>
+>>>          Max                 6061 usec
+>>>          Avg                 3797 usec
+>>>          Stdev               1726 usec
+>>>          Stdev mean           117 usec
+>>>
+>>>          Max                 5122 usec
+>>>          Avg                 3958 usec
+>>>          Stdev               1697 usec
+>>>          Stdev mean           115 usec
+>>>
+>>>          Max                 6691 usec
+>>>          Avg                 2130 usec
+>>>          Stdev               2165 usec
+>>>          Stdev mean           147 usec
+>>
+>> At least in my tests these latencies were mainly due to a bug in
+>> latt.c - i've attached the fixed version.
+>>
+>> The other reason was wakeup batching. If you do this:
+>>
+>>     echo 0>  /proc/sys/kernel/sched_wakeup_granularity_ns
+>>
+>> ... then you can switch on insta-wakeups on -tip too.
+>>
+>> With a dual-core box and a make -j4 background job running, on
+>> latest -tip i get the following latencies:
+>>
+>>   $ ./latt -c8 sleep 30
+>>   Entries: 656 (clients=8)
+>>
+>>   Averages:
+>>   ------------------------------
+>>   	Max	      158 usec
+>> 	Avg	       12 usec
+>> 	Stdev	       10 usec
+>
+> With your version of latt.c, I get these results with 2.6-tip vs  
+> 2.6.31-rc9-bfs:
+>
+>
+> (mainline)
+> Averages:
+> ------------------------------
+>         Max            50 usec
+>         Avg            12 usec
+>         Stdev           3 usec
+>
+>
+> (BFS)
+> Averages:
+> ------------------------------
+>         Max           474 usec
+>         Avg            11 usec
+>         Stdev          16 usec
+>
+>
+> However, the interactivity problems still remain.  Does that mean it's  
+> not a latency issue?
 
-So let's just use the handle instead of converting back and forth.
+It probably just means that latt isn't a good measure of the problem.
+Which isn't really too much of a surprise.
 
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-
- drivers/pci/hotplug/acpi_pcihp.c   |    9 +++------
- drivers/pci/hotplug/acpiphp_glue.c |   33 +++++++++++----------------------
- drivers/pci/hotplug/pciehp_acpi.c  |    5 +++--
- include/linux/pci_hotplug.h        |    2 +-
- 4 files changed, 18 insertions(+), 31 deletions(-)
-
-diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
-index eb15958..80af75c 100644
---- a/drivers/pci/hotplug/acpi_pcihp.c
-+++ b/drivers/pci/hotplug/acpi_pcihp.c
-@@ -500,18 +500,15 @@ check_hotplug(acpi_handle handle, u32 lvl, void *context, void **rv)
- 
- /**
-  * acpi_pci_detect_ejectable - check if the PCI bus has ejectable slots
-- * @pbus - PCI bus to scan
-+ * @handle - handle of the PCI bus to scan
-  *
-  * Returns 1 if the PCI bus has ACPI based ejectable slots, 0 otherwise.
-  */
--int acpi_pci_detect_ejectable(struct pci_bus *pbus)
-+int acpi_pci_detect_ejectable(acpi_handle handle)
- {
--	acpi_handle handle;
- 	int found = 0;
- 
--	if (!(handle = acpi_pci_get_bridge_handle(pbus)))
--		return 0;
--	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
-+	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, 1,
- 			    check_hotplug, (void *)&found, NULL);
- 	return found;
- }
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index e72e0ad..680c336 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -62,22 +62,6 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus);
- static void acpiphp_set_hpp_values(acpi_handle handle, struct pci_bus *bus);
- static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *context);
- 
--static struct pci_bus *pci_bus_from_handle(acpi_handle handle)
--{
--	struct pci_bus *pbus;
--	struct acpi_pci_root *root;
--
--	root = acpi_pci_find_root(handle);
--	if (root)
--		pbus = root->bus;
--	else {
--		struct pci_dev *pdev = acpi_get_pci_dev(handle);
--		pbus = pdev->subordinate;
--		pci_dev_put(pdev);
--	}
--	return pbus;
--}
--
- /* callback routine to check for the existence of a pci dock device */
- static acpi_status
- is_pci_dock_device(acpi_handle handle, u32 lvl, void *context, void **rv)
-@@ -279,11 +263,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- /* see if it's worth looking at this bridge */
- static int detect_ejectable_slots(acpi_handle handle)
- {
--	int found;
--	struct pci_bus *pbus;
--
--	pbus = pci_bus_from_handle(handle);
--	found = acpi_pci_detect_ejectable(pbus);
-+	int found = acpi_pci_detect_ejectable(handle);
- 	if (!found) {
- 		acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
- 				    is_pci_dock_device, (void *)&found, NULL);
-@@ -1364,7 +1344,16 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus)
- /* Program resources in newly inserted bridge */
- static int acpiphp_configure_bridge (acpi_handle handle)
- {
--	struct pci_bus *bus = pci_bus_from_handle(handle);
-+	struct pci_bus *bus;
-+
-+	if (acpi_is_root_bridge(handle)) {
-+		struct acpi_pci_root *root = acpi_pci_find_root(handle);
-+		bus = root->bus;
-+	} else {
-+		struct pci_dev *pdev = acpi_get_pci_dev(handle);
-+		bus = pdev->subordinate;
-+		pci_dev_put(pdev);
-+	}
- 
- 	pci_bus_size_bridges(bus);
- 	pci_bus_assign_resources(bus);
-diff --git a/drivers/pci/hotplug/pciehp_acpi.c b/drivers/pci/hotplug/pciehp_acpi.c
-index 9604801..0c6aa99 100644
---- a/drivers/pci/hotplug/pciehp_acpi.c
-+++ b/drivers/pci/hotplug/pciehp_acpi.c
-@@ -47,7 +47,7 @@ int pciehp_acpi_slot_detection_check(struct pci_dev *dev)
- {
- 	if (slot_detection_mode != PCIEHP_DETECT_ACPI)
- 		return 0;
--	if (acpi_pci_detect_ejectable(dev->subordinate))
-+	if (acpi_pci_detect_ejectable(dev->dev.archdata.acpi_handle))
- 		return 0;
- 	return -ENODEV;
- }
-@@ -94,7 +94,8 @@ static int __init dummy_probe(struct pcie_device *dev)
- 			dup_slot_id++;
- 	}
- 	list_add_tail(&slot->slot_list, &dummy_slots);
--	if (!acpi_slot_detected && acpi_pci_detect_ejectable(pbus))
-+	if (!acpi_slot_detected &&
-+		acpi_pci_detect_ejectable(pbus->self->dev.archdata.acpi_handle))
- 		acpi_slot_detected = 1;
- 	return -ENODEV;         /* dummy driver always returns error */
- }
-diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
-index 1b00cc3..f0c31ae 100644
---- a/include/linux/pci_hotplug.h
-+++ b/include/linux/pci_hotplug.h
-@@ -231,7 +231,7 @@ extern acpi_status acpi_get_hp_params_from_firmware(struct pci_bus *bus,
- 				struct hotplug_params *hpp);
- int acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev, u32 flags);
- int acpi_pci_check_ejectable(struct pci_bus *pbus, acpi_handle handle);
--int acpi_pci_detect_ejectable(struct pci_bus *pbus);
-+int acpi_pci_detect_ejectable(acpi_handle handle);
- #endif
- #endif
- 
+-- 
+Jens Axboe
 
