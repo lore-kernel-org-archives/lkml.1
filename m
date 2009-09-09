@@ -1,47 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753592AbZIIR3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753506AbZIIRaz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753592AbZIIR3g (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZIIR3g
+	id S1753506AbZIIRaz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:30:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753501AbZIIRay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:29:36 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:38499 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753479AbZIIR3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:29:35 -0400
-Date: Wed, 9 Sep 2009 13:28:24 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Jeff Layton <jlayton@redhat.com>
-cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
-In-Reply-To: <20090909132039.1ca47cd4@tlielax.poochiereds.net>
-Message-ID: <alpine.DEB.1.10.0909091327370.32067@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1> <20090905071052.50501826@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1> <20090909125352.1c7b57d2@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
- <20090909132039.1ca47cd4@tlielax.poochiereds.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 9 Sep 2009 13:30:54 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39938 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752416AbZIIRax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 13:30:53 -0400
+Date: Wed, 9 Sep 2009 13:30:03 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Fabio Checconi <fchecconi@gmail.com>
+Cc: Rik van Riel <riel@redhat.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
+       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090909173003.GE8256@redhat.com>
+References: <20090904231129.GA3689@redhat.com> <20090907.200222.193693062.ryov@valinux.co.jp> <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp> <4AA6AF58.3050501@redhat.com> <20090909000900.GK17468@gandalf.sssup.it> <20090909020620.GC3594@redhat.com> <20090909154126.GG17468@gandalf.sssup.it>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090909154126.GG17468@gandalf.sssup.it>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009, Jeff Layton wrote:
+On Wed, Sep 09, 2009 at 05:41:26PM +0200, Fabio Checconi wrote:
+> > From: Vivek Goyal <vgoyal@redhat.com>
+> > Date: Tue, Sep 08, 2009 10:06:20PM -0400
+> >
+> > On Wed, Sep 09, 2009 at 02:09:00AM +0200, Fabio Checconi wrote:
+> > > Hi,
+> > > 
+> > > > From: Rik van Riel <riel@redhat.com>
+> > > > Date: Tue, Sep 08, 2009 03:24:08PM -0400
+> > > >
+> > > > Ryo Tsuruta wrote:
+> > > > >Rik van Riel <riel@redhat.com> wrote:
+> > > > 
+> > > > >>Are you saying that dm-ioband is purposely unfair,
+> > > > >>until a certain load level is reached?
+> > > > >
+> > > > >Not unfair, dm-ioband(weight policy) is intentionally designed to
+> > > > >use bandwidth efficiently, weight policy tries to give spare bandwidth
+> > > > >of inactive groups to active groups.
+> > > > 
+> > > > This sounds good, except that the lack of anticipation
+> > > > means that a group with just one task doing reads will
+> > > > be considered "inactive" in-between reads.
+> > > > 
+> > > 
+> > >   anticipation helps in achieving fairness, but CFQ currently disables
+> > > idling for nonrot+NCQ media, to avoid the resulting throughput loss on
+> > > some SSDs.  Are we really sure that we want to introduce anticipation
+> > > everywhere, not only to improve throughput on rotational media, but to
+> > > achieve fairness too?
+> > 
+> > That's a good point. Personally I think that fairness requirements for
+> > individual queues and groups are little different. CFQ in general seems
+> > to be focussing more on latency and throughput at the cost of fairness.
+> > 
+> > With groups, we probably need to put a greater amount of emphasis on group
+> > fairness. So group will be a relatively a slower entity (with anticiaption
+> > on and more idling), but it will also give you a greater amount of
+> > isolation. So in practice, one will create groups carefully and they will
+> > not proliferate like queues. This can mean overall reduced throughput on
+> > SSD.
+> > 
+> 
+> Ok, I personally agree on that, but I think it's something to be documented.
+> 
 
-> That'll stop your client from requesting oplocks, but that won't
-> prevent others from doing so. If my suspicion is correct, then another
-> client is holding an oplock and the server needs to break it before it
-> can reply to yours.
->
-> Unfortunately I doubt there's much you can do from your client to
-> prevent that (if that is the case). There may be a way to turn off
-> oplocks on the server side, but that may very well be even worse for
-> performance.
+Sure. I will document it in documentation file.
 
-Hmmm... We can look at that.
+> 
+> > Having said that, group idling is tunable and one can always reduce it to
+> > achieve a balance between fairness vs throughput depending on his need.
+> > 
+> 
+> This is good, however tuning will not be an easy task (at least, in my
+> experience with BFQ it has been a problem): while for throughput usually
+> there are tradeoffs, as soon as a queue/group idles and then timeouts,
+> from the fairness perspective the results soon become almost random
+> (i.e., depending on the rate of successful anticipations, but in the
+> common case they are unpredictable)...
 
-Another interesting tidbit is that I have never seen this from a 64 bit
-Linux kernel. Only occurs with 32 bit kernels it seems.
+I am lost in last few lines. I guess you are suggesting that static tuning
+is hard and dynamically adjusting idling has limitations that it might not
+be accurate all the time?
 
+I will explain how things are working in current set of io scheduler
+patches.
+
+Currently on top of queue idling, I have implemented group idling also.
+Queue idling is dynamic and io scheduler like CFQ keeps track of
+traffic pattern on the queue and disables/enables idling dynamically. So
+in this case fairness depends on rate of successful anticipations by the
+io scheduler.
+
+Group idling currently is static in nature and purely implemented in
+elevator fair queuing layer. Group idling kicks in only when a group is
+empty at the time of queue expiration and underlying ioscheduler has not
+chosen to enable idling on the queue. This provides us the gurantee that
+group will keep on getting its fair share of disk as long as a new request
+comes in the group with-in that idling period.
+
+Implementing group idling ensures that it does not bog down the io scheduler
+and with-in group queue switching can still be very fast (no idling on many of
+the queues by cfq).
+
+Now in case of SSD if group idling is really hurting somebody, I would
+expect him to set it to either 1 or 0. You might get better throughput
+but then expect fairness for the group only if the group is continuously
+backlogged. (Something what dm-ioband guys seem to be doing).
+
+So do you think that adjusting this "group_idling" tunable is too
+complicated and there are better ways to handle it in case of SSD+NCQ?
+
+Thanks
+Vivek
