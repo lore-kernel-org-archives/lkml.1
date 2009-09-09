@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZIIXR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZIIXWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbZIIXR1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 19:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753787AbZIIXR1
+	id S1754547AbZIIXWU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 19:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbZIIXWT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 19:17:27 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:37577 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752749AbZIIXR0 (ORCPT
+	Wed, 9 Sep 2009 19:22:19 -0400
+Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:50582 "EHLO
+	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754534AbZIIXWS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 19:17:26 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH for -mm] getrusage: fill ru_maxrss value
-Cc: kosaki.motohiro@jp.fujitsu.com, hugh@veritas.com, jpirko@redhat.com,
-       linux-kernel@vger.kernel.org, oleg@redhat.com, linux-mm@kvack.org,
-       mingo@elte.hu
-In-Reply-To: <20090909134643.5479b09e.akpm@linux-foundation.org>
-References: <20090907115430.6C16.A69D9226@jp.fujitsu.com> <20090909134643.5479b09e.akpm@linux-foundation.org>
-Message-Id: <20090910081020.9CAE.A69D9226@jp.fujitsu.com>
+	Wed, 9 Sep 2009 19:22:18 -0400
+Date: Wed, 9 Sep 2009 17:22:18 -0600
+From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+To: linux-kernel@vger.kernel.org
+Cc: tpmdd-devel@lists.sourceforge.net, srajiv@linux.vnet.ibm.com,
+       Debora Velarde <debora@linux.vnet.ibm.com>,
+       Marcel Selhorst <m.selhorst@sirrix.com>,
+       James Morris <jmorris@namei.org>, Jan Beulich <jbeulich@novell.com>
+Subject: [PATCH] TPM: Fixup boot probe timeout for tpm_tis driver
+Message-ID: <20090909232218.GK406@obsidianresearch.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 10 Sep 2009 08:17:27 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon,  7 Sep 2009 11:58:36 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > > Grr, my fault.
-> > > I recognize it. sorry.
-> > 
-> > I've finished my long pending homework ;)
-> > 
-> > Andrew, can you please replace following patch with getrusage-fill-ru_maxrss-value.patch
-> > and getrusage-fill-ru_maxrss-value-update.patch?
-> > 
-> > 
-> > 
-> > ChangeLog
-> >  ===============================
-> >   o Merge getrusage-fill-ru_maxrss-value.patch and getrusage-fill-ru_maxrss-value-update.patch
-> >   o rewrote test programs (older version hit FreeBSD bug and it obfuscate testcase intention, thanks Hugh)
-> 
-> The code changes are unaltered, so I merely updated the changelog.
+When probing the device in tpm_tis_init the call request_locality
+uses timeout_a, which wasn't being initalized until after
+request_locality. This results in request_locality falsely timing
+out if the chip is still starting. Move the initialization to before
+request_locality.
 
-I see. thanks.
+This probably only matters for embedded cases (ie mine), a BIOS likely
+gets the TPM into a state where this code path isn't necessary.
 
+Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+---
+ drivers/char/tpm/tpm_tis.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-> The changelog had lots of ^------- lines in it.  But those are
-> conventionally the end-of-changelog separator so I rewrote them to
-> ^=======
-
-sorry, I have stupid question.
-I thought "--" and "---" have special meaning. but other length "-" are safe.
-Is this incorrect?
-
-or You mean it's easy confusing bad style?
-
-
+diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+index 241b5ae..c1e5ab8 100644
+--- a/drivers/char/tpm/tpm_tis.c
++++ b/drivers/char/tpm/tpm_tis.c
+@@ -450,6 +450,12 @@ static int tpm_tis_init(struct device *dev, u32 start,
+ 		goto out_err;
+ 	}
+ 
++	/* Default timeouts */
++	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
++	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
++
+ 	if (request_locality(chip, 0) != 0) {
+ 		rc = -ENODEV;
+ 		goto out_err;
+@@ -457,12 +463,6 @@ static int tpm_tis_init(struct device *dev, u32 start,
+ 
+ 	vendor = ioread32(chip->vendor.iobase + TPM_DID_VID(0));
+ 
+-	/* Default timeouts */
+-	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
+-	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
+-
+ 	dev_info(dev,
+ 		 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
+ 		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
+-- 
+1.5.4.2
 
