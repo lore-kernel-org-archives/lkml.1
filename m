@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbZIIB0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbZIIB17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752953AbZIIB0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 21:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751651AbZIIB0Q
+	id S1753002AbZIIB17 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 21:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752980AbZIIB17
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 21:26:16 -0400
-Received: from fifo99.com ([67.223.236.141]:55039 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752749AbZIIB0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 21:26:15 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V4.
-From: Daniel Walker <dwalker@fifo99.com>
-To: akataria@vmware.com
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
-       Matthew Wilcox <matthew@wil.cx>, Roland Dreier <rdreier@cisco.com>,
-       Bart Van Assche <bvanassche@acm.org>,
-       Robert Love <robert.w.love@intel.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+	Tue, 8 Sep 2009 21:27:59 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56147 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752744AbZIIB15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 21:27:57 -0400
+Message-ID: <4AA70451.6050307@cn.fujitsu.com>
+Date: Wed, 09 Sep 2009 09:26:41 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Daniel Walker <dwalker@fifo99.com>
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, pv-drivers@vmware.com
-In-Reply-To: <1252458903.24914.73.camel@ank32.eng.vmware.com>
-References: <1252458903.24914.73.camel@ank32.eng.vmware.com>
-Content-Type: text/plain
-Date: Tue, 08 Sep 2009 18:26:36 -0700
-Message-Id: <1252459596.14793.46.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+       Eric Biederman <ebiederm@xmission.com>
+Subject: Re: [PATCH 2/2] tracing/events: Add kexec tracepoints
+References: <4AA70198.9070500@cn.fujitsu.com>  <4AA701B3.704@cn.fujitsu.com> <1252459241.14793.40.camel@desktop>
+In-Reply-To: <1252459241.14793.40.camel@desktop>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 18:15 -0700, Alok Kataria wrote:
-> +typedef struct PVSCSIRingCmpDesc {
-> +       u64     context;
-> +       u64     dataLen;
-> +       u32     senseLen;
-> +       u16     hostStatus;
-> +       u16     scsiStatus;
-> +       u32     _pad[2];
-> +} __packed PVSCSIRingCmpDesc;
+Daniel Walker wrote:
+> On Wed, 2009-09-09 at 09:15 +0800, Li Zefan wrote:
+>> +       TP_STRUCT__entry(
+>> +               __string(       msg,    msg     )
+>> +       ),
+> 
+> Why the funny spacing here?
+> 
 
+To make the code better-looking.
 
-I get a lot of checkpatch warnings due to the typedefs here.. They are
-usually frowned upon, and it really does make you code look alien ..
+This is the coding-style we use for the code in
+include/trace/events/*.
 
-> +#define PVSCSI_MEM_SPACE_COMMAND_PAGE          0
-> +#define PVSCSI_MEM_SPACE_INTR_STATUS_PAGE      1
-> +#define PVSCSI_MEM_SPACE_MISC_PAGE             2
-> +#define PVSCSI_MEM_SPACE_KICK_IO_PAGE          4
-> +#define PVSCSI_MEM_SPACE_MSIX_TABLE_PAGE       6
-> +#define PVSCSI_MEM_SPACE_MSIX_PBA_PAGE         7
-
-Why not use an enum for the above? Your using enums in the rest of your
-code..
-
-Daniel
+Run scripts/checkpatch.pl to include/trace/events/foo.h,
+you'll get a bunch of ERRORs. We ignore them, because the
+script is not applicable here.
 
