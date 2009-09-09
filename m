@@ -1,107 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753162AbZIIMLo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753201AbZIIMVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753162AbZIIMLo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 08:11:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZIIMLo
+	id S1753201AbZIIMVl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 08:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZIIMVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 08:11:44 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47287 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751725AbZIIMLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 08:11:43 -0400
-Date: Wed, 9 Sep 2009 14:11:46 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] aoe fix for 2.6.31
-Message-ID: <20090909121146.GZ18599@kernel.dk>
+	Wed, 9 Sep 2009 08:21:40 -0400
+Received: from moutng.kundenserver.de ([212.227.17.10]:62822 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753132AbZIIMVj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 08:21:39 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Nathan Lynch <ntl@pobox.com>
+Subject: Re: [RFC][v5][PATCH 8/8]: Define clone_with_pids() syscall
+Date: Wed, 9 Sep 2009 14:19:50 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-9-generic; KDE/4.3.1; x86_64; ; )
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       Containers <containers@lists.linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
+       mingo@elte.hu, torvalds@linux-foundation.org,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>
+References: <20090907211302.GA5892@us.ibm.com> <20090907211700.GH6685@us.ibm.com> <m3zl95l2oz.fsf@pobox.com>
+In-Reply-To: <m3zl95l2oz.fsf@pobox.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
+ =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909091419.50496.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/U/cpFVumXmQDi2n8C4CVbxOhYiUFDSDAAfJd
+ Fl81LbvbygG4S9GohuNy2ggvzI5RRBG0dVIiVMiA8uoWM2X1HR
+ Q6jSrzTcOB0u2Yir1ixlg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+On Tuesday 08 September 2009, Nathan Lynch wrote:
 
-Please pull this single fix for 2.6.31, which fixes a problem with the
-way that aoe handles the request queue. It used to embed the queue
-inside another structure, but this breaks for a variety of reasons.
+> This doesn't work on a 64-bit kernel when the process is 32-bit and uses
+> the definition of struct pid_set provided in types.h:
+> 
+> +struct pid_set {
+> +       int num_pids;
+> +       pid_t *pids;
+> +};
+> 
+> Shouldn't the pids field be u64 or some other type of fixed size?
 
-  git://git.kernel.dk/linux-2.6-block.git for-linus
+This is a complex problem. The structure above would need a conversion
+for the pointer size that you can avoid by using a u64, but that introduces
+another problem:
 
-Ed L. Cashin (1):
-      aoe: allocate unused request_queue for sysfs
+struct pid_set {
+	int num_pids;
+	u64 pidp;
+};
 
- drivers/block/aoe/aoe.h    |    2 +-
- drivers/block/aoe/aoeblk.c |   12 +++++++++---
- drivers/block/aoe/aoedev.c |    1 +
- 3 files changed, 11 insertions(+), 4 deletions(-)
+Has implicit padding between the two members on all 64 bit architectures,
+but not on i386, so you would still need a conversion (not for s390, power,
+mips, sparc or parisc though, only for x86).
 
-diff --git a/drivers/block/aoe/aoe.h b/drivers/block/aoe/aoe.h
-index 5e41e6d..db195ab 100644
---- a/drivers/block/aoe/aoe.h
-+++ b/drivers/block/aoe/aoe.h
-@@ -155,7 +155,7 @@ struct aoedev {
- 	u16 fw_ver;		/* version of blade's firmware */
- 	struct work_struct work;/* disk create work struct */
- 	struct gendisk *gd;
--	struct request_queue blkq;
-+	struct request_queue *blkq;
- 	struct hd_geometry geo; 
- 	sector_t ssize;
- 	struct timer_list timer;
-diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
-index 2307a27..1e15889 100644
---- a/drivers/block/aoe/aoeblk.c
-+++ b/drivers/block/aoe/aoeblk.c
-@@ -264,9 +264,12 @@ aoeblk_gdalloc(void *vp)
- 		goto err_disk;
- 	}
- 
--	blk_queue_make_request(&d->blkq, aoeblk_make_request);
--	if (bdi_init(&d->blkq.backing_dev_info))
-+	d->blkq = blk_alloc_queue(GFP_KERNEL);
-+	if (!d->blkq)
- 		goto err_mempool;
-+	blk_queue_make_request(d->blkq, aoeblk_make_request);
-+	if (bdi_init(&d->blkq->backing_dev_info))
-+		goto err_blkq;
- 	spin_lock_irqsave(&d->lock, flags);
- 	gd->major = AOE_MAJOR;
- 	gd->first_minor = d->sysminor * AOE_PARTITIONS;
-@@ -276,7 +279,7 @@ aoeblk_gdalloc(void *vp)
- 	snprintf(gd->disk_name, sizeof gd->disk_name, "etherd/e%ld.%d",
- 		d->aoemajor, d->aoeminor);
- 
--	gd->queue = &d->blkq;
-+	gd->queue = d->blkq;
- 	d->gd = gd;
- 	d->flags &= ~DEVFL_GDALLOC;
- 	d->flags |= DEVFL_UP;
-@@ -287,6 +290,9 @@ aoeblk_gdalloc(void *vp)
- 	aoedisk_add_sysfs(d);
- 	return;
- 
-+err_blkq:
-+	blk_cleanup_queue(d->blkq);
-+	d->blkq = NULL;
- err_mempool:
- 	mempool_destroy(d->bufpool);
- err_disk:
-diff --git a/drivers/block/aoe/aoedev.c b/drivers/block/aoe/aoedev.c
-index eeea477..fa67027 100644
---- a/drivers/block/aoe/aoedev.c
-+++ b/drivers/block/aoe/aoedev.c
-@@ -113,6 +113,7 @@ aoedev_freedev(struct aoedev *d)
- 	if (d->bufpool)
- 		mempool_destroy(d->bufpool);
- 	skbpoolfree(d);
-+	blk_cleanup_queue(d->blkq);
- 	kfree(d);
- }
- 
+I can see two solutions for this:
 
--- 
-Jens Axboe
+1. use separate system call arguments for num_pids and pidp.
+This avoids the data structure and saves one copy_from_user call,
+at the cost of adding another argument to the syscall. syscalls with
+more than 6 arguments are somewhat problematic as well.
 
+2. use a single pointer, with variable length data structures:
+
+struct pid_set {
+	int num_pids;
+	pid_t pids[0];
+};
+
+Since pid_t is always an int, you have no problem with padding or
+incompatible types, but rely on a data structure definition that
+is not in C89 (not sure about C99).
+
+	Arnd <><
