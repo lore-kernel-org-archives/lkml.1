@@ -1,64 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbZIIDHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbZIIOwv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752699AbZIIDHr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 23:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZIIDHq
+	id S1753296AbZIIOwv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:52:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752499AbZIIOwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 23:07:46 -0400
-Received: from mga02.intel.com ([134.134.136.20]:43073 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbZIIDHp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 23:07:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,356,1249282800"; 
-   d="scan'208";a="446875126"
-Date: Wed, 9 Sep 2009 06:46:06 -0400
-From: "Youquan,Song" <youquan.song@intel.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Youquan Song <youquan.song@intel.com>, mingo@elte.hu, hpa@zytor.com,
-       tglx@linutronix.de, linux-kernel@vger.kernel.org, dwmw2@infradead.org,
-       Suresh Siddha <suresh.b.siddha@intel.com>, youqun.song@intel.com
-Subject: Re: Fix interrupt remapping hang if interrupt remapping disable in BIOS
-Message-ID: <20090909104606.GA10454@youquan-linux.bj.intel.com>
-References: <20090907141313.GA26091@youquan-linux.bj.intel.com> <20090907145940.GD5294@lenovo>
-Mime-Version: 1.0
+	Wed, 9 Sep 2009 10:52:51 -0400
+Received: from e28smtp07.in.ibm.com ([59.145.155.7]:55628 "EHLO
+	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbZIIOwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 10:52:50 -0400
+Date: Wed, 9 Sep 2009 16:21:22 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: vgoyal@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
+       akpm@linux-foundation.org, nauman@google.com,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090909105122.GF8828@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+References: <20090908.120119.71095369.ryov@valinux.co.jp> <20090908134244.GA15974@redhat.com> <20090908170649.GC8828@linux.vnet.ibm.com> <20090909.150511.112608142.ryov@valinux.co.jp>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090907145940.GD5294@lenovo>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20090909.150511.112608142.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 07, 2009 at 06:59:40PM +0400, Cyrill Gorcunov wrote:
-> [Youquan Song - Mon, Sep 07, 2009 at 10:13:13AM -0400]
-> ...  
-> |  static int disable_intremap;
-> |  static __init int setup_nointremap(char *str)
-> | @@ -607,9 +608,14 @@ end:
-> |  int __init intr_remapping_supported(void)
-> |  {
-> |  	struct dmar_drhd_unit *drhd;
-> | -
-> | +	struct acpi_table_dmar *dmar;
-> | +
-> |  	if (disable_intremap)
-> |  		return 0;
-> | +
-> | +	dmar = (struct acpi_table_dmar *)dmar_tbl;
-> | +	if (!(dmar->flags & 0x1))
-> | +		return 0;
-> |  
-> |  	for_each_drhd_unit(drhd) {
-> |  		struct intel_iommu *iommu = drhd->iommu;
+On Wed, Sep 09, 2009 at 03:05:11PM +0900, Ryo Tsuruta wrote:
+> Hi,
 > 
-> Hi Youquan,
+> Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> > > > - dm-ioband can use without cgroup. (I remember Vivek said it's not an
+> > > >   advantage.)
+> > > 
+> > > I think this is more of a disadvantage than advantage. We have a very well
+> > > defined functionality of cgroup in kernel to group the tasks. Now you are
+> > > coming up with your own method of grouping the tasks which will make life
+> > > even more confusing for users and application writers.
 > 
-> perhaps we could move this test to helper function
-> in dmar.c instead of plain external variable test?
+> I know that cgroup is a very well defined functionality, that is why
+> dm-ioband also supports throttling per cgroup. But how are we supposed
+> to do throttling on the system which doesn't support cgroup?
+> As I wrote in another mail to Vivek, I would like to make use of
+> dm-ioband on RHEL 5.x. 
 
-Good point. I will update it and send it out soon.
+Hi Ryo,
 
-- Youquan
+I am not sure that upstream should really be worrying about RHEL 5.x.
+cgroups is a relatively mature solution and is available in most (if not
+all) community distros today. We really should not be looking at another
+grouping solution if the sole reason is that then dm-ioband can be used
+on RHEL 5.x. The correct solution would be to maintain a separate patch
+for RHEL 5.x then and not to burden the upstream kernel.
 
+> And I don't think that the grouping methods are not complicated, just
+> stack a new device on the existing device and assign bandwidth to it,
+> that is the same method as other device-mapper targets, if you would
+> like to assign bandwidth per thread, then register the thread's ID to
+> the device and assign bandwidth to it as well. I don't think it makes
+> users confused.
+> 
+> > I would tend to agree with this. With other resource management
+> > controllers using cgroups, having dm-ioband use something different will
+> > require a different set of userspace tools/libraries to be used.
+> > Something that will severly limit its usefulness froma programmer's
+> > perspective.
+> 
+> Once we create a dm-ioband device, the device can be configured
+> through the cgroup interface. I think it will not severly limit its
+> usefulness.
+> 
 
+My objection is slightly different. My objection is that there are too
+many interfaces to do the same thing. Which one of these is the
+recommended one? WHich one is going to be supported? If we say that
+cgroups is not the preferred interface, do the application developers
+need to use yet another library for io control along with cpu/memory
+control?
+
+thanks,
+-- 
+regards,
+Dhaval
