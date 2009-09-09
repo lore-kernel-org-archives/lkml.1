@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbZIIDqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752934AbZIIDsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752897AbZIIDqa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 23:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752522AbZIIDqa
+	id S1752934AbZIIDsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 23:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZIIDsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 23:46:30 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51973 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751565AbZIIDq3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 23:46:29 -0400
-Message-ID: <4AA724CB.1070401@cn.fujitsu.com>
-Date: Wed, 09 Sep 2009 11:45:15 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
-References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com> <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com> <1251129384.22398.7166.camel@nimitz> <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com> <1251150156.22398.8289.camel@nimitz> <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com> <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com> <4AA70D4F.3040503@cn.fujitsu.com> <alpine.DEB.1.00.0909081959030.5084@chino.kir.corp.google.com> <4AA72175.5000108@cn.fujitsu.com> <alpine.DEB.1.00.0909082034470.8334@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.1.00.0909082034470.8334@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 8 Sep 2009 23:48:00 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:34080 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752812AbZIIDr7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 23:47:59 -0400
+Date: Wed, 9 Sep 2009 13:47:52 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Siarhei Liakh <sliakh.lkml@gmail.com>, Xuxian Jiang <jiang@cs.ncsu.edu>,
+       Arjan van de Ven <arjan@linux.intel.com>
+Subject: linux-next: rr tree build failure
+Message-Id: <20090909134752.f5b8c2e7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-11:41, David Rientjes wrote:
-> On Wed, 9 Sep 2009, Li Zefan wrote:
-> 
->> I was not talking about ftrace_ret_stack, I was talking about
->> struct ftrace_page and struct ftrace_profile_page. ;)
->>
-> 
-> Gack, ftrace_page would probably be better off simply using the flex list 
-> implementation I suggested which constructs a list from page->lru since it 
-> doesn't appear to require indexing into the array, it simply requires an 
-> iteration in all cases (or am I wrong?).  Flex lists could easily be made 
-> to support seqfiles.
-> 
+--Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Right, iteration is needed but indexing is not. I thought
-about flex list too, flex array has some limitations which
-make it hard to find a real user.
+Hi Rusty,
 
+Today's linux-next build (powerpc ppc64_defconfig) failed like this:
+
+kernel/module.c: In function 'set_section_ro_nx':
+kernel/module.c:1549: error: implicit declaration of function 'set_memory_r=
+o'
+kernel/module.c:1560: error: implicit declaration of function 'set_memory_n=
+x'
+kernel/module.c: In function 'unset_section_ro_nx':
+kernel/module.c:1575: error: implicit declaration of function 'set_memory_r=
+w'
+
+Caused by commit 25306e21864c2a220d6fa2e0632425028aa9626c
+("module:ro-nx-protection") which uses these interfaces that are only
+defined on x86 ...
+
+I have used the version of the rr tree from next-20090908 for today.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqnJWgACgkQjjKRsyhoI8xXbACgq+Bc+RmETT3Uq4IoAtIOuRig
+XqwAnjUO3zqhuK7pBh8LFfL3qnsuTiq/
+=uYv4
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Sep_2009_13_47_52_+1000_fvckU9udN=5=v6t9--
