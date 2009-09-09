@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752602AbZIICsu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751536AbZIICvt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752602AbZIICsu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:48:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752549AbZIICsu
+	id S1751536AbZIICvt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:51:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZIICvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:48:50 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:45642 "EHLO
+	Tue, 8 Sep 2009 22:51:47 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:46336 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752496AbZIICst (ORCPT
+	by vger.kernel.org with ESMTP id S1752517AbZIICvp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:48:49 -0400
+	Tue, 8 Sep 2009 22:51:45 -0400
 From: Tim Abbott <tabbott@ksplice.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Sam Ravnborg <sam@ravnborg.org>, Ingo Molnar <mingo@redhat.com>,
        Tim Abbott <tabbott@ksplice.com>
-Subject: [PATCH 3/5] x86: convert to use __HEAD and HEAD_TEXT macros.
-Date: Tue,  8 Sep 2009 22:48:16 -0400
-Message-Id: <1252464498-26293-3-git-send-email-tabbott@ksplice.com>
+Subject: [PATCH 4/5] x86: Use section .data.page_aligned for the idt_table.
+Date: Tue,  8 Sep 2009 22:48:17 -0400
+Message-Id: <1252464498-26293-4-git-send-email-tabbott@ksplice.com>
 X-Mailer: git-send-email 1.6.3.3
 In-Reply-To: <1252464498-26293-1-git-send-email-tabbott@ksplice.com>
 References: <1252464498-26293-1-git-send-email-tabbott@ksplice.com>
@@ -26,74 +26,49 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This has the consequence of changing the section name use for head
-code from ".text.head" to ".head.text".  It also eliminates the
-".text.head" output section (instead placing head code at the start of
-the .text output section), which should be harmless.
+The .data.idt section is just squashed into the .data.page_aligned
+output section by the linker script anyway, so it might as well be in
+the .data.page_aligned section.
 
-This patch only changes the sections in the actual kernel, not those
-in the compressed boot loader.
+This eliminates all references to .data.idt on x86.
 
 Signed-off-by: Tim Abbott <tabbott@ksplice.com>
 Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- arch/x86/kernel/head_32.S     |    2 +-
- arch/x86/kernel/head_64.S     |    2 +-
- arch/x86/kernel/vmlinux.lds.S |   12 +++---------
- 3 files changed, 5 insertions(+), 11 deletions(-)
+ arch/x86/kernel/traps.c       |    6 ++----
+ arch/x86/kernel/vmlinux.lds.S |    1 -
+ 2 files changed, 2 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/kernel/head_32.S b/arch/x86/kernel/head_32.S
-index 3eba3ab..f689c31 100644
---- a/arch/x86/kernel/head_32.S
-+++ b/arch/x86/kernel/head_32.S
-@@ -79,7 +79,7 @@ RESERVE_BRK(pagetables, INIT_MAP_SIZE)
-  * any particular GDT layout, because we load our own as soon as we
-  * can.
-  */
--.section .text.head,"ax",@progbits
-+__HEAD
- ENTRY(startup_32)
- 	/* test KEEP_SEGMENTS flag to see if the bootloader is asking
- 		us to not reload segments */
-diff --git a/arch/x86/kernel/head_64.S b/arch/x86/kernel/head_64.S
-index d0bc0a1..780cd92 100644
---- a/arch/x86/kernel/head_64.S
-+++ b/arch/x86/kernel/head_64.S
-@@ -40,7 +40,7 @@ L4_START_KERNEL = pgd_index(__START_KERNEL_map)
- L3_START_KERNEL = pud_index(__START_KERNEL_map)
+diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
+index 5204332..dd04f86 100644
+--- a/arch/x86/kernel/traps.c
++++ b/arch/x86/kernel/traps.c
+@@ -73,11 +73,9 @@ char ignore_fpu_irq;
  
- 	.text
--	.section .text.head
-+	__HEAD
- 	.code64
- 	.globl startup_64
- startup_64:
+ /*
+  * The IDT has to be page-aligned to simplify the Pentium
+- * F0 0F bug workaround.. We have a special link segment
+- * for this.
++ * F0 0F bug workaround.
+  */
+-gate_desc idt_table[256]
+-	__attribute__((__section__(".data.idt"))) = { { { { 0, 0 } } }, };
++gate_desc idt_table[256] __page_aligned_data = { { { { 0, 0 } } }, };
+ #endif
+ 
+ DECLARE_BITMAP(used_vectors, NR_VECTORS);
 diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index e771251..51a8478 100644
+index 51a8478..dad5a59 100644
 --- a/arch/x86/kernel/vmlinux.lds.S
 +++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -65,17 +65,11 @@ SECTIONS
+@@ -112,7 +112,6 @@ SECTIONS
  #endif
  
- 	/* Text and read-only data */
--
--	/* bootstrapping code */
--	.text.head : AT(ADDR(.text.head) - LOAD_OFFSET) {
--		_text = .;
--		*(.text.head)
--	} :text = 0x9090
--
--	/* The rest of the text */
- 	.text :  AT(ADDR(.text) - LOAD_OFFSET) {
-+		_text = .;
-+		/* bootstrapping code */
-+		HEAD_TEXT
- #ifdef CONFIG_X86_32
--		/* not really needed, already page aligned */
- 		. = ALIGN(PAGE_SIZE);
- 		*(.text.page_aligned)
- #endif
+ 		PAGE_ALIGNED_DATA(PAGE_SIZE)
+-		*(.data.idt)
+ 
+ 		CACHELINE_ALIGNED_DATA(CONFIG_X86_L1_CACHE_BYTES)
+ 
 -- 
 1.6.3.3
 
