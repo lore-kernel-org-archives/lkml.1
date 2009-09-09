@@ -1,330 +1,751 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZIIVvc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZIIWEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754384AbZIIVvc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 17:51:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753937AbZIIVvb
+	id S1754471AbZIIWEJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 18:04:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754457AbZIIWEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 17:51:31 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:59989 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753079AbZIIVva (ORCPT
+	Wed, 9 Sep 2009 18:04:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:13259 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754452AbZIIWEC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 17:51:30 -0400
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V4.
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <4AA8177A.2020606@codemonkey.ws>
-References: <1252458903.24914.73.camel@ank32.eng.vmware.com>
-	 <4AA8177A.2020606@codemonkey.ws>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 09 Sep 2009 14:51:33 -0700
-Message-Id: <1252533093.24633.40.camel@ank32.eng.vmware.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Wed, 9 Sep 2009 18:04:02 -0400
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/4] xvmalloc memory allocator
+Date: Thu, 10 Sep 2009 03:23:24 +0530
+User-Agent: KMail/1.12.0 (Linux/2.6.30.5-43.fc11.x86_64; KDE/4.3.0; x86_64; ; )
+Cc: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org
+References: <200909100215.36350.ngupta@vflare.org>
+In-Reply-To: <200909100215.36350.ngupta@vflare.org>
+MIME-Version: 1.0
+Message-Id: <200909100323.24949.ngupta@vflare.org>
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Anthony,
+xvmalloc is a memory allocator designed specifically for ramzswap project.
 
-On Wed, 2009-09-09 at 14:00 -0700, Anthony Liguori wrote:
-> Hi Alok,
-> 
-> Joining this a bit late as this was just brought to my attention.  It 
-> would have been nice to CC the virtualization mailing list.  Please do 
-> in future submissions.
+* Features:
+ - Low metadata overhead (just 4 bytes per object)
+ - O(1) Alloc/Free - except when we have to call system page allocator to
+   get additional memory.
+ - Very low fragmentation: In all tests, xvmalloc memory usage is within 12%
+   of "Ideal".
+ - Pool based allocator: Each pool can grow and shrink.
+ - It maps pages only when required. So, it does not hog vmalloc area which
+   is very small on 32-bit systems.
 
-Sure.
+SLUB allocator could not be used due to fragmentation issues:
+http://code.google.com/p/compcache/wiki/AllocatorsComparison
+Data here shows kmalloc using ~43% more memory than TLSF and xvMalloc
+is showed ~2% more space efficiency than TLSF (due to smaller metadata).
+Creating various kmem_caches can reduce space efficiency gap but still
+problem of being limited to low memory exists. Also, it depends on
+allocating higher order pages to reduce fragmentation - this is not
+acceptable for ramzswap as it is used under memory crunch (its a swap
+device!).
 
-> 
-> Alok Kataria wrote:
-> > VMware PVSCSI driver - v4.
-> > 
-> /
-> >  
-> > diff --git a/drivers/scsi/pvscsi.h b/drivers/scsi/pvscsi.h
-> > new file mode 100644
-> > index 0000000..96bb655
-> > --- /dev/null
-> > +++ b/drivers/scsi/pvscsi.h
-> > @@ -0,0 +1,395 @@
-> > +/*
-> > + * VMware PVSCSI header file
-> > + *
-> > + * Copyright (C) 2008-2009, VMware, Inc. All Rights Reserved.
-> > + *
-> > + * This program is free software; you can redistribute it and/or modify it
-> > + * under the terms of the GNU General Public License as published by the
-> > + * Free Software Foundation; version 2 of the License and no later version.
-> > + *
-> > + * This program is distributed in the hope that it will be useful, but
-> > + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> > + * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
-> > + * NON INFRINGEMENT.  See the GNU General Public License for more
-> > + * details.
-> > + *
-> > + * You should have received a copy of the GNU General Public License
-> > + * along with this program; if not, write to the Free Software
-> > + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
-> > + *
-> > + * Maintained by: Alok N Kataria <akataria@vmware.com>
-> > + *
-> > + */
-> > +
-> > +#ifndef _PVSCSI_H_
-> > +#define _PVSCSI_H_
-> > +
-> > +#include <linux/types.h>
-> > +
-> > +#define PVSCSI_DRIVER_VERSION_STRING   "1.0.0.0"
-> > +
-> > +#define PVSCSI_MAX_NUM_SG_ENTRIES_PER_SEGMENT 128
-> > +
-> > +#define MASK(n)        ((1 << (n)) - 1)        /* make an n-bit mask */
-> > +
-> > +#define PCI_VENDOR_ID_VMWARE		0x15AD
-> > +#define PCI_DEVICE_ID_VMWARE_PVSCSI	0x07C0
-> > +
-> > +/*
-> > + * host adapter status/error codes
-> > + */
-> > +typedef enum {
-> > +   BTSTAT_SUCCESS       = 0x00,  /* CCB complete normally with no errors */
-> > +   BTSTAT_LINKED_COMMAND_COMPLETED           = 0x0a,
-> > +   BTSTAT_LINKED_COMMAND_COMPLETED_WITH_FLAG = 0x0b,
-> > +   BTSTAT_DATA_UNDERRUN = 0x0c,
-> > +   BTSTAT_SELTIMEO      = 0x11,  /* SCSI selection timeout */
-> > +   BTSTAT_DATARUN       = 0x12,  /* data overrun/underrun */
-> > +   BTSTAT_BUSFREE       = 0x13,  /* unexpected bus free */
-> > +   BTSTAT_INVPHASE      = 0x14,  /* invalid bus phase or sequence requested by target */
-> > +   BTSTAT_LUNMISMATCH   = 0x17,  /* linked CCB has different LUN from first CCB */
-> > +   BTSTAT_SENSFAILED    = 0x1b,  /* auto request sense failed */
-> > +   BTSTAT_TAGREJECT     = 0x1c,  /* SCSI II tagged queueing message rejected by target */
-> > +   BTSTAT_BADMSG        = 0x1d,  /* unsupported message received by the host adapter */
-> > +   BTSTAT_HAHARDWARE    = 0x20,  /* host adapter hardware failed */
-> > +   BTSTAT_NORESPONSE    = 0x21,  /* target did not respond to SCSI ATN, sent a SCSI RST */
-> > +   BTSTAT_SENTRST       = 0x22,  /* host adapter asserted a SCSI RST */
-> > +   BTSTAT_RECVRST       = 0x23,  /* other SCSI devices asserted a SCSI RST */
-> > +   BTSTAT_DISCONNECT    = 0x24,  /* target device reconnected improperly (w/o tag) */
-> > +   BTSTAT_BUSRESET      = 0x25,  /* host adapter issued BUS device reset */
-> > +   BTSTAT_ABORTQUEUE    = 0x26,  /* abort queue generated */
-> > +   BTSTAT_HASOFTWARE    = 0x27,  /* host adapter software error */
-> > +   BTSTAT_HATIMEOUT     = 0x30,  /* host adapter hardware timeout error */
-> > +   BTSTAT_SCSIPARITY    = 0x34,  /* SCSI parity error detected */
-> > +} HostBusAdapterStatus;
-> > +
-> > +/*
-> > + * Register offsets.
-> > + *
-> > + * These registers are accessible both via i/o space and mm i/o.
-> > + */
-> > +
-> > +enum PVSCSIRegOffset {
-> > +	PVSCSI_REG_OFFSET_COMMAND        =    0x0,
-> > +	PVSCSI_REG_OFFSET_COMMAND_DATA   =    0x4,
-> > +	PVSCSI_REG_OFFSET_COMMAND_STATUS =    0x8,
-> > +	PVSCSI_REG_OFFSET_LAST_STS_0     =  0x100,
-> > +	PVSCSI_REG_OFFSET_LAST_STS_1     =  0x104,
-> > +	PVSCSI_REG_OFFSET_LAST_STS_2     =  0x108,
-> > +	PVSCSI_REG_OFFSET_LAST_STS_3     =  0x10c,
-> > +	PVSCSI_REG_OFFSET_INTR_STATUS    = 0x100c,
-> > +	PVSCSI_REG_OFFSET_INTR_MASK      = 0x2010,
-> > +	PVSCSI_REG_OFFSET_KICK_NON_RW_IO = 0x3014,
-> > +	PVSCSI_REG_OFFSET_DEBUG          = 0x3018,
-> > +	PVSCSI_REG_OFFSET_KICK_RW_IO     = 0x4018,
-> > +};
-> > +
-> > +/*
-> > + * Virtual h/w commands.
-> > + */
-> > +
-> > +enum PVSCSICommands {
-> > +	PVSCSI_CMD_FIRST             = 0, /* has to be first */
-> > +
-> > +	PVSCSI_CMD_ADAPTER_RESET     = 1,
-> > +	PVSCSI_CMD_ISSUE_SCSI        = 2,
-> > +	PVSCSI_CMD_SETUP_RINGS       = 3,
-> > +	PVSCSI_CMD_RESET_BUS         = 4,
-> > +	PVSCSI_CMD_RESET_DEVICE      = 5,
-> > +	PVSCSI_CMD_ABORT_CMD         = 6,
-> > +	PVSCSI_CMD_CONFIG            = 7,
-> > +	PVSCSI_CMD_SETUP_MSG_RING    = 8,
-> > +	PVSCSI_CMD_DEVICE_UNPLUG     = 9,
-> > +
-> > +	PVSCSI_CMD_LAST              = 10  /* has to be last */
-> > +};
-> > +
-> > +/*
-> > + * Command descriptor for PVSCSI_CMD_RESET_DEVICE --
-> > + */
-> > +
-> > +typedef struct PVSCSICmdDescResetDevice {
-> > +	u32	target;
-> > +	u8	lun[8];
-> > +} __packed PVSCSICmdDescResetDevice;
-> > +
-> > +/*
-> > + * Command descriptor for PVSCSI_CMD_ABORT_CMD --
-> > + *
-> > + * - currently does not support specifying the LUN.
-> > + * - _pad should be 0.
-> > + */
-> > +
-> > +typedef struct PVSCSICmdDescAbortCmd {
-> > +	u64	context;
-> > +	u32	target;
-> > +	u32	_pad;
-> > +} __packed PVSCSICmdDescAbortCmd;
-> > +
-> > +/*
-> > + * Command descriptor for PVSCSI_CMD_SETUP_RINGS --
-> > + *
-> > + * Notes:
-> > + * - reqRingNumPages and cmpRingNumPages need to be power of two.
-> > + * - reqRingNumPages and cmpRingNumPages need to be different from 0,
-> > + * - reqRingNumPages and cmpRingNumPages need to be inferior to
-> > + *   PVSCSI_SETUP_RINGS_MAX_NUM_PAGES.
-> > + */
-> > +
-> > +#define PVSCSI_SETUP_RINGS_MAX_NUM_PAGES        32
-> > +typedef struct PVSCSICmdDescSetupRings {
-> > +	u32	reqRingNumPages;
-> > +	u32	cmpRingNumPages;
-> > +	u64	ringsStatePPN;
-> > +	u64	reqRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
-> > +	u64	cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
-> > +} __packed PVSCSICmdDescSetupRings;
-> > +
-> > +/*
-> > + * Command descriptor for PVSCSI_CMD_SETUP_MSG_RING --
-> > + *
-> > + * Notes:
-> > + * - this command was not supported in the initial revision of the h/w
-> > + *   interface. Before using it, you need to check that it is supported by
-> > + *   writing PVSCSI_CMD_SETUP_MSG_RING to the 'command' register, then
-> > + *   immediately after read the 'command status' register:
-> > + *       * a value of -1 means that the cmd is NOT supported,
-> > + *       * a value != -1 means that the cmd IS supported.
-> > + *   If it's supported the 'command status' register should return:
-> > + *      sizeof(PVSCSICmdDescSetupMsgRing) / sizeof(u32).
-> > + * - this command should be issued _after_ the usual SETUP_RINGS so that the
-> > + *   RingsState page is already setup. If not, the command is a nop.
-> > + * - numPages needs to be a power of two,
-> > + * - numPages needs to be different from 0,
-> > + * - _pad should be zero.
-> > + */
-> > +
-> > +#define PVSCSI_SETUP_MSG_RING_MAX_NUM_PAGES  16
-> > +
-> > +typedef struct PVSCSICmdDescSetupMsgRing {
-> > +	u32	numPages;
-> > +	u32	_pad;
-> > +	u64	ringPPNs[PVSCSI_SETUP_MSG_RING_MAX_NUM_PAGES];
-> > +} __packed PVSCSICmdDescSetupMsgRing;
-> > +
-> > +enum PVSCSIMsgType {
-> > +	PVSCSI_MSG_DEV_ADDED          = 0,
-> > +	PVSCSI_MSG_DEV_REMOVED        = 1,
-> > +	PVSCSI_MSG_LAST               = 2,
-> > +};
-> > +
-> > +/*
-> > + * Msg descriptor.
-> > + *
-> > + * sizeof(struct PVSCSIRingMsgDesc) == 128.
-> > + *
-> > + * - type is of type enum PVSCSIMsgType.
-> > + * - the content of args depend on the type of event being delivered.
-> > + */
-> > +
-> > +typedef struct PVSCSIRingMsgDesc {
-> > +	u32	type;
-> > +	u32	args[31];
-> > +} __packed PVSCSIRingMsgDesc;
-> > +
-> > +typedef struct PVSCSIMsgDescDevStatusChanged {
-> > +	u32	type;  /* PVSCSI_MSG_DEV _ADDED / _REMOVED */
-> > +	u32	bus;
-> > +	u32	target;
-> > +	u8	lun[8];
-> > +	u32	pad[27];
-> > +} __packed PVSCSIMsgDescDevStatusChanged;
-> > +
-> > +/*
-> > + * Rings state.
-> > + *
-> > + * - the fields:
-> > + *    . msgProdIdx,
-> > + *    . msgConsIdx,
-> > + *    . msgNumEntriesLog2,
-> > + *   .. are only used once the SETUP_MSG_RING cmd has been issued.
-> > + * - '_pad' helps to ensure that the msg related fields are on their own
-> > + *   cache-line.
-> > + */
-> > +
-> > +typedef struct PVSCSIRingsState {
-> > +	u32	reqProdIdx;
-> > +	u32	reqConsIdx;
-> > +	u32	reqNumEntriesLog2;
-> > +
-> > +	u32	cmpProdIdx;
-> > +	u32	cmpConsIdx;
-> > +	u32	cmpNumEntriesLog2;
-> > +
-> > +	u8	_pad[104];
-> > +
-> > +	u32	msgProdIdx;
-> > +	u32	msgConsIdx;
-> > +	u32	msgNumEntriesLog2;
-> > +} __packed PVSCSIRingsState;
-> 
-> All of this can be hidden behind a struct virtqueue.  You could then 
-> introduce a virtio-vmwring that implemented this ABI.
-> 
-> You could then separate out the actual scsi logic into a separate 
-> virtio-scsi.c driver.
-> 
-> There are numerous advantages to this layering.  You get to remain ABI 
-> compatible with yourself.  You can potentially reuse the ring logic in 
-> other drivers.  Other VMMs can use different ring transports without 
-> introducing new drivers.  For instance, in KVM, we would use virtio-pci 
-> + virtio-scsi instead of using virtio-vmwring + virtio-scsi.
+SLOB allocator could not be used do to reasons mentioned here:
+http://lkml.org/lkml/2009/3/18/210
 
-I see your point, but the ring logic or the ABI that we use to
-communicate between the hypervisor and guest is not shared between our
-storage and network drivers. As a result, I don't see any benefit of
-separating out this ring handling mechanism, on the contrary it might
-just add some overhead of translating between various layers for our
-SCSI driver.
+* Implementation:
+It uses two-level bitmap search to find free list containing block of
+correct size. This idea is taken from TLSF (Two-Level Segregate Fit)
+allocator and is well explained in its paper (see [Links] below).
 
-Having said that, I will like to add that yes if in some future
-iteration of our paravirtualized drivers, if we decide to share this
-ring mechanism for our various device drivers this might be an
-interesting proposition. 
+* Limitations:
+ - Poor scalability: No per-cpu data structures (work in progress).
 
-Thanks,
-Alok
+[Links]
+1. Details and Performance data:
+http://code.google.com/p/compcache/wiki/xvMalloc
+http://code.google.com/p/compcache/wiki/xvMallocPerformance
 
-> 
-> The virtio infrastructure has been backported to various old kernels too 
-> so there really is no reason not to use it.
-> 
-> We have the interfaces in virtio to do notification suppression and MSI 
-> so I don't think there's any real limitation that it would impose on you.
-> 
-> Regards,
-> 
-> Anthony Liguori
+2. TLSF memory allocator:
+home: http://rtportal.upv.es/rtmalloc/
+paper: http://rtportal.upv.es/rtmalloc/files/MRBC_2008.pdf
 
+Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+---
+
+ drivers/block/ramzswap/xvmalloc.c     |  533 +++++++++++++++++++++++++++++++++
+ drivers/block/ramzswap/xvmalloc.h     |   30 ++
+ drivers/block/ramzswap/xvmalloc_int.h |   86 ++++++
+ 3 files changed, 649 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/block/ramzswap/xvmalloc.c b/drivers/block/ramzswap/xvmalloc.c
+new file mode 100644
+index 0000000..12ad1a3
+--- /dev/null
++++ b/drivers/block/ramzswap/xvmalloc.c
+@@ -0,0 +1,533 @@
++/*
++ * xvmalloc memory allocator
++ *
++ * Copyright (C) 2008, 2009  Nitin Gupta
++ *
++ * This code is released using a dual license strategy: BSD/GPL
++ * You can choose the licence that better fits your requirements.
++ *
++ * Released under the terms of 3-clause BSD License
++ * Released under the terms of GNU General Public License Version 2.0
++ */
++
++#include <linux/bitops.h>
++#include <linux/errno.h>
++#include <linux/highmem.h>
++#include <linux/init.h>
++#include <linux/string.h>
++#include <linux/slab.h>
++
++#include "xvmalloc.h"
++#include "xvmalloc_int.h"
++
++static void stat_inc(u64 *value)
++{
++	*value = *value + 1;
++}
++
++static void stat_dec(u64 *value)
++{
++	*value = *value - 1;
++}
++
++static int test_flag(struct block_header *block, enum blockflags flag)
++{
++	return block->prev & BIT(flag);
++}
++
++static void set_flag(struct block_header *block, enum blockflags flag)
++{
++	block->prev |= BIT(flag);
++}
++
++static void clear_flag(struct block_header *block, enum blockflags flag)
++{
++	block->prev &= ~BIT(flag);
++}
++
++/*
++ * Given <page, offset> pair, provide a derefrencable pointer.
++ * This is called from xv_malloc/xv_free path, so it
++ * needs to be fast.
++ */
++static void *get_ptr_atomic(struct page *page, u16 offset, enum km_type type)
++{
++	unsigned char *base;
++
++	base = kmap_atomic(page, type);
++	return base + offset;
++}
++
++static void put_ptr_atomic(void *ptr, enum km_type type)
++{
++	kunmap_atomic(ptr, type);
++}
++
++static u32 get_blockprev(struct block_header *block)
++{
++	return block->prev & PREV_MASK;
++}
++
++static void set_blockprev(struct block_header *block, u16 new_offset)
++{
++	block->prev = new_offset | (block->prev & FLAGS_MASK);
++}
++
++static struct block_header *BLOCK_NEXT(struct block_header *block)
++{
++	return (struct block_header *)
++		((char *)block + block->size + XV_ALIGN);
++}
++
++/*
++ * Get index of free list containing blocks of maximum size
++ * which is less than or equal to given size.
++ */
++static u32 get_index_for_insert(u32 size)
++{
++	if (unlikely(size > XV_MAX_ALLOC_SIZE))
++		size = XV_MAX_ALLOC_SIZE;
++	size &= ~FL_DELTA_MASK;
++	return (size - XV_MIN_ALLOC_SIZE) >> FL_DELTA_SHIFT;
++}
++
++/*
++ * Get index of free list having blocks of size greater than
++ * or equal to requested size.
++ */
++static u32 get_index(u32 size)
++{
++	if (unlikely(size < XV_MIN_ALLOC_SIZE))
++		size = XV_MIN_ALLOC_SIZE;
++	size = ALIGN(size, FL_DELTA);
++	return (size - XV_MIN_ALLOC_SIZE) >> FL_DELTA_SHIFT;
++}
++
++/*
++ * Allocate a memory page. Called when a pool needs to grow.
++ */
++static struct page *xv_alloc_page(gfp_t flags)
++{
++	struct page *page;
++
++	page = alloc_page(flags);
++	if (unlikely(!page))
++		return 0;
++
++	return page;
++}
++
++/*
++ * Called when all objects in a page are freed.
++ */
++static void xv_free_page(struct page *page)
++{
++	__free_page(page);
++}
++
++/**
++ * find_block - find block of at least given size
++ * @pool: memory pool to search from
++ * @size: size of block required
++ * @page: page containing required block
++ * @offset: offset within the page where block is located.
++ *
++ * Searches two level bitmap to locate block of at least
++ * the given size. If such a block is found, it provides
++ * <page, offset> to identify this block and returns index
++ * in freelist where we found this block.
++ * Otherwise, returns 0 and <page, offset> params are not touched.
++ */
++static u32 find_block(struct xv_pool *pool, u32 size,
++			struct page **page, u32 *offset)
++{
++	ulong flbitmap, slbitmap;
++	u32 flindex, slindex, slbitstart;
++
++	/* There are no free blocks in this pool */
++	if (!pool->flbitmap)
++		return 0;
++
++	/* Get freelist index correspoding to this size */
++	slindex = get_index(size);
++	slbitmap = pool->slbitmap[slindex / BITS_PER_LONG];
++	slbitstart = slindex % BITS_PER_LONG;
++
++	/*
++	 * If freelist is not empty at this index, we found the
++	 * block - head of this list. This is approximate best-fit match.
++	 */
++	if (test_bit(slbitstart, &slbitmap)) {
++		*page = pool->freelist[slindex].page;
++		*offset = pool->freelist[slindex].offset;
++		return slindex;
++	}
++
++	/*
++	 * No best-fit found. Search a bit further in bitmap for a free block.
++	 * Second level bitmap consists of series of 32-bit chunks. Search
++	 * further in the chunk where we expected a best-fit, starting from
++	 * index location found above.
++	 */
++	slbitstart++;
++	slbitmap >>= slbitstart;
++
++	/* Skip this search if we were already at end of this bitmap chunk */
++	if ((slbitstart != BITS_PER_LONG) && slbitmap) {
++		slindex += __ffs(slbitmap) + 1;
++		*page = pool->freelist[slindex].page;
++		*offset = pool->freelist[slindex].offset;
++		return slindex;
++	}
++
++	/* Now do a full two-level bitmap search to find next nearest fit */
++	flindex = slindex / BITS_PER_LONG;
++
++	flbitmap = (pool->flbitmap) >> (flindex + 1);
++	if (!flbitmap)
++		return 0;
++
++	flindex += __ffs(flbitmap) + 1;
++	slbitmap = pool->slbitmap[flindex];
++	slindex = (flindex * BITS_PER_LONG) + __ffs(slbitmap);
++	*page = pool->freelist[slindex].page;
++	*offset = pool->freelist[slindex].offset;
++
++	return slindex;
++}
++
++/*
++ * Insert block at <page, offset> in freelist of given pool.
++ * freelist used depends on block size.
++ */
++static void insert_block(struct xv_pool *pool, struct page *page, u32 offset,
++			struct block_header *block)
++{
++	u32 flindex, slindex;
++	struct block_header *nextblock;
++
++	slindex = get_index_for_insert(block->size);
++	flindex = slindex / BITS_PER_LONG;
++
++	block->link.prev_page = 0;
++	block->link.prev_offset = 0;
++	block->link.next_page = pool->freelist[slindex].page;
++	block->link.next_offset = pool->freelist[slindex].offset;
++	pool->freelist[slindex].page = page;
++	pool->freelist[slindex].offset = offset;
++
++	if (block->link.next_page) {
++		nextblock = get_ptr_atomic(block->link.next_page,
++					block->link.next_offset, KM_USER1);
++		nextblock->link.prev_page = page;
++		nextblock->link.prev_offset = offset;
++		put_ptr_atomic(nextblock, KM_USER1);
++	}
++
++	__set_bit(slindex % BITS_PER_LONG, &pool->slbitmap[flindex]);
++	__set_bit(flindex, &pool->flbitmap);
++}
++
++/*
++ * Remove block from head of freelist. Index 'slindex' identifies the freelist.
++ */
++static void remove_block_head(struct xv_pool *pool,
++			struct block_header *block, u32 slindex)
++{
++	struct block_header *tmpblock;
++	u32 flindex = slindex / BITS_PER_LONG;
++
++	pool->freelist[slindex].page = block->link.next_page;
++	pool->freelist[slindex].offset = block->link.next_offset;
++	block->link.prev_page = 0;
++	block->link.prev_offset = 0;
++
++	if (!pool->freelist[slindex].page) {
++		__clear_bit(slindex % BITS_PER_LONG, &pool->slbitmap[flindex]);
++		if (!pool->slbitmap[flindex])
++			__clear_bit(flindex, &pool->flbitmap);
++	} else {
++		/*
++		 * DEBUG ONLY: We need not reinitialize freelist head previous
++		 * pointer to 0 - we never depend on its value. But just for
++		 * sanity, lets do it.
++		 */
++		tmpblock = get_ptr_atomic(pool->freelist[slindex].page,
++				pool->freelist[slindex].offset, KM_USER1);
++		tmpblock->link.prev_page = 0;
++		tmpblock->link.prev_offset = 0;
++		put_ptr_atomic(tmpblock, KM_USER1);
++	}
++}
++
++/*
++ * Remove block from freelist. Index 'slindex' identifies the freelist.
++ */
++static void remove_block(struct xv_pool *pool, struct page *page, u32 offset,
++			struct block_header *block, u32 slindex)
++{
++	u32 flindex;
++	struct block_header *tmpblock;
++
++	if (pool->freelist[slindex].page == page
++	   && pool->freelist[slindex].offset == offset) {
++		remove_block_head(pool, block, slindex);
++		return;
++	}
++
++	flindex = slindex / BITS_PER_LONG;
++
++	if (block->link.prev_page) {
++		tmpblock = get_ptr_atomic(block->link.prev_page,
++				block->link.prev_offset, KM_USER1);
++		tmpblock->link.next_page = block->link.next_page;
++		tmpblock->link.next_offset = block->link.next_offset;
++		put_ptr_atomic(tmpblock, KM_USER1);
++	}
++
++	if (block->link.next_page) {
++		tmpblock = get_ptr_atomic(block->link.next_page,
++				block->link.next_offset, KM_USER1);
++		tmpblock->link.prev_page = block->link.prev_page;
++		tmpblock->link.prev_offset = block->link.prev_offset;
++		put_ptr_atomic(tmpblock, KM_USER1);
++	}
++
++	return;
++}
++
++/*
++ * Allocate a page and add it freelist of given pool.
++ */
++static int grow_pool(struct xv_pool *pool, gfp_t flags)
++{
++	struct page *page;
++	struct block_header *block;
++
++	page = xv_alloc_page(flags);
++	if (unlikely(!page))
++		return -ENOMEM;
++
++	stat_inc(&pool->total_pages);
++
++	spin_lock(&pool->lock);
++	block = get_ptr_atomic(page, 0, KM_USER0);
++
++	block->size = PAGE_SIZE - XV_ALIGN;
++	set_flag(block, BLOCK_FREE);
++	clear_flag(block, PREV_FREE);
++	set_blockprev(block, 0);
++
++	insert_block(pool, page, 0, block);
++
++	put_ptr_atomic(block, KM_USER0);
++	spin_unlock(&pool->lock);
++
++	return 0;
++}
++
++/*
++ * Create a memory pool. Allocates freelist, bitmaps and other
++ * per-pool metadata.
++ */
++struct xv_pool *xv_create_pool(void)
++{
++	u32 ovhd_size;
++	struct xv_pool *pool;
++
++	ovhd_size = roundup(sizeof(*pool), PAGE_SIZE);
++	pool = kzalloc(ovhd_size, GFP_KERNEL);
++	if (!pool)
++		return NULL;
++
++	spin_lock_init(&pool->lock);
++
++	return pool;
++}
++
++void xv_destroy_pool(struct xv_pool *pool)
++{
++	kfree(pool);
++}
++
++/**
++ * xv_malloc - Allocate block of given size from pool.
++ * @pool: pool to allocate from
++ * @size: size of block to allocate
++ * @page: page no. that holds the object
++ * @offset: location of object within page
++ *
++ * On success, <page, offset> identifies block allocated
++ * and 0 is returned. On failure, <page, offset> is set to
++ * 0 and -ENOMEM is returned.
++ *
++ * Allocation requests with size > XV_MAX_ALLOC_SIZE will fail.
++ */
++int xv_malloc(struct xv_pool *pool, u32 size, struct page **page,
++		u32 *offset, gfp_t flags)
++{
++	int error;
++	u32 index, tmpsize, origsize, tmpoffset;
++	struct block_header *block, *tmpblock;
++
++	*page = NULL;
++	*offset = 0;
++	origsize = size;
++
++	if (unlikely(!size || size > XV_MAX_ALLOC_SIZE))
++		return -ENOMEM;
++
++	size = ALIGN(size, XV_ALIGN);
++
++	spin_lock(&pool->lock);
++
++	index = find_block(pool, size, page, offset);
++
++	if (!*page) {
++		spin_unlock(&pool->lock);
++		if (flags & GFP_NOWAIT)
++			return -ENOMEM;
++		error = grow_pool(pool, flags);
++		if (unlikely(error))
++			return -ENOMEM;
++
++		spin_lock(&pool->lock);
++		index = find_block(pool, size, page, offset);
++	}
++
++	if (!*page) {
++		spin_unlock(&pool->lock);
++		return -ENOMEM;
++	}
++
++	block = get_ptr_atomic(*page, *offset, KM_USER0);
++
++	remove_block_head(pool, block, index);
++
++	/* Split the block if required */
++	tmpoffset = *offset + size + XV_ALIGN;
++	tmpsize = block->size - size;
++	tmpblock = (struct block_header *)((char *)block + size + XV_ALIGN);
++	if (tmpsize) {
++		tmpblock->size = tmpsize - XV_ALIGN;
++		set_flag(tmpblock, BLOCK_FREE);
++		clear_flag(tmpblock, PREV_FREE);
++
++		set_blockprev(tmpblock, *offset);
++		if (tmpblock->size >= XV_MIN_ALLOC_SIZE)
++			insert_block(pool, *page, tmpoffset, tmpblock);
++
++		if (tmpoffset + XV_ALIGN + tmpblock->size != PAGE_SIZE) {
++			tmpblock = BLOCK_NEXT(tmpblock);
++			set_blockprev(tmpblock, tmpoffset);
++		}
++	} else {
++		/* This block is exact fit */
++		if (tmpoffset != PAGE_SIZE)
++			clear_flag(tmpblock, PREV_FREE);
++	}
++
++	block->size = origsize;
++	clear_flag(block, BLOCK_FREE);
++
++	put_ptr_atomic(block, KM_USER0);
++	spin_unlock(&pool->lock);
++
++	*offset += XV_ALIGN;
++
++	return 0;
++}
++
++/*
++ * Free block identified with <page, offset>
++ */
++void xv_free(struct xv_pool *pool, struct page *page, u32 offset)
++{
++	void *page_start;
++	struct block_header *block, *tmpblock;
++
++	offset -= XV_ALIGN;
++
++	spin_lock(&pool->lock);
++
++	page_start = get_ptr_atomic(page, 0, KM_USER0);
++	block = (struct block_header *)((char *)page_start + offset);
++
++	/* Catch double free bugs */
++	BUG_ON(test_flag(block, BLOCK_FREE));
++
++	block->size = ALIGN(block->size, XV_ALIGN);
++
++	tmpblock = BLOCK_NEXT(block);
++	if (offset + block->size + XV_ALIGN == PAGE_SIZE)
++		tmpblock = NULL;
++
++	/* Merge next block if its free */
++	if (tmpblock && test_flag(tmpblock, BLOCK_FREE)) {
++		/*
++		 * Blocks smaller than XV_MIN_ALLOC_SIZE
++		 * are not inserted in any free list.
++		 */
++		if (tmpblock->size >= XV_MIN_ALLOC_SIZE) {
++			remove_block(pool, page,
++				    offset + block->size + XV_ALIGN, tmpblock,
++				    get_index_for_insert(tmpblock->size));
++		}
++		block->size += tmpblock->size + XV_ALIGN;
++	}
++
++	/* Merge previous block if its free */
++	if (test_flag(block, PREV_FREE)) {
++		tmpblock = (struct block_header *)((char *)(page_start) +
++						get_blockprev(block));
++		offset = offset - tmpblock->size - XV_ALIGN;
++
++		if (tmpblock->size >= XV_MIN_ALLOC_SIZE)
++			remove_block(pool, page, offset, tmpblock,
++				    get_index_for_insert(tmpblock->size));
++
++		tmpblock->size += block->size + XV_ALIGN;
++		block = tmpblock;
++	}
++
++	/* No used objects in this page. Free it. */
++	if (block->size == PAGE_SIZE - XV_ALIGN) {
++		put_ptr_atomic(page_start, KM_USER0);
++		spin_unlock(&pool->lock);
++
++		xv_free_page(page);
++		stat_dec(&pool->total_pages);
++		return;
++	}
++
++	set_flag(block, BLOCK_FREE);
++	if (block->size >= XV_MIN_ALLOC_SIZE)
++		insert_block(pool, page, offset, block);
++
++	if (offset + block->size + XV_ALIGN != PAGE_SIZE) {
++		tmpblock = BLOCK_NEXT(block);
++		set_flag(tmpblock, PREV_FREE);
++		set_blockprev(tmpblock, offset);
++	}
++
++	put_ptr_atomic(page_start, KM_USER0);
++	spin_unlock(&pool->lock);
++
++	return;
++}
++
++u32 xv_get_object_size(void *obj)
++{
++	struct block_header *blk;
++
++	blk = (struct block_header *)((char *)(obj) - XV_ALIGN);
++	return blk->size;
++}
++
++/*
++ * Returns total memory used by allocator (userdata + metadata)
++ */
++u64 xv_get_total_size_bytes(struct xv_pool *pool)
++{
++	return pool->total_pages << PAGE_SHIFT;
++}
+diff --git a/drivers/block/ramzswap/xvmalloc.h b/drivers/block/ramzswap/xvmalloc.h
+new file mode 100644
+index 0000000..010c6fe
+--- /dev/null
++++ b/drivers/block/ramzswap/xvmalloc.h
+@@ -0,0 +1,30 @@
++/*
++ * xvmalloc memory allocator
++ *
++ * Copyright (C) 2008, 2009  Nitin Gupta
++ *
++ * This code is released using a dual license strategy: BSD/GPL
++ * You can choose the licence that better fits your requirements.
++ *
++ * Released under the terms of 3-clause BSD License
++ * Released under the terms of GNU General Public License Version 2.0
++ */
++
++#ifndef _XV_MALLOC_H_
++#define _XV_MALLOC_H_
++
++#include <linux/types.h>
++
++struct xv_pool;
++
++struct xv_pool *xv_create_pool(void);
++void xv_destroy_pool(struct xv_pool *pool);
++
++int xv_malloc(struct xv_pool *pool, u32 size, struct page **page,
++			u32 *offset, gfp_t flags);
++void xv_free(struct xv_pool *pool, struct page *page, u32 offset);
++
++u32 xv_get_object_size(void *obj);
++u64 xv_get_total_size_bytes(struct xv_pool *pool);
++
++#endif
+diff --git a/drivers/block/ramzswap/xvmalloc_int.h b/drivers/block/ramzswap/xvmalloc_int.h
+new file mode 100644
+index 0000000..03c1a65
+--- /dev/null
++++ b/drivers/block/ramzswap/xvmalloc_int.h
+@@ -0,0 +1,86 @@
++/*
++ * xvmalloc memory allocator
++ *
++ * Copyright (C) 2008, 2009  Nitin Gupta
++ *
++ * This code is released using a dual license strategy: BSD/GPL
++ * You can choose the licence that better fits your requirements.
++ *
++ * Released under the terms of 3-clause BSD License
++ * Released under the terms of GNU General Public License Version 2.0
++ */
++
++#ifndef _XV_MALLOC_INT_H_
++#define _XV_MALLOC_INT_H_
++
++#include <linux/kernel.h>
++#include <linux/types.h>
++
++/* User configurable params */
++
++/* Must be power of two */
++#define XV_ALIGN_SHIFT	2
++#define XV_ALIGN	(1 << XV_ALIGN_SHIFT)
++#define XV_ALIGN_MASK	(XV_ALIGN - 1)
++
++/* This must be greater than sizeof(link_free) */
++#define XV_MIN_ALLOC_SIZE	32
++#define XV_MAX_ALLOC_SIZE	(PAGE_SIZE - XV_ALIGN)
++
++/* Free lists are separated by FL_DELTA bytes */
++#define FL_DELTA_SHIFT	3
++#define FL_DELTA	(1 << FL_DELTA_SHIFT)
++#define FL_DELTA_MASK	(FL_DELTA - 1)
++#define NUM_FREE_LISTS	((XV_MAX_ALLOC_SIZE - XV_MIN_ALLOC_SIZE) \
++				/ FL_DELTA + 1)
++
++#define MAX_FLI		DIV_ROUND_UP(NUM_FREE_LISTS, BITS_PER_LONG)
++
++/* End of user params */
++
++enum blockflags {
++	BLOCK_FREE,
++	PREV_FREE,
++	__NR_BLOCKFLAGS,
++};
++
++#define FLAGS_MASK	XV_ALIGN_MASK
++#define PREV_MASK	(~FLAGS_MASK)
++
++struct freelist_entry {
++	struct page *page;
++	u16 offset;
++	u16 pad;
++};
++
++struct link_free {
++	struct page *prev_page;
++	struct page *next_page;
++	u16 prev_offset;
++	u16 next_offset;
++};
++
++struct block_header {
++	union {
++		/* This common header must be ALIGN bytes */
++		u8 common[XV_ALIGN];
++		struct {
++			u16 size;
++			u16 prev;
++		};
++	};
++	struct link_free link;
++};
++
++struct xv_pool {
++	ulong flbitmap;
++	ulong slbitmap[MAX_FLI];
++	spinlock_t lock;
++
++	struct freelist_entry freelist[NUM_FREE_LISTS];
++
++	/* stats */
++	u64 total_pages;
++};
++
++#endif
