@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754033AbZIISay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754006AbZIIS26@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754033AbZIISay (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbZIISax
+	id S1754006AbZIIS26 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:28:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZIIS25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:30:53 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:31347 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752559AbZIISax (ORCPT
+	Wed, 9 Sep 2009 14:28:57 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:46954 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752163AbZIIS25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:30:53 -0400
-Date: Wed, 9 Sep 2009 11:28:02 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Greg KH <gregkh@suse.de>
-Cc: Michael Tokarev <mjt@tls.msk.ru>,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 00/48] 2.6.27.32-stable review
-Message-ID: <20090909182802.GA12456@mail.oracle.com>
-Mail-Followup-To: Greg KH <gregkh@suse.de>,
-	Michael Tokarev <mjt@tls.msk.ru>,
-	Linux-kernel <linux-kernel@vger.kernel.org>
-References: <20090909030843.GC10608@suse.de>
- <20090909073150.44F8C12B5F@gandalf.tls.msk.ru>
- <20090909132340.GA12391@suse.de>
-MIME-Version: 1.0
+	Wed, 9 Sep 2009 14:28:57 -0400
+Date: Wed, 9 Sep 2009 13:28:57 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+Cc: Alemao <xcarandiru@gmail.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: MPC85xx External/Internal Interrupts
+Message-ID: <20090909182857.GB8215@b07421-ec1.am.freescale.net>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com> <d970ff420909041228h3638e840r34c0c0e79f178e55@mail.gmail.com> <d970ff420909041229hb3aa96dya329e06ea56dd1ac@mail.gmail.com> <20090906110641.GA11350@Chamillionaire.breakpoint.cc>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090909132340.GA12391@suse.de>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4AA7F452.01F8:SCFMA4539814,ss=1,fgs=0
+In-Reply-To: <20090906110641.GA11350@Chamillionaire.breakpoint.cc>
+User-Agent: Mutt/1.4.1i
+X-Brightmail-Tracker: AAAAAQAAAWE=
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 06:23:40AM -0700, Greg KH wrote:
-> On Wed, Sep 09, 2009 at 11:31:50AM +0400, Michael Tokarev wrote:
-> > > On Tue, Sep 08, 2009 at 09:47:51AM -0500, Jayson King wrote:
-> > > > A line from the upstream patch is missing in this patch:
-> > > > 
-> > > >   static int ocfs2_write_cluster(struct address_space *mapping,
-> > > >                      u32 phys, unsigned int unwritten,
-> > > > +                   unsigned int should_zero,
-> > > >                      struct ocfs2_alloc_context *data_ac,
-> > > >                      struct ocfs2_alloc_context *meta_ac,
-> > > >                      struct ocfs2_write_ctxt *wc, u32 cpos,
-> > > >                      loff_t user_pos, unsigned user_len)
+On Sun, Sep 06, 2009 at 01:06:41PM +0200, Sebastian Andrzej Siewior wrote:
+> irq_of_parse_and_map() creates a mapping between the hardware irq number
+> as specified in the device tree and the linux number (virq) which is
+> used within the linux api in request_irq() for instance.
+> irq_of_parse_and_map() is essential to create a mapping between those
+> two. The interrupt controller on the MPC8555 (mpic) specifies the first
+> few interrupt numbers as external sources followed by internal sources. 
+> Now, during the init sequenze of the mpic every interrupt source
+> (internal and external) becomes its uniqe vector number which identifies
+> the source by a number. This number is the hardware interrupt number
+> i.e. that thing in the device tree. The init sequence is a for loop
+> which starts at 0 for the first interrupt source which happens to be
+> external interrupt 0, 1 for external interrupt 1 and so on. At the time
+> it reaches the first internal interrupt source the vector number is 16.
+> That's why you always have an offset of 16 between every internal
+> interupt source number in the MPC855ERM document and those weired
+> numbers in the device tree :)
 
-<snip>
+This seems to be a common point of confusion -- we should probably put
+something in the dts bindings that explains it.  Am I correct in assuming
+that this particular internal/external split is Freescale-specific and
+not a general OpenPIC thing?
 
-> >  ocfs2-initialize-the-cluster-we-re-writing-to-in-a-non-sparse-extend.patch
-> >  ocfs2-ocfs2_write_begin_nolock-should-handle-len-0.patch
-> > Neither of which looks like an addon, and only one (the first)
-> > has references to this "should_zero" variable.
-> 
-> I thought the second one would solve the problem.
-> 
-> What happened here, I took the upstream patch, was it incorrect?  If so,
-> was there a patch, also upstream, that fixed this problem?
-
-	The upstream first patch is
-e7432675f8ca868a4af365759a8d4c3779a3d922.  It has this line.  The second
-patch fixes a bug in the first patch, but the bug is not around this
-line, it's totally separate.
-	Ok, I'm confused.  In linux-2.6-stable.git, the 2.6.30.y branch
-has this for the diff:
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=blobdiff;f=fs/ocfs2/aops.c;h=122fb7978f60f7dde54ac0567f578159900f163b;hp=b2c52b3a1484f1c57c4b098bf9706fe21c186ac0;hb=9baf278cca4043a1312f3a40bf17b979b6238ebc;hpb=8c668814e3e2be7d633447bf6e78237d4cedabb7
-It has the correct line.
-	But in 2.6.27.y branch, referencing the same upstream commit,
-there is this diff:
-http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6-stable.git;a=blobdiff;f=fs/ocfs2/aops.c;h=50bb561860dfb5ee024e7a992bb4d72bc71f0372;hp=a53da1466277abd843b0117f89df9850423ba92b;hb=8338941200d9188e3c866dd16cc2848754947895;hpb=7e8287379470a7c18153be389c9516e31ae141f3
-It is missing the line.  I think the cherry-pick for 2.6.27.y got
-broken.
-
-Joel
-
--- 
-
-"If you are ever in doubt as to whether or not to kiss a pretty girl, 
- give her the benefit of the doubt"
-                                        -Thomas Carlyle
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+-Scott
