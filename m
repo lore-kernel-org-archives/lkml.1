@@ -1,303 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbZIIVIV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754182AbZIIVDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754247AbZIIVIV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 17:08:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753676AbZIIVIU
+	id S1754182AbZIIVDR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 17:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753902AbZIIVDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 17:08:20 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:35335 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752415AbZIIVIT (ORCPT
+	Wed, 9 Sep 2009 17:03:16 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:62433 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753676AbZIIVDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 17:08:19 -0400
-Message-ID: <4AA8177A.2020606@codemonkey.ws>
-Date: Wed, 09 Sep 2009 16:00:42 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
+	Wed, 9 Sep 2009 17:03:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type;
+        b=GOL0b7mrnz68aq062UKLFG1K5pSZKSOf5zXnxu27BjXfBzKjlemPLz62EXh1dzhapN
+         2hQjibctOszgTBW5vXnPMdmdPO2JrN7gcTHG0iT00FYXJ4Cl/5YkpR1owQO5i55Gcvzg
+         ROdCJNHrGyPhC7erpzSsbio7MRq/9sD2jBU7Y=
+Message-ID: <4AA81811.8020500@skyrush.com>
+Date: Wed, 09 Sep 2009 15:03:13 -0600
+From: Joe Peterson <joe@skyrush.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090907)
 MIME-Version: 1.0
-To: akataria@vmware.com
-CC: James Bottomley <James.Bottomley@suse.de>,
-       Rolf Eike Beer <eike-kernel@sf-tec.de>,
-       Brian King <brking@linux.vnet.ibm.com>,
-       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, pv-drivers@vmware.com,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V4.
-References: <1252458903.24914.73.camel@ank32.eng.vmware.com>
-In-Reply-To: <1252458903.24914.73.camel@ank32.eng.vmware.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: greg@kroah.com
+CC: sfr@canb.auug.org.au, linux-next@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org
+Subject: [PATCH 1/2 (resubmission)] n_tty: honor opost flag for echoes
+Content-Type: multipart/mixed;
+ boundary="------------060603040407070100010604"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alok,
+This is a multi-part message in MIME format.
+--------------060603040407070100010604
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Joining this a bit late as this was just brought to my attention.  It 
-would have been nice to CC the virtualization mailing list.  Please do 
-in future submissions.
+This (and the forthcoming part 2, which is the same patch with corrected
+offsets) are resubmissions to avoid the conflict with "n_tty: do O_ONLCR
+translation as a single write" and to move the O_OPOST test to the caller.
 
-Alok Kataria wrote:
-> VMware PVSCSI driver - v4.
-> 
-/
->  
-> diff --git a/drivers/scsi/pvscsi.h b/drivers/scsi/pvscsi.h
-> new file mode 100644
-> index 0000000..96bb655
-> --- /dev/null
-> +++ b/drivers/scsi/pvscsi.h
-> @@ -0,0 +1,395 @@
-> +/*
-> + * VMware PVSCSI header file
-> + *
-> + * Copyright (C) 2008-2009, VMware, Inc. All Rights Reserved.
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the
-> + * Free Software Foundation; version 2 of the License and no later version.
-> + *
-> + * This program is distributed in the hope that it will be useful, but
-> + * WITHOUT ANY WARRANTY; without even the implied warranty of
-> + * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
-> + * NON INFRINGEMENT.  See the GNU General Public License for more
-> + * details.
-> + *
-> + * You should have received a copy of the GNU General Public License
-> + * along with this program; if not, write to the Free Software
-> + * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA.
-> + *
-> + * Maintained by: Alok N Kataria <akataria@vmware.com>
-> + *
-> + */
-> +
-> +#ifndef _PVSCSI_H_
-> +#define _PVSCSI_H_
-> +
-> +#include <linux/types.h>
-> +
-> +#define PVSCSI_DRIVER_VERSION_STRING   "1.0.0.0"
-> +
-> +#define PVSCSI_MAX_NUM_SG_ENTRIES_PER_SEGMENT 128
-> +
-> +#define MASK(n)        ((1 << (n)) - 1)        /* make an n-bit mask */
-> +
-> +#define PCI_VENDOR_ID_VMWARE		0x15AD
-> +#define PCI_DEVICE_ID_VMWARE_PVSCSI	0x07C0
-> +
-> +/*
-> + * host adapter status/error codes
-> + */
-> +typedef enum {
-> +   BTSTAT_SUCCESS       = 0x00,  /* CCB complete normally with no errors */
-> +   BTSTAT_LINKED_COMMAND_COMPLETED           = 0x0a,
-> +   BTSTAT_LINKED_COMMAND_COMPLETED_WITH_FLAG = 0x0b,
-> +   BTSTAT_DATA_UNDERRUN = 0x0c,
-> +   BTSTAT_SELTIMEO      = 0x11,  /* SCSI selection timeout */
-> +   BTSTAT_DATARUN       = 0x12,  /* data overrun/underrun */
-> +   BTSTAT_BUSFREE       = 0x13,  /* unexpected bus free */
-> +   BTSTAT_INVPHASE      = 0x14,  /* invalid bus phase or sequence requested by target */
-> +   BTSTAT_LUNMISMATCH   = 0x17,  /* linked CCB has different LUN from first CCB */
-> +   BTSTAT_SENSFAILED    = 0x1b,  /* auto request sense failed */
-> +   BTSTAT_TAGREJECT     = 0x1c,  /* SCSI II tagged queueing message rejected by target */
-> +   BTSTAT_BADMSG        = 0x1d,  /* unsupported message received by the host adapter */
-> +   BTSTAT_HAHARDWARE    = 0x20,  /* host adapter hardware failed */
-> +   BTSTAT_NORESPONSE    = 0x21,  /* target did not respond to SCSI ATN, sent a SCSI RST */
-> +   BTSTAT_SENTRST       = 0x22,  /* host adapter asserted a SCSI RST */
-> +   BTSTAT_RECVRST       = 0x23,  /* other SCSI devices asserted a SCSI RST */
-> +   BTSTAT_DISCONNECT    = 0x24,  /* target device reconnected improperly (w/o tag) */
-> +   BTSTAT_BUSRESET      = 0x25,  /* host adapter issued BUS device reset */
-> +   BTSTAT_ABORTQUEUE    = 0x26,  /* abort queue generated */
-> +   BTSTAT_HASOFTWARE    = 0x27,  /* host adapter software error */
-> +   BTSTAT_HATIMEOUT     = 0x30,  /* host adapter hardware timeout error */
-> +   BTSTAT_SCSIPARITY    = 0x34,  /* SCSI parity error detected */
-> +} HostBusAdapterStatus;
-> +
-> +/*
-> + * Register offsets.
-> + *
-> + * These registers are accessible both via i/o space and mm i/o.
-> + */
-> +
-> +enum PVSCSIRegOffset {
-> +	PVSCSI_REG_OFFSET_COMMAND        =    0x0,
-> +	PVSCSI_REG_OFFSET_COMMAND_DATA   =    0x4,
-> +	PVSCSI_REG_OFFSET_COMMAND_STATUS =    0x8,
-> +	PVSCSI_REG_OFFSET_LAST_STS_0     =  0x100,
-> +	PVSCSI_REG_OFFSET_LAST_STS_1     =  0x104,
-> +	PVSCSI_REG_OFFSET_LAST_STS_2     =  0x108,
-> +	PVSCSI_REG_OFFSET_LAST_STS_3     =  0x10c,
-> +	PVSCSI_REG_OFFSET_INTR_STATUS    = 0x100c,
-> +	PVSCSI_REG_OFFSET_INTR_MASK      = 0x2010,
-> +	PVSCSI_REG_OFFSET_KICK_NON_RW_IO = 0x3014,
-> +	PVSCSI_REG_OFFSET_DEBUG          = 0x3018,
-> +	PVSCSI_REG_OFFSET_KICK_RW_IO     = 0x4018,
-> +};
-> +
-> +/*
-> + * Virtual h/w commands.
-> + */
-> +
-> +enum PVSCSICommands {
-> +	PVSCSI_CMD_FIRST             = 0, /* has to be first */
-> +
-> +	PVSCSI_CMD_ADAPTER_RESET     = 1,
-> +	PVSCSI_CMD_ISSUE_SCSI        = 2,
-> +	PVSCSI_CMD_SETUP_RINGS       = 3,
-> +	PVSCSI_CMD_RESET_BUS         = 4,
-> +	PVSCSI_CMD_RESET_DEVICE      = 5,
-> +	PVSCSI_CMD_ABORT_CMD         = 6,
-> +	PVSCSI_CMD_CONFIG            = 7,
-> +	PVSCSI_CMD_SETUP_MSG_RING    = 8,
-> +	PVSCSI_CMD_DEVICE_UNPLUG     = 9,
-> +
-> +	PVSCSI_CMD_LAST              = 10  /* has to be last */
-> +};
-> +
-> +/*
-> + * Command descriptor for PVSCSI_CMD_RESET_DEVICE --
-> + */
-> +
-> +typedef struct PVSCSICmdDescResetDevice {
-> +	u32	target;
-> +	u8	lun[8];
-> +} __packed PVSCSICmdDescResetDevice;
-> +
-> +/*
-> + * Command descriptor for PVSCSI_CMD_ABORT_CMD --
-> + *
-> + * - currently does not support specifying the LUN.
-> + * - _pad should be 0.
-> + */
-> +
-> +typedef struct PVSCSICmdDescAbortCmd {
-> +	u64	context;
-> +	u32	target;
-> +	u32	_pad;
-> +} __packed PVSCSICmdDescAbortCmd;
-> +
-> +/*
-> + * Command descriptor for PVSCSI_CMD_SETUP_RINGS --
-> + *
-> + * Notes:
-> + * - reqRingNumPages and cmpRingNumPages need to be power of two.
-> + * - reqRingNumPages and cmpRingNumPages need to be different from 0,
-> + * - reqRingNumPages and cmpRingNumPages need to be inferior to
-> + *   PVSCSI_SETUP_RINGS_MAX_NUM_PAGES.
-> + */
-> +
-> +#define PVSCSI_SETUP_RINGS_MAX_NUM_PAGES        32
-> +typedef struct PVSCSICmdDescSetupRings {
-> +	u32	reqRingNumPages;
-> +	u32	cmpRingNumPages;
-> +	u64	ringsStatePPN;
-> +	u64	reqRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
-> +	u64	cmpRingPPNs[PVSCSI_SETUP_RINGS_MAX_NUM_PAGES];
-> +} __packed PVSCSICmdDescSetupRings;
-> +
-> +/*
-> + * Command descriptor for PVSCSI_CMD_SETUP_MSG_RING --
-> + *
-> + * Notes:
-> + * - this command was not supported in the initial revision of the h/w
-> + *   interface. Before using it, you need to check that it is supported by
-> + *   writing PVSCSI_CMD_SETUP_MSG_RING to the 'command' register, then
-> + *   immediately after read the 'command status' register:
-> + *       * a value of -1 means that the cmd is NOT supported,
-> + *       * a value != -1 means that the cmd IS supported.
-> + *   If it's supported the 'command status' register should return:
-> + *      sizeof(PVSCSICmdDescSetupMsgRing) / sizeof(u32).
-> + * - this command should be issued _after_ the usual SETUP_RINGS so that the
-> + *   RingsState page is already setup. If not, the command is a nop.
-> + * - numPages needs to be a power of two,
-> + * - numPages needs to be different from 0,
-> + * - _pad should be zero.
-> + */
-> +
-> +#define PVSCSI_SETUP_MSG_RING_MAX_NUM_PAGES  16
-> +
-> +typedef struct PVSCSICmdDescSetupMsgRing {
-> +	u32	numPages;
-> +	u32	_pad;
-> +	u64	ringPPNs[PVSCSI_SETUP_MSG_RING_MAX_NUM_PAGES];
-> +} __packed PVSCSICmdDescSetupMsgRing;
-> +
-> +enum PVSCSIMsgType {
-> +	PVSCSI_MSG_DEV_ADDED          = 0,
-> +	PVSCSI_MSG_DEV_REMOVED        = 1,
-> +	PVSCSI_MSG_LAST               = 2,
-> +};
-> +
-> +/*
-> + * Msg descriptor.
-> + *
-> + * sizeof(struct PVSCSIRingMsgDesc) == 128.
-> + *
-> + * - type is of type enum PVSCSIMsgType.
-> + * - the content of args depend on the type of event being delivered.
-> + */
-> +
-> +typedef struct PVSCSIRingMsgDesc {
-> +	u32	type;
-> +	u32	args[31];
-> +} __packed PVSCSIRingMsgDesc;
-> +
-> +typedef struct PVSCSIMsgDescDevStatusChanged {
-> +	u32	type;  /* PVSCSI_MSG_DEV _ADDED / _REMOVED */
-> +	u32	bus;
-> +	u32	target;
-> +	u8	lun[8];
-> +	u32	pad[27];
-> +} __packed PVSCSIMsgDescDevStatusChanged;
-> +
-> +/*
-> + * Rings state.
-> + *
-> + * - the fields:
-> + *    . msgProdIdx,
-> + *    . msgConsIdx,
-> + *    . msgNumEntriesLog2,
-> + *   .. are only used once the SETUP_MSG_RING cmd has been issued.
-> + * - '_pad' helps to ensure that the msg related fields are on their own
-> + *   cache-line.
-> + */
-> +
-> +typedef struct PVSCSIRingsState {
-> +	u32	reqProdIdx;
-> +	u32	reqConsIdx;
-> +	u32	reqNumEntriesLog2;
-> +
-> +	u32	cmpProdIdx;
-> +	u32	cmpConsIdx;
-> +	u32	cmpNumEntriesLog2;
-> +
-> +	u8	_pad[104];
-> +
-> +	u32	msgProdIdx;
-> +	u32	msgConsIdx;
-> +	u32	msgNumEntriesLog2;
-> +} __packed PVSCSIRingsState;
+						-Joe
 
-All of this can be hidden behind a struct virtqueue.  You could then 
-introduce a virtio-vmwring that implemented this ABI.
 
-You could then separate out the actual scsi logic into a separate 
-virtio-scsi.c driver.
+--------------060603040407070100010604
+Content-Type: text/plain;
+ name="n_tty-honor-opost-flag-for-echoes.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="n_tty-honor-opost-flag-for-echoes.patch"
 
-There are numerous advantages to this layering.  You get to remain ABI 
-compatible with yourself.  You can potentially reuse the ring logic in 
-other drivers.  Other VMMs can use different ring transports without 
-introducing new drivers.  For instance, in KVM, we would use virtio-pci 
-+ virtio-scsi instead of using virtio-vmwring + virtio-scsi.
+Fixes the following bug:
 
-The virtio infrastructure has been backported to various old kernels too 
-so there really is no reason not to use it.
+      http://bugs.linuxbase.org/show_bug.cgi?id=2692
 
-We have the interfaces in virtio to do notification suppression and MSI 
-so I don't think there's any real limitation that it would impose on you.
+Causes processing of echoed characters (output from the echo buffer) to
+honor the O_OPOST flag, which is consistent with the old behavior.
 
-Regards,
+Note that this and the next patch ("n_tty: move echoctl check and
+clean up logic") were verified together by the bug reporters, and
+the test now passes.
 
-Anthony Liguori
+Signed-off-by: Joe Peterson <joe@skyrush.com>
+---
+
+diff -Nurp a/drivers/char/n_tty.c b/drivers/char/n_tty.c
+--- a/drivers/char/n_tty.c	2009-09-07 16:54:03.540366388 -0600
++++ b/drivers/char/n_tty.c	2009-09-07 16:53:53.880294497 -0600
+@@ -272,7 +272,8 @@ static inline int is_continuation(unsign
+  *
+  *	This is a helper function that handles one output character
+  *	(including special characters like TAB, CR, LF, etc.),
+- *	putting the results in the tty driver's write buffer.
++ *	doing OPOST processing and putting the results in the
++ *	tty driver's write buffer.
+  *
+  *	Note that Linux currently ignores TABDLY, CRDLY, VTDLY, FFDLY
+  *	and NLDLY.  They simply aren't relevant in the world today.
+@@ -351,8 +352,9 @@ static int do_output_char(unsigned char 
+  *	@c: character (or partial unicode symbol)
+  *	@tty: terminal device
+  *
+- *	Perform OPOST processing.  Returns -1 when the output device is
+- *	full and the character must be retried.
++ *	Output one character with OPOST processing.
++ *	Returns -1 when the output device is full and the character
++ *	must be retried.
+  *
+  *	Locking: output_lock to protect column state and space left
+  *		 (also, this is called from n_tty_write under the
+@@ -378,8 +380,11 @@ static int process_output(unsigned char 
+ /**
+  *	process_output_block		-	block post processor
+  *	@tty: terminal device
+- *	@inbuf: user buffer
+- *	@nr: number of bytes
++ *	@buf: character buffer
++ *	@nr: number of bytes to output
++ *
++ *	Output a block of characters with OPOST processing.
++ *	Returns the number of characters output.
+  *
+  *	This path is used to speed up block console writes, among other
+  *	things when processing blocks of output data. It handles only
+@@ -606,12 +611,18 @@ static void process_echoes(struct tty_st
+ 			if (no_space_left)
+ 				break;
+ 		} else {
+-			int retval;
+-
+-			retval = do_output_char(c, tty, space);
+-			if (retval < 0)
+-				break;
+-			space -= retval;
++			if (O_OPOST(tty) &&
++			    !(test_bit(TTY_HW_COOK_OUT, &tty->flags))) {
++				int retval = do_output_char(c, tty, space);
++				if (retval < 0)
++					break;
++				space -= retval;
++			} else {
++				if (!space)
++					break;
++				tty_put_char(tty, c);
++				space -= 1;
++			}
+ 			cp += 1;
+ 			nr -= 1;
+ 		}
+
+
+--------------060603040407070100010604--
