@@ -1,96 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZIIIGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752800AbZIIIIj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbZIIIGp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 04:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZIIIGo
+	id S1752800AbZIIIIj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 04:08:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752728AbZIIIIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 04:06:44 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40658 "EHLO
+	Wed, 9 Sep 2009 04:08:38 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40776 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbZIIIGn (ORCPT
+	with ESMTP id S1752656AbZIIIIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 04:06:43 -0400
-Date: Wed, 9 Sep 2009 10:06:38 +0200
+	Wed, 9 Sep 2009 04:08:37 -0400
+Date: Wed, 9 Sep 2009 10:08:33 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "Darrick J. Wong" <djwong@us.ibm.com>
-Cc: akpm@linux-foundation.org, mm-commits@vger.kernel.org, lenb@kernel.org,
-       rui.zhang@intel.com, linux-kernel <linux-kernel@vger.kernel.org>,
-       lm-sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [PATCH v3] hwmon driver for ACPI 4.0 power meters
-Message-ID: <20090909080637.GA28353@elf.ucw.cz>
-References: <200908202049.n7KKnKO7015060@imap1.linux-foundation.org> <20090820211557.GA8431@elf.ucw.cz> <20090820213755.GB10521@tux1.beaverton.ibm.com> <20090821091939.GC21167@elf.ucw.cz> <20090821184718.GD23397@tux1.beaverton.ibm.com> <20090821221705.GA2108@elf.ucw.cz> <20090822011744.GH10521@tux1.beaverton.ibm.com> <20090821140159.GB1328@ucw.cz> <20090908202410.GS10521@tux1.beaverton.ibm.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kconfig CROSS_COMPILE option
+Message-ID: <20090909080833.GA28586@elf.ucw.cz>
+References: <20090905002947.A4C678BEB1@magilla.sf.frob.com> <20090907130402.GB1595@ucw.cz> <20090907183801.379228BF3F@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090908202410.GS10521@tux1.beaverton.ibm.com>
+In-Reply-To: <20090907183801.379228BF3F@magilla.sf.frob.com>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Mon 2009-09-07 11:38:01, Roland McGrath wrote:
+> > Yes that would be very nice. Editing Makefile every time I
+> > crosscomppile for arm sucks.
+> 
+> The other trick I can recommend is to write a GNUmakefile containing:
+> 
+> ARCH=foo
+> CROSS_COMPILE=foo-linux-
+> include Makefile
 
-> diff --git a/Documentation/hwmon/acpi_power_meter b/Documentation/hwmon/acpi_power_meter
-> new file mode 100644
-> index 0000000..b02ddaa
-> --- /dev/null
-> +++ b/Documentation/hwmon/acpi_power_meter
-> @@ -0,0 +1,31 @@
-> +Kernel driver power_meter
-> +=========================
-> +
-> +This driver talks to ACPI 4.0 power meters.
-> +
-> +Supported systems:
-> +  * Any recent system with ACPI 4.0.
-> +    Prefix: 'power_meter'
-> +    Datasheet: http://acpi.info/, section 10.4.
-> +
-> +Author: Darrick J. Wong
-> +
-> +Description
-> +-----------
-> +
-> +This driver implements sensor reading support for the power meters exposed in
-> +the ACPI 4.0 spec (Chapter 10.4).  These devices have a simple set of
-> +features--a power meter that returns average power use over a configurable
-> +interval, an optional capping mechanism, and a couple of trip points.
+Hehe, thanks.
 
-So where do we get the average power?
+> (GNU make reads GNUmakefile in preference to Makefile.)
+> But this manual hackery is still not nearly as nice as the automagic way.
+> 
+> > But... do we need an option for subarch, too? And will Kconfig system
+> > handle that?
+> 
+> I'm not sure I follow exactly what your concern is.  I am mostly familiar
+> with doing x86 and powerpc builds.  For both of those, the kernel config
+> sets whether it's the 32-bit or 64-bit world.
 
-> +Special Features
-> +----------------
-> +
-> +The power[1-*]_is_battery knob indicates if the power supply is a battery.
-> +Both power[1-*]_average_{min,max} must be set before the trip
-> points will work.
-
-How do trip points work? It is not explained here.
-
-
-> +config ACPI_POWER_METER
-> +	tristate "ACPI 4.0 power meter"
-> +	depends on HWMON
-> +	default m
-
-default M is "evil".
-
-> +	  devices.  Say Y (or M) if you have an Intel or AMD computer with
-> +	  a power meter.
-
-WTF? Neither Intel nor AMD makes _computers_.
-
-> +	  To compile this driver as a module, choose M here:
-> +	  the module will be called power-meter.
-
-.ko.
-
-> +#define POWER_CAP_NAME		"power1_cap"
-
-I did not see power cap explained.
-
-								Pavel
+Well, my concern is that your patch allows me to set $CROSS_COMPILE,
+but I need to set $ARCH too, to get useful result. So I can't actually
+see how to use your patch.
+									Pavel
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
