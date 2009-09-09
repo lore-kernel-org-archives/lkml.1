@@ -1,49 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZIIOzE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZIIOyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbZIIOzE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:55:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753331AbZIIOzD
+	id S1753387AbZIIOyn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 10:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZIIOyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:55:03 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:56554 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752328AbZIIOzA (ORCPT
+	Wed, 9 Sep 2009 10:54:43 -0400
+Received: from mail-qy0-f181.google.com ([209.85.221.181]:64403 "EHLO
+	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752122AbZIIOym (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:55:00 -0400
-Date: Wed, 9 Sep 2009 10:53:22 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-cc: Eric Dumazet <eric.dumazet@gmail.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Patrick McHardy <kaber@trash.net>, Robin Holt <holt@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jesper Dangaard Brouer <hawk@comx.dk>,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       Netfilter Developers <netfilter-devel@vger.kernel.org>,
-       dhowells@redhat.com, lethal@linux-sh.org, kernel@wantstofly.org,
-       mpm@selenic.com
-Subject: Re: [PATCH] slub: fix slab_pad_check()
-In-Reply-To: <20090909144238.GA6749@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.1.10.0909091052380.28070@V090114053VZO-1>
-References: <4AA00400.1030005@gmail.com> <alpine.DEB.1.10.0909031731540.24199@V090114053VZO-1> <20090903231757.GP6761@linux.vnet.ibm.com> <alpine.DEB.1.10.0909041140040.9781@V090114053VZO-1> <20090904204335.GG6751@linux.vnet.ibm.com>
- <alpine.DEB.1.10.0909081555410.26382@V090114053VZO-1> <20090908222036.GM6753@linux.vnet.ibm.com> <alpine.DEB.1.10.0909081839090.7733@V090114053VZO-1> <20090908225937.GO6753@linux.vnet.ibm.com> <alpine.DEB.1.10.0909091002440.28070@V090114053VZO-1>
- <20090909144238.GA6749@linux.vnet.ibm.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 9 Sep 2009 10:54:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=dCeRZcV1tqwVji5albMjpkBvyKLPRJSdeHioWIz8zUBBnpUnUeSEdCWt/Veifwr9xM
+         vvkebq/QvJA9iQCbTt8MTstP44wBOBY9zCKxqzde95VtN3Zd3/8G+Kg9bMJe64PL5aDc
+         4A5lrcGDR3B17cRHj4vANH0mCKsS4cSGCip7U=
+Message-ID: <4AA7C1B2.7080804@gmail.com>
+Date: Wed, 09 Sep 2009 10:54:42 -0400
+From: Glenn Elliott <arakageeta.lkml@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       DL-MPT Fusion Linux <DL-MPTFusionLinux@lsi.com>,
+       Bjoern Brandenburg <bbb@cs.unc.edu>
+Subject: Re: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
+References: <4AA14523.7070405@gmail.com> <0D1E8821739E724A86F4D16902CE275C1C8EAE092F@inbmail01.lsi.com> <4AA6C4F5.7050306@gmail.com> <0D1E8821739E724A86F4D16902CE275C1C8EAE0C0D@inbmail01.lsi.com>
+In-Reply-To: <0D1E8821739E724A86F4D16902CE275C1C8EAE0C0D@inbmail01.lsi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009, Paul E. McKenney wrote:
+Desai, Kashyap wrote:
+> Glenn,
+>
+> After applying patch 
+> http://marc.info/?l=linux-scsi&m=125187353611068&w=2
+>
+> my understanding is Opps will not be same. Is it correct?
+>
+> I have taken some imp snaps from you Opps message as below.
+>
+> .flush_workqueue+0x68/0xb8
+>   
+>> [c0000007fde23500] [c00000000030c320] 
+>> .mptsas_cleanup_fw_event_q+0x128/0x154
+>> [c0000007fde235b0] [c00000000030c650] .mptsas_ioc_reset+0x98/0xe0
+>> [c0000007fde23640] [c0000000002f9610] .mpt_signal_reset+0x94/0xb4
+>> [c0000007fde236c0] [c0000000003018e4] .mpt_do_ioc_recovery+0x15ec/0x16e8
+>> [c0000007fde23890] [c000000000301ad8] .mpt_HardResetHandler+0xf8/0x19c
+>>     
+>
+>
+>
+> flush_workqueue() will not be called from mptsas_ioc_reset as it was happening without the patch.
+>
+> Please add more details if I am guessing wrong.
+>
+> Thanks,
+> Kashyap
+>
+>
+> -----Original Message-----
+> From: Glenn Elliott [mailto:arakageeta.lkml@gmail.com] 
+> Sent: Wednesday, September 09, 2009 2:26 AM
+> To: Desai, Kashyap
+> Cc: linux-kernel@vger.kernel.org; tglx@linutronix.de; DL-MPT Fusion Linux; Bjoern Brandenburg
+> Subject: Re: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
+>
+> Desai, Kashyap wrote:
+>   
+>> Glenn,
+>>
+>> There is one fix in same area recently posted to upstream.
+>> Can you try applying this patch?
+>>
+>> http://marc.info/?l=linux-scsi&m=125187353611068&w=2
+>>
+>> Thanks,
+>> Kashyap
+>>
+>> -----Original Message-----
+>> From: Glenn Elliott [mailto:arakageeta.lkml@gmail.com] 
+>> Sent: Friday, September 04, 2009 10:20 PM
+>> To: linux-kernel@vger.kernel.org
+>> Cc: tglx@linutronix.de; DL-MPT Fusion Linux; Bjoern Brandenburg
+>> Subject: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
+>>
+>> Hello,
+>>
+>> I get an oops when I boot 2.6.31-rc8 with the Realtime Preempt patch, 
+>> patch-2.6.31-rc8-rt9, on my IBM QS22 (Cell Blade-- PPC-based).  It 
+>> appears to be happening somewhere in the SAS disk related driver, mptsas.
+>>
+>> The unpatched 2.6.31-rc8 boots without issue.  I am using the 
+>> cell_defconfig configuration with the same minor additions (IPv6, 
+>> auditing, etc.) for both patched and unpatched kernels.  The RT-patched 
+>> configuration also includes the necessary RT-related settings.
+>>
+>> Below is the captured oops, with a little extra logging, from the serial 
+>> console (it didn't make it to /var/log/messages).  I would be happy to 
+>> provide any additional information.
+>>
+>> Thank you,
+>> Glenn Elliott
+>>
+>> mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
+>> sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
+>> mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
+>> mptbase: ioc0: Initiating recovery
+>> mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
+>> mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
+>> sd 0:0:0:0: CDB: cdb[0]=0x0: 00 00 00 00 00 00
+>> mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
+>> mptbase: ioc0: Initiating recovery
+>> mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
+>> mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
+>> mptscsih: ioc0: attempting target reset! (sc=c0000007fdd02080)
+>> sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
+>> mptscsih: ioc0: WARNING - TaskMgmt type=3: ioc_state: DOORBELL_ACTIVE 
+>> (0x2c000000)!
+>> mptscsih: ioc0: target reset: FAILED (sc=c0000007fdd02080)
+>> mptscsih: ioc0: attempting bus reset! (sc=c0000007fdd02080)
+>> sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
+>> mptscsih: ioc0: WARNING - TaskMgmt type=4: ioc_state: DOORBELL_ACTIVE 
+>> (0x2c000000)!
+>> mptscsih: ioc0: bus reset: FAILED (sc=c0000007fdd02080)
+>> mptscsih: ioc0: attempting host reset! (sc=c0000007fdd02080)
+>> mptscsih: ioc0: host reset: SUCCESS (sc=c0000007fdd02080)
+>> ------------[ cut here ]------------
+>> Badness at kernel/workqueue.c:372
+>> NIP: c000000000086a04 LR: c000000000087cac CTR: c00000000030c5b8
+>> REGS: c0000007fde230f0 TRAP: 0700   Not tainted  (2.6.31-rc8-rt9)
+>> MSR: 9000000000029032 <EE,ME,CE,IR,DR>  CR: 44022024  XER: 20000000
+>> TASK = c0000007fa3e5c50[2606] 'mpt/0' THREAD: c0000007fde20000 CPU: 2
+>> GPR00: 0000000000000001 c0000007fde23370 c0000000006992b0 c0000003fdde0c80
+>> GPR04: 0000000000000000 0000000000000000 000000000000000a c0000003fe0ce114
+>> GPR08: 0000000000000000 c0000007fa3e5c50 c00000000044ebb0 0000000000000000
+>> GPR12: 0000000000000000 c000000000722a00 0000000000000000 0000000000000004
+>> GPR16: c0000003fe0ce998 c0000003fe0ce968 0000000000000000 0000000000000000
+>> GPR20: 0000000000000001 0000000000000000 c0000003fe0ce108 0000000000000001
+>> GPR24: 0000000000000000 0000000000000001 c0000003fe0ce100 c0000003fe0ce720
+>> GPR28: c0000003fddf4000 c0000003fdde0c80 c000000000640080 0000000000000000
+>> NIP [c000000000086a04] .flush_cpu_workqueue+0x2c/0xa4
+>> LR [c000000000087cac] .flush_workqueue+0x68/0xb8
+>> Call Trace:
+>> [c0000007fde23370] [0000000000200200] 0x200200 (unreliable)
+>> [c0000007fde23470] [c000000000087cac] .flush_workqueue+0x68/0xb8
+>> [c0000007fde23500] [c00000000030c320] 
+>> .mptsas_cleanup_fw_event_q+0x128/0x154
+>> [c0000007fde235b0] [c00000000030c650] .mptsas_ioc_reset+0x98/0xe0
+>> [c0000007fde23640] [c0000000002f9610] .mpt_signal_reset+0x94/0xb4
+>> [c0000007fde236c0] [c0000000003018e4] .mpt_do_ioc_recovery+0x15ec/0x16e8
+>> [c0000007fde23890] [c000000000301ad8] .mpt_HardResetHandler+0xf8/0x19c
+>> [c0000007fde23930] [c00000000030215c] .mpt_config+0x3d4/0x470
+>> [c0000007fde23a30] [c0000000002ffd28] .mpt_findImVolumes+0xd0/0x6a0
+>> [c0000007fde23c00] [c00000000030dacc] 
+>> .mptsas_firmware_event_work+0x74/0x109c
+>> [c0000007fde23d90] [c0000000000876e8] .worker_thread+0x20c/0x2e0
+>> [c0000007fde23ea0] [c00000000008cb88] .kthread+0xa8/0xb4
+>> [c0000007fde23f90] [c000000000025b68] .kernel_thread+0x54/0x70
+>> Instruction dump:
+>> 4bfffe34 fba1ffe8 7c0802a6 f8010010 7c7d1b78 fbe1fff8 f821ff01 e80d01b0
+>> e92300a0 7c004a78 7c000074 7800d182 <0b000000> 48395349 60000000 38bd0038
+>>   
+>>     
+> Thank you for your suggestion, Kashyap, but it does not appear to help. 
+> The system still hangs on boot. Is there any other information I can 
+> gather that may be helpful?
+>
+> -Glenn
+>   
+I will try to get more information.  The system is touchy-- I rarely get an
+oops message.  In fact, I've posted the only one that I've received.  I have
+booted my system many times and, so far, it simply hangs.
 
-> If the embedded guys are OK with an additional pointer in the slab data
-> structure, I have no objection to this approach.  I am assuming that we
-> would use the usual ops-style structure full of pointers to functions
-> in order to avoid a pair of extra pointers.
-
-This would also allow us to get rid of the ctor pointer in
-kmem_cache_create(). We can put it into the same structure.
+Thank you,
+Glenn
 
