@@ -1,185 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753387AbZIIOyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZIIPDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753387AbZIIOyn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752328AbZIIOyn
+	id S1753331AbZIIPDG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 11:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZIIPDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:54:43 -0400
-Received: from mail-qy0-f181.google.com ([209.85.221.181]:64403 "EHLO
-	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbZIIOym (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:54:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=dCeRZcV1tqwVji5albMjpkBvyKLPRJSdeHioWIz8zUBBnpUnUeSEdCWt/Veifwr9xM
-         vvkebq/QvJA9iQCbTt8MTstP44wBOBY9zCKxqzde95VtN3Zd3/8G+Kg9bMJe64PL5aDc
-         4A5lrcGDR3B17cRHj4vANH0mCKsS4cSGCip7U=
-Message-ID: <4AA7C1B2.7080804@gmail.com>
-Date: Wed, 09 Sep 2009 10:54:42 -0400
-From: Glenn Elliott <arakageeta.lkml@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Wed, 9 Sep 2009 11:03:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:18036 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751599AbZIIPDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 11:03:04 -0400
+Message-ID: <4AA7C38E.8020306@redhat.com>
+Date: Wed, 09 Sep 2009 10:02:38 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-To: "Desai, Kashyap" <Kashyap.Desai@lsi.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       DL-MPT Fusion Linux <DL-MPTFusionLinux@lsi.com>,
-       Bjoern Brandenburg <bbb@cs.unc.edu>
-Subject: Re: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
-References: <4AA14523.7070405@gmail.com> <0D1E8821739E724A86F4D16902CE275C1C8EAE092F@inbmail01.lsi.com> <4AA6C4F5.7050306@gmail.com> <0D1E8821739E724A86F4D16902CE275C1C8EAE0C0D@inbmail01.lsi.com>
-In-Reply-To: <0D1E8821739E724A86F4D16902CE275C1C8EAE0C0D@inbmail01.lsi.com>
+To: Jiri Kosina <jkosina@suse.cz>
+CC: Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
+       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext4+quota+nfs issue
+References: <4AA5E5F3.30309@primeinteractive.net> <4AA72C14.1020005@primeinteractive.net> <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
+In-Reply-To: <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Desai, Kashyap wrote:
-> Glenn,
->
-> After applying patch 
-> http://marc.info/?l=linux-scsi&m=125187353611068&w=2
->
-> my understanding is Opps will not be same. Is it correct?
->
-> I have taken some imp snaps from you Opps message as below.
->
-> .flush_workqueue+0x68/0xb8
->   
->> [c0000007fde23500] [c00000000030c320] 
->> .mptsas_cleanup_fw_event_q+0x128/0x154
->> [c0000007fde235b0] [c00000000030c650] .mptsas_ioc_reset+0x98/0xe0
->> [c0000007fde23640] [c0000000002f9610] .mpt_signal_reset+0x94/0xb4
->> [c0000007fde236c0] [c0000000003018e4] .mpt_do_ioc_recovery+0x15ec/0x16e8
->> [c0000007fde23890] [c000000000301ad8] .mpt_HardResetHandler+0xf8/0x19c
->>     
->
->
->
-> flush_workqueue() will not be called from mptsas_ioc_reset as it was happening without the patch.
->
-> Please add more details if I am guessing wrong.
->
-> Thanks,
-> Kashyap
->
->
-> -----Original Message-----
-> From: Glenn Elliott [mailto:arakageeta.lkml@gmail.com] 
-> Sent: Wednesday, September 09, 2009 2:26 AM
-> To: Desai, Kashyap
-> Cc: linux-kernel@vger.kernel.org; tglx@linutronix.de; DL-MPT Fusion Linux; Bjoern Brandenburg
-> Subject: Re: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
->
-> Desai, Kashyap wrote:
->   
->> Glenn,
+Jiri Kosina wrote:
+> [ adding relevant CCs ]
+> 
+> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
+> 
+>> Hi,
 >>
->> There is one fix in same area recently posted to upstream.
->> Can you try applying this patch?
+>> can somebody who is aware of ext4 and quota have a look on this one?
 >>
->> http://marc.info/?l=linux-scsi&m=125187353611068&w=2
->>
->> Thanks,
->> Kashyap
->>
->> -----Original Message-----
->> From: Glenn Elliott [mailto:arakageeta.lkml@gmail.com] 
->> Sent: Friday, September 04, 2009 10:20 PM
->> To: linux-kernel@vger.kernel.org
->> Cc: tglx@linutronix.de; DL-MPT Fusion Linux; Bjoern Brandenburg
->> Subject: 2.6.31-rc8 + patch-2.6.31-rc8-rt9 = oops in mptsas
->>
->> Hello,
->>
->> I get an oops when I boot 2.6.31-rc8 with the Realtime Preempt patch, 
->> patch-2.6.31-rc8-rt9, on my IBM QS22 (Cell Blade-- PPC-based).  It 
->> appears to be happening somewhere in the SAS disk related driver, mptsas.
->>
->> The unpatched 2.6.31-rc8 boots without issue.  I am using the 
->> cell_defconfig configuration with the same minor additions (IPv6, 
->> auditing, etc.) for both patched and unpatched kernels.  The RT-patched 
->> configuration also includes the necessary RT-related settings.
->>
->> Below is the captured oops, with a little extra logging, from the serial 
->> console (it didn't make it to /var/log/messages).  I would be happy to 
->> provide any additional information.
->>
->> Thank you,
->> Glenn Elliott
->>
->> mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
->> sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
->> mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
->> mptbase: ioc0: Initiating recovery
->> mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
->> mptscsih: ioc0: attempting task abort! (sc=c0000007fdd02080)
->> sd 0:0:0:0: CDB: cdb[0]=0x0: 00 00 00 00 00 00
->> mptbase: ioc0: WARNING - Issuing Reset from mpt_config!!
->> mptbase: ioc0: Initiating recovery
->> mptscsih: ioc0: WARNING - Issuing Reset from mptscsih_IssueTaskMgmt!!
->> mptscsih: ioc0: task abort: SUCCESS (sc=c0000007fdd02080)
->> mptscsih: ioc0: attempting target reset! (sc=c0000007fdd02080)
->> sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
->> mptscsih: ioc0: WARNING - TaskMgmt type=3: ioc_state: DOORBELL_ACTIVE 
->> (0x2c000000)!
->> mptscsih: ioc0: target reset: FAILED (sc=c0000007fdd02080)
->> mptscsih: ioc0: attempting bus reset! (sc=c0000007fdd02080)
->> sd 0:0:0:0: CDB: cdb[0]=0x1a: 1a 00 08 00 04 00
->> mptscsih: ioc0: WARNING - TaskMgmt type=4: ioc_state: DOORBELL_ACTIVE 
->> (0x2c000000)!
->> mptscsih: ioc0: bus reset: FAILED (sc=c0000007fdd02080)
->> mptscsih: ioc0: attempting host reset! (sc=c0000007fdd02080)
->> mptscsih: ioc0: host reset: SUCCESS (sc=c0000007fdd02080)
->> ------------[ cut here ]------------
->> Badness at kernel/workqueue.c:372
->> NIP: c000000000086a04 LR: c000000000087cac CTR: c00000000030c5b8
->> REGS: c0000007fde230f0 TRAP: 0700   Not tainted  (2.6.31-rc8-rt9)
->> MSR: 9000000000029032 <EE,ME,CE,IR,DR>  CR: 44022024  XER: 20000000
->> TASK = c0000007fa3e5c50[2606] 'mpt/0' THREAD: c0000007fde20000 CPU: 2
->> GPR00: 0000000000000001 c0000007fde23370 c0000000006992b0 c0000003fdde0c80
->> GPR04: 0000000000000000 0000000000000000 000000000000000a c0000003fe0ce114
->> GPR08: 0000000000000000 c0000007fa3e5c50 c00000000044ebb0 0000000000000000
->> GPR12: 0000000000000000 c000000000722a00 0000000000000000 0000000000000004
->> GPR16: c0000003fe0ce998 c0000003fe0ce968 0000000000000000 0000000000000000
->> GPR20: 0000000000000001 0000000000000000 c0000003fe0ce108 0000000000000001
->> GPR24: 0000000000000000 0000000000000001 c0000003fe0ce100 c0000003fe0ce720
->> GPR28: c0000003fddf4000 c0000003fdde0c80 c000000000640080 0000000000000000
->> NIP [c000000000086a04] .flush_cpu_workqueue+0x2c/0xa4
->> LR [c000000000087cac] .flush_workqueue+0x68/0xb8
->> Call Trace:
->> [c0000007fde23370] [0000000000200200] 0x200200 (unreliable)
->> [c0000007fde23470] [c000000000087cac] .flush_workqueue+0x68/0xb8
->> [c0000007fde23500] [c00000000030c320] 
->> .mptsas_cleanup_fw_event_q+0x128/0x154
->> [c0000007fde235b0] [c00000000030c650] .mptsas_ioc_reset+0x98/0xe0
->> [c0000007fde23640] [c0000000002f9610] .mpt_signal_reset+0x94/0xb4
->> [c0000007fde236c0] [c0000000003018e4] .mpt_do_ioc_recovery+0x15ec/0x16e8
->> [c0000007fde23890] [c000000000301ad8] .mpt_HardResetHandler+0xf8/0x19c
->> [c0000007fde23930] [c00000000030215c] .mpt_config+0x3d4/0x470
->> [c0000007fde23a30] [c0000000002ffd28] .mpt_findImVolumes+0xd0/0x6a0
->> [c0000007fde23c00] [c00000000030dacc] 
->> .mptsas_firmware_event_work+0x74/0x109c
->> [c0000007fde23d90] [c0000000000876e8] .worker_thread+0x20c/0x2e0
->> [c0000007fde23ea0] [c00000000008cb88] .kthread+0xa8/0xb4
->> [c0000007fde23f90] [c000000000025b68] .kernel_thread+0x54/0x70
->> Instruction dump:
->> 4bfffe34 fba1ffe8 7c0802a6 f8010010 7c7d1b78 fbe1fff8 f821ff01 e80d01b0
->> e92300a0 7c004a78 7c000074 7800d182 <0b000000> 48395349 60000000 38bd0038
->>   
->>     
-> Thank you for your suggestion, Kashyap, but it does not appear to help. 
-> The system still hangs on boot. Is there any other information I can 
-> gather that may be helpful?
->
-> -Glenn
->   
-I will try to get more information.  The system is touchy-- I rarely get an
-oops message.  In fact, I've posted the only one that I've received.  I have
-booted my system many times and, so far, it simply hangs.
 
-Thank you,
-Glenn
+This was also just reported at:
+
+https://bugzilla.redhat.com/show_bug.cgi?id=521914
+
+-Eric
+
+>> Thanks,
+>>
+>> P.
+>>
+>> On 8. 9. 2009 7:04, Pavol Cvengros wrote:
+>>> Hello,
+>>>
+>>> recently we have build and started to use raid storage with formatted
+>>> capacity of 4.5T (ext4 formatted, default params).
+>>> FS has quota turned on and is exported via NFS to nodes.
+>>> If we turn qouta on on this FS and are trying to use it over NFS we get the
+>>> following:
+>>>
+>>> ------------[ cut here ]------------
+>>> WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
+>>> Hardware name: S3210SH
+>>> Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc
+>>> coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd floppy
+>>> usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
+>>> Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
+>>> Call Trace:
+>>>  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+>>>  [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
+>>>  [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+>>>  [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
+>>>  [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
+>>>  [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
+>>>  [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
+>>>  [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
+>>>  [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
+>>>  [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
+>>>  [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
+>>>  [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
+>>>  [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
+>>>  [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
+>>>  [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
+>>>  [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
+>>>  [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
+>>>  [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
+>>>  [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
+>>>  [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
+>>>  [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
+>>>  [<ffffffff80292110>] ? pdflush+0x120/0x230
+>>>  [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
+>>>  [<ffffffff80291ff0>] ? pdflush+0x0/0x230
+>>>  [<ffffffff80261154>] ? kthread+0x64/0xc0
+>>>  [<ffffffff8020d13a>] ? child_rip+0xa/0x20
+>>>  [<ffffffff802610f0>] ? kthread+0x0/0xc0
+>>>  [<ffffffff8020d130>] ? child_rip+0x0/0x20
+>>> ---[ end trace cb54e6523e9ab60d ]---
+>>>
+>>> fstab entry:
+>>> /dev/sdb1              /mnt/storage    ext4
+>>> noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0 
+>>>
+>>> qith quotaoff on tihs FS, warnings stop.
+>>>
+>>> Question is if it's safe to use quotas with this problem (warning) or not.
+>>> Can't afford data damage.
+>>>
+>>> Thanks,
+>>>
+>>> Pavol Cvengros
+
 
