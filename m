@@ -1,65 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753095AbZIINdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZIINer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753095AbZIINdX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 09:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZIINdW
+	id S1753164AbZIINer (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 09:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZIINer
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 09:33:22 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51894 "EHLO mx1.suse.de"
+	Wed, 9 Sep 2009 09:34:47 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31685 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752527AbZIINdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 09:33:21 -0400
-Date: Wed, 9 Sep 2009 06:28:56 -0700
-From: Greg KH <gregkh@suse.de>
-To: Arkadiusz Miskiewicz <arekm@pld-linux.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.27.32
-Message-ID: <20090909132856.GA12498@suse.de>
-References: <20090909040829.GA9657@kroah.com>
- <h87kdq$us2$1@ger.gmane.org>
+	id S1752835AbZIINeq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 09:34:46 -0400
+Date: Wed, 9 Sep 2009 09:34:27 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: balbir@linux.vnet.ibm.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
+       akpm@linux-foundation.org, nauman@google.com,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090909133427.GA8256@redhat.com>
+References: <20090908032254.GJ8315@balbir.in.ibm.com> <20090908.140516.104049366.ryov@valinux.co.jp> <20090908134915.GB15974@redhat.com> <20090909.141748.189706141.ryov@valinux.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <h87kdq$us2$1@ger.gmane.org>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <20090909.141748.189706141.ryov@valinux.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 09:10:50AM +0200, Arkadiusz Miskiewicz wrote:
-> Greg KH wrote:
+On Wed, Sep 09, 2009 at 02:17:48PM +0900, Ryo Tsuruta wrote:
+> Hi Vivek,
 > 
-> > I'm announcing the release of the 2.6.27.32 kernel.  All users of the
-> > 2.6.27 kernel series are very strongly encouraged to upgrade.
+> Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > It is not necessary when controlling bandwidth on a per partition
+> > > basis or on a IO thread basis like Xen blkback kernel thread.
+> > > 
+> > > Here are configration examples.
+> > > http://sourceforge.net/apps/trac/ioband/wiki/dm-ioband/man/examples
+> > > 
+> > 
+> > For partition based control, where a thread or group of threads is doing
+> > IO to a specific parition, why can't you simply create different cgroups
+> > for each partition and move threads in those partitions.
+> > 
+> > 
+> > 			root
+> > 		 	/ | \
+> > 		    sda1 sda2 sda3
+> >
+> > Above are three groups and move threads doing IO into those groups and
+> > problem is solved. In fact that's what one will do for KVM virtual
+> > machines. Move all the qemu helper threds doing IO for a virtual machine
+> > instance into a specific group and control the IO.
+> > 
+> > Why do you have to come up with additional complicated grouping mechanism?
 > 
->   CC [M]  fs/ocfs2/aops.o
-> fs/ocfs2/aops.c: In function 'ocfs2_write_cluster':
-> fs/ocfs2/aops.c:1286: error: 'should_zero' undeclared (first use in this 
-> function)
-> fs/ocfs2/aops.c:1286: error: (Each undeclared identifier is reported only 
-> once
-> fs/ocfs2/aops.c:1286: error: for each function it appears in.)
-> fs/ocfs2/aops.c: In function 'ocfs2_write_cluster_by_desc':
-> fs/ocfs2/aops.c:1360: warning: passing argument 4 of 'ocfs2_write_cluster' 
-> makes pointer from integer without a cast
-> fs/ocfs2/aops.c:1235: note: expected 'struct ocfs2_alloc_context *' but 
-> argument is of type 'unsigned int'
-> fs/ocfs2/aops.c:1360: warning: passing argument 6 of 'ocfs2_write_cluster' 
-> from incompatible pointer type
-> fs/ocfs2/aops.c:1235: note: expected 'struct ocfs2_write_ctxt *' but 
-> argument is of type 'struct ocfs2_alloc_context *'
-> fs/ocfs2/aops.c:1360: warning: passing argument 7 of 'ocfs2_write_cluster' 
-> makes integer from pointer without a cast
-> fs/ocfs2/aops.c:1235: note: expected 'u32' but argument is of type 'struct 
-> ocfs2_write_ctxt *'
-> fs/ocfs2/aops.c:1360: error: too many arguments to function 
-> 'ocfs2_write_cluster'
-> make[2]: *** [fs/ocfs2/aops.o] Error 1
+> I don't get why you think it's complicated, your io-controller also
+> provides the same grouping machanism which assigns bandwidth per
+> device by io.policy file. What's the difference?
 
-Yes, this was just reported :)
+I am using purely cgroup based interface. This makes life easier for user
+space tools and libraries like libcgroup and should also help libvirt. Now
+they can treat all the resource controllers in kernel in a uniform way
+(through cgroup interface).
 
-Do you have a proposed fix that is also upstream?
+With-in cgroups, there are controller specific files and libcgroup is
+aware of that. So libcgroup can be modified to take care of special
+syntax of io.policy file. But this is not too big a deviation in overall
+picture.
 
-thanks,
+dm-ioband is coming up with a whole new way of configuring and managing
+groups and now these user space tools shall have to be modified to take
+care of this new way only for io controller.
 
-greg k-h
+The point is there is no need. You seem to be introducing this new
+interface because you want to use this module with RHEL5 which does not
+have cgroup support. 
+
+I think this is hard to sell argument that upstream should also introduce
+a new interface just because one wants to use the module with older
+releases of kernel which did not have cgroup support.
+
+Taking this new interface solves your case but will make life harder for user
+space tools, libraries and applications making use of cgroups and various
+resource controllers.
+
+> The thread grouping
+> machianism is also not special, it is the same concept as cgroup.
+> These mechanisms are necessary to make use of dm-ioband on the systems
+> which doesn't support cgroup such as RHEL 5.x. As you know, dm-ioband
+> also supports cgroup, the configurations you mentioned above can apply
+> to the system by dm-ioband.
+
+dm-ioband also supports cgroup but there is additional step required and
+that is passing all the cgroup ids to various ioband devices. This
+requires knowledge of all the ioband devices and how these have been
+created and usage of dm tools. 
+
+The only place where it helps a bit is that once the configuration is
+done, one can move the tasks in groups to arbitrarily group them instead
+of grouping these on pid, gid etc....
+
+So it still does not solve the issue of dm-ioband being so different from
+rest of the controllers and introducing a new interface for creation and
+management of groups.
+
+> I think it's not bad to have several ways
+> to setup.
+
+It is not bad if there is a proper justification for new interface and why
+existing standard mechanism does not meet that requirement.
+
+In this case you are saying that in general cgroup mechanism is sufficient
+to take care of grouping of tasks but it is not available in older kernels
+hence let us introduce a new interface in upstream kernels. I think this does
+not work. This brings in unnecessary overhead of maintaining anohter interface
+for upstream and upstream does not benefit from this interface.
+
+Thanks
+Vivek
