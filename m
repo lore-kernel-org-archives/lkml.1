@@ -1,122 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752645AbZIICuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752744AbZIICxG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752645AbZIICuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 22:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752467AbZIICuj
+	id S1752744AbZIICxG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 22:53:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752169AbZIICxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 22:50:39 -0400
-Received: from mx1-old.redhat.com ([66.187.233.31]:34684 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751344AbZIICui (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 22:50:38 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 8 Sep 2009 22:53:05 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51245 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751922AbZIICxF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 22:53:05 -0400
+Subject: Re: [PATCH 1/2] tracing: Add sysctl to enable/disable tracing on
+ oops
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AA715A3.8040108@cn.fujitsu.com>
+References: <4AA7092C.4070706@cn.fujitsu.com>
+	 <1252461867.11070.6.camel@gandalf.stny.rr.com>
+	 <20090909113231.0CE6.A69D9226@jp.fujitsu.com>
+	 <4AA715A3.8040108@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 08 Sep 2009 22:53:04 -0400
+Message-Id: <1252464784.12982.4.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: John Reiser <jreiser@bitwagon.com>
-X-Fcc: ~/Mail/linus
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-fsdevel@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: binfmt_elf PT_INTERP gets EFAULT if no PROT_WRITE
-In-Reply-To: John Reiser's message of  Tuesday, 8 September 2009 17:26:59 -0700 <4AA6F653.1010007@bitwagon.com>
-References: <4AA6F653.1010007@bitwagon.com>
-X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
-Message-Id: <20090909024940.850948BECA@magilla.sf.frob.com>
-Date: Tue,  8 Sep 2009 19:49:40 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good catch, John.  But I prefer a different fix.  
+On Wed, 2009-09-09 at 10:40 +0800, Li Zefan wrote:
 
-I've reproduced the bug with the test case John included,
-and verified that my change fixes it too.
+> > I have another silly question.
+> > Why should we call tracing_off() in oops_enter()?
+> > 
+> 
+> I guess it's because trace outputs generated during oops can
+> overwrite/mess up those generated before oops?
+> 
+> It was added by this commit, but I can't find trace_printk_on_oops.
 
+That's because Thomas did not bother looking up the actual variable he
+was talking about. s/trace_printk_on_oops/ftrace_dump_on_oops/
 
-Thanks,
-Roland
+-- Steve
 
----
-[PATCH] binfmt_elf: fix PT_INTERP bss handling
+> 
+> commit bdff78707f3ce47e891f3201c9666122a70556ce
+> Author: Thomas Gleixner <tglx@linutronix.de>
+> Date:   Fri Jul 24 15:30:45 2009 -0400
+> 
+>     trace: stop tracer in oops_enter()
+> 
+>     If trace_printk_on_oops is set we lose interesting trace information
+>     when the tracer is enabled across oops handling and printing. We want
+>     the trace which might give us information _WHY_ we oopsed.
+> 
 
-In fs/binfmt_elf.c, load_elf_interp() calls padzero() for .bss even if
-the PT_LOAD has no PROT_WRITE and no .bss.  This generates EFAULT.
-
-Here is a small test case.  (Yes, there are other, useful PT_INTERP
-which have only .text and no .data/.bss.)
-
-	----- ptinterp.S
-	_start: .globl _start
-		 nop
-		 int3
-	-----
-	$ gcc -m32 -nostartfiles -nostdlib -o ptinterp ptinterp.S
-	$ gcc -m32 -Wl,--dynamic-linker=ptinterp -o hello hello.c
-	$ ./hello
-	Segmentation fault  # during execve() itself
-
-	After applying the patch:
-	$ ./hello
-	Trace trap  # user-mode execution after execve() finishes
-
-If the ELF headers are actually self-inconsistent, then dying is fine.
-But having no PROT_WRITE segment is perfectly normal and correct if
-there is no segment with p_memsz > p_filesz (i.e. bss).  John Reiser
-suggested checking for PROT_WRITE in the bss logic.  I think it makes
-most sense to simply apply the bss logic only when there is bss.
-
-This patch looks less trivial than it is due to some reindentation.
-It just moves the "if (last_bss > elf_bss) {" test up to include the
-partial-page bss logic as well as the more-pages bss logic.
-
-Reported-by: John Reiser <jreiser@bitwagon.com>
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- fs/binfmt_elf.c |   28 ++++++++++++++--------------
- 1 files changed, 14 insertions(+), 14 deletions(-)
-
-diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index b7c1603..7c1e65d 100644
---- a/fs/binfmt_elf.c
-+++ b/fs/binfmt_elf.c
-@@ -501,22 +501,22 @@ static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
- 		}
- 	}
- 
--	/*
--	 * Now fill out the bss section.  First pad the last page up
--	 * to the page boundary, and then perform a mmap to make sure
--	 * that there are zero-mapped pages up to and including the 
--	 * last bss page.
--	 */
--	if (padzero(elf_bss)) {
--		error = -EFAULT;
--		goto out_close;
--	}
-+	if (last_bss > elf_bss) {
-+		/*
-+		 * Now fill out the bss section.  First pad the last page up
-+		 * to the page boundary, and then perform a mmap to make sure
-+		 * that there are zero-mapped pages up to and including the
-+		 * last bss page.
-+		 */
-+		if (padzero(elf_bss)) {
-+			error = -EFAULT;
-+			goto out_close;
-+		}
- 
--	/* What we have mapped so far */
--	elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
-+		/* What we have mapped so far */
-+		elf_bss = ELF_PAGESTART(elf_bss + ELF_MIN_ALIGN - 1);
- 
--	/* Map the last of the bss segment */
--	if (last_bss > elf_bss) {
-+		/* Map the last of the bss segment */
- 		down_write(&current->mm->mmap_sem);
- 		error = do_brk(elf_bss, last_bss - elf_bss);
- 		up_write(&current->mm->mmap_sem);
