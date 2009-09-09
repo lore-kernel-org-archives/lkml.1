@@ -1,85 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751758AbZIIF6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbZIIGEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751758AbZIIF6k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 01:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751432AbZIIF6j
+	id S1751917AbZIIGEx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 02:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751341AbZIIGEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 01:58:39 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34264 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751015AbZIIF6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 01:58:39 -0400
-X-Authenticated: #32306085
-X-Provags-ID: V01U2FsdGVkX18TIV5FLwcTgWvCzNJ1OZa1zMcX/1VLn0uK5603qA
-	Ix3gBre+ID/OCj
-From: Christoph Thielecke <christoph.thielecke@gmx.de>
-Reply-To: christoph.thielecke@gmx.de
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [Bug #14018] kernel freezes, inotify problem
-Date: Wed, 9 Sep 2009 07:58:32 +0200
-User-Agent: KMail/1.9.9
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <1252273078.27723.0.camel@dhcp231-106.rdu.redhat.com> <200909062351.02664.rjw@sisk.pl>
-In-Reply-To: <200909062351.02664.rjw@sisk.pl>
-Cc: Eric Paris <eparis@redhat.com>,
+	Wed, 9 Sep 2009 02:04:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39873 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751290AbZIIGEw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 02:04:52 -0400
+Date: Tue, 8 Sep 2009 22:58:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michael Abbott <michael@araneidae.co.uk>
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Eric Paris <eparis@parisplace.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2844453.UKP6nlZWuT";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+       Johan van Baarlen <JF@vanbaarlen.demon.nl>
+Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
+Message-Id: <20090908225858.04d56dce.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0908141315310.1670@venus.araneidae.co.uk>
+References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr>
+	<Pine.LNX.4.64.0908141315310.1670@venus.araneidae.co.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909090758.40514.christoph.thielecke@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2844453.UKP6nlZWuT
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Fri, 14 Aug 2009 13:18:08 +0100 (BST) Michael Abbott <michael@araneidae.co.uk> wrote:
 
-Hello,
-> > > The following bug entry is on the current list of known regressions
-> > > from 2.6.30.  Please verify if it still should be listed and let me
-> > > know (either way).
-> > >
-> > >
-> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=3D14018
-> > > Subject		: kernel freezes, inotify problem
-> > > Submitter	: Christoph Thielecke <christoph.thielecke@gmx.de>
-> > > Date		: 2009-08-19 12:48 (19 days old)
-> > > References	: http://marc.info/?l=3Dlinux-kernel&m=3D125068616818353&w=
-=3D4
-> > > Handled-By	: Eric Paris <eparis@parisplace.org>
-> >
-> > This should be marked as fixed.
->
-> Yeah, I forgot to close it.  Thanks for the heads up.
-Right, seems working fine (sorry for the delay I tested a while).
+> Reviving this:
+> 
+> On Sat, 9 May 2009, Jan Engelhardt wrote:
+> > starting from v2.6.28-4930-g79741dd lasting thru at least v2.6.29.1,
+> > the second field of /proc/uptime always shows 0.00. This happens for
+> > both the typical i386 (my case) and on an ARM (according to Michael,
+> > cc'ed).
+> > 
+> > >From the commit log of 79741dd:
+> > 
+> > 	"""The cpu time spent by the idle process actually doing
+> > 	something is currently accounted as idle time. This is plain
+> > 	wrong, the architectures that support VIRT_CPU_ACCOUNTING=y
+> > 	can do better: distinguish between the time spent doing
+> > 	nothing and the time spent by idle doing work. The first is
+> > 	accounted with account_idle_time and the second with
+> > 	account_system_time."""
+> > 
+> > Citing Michael from our irc conversation:
+> > 
+> > 	"""the writer[committer] [says] that [the] idle process time
+> > 	isn't really idle time ... but that's all that /proc/uptime
+> > 	looks at. I guess fs/proc/uptime.c needs to catch up."""
+> > 
+> > So, were the updates to uptime.c missed, or do we now live on with
+> > /proc/uptime constantly having 0?
+> 
+> My previous patch seems to have run into the sand.  It every so nearly got 
+> pulled into mainstream as far as I can tell, but didn't seem to make it; 
+> no idea what happened.
+> 
+> So here we go again:
+> 
+
+Imagine my surprise to find a version of this patch lurking in Martin's
+tree since June 22.  It's a regression fix!
+
+Johan, does this patch help with the regression you reported in
+http://bugzilla.kernel.org/show_bug.cgi?id=14131 ?
+
+Thanks.
 
 
-With best regards
+commit 27bf8712477db47c891e6198000c985631cd18de
+Author:     Michael Abbott <michael.abbott@diamond.ac.uk>
+AuthorDate: Mon Jun 22 12:19:25 2009 +0200
+Commit:     Martin Schwidefsky <schwidefsky@de.ibm.com>
+CommitDate: Mon Jun 22 12:20:44 2009 +0200
 
-Christoph
-=2D-=20
-Linux User Group Wernigerode
-http://www.lug-wr.de/
+    [PATCH] Fix idle time field in /proc/uptime
+    
+    Git commit 79741dd changes idle cputime accounting, but unfortunately
+    the /proc/uptime file hasn't caught up.  Here the idle time calculation
+    from /proc/stat is copied over.
+    
+    Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
+    Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
---nextPart2844453.UKP6nlZWuT
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
+diff --git a/fs/proc/uptime.c b/fs/proc/uptime.c
+index 0c10a0b..766b1d4 100644
+--- a/fs/proc/uptime.c
++++ b/fs/proc/uptime.c
+@@ -4,13 +4,18 @@
+ #include <linux/sched.h>
+ #include <linux/seq_file.h>
+ #include <linux/time.h>
++#include <linux/kernel_stat.h>
+ #include <asm/cputime.h>
+ 
+ static int uptime_proc_show(struct seq_file *m, void *v)
+ {
+ 	struct timespec uptime;
+ 	struct timespec idle;
+-	cputime_t idletime = cputime_add(init_task.utime, init_task.stime);
++	int i;
++	cputime_t idletime = cputime_zero;
++
++	for_each_possible_cpu(i)
++		idletime = cputime64_add(idletime, kstat_cpu(i).cpustat.idle);
+ 
+ 	do_posix_clock_monotonic_gettime(&uptime);
+ 	monotonic_to_bootbased(&uptime);
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkqnRAsACgkQd9JRTD5SjRg8GQCeJCznPmVi9TGzGkOvEEI6G0YI
-WxIAoKS1tBgCopLWM/WsfvN9w+JIieDS
-=zgyW
------END PGP SIGNATURE-----
-
---nextPart2844453.UKP6nlZWuT--
