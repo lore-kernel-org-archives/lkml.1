@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753906AbZIISLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZIISRf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753906AbZIISLL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 14:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753595AbZIISLK
+	id S1754019AbZIISRf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbZIISRe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 14:11:10 -0400
-Received: from fifo99.com ([67.223.236.141]:33113 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752463AbZIISLK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 14:11:10 -0400
-Subject: Re: [PATCH] x86: SGU UV Add volatile to macros that access chipset
- registers
-From: Daniel Walker <dwalker@fifo99.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20090909180110.GA10311@sgi.com>
-References: <20090909154246.GA26716@sgi.com>
-	 <1252512600.14793.125.camel@desktop>  <20090909180110.GA10311@sgi.com>
-Content-Type: text/plain
-Date: Wed, 09 Sep 2009 11:11:25 -0700
-Message-Id: <1252519885.14793.135.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Wed, 9 Sep 2009 14:17:34 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:2816 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753595AbZIISRe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 14:17:34 -0400
+Message-ID: <4AA7F133.20104@caviumnetworks.com>
+Date: Wed, 09 Sep 2009 11:17:23 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Dok Sander <doksander@yahoo.com>
+CC: linux-kernel@vger.kernel.org, linux-mips <linux-mips@linux-mips.org>
+Subject: Re: io.h doesn't get installed by target "headers_install" for mips
+References: <806810.23677.qm@web59313.mail.re1.yahoo.com>
+In-Reply-To: <806810.23677.qm@web59313.mail.re1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Sep 2009 18:17:23.0636 (UTC) FILETIME=[C7340740:01CA3179]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 13:01 -0500, Jack Steiner wrote:
-> On Wed, Sep 09, 2009 at 09:10:00AM -0700, Daniel Walker wrote:
-> > On Wed, 2009-09-09 at 10:42 -0500, Jack Steiner wrote:
-> > > Add "volatile" to the SGI UV read/write macros that are used to access chipset
-> > > memory mapped registers.
-> > 
-> > There is a considerable document regarding the usage of volatile in the
-> > kernel (Documentation/volatile-considered-harmful.txt). Considering that
-> > document, can you give a more descriptive reason why your using
-> > "volatile" here ?
-> > 
+Dok Sander wrote:
+> Hi,
 > 
-> I knew that "volatile" would catch someone's attention  :-)
+>  I noticed the absence of the header io.h while trying to build(cross-compile, host i686-pc-linux-gnu) a software(lm-sensors-3.1.1, wants io.h in /sys) for mips. I can find io.h for mips in arch/mips/asm/include/{,sn/} However, io.h doesn't get installed when i do "make ARCH=mips headers_install" on linux 2.6.30.6
 > 
+>  According to someone on the eglibc mailing list, linux should provide io.h for mips. Is this true?
 > 
-> Volatile is being added to the accessor functions that are used to
-> read/write memory-mapped I/O registers located within the UV chipset.
-> The use of volatile is hidden within the functions and is not exposed
-> to the users of the functions.
-> 
-> Note that the use is limited to the accessor functions in the header
-> file. No .c files are changed or need to know about volatile.
-> 
-> 
-> This seems to be consistent with other uses of volatile within the kernel.
 
-The document that I cited specifically addresses memory accessors as not
-needing the volatile keyword .. So your still not addressing exactly why
-your code needs it .. Are your accessors special in some way? Is there
-some defect your seeing without the volatile keyword?
+I don't think so (for two reasons):
 
-Daniel
+1) The things in /usr/include/sys are provided by libc not the kernel.
+
+2) MIPS doesn't have I/O ports, so all the functions in sys/io.h on an 
+x86 are undefined for MIPS.
+
+David Daney
 
