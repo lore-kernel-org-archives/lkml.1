@@ -1,27 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754389AbZIIVZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbZIIV2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754389AbZIIVZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 17:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZIIVY7
+	id S1754400AbZIIV2K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 17:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbZIIV2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 17:24:59 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36789 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754369AbZIIVY5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 17:24:57 -0400
-Date: Wed, 9 Sep 2009 14:24:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: Valdis.Kletnieks@vt.edu, hugh.dickins@tiscali.co.uk, matthew@wil.cx,
-       agruen@suse.de, viro@zeniv.linux.org.uk, hch@lst.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] vfs: no "(unreachable)" prefix for SYSVIPC maps in
- /proc/PID/maps
-Message-Id: <20090909142403.c3b35d4d.akpm@linux-foundation.org>
-In-Reply-To: <E1Mkg2P-0000mi-H3@pomaz-ex.szeredi.hu>
-References: <E1Mkg2P-0000mi-H3@pomaz-ex.szeredi.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Wed, 9 Sep 2009 17:28:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:11588 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754368AbZIIV2F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 17:28:05 -0400
+Date: Wed, 9 Sep 2009 17:26:47 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Justin Piszcz <jpiszcz@lucidpixels.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Felix Blyakher <felixb@sgi.com>
+Subject: Re: [Bug #13949] Cryptoloop stuck I/O issue on partition or
+ loopback device
+Message-ID: <20090909172647.29e52b47@dhcp-100-2-144.bos.redhat.com>
+In-Reply-To: <200909082105.13124.rjw@sisk.pl>
+References: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera>
+	<20090907152553.GA21768@infradead.org>
+	<alpine.DEB.2.00.0909081029050.7636@p34.internal.lan>
+	<200909082105.13124.rjw@sisk.pl>
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,36 +33,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 Sep 2009 17:21:49 +0200
-Miklos Szeredi <miklos@szeredi.hu> wrote:
+On Tue, 8 Sep 2009 21:05:13 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> Another fix for vfs-fix-d_path-for-unreachable-paths.patch in -mm.
+> On Tuesday 08 September 2009, Justin Piszcz wrote:
+> > Unsure how to edit on the kernel bugtracker but updating this thread to 
+> > correct the subject.
+> 
+> I've changed the subject and moved the bug to I/O & storage.
 > 
 
-Now I'm confused.
-
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> The patch
-> 
->   "vfs: fix d_path() for unreachable paths"
-> 
-> generally changed d_path() to report unreachable paths with a special
-> prefix.  This has an effect on /proc/${PID}/maps as well for memory
-> maps set up with shmem_file_setup() or hugetlb_file_setup().  These
-> functions set up unlinked files under a kernel-private vfsmount.
-> Since this vfsmount is unreachable from userspace, these maps will be
-> reported with the "(unreachable)" prefix.
-> 
-> This is undesirable, because it changes the kernel ABI and might break
-> applications for no good reason.
-> 
-> Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-
-These three patches are fixes against
-vfs-fix-d_path-for-unreachable-paths.patch?  The description for
-seq_file-return-a-negative-error-code-when-seq_path_root-fails.patch
-led me to believe that vfs-fix-d_path-for-unreachable-paths.patch was
-to be dropped.
-
-argh.
+Should we just revert that barrier support in loopback, like I
+suggested in bugzilla?
