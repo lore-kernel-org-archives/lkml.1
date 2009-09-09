@@ -1,53 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbZIIO2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753571AbZIIPJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbZIIO2c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752697AbZIIO2c
+	id S1753571AbZIIPJn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 11:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753505AbZIIPJm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:28:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54892 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752524AbZIIO2b (ORCPT
+	Wed, 9 Sep 2009 11:09:42 -0400
+Received: from bosmailout19.eigbox.net ([66.96.187.19]:52198 "EHLO
+	bosmailout19.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753420AbZIIPJl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:28:31 -0400
-Date: Wed, 9 Sep 2009 07:28:28 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Knut Petersen <Knut_Petersen@t-online.de>
-cc: airlied@linux.ie, linux-kernel@vger.kernel.org,
-       ykzhao <yakui.zhao@intel.com>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: Regression DRM/i915/KMS: VGA connector unusable after 2.6.31-rc8-git1,
- DVI connector ok
-In-Reply-To: <4AA7549B.5040905@t-online.de>
-Message-ID: <alpine.LFD.2.01.0909090719070.7458@localhost.localdomain>
-References: <4AA6D858.6040505@t-online.de> <alpine.LFD.2.01.0909081607400.7458@localhost.localdomain> <4AA7549B.5040905@t-online.de>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Wed, 9 Sep 2009 11:09:41 -0400
+X-Greylist: delayed 2421 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Sep 2009 11:09:41 EDT
+X-EN-OrigOutIP: 10.20.18.9
+X-EN-IMPSID: eeVL1c0050BkY8i0000000
+Message-ID: <4AA7BC05.7050507@jaysonking.com>
+Date: Wed, 09 Sep 2009 09:30:29 -0500
+From: Jayson King <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: gregkh@suse.de
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 00/48] 2.6.27.32-stable review
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
+X-EN-AuthUser: jaysonking@jaysonking.com
+X-EN-OrigIP: 66.139.154.210
+X-EN-OrigHost: adsl-66-139-154-210.dsl.okcyok.swbell.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greg KH wrote:
+ >I thought the second one would solve the problem.
+ >
+ >What happened here, I took the upstream patch, was it incorrect? If so,
+ >was there a patch, also upstream, that fixed this problem?
+ >
+ >totally confused,
+
+No. The upstream patch was not incorrect, but it was incompletely 
+applied to 2.6.27. The missing line is not missing in the upstream 
+patch. The replacement for the patch I sent earlier puts the line back in.
+
+Jayson R. King
+
+(sorry if I am dropping anyone from CC. I am not subscribed to LKML)
 
 
-On Wed, 9 Sep 2009, Knut Petersen wrote:
-> 
-> As the old X does not work with the new kernel, I cannot decide if the 
-> kernel or X is to blame.
-
-Hmm. Doesn't old X work if you disable KMS? Either with "i915.modeset=0" 
-or by just compiling it out?
-
-Also, glxgears is usually not a good way to verify anything. At least some 
-versions used to run the gears at the painting frame rate rather than some 
-fixed rate, and so "jerky" or not depended not on how fast it was 
-painting, but on whether the painting speed was some multiple of the 
-screen refresh.
-
-The FPS output from glxgears should mean something, although quite 
-frankly, considering the simplicity of the thing, not a whole lot. I'd 
-suggest using some somewhat more real test (I admit to having used 
-"Extreme Tux Racer", which while not wonderful either is certainly better 
-than glxgears ;^)
-
-		Linus
