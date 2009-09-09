@@ -1,107 +1,249 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753361AbZIIOiJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753512AbZIIPTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753361AbZIIOiJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 10:38:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753275AbZIIOiH
+	id S1753512AbZIIPTr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 11:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZIIPTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 10:38:07 -0400
-Received: from mga14.intel.com ([143.182.124.37]:55541 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753333AbZIIOiE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 10:38:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="185715917"
-Date: Wed, 9 Sep 2009 22:37:53 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Chris Mason <chris.mason@oracle.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "david@fromorbit.com" <david@fromorbit.com>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090909143753.GA2071@localhost>
-References: <1252401791-22463-9-git-send-email-jens.axboe@oracle.com> <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins> <20090908172842.GC2975@think> <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz>
+	Wed, 9 Sep 2009 11:19:47 -0400
+Received: from bosmailout11.eigbox.net ([66.96.190.11]:35991 "EHLO
+	bosmailout11.eigbox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753037AbZIIPTq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 11:19:46 -0400
+X-Greylist: delayed 2401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Sep 2009 11:19:46 EDT
+X-EN-OrigOutIP: 10.20.18.4
+X-EN-IMPSID: eefm1c00F05GATN0000000
+Message-ID: <4AA7BE77.9000208@jaysonking.com>
+Date: Wed, 09 Sep 2009 09:40:55 -0500
+From: Jayson King <dev@jaysonking.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909142315.GA7949@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: gregkh@suse.de
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.27.32
+Content-Type: multipart/mixed;
+ boundary="------------020809080507020903050607"
+X-EN-UserInfo: 06af1bc540adb20c3d2d7097199478a6:08dd1976e651f6e3791fbe97eaa5f898
+X-EN-AuthUser: jaysonking@jaysonking.com
+X-EN-OrigIP: 66.139.154.210
+X-EN-OrigHost: adsl-66-139-154-210.dsl.okcyok.swbell.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 10:23:15PM +0800, Jan Kara wrote:
-> On Tue 08-09-09 20:32:26, Peter Zijlstra wrote:
-> > On Tue, 2009-09-08 at 19:55 +0200, Peter Zijlstra wrote:
-> > > 
-> > > I think I'm somewhat confused here though..
-> > > 
-> > > There's kernel threads doing writeout, and there's apps getting stuck in
-> > > balance_dirty_pages().
-> > > 
-> > > If we want all writeout to be done by kernel threads (bdi/pd-flush like
-> > > things) then we still need to manage the actual apps and delay them.
-> > > 
-> > > As things stand now, we kick pdflush into action when dirty levels are
-> > > above the background level, and start writing out from the app task when
-> > > we hit the full dirty level.
-> > > 
-> > > Moving all writeout to a kernel thread sounds good from writing linear
-> > > stuff pov, but what do we make apps wait on then?
-> > 
-> > OK, so like said in the previous email, we could have these app tasks
-> > simply sleep on a waitqueue which gets periodic wakeups from
-> > __bdi_writeback_inc() every time the dirty threshold drops.
-> > 
-> > The woken tasks would then check their bdi dirty limit (its task
-> > dependent) against the current values and either go back to sleep or
-> > back to work.
->   Well, what I imagined we could do is:
-> Have a per-bdi variable 'pages_written' - that would reflect the amount of
-> pages written to the bdi since boot (OK, we'd have to handle overflows but
-> that's doable).
-> 
-> There will be a per-bdi variable 'pages_waited'. When a thread should sleep
-> in balance_dirty_pages() because we are over limits, it kicks writeback thread
-> and does:
->   to_wait =  max(pages_waited, pages_written) + sync_dirty_pages() (or
-> whatever number we decide)
->   pages_waited = to_wait
->   sleep until pages_written reaches to_wait or we drop below dirty limits.
-> 
-> That will make sure each thread will sleep until writeback threads have done
-> their duty for the writing thread.
-> 
-> If we make sure sleeping threads are properly ordered on the wait queue,
-> we could always wakeup just the first one and thus avoid the herding
-> effect. When we drop below dirty limits, we would just wakeup the whole
-> waitqueue.
-> 
-> Does this sound reasonable?
+This is a multi-part message in MIME format.
+--------------020809080507020903050607
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Yup! I have a similar idea: for each chunk the kernel writeback thread
-synced, it 'honours' so many pages of quota to some waiting/sleeping
-dirtier task to consume (so that it can continue dirty so many pages).
+Greg KH wrote:
+ >Yes, this was just reported :)
+ >
+ >Do you have a proposed fix that is also upstream?
 
-This makes it possible to control the relative/absolute writeback
-bandwidth for each dirtier tasks. Something like IO controller.
+Revert the incomplete version of "ocfs2: Initialize the..." patch which 
+is in -stable now and apply this one instead.
 
-Thanks,
-Fengguang
+Jayson R. King
 
-> > The only problem would be the mass wakeups when lots of tasks are
-> > blocked on dirty, but I'm guessing there's no way around that anyway,
-> > and its better to have a limited number of writers than have everybody
-> > write something, which would result in massive write fragmentation.
-> 
-> 								Honza
-> -- 
-> Jan Kara <jack@suse.cz>
-> SUSE Labs, CR
+(sorry if I am dropping anyone from CC. I am not subscribed to LKML)
+
+
+
+--------------020809080507020903050607
+Content-Type: text/plain;
+ name="aops-new.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="aops-new.patch"
+
+From: Sunil Mushran <sunil.mushran@oracle.com>
+
+commit e7432675f8ca868a4af365759a8d4c3779a3d922 upstream.
+
+In a non-sparse extend, we correctly allocate (and zero) the clusters between
+the old_i_size and pos, but we don't zero the portions of the cluster we're
+writing to outside of pos<->len.
+
+It handles clustersize > pagesize and blocksize < pagesize.
+
+[Cleaned up by Joel Becker.]
+
+Signed-off-by: Sunil Mushran <sunil.mushran@oracle.com>
+Signed-off-by: Joel Becker <joel.becker@oracle.com>
+
+---
+ fs/ocfs2/aops.c |   66 +++++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 47 insertions(+), 19 deletions(-)
+
+--- a/fs/ocfs2/aops.c
++++ b/fs/ocfs2/aops.c
+@@ -908,18 +908,17 @@ struct ocfs2_write_cluster_desc {
+ 	 */
+ 	unsigned	c_new;
+ 	unsigned	c_unwritten;
++	unsigned	c_needs_zero;
+ };
+ 
+-static inline int ocfs2_should_zero_cluster(struct ocfs2_write_cluster_desc *d)
+-{
+-	return d->c_new || d->c_unwritten;
+-}
+-
+ struct ocfs2_write_ctxt {
+ 	/* Logical cluster position / len of write */
+ 	u32				w_cpos;
+ 	u32				w_clen;
+ 
++	/* First cluster allocated in a nonsparse extend */
++	u32				w_first_new_cpos;
++
+ 	struct ocfs2_write_cluster_desc	w_desc[OCFS2_MAX_CLUSTERS_PER_PAGE];
+ 
+ 	/*
+@@ -997,6 +996,7 @@ static int ocfs2_alloc_write_ctxt(struct
+ 		return -ENOMEM;
+ 
+ 	wc->w_cpos = pos >> osb->s_clustersize_bits;
++	wc->w_first_new_cpos = UINT_MAX;
+ 	cend = (pos + len - 1) >> osb->s_clustersize_bits;
+ 	wc->w_clen = cend - wc->w_cpos + 1;
+ 	get_bh(di_bh);
+@@ -1234,19 +1234,17 @@ out:
+  */
+ static int ocfs2_write_cluster(struct address_space *mapping,
+ 			       u32 phys, unsigned int unwritten,
++			       unsigned int should_zero,
+ 			       struct ocfs2_alloc_context *data_ac,
+ 			       struct ocfs2_alloc_context *meta_ac,
+ 			       struct ocfs2_write_ctxt *wc, u32 cpos,
+ 			       loff_t user_pos, unsigned user_len)
+ {
+-	int ret, i, new, should_zero = 0;
++	int ret, i, new;
+ 	u64 v_blkno, p_blkno;
+ 	struct inode *inode = mapping->host;
+ 
+ 	new = phys == 0 ? 1 : 0;
+-	if (new || unwritten)
+-		should_zero = 1;
+-
+ 	if (new) {
+ 		u32 tmp_pos;
+ 
+@@ -1356,7 +1354,9 @@ static int ocfs2_write_cluster_by_desc(s
+ 			local_len = osb->s_clustersize - cluster_off;
+ 
+ 		ret = ocfs2_write_cluster(mapping, desc->c_phys,
+-					  desc->c_unwritten, data_ac, meta_ac,
++					  desc->c_unwritten,
++					  desc->c_needs_zero,
++					  data_ac, meta_ac,
+ 					  wc, desc->c_cpos, pos, local_len);
+ 		if (ret) {
+ 			mlog_errno(ret);
+@@ -1406,14 +1406,14 @@ static void ocfs2_set_target_boundaries(
+ 		 * newly allocated cluster.
+ 		 */
+ 		desc = &wc->w_desc[0];
+-		if (ocfs2_should_zero_cluster(desc))
++		if (desc->c_needs_zero)
+ 			ocfs2_figure_cluster_boundaries(osb,
+ 							desc->c_cpos,
+ 							&wc->w_target_from,
+ 							NULL);
+ 
+ 		desc = &wc->w_desc[wc->w_clen - 1];
+-		if (ocfs2_should_zero_cluster(desc))
++		if (desc->c_needs_zero)
+ 			ocfs2_figure_cluster_boundaries(osb,
+ 							desc->c_cpos,
+ 							NULL,
+@@ -1481,13 +1481,28 @@ static int ocfs2_populate_write_desc(str
+ 			phys++;
+ 		}
+ 
++		/*
++		 * If w_first_new_cpos is < UINT_MAX, we have a non-sparse
++		 * file that got extended.  w_first_new_cpos tells us
++		 * where the newly allocated clusters are so we can
++		 * zero them.
++		 */
++		if (desc->c_cpos >= wc->w_first_new_cpos) {
++			BUG_ON(phys == 0);
++			desc->c_needs_zero = 1;
++		}
++
+ 		desc->c_phys = phys;
+ 		if (phys == 0) {
+ 			desc->c_new = 1;
++			desc->c_needs_zero = 1;
+ 			*clusters_to_alloc = *clusters_to_alloc + 1;
+ 		}
+-		if (ext_flags & OCFS2_EXT_UNWRITTEN)
++
++		if (ext_flags & OCFS2_EXT_UNWRITTEN) {
+ 			desc->c_unwritten = 1;
++			desc->c_needs_zero = 1;
++		}
+ 
+ 		num_clusters--;
+ 	}
+@@ -1644,10 +1659,13 @@ static int ocfs2_expand_nonsparse_inode(
+ 	if (newsize <= i_size_read(inode))
+ 		return 0;
+ 
+-	ret = ocfs2_extend_no_holes(inode, newsize, newsize - len);
++	ret = ocfs2_extend_no_holes(inode, newsize, pos);
+ 	if (ret)
+ 		mlog_errno(ret);
+ 
++	wc->w_first_new_cpos =
++		ocfs2_clusters_for_bytes(inode->i_sb, i_size_read(inode));
++
+ 	return ret;
+ }
+ 
+@@ -1656,7 +1674,7 @@ int ocfs2_write_begin_nolock(struct addr
+ 			     struct page **pagep, void **fsdata,
+ 			     struct buffer_head *di_bh, struct page *mmap_page)
+ {
+-	int ret, credits = OCFS2_INODE_UPDATE_CREDITS;
++	int ret, cluster_of_pages, credits = OCFS2_INODE_UPDATE_CREDITS;
+ 	unsigned int clusters_to_alloc, extents_to_split;
+ 	struct ocfs2_write_ctxt *wc;
+ 	struct inode *inode = mapping->host;
+@@ -1724,8 +1742,19 @@ int ocfs2_write_begin_nolock(struct addr
+ 
+ 	}
+ 
+-	ocfs2_set_target_boundaries(osb, wc, pos, len,
+-				    clusters_to_alloc + extents_to_split);
++	/*
++	 * We have to zero sparse allocated clusters, unwritten extent clusters,
++	 * and non-sparse clusters we just extended.  For non-sparse writes,
++	 * we know zeros will only be needed in the first and/or last cluster.
++	 */
++	if (clusters_to_alloc || extents_to_split ||
++	    wc->w_desc[0].c_needs_zero ||
++	    wc->w_desc[wc->w_clen - 1].c_needs_zero)
++		cluster_of_pages = 1;
++	else
++		cluster_of_pages = 0;
++
++	ocfs2_set_target_boundaries(osb, wc, pos, len, cluster_of_pages);
+ 
+ 	handle = ocfs2_start_trans(osb, credits);
+ 	if (IS_ERR(handle)) {
+@@ -1753,8 +1782,7 @@ int ocfs2_write_begin_nolock(struct addr
+ 	 * extent.
+ 	 */
+ 	ret = ocfs2_grab_pages_for_write(mapping, wc, wc->w_cpos, pos,
+-					 clusters_to_alloc + extents_to_split,
+-					 mmap_page);
++					 cluster_of_pages, mmap_page);
+ 	if (ret) {
+ 		mlog_errno(ret);
+ 		goto out_commit;
+
+--------------020809080507020903050607--
