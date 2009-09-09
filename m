@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752643AbZIIDkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZIIDlY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752643AbZIIDkR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 Sep 2009 23:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751502AbZIIDkQ
+	id S1752873AbZIIDlY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 Sep 2009 23:41:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZIIDlX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 Sep 2009 23:40:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:13569 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751445AbZIIDkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 Sep 2009 23:40:16 -0400
-Message-ID: <4AA72363.6000904@redhat.com>
-Date: Tue, 08 Sep 2009 23:39:15 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Tue, 8 Sep 2009 23:41:23 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:25761 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751502AbZIIDlW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 Sep 2009 23:41:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Cka0oJzC0sNOTtfRX564QZnoAhCPMF6MFdcw5qSIZCZY8+131NyNHlP++K41lyDqa
+	ZQ6yczGDAuXfMst6Vf5/Q==
+Date: Tue, 8 Sep 2009 20:41:16 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 3/4 -mm] flex_array: poison free elements
+In-Reply-To: <4AA72175.5000108@cn.fujitsu.com>
+Message-ID: <alpine.DEB.1.00.0909082034470.8334@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0908211619270.28611@chino.kir.corp.google.com> <alpine.DEB.2.00.0908211620580.28611@chino.kir.corp.google.com> <1251129384.22398.7166.camel@nimitz> <alpine.DEB.2.00.0908241330361.5574@chino.kir.corp.google.com>
+ <1251150156.22398.8289.camel@nimitz> <alpine.DEB.2.00.0908241540480.12448@chino.kir.corp.google.com> <alpine.DEB.1.00.0909081511590.26432@chino.kir.corp.google.com> <4AA70D4F.3040503@cn.fujitsu.com> <alpine.DEB.1.00.0909081959030.5084@chino.kir.corp.google.com>
+ <4AA72175.5000108@cn.fujitsu.com>
+User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH 24/23] io-controller: Don't leave a queue active when
- a	disk is idle
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <20090908222821.GB3558@redhat.com>
-In-Reply-To: <20090908222821.GB3558@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> o It is possible that when there is only a single queue in the system, it
->   remains unexpired for a long time (because there is no IO activity on the
->   disk). So when next request comes in after a long time, it might make
->   scheduler think that all this while queue used the disk and it will assign
->   a high vdisktime to the queue. Hence make sure queue is expired once all
->   the requests have completed from the queue.
-> 
-> o Also avoid unnecessarily expiring a queue when it has got one request
->   dispatched to the queue and waiting for it to finish and it does not have
->   more requests queued to dispatch.
-> 
-> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+On Wed, 9 Sep 2009, Li Zefan wrote:
 
-Acked-by: Rik van Riel <riel@redhat.com>
+> I was not talking about ftrace_ret_stack, I was talking about
+> struct ftrace_page and struct ftrace_profile_page. ;)
+> 
 
--- 
-All rights reversed.
+Gack, ftrace_page would probably be better off simply using the flex list 
+implementation I suggested which constructs a list from page->lru since it 
+doesn't appear to require indexing into the array, it simply requires an 
+iteration in all cases (or am I wrong?).  Flex lists could easily be made 
+to support seqfiles.
