@@ -1,47 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZIITB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752724AbZIIS60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbZIITB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 15:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752488AbZIITBZ
+	id S1752724AbZIIS60 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 14:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZIIS60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 15:01:25 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:32923 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752321AbZIITBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 15:01:25 -0400
-Message-ID: <4AA7FB13.9060603@nortel.com>
-Date: Wed, 09 Sep 2009 12:59:31 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Theodore Tso <tytso@mit.edu>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl, efault@gmx.de,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:sched/core] sched: Turn off child_runs_first
-References: <1252486344.28645.18.camel@marge.simson.net> <tip-2bba22c50b06abe9fd0d23933b1e64d35b419262@git.kernel.org> <20090909175724.GY22901@mit.edu> <20090909180856.GA7323@elte.hu>
-In-Reply-To: <20090909180856.GA7323@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 09 Sep 2009 19:00:18.0627 (UTC) FILETIME=[C6047930:01CA317F]
+	Wed, 9 Sep 2009 14:58:26 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:48714 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752261AbZIIS6Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 14:58:25 -0400
+Date: Wed, 9 Sep 2009 21:01:42 +0200
+From: Fabio Checconi <fchecconi@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Rik van Riel <riel@redhat.com>, Ryo Tsuruta <ryov@valinux.co.jp>,
+       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
+       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090909190142.GI17468@gandalf.sssup.it>
+References: <20090904231129.GA3689@redhat.com> <20090907.200222.193693062.ryov@valinux.co.jp> <4AA51065.6050000@redhat.com> <20090908.120119.71095369.ryov@valinux.co.jp> <4AA6AF58.3050501@redhat.com> <20090909000900.GK17468@gandalf.sssup.it> <20090909020620.GC3594@redhat.com> <20090909154126.GG17468@gandalf.sssup.it> <20090909173003.GE8256@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090909173003.GE8256@redhat.com>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2009 12:08 PM, Ingo Molnar wrote:
+> From: Vivek Goyal <vgoyal@redhat.com>
+> Date: Wed, Sep 09, 2009 01:30:03PM -0400
+>
+> On Wed, Sep 09, 2009 at 05:41:26PM +0200, Fabio Checconi wrote:
+> > > From: Vivek Goyal <vgoyal@redhat.com>
+> > > Date: Tue, Sep 08, 2009 10:06:20PM -0400
+> > >
+...
+> > This is good, however tuning will not be an easy task (at least, in my
+> > experience with BFQ it has been a problem): while for throughput usually
+> > there are tradeoffs, as soon as a queue/group idles and then timeouts,
+> > from the fairness perspective the results soon become almost random
+> > (i.e., depending on the rate of successful anticipations, but in the
+> > common case they are unpredictable)...
 > 
-> * Theodore Tso <tytso@mit.edu> wrote:
-
->> Wasn't one of the reasons why we historically did child_runs_first 
->> was so that for fork/exit workloads, the child has a chance to 
->> exec the new process?  If the parent runs first, then more pages 
->> will probably need to be COW'ed.
+> I am lost in last few lines. I guess you are suggesting that static tuning
+> is hard and dynamically adjusting idling has limitations that it might not
+> be accurate all the time?
 > 
-> That kind of workload should be using vfork() anyway, and be even 
-> faster because it can avoid the fork overhead, right?
 
-According to my man page, POSIX.1-2008 removes the specification  of
-vfork().
+Yes, this was the problem, at least for me.  As soon as there were
+unsuccessful anticipations there was no graceful degradation of
+fairness, and bandwidth distribution became almost random.  In
+this situation all the complexity of CFQ/BFQ/io-controller seems
+overkill; NCQ+SSD is or will be quite a common usage scenario
+triggering it.
 
-Chris
+
+> I will explain how things are working in current set of io scheduler
+> patches.
+> 
+> Currently on top of queue idling, I have implemented group idling also.
+> Queue idling is dynamic and io scheduler like CFQ keeps track of
+> traffic pattern on the queue and disables/enables idling dynamically. So
+> in this case fairness depends on rate of successful anticipations by the
+> io scheduler.
+> 
+> Group idling currently is static in nature and purely implemented in
+> elevator fair queuing layer. Group idling kicks in only when a group is
+> empty at the time of queue expiration and underlying ioscheduler has not
+> chosen to enable idling on the queue. This provides us the gurantee that
+> group will keep on getting its fair share of disk as long as a new request
+> comes in the group with-in that idling period.
+> 
+> Implementing group idling ensures that it does not bog down the io scheduler
+> and with-in group queue switching can still be very fast (no idling on many of
+> the queues by cfq).
+> 
+> Now in case of SSD if group idling is really hurting somebody, I would
+> expect him to set it to either 1 or 0. You might get better throughput
+> but then expect fairness for the group only if the group is continuously
+> backlogged. (Something what dm-ioband guys seem to be doing).
+> 
+> So do you think that adjusting this "group_idling" tunable is too
+> complicated and there are better ways to handle it in case of SSD+NCQ?
+> 
+
+Unfortunately I am not aware of any reasonable and working method to
+properly handle this issue; anyway adjusting the tunable is something
+that needs a lot of care.
