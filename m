@@ -1,87 +1,310 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752902AbZIIJTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752105AbZIIJQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752902AbZIIJTS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 05:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZIIJTR
+	id S1752105AbZIIJQy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 05:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751787AbZIIJQy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 05:19:17 -0400
-Received: from mail-yw0-f173.google.com ([209.85.211.173]:41812 "EHLO
-	mail-yw0-f173.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbZIIJTR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 05:19:17 -0400
-Message-ID: <4AA771C2.2080602@petalogix.com>
-Date: Wed, 09 Sep 2009 11:13:38 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Robin Getz <rgetz@blackfin.uclinux.org>
-CC: Arnd Bergmann <arnd@arndb.de>, Mike Frysinger <vapier.adi@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: asm-generic update candidates?
-References: <200909031729.52538.rgetz@blackfin.uclinux.org> <200909041539.28384.rgetz@blackfin.uclinux.org> <200909081455.45576.arnd@arndb.de> <200909081258.50345.rgetz@blackfin.uclinux.org>
-In-Reply-To: <200909081258.50345.rgetz@blackfin.uclinux.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 05:16:54 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:60718 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751692AbZIIJQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 05:16:52 -0400
+Date: Wed, 9 Sep 2009 19:16:45 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for September 9
+Message-Id: <20090909191645.dca04f7c.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__9_Sep_2009_19_16_45_+1000_vMlQ+baeB8NEWzHm"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robin Getz wrote:
-> On Tue 8 Sep 2009 08:55, Arnd Bergmann pondered:
->   
->> On Friday 04 September 2009, Robin Getz wrote:
->>     
->>> I also noticed in Linus's latest (last commit 
->>> 37d0892c5a94e208cf863e3b7bac014edee4346d):
->>>
->>> cat arch/microblaze/include/asm/ipc.h
->>> #include <asm-generic/ipc.h>
->>>
->>> but: ls include/asm-generic/ipc.h
->>> ls: cannot access include/asm-generic/ipc.h: No such file or directory
->>>       
->> Adrian Bunk killed that file in asm/ back in 2007, he probably crossed
->> patches with the microblaze architecture.
->>     
->
-> Ok - that got me doing a quick look:
->
-> asm-generic/compat_signal.h doesn't exist?
-> arch/parisc/include/asm/compat_signal.h:#include <asm-generic/compat_signal.h>
->
-> asm-generic/cpumask.h doesn't exist?
-> arch/frv/include/asm/cpumask.h:#include <asm-generic/cpumask.h>
-> arch/xtensa/include/asm/cpumask.h:#include <asm-generic/cpumask.h>
->
-> asm-generic/ipc.h doesn't exist?
-> arch/microblaze/include/asm/ipc.h:#include <asm-generic/ipc.h>
->   
-Thanks for pointing. You can remove it from include/asm/ipc.h or I can
-do it instead of you - just let me know.
+--Signature=_Wed__9_Sep_2009_19_16_45_+1000_vMlQ+baeB8NEWzHm
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Regards,
-Michal
+Hi all,
 
-> arch/mn10300/include/asm/ipc.h:#include <asm-generic/ipc.h>
->
-> asm-generic/rmap.h doesn't exist?
-> arch/xtensa/include/asm/rmap.h:#include <asm-generic/rmap.h>
->
->
-> Maybe checkpatch (or something else?) needs something to make sure all 
-> referenced files are actually in the tree or in the patch?
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
+Changes since 20090908:
 
+The acpi tree still has a build failure so I used the version from
+next-20090831.
 
--- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+The async_tx tree lost its build failure.
 
+The wireless tree lost its build failure.
+
+The rr tree gained a build failure so I used the version from
+next-20090908.
+
+The drm tree lost 5 conflicts.
+
+The security-testing tree still has a build failure (affecting several
+architectures) so I used the version from 20090902.
+
+The tip tree lost a conflict.
+
+The tty tree lost a conflict.
+
+The scsi-post-merge tree still has a build failure so I used the version
+from 20090904.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 140 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging thumb-2/thumb-2
+CONFLICT (add/add): Merge conflict in arch/arm/include/asm/unified.h
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+CONFLICT (content): Merge conflict in kernel/gcov/Kconfig
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+CONFLICT (content): Merge conflict in net/sunrpc/cache.c
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_lrw.c
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/pci_64.c
+Applying: pci: merge fixup for fundamental reset conflict with powerpc tree
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in drivers/media/video/sh_mobile_ceu_cam=
+era.c
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+CONFLICT (content): Merge conflict in scripts/extract-ikconfig
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+$ git reset --hard HEAD^
+Merging refs/next/20090831/acpi
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/mtdcore.c
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+$ git reset --hard HEAD^
+Merging refs/next/20090908/rr
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+Merging mmc/next
+Merging input/next
+CONFLICT (content): Merge conflict in drivers/base/platform.c
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in fs/ubifs/super.c
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+CONFLICT (content): Merge conflict in drivers/power/wm97xx_battery.c
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in firmware/Makefile
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/regulator/Kconfig
+Merging security-testing/next
+CONFLICT (content): Merge conflict in arch/arm/kernel/signal.c
+CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
+CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
+CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
+$ git reset --hard HEAD^
+Merging refs/next/20090902/security-testing
+Applying: security: fix merge for tun_struct changes
+Merging lblnet/master
+CONFLICT (content): Merge conflict in drivers/net/tun.c
+Merging agp/agp-next
+CONFLICT (content): Merge conflict in drivers/char/agp/uninorth-agp.c
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+Applying: tip: fix merge for cupmask update
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in kernel/sched.c
+CONFLICT (content): Merge conflict in mm/percpu.c
+Merging sfi/sfi-test
+CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in drivers/mtd/mtdcore.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/at76_usb/at76_usb.c deleted in qu=
+ilt/staging and modified in HEAD. Version HEAD of drivers/staging/at76_usb/=
+at76_usb.c left in tree.
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+$ git rm -f drivers/staging/at76_usb/at76_usb.c
+Merging scsi-post-merge/master
+$ git reset --hard HEAD^
+Merging refs/next/20090904/scsi-post-merge
+
+--Signature=_Wed__9_Sep_2009_19_16_45_+1000_vMlQ+baeB8NEWzHm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqncn0ACgkQjjKRsyhoI8y3jACdHYvg9e9pdpeDRi14VK646Vyb
+i48AoKyzrTwQyZ+YBTvUXv9RtpIQSM5F
+=t+p8
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__9_Sep_2009_19_16_45_+1000_vMlQ+baeB8NEWzHm--
