@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753710AbZIIWmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZIIXyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753710AbZIIWmR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 18:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbZIIWmQ
+	id S1754729AbZIIXyw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 19:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZIIXyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 18:42:16 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:57149 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751122AbZIIWmQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 18:42:16 -0400
-Date: Wed, 9 Sep 2009 18:42:06 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Michal Simek <monstr@monstr.eu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [PATCH] microblaze: Cleanup linker script using new linker script
- macros.
-In-Reply-To: <4AA7DFF7.6010001@monstr.eu>
-Message-ID: <alpine.DEB.1.10.0909091307590.15693@dr-wily.mit.edu>
-References: <1252293010-13038-1-git-send-email-tabbott@ksplice.com> <4AA7DFF7.6010001@monstr.eu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Wed, 9 Sep 2009 19:54:51 -0400
+Received: from kroah.org ([198.145.64.141]:58733 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754561AbZIIXyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 19:54:50 -0400
+Date: Wed, 9 Sep 2009 15:44:55 -0700
+From: Greg KH <greg@kroah.com>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
+Subject: Re: [Stable-review] [patch 00/71] 2.6.30.6-stable review
+Message-ID: <20090909224455.GB2077@kroah.com>
+References: <20090905001824.GA18171@kroah.com>
+ <43e72e890909081223w3e50eee6v438411462a7ed534@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <43e72e890909081223w3e50eee6v438411462a7ed534@mail.gmail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009, Michal Simek wrote:
+On Tue, Sep 08, 2009 at 12:23:29PM -0700, Luis R. Rodriguez wrote:
+> On Fri, Sep 4, 2009 at 5:18 PM, Greg KH<gregkh@suse.de> wrote:
+> > This is the start of the stable review cycle for the 2.6.30.6 release.
+> > There are 71 patches in this series, all will be posted as a response to
+> > this one.  If anyone has any issues with these being applied, please let
+> > us know.  If anyone is a maintainer of the proper subsystem, and wants
+> > to add a Signed-off-by: line to the patch, please respond with it.
+> >
+> > These patches are sent out with a number of different people on the Cc:
+> > line.  If you wish to be a reviewer, please email stable@kernel.org to
+> > add your name to the list.
+> 
+> I think this automated message needs some updated to reflect the fact
+> that a mailman list is used now, and redirect people to help
+> themselves to help us by subscribing to:
+> 
+> http://linux.kernel.org/mailman/listinfo/stable-review
+> 
+> > If you want to be off the reviewer list,
+> > also email us.
+> 
+> This seems to not be required any more.
 
-> If you want to add this patch through microblaze tree, please let me know.
+True.  Care to send a patch against the stable-queue where this message
+is:
+	http://git.kernel.org/?p=linux/kernel/git/chrisw/stable-queue.git;a=summary
 
-I think it would be best to add it via the microblaze tree (in general I 
-have been adding these cleanup patches via the architecture trees when 
-possible).
+thanks,
 
-	-Tim Abbott
+greg k-h
