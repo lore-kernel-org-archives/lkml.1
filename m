@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZIIRGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZIIRI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753490AbZIIRGw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZIIRGv
+	id S1753446AbZIIRI5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZIIRI4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:06:51 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38429 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752613AbZIIRGv (ORCPT
+	Wed, 9 Sep 2009 13:08:56 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:54766 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752908AbZIIRIz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:06:51 -0400
-Subject: Re: [tip:sched/core] sched: Keep kthreads at default priority
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090909172916.949DA526EC9@mailhub.coreip.homeip.net>
-References: <1252486344.28645.18.camel@marge.simson.net>
-	 <tip-61cbe54d9479ad98283b2dda686deae4c34b2d59@git.kernel.org>
-	 <20090909172916.949DA526EC9@mailhub.coreip.homeip.net>
-Content-Type: text/plain
-Date: Wed, 09 Sep 2009 19:06:41 +0200
-Message-Id: <1252516001.22918.6.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 13:08:55 -0400
+Date: Wed, 9 Sep 2009 13:07:52 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Jeff Layton <jlayton@redhat.com>
+cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
+In-Reply-To: <20090909125352.1c7b57d2@tlielax.poochiereds.net>
+Message-ID: <alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
+References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1> <20090905071052.50501826@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1> <20090909125352.1c7b57d2@tlielax.poochiereds.net>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 09:55 -0700, Dmitry Torokhov wrote:
-> On Wed, Sep 09, 2009 at 03:37:34PM +0000, tip-bot for Mike Galbraith wrote:
-> > 
-> > diff --git a/kernel/kthread.c b/kernel/kthread.c
-> > index eb8751a..5fe7099 100644
-> > --- a/kernel/kthread.c
-> > +++ b/kernel/kthread.c
-> > @@ -16,8 +16,6 @@
-> >  #include <linux/mutex.h>
-> >  #include <trace/events/sched.h>
-> >  
-> > -#define KTHREAD_NICE_LEVEL (-5)
-> > -
-> 
-> Why don't we just redefine it to 0? We may find out later that we'd
-> still prefer to have kernel threads have boost.
+On Wed, 9 Sep 2009, Jeff Layton wrote:
 
-Seems sensible, also the traditional reasoning behind this nice level is
-that kernel threads do work on behalf of multiple tasks. Its a kind of
-prio ceiling thing.
+> My suspicion would be that the server needs to perform an oplock break
+> to another client before it can send the response. The only way I know
+> how to tell that is to sniff all SMB traffic on the server and watch
+> for oplock break calls to other clients when these stalls occur.
+
+That could be tested by switching them off right? If I do
+
+echo 0 >/proc/fs/cifs/OplockEnabled
+
+and then remount the volume it should switch off oplocks?
+
+This has no effect on the stalls.
 
