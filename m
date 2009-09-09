@@ -1,89 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752614AbZIIICu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752667AbZIIIDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752614AbZIIICu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 04:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752451AbZIIICt
+	id S1752667AbZIIIDz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 04:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752496AbZIIIDx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 04:02:49 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:47587 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752404AbZIIICs (ORCPT
+	Wed, 9 Sep 2009 04:03:53 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:33851 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752431AbZIIIDt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 04:02:48 -0400
-Date: Wed, 9 Sep 2009 10:02:47 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Michael Abbott <michael@araneidae.co.uk>,
-       Jan Engelhardt <jengelh@medozas.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Johan van Baarlen <JF@vanbaarlen.demon.nl>
-Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
-Message-ID: <20090909100247.2acaceff@skybase>
-In-Reply-To: <20090908225858.04d56dce.akpm@linux-foundation.org>
-References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr>
-	<Pine.LNX.4.64.0908141315310.1670@venus.araneidae.co.uk>
-	<20090908225858.04d56dce.akpm@linux-foundation.org>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 Sep 2009 04:03:49 -0400
+Message-ID: <4AA76162.2000309@nokia.com>
+Date: Wed, 09 Sep 2009 11:03:46 +0300
+From: Adrian Hunter <adrian.hunter@nokia.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Nick Piggin <npiggin@suse.de>
+CC: "chris.mason@oracle.com" <chris.mason@oracle.com>,
+       "david@fromorbit.com" <david@fromorbit.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Bityutskiy Artem (Nokia-D/Helsinki)" <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>
+Subject: Re: [RFC][PATCH] mm: write_cache_pages be more sequential
+References: <4AA513AA.3010206@nokia.com> <20090907141548.GA28054@wotan.suse.de> <4AA518B3.40401@nokia.com> <20090907144514.GC28054@wotan.suse.de>
+In-Reply-To: <20090907144514.GC28054@wotan.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 09 Sep 2009 08:03:21.0829 (UTC) FILETIME=[FFC66950:01CA3123]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 Sep 2009 22:58:58 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> On Fri, 14 Aug 2009 13:18:08 +0100 (BST) Michael Abbott <michael@araneidae.co.uk> wrote:
+ext Nick Piggin wrote:
+> On Mon, Sep 07, 2009 at 05:29:07PM +0300, Adrian Hunter wrote:
+>> Nick Piggin wrote:
+>>> On Mon, Sep 07, 2009 at 05:07:38PM +0300, Adrian Hunter wrote:
+>>>> >From 6f3bb7c26936c45d810048f59c369e8d5a5623fc Mon Sep 17 00:00:00 2001
+>>>> From: Adrian Hunter <adrian.hunter@nokia.com>
+>>>> Date: Mon, 7 Sep 2009 10:49:11 +0300
+>>>> Subject: [PATCH] mm: write_cache_pages be more sequential
+>>>>
+>>>> If a file is written to sequentially, then writeback
+>>>> should write the pages sequentially also.  However,
+>>>> that does not always happen.  For example:
+>>>>
+>>>> 1) user writes pages 0, 1 and 2 but 2 is incomplete
+>>>> 2) write_cache_pages writes pages 0, 1 and 2 and sets
+>>>> writeback_index to 3
+>>>> 3) user finishes writing page 2 and writes pages 3 and 4
+>>>> 4) write_cache_pages writes pages 3 and 4, and then cycles
+>>>> back and writes page 2 again.
+>>>>
+>>>> So the pages are written out in the order 0, 1, 2, 3 ,4 ,2
+>>>> instead of 0, 1, 2, 2, 3, 4.
+>>> Why does page 2 get set dirty if the write was incomplete?
+>> I meant that only part of the page was written. e.g.
+>> write 10240 bytes, wait for writeback, then write another
+>> 10240 bytes.  The pages will be written out in the order
+>> 0, 1, 2, 3, 4, 2
 > 
-> > Reviving this:
-> > 
-> > On Sat, 9 May 2009, Jan Engelhardt wrote:
-> > > starting from v2.6.28-4930-g79741dd lasting thru at least v2.6.29.1,
-> > > the second field of /proc/uptime always shows 0.00. This happens for
-> > > both the typical i386 (my case) and on an ARM (according to Michael,
-> > > cc'ed).
-> > > 
-> > > >From the commit log of 79741dd:
-> > > 
-> > > 	"""The cpu time spent by the idle process actually doing
-> > > 	something is currently accounted as idle time. This is plain
-> > > 	wrong, the architectures that support VIRT_CPU_ACCOUNTING=y
-> > > 	can do better: distinguish between the time spent doing
-> > > 	nothing and the time spent by idle doing work. The first is
-> > > 	accounted with account_idle_time and the second with
-> > > 	account_system_time."""
-> > > 
-> > > Citing Michael from our irc conversation:
-> > > 
-> > > 	"""the writer[committer] [says] that [the] idle process time
-> > > 	isn't really idle time ... but that's all that /proc/uptime
-> > > 	looks at. I guess fs/proc/uptime.c needs to catch up."""
-> > > 
-> > > So, were the updates to uptime.c missed, or do we now live on with
-> > > /proc/uptime constantly having 0?
-> > 
-> > My previous patch seems to have run into the sand.  It every so nearly got 
-> > pulled into mainstream as far as I can tell, but didn't seem to make it; 
-> > no idea what happened.
-> > 
-> > So here we go again:
-> > 
+> OK...
 > 
-> Imagine my surprise to find a version of this patch lurking in Martin's
-> tree since June 22.  It's a regression fix!
 > 
-> Johan, does this patch help with the regression you reported in
-> http://bugzilla.kernel.org/show_bug.cgi?id=14131 ?
+>>>> This situation was noticed on UBIFS because it writes
+>>>> directly from writepage.  Hence if there is an unexpected
+>>>> power-loss, a file will end up with a hole even though
+>>>> the file was written sequentially by the user.
+>>>>
+>>>> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+>>>> ---
+>>>> mm/page-writeback.c |    2 ++
+>>>> 1 files changed, 2 insertions(+), 0 deletions(-)
+>>>>
+>>>> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+>>>> index 81627eb..7410b7a 100644
+>>>> --- a/mm/page-writeback.c
+>>>> +++ b/mm/page-writeback.c
+>>>> @@ -960,6 +960,8 @@ int write_cache_pages(struct address_space *mapping,
+>>>> 	pagevec_init(&pvec, 0);
+>>>> 	if (wbc->range_cyclic) {
+>>>> 		writeback_index = mapping->writeback_index; /* prev offset */
+>>>> +		if (writeback_index)
+>>>> +			writeback_index -= 1;
+>>>> 		index = writeback_index;
+>>>> 		if (index == 0)
+>>>> 			cycled = 1;
+>>> Doesn't this just break range_cyclic? range_cyclic is supposed to
+>>> work across calls to write_cache_pages, and it's there I guess so
+>>> background writeout will be able to eventually get around to writing
+>>> all pages relatively fairly in the presence of redirtying operations.
+>> I do not immediately see how it breaks range_cyclic.  Can you give an
+>> example?
+> 
+> Oh, I must be dyslexic, I read it as writeback_index = -1; :P
+> But I think it can still cause some subtle problems with error
+> cases.
+> 
+> I guess you could just make the done_index assignment more logical
+> and make it page->index. Then add a comment when assigning to
+> writeback_index that you want to start up again at the previously
+> written page to help this case.
 
-I did send a Please-Pull for the cputime branch back in May. Seems like it
-never has been pulled. I don't know why, so perhaps I should just retry. 
+That means changing slightly the meaning of writeback_index which will
+mean more analysis to avoid unexpected side-effects.
 
+Speaking of unexpected side-effects, I glanced at ext4_da_writepages()
+which contains the line:
 
--- 
-blue skies,
-   Martin.
+		wbc->nr_to_write -= mpd.pages_written;
 
-"Reality continues to ruin my life." - Calvin.
+which should probably be:
+
+		if (mpd.pages_written >= wbc->nr_to_write)
+			wbc->nr_to_write = 0;
+		else
+			wbc->nr_to_write -= mpd.pages_written;
+
+now that write_cache_pages() can write more than wbc->nr_to_write
+pages.  What do you think?
+
+> Also, check to ensure the error cases are going to still work correctly.
+> Eg. you might want to increment done_index in the case of error.
+
+Sure.
+
+> I guess it is a reasonable workaround for the problem. It is a bit
+> unsatisfying to special case on a page basis like this, but anyway
+> I don't think there should be a realistic downside in practice.
 
