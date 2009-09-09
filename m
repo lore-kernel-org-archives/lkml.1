@@ -1,111 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751931AbZIIJKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752279AbZIIJK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751931AbZIIJKI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 05:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZIIJKH
+	id S1752279AbZIIJK2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 05:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZIIJK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 05:10:07 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53016 "EHLO kernel.dk"
+	Wed, 9 Sep 2009 05:10:27 -0400
+Received: from bamako.nerim.net ([62.4.17.28]:56506 "EHLO bamako.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751528AbZIIJKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 05:10:06 -0400
-Date: Wed, 9 Sep 2009 11:10:09 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Galbraith <efault@gmx.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090909091009.GR18599@kernel.dk>
-References: <20090907094953.GP18599@kernel.dk> <20090907115750.GW18599@kernel.dk> <20090907141458.GD24507@elte.hu> <20090907173846.GB18599@kernel.dk> <20090907204458.GJ18599@kernel.dk> <20090908091304.GQ18599@kernel.dk> <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252486344.28645.18.camel@marge.simson.net>
+	id S1751979AbZIIJKZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 05:10:25 -0400
+Date: Wed, 9 Sep 2009 11:10:26 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Crane Cai <crane.cai@amd.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-i2c@vger.kernel.org>
+Subject: Re: [PATCH v2] I2C: Add support for new AMD SMBus devices
+Message-ID: <20090909111026.21e85f54@hyperion.delvare>
+In-Reply-To: <20090811014921.GB29858@crane-desktop>
+References: <20090811014921.GB29858@crane-desktop>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09 2009, Mike Galbraith wrote:
-> On Wed, 2009-09-09 at 08:13 +0200, Ingo Molnar wrote:
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Tue, Sep 08 2009, Peter Zijlstra wrote:
-> > > > On Tue, 2009-09-08 at 11:13 +0200, Jens Axboe wrote:
-> > > > > And here's a newer version.
-> > > > 
-> > > > I tinkered a bit with your proglet and finally found the 
-> > > > problem.
-> > > > 
-> > > > You used a single pipe per child, this means the loop in 
-> > > > run_child() would consume what it just wrote out until it got 
-> > > > force preempted by the parent which would also get woken.
-> > > > 
-> > > > This results in the child spinning a while (its full quota) and 
-> > > > only reporting the last timestamp to the parent.
-> > > 
-> > > Oh doh, that's not well thought out. Well it was a quick hack :-) 
-> > > Thanks for the fixup, now it's at least usable to some degree.
-> > 
-> > What kind of latencies does it report on your box?
-> > 
-> > Our vanilla scheduler default latency targets are:
-> > 
-> >   single-core: 20 msecs
-> >     dual-core: 40 msecs
-> >     quad-core: 60 msecs
-> >     opto-core: 80 msecs
-> > 
-> > You can enable CONFIG_SCHED_DEBUG=y and set it directly as well via 
-> > /proc/sys/kernel/sched_latency_ns:
-> > 
-> >    echo 10000000 > /proc/sys/kernel/sched_latency_ns
+[Resending with fixed LKML address.]
+
+Hi Crane,
+
+Sorry for the late reply.
+
+On Tue, 11 Aug 2009 09:49:21 +0800, Crane Cai wrote:
+> AMD newer SMBus device uses the piix4 driver, and device is added by vendor ID
+> and class code. This method will include AMD old SMBus controller in, and need
+> to filter it out.
+
+This is better, however I still have concerns:
+
+* Your device ID comparison is fragile. Are you absolutely certain that
+  you know _all_ the SMBus devices that were released by AMD in the
+  past? If anything, I'd rather have a single comparison on the first
+  device ID that _will_ be supported by the i2c-piix4 driver.
+
+* Are you absolutely certain that AMD will never ever release an
+  incompatible SMBus device in the future? I doubt it. In the past,
+  various vendors have changed their implementations. Intel changed
+  twice (i2c-piix4 -> i2c-i801 -> i2c-isch), AMD once already
+  (i2c-amd756 -> i2c-amd8111), VIA once (i2c-via -> i2c-viapro), nVidia
+  once (i2c-amd756 -> i2c-nforce2), etc. If history repeats itself (and
+  it often does), I wouldn't be surprised to see future AMD SMBus chips
+  not compatible with the i2c-piix4 driver, while with your patch
+  applied, the driver would claim to support them. Binding a driver to
+  an unsupported chip can have unpredictable, potentially bad
+  consequences, and I'd rather have the driver not bind immediately to
+  new supported devices than bind to unsupported ones.
+
+* With your patch, the i2c-piix4 driver would load automatically on
+  systems which do not need it (all old AMD-based PC systems.) While a
+  minor issue, this is still a waste of boot time and memory for these
+  users. I am not aware of any precedent of this.
+
+So, all in all, I'd rather simply add the IDs of new supported devices
+as they are released, rather than implement this broad matching
+mechanism.
+
+If AMD is bored with adding new device IDs to Linux drivers all the
+time (and I certainly am) then the cleanest solution is to simply not
+allocate new device IDs for fully compatible (if not even completely
+identical silicon-wise) devices. For example, AMD could allocate a
+single PCI device ID for their PIIX4-compatible SMBus chips, we name it
+PCI_DEVICE_ID_AMD_SMBUS_PIIX4 for example, and all future compatible
+chips use this device ID. You can use the revision ID field if you want
+to be able to differentiate between the various incarnations.
+
 > 
-> He would also need to lower min_granularity, otherwise, it'd be larger
-> than the whole latency target.
+> Signed-off-by: Crane Cai <crane.cai@amd.com>
+> ---
+>  drivers/i2c/busses/i2c-piix4.c |   17 +++++++++++++++--
+>  1 files changed, 15 insertions(+), 2 deletions(-)
 > 
-> I'm testing right now, and one thing that is definitely a problem is the
-> amount of sleeper fairness we're giving.  A full latency is just too
-> much short term fairness in my testing.  While sleepers are catching up,
-> hogs languish.  That's the biggest issue going on.
-> 
-> I've also been doing some timings of make -j4 (looking at idle time),
-> and find that child_runs_first is mildly detrimental to fork/exec load,
-> as are buddies.
-> 
-> I'm running with the below at the moment.  (the kthread/workqueue thing
-> is just because I don't see any reason for it to exist, so consider it
-> to be a waste of perfectly good math;)
-
-Using latt, it seems better than -rc9. The below are entries logged
-while running make -j128 on a 64 thread box. I did two runs on each, and
-latt is using 8 clients.
-
--rc9
-        Max                23772 usec
-        Avg                 1129 usec
-        Stdev               4328 usec
-        Stdev mean           117 usec
-
-        Max                32709 usec
-        Avg                 1467 usec
-        Stdev               5095 usec
-        Stdev mean           136 usec
-
--rc9 + patch
-
-        Max                11561 usec
-        Avg                 1532 usec
-        Stdev               1994 usec
-        Stdev mean            48 usec
-
-        Max                 9590 usec
-        Avg                 1550 usec
-        Stdev               2051 usec
-        Stdev mean            50 usec
-
-max latency is way down, and much smaller variation as well.
+> diff --git a/drivers/i2c/busses/i2c-piix4.c b/drivers/i2c/busses/i2c-piix4.c
+> index 0249a7d..2539282 100644
+> --- a/drivers/i2c/busses/i2c-piix4.c
+> +++ b/drivers/i2c/busses/i2c-piix4.c
+> @@ -232,6 +232,14 @@ static int __devinit piix4_setup_sb800(struct pci_dev *PIIX4_dev,
+>  	unsigned short smba_idx = 0xcd6;
+>  	u8 smba_en_lo, smba_en_hi, i2ccfg, i2ccfg_offset = 0x10, smb_en = 0x2c;
+>  
+> +	/* Filter AMD old SMBus controller out */
+> +	if (PIIX4_dev->vendor == PCI_VENDOR_ID_AMD &&
+> +	    (PIIX4_dev->device <= PCI_DEVICE_ID_AMD_8111_SMBUS &&
+> +	     PIIX4_dev->device >= PCI_DEVICE_ID_AMD_VIPER_740B)) {
+> +		dev_info(&PIIX4_dev->dev, "Does not support this chip.\n");
+> +		return -ENODEV;
+> +	}
+> +
+>  	/* SB800 SMBus does not support forcing address */
+>  	if (force || force_addr) {
+>  		dev_err(&PIIX4_dev->dev, "SB800 SMBus does not support "
+> @@ -479,6 +487,10 @@ static struct pci_device_id piix4_ids[] = {
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP300_SMBUS) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_SMBUS) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_SBX00_SMBUS) },
+> +	/* AMD Generic, PCI class code and Vendor ID for SMBus */
+> +	{ PCI_DEVICE(PCI_VENDOR_ID_AMD, PCI_ANY_ID),
+> +	  .class = PCI_CLASS_SERIAL_SMBUS << 8,
+> +	  .class_mask = 0xffffff },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
+>  		     PCI_DEVICE_ID_SERVERWORKS_OSB4) },
+>  	{ PCI_DEVICE(PCI_VENDOR_ID_SERVERWORKS,
+> @@ -499,9 +511,10 @@ static int __devinit piix4_probe(struct pci_dev *dev,
+>  {
+>  	int retval;
+>  
+> -	if ((dev->vendor == PCI_VENDOR_ID_ATI) &&
+> +	if (((dev->vendor == PCI_VENDOR_ID_ATI) &&
+>  	    (dev->device == PCI_DEVICE_ID_ATI_SBX00_SMBUS) &&
+> -	    (dev->revision >= 0x40))
+> +	    (dev->revision >= 0x40)) ||
+> +	    dev->vendor == PCI_VENDOR_ID_AMD)
+>  		/* base address location etc changed in SB800 */
+>  		retval = piix4_setup_sb800(dev, id);
+>  	else
 
 
 -- 
-Jens Axboe
-
+Jean Delvare
