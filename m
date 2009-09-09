@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZIIRI5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753795AbZIIRG7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZIIRI5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 13:08:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZIIRI4
+	id S1753795AbZIIRG7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 13:06:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZIIRG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 13:08:56 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:54766 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752908AbZIIRIz (ORCPT
+	Wed, 9 Sep 2009 13:06:58 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49623 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753357AbZIIRGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 13:08:55 -0400
-Date: Wed, 9 Sep 2009 13:07:52 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Jeff Layton <jlayton@redhat.com>
-cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
-In-Reply-To: <20090909125352.1c7b57d2@tlielax.poochiereds.net>
-Message-ID: <alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1> <20090905071052.50501826@tlielax.poochiereds.net> <alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1> <20090909125352.1c7b57d2@tlielax.poochiereds.net>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 Sep 2009 13:06:55 -0400
+Date: Wed, 9 Sep 2009 18:08:04 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ed Cashin <ecashin@coraid.com>
+Cc: ecashin@coraid.com, jens.axboe@oracle.com, akpm@linux-foundation.org,
+       apw@canonical.com, bonbons@linux-vserver.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
+Message-ID: <20090909180804.3e62331a@lxorguk.ukuu.org.uk>
+In-Reply-To: <60772f633c524ba873f569966fccd6ce@coraid.com>
+References: <200909021955.n82JtkrI032267@imap1.linux-foundation.org>
+	<20090903063539.GH12579@kernel.dk>
+	<2339aa04a4e8fb440a52624273728352@coraid.com>
+	<20090904183525.GB18599@kernel.dk>
+	<f48e25c99e41e375f2ddd85989cd39e1@coraid.com>
+	<20090905051735.GH18599@kernel.dk>
+	<366469f19c41e0150028b886f6859019@coraid.com>
+	<20090908193540.GB18599@kernel.dk>
+	<60772f633c524ba873f569966fccd6ce@coraid.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009, Jeff Layton wrote:
+> The bio in question is a barrier.  Jens Axboe suggested that such bios
+> need to be recognized and ended with -EOPNOTSUPP by any driver that
+> provides its own ->make_request_fn handler and does not handle
+> barriers.
+> 
+> In testing the changes below eliminate the BUG.
 
-> My suspicion would be that the server needs to perform an oplock break
-> to another client before it can send the response. The only way I know
-> how to tell that is to sniff all SMB traffic on the server and watch
-> for oplock break calls to other clients when these stalls occur.
-
-That could be tested by switching them off right? If I do
-
-echo 0 >/proc/fs/cifs/OplockEnabled
-
-and then remount the volume it should switch off oplocks?
-
-This has no effect on the stalls.
+Presumably AoE should actually issue an ATA cache flush for this case ?
 
