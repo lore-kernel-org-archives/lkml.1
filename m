@@ -1,61 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754729AbZIIXyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZIIWtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754729AbZIIXyw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 19:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZIIXyv
+	id S1754456AbZIIWtQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 18:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752620AbZIIWtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 19:54:51 -0400
-Received: from kroah.org ([198.145.64.141]:58733 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754561AbZIIXyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 19:54:50 -0400
-Date: Wed, 9 Sep 2009 15:44:55 -0700
-From: Greg KH <greg@kroah.com>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [Stable-review] [patch 00/71] 2.6.30.6-stable review
-Message-ID: <20090909224455.GB2077@kroah.com>
-References: <20090905001824.GA18171@kroah.com>
- <43e72e890909081223w3e50eee6v438411462a7ed534@mail.gmail.com>
+	Wed, 9 Sep 2009 18:49:16 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:52337 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752602AbZIIWtP convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 18:49:15 -0400
+From: Chetan.Loke@Emulex.Com
+To: <akataria@vmware.com>
+CC: <brking@linux.vnet.ibm.com>, <James.Bottomley@suse.de>,
+       <eike-kernel@sf-tec.de>, <matthew@wil.cx>, <rdreier@cisco.com>,
+       <bvanassche@acm.org>, <robert.w.love@intel.com>,
+       <randy.dunlap@oracle.com>, <michaelc@cs.wisc.edu>,
+       <linux-kernel@vger.kernel.org>, <akpm@linux-foundation.org>,
+       <pv-drivers@vmware.com>
+Date: Wed, 9 Sep 2009 15:48:38 -0700
+Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA - V3.
+Thread-Topic: [PATCH] SCSI driver for VMware's virtual HBA - V3.
+Thread-Index: Acow6fLRT41oDWMjT+e69A7rLm4InwAsy7Kw
+Message-ID: <412A05BA40734D4887DBC67661F433080FF72C2B@EXMAIL.ad.emulex.com>
+References: <1252006675.18725.20.camel@ank32.eng.vmware.com>
+	 <4AA03A9F.2040500@linux.vnet.ibm.com>
+	 <412A05BA40734D4887DBC67661F433080FF72585@EXMAIL.ad.emulex.com>
+ <1252458467.24914.66.camel@ank32.eng.vmware.com>
+In-Reply-To: <1252458467.24914.66.camel@ank32.eng.vmware.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <43e72e890909081223w3e50eee6v438411462a7ed534@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 09 Sep 2009 22:48:39.0864 (UTC) FILETIME=[AC975380:01CA319F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08, 2009 at 12:23:29PM -0700, Luis R. Rodriguez wrote:
-> On Fri, Sep 4, 2009 at 5:18 PM, Greg KH<gregkh@suse.de> wrote:
-> > This is the start of the stable review cycle for the 2.6.30.6 release.
-> > There are 71 patches in this series, all will be posted as a response to
-> > this one.  If anyone has any issues with these being applied, please let
-> > us know.  If anyone is a maintainer of the proper subsystem, and wants
-> > to add a Signed-off-by: line to the patch, please respond with it.
+> -----Original Message-----
+> From: Alok Kataria [mailto:akataria@vmware.com]
+> Sent: Tuesday, September 08, 2009 9:08 PM
+> To: Loke,Chetan
+> Cc: brking@linux.vnet.ibm.com; James.Bottomley@suse.de; eike-kernel@sf-
+> tec.de; matthew@wil.cx; rdreier@cisco.com; bvanassche@acm.org;
+> robert.w.love@intel.com; randy.dunlap@oracle.com; michaelc@cs.wisc.edu;
+> linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; akpm@linux-
+> foundation.org; pv-drivers@vmware.com
+> Subject: RE: [PATCH] SCSI driver for VMware's virtual HBA - V3.
+> 
+> Hi Chetan,
+> 
+> > Alok,
 > >
-> > These patches are sent out with a number of different people on the Cc:
-> > line.  If you wish to be a reviewer, please email stable@kernel.org to
-> > add your name to the list.
+> > (This is just a optimization.You don't need it in order to get your
+> > code merged upstream.You can always patch it later on)In fact hw_lock
+> > should be split into two locks -
+> >
+> > req_path_lock(aka tx_lock) and
+> > cmpl_path_lock(aka rx_lock).
+> >
+> > You can then have a full-duplex channel.
+> >
+> > Revised-code -
+> > 	::pvscsi_acquire_context->spin_lock_irqsave(tx_lock)
+> > 	::pvscsi_isr->spin_lock_irqsave(rx_lock)
+> > 	::some_future_napi_style_pvrx_poll_func->spin_lock_irqsave(rx_lock)
+> >
+> > 	::for aborts synchronize on the rx_lock so that you know what's
+> > completed and what's not.
+> >
 > 
-> I think this automated message needs some updated to reflect the fact
-> that a mailman list is used now, and redirect people to help
-> themselves to help us by subscribing to:
-> 
-> http://linux.kernel.org/mailman/listinfo/stable-review
-> 
-> > If you want to be off the reviewer list,
-> > also email us.
-> 
-> This seems to not be required any more.
 
-True.  Care to send a patch against the stable-queue where this message
-is:
-	http://git.kernel.org/?p=linux/kernel/git/chrisw/stable-queue.git;a=summary
 
-thanks,
 
-greg k-h
+> I agree about the optimization. Though IMO this will be more attractive
+> once we have a device which supports multiple queue pairs.
+
+lpfc driver has native multi-ring support. It won't create hundred's of ring-pairs but the stuff that's present is good enough to start with(at least for this generation).
+
+
+> Anyways, let me keep this on my plate, I will check how much of an
+> benefit this gets us and will decide if this should be done, but as you
+> suggested this is for later.
+> 
+
+I keep forgetting that this is a pv-driver.So, to reap the benefits of the multi-ring arch, the plumbing should be present in your hypervisor/kernel and NOT in the guest-world.
+
+
+> Thanks for taking a look.
+No worries.
+
+
+> 
+> --Alok
+
+
+Chetan
