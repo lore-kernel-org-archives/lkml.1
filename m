@@ -1,154 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZIJTRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbZIJTVE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753509AbZIJTRy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753447AbZIJTRw
+	id S1753494AbZIJTVE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:21:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZIJTVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:17:52 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:29242 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753481AbZIJTRu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:17:50 -0400
-Date: Thu, 10 Sep 2009 21:13:54 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] cpu hotplug: don't play with current->cpus_allowed
-Message-ID: <20090910191354.GA32654@redhat.com>
+	Thu, 10 Sep 2009 15:21:03 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46005 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753134AbZIJTVC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 15:21:02 -0400
+Message-ID: <4AA950C8.1080200@zytor.com>
+Date: Thu, 10 Sep 2009 12:17:28 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
+ devices are requested
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>	<4AA6DF50.3030603@zytor.com>	<20090908203323.486c129c@caramujo.chehab.org>	<4AA6F63F.7090009@zytor.com>	<20090908235441.04549a29@caramujo.chehab.org>	<4AA73309.8030302@zytor.com>	<20090910010512.60a1f523@caramujo.chehab.org>	<4AA89B02.1050909@zytor.com>	<20090910093301.4ccfd786@caramujo.chehab.org>	<20090910150716.66310f02@lxorguk.ukuu.org.uk>	<4AA92487.5080401@zytor.com> <20090910161215.5129bd71@caramujo.chehab.org>
+In-Reply-To: <20090910161215.5129bd71@caramujo.chehab.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(replaces cpu_hotplug-dont-affect-current-tasks-affinity.patch)
+On 09/10/2009 12:12 PM, Mauro Carvalho Chehab wrote:
+> 
+> +1. Reusing the namespace after tty[p-za-e][0-9a-f] doesn't seem to be good, IMHO.
+> 
 
-_cpu_down() changes the current task's affinity and then recovers it at
-the end. The problems are well known: we can't restore old_allowed if it
-was bound to the now-dead-cpu, and we can race with the userspace which
-can change cpu-affinity during unplug.
+I think it's better to extend the strings with the current prefixes than
+to burn the virgin ttyf* prefix.
 
-_cpu_down() should not play with current->cpus_allowed at all. Instead,
-take_cpu_down() can migrate the caller of _cpu_down() after __cpu_disable()
-removes the dying cpu from cpu_online_mask.
+> In the case of the BSD sockets, the patch is not just an userless fix. This is
+> interesting when some applications are ported from other Unix'es and still uses BSD
+> pty's, since several other Unix flavors were defining a higher namespace size.
+> 
+> For example, on zOS Unix, a pty device seems to allow up to 10.000 pty numbers (in the
+> specific case of zOS Unix, they seem to be defined as /dev/[pt]typ[0-9]...) as shown at:
+> 	www.redbooks.ibm.com/redbooks/pdfs/sg245228.pdf
+> 
 
-Reported-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
+Yes, but you have to port the application *anyway* do deal with the
+namespace.  BSD tty allocation is done largely by each application,
+which makes it even worse.  Furthermore, there is the static allocation
+issue, so unless there is a concrete application which needs this *and*
+cannot be ported to Unix98 ptys (which is the Right Thing[TM] to do) I
+think Alan is right.
 
- include/linux/sched.h |    1 +
- kernel/sched.c        |    2 +-
- kernel/cpu.c          |   19 ++++++-------------
- 3 files changed, 8 insertions(+), 14 deletions(-)
-
---- CPUHP/include/linux/sched.h~3_CPU_DOWN_AFFINITY	2009-08-01 04:28:56.000000000 +0200
-+++ CPUHP/include/linux/sched.h	2009-09-10 20:54:00.000000000 +0200
-@@ -1794,6 +1794,7 @@ extern void sched_clock_idle_sleep_event
- extern void sched_clock_idle_wakeup_event(u64 delta_ns);
- 
- #ifdef CONFIG_HOTPLUG_CPU
-+extern void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p);
- extern void idle_task_exit(void);
- #else
- static inline void idle_task_exit(void) {}
---- CPUHP/kernel/sched.c~3_CPU_DOWN_AFFINITY	2009-09-10 20:27:29.000000000 +0200
-+++ CPUHP/kernel/sched.c	2009-09-10 20:54:00.000000000 +0200
-@@ -7118,7 +7118,7 @@ static int __migrate_task_irq(struct tas
- /*
-  * Figure out where task on dead CPU should go, use force if necessary.
-  */
--static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
-+void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
- {
- 	int dest_cpu;
- 	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(dead_cpu));
---- CPUHP/kernel/cpu.c~3_CPU_DOWN_AFFINITY	2009-08-01 04:28:56.000000000 +0200
-+++ CPUHP/kernel/cpu.c	2009-09-10 20:54:00.000000000 +0200
-@@ -163,6 +163,7 @@ static inline void check_for_tasks(int c
- }
- 
- struct take_cpu_down_param {
-+	struct task_struct *caller;
- 	unsigned long mod;
- 	void *hcpu;
- };
-@@ -171,6 +172,7 @@ struct take_cpu_down_param {
- static int __ref take_cpu_down(void *_param)
- {
- 	struct take_cpu_down_param *param = _param;
-+	unsigned int cpu = (unsigned long)param->hcpu;
- 	int err;
- 
- 	/* Ensure this CPU doesn't handle any more interrupts. */
-@@ -181,6 +183,8 @@ static int __ref take_cpu_down(void *_pa
- 	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
- 				param->hcpu);
- 
-+	if (task_cpu(param->caller) == cpu)
-+		move_task_off_dead_cpu(cpu, param->caller);
- 	/* Force idle task to run as soon as we yield: it should
- 	   immediately notice cpu is offline and die quickly. */
- 	sched_idle_next();
-@@ -191,10 +195,10 @@ static int __ref take_cpu_down(void *_pa
- static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
- {
- 	int err, nr_calls = 0;
--	cpumask_var_t old_allowed;
- 	void *hcpu = (void *)(long)cpu;
- 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
- 	struct take_cpu_down_param tcd_param = {
-+		.caller = current,
- 		.mod = mod,
- 		.hcpu = hcpu,
- 	};
-@@ -205,9 +209,6 @@ static int __ref _cpu_down(unsigned int 
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
- 
--	if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
--		return -ENOMEM;
--
- 	cpu_hotplug_begin();
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
- 					hcpu, -1, &nr_calls);
-@@ -221,11 +222,6 @@ static int __ref _cpu_down(unsigned int 
- 		goto out_release;
- 	}
- 
--	/* Ensure that we are not runnable on dying cpu */
--	cpumask_copy(old_allowed, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current,
--			     cpumask_of(cpumask_any_but(cpu_online_mask, cpu)));
--
- 	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
- 	if (err) {
- 		/* CPU didn't die: tell everyone.  Can't complain. */
-@@ -233,7 +229,7 @@ static int __ref _cpu_down(unsigned int 
- 					    hcpu) == NOTIFY_BAD)
- 			BUG();
- 
--		goto out_allowed;
-+		goto out_release;
- 	}
- 	BUG_ON(cpu_online(cpu));
- 
-@@ -251,8 +247,6 @@ static int __ref _cpu_down(unsigned int 
- 
- 	check_for_tasks(cpu);
- 
--out_allowed:
--	set_cpus_allowed_ptr(current, old_allowed);
- out_release:
- 	cpu_hotplug_done();
- 	if (!err) {
-@@ -260,7 +254,6 @@ out_release:
- 					    hcpu) == NOTIFY_BAD)
- 			BUG();
- 	}
--	free_cpumask_var(old_allowed);
- 	return err;
- }
- 
-
+	-hpa
