@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbZIJOGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755716AbZIJOOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbZIJOGS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 10:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbZIJOGR
+	id S1755716AbZIJOOQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 10:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZIJOOP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 10:06:17 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59549 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752090AbZIJOGQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 10:06:16 -0400
-Date: Thu, 10 Sep 2009 15:07:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Alan Cox <alan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
- devices are requested
-Message-ID: <20090910150716.66310f02@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090910093301.4ccfd786@caramujo.chehab.org>
-References: <20090908144942.76ddf0e7@caramujo.chehab.org>
-	<4AA6DF50.3030603@zytor.com>
-	<20090908203323.486c129c@caramujo.chehab.org>
-	<4AA6F63F.7090009@zytor.com>
-	<20090908235441.04549a29@caramujo.chehab.org>
-	<4AA73309.8030302@zytor.com>
-	<20090910010512.60a1f523@caramujo.chehab.org>
-	<4AA89B02.1050909@zytor.com>
-	<20090910093301.4ccfd786@caramujo.chehab.org>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Sep 2009 10:14:15 -0400
+Received: from cantor.suse.de ([195.135.220.2]:43266 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752145AbZIJOOP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 10:14:15 -0400
+Date: Thu, 10 Sep 2009 16:14:15 +0200
+From: Jan Kara <jack@suse.cz>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
+       Chris Mason <chris.mason@oracle.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 2/7] writeback: fix queue_io() ordering
+Message-ID: <20090910141415.GK607@duck.suse.cz>
+References: <20090909145141.293229693@intel.com> <20090909150600.451373732@intel.com> <20090909155330.GE7949@duck.suse.cz> <20090910012624.GA10957@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090910012624.GA10957@localhost>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> * The remaining nibbles are represented by one of 0123456789abcdef letters,
->   indicating the 1st through 16th nibble value, starting from the most
->   significative nibble to the least significative nibble, excluding the
->   second nibble (that were already represented).
+On Thu 10-09-09 09:26:24, Wu Fengguang wrote:
+> On Wed, Sep 09, 2009 at 11:53:30PM +0800, Jan Kara wrote:
+> > On Wed 09-09-09 22:51:43, Wu Fengguang wrote:
+> > > This was not a bug, since b_io is empty for kupdate writeback.
+> > > The next patch will do requeue_io() for non-kupdate writeback,
+> > > so let's fix it.
+> >   But doesn't this patch also need your "anti-starvation" patch?
+> 
+> Honza, can you show me that patch?
+> 
+> > Looking into the code, we put inode to b_more_io when nr_to_write
+> > drops to zero and this way we'd just start writing it again
+> > in the next round...
+> 
+> I'm confused. It's OK to start it in next round. Starvation can
+> occur if we start it immediately in the next writeback_inodes()
+> invocation. How can that happen with this patch?
+  Sorry, my fault. For kupdate, we splice the list only once s_io is empty
+so that's not an issue. So the patch looks good.
+  Acked-by: Jan Kara <jack@suse.cz>
 
-This is a real step back.
-
-It now wastes all the tty[e-p]%d namespace. ttyp%d for > 255 at least
-only uses one for this irrelevant area.
-
-I actually have another proposal having reviewed the user space code.
-
-Limit the BSD ptys to 256. Nothing uses them, the C library routines for
-their allocation would need glibc modifying (which takes about five years
-for a tty change it seems anyway). It's basically a huge amount of work
-for no purpose at all.
-
-So lets limit BSD ptys (unused anyway) to 256 and be done with it.
-
-
-Alan
+> > > CC: Dave Chinner <david@fromorbit.com>
+> > > Cc: Martin Bligh <mbligh@google.com>
+> > > Cc: Michael Rubin <mrubin@google.com>
+> > > Cc: Peter Zijlstra <peterz@infradead.org>
+> > > Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
+> > > ---
+> > >  fs/fs-writeback.c |    7 +++++--
+> > >  1 file changed, 5 insertions(+), 2 deletions(-)
+> > > 
+> > > --- linux.orig/fs/fs-writeback.c	2009-09-09 21:41:14.000000000 +0800
+> > > +++ linux/fs/fs-writeback.c	2009-09-09 21:45:15.000000000 +0800
+> > > @@ -313,11 +313,14 @@ static void move_expired_inodes(struct l
+> > >  }
+> > >  
+> > >  /*
+> > > - * Queue all expired dirty inodes for io, eldest first.
+> > > + * Queue all expired dirty inodes for io, eldest first:
+> > > + * (newly dirtied) => b_dirty inodes
+> > > + *                 => b_more_io inodes
+> > > + *                 => remaining inodes in b_io => (dequeue for sync)
+> > >   */
+> > >  static void queue_io(struct bdi_writeback *wb, unsigned long *older_than_this)
+> > >  {
+> > > -	list_splice_init(&wb->b_more_io, wb->b_io.prev);
+> > > +	list_splice_init(&wb->b_more_io, &wb->b_io);
+> > >  	move_expired_inodes(&wb->b_dirty, &wb->b_io, older_than_this);
+> > >  }
+> > >  
+> > > 
+> > > -- 
+> > > 
+> > -- 
+> > Jan Kara <jack@suse.cz>
+> > SUSE Labs, CR
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
