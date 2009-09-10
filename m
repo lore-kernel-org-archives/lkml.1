@@ -1,140 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753882AbZIJJCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZIJJDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753882AbZIJJCG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 05:02:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752622AbZIJJCG
+	id S1754876AbZIJJDk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 05:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZIJJDj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 05:02:06 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:46370 "EHLO gir.skynet.ie"
+	Thu, 10 Sep 2009 05:03:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:40049 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752169AbZIJJCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 05:02:04 -0400
-Date: Thu, 10 Sep 2009 10:02:06 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: reinette chatre <reinette.chatre@intel.com>
-Cc: Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "Krauss, Assaf" <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>
-Subject: Re: iwlagn: order 2 page allocation failures
-Message-ID: <20090910090206.GA22276@csn.ul.ie>
-References: <200909060941.01810.elendil@planet.nl> <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie> <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie> <1252526738.30150.91.camel@rc-desk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <1252526738.30150.91.camel@rc-desk>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	id S1752622AbZIJJDh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 05:03:37 -0400
+Date: Thu, 10 Sep 2009 19:03:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for September 10
+Message-Id: <20090910190331.7963154b.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__10_Sep_2009_19_03_31_+1000_yeFqU3Da1vHu/rxh"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 01:05:38PM -0700, reinette chatre wrote:
-> Mel and Frans, 
-> 
-> Thank you very much for digging into this.
-> 
-> On Wed, 2009-09-09 at 09:55 -0700, Mel Gorman wrote:
-> > Conceivably a better candidate for this problem is commit
-> > 4752c93c30441f98f7ed723001b1a5e3e5619829 introduced in May 2009. If there
-> > are less than RX_QUEUE_SIZE/2 left, it starts replenishing buffers. Mohamed,
-> > is it absolutly necessary it use GFP_ATOMIC there? If an allocation fails,
-> > does it always mean frames are dropped or could it just replenish what it
-> > can and try again later printing a warning only if allocation failures are
-> > resulting in packet loss?
-> 
-> I agree that this patch may be the reason we are seeing this issue. We
-> would like to keep using GFP_ATOMIC here, but it is not necessary for an
-> allocation failure to be so noisy since the function doing the
-> allocation (iwl_rx_allocate) is always followed by a call to
-> iwl_rx_queue_restock which will schedule a refill if the buffers are
-> running low.
+--Signature=_Thu__10_Sep_2009_19_03_31_+1000_yeFqU3Da1vHu/rxh
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Right, so it's a "refill now if you can and defer further refilling
-until later".
+Hi all,
 
-> We can thus use ___GFP_NOWARN for the allocations in
-> iwl_rx_allocate and leave it to the restocking to find the needed memory
-> when it tried its allocations using GFP_KERNEL.
-> 
+Please do not add code destined for 2.6.33 into linux-next trees until
+(at least) 2.6.32-rc1 is out.  This will hopefully give those who have
+stuff destined for just after -rc1 a chance.
 
-Would it be possible to use __GFP_NOWARN *unless* this allocation is
-necessary to receive the packet?
+Changes since 20090909:
 
-> I do think it is useful to let user know about these allocation
-> failures, even if it does not result in packet loss. Wrapping it in
-> net_ratelimit() will help though.
-> 
+The acpi tree lost its build failure.
 
-If it does not distinguish between failures causing packet loss and just a
-temporary issue, I'd be worried the messages would generate bug reports and
-we genuinely won't know if it's a real problem or not.
+The rr tree still has a build failure so I used the version from
+next-20090908.
 
-As a total aside, there is still the problem that the driver is depending on
-order-2 allocations. On systems without swap, the allocation problem could be
-more severe as there are fewer pages the system can use to regain contiguity.
+The block tree gained a conflict against Linus' tree.
 
-> How about the patch below?
-> 
-> diff --git a/drivers/net/wireless/iwlwifi/iwl-rx.c b/drivers/net/wireless/iwlwifi/iwl-rx.c
-> index b90adcb..f0ee72e 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl-rx.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl-rx.c
-> @@ -252,10 +252,11 @@ void iwl_rx_allocate(struct iwl_priv *priv, gfp_t priority)
->  
->  		/* Alloc a new receive buffer */
->  		skb = alloc_skb(priv->hw_params.rx_buf_size + 256,
-> -						priority);
-> +				priority | __GFP_NOWARN);
->  
+The security-testing tree lost its build failure.
 
-So, would it be possible here to only remove __GFP_NOWARN if this is GFP_ATOMIC
-(implying we have to refill now) and the rxq->free_count is really small
-e.g. <= 2?
+The scsi-post-merge tree still has a build failure so I used the version
+from 20090904.
 
->  		if (!skb) {
-> -			IWL_CRIT(priv, "Can not allocate SKB buffers\n");
-> +			if (net_ratelimit())
-> +				IWL_CRIT(priv, "Can not allocate SKB buffer.\n");
+----------------------------------------------------------------------------
 
-Similarly, could the message either be supressed when there is enough
-buffers in the RX queue or differenciate between enough buffers and
-things getting tight possibly causing packet loss?
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+(patches at http://www.kernel.org/pub/linux/kernel/v2.6/next/ ).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
 
-The IWL_CRIT() part even is a hint - there is no guarantee that the allocation
-failure is really a critical problem.
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES - this fails its final link) and i386, sparc
+and sparc64 defconfig. These builds also have
+CONFIG_ENABLE_WARN_DEPRECATED, CONFIG_ENABLE_MUST_CHECK and
+CONFIG_DEBUG_INFO disabled when necessary.
 
->  			/* We don't reschedule replenish work here -- we will
->  			 * call the restock method and if it still needs
->  			 * more buffers it will schedule replenish */
-> diff --git a/drivers/net/wireless/iwlwifi/iwl3945-base.c b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-> index 0909668..5d9fb78 100644
-> --- a/drivers/net/wireless/iwlwifi/iwl3945-base.c
-> +++ b/drivers/net/wireless/iwlwifi/iwl3945-base.c
-> @@ -1147,10 +1147,10 @@ static void iwl3945_rx_allocate(struct iwl_priv *priv, gfp_t priority)
->  		spin_unlock_irqrestore(&rxq->lock, flags);
->  
->  		/* Alloc a new receive buffer */
-> -		skb = alloc_skb(priv->hw_params.rx_buf_size, priority);
-> +		skb = alloc_skb(priv->hw_params.rx_buf_size, priority | __GFP_NOWARN);
->  		if (!skb) {
->  			if (net_ratelimit())
-> -				IWL_CRIT(priv, ": Can not allocate SKB buffers\n");
-> +				IWL_CRIT(priv, "Can not allocate SKB buffer.\n");
->  			/* We don't reschedule replenish work here -- we will
->  			 * call the restock method and if it still needs
->  			 * more buffers it will schedule replenish */
-> 
-> 
+Below is a summary of the state of the merge.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+We are up to 140 trees (counting Linus' and 21 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging fixes/fixes
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/tty.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging ide-curent/master
+Merging dwmw2/master
+Merging arm/devel
+Merging davinci/for-next
+Merging pxa/for-next
+Merging thumb-2/thumb-2
+CONFLICT (add/add): Merge conflict in arch/arm/include/asm/unified.h
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging microblaze/next
+Merging mips/mips-for-linux-next
+Merging parisc/next
+Merging powerpc/next
+CONFLICT (content): Merge conflict in kernel/gcov/Kconfig
+Merging 4xx/next
+Merging galak/next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging xtensa/master
+Merging cifs/master
+Merging configfs/linux-next
+Merging ecryptfs/next
+Merging ext3/for_next
+Merging ext4/next
+Merging fatfs/master
+Merging fuse/for-next
+Merging gfs2/master
+Merging jfs/next
+Merging nfs/linux-next
+Merging nfsd/nfsd-next
+CONFLICT (content): Merge conflict in net/sunrpc/cache.c
+Merging nilfs2/for-next
+Merging ocfs2/linux-next
+Merging squashfs/master
+Merging udf/for_next
+Merging v9fs/for-next
+Merging ubifs/linux-next
+Merging xfs/master
+CONFLICT (content): Merge conflict in fs/xfs/linux-2.6/xfs_lrw.c
+Merging reiserfs-bkl/reiserfs/kill-bkl
+Merging vfs/for-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/pci_64.c
+Applying: pci: merge fixup for fundamental reset conflict with powerpc tree
+Merging hid/for-next
+Merging quilt/i2c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in drivers/media/video/sh_mobile_ceu_cam=
+era.c
+Merging quota/for_next
+Merging kbuild/master
+Merging kconfig/for-next
+CONFLICT (content): Merge conflict in scripts/extract-ikconfig
+Merging ide/master
+Merging libata/NEXT
+Merging infiniband/for-next
+Merging acpi/test
+CONFLICT (content): Merge conflict in drivers/acpi/power.c
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/linux-next
+Merging dlm/next
+Merging scsi/master
+Merging async_tx/next
+Merging net/master
+Merging wireless/master
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/mtdcore.c
+Merging crypto/master
+Merging sound/for-next
+Merging cpufreq/next
+Merging quilt/rr
+$ git reset --hard HEAD^
+Merging refs/next/20090908/rr
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+Merging mmc/next
+Merging input/next
+CONFLICT (content): Merge conflict in drivers/base/platform.c
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in drivers/block/aoe/aoeblk.c
+CONFLICT (content): Merge conflict in fs/ubifs/super.c
+Merging quilt/device-mapper
+Merging embedded/master
+Merging firmware/master
+Merging pcmcia/master
+Merging battery/master
+CONFLICT (content): Merge conflict in drivers/power/wm97xx_battery.c
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+CONFLICT (content): Merge conflict in drivers/input/misc/Kconfig
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in firmware/Makefile
+Merging voltage/for-next
+CONFLICT (content): Merge conflict in drivers/regulator/Kconfig
+Merging security-testing/next
+CONFLICT (content): Merge conflict in arch/arm/kernel/signal.c
+CONFLICT (content): Merge conflict in arch/parisc/include/asm/thread_info.h
+CONFLICT (content): Merge conflict in arch/parisc/kernel/entry.S
+CONFLICT (content): Merge conflict in arch/parisc/kernel/signal.c
+Applying: security: fix merge for tun_struct changes
+Merging lblnet/master
+CONFLICT (content): Merge conflict in drivers/net/tun.c
+Merging agp/agp-next
+CONFLICT (content): Merge conflict in drivers/char/agp/uninorth-agp.c
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging omap/for-next
+Merging quilt/aoe
+Merging suspend/linux-next
+Merging bluetooth/master
+Merging fsnotify/for-next
+Merging irda/for-next
+Merging hwlat/for-linus
+Merging drbd/drbd
+Merging kmemleak/kmemleak
+Merging tip/auto-latest
+CONFLICT (content): Merge conflict in arch/x86/include/asm/socket.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
+CONFLICT (content): Merge conflict in drivers/pci/dmar.c
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+Applying: tip: fix merge for cupmask update
+Merging oprofile/for-next
+CONFLICT (content): Merge conflict in kernel/trace/ring_buffer.c
+Merging percpu/for-next
+CONFLICT (content): Merge conflict in arch/sh/kernel/vmlinux.lds.S
+CONFLICT (content): Merge conflict in kernel/sched.c
+CONFLICT (content): Merge conflict in mm/percpu.c
+Merging sfi/sfi-test
+CONFLICT (content): Merge conflict in arch/x86/kernel/setup.c
+Merging asm-generic/next
+Merging hwpoison/hwpoison
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/base/class.c
+CONFLICT (content): Merge conflict in drivers/mtd/mtdcore.c
+CONFLICT (content): Merge conflict in init/main.c
+Merging quilt/tty
+CONFLICT (content): Merge conflict in arch/x86/include/asm/termios.h
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (delete/modify): drivers/staging/at76_usb/at76_usb.c deleted in qu=
+ilt/staging and modified in HEAD. Version HEAD of drivers/staging/at76_usb/=
+at76_usb.c left in tree.
+CONFLICT (delete/modify): drivers/staging/epl/VirtualEthernetLinux.c delete=
+d in quilt/staging and modified in HEAD. Version HEAD of drivers/staging/ep=
+l/VirtualEthernetLinux.c left in tree.
+$ git rm -f drivers/staging/epl/VirtualEthernetLinux.c
+$ git rm -f drivers/staging/at76_usb/at76_usb.c
+Merging scsi-post-merge/master
+$ git reset --hard HEAD^
+Merging refs/next/20090904/scsi-post-merge
+
+--Signature=_Thu__10_Sep_2009_19_03_31_+1000_yeFqU3Da1vHu/rxh
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkqowOMACgkQjjKRsyhoI8xVpACeIo4x5hjORGABJ0P3gzY8o8BM
+0R0AoK/NFvyrTTs40opZzDVGD36X6obs
+=xzoi
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_Sep_2009_19_03_31_+1000_yeFqU3Da1vHu/rxh--
