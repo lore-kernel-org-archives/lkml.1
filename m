@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZIJTyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753670AbZIJT4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZIJTyq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZIJTyp
+	id S1753670AbZIJT4Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752930AbZIJT4Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:54:45 -0400
-Received: from e24smtp03.br.ibm.com ([32.104.18.24]:55053 "EHLO
-	e24smtp03.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbZIJTyp (ORCPT
+	Thu, 10 Sep 2009 15:56:24 -0400
+Received: from e24smtp01.br.ibm.com ([32.104.18.85]:40287 "EHLO
+	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752851AbZIJT4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:54:45 -0400
-Subject: [PATCH] tpm_tis: TPM_STS_DATA_EXPECT workaround
+	Thu, 10 Sep 2009 15:56:23 -0400
+Subject: Re: [PATCH 1/6] tpm_tis: various cleanups
 From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Andy Isaacson <adi@hexapodia.org>
-Cc: jmorris@namei.org, len.brown@intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Isaacson <adi@vmware.com>,
-       linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
-       dds@google.com, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+To: Andy Isaacson <adi@vmware.com>
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
+       tpmdd-devel@lists.sourceforge.net, adi@hexapodia.org, dds@google.com,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
        Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com
-In-Reply-To: <1252609714.4837.87.camel@blackbox>
+In-Reply-To: <1246410255-6839-2-git-send-email-adi@vmware.com>
 References: <1246410255-6839-1-git-send-email-adi@vmware.com>
-	 <1246410255-6839-6-git-send-email-adi@vmware.com>
-	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
-	 <1246455920.9140.28.camel@blackbox>  <20090720182732.GL6370@hexapodia.org>
-	 <1252609714.4837.87.camel@blackbox>
+	 <1246410255-6839-2-git-send-email-adi@vmware.com>
 Content-Type: text/plain
-Date: Thu, 10 Sep 2009 16:54:31 -0300
-Message-Id: <1252612471.4837.107.camel@blackbox>
+Date: Thu, 10 Sep 2009 16:56:15 -0300
+Message-Id: <1252612575.4837.109.camel@blackbox>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.2 
 Content-Transfer-Encoding: 7bit
@@ -34,58 +30,61 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some newer Lenovo models are shipped with a TPM that doesn't seem to set the TPM_STS_DATA_EXPECT status bit
-when sending it a burst of data, so the code understands it as a failure and doesn't proceed sending the chip
-the intended data. In this patch we bypass this bit check in case the itpm module parameter was set.
+Acked-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
 
-This patch is based on Andy Isaacson's one:
-
-http://marc.info/?l=linux-kernel&m=124650185023495&w=2
-
-It was heavily discussed how should we deal with identifying the chip in kernel space, but the required
-patch to do so was NACK'd:
-
-http://marc.info/?l=linux-kernel&m=124650186423711&w=2
-
-This way we let the user choose using this workaround or not based on his
-observations on this code behavior when trying to use the TPM.
-
-Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
----
-diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-index aec1931..c9990db 100644
---- a/drivers/char/tpm/tpm_tis.c
-+++ b/drivers/char/tpm/tpm_tis.c
-@@ -257,6 +257,10 @@ out:
- 	return size;
- }
- 
-+static int itpm = 0;
-+module_param(itpm, bool, 0444);
-+MODULE_PARM_DESC(itpm, "Force iTPM workarounds (found on some Lenovo laptops)");
-+
- /*
-  * If interrupts are used (signaled by an irq set in the vendor structure)
-  * tpm.c can skip polling for the data to be available as the interrupt is
-@@ -293,7 +297,7 @@ static int tpm_tis_send(struct tpm_chip *chip, u8 *buf, size_t len)
- 		wait_for_stat(chip, TPM_STS_VALID, chip->vendor.timeout_c,
- 			      &chip->vendor.int_queue);
- 		status = tpm_tis_status(chip);
--		if ((status & TPM_STS_DATA_EXPECT) == 0) {
-+		if (!itpm && (status & TPM_STS_DATA_EXPECT) == 0) {
- 			rc = -EIO;
- 			goto out_err;
- 		}
-@@ -467,6 +471,10 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
- 		 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
- 		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
- 
-+	if (itpm) 
-+		dev_info(dev, "Intel iTPM workaround enabled\n");
-+
-+
- 	/* Figure out the capabilities */
- 	intfcaps =
- 	    ioread32(chip->vendor.iobase +
-
+On Tue, 2009-06-30 at 18:04 -0700, Andy Isaacson wrote:
+> Avoid tabs in printk output.
+> Use parentheses and ARRAY_SIZE() in macro definition.
+> 
+> Signed-off-by: Andy Isaacson <adi@vmware.com>
+> ---
+>  drivers/char/tpm/tpm_tis.c |   20 ++++++++++----------
+>  1 files changed, 10 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+> index 717af7a..1b84441 100644
+> --- a/drivers/char/tpm/tpm_tis.c
+> +++ b/drivers/char/tpm/tpm_tis.c
+> @@ -474,23 +474,23 @@ static int tpm_tis_init(struct device *dev, resource_size_t start,
+>  	dev_dbg(dev, "TPM interface capabilities (0x%x):\n",
+>  		intfcaps);
+>  	if (intfcaps & TPM_INTF_BURST_COUNT_STATIC)
+> -		dev_dbg(dev, "\tBurst Count Static\n");
+> +		dev_dbg(dev, "    Burst Count Static\n");
+>  	if (intfcaps & TPM_INTF_CMD_READY_INT)
+> -		dev_dbg(dev, "\tCommand Ready Int Support\n");
+> +		dev_dbg(dev, "    Command Ready Int Support\n");
+>  	if (intfcaps & TPM_INTF_INT_EDGE_FALLING)
+> -		dev_dbg(dev, "\tInterrupt Edge Falling\n");
+> +		dev_dbg(dev, "    Interrupt Edge Falling\n");
+>  	if (intfcaps & TPM_INTF_INT_EDGE_RISING)
+> -		dev_dbg(dev, "\tInterrupt Edge Rising\n");
+> +		dev_dbg(dev, "    Interrupt Edge Rising\n");
+>  	if (intfcaps & TPM_INTF_INT_LEVEL_LOW)
+> -		dev_dbg(dev, "\tInterrupt Level Low\n");
+> +		dev_dbg(dev, "    Interrupt Level Low\n");
+>  	if (intfcaps & TPM_INTF_INT_LEVEL_HIGH)
+> -		dev_dbg(dev, "\tInterrupt Level High\n");
+> +		dev_dbg(dev, "    Interrupt Level High\n");
+>  	if (intfcaps & TPM_INTF_LOCALITY_CHANGE_INT)
+> -		dev_dbg(dev, "\tLocality Change Int Support\n");
+> +		dev_dbg(dev, "    Locality Change Int Support\n");
+>  	if (intfcaps & TPM_INTF_STS_VALID_INT)
+> -		dev_dbg(dev, "\tSts Valid Int Support\n");
+> +		dev_dbg(dev, "    Sts Valid Int Support\n");
+>  	if (intfcaps & TPM_INTF_DATA_AVAIL_INT)
+> -		dev_dbg(dev, "\tData Avail Int Support\n");
+> +		dev_dbg(dev, "    Data Avail Int Support\n");
+> 
+>  	/* INTERRUPT Setup */
+>  	init_waitqueue_head(&chip->vendor.read_queue);
+> @@ -649,7 +649,7 @@ static struct pnp_driver tis_pnp_driver = {
+>  	.remove = tpm_tis_pnp_remove,
+>  };
+> 
+> -#define TIS_HID_USR_IDX sizeof(tpm_pnp_tbl)/sizeof(struct pnp_device_id) -2
+> +#define TIS_HID_USR_IDX (ARRAY_SIZE(tpm_pnp_tbl) - 2)
+>  module_param_string(hid, tpm_pnp_tbl[TIS_HID_USR_IDX].id,
+>  		    sizeof(tpm_pnp_tbl[TIS_HID_USR_IDX].id), 0444);
+>  MODULE_PARM_DESC(hid, "Set additional specific HID for this driver to probe");
 
