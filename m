@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755222AbZIJHgG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZIJHkx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755222AbZIJHgG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 03:36:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752095AbZIJHgG
+	id S1753432AbZIJHkx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 03:40:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZIJHkw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 03:36:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:56717 "EHLO mga03.intel.com"
+	Thu, 10 Sep 2009 03:40:52 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:57303 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751929AbZIJHgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 03:36:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="186054420"
-Date: Thu, 10 Sep 2009 15:35:53 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Christoph Hellwig <hch@infradead.org>, "jack@suse.cz" <jack@suse.cz>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 5/7] writeback: use 64MB MAX_WRITEBACK_PAGES
-Message-ID: <20090910073553.GA21899@localhost>
-References: <20090909145141.293229693@intel.com> <20090909150600.874037375@intel.com> <20090909232938.GD24951@mit.edu> <1252558398.7205.0.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252558398.7205.0.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751536AbZIJHkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 03:40:52 -0400
+Date: Thu, 10 Sep 2009 17:40:48 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ed Cashin <ecashin@coraid.com>
+Subject: Re: linux-next: manual merge of the block tree with the  tree
+Message-Id: <20090910174048.58653ad0.sfr@canb.auug.org.au>
+In-Reply-To: <20090910072407.GO18599@kernel.dk>
+References: <20090910144801.2b604ee7.sfr@canb.auug.org.au>
+	<20090910072407.GO18599@kernel.dk>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 12:53:18PM +0800, Peter Zijlstra wrote:
-> On Wed, 2009-09-09 at 19:29 -0400, Theodore Tso wrote:
-> > On Wed, Sep 09, 2009 at 10:51:46PM +0800, Wu Fengguang wrote:
-> > > + * The maximum number of pages to writeout in a single periodic/background
-> > > + * writeback operation. 64MB means I_SYNC may be hold for up to 1 second.
-> > > + * This is not a big problem since we normally do kind of trylock on I_SYNC
-> > > + * for non-data-integrity writes.  Userspace tasks doing throttled writeback
-> > > + * do not use this value.
-> > 
-> > What's your justification for using 64MB?  Where are you getting 1
-> > second from?  On a fast RAID array 64MB can be written in much less
-> > than 1 second.
-> 
-> Worse, on my 5mb/s usb stick writing out 64m will take forever.
+--Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-        cp bigfile1 bigfile2 /mnt/usb/
-        sync
+Hi Jens,
 
-In that case the user would notice that kernel keeps writing to one
-file for up to 13 seconds before switching to another file.
+On Thu, 10 Sep 2009 09:24:07 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> Thanks, I'll update my for-2.6.32 branch today and let that propagate
+> into for-next to resolve this.
 
-A simple fix would look like this. It stops io continuation on one
-file after 1 second. It will work because when io is congested, it
-relies on the io continuation logic (based on last_file*) to retry
-the same file until MAX_WRITEBACK_PAGES is reached. The queue-able
-requests between congested <=> uncongested states are not very large.
-For slow devices, the queue-able pages between empty <=> congested
-states are also not very large. For example, my USB stick has
-nr_requests=128 and max_sectors_kb=120. It would take less than 12MB
-to congest this queue.
+Thanks.
 
-With this patch and my usb stick, the kernel may first sync 12MB for
-bigfile1 (which takes 1-3 seconds), then sync bigfile2 for 1 second,
-and then bigfile1 for 1 second, and so on.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-It seems that we could now safely bump MAX_WRITEBACK_PAGES to even
-larger values beyond 128MB :)
+--Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP
+Content-Type: application/pgp-signature
 
-Thanks,
-Fengguang
----
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
---- linux.orig/fs/fs-writeback.c	2009-09-10 15:02:48.000000000 +0800
-+++ linux/fs/fs-writeback.c	2009-09-10 15:07:23.000000000 +0800
-@@ -277,7 +277,8 @@ static void requeue_io(struct inode *ino
-  */
- static void requeue_partial_io(struct writeback_control *wbc, struct inode *inode)
- {
--	if (wbc->last_file_written == 0 ||
-+	if (time_before(wbc->last_file_time + HZ, jiffies) ||
-+	    wbc->last_file_written == 0 ||
- 	    wbc->last_file_written >= MAX_WRITEBACK_PAGES)
- 		return requeue_io(inode);
- 
-@@ -428,6 +429,7 @@ writeback_single_inode(struct inode *ino
- 
- 	if (wbc->last_file != inode->i_ino) {
- 		wbc->last_file = inode->i_ino;
-+		wbc->last_file_time = jiffies;
- 		wbc->last_file_written = nr_to_write - wbc->nr_to_write;
- 	} else
- 		wbc->last_file_written += nr_to_write - wbc->nr_to_write;
---- linux.orig/include/linux/writeback.h	2009-09-10 15:07:28.000000000 +0800
-+++ linux/include/linux/writeback.h	2009-09-10 15:08:46.000000000 +0800
-@@ -46,6 +46,7 @@ struct writeback_control {
- 	long nr_to_write;		/* Write this many pages, and decrement
- 					   this for each page written */
- 	unsigned long last_file;	/* Inode number of last written file */
-+	unsigned long last_file_time;	/* First sync time for last file */
- 	long last_file_written;		/* Total pages written for last file */
- 	long pages_skipped;		/* Pages which were not written */
- 
+iEYEARECAAYFAkqorYAACgkQjjKRsyhoI8zKrACgk4U277tvTYR03467cVkFUh+a
+4MkAoJ0uEJ+5iUyaWjRhZFL9Qu+eebDi
+=iXt4
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP--
