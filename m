@@ -1,54 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753804AbZIJT6B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZIJUEv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753804AbZIJT6B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:58:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753861AbZIJT6A
+	id S1753394AbZIJUEv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 16:04:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZIJUEv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:58:00 -0400
-Received: from fifo99.com ([67.223.236.141]:33707 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753846AbZIJT57 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:57:59 -0400
-Subject: Re: [PATCH] tpm_tis: TPM_STS_DATA_EXPECT workaround
-From: Daniel Walker <dwalker@fifo99.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: Andy Isaacson <adi@hexapodia.org>, jmorris@namei.org, len.brown@intel.com,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Isaacson <adi@vmware.com>,
-       linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
-       dds@google.com, Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com
-In-Reply-To: <1252612471.4837.107.camel@blackbox>
-References: <1246410255-6839-1-git-send-email-adi@vmware.com>
-	 <1246410255-6839-6-git-send-email-adi@vmware.com>
-	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
-	 <1246455920.9140.28.camel@blackbox>  <20090720182732.GL6370@hexapodia.org>
-	 <1252609714.4837.87.camel@blackbox>  <1252612471.4837.107.camel@blackbox>
-Content-Type: text/plain
-Date: Thu, 10 Sep 2009 12:58:29 -0700
-Message-Id: <1252612709.30578.219.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Thu, 10 Sep 2009 16:04:51 -0400
+Received: from ns1.co-raid.com ([12.51.113.4]:60125 "EHLO coraid.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751096AbZIJUEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 16:04:50 -0400
+From: Ed Cashin <ecashin@coraid.com>
+X-Mailer: nedmail
+Date: Thu, 10 Sep 2009 16:03:42 -0400
+To: jens.axboe@oracle.com, ecashin@coraid.com, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, apw@canonical.com, bonbons@linux-vserver.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
+Message-ID: <aa669085856b88bee82d150efe84b682@coraid.com>
+In-Reply-To: <20090910195021.GW18599@kernel.dk>
+References: <20090905051735.GH18599@kernel.dk>
+	<366469f19c41e0150028b886f6859019@coraid.com>
+	<20090908193540.GB18599@kernel.dk>
+	<60772f633c524ba873f569966fccd6ce@coraid.com>
+	<20090909180804.3e62331a@lxorguk.ukuu.org.uk>
+	<30b7855d211ab5b6bef6fe2cd9b76295@coraid.com>
+	<20090909205835.GK18599@kernel.dk>
+	<810bbe1723b0a205f9b5018a5ddaa722@coraid.com>
+	<20090910074820.GS18599@kernel.dk>
+	<84f18127dcdb4762bf9dc6796846087f@coraid.com>
+	<20090910195021.GW18599@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 16:54 -0300, Rajiv Andrade wrote:
+On Thu Sep 10 15:50:23 EDT 2009, jens.axboe@oracle.com wrote:
+> On Thu, Sep 10 2009, Ed Cashin wrote:
+...
+> > I think the EOPNOTSUPP patch is good for the for-next aoe quilt tree,
+> > while the new barrier support will be good for 2.6.32.
+> 
+> .31 is already out, so there's plenty of time to fix it for .32 for
+> real. I don't mind putting in the temporary fix in the mean time,
+> though.
 
-> Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-> ---
-> diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-> index aec1931..c9990db 100644
-> --- a/drivers/char/tpm/tpm_tis.c
-> +++ b/drivers/char/tpm/tpm_tis.c
-> @@ -257,6 +257,10 @@ out:
->  	return size;
->  }
->  
-> +static int itpm = 0;
+I missed that.  It was still rc9 when I pulled earlier today, so I put
+the temporary fix into the aoe quilt tree for linux-next.
 
-This patch has some checkpatch issues .. Could you run it
-through ./script/checkpatch.pl and fix the issues that get reported?
+Now that 2.6.31 is out, I suppose this patch should be taken out of
+the aoe quilt tree for linux-next and submitted for inclusion in
+2.6.31.1.
 
-Daniel
+So, yes, if you don't mind pushing the patch to the appropriate place,
+that would be great.
 
+Now I have to figure out why the other patch in aoe's quilt tree for
+linux-next never made it to 2.6.31.
+
+-- 
+  Ed
