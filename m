@@ -1,181 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753070AbZIJSeE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751117AbZIJOgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753070AbZIJSeE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 14:34:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753050AbZIJSeD
+	id S1751117AbZIJOgI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 10:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZIJOgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 14:34:03 -0400
-Received: from g4t0017.houston.hp.com ([15.201.24.20]:44315 "EHLO
-	g4t0017.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752994AbZIJSeA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 14:34:00 -0400
-Subject: [PATCH v2 2/2] PCI Hotplug: convert acpi_pci_detect_ejectable() to
-	take an acpi_handle
-To: jbarnes@virtuousgeek.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Date: Thu, 10 Sep 2009 12:34:09 -0600
-Message-ID: <20090910183409.20011.76128.stgit@bob.kio>
-In-Reply-To: <20090910183219.20011.41679.stgit@bob.kio>
-References: <20090910183219.20011.41679.stgit@bob.kio>
-User-Agent: StGit/0.14.3.386.gb02d
+	Thu, 10 Sep 2009 10:36:07 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:52843 "EHLO smtp.ispras.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750839AbZIJOgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 10:36:07 -0400
+Content-Disposition: inline
+From: iceberg <strakh@ispras.ru>
+Organization: ISP RAS
+To: Jonathan Corbet <corbet@lwn.net>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
+Date: Thu, 10 Sep 2009 18:37:34 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909101837.34472.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-acpi_pci_detect_ejectable() goes through effort to convert its
-struct pci_bus arg to an acpi_handle, but every time we use this
-interface, we already have the handle available.
+In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe: 
+Mutex must be unlocked before exit
+	1. On paths starting with mutex lock in line 1912, then continuing in lines: 
+1929, 1936 (goto unreg) and 1940 (goto iounmap) . 
+	2. On path starting in line 1971 mutex lock, and then continuing in line 1978 
+(goto out_smbus) mutex.
 
-So let's just use the handle instead of converting back and forth.
+Fix lock imbalances in function cafe_pci_probe.
+Found by Linux Driver Verification project.
 
-Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
+Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+
 ---
+diff --git a/./a/drivers/media/video/cafe_ccic.c 
+b/./b/drivers/media/video/cafe_ccic.c
+index c4d181d..2987433 100644
+--- a/./a/drivers/media/video/cafe_ccic.c
++++ b/./b/drivers/media/video/cafe_ccic.c
+@@ -1925,19 +1925,24 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+         * Get set up on the PCI bus.
+         */
+        ret = pci_enable_device(pdev);
+-       if (ret)
++       if (ret) {
++               mutex_unlock(&cam->s_mutex);
+                goto out_unreg;
++       }
+        pci_set_master(pdev);
 
- drivers/pci/hotplug/acpi_pcihp.c   |   12 ++++++------
- drivers/pci/hotplug/acpiphp_glue.c |   33 +++++++++++----------------------
- drivers/pci/hotplug/pciehp_acpi.c  |    7 ++++---
- include/linux/pci_hotplug.h        |    2 +-
- 4 files changed, 22 insertions(+), 32 deletions(-)
+        ret = -EIO;
+        cam->regs = pci_iomap(pdev, 0, 0);
+        if (! cam->regs) {
+                printk(KERN_ERR "Unable to ioremap cafe-ccic regs\n");
++               mutex_unlock(&cam->s_mutex);
+                goto out_unreg;
+        }
+        ret = request_irq(pdev->irq, cafe_irq, IRQF_SHARED, "cafe-ccic", cam);
+-       if (ret)
++       if (ret) {
++               mutex_unlock(&cam->s_mutex);
+                goto out_iounmap;
++       }
+        /*
+         * Initialize the controller and leave it powered up.  It will
+         * stay that way until the sensor driver shows up.
+@@ -1974,8 +1979,10 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ /*     cam->vdev.debug = V4L2_DEBUG_IOCTL_ARG;*/
+        cam->vdev.v4l2_dev = &cam->v4l2_dev;
+        ret = video_register_device(&cam->vdev, VFL_TYPE_GRABBER, -1);
+-       if (ret)
++       if (ret) {
++               mutex_unlock(&cam->s_mutex);
+                goto out_smbus;
++       }
+        video_set_drvdata(&cam->vdev, cam);
 
-diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
-index eb15958..ec3c039 100644
---- a/drivers/pci/hotplug/acpi_pcihp.c
-+++ b/drivers/pci/hotplug/acpi_pcihp.c
-@@ -500,18 +500,18 @@ check_hotplug(acpi_handle handle, u32 lvl, void *context, void **rv)
- 
- /**
-  * acpi_pci_detect_ejectable - check if the PCI bus has ejectable slots
-- * @pbus - PCI bus to scan
-+ * @handle - handle of the PCI bus to scan
-  *
-  * Returns 1 if the PCI bus has ACPI based ejectable slots, 0 otherwise.
-  */
--int acpi_pci_detect_ejectable(struct pci_bus *pbus)
-+int acpi_pci_detect_ejectable(acpi_handle handle)
- {
--	acpi_handle handle;
- 	int found = 0;
- 
--	if (!(handle = acpi_pci_get_bridge_handle(pbus)))
--		return 0;
--	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
-+	if (!handle)
-+		return found;
-+
-+	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, 1,
- 			    check_hotplug, (void *)&found, NULL);
- 	return found;
- }
-diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
-index e72e0ad..680c336 100644
---- a/drivers/pci/hotplug/acpiphp_glue.c
-+++ b/drivers/pci/hotplug/acpiphp_glue.c
-@@ -62,22 +62,6 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus);
- static void acpiphp_set_hpp_values(acpi_handle handle, struct pci_bus *bus);
- static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *context);
- 
--static struct pci_bus *pci_bus_from_handle(acpi_handle handle)
--{
--	struct pci_bus *pbus;
--	struct acpi_pci_root *root;
--
--	root = acpi_pci_find_root(handle);
--	if (root)
--		pbus = root->bus;
--	else {
--		struct pci_dev *pdev = acpi_get_pci_dev(handle);
--		pbus = pdev->subordinate;
--		pci_dev_put(pdev);
--	}
--	return pbus;
--}
--
- /* callback routine to check for the existence of a pci dock device */
- static acpi_status
- is_pci_dock_device(acpi_handle handle, u32 lvl, void *context, void **rv)
-@@ -279,11 +263,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- /* see if it's worth looking at this bridge */
- static int detect_ejectable_slots(acpi_handle handle)
- {
--	int found;
--	struct pci_bus *pbus;
--
--	pbus = pci_bus_from_handle(handle);
--	found = acpi_pci_detect_ejectable(pbus);
-+	int found = acpi_pci_detect_ejectable(handle);
- 	if (!found) {
- 		acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
- 				    is_pci_dock_device, (void *)&found, NULL);
-@@ -1364,7 +1344,16 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus)
- /* Program resources in newly inserted bridge */
- static int acpiphp_configure_bridge (acpi_handle handle)
- {
--	struct pci_bus *bus = pci_bus_from_handle(handle);
-+	struct pci_bus *bus;
-+
-+	if (acpi_is_root_bridge(handle)) {
-+		struct acpi_pci_root *root = acpi_pci_find_root(handle);
-+		bus = root->bus;
-+	} else {
-+		struct pci_dev *pdev = acpi_get_pci_dev(handle);
-+		bus = pdev->subordinate;
-+		pci_dev_put(pdev);
-+	}
- 
- 	pci_bus_size_bridges(bus);
- 	pci_bus_assign_resources(bus);
-diff --git a/drivers/pci/hotplug/pciehp_acpi.c b/drivers/pci/hotplug/pciehp_acpi.c
-index 9604801..7163e6a 100644
---- a/drivers/pci/hotplug/pciehp_acpi.c
-+++ b/drivers/pci/hotplug/pciehp_acpi.c
-@@ -47,7 +47,7 @@ int pciehp_acpi_slot_detection_check(struct pci_dev *dev)
- {
- 	if (slot_detection_mode != PCIEHP_DETECT_ACPI)
- 		return 0;
--	if (acpi_pci_detect_ejectable(dev->subordinate))
-+	if (acpi_pci_detect_ejectable(DEVICE_ACPI_HANDLE(&dev->dev)))
- 		return 0;
- 	return -ENODEV;
- }
-@@ -76,9 +76,9 @@ static int __init dummy_probe(struct pcie_device *dev)
- {
- 	int pos;
- 	u32 slot_cap;
-+	acpi_handle handle;
- 	struct slot *slot, *tmp;
- 	struct pci_dev *pdev = dev->port;
--	struct pci_bus *pbus = pdev->subordinate;
- 	/* Note: pciehp_detect_mode != PCIEHP_DETECT_ACPI here */
- 	if (pciehp_get_hp_hw_control_from_firmware(pdev))
- 		return -ENODEV;
-@@ -94,7 +94,8 @@ static int __init dummy_probe(struct pcie_device *dev)
- 			dup_slot_id++;
- 	}
- 	list_add_tail(&slot->slot_list, &dummy_slots);
--	if (!acpi_slot_detected && acpi_pci_detect_ejectable(pbus))
-+	handle = DEVICE_ACPI_HANDLE(&pdev->dev);
-+	if (!acpi_slot_detected && acpi_pci_detect_ejectable(handle))
- 		acpi_slot_detected = 1;
- 	return -ENODEV;         /* dummy driver always returns error */
- }
-diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
-index 1b00cc3..f0c31ae 100644
---- a/include/linux/pci_hotplug.h
-+++ b/include/linux/pci_hotplug.h
-@@ -231,7 +231,7 @@ extern acpi_status acpi_get_hp_params_from_firmware(struct pci_bus *bus,
- 				struct hotplug_params *hpp);
- int acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev, u32 flags);
- int acpi_pci_check_ejectable(struct pci_bus *pbus, acpi_handle handle);
--int acpi_pci_detect_ejectable(struct pci_bus *pbus);
-+int acpi_pci_detect_ejectable(acpi_handle handle);
- #endif
- #endif
- 
+        /*
 
