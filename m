@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753904AbZIJHpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZIJHsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753904AbZIJHpV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 03:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZIJHpU
+	id S1754507AbZIJHsT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 03:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZIJHsS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 03:45:20 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:53428 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbZIJHpU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 03:45:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
-         :from:to:cc:content-type;
-        b=tJ5HAtK/M+ViQCiXgOHQMp+z5ei9Hvw9QeJ2gwK4nuopwrDNCtuTHrCRGvyVMj5cK5
-         OPBSO3PDYz37K+Su0m3ghueEqA59/5dXYoXqYQMwfU6QonE9fxXaS6mQmKICvaIq9ltG
-         QdnD8PNyVZZaa8AVpAKfOf9Ovsfzhx4UF3ueY=
+	Thu, 10 Sep 2009 03:48:18 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:46906 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751634AbZIJHsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 03:48:18 -0400
+Date: Thu, 10 Sep 2009 09:48:20 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ed Cashin <ecashin@coraid.com>
+Cc: alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org, apw@canonical.com,
+       bonbons@linux-vserver.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
+Message-ID: <20090910074820.GS18599@kernel.dk>
+References: <20090904183525.GB18599@kernel.dk> <f48e25c99e41e375f2ddd85989cd39e1@coraid.com> <20090905051735.GH18599@kernel.dk> <366469f19c41e0150028b886f6859019@coraid.com> <20090908193540.GB18599@kernel.dk> <60772f633c524ba873f569966fccd6ce@coraid.com> <20090909180804.3e62331a@lxorguk.ukuu.org.uk> <30b7855d211ab5b6bef6fe2cd9b76295@coraid.com> <20090909205835.GK18599@kernel.dk> <810bbe1723b0a205f9b5018a5ddaa722@coraid.com>
 MIME-Version: 1.0
-Date: Thu, 10 Sep 2009 09:45:22 +0200
-X-Google-Sender-Auth: 060f317cb5246210
-Message-ID: <10f740e80909100045n3f830091l2d5430adc85004c2@mail.gmail.com>
-Subject: ERROR: "strchr" [drivers/md/dm-log-userspace.ko] undefined!
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: linux-m68k@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <810bbe1723b0a205f9b5018a5ddaa722@coraid.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As of Sep 6 (http://kisskb.ellerman.id.au/kisskb/config/164/), the
-m68k allmodconfig build
-fails with:
+On Wed, Sep 09 2009, Ed Cashin wrote:
+> On Wed Sep  9 16:59:30 EDT 2009, jens.axboe@oracle.com wrote:
+> > On Wed, Sep 09 2009, Ed Cashin wrote:
+> ...
+> > > To implement the barrier, [aoe] would stop generating new AoE write
+> > > commands, wait for AoE write responses for all the outstanding write
+> > > commands, issue the ATA cache flush command, wait for the response to
+> > > the flush, and then resume normal activity.
+> > 
+> > That's how barriers work with sata to begin with, so I'd very much
+> > recommend that you do the same in aoe instead of just not supporting it.
+> 
+> This patch with EOPNOTSUPP just fixes the regression in 2.6.31-rc9.
+> 
+> A patch adding support for barriers would be nice.  Since I have
+> limited time I tried to motivate that work by using the torture tests
+> that Chris Mason (I believe it was) posted a while ago, but I could
+> not get any problems to manifest using that torture test.
+> 
+> If I had a reproducable problem case that the barrier implementation
+> could fix, it would be very helpful.
 
-| ERROR: "strchr" [drivers/md/dm-log-userspace.ko] undefined!
+Depending on timing and the other end, it may not be easy to reproduce.
+But the problem is indeed real, so I think you should just add the
+proper barrier implementation instead of spending too much time trying
+to create a reproducable problem. By the time you get there, you could
+have fixed it many times over :-)
 
-This was introduced in v2.6.31-rc9 by commit
-b8313b6da7e2e7c7f47d93d8561969a3ff9ba0ea
-(dm log: remove incorrect field from userspace table output).
+-- 
+Jens Axboe
 
-It seems the newly added call to strstr() is turned into a call to
-strchr() by gcc.
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
