@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752199AbZIJQJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752629AbZIJQNH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752199AbZIJQJJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 12:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZIJQJI
+	id S1752629AbZIJQNH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 12:13:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752474AbZIJQMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 12:09:08 -0400
-Received: from mga03.intel.com ([143.182.124.21]:1869 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751899AbZIJQJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 12:09:06 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="186213758"
-Date: Fri, 11 Sep 2009 00:08:57 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 7/7] writeback: balance_dirty_pages() shall write
-	more than dirtied pages
-Message-ID: <20090910160857.GA14984@localhost>
-References: <20090909150601.159061863@intel.com> <20090909154413.GC7949@duck.suse.cz> <20090910014201.GB10957@localhost> <20090910125742.GH5106@think> <20090910132154.GA6446@localhost> <1252594564.7205.36.camel@laptop> <20090910151458.GA10767@localhost> <1252596698.7205.59.camel@laptop> <20090910154116.GA10856@localhost> <1252598069.7205.87.camel@laptop>
+	Thu, 10 Sep 2009 12:12:13 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:52391 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752455AbZIJQMJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 12:12:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hOvXsPk+O7GBQbDt2EgkQWJrYNPziqNO+A+Ngx4NxcKxtWtlc2Efldf962Z75YmY4b
+         /nlCJ/v/J7PoutmxMacDg3LuagZVcsA0g2F7+Hg9udqLsV7uHqO62rKm3pjDDsw9AV3P
+         UP8jVxcOFFHmUwgneEm10Wg013kcgO/ouN/JA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252598069.7205.87.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1252598709.7360.0.camel@twins>
+References: <20090908091304.GQ18599@kernel.dk>
+	 <1252486344.28645.18.camel@marge.simson.net>
+	 <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk>
+	 <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu>
+	 <4AA80C1E.2080901@arcor.de> <20090910060824.GF1335@elte.hu>
+	 <dda83e780909100902s32f076e7o87cebbbfc40d6dea@mail.gmail.com>
+	 <1252598709.7360.0.camel@twins>
+Date: Thu, 10 Sep 2009 09:12:11 -0700
+Message-ID: <dda83e780909100912t45eeeb9cj5179edda565526bc@mail.gmail.com>
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+From: Bret Towe <magnade@gmail.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Nikos Chantziaras <realnc@arcor.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 11:54:29PM +0800, Peter Zijlstra wrote:
-> On Thu, 2009-09-10 at 23:41 +0800, Wu Fengguang wrote:
-> > > > So btrfs_file_write() explicitly calls
-> > > > balance_dirty_pages_ratelimited_nr() to get throttled.
-> > > 
-> > > Right, so what is wrong with than, and how does this patch fix that?
-> > > 
-> > > [ the only thing you have to be careful with is that you don't
-> > > excessively grow the error bound on the dirty limit ]
-> > 
-> > Then we could form a loop:
-> > 
-> >         btrfs_file_write():     dirty 1024 pages
-> >         balance_dirty_pages():  write up to 12 pages (= ratelimit_pages * 1.5)
-> > 
-> > in which the writeback rate cannot keep up with dirty rate,
-> > and the dirty pages go all the way beyond dirty_thresh.
-> 
-> Ah, ok so this is to keep the error bound on the dirty limit bounded,
-> because we can break out of balance_dirty_pages() early, the /* We've
-> done our duty */ break.
-> 
-> Which unbalances the duty vs the dirty ratio.
+On Thu, Sep 10, 2009 at 9:05 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> On Thu, 2009-09-10 at 09:02 -0700, Bret Towe wrote:
+>>
+>> thanks to this thread and others I've seen several kernel tunables
+>> that can effect how the scheduler performs/acts
+>> but what I don't see after a bit of looking is where all these are
+>> documented
+>> perhaps thats also part of the reason there are unhappy people with
+>> the current code in the kernel just because they don't know how
+>> to tune it for their workload
+>
+> The thing is, ideally they should not need to poke at these. These knobs
+> are under CONFIG_SCHED_DEBUG, and that is exactly what they are for.
 
-Right!
+even then I would think they should be documented so people can find out
+what item is hurting their workload so they can better report the bug no?
 
-> I figure that with the task dirty limit stuff we could maybe try to get
-> rid of this break.. worth a try.
-
-Be careful. Without that break, the time a task get throttled in a
-single trip may go out of control. For example, task B get blocked
-for 1000 seconds because there is a task A keep dirtying pages, in
-the mean time task A's dirty thresh going down slowly, but still
-larger than B's.
-
-> > Sorry for writing such a vague changelog!
-> 
-> np, as long as we get there :-)
-> 
-> Change makes sense now, thanks!
-
-May I add you ack?
-
-Thanks,
-Fengguang
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
