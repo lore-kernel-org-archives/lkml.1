@@ -1,101 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755743AbZIJOSD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755759AbZIJOTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755743AbZIJOSD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 10:18:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZIJOSC
+	id S1755759AbZIJOTN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 10:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755740AbZIJOTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 10:18:02 -0400
-Received: from mga14.intel.com ([143.182.124.37]:52045 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753319AbZIJOSA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 10:18:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="186168914"
-Date: Thu, 10 Sep 2009 22:17:50 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/7] writeback: fix queue_io() ordering
-Message-ID: <20090910141750.GA11969@localhost>
-References: <20090909145141.293229693@intel.com> <20090909150600.451373732@intel.com> <20090909155330.GE7949@duck.suse.cz> <20090910012624.GA10957@localhost> <20090910141415.GK607@duck.suse.cz>
+	Thu, 10 Sep 2009 10:19:12 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:40440 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755735AbZIJOTK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 10:19:10 -0400
+Date: Fri, 11 Sep 2009 00:19:05 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Crypto Mailing List <linux-crypto@vger.kernel.org>
+Subject: Crypto Update for 2.6.32
+Message-ID: <20090910141905.GA17948@gondor.apana.org.au>
+References: <20081225001724.GA2813@gondor.apana.org.au> <20081225002020.GA2912@gondor.apana.org.au> <20090324044932.GA18245@gondor.apana.org.au> <20090613020512.GA21024@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090910141415.GK607@duck.suse.cz>
+In-Reply-To: <20090613020512.GA21024@gondor.apana.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 10:14:15PM +0800, Jan Kara wrote:
-> On Thu 10-09-09 09:26:24, Wu Fengguang wrote:
-> > On Wed, Sep 09, 2009 at 11:53:30PM +0800, Jan Kara wrote:
-> > > On Wed 09-09-09 22:51:43, Wu Fengguang wrote:
-> > > > This was not a bug, since b_io is empty for kupdate writeback.
-> > > > The next patch will do requeue_io() for non-kupdate writeback,
-> > > > so let's fix it.
-> > >   But doesn't this patch also need your "anti-starvation" patch?
-> > 
-> > Honza, can you show me that patch?
-> > 
-> > > Looking into the code, we put inode to b_more_io when nr_to_write
-> > > drops to zero and this way we'd just start writing it again
-> > > in the next round...
-> > 
-> > I'm confused. It's OK to start it in next round. Starvation can
-> > occur if we start it immediately in the next writeback_inodes()
-> > invocation. How can that happen with this patch?
->   Sorry, my fault. For kupdate, we splice the list only once s_io is empty
-> so that's not an issue. So the patch looks good.
->   Acked-by: Jan Kara <jack@suse.cz>
+Hi Linus:
 
-Thank you :)
+Here is the crypto update for 2.6.32:
 
-Regards,
-Fengguang
+* Completed hash algorithm transition to shash.
+* Convert IPsec over to lockless ahash interface.
+* Split GHASH from GCM.
+* Orion5X crypto engine support.
+* Minor fixes/updates.
 
-> > > > CC: Dave Chinner <david@fromorbit.com>
-> > > > Cc: Martin Bligh <mbligh@google.com>
-> > > > Cc: Michael Rubin <mrubin@google.com>
-> > > > Cc: Peter Zijlstra <peterz@infradead.org>
-> > > > Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> > > > ---
-> > > >  fs/fs-writeback.c |    7 +++++--
-> > > >  1 file changed, 5 insertions(+), 2 deletions(-)
-> > > > 
-> > > > --- linux.orig/fs/fs-writeback.c	2009-09-09 21:41:14.000000000 +0800
-> > > > +++ linux/fs/fs-writeback.c	2009-09-09 21:45:15.000000000 +0800
-> > > > @@ -313,11 +313,14 @@ static void move_expired_inodes(struct l
-> > > >  }
-> > > >  
-> > > >  /*
-> > > > - * Queue all expired dirty inodes for io, eldest first.
-> > > > + * Queue all expired dirty inodes for io, eldest first:
-> > > > + * (newly dirtied) => b_dirty inodes
-> > > > + *                 => b_more_io inodes
-> > > > + *                 => remaining inodes in b_io => (dequeue for sync)
-> > > >   */
-> > > >  static void queue_io(struct bdi_writeback *wb, unsigned long *older_than_this)
-> > > >  {
-> > > > -	list_splice_init(&wb->b_more_io, wb->b_io.prev);
-> > > > +	list_splice_init(&wb->b_more_io, &wb->b_io);
-> > > >  	move_expired_inodes(&wb->b_dirty, &wb->b_io, older_than_this);
-> > > >  }
-> > > >  
-> > > > 
-> > > > -- 
-> > > > 
-> > > -- 
-> > > Jan Kara <jack@suse.cz>
-> > > SUSE Labs, CR
-> -- 
-> Jan Kara <jack@suse.cz>
-> SUSE Labs, CR
+
+Please pull from
+
+git://git.kernel.org/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+or
+
+master.kernel.org:/pub/scm/linux/kernel/git/herbert/crypto-2.6.git
+
+
+Christian Kujau (1):
+      crypto: rng - Fix typo
+
+Herbert Xu (75):
+      crypto: ansi_cprng - Do not select FIPS
+      crypto: tcrypt - Fix module return code when testing by name
+      crypto: testmgr - Remove hash size check
+      crypto: skcipher - Fix request for sync algorithms
+      crypto: skcipher - Change default sync geniv on SMP to eseqiv
+      crypto: testmgr - Allow implementation-specific tests
+      crypto: api - Add new template create function
+      crypto: api - Add crypto_alloc_instance2
+      crypto: shash - Add shash_instance
+      crypto: api - Add new style spawn support
+      crypto: shash - Add spawn support
+      crypto: api - Add crypto_attr_alg2 helper
+      crypto: shash - Add shash_attr_alg2 helper
+      crypto: shash - Add shash_register_instance
+      crypto: shash - Add crypto_shash_ctx_aligned
+      crypto: shash - Add __crypto_shash_cast
+      crypto: shash - Use finup in default digest
+      crypto: shash - Propagate reinit return value
+      crypto: shash - Add shash_instance_ctx
+      crypto: api - Fix crypto_drop_spawn crash on blank spawns
+      crypto: shash - Export/import hash state only
+      crypto: shash - Move finup/digest null checks to registration time
+      crypto: sha1_generic - Add export/import support
+      crypto: sha256_generic - Use 64-bit counter like sha1
+      crypto: sha256_generic - Add export/import support
+      crypto: sha1-s390 - Add export/import support
+      crypto: sha256-s390 - Add export/import support
+      crypto: padlock - Use shash fallback for sha
+      crypto: shash - Move null setkey check to registration time
+      crypto: async - Use kzfree for requests
+      crypto: shash - Make descsize a run-time attribute
+      crypto: padlock - Switch sha to shash
+      crypto: hmac - Switch to shash
+      crypto: xcbc - Switch to shash
+      crypto: authenc - Remove reference to crypto_hash
+      crypto: hash - Remove legacy hash/digest implementaion
+      crypto: shash - Export async functions
+      crypto: cryptd - Use shash algorithms
+      crypto: ahash - Add crypto_ahash_set_reqsize
+      crypto: cryptd - Use crypto_ahash_set_reqsize
+      crypto: crypto4xx - Use crypto_ahash_set_reqsize
+      crypto: api - Remove frontend argument from extsize/init_tfm
+      crypto: ahash - Convert to new style algorithms
+      crypto: ahash - Add instance/spawn support
+      crypto: tcrypt - Add mask parameter
+      crypto: hash - Add helpers to free spawns
+      crypto: cryptd - Switch to template create API
+      crypto: cryptd - Switch to new style ahash
+      crypto: crypto4xx - Switch to new style ahash
+      crypto: ahash - Remove old_ahash_alg
+      crypto: hash - Zap unaligned buffers
+      crypto: shash - Fix alignment in unaligned operations
+      crypto: ahash - Use GFP_KERNEL in unaligned setkey
+      crypto: ahash - Add unaligned handling and default operations
+      crypto: crypto4xx - Disable SHA implementation
+      crypto: hmac - Fix incorrect error value when creating instance
+      crypto: xcbc - Fix incorrect error value when creating instance
+      crypto: padlock - Fix compile error on i386
+      crypto: ahash - Fix setkey crash
+      crypto: shash - Fix digest size offset
+      crypto: shash - Fix async finup handling of null digest
+      crypto: padlock - Fix hashing of partial blocks
+      crypto: cryptd - Add finup/export/import for hash
+      crypto: xcbc - Use crypto_xor
+      crypto: xcbc - Fix shash conversion
+      crypto: sha512 - Export struct sha512_state
+      crypto: sha512_generic - Use 64-bit counters
+      crypto: sha512-s390 - Add export/import support
+      crypto: shash - Require all algorithms to support export/import
+      crypto: hmac - Prehash ipad/opad
+      crypto: api - Fix aligned ctx helper
+      Revert crypto: fips - Select CPRNG
+      crypto: ctr - Use chainiv on raw counter mode
+      crypto: blkcipher - Do not use eseqiv on stream ciphers
+      crypto: api - Do not displace newly registered algorithms
+
+Huang Ying (3):
+      crypto: ghash - Add GHASH digest algorithm for GCM
+      crypto: gcm - Use GHASH digest algorithm
+      crypto: cryptd - Add support to access underlaying shash
+
+Jan Glauber (1):
+      crypto: sha-s390 - Fix warnings in import function
+
+Jarod Wilson (1):
+      crypto: des_s390 - Permit weak keys unless REQ_WEAK_KEY set
+
+Joe Perches (1):
+      hwrng: Use PCI_VDEVICE
+
+Kim Phillips (3):
+      crypto: talitos - simplify hmac data size calculation
+      crypto: talitos - align locks on cache lines
+      crypto: talitos - add support for 36 bit addressing
+
+Neil Horman (3):
+      random: Add optional continuous repetition test to entropy store based rngs
+      crypto: fips - Select CPRNG
+      crypto: fips - Depend on ansi_cprng
+
+Phil Carmody (1):
+      crypto: aes - Undefined behaviour in crypto_aes_expand_key
+
+Roland Dreier (1):
+      crypto: aes-ni - Don't print message with KERN_ERR on old system
+
+Sachin Sant (1):
+      crypto: s390 - Fix sha build failure
+
+Sebastian Andrzej Siewior (3):
+      crypto: ansi_prng - Use just a BH lock
+      crypto: ansi_prng - alloc cipher just in init
+      crypto: mv_cesa - Add support for Orion5X crypto engine
+
+Shane Wang (1):
+      crypto: vmac - New hash algorithm for intel_txt support
+
+Steffen Klassert (7):
+      crypto: tcrypt - Test algorithms by name
+      crypto: cryptd - Fix uninitialized return value
+      crypto: ahash - Use GFP_KERNEL on allocation if the request can sleep
+      crypto: shash - Test for the algorithms import function before exporting it
+      crypto: authenc - Convert to ahash
+      crypto: xcbc - Fix alignment calculation of xcbc_tfm_ctx
+      crypto: ansi_cprng - Fix module initialization
+
+ arch/s390/crypto/des_s390.c          |   11 +-
+ arch/s390/crypto/sha1_s390.c         |   26 ++
+ arch/s390/crypto/sha256_s390.c       |   26 ++
+ arch/s390/crypto/sha512_s390.c       |   36 ++
+ arch/x86/crypto/aesni-intel_glue.c   |    2 +-
+ crypto/Kconfig                       |   30 ++-
+ crypto/Makefile                      |    5 +-
+ crypto/ablkcipher.c                  |   29 ++-
+ crypto/aes_generic.c                 |    9 +-
+ crypto/ahash.c                       |  336 +++++++++++++++--
+ crypto/algapi.c                      |  180 ++++++++--
+ crypto/algboss.c                     |    5 +
+ crypto/ansi_cprng.c                  |   43 +--
+ crypto/api.c                         |   54 ++--
+ crypto/authenc.c                     |  358 ++++++++++++++----
+ crypto/cryptd.c                      |  321 +++++++++++------
+ crypto/ctr.c                         |    2 +
+ crypto/gcm.c                         |  580 ++++++++++++++++++++---------
+ crypto/ghash-generic.c               |  170 +++++++++
+ crypto/hmac.c                        |  302 +++++++--------
+ crypto/internal.h                    |   28 +--
+ crypto/pcompress.c                   |    6 +-
+ crypto/rng.c                         |    2 +-
+ crypto/sha1_generic.c                |   41 ++-
+ crypto/sha256_generic.c              |  100 +++---
+ crypto/sha512_generic.c              |   48 +--
+ crypto/shash.c                       |  270 ++++++++++----
+ crypto/tcrypt.c                      |   22 +-
+ crypto/testmgr.c                     |   30 ++-
+ crypto/testmgr.h                     |   16 +
+ crypto/vmac.c                        |  678 ++++++++++++++++++++++++++++++++++
+ crypto/xcbc.c                        |  370 +++++++------------
+ drivers/char/hw_random/amd-rng.c     |    4 +-
+ drivers/char/hw_random/geode-rng.c   |    3 +-
+ drivers/char/random.c                |   14 +
+ drivers/crypto/Kconfig               |   15 +-
+ drivers/crypto/Makefile              |    1 +
+ drivers/crypto/amcc/crypto4xx_alg.c  |    3 +-
+ drivers/crypto/amcc/crypto4xx_core.c |   73 ++--
+ drivers/crypto/amcc/crypto4xx_core.h |   25 ++-
+ drivers/crypto/mv_cesa.c             |  606 ++++++++++++++++++++++++++++++
+ drivers/crypto/mv_cesa.h             |  119 ++++++
+ drivers/crypto/padlock-sha.c         |  329 +++++++++--------
+ drivers/crypto/talitos.c             |  216 +++++------
+ drivers/crypto/talitos.h             |    1 +
+ include/crypto/algapi.h              |   37 ++-
+ include/crypto/cryptd.h              |   17 +
+ include/crypto/hash.h                |  147 +++++---
+ include/crypto/internal/hash.h       |  147 +++++++-
+ include/crypto/sha.h                 |   20 +
+ include/crypto/vmac.h                |   61 +++
+ include/linux/crypto.h               |   43 +--
+ include/linux/fips.h                 |   10 +
+ 53 files changed, 4515 insertions(+), 1512 deletions(-)
+
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
