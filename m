@@ -1,72 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752787AbZIJQdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752839AbZIJQmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752787AbZIJQdr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 12:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZIJQdq
+	id S1752839AbZIJQmb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 12:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752291AbZIJQma
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 12:33:46 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:29351 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751146AbZIJQdp (ORCPT
+	Thu, 10 Sep 2009 12:42:30 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:52591 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751173AbZIJQma (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 12:33:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=GdJmkbJq4LK1r8zM1ZgmWozvm5f9BdQD/Imx73oDVw1cMfGEH97WcMzoylbRYN8/4c
-         A42ZRdETjbxJD/SayMA546eTWo9z1YIfgb3BCejLlKLWnLx3FuLC2GQjWoJudYrBgFSv
-         UVaS6Xs2doVGjVYYnRxXzS3aHy62IbwswAnDM=
-MIME-Version: 1.0
-In-Reply-To: <20090910162611.GA31265@elte.hu>
-References: <1252486344.28645.18.camel@marge.simson.net>
-	 <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk>
-	 <20090909180404.GA11027@elte.hu> <4AA80C1E.2080901@arcor.de>
-	 <20090910060824.GF1335@elte.hu>
-	 <dda83e780909100902s32f076e7o87cebbbfc40d6dea@mail.gmail.com>
-	 <1252598709.7360.0.camel@twins>
-	 <dda83e780909100912t45eeeb9cj5179edda565526bc@mail.gmail.com>
-	 <20090910162611.GA31265@elte.hu>
-Date: Thu, 10 Sep 2009 09:33:37 -0700
-Message-ID: <dda83e780909100933q28cd1e06kcbceec53d2c94936@mail.gmail.com>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-From: Bret Towe <magnade@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nikos Chantziaras <realnc@arcor.de>, Jens Axboe <jens.axboe@oracle.com>,
-       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+	Thu, 10 Sep 2009 12:42:30 -0400
+Date: Thu, 10 Sep 2009 18:42:32 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>, linux-input@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Subject: Re: 2.6.31-rc6 (yeah, I know...): weird tty / X.org state currently
+Message-ID: <20090910164232.GA27404@rhlx01.hs-esslingen.de>
+References: <20090910103126.GA17742@rhlx01.hs-esslingen.de> <20090910165837.50544526EC9@mailhub.coreip.homeip.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090910165837.50544526EC9@mailhub.coreip.homeip.net>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 9:26 AM, Ingo Molnar <mingo@elte.hu> wrote:
->
-> * Bret Towe <magnade@gmail.com> wrote:
->
->> On Thu, Sep 10, 2009 at 9:05 AM, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->> > On Thu, 2009-09-10 at 09:02 -0700, Bret Towe wrote:
->> >>
->> >> thanks to this thread and others I've seen several kernel tunables
->> >> that can effect how the scheduler performs/acts
->> >> but what I don't see after a bit of looking is where all these are
->> >> documented
->> >> perhaps thats also part of the reason there are unhappy people with
->> >> the current code in the kernel just because they don't know how
->> >> to tune it for their workload
->> >
->> > The thing is, ideally they should not need to poke at these.
->> > These knobs are under CONFIG_SCHED_DEBUG, and that is exactly
->> > what they are for.
->>
->> even then I would think they should be documented so people can
->> find out what item is hurting their workload so they can better
->> report the bug no?
->
-> Would be happy to apply such documentation patches. You could also
-> help start adding a 'scheduler performance' wiki portion to
-> perf.wiki.kernel.org, if you have time for that.
+Hi,
 
-time isn't so much the issue but not having any clue as to what any
-of the options do
+On Thu, Sep 10, 2009 at 09:25:00AM -0700, Dmitry Torokhov wrote:
+> On Thursday 10 September 2009 03:31:26 am Andreas Mohr wrote:
+> > Possibly the kernel's control key state got stuck in a weird state,
+> > perhaps due to some input layer race conditions or so.
+> >
+> > Or is it X.org's input handling which is responsible for Ctrl-Alt-F1
+> > etc. combos? I wouldn't think so...
+> 
+> X is solely responsible for handling input when active. It switches
+> console in RAW mode which bypasses kernel processing) and does it's
+> own thing. This includes switching VTs upon Ctrl-ALt-Fx.
+
+OK, but what's puzzling is that there's no indication whatsoever that
+there's any broken Ctrl activity (neither in konsole nor in a tty),
+yet the tty gets switched readily as soon as only Alt-Fx gets pressed in
+X.org. 
+
+IOW (unless that's wrong) you're saying that it's X.org which has
+a broken Ctrl key state (but solely when doing the Alt-Fx switch,
+_not_ when doing Ctrl-L or regular letter input), not the kernel.
+
+If so, would this problem warrant notifying X.org upstream,
+or is it likely to be fixed in newer X.org releases?
+
+Andreas Mohr
