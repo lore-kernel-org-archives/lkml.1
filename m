@@ -1,56 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753002AbZIJTCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753293AbZIJTFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753002AbZIJTCj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbZIJTCi
+	id S1753293AbZIJTFX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752915AbZIJTFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:02:38 -0400
-Received: from claw.goop.org ([74.207.240.146]:41594 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751150AbZIJTCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:02:38 -0400
-Message-ID: <4AA94D48.5010401@goop.org>
-Date: Thu, 10 Sep 2009 12:02:32 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
+	Thu, 10 Sep 2009 15:05:22 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36629 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752414AbZIJTFW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 15:05:22 -0400
+Date: Thu, 10 Sep 2009 21:05:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Eric Miao <eric.y.miao@gmail.com>
+Cc: Daniel Walker <dwalker@fifo99.com>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       Russell King <rmk@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
+Message-ID: <20090910190518.GC23356@elf.ucw.cz>
+References: <20090909075024.GA1400@ucw.cz> <1252507740.14793.115.camel@desktop> <f17812d70909091740m3ef98e44t18dffc6a2c7c1126@mail.gmail.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Stable Kernel <stable@kernel.org>, Tejun Heo <tj@kernel.org>
-Subject: Re: [GIT PULL] Xen bugfixes
-References: <4AA83F99.5040401@goop.org> <20090910051648.GA1335@elte.hu> <4AA93466.6020607@goop.org> <20090910172629.GA10689@elte.hu>
-In-Reply-To: <20090910172629.GA10689@elte.hu>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f17812d70909091740m3ef98e44t18dffc6a2c7c1126@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/10/09 10:26, Ingo Molnar wrote:
-> Looks like a nice cleanup. Mind sticking it into your next pull 
-> request?
->   
+On Thu 2009-09-10 08:40:24, Eric Miao wrote:
+> On Wed, Sep 9, 2009 at 10:49 PM, Daniel Walker <dwalker@fifo99.com> wrote:
+> > On Wed, 2009-09-09 at 09:50 +0200, Pavel Machek wrote:
+> >> Hi, Linus!
+> >>
+> >> Spitz resume was broken for year or likely two, and it would be very
+> >> nice to fix it for 2.6.31 release. One liner is below, and it really
+> >> can not harm. It already is in Eric's fix queue, so pulling that for
+> >> .31 should work, too.
+> >>
+> >> Do you think you could take it?
+> >
+> > One checkpatch error here..
+> >
+> > ERROR: trailing whitespace
+> > #77: FILE: arch/arm/mach-pxa/sharpsl_pm.c:681:
+> > +^Iif ((!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_LOCK)) || $
+> >
+> > total: 1 errors, 0 warnings, 10 lines checked
+> >
+> 
+> This has been fixed in the version I sent to Russell.
 
-The following changes since commit 2496afbf1e50c70f80992656bcb730c8583ddac3:
-  Yang Xiaowei (1):
-        xen: use stronger barrier after unlocking lock
+Thanks and sorry for the noise. 
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git bugfix
-Jeremy Fitzhardinge (1):
-      x86: split __phys_addr out into separate file
-
- arch/x86/mm/Makefile   |    4 +-
- arch/x86/mm/ioremap.c  |   72 +-----------------------------------------------
- arch/x86/mm/physaddr.c |   70 ++++++++++++++++++++++++++++++++++++++++++++++
- arch/x86/mm/physaddr.h |   10 ++++++
- 4 files changed, 83 insertions(+), 73 deletions(-)
- create mode 100644 arch/x86/mm/physaddr.c
- create mode 100644 arch/x86/mm/physaddr.h
-
-	J
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
