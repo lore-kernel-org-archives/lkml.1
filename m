@@ -1,648 +1,308 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755484AbZIJLDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753644AbZIJLJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755484AbZIJLDs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 07:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755437AbZIJLDs
+	id S1753644AbZIJLJO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 07:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZIJLJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 07:03:48 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:42098 "EHLO kernel.dk"
+	Thu, 10 Sep 2009 07:09:13 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:58340 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753085AbZIJLDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 07:03:46 -0400
-Date: Thu, 10 Sep 2009 13:03:48 +0200
+	id S1752831AbZIJLJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 07:09:11 -0400
+Date: Thu, 10 Sep 2009 13:09:13 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Con Kolivas <kernel@kolivas.org>
-Cc: Nikos Chantziaras <realnc@arcor.de>, Ingo Molnar <mingo@elte.hu>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org
+To: Mike Galbraith <efault@gmx.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Nikos Chantziaras <realnc@arcor.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
 Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090910110348.GK18599@kernel.dk>
-References: <20090908091304.GQ18599@kernel.dk> <4AA80C1E.2080901@arcor.de> <20090909205043.GI18599@kernel.dk> <200909101102.56615.kernel@kolivas.org>
+Message-ID: <20090910110912.GL18599@kernel.dk>
+References: <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu> <4AA80C1E.2080901@arcor.de> <20090910060824.GF1335@elte.hu> <20090910064059.GA22646@elte.hu> <20090910095457.GD18599@kernel.dk> <20090910100321.GA7922@elte.hu> <20090910101137.GH18599@kernel.dk> <20090910102837.GJ18599@kernel.dk> <1252580251.18659.10.camel@marge.simson.net>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="Bzq2cJcN05fcPrs+"
+Content-Type: multipart/mixed; boundary="Qgof7w7UksPF5inF"
 Content-Disposition: inline
-In-Reply-To: <200909101102.56615.kernel@kolivas.org>
+In-Reply-To: <1252580251.18659.10.camel@marge.simson.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---Bzq2cJcN05fcPrs+
+--Qgof7w7UksPF5inF
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 
-On Thu, Sep 10 2009, Con Kolivas wrote:
-> > It probably just means that latt isn't a good measure of the problem.
-> > Which isn't really too much of a surprise.
+On Thu, Sep 10 2009, Mike Galbraith wrote:
+> On Thu, 2009-09-10 at 12:28 +0200, Jens Axboe wrote:
 > 
-> And that's a real shame because this was one of the first real good attempts 
-> I've seen to actually measure the difference, and I thank you for your 
-> efforts Jens. I believe the reason it's limited is because all you're 
-> measuring is time from wakeup and the test app isn't actually doing any work. 
-> The issue is more than just waking up as fast as possible, it's then doing 
-> some meaningful amount of work within a reasonable time frame as well. What 
-> the "meaningful amount of work" and "reasonable time frame" are, remains a 
-> mystery, but I guess could be added on to this testing app.
+> > No difference. Then I tried switching NO_NEW_FAIR_SLEEPERS on, and then
+> > I get:
+> > 
+> >  Performance counter stats for 'xmodmap .xmodmap-carl':
+> > 
+> >        9.009137  task-clock-msecs         #      0.447 CPUs 
+> >              18  context-switches         #      0.002 M/sec
+> >               1  CPU-migrations           #      0.000 M/sec
+> >             315  page-faults              #      0.035 M/sec
+> >   <not counted>  cycles                  
+> >   <not counted>  instructions            
+> >   <not counted>  cache-references        
+> >   <not counted>  cache-misses            
+> > 
+> >     0.020167093  seconds time elapsed
+> > 
+> > Woot!
+> 
+> Something is very seriously hosed on that box... clock?
 
-Here's a quickie addition that adds some work to the threads. The
-latency measure is now 'when did I wake up and complete my work'. The
-default work is filling a buffer with pseudo random data and then
-compressing it with zlib. Default is 64kb of data, can be adjusted with
--x. -x0 turns off work processing.
+model name      : Genuine Intel(R) CPU           T2400  @ 1.83GHz
+
+Throttles down to 1.00GHz when idle.
+
+> Can you turn it back on, and do..
+
+I guess you mean turn NEW_FAIR_SLEEPERS back on, correct?
+
+> 	while sleep .1; do cat /proc/sched_debug >> foo; done 
+> ..on one core, and (quickly;) xmodmap .xmodmap-carl, then send me a few
+> seconds worth (gzipped up) to eyeball?
+
+Attached.
 
 -- 
 Jens Axboe
 
 
---Bzq2cJcN05fcPrs+
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="latt.c"
-
-/*
- * Simple latency tester that combines multiple processes.
- *
- * Compile: gcc -Wall -O2 -D_GNU_SOURCE -lrt -lm -lz -o latt latt.c
- *
- * Run with: latt -c8 'program --args'
- *
- * Options:
- *
- *	-cX	Use X number of clients
- *	-sX	Use X msec as the minimum sleep time for the parent
- *	-SX	Use X msec as the maximum sleep time for the parent
- *	-xX	Use X kb as the work buffer to randomize and compress
- *	-v	Print all delays as they are logged
- *
- * (C) Jens Axboe <jens.axboe@oracle.com> 2009
- * Fixes from Peter Zijlstra <a.p.zijlstra@chello.nl> to actually make it
- * measure what it was intended to measure.
- * Fix from Ingo Molnar for poll() using 0 as timeout (should be negative).
- *
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <getopt.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/time.h>
-#include <sys/mman.h>
-#include <time.h>
-#include <math.h>
-#include <poll.h>
-#include <pthread.h>
-#include <zlib.h>
-#include <string.h>
-
-/*
- * In msecs
- */
-static unsigned int min_delay = 100;
-static unsigned int max_delay = 500;
-static unsigned int clients = 1;
-static unsigned int compress_size = 64 * 1024;
-static unsigned int verbose;
-
-#define print_if_verbose(args...)		\
-	do {					\
-	if (verbose) {				\
-		fprintf(stderr, ##args);	\
-		fflush(stderr);			\
-	}					\
-	} while (0)
-
-#define MAX_CLIENTS		512
-
-static int pipes[MAX_CLIENTS*2][2];
-static pid_t app_pid;
-
-#define CLOCKSOURCE		CLOCK_MONOTONIC
-
-struct stats
-{
-	double n, mean, M2, max, max_client;
-} delay_stats;
-
-
-static void update_stats(struct stats *stats, unsigned long long val)
-{
-	double delta, x = val;
-
-	stats->n++;
-	delta = x - stats->mean;
-	stats->mean += delta / stats->n;
-	stats->M2 += delta*(x - stats->mean);
-
-	if (stats->max < x)
-		stats->max = x;
-}
-
-static unsigned long nr_stats(struct stats *stats)
-{
-	return stats->n;
-}
-
-static double max_stats(struct stats *stats)
-{
-	return stats->max;
-}
-
-static double avg_stats(struct stats *stats)
-{
-	return stats->mean;
-}
-
-/*
- * http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
- *
- *       (\Sum n_i^2) - ((\Sum n_i)^2)/n
- * s^2 = -------------------------------
- *                  n - 1
- *
- * http://en.wikipedia.org/wiki/Stddev
- */
-static double stddev_stats(struct stats *stats)
-{
-	double variance = stats->M2 / (stats->n - 1);
-
-	return sqrt(variance);
-}
-
-/*
- * The std dev of the mean is related to the std dev by:
- *
- *             s
- * s_mean = -------
- *          sqrt(n)
- *
- */
-static double stddev_mean_stats(struct stats *stats)
-{
-	double variance = stats->M2 / (stats->n - 1);
-	double variance_mean = variance / stats->n;
-
-	return sqrt(variance_mean);
-}
-
-struct sem {
-	pthread_mutex_t lock;
-	pthread_cond_t cond;
-	int value;
-	int waiters;
-};
-
-static void init_sem(struct sem *sem)
-{
-	pthread_mutexattr_t attr;
-	pthread_condattr_t cond;
-
-	pthread_mutexattr_init(&attr);
-	pthread_mutexattr_setpshared(&attr, PTHREAD_PROCESS_SHARED);
-	pthread_condattr_init(&cond);
-	pthread_condattr_setpshared(&cond, PTHREAD_PROCESS_SHARED);
-	pthread_cond_init(&sem->cond, &cond);
-	pthread_mutex_init(&sem->lock, &attr);
-
-	sem->value = 0;
-	sem->waiters = 0;
-}
-
-static void sem_down(struct sem *sem)
-{
-	pthread_mutex_lock(&sem->lock);
-
-	while (!sem->value) {
-		sem->waiters++;
-		pthread_cond_wait(&sem->cond, &sem->lock);
-		sem->waiters--;
-	}
-
-	sem->value--;
-	pthread_mutex_unlock(&sem->lock);
-}
-
-static void sem_up(struct sem *sem)
-{
-	pthread_mutex_lock(&sem->lock);
-	if (!sem->value && sem->waiters)
-		pthread_cond_signal(&sem->cond);
-	sem->value++;
-	pthread_mutex_unlock(&sem->lock);
-}
-
-static int parse_options(int argc, char *argv[])
-{
-	struct option l_opts[] = {
-		{ "min-delay (msec)", 	1, 	NULL,	's' },
-		{ "max-delay (msec)",	1,	NULL,	'S' },
-		{ "clients",		1,	NULL,	'c' },
-		{ "compress-size (kb)",	1,	NULL,	'x' },
-		{ "verbose",		0,	NULL,	'v' },
-		{ "help",		0,	NULL,	'h' },
-		{ NULL,					    },
-	};
-	int c, res, index = 0, i;
-
-	while ((c = getopt_long(argc, argv, "s:S:c:vhx:", l_opts, &res)) != -1) {
-		index++;
-		switch (c) {
-			case 's':
-				min_delay = atoi(optarg);
-				break;
-			case 'S':
-				max_delay = atoi(optarg);
-				break;
-			case 'c':
-				clients = atoi(optarg);
-				if (clients > MAX_CLIENTS) {
-					clients = MAX_CLIENTS;
-					printf("Capped clients to %d\n", clients);
-				}
-				break;
-			case 'v':
-				verbose = 1;
-				break;
-			case 'h':
-				for (i = 0; l_opts[i].name; i++)
-					printf("-%c: %s\n", l_opts[i].val, l_opts[i].name);
-				break;
-			case 'x':
-				compress_size = atoi(optarg);
-				compress_size *= 1024;
-				break;
-		}
-	}
-
-	return index + 1;
-}
-
-static pid_t fork_off(const char *app)
-{
-	pid_t pid;
-
-	pid = fork();
-	if (pid)
-		return pid;
-
-	exit(system(app));
-}
-
-static unsigned long usec_since(struct timespec *start, struct timespec *end)
-{
-	unsigned long long s, e;
-
-	s = start->tv_sec * 1000000000ULL + start->tv_nsec;
-	e =   end->tv_sec * 1000000000ULL +   end->tv_nsec;
-
-	return (e - s) / 1000;
-}
-
-static void log_delay(unsigned long delay)
-{
-	print_if_verbose("log delay %8lu usec (pid=%d)\n", delay, getpid());
-
-	update_stats(&delay_stats, delay);
-}
-
-static unsigned long pseed = 1;
-
-static int get_rand(void)
-{
-	pseed = pseed * 1103515245 + 12345;
-	return ((unsigned) (pseed / 65536) % 32768);
-}
-
-static void fill_random_data(int *buf, unsigned int nr_ints)
-{
-	int i;
-
-	for (i = 0; i < nr_ints; i++)
-		buf[i] = get_rand();
-}
-
-/*
- * Generate random data and compress it with zlib
- */
-static void do_work(void)
-{
-	unsigned long work_size = compress_size;
-	z_stream stream;
-	int ret, bytes;
-	void *zbuf;
-	int *buf;
-
-	memset(&stream, 0, sizeof(stream));
-	deflateInit(&stream, 7);
-	bytes = deflateBound(&stream, work_size);
-
-	zbuf = malloc(bytes);
-	buf = malloc(work_size);
-	fill_random_data(buf, work_size / sizeof(int));
-
-	stream.next_in = (void *) buf;
-	stream.avail_in = work_size;
-	stream.next_out = zbuf;
-	stream.avail_out = bytes;
-
-	do {
-		ret = deflate(&stream, Z_FINISH);
-	} while (ret == Z_OK);
-
-	deflateEnd(&stream);
-	free(buf);
-	free(zbuf);
-}
-
-/*
- * Reads a timestamp (which is ignored, it's just a wakeup call), and replies
- * with the timestamp of when we saw it
- */
-static void run_child(int *in, int *out, struct sem *sem)
-{
-	struct timespec ts;
-
-	print_if_verbose("present: %d\n", getpid());
-
-	sem_up(sem);
-
-	do {
-		int ret;
-
-		ret = read(in[0], &ts, sizeof(ts));
-		if (ret <= 0)
-			break;
-		else if (ret != sizeof(ts))
-			break;
-
-		if (compress_size)
-			do_work();
-
-		clock_gettime(CLOCKSOURCE, &ts);
-
-		ret = write(out[1], &ts, sizeof(ts));
-		if (ret <= 0)
-			break;
-		else if (ret != sizeof(ts))
-			break;
-
-		print_if_verbose("alive: %d\n", getpid());
-	} while (1);
-}
-
-/*
- * Do a random sleep between min and max delay
- */
-static void do_rand_sleep(void)
-{
-	unsigned int msecs;
-
-	msecs = min_delay + ((float) max_delay * (rand() / (RAND_MAX + 1.0)));
-	print_if_verbose("sleeping for: %u msec\n", msecs);
-	usleep(msecs * 1000);
-}
-
-static void kill_connection(void)
-{
-	int i;
-
-	for (i = 0; i < 2*clients; i++) {
-		if (pipes[i][0] != -1) {
-			close(pipes[i][0]);
-			pipes[i][0] = -1;
-		}
-		if (pipes[i][1] != -1) {
-			close(pipes[i][1]);
-			pipes[i][1] = -1;
-		}
-	}
-}
-
-static int __write_ts(int i, struct timespec *ts)
-{
-	int fd = pipes[2*i][1];
-
-	clock_gettime(CLOCKSOURCE, ts);
-
-	return write(fd, ts, sizeof(*ts)) != sizeof(*ts);
-}
-
-static long __read_ts(int i, struct timespec *ts, pid_t *cpids)
-{
-	int fd = pipes[2*i+1][0];
-	unsigned long delay;
-	struct timespec t;
-
-	if (read(fd, &t, sizeof(t)) != sizeof(t))
-		return -1;
-
-	delay = usec_since(ts, &t);
-	log_delay(delay);
-	print_if_verbose("got delay %ld from child %d [pid %d]\n", delay,
-				i, cpids[i]);
-	return 0;
-}
-
-static int read_ts(struct pollfd *pfd, unsigned int nr, struct timespec *ts,
-		   pid_t *cpids)
-{
-	unsigned int i;
-
-	for (i = 0; i < clients; i++) {
-		if (pfd[i].revents & (POLLERR | POLLHUP | POLLNVAL))
-			return -1L;
-		if (pfd[i].revents & POLLIN) {
-			pfd[i].events = 0;
-			if (__read_ts(i, &ts[i], cpids))
-				return -1L;
-			nr--;
-		}
-		if (!nr)
-			break;
-	}
-
-	return 0;
-}
-
-static int app_has_exited(void)
-{
-	int ret, status;
-
-	/*
-	 * If our app has exited, stop
-	 */
-	ret = waitpid(app_pid, &status, WNOHANG);
-	if (ret < 0) {
-		perror("waitpid");
-		return 1;
-	} else if (ret == app_pid &&
-		   (WIFSIGNALED(status) || WIFEXITED(status))) {
-		return 1;
-	}
-
-	return 0;
-}
-
-/*
- * While our given app is running, send a timestamp to each client and
- * log the maximum latency for each of them to wakeup and reply
- */
-static void run_parent(pid_t *cpids)
-{
-	struct pollfd *ipfd;
-	int do_exit = 0, i;
-	struct timespec *t1;
-
-	t1 = malloc(sizeof(struct timespec) * clients);
-	ipfd = malloc(sizeof(struct pollfd) * clients);
-
-	srand(1234);
-
-	do {
-		unsigned pending_events;
-
-		do_rand_sleep();
-
-		if (app_has_exited())
-			break;
-
-		for (i = 0; i < clients; i++) {
-			ipfd[i].fd = pipes[2*i+1][0];
-			ipfd[i].events = POLLIN;
-		}
-
-		/*
-		 * Write wakeup calls
-		 */
-		for (i = 0; i < clients; i++) {
-			print_if_verbose("waking: %d\n", cpids[i]);
-
-			if (__write_ts(i, t1+i)) {
-				do_exit = 1;
-				break;
-			}
-		}
-
-		if (do_exit)
-			break;
-
-		/*
-		 * Poll and read replies
-		 */
-		pending_events = clients;
-		while (pending_events) {
-			int evts = poll(ipfd, clients, -1);
-
-			if (evts < 0) {
-				do_exit = 1;
-				break;
-			} else if (!evts)
-				continue;
-
-			if (read_ts(ipfd, evts, t1, cpids)) {
-				do_exit = 1;
-				break;
-			}
-
-			pending_events -= evts;
-		}
-	} while (!do_exit);
-
-	kill_connection();
-	free(t1);
-	free(ipfd);
-}
-
-static void run_test(void)
-{
-	struct sem *sem;
-	pid_t *cpids;
-	int i, status;
-
-	sem = mmap(NULL, sizeof(*sem), PROT_READ|PROT_WRITE,
-			MAP_SHARED | MAP_ANONYMOUS, 0, 0);
-	if (sem == MAP_FAILED) {
-		perror("mmap");
-		return;
-	}
-
-	init_sem(sem);
-
-	for (i = 0; i < 2*clients; i++) {
-		if (pipe(pipes[i])) {
-			perror("pipe");
-			return;
-		}
-	}
-
-	cpids = malloc(sizeof(pid_t) * clients);
-
-	for (i = 0; i < clients; i++) {
-		cpids[i] = fork();
-		if (cpids[i]) {
-			sem_down(sem);
-			continue;
-		}
-
-		run_child(pipes[2*i], pipes[2*i+1], sem);
-		exit(0);
-	}
-
-	run_parent(cpids);
-
-	for (i = 0; i < clients; i++)
-		kill(cpids[i], SIGQUIT);
-	for (i = 0; i < clients; i++)
-		waitpid(cpids[i], &status, 0);
-
-	free(cpids);
-	munmap(sem, sizeof(*sem));
-}
-
-static void handle_sigint(int sig)
-{
-	kill(app_pid, SIGINT);
-}
-
-int main(int argc, char *argv[])
-{
-	int app_offset, off;
-	char app[256];
-
-	off = 0;
-	app_offset = parse_options(argc, argv);
-	if (app_offset >= argc) {
-		printf("%s: [options] 'app'\n", argv[0]);
-		return 1;
-	}
-
-	while (app_offset < argc) {
-		if (off) {
-			app[off] = ' ';
-			off++;
-		}
-		off += sprintf(app + off, "%s", argv[app_offset]);
-		app_offset++;
-	}
-
-	signal(SIGINT, handle_sigint);
-
-	/*
-	 * Start app and start logging latencies
-	 */
-	app_pid = fork_off(app);
-	run_test();
-
-	printf("\nParameters: min_wait=%ums, max_wait=%ums, clients=%u\n",
-			min_delay, max_delay, clients);
-	printf("Entries logged: %lu\n", nr_stats(&delay_stats));
-	printf("\n             Averages\n");
-	printf("-------------------------------------\n");
-	printf("\tMax\t\t%8.0f usec\n", max_stats(&delay_stats));
-	printf("\tAvg\t\t%8.0f usec\n", avg_stats(&delay_stats));
-	printf("\tStdev\t\t%8.0f usec\n", stddev_stats(&delay_stats));
-	printf("\tStdev mean\t%8.0f usec\n", stddev_mean_stats(&delay_stats));
-
-	return 0;
-}
-
---Bzq2cJcN05fcPrs+--
+--Qgof7w7UksPF5inF
+Content-Type: application/octet-stream
+Content-Disposition: attachment; filename="sched-debug-cat.bz2"
+Content-Transfer-Encoding: base64
+
+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
+BMsfX0A=
+
+--Qgof7w7UksPF5inF--
