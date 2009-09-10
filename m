@@ -1,45 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755043AbZIJGPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbZIJGCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755043AbZIJGPY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 02:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754249AbZIJGPY
+	id S1754393AbZIJGCG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 02:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZIJGCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 02:15:24 -0400
-Received: from max.feld.cvut.cz ([147.32.192.36]:46564 "EHLO max.feld.cvut.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752391AbZIJGPX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 02:15:23 -0400
-X-Greylist: delayed 704 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Sep 2009 02:15:23 EDT
-From: Michal Sojka <sojkam1@fel.cvut.cz>
-To: srostedt@redhat.com
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org,
-       Michal Sojka <sojkam1@fel.cvut.cz>
-Subject: [PATCH] tracing/events: Fixed typo
-Date: Thu, 10 Sep 2009 08:02:21 +0200
-Message-Id: <1252562541-32609-1-git-send-email-sojkam1@fel.cvut.cz>
-X-Mailer: git-send-email 1.6.3.3
+	Thu, 10 Sep 2009 02:02:05 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:37591 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752279AbZIJGCD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 02:02:03 -0400
+Date: Wed, 9 Sep 2009 23:06:28 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       container@us.ibm.com, sukadev@us.ibm.com
+Subject: [RFC][v6][PATCH 0/9] clone_with_pids() syscall
+Message-ID: <20090910060627.GA24343@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Michal Sojka <sojkam1@fel.cvut.cz>
----
- Documentation/trace/events.txt |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
-index f157d75..8efb969 100644
---- a/Documentation/trace/events.txt
-+++ b/Documentation/trace/events.txt
-@@ -72,7 +72,7 @@ To enable all events in sched subsystem:
- 
- 	# echo 1 > /debug/tracing/events/sched/enable
- 
--To eanble all events:
-+To enable all events:
- 
- 	# echo 1 > /debug/tracing/events/enable
- 
--- 
-1.6.3.3
+=== NEW CLONE() SYSTEM CALL:
 
+To support application checkpoint/restart, a task must have the same pid it
+had when it was checkpointed.  When containers are nested, the tasks within
+the containers exist in multiple pid namespaces and hence have multiple pids
+to specify during restart.
+
+This patchset implements a new system call, clone_with_pids() that lets a
+process specify the pids of the child process.
+
+Patches 1 through 6 are helpers and we believe they are needed for application
+restart, regardless of the kernel implementation of application restart.
+
+Patch 8 defines a prototype of the new system call. Patch 9 adds some
+documentation on the new system call.
+
+Changelog[v6]:
+	- [Nathan Lynch, Arnd Bergmann, H. Peter Anvin, Linus Torvalds]
+	  Change 'pid_set.pids' to 'pid_t pids[]' so sizeof(struct pid_set) is
+	  constant across architectures (Patches 7, 8).
+	- [Nathan Lynch] Change pid_set.num_pids to unsigned and remove
+	  'unum_pids < 0' check (Patches 7,8)
+	- [Pavel Machek] New patch (Patch 9) to add some documentation.
+
+Changelog[v5]:
+	- Make 'pid_max' a property of pid_ns (Integrated Serge Hallyn's patch
+	  into this set)
+	- (Eric Biederman): Avoid the new function, set_pidmap() - added
+	  couple of checks on 'target_pid' in alloc_pidmap() itself.
+
+=== IMPORTANT TODO:
+
+clone() system call has another limitation - all available bits in clone-flags
+are in use and any new clone-flag will need a variant of the clone() system
+call. 
+
+It appears to make sense to try and extend this new system call to address
+this limitation as well. The basic requirements of a new clone system call
+could then be summarized as:
+
+	- do everything clone() does today, and
+	- give application an ability to choose pids for the child process
+	  in all ancestor pid namespaces, and
+	- allow more clone_flags
+
+Contstraints:
+
+	- system-calls are restricted to 6 parameters and clone() already
+	  takes 5 parameters, any extension to clone() interface would require
+	  one or more copy_from_user().
+
+	- does copy_from_user() of a few words have a significant impact on
+	  the total cost of clone() ?
+
+Based on these requirements and constraints, we have been exploring a couple
+of system call interfaces and appreciate any iput.  
+
+1. =====
+
+	#if 64bit
+	#define CLONE_FLAGS_WORDS	1
+	#else
+	#define CLONE_FLAGS_WORDS	2
+	#endif
+
+        struct pid_set {
+                int num_pids;
+                pid_t pids[];
+        };
+
+	typedef struct {
+		unsigned long flags[CLONE_FLAGS_WORDS];
+	} clone_flags_t;
+
+	int clone_extended(clone_flags_t *flags, void *child_stack, int *unused,
+		int *parent_tid, int *child_tid, struct pid_set *pid_set);
+
+	Pros:
+		- extendible clone_flags (like sigset_t)
+
+	Cons:
+		- copy_from_user() needed on all architectures (we maybe able
+		  to play some tricks with 'clone_flags_t' to avoid the copy
+		  on 64-bit archtitectures till N_CLONE_FLAGS exceeds 64).
+
+		- Both applications and kernel must use interfaces equivalent
+		  to sigsetops(3) to test/set/clear clone flags.
+2. ======
+
+	struct clone_info {
+		int num_clone_high_words;
+		int *flags_high;
+		struct pid_set pid_set;
+	}
+
+        int clone_extended(int flags_low, void *child_stack, void *unused,
+		int *parent_tid, int *child_tid, struct clone_info *clone_info);
+
+	Pros:
+		- copy_from_user() needed only for new flags and pid_set
+
+	Cons:
+		- splitting the high and low clone-flags is awkward ?
+
+
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
