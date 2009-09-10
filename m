@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754741AbZIJAIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZIJAKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754741AbZIJAIK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 20:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZIJAIJ
+	id S1754567AbZIJAKF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 20:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbZIJAKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 20:08:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59978
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752630AbZIJAII (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 20:08:08 -0400
-Date: Wed, 09 Sep 2009 17:08:24 -0700 (PDT)
-Message-Id: <20090909.170824.141343404.davem@davemloft.net>
-To: paulsheer@gmail.com
-Cc: linux-kernel@vger.kernel.org, roque@di.fc.ul.pt, netdev@vger.kernel.org
-Subject: Re: TCP kernel tables overflowing after sustained 1000 new
- connections per second
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <c67e3dc60909091146j4aeaf422v4e0543eff87c7f9a@mail.gmail.com>
-References: <c67e3dc60909091146j4aeaf422v4e0543eff87c7f9a@mail.gmail.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 20:10:05 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49232 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752642AbZIJAKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 20:10:04 -0400
+Date: Thu, 10 Sep 2009 01:10:09 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Jerome Glisse <jglisse@redhat.com>
+cc: airlied@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Subject: Re: [PATCH] drm/radeon/kms: Don't try to process irq when we are
+ unloading
+In-Reply-To: <1252527787-2203-1-git-send-email-jglisse@redhat.com>
+Message-ID: <alpine.DEB.2.00.0909100109190.29694@skynet.skynet.ie>
+References: <1252527787-2203-1-git-send-email-jglisse@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Paul Sheer <paulsheer@gmail.com>
-Date: Wed, 9 Sep 2009 20:46:07 +0200
+On Wed, 9 Sep 2009, Jerome Glisse wrote:
 
-Can you please send networking reports and questions at least
-CC:'d to netdev@vger.kernel.org, which is where the networking
-developers are subscribed?  I've added it to the CC:
+> If module is being unloaded we should not try to handle irq especialy
+> we should not call into drm helper or we could hard hang the computer
+> free_irq will call the irq handler to make sure we behave properly.
 
-> I am developing a high-performance application, and testing against Apache.
-> It makes 1000 new connections to Apache per second.
+Should you not just ack all irqs here before returning, else we'll
+just get called again.
+
+Dave.
+
 > 
-> After 16 seconds the test grinds to a halt. A Linux kernel problem. There are
-> several hurdles to overcome when trying to sustain such through-put. Some
-> are configuration issues, others I believe are real problems with the kernel
-> internals. I'll discuss these all below.
+> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+> ---
+>  drivers/gpu/drm/radeon/r100.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> Configuration:
+> diff --git a/drivers/gpu/drm/radeon/r100.c b/drivers/gpu/drm/radeon/r100.c
+> index 5708c07..36d0ba2 100644
+> --- a/drivers/gpu/drm/radeon/r100.c
+> +++ b/drivers/gpu/drm/radeon/r100.c
+> @@ -319,6 +319,9 @@ int r100_irq_process(struct radeon_device *rdev)
+>  	if (!status) {
+>  		return IRQ_NONE;
+>  	}
+> +	if (rdev->shutdown) {
+> +		return IRQ_NONE;
+> +	}
+>  	while (status) {
+>  		/* SW interrupt */
+>  		if (status & RADEON_SW_INT_TEST) {
 > 
-> These are the relavent kernel configuration parameters:
-> 
->  /proc/sys/net/ipv4/tcp_tw_recycle
->  /proc/sys/net/ipv4/tcp_tw_reuse
->  /proc/sys/net/ipv4/tcp_max_tw_buckets
->  /proc/sys/net/ipv4/ip_local_port_range
->  /proc/sys/net/ipv4/tcp_timestamps
->  /proc/sys/net/ipv4/tcp_fin_timeout
->  /proc/sys/net/ipv4/tcp_orphan_retries
->  /proc/sys/net/ipv4/tcp_rfc1337
->  /proc/sys/net/ipv4/tcp_max_orphans
->  /proc/sys/net/ipv4/tcp_max_syn_backlog
->  /proc/sys/net/ipv4/tcp_mem
-> 
-> On a gigabit local LAN I can set the timeouts very low to encourage
-> port reuse. A well known configuration issue with all OS's - just search
-> for MyOS+TIMED_WAIT on google. No problems here.
-> 
-> 
-> The second problem is the ip_conntrack module.
-> 
-> If you don't know that your distribution has enabled this module
-> by default, it not easy to work out that it has internal tables
-> that max out at 16384.  So this explains why my system
-> stops accepting connections after exactly 16 seconds.
-> If you stop the application, give it a few minutes, try again,
-> then you can do another 16 seconds of flat out load for it
-> grinds to a halt again. Doing an rm on the module ko and
-> rebooting fixed *this* problem.
-> 
-> The third problem seems to be connected to /proc/net/tcp6
-> 
-> look at the output of the script
-> 
-> while true ; do echo "`date`: `cat /proc/net/tcp6 | wc -l`  vs  `cat
-> /proc/net/tcp | wc -l`" ; sleep 1 ; done
-> 
-> while I run my load test:
-> 
-> 
->  Wed Sep  9 20:39:26 SAST 2009: 5  vs  20
->  Wed Sep  9 20:39:27 SAST 2009: 5  vs  20
->  Wed Sep  9 20:39:28 SAST 2009: 5  vs  20
->  Wed Sep  9 20:39:29 SAST 2009: 5  vs  20
->  Wed Sep  9 20:39:31 SAST 2009: 1233  vs  20
->  Wed Sep  9 20:39:32 SAST 2009: 2640  vs  21
->  Wed Sep  9 20:39:33 SAST 2009: 4190  vs  20
->  Wed Sep  9 20:39:34 SAST 2009: 5813  vs  20
->  Wed Sep  9 20:39:35 SAST 2009: 7527  vs  20
->  Wed Sep  9 20:39:37 SAST 2009: 9568  vs  44
->  Wed Sep  9 20:39:38 SAST 2009: 11819  vs  21
->  Wed Sep  9 20:39:40 SAST 2009: 14510  vs  21
->  Wed Sep  9 20:39:42 SAST 2009: 16971  vs  20
->  Wed Sep  9 20:39:44 SAST 2009: 16971  vs  20
->  Wed Sep  9 20:39:46 SAST 2009: 17013  vs  20
->  Wed Sep  9 20:39:48 SAST 2009: 17013  vs  20
->  Wed Sep  9 20:39:50 SAST 2009: 17013  vs  20
-> 
-> So it is clear "something" is filling up in tcp_ipv6.c
-> 
-> any ideas Pedro?
-> anyone?
-> 
-> Many thanks.
-> 
-> -paul
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
