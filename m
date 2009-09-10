@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZIJR0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752944AbZIJRd3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752894AbZIJR0s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 13:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZIJR0s
+	id S1752944AbZIJRd3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 13:33:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbZIJRd2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 13:26:48 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46769 "EHLO mx3.mail.elte.hu"
+	Thu, 10 Sep 2009 13:33:28 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:62461 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752834AbZIJR0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 13:26:47 -0400
-Date: Thu, 10 Sep 2009 19:26:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Stable Kernel <stable@kernel.org>, Tejun Heo <tj@kernel.org>
-Subject: Re: [GIT PULL] Xen bugfixes
-Message-ID: <20090910172629.GA10689@elte.hu>
-References: <4AA83F99.5040401@goop.org> <20090910051648.GA1335@elte.hu> <4AA93466.6020607@goop.org>
+	id S1752915AbZIJRd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 13:33:27 -0400
+Date: Thu, 10 Sep 2009 13:32:42 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH 15/23] io-controller: noop changes for hierarchical
+	fair queuing
+Message-ID: <20090910173242.GB29559@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <1251495072-7780-16-git-send-email-vgoyal@redhat.com> <4A9B3B0B.9090009@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AA93466.6020607@goop.org>
+In-Reply-To: <4A9B3B0B.9090009@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Aug 30, 2009 at 10:52:59PM -0400, Rik van Riel wrote:
+> Vivek Goyal wrote:
+>> This patch changes noop to use queue scheduling code from elevator layer.
+>> One can go back to old noop by deselecting CONFIG_IOSCHED_NOOP_HIER.
+>>
+>> Signed-off-by: Nauman Rafique <nauman@google.com>
+>> Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+>
+> Not sure why noop needs hierarchical fair queueing
+> support, but this patch is so small we might as well
+> take it to keep things consistent between schedulers.
+>
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+Thinking more about it. It probably can be useful for the case ryo is
+pointing out where fast SSD drivers are not making use of kernel IO
+schedulers.
 
-> On 09/09/09 22:16, Ingo Molnar wrote:
-> >> +# Make sure __phys_addr has no stackprotector
-> >> +nostackp := $(call cc-option, -fno-stack-protector)
-> >> +CFLAGS_ioremap.o		:= $(nostackp)
-> >> +
-> >>     
-> > Sure we could move __phys_addr into its own file and thus avoid 
-> > turning off stackprotector for the rest of ioremap.c?
-> >   
-> 
-> I'm not very keen on having zillions of tiny files just to cope 
-> with the lack of per-function stackprotector disable.  I don't see 
-> any code in ioremap.c that would really benefit from 
-> stack-protector anyway; there are no local arrays.
-> 
-> At least __phys_addr and friends aren't terribly closely related 
-> to ioremap so it would at least make some sense.
+If they want group io schduling support on these SSDs, they can modify their
+driver to make use of hierarchical noop.
 
-Agreed, i wouldnt do it just for the stackprotector benefit (it's 
-really stupid that GCC does not allow per function exceptions) - but 
-here __phys_addr() looked out of place a bit.
+> Acked-by: Rik van Riel <riel@redhat.com>
 
-> [...]  Patch below.
+Thanks
+Vivek
 
-Looks like a nice cleanup. Mind sticking it into your next pull 
-request?
-
-> >> +CFLAGS_mmu.o			:= $(nostackp)
-> >>     
-> > A similar argument could be made here - what proportion of mmu.c is 
-> > affected?
-> 
-> More.  It would be a fairly arbitrary chunk of code to split out 
-> into a separate file.
-
-Ok - i'd not do it then.
-
-> > Also, once the commits have hit upstream feel free bounce them 
-> > to stable@kernel.org - they dont have Cc: <stable@kernel.org> 
-> > tags for automatic back-merging requests. The fixes narrowly 
-> > missed v2.6.31.
-> >   
-> 
-> Will do.
-
-Thanks,
-
-	Ingo
+>
+> -- 
+> All rights reversed.
