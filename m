@@ -1,77 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754898AbZIJBsV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754897AbZIJByy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754898AbZIJBsV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 21:48:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZIJBsU
+	id S1754897AbZIJByy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 21:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754831AbZIJByx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 21:48:20 -0400
-Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:57202 "EHLO
-	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754880AbZIJBsS (ORCPT
+	Wed, 9 Sep 2009 21:54:53 -0400
+Received: from shadbolt.e.decadent.org.uk ([88.96.1.126]:36626 "EHLO
+	shadbolt.e.decadent.org.uk" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751733AbZIJByx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 21:48:18 -0400
-From: Frans Pop <elendil@planet.nl>
-To: reinette chatre <reinette.chatre@intel.com>
-Subject: Re: iwlagn: order 2 page allocation failures
-Date: Thu, 10 Sep 2009 03:48:16 +0200
-User-Agent: KMail/1.9.9
-Cc: Mel Gorman <mel@csn.ul.ie>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "Krauss, Assaf" <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>
-References: <200909060941.01810.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie> <1252526738.30150.91.camel@rc-desk>
-In-Reply-To: <1252526738.30150.91.camel@rc-desk>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Wed, 9 Sep 2009 21:54:53 -0400
+From: Ben Hutchings <ben@decadent.org.uk>
+To: x86@kernel.org
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909100348.20361.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Sep 2009 01:48:20.0942 (UTC) FILETIME=[C69D46E0:01CA31B8]
+Date: Thu, 10 Sep 2009 02:53:50 +0100
+Message-Id: <1252547631.3423.134.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+X-SA-Exim-Connect-IP: 192.168.4.185
+X-SA-Exim-Mail-From: ben@decadent.org.uk
+Subject: [PATCH v2] x86: Fix code patching for paravirt-alternatives on 486
+X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
+X-SA-Exim-Scanned: Yes (on shadbolt.decadent.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Reinette,
+As reported in <http://bugs.debian.org/511703> and
+<http://bugs.debian.org/515982>, kernels with paravirt-alternatives
+enabled crash in text_poke_early() on at least some 486-class
+processors.
 
-On Wednesday 09 September 2009, reinette chatre wrote:
-> I agree that this patch may be the reason we are seeing this issue. We
-> would like to keep using GFP_ATOMIC here, but it is not necessary for
-> an allocation failure to be so noisy since the function doing the
-> allocation (iwl_rx_allocate) is always followed by a call to
-> iwl_rx_queue_restock which will schedule a refill if the buffers are
-> running low. We can thus use ___GFP_NOWARN for the allocations in
-> iwl_rx_allocate and leave it to the restocking to find the needed
-> memory when it tried its allocations using GFP_KERNEL.
->
-> I do think it is useful to let user know about these allocation
-> failures, even if it does not result in packet loss. Wrapping it in
-> net_ratelimit() will help though.
->
-> How about the patch below?
+The problem is that text_poke_early() itself uses inline functions
+affected by paravirt-alternatives and so will modify instructions that
+have already been prefetched.  Pentium and later processors will
+invalidate the prefetched instructions in this case, but 486-class
+processors do not.
 
-A couple of comments/suggestions.
+Change sync_core() to limit prefetching on 486-class (and 386-class)
+processors, and move the call to sync_core() above the call to the
+modifiable local_irq_restore().
 
-If the driver recovers cleanly from the error, shouldn't the priority of 
-the message be lowered from CRIT to INFO. Or maybe even DEBUG; AFAIK most 
-distros will have DEBUG_KERNEL enabled by default.
-This means it will still show up in logs, but not the console.
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+---
+Second try, incorporating the jmp into sync_core().
 
-Shouldn't the message include some indication that the driver will recover 
-by itself and that no user action is needed? This will help avoid users 
-(unnecessarily) reporting this as a bug when it does occur.
-I expect that users would still report it if they get flooded with the 
-message (or ratelimit warnings for it), which I think is what you'd want.
+Also not signed as I know git has trouble with MIME.
 
-And maybe s/Can not/Cannot/ or s/Can not/Failed to/.
+Ben.
 
-Cheers,
-FJP
+ arch/x86/include/asm/processor.h |   16 +++++++++++++---
+ arch/x86/kernel/alternative.c    |    2 +-
+ 2 files changed, 14 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index c776826..2db56c5 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -703,13 +703,23 @@ static inline void cpu_relax(void)
+ 	rep_nop();
+ }
+ 
+-/* Stop speculative execution: */
++/* Stop speculative execution and prefetching of modified code. */
+ static inline void sync_core(void)
+ {
+ 	int tmp;
+ 
+-	asm volatile("cpuid" : "=a" (tmp) : "0" (1)
+-		     : "ebx", "ecx", "edx", "memory");
++#if defined(CONFIG_M386) || defined(CONFIG_M486)
++	if (boot_cpu_data.x86 < 5)
++		/* There is no speculative execution.
++		 * jmp is a barrier to prefetching. */
++		asm volatile("jmp 1f\n1:\n" ::: "memory");
++	else
++#endif
++		/* cpuid is a barrier to speculative execution.
++		 * Prefetched instructions are automatically
++		 * invalidated when modified. */
++		asm volatile("cpuid" : "=a" (tmp) : "0" (1)
++			     : "ebx", "ecx", "edx", "memory");
+ }
+ 
+ static inline void __monitor(const void *eax, unsigned long ecx,
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index 4869351..de7353c 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -498,8 +498,8 @@ static void *__init_or_module text_poke_early(void *addr, const void *opcode,
+ 	unsigned long flags;
+ 	local_irq_save(flags);
+ 	memcpy(addr, opcode, len);
+-	local_irq_restore(flags);
+ 	sync_core();
++	local_irq_restore(flags);
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+ 	return addr;
+-- 
+1.6.3.3
+
