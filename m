@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZIJAsE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZIJA5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbZIJAsE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 20:48:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752905AbZIJAsD
+	id S1753534AbZIJA5D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 20:57:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZIJA5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 20:48:03 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46468 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752889AbZIJAsC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 20:48:02 -0400
-Message-ID: <4AA84BE7.9010304@zytor.com>
-Date: Wed, 09 Sep 2009 17:44:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Jack Steiner <steiner@sgi.com>
-CC: Chris Friesen <cfriesen@nortel.com>, Daniel Walker <dwalker@fifo99.com>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: SGU UV Add volatile to macros that access chipset
- registers
-References: <20090909154246.GA26716@sgi.com> <1252512600.14793.125.camel@desktop> <20090909180110.GA10311@sgi.com> <1252519885.14793.135.camel@desktop> <4AA7F9E5.4070506@nortel.com> <20090909193829.GB10530@sgi.com>
-In-Reply-To: <20090909193829.GB10530@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Sep 2009 20:57:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:31623 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752565AbZIJA5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 20:57:02 -0400
+Date: Wed, 9 Sep 2009 20:55:48 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
+Message-ID: <20090909205548.4858b524@zanovar.poochiereds.net>
+In-Reply-To: <alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1>
+References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
+	<20090905071052.50501826@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1>
+	<20090909125352.1c7b57d2@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
+	<20090909132039.1ca47cd4@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091327370.32067@V090114053VZO-1>
+	<20090909140257.35ede0cc@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/09/2009 12:38 PM, Jack Steiner wrote:
->  
->  static inline void uv_write_local_mmr8(unsigned long offset, unsigned char val)
->  {
-> -	*((unsigned char *)uv_local_mmr_address(offset)) = val;
-> +	*((volatile unsigned char *)uv_local_mmr_address(offset)) = val;
->  }
->  
+On Wed, 9 Sep 2009 17:27:57 -0400 (EDT)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Why aren't you simply using __writeb() here, and the other memory
-accessors we already have in the other places?
+> On Wed, 9 Sep 2009, Jeff Layton wrote:
+> 
+> > That sounds rather strange. Maybe we do have a bug of some sort? The
+> > thing to do might be to get a binary capture of the 32-bit traffic
+> > around the time of the stalls. We could then inspect the packets and
+> > see whether we have something wrong in there.
+> 
+> Capture attached.
 
-	-hpa
+Well, I can see the delays in the capture, but the snarflen for the
+capture is a little too small to tell much else. Can you redo the
+capture with a larger snarflen (maybe -s 512 or so)?
+
+Also, were you able to tell anything from a server-side capture? Is the
+server issuing oplock breaks at those times?
+
+Cheers,
+Jeff
