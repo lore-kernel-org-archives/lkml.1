@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752930AbZIJXwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752959AbZIJXwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752930AbZIJXwd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 19:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZIJXwa
+	id S1752959AbZIJXwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 19:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752572AbZIJXwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 19:52:30 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23051 "EHLO mx1.redhat.com"
+	Thu, 10 Sep 2009 19:52:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:62417 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752549AbZIJXw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 19:52:28 -0400
+	id S1752549AbZIJXwb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 19:52:31 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH tracing/kprobes 6/7] tracing/kprobes: Show event name in trace
-	output
+Subject: [PATCH tracing/kprobes 7/7] tracing/kprobes: Support custom subsystem
+	for each kprobe event
 To: Frederic Weisbecker <fweisbec@gmail.com>,
        Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        lkml <linux-kernel@vger.kernel.org>
@@ -29,8 +29,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
        Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>
-Date: Thu, 10 Sep 2009 19:53:45 -0400
-Message-ID: <20090910235345.22412.76527.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Thu, 10 Sep 2009 19:53:53 -0400
+Message-ID: <20090910235353.22412.15149.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -41,16 +41,12 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Show event name in tracing/trace output. This also fixes kprobes events format
-as same as other tracepoint events.
+Support specifying a custom subsystem(group) for each kprobe event.
+This allows users to create new group for controlling several probes
+at once, or add events to existing groups as additional tracepoints.
 
-Before patching:
-<...>-1447  [001] 1038282.286875: do_sys_open+0x0/0xd6: ...
-<...>-1447  [001] 1038282.286878: sys_openat+0xc/0xe <- do_sys_open: ...
-
-After patching:
-<...>-1447  [001] 1038282.286875: myprobe: (do_sys_open+0x0/0xd6) ...
-<...>-1447  [001] 1038282.286878: myretprobe: (sys_openat+0xc/0xe <- do_sys_open) ...
+New synopsis:
+ p[:[subsys/]event-name] KADDR|KSYM[+offs] [ARGS]
 
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
@@ -72,104 +68,137 @@ Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: Tom Zanussi <tzanussi@gmail.com>
 ---
 
- Documentation/trace/kprobetrace.txt |   16 ++++++++--------
- kernel/trace/trace_kprobe.c         |   16 +++++++++++-----
- 2 files changed, 19 insertions(+), 13 deletions(-)
+ Documentation/trace/kprobetrace.txt |    5 +++--
+ kernel/trace/trace_kprobe.c         |   33 +++++++++++++++++++++++++++------
+ 2 files changed, 30 insertions(+), 8 deletions(-)
 
 diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index 55a8034..ed152a1 100644
+index ed152a1..af9ae49 100644
 --- a/Documentation/trace/kprobetrace.txt
 +++ b/Documentation/trace/kprobetrace.txt
-@@ -114,7 +114,7 @@ format:
- 	field: unsigned long flags;	offset:48;tsize:8;
- 	field: unsigned long mode;	offset:56;tsize:8;
+@@ -25,9 +25,10 @@ probe events via /sys/kernel/debug/tracing/events/kprobes/<EVENT>/filter.
  
--print fmt: "%lx: dfd=%lx filename=%lx flags=%lx mode=%lx", ip, REC->dfd, REC->filename, REC->flags, REC->mode
-+print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->ip, REC->dfd, REC->filename, REC->flags, REC->mode
+ Synopsis of kprobe_events
+ -------------------------
+-  p[:EVENT] SYMBOL[+offs]|MEMADDR [FETCHARGS]	: Set a probe
+-  r[:EVENT] SYMBOL[+0] [FETCHARGS]		: Set a return probe
++  p[:[GRP/]EVENT] SYMBOL[+offs]|MEMADDR [FETCHARGS]	: Set a probe
++  r[:[GRP/]EVENT] SYMBOL[+0] [FETCHARGS]		: Set a return probe
  
- 
-  You can see that the event has 4 arguments as expressions you specified.
-@@ -129,15 +129,15 @@ print fmt: "%lx: dfd=%lx filename=%lx flags=%lx mode=%lx", ip, REC->dfd, REC->fi
- #
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
--           <...>-1447  [001] 1038282.286875: do_sys_open+0x0/0xd6: dfd=3 filename=7fffd1ec4440 flags=8000 mode=0
--           <...>-1447  [001] 1038282.286878: sys_openat+0xc/0xe <- do_sys_open: rv=fffffffffffffffe ra=ffffffff81367a3a
--           <...>-1447  [001] 1038282.286885: do_sys_open+0x0/0xd6: dfd=ffffff9c filename=40413c flags=8000 mode=1b6
--           <...>-1447  [001] 1038282.286915: sys_open+0x1b/0x1d <- do_sys_open: rv=3 ra=ffffffff81367a3a
--           <...>-1447  [001] 1038282.286969: do_sys_open+0x0/0xd6: dfd=ffffff9c filename=4041c6 flags=98800 mode=10
--           <...>-1447  [001] 1038282.286976: sys_open+0x1b/0x1d <- do_sys_open: rv=3 ra=ffffffff81367a3a
-+           <...>-1447  [001] 1038282.286875: myprobe: (do_sys_open+0x0/0xd6) dfd=3 filename=7fffd1ec4440 flags=8000 mode=0
-+           <...>-1447  [001] 1038282.286878: myretprobe: (sys_openat+0xc/0xe <- do_sys_open) rv=fffffffffffffffe ra=ffffffff81367a3a
-+           <...>-1447  [001] 1038282.286885: myprobe: (do_sys_open+0x0/0xd6) dfd=ffffff9c filename=40413c flags=8000 mode=1b6
-+           <...>-1447  [001] 1038282.286915: myretprobe: (sys_open+0x1b/0x1d <- do_sys_open) rv=3 ra=ffffffff81367a3a
-+           <...>-1447  [001] 1038282.286969: myprobe: (do_sys_open+0x0/0xd6) dfd=ffffff9c filename=4041c6 flags=98800 mode=10
-+           <...>-1447  [001] 1038282.286976: myretprobe: (sys_open+0x1b/0x1d <- do_sys_open) rv=3 ra=ffffffff81367a3a
- 
- 
-- Each line shows when the kernel hits a probe, and <- SYMBOL means kernel
-+ Each line shows when the kernel hits an event, and <- SYMBOL means kernel
- returns from SYMBOL(e.g. "sys_open+0x1b/0x1d <- do_sys_open" means kernel
- returns from do_sys_open to sys_open+0x1b).
- 
++ GRP		: Group name. If omitted, use "kprobes" for it.
+  EVENT		: Event name. If omitted, the event name is generated
+ 		  based on SYMBOL+offs or MEMADDR.
+  SYMBOL[+offs]	: Symbol+offset where the probe is inserted.
 diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 6b88acd..486c229 100644
+index 486c229..cb3627b 100644
 --- a/kernel/trace/trace_kprobe.c
 +++ b/kernel/trace/trace_kprobe.c
-@@ -900,10 +900,13 @@ print_kprobe_event(struct trace_iterator *iter, int flags)
- 	event = ftrace_find_event(field->ent.type);
- 	tp = container_of(event, struct trace_probe, event);
+@@ -36,6 +36,7 @@
+ #define MAX_TRACE_ARGS 128
+ #define MAX_ARGSTR_LEN 63
+ #define MAX_EVENT_NAME_LEN 64
++#define KPROBE_EVENT_SYSTEM "kprobes"
  
-+	if (!trace_seq_printf(s, "%s: (", tp->call.name))
-+		goto partial;
+ /* currently, trace_kprobe only supports X86. */
+ 
+@@ -265,7 +266,8 @@ static LIST_HEAD(probe_list);
+ /*
+  * Allocate new trace_probe and initialize it (including kprobes).
+  */
+-static struct trace_probe *alloc_trace_probe(const char *event,
++static struct trace_probe *alloc_trace_probe(const char *group,
++					     const char *event,
+  					     void *addr,
+ 					     const char *symbol,
+ 					     unsigned long offs,
+@@ -298,9 +300,16 @@ static struct trace_probe *alloc_trace_probe(const char *event,
+ 	if (!tp->call.name)
+ 		goto error;
+ 
++	if (!group)
++		goto error;
++	tp->call.system = kstrdup(group, GFP_KERNEL);
++	if (!tp->call.system)
++		goto error;
 +
- 	if (!seq_print_ip_sym(s, field->ip, flags | TRACE_ITER_SYM_OFFSET))
- 		goto partial;
+ 	INIT_LIST_HEAD(&tp->list);
+ 	return tp;
+ error:
++	kfree(tp->call.name);
+ 	kfree(tp->symbol);
+ 	kfree(tp);
+ 	return ERR_PTR(-ENOMEM);
+@@ -322,6 +331,7 @@ static void free_trace_probe(struct trace_probe *tp)
+ 	for (i = 0; i < tp->nr_args; i++)
+ 		free_probe_arg(&tp->args[i]);
  
--	if (!trace_seq_puts(s, ":"))
-+	if (!trace_seq_puts(s, ")"))
- 		goto partial;
++	kfree(tp->call.system);
+ 	kfree(tp->call.name);
+ 	kfree(tp->symbol);
+ 	kfree(tp);
+@@ -530,8 +540,8 @@ static int create_trace_probe(int argc, char **argv)
+ {
+ 	/*
+ 	 * Argument syntax:
+-	 *  - Add kprobe: p[:EVENT] SYMBOL[+OFFS]|ADDRESS [FETCHARGS]
+-	 *  - Add kretprobe: r[:EVENT] SYMBOL[+0] [FETCHARGS]
++	 *  - Add kprobe: p[:[GRP/]EVENT] KSYM[+OFFS]|KADDR [FETCHARGS]
++	 *  - Add kretprobe: r[:[GRP/]EVENT] KSYM[+0] [FETCHARGS]
+ 	 * Fetch args:
+ 	 *  aN	: fetch Nth of function argument. (N:0-)
+ 	 *  rv	: fetch return value
+@@ -549,7 +559,7 @@ static int create_trace_probe(int argc, char **argv)
+ 	struct trace_probe *tp;
+ 	int i, ret = 0;
+ 	int is_return = 0;
+-	char *symbol = NULL, *event = NULL, *arg = NULL;
++	char *symbol = NULL, *event = NULL, *arg = NULL, *group = NULL;
+ 	unsigned long offset = 0;
+ 	void *addr = NULL;
+ 	char buf[MAX_EVENT_NAME_LEN];
+@@ -566,6 +576,15 @@ static int create_trace_probe(int argc, char **argv)
  
- 	for (i = 0; i < field->nargs; i++)
-@@ -932,6 +935,9 @@ print_kretprobe_event(struct trace_iterator *iter, int flags)
- 	event = ftrace_find_event(field->ent.type);
- 	tp = container_of(event, struct trace_probe, event);
+ 	if (argv[0][1] == ':') {
+ 		event = &argv[0][2];
++		if (strchr(event, '/')) {
++			group = event;
++			event = strchr(group, '/') + 1;
++			event[-1] = '\0';
++			if (strlen(group) == 0) {
++				pr_info("Group name is not specifiled\n");
++				return -EINVAL;
++			}
++		}
+ 		if (strlen(event) == 0) {
+ 			pr_info("Event name is not specifiled\n");
+ 			return -EINVAL;
+@@ -592,6 +611,8 @@ static int create_trace_probe(int argc, char **argv)
+ 	argc -= 2; argv += 2;
  
-+	if (!trace_seq_printf(s, "%s: (", tp->call.name))
-+		goto partial;
-+
- 	if (!seq_print_ip_sym(s, field->ret_ip, flags | TRACE_ITER_SYM_OFFSET))
- 		goto partial;
+ 	/* setup a probe */
++	if (!group)
++		group = KPROBE_EVENT_SYSTEM;
+ 	if (!event) {
+ 		/* Make a new event name */
+ 		if (symbol)
+@@ -602,7 +623,8 @@ static int create_trace_probe(int argc, char **argv)
+ 				 is_return ? 'r' : 'p', addr);
+ 		event = buf;
+ 	}
+-	tp = alloc_trace_probe(event, addr, symbol, offset, argc, is_return);
++	tp = alloc_trace_probe(group, event, addr, symbol, offset, argc,
++			       is_return);
+ 	if (IS_ERR(tp))
+ 		return PTR_ERR(tp);
  
-@@ -941,7 +947,7 @@ print_kretprobe_event(struct trace_iterator *iter, int flags)
- 	if (!seq_print_ip_sym(s, field->func, flags & ~TRACE_ITER_SYM_OFFSET))
- 		goto partial;
+@@ -1215,7 +1237,6 @@ static int register_probe_event(struct trace_probe *tp)
+ 	int ret;
  
--	if (!trace_seq_puts(s, ":"))
-+	if (!trace_seq_puts(s, ")"))
- 		goto partial;
- 
- 	for (i = 0; i < field->nargs; i++)
-@@ -1085,7 +1091,7 @@ static int kprobe_event_show_format(struct ftrace_event_call *call,
- 		SHOW_FIELD(unsigned long, args[i], tp->args[i].name);
- 	trace_seq_puts(s, "\n");
- 
--	return __probe_event_show_format(s, tp, "%lx:", "ip");
-+	return __probe_event_show_format(s, tp, "(%lx)", "REC->ip");
- }
- 
- static int kretprobe_event_show_format(struct ftrace_event_call *call,
-@@ -1104,8 +1110,8 @@ static int kretprobe_event_show_format(struct ftrace_event_call *call,
- 		SHOW_FIELD(unsigned long, args[i], tp->args[i].name);
- 	trace_seq_puts(s, "\n");
- 
--	return __probe_event_show_format(s, tp, "%lx <- %lx:",
--					  "func, ret_ip");
-+	return __probe_event_show_format(s, tp, "(%lx <- %lx)",
-+					  "REC->func, REC->ret_ip");
- }
- 
- #ifdef CONFIG_EVENT_PROFILE
+ 	/* Initialize ftrace_event_call */
+-	call->system = "kprobes";
+ 	if (probe_is_return(tp)) {
+ 		tp->event.trace = print_kretprobe_event;
+ 		call->raw_init = probe_event_raw_init;
 
 
 -- 
