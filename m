@@ -1,56 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZIJA5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753530AbZIJBBX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753534AbZIJA5D (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 20:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbZIJA5D
+	id S1753530AbZIJBBX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 21:01:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZIJBBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 20:57:03 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:31623 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752565AbZIJA5C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 20:57:02 -0400
-Date: Wed, 9 Sep 2009 20:55:48 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
-Message-ID: <20090909205548.4858b524@zanovar.poochiereds.net>
-In-Reply-To: <alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
-	<20090905071052.50501826@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1>
-	<20090909125352.1c7b57d2@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
-	<20090909132039.1ca47cd4@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091327370.32067@V090114053VZO-1>
-	<20090909140257.35ede0cc@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1>
+	Wed, 9 Sep 2009 21:01:22 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:55722 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752520AbZIJBBW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 21:01:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=cAMEGVTeO1k0mGf1+TDg4gUoxiCviZOAEY25s8wYa9V5wu986B45IclLkc8cTqDoE2
+         pacR3EvnH2eBt6nw1hWgoClwANMFi43jl+c1kUs48PmbtSLLCFnUKu6SVkjTCyKKbds8
+         ahVAZx3PVFofBFaGkU/7fsVUEpbHO3Js3MZyI=
+Date: Thu, 10 Sep 2009 10:00:57 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm <linux-mm@kvack.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] lru_add_drain_all() vs isolation
+Message-Id: <20090910100057.a1375276.minchan.kim@barrios-desktop>
+In-Reply-To: <20090910084602.9CBD.A69D9226@jp.fujitsu.com>
+References: <20090909131945.0CF5.A69D9226@jp.fujitsu.com>
+	<28c262360909090839j626ff818of930cf13a6185123@mail.gmail.com>
+	<20090910084602.9CBD.A69D9226@jp.fujitsu.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009 17:27:57 -0400 (EDT)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+On Thu, 10 Sep 2009 08:58:20 +0900 (JST)
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> On Wed, 9 Sep 2009, Jeff Layton wrote:
+> > On Wed, Sep 9, 2009 at 1:27 PM, KOSAKI Motohiro
+> > <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > >> The usefulness of a scheme like this requires:
+> > >>
+> > >> 1. There are cpus that continually execute user space code
+> > >>    without system interaction.
+> > >>
+> > >> 2. There are repeated VM activities that require page isolation /
+> > >>    migration.
+> > >>
+> > >> The first page isolation activity will then clear the lru caches of the
+> > >> processes doing number crunching in user space (and therefore the first
+> > >> isolation will still interrupt). The second and following isolation will
+> > >> then no longer interrupt the processes.
+> > >>
+> > >> 2. is rare. So the question is if the additional code in the LRU handling
+> > >> can be justified. If lru handling is not time sensitive then yes.
+> > >
+> > > Christoph, I'd like to discuss a bit related (and almost unrelated) thing.
+> > > I think page migration don't need lru_add_drain_all() as synchronous, because
+> > > page migration have 10 times retry.
+> > >
+> > > Then asynchronous lru_add_drain_all() cause
+> > >
+> > >  - if system isn't under heavy pressure, retry succussfull.
+> > >  - if system is under heavy pressure or RT-thread work busy busy loop, retry failure.
+> > >
+> > > I don't think this is problematic bahavior. Also, mlock can use asynchrounous lru drain.
+> > 
+> > I think, more exactly, we don't have to drain lru pages for mlocking.
+> > Mlocked pages will go into unevictable lru due to
+> > try_to_unmap when shrink of lru happens.
 > 
-> > That sounds rather strange. Maybe we do have a bug of some sort? The
-> > thing to do might be to get a binary capture of the 32-bit traffic
-> > around the time of the stalls. We could then inspect the packets and
-> > see whether we have something wrong in there.
+> Right.
 > 
-> Capture attached.
+> > How about removing draining in case of mlock?
+> 
+> Umm, I don't like this. because perfectly no drain often make strange test result.
+> I mean /proc/meminfo::Mlock might be displayed unexpected value. it is not leak. it's only lazy cull.
+> but many tester and administrator wiill think it's bug... ;)
 
-Well, I can see the delays in the capture, but the snarflen for the
-capture is a little too small to tell much else. Can you redo the
-capture with a larger snarflen (maybe -s 512 or so)?
+I agree. I have no objection to your approach. :)
 
-Also, were you able to tell anything from a server-side capture? Is the
-server issuing oplock breaks at those times?
+> Practically, lru_add_drain_all() is nearly zero cost. because mlock's page fault is very
+> costly operation. it hide drain cost. now, we only want to treat corner case issue. 
+> I don't hope dramatic change.
 
-Cheers,
-Jeff
+Another problem is as follow.
+
+Although some CPUs don't have any thing to do, we do it. 
+HPC guys don't want to consume CPU cycle as Christoph pointed out.
+I liked Peter's idea with regard to this. 
+My approach can solve it, too. 
+But I agree it would be dramatic change. 
+
+-- 
+Kind regards,
+Minchan Kim
