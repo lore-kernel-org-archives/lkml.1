@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZIJDpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754104AbZIJDrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753850AbZIJDpq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 23:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbZIJDpp
+	id S1754104AbZIJDrb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 23:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752872AbZIJDra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 23:45:45 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:50879 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752170AbZIJDpp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 23:45:45 -0400
-Date: Thu, 10 Sep 2009 12:45:47 +0900 (JST)
-Message-Id: <20090910.124547.71116284.ryov@valinux.co.jp>
-To: vgoyal@redhat.com
-Cc: riel@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
-       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090909143159.GC8256@redhat.com>
-References: <20090908134244.GA15974@redhat.com>
-	<20090909.190146.59669568.ryov@valinux.co.jp>
-	<20090909143159.GC8256@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Wed, 9 Sep 2009 23:47:30 -0400
+Received: from fifo99.com ([67.223.236.141]:45507 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752553AbZIJDra (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 23:47:30 -0400
+Subject: Re: [PATCH 00/12] Gigaset driver patches for 2.6.32
+From: Daniel Walker <dwalker@fifo99.com>
+To: Tilman Schmidt <tilman@imap.cc>
+Cc: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       i4ldeveloper@listserv.isdn4linux.de, Hansjoerg Lipp <hjlipp@web.de>
+In-Reply-To: <20090909223205.E9D632269516@fifo99.com>
+References: <20090909223205.E9D632269516@fifo99.com>
+Content-Type: text/plain
+Date: Wed, 09 Sep 2009 20:47:57 -0700
+Message-Id: <1252554477.30578.167.camel@desktop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
-
-Vivek Goyal <vgoyal@redhat.com> wrote:
-> > In addition,
-> > there are devices which doesn't use standard IO schedulers, and
-> > dm-ioband can work on even such devices.
+On Thu, 2009-09-10 at 00:32 +0200, Tilman Schmidt wrote:
+> Daniel Walker wrote 07.09.09 16:30:
+> > Yeah, it looks like the whole file needs a checkpatch clean up..
+> Sounds
+> like your not willing to do that?
 > 
-> This is a interesting use case. Few thoughts.
+> It's not a question of willingness. You may notice I did a lot of
+> cleanup work already. But it's very time consuming work, and there has
+> been more important work to attend to first.
 > 
-> - Can't io scheduling mechanism of these devices make use of elevator and
->   elevator fair queuing interfaces to take advantage of io controlling
->   mechanism. It should not be too difficult. Look at noop. It has
->   just 131 lines of code and it now supports hierarchical io scheduling.
->  
->   This will come with request queue and its merging and plug/unplug
->   mechanism. Is that an issue?
->
-> - If not, then yes, for these corner cases, io scheduler based controller
->   does not work as it is.
+> > Usually if a checkpatch cleanup comes
+> first prior to all your other changes , it doesn't usually cloud the
+> rest of the changes..
+> 
+> Sure. But that would mean postponing the merging of bugfixes until
+> someone finds the time to do a complete checkpatch cleanup of the
+> affected code. I don't think that's a sensible approach.
 
-I have a extreme fast SSD and its device driver provides its own
-make_request_fn(). So the device driver intercepts IO requests and the
-subsequent processes are done within it.
+You shouldn't be adding any new checkpatch errors, but you currently
+are .. Just clean up the individual patches w/o the entire gigaset
+driver, that should be do-able (it's even a basic submission
+requirement). The other issue is that your adding new files which aren't
+clean, those can certainly be cleaned up.
 
-Thanks,
-Ryo Tsuruta
+Daniel
+
