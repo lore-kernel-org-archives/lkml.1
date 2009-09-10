@@ -1,33 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752884AbZIJRYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752894AbZIJR0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752884AbZIJRYL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 13:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752305AbZIJRYK
+	id S1752894AbZIJR0s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 13:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZIJR0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 13:24:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43038 "EHLO mx2.mail.elte.hu"
+	Thu, 10 Sep 2009 13:26:48 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46769 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751899AbZIJRYJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 13:24:09 -0400
-Date: Thu, 10 Sep 2009 19:23:43 +0200
+	id S1752834AbZIJR0r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 13:26:47 -0400
+Date: Thu, 10 Sep 2009 19:26:29 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Mike Galbraith <efault@gmx.de>, Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [RFC GIT PULL] hw-breakpoints: Rewrite on top of perf counters
-Message-ID: <20090910172343.GA25044@elte.hu>
-References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com> <19112.53364.51476.9036@cargo.ozlabs.ibm.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@redhat.com>, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Stable Kernel <stable@kernel.org>, Tejun Heo <tj@kernel.org>
+Subject: Re: [GIT PULL] Xen bugfixes
+Message-ID: <20090910172629.GA10689@elte.hu>
+References: <4AA83F99.5040401@goop.org> <20090910051648.GA1335@elte.hu> <4AA93466.6020607@goop.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <19112.53364.51476.9036@cargo.ozlabs.ibm.com>
+In-Reply-To: <4AA93466.6020607@goop.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -41,37 +36,53 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul Mackerras <paulus@samba.org> wrote:
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> Frederic Weisbecker writes:
+> On 09/09/09 22:16, Ingo Molnar wrote:
+> >> +# Make sure __phys_addr has no stackprotector
+> >> +nostackp := $(call cc-option, -fno-stack-protector)
+> >> +CFLAGS_ioremap.o		:= $(nostackp)
+> >> +
+> >>     
+> > Sure we could move __phys_addr into its own file and thus avoid 
+> > turning off stackprotector for the rest of ioremap.c?
+> >   
 > 
-> > This is a rewrite of the hardware breakpoints on top of perf counters.
+> I'm not very keen on having zillions of tiny files just to cope 
+> with the lack of per-function stackprotector disable.  I don't see 
+> any code in ioremap.c that would really benefit from 
+> stack-protector anyway; there are no local arrays.
 > 
-> On powerpc, it doesn't build.  I get:
-> 
->   CC      kernel/perf_counter.o
-> kernel/perf_counter.c:31:31: error: asm/hw_breakpoint.h: No such file or directory
-> kernel/perf_counter.c: In function 'bp_perf_counter_init':
-> kernel/perf_counter.c:3964: error: implicit declaration of function 'register_perf_hw_breakpoint'
-> kernel/perf_counter.c:3966: error: implicit declaration of function '__register_perf_hw_breakpoint'
-> kernel/perf_counter.c:3968: error: 'perf_ops_bp' undeclared (first use in this function)
-> kernel/perf_counter.c:3968: error: (Each undeclared identifier is reported only once
-> kernel/perf_counter.c:3968: error: for each function it appears in.)
-> make[2]: *** [kernel/perf_counter.o] Error 1
-> make[1]: *** [kernel] Error 2
-> make: *** [sub-make] Error 2
-> 
-> Seems like every architecture now needs an asm/hw_breakpoint.h.  
-> What is the minimum required in that file?  Looks like we would 
-> require a perf_ops_bp, at least.
-> 
-> Could you please either arrange things so that architectures that 
-> don't have hardware breakpoints hooked up to perf_counters don't 
-> need an asm/hw_breakpoint.h, or add minimal versions of that file 
-> for every architecture, so as not to break bisection 
-> unnecessarily?
+> At least __phys_addr and friends aren't terribly closely related 
+> to ioremap so it would at least make some sense.
 
-I'd prefer the former - i.e. dont touch architectures that dont 
-support it yet.
+Agreed, i wouldnt do it just for the stackprotector benefit (it's 
+really stupid that GCC does not allow per function exceptions) - but 
+here __phys_addr() looked out of place a bit.
+
+> [...]  Patch below.
+
+Looks like a nice cleanup. Mind sticking it into your next pull 
+request?
+
+> >> +CFLAGS_mmu.o			:= $(nostackp)
+> >>     
+> > A similar argument could be made here - what proportion of mmu.c is 
+> > affected?
+> 
+> More.  It would be a fairly arbitrary chunk of code to split out 
+> into a separate file.
+
+Ok - i'd not do it then.
+
+> > Also, once the commits have hit upstream feel free bounce them 
+> > to stable@kernel.org - they dont have Cc: <stable@kernel.org> 
+> > tags for automatic back-merging requests. The fixes narrowly 
+> > missed v2.6.31.
+> >   
+> 
+> Will do.
+
+Thanks,
 
 	Ingo
