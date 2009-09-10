@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751785AbZIJWm0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751700AbZIJW5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751785AbZIJWm0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 18:42:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750956AbZIJWmZ
+	id S1751700AbZIJW5j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 18:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZIJW5j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 18:42:25 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:47254 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750714AbZIJWmZ (ORCPT
+	Thu, 10 Sep 2009 18:57:39 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:38835 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750860AbZIJW5i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 18:42:25 -0400
-Date: Thu, 10 Sep 2009 23:41:59 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Eric Miao <eric.y.miao@gmail.com>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
-       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
-       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
-       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
-       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
-Message-ID: <20090910224159.GA4360@n2100.arm.linux.org.uk>
-References: <20090909075024.GA1400@ucw.cz> <f17812d70909090737n4315d0cbh82c0a63e9222fdb5@mail.gmail.com> <20090909182340.GA5235@n2100.arm.linux.org.uk> <20090910191932.GA23721@elf.ucw.cz>
+	Thu, 10 Sep 2009 18:57:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IAs2pgFX3G/5BQh1MVPjs1SFG+mrnjdcP0NMbYkIRbKLdm5FUBYW3jjyR4uZT/inqZ
+         dWzsOAF2fRVv4xiSJ9VowcuWvZ1iurk40hUE05C1Auf3N0zWULbArT2K9wK0/ekZROFw
+         bMMz+PdHTL9B0SmOAz7aXpPrbAqyYL63WGEDw=
+Date: Fri, 11 Sep 2009 00:57:37 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH tracing/kprobes] x86: Add MMX support for instruction
+	decoder
+Message-ID: <20090910225735.GA16396@nowhere>
+References: <20090904190651.GC6118@nowhere> <20090908163246.23516.78835.stgit@dhcp-100-2-132.bos.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090910191932.GA23721@elf.ucw.cz>
+In-Reply-To: <20090908163246.23516.78835.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 09:19:32PM +0200, Pavel Machek wrote:
-> On Wed 2009-09-09 19:23:40, Russell King - ARM Linux wrote:
-> > On Wed, Sep 09, 2009 at 10:37:41PM +0800, Eric Miao wrote:
-> > > On Wed, Sep 9, 2009 at 3:50 PM, Pavel Machek<pavel@ucw.cz> wrote:
-> > > > Hi, Linus!
-> > > >
-> > > > Spitz resume was broken for year or likely two, and it would be very
-> > > > nice to fix it for 2.6.31 release. One liner is below, and it really
-> > > > can not harm. It already is in Eric's fix queue, so pulling that for
-> > > > .31 should work, too.
-> > > >
-> > > 
-> > > This should be sitting in rmk's git tree and I'm not sure if Russell
-> > > has sent the pull request already.
-> > 
-> > It's just Pavel being his obnoxious impatient self...
+On Tue, Sep 08, 2009 at 12:32:46PM -0400, Masami Hiramatsu wrote:
+> Add MMX/SSE instructions to x86 opcode maps, since some of those
+> instructions are used in the kernel.
 > 
-> Aha, Russell, being polite and helpful, as usual.
-> 
-> Only that, you know, you missed the deadline, so... perhaps I had
-> reason to be impatient?
+> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> Cc: Jim Keniston <jkenisto@us.ibm.com>
+> Cc: H. Peter Anvin <hpa@zytor.com>
+> Cc: Sam Ravnborg <sam@ravnborg.org>
+> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> ---
 
-I missed the deadline because I was waiting on others to sort out telling
-me whether a bugfix patch was actually correct, and then it took several
-days and mails to get an attributation line out of them.  I finally got
-that yesterday, and since I'm not doing kernel work (in fact, I'm hardly
-in front of the computer at the moment) these things are going to _HAVE_
-to wait until this weekend.
 
-By agreement with Linus, I do not send pull requests more often than once
-a week, absolute maximum.  So if I've something pending in the queue, I
-hold off sending the queue until that issue is resolved.
+Hehe :) 
 
-Don't like it?  Tough.  This is the workflow that I've been forced into
-by other flame wars.  It would be my personal preference to ensure that
-fixes make their way in a timely manner into mainline, but due to that,
-it's just not possible.
+	"Succeed: decoded and checked 1574884 instructions"
+
+I'm taking the three patches, thanks!
+
