@@ -1,60 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZIJAKF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754764AbZIJALf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbZIJAKF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 20:10:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbZIJAKF
+	id S1754764AbZIJALf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 20:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754598AbZIJALe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 20:10:05 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49232 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752642AbZIJAKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 20:10:04 -0400
-Date: Thu, 10 Sep 2009 01:10:09 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jerome Glisse <jglisse@redhat.com>
-cc: airlied@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [PATCH] drm/radeon/kms: Don't try to process irq when we are
- unloading
-In-Reply-To: <1252527787-2203-1-git-send-email-jglisse@redhat.com>
-Message-ID: <alpine.DEB.2.00.0909100109190.29694@skynet.skynet.ie>
-References: <1252527787-2203-1-git-send-email-jglisse@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 9 Sep 2009 20:11:34 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:54563 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752775AbZIJALd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 20:11:33 -0400
+Message-ID: <4AA84436.3050205@codemonkey.ws>
+Date: Wed, 09 Sep 2009 19:11:34 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
+       James Bottomley <James.Bottomley@suse.de>, akataria@vmware.com,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>
+Subject: Re: [PATCH] SCSI driver for VMware's virtual HBA - V4.
+References: <1252458903.24914.73.camel@ank32.eng.vmware.com>	<4AA8177A.2020606@codemonkey.ws>	<1252533093.24633.40.camel@ank32.eng.vmware.com>	<4AA8284A.3010908@codemonkey.ws>	<20090909230854.GA4495@infradead.org> <4AA83B88.2020104@codemonkey.ws> <4AA84020.6040504@goop.org>
+In-Reply-To: <4AA84020.6040504@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009, Jerome Glisse wrote:
+Jeremy Fitzhardinge wrote:
+> On 09/09/09 16:34, Anthony Liguori wrote:
+>   
+>> We haven't even been successful in getting the Xen folks to present 
+>> their work on lkml before shipping it to their users.  Why would we 
+>> expect more from VMware if we're willing to merge the Xen stuff?
+>>   
+>>     
+>
+> The Xen code may be out of tree, but it has always been readily
+> available from a well-known place.  I don't think its comparable.
+>   
 
-> If module is being unloaded we should not try to handle irq especialy
-> we should not call into drm helper or we could hard hang the computer
-> free_irq will call the irq handler to make sure we behave properly.
+Once an ABI is set in stone, there's very little that can be done on 
+lkml to review the ABI in any serious way.
 
-Should you not just ack all irqs here before returning, else we'll
-just get called again.
+VMware has repeatedly done this in the past.  Ship a product with their 
+own drivers, then submit something to lkml saying that the ABI cannot be 
+changed because it's present in a shipping product.
 
-Dave.
+I'll admit, Xen hasn't been as bad as VMware in this regard, but it's 
+certainly not perfect either.
 
-> 
-> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
-> ---
->  drivers/gpu/drm/radeon/r100.c |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/radeon/r100.c b/drivers/gpu/drm/radeon/r100.c
-> index 5708c07..36d0ba2 100644
-> --- a/drivers/gpu/drm/radeon/r100.c
-> +++ b/drivers/gpu/drm/radeon/r100.c
-> @@ -319,6 +319,9 @@ int r100_irq_process(struct radeon_device *rdev)
->  	if (!status) {
->  		return IRQ_NONE;
->  	}
-> +	if (rdev->shutdown) {
-> +		return IRQ_NONE;
-> +	}
->  	while (status) {
->  		/* SW interrupt */
->  		if (status & RADEON_SW_INT_TEST) {
-> 
+Regards,
+
+Anthony Liguori
+
+>     J
+>   
+
