@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753702AbZIJT12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751922AbZIJP1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753702AbZIJT12 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZIJT10
+	id S1751922AbZIJP1k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 11:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZIJP1j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:27:26 -0400
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:55801 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753650AbZIJT1W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:27:22 -0400
-Date: Thu, 10 Sep 2009 13:27:21 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: James Morris <jmorris@namei.org>
-Cc: Rajiv Andrade <srajiv@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       tpmdd-devel@lists.sourceforge.net,
-       Debora Velarde <debora@linux.vnet.ibm.com>,
-       Marcel Selhorst <m.selhorst@sirrix.com>,
-       Jan Beulich <jbeulich@novell.com>, adi@vmware.com, stable@kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] TPM: Fixup boot probe timeout for tpm_tis driver
-Message-ID: <20090910192721.GA7552@obsidianresearch.com>
-References: <20090909232218.GK406@obsidianresearch.com> <1252545267.4837.62.camel@blackbox> <alpine.LRH.2.00.0909101919400.3312@tundra.namei.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 Sep 2009 11:27:39 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:53057 "EHLO smtp.ispras.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750827AbZIJP1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 11:27:39 -0400
 Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0909101919400.3312@tundra.namei.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
+From: iceberg <strakh@ispras.ru>
+Organization: ISP RAS
+To: Jonathan Corbet <corbet@lwn.net>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Re: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
+Date: Thu, 10 Sep 2009 19:29:07 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909101929.08127.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 07:21:33PM +1000, James Morris wrote:
-> On Wed, 9 Sep 2009, Rajiv Andrade wrote:
+In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe: 
+Mutex must be unlocked before exit
+	1. On paths starting with mutex lock in line 1912, then continuing in lines: 
+1929, 1936 (goto unreg) and 1940 (goto iounmap) . 
+	2. On path starting in line 1971 mutex lock, and then continuing in line 1978 
+(goto out_smbus) mutex.
+
+Fix lock imbalances in function cafe_pci_probe.
+Found by Linux Driver Verification project.
+
+Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+
+---
+diff --git a/./a/drivers/media/video/cafe_ccic.c 
+b/./b/drivers/media/video/cafe_ccic.c
+index c4d181d..2987433 100644
+--- a/./a/drivers/media/video/cafe_ccic.c
++++ b/./b/drivers/media/video/cafe_ccic.c
+@@ -1925,19 +1925,24 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ 	 * Get set up on the PCI bus.
+ 	 */
+ 	ret = pci_enable_device(pdev);
+-	if (ret)
++	if (ret) {
++		mutex_unlock(&cam->s_mutex);
+ 		goto out_unreg;
++	}
+ 	pci_set_master(pdev);
  
-> > Andy Isaacson sent this a while ago in a patchset, I think I lost track
-> > of it in the middle of the other patches, sorry. In any case, ACK.
+ 	ret = -EIO;
+ 	cam->regs = pci_iomap(pdev, 0, 0);
+ 	if (! cam->regs) {
+ 		printk(KERN_ERR "Unable to ioremap cafe-ccic regs\n");
++		mutex_unlock(&cam->s_mutex);
+ 		goto out_unreg;
+ 	}
+ 	ret = request_irq(pdev->irq, cafe_irq, IRQF_SHARED, "cafe-ccic", cam);
+-	if (ret)
++	if (ret) {
++		mutex_unlock(&cam->s_mutex);
+ 		goto out_iounmap;
++	}
+ 	/*
+ 	 * Initialize the controller and leave it powered up.  It will
+ 	 * stay that way until the sensor driver shows up.
+@@ -1974,8 +1979,10 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ /*	cam->vdev.debug = V4L2_DEBUG_IOCTL_ARG;*/
+ 	cam->vdev.v4l2_dev = &cam->v4l2_dev;
+ 	ret = video_register_device(&cam->vdev, VFL_TYPE_GRABBER, -1);
+-	if (ret)
++	if (ret) {
++		mutex_unlock(&cam->s_mutex);
+ 		goto out_smbus;
++	}
+ 	video_set_drvdata(&cam->vdev, cam);
+ 
+ 	/*
 
-Thanks Rajiv
-
-> This will be pushed to Linus within the next day as part of the merge for 
-> 2.6.32, and I'm guessing needs to be in -stable.
-
-Thanks - as for -stable I'm expecting not many people are affected by
-this, but I doubt it hurts anything. This is actually fixing a
-regression introduced by 05a462afe80553550bc77afc724ce60b42ad587e if
-that matters.
-
-Jason
