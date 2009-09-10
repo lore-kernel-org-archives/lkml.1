@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZIJGc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755154AbZIJGlD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbZIJGc3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 02:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZIJGc3
+	id S1755154AbZIJGlD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 02:41:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752909AbZIJGlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 02:32:29 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56632 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752824AbZIJGc2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 02:32:28 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] lowmemorykiller: fix build error to move oom_adj
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       <stable@kernel.org>
-In-Reply-To: <20090910152551.DB3C.A69D9226@jp.fujitsu.com>
-References: <20090910152551.DB3C.A69D9226@jp.fujitsu.com>
-Message-Id: <20090910153108.DB42.A69D9226@jp.fujitsu.com>
+	Thu, 10 Sep 2009 02:41:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36738 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752857AbZIJGlB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 02:41:01 -0400
+Date: Thu, 10 Sep 2009 08:40:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Nikos Chantziaras <realnc@arcor.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090910064059.GA22646@elte.hu>
+References: <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu> <4AA80C1E.2080901@arcor.de> <20090910060824.GF1335@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 10 Sep 2009 15:32:26 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090910060824.GF1335@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Recently, oom_adj moved from task_struct to signal_struct. Then, the oom_adj
-treating code in android driver also should be changed.
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- drivers/staging/android/lowmemorykiller.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+> > However, the interactivity problems still remain.  Does that 
+> > mean it's not a latency issue?
+> 
+> It means that Jens's test-app, which demonstrated and helped us 
+> fix the issue for him does not help us fix it for you just yet.
 
-diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
-index f91ed1c..63ef837 100644
---- a/drivers/staging/android/lowmemorykiller.c
-+++ b/drivers/staging/android/lowmemorykiller.c
-@@ -106,7 +106,7 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
- 			task_unlock(p);
- 			continue;
- 		}
--		oom_adj = p->oomkilladj;
-+		oom_adj = p->signal->oom_adj;
- 		if (oom_adj < min_adj) {
- 			task_unlock(p);
- 			continue;
--- 
-1.6.2.5
+Lemme qualify that by saying that Jens's issues are improved not 
+fixed [he has not re-run with latest latt.c yet] but not all things 
+are fully fixed yet. For example the xmodmap thing sounds 
+interesting - could that be a child-runs-first effect?
 
-
-
+	Ingo
