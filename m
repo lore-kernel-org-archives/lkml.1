@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755259AbZIJI3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755278AbZIJI3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755259AbZIJI3d (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 04:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZIJI3c
+	id S1755278AbZIJI3j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 04:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755262AbZIJI3h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 04:29:32 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:51951 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751941AbZIJI3a (ORCPT
+	Thu, 10 Sep 2009 04:29:37 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:10850 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752048AbZIJI3c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 04:29:30 -0400
+	Thu, 10 Sep 2009 04:29:32 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=aXRmtPFJ40OGdvrC4xUGNSrnvdGM+jjK12Qc+Ut+AFxyQdG2Kf9ixrkOTx5jUQ3lkF
-         YnpFaTjctEeBo5D1cnHAwHn87IS4MW9TIxI2PVB0e3h3GRjr7GobFDJomlH3f7PYAbjU
-         KkJkRPbHiI1HmKkcf4taD2pZyjrfgDWDlN8ok=
+        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
+        b=O+muENkMXxWT9YPWX7P+m2Rm0Vnmivs3CAq+8A+IzY08qq/sySGBFL5K3BCS0Nt7d4
+         mtBbeRQ103wnVh0q9m0z76VyxB4db0g6M/pv8h7cJV2iGL7PiAMHs/2rhMSzYWTMfPiW
+         Rd3DNJLmkBOzB1IagrPNakY8XhbBd0y0NcLvo=
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: LKML <linux-kernel@vger.kernel.org>,
@@ -24,81 +24,130 @@ Cc: LKML <linux-kernel@vger.kernel.org>,
        Alan Stern <stern@rowland.harvard.edu>,
        Peter Zijlstra <peterz@infradead.org>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
        Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
        Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
        Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC GIT PULL] hw-breakpoints: Rewrite on top of perf counters
-Date: Thu, 10 Sep 2009 10:29:22 +0200
-Message-Id: <1252571367-25876-1-git-send-email-fweisbec@gmail.com>
+Subject: [PATCH 1/5] perf_counter: Add open/close pmu callbacks
+Date: Thu, 10 Sep 2009 10:29:23 +0200
+Message-Id: <1252571367-25876-2-git-send-email-fweisbec@gmail.com>
 X-Mailer: git-send-email 1.6.2.3
+In-Reply-To: <1252571367-25876-1-git-send-email-fweisbec@gmail.com>
+References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Add the open() and close() callback to the pmu structure.
+Open is called when a counter is initialized just after it's allocation
+and close is called when the counter is about to be released.
 
-This is a rewrite of the hardware breakpoints on top of perf counters.
+These callbacks are useful for example when a pmu has to deal with
+several registers and needs to maintain an internal list of counters
+using them. Given such list, the pmu is able to check if the the number
+of physical registers are still sufficient for the new created counter
+and then accept or refuse this counter.
 
-Most of the details can be found in the 3rd and 4th patches.
+open() will return 0 in case of success or an error if we have not
+enough registers for the given counter (or whatever error a pmu may
+encounter).
 
-To sum-up, this brings the perf tunable features that a perf
-counter can perform:
-
-- Hardware registers scheduling through a pmu
-- Pinned/flexible, exlusive/non-exclusive, tunable periodic
-  events.
-- Easier arch integration
-- Optimized register allocation
-
-There is still some work to do.
-Beside the todo list found in individual patches:
-
-- Fix a nasty bug: it doesn't properly free/unregister the breakpoint
-  after a use through ptrace. I should fix it soon.
-
-- Drop the struct hw_breakpoint type and integrate the breakpoint core
-  fields into the counter structure (into the perf attributes)
-
-Thanks,
-Frederic.
-
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Prasad <prasad@linux.vnet.ibm.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Kiszka <jan.kiszka@siemens.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Avi Kivity <avi@redhat.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Mike Galbraith <efault@gmx.de>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
 ---
-The following changes since commit d6a65dffb30d8636b1e5d4c201564ef401a246cf:
-  Frederic Weisbecker (1):
-        tracing: Fix ring-buffer and ksym tracer merge interaction
+ include/linux/perf_counter.h |    3 +++
+ kernel/perf_counter.c        |   27 +++++++++++++++++++++------
+ 2 files changed, 24 insertions(+), 6 deletions(-)
 
-are available in the git repository at:
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 9ba1822..f557483 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -487,6 +487,8 @@ struct pmu {
+ 	void (*disable)			(struct perf_counter *counter);
+ 	void (*read)			(struct perf_counter *counter);
+ 	void (*unthrottle)		(struct perf_counter *counter);
++	int (*open)			(struct perf_counter *counter);
++	void (*close)			(struct perf_counter *counter);
+ };
+ 
+ /**
+@@ -497,6 +499,7 @@ enum perf_counter_active_state {
+ 	PERF_COUNTER_STATE_OFF		= -1,
+ 	PERF_COUNTER_STATE_INACTIVE	=  0,
+ 	PERF_COUNTER_STATE_ACTIVE	=  1,
++	PERF_COUNTER_STATE_UNOPENED	=  2,
+ };
+ 
+ struct file;
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index d7cbc57..400ccf6 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1675,6 +1675,10 @@ static void free_counter(struct perf_counter *counter)
+ 			atomic_dec(&nr_task_counters);
+ 	}
+ 
++	if (counter->pmu->close)
++		if (counter->state != PERF_COUNTER_STATE_UNOPENED)
++			counter->pmu->close(counter);
++
+ 	if (counter->destroy)
+ 		counter->destroy(counter);
+ 
+@@ -4101,15 +4105,19 @@ done:
+ 	else if (IS_ERR(pmu))
+ 		err = PTR_ERR(pmu);
+ 
+-	if (err) {
+-		if (counter->ns)
+-			put_pid_ns(counter->ns);
+-		kfree(counter);
+-		return ERR_PTR(err);
+-	}
++	if (err)
++		goto fail;
+ 
+ 	counter->pmu = pmu;
+ 
++	if (pmu->open) {
++		err = pmu->open(counter);
++		if (err) {
++			counter->state = PERF_COUNTER_STATE_UNOPENED;
++			goto fail;
++		}
++	}
++
+ 	if (!counter->parent) {
+ 		atomic_inc(&nr_counters);
+ 		if (counter->attr.mmap)
+@@ -4121,6 +4129,13 @@ done:
+ 	}
+ 
+ 	return counter;
++
++fail:
++	if (counter->ns)
++		put_pid_ns(counter->ns);
++	kfree(counter);
++
++	return ERR_PTR(err);
+ }
+ 
+ static int perf_copy_attr(struct perf_counter_attr __user *uattr,
+-- 
+1.6.2.3
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
-	tracing/hw-breakpoints
-
-Frederic Weisbecker (4):
-      perf_counter: Add open/close pmu callbacks
-      perf_counter: Export various perf helpers for external users
-      hw-breakpoints: Rewrite the hw-breakpoints layer on top of perf counters
-      hw-breakpoints: Arbitrate access to pmu following registers constraints
-
-Li Zefan (1):
-      ksym_tracer: Remove KSYM_SELFTEST_ENTRY
-
- arch/Kconfig                         |    3 +
- arch/x86/include/asm/debugreg.h      |    7 -
- arch/x86/include/asm/hw_breakpoint.h |   31 ++-
- arch/x86/include/asm/processor.h     |   10 +-
- arch/x86/kernel/hw_breakpoint.c      |  217 ++++++++------
- arch/x86/kernel/process.c            |    4 +-
- arch/x86/kernel/process_32.c         |   28 +--
- arch/x86/kernel/process_64.c         |   28 +--
- arch/x86/kernel/ptrace.c             |  163 +++++++----
- arch/x86/kernel/smpboot.c            |    3 -
- arch/x86/power/cpu.c                 |    6 -
- include/asm-generic/hw_breakpoint.h  |   20 +-
- include/linux/perf_counter.h         |   42 +++
- kernel/hw_breakpoint.c               |  543 ++++++++++++++++++++--------------
- kernel/perf_counter.c                |  112 +++++--
- kernel/trace/trace.h                 |    1 -
- kernel/trace/trace_ksym.c            |  151 +++++++---
- kernel/trace/trace_selftest.c        |    2 +-
- 18 files changed, 840 insertions(+), 531 deletions(-)
