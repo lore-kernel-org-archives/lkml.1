@@ -1,72 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752007AbZIJPyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbZIJQD3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752007AbZIJPyk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 11:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbZIJPyk
+	id S1752111AbZIJQD3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 12:03:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZIJQD2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 11:54:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34806 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751607AbZIJPyj (ORCPT
+	Thu, 10 Sep 2009 12:03:28 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55775 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752046AbZIJQD2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 11:54:39 -0400
-Subject: Re: [RFC][PATCH 7/7] writeback: balance_dirty_pages() shall write
- more than dirtied pages
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
+	Thu, 10 Sep 2009 12:03:28 -0400
+Message-ID: <4AA921E0.3000605@zytor.com>
+Date: Thu, 10 Sep 2009 08:57:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-In-Reply-To: <20090910154116.GA10856@localhost>
-References: <20090909145141.293229693@intel.com>
-	 <20090909150601.159061863@intel.com> <20090909154413.GC7949@duck.suse.cz>
-	 <20090910014201.GB10957@localhost> <20090910125742.GH5106@think>
-	 <20090910132154.GA6446@localhost> <1252594564.7205.36.camel@laptop>
-	 <20090910151458.GA10767@localhost> <1252596698.7205.59.camel@laptop>
-	 <20090910154116.GA10856@localhost>
-Content-Type: text/plain
-Date: Thu, 10 Sep 2009 17:54:29 +0200
-Message-Id: <1252598069.7205.87.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
+ devices are requested
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>	<4AA6DF50.3030603@zytor.com>	<20090908203323.486c129c@caramujo.chehab.org>	<4AA6F63F.7090009@zytor.com>	<20090908235441.04549a29@caramujo.chehab.org>	<4AA73309.8030302@zytor.com>	<20090910010512.60a1f523@caramujo.chehab.org>	<4AA89B02.1050909@zytor.com>	<20090910093301.4ccfd786@caramujo.chehab.org> <20090910150716.66310f02@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090910150716.66310f02@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 23:41 +0800, Wu Fengguang wrote:
-> > > So btrfs_file_write() explicitly calls
-> > > balance_dirty_pages_ratelimited_nr() to get throttled.
-> > 
-> > Right, so what is wrong with than, and how does this patch fix that?
-> > 
-> > [ the only thing you have to be careful with is that you don't
-> > excessively grow the error bound on the dirty limit ]
+On 09/10/2009 07:07 AM, Alan Cox wrote:
+> I actually have another proposal having reviewed the user space code.
 > 
-> Then we could form a loop:
+> Limit the BSD ptys to 256. Nothing uses them, the C library routines for
+> their allocation would need glibc modifying (which takes about five years
+> for a tty change it seems anyway). It's basically a huge amount of work
+> for no purpose at all.
 > 
->         btrfs_file_write():     dirty 1024 pages
->         balance_dirty_pages():  write up to 12 pages (= ratelimit_pages * 1.5)
-> 
-> in which the writeback rate cannot keep up with dirty rate,
-> and the dirty pages go all the way beyond dirty_thresh.
+> So lets limit BSD ptys (unused anyway) to 256 and be done with it.
 
-Ah, ok so this is to keep the error bound on the dirty limit bounded,
-because we can break out of balance_dirty_pages() early, the /* We've
-done our duty */ break.
+IMO this is the right thing to do (and in fact what the current kernel
+does, explicitly, via Kconfig); I guess I assumed Mauro had a specific
+reason for breaking it, but there are multiple reasons to NOT do this:
 
-Which unbalances the duty vs the dirty ratio.
+a) the userspace code needs to be changed regardless, in an arbitrary
+   number of places.
+b) noone uses them, except the occasional dedicated pipe which wants
+   a predefined name.
+c) the memory used is statically allocated.
 
-I figure that with the task dirty limit stuff we could maybe try to get
-rid of this break.. worth a try.
+	-hpa
 
-> Sorry for writing such a vague changelog!
-
-np, as long as we get there :-)
-
-Change makes sense now, thanks!
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
