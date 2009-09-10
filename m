@@ -1,181 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755420AbZIJK0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755427AbZIJK2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755420AbZIJK0w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 06:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbZIJK0w
+	id S1755427AbZIJK2g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 06:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755371AbZIJK2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 06:26:52 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:56218 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752235AbZIJK0u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 06:26:50 -0400
-Date: Thu, 10 Sep 2009 12:26:53 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 6/9] PM: Add a switch for disabling/enabling asynchronous suspend/resume
-Message-ID: <20090910102653.GA30778@atrey.karlin.mff.cuni.cz>
-References: <200909100127.11252.rjw@sisk.pl> <200909100138.25839.rjw@sisk.pl>
+	Thu, 10 Sep 2009 06:28:35 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60041 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755358AbZIJK2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 06:28:35 -0400
+Date: Thu, 10 Sep 2009 12:28:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nikos Chantziaras <realnc@arcor.de>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090910102837.GJ18599@kernel.dk>
+References: <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu> <4AA80C1E.2080901@arcor.de> <20090910060824.GF1335@elte.hu> <20090910064059.GA22646@elte.hu> <20090910095457.GD18599@kernel.dk> <20090910100321.GA7922@elte.hu> <20090910101137.GH18599@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200909100138.25839.rjw@sisk.pl>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090910101137.GH18599@kernel.dk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
+On Thu, Sep 10 2009, Jens Axboe wrote:
+> On Thu, Sep 10 2009, Ingo Molnar wrote:
+> > 
+> > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > 
+> > > On Thu, Sep 10 2009, Ingo Molnar wrote:
+> > > > 
+> > > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > > 
+> > > > > > However, the interactivity problems still remain.  Does that 
+> > > > > > mean it's not a latency issue?
+> > > > > 
+> > > > > It means that Jens's test-app, which demonstrated and helped us 
+> > > > > fix the issue for him does not help us fix it for you just yet.
+> > > > 
+> > > > Lemme qualify that by saying that Jens's issues are improved not 
+> > > > fixed [he has not re-run with latest latt.c yet] but not all things 
+> > > > are fully fixed yet. For example the xmodmap thing sounds 
+> > > > interesting - could that be a child-runs-first effect?
+> > > 
+> > > I thought so too, so when -tip failed to boot I pulled the patches 
+> > > from Mike into 2.6.31. It doesn't change anything for xmodmap, 
+> > > though.
+> > 
+> > Note, you can access just the pristine scheduler patches by checking 
+> > out and testing tip:sched/core - no need to pull them out and apply.
+> > 
+> > Your crash looks like clocksource related - that's in a separate 
+> > topic which you can thus isolate if you use sched/core.
 > 
-> Add sysfs attribute kernel/power/pm_async allowing the user space to
-> disable and enable async suspend/resume of devices.
+> I'm building sched/core now and will run the xmodmap test there.
 
-for bisect reasons, should this go before 5?
+No difference. Then I tried switching NO_NEW_FAIR_SLEEPERS on, and then
+I get:
 
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  drivers/base/power/main.c  |   13 +++++++------
->  drivers/base/power/power.h |    6 +++---
->  kernel/power/main.c        |   31 ++++++++++++++++++++++++++++++-
->  3 files changed, 40 insertions(+), 10 deletions(-)
-> 
-> Index: linux-2.6/kernel/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/main.c
-> +++ linux-2.6/kernel/power/main.c
-> @@ -44,6 +44,32 @@ int pm_notifier_call_chain(unsigned long
->  			== NOTIFY_BAD) ? -EINVAL : 0;
->  }
->  
-> +/* If set, devices may be suspended and resumed asynchronously. */
-> +int pm_async_enabled = 1;
-> +
-> +static ssize_t pm_async_show(struct kobject *kobj, struct kobj_attribute *attr,
-> +			     char *buf)
-> +{
-> +	return sprintf(buf, "%d\n", pm_async_enabled);
-> +}
-> +
-> +static ssize_t pm_async_store(struct kobject *kobj, struct kobj_attribute *attr,
-> +			      const char *buf, size_t n)
-> +{
-> +	unsigned long val;
-> +
-> +	if (strict_strtoul(buf, 10, &val))
-> +		return -EINVAL;
-> +
-> +	if (val > 1)
-> +		return -EINVAL;
-> +
-> +	pm_async_enabled = val;
-> +	return n;
-> +}
-> +
-> +power_attr(pm_async);
-> +
->  #ifdef CONFIG_PM_DEBUG
->  int pm_test_level = TEST_NONE;
->  
-> @@ -208,9 +234,12 @@ static struct attribute * g[] = {
->  #ifdef CONFIG_PM_TRACE
->  	&pm_trace_attr.attr,
->  #endif
-> -#if defined(CONFIG_PM_SLEEP) && defined(CONFIG_PM_DEBUG)
-> +#ifdef CONFIG_PM_SLEEP
-> +	&pm_async_attr.attr,
-> +#ifdef CONFIG_PM_DEBUG
->  	&pm_test_attr.attr,
->  #endif
-> +#endif
->  	NULL,
->  };
->  
-> Index: linux-2.6/drivers/base/power/main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/main.c
-> +++ linux-2.6/drivers/base/power/main.c
-> @@ -235,7 +235,7 @@ static int device_pm_wait_fn(struct devi
->   */
->  static void device_pm_wait_for_masters(struct device *slave)
->  {
-> -	if (!pm_trace_enabled)
-> +	if (pm_async_enabled && !pm_trace_enabled)
->  		device_for_each_master(slave, slave, device_pm_wait_fn);
->  }
->  
-> @@ -245,7 +245,8 @@ static void device_pm_wait_for_masters(s
->   */
->  static void device_pm_wait_for_slaves(struct device *master)
->  {
-> -	device_for_each_slave(master, master, device_pm_wait_fn);
-> +	if (pm_async_enabled)
-> +		device_for_each_slave(master, master, device_pm_wait_fn);
->  }
->  
->  /**
-> @@ -560,7 +561,7 @@ static int device_resume_noirq(struct de
->  	if (pm_op_started(dev))
->  		return 0;
->  
-> -	if (dev->power.async_suspend && !pm_trace_enabled) {
-> +	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
->  		async_schedule(async_resume_noirq, dev);
->  		return 0;
->  	}
-> @@ -719,7 +720,7 @@ static int device_resume(struct device *
->  	if (pm_op_started(dev))
->  		return 0;
->  
-> -	if (dev->power.async_suspend && !pm_trace_enabled) {
-> +	if (pm_async_enabled && !pm_trace_enabled && dev->power.async_suspend) {
->  		get_device(dev);
->  		async_schedule(async_resume, dev);
->  		return 0;
-> @@ -965,7 +966,7 @@ static int device_suspend_noirq(struct d
->  	if (pm_op_started(dev))
->  		return 0;
->  
-> -	if (dev->power.async_suspend) {
-> +	if (pm_async_enabled && dev->power.async_suspend) {
->  		async_schedule(async_suspend_noirq, dev);
->  		return 0;
->  	}
-> @@ -1139,7 +1140,7 @@ static int device_suspend(struct device 
->  	if (pm_op_started(dev))
->  		return 0;
->  
-> -	if (dev->power.async_suspend) {
-> +	if (pm_async_enabled && dev->power.async_suspend) {
->  		get_device(dev);
->  		async_schedule(async_suspend, dev);
->  		return 0;
-> Index: linux-2.6/drivers/base/power/power.h
-> ===================================================================
-> --- linux-2.6.orig/drivers/base/power/power.h
-> +++ linux-2.6/drivers/base/power/power.h
-> @@ -16,10 +16,10 @@ static inline void pm_runtime_remove(str
->  
->  #ifdef CONFIG_PM_SLEEP
->  
-> -/*
-> - * main.c
-> - */
-> +/* kernel/power/main.c */
-> +extern int pm_async_enabled;
->  
-> +/* drivers/base/power/main.c */
->  extern struct list_head dpm_list;	/* The active device list */
->  
->  static inline struct device *to_device(struct list_head *entry)
+ Performance counter stats for 'xmodmap .xmodmap-carl':
+
+       9.009137  task-clock-msecs         #      0.447 CPUs 
+             18  context-switches         #      0.002 M/sec
+              1  CPU-migrations           #      0.000 M/sec
+            315  page-faults              #      0.035 M/sec
+  <not counted>  cycles                  
+  <not counted>  instructions            
+  <not counted>  cache-references        
+  <not counted>  cache-misses            
+
+    0.020167093  seconds time elapsed
+
+Woot!
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jens Axboe
+
