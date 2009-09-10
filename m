@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754300AbZIJVDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754168AbZIJVCO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754300AbZIJVDR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 17:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZIJVDQ
+	id S1754168AbZIJVCO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 17:02:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753549AbZIJVCO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 17:03:16 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47353 "EHLO mx2.suse.de"
+	Thu, 10 Sep 2009 17:02:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40594 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753086AbZIJVDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 17:03:16 -0400
-Date: Thu, 10 Sep 2009 14:00:47 -0700
-From: Greg KH <gregkh@suse.de>
-To: Haiyang Zhang <haiyangz@microsoft.com>
-Cc: Hank Janssen <hjanssen@microsoft.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Tom Hanrahan <hanrahat@microsoft.com>
-Subject: Re: [patch] Staging: hv: Add new tasks to the TODO file
-Message-ID: <20090910210046.GC3376@suse.de>
-References: <1FB5E1D5CA062146B38059374562DF720B8E1E77@TK5EX14MBXC130.redmond.corp.microsoft.com>
+	id S1751728AbZIJVCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 17:02:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Subject: Re: [Bug #13733] 2.6.31-rc2: irq 16: nobody cared
+Date: Thu, 10 Sep 2009 23:02:51 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
+Cc: "linux.kernel" <linux-kernel@vger.kernel.org>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Len Brown <lenb@kernel.org>, Alan Stern <stern@rowland.harvard.edu>
+References: <dhwns-J2-13@gated-at.bofh.it> <dhwxb-O6-7@gated-at.bofh.it> <4AA6B5D4.4040802@gmail.com>
+In-Reply-To: <4AA6B5D4.4040802@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1FB5E1D5CA062146B38059374562DF720B8E1E77@TK5EX14MBXC130.redmond.corp.microsoft.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909102302.51808.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 08:49:56PM +0000, Haiyang Zhang wrote:
-> From: Haiyang Zhang <haiyangz@microsoft.com>
+On Tuesday 08 September 2009, Niel Lambrechts wrote:
+> On 09/06/2009 10:30 PM, Rafael J. Wysocki wrote:
+> > The following bug entry is on the current list of known regressions
+> > from 2.6.30.  Please verify if it still should be listed and let me know
+> > (either way).
+> >
+> >
+> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13733
+> > Subject		: 2.6.31-rc2: irq 16: nobody cared
+> > Submitter	: Niel Lambrechts<niel.lambrechts@gmail.com>
+> > Date		: 2009-07-06 18:32 (63 days old)
+> > References	: http://marc.info/?l=linux-kernel&m=124690524027166&w=4
 > 
-> Add new tasks to the TODO file.
+> Hi Rafael,
 > 
-> Cc: Hank Janssen <hjanssen@microsoft.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
+> This is still present in 2.6.31-rc9-pae.
 > 
-> ---
-> diff --git a/drivers/staging/hv/TODO b/drivers/staging/hv/TODO
-> index fc754ab..345a59f 100644
-> --- a/drivers/staging/hv/TODO
-> +++ b/drivers/staging/hv/TODO
-> @@ -11,6 +11,12 @@ TODO:
->         - audit the network driver
->         - audit the block driver
->         - audit the scsi driver
-> +       - SMP Support
-> +       - Remote Shutdown
-> +       - Networking . Jumbo Frames
-> +       - Hot swappable storage devices
-> +       - Time Synchronization
-> +       - Key Value Pair Exchange
+> To test, I removed ehci_hcd, hibernated/resumed and the problem did not appear.
+> But when I first plugged in a USB mouse after the system was up and before
+> ehci_hcd was loaded the error occurred again.
 
-No, sorry, I'm not going to take this.
+Thanks for the update (extending the CC list).
 
-The TODO file is for what needs to be done to the code in order to get
-it _out_ of the staging tree.  Not new features.  This should be a list
-of things that people can help you out with, which none of these are,
-given the lack of documentation on how adding this to the code is able
-to be done.
-
-So please, work on removing the items on the TODO list, that way the
-code can then be merged into the main portion of the kernel tree.  Then
-you can go and add new features.  There's lots that still needs to be
-done with this code before you can think about adding anything new.
-
-thanks,
-
-greg k-h
+Rafael
