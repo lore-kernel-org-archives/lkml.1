@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbZIJUR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753950AbZIJUWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbZIJUR6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 16:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZIJUR5
+	id S1753950AbZIJUWL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 16:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZIJUWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 16:17:57 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40442 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752476AbZIJUR4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 16:17:56 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@redhat.com>
-Subject: Re: [PATCH 0/3] resend, cpuset/hotplug fixes
-Date: Thu, 10 Sep 2009 22:18:40 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, Gautham Shenoy <ego@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-References: <20090910192153.GA584@redhat.com>
-In-Reply-To: <20090910192153.GA584@redhat.com>
+	Thu, 10 Sep 2009 16:22:10 -0400
+Received: from baron.coraid.com ([12.51.113.4]:64165 "EHLO coraid.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752950AbZIJUWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 16:22:10 -0400
+From: Ed Cashin <ecashin@coraid.com>
+X-Mailer: nedmail
+Date: Thu, 10 Sep 2009 16:20:34 -0400
+To: jens.axboe@oracle.com, ecashin@coraid.com, alan@lxorguk.ukuu.org.uk,
+       akpm@linux-foundation.org, apw@canonical.com, bonbons@linux-vserver.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
+Message-ID: <178912f8877bbbbbd5aa5cd4a082f8a9@coraid.com>
+In-Reply-To: <20090910200735.GX18599@kernel.dk>
+References: <20090908193540.GB18599@kernel.dk>
+	<60772f633c524ba873f569966fccd6ce@coraid.com>
+	<20090909180804.3e62331a@lxorguk.ukuu.org.uk>
+	<30b7855d211ab5b6bef6fe2cd9b76295@coraid.com>
+	<20090909205835.GK18599@kernel.dk>
+	<810bbe1723b0a205f9b5018a5ddaa722@coraid.com>
+	<20090910074820.GS18599@kernel.dk>
+	<84f18127dcdb4762bf9dc6796846087f@coraid.com>
+	<20090910195021.GW18599@kernel.dk>
+	<aa669085856b88bee82d150efe84b682@coraid.com>
+	<20090910200735.GX18599@kernel.dk>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909102218.40143.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Oleg,
+On Thu Sep 10 16:07:37 EDT 2009, jens.axboe@oracle.com wrote:
+> On Thu, Sep 10 2009, Ed Cashin wrote:
+...
+> > So, yes, if you don't mind pushing the patch to the appropriate place,
+> > that would be great.
+> 
+> Did you repost a non-whitespace damaged version?
 
-On Thursday 10 September 2009, Oleg Nesterov wrote:
-> (my apologies to those who see this twice).
-> 
-> 
-> The 1st patch is preparation. 2-3 fix different problems, the 3rd one
-> depends on 2nd.
-> 
-> These patches change the code which I don't really understand, please
-> review.
-> 
-> 
-> As for the 3rd patch, it replaces
-> 
-> 	cpu_hotplug-dont-affect-current-tasks-affinity.patch
-> 
-> in -mm tree. Imho the new patch is more simple and clean, but of course
-> this is subjective and I am biased.
+Yes.  I'll post it again as a response to this email.
 
-The patches look good to me FWIW.
+> > Now I have to figure out why the other patch in aoe's quilt tree for
+> > linux-next never made it to 2.6.31.
+> 
+> Things don't go from -next to mainstream automatically, -next is just a
+> testing base. You have to submit it explicitly, eg send it to me.
 
-Thanks a lot for taking care of this!
+Ah.  Thanks.
 
-Rafael
+-- 
+  Ed
