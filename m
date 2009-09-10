@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZIJLus@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755521AbZIJMOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755491AbZIJLus (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 07:50:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZIJLur
+	id S1755521AbZIJMOa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 08:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754810AbZIJMO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 07:50:47 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:57603 "EHLO poutre.nerim.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbZIJLuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 07:50:46 -0400
-Date: Thu, 10 Sep 2009 13:50:47 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Crane Cai <crane.cai@amd.com>
-Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] I2C: add new AMD SMBus device ID
-Message-ID: <20090910135047.2a55ccca@hyperion.delvare>
-In-Reply-To: <20090910080427.GA10945@crane-desktop>
-References: <20090910080427.GA10945@crane-desktop>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	Thu, 10 Sep 2009 08:14:29 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:57352 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbZIJMO2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 08:14:28 -0400
+Subject: Re: [PATCH 3/3] sysfs: Add labeling support for sysfs
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Casey Schaufler <casey@schaufler-ca.com>
+Cc: Greg KH <gregkh@suse.de>, James Morris <jmorris@namei.org>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
+In-Reply-To: <4AA87710.9010901@schaufler-ca.com>
+References: <1252002358-6612-1-git-send-email-dpquigl@tycho.nsa.gov>
+	 <1252002358-6612-4-git-send-email-dpquigl@tycho.nsa.gov>
+	 <alpine.LRH.2.00.0909071147100.2538@tundra.namei.org>
+	 <1252520737.13634.833.camel@moss-pluto.epoch.ncsc.mil>
+	 <alpine.LRH.2.00.0909101040460.30636@tundra.namei.org>
+	 <20090910030121.GA32239@suse.de>  <4AA87710.9010901@schaufler-ca.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Thu, 10 Sep 2009 08:14:10 -0400
+Message-Id: <1252584850.13634.876.camel@moss-pluto.epoch.ncsc.mil>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Crane,
-
-On Thu, 10 Sep 2009 16:04:27 +0800, Crane Cai wrote:
-> Add new SMBus device ID for SB900
+On Wed, 2009-09-09 at 20:48 -0700, Casey Schaufler wrote:
+> Greg KH wrote:
+> > On Thu, Sep 10, 2009 at 10:40:59AM +1000, James Morris wrote:
+> >   
+> >> Thanks, all applied to
+> >> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
+> >>     
+> >
+> > Um, wait, what about the sysfs maintainer's review?  :)
+> >
+> > I also want to see Casey agree with this as well.
+> >   
 > 
-> ---
-> Hi Jean,
+> Without being able to provide a better solution in a reasonable
+> time I don't see that I can responsibly raise an objection. Sure,
+> I'd rather see a real implementation of xattrs on memory based
+> file systems, but I can't put the time in to make it happen and
+> I don't see that it would be "fair" for these people to be held
+> up by my petty idiosyncrasies on the topic if I'm not willing to
+> make the investment and do it myself.
 > 
-> We follow your point, new patch submitted, please apply.
+> Maybe the next time I'm out of work ("Nuts! And I finally got
+> asking if they wanted to SuperSize it down!") I'll revive my
+> efforts to eliminate secids from the kernel entirely.
 
-Applied, thanks. FYI, I also had to list the SB900 in
-Documentation/i2c/busses/i2c-piix4 and drivers/i2c/busses/Kconfig. Next
-time, please include these changes in your patch. The completed patch
-can be seen at:
-ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-piix4-add-amd-SB900-smbus-device-id.patch
+Casey - we reworked the patch to avoid the use of secids in the
+interface between the security module and sysfs and to support
+multi-xattr security modules (by leveraging the previously discussed
+hooks introduced for labeled NFS).  So I believe we went to the trouble
+of addressing your concerns.  An Acked-by would be appreciated (and is
+necessary at least for the changes to Smack, which we updated for you to
+likewise support sysfs labeling).
 
-Will a datasheet for the SB900 be released to the public at some point
-in the future? That would be useful for us developers.
-
-Thanks,
 -- 
-Jean Delvare
-http://khali.linux-fr.org/wishlist.html
+Stephen Smalley
+National Security Agency
+
