@@ -1,102 +1,232 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZIJBhY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754837AbZIJBff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754844AbZIJBhY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 21:37:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZIJBhX
+	id S1754837AbZIJBff (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 21:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZIJBfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 21:37:23 -0400
-Received: from mga11.intel.com ([192.55.52.93]:52363 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753882AbZIJBhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 21:37:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,361,1249282800"; 
-   d="scan'208";a="492075264"
-Subject: Re: RFC: Light sensors, unifying current options?
-From: Zhang Rui <rui.zhang@intel.com>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jean Delvare <khali@linux-fr.org>,
-       "alan@linux.intel.com" <alan@linux.intel.com>,
-       "lenb@kernel.org" <lenb@kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>,
-       "Cory T. Tusar" <ctusar@videon-central.com>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-In-Reply-To: <4AA79144.8060104@cam.ac.uk>
-References: <4A9FC9D7.20000@cam.ac.uk> <1252308744.3483.414.camel@rzhang-dt>
-	 <4AA4F194.1070507@cam.ac.uk> <1252467684.3483.446.camel@rzhang-dt>
-	 <4AA79144.8060104@cam.ac.uk>
-Content-Type: text/plain
-Date: Thu, 10 Sep 2009 09:34:09 +0800
-Message-Id: <1252546449.3483.476.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+	Wed, 9 Sep 2009 21:35:34 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56004 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752472AbZIJBfe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 21:35:34 -0400
+Message-ID: <4AA8579B.4020706@cn.fujitsu.com>
+Date: Thu, 10 Sep 2009 09:34:19 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH v2] tracing: Clean up trace.h
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 19:28 +0800, Jonathan Cameron wrote:
-> Zhang Rui wrote:
-> > On Mon, 2009-09-07 at 19:42 +0800, Jonathan Cameron wrote:
-> >> Zhang Rui wrote:
+- remove some dead code
+- remove @stats from struct tracer
+- move DEFINE_COMPARISON_PRED() and DEFINE_EQUALITY_PRED()
+  to kernel/trace/trace_events_filter.c
 
-> >
-> >> Maybe similar to hwmon approach allowing for multiple readings of a given
-> >> type?
-> >>
-> >> illumiance[n]
-> >> illuminmance_type[n]
-> >
-> > what's the value in illuminance_type, infrared/visible/ultraviolet?
-> Probably a mask allowing for a given sensor to cover several of these.
-> Hence if you have an infrared and an visible + infrared, userspace can
-> pull the visible out.  Or we could do that separation in kernel, so
-> in this case export
-> 
-> visible, visible+infrared and infrared.
-> 
-> Perhaps we might do it via sysfs naming instead.
-> 
-> illuminance[n] - defined to be visible (which is what term means anyway)
-> 
-> infrared[n] - hmm.. will be in different units to illuminance - perhaps we leave
-> these raw with suitable documentation?
-> 
-> illuminance_and_infrared[n]
-> 
-what's the unit of this?
-what does the value of this file mean?
-I think we should make sure that there are more sensors need this and
-the same "visible + infrared" reading on different sensors stands for
-the same ambient light environment.
-Or else we should convert it to something generic. what do you think?
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
 
->   If they are capable of
-> exporting other things all well and good.  The naming can be decided as and
-> when people post drivers with new functionality.
-> 
+I've split hw_breakpoint code out.
 
-> The other obvious question is whether it makes sense to cache values from sensors?
-> (as per many hwmon drivers)  These things are pretty slow, so there is no point in
-> taking a new reading unless there has been sufficient time for it to update.
-> Still this is again a documentation issue rather than core code, as it would be
-> down to the individual drivers.
-> 
+---
+ kernel/trace/trace.h               |   86 +++++-------------------------------
+ kernel/trace/trace_events_filter.c |   41 +++++++++++++++++
+ 2 files changed, 52 insertions(+), 75 deletions(-)
 
-I think this depends and it's the individual drivers responsibility to
-keep these values valid.
-
-For example, ACPI ALS can get a notification "whenever the lux reading
-changes more than 10% (from the last reading that resulted in a
-notification)". So it can use cache values because they're refreshed
-from time to time.
-
-But maybe there are some other sensors that don't have this asynchronous
-notification so that the cached values don't have a chance to get
-updated.
-then we need to read the sensor every time the sysfs I/F is poked.
-
-thanks,
-rui
-
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index ea7e0bc..76ed0db 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -125,14 +125,6 @@ struct print_entry {
+ 	char			buf[];
+ };
+ 
+-#define TRACE_OLD_SIZE		88
+-
+-struct trace_field_cont {
+-	unsigned char		type;
+-	/* Temporary till we get rid of this completely */
+-	char			buf[TRACE_OLD_SIZE - 1];
+-};
+-
+ struct trace_mmiotrace_rw {
+ 	struct trace_entry	ent;
+ 	struct mmiotrace_rw	rw;
+@@ -182,20 +174,20 @@ enum kmemtrace_type_id {
+ 
+ struct kmemtrace_alloc_entry {
+ 	struct trace_entry	ent;
+-	enum kmemtrace_type_id type_id;
+-	unsigned long call_site;
+-	const void *ptr;
+-	size_t bytes_req;
+-	size_t bytes_alloc;
+-	gfp_t gfp_flags;
+-	int node;
++	enum kmemtrace_type_id	type_id;
++	unsigned long		call_site;
++	const void		*ptr;
++	size_t			bytes_req;
++	size_t			bytes_alloc;
++	gfp_t			gfp_flags;
++	int			node;
+ };
+ 
+ struct kmemtrace_free_entry {
+ 	struct trace_entry	ent;
+-	enum kmemtrace_type_id type_id;
+-	unsigned long call_site;
+-	const void *ptr;
++	enum kmemtrace_type_id	type_id;
++	unsigned long		call_site;
++	const void		*ptr;
+ };
+ 
+ struct syscall_trace_enter {
+@@ -226,7 +218,7 @@ struct ksym_trace_entry {
+  * states when a trace occurs. These are:
+  *  IRQS_OFF		- interrupts were disabled
+  *  IRQS_NOSUPPORT	- arch does not support irqs_disabled_flags
+- *  NEED_RESCED		- reschedule is requested
++ *  NEED_RESCHED	- reschedule is requested
+  *  HARDIRQ		- inside an interrupt handler
+  *  SOFTIRQ		- inside a softirq handler
+  */
+@@ -406,7 +398,6 @@ struct tracer {
+ 	struct tracer		*next;
+ 	int			print_max;
+ 	struct tracer_flags	*flags;
+-	struct tracer_stat	*stats;
+ };
+ 
+ 
+@@ -525,20 +516,6 @@ static inline void __trace_stack(struct trace_array *tr, unsigned long flags,
+ 
+ extern cycle_t ftrace_now(int cpu);
+ 
+-#ifdef CONFIG_CONTEXT_SWITCH_TRACER
+-typedef void
+-(*tracer_switch_func_t)(void *private,
+-			void *__rq,
+-			struct task_struct *prev,
+-			struct task_struct *next);
+-
+-struct tracer_switch_ops {
+-	tracer_switch_func_t		func;
+-	void				*private;
+-	struct tracer_switch_ops	*next;
+-};
+-#endif /* CONFIG_CONTEXT_SWITCH_TRACER */
+-
+ extern void trace_find_cmdline(int pid, char comm[]);
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -841,47 +818,6 @@ filter_check_discard(struct ftrace_event_call *call, void *rec,
+ 	return 0;
+ }
+ 
+-#define DEFINE_COMPARISON_PRED(type)					\
+-static int filter_pred_##type(struct filter_pred *pred, void *event,	\
+-			      int val1, int val2)			\
+-{									\
+-	type *addr = (type *)(event + pred->offset);			\
+-	type val = (type)pred->val;					\
+-	int match = 0;							\
+-									\
+-	switch (pred->op) {						\
+-	case OP_LT:							\
+-		match = (*addr < val);					\
+-		break;							\
+-	case OP_LE:							\
+-		match = (*addr <= val);					\
+-		break;							\
+-	case OP_GT:							\
+-		match = (*addr > val);					\
+-		break;							\
+-	case OP_GE:							\
+-		match = (*addr >= val);					\
+-		break;							\
+-	default:							\
+-		break;							\
+-	}								\
+-									\
+-	return match;							\
+-}
+-
+-#define DEFINE_EQUALITY_PRED(size)					\
+-static int filter_pred_##size(struct filter_pred *pred, void *event,	\
+-			      int val1, int val2)			\
+-{									\
+-	u##size *addr = (u##size *)(event + pred->offset);		\
+-	u##size val = (u##size)pred->val;				\
+-	int match;							\
+-									\
+-	match = (val == *addr) ^ pred->not;				\
+-									\
+-	return match;							\
+-}
+-
+ extern struct mutex event_mutex;
+ extern struct list_head ftrace_events;
+ 
+diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+index 93660fb..2324578 100644
+--- a/kernel/trace/trace_events_filter.c
++++ b/kernel/trace/trace_events_filter.c
+@@ -121,6 +121,47 @@ struct filter_parse_state {
+ 	} operand;
+ };
+ 
++#define DEFINE_COMPARISON_PRED(type)					\
++static int filter_pred_##type(struct filter_pred *pred, void *event,	\
++			      int val1, int val2)			\
++{									\
++	type *addr = (type *)(event + pred->offset);			\
++	type val = (type)pred->val;					\
++	int match = 0;							\
++									\
++	switch (pred->op) {						\
++	case OP_LT:							\
++		match = (*addr < val);					\
++		break;							\
++	case OP_LE:							\
++		match = (*addr <= val);					\
++		break;							\
++	case OP_GT:							\
++		match = (*addr > val);					\
++		break;							\
++	case OP_GE:							\
++		match = (*addr >= val);					\
++		break;							\
++	default:							\
++		break;							\
++	}								\
++									\
++	return match;							\
++}
++
++#define DEFINE_EQUALITY_PRED(size)					\
++static int filter_pred_##size(struct filter_pred *pred, void *event,	\
++			      int val1, int val2)			\
++{									\
++	u##size *addr = (u##size *)(event + pred->offset);		\
++	u##size val = (u##size)pred->val;				\
++	int match;							\
++									\
++	match = (val == *addr) ^ pred->not;				\
++									\
++	return match;							\
++}
++
+ DEFINE_COMPARISON_PRED(s64);
+ DEFINE_COMPARISON_PRED(u64);
+ DEFINE_COMPARISON_PRED(s32);
+-- 
+1.6.3
 
