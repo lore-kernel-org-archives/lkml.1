@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751941AbZIJPaE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751986AbZIJPb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751941AbZIJPaE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 11:30:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZIJPaD
+	id S1751986AbZIJPb7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 11:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751890AbZIJPb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 11:30:03 -0400
-Received: from vena.lwn.net ([206.168.112.25]:44005 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750934AbZIJPaC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 11:30:02 -0400
-Date: Thu, 10 Sep 2009 09:30:03 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: iceberg <strakh@ispras.ru>
-Cc: linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
-Message-ID: <20090910093003.194c300f@bike.lwn.net>
-In-Reply-To: <200909101837.34472.strakh@ispras.ru>
-References: <200909101837.34472.strakh@ispras.ru>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+	Thu, 10 Sep 2009 11:31:58 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52184 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750908AbZIJPb5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 11:31:57 -0400
+Subject: Re: [RFC][PATCH 7/7] writeback: balance_dirty_pages() shall write
+ more than dirtied pages
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20090910151458.GA10767@localhost>
+References: <20090909145141.293229693@intel.com>
+	 <20090909150601.159061863@intel.com> <20090909154413.GC7949@duck.suse.cz>
+	 <20090910014201.GB10957@localhost> <20090910125742.GH5106@think>
+	 <20090910132154.GA6446@localhost> <1252594564.7205.36.camel@laptop>
+	 <20090910151458.GA10767@localhost>
+Content-Type: text/plain
+Date: Thu, 10 Sep 2009 17:31:38 +0200
+Message-Id: <1252596698.7205.59.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Sep 2009 18:37:34 +0000
-iceberg <strakh@ispras.ru> wrote:
+On Thu, 2009-09-10 at 23:14 +0800, Wu Fengguang wrote:
+> On Thu, Sep 10, 2009 at 10:56:04PM +0800, Peter Zijlstra wrote:
+> > On Thu, 2009-09-10 at 21:21 +0800, Wu Fengguang wrote:
+> > > On Thu, Sep 10, 2009 at 08:57:42PM +0800, Chris Mason wrote:
+> > > > On Thu, Sep 10, 2009 at 09:42:01AM +0800, Wu Fengguang wrote:
+> > > > > On Wed, Sep 09, 2009 at 11:44:13PM +0800, Jan Kara wrote:
+> > > > > > On Wed 09-09-09 22:51:48, Wu Fengguang wrote:
+> > > > > > > Some filesystem may choose to write much more than ratelimit_pages
+> > > > > > > before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
+> > > > > > > determine number to write based on real number of dirtied pages.
+> > > > > > > 
+> > > > > > > The increased write_chunk may make the dirtier more bumpy.  This is
+> > > > > > > filesystem writers' duty not to dirty too much at a time without
+> > > > > > > checking the ratelimit.
+> > > > > >   I don't get this. balance_dirty_pages_ratelimited_nr() is called when we
+> > > > > > dirty the page, not when we write it out. So a problem would only happen if
+> > > > > > filesystem dirties pages by set_page_dirty() and won't call
+> > > > > > balance_dirty_pages_ratelimited_nr(). But e.g. generic_perform_write()
+> > > > > > and do_wp_page() takes care of that. So where's the problem?
+> > > > > 
+> > > > > It seems that btrfs_file_write() is writing in chunks of up to 1024-pages
+> > > > > (1024 is the computed nrptrs value in a 32bit kernel). And it calls
+> > > > > balance_dirty_pages_ratelimited_nr() each time it dirtied such a chunk.
+> > > > 
+> > > > I can easily change this to call more often, but we do always call
+> > > > balance_dirty_pages to reflect how much ram we've really sent down.
+> > > 
+> > > Btrfs is doing OK. 2MB/4MB looks like reasonable chunk sizes. The
+> > > need-change part is balance_dirty_pages_ratelimited_nr(), hence this
+> > > patch :)
+> > 
+> > I'm not getting it, it calls set_page_dirty() for each page, right? and
+> > then it calls into balance_dirty_pages_ratelimited_nr(), that sounds
+> > right. What is the problem with that?
+> 
+> It looks like btrfs_file_write() eventually calls
+> __set_page_dirty_buffers() which in turn won't call
+> balance_dirty_pages*(). This is why do_wp_page() calls
+> set_page_dirty_balance() to do balance_dirty_pages*().
+> 
+> So btrfs_file_write() explicitly calls
+> balance_dirty_pages_ratelimited_nr() to get throttled.
 
-> In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe: 
-> Mutex must be unlocked before exit
-> 	1. On paths starting with mutex lock in line 1912, then continuing in lines: 
-> 1929, 1936 (goto unreg) and 1940 (goto iounmap) . 
-> 	2. On path starting in line 1971 mutex lock, and then continuing in line 1978 
-> (goto out_smbus) mutex.
+Right, so what is wrong with than, and how does this patch fix that?
 
-That's a definite bug, but I hate all those unlocks in the error
-branches.  As it happens, we don't really need the mutex until the
-device has been exposed to the rest of the kernel, so I propose the
-following as a better patch.
-
-Thanks for pointing this out,
-
-jon
-
----
-Fix a mutex leak
-
-Certain error exits from cafe_pci_probe() can leave the camera mutex
-locked.  For much of the time, we didn't need the mutex anyway; take it out
-and add an unlock in the path where it is needed.
-
-Reported-by: Alexander Strakh <strakh@ispras.ru>
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
----
- drivers/media/video/cafe_ccic.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/media/video/cafe_ccic.c b/drivers/media/video/cafe_ccic.c
-index c4d181d..0f62b5e 100644
---- a/drivers/media/video/cafe_ccic.c
-+++ b/drivers/media/video/cafe_ccic.c
-@@ -1909,7 +1909,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 		goto out_free;
- 
- 	mutex_init(&cam->s_mutex);
--	mutex_lock(&cam->s_mutex);
- 	spin_lock_init(&cam->dev_lock);
- 	cam->state = S_NOTREADY;
- 	cafe_set_config_needed(cam, 1);
-@@ -1949,7 +1948,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 	 * because the sensor could attach in this call chain, leading to
- 	 * unsightly deadlocks.
- 	 */
--	mutex_unlock(&cam->s_mutex);  /* attach can deadlock */
- 	ret = cafe_smbus_setup(cam);
- 	if (ret)
- 		goto out_freeirq;
-@@ -1991,6 +1989,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 	return 0;
- 
- out_smbus:
-+	mutex_unlock(&cam->s_mutex);
- 	cafe_smbus_shutdown(cam);
- out_freeirq:
- 	cafe_ctlr_power_down(cam);
--- 
-1.6.2.5
+[ the only thing you have to be careful with is that you don't
+excessively grow the error bound on the dirty limit ]
 
