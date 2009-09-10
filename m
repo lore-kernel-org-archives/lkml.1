@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZIJSzm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZIJS5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbZIJSzm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 14:55:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZIJSzl
+	id S1753379AbZIJS5B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 14:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZIJS5A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 14:55:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40156 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753188AbZIJSzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 14:55:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 6/9] PM: Add a switch for disabling/enabling asynchronous suspend/resume
-Date: Thu, 10 Sep 2009 20:56:39 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
-Cc: "linux-pm" <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
-       Len Brown <lenb@kernel.org>, Zhang Rui <rui.zhang@intel.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>
-References: <200909100127.11252.rjw@sisk.pl> <200909100138.25839.rjw@sisk.pl> <20090910102653.GA30778@atrey.karlin.mff.cuni.cz>
-In-Reply-To: <20090910102653.GA30778@atrey.karlin.mff.cuni.cz>
+	Thu, 10 Sep 2009 14:57:00 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:40387 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753049AbZIJS47 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 14:56:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:content-type;
+        b=xJgwbhv15he4RkXBNJmZc8wMCYhSuRHfGjaFLeglW8IOqO45AvXINDyGL9OY+Pm7m0
+         L7pFGnsHFE3W3LTzUXqByBlEgaQJWFPM2zR9hGaYcDmVZ5ECqnoYuAQ8e5E1IjKqaofX
+         YqxBIQCvTUf8zZhLZtDUpyAXuHtYSYbzzZBy4=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909102056.39903.rjw@sisk.pl>
+From: David Rees <drees76@gmail.com>
+Date: Thu, 10 Sep 2009 11:56:42 -0700
+Message-ID: <72dbd3150909101156qa2c4e3dnfef02d509f63330f@mail.gmail.com>
+Subject: EXT4-fs error - ext4_mb_generate_buddy
+To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 September 2009, Pavel Machek wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Add sysfs attribute kernel/power/pm_async allowing the user space to
-> > disable and enable async suspend/resume of devices.
-> 
-> for bisect reasons, should this go before 5?
+Running ext4 on Fedora 10, kernel 2.6.29.6-93.fc10.x86_64.  Partition
+in question is an 8 disk software RAID10 with mostly SATA disks and
+one IDE disk.  We've never seen any hardware or filesystem corruption
+issues on this machine in the past, though the RAID10 setup is new -
+was put into service the same time we migrated the partition from ext3
+to ext4 (fresh filesystem created and data copied over).
 
-It is set to "enabled" by default, so it shouldn't change bisection results.
+Earlier today, we saw this message in the logs:
 
-Thanks,
-Rafael
+EXT4-fs error (device md0): ext4_mb_generate_buddy: EXT4-fs: group
+586: 19635 blocks in bitmap, 19636 in gd
+
+It looks rather ominous and we will be scheduling a reboot to force a
+fsck as well as to upgrade to kernel-2.6.29.6-99.fc10.x86_64 (which
+doesn't appear to have any ext4 related changes in it).  Looking in
+the archives, I'm not quite sure what to make of the message, but it
+does seem to indicate that we may have filesystem corruption.  Any
+suggestions?
+
+Thanks
+
+-Dave
