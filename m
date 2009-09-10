@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZIJAVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754774AbZIJA0D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbZIJAVx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 20:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752713AbZIJAVw
+	id S1754774AbZIJA0D (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 20:26:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZIJA0D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 20:21:52 -0400
-Received: from mail-iw0-f200.google.com ([209.85.223.200]:36818 "EHLO
-	mail-iw0-f200.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752630AbZIJAVw convert rfc822-to-8bit (ORCPT
+	Wed, 9 Sep 2009 20:26:03 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:30228 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752901AbZIJA0B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 20:21:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=obTHIsKeUYkc4VC8PatFb4BsnlgCV4PEiXfHXhhCMHk2O2MndWD/BCr5bCKCbvv6LW
-         2abvgsp3/EvFOIecwBBtDIdfL/G+ZQcTywEUWId9evCtywQ62KjB3AughUWPQhk7Fok/
-         feEb5aQVsgdUE4ZERIz9NFaJ2RzOXJTTjk0x0=
+	Wed, 9 Sep 2009 20:26:01 -0400
+Message-ID: <4AA84799.4070906@hp.com>
+Date: Wed, 09 Sep 2009 20:26:01 -0400
+From: Brian Haley <brian.haley@hp.com>
+Organization: Open Source and Linux Organization
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20090909224455.GB2077@kroah.com>
-References: <20090905001824.GA18171@kroah.com> <43e72e890909081223w3e50eee6v438411462a7ed534@mail.gmail.com> 
-	<20090909224455.GB2077@kroah.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Wed, 9 Sep 2009 17:21:34 -0700
-Message-ID: <43e72e890909091721r3016db52i7328bac5d978c26c@mail.gmail.com>
-Subject: Re: [Stable-review] [patch 00/71] 2.6.30.6-stable review
-To: Greg KH <greg@kroah.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: paulsheer@gmail.com
+CC: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       roque@di.fc.ul.pt, netdev@vger.kernel.org
+Subject: Re: TCP kernel tables overflowing after sustained 1000 new connections
+ per second
+References: <c67e3dc60909091146j4aeaf422v4e0543eff87c7f9a@mail.gmail.com> <20090909.170824.141343404.davem@davemloft.net>
+In-Reply-To: <20090909.170824.141343404.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 9, 2009 at 3:44 PM, Greg KH <greg@kroah.com> wrote:
-> On Tue, Sep 08, 2009 at 12:23:29PM -0700, Luis R. Rodriguez wrote:
->> On Fri, Sep 4, 2009 at 5:18 PM, Greg KH<gregkh@suse.de> wrote:
->> > This is the start of the stable review cycle for the 2.6.30.6 release.
->> > There are 71 patches in this series, all will be posted as a response to
->> > this one.  If anyone has any issues with these being applied, please let
->> > us know.  If anyone is a maintainer of the proper subsystem, and wants
->> > to add a Signed-off-by: line to the patch, please respond with it.
->> >
->> > These patches are sent out with a number of different people on the Cc:
->> > line.  If you wish to be a reviewer, please email stable@kernel.org to
->> > add your name to the list.
+>> The third problem seems to be connected to /proc/net/tcp6
 >>
->> I think this automated message needs some updated to reflect the fact
->> that a mailman list is used now, and redirect people to help
->> themselves to help us by subscribing to:
+>> look at the output of the script
 >>
->> http://linux.kernel.org/mailman/listinfo/stable-review
+>> while true ; do echo "`date`: `cat /proc/net/tcp6 | wc -l`  vs  `cat
+>> /proc/net/tcp | wc -l`" ; sleep 1 ; done
 >>
->> > If you want to be off the reviewer list,
->> > also email us.
+>> while I run my load test:
 >>
->> This seems to not be required any more.
->
-> True.  Care to send a patch against the stable-queue where this message
-> is:
->        http://git.kernel.org/?p=linux/kernel/git/chrisw/stable-queue.git;a=summary
+>>
+>>  Wed Sep  9 20:39:26 SAST 2009: 5  vs  20
+>>  Wed Sep  9 20:39:27 SAST 2009: 5  vs  20
+>>  Wed Sep  9 20:39:28 SAST 2009: 5  vs  20
+>>  Wed Sep  9 20:39:29 SAST 2009: 5  vs  20
+>>  Wed Sep  9 20:39:31 SAST 2009: 1233  vs  20
+>>  Wed Sep  9 20:39:32 SAST 2009: 2640  vs  21
+>>  Wed Sep  9 20:39:33 SAST 2009: 4190  vs  20
+>>  Wed Sep  9 20:39:34 SAST 2009: 5813  vs  20
+>>  Wed Sep  9 20:39:35 SAST 2009: 7527  vs  20
+>>  Wed Sep  9 20:39:37 SAST 2009: 9568  vs  44
+>>  Wed Sep  9 20:39:38 SAST 2009: 11819  vs  21
+>>  Wed Sep  9 20:39:40 SAST 2009: 14510  vs  21
+>>  Wed Sep  9 20:39:42 SAST 2009: 16971  vs  20
+>>  Wed Sep  9 20:39:44 SAST 2009: 16971  vs  20
+>>  Wed Sep  9 20:39:46 SAST 2009: 17013  vs  20
+>>  Wed Sep  9 20:39:48 SAST 2009: 17013  vs  20
+>>  Wed Sep  9 20:39:50 SAST 2009: 17013  vs  20
+>>
+>> So it is clear "something" is filling up in tcp_ipv6.c
 
-Sure, that hasn't been updated since 2006, is that the right tree?
+By default, apache is going to open an IPv6 socket, so every connection,
+even IPv4, will use an IPv6 socket with a mapped address:
 
-  Luis
+# netstat -anp | grep apache
+tcp6       0      0 :::80                   :::*                    LISTEN     27795/apache2       
+tcp6       0      0 ::ffff:10.0.0.1:80   ::ffff:10.0.0.2:35271      ESTABLISHED27813/apache2
+
+I'm guessing that 17013 is your 16384 plus a few in time-wait, right?
+
+There's a way to change it to be IPv4-only in the conf file from what I remember.
+
+-Brian
+
