@@ -1,148 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZIJEOH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754138AbZIJENv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755045AbZIJEOH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 00:14:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754010AbZIJEOE
+	id S1754138AbZIJENv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 00:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZIJENu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 00:14:04 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41381 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750908AbZIJEM7 (ORCPT
+	Thu, 10 Sep 2009 00:13:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40767 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751231AbZIJENs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 00:12:59 -0400
-Message-Id: <20090910041301.972329901@goodmis.org>
-References: <20090910041219.149954890@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Thu, 10 Sep 2009 00:12:25 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 6/6] tracing: move PRED macros to trace_events_filter.c
-Content-Disposition: inline; filename=0006-tracing-move-PRED-macros-to-trace_events_filter.c.patch
+	Thu, 10 Sep 2009 00:13:48 -0400
+Date: Thu, 10 Sep 2009 01:13:20 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@linux.intel.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH RFC] char/tty_io: fix legacy pty name when more than 256
+ pty devices are requested
+Message-ID: <20090910011320.3a6ec797@caramujo.chehab.org>
+In-Reply-To: <4AA73309.8030302@zytor.com>
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>
+	<4AA6DF50.3030603@zytor.com>
+	<20090908203323.486c129c@caramujo.chehab.org>
+	<4AA6F63F.7090009@zytor.com>
+	<20090908235441.04549a29@caramujo.chehab.org>
+	<4AA73309.8030302@zytor.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Li Zefan <lizf@cn.fujitsu.com>
+Em Tue, 08 Sep 2009 21:46:01 -0700
+"H. Peter Anvin" <hpa@zytor.com> escreveu:
 
-Move DEFINE_COMPARISON_PRED() and DEFINE_EQUALITY_PRED()
-  to kernel/trace/trace_events_filter.c
+> Actually it's [7:4][*:8][3:0].  It was the easiest way to get backwards
+> compatibility, since it allowed for the use of s[n]printf().  It's not
+> by any means the only possibility, but I think the easiest one to describe.
+> 
+> > From one side, I liked the idea of not having any arbitrary maximum limit, but
+> > from other side, It seems easier to implement than to describe it in English,
+> > at devices.txt. Maybe the solution is to explain it by examples.
+> > 
+> > Also, if we look at the current device designation, we already have some rule
+> > changes. 
+> 
+> That doesn't mean it's a good idea.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4AA8579B.4020706@cn.fujitsu.com>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.h               |   41 ------------------------------------
- kernel/trace/trace_events_filter.c |   41 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 41 insertions(+), 41 deletions(-)
+True. Given the idea of using an unique algorithm to populate the namespace, I agree
+that your proposal is a good alternative.
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 2163d18..acaa680 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -800,47 +800,6 @@ filter_check_discard(struct ftrace_event_call *call, void *rec,
- 	return 0;
- }
- 
--#define DEFINE_COMPARISON_PRED(type)					\
--static int filter_pred_##type(struct filter_pred *pred, void *event,	\
--			      int val1, int val2)			\
--{									\
--	type *addr = (type *)(event + pred->offset);			\
--	type val = (type)pred->val;					\
--	int match = 0;							\
--									\
--	switch (pred->op) {						\
--	case OP_LT:							\
--		match = (*addr < val);					\
--		break;							\
--	case OP_LE:							\
--		match = (*addr <= val);					\
--		break;							\
--	case OP_GT:							\
--		match = (*addr > val);					\
--		break;							\
--	case OP_GE:							\
--		match = (*addr >= val);					\
--		break;							\
--	default:							\
--		break;							\
--	}								\
--									\
--	return match;							\
--}
--
--#define DEFINE_EQUALITY_PRED(size)					\
--static int filter_pred_##size(struct filter_pred *pred, void *event,	\
--			      int val1, int val2)			\
--{									\
--	u##size *addr = (u##size *)(event + pred->offset);		\
--	u##size val = (u##size)pred->val;				\
--	int match;							\
--									\
--	match = (val == *addr) ^ pred->not;				\
--									\
--	return match;							\
--}
--
- extern struct mutex event_mutex;
- extern struct list_head ftrace_events;
- 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 93660fb..2324578 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -121,6 +121,47 @@ struct filter_parse_state {
- 	} operand;
- };
- 
-+#define DEFINE_COMPARISON_PRED(type)					\
-+static int filter_pred_##type(struct filter_pred *pred, void *event,	\
-+			      int val1, int val2)			\
-+{									\
-+	type *addr = (type *)(event + pred->offset);			\
-+	type val = (type)pred->val;					\
-+	int match = 0;							\
-+									\
-+	switch (pred->op) {						\
-+	case OP_LT:							\
-+		match = (*addr < val);					\
-+		break;							\
-+	case OP_LE:							\
-+		match = (*addr <= val);					\
-+		break;							\
-+	case OP_GT:							\
-+		match = (*addr > val);					\
-+		break;							\
-+	case OP_GE:							\
-+		match = (*addr >= val);					\
-+		break;							\
-+	default:							\
-+		break;							\
-+	}								\
-+									\
-+	return match;							\
-+}
-+
-+#define DEFINE_EQUALITY_PRED(size)					\
-+static int filter_pred_##size(struct filter_pred *pred, void *event,	\
-+			      int val1, int val2)			\
-+{									\
-+	u##size *addr = (u##size *)(event + pred->offset);		\
-+	u##size val = (u##size)pred->val;				\
-+	int match;							\
-+									\
-+	match = (val == *addr) ^ pred->not;				\
-+									\
-+	return match;							\
-+}
-+
- DEFINE_COMPARISON_PRED(s64);
- DEFINE_COMPARISON_PRED(u64);
- DEFINE_COMPARISON_PRED(s32);
--- 
-1.6.3.3
+I just sent the patch with the feedbacks I had. I tried to do my best to describe it in
+simple yet precise terms at devices.txt.
 
--- 
+Thanks,
+Mauro
