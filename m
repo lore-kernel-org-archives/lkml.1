@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753589AbZIJUGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZIJUGb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753589AbZIJUGV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 16:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZIJUGV
+	id S1753838AbZIJUGb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 16:06:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753799AbZIJUGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 16:06:21 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41924 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751150AbZIJUGU (ORCPT
+	Thu, 10 Sep 2009 16:06:30 -0400
+Received: from e24smtp05.br.ibm.com ([32.104.18.26]:44293 "EHLO
+	e24smtp05.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753778AbZIJUG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 16:06:20 -0400
-Date: Thu, 10 Sep 2009 17:05:38 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
- devices are requested
-Message-ID: <20090910170538.3df10839@caramujo.chehab.org>
-In-Reply-To: <4AA950C8.1080200@zytor.com>
-References: <20090908144942.76ddf0e7@caramujo.chehab.org>
-	<4AA6DF50.3030603@zytor.com>
-	<20090908203323.486c129c@caramujo.chehab.org>
-	<4AA6F63F.7090009@zytor.com>
-	<20090908235441.04549a29@caramujo.chehab.org>
-	<4AA73309.8030302@zytor.com>
-	<20090910010512.60a1f523@caramujo.chehab.org>
-	<4AA89B02.1050909@zytor.com>
-	<20090910093301.4ccfd786@caramujo.chehab.org>
-	<20090910150716.66310f02@lxorguk.ukuu.org.uk>
-	<4AA92487.5080401@zytor.com>
-	<20090910161215.5129bd71@caramujo.chehab.org>
-	<4AA950C8.1080200@zytor.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Thu, 10 Sep 2009 16:06:29 -0400
+Subject: Re: [PATCH] tpm_tis: TPM_STS_DATA_EXPECT workaround
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Andy Isaacson <adi@hexapodia.org>, jmorris@namei.org, len.brown@intel.com,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andy Isaacson <adi@vmware.com>,
+       linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
+       dds@google.com, Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com
+In-Reply-To: <1252612709.30578.219.camel@desktop>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com>
+	 <1246410255-6839-6-git-send-email-adi@vmware.com>
+	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
+	 <1246455920.9140.28.camel@blackbox>  <20090720182732.GL6370@hexapodia.org>
+	 <1252609714.4837.87.camel@blackbox>  <1252612471.4837.107.camel@blackbox>
+	 <1252612709.30578.219.camel@desktop>
+Content-Type: text/plain
+Date: Thu, 10 Sep 2009 17:06:14 -0300
+Message-Id: <1252613174.4837.117.camel@blackbox>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.2 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, 10 Sep 2009 12:17:28 -0700
-"H. Peter Anvin" <hpa@zytor.com> escreveu:
-
-> > In the case of the BSD sockets, the patch is not just an userless fix. This is
-> > interesting when some applications are ported from other Unix'es and still uses BSD
-> > pty's, since several other Unix flavors were defining a higher namespace size.
-> > 
-> > For example, on zOS Unix, a pty device seems to allow up to 10.000 pty numbers (in the
-> > specific case of zOS Unix, they seem to be defined as /dev/[pt]typ[0-9]...) as shown at:
-> > 	www.redbooks.ibm.com/redbooks/pdfs/sg245228.pdf
-> > 
+On Thu, 2009-09-10 at 12:58 -0700, Daniel Walker wrote:
+> On Thu, 2009-09-10 at 16:54 -0300, Rajiv Andrade wrote:
 > 
-> Yes, but you have to port the application *anyway* do deal with the
-> namespace.
+> > Signed-off-by: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+> > ---
+> > diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
+> > index aec1931..c9990db 100644
+> > --- a/drivers/char/tpm/tpm_tis.c
+> > +++ b/drivers/char/tpm/tpm_tis.c
+> > @@ -257,6 +257,10 @@ out:
+> >  	return size;
+> >  }
+> >  
+> > +static int itpm = 0;
+> 
+> This patch has some checkpatch issues .. Could you run it
+> through ./script/checkpatch.pl and fix the issues that get reported?
+> 
 
-Or create some udev rules for that.
+Thanks for reminding me Daniel, it indeed complained about the itpm
+initialization to 0 and about a whitespace. Will post the fixed patch in
+reply to this note (avoid the quotes)
 
-> BSD tty allocation is done largely by each application,
-> which makes it even worse.  Furthermore, there is the static allocation
-> issue, so unless there is a concrete application which needs this *and*
-> cannot be ported to Unix98 ptys (which is the Right Thing[TM] to do) I
-> think Alan is right.
+Rajiv
 
-The amount of static allocation space can be controlled via pty.legacy_count
-boot parameter. It overrides whatever specified at CONFIG_LEGACY_PTY_COUNT.
-You can even let LEGACY_PTY_COUNT = 0 and enable the actual numbers of needed
-legacy ptys via boot parameter, where needed. So, this is not a problem on a
-real situation.
-
-Cheers,
-Mauro
