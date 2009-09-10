@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZIJKFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZIJKJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755374AbZIJKFy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 06:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZIJKFy
+	id S1755377AbZIJKJo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 06:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755335AbZIJKJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 06:05:54 -0400
-Received: from anchor-post-3.mail.demon.net ([195.173.77.134]:51426 "EHLO
-	anchor-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752048AbZIJKFx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 06:05:53 -0400
-Subject: UWB Kconfig: cannot set UWB to N in gconfig
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: David Vrabel <david.vrabel@csr.com>, Roman Zippel <zippel@linux-m68k.org>
-Cc: linux-usb <linux-usb@vger.kernel.org>,
-       linux-kbuild <linux-kbuild@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 10 Sep 2009 11:05:54 +0100
-Message-Id: <1252577154.2340.12.camel@castor>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Sep 2009 06:09:44 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35541 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753111AbZIJKJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 06:09:43 -0400
+Date: Thu, 10 Sep 2009 12:09:46 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090910100945.GG18599@kernel.dk>
+References: <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop> <20090910065856.GL18599@kernel.dk> <20090910073317.GP18599@kernel.dk> <20090910074902.GA10634@elte.hu> <20090910075357.GT18599@kernel.dk> <20090910100214.GB21314@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090910100214.GB21314@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I sometimes use 'make gconfig' and I noticed that I cannot disable the
-UWB option -- it just won't let me set it to N.
+On Thu, Sep 10 2009, Ingo Molnar wrote:
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > I went to try -tip btw, but it crashes on boot. Here's the 
+> > backtrace, typed manually, it's crashing in 
+> > queue_work_on+0x28/0x60.
+> > 
+> > Call Trace:
+> >         queue_work
+> >         schedule_work
+> >         clocksource_mark_unstable
+> >         mark_tsc_unstable
+> >         check_tsc_sync_source
+> >         native_cpu_up
+> >         relay_hotcpu_callback
+> >         do_forK_idle
+> >         _cpu_up
+> >         cpu_up
+> >         kernel_init
+> >         kernel_thread_helper
+> 
+> hm, that looks like an old bug i fixed days ago via:
+> 
+>   00a3273: Revert "x86: Make tsc=reliable override boot time stability checks"
+> 
+> Have you tested tip:master - do you still know which sha1?
 
-AFAICT this is because the CONFIG USB_WUSB selects UWB which forces it
-on.
-applying this patch fixes the issue but I'm not sure if this is the
-right way to go about it.
+It was -tip pulled this morning, 2-3 hours ago. I don't have the sha
+anymore, but it was a fresh pull today.
 
-any thoughts?
-
-regards
-Richard
-
-This is against 2.6.31
-
-
-diff --git a/drivers/usb/wusbcore/Kconfig b/drivers/usb/wusbcore/Kconfig
-index eb09a0a..cc97041 100644
---- a/drivers/usb/wusbcore/Kconfig
-+++ b/drivers/usb/wusbcore/Kconfig
-@@ -5,7 +5,7 @@ config USB_WUSB
- 	tristate "Enable Wireless USB extensions (EXPERIMENTAL)"
- 	depends on EXPERIMENTAL
- 	depends on USB
--        select UWB
-+        depends on UWB
-         select CRYPTO
-         select CRYPTO_BLKCIPHER
-         select CRYPTO_CBC
-
+-- 
+Jens Axboe
 
