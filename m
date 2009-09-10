@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZIJTdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753741AbZIJTr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753662AbZIJTdu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753613AbZIJTdu
+	id S1753741AbZIJTr4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZIJTr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:33:50 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45034 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752777AbZIJTdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:33:49 -0400
-Date: Thu, 10 Sep 2009 15:33:47 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
-       linux-cifs-client@lists.samba.org
-Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
-Message-ID: <20090910153347.2f2616e8@barsoom.rdu.redhat.com>
-In-Reply-To: <alpine.DEB.1.10.0909101419310.29762@V090114053VZO-1>
-References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
-	<20090905071052.50501826@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1>
-	<20090909125352.1c7b57d2@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
-	<20090909132039.1ca47cd4@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091327370.32067@V090114053VZO-1>
-	<20090909140257.35ede0cc@tlielax.poochiereds.net>
-	<alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1>
-	<20090909205548.4858b524@zanovar.poochiereds.net>
-	<alpine.DEB.1.10.0909101419310.29762@V090114053VZO-1>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 Sep 2009 15:47:56 -0400
+Received: from smtp6.netcologne.de ([194.8.194.26]:52993 "EHLO
+	smtp6.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753111AbZIJTrz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 15:47:55 -0400
+X-Greylist: delayed 492 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Sep 2009 15:47:55 EDT
+From: Mathias Kretschmer <posting@blx4.net>
+To: linux-kernel@vger.kernel.org
+Subject: WARNING: at kernel/softirq.c:141 local_bh_enable+0x8b/0xc0()
+Date: Thu, 10 Sep 2009 21:39:09 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9; KDE/4.3.1; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909102139.09735.posting@blx4.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Sep 2009 14:53:12 -0400 (EDT)
-Christoph Lameter <cl@linux-foundation.org> wrote:
+I reported this before. I'm still seeing this on 2.6.30.6+grsec:
 
-> On Wed, 9 Sep 2009, Jeff Layton wrote:
-> 
-> > Well, I can see the delays in the capture, but the snarflen for the
-> > capture is a little too small to tell much else. Can you redo the
-> > capture with a larger snarflen (maybe -s 512 or so)?
-> 
-> -s 1000 version attached.
-> 
-> > Also, were you able to tell anything from a server-side capture? Is the
-> > server issuing oplock breaks at those times?
-> 
-> Thats a pretty busy system. They have not gotten around to do any logging
-> on that end.
-
-Ok. I had a look at the capture. The stalls seem to be occurring on
-FIND_FILE requests. Those are similar to READDIRPLUS requests in NFS,
-it returns a list of files that match a particular set of criteria and
-their attributes.
-
-Each time the client is making one of these calls to the server, it
-requests a set of up to 150 files. The server grinds for 5s each time
-and then responds.
-
-The calls themselves seem to be sane AFAICT. I don't see any problems
-with the parameters we're sending for the search. I also had a look
-over the FIND_FIRST code and it doesn't seem to have any obvious
-word size related problems.
-
-I assume that the 32 and 64 bit clients you have are calling "ls" in
-the same dir. If so, maybe a similar capture from a 64-bit client might
-help us see the difference?
-
-Thanks,
--- 
-Jeff Layton <jlayton@redhat.com>
+[  526.823652] ------------[ cut here ]------------
+[  526.823671] WARNING: at kernel/softirq.c:141 local_bh_enable+0x8b/0xc0()
+[  526.823676] Hardware name: empty
+[  526.823680] Modules linked in: iscsi_trgt dummy bonding dvb_usb_cinergyT2 
+usbtouchscreen forcedeth
+[  526.823697] Pid: 904, comm: mISDN_hfc-pci.1 Not tainted 2.6.30.6-grsec #3
+[  526.823702] Call Trace:
+[  526.823711]  [<ffffffff81064a0b>] ? local_bh_enable+0x8b/0xc0
+[  526.823718]  [<ffffffff81064a0b>] ? local_bh_enable+0x8b/0xc0
+[  526.823727]  [<ffffffff8105ea39>] ? warn_slowpath_common+0x79/0xd0
+[  526.823734]  [<ffffffff81064a0b>] ? local_bh_enable+0x8b/0xc0
+[  526.823743]  [<ffffffff8151af41>] ? sk_filter+0x41/0xa0
+[  526.823753]  [<ffffffff8150002d>] ? sock_queue_rcv_skb+0x5d/0x140
+[  526.823762]  [<ffffffff8148fe9f>] ? mISDN_send+0x4f/0xa0
+[  526.823769]  [<ffffffff81495250>] ? l2_got_ui+0x0/0x70
+[  526.823775]  [<ffffffff81493437>] ? l2up+0x27/0x50
+[  526.823782]  [<ffffffff8148eac2>] ? mISDN_FsmEvent+0x82/0x100
+[  526.823788]  [<ffffffff814973ba>] ? l2_send+0x6fa/0x980
+[  526.823795]  [<ffffffff814993b3>] ? mgr_bcast+0x83/0x160
+[  526.823803]  [<ffffffff81492459>] ? mISDNStackd+0x439/0x680
+[  526.823811]  [<ffffffff81077730>] ? autoremove_wake_function+0x0/0x30
+[  526.823818]  [<ffffffff81492020>] ? mISDNStackd+0x0/0x680
+[  526.823825]  [<ffffffff81492020>] ? mISDNStackd+0x0/0x680
+[  526.823831]  [<ffffffff81077224>] ? kthread+0x54/0x90
+[  526.823838]  [<ffffffff8105bb72>] ? schedule_tail+0x32/0x80
+[  526.823845]  [<ffffffff81025baa>] ? child_rip+0xa/0x20
+[  526.823851]  [<ffffffff810771d0>] ? kthread+0x0/0x90
+[  526.823857]  [<ffffffff81025ba0>] ? child_rip+0x0/0x20
+[  526.823862] ---[ end trace a4fad34479a16c5d ]---
