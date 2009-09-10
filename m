@@ -1,70 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZIJNeY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754934AbZIJNx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZIJNeY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 09:34:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbZIJNeY
+	id S1754934AbZIJNx6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 09:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753283AbZIJNx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 09:34:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58131 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755651AbZIJNeX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 09:34:23 -0400
-Subject: Re: [PATCH v2] tracing: Clean up trace.h
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4AA863A7.5030909@cn.fujitsu.com>
-References: <4AA8579B.4020706@cn.fujitsu.com>
-	 <1252549061.18996.3.camel@gandalf.stny.rr.com>
-	 <4AA863A7.5030909@cn.fujitsu.com>
-Content-Type: text/plain; charset="UTF-8"
-Organization: Kihon Technologies Inc.
-Date: Thu, 10 Sep 2009 09:34:24 -0400
-Message-Id: <1252589664.18996.11.camel@gandalf.stny.rr.com>
+	Thu, 10 Sep 2009 09:53:57 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:33596 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752273AbZIJNx5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 09:53:57 -0400
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+From: Steven Rostedt <srostedt@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>, Con Kolivas <kernel@kolivas.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090910094433.GA18599@kernel.dk>
+References: <1252423398.7746.97.camel@twins>
+	 <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu>
+	 <1252486344.28645.18.camel@marge.simson.net>
+	 <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk>
+	 <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop>
+	 <20090910065856.GL18599@kernel.dk> <20090910070443.GC29009@elte.hu>
+	 <20090910094433.GA18599@kernel.dk>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Thu, 10 Sep 2009 09:53:42 -0400
+Message-Id: <1252590822.2964.55.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 10:25 +0800, Li Zefan wrote:
-> 于 2009年09月10日 10:17, Steven Rostedt 写道:
-> > On Thu, 2009-09-10 at 09:34 +0800, Li Zefan wrote:
-> >> - remove some dead code
-> >> - remove @stats from struct tracer
-> >> - move DEFINE_COMPARISON_PRED() and DEFINE_EQUALITY_PRED()
-> >>   to kernel/trace/trace_events_filter.c
-> >>
-> > 
-> > Actually, Li if you don't mind, I'm going to break this up into separate
-> > patches. Each of the above "topics" really should be a separate patch.
-> > It makes bisecting and such nicer if for some strange reason this patch
-> > became the cause.
-> > 
-> 
-> Actually it does more than I described:
-> 
-> - indent some lines
-> - fix a typo in comment
-> - remove trace_field_cont
-> - remove tracer_switch_ops
-> - remove @stats from struct tracer
-> - move 2 macros to trace_events_filter.c
-> 
-> I'm not sure it worths breaking into several patches, since each of them
-> is trivial.
-> 
-> But I won't mind if you break this up, or if you want me to do
-> this.
+On Thu, 2009-09-10 at 11:44 +0200, Jens Axboe wrote:
+> On Thu, Sep 10 2009, Ingo Molnar wrote:
 
-Yeah I already broke it up and sent it out. Some could go together, but
-I did not like moving code mixed with other cleanups.
+> trace.txt attached. Steven, you seem to go through a lot of trouble to
+> find the debugfs path, yet at the very end do:
+> 
+> > 	system("cat /debug/tracing/trace");
+> 
+> which doesn't seem quite right :-)
+> 
 
-Thanks,
+That's an older version of the tool. The newer version (still in alpha)
+doesn't do that.
 
 -- Steve
 
