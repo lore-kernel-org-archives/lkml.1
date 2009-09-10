@@ -1,91 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754557AbZIJVT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754552AbZIJVSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754557AbZIJVT0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 17:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbZIJVTZ
+	id S1754552AbZIJVSb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 17:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZIJVSa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 17:19:25 -0400
-Received: from mailc.microsoft.com ([131.107.115.214]:25276 "EHLO
-	smtp.microsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754453AbZIJVTY convert rfc822-to-8bit (ORCPT
+	Thu, 10 Sep 2009 17:18:30 -0400
+Received: from gerard.telenet-ops.be ([195.130.132.48]:55821 "EHLO
+	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754077AbZIJVS3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 17:19:24 -0400
-X-Greylist: delayed 310 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Sep 2009 17:19:24 EDT
-From: Tom Hanrahan <hanrahat@microsoft.com>
-To: Greg KH <gregkh@suse.de>, Haiyang Zhang <haiyangz@microsoft.com>
-CC: Hank Janssen <hjanssen@microsoft.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: RE: [patch] Staging: hv: Add new tasks to the TODO file
-Thread-Topic: [patch] Staging: hv: Add new tasks to the TODO file
-Thread-Index: AcoyWEDkXkMdXuS/TzW/xG2oNhanAwAPDBaAAA5I/nA=
-Date: Thu, 10 Sep 2009 21:12:44 +0000
-Message-ID: <AD02C96F1FB40A4B896D24F974E9B9D402E4F0@TK5EX14MBXC139.redmond.corp.microsoft.com>
-References: <1FB5E1D5CA062146B38059374562DF720B8E1E77@TK5EX14MBXC130.redmond.corp.microsoft.com>
- <20090910210046.GC3376@suse.de>
-In-Reply-To: <20090910210046.GC3376@suse.de>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 10 Sep 2009 17:18:29 -0400
+X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Sep 2009 17:18:29 EDT
+Date: Thu, 10 Sep 2009 23:13:28 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Jonathan Brassow <jbrassow@redhat.com>
+cc: dm-devel@redhat.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] md: Fix "strchr" [drivers/md/dm-log-userspace.ko]
+ undefined!
+Message-ID: <alpine.DEB.2.00.0909102311520.10463@ayla.of.borg>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-That's a fair request.  I concur.
+Commit b8313b6da7e2e7c7f47d93d8561969a3ff9ba0ea ("dm log: remove incorrect
+field from userspace table output") added a call to strstr() with a
+single-character "needle" string parameter.
+Unfortunately some versions of gcc replace such calls to strstr() by calls
+to strchr() behind our back.  This causes linking errors if strchr() is
+defined as an inline function in <asm/string.h> (e.g. on m68k):
 
-Thanks,
+| WARNING: "strchr" [drivers/md/dm-log-userspace.ko] undefined!
 
--- Tom
+Avoid this by explicitly calling strchr() instead.
 
------Original Message-----
-From: Greg KH [mailto:gregkh@suse.de] 
-Sent: Thursday, September 10, 2009 11:01 PM
-To: Haiyang Zhang
-Cc: Hank Janssen; linux-kernel@vger.kernel.org; Tom Hanrahan
-Subject: Re: [patch] Staging: hv: Add new tasks to the TODO file
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: stable@kernel.org
+---
+This fixes a regression introduced in 2.6.31-rc9, and detected by m68k
+allmodconfig, cfr. http://kisskb.ellerman.id.au/kisskb/config/164/
 
-On Thu, Sep 10, 2009 at 08:49:56PM +0000, Haiyang Zhang wrote:
-> From: Haiyang Zhang <haiyangz@microsoft.com>
-> 
-> Add new tasks to the TODO file.
-> 
-> Cc: Hank Janssen <hjanssen@microsoft.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Signed-off-by: Haiyang Zhang <haiyangz@microsoft.com>
-> 
-> ---
-> diff --git a/drivers/staging/hv/TODO b/drivers/staging/hv/TODO
-> index fc754ab..345a59f 100644
-> --- a/drivers/staging/hv/TODO
-> +++ b/drivers/staging/hv/TODO
-> @@ -11,6 +11,12 @@ TODO:
->         - audit the network driver
->         - audit the block driver
->         - audit the scsi driver
-> +       - SMP Support
-> +       - Remote Shutdown
-> +       - Networking . Jumbo Frames
-> +       - Hot swappable storage devices
-> +       - Time Synchronization
-> +       - Key Value Pair Exchange
+ drivers/md/dm-log-userspace-base.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-No, sorry, I'm not going to take this.
+diff --git a/drivers/md/dm-log-userspace-base.c b/drivers/md/dm-log-userspace-base.c
+index 6e186b1..652bd33 100644
+--- a/drivers/md/dm-log-userspace-base.c
++++ b/drivers/md/dm-log-userspace-base.c
+@@ -582,7 +582,7 @@ static int userspace_status(struct dm_dirty_log *log, status_type_t status_type,
+ 		break;
+ 	case STATUSTYPE_TABLE:
+ 		sz = 0;
+-		table_args = strstr(lc->usr_argv_str, " ");
++		table_args = strchr(lc->usr_argv_str, ' ');
+ 		BUG_ON(!table_args); /* There will always be a ' ' */
+ 		table_args++;
+ 
+-- 
+1.6.0.4
 
-The TODO file is for what needs to be done to the code in order to get
-it _out_ of the staging tree.  Not new features.  This should be a list
-of things that people can help you out with, which none of these are,
-given the lack of documentation on how adding this to the code is able
-to be done.
+Gr{oetje,eeting}s,
 
-So please, work on removing the items on the TODO list, that way the
-code can then be merged into the main portion of the kernel tree.  Then
-you can go and add new features.  There's lots that still needs to be
-done with this code before you can think about adding anything new.
+						Geert
 
-thanks,
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-greg k-h
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
