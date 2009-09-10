@@ -1,111 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755774AbZIJObw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751015AbZIJOlT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755774AbZIJObw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 10:31:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbZIJObv
+	id S1751015AbZIJOlT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 10:41:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750910AbZIJOlS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 10:31:51 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:36440 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753371AbZIJObv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 10:31:51 -0400
-Date: Thu, 10 Sep 2009 09:31:49 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       dwalker@fifo99.com, cfriesen@nortel.com
-Subject: [PATCH V3] x86: SGU UV Add volatile semantics to macros that access chipset registers
-Message-ID: <20090910143149.GA14273@sgi.com>
-References: <20090909154246.GA26716@sgi.com> <1252512600.14793.125.camel@desktop> <20090909180110.GA10311@sgi.com> <1252519885.14793.135.camel@desktop> <4AA7F9E5.4070506@nortel.com> <20090909193829.GB10530@sgi.com> <4AA84BE7.9010304@zytor.com> <20090910022226.GB10038@sgi.com> <4AA86CFA.8090000@zytor.com>
+	Thu, 10 Sep 2009 10:41:18 -0400
+Received: from fifo99.com ([67.223.236.141]:38947 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750704AbZIJOlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 10:41:18 -0400
+Subject: Re: [PATCH 4/5] hw-breakpoints: Arbitrate access to pmu following
+ registers constraints
+From: Daniel Walker <dwalker@fifo99.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+In-Reply-To: <1252571367-25876-5-git-send-email-fweisbec@gmail.com>
+References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com>
+	 <1252571367-25876-5-git-send-email-fweisbec@gmail.com>
+Content-Type: text/plain
+Date: Thu, 10 Sep 2009 07:41:38 -0700
+Message-Id: <1252593698.30578.176.camel@desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA86CFA.8090000@zytor.com>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add volatile-semantics to the SGI UV read/write macros that are
-used to access chipset memory mapped registers. No direct
-references to volatile are made. Instead the readq/writeq
-macros are used.
+On Thu, 2009-09-10 at 10:29 +0200, Frederic Weisbecker wrote:
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+> +static unsigned int max_task_bp_pinned(int cpu)
+>  {
+> -	if (atomic_inc_return(&bp_slot) == HBP_NUM) {
+> -		atomic_dec(&bp_slot);
+> +	int i;
+> +	unsigned int *tsk_pinned = per_cpu(task_bp_pinned, cpu);
+>  
+> -		return -ENOSPC;
+> +	for (i = HBP_NUM -1; i >= 0; i--) {
+> +		if (tsk_pinned[i] > 0)
+> +			return i + 1;
+>  	}
 
+One checkpatch error in the code above..
 
----
- arch/x86/include/asm/uv/uv_hub.h |   17 +++++++++--------
- 1 file changed, 9 insertions(+), 8 deletions(-)
+ERROR: need consistent spacing around '-' (ctx:WxV)
+#206: FILE: kernel/hw_breakpoint.c:81:
++       for (i = HBP_NUM -1; i >= 0; i--) {
+                         ^
 
-Index: linux/arch/x86/include/asm/uv/uv_hub.h
-===================================================================
---- linux.orig/arch/x86/include/asm/uv/uv_hub.h	2009-09-09 01:34:02.000000000 -0500
-+++ linux/arch/x86/include/asm/uv/uv_hub.h	2009-09-09 20:51:53.000000000 -0500
-@@ -15,6 +15,7 @@
- #include <linux/numa.h>
- #include <linux/percpu.h>
- #include <linux/timer.h>
-+#include <linux/io.h>
- #include <asm/types.h>
- #include <asm/percpu.h>
- #include <asm/uv/uv_mmrs.h>
-@@ -258,13 +259,13 @@ static inline unsigned long *uv_global_m
- static inline void uv_write_global_mmr32(int pnode, unsigned long offset,
- 				 unsigned long val)
- {
--	*uv_global_mmr32_address(pnode, offset) = val;
-+	writeq(val, uv_global_mmr32_address(pnode, offset));
- }
- 
- static inline unsigned long uv_read_global_mmr32(int pnode,
- 						 unsigned long offset)
- {
--	return *uv_global_mmr32_address(pnode, offset);
-+	return readq(uv_global_mmr32_address(pnode, offset));
- }
- 
- /*
-@@ -281,13 +282,13 @@ static inline unsigned long *uv_global_m
- static inline void uv_write_global_mmr64(int pnode, unsigned long offset,
- 				unsigned long val)
- {
--	*uv_global_mmr64_address(pnode, offset) = val;
-+	writeq(val, uv_global_mmr64_address(pnode, offset));
- }
- 
- static inline unsigned long uv_read_global_mmr64(int pnode,
- 						 unsigned long offset)
- {
--	return *uv_global_mmr64_address(pnode, offset);
-+	return readq(uv_global_mmr64_address(pnode, offset));
- }
- 
- /*
-@@ -301,22 +302,22 @@ static inline unsigned long *uv_local_mm
- 
- static inline unsigned long uv_read_local_mmr(unsigned long offset)
- {
--	return *uv_local_mmr_address(offset);
-+	return readq(uv_local_mmr_address(offset));
- }
- 
- static inline void uv_write_local_mmr(unsigned long offset, unsigned long val)
- {
--	*uv_local_mmr_address(offset) = val;
-+	writeq(val, uv_local_mmr_address(offset));
- }
- 
- static inline unsigned char uv_read_local_mmr8(unsigned long offset)
- {
--	return *((unsigned char *)uv_local_mmr_address(offset));
-+	return readb(uv_local_mmr_address(offset));
- }
- 
- static inline void uv_write_local_mmr8(unsigned long offset, unsigned char val)
- {
--	*((unsigned char *)uv_local_mmr_address(offset)) = val;
-+	writeb(val, uv_local_mmr_address(offset));
- }
- 
- /*
+Daniel
+
