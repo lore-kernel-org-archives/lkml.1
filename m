@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753636AbZIJT1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753562AbZIJT0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753636AbZIJT1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZIJT1H
+	id S1753562AbZIJT0z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZIJT0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:27:07 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32227 "EHLO mx1.redhat.com"
+	Thu, 10 Sep 2009 15:26:55 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:37690 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753581AbZIJT1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:27:03 -0400
-Date: Thu, 10 Sep 2009 21:22:16 +0200
+	id S1753268AbZIJT0y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 15:26:54 -0400
+Date: Thu, 10 Sep 2009 21:22:21 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
@@ -18,8 +18,9 @@ Cc: Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
        Paul Menage <menage@google.com>, Peter Zijlstra <peterz@infradead.org>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
        Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH 1/3] cpusets: introduce cpuset->cpumask_lock
-Message-ID: <20090910192216.GA603@redhat.com>
+Subject: [PATCH 2/3] cpusets: rework guarantee_online_cpus() to fix
+	deadlock with cpu_down()
+Message-ID: <20090910192221.GA610@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -28,68 +29,213 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preparation for the next patch.
+Suppose that task T bound to CPU takes callback_mutex. If cpu_down(CPU)
+happens before T drops callback_mutex we have a deadlock.
 
-Introduce cpuset->cpumask_lock. From now ->cpus_allowed of the "active"
-cpuset is always changed under this spinlock_t.
+stop_machine() preempts T, then migration_call(CPU_DEAD) tries to take
+cpuset_lock() and hangs forever because CPU is already dead and thus
+T can't be scheduled.
 
-A separate patch to simplify the review/fixing, in case I missed some
-places where ->cpus_allowed is updated.
+To simplify the testing, I added schedule_timeout_interruptible(3*HZ)
+to cpuset_sprintf_cpulist() under mutex_lock(callback_mutex). Then,
+
+	mkdir -p /dev/cpuset
+	mount -t cgroup -ocpuset cpuset /dev/cpuset
+	mkdir -p /dev/cpuset/XXX
+	taskset -p 2 $$
+	cat /dev/cpuset/XXX/cpuset.cpus
+
+and, on another console,
+
+	echo 0 >> /sys/devices/system/cpu/cpu1/online
+
+Before this patch cpuset/hotplug subsytems deadlock, after this patch
+everething is OK.
+
+Since the previous patch we can access cs->cpus_allowed safely either
+under the global callback_mutex or cs->cpumask_lock.
+
+This patch:
+
+	- kills cpuset_lock() and cpuset_cpus_allowed_locked()
+
+	- converts move_task_off_dead_cpu() to use cpuset_cpus_allowed()
+
+Then we change guarantee_online_cpus(),
+
+	- take cs->cpumask_lock instead of callback_mutex
+
+	- do NOT scan cs->parent cpusets. If there are no online CPUs in
+	  cs->cpus_allowed, we use cpu_online_mask. This is only possible
+	  when we are called by cpu_down() hooks, in that case
+	  cpuset_track_online_cpus(CPU_DEAD) will fix things later.
+
+In particular, this all means sched_setaffinity() takes the per cpuset
+spinlock instead of global callback_mutex, and hotplug can forget about
+complications added by cpusets.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- kernel/cpuset.c |    9 +++++++++
- 1 file changed, 9 insertions(+)
+ include/linux/cpuset.h |   13 -----------
+ kernel/sched.c         |    4 ---
+ kernel/cpuset.c        |   56 ++++++++++---------------------------------------
+ 3 files changed, 13 insertions(+), 60 deletions(-)
 
---- CPUHP/kernel/cpuset.c~1_ADD_CPUMASK_LOCK	2009-09-10 19:35:16.000000000 +0200
-+++ CPUHP/kernel/cpuset.c	2009-09-10 20:06:39.000000000 +0200
-@@ -92,6 +92,7 @@ struct cpuset {
- 	struct cgroup_subsys_state css;
+--- CPUHP/include/linux/cpuset.h~2_KILL_CPUSET_LOCK	2009-09-10 18:48:25.000000000 +0200
++++ CPUHP/include/linux/cpuset.h	2009-09-10 20:27:29.000000000 +0200
+@@ -21,8 +21,6 @@ extern int number_of_cpusets;	/* How man
+ extern int cpuset_init(void);
+ extern void cpuset_init_smp(void);
+ extern void cpuset_cpus_allowed(struct task_struct *p, struct cpumask *mask);
+-extern void cpuset_cpus_allowed_locked(struct task_struct *p,
+-				       struct cpumask *mask);
+ extern nodemask_t cpuset_mems_allowed(struct task_struct *p);
+ #define cpuset_current_mems_allowed (current->mems_allowed)
+ void cpuset_init_current_mems_allowed(void);
+@@ -69,9 +67,6 @@ struct seq_file;
+ extern void cpuset_task_status_allowed(struct seq_file *m,
+ 					struct task_struct *task);
  
- 	unsigned long flags;		/* "unsigned long" so bitops work */
-+	spinlock_t cpumask_lock;	/* protects ->cpus_allowed */
- 	cpumask_var_t cpus_allowed;	/* CPUs allowed to tasks in cpuset */
- 	nodemask_t mems_allowed;	/* Memory Nodes allowed to tasks */
+-extern void cpuset_lock(void);
+-extern void cpuset_unlock(void);
+-
+ extern int cpuset_mem_spread_node(void);
  
-@@ -891,7 +892,9 @@ static int update_cpumask(struct cpuset 
- 	is_load_balanced = is_sched_load_balance(trialcs);
+ static inline int cpuset_do_page_mem_spread(void)
+@@ -105,11 +100,6 @@ static inline void cpuset_cpus_allowed(s
+ {
+ 	cpumask_copy(mask, cpu_possible_mask);
+ }
+-static inline void cpuset_cpus_allowed_locked(struct task_struct *p,
+-					      struct cpumask *mask)
+-{
+-	cpumask_copy(mask, cpu_possible_mask);
+-}
  
- 	mutex_lock(&callback_mutex);
-+	spin_lock(&cs->cpumask_lock);
- 	cpumask_copy(cs->cpus_allowed, trialcs->cpus_allowed);
-+	spin_unlock(&cs->cpumask_lock);
- 	mutex_unlock(&callback_mutex);
+ static inline nodemask_t cpuset_mems_allowed(struct task_struct *p)
+ {
+@@ -157,9 +147,6 @@ static inline void cpuset_task_status_al
+ {
+ }
  
- 	/*
-@@ -1781,6 +1784,8 @@ static struct cgroup_subsys_state *cpuse
- 	cs = kmalloc(sizeof(*cs), GFP_KERNEL);
- 	if (!cs)
- 		return ERR_PTR(-ENOMEM);
+-static inline void cpuset_lock(void) {}
+-static inline void cpuset_unlock(void) {}
+-
+ static inline int cpuset_mem_spread_node(void)
+ {
+ 	return 0;
+--- CPUHP/kernel/sched.c~2_KILL_CPUSET_LOCK	2009-09-10 18:48:25.000000000 +0200
++++ CPUHP/kernel/sched.c	2009-09-10 20:27:29.000000000 +0200
+@@ -7136,7 +7136,7 @@ again:
+ 
+ 	/* No more Mr. Nice Guy. */
+ 	if (dest_cpu >= nr_cpu_ids) {
+-		cpuset_cpus_allowed_locked(p, &p->cpus_allowed);
++		cpuset_cpus_allowed(p, &p->cpus_allowed);
+ 		dest_cpu = cpumask_any_and(cpu_online_mask, &p->cpus_allowed);
+ 
+ 		/*
+@@ -7550,7 +7550,6 @@ migration_call(struct notifier_block *nf
+ 
+ 	case CPU_DEAD:
+ 	case CPU_DEAD_FROZEN:
+-		cpuset_lock(); /* around calls to cpuset_cpus_allowed_lock() */
+ 		migrate_live_tasks(cpu);
+ 		rq = cpu_rq(cpu);
+ 		kthread_stop(rq->migration_thread);
+@@ -7565,7 +7564,6 @@ migration_call(struct notifier_block *nf
+ 		rq->idle->sched_class = &idle_sched_class;
+ 		migrate_dead_tasks(cpu);
+ 		spin_unlock_irq(&rq->lock);
+-		cpuset_unlock();
+ 		migrate_nr_uninterruptible(rq);
+ 		BUG_ON(rq->nr_running != 0);
+ 		calc_global_load_remove(rq);
+--- CPUHP/kernel/cpuset.c~2_KILL_CPUSET_LOCK	2009-09-10 20:06:39.000000000 +0200
++++ CPUHP/kernel/cpuset.c	2009-09-10 20:28:11.000000000 +0200
+@@ -268,16 +268,23 @@ static struct file_system_type cpuset_fs
+  * Call with callback_mutex held.
+  */
+ 
+-static void guarantee_online_cpus(const struct cpuset *cs,
+-				  struct cpumask *pmask)
++static void guarantee_online_cpus(struct cpuset *cs, struct cpumask *pmask)
+ {
+-	while (cs && !cpumask_intersects(cs->cpus_allowed, cpu_online_mask))
+-		cs = cs->parent;
+ 	if (cs)
++		spin_lock(&cs->cpumask_lock);
++	/*
++	 * cs->cpus_allowed must include online CPUs, or we are called
++	 * from cpu_down() hooks. In that case use cpu_online_mask
++	 * temporary until scan_for_empty_cpusets() moves us to ->parent
++	 * cpuset.
++	 */
++	if (cs && cpumask_intersects(cs->cpus_allowed, cpu_online_mask))
+ 		cpumask_and(pmask, cs->cpus_allowed, cpu_online_mask);
+ 	else
+ 		cpumask_copy(pmask, cpu_online_mask);
+-	BUG_ON(!cpumask_intersects(pmask, cpu_online_mask));
 +
-+	spin_lock_init(&cs->cpumask_lock);
- 	if (!alloc_cpumask_var(&cs->cpus_allowed, GFP_KERNEL)) {
- 		kfree(cs);
- 		return ERR_PTR(-ENOMEM);
-@@ -1981,8 +1986,10 @@ static void scan_for_empty_cpusets(struc
++	if (cs)
++		spin_unlock(&cs->cpumask_lock);
+ }
  
- 		/* Remove offline cpus and mems from this cpuset. */
- 		mutex_lock(&callback_mutex);
-+		spin_lock(&cp->cpumask_lock);
- 		cpumask_and(cp->cpus_allowed, cp->cpus_allowed,
- 			    cpu_online_mask);
-+		spin_unlock(&cp->cpumask_lock);
- 		nodes_and(cp->mems_allowed, cp->mems_allowed,
- 						node_states[N_HIGH_MEMORY]);
- 		mutex_unlock(&callback_mutex);
-@@ -2030,7 +2037,9 @@ static int cpuset_track_online_cpus(stru
+ /*
+@@ -2106,20 +2113,8 @@ void __init cpuset_init_smp(void)
+  * subset of cpu_online_map, even if this means going outside the
+  * tasks cpuset.
+  **/
+-
+ void cpuset_cpus_allowed(struct task_struct *tsk, struct cpumask *pmask)
+ {
+-	mutex_lock(&callback_mutex);
+-	cpuset_cpus_allowed_locked(tsk, pmask);
+-	mutex_unlock(&callback_mutex);
+-}
+-
+-/**
+- * cpuset_cpus_allowed_locked - return cpus_allowed mask from a tasks cpuset.
+- * Must be called with callback_mutex held.
+- **/
+-void cpuset_cpus_allowed_locked(struct task_struct *tsk, struct cpumask *pmask)
+-{
+ 	task_lock(tsk);
+ 	guarantee_online_cpus(task_cs(tsk), pmask);
+ 	task_unlock(tsk);
+@@ -2311,33 +2306,6 @@ int __cpuset_node_allowed_hardwall(int n
+ }
  
- 	cgroup_lock();
- 	mutex_lock(&callback_mutex);
-+	spin_lock(&top_cpuset.cpumask_lock);
- 	cpumask_copy(top_cpuset.cpus_allowed, cpu_online_mask);
-+	spin_unlock(&top_cpuset.cpumask_lock);
- 	mutex_unlock(&callback_mutex);
- 	scan_for_empty_cpusets(&top_cpuset);
- 	ndoms = generate_sched_domains(&doms, &attr);
+ /**
+- * cpuset_lock - lock out any changes to cpuset structures
+- *
+- * The out of memory (oom) code needs to mutex_lock cpusets
+- * from being changed while it scans the tasklist looking for a
+- * task in an overlapping cpuset.  Expose callback_mutex via this
+- * cpuset_lock() routine, so the oom code can lock it, before
+- * locking the task list.  The tasklist_lock is a spinlock, so
+- * must be taken inside callback_mutex.
+- */
+-
+-void cpuset_lock(void)
+-{
+-	mutex_lock(&callback_mutex);
+-}
+-
+-/**
+- * cpuset_unlock - release lock on cpuset changes
+- *
+- * Undo the lock taken in a previous cpuset_lock() call.
+- */
+-
+-void cpuset_unlock(void)
+-{
+-	mutex_unlock(&callback_mutex);
+-}
+-
+-/**
+  * cpuset_mem_spread_node() - On which node to begin search for a page
+  *
+  * If a task is marked PF_SPREAD_PAGE or PF_SPREAD_SLAB (as for
 
