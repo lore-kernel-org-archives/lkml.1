@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZIJWQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753846AbZIJWYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546AbZIJWQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 18:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZIJWQ6
+	id S1753846AbZIJWYE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 18:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752874AbZIJWYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 18:16:58 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:56917 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754453AbZIJWQ6 (ORCPT
+	Thu, 10 Sep 2009 18:24:03 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:59268 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752368AbZIJWYC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 18:16:58 -0400
-Subject: Re: [PATCH] update clocksource raw_time in timekeeping_suspend
-From: john stultz <johnstul@us.ibm.com>
-To: Yong Zhang <yong.zhang0@gmail.com>
-Cc: ye janboe <janboe.ye@gmail.com>, zippel@linux-m68k.org,
-       akpm@linux-foundation.org, mingo@elte.hu,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <2674af740909100231x582851dbv9b71bc2914be7030@mail.gmail.com>
-References: <af3ea28a0909090035t710f5895i135760a2c7bd8a02@mail.gmail.com>
-	 <1252537622.9883.24.camel@localhost.localdomain>
-	 <af3ea28a0909100107q328d1288x8d677d4d5f79f728@mail.gmail.com>
-	 <2674af740909100231x582851dbv9b71bc2914be7030@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 10 Sep 2009 15:15:38 -0700
-Message-Id: <1252620938.7319.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Sep 2009 18:24:02 -0400
+Date: Fri, 11 Sep 2009 00:24:00 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Alemao <xcarandiru@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: MPC85xx External/Internal Interrupts
+Message-ID: <20090910222400.GB26587@Chamillionaire.breakpoint.cc>
+References: <d970ff420909040604h1bb3874eg5c79f79f85e713a3@mail.gmail.com>
+ <d970ff420909041228h3638e840r34c0c0e79f178e55@mail.gmail.com>
+ <d970ff420909041229hb3aa96dya329e06ea56dd1ac@mail.gmail.com>
+ <20090906110641.GA11350@Chamillionaire.breakpoint.cc>
+ <20090909182857.GB8215@b07421-ec1.am.freescale.net>
+ <20090910131544.GB23433@Chamillionaire.breakpoint.cc>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090910131544.GB23433@Chamillionaire.breakpoint.cc>
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 17:31 +0800, Yong Zhang wrote:
-> On Thu, Sep 10, 2009 at 4:07 PM, ye janboe <janboe.ye@gmail.com> wrote:
-> > hi, John
-> >
-> > Thanks for your comments.
-> >
-> > After sent this patch, I realize that this patch exposes the hardware
-> > detail ugly in common code.
-> >
-> > In embed system, user space apps need to have a method to get the
-> > right time which will not be impacted by NTP and suspend.
-> >
-> > Yes, you are right. I want to add sleep_length to the raw time and
-> > user space apps could get the right time after suspend.
-> >
-> 
-> What I get from the code is that CLOCK_MONOTONIC doesn't consider
-> sleep_length either. Do I miss something?
+* Sebastian Andrzej Siewior | 2009-09-10 15:15:44 [+0200]:
 
-You're quite right. I forgot we drop sleep_length from
-wall_to_monotonic, so it should not increase while we're suspended.
+>* Scott Wood | 2009-09-09 13:28:57 [-0500]:
+>
+>>> That's why you always have an offset of 16 between every internal
+>>> interupt source number in the MPC855ERM document and those weired
+>>> numbers in the device tree :)
+>>
+>>something in the dts bindings that explains it.  Am I correct in assuming
+>>that this particular internal/external split is Freescale-specific and
+>>not a general OpenPIC thing?
+>Yes it looks like this. 
+>manual for both of them to check. I also don't have an OpenPIC spec to
+>check there.
+I had to say this. Now I got one. According to the OpenPIC there is no
+such thing as an internal and external interrupt sources. Base + 0x10000
+is the first interrupt source register and the number of interrupt
+sources is specified in the feature register. 
 
-Janboe: So I think things are fine as they stand. No patch necessary.
+So the split is a FSL thing.
+What do you thing about making this clear? Adding into every .dts a
+comment right on top or maybe in
+Documentation/powerpc/dts-bindings/fsl/?
 
-But please let me know if I'm yet again forgetting something or you're
-finding CLOCK_MONOTONIC_RAW to be insufficient in some way.
+>>
+>>-Scott
 
-thanks
--john
-
+Sebastian
