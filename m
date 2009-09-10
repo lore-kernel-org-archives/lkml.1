@@ -1,86 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbZIJTzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753490AbZIJTqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbZIJTzK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753481AbZIJTzK
+	id S1753490AbZIJTqq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZIJTqp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:55:10 -0400
-Received: from mondschein.lichtvoll.de ([194.150.191.11]:46662 "EHLO
-	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753473AbZIJTzJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:55:09 -0400
-X-Greylist: delayed 552 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Sep 2009 15:55:09 EDT
-From: Martin Steigerwald <Martin@lichtvoll.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Date: Thu, 10 Sep 2009 21:45:47 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc7-tp42-toi-3.0.1-04741-g57e61c0; KDE/4.3.1; i686; ; )
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nikos Chantziaras <realnc@arcor.de>, Mike Galbraith <efault@gmx.de>,
-       Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Con Kolivas <kernel@kolivas.org>
-References: <20090906205952.GA6516@elte.hu> <4AA76FD2.1050103@arcor.de> <1252487869.7746.181.camel@twins> (sfid-20090909_111953_200988_A02CB5A6)
-In-Reply-To: <1252487869.7746.181.camel@twins>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3556249.JiEUj4pTiB";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909102145.53332.Martin@lichtvoll.de>
+	Thu, 10 Sep 2009 15:46:45 -0400
+Received: from nox.protox.org ([88.191.38.29]:57570 "EHLO nox.protox.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752652AbZIJTqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 15:46:44 -0400
+From: Jerome Glisse <jglisse@redhat.com>
+To: airlied@gmail.com
+Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
+       Jerome Glisse <jglisse@redhat.com>
+Subject: [PATCH 1/3] drm/radeon/kms: move modeset init outside of GPU init
+Date: Thu, 10 Sep 2009 21:46:48 +0200
+Message-Id: <1252612008-1944-1-git-send-email-jglisse@redhat.com>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3556249.JiEUj4pTiB
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: quoted-printable
+We are splitting GPU & modeset init so that it's easier
+to abord only remaining GPU init when somethings fails.
+We want to always provide enough funcionalities to get
+fbcon and a shadowfb X working. Only acceptable error
+during initialization are memory allocation failure or
+io mapping failure.
 
-Am Mittwoch 09 September 2009 schrieb Peter Zijlstra:
-> On Wed, 2009-09-09 at 12:05 +0300, Nikos Chantziaras wrote:
-> > Thank you for mentioning min_granularity.  After:
-> >
-> >    echo 10000000 > /proc/sys/kernel/sched_latency_ns
-> >    echo 2000000 > /proc/sys/kernel/sched_min_granularity_ns
->=20
-> You might also want to do:
->=20
->      echo 2000000 > /proc/sys/kernel/sched_wakeup_granularity_ns
->=20
-> That affects when a newly woken task will preempt an already running
-> task.
+Signed-off-by: Jerome Glisse <jglisse@redhat.com>
+---
+ drivers/gpu/drm/radeon/radeon.h        |    4 ++++
+ drivers/gpu/drm/radeon/radeon_device.c |   20 +++-----------------
+ drivers/gpu/drm/radeon/radeon_kms.c    |   22 ++++++++++++++++++----
+ 3 files changed, 25 insertions(+), 21 deletions(-)
 
-Heh that scheduler thing again... and unfortunately Col appearing to feel=20
-hurt while I am think that Ingo is honest on his offer on collaboration...
+diff --git a/drivers/gpu/drm/radeon/radeon.h b/drivers/gpu/drm/radeon/radeon.h
+index d6ff4e0..23ede0e 100644
+--- a/drivers/gpu/drm/radeon/radeon.h
++++ b/drivers/gpu/drm/radeon/radeon.h
+@@ -933,6 +933,10 @@ static inline void radeon_ring_write(struct radeon_device *rdev, uint32_t v)
+ #define radeon_clear_surface_reg(rdev, r) ((rdev)->asic->clear_surface_reg((rdev), (r)))
+ #define radeon_bandwidth_update(rdev) (rdev)->asic->bandwidth_update((rdev))
+ 
++/* Common functions */
++int radeon_modeset_init(struct radeon_device *rdev);
++void radeon_modeset_fini(struct radeon_device *rdev);
++
+ /* r100,rv100,rs100,rv200,rs200,r200,rv250,rs300,rv280 */
+ void r100_cp_disable(struct radeon_device *rdev);
+ void r100_pci_gart_tlb_flush(struct radeon_device *rdev);
+diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
+index bf69394..72f6262 100644
+--- a/drivers/gpu/drm/radeon/radeon_device.c
++++ b/drivers/gpu/drm/radeon/radeon_device.c
+@@ -469,9 +469,6 @@ void radeon_combios_fini(struct radeon_device *rdev)
+ {
+ }
+ 
+-int radeon_modeset_init(struct radeon_device *rdev);
+-void radeon_modeset_fini(struct radeon_device *rdev);
+-
+ 
+ /*
+  * Radeon device.
+@@ -481,7 +478,7 @@ int radeon_device_init(struct radeon_device *rdev,
+ 		       struct pci_dev *pdev,
+ 		       uint32_t flags)
+ {
+-	int r, ret = 0;
++	int r;
+ 	int dma_bits;
+ 
+ 	DRM_INFO("radeon: Initializing kernel modesetting.\n");
+@@ -660,33 +657,22 @@ int radeon_device_init(struct radeon_device *rdev,
+ 				return r;
+ 			}
+ 		}
+-		ret = r;
+-	}
+-	r = radeon_modeset_init(rdev);
+-	if (r) {
+-		return r;
+-	}
+-	if (!ret) {
+-		DRM_INFO("radeon: kernel modesetting successfully initialized.\n");
+ 	}
++	DRM_INFO("radeon: kernel modesetting successfully initialized.\n");
+ 	if (radeon_testing) {
+ 		radeon_test_moves(rdev);
+ 	}
+ 	if (radeon_benchmarking) {
+ 		radeon_benchmark(rdev);
+ 	}
+-	return ret;
++	return 0;
+ }
+ 
+ void radeon_device_fini(struct radeon_device *rdev)
+ {
+-	if (rdev == NULL || rdev->rmmio == NULL) {
+-		return;
+-	}
+ 	DRM_INFO("radeon: finishing device.\n");
+ 	rdev->shutdown = true;
+ 	/* Order matter so becarefull if you rearrange anythings */
+-	radeon_modeset_fini(rdev);
+ 	if (!rdev->new_init_path) {
+ 		radeon_ib_pool_fini(rdev);
+ 		radeon_cp_fini(rdev);
+diff --git a/drivers/gpu/drm/radeon/radeon_kms.c b/drivers/gpu/drm/radeon/radeon_kms.c
+index dce09ad..ac8505f 100644
+--- a/drivers/gpu/drm/radeon/radeon_kms.c
++++ b/drivers/gpu/drm/radeon/radeon_kms.c
+@@ -54,12 +54,23 @@ int radeon_driver_load_kms(struct drm_device *dev, unsigned long flags)
+ 		flags |= RADEON_IS_PCI;
+ 	}
+ 
++	/* radeon_device_init should report only fatal error
++	 * like memory allocation failure or iomapping failure,
++	 * or memory manager initialization failure, it must
++	 * properly initialize the GPU MC controller and permit
++	 * VRAM allocation
++	 */
+ 	r = radeon_device_init(rdev, dev, dev->pdev, flags);
+ 	if (r) {
+-		DRM_ERROR("Failed to initialize radeon, disabling IOCTL\n");
+-		radeon_device_fini(rdev);
+-		kfree(rdev);
+-		dev->dev_private = NULL;
++		DRM_ERROR("Fatal error while trying to initialize radeon.\n");
++		return r;
++	}
++	/* Again modeset_init should fail only on fatal error
++	 * otherwise it should provide enough functionalities
++	 * for shadowfb to run
++	 */
++	r = radeon_modeset_init(rdev);
++	if (r) {
+ 		return r;
+ 	}
+ 	return 0;
+@@ -69,6 +80,9 @@ int radeon_driver_unload_kms(struct drm_device *dev)
+ {
+ 	struct radeon_device *rdev = dev->dev_private;
+ 
++	if (rdev == NULL)
++		return 0;
++	radeon_modeset_fini(rdev);
+ 	radeon_device_fini(rdev);
+ 	kfree(rdev);
+ 	dev->dev_private = NULL;
+-- 
+1.6.4.2
 
-While it makes fun playing with that numbers and indeed experiencing=20
-subjectively a more fluid deskopt how about just a
-
-echo "This is a f* desktop!" > /proc/sys/kernel/sched_workload
-
-Or to say it in other words: The Linux kernel should not require me to=20
-fine-tune three or more values to have the scheduler act in a way that=20
-matches my workload.
-
-I am willing to test stuff on my work thinkpad and my Amarok thinkpad in=20
-order to help improving with that.
-
-=2D-=20
-Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
-GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
-
---nextPart3556249.JiEUj4pTiB
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkqpV2sACgkQmRvqrKWZhMf1xgCfT/nuF5hLfFXLXNydZcrZEPWp
-AXcAn0rCBasqT9KolgBeiYOc4+mfcq7I
-=c/UZ
------END PGP SIGNATURE-----
-
---nextPart3556249.JiEUj4pTiB--
