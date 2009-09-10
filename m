@@ -1,57 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbZIJUx7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZIJUwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754332AbZIJUx7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 16:53:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZIJUx6
+	id S1754226AbZIJUwq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 16:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZIJUwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 16:53:58 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40502 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751728AbZIJUx6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 16:53:58 -0400
-Subject: Re: [PATCH 0/3] resend, cpuset/hotplug fixes
-From: Peter Zijlstra <peterz@infradead.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Gautham Shenoy <ego@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090910192153.GA584@redhat.com>
-References: <20090910192153.GA584@redhat.com>
-Content-Type: text/plain
-Date: Thu, 10 Sep 2009 22:53:16 +0200
-Message-Id: <1252615996.7205.99.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 10 Sep 2009 16:52:45 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:40552 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751728AbZIJUwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 16:52:45 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Karsten Mehrhoff <kawime@gmx.de>
+Subject: Re: [Bug #13318] AGP doesn't work anymore on nforce2
+Date: Thu, 10 Sep 2009 22:53:46 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kernel Testers List" <kernel-testers@vger.kernel.org>,
+       "Dave Airlie" <airlied@redhat.com>,
+       "Jerome Glisse" <glisse@freedesktop.org>,
+       Michel =?utf-8?q?D=C3=A4nzer?= <michel@daenzer.net>,
+       "Shaohua Li" <shaohua.li@intel.com>
+References: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera> <hKF51Pczj6N.A.2PB.55BpKB@chimera> <op.uz1iefpygp7xae@127.0.0.1>
+In-Reply-To: <op.uz1iefpygp7xae@127.0.0.1>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909102253.46839.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 21:21 +0200, Oleg Nesterov wrote:
-> (my apologies to those who see this twice).
+On Thursday 10 September 2009, Karsten Mehrhoff wrote:
+> Hi all,
 > 
+> Today i compilied the new kernel 2.6.31 and everything works ok.
+> Maybe it's related to other changes in the generic.c file.
 > 
-> The 1st patch is preparation. 2-3 fix different problems, the 3rd one
-> depends on 2nd.
-> 
-> These patches change the code which I don't really understand, please
-> review.
-> 
-> 
-> As for the 3rd patch, it replaces
-> 
-> 	cpu_hotplug-dont-affect-current-tasks-affinity.patch
-> 
-> in -mm tree. Imho the new patch is more simple and clean, but of course
-> this is subjective and I am biased.
+> So everything works ok for me with AGP in 2.6.31.
+> I do not get the problem like it was in 2.6.30.x
 
-Look good to me.
+Thanks for the update, I closed the bug.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-Ingo, will you stick them in -tip?
-
+Best,
+Rafael
