@@ -1,114 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZIJHx4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754532AbZIJH6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbZIJHx4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 03:53:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZIJHx4
+	id S1754532AbZIJH6s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 03:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754066AbZIJH6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 03:53:56 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36057 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752353AbZIJHxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 03:53:55 -0400
-Date: Thu, 10 Sep 2009 09:53:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090910075357.GT18599@kernel.dk>
-References: <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop> <20090910065856.GL18599@kernel.dk> <20090910073317.GP18599@kernel.dk> <20090910074902.GA10634@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090910074902.GA10634@elte.hu>
+	Thu, 10 Sep 2009 03:58:48 -0400
+Received: from mail.valinux.co.jp ([210.128.90.3]:35633 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753591AbZIJH6r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 03:58:47 -0400
+Date: Thu, 10 Sep 2009 16:58:49 +0900 (JST)
+Message-Id: <20090910.165849.104059407.ryov@valinux.co.jp>
+To: dhaval@linux.vnet.ibm.com
+Cc: vgoyal@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
+       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
+       akpm@linux-foundation.org, nauman@google.com,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Regarding dm-ioband tests
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090909105122.GF8828@linux.vnet.ibm.com>
+References: <20090908170649.GC8828@linux.vnet.ibm.com>
+	<20090909.150511.112608142.ryov@valinux.co.jp>
+	<20090909105122.GF8828@linux.vnet.ibm.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10 2009, Ingo Molnar wrote:
+Hi,
+
+Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> > I know that cgroup is a very well defined functionality, that is why
+> > dm-ioband also supports throttling per cgroup. But how are we supposed
+> > to do throttling on the system which doesn't support cgroup?
+> > As I wrote in another mail to Vivek, I would like to make use of
+> > dm-ioband on RHEL 5.x. 
 > 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> Hi Ryo,
 > 
-> > On Thu, Sep 10 2009, Jens Axboe wrote:
-> > > On Thu, Sep 10 2009, Peter Zijlstra wrote:
-> > > > On Wed, 2009-09-09 at 14:20 +0200, Jens Axboe wrote:
-> > > > > 
-> > > > > One thing I also noticed is that when I have logged in, I 
-> > > > > run xmodmap manually to load some keymappings (I always tell 
-> > > > > myself to add this to the log in scripts, but I 
-> > > > > suspend/resume this laptop for weeks at the time and forget 
-> > > > > before the next boot). With the stock kernel, xmodmap will 
-> > > > > halt X updates and take forever to run. With BFS, it 
-> > > > > returned instantly. As I would expect.
-> > > > 
-> > > > Can you provide a little more detail (I'm a xmodmap n00b), how does one
-> > > > run xmodmap and maybe provide your xmodmap config?
-> > > 
-> > > Will do, let me get the notebook and strace time it on both bfs and
-> > > mainline.
+> I am not sure that upstream should really be worrying about RHEL 5.x.
+> cgroups is a relatively mature solution and is available in most (if not
+> all) community distros today. We really should not be looking at another
+> grouping solution if the sole reason is that then dm-ioband can be used
+> on RHEL 5.x. The correct solution would be to maintain a separate patch
+> for RHEL 5.x then and not to burden the upstream kernel.
+
+RHEL 5.x is not the sole reason for that.
+
+> > And I don't think that the grouping methods are not complicated, just
+> > stack a new device on the existing device and assign bandwidth to it,
+> > that is the same method as other device-mapper targets, if you would
+> > like to assign bandwidth per thread, then register the thread's ID to
+> > the device and assign bandwidth to it as well. I don't think it makes
+> > users confused.
 > > 
-> > Here's the result of running perf stat xmodmap .xmodmap-carl on 
-> > the notebook. I have attached the .xmodmap-carl file, it's pretty 
-> > simple. I have also attached the output of strace -o foo -f -tt 
-> > xmodmap .xmodmap-carl when run on 2.6.31-rc9.
+> > > I would tend to agree with this. With other resource management
+> > > controllers using cgroups, having dm-ioband use something different will
+> > > require a different set of userspace tools/libraries to be used.
+> > > Something that will severly limit its usefulness froma programmer's
+> > > perspective.
 > > 
-> > 2.6.31-rc9-bfs210
+> > Once we create a dm-ioband device, the device can be configured
+> > through the cgroup interface. I think it will not severly limit its
+> > usefulness.
 > > 
-> >  Performance counter stats for 'xmodmap .xmodmap-carl':
-> > 
-> >      153.994976  task-clock-msecs         #      0.990 CPUs   (scaled from 99.86%)
-> >               0  context-switches         #      0.000 M/sec  (scaled from 99.86%)
-> >               0  CPU-migrations           #      0.000 M/sec  (scaled from 99.86%)
-> >             315  page-faults              #      0.002 M/sec  (scaled from 99.86%)
-> >   <not counted>  cycles                  
-> >   <not counted>  instructions            
-> >   <not counted>  cache-references        
-> >   <not counted>  cache-misses            
-> > 
-> >     0.155573406  seconds time elapsed
 > 
-> (Side question: what hardware is this - why are there no hw 
-> counters? Could you post the /proc/cpuinfo?)
+> My objection is slightly different. My objection is that there are too
+> many interfaces to do the same thing.
 
-Sure, attached. It's a Thinkpad x60, core duo. Nothing fancy. The perf
-may be a bit dated.
+Not too many, There are only two interfaces device-mapper and cgroup.
 
-I went to try -tip btw, but it crashes on boot. Here's the backtrace,
-typed manually, it's crashing in queue_work_on+0x28/0x60.
+> Which one of these is the recommended one? 
 
-Call Trace:
-        queue_work
-        schedule_work
-        clocksource_mark_unstable
-        mark_tsc_unstable
-        check_tsc_sync_source
-        native_cpu_up
-        relay_hotcpu_callback
-        do_forK_idle
-        _cpu_up
-        cpu_up
-        kernel_init
-        kernel_thread_helper
+I think whichever users like, it's up to users.
 
-> >  Performance counter stats for 'xmodmap .xmodmap-carl':
-> > 
-> >        8.529265  task-clock-msecs         #      0.001 CPUs 
-> >              23  context-switches         #      0.003 M/sec
-> >               1  CPU-migrations           #      0.000 M/sec
-> >             315  page-faults              #      0.037 M/sec
-> >   <not counted>  cycles                  
-> >   <not counted>  instructions            
-> >   <not counted>  cache-references        
-> >   <not counted>  cache-misses            
-> > 
-> >    11.804293482  seconds time elapsed
-> 
-> Thanks - so we context-switch 23 times - possibly to Xorg. But 11 
-> seconds is extremely long. Will try to reproduce it.
+> WHich one is going to be supported?
 
-There's also the strace info with timings. Xorg is definitely involved,
-during those 11s things stop updating completely.
+Both device-mapper and cgroup interfaces are supported continuously.
 
--- 
-Jens Axboe
+> If we say that cgroups is not the preferred interface, do the
+> application developers need to use yet another library for io
+> control along with cpu/memory control?
 
+I don't think that cgroup is not the preferred interface, especially
+not if dm-ioband uses with cpu/memory controller together. Once a
+dm-ioband device is created, all configurations for the device can be
+done through the cgroup interface like other cgroup subsystems. It
+does not require a different set of userspace tools/libraries to be
+used.
+
+I think it is natural to make dm-ioband can be configured by
+device-mapper's interface since dm-ioband is a device-mapper driver,
+and it extends use case, rather it limits usefulness.
+
+Thanks,
+Ryo Tsuruta
