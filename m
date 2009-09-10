@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbZIJNWJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbZIJNZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbZIJNWJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 09:22:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754910AbZIJNWI
+	id S1755689AbZIJNZW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 09:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755641AbZIJNZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 09:22:08 -0400
-Received: from mga14.intel.com ([143.182.124.37]:13941 "EHLO mga14.intel.com"
+	Thu, 10 Sep 2009 09:25:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39840 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752925AbZIJNWH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 09:22:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="186148262"
-Date: Thu, 10 Sep 2009 21:21:54 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 7/7] writeback: balance_dirty_pages() shall write
-	more than dirtied pages
-Message-ID: <20090910132154.GA6446@localhost>
-References: <20090909145141.293229693@intel.com> <20090909150601.159061863@intel.com> <20090909154413.GC7949@duck.suse.cz> <20090910014201.GB10957@localhost> <20090910125742.GH5106@think>
+	id S1755565AbZIJNZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 09:25:20 -0400
+Date: Thu, 10 Sep 2009 09:25:03 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+Cc: riel@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
+       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       balbir@linux.vnet.ibm.com
+Subject: Re: Regarding dm-ioband tests
+Message-ID: <20090910132503.GA29559@redhat.com>
+References: <20090908134244.GA15974@redhat.com> <20090909.190146.59669568.ryov@valinux.co.jp> <20090909143159.GC8256@redhat.com> <20090910.124547.71116284.ryov@valinux.co.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090910125742.GH5106@think>
+In-Reply-To: <20090910.124547.71116284.ryov@valinux.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 08:57:42PM +0800, Chris Mason wrote:
-> On Thu, Sep 10, 2009 at 09:42:01AM +0800, Wu Fengguang wrote:
-> > On Wed, Sep 09, 2009 at 11:44:13PM +0800, Jan Kara wrote:
-> > > On Wed 09-09-09 22:51:48, Wu Fengguang wrote:
-> > > > Some filesystem may choose to write much more than ratelimit_pages
-> > > > before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
-> > > > determine number to write based on real number of dirtied pages.
-> > > > 
-> > > > The increased write_chunk may make the dirtier more bumpy.  This is
-> > > > filesystem writers' duty not to dirty too much at a time without
-> > > > checking the ratelimit.
-> > >   I don't get this. balance_dirty_pages_ratelimited_nr() is called when we
-> > > dirty the page, not when we write it out. So a problem would only happen if
-> > > filesystem dirties pages by set_page_dirty() and won't call
-> > > balance_dirty_pages_ratelimited_nr(). But e.g. generic_perform_write()
-> > > and do_wp_page() takes care of that. So where's the problem?
-> > 
-> > It seems that btrfs_file_write() is writing in chunks of up to 1024-pages
-> > (1024 is the computed nrptrs value in a 32bit kernel). And it calls
-> > balance_dirty_pages_ratelimited_nr() each time it dirtied such a chunk.
+On Thu, Sep 10, 2009 at 12:45:47PM +0900, Ryo Tsuruta wrote:
+> Hi Vivek,
 > 
-> I can easily change this to call more often, but we do always call
-> balance_dirty_pages to reflect how much ram we've really sent down.
+> Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > In addition,
+> > > there are devices which doesn't use standard IO schedulers, and
+> > > dm-ioband can work on even such devices.
+> > 
+> > This is a interesting use case. Few thoughts.
+> > 
+> > - Can't io scheduling mechanism of these devices make use of elevator and
+> >   elevator fair queuing interfaces to take advantage of io controlling
+> >   mechanism. It should not be too difficult. Look at noop. It has
+> >   just 131 lines of code and it now supports hierarchical io scheduling.
+> >  
+> >   This will come with request queue and its merging and plug/unplug
+> >   mechanism. Is that an issue?
+> >
+> > - If not, then yes, for these corner cases, io scheduler based controller
+> >   does not work as it is.
+> 
+> I have a extreme fast SSD and its device driver provides its own
+> make_request_fn(). So the device driver intercepts IO requests and the
+> subsequent processes are done within it.
 
-Btrfs is doing OK. 2MB/4MB looks like reasonable chunk sizes. The
-need-change part is balance_dirty_pages_ratelimited_nr(), hence this
-patch :)
+IMHO, in those cases these SSD driver needs to hook into block layer's request
+queue mechanism if they need io controlling mechanism instead of we coming
+up a device mapper module.
 
-Thanks,
-Fengguang
+Think of it that if somebody needs CFQ like tasks classes and prio
+suported on these devices, should we also come up with another device
+mapper module "dm-cfq"?
+
+Jens, I am wondering if similiar concerns have popped in the past also for
+CFQ also? Somebody asking to support task prio and classes on devices which
+don't use standard IO scheduler?
+
+Thanks
+Vivek
