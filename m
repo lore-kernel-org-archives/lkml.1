@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755393AbZIJKKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZIJKLf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755393AbZIJKKt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 06:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755348AbZIJKKs
+	id S1755390AbZIJKLf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 06:11:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755358AbZIJKLf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 06:10:48 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:41300 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755345AbZIJKKs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 06:10:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=aDREfidf6UrR2byCObHzokBzWjUt9FmWhXzz9+Jm3JDw8E/i6mpmMaeR9QSsbqRHWg
-         hBlBkgLhxU+XZlYS3BRDHh2NXTkTf2ZQIiGH5zhFHpc9Pg9E/Sl2YVx8jyJ7Vuh3vCOQ
-         tY7r0i6cquuCgKbdQ7keTXWl4+lqJQx95TC9Y=
+	Thu, 10 Sep 2009 06:11:35 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:35559 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755348AbZIJKLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 06:11:34 -0400
+Date: Thu, 10 Sep 2009 12:11:37 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Nikos Chantziaras <realnc@arcor.de>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090910101137.GH18599@kernel.dk>
+References: <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu> <4AA80C1E.2080901@arcor.de> <20090910060824.GF1335@elte.hu> <20090910064059.GA22646@elte.hu> <20090910095457.GD18599@kernel.dk> <20090910100321.GA7922@elte.hu>
 MIME-Version: 1.0
-Date: Thu, 10 Sep 2009 15:40:51 +0530
-Message-ID: <241b8f7b0909100310t267b82cq976929d2f7b7734@mail.gmail.com>
-Subject: disable : Ctrl -C in the Kernel
-From: Prabhu Chawandi <prabhu.chavandi@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090910100321.GA7922@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, Sep 10 2009, Ingo Molnar wrote:
+> 
+> * Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Thu, Sep 10 2009, Ingo Molnar wrote:
+> > > 
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > > However, the interactivity problems still remain.  Does that 
+> > > > > mean it's not a latency issue?
+> > > > 
+> > > > It means that Jens's test-app, which demonstrated and helped us 
+> > > > fix the issue for him does not help us fix it for you just yet.
+> > > 
+> > > Lemme qualify that by saying that Jens's issues are improved not 
+> > > fixed [he has not re-run with latest latt.c yet] but not all things 
+> > > are fully fixed yet. For example the xmodmap thing sounds 
+> > > interesting - could that be a child-runs-first effect?
+> > 
+> > I thought so too, so when -tip failed to boot I pulled the patches 
+> > from Mike into 2.6.31. It doesn't change anything for xmodmap, 
+> > though.
+> 
+> Note, you can access just the pristine scheduler patches by checking 
+> out and testing tip:sched/core - no need to pull them out and apply.
+> 
+> Your crash looks like clocksource related - that's in a separate 
+> topic which you can thus isolate if you use sched/core.
 
-  I am running Some application at the end of rcS script file.
+I'm building sched/core now and will run the xmodmap test there.
 
-I need to disable Ctrl-c, i.e.  application should not kill after Ctrl-c.
+-- 
+Jens Axboe
 
-and in some case I want Ctrl-C to work normally.
-
-I am taking care in application about catching signal using signal(),
-even then I think there is something from kernel side.
-
-Can any one help ?????/
-
-Thanks in advance
-Prabhu
