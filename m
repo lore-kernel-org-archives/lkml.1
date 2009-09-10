@@ -1,48 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbZIJKBr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZIJKC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbZIJKBr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 06:01:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZIJKBq
+	id S1755365AbZIJKC1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 06:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZIJKC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 06:01:46 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53665 "EHLO kernel.dk"
+	Thu, 10 Sep 2009 06:02:26 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42470 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753108AbZIJKBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 06:01:46 -0400
-Date: Thu, 10 Sep 2009 12:01:48 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	id S1755281AbZIJKC0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 06:02:26 -0400
+Date: Thu, 10 Sep 2009 12:02:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
        Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
 Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090910100148.GF18599@kernel.dk>
-References: <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <20090909180404.GA11027@elte.hu> <20090910094821.GC18599@kernel.dk> <20090910095933.GA21314@elte.hu>
+Message-ID: <20090910100214.GB21314@elte.hu>
+References: <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop> <20090910065856.GL18599@kernel.dk> <20090910073317.GP18599@kernel.dk> <20090910074902.GA10634@elte.hu> <20090910075357.GT18599@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090910095933.GA21314@elte.hu>
+In-Reply-To: <20090910075357.GT18599@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10 2009, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Wed, Sep 09 2009, Ingo Molnar wrote:
-> > > At least in my tests these latencies were mainly due to a bug in 
-> > > latt.c - i've attached the fixed version.
-> > 
-> > What bug? I don't see any functional change between the version 
-> > you attach and the current one.
-> 
-> Here's the diff of what i fixed yesterday over the last latt.c 
-> version i found in this thread. The poll() thing is the significant 
-> one.
 
-Ah indeed, thanks Ingo! I'm tempted to add some actual work processing
-into latt as well, to see if that helps improve it.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
--- 
-Jens Axboe
+> I went to try -tip btw, but it crashes on boot. Here's the 
+> backtrace, typed manually, it's crashing in 
+> queue_work_on+0x28/0x60.
+> 
+> Call Trace:
+>         queue_work
+>         schedule_work
+>         clocksource_mark_unstable
+>         mark_tsc_unstable
+>         check_tsc_sync_source
+>         native_cpu_up
+>         relay_hotcpu_callback
+>         do_forK_idle
+>         _cpu_up
+>         cpu_up
+>         kernel_init
+>         kernel_thread_helper
 
+hm, that looks like an old bug i fixed days ago via:
+
+  00a3273: Revert "x86: Make tsc=reliable override boot time stability checks"
+
+Have you tested tip:master - do you still know which sha1?
+
+	Ingo
