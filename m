@@ -1,83 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752451AbZIJSBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752521AbZIJSFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752451AbZIJSBA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 14:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZIJSBA
+	id S1752521AbZIJSFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 14:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZIJSFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 14:01:00 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44939 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752146AbZIJSA7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 14:00:59 -0400
-Date: Thu, 10 Sep 2009 20:00:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: [crash, bisected] Re: clocksource: Resolve cpu hotplug dead lock
-	with TSC unstable
-Message-ID: <20090910180049.GA10579@elte.hu>
-References: <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop> <20090910065856.GL18599@kernel.dk> <20090910073317.GP18599@kernel.dk> <20090910074902.GA10634@elte.hu> <20090910075357.GT18599@kernel.dk> <20090910100214.GB21314@elte.hu>
+	Thu, 10 Sep 2009 14:05:21 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:38715 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751150AbZIJSFV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 14:05:21 -0400
+Date: Thu, 10 Sep 2009 14:03:55 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm <linux-mm@kvack.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] lru_add_drain_all() vs isolation
+In-Reply-To: <20090910083340.9CB7.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.1.10.0909101402340.13682@V090114053VZO-1>
+References: <20090909131945.0CF5.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0909091005010.28070@V090114053VZO-1> <20090910083340.9CB7.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090910100214.GB21314@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 Sep 2009, KOSAKI Motohiro wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+> How about this?
+>   - pass 1-2,  lru_add_drain_all_async()
+>   - pass 3-10, lru_add_drain_all()
+>
+> this scheme might save RT-thread case and never cause regression. (I think)
 
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > I went to try -tip btw, but it crashes on boot. Here's the 
-> > backtrace, typed manually, it's crashing in 
-> > queue_work_on+0x28/0x60.
-> > 
-> > Call Trace:
-> >         queue_work
-> >         schedule_work
-> >         clocksource_mark_unstable
-> >         mark_tsc_unstable
-> >         check_tsc_sync_source
-> >         native_cpu_up
-> >         relay_hotcpu_callback
-> >         do_forK_idle
-> >         _cpu_up
-> >         cpu_up
-> >         kernel_init
-> >         kernel_thread_helper
-> 
-> hm, that looks like an old bug i fixed days ago via:
-> 
->   00a3273: Revert "x86: Make tsc=reliable override boot time stability checks"
-> 
-> Have you tested tip:master - do you still know which sha1?
+Sounds good.
 
-Ok, i reproduced it on a testbox and bisected it, the crash is 
-caused by:
+> The last remain problem is, if RT-thread binding cpu's pagevec has migrate
+> targetted page, migration still face the same issue.
+> but we can't solve it...
+> RT-thread must use /proc/sys/vm/drop_caches properly.
 
- 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16 is first bad commit
- commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
- Author: Thomas Gleixner <tglx@linutronix.de>
- Date:   Fri Aug 28 20:25:24 2009 +0200
+A system call "sys_os_quiet_down" may be useful. It would drain all
+caches, fold counters etc etc so that there will be no OS activities
+needed for those things later.
 
-    clocksource: Resolve cpu hotplug dead lock with TSC unstable
-    
-    Martin Schwidefsky analyzed it:
-
-I've reverted it in tip/master for now.
-
-	Ingo
