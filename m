@@ -1,62 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZIJB77@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754867AbZIJBqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbZIJB77 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 21:59:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751589AbZIJB76
+	id S1754867AbZIJBqi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 21:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbZIJBqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 21:59:58 -0400
-Received: from modry.cz ([217.11.254.86]:55101 "EHLO modry.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbZIJB76 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 21:59:58 -0400
-X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 Sep 2009 21:59:57 EDT
-Date: Thu, 10 Sep 2009 03:44:47 +0200 (CEST)
-From: Martin Decky <martin@decky.cz>
-To: j@w1.fi
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] hostap: Revert a toxic part of the conversion to
- net_device_ops
-Message-ID: <alpine.LFD.2.00.0909100333230.4334@hefaistos.decky.cz>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 9 Sep 2009 21:46:37 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:43106 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754815AbZIJBqg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 21:46:36 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AA85A6D.9040302@jp.fujitsu.com>
+Date: Thu, 10 Sep 2009 10:46:21 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Score: -4.3
+To: Alex Chiang <achiang@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] PCI Hotplug: convert acpi_pci_detect_ejectable()
+ to take	an acpi_handle
+References: <20090909204738.11037.26974.stgit@bob.kio> <20090909204935.11037.98403.stgit@bob.kio>
+In-Reply-To: <20090909204935.11037.98403.stgit@bob.kio>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Decky <martin@decky.cz>
+Alex Chiang wrote:
+> acpi_pci_detect_ejectable() goes through effort to convert its
+> struct pci_bus arg to an acpi_handle, but every time we use this
+> interface, we already have the handle available.
+> 
+> So let's just use the handle instead of converting back and forth.
+> 
+> Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> 
+>  drivers/pci/hotplug/acpi_pcihp.c   |    9 +++------
+>  drivers/pci/hotplug/acpiphp_glue.c |   33 +++++++++++----------------------
+>  drivers/pci/hotplug/pciehp_acpi.c  |    5 +++--
+>  include/linux/pci_hotplug.h        |    2 +-
+>  4 files changed, 18 insertions(+), 31 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
+> index eb15958..80af75c 100644
+> --- a/drivers/pci/hotplug/acpi_pcihp.c
+> +++ b/drivers/pci/hotplug/acpi_pcihp.c
+> @@ -500,18 +500,15 @@ check_hotplug(acpi_handle handle, u32 lvl, void *context, void **rv)
+>  
+>  /**
+>   * acpi_pci_detect_ejectable - check if the PCI bus has ejectable slots
+> - * @pbus - PCI bus to scan
+> + * @handle - handle of the PCI bus to scan
+>   *
+>   * Returns 1 if the PCI bus has ACPI based ejectable slots, 0 otherwise.
+>   */
+> -int acpi_pci_detect_ejectable(struct pci_bus *pbus)
+> +int acpi_pci_detect_ejectable(acpi_handle handle)
+>  {
+> -	acpi_handle handle;
+>  	int found = 0;
+>  
+> -	if (!(handle = acpi_pci_get_bridge_handle(pbus)))
+> -		return 0;
+> -	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
 
-As the hostap driver was converted to use net_device_ops, a mistake was 
-made in hostap_main.c (commit 5ae4efbcd2611562a8b93596be034e63495706a5). 
-Originally, the tx_queue_len was set to 0 for every other interface than 
-HOSTAP_INTERFACE_MASTER, but the new fragment of code sets tx_queue_len to 
-0 only for HOSTAP_INTERFACE_MASTER. The opposite of the previous 
-behavior makes the driver to drop all packets in AP mode.
+I think we need NULL check here.
 
-Change the way 0 is assigned to tx_queue_len according to the original 
-logic.
+	if (!handle)
+		return 0;
 
-Signed-off-by: Martin Decky <martin@decky.cz>
-----
-diff -Naurp linux-2.6.30.orig/drivers/net/wireless/hostap/hostap_main.c linux-2.6.30/drivers/net/wireless/hostap/hostap_main.c
---- linux-2.6.30.orig/drivers/net/wireless/hostap/hostap_main.c	2009-06-10 05:05:27.000000000 +0200
-+++ linux-2.6.30/drivers/net/wireless/hostap/hostap_main.c	2009-09-08 11:11:23.892816045 +0200
-@@ -875,15 +875,16 @@ void hostap_setup_dev(struct net_device 
- 
- 	switch(type) {
- 	case HOSTAP_INTERFACE_AP:
-+		dev->tx_queue_len = 0;	/* use main radio device queue */
- 		dev->netdev_ops = &hostap_mgmt_netdev_ops;
- 		dev->type = ARPHRD_IEEE80211;
- 		dev->header_ops = &hostap_80211_ops;
- 		break;
- 	case HOSTAP_INTERFACE_MASTER:
--		dev->tx_queue_len = 0;	/* use main radio device queue */
- 		dev->netdev_ops = &hostap_master_ops;
- 		break;
- 	default:
-+		dev->tx_queue_len = 0;	/* use main radio device queue */
- 		dev->netdev_ops = &hostap_netdev_ops;
- 	}
- 
+(snip.)
+
+> diff --git a/drivers/pci/hotplug/pciehp_acpi.c b/drivers/pci/hotplug/pciehp_acpi.c
+> index 9604801..0c6aa99 100644
+> --- a/drivers/pci/hotplug/pciehp_acpi.c
+> +++ b/drivers/pci/hotplug/pciehp_acpi.c
+> @@ -47,7 +47,7 @@ int pciehp_acpi_slot_detection_check(struct pci_dev *dev)
+>  {
+>  	if (slot_detection_mode != PCIEHP_DETECT_ACPI)
+>  		return 0;
+> -	if (acpi_pci_detect_ejectable(dev->subordinate))
+> +	if (acpi_pci_detect_ejectable(dev->dev.archdata.acpi_handle))
+>  		return 0;
+
+How about:
+
+	handle = DEVICE_ACPI_HANDLE(&dev->dev);
+	if (acpi_pci_detect_ejectable(handle))
+		return 0;
+
+
+>  	return -ENODEV;
+>  }
+> @@ -94,7 +94,8 @@ static int __init dummy_probe(struct pcie_device *dev)
+>  			dup_slot_id++;
+>  	}
+>  	list_add_tail(&slot->slot_list, &dummy_slots);
+> -	if (!acpi_slot_detected && acpi_pci_detect_ejectable(pbus))
+> +	if (!acpi_slot_detected &&
+> +		acpi_pci_detect_ejectable(pbus->self->dev.archdata.acpi_handle))
+>  		acpi_slot_detected = 1;
+
+How about:
+
+	handle = DEVICE_ACPI_HANDLE(&pdev->dev);
+	if (!acpi_slot_detected && acpi_pci_detect_ejectable(handle))
+
+And the following line at the head of dummy_probe() seems no longer
+needed.
+
+	struct pci_bus *pbus = pdev->subordinate;
+
+Thanks,
+Kenji Kaneshige
+
+
+
