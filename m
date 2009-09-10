@@ -1,140 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754984AbZIJDVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZIJDWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754984AbZIJDVz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 23:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbZIJDVy
+	id S1755022AbZIJDWI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 23:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbZIJDWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 23:21:54 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62474 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752155AbZIJDVy convert rfc822-to-8bit (ORCPT
+	Wed, 9 Sep 2009 23:22:08 -0400
+Received: from ns1.primeinteractive.net ([195.95.205.253]:36683 "EHLO
+	mail.primeinteractive.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755010AbZIJDWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 23:21:54 -0400
-Message-ID: <4AA8706D.3050802@cn.fujitsu.com>
-Date: Thu, 10 Sep 2009 11:20:13 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Wed, 9 Sep 2009 23:22:06 -0400
+Message-ID: <4AA870CA.906@primeinteractive.net>
+Date: Thu, 10 Sep 2009 05:21:46 +0200
+From: Pavol Cvengros <pavol.cvengros@primeinteractive.net>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; en-US; rv:1.9.1.1) Gecko/20090715 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>, jens.axboe@oracle.com
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [RFC] IO scheduler based IO controller V9
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com>
-In-Reply-To: <20090909150537.GD8256@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Mingming <cmm@us.ibm.com>
+CC: Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext4+quota+nfs issue
+References: <4AA5E5F3.30309@primeinteractive.net>	 <4AA72C14.1020005@primeinteractive.net>	 <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>	 <4AA7C38E.8020306@redhat.com> <1252531929.19097.174.camel@mingming-laptop>
+In-Reply-To: <1252531929.19097.174.camel@mingming-laptop>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, Sep 09, 2009 at 03:38:25PM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->>> On Mon, Sep 07, 2009 at 03:40:53PM +0800, Gui Jianfeng wrote:
->>>> Hi Vivek,
->>>>
->>>> I happened to encount a bug when i test IO Controller V9.
->>>> When there are three tasks to run concurrently in three group,
->>>> that is, one is parent group, and other two tasks are running 
->>>> in two different child groups respectively to read or write 
->>>> files in some disk, say disk "hdb", The task may hang up, and 
->>>> other tasks which access into "hdb" will also hang up.
->>>>
->>>> The bug only happens when using AS io scheduler.
->>>> The following scirpt can reproduce this bug in my box.
->>>>
->>> Hi Gui,
+On 9. 9. 2009 23:32, Mingming wrote:
+> On Wed, 2009-09-09 at 10:02 -0500, Eric Sandeen wrote:
+>    
+>> Jiri Kosina wrote:
+>>      
+>>> [ adding relevant CCs ]
 >>>
->>> I tried reproducing this on my system and can't reproduce it. All the
->>> three processes get killed and system does not hang.
+>>> On Wed, 9 Sep 2009, Pavol Cvengros wrote:
 >>>
->>> Can you please dig deeper a bit into it. 
->>>
->>> - If whole system hangs or it is just IO to disk seems to be hung.
->>     Only when the task is trying do IO to disk it will hang up.
+>>>        
+>>>> Hi,
+>>>>
+>>>> can somebody who is aware of ext4 and quota have a look on this one?
+>>>>
+>>>>          
+>> This was also just reported at:
 >>
->>> - Does io scheduler switch on the device work
->>     yes, io scheduler can be switched, and the hung task will be resumed.
+>> https://bugzilla.redhat.com/show_bug.cgi?id=521914
 >>
->>> - If the system is not hung, can you capture the blktrace on the device.
->>>   Trace might give some idea, what's happening.
->> I run a "find" task to do some io on that disk, it seems that task hangs 
->> when it is issuing getdents() syscall.
->> kernel generates the following message:
+>>      
+> Checked the bugzilla, it seems the fs enabled quota, but no user quota
+> limit is specified. Is this the case with the ext4 quota+ nfs issue too?
+>
+> If no user quota is specified, then IS_NOQUOTA() should avoid doing
+> quota reservation/claim at all. Not sure what is missing... I will check
+> if I could reproduce this on local filesystem...
+>
+> Thanks,
+> Mingming
+>    
+yes, FS has quota just enabled and only initial quotacheck was done
+
+P.
+
+>> -Eric
 >>
->> INFO: task find:3260 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> find          D a1e95787  1912  3260   2897 0x00000004
->>  f6af2db8 00000096 f660075c a1e95787 00000032 f6600270 f6600508 c2037820
->>  00000000 c09e0820 f655f0c0 f6af2d8c fffebbf1 00000000 c0447323 f7152a1c
->>  0006a144 f7152a1c 0006a144 f6af2e04 f6af2db0 c04438df c2037820 c2037820
->> Call Trace:
->>  [<c0447323>] ? getnstimeofday+0x57/0xe0
->>  [<c04438df>] ? ktime_get_ts+0x4a/0x4e
->>  [<c068ab68>] io_schedule+0x47/0x79
->>  [<c04c12ee>] sync_buffer+0x36/0x3a
->>  [<c068ae14>] __wait_on_bit+0x36/0x5d
->>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
->>  [<c068ae93>] out_of_line_wait_on_bit+0x58/0x60
->>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
->>  [<c0440fa4>] ? wake_bit_function+0x0/0x43
->>  [<c04c1249>] __wait_on_buffer+0x19/0x1c
->>  [<f81e4186>] ext3_bread+0x5e/0x79 [ext3]
->>  [<f81e77a8>] htree_dirblock_to_tree+0x1f/0x120 [ext3]
->>  [<f81e7923>] ext3_htree_fill_tree+0x7a/0x1bb [ext3]
->>  [<c04a01f9>] ? kmem_cache_alloc+0x86/0xf3
->>  [<c044c428>] ? trace_hardirqs_on_caller+0x107/0x12f
->>  [<c044c45b>] ? trace_hardirqs_on+0xb/0xd
->>  [<f81e09e4>] ? ext3_readdir+0x9e/0x692 [ext3]
->>  [<f81e0b34>] ext3_readdir+0x1ee/0x692 [ext3]
->>  [<c04b1100>] ? filldir64+0x0/0xcd
->>  [<c068b86a>] ? mutex_lock_killable_nested+0x2b1/0x2c5
->>  [<c068b874>] ? mutex_lock_killable_nested+0x2bb/0x2c5
->>  [<c04b12db>] ? vfs_readdir+0x46/0x94
->>  [<c04b12fd>] vfs_readdir+0x68/0x94
->>  [<c04b1100>] ? filldir64+0x0/0xcd
->>  [<c04b1387>] sys_getdents64+0x5e/0x9f
->>  [<c04028b4>] sysenter_do_call+0x12/0x32
->> 1 lock held by find/3260:
->>  #0:  (&sb->s_type->i_mutex_key#7){+.+.+.}, at: [<c04b12db>] vfs_readdir+0x46/0x94
+>>      
+>>>> Thanks,
+>>>>
+>>>> P.
+>>>>
+>>>> On 8. 9. 2009 7:04, Pavol Cvengros wrote:
+>>>>          
+>>>>> Hello,
+>>>>>
+>>>>> recently we have build and started to use raid storage with formatted
+>>>>> capacity of 4.5T (ext4 formatted, default params).
+>>>>> FS has quota turned on and is exported via NFS to nodes.
+>>>>> If we turn qouta on on this FS and are trying to use it over NFS we get the
+>>>>> following:
+>>>>>
+>>>>> ------------[ cut here ]------------
+>>>>> WARNING: at fs/quota/dquot.c:964 dquot_claim_space+0x181/0x190()
+>>>>> Hardware name: S3210SH
+>>>>> Modules linked in: nfs fscache nfsd lockd auth_rpcgss exportfs sunrpc
+>>>>> coretemp hwmon ipmi_si ipmi_msghandler ehci_hcd sr_mod cdrom uhci_hcd floppy
+>>>>> usbcore i2c_i801 i2c_core processor 3w_9xxx button thermal
+>>>>> Pid: 268, comm: pdflush Tainted: G        W  2.6.30-gentoo-r3_host #1
+>>>>> Call Trace:
+>>>>>   [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+>>>>>   [<ffffffff80245c59>] ? warn_slowpath_common+0x89/0x100
+>>>>>   [<ffffffff803151e1>] ? dquot_claim_space+0x181/0x190
+>>>>>   [<ffffffff80367e83>] ? ext4_mb_mark_diskspace_used+0x423/0x440
+>>>>>   [<ffffffff8036c05f>] ? ext4_mb_new_blocks+0x2cf/0x460
+>>>>>   [<ffffffff80360a17>] ? ext4_ext_find_extent+0x307/0x330
+>>>>>   [<ffffffff80362508>] ? ext4_ext_get_blocks+0x578/0xfc0
+>>>>>   [<ffffffff8028e828>] ? __pagevec_free+0x48/0x70
+>>>>>   [<ffffffff803a1c65>] ? blk_rq_bio_prep+0x35/0x130
+>>>>>   [<ffffffff8034d310>] ? ext4_get_blocks_wrap+0x210/0x380
+>>>>>   [<ffffffff8034d8d8>] ? mpage_da_map_blocks+0xe8/0x750
+>>>>>   [<ffffffff80292cee>] ? pagevec_lookup_tag+0x2e/0x50
+>>>>>   [<ffffffff8029084c>] ? write_cache_pages+0x11c/0x400
+>>>>>   [<ffffffff8034e500>] ? __mpage_da_writepage+0x0/0x190
+>>>>>   [<ffffffff8034e269>] ? ext4_da_writepages+0x329/0x4b0
+>>>>>   [<ffffffff80290bd2>] ? do_writepages+0x32/0x70
+>>>>>   [<ffffffff802e4140>] ? __writeback_single_inode+0xb0/0x490
+>>>>>   [<ffffffff8023c753>] ? dequeue_entity+0x23/0x1c0
+>>>>>   [<ffffffff802e4b16>] ? generic_sync_sb_inodes+0x316/0x4f0
+>>>>>   [<ffffffff802e4f4e>] ? writeback_inodes+0x5e/0x110
+>>>>>   [<ffffffff80290e56>] ? wb_kupdate+0xc6/0x160
+>>>>>   [<ffffffff80292110>] ? pdflush+0x120/0x230
+>>>>>   [<ffffffff80290d90>] ? wb_kupdate+0x0/0x160
+>>>>>   [<ffffffff80291ff0>] ? pdflush+0x0/0x230
+>>>>>   [<ffffffff80261154>] ? kthread+0x64/0xc0
+>>>>>   [<ffffffff8020d13a>] ? child_rip+0xa/0x20
+>>>>>   [<ffffffff802610f0>] ? kthread+0x0/0xc0
+>>>>>   [<ffffffff8020d130>] ? child_rip+0x0/0x20
+>>>>> ---[ end trace cb54e6523e9ab60d ]---
+>>>>>
+>>>>> fstab entry:
+>>>>> /dev/sdb1              /mnt/storage    ext4
+>>>>> noatime,nodiratime,usrjquota=aquota.user,grpjquota=aquota.group,jqfmt=vfsv0
+>>>>>
+>>>>> qith quotaoff on tihs FS, warnings stop.
+>>>>>
+>>>>> Question is if it's safe to use quotas with this problem (warning) or not.
+>>>>> Can't afford data damage.
+>>>>>
+>>>>> Thanks,
+>>>>>
+>>>>> Pavol Cvengros
+>>>>>            
 >>
->> ext3 calls wait_on_buffer() to wait buffer, and schedule the task out in TASK_UNINTERRUPTIBLE
->> state, and I found this task will be resumed after a quite long period(more than 10 mins).
-> 
-> Thanks Gui. As Jens said, it does look like a case of missing queue
-> restart somewhere and now we are stuck, no requests are being dispatched
-> to the disk and queue is already unplugged.
-> 
-> Can you please also try capturing the trace of events at io scheduler
-> (blktrace) to see how did we get into that situation.
-
-  Ok, I'll try.
-
-> 
-> Are you using ide drivers and not libata? As jens said, I will try to make
-> use of ide drivers and see if I can reproduce it.
-
-  Hi Vivek, Jens,
-
-  yes, i used the old ide driver. So I switch to libata instead(deactivate the 
-  whole “ATA/ATAPI/MFM/RLL support”), the bug still exists and I can reproduce
-  it by that script.
-
-> 
-> Thanks
-> Vivek
-> 
-> 
-> 
-
--- 
-Regards
-Gui Jianfeng
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>      
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>    
 
