@@ -1,58 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZIJHsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZIJHtM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbZIJHsT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 03:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753926AbZIJHsS
+	id S1754619AbZIJHtM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 03:49:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752813AbZIJHtL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 03:48:18 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46906 "EHLO kernel.dk"
+	Thu, 10 Sep 2009 03:49:11 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33701 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751634AbZIJHsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 03:48:18 -0400
-Date: Thu, 10 Sep 2009 09:48:20 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ed Cashin <ecashin@coraid.com>
-Cc: alan@lxorguk.ukuu.org.uk, akpm@linux-foundation.org, apw@canonical.com,
-       bonbons@linux-vserver.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] aoe: end barrier bios with EOPNOTSUPP
-Message-ID: <20090910074820.GS18599@kernel.dk>
-References: <20090904183525.GB18599@kernel.dk> <f48e25c99e41e375f2ddd85989cd39e1@coraid.com> <20090905051735.GH18599@kernel.dk> <366469f19c41e0150028b886f6859019@coraid.com> <20090908193540.GB18599@kernel.dk> <60772f633c524ba873f569966fccd6ce@coraid.com> <20090909180804.3e62331a@lxorguk.ukuu.org.uk> <30b7855d211ab5b6bef6fe2cd9b76295@coraid.com> <20090909205835.GK18599@kernel.dk> <810bbe1723b0a205f9b5018a5ddaa722@coraid.com>
+	id S1751916AbZIJHtK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 03:49:10 -0400
+Date: Thu, 10 Sep 2009 09:49:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090910074902.GA10634@elte.hu>
+References: <1252423398.7746.97.camel@twins> <20090908203409.GJ18599@kernel.dk> <20090909061308.GA28109@elte.hu> <1252486344.28645.18.camel@marge.simson.net> <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop> <20090910065856.GL18599@kernel.dk> <20090910073317.GP18599@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <810bbe1723b0a205f9b5018a5ddaa722@coraid.com>
+In-Reply-To: <20090910073317.GP18599@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09 2009, Ed Cashin wrote:
-> On Wed Sep  9 16:59:30 EDT 2009, jens.axboe@oracle.com wrote:
-> > On Wed, Sep 09 2009, Ed Cashin wrote:
-> ...
-> > > To implement the barrier, [aoe] would stop generating new AoE write
-> > > commands, wait for AoE write responses for all the outstanding write
-> > > commands, issue the ATA cache flush command, wait for the response to
-> > > the flush, and then resume normal activity.
+
+* Jens Axboe <jens.axboe@oracle.com> wrote:
+
+> On Thu, Sep 10 2009, Jens Axboe wrote:
+> > On Thu, Sep 10 2009, Peter Zijlstra wrote:
+> > > On Wed, 2009-09-09 at 14:20 +0200, Jens Axboe wrote:
+> > > > 
+> > > > One thing I also noticed is that when I have logged in, I 
+> > > > run xmodmap manually to load some keymappings (I always tell 
+> > > > myself to add this to the log in scripts, but I 
+> > > > suspend/resume this laptop for weeks at the time and forget 
+> > > > before the next boot). With the stock kernel, xmodmap will 
+> > > > halt X updates and take forever to run. With BFS, it 
+> > > > returned instantly. As I would expect.
+> > > 
+> > > Can you provide a little more detail (I'm a xmodmap n00b), how does one
+> > > run xmodmap and maybe provide your xmodmap config?
 > > 
-> > That's how barriers work with sata to begin with, so I'd very much
-> > recommend that you do the same in aoe instead of just not supporting it.
+> > Will do, let me get the notebook and strace time it on both bfs and
+> > mainline.
 > 
-> This patch with EOPNOTSUPP just fixes the regression in 2.6.31-rc9.
+> Here's the result of running perf stat xmodmap .xmodmap-carl on 
+> the notebook. I have attached the .xmodmap-carl file, it's pretty 
+> simple. I have also attached the output of strace -o foo -f -tt 
+> xmodmap .xmodmap-carl when run on 2.6.31-rc9.
 > 
-> A patch adding support for barriers would be nice.  Since I have
-> limited time I tried to motivate that work by using the torture tests
-> that Chris Mason (I believe it was) posted a while ago, but I could
-> not get any problems to manifest using that torture test.
+> 2.6.31-rc9-bfs210
 > 
-> If I had a reproducable problem case that the barrier implementation
-> could fix, it would be very helpful.
+>  Performance counter stats for 'xmodmap .xmodmap-carl':
+> 
+>      153.994976  task-clock-msecs         #      0.990 CPUs   (scaled from 99.86%)
+>               0  context-switches         #      0.000 M/sec  (scaled from 99.86%)
+>               0  CPU-migrations           #      0.000 M/sec  (scaled from 99.86%)
+>             315  page-faults              #      0.002 M/sec  (scaled from 99.86%)
+>   <not counted>  cycles                  
+>   <not counted>  instructions            
+>   <not counted>  cache-references        
+>   <not counted>  cache-misses            
+> 
+>     0.155573406  seconds time elapsed
 
-Depending on timing and the other end, it may not be easy to reproduce.
-But the problem is indeed real, so I think you should just add the
-proper barrier implementation instead of spending too much time trying
-to create a reproducable problem. By the time you get there, you could
-have fixed it many times over :-)
+(Side question: what hardware is this - why are there no hw 
+counters? Could you post the /proc/cpuinfo?)
 
--- 
-Jens Axboe
+> 2.6.31-rc9
+> 
+>  Performance counter stats for 'xmodmap .xmodmap-carl':
+> 
+>        8.529265  task-clock-msecs         #      0.001 CPUs 
+>              23  context-switches         #      0.003 M/sec
+>               1  CPU-migrations           #      0.000 M/sec
+>             315  page-faults              #      0.037 M/sec
+>   <not counted>  cycles                  
+>   <not counted>  instructions            
+>   <not counted>  cache-references        
+>   <not counted>  cache-misses            
+> 
+>    11.804293482  seconds time elapsed
 
+Thanks - so we context-switch 23 times - possibly to Xorg. But 11 
+seconds is extremely long. Will try to reproduce it.
+
+	Ingo
