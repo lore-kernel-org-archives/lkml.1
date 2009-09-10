@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753494AbZIJTVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZIJTTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753494AbZIJTVE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZIJTVD
+	id S1753463AbZIJTTh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZIJTTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:21:03 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:46005 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753134AbZIJTVC (ORCPT
+	Thu, 10 Sep 2009 15:19:37 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48702 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753202AbZIJTTg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:21:02 -0400
-Message-ID: <4AA950C8.1080200@zytor.com>
-Date: Thu, 10 Sep 2009 12:17:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Thu, 10 Sep 2009 15:19:36 -0400
+Date: Thu, 10 Sep 2009 21:19:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Eric Miao <eric.y.miao@gmail.com>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
+Message-ID: <20090910191932.GA23721@elf.ucw.cz>
+References: <20090909075024.GA1400@ucw.cz> <f17812d70909090737n4315d0cbh82c0a63e9222fdb5@mail.gmail.com> <20090909182340.GA5235@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
- devices are requested
-References: <20090908144942.76ddf0e7@caramujo.chehab.org>	<4AA6DF50.3030603@zytor.com>	<20090908203323.486c129c@caramujo.chehab.org>	<4AA6F63F.7090009@zytor.com>	<20090908235441.04549a29@caramujo.chehab.org>	<4AA73309.8030302@zytor.com>	<20090910010512.60a1f523@caramujo.chehab.org>	<4AA89B02.1050909@zytor.com>	<20090910093301.4ccfd786@caramujo.chehab.org>	<20090910150716.66310f02@lxorguk.ukuu.org.uk>	<4AA92487.5080401@zytor.com> <20090910161215.5129bd71@caramujo.chehab.org>
-In-Reply-To: <20090910161215.5129bd71@caramujo.chehab.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090909182340.GA5235@n2100.arm.linux.org.uk>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/10/2009 12:12 PM, Mauro Carvalho Chehab wrote:
+On Wed 2009-09-09 19:23:40, Russell King - ARM Linux wrote:
+> On Wed, Sep 09, 2009 at 10:37:41PM +0800, Eric Miao wrote:
+> > On Wed, Sep 9, 2009 at 3:50 PM, Pavel Machek<pavel@ucw.cz> wrote:
+> > > Hi, Linus!
+> > >
+> > > Spitz resume was broken for year or likely two, and it would be very
+> > > nice to fix it for 2.6.31 release. One liner is below, and it really
+> > > can not harm. It already is in Eric's fix queue, so pulling that for
+> > > .31 should work, too.
+> > >
+> > 
+> > This should be sitting in rmk's git tree and I'm not sure if Russell
+> > has sent the pull request already.
 > 
-> +1. Reusing the namespace after tty[p-za-e][0-9a-f] doesn't seem to be good, IMHO.
-> 
+> It's just Pavel being his obnoxious impatient self...
 
-I think it's better to extend the strings with the current prefixes than
-to burn the virgin ttyf* prefix.
+Aha, Russell, being polite and helpful, as usual.
 
-> In the case of the BSD sockets, the patch is not just an userless fix. This is
-> interesting when some applications are ported from other Unix'es and still uses BSD
-> pty's, since several other Unix flavors were defining a higher namespace size.
-> 
-> For example, on zOS Unix, a pty device seems to allow up to 10.000 pty numbers (in the
-> specific case of zOS Unix, they seem to be defined as /dev/[pt]typ[0-9]...) as shown at:
-> 	www.redbooks.ibm.com/redbooks/pdfs/sg245228.pdf
-> 
-
-Yes, but you have to port the application *anyway* do deal with the
-namespace.  BSD tty allocation is done largely by each application,
-which makes it even worse.  Furthermore, there is the static allocation
-issue, so unless there is a concrete application which needs this *and*
-cannot be ported to Unix98 ptys (which is the Right Thing[TM] to do) I
-think Alan is right.
-
-	-hpa
+Only that, you know, you missed the deadline, so... perhaps I had
+reason to be impatient?
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
