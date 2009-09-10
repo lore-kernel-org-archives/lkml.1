@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZIJMjf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755608AbZIJMk7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbZIJMjf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 08:39:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755562AbZIJMje
+	id S1755608AbZIJMk7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 08:40:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZIJMk6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 08:39:34 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34936 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752950AbZIJMje (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 08:39:34 -0400
-Subject: Re: iwlagn: order 2 page allocation failures
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
-       Assaf Krauss <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Mohamed Abbas <mohamed.abbas@intel.com>
-In-Reply-To: <20090910123445.GC31153@csn.ul.ie>
-References: <200909060941.01810.elendil@planet.nl>
-	 <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie>
-	 <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie>
-	 <1252570722.4876.23.camel@penberg-laptop>
-	 <20090910123445.GC31153@csn.ul.ie>
-Date: Thu, 10 Sep 2009 15:39:36 +0300
-Message-Id: <1252586376.4876.29.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 10 Sep 2009 08:40:58 -0400
+Received: from cantor.suse.de ([195.135.220.2]:39466 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752797AbZIJMk6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 08:40:58 -0400
+Date: Thu, 10 Sep 2009 14:40:56 +0200
+From: Jan Kara <jack@suse.cz>
+To: Mingming <cmm@us.ibm.com>
+Cc: Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
+       linux-kernel@vger.kernel.org, Jan Kara <jack@suse.cz>,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext4+quota+nfs issue
+Message-ID: <20090910124056.GI607@duck.suse.cz>
+References: <4AA5E5F3.30309@primeinteractive.net> <4AA72C14.1020005@primeinteractive.net> <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz> <4AA7C38E.8020306@redhat.com> <1252531929.19097.174.camel@mingming-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252531929.19097.174.camel@mingming-laptop>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mel,
-
-On Thu, 2009-09-10 at 13:34 +0100, Mel Gorman wrote:
-> > That's because it's a large allocation that's passed directly to the
-> > page allocator. See kmalloc_large_node(), for example. 
+On Wed 09-09-09 14:32:09, Mingming wrote:
+> On Wed, 2009-09-09 at 10:02 -0500, Eric Sandeen wrote:
+> > Jiri Kosina wrote:
+> > > [ adding relevant CCs ]
+> > > 
+> > > On Wed, 9 Sep 2009, Pavol Cvengros wrote:
+> > > 
+> > >> Hi,
+> > >>
+> > >> can somebody who is aware of ext4 and quota have a look on this one?
+> > >>
+> > 
+> > This was also just reported at:
+> > 
+> > https://bugzilla.redhat.com/show_bug.cgi?id=521914
+> > 
 > 
-> Pants. Is there any chance that could be fixed so that allocation
-> failures within SLUB get consistently reported?
+> Checked the bugzilla, it seems the fs enabled quota, but no user quota
+> limit is specified. Is this the case with the ext4 quota+ nfs issue too?
+> 
+> If no user quota is specified, then IS_NOQUOTA() should avoid doing
+> quota reservation/claim at all. Not sure what is missing... I will check
+> if I could reproduce this on local filesystem...
+  Mingming, IS_NOQUOTA() check is true only for quota-files. For all other
+files it is false since we have to know how much space each user uses even
+if it does not have a quota limit set (for the case that someone sets the
+limit in future).
 
-Did you have something specific in mind? I am not sure it's worth it,
-really.
-
-The kmalloc_large() function is a static inline in
-include/linux/slub_def.h that gets inlined nicely to a get_order() +
-__get_free_pages() pair in the caller for production configs. I'm not
-sure what we should print either. There's no known "object size" or
-"buffer size" nor do we any of the variable order things or backing
-struct kmem_cache_nodes.
-
-			Pekka
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
