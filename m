@@ -1,61 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751948AbZIJPhB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751353AbZIJPl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751948AbZIJPhB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 11:37:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751494AbZIJPhA
+	id S1751353AbZIJPl1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 11:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750917AbZIJPl0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 11:37:00 -0400
-Received: from mtagate3.de.ibm.com ([195.212.17.163]:59861 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751302AbZIJPhA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 11:37:00 -0400
-Date: Thu, 10 Sep 2009 17:37:00 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: "Johan van Baarlen" <vanbaajf@xs4all.nl>
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Michael Abbott" <michael@araneidae.co.uk>,
-       "Jan Engelhardt" <jengelh@medozas.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Johan van Baarlen" <jf@vanbaarlen.demon.nl>
-Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
-Message-ID: <20090910173700.5e5fc3f8@skybase>
-In-Reply-To: <2f08a48107b19501ffa2c1570483544f.squirrel@webmail.xs4all.nl>
-References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr>
-	<Pine.LNX.4.64.0908141315310.1670@venus.araneidae.co.uk>
-	<20090908225858.04d56dce.akpm@linux-foundation.org>
-	<2f08a48107b19501ffa2c1570483544f.squirrel@webmail.xs4all.nl>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Sep 2009 11:41:26 -0400
+Received: from mga03.intel.com ([143.182.124.21]:50061 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750842AbZIJPlZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 11:41:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
+   d="scan'208";a="186200973"
+Date: Thu, 10 Sep 2009 23:41:16 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Chris Mason <chris.mason@oracle.com>, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Artem Bityutskiy <dedekind1@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+Subject: Re: [RFC][PATCH 7/7] writeback: balance_dirty_pages() shall write
+	more than dirtied pages
+Message-ID: <20090910154116.GA10856@localhost>
+References: <20090909145141.293229693@intel.com> <20090909150601.159061863@intel.com> <20090909154413.GC7949@duck.suse.cz> <20090910014201.GB10957@localhost> <20090910125742.GH5106@think> <20090910132154.GA6446@localhost> <1252594564.7205.36.camel@laptop> <20090910151458.GA10767@localhost> <1252596698.7205.59.camel@laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252596698.7205.59.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Sep 2009 15:02:53 +0200
-"Johan van Baarlen" <vanbaajf@xs4all.nl> wrote:
-
-> with this patch the idle-time in /proc/uptime makes a lot more sense - but
-> it runs about a factor of 4 too fast (I'm thinking this is not coincidence
-> - I've got 4 cpu's in this box, and simply adding 4 idle timers means you
-> are going 4 times too fast).
+On Thu, Sep 10, 2009 at 11:31:38PM +0800, Peter Zijlstra wrote:
+> On Thu, 2009-09-10 at 23:14 +0800, Wu Fengguang wrote:
+> > On Thu, Sep 10, 2009 at 10:56:04PM +0800, Peter Zijlstra wrote:
+> > > On Thu, 2009-09-10 at 21:21 +0800, Wu Fengguang wrote:
+> > > > On Thu, Sep 10, 2009 at 08:57:42PM +0800, Chris Mason wrote:
+> > > > > On Thu, Sep 10, 2009 at 09:42:01AM +0800, Wu Fengguang wrote:
+> > > > > > On Wed, Sep 09, 2009 at 11:44:13PM +0800, Jan Kara wrote:
+> > > > > > > On Wed 09-09-09 22:51:48, Wu Fengguang wrote:
+> > > > > > > > Some filesystem may choose to write much more than ratelimit_pages
+> > > > > > > > before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
+> > > > > > > > determine number to write based on real number of dirtied pages.
+> > > > > > > > 
+> > > > > > > > The increased write_chunk may make the dirtier more bumpy.  This is
+> > > > > > > > filesystem writers' duty not to dirty too much at a time without
+> > > > > > > > checking the ratelimit.
+> > > > > > >   I don't get this. balance_dirty_pages_ratelimited_nr() is called when we
+> > > > > > > dirty the page, not when we write it out. So a problem would only happen if
+> > > > > > > filesystem dirties pages by set_page_dirty() and won't call
+> > > > > > > balance_dirty_pages_ratelimited_nr(). But e.g. generic_perform_write()
+> > > > > > > and do_wp_page() takes care of that. So where's the problem?
+> > > > > > 
+> > > > > > It seems that btrfs_file_write() is writing in chunks of up to 1024-pages
+> > > > > > (1024 is the computed nrptrs value in a 32bit kernel). And it calls
+> > > > > > balance_dirty_pages_ratelimited_nr() each time it dirtied such a chunk.
+> > > > > 
+> > > > > I can easily change this to call more often, but we do always call
+> > > > > balance_dirty_pages to reflect how much ram we've really sent down.
+> > > > 
+> > > > Btrfs is doing OK. 2MB/4MB looks like reasonable chunk sizes. The
+> > > > need-change part is balance_dirty_pages_ratelimited_nr(), hence this
+> > > > patch :)
+> > > 
+> > > I'm not getting it, it calls set_page_dirty() for each page, right? and
+> > > then it calls into balance_dirty_pages_ratelimited_nr(), that sounds
+> > > right. What is the problem with that?
+> > 
+> > It looks like btrfs_file_write() eventually calls
+> > __set_page_dirty_buffers() which in turn won't call
+> > balance_dirty_pages*(). This is why do_wp_page() calls
+> > set_page_dirty_balance() to do balance_dirty_pages*().
+> > 
+> > So btrfs_file_write() explicitly calls
+> > balance_dirty_pages_ratelimited_nr() to get throttled.
 > 
-> Can we just add idletime /= (i+1) after the foreachcpu loop, or am I
-> thinking too easy?
+> Right, so what is wrong with than, and how does this patch fix that?
+> 
+> [ the only thing you have to be careful with is that you don't
+> excessively grow the error bound on the dirty limit ]
 
-With "/= (i+1)" you mean dividing the result by the number of cpus, no?
-That doesn't work because of that fact that the value used to contain
-the accumulated idle time of a uni-processor system and cpu hotplug.
-The only way to get meaningful numbers is to make the value contain the
-sum of the idle over all possible cpus. The user space tool that reads
-the value needs to take the number of currently active cpus into
-account.
+Then we could form a loop:
 
--- 
-blue skies,
-   Martin.
+        btrfs_file_write():     dirty 1024 pages
+        balance_dirty_pages():  write up to 12 pages (= ratelimit_pages * 1.5)
 
-"Reality continues to ruin my life." - Calvin.
+in which the writeback rate cannot keep up with dirty rate,
+and the dirty pages go all the way beyond dirty_thresh.
 
+Sorry for writing such a vague changelog!
+
+Thanks,
+Fengguang
