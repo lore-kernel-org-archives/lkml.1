@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754330AbZIJVOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbZIJVP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754330AbZIJVOV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 17:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754009AbZIJVOU
+	id S1754505AbZIJVP6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 17:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754483AbZIJVP6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 17:14:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40649 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753669AbZIJVOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 17:14:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [Bug #14141] order 2 page allocation failures
-Date: Thu, 10 Sep 2009 23:14:59 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Frans Pop <elendil@planet.nl>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       reinette chatre <reinette.chatre@intel.com>
-References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <Vm51Upp4EV.A.RWB.7eBpKB@chimera> <20090909152206.GJ24614@csn.ul.ie>
-In-Reply-To: <20090909152206.GJ24614@csn.ul.ie>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+	Thu, 10 Sep 2009 17:15:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59208 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754482AbZIJVP5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 17:15:57 -0400
+Subject: Re: [PATCH 0/4] RFC: jump label - (tracepoint optimizations)
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Jason Baron <jbaron@redhat.com>, linux-kernel@vger.kernel.org,
+       roland@redhat.com, rth@redhat.com, mingo@elte.hu
+In-Reply-To: <20090907170619.GB6968@Krystal>
+References: <cover.1252007851.git.jbaron@redhat.com>
+	 <20090907154824.GA1085@Krystal>  <20090907170619.GB6968@Krystal>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 10 Sep 2009 17:15:59 -0400
+Message-Id: <1252617359.18996.36.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909102315.00052.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 September 2009, Mel Gorman wrote:
-> On Sun, Sep 06, 2009 at 07:24:58PM +0200, Rafael J. Wysocki wrote:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
+On Mon, 2009-09-07 at 13:06 -0400, Mathieu Desnoyers wrote:
+> * Mathieu Desnoyers (mathieu.desnoyers@polymtl.ca) wrote:
+> > * Jason Baron (jbaron@redhat.com) wrote:
+> [...]
+> > > Solution:
+> > > 
+> > > In discussing this problem with Roland McGrath and Richard Henderson, we came 
+> > > up with a new 'asm goto' statement that allows branching to a label. Thus, this
+> > > patch set introdues a 'STATIC_JUMP_IF()' macro as follows:
+> > > 
+> > > #ifdef HAVE_STATIC_JUMP
+> > > 
+> > > #define STATIC_JUMP_IF(tag, label, cond)                               \
+> > >        asm goto ("1:"   /* 5-byte insn */                              \
+> > >           P6_NOP5                                                      \
 > > 
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.30.  Please verify if it still should be listed and let me know
-> > (either way).
-> > 
-> > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14141
-> > Subject		: order 2 page allocation failures
-> > Submitter	: Frans Pop <elendil@planet.nl>
-> > Date		: 2009-09-06 7:40 (1 days old)
-> > References	: http://marc.info/?l=linux-kernel&m=125222287419691&w=4
-> > Handled-By	: Pekka Enberg <penberg@cs.helsinki.fi>
+> > Hrm, be careful there. P6_NOP5 is not always a single instruction. If
+> > you are preempted in the middle of it, bad things could happen, even
+> > with stop_machine, if you iret in the middle the of the new jump
+> > instruction. It could cause an illegal instruction fault. You should use
+> > an atomic nop5. I think the function tracer already does, since I
+> > told Steven about this exact issue.
 > > 
 > 
-> AFAIK, this is still a problem. Have requested more information in
-> relation to the bug. 
+> Just to clarify this statement:
 > 
-> As an aside, the subject seems to have lost the iwlagn aspect of this
-> bug.
+> P6_NOP5 happens to be an atomic nop, but nothing states this requirement
+> in arch/x86/include/asm/nops.h. Other 5-bytes nops are defined as
+> multiple instructions (e.g. 2 bytes + 3 bytes nops). So I recommend to
+> create a family of ATOMIC_P6_NOP5 (and other ATOMIC_*_NOP5 defines) to
+> document this atomicity requirement.
 
-Fixed.  I also moved the bug to "drivers/network-wireless" as it seems to
-be specific to iwlagn.
+Although I agree that we probably should place a comment in that file, I
+highly doubt anyone will change that. But who knows?
 
-Thanks,
-Rafael
+> 
+> Ftrace could probably handle this more gracefully than it does at the
+> moment. It basically assumes that P6_NOP5 is atomic, and falls back on a
+> 5-bytes jmp if it detects that P6_NOP5 faults.
+> 
+> That's coherent with the
+> "TODO: check the cpuid to determine the best nop."
+> 
+> present in x86 ftrace.c.
+> 
+> So, at the very least, if we rely on nops.h having a single-instruction
+> P6_NOP5 5 bytes nop, a comment to that effect should be added to nops.h.
+
+I might as well go add one.
+
+-- Steve
+
+
