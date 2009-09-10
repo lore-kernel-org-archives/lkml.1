@@ -1,129 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZIJTFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbZIJTIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbZIJTFh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZIJTFg
+	id S1753245AbZIJTIt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZIJTIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:05:36 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37495 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753316AbZIJTFf (ORCPT
+	Thu, 10 Sep 2009 15:08:49 -0400
+Received: from e24smtp01.br.ibm.com ([32.104.18.85]:59422 "EHLO
+	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbZIJTIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:05:35 -0400
-Date: Thu, 10 Sep 2009 15:05:37 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: iceberg <strakh@ispras.ru>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
-Message-ID: <20090910190537.GA10904@goodmis.org>
-References: <200909101837.34472.strakh@ispras.ru>
- <20090910093003.194c300f@bike.lwn.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090910093003.194c300f@bike.lwn.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Thu, 10 Sep 2009 15:08:48 -0400
+Subject: Re: [PATCH 5/6] tpm_tis: convert from pnp_driver to acpi_driver
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: Andy Isaacson <adi@hexapodia.org>
+Cc: len.brown@intel.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
+       tpmdd-devel@lists.sourceforge.net, dds@google.com,
+       Mimi Zohar <zohar@linux.vnet.ibm.com>,
+       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com
+In-Reply-To: <20090720182732.GL6370@hexapodia.org>
+References: <1246410255-6839-1-git-send-email-adi@vmware.com>
+	 <1246410255-6839-6-git-send-email-adi@vmware.com>
+	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
+	 <1246455920.9140.28.camel@blackbox>  <20090720182732.GL6370@hexapodia.org>
+Content-Type: text/plain
+Date: Thu, 10 Sep 2009 16:08:34 -0300
+Message-Id: <1252609714.4837.87.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 09:30:03AM -0600, Jonathan Corbet wrote:
-> On Thu, 10 Sep 2009 18:37:34 +0000
-> iceberg <strakh@ispras.ru> wrote:
+On Mon, 2009-07-20 at 11:27 -0700, Andy Isaacson wrote:
+> On Wed, Jul 01, 2009 at 10:45:19AM -0300, Rajiv Andrade wrote:
+> > On Wed, 2009-07-01 at 11:01 +0100, Alan Cox wrote:
+> > > On Tue, 30 Jun 2009 18:04:14 -0700
+> > > Andy Isaacson <adi@vmware.com> wrote:
+> > > 
+> > > > Not all TIS-compatible TPM chips have a _HID method in their ACPI entry,
+> > > > and the TPM spec says that the _CID method should be used to enumerate
+> > > > the TPM chip.
+> > > 
+> > > There are a number of systems with TPMs (older laptops) that don't work
+> > > very well if you enable ACPI.
+> > > 
+> > > This is therefore a regression - NAK
+> > > 
+> > > Probably the best thing to do is to provide both ACPI and PnP
+> > > registration according to what is configured into the kernel. (And I
+> > > guess spot duplicates although the resource should be busy anyway)
+> > > --
+> > David sent this earlier when I said that PNP didn't work with this chip:
+> >         
+> > <quote>
+> > The problem here is acpi pnp but the fix is really simple. The current
+> > pnpacpi/core.c routine that looks for isapnp devices enumerated in acpi
+> > enforces that the acpi hid be a valid isapnp id (the formats are
+> > slightly different). But that's broken: it shoudl be enforcing that
+> > either the acpi hid or any acpi cids be valid isapnp ids. It's a
+> > one-line change to do this, see patch 2. 
+> > 
+> > commit 7a553b4e7439ad0733da7da8663d32aa4865aa9e
+> > Author: David Smith <dds@google.com>
+> > Date:   Tue Apr 28 18:52:02 2009 +0900
+> > 
+> >     Update ACPI PNP to support devices with EISA PNP CIDs but non-PNP HIDs
+> >     
+> >     Signed-off-by: David Smith <dds@google.com>
+> > 
+> > diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
+> > index 9496494..8bfddfb 100644
+> > --- a/drivers/pnp/pnpacpi/core.c
+> > +++ b/drivers/pnp/pnpacpi/core.c
+> > @@ -159,8 +159,8 @@ static int __init pnpacpi_add_device(struct acpi_device *device)
+> >  	 * driver should not be loaded.
+> >  	 */
+> >  	status = acpi_get_handle(device->handle, "_CRS", &temp);
+> > -	if (ACPI_FAILURE(status) || !ispnpidacpi(acpi_device_hid(device)) ||
+> > -	    is_exclusive_device(device) || (!device->status.present))
+> > +	if (ACPI_FAILURE(status) || is_exclusive_device(device) ||
+> > +            (!device->status.present))
+> >  		return 0;
+> >  
+> >  	dev = pnp_alloc_dev(&pnpacpi_protocol, num, acpi_device_hid(device));
+> > 
+> > </quote>
 > 
-> > In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe: 
-> > Mutex must be unlocked before exit
-> > 	1. On paths starting with mutex lock in line 1912, then continuing in lines: 
-> > 1929, 1936 (goto unreg) and 1940 (goto iounmap) . 
-> > 	2. On path starting in line 1971 mutex lock, and then continuing in line 1978 
-> > (goto out_smbus) mutex.
+> Len,
 > 
-> That's a definite bug, but I hate all those unlocks in the error
-> branches.  As it happens, we don't really need the mutex until the
-> device has been exposed to the rest of the kernel, so I propose the
-> following as a better patch.
+> Is this an acceptable change to pnpacpi?  It resolves an issue with
+> tpm_tis but I'm concerned that it might have far-reaching impact.
 > 
-> Thanks for pointing this out,
-
-Actually, for something like this, I would put the mutex_unlock in the error path,
-and just add a local variable to tell that it is locked.
-
-	int is_locked = 0;
-
-[...]
-
-	mutex_lock(&cam->s_mutex);
-	is_locked = 1;
-
-[...]
-
-	mutex_unlock(&cam->s_mutex);
-	is_locked = 0;
-
-[...]
-
-out_iounmap:
-	pci_iounmap(pdev, cam->regs);
-	if (is_locked)
-		mutex_unlock(&cam->s_mutex);
-out_free:
-
-[...]
-
-Or something similar. I hate the multiple unlocks too.
-
--- Steve
-
+> I've pasted in the problematic DSDT (manually fixing up whitespace to
+> make it more readable), and then a normal TPM simply has a _HID which
+> is matched by a pnp_device_id table in the driver
+> (drivers/char/tpm/tpm_tis.c).
 > 
-> jon
+> T400:
+>         Device (TPM)
+>         {
+>             Method (_HID, 0, NotSerialized)
+>             {
+>                 TPHY (0x00)
+>                 If (LEqual (TPMV, 0x01)) { Return (0x0201D824) } 
+>                 If (LEqual (TPMV, 0x02)) { Return (0x0435CF4D) } 
+>                 If (LEqual (TPMV, 0x03)) { Return (0x02016D08) } 
+>                 If (LEqual (TPMV, 0x04)) { Return (0x01016D08) } 
+>                 If (LOr (LEqual (TPMV, 0x05), LEqual (TPMV, 0x06))) {
+> 			Return (0x0010A35C)
+> 		} 
+>                 If (LEqual (TPMV, 0x08)) { Return (0x00128D06) } 
+>                 If (LEqual (TPMV, 0x09)) { Return ("INTC0102") } 
+>                 Return (0x310CD041)
+>             }
 > 
-> ---
-> Fix a mutex leak
+>             Name (_CID, EisaId ("PNP0C31"))
 > 
-> Certain error exits from cafe_pci_probe() can leave the camera mutex
-> locked.  For much of the time, we didn't need the mutex anyway; take it out
-> and add an unlock in the path where it is needed.
+> standard TPM:
+>         Device (TPM)
+>         {
+>             Name (_HID, EisaId ("BCM0102"))
+>             Name (_CID, EisaId ("PNP0C31"))
 > 
-> Reported-by: Alexander Strakh <strakh@ispras.ru>
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> ---
->  drivers/media/video/cafe_ccic.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
+> The full thread is at
+> http://lkml.org/lkml/2009/7/1/265
 > 
-> diff --git a/drivers/media/video/cafe_ccic.c b/drivers/media/video/cafe_ccic.c
-> index c4d181d..0f62b5e 100644
-> --- a/drivers/media/video/cafe_ccic.c
-> +++ b/drivers/media/video/cafe_ccic.c
-> @@ -1909,7 +1909,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
->  		goto out_free;
->  
->  	mutex_init(&cam->s_mutex);
-> -	mutex_lock(&cam->s_mutex);
->  	spin_lock_init(&cam->dev_lock);
->  	cam->state = S_NOTREADY;
->  	cafe_set_config_needed(cam, 1);
-> @@ -1949,7 +1948,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
->  	 * because the sensor could attach in this call chain, leading to
->  	 * unsightly deadlocks.
->  	 */
-> -	mutex_unlock(&cam->s_mutex);  /* attach can deadlock */
->  	ret = cafe_smbus_setup(cam);
->  	if (ret)
->  		goto out_freeirq;
-> @@ -1991,6 +1989,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
->  	return 0;
->  
->  out_smbus:
-> +	mutex_unlock(&cam->s_mutex);
->  	cafe_smbus_shutdown(cam);
->  out_freeirq:
->  	cafe_ctlr_power_down(cam);
-> -- 
-> 1.6.2.5
+> Thanks for any insight.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+
+We've already waited too much on this, is it acceptable to make the
+workaround depend on (and only on) the module parameter you've set in
+patch 6/6? Therefore no need to check the vendor ID.
+
+<snip>
++MODULE_PARM_DESC(itpm, "Force iTPM workarounds (found on some Lenovo laptops)"); 
+</snip>
+
+It already mentions _Force_, which in many cases maps to "it's all your
+responsibility"...
+
+And yes, still without PNP, but at least, working.
+
+Rajiv
+
+
+
