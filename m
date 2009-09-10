@@ -1,51 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755595AbZIJKcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755405AbZIJKhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755595AbZIJKcB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 06:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZIJKcA
+	id S1755405AbZIJKhW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 06:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753162AbZIJKhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 06:32:00 -0400
-Received: from tundra.namei.org ([65.99.196.166]:57882 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755536AbZIJKb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 06:31:58 -0400
-Date: Thu, 10 Sep 2009 20:31:56 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Greg KH <gregkh@suse.de>
-cc: Stephen Smalley <sds@tycho.nsa.gov>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>, casey@schaufler-ca.com,
-       ebiederm@xmission.com, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org
-Subject: Re: [PATCH 3/3] sysfs: Add labeling support for sysfs
-In-Reply-To: <20090910030121.GA32239@suse.de>
-Message-ID: <alpine.LRH.2.00.0909102031430.3312@tundra.namei.org>
-References: <1252002358-6612-1-git-send-email-dpquigl@tycho.nsa.gov> <1252002358-6612-4-git-send-email-dpquigl@tycho.nsa.gov> <alpine.LRH.2.00.0909071147100.2538@tundra.namei.org> <1252520737.13634.833.camel@moss-pluto.epoch.ncsc.mil>
- <alpine.LRH.2.00.0909101040460.30636@tundra.namei.org> <20090910030121.GA32239@suse.de>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 10 Sep 2009 06:37:21 -0400
+Received: from mail-yx0-f175.google.com ([209.85.210.175]:52844 "EHLO
+	mail-yx0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036AbZIJKhV convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 06:37:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=P0rzi2r3SzqEMPmDcawm7ZllepJVBEDY+Q+21fQJuZeFixkrUCUJOaYJ+e9wf9MZTx
+         +H695++Pa/H82rsq8EKDSq8Wtw9uOHG5gJ9aFLsR35VlZSb1yR4lmeqwfF7ThZqU+I8R
+         qB3D4iCY2J8BcVDoWrLs7DsBsHmrExkkP84Hs=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <alpine.DEB.2.00.0909101228170.9074@aurora.sdinet.de>
+References: <241b8f7b0909100310t267b82cq976929d2f7b7734@mail.gmail.com>
+	 <alpine.DEB.2.00.0909101228170.9074@aurora.sdinet.de>
+Date: Thu, 10 Sep 2009 16:07:24 +0530
+Message-ID: <241b8f7b0909100337sc47f6a6yf1488d1bd7f17a00@mail.gmail.com>
+Subject: Re: disable : Ctrl -C in the Kernel
+From: Prabhu Chawandi <prabhu.chavandi@gmail.com>
+To: Sven-Haegar Koch <haegar@sdinet.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009, Greg KH wrote:
+Thansk,
 
-> On Thu, Sep 10, 2009 at 10:40:59AM +1000, James Morris wrote:
-> > Thanks, all applied to
-> > git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
-> 
-> Um, wait, what about the sysfs maintainer's review?  :)
+Do u know which is enabling it.
 
-Sorry, I thought it had been reviewed.   Want me to drop it?
+Coz, after adding the line told by u, I am not able to  disable, means
+somewhere after this place its being enabled.
 
-> 
-> I also want to see Casey agree with this as well.
-> 
-> thanks,
-> 
-> greg k-h
-> 
 
--- 
-James Morris
-<jmorris@namei.org>
+
+On Thu, Sep 10, 2009 at 3:59 PM, Sven-Haegar Koch <haegar@sdinet.de> wrote:
+> On Thu, 10 Sep 2009, Prabhu Chawandi wrote:
+>
+>>   I am running Some application at the end of rcS script file.
+>>
+>> I need to disable Ctrl-c, i.e.  application should not kill after Ctrl-c.
+>>
+>> and in some case I want Ctrl-C to work normally.
+>>
+>> I am taking care in application about catching signal using signal(),
+>> even then I think there is something from kernel side.
+>>
+>> Can any one help ?????/
+>
+> We are using the following command here in an rc script early at boot to
+> disable Ctrl-C:
+>
+>        stty intr ^@ quit ^@ susp ^@
+>
+> c'ya
+> sven
+>
+> --
+> The lights are fading out, once more...
+>
