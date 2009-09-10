@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753432AbZIJHkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753005AbZIJHn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753432AbZIJHkx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 03:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZIJHkw
+	id S1753005AbZIJHn2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 03:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752643AbZIJHn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 03:40:52 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:57303 "EHLO smtps.tip.net.au"
+	Thu, 10 Sep 2009 03:43:27 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42425 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751536AbZIJHkw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 03:40:52 -0400
-Date: Thu, 10 Sep 2009 17:40:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ed Cashin <ecashin@coraid.com>
-Subject: Re: linux-next: manual merge of the block tree with the  tree
-Message-Id: <20090910174048.58653ad0.sfr@canb.auug.org.au>
-In-Reply-To: <20090910072407.GO18599@kernel.dk>
-References: <20090910144801.2b604ee7.sfr@canb.auug.org.au>
-	<20090910072407.GO18599@kernel.dk>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP"
+	id S1752037AbZIJHn1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 03:43:27 -0400
+Date: Thu, 10 Sep 2009 09:43:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>
+Subject: [updated] BFS vs. mainline scheduler benchmarks and measurements
+Message-ID: <20090910074323.GA21751@elte.hu>
+References: <20090906205952.GA6516@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090906205952.GA6516@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Jens,
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-On Thu, 10 Sep 2009 09:24:07 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> Thanks, I'll update my for-2.6.32 branch today and let that propagate
-> into for-next to resolve this.
+>   OLTP performance (postgresql + sysbench)
+>      http://redhat.com/~mingo/misc/bfs-vs-tip-oltp.jpg
 
-Thanks.
+To everyone who might care about this, i've updated the sysbench 
+results to latest -tip:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+    http://redhat.com/~mingo/misc/bfs-vs-tip-oltp-v2.jpg
 
---Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP
-Content-Type: application/pgp-signature
+This double checks the effects of the various interactivity fixlets 
+in the scheduler tree (whose interactivity effects 
+mentioned/documented in the various threads on lkml) in the 
+throughput space too and they also improved sysbench performance.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Con, i'd also like to thank you for raising general interest in 
+scheduler latencies once more by posting the BFS patch. It gave us 
+more bugreports upstream and gave us desktop users willing to test 
+patches which in turn helps us improve the code. When users choose 
+to suffer in silence that is never helpful.
 
-iEYEARECAAYFAkqorYAACgkQjjKRsyhoI8zKrACgk4U277tvTYR03467cVkFUh+a
-4MkAoJ0uEJ+5iUyaWjRhZFL9Qu+eebDi
-=iXt4
------END PGP SIGNATURE-----
+BFS isnt particularly strong in this graph - from having looked at 
+the workload under BFS my impression was that this is primarily due 
+to you having cut out much of the sched-domains SMP load-balancer 
+code. BFS 'insta-balances' very agressively, which hurts cache 
+affine workloads rather visibly.
 
---Signature=_Thu__10_Sep_2009_17_40_48_+1000_QOorCcRwgUsGp+zP--
+You might want to have a look at that design detail if you care - 
+load-balancing is in significant parts orthogonal to the basic 
+design of a fair scheduler.
+
+For example we kept much of the existing load-balancer when we went 
+to CFS in v2.6.23 - the fairness engine and the load-balancer are in 
+large parts independent units of code and can be improved/tweaked 
+separately.
+
+There's interactions, but the concepts are largely separate.
+
+Thanks,
+
+	Ingo
