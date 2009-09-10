@@ -1,88 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753518AbZIJTTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752487AbZIKMom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753518AbZIJTTn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753492AbZIJTTm
+	id S1752487AbZIKMom (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 08:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZIKMol
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:19:42 -0400
-Received: from THUNK.ORG ([69.25.196.29]:42570 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753006AbZIJTTj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:19:39 -0400
-Date: Thu, 10 Sep 2009 15:19:35 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Rees <drees76@gmail.com>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: EXT4-fs error - ext4_mb_generate_buddy
-Message-ID: <20090910191935.GD23700@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	David Rees <drees76@gmail.com>, linux-ext4@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-References: <72dbd3150909101156qa2c4e3dnfef02d509f63330f@mail.gmail.com>
+	Fri, 11 Sep 2009 08:44:41 -0400
+Received: from relay2.sgi.com ([192.48.179.30]:45462 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750714AbZIKMok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 08:44:40 -0400
+Date: Thu, 10 Sep 2009 14:20:00 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Add memory mapped RTC driver for UV
+Message-ID: <20090910192000.GA8351@sgi.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <72dbd3150909101156qa2c4e3dnfef02d509f63330f@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 11:56:42AM -0700, David Rees wrote:
-> Running ext4 on Fedora 10, kernel 2.6.29.6-93.fc10.x86_64.  Partition
-> in question is an 8 disk software RAID10 with mostly SATA disks and
-> one IDE disk.  We've never seen any hardware or filesystem corruption
-> issues on this machine in the past, though the RAID10 setup is new -
-> was put into service the same time we migrated the partition from ext3
-> to ext4 (fresh filesystem created and data copied over).
-> 
-> Earlier today, we saw this message in the logs:
-> 
-> EXT4-fs error (device md0): ext4_mb_generate_buddy: EXT4-fs: group
-> 586: 19635 blocks in bitmap, 19636 in gd
-> 
-> It looks rather ominous and we will be scheduling a reboot to force a
-> fsck as well as to upgrade to kernel-2.6.29.6-99.fc10.x86_64 (which
-> doesn't appear to have any ext4 related changes in it).  Looking in
-> the archives, I'm not quite sure what to make of the message, but it
-> does seem to indicate that we may have filesystem corruption.  Any
-> suggestions?
+This driver memory maps the UV Hub RTC.
 
-We need to fix up this message so it's more understandable.  What this
-means is that when the ext4 block allocator loaded block group #586
-block allocation bitmap, it found that there were 19,635 free blocks
-in the block group, but the block group descriptors had on record that
-there were 19,636 free blocks.  If this is the only file system
-corruption, it's harmless.  For example, it could be caused by a bit
-flip such that block that is not in use was actually marked as being
-in use, which is the harmless direction --- a bit flip in the opposite
-direction, where an in-use block is marked as free could cause data
-corruption.
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-Ext4 has more sanity checks to catch file system corruptions, compared
-to ext3, and this is one such example.  So this doesn't necessarily
-mean that ext4 is less reliable, assuming that the cause of the file
-system corruption was caused by cosmic rays, or some kind of hardware
-hiccup.  Of course, it is possible that it might be caused by some
-kind of software bug, too.  If you can reliably reproduce it, and
-there are no indications of hardware problems (no errors in the system
-log, nothing reported by smartctl), we definitely want to know about
-it.  I can say that it seems to be relatively rare and it's not
-something that's shown up in any of my QA testing.  On the other hand,
-I personally don't not to run my tests on big RAID arrays, since I
-don't have access to such fun toys, and sometimes race conditions will
-only show up on that kind of hardware.  Other ext4 developers, such as
-Eric Sandeen at Red Hat, and some testers at IBM, do have access to
-such big storage hardware, and they are running QA tests as well; as
-far as I know they haven't see any evidence of this kind of failure.
+---
 
-If you can characterize the application workload running on your
-system if you can get this to fail repeatedly, that would be most
-useful.
+ drivers/char/Kconfig      |    8 +
+ drivers/char/Makefile     |    1 
+ drivers/char/uv_mmtimer.c |  214 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 223 insertions(+)
 
-Thanks, regards,
-
-						- Ted
+Index: linux/drivers/char/Kconfig
+===================================================================
+--- linux.orig/drivers/char/Kconfig	2009-09-10 12:38:30.000000000 -0500
++++ linux/drivers/char/Kconfig	2009-09-10 12:40:12.000000000 -0500
+@@ -1087,6 +1087,14 @@ config MMTIMER
+ 	  The mmtimer device allows direct userspace access to the
+ 	  Altix system timer.
+ 
++config UV_MMTIMER
++	tristate "UV_MMTIMER Memory mapped RTC for SGI UV"
++	depends on X86_UV
++	default m
++	help
++	  The uv_mmtimer device allows direct userspace access to the
++	  UV system timer.
++
+ source "drivers/char/tpm/Kconfig"
+ 
+ config TELCLOCK
+Index: linux/drivers/char/Makefile
+===================================================================
+--- linux.orig/drivers/char/Makefile	2009-09-10 12:38:30.000000000 -0500
++++ linux/drivers/char/Makefile	2009-09-10 12:40:12.000000000 -0500
+@@ -58,6 +58,7 @@ obj-$(CONFIG_RAW_DRIVER)	+= raw.o
+ obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
+ obj-$(CONFIG_MSPEC)		+= mspec.o
+ obj-$(CONFIG_MMTIMER)		+= mmtimer.o
++obj-$(CONFIG_UV_MMTIMER)	+= uv_mmtimer.o
+ obj-$(CONFIG_VIOTAPE)		+= viotape.o
+ obj-$(CONFIG_HVCS)		+= hvcs.o
+ obj-$(CONFIG_IBM_BSR)		+= bsr.o
+Index: linux/drivers/char/uv_mmtimer.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/drivers/char/uv_mmtimer.c	2009-09-10 14:09:35.000000000 -0500
+@@ -0,0 +1,214 @@
++/*
++ * Timer device implementation for SGI UV platform.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (c) 2009 Silicon Graphics, Inc.  All rights reserved.
++ *
++ */
++
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/ioctl.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/mm.h>
++#include <linux/fs.h>
++#include <linux/mmtimer.h>
++#include <linux/miscdevice.h>
++#include <linux/posix-timers.h>
++#include <linux/interrupt.h>
++#include <linux/time.h>
++#include <linux/math64.h>
++#include <linux/smp_lock.h>
++
++#include <asm/genapic.h>
++#include <asm/uv/uv_hub.h>
++#include <asm/uv/bios.h>
++#include <asm/uv/uv.h>
++
++MODULE_AUTHOR("Dimitri Sivanich <sivanich@sgi.com>");
++MODULE_DESCRIPTION("SGI UV Memory Mapped RTC Timer");
++MODULE_LICENSE("GPL");
++
++/* name of the device, usually in /dev */
++#define UV_MMTIMER_NAME "mmtimer"
++#define UV_MMTIMER_DESC "SGI UV Memory Mapped RTC Timer"
++#define UV_MMTIMER_VERSION "1.0"
++
++static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
++						unsigned long arg);
++static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma);
++
++/*
++ * Period in femtoseconds (10^-15 s)
++ */
++static unsigned long uv_mmtimer_femtoperiod;
++
++static const struct file_operations uv_mmtimer_fops = {
++	.owner = THIS_MODULE,
++	.mmap =	uv_mmtimer_mmap,
++	.unlocked_ioctl = uv_mmtimer_ioctl,
++};
++
++/**
++ * uv_mmtimer_ioctl - ioctl interface for /dev/uv_mmtimer
++ * @file: file structure for the device
++ * @cmd: command to execute
++ * @arg: optional argument to command
++ *
++ * Executes the command specified by @cmd.  Returns 0 for success, < 0 for
++ * failure.
++ *
++ * Valid commands:
++ *
++ * %MMTIMER_GETOFFSET - Should return the offset (relative to the start
++ * of the page where the registers are mapped) for the counter in question.
++ *
++ * %MMTIMER_GETRES - Returns the resolution of the clock in femto (10^-15)
++ * seconds
++ *
++ * %MMTIMER_GETFREQ - Copies the frequency of the clock in Hz to the address
++ * specified by @arg
++ *
++ * %MMTIMER_GETBITS - Returns the number of bits in the clock's counter
++ *
++ * %MMTIMER_MMAPAVAIL - Returns 1 if registers can be mmap'd into userspace
++ *
++ * %MMTIMER_GETCOUNTER - Gets the current value in the counter and places it
++ * in the address specified by @arg.
++ */
++static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
++						unsigned long arg)
++{
++	int ret = 0;
++
++	switch (cmd) {
++	case MMTIMER_GETOFFSET:	/* offset of the counter */
++		/*
++		 * UV RTC register is on it's own page
++		 */
++		if (PAGE_SIZE <= (1 << 16))
++			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
++				/ 8;
++		else
++			ret = -ENOSYS;
++		break;
++
++	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
++		if (copy_to_user((unsigned long __user *)arg,
++				&uv_mmtimer_femtoperiod, sizeof(unsigned long)))
++			ret = -EFAULT;
++		break;
++
++	case MMTIMER_GETFREQ: /* frequency in Hz */
++		if (copy_to_user((unsigned long __user *)arg,
++				&sn_rtc_cycles_per_second,
++				sizeof(unsigned long)))
++			ret = -EFAULT;
++		break;
++
++	case MMTIMER_GETBITS: /* number of bits in the clock */
++		ret = hweight64(UVH_RTC_REAL_TIME_CLOCK_MASK);
++		break;
++
++	case MMTIMER_MMAPAVAIL: /* can we mmap the clock into userspace? */
++		ret = (PAGE_SIZE <= (1 << 16)) ? 1 : 0;
++		break;
++
++	case MMTIMER_GETCOUNTER:
++		if (copy_to_user((unsigned long __user *)arg,
++				(unsigned long *)uv_local_mmr_address(UVH_RTC),
++				sizeof(unsigned long)))
++			ret = -EFAULT;
++		break;
++	default:
++		ret = -ENOTTY;
++		break;
++	}
++	return ret;
++}
++
++/**
++ * uv_mmtimer_mmap - maps the clock's registers into userspace
++ * @file: file structure for the device
++ * @vma: VMA to map the registers into
++ *
++ * Calls remap_pfn_range() to map the clock's registers into
++ * the calling process' address space.
++ */
++static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	unsigned long uv_mmtimer_addr;
++
++	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
++		return -EINVAL;
++
++	if (vma->vm_flags & VM_WRITE)
++		return -EPERM;
++
++	if (PAGE_SIZE > (1 << 16))
++		return -ENOSYS;
++
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++
++	uv_mmtimer_addr = UV_LOCAL_MMR_BASE | UVH_RTC;
++	uv_mmtimer_addr &= ~(PAGE_SIZE - 1);
++	uv_mmtimer_addr &= 0xfffffffffffffffUL;
++
++	if (remap_pfn_range(vma, vma->vm_start, uv_mmtimer_addr >> PAGE_SHIFT,
++					PAGE_SIZE, vma->vm_page_prot)) {
++		printk(KERN_ERR "remap_pfn_range failed in uv_mmtimer_mmap\n");
++		return -EAGAIN;
++	}
++
++	return 0;
++}
++
++static struct miscdevice uv_mmtimer_miscdev = {
++	MISC_DYNAMIC_MINOR,
++	UV_MMTIMER_NAME,
++	&uv_mmtimer_fops
++};
++
++
++/**
++ * uv_mmtimer_init - device initialization routine
++ *
++ * Does initial setup for the uv_mmtimer device.
++ */
++static int __init uv_mmtimer_init(void)
++{
++	if (!is_uv_system())
++		return 0;
++
++	/*
++	 * Sanity check the cycles/sec variable
++	 */
++	if (sn_rtc_cycles_per_second < 100000) {
++		printk(KERN_ERR "%s: unable to determine clock frequency\n",
++		       UV_MMTIMER_NAME);
++		return -1;
++	}
++
++	uv_mmtimer_femtoperiod = ((unsigned long)1E15 +
++				sn_rtc_cycles_per_second / 2) /
++				sn_rtc_cycles_per_second;
++
++	if (misc_register(&uv_mmtimer_miscdev)) {
++		printk(KERN_ERR "%s: failed to register device\n",
++		       UV_MMTIMER_NAME);
++		return -1;
++	}
++
++	printk(KERN_INFO "%s: v%s, %ld MHz\n", UV_MMTIMER_DESC,
++		UV_MMTIMER_VERSION,
++		sn_rtc_cycles_per_second/(unsigned long)1E6);
++
++	return 0;
++}
++
++module_init(uv_mmtimer_init);
