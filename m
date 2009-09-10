@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754822AbZIJB0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZIJBhY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754822AbZIJB0e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 21:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZIJB0d
+	id S1754844AbZIJBhY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 21:37:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754050AbZIJBhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 21:26:33 -0400
-Received: from mga14.intel.com ([143.182.124.37]:29069 "EHLO mga14.intel.com"
+	Wed, 9 Sep 2009 21:37:23 -0400
+Received: from mga11.intel.com ([192.55.52.93]:52363 "EHLO mga11.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753883AbZIJB0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 21:26:32 -0400
+	id S1753882AbZIJBhW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 21:37:22 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,271,1249282800"; 
-   d="scan'208";a="185959812"
-Date: Thu, 10 Sep 2009 09:26:24 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
-       Chris Mason <chris.mason@oracle.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>, "jack@suse.cz" <jack@suse.cz>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 2/7] writeback: fix queue_io() ordering
-Message-ID: <20090910012624.GA10957@localhost>
-References: <20090909145141.293229693@intel.com> <20090909150600.451373732@intel.com> <20090909155330.GE7949@duck.suse.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090909155330.GE7949@duck.suse.cz>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-IronPort-AV: E=Sophos;i="4.44,361,1249282800"; 
+   d="scan'208";a="492075264"
+Subject: Re: RFC: Light sensors, unifying current options?
+From: Zhang Rui <rui.zhang@intel.com>
+To: Jonathan Cameron <jic23@cam.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>, Jean Delvare <khali@linux-fr.org>,
+       "alan@linux.intel.com" <alan@linux.intel.com>,
+       "lenb@kernel.org" <lenb@kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>,
+       "Cory T. Tusar" <ctusar@videon-central.com>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+In-Reply-To: <4AA79144.8060104@cam.ac.uk>
+References: <4A9FC9D7.20000@cam.ac.uk> <1252308744.3483.414.camel@rzhang-dt>
+	 <4AA4F194.1070507@cam.ac.uk> <1252467684.3483.446.camel@rzhang-dt>
+	 <4AA79144.8060104@cam.ac.uk>
+Content-Type: text/plain
+Date: Thu, 10 Sep 2009 09:34:09 +0800
+Message-Id: <1252546449.3483.476.camel@rzhang-dt>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Sep 09, 2009 at 11:53:30PM +0800, Jan Kara wrote:
-> On Wed 09-09-09 22:51:43, Wu Fengguang wrote:
-> > This was not a bug, since b_io is empty for kupdate writeback.
-> > The next patch will do requeue_io() for non-kupdate writeback,
-> > so let's fix it.
->   But doesn't this patch also need your "anti-starvation" patch?
+On Wed, 2009-09-09 at 19:28 +0800, Jonathan Cameron wrote:
+> Zhang Rui wrote:
+> > On Mon, 2009-09-07 at 19:42 +0800, Jonathan Cameron wrote:
+> >> Zhang Rui wrote:
 
-Honza, can you show me that patch?
+> >
+> >> Maybe similar to hwmon approach allowing for multiple readings of a given
+> >> type?
+> >>
+> >> illumiance[n]
+> >> illuminmance_type[n]
+> >
+> > what's the value in illuminance_type, infrared/visible/ultraviolet?
+> Probably a mask allowing for a given sensor to cover several of these.
+> Hence if you have an infrared and an visible + infrared, userspace can
+> pull the visible out.  Or we could do that separation in kernel, so
+> in this case export
+> 
+> visible, visible+infrared and infrared.
+> 
+> Perhaps we might do it via sysfs naming instead.
+> 
+> illuminance[n] - defined to be visible (which is what term means anyway)
+> 
+> infrared[n] - hmm.. will be in different units to illuminance - perhaps we leave
+> these raw with suitable documentation?
+> 
+> illuminance_and_infrared[n]
+> 
+what's the unit of this?
+what does the value of this file mean?
+I think we should make sure that there are more sensors need this and
+the same "visible + infrared" reading on different sensors stands for
+the same ambient light environment.
+Or else we should convert it to something generic. what do you think?
 
-> Looking into the code, we put inode to b_more_io when nr_to_write
-> drops to zero and this way we'd just start writing it again
-> in the next round...
+>   If they are capable of
+> exporting other things all well and good.  The naming can be decided as and
+> when people post drivers with new functionality.
+> 
 
-I'm confused. It's OK to start it in next round. Starvation can
-occur if we start it immediately in the next writeback_inodes()
-invocation. How can that happen with this patch?
+> The other obvious question is whether it makes sense to cache values from sensors?
+> (as per many hwmon drivers)  These things are pretty slow, so there is no point in
+> taking a new reading unless there has been sufficient time for it to update.
+> Still this is again a documentation issue rather than core code, as it would be
+> down to the individual drivers.
+> 
 
-Thanks,
-Fengguang
+I think this depends and it's the individual drivers responsibility to
+keep these values valid.
 
-> 							Honza
-> > 
-> > CC: Dave Chinner <david@fromorbit.com>
-> > Cc: Martin Bligh <mbligh@google.com>
-> > Cc: Michael Rubin <mrubin@google.com>
-> > Cc: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Fengguang Wu <wfg@mail.ustc.edu.cn>
-> > ---
-> >  fs/fs-writeback.c |    7 +++++--
-> >  1 file changed, 5 insertions(+), 2 deletions(-)
-> > 
-> > --- linux.orig/fs/fs-writeback.c	2009-09-09 21:41:14.000000000 +0800
-> > +++ linux/fs/fs-writeback.c	2009-09-09 21:45:15.000000000 +0800
-> > @@ -313,11 +313,14 @@ static void move_expired_inodes(struct l
-> >  }
-> >  
-> >  /*
-> > - * Queue all expired dirty inodes for io, eldest first.
-> > + * Queue all expired dirty inodes for io, eldest first:
-> > + * (newly dirtied) => b_dirty inodes
-> > + *                 => b_more_io inodes
-> > + *                 => remaining inodes in b_io => (dequeue for sync)
-> >   */
-> >  static void queue_io(struct bdi_writeback *wb, unsigned long *older_than_this)
-> >  {
-> > -	list_splice_init(&wb->b_more_io, wb->b_io.prev);
-> > +	list_splice_init(&wb->b_more_io, &wb->b_io);
-> >  	move_expired_inodes(&wb->b_dirty, &wb->b_io, older_than_this);
-> >  }
-> >  
-> > 
-> > -- 
-> > 
-> -- 
-> Jan Kara <jack@suse.cz>
-> SUSE Labs, CR
+For example, ACPI ALS can get a notification "whenever the lux reading
+changes more than 10% (from the last reading that resulted in a
+notification)". So it can use cache values because they're refreshed
+from time to time.
+
+But maybe there are some other sensors that don't have this asynchronous
+notification so that the cached values don't have a chance to get
+updated.
+then we need to read the sensor every time the sysfs I/F is poked.
+
+thanks,
+rui
+
+
