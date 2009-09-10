@@ -1,149 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbZIJK3w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZIJKaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbZIJK3w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 06:29:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbZIJK3u
+	id S1755546AbZIJKaE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 06:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZIJKaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 06:29:50 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:30692 "EHLO mx1.redhat.com"
+	Thu, 10 Sep 2009 06:30:00 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:61813 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755470AbZIJK3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 06:29:48 -0400
+	id S1755497AbZIJK34 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 06:29:56 -0400
 From: Steven Whitehouse <swhiteho@redhat.com>
 To: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-Cc: Steven Whitehouse <swhiteho@redhat.com>,
-       Bob Peterson <rpeterso@redhat.com>
-Subject: [PATCH 06/15] GFS2: Add a document explaining GFS2's uevents
-Date: Thu, 10 Sep 2009 12:27:58 +0100
-Message-Id: <1252582087-10007-7-git-send-email-swhiteho@redhat.com>
-In-Reply-To: <1252582087-10007-6-git-send-email-swhiteho@redhat.com>
+Cc: Wengang Wang <wen.gang.wang@oracle.com>,
+       Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 07/15] GFS2: free disk inode which is deleted by remote node -V2
+Date: Thu, 10 Sep 2009 12:27:59 +0100
+Message-Id: <1252582087-10007-8-git-send-email-swhiteho@redhat.com>
+In-Reply-To: <1252582087-10007-7-git-send-email-swhiteho@redhat.com>
 References: <1252582087-10007-1-git-send-email-swhiteho@redhat.com>
  <1252582087-10007-2-git-send-email-swhiteho@redhat.com>
  <1252582087-10007-3-git-send-email-swhiteho@redhat.com>
  <1252582087-10007-4-git-send-email-swhiteho@redhat.com>
  <1252582087-10007-5-git-send-email-swhiteho@redhat.com>
  <1252582087-10007-6-git-send-email-swhiteho@redhat.com>
+ <1252582087-10007-7-git-send-email-swhiteho@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will be essential reading for anybody who wants to
-understand how GFS2 interacts with the userland gfs_controld,
-and the details of recovery.
+From: Wengang Wang <wen.gang.wang@oracle.com>
 
+this patch is for the same problem that Benjamin Marzinski fixes at commit
+b94a170e96dc416828af9d350ae2e34b70ae7347
+
+quotation of the original problem:
+
+---cut here---
+When a file is deleted from a gfs2 filesystem on one node, a dcache
+entry for it may still exist on other nodes in the cluster. If this
+happens, gfs2 will be unable to free this file on disk. Because of this,
+it's possible to have a gfs2 filesystem with no files on it and no free
+space. With this patch, when a node receives a callback notifying it
+that the file is being deleted on another node, it schedules a new
+workqueue thread to remove the file's dcache entry.
+---end cut---
+
+after applying Benjamin's patch, I think there is still a case in which the disk
+inode remains even when "no space" is hit. the case is that when running
+d_prune_aliases() against the inode, there are one or more dentries(aliases)
+which have reference count number > 0. in this case the dentries won't be pruned.
+and even later, the reference count becomes to 0, the dentries can still be
+cached in memory. unfortunately, no callback come again, things come back to
+the state before the callback runs. thus the on disk inode remains there until
+in memoryinode is removed for some other reason(shrinking inode cache or unmount
+the volume..).
+
+this patch is to remove those dentries when their reference count becomes to 0 and
+the inode is deleted by remote node. for implementation, gfs2_dentry_delete() is
+added as dentry_operations.d_delete. the function returns true when the inode is
+deleted by remote node. in dput(), gfs2_dentry_delete() is called and since it
+returns true, the dentry is unhashed from dcache and then removed. when all dentries
+are removed, the in memory inode get removed so that the on disk inode is freed.
+
+Signed-off-by: Wengang Wang <wen.gang.wang@oracle.com>
 Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
-Signed-off-by: Bob Peterson <rpeterso@redhat.com>
 ---
- Documentation/filesystems/gfs2-uevents.txt |  100 ++++++++++++++++++++++++++++
- 1 files changed, 100 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/filesystems/gfs2-uevents.txt
+ fs/gfs2/dentry.c |   18 ++++++++++++++++++
+ 1 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/filesystems/gfs2-uevents.txt b/Documentation/filesystems/gfs2-uevents.txt
-new file mode 100644
-index 0000000..fd966dc
---- /dev/null
-+++ b/Documentation/filesystems/gfs2-uevents.txt
-@@ -0,0 +1,100 @@
-+                              uevents and GFS2
-+                             ==================
+diff --git a/fs/gfs2/dentry.c b/fs/gfs2/dentry.c
+index 022c66c..91bedda 100644
+--- a/fs/gfs2/dentry.c
++++ b/fs/gfs2/dentry.c
+@@ -107,8 +107,26 @@ static int gfs2_dhash(struct dentry *dentry, struct qstr *str)
+ 	return 0;
+ }
+ 
++static int gfs2_dentry_delete(struct dentry *dentry)
++{
++	struct gfs2_inode *ginode;
 +
-+During the lifetime of a GFS2 mount, a number of uevents are generated.
-+This document explains what the events are and what they are used
-+for (by gfs_controld in gfs2-utils).
++	if (!dentry->d_inode)
++		return 0;
 +
-+A list of GFS2 uevents
-+-----------------------
++	ginode = GFS2_I(dentry->d_inode);
++	if (!ginode->i_iopen_gh.gh_gl)
++		return 0;
 +
-+1. ADD
++	if (test_bit(GLF_DEMOTE, &ginode->i_iopen_gh.gh_gl->gl_flags))
++		return 1;
 +
-+The ADD event occurs at mount time. It will always be the first
-+uevent generated by the newly created filesystem. If the mount
-+is successful, an ONLINE uevent will follow.  If it is not successful
-+then a REMOVE uevent will follow.
++	return 0;
++}
 +
-+The ADD uevent has two environment variables: SPECTATOR=[0|1]
-+and RDONLY=[0|1] that specify the spectator status (a read-only mount
-+with no journal assigned), and read-only (with journal assigned) status
-+of the filesystem respectively.
-+
-+2. ONLINE
-+
-+The ONLINE uevent is generated after a successful mount or remount. It
-+has the same environment variables as the ADD uevent. The ONLINE
-+uevent, along with the two environment variables for spectator and
-+RDONLY are a relatively recent addition (2.6.32-rc+) and will not
-+be generated by older kernels.
-+
-+3. CHANGE
-+
-+The CHANGE uevent is used in two places. One is when reporting the
-+successful mount of the filesystem by the first node (FIRSTMOUNT=Done).
-+This is used as a signal by gfs_controld that it is then ok for other
-+nodes in the cluster to mount the filesystem.
-+
-+The other CHANGE uevent is used to inform of the completion
-+of journal recovery for one of the filesystems journals. It has
-+two environment variables, JID= which specifies the journal id which
-+has just been recovered, and RECOVERY=[Done|Failed] to indicate the
-+success (or otherwise) of the operation. These uevents are generated
-+for every journal recovered, whether it is during the initial mount
-+process or as the result of gfs_controld requesting a specific journal
-+recovery via the /sys/fs/gfs2/<fsname>/lock_module/recovery file.
-+
-+Because the CHANGE uevent was used (in early versions of gfs_controld)
-+without checking the environment variables to discover the state, we
-+cannot add any more functions to it without running the risk of
-+someone using an older version of the user tools and breaking their
-+cluster. For this reason the ONLINE uevent was used when adding a new
-+uevent for a successful mount or remount.
-+
-+4. OFFLINE
-+
-+The OFFLINE uevent is only generated due to filesystem errors and is used
-+as part of the "withdraw" mechanism. Currently this doesn't give any
-+information about what the error is, which is something that needs to
-+be fixed.
-+
-+5. REMOVE
-+
-+The REMOVE uevent is generated at the end of an unsuccessful mount
-+or at the end of a umount of the filesystem. All REMOVE uevents will
-+have been preceeded by at least an ADD uevent for the same fileystem,
-+and unlike the other uevents is generated automatically by the kernel's
-+kobject subsystem.
-+
-+
-+Information common to all GFS2 uevents (uevent environment variables)
-+----------------------------------------------------------------------
-+
-+1. LOCKTABLE=
-+
-+The LOCKTABLE is a string, as supplied on the mount command
-+line (locktable=) or via fstab. It is used as a filesystem label
-+as well as providing the information for a lock_dlm mount to be
-+able to join the cluster.
-+
-+2. LOCKPROTO=
-+
-+The LOCKPROTO is a string, and its value depends on what is set
-+on the mount command line, or via fstab. It will be either
-+lock_nolock or lock_dlm. In the future other lock managers
-+may be supported.
-+
-+3. JOURNALID=
-+
-+If a journal is in use by the filesystem (journals are not
-+assigned for spectator mounts) then this will give the
-+numeric journal id in all GFS2 uevents.
-+
-+4. UUID=
-+
-+With recent versions of gfs2-utils, mkfs.gfs2 writes a UUID
-+into the filesystem superblock. If it exists, this will
-+be included in every uevent relating to the filesystem.
-+
-+
-+
+ const struct dentry_operations gfs2_dops = {
+ 	.d_revalidate = gfs2_drevalidate,
+ 	.d_hash = gfs2_dhash,
++	.d_delete = gfs2_dentry_delete,
+ };
+ 
 -- 
 1.6.2.5
 
