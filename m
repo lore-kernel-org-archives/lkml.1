@@ -1,149 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753245AbZIJTIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbZIJTMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753245AbZIJTIt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZIJTIt
+	id S1753066AbZIJTMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752414AbZIJTMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:08:49 -0400
-Received: from e24smtp01.br.ibm.com ([32.104.18.85]:59422 "EHLO
-	e24smtp01.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751845AbZIJTIs (ORCPT
+	Thu, 10 Sep 2009 15:12:52 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35419 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751096AbZIJTMv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:08:48 -0400
-Subject: Re: [PATCH 5/6] tpm_tis: convert from pnp_driver to acpi_driver
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Andy Isaacson <adi@hexapodia.org>
-Cc: len.brown@intel.com, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andy Isaacson <adi@vmware.com>, linux-kernel@vger.kernel.org,
-       tpmdd-devel@lists.sourceforge.net, dds@google.com,
-       Mimi Zohar <zohar@linux.vnet.ibm.com>,
-       Shahbaz Khan <shaz.linux@gmail.com>, seiji.munetoh@gmail.com
-In-Reply-To: <20090720182732.GL6370@hexapodia.org>
-References: <1246410255-6839-1-git-send-email-adi@vmware.com>
-	 <1246410255-6839-6-git-send-email-adi@vmware.com>
-	 <20090701110136.576a1d14@lxorguk.ukuu.org.uk>
-	 <1246455920.9140.28.camel@blackbox>  <20090720182732.GL6370@hexapodia.org>
-Content-Type: text/plain
-Date: Thu, 10 Sep 2009 16:08:34 -0300
-Message-Id: <1252609714.4837.87.camel@blackbox>
+	Thu, 10 Sep 2009 15:12:51 -0400
+Date: Thu, 10 Sep 2009 16:12:15 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alan Cox <alan@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
+ devices are requested
+Message-ID: <20090910161215.5129bd71@caramujo.chehab.org>
+In-Reply-To: <4AA92487.5080401@zytor.com>
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>
+	<4AA6DF50.3030603@zytor.com>
+	<20090908203323.486c129c@caramujo.chehab.org>
+	<4AA6F63F.7090009@zytor.com>
+	<20090908235441.04549a29@caramujo.chehab.org>
+	<4AA73309.8030302@zytor.com>
+	<20090910010512.60a1f523@caramujo.chehab.org>
+	<4AA89B02.1050909@zytor.com>
+	<20090910093301.4ccfd786@caramujo.chehab.org>
+	<20090910150716.66310f02@lxorguk.ukuu.org.uk>
+	<4AA92487.5080401@zytor.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-07-20 at 11:27 -0700, Andy Isaacson wrote:
-> On Wed, Jul 01, 2009 at 10:45:19AM -0300, Rajiv Andrade wrote:
-> > On Wed, 2009-07-01 at 11:01 +0100, Alan Cox wrote:
-> > > On Tue, 30 Jun 2009 18:04:14 -0700
-> > > Andy Isaacson <adi@vmware.com> wrote:
-> > > 
-> > > > Not all TIS-compatible TPM chips have a _HID method in their ACPI entry,
-> > > > and the TPM spec says that the _CID method should be used to enumerate
-> > > > the TPM chip.
-> > > 
-> > > There are a number of systems with TPMs (older laptops) that don't work
-> > > very well if you enable ACPI.
-> > > 
-> > > This is therefore a regression - NAK
-> > > 
-> > > Probably the best thing to do is to provide both ACPI and PnP
-> > > registration according to what is configured into the kernel. (And I
-> > > guess spot duplicates although the resource should be busy anyway)
-> > > --
-> > David sent this earlier when I said that PNP didn't work with this chip:
-> >         
-> > <quote>
-> > The problem here is acpi pnp but the fix is really simple. The current
-> > pnpacpi/core.c routine that looks for isapnp devices enumerated in acpi
-> > enforces that the acpi hid be a valid isapnp id (the formats are
-> > slightly different). But that's broken: it shoudl be enforcing that
-> > either the acpi hid or any acpi cids be valid isapnp ids. It's a
-> > one-line change to do this, see patch 2. 
+Em Thu, 10 Sep 2009 09:08:39 -0700
+"H. Peter Anvin" <hpa@zytor.com> escreveu:
+
+> On 09/10/2009 07:07 AM, Alan Cox wrote:
 > > 
-> > commit 7a553b4e7439ad0733da7da8663d32aa4865aa9e
-> > Author: David Smith <dds@google.com>
-> > Date:   Tue Apr 28 18:52:02 2009 +0900
+> > This is a real step back.
 > > 
-> >     Update ACPI PNP to support devices with EISA PNP CIDs but non-PNP HIDs
-> >     
-> >     Signed-off-by: David Smith <dds@google.com>
+> > It now wastes all the tty[e-p]%d namespace. ttyp%d for > 255 at least
+> > only uses one for this irrelevant area.
 > > 
-> > diff --git a/drivers/pnp/pnpacpi/core.c b/drivers/pnp/pnpacpi/core.c
-> > index 9496494..8bfddfb 100644
-> > --- a/drivers/pnp/pnpacpi/core.c
-> > +++ b/drivers/pnp/pnpacpi/core.c
-> > @@ -159,8 +159,8 @@ static int __init pnpacpi_add_device(struct acpi_device *device)
-> >  	 * driver should not be loaded.
-> >  	 */
-> >  	status = acpi_get_handle(device->handle, "_CRS", &temp);
-> > -	if (ACPI_FAILURE(status) || !ispnpidacpi(acpi_device_hid(device)) ||
-> > -	    is_exclusive_device(device) || (!device->status.present))
-> > +	if (ACPI_FAILURE(status) || is_exclusive_device(device) ||
-> > +            (!device->status.present))
-> >  		return 0;
-> >  
-> >  	dev = pnp_alloc_dev(&pnpacpi_protocol, num, acpi_device_hid(device));
-> > 
-> > </quote>
 > 
-> Len,
-> 
-> Is this an acceptable change to pnpacpi?  It resolves an issue with
-> tpm_tis but I'm concerned that it might have far-reaching impact.
-> 
-> I've pasted in the problematic DSDT (manually fixing up whitespace to
-> make it more readable), and then a normal TPM simply has a _HID which
-> is matched by a pnp_device_id table in the driver
-> (drivers/char/tpm/tpm_tis.c).
-> 
-> T400:
->         Device (TPM)
->         {
->             Method (_HID, 0, NotSerialized)
->             {
->                 TPHY (0x00)
->                 If (LEqual (TPMV, 0x01)) { Return (0x0201D824) } 
->                 If (LEqual (TPMV, 0x02)) { Return (0x0435CF4D) } 
->                 If (LEqual (TPMV, 0x03)) { Return (0x02016D08) } 
->                 If (LEqual (TPMV, 0x04)) { Return (0x01016D08) } 
->                 If (LOr (LEqual (TPMV, 0x05), LEqual (TPMV, 0x06))) {
-> 			Return (0x0010A35C)
-> 		} 
->                 If (LEqual (TPMV, 0x08)) { Return (0x00128D06) } 
->                 If (LEqual (TPMV, 0x09)) { Return ("INTC0102") } 
->                 Return (0x310CD041)
->             }
-> 
->             Name (_CID, EisaId ("PNP0C31"))
-> 
-> standard TPM:
->         Device (TPM)
->         {
->             Name (_HID, EisaId ("BCM0102"))
->             Name (_CID, EisaId ("PNP0C31"))
-> 
-> The full thread is at
-> http://lkml.org/lkml/2009/7/1/265
-> 
-> Thanks for any insight.
-> 
+> Honestly, I *really* don't think the [pt]ty[p-za-e]* namespace should be
+> used for another purpose, at least until BSD ptys are killed dead, so in
+> that sense expanding tty[p-za-e][0-9a-f] to tty[p-za-e][0-9a-f]+ is
+> hardly significant in the namespace pollution sense.  Can you imagine
+> ttyp1 being a BSD pty and ttyp10 being a completely different kind of
+> device?
 
-We've already waited too much on this, is it acceptable to make the
-workaround depend on (and only on) the module parameter you've set in
-patch 6/6? Therefore no need to check the vendor ID.
++1. Reusing the namespace after tty[p-za-e][0-9a-f] doesn't seem to be good, IMHO.
 
-<snip>
-+MODULE_PARM_DESC(itpm, "Force iTPM workarounds (found on some Lenovo laptops)"); 
-</snip>
+In the case of the BSD sockets, the patch is not just an userless fix. This is
+interesting when some applications are ported from other Unix'es and still uses BSD
+pty's, since several other Unix flavors were defining a higher namespace size.
 
-It already mentions _Force_, which in many cases maps to "it's all your
-responsibility"...
+For example, on zOS Unix, a pty device seems to allow up to 10.000 pty numbers (in the
+specific case of zOS Unix, they seem to be defined as /dev/[pt]typ[0-9]...) as shown at:
+	www.redbooks.ibm.com/redbooks/pdfs/sg245228.pdf
 
-And yes, still without PNP, but at least, working.
-
-Rajiv
-
-
-
+Cheers,
+Mauro
