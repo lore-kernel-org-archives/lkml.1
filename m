@@ -1,133 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZIJP2b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751954AbZIJP2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751994AbZIJP2b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 11:28:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZIJP2b
+	id S1751954AbZIJP2W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 11:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751913AbZIJP2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 11:28:31 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:35978 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751599AbZIJP23 (ORCPT
+	Thu, 10 Sep 2009 11:28:22 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:56924 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbZIJP2V convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 11:28:29 -0400
-Date: Thu, 10 Sep 2009 08:26:59 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
-       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
-Subject: Re: [RFC][v6][PATCH 9/9]: Document clone_with_pids() syscall
-Message-Id: <20090910082659.033ab8fd.randy.dunlap@oracle.com>
-In-Reply-To: <20090910061413.GH25883@us.ibm.com>
-References: <20090910060627.GA24343@us.ibm.com>
-	<20090910061413.GH25883@us.ibm.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt016.oracle.com [141.146.116.25]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.4AA91AC7.014E:SCFSTAT5015188,ss=1,fgs=0
+	Thu, 10 Sep 2009 11:28:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LhlpWxi4fJLbm+wOFkEH8DVbIh/3IsdaD0DzkwWy8PMhE6gCJfP67d48QtreLvkkZs
+         QgAn0JrQORrgFbjUh7uIFYmcEyK66eTpBnzB7J66glriiigsvdu6jnyLoVjUqWKwPG2U
+         EKAlL2biVyl++c9Xf4oAAEUJQxvo56IeQ0hYY=
+MIME-Version: 1.0
+In-Reply-To: <1252583229-13754-1-git-send-email-jglisse@redhat.com>
+References: <1252583229-13754-1-git-send-email-jglisse@redhat.com>
+Date: Thu, 10 Sep 2009 11:28:23 -0400
+Message-ID: <a728f9f90909100828h103b00fcu876055cd5afb0492@mail.gmail.com>
+Subject: Re: [PATCH] drm/radeon/kms: R3XX/R4XX AGP asic use PCI GART not PCIE 
+	GART
+From: Alex Deucher <alexdeucher@gmail.com>
+To: Jerome Glisse <jglisse@redhat.com>
+Cc: airlied@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 Sep 2009 23:14:13 -0700 Sukadev Bhattiprolu wrote:
+On Thu, Sep 10, 2009 at 7:47 AM, Jerome Glisse<jglisse@redhat.com> wrote:
+> R3XX/R4XX AGP asic use the old PCI GART block, not the new PCIE GART.
+> Make sure we pick the right GART when disabling AGP.
+>
+> Signed-off-by: Jerome Glisse <jglisse@redhat.com>
 
-> 
-> Subject: [RFC][v6][PATCH 9/9]: Document clone_with_pids() syscall
-> 
-> This gives a brief overview of the clone_with_pids() system call.  We should
-> eventually describe more details either in clone(2) or in a new man page.
-> 
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@vnet.linux.ibm.com>
+Acked-by: Alex Deucher <alexdeucher@gmail.com>
+
+
 > ---
->  Documentation/clone-with-pids |   58 ++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 58 insertions(+)
-> 
-> Index: linux-2.6/Documentation/clone-with-pids
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6/Documentation/clone-with-pids	2009-09-09 21:53:30.000000000 -0700
-> @@ -0,0 +1,58 @@
-> +
-> +struct pid_set {
-> +	unsigned int num_pids;
-> +	pid_t pids[];
-> +};
-> +
-> +clone_with_pids(int flags, void *child_stack_base, int *parent_tid_ptr,
-> +			int *child_tid_ptr, NULL, struct pid_set *pid_setp)
-> +
-> +	The clone_with_pids() system call is identical to clone(), except
-> +	that it allows the user to specify a pid for the child process
-> +	in each of the child processes' pid name spaces.
-> +
-	                                    namespaces.  {as below}
-
-> +	This system call is meant to be used when restarting an application
-> +	from an earlier checkpoint. When restarting the application, the
-> +	processes in the application must get the same pids they had at the
-> +	time of the checkpoint.
-> +
-> +	The 'pid_setp' parameter defines a set of pids to use, one for each
-> +	pid-namespace of the child process.  The order pids in '->pids[]'
-
-	                                         order of pids
-
-> +	corresponds to the nesting order of pid-namespaces, with ->pids[0]
-> +	corresponding to the init_pid_ns.
-> +
-> +	If a pid in the ->pids list is 0, the kernel will assign the next
-> +	available pid in the pid namespace, for the process.
-> +
-> +	If a pid in the ->pids[] list is non-zero, the kernel tries to assign
-> +	the specified pid in that namespace.  If that pid is already in use
-> +	by another process, the system call fails with -EBUSY.
-> +
-> +	On success, the system call returns the pid of the child process in
-> +	the parent's active pid namespace.
-> +
-> +	On failure, clone_with_pids() returns -1 and sets 'errno' to one of
-> +	following values (the child process is not created).
-> +
-> +	EPERM	Caller does not have the SYS_ADMIN privilege needed to excute
-
-		                                                       execute
-
-> +		this call.
-> +
-> +	EINVAL	The number of pids specified in 'pid_set.num_pids' exceeds
-> +		the current nesting level of parent process
-> +
-> +	EBUSY	A requested 'pid' is in use by another process in that name
-> +		space.
-> +
-> +Example:
-> +
-> +	struct pid_set pid_set { 3, {0, 99, 177} };
-> +	void *child_stack = malloc(STACKSIZE);
-> +
-> +	/* set up child_stack, like with clone() */
-> +	rc = clone_with_pids(clone_flags, child_stack, NULL, NULL, &pid_set);
-> +
-> +	if (rc < 0) {
-> +		perror("clone_with_pids()");
-> +		exit(1);
-> +	}
-
-What happens when one of the pids is busy?  Say the last one in the
-example above [177].  Are the first 2 children already cloned
-or are all pids checked for availability before cloning?
-If the latter, is there a race there?
-and what value is returned?
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+>  drivers/gpu/drm/radeon/r300.c          |    6 ++++++
+>  drivers/gpu/drm/radeon/r420.c          |    9 +++++++--
+>  drivers/gpu/drm/radeon/radeon.h        |    4 ++++
+>  drivers/gpu/drm/radeon/radeon_device.c |    2 +-
+>  4 files changed, 18 insertions(+), 3 deletions(-)
+>
+> diff --git a/drivers/gpu/drm/radeon/r300.c b/drivers/gpu/drm/radeon/r300.c
+> index a5f82f7..9c17b78 100644
+> --- a/drivers/gpu/drm/radeon/r300.c
+> +++ b/drivers/gpu/drm/radeon/r300.c
+> @@ -181,6 +181,12 @@ int r300_gart_enable(struct radeon_device *rdev)
+>                rdev->asic->gart_set_page = &rv370_pcie_gart_set_page;
+>                return rv370_pcie_gart_enable(rdev);
+>        }
+> +       if (rdev->flags & RADEON_IS_PCI) {
+> +               rdev->asic->gart_disable = &r100_pci_gart_disable;
+> +               rdev->asic->gart_tlb_flush = &r100_pci_gart_tlb_flush;
+> +               rdev->asic->gart_set_page = &r100_pci_gart_set_page;
+> +               return r100_pci_gart_enable(rdev);
+> +       }
+>        return r100_pci_gart_enable(rdev);
+>  }
+>
+> diff --git a/drivers/gpu/drm/radeon/r420.c b/drivers/gpu/drm/radeon/r420.c
+> index 96303f0..551d699 100644
+> --- a/drivers/gpu/drm/radeon/r420.c
+> +++ b/drivers/gpu/drm/radeon/r420.c
+> @@ -101,8 +101,13 @@ int r420_mc_init(struct radeon_device *rdev)
+>
+>  void r420_mc_fini(struct radeon_device *rdev)
+>  {
+> -       rv370_pcie_gart_disable(rdev);
+> -       radeon_gart_table_vram_free(rdev);
+> +       if (rdev->flags & RADEON_IS_PCIE) {
+> +               rv370_pcie_gart_disable(rdev);
+> +               radeon_gart_table_vram_free(rdev);
+> +       } else {
+> +               r100_pci_gart_disable(rdev);
+> +               radeon_gart_table_ram_free(rdev);
+> +       }
+>        radeon_gart_fini(rdev);
+>  }
+>
+> diff --git a/drivers/gpu/drm/radeon/radeon.h b/drivers/gpu/drm/radeon/radeon.h
+> index fa84c77..d6ff4e0 100644
+> --- a/drivers/gpu/drm/radeon/radeon.h
+> +++ b/drivers/gpu/drm/radeon/radeon.h
+> @@ -935,6 +935,10 @@ static inline void radeon_ring_write(struct radeon_device *rdev, uint32_t v)
+>
+>  /* r100,rv100,rs100,rv200,rs200,r200,rv250,rs300,rv280 */
+>  void r100_cp_disable(struct radeon_device *rdev);
+> +void r100_pci_gart_tlb_flush(struct radeon_device *rdev);
+> +int r100_pci_gart_enable(struct radeon_device *rdev);
+> +void r100_pci_gart_disable(struct radeon_device *rdev);
+> +int r100_pci_gart_set_page(struct radeon_device *rdev, int i, uint64_t addr);
+>
+>  /* r420,r423,rv410 */
+>  u32 r420_mc_rreg(struct radeon_device *rdev, u32 reg);
+> diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
+> index 05e1af0..bf69394 100644
+> --- a/drivers/gpu/drm/radeon/radeon_device.c
+> +++ b/drivers/gpu/drm/radeon/radeon_device.c
+> @@ -503,7 +503,7 @@ int radeon_device_init(struct radeon_device *rdev,
+>
+>        if (radeon_agpmode == -1) {
+>                rdev->flags &= ~RADEON_IS_AGP;
+> -               if (rdev->family > CHIP_RV515 ||
+> +               if (rdev->family >= CHIP_RV515 ||
+>                    rdev->family == CHIP_RV380 ||
+>                    rdev->family == CHIP_RV410 ||
+>                    rdev->family == CHIP_R423) {
+> --
+> 1.6.4.2
+>
+>
+> ------------------------------------------------------------------------------
+> Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day
+> trial. Simplify your report design, integration and deployment - and focus on
+> what you do best, core application coding. Discover what's new with
+> Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+> --
+> _______________________________________________
+> Dri-devel mailing list
+> Dri-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/dri-devel
+>
