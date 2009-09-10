@@ -1,244 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753390AbZIJCRl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZIJCVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753390AbZIJCRl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 22:17:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751565AbZIJCRk
+	id S1753940AbZIJCVI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 22:21:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751777AbZIJCVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 22:17:40 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:52348 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751530AbZIJCRk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 22:17:40 -0400
-Subject: Re: [PATCH v2] tracing: Clean up trace.h
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Tom Zanussi <tzanussi@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4AA8579B.4020706@cn.fujitsu.com>
-References: <4AA8579B.4020706@cn.fujitsu.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Wed, 09 Sep 2009 22:17:41 -0400
-Message-Id: <1252549061.18996.3.camel@gandalf.stny.rr.com>
+	Wed, 9 Sep 2009 22:21:07 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:38145 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751651AbZIJCVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 Sep 2009 22:21:06 -0400
+Date: Wed, 9 Sep 2009 21:21:02 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Chris Friesen <cfriesen@nortel.com>, Daniel Walker <dwalker@fifo99.com>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: SGU UV Add volatile to macros that access chipset registers
+Message-ID: <20090910022101.GA10038@sgi.com>
+References: <20090909154246.GA26716@sgi.com> <1252512600.14793.125.camel@desktop> <20090909180110.GA10311@sgi.com> <1252519885.14793.135.camel@desktop> <4AA7F9E5.4070506@nortel.com> <20090909193829.GB10530@sgi.com> <4AA84BE7.9010304@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA84BE7.9010304@zytor.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 09:34 +0800, Li Zefan wrote:
-> - remove some dead code
-> - remove @stats from struct tracer
-> - move DEFINE_COMPARISON_PRED() and DEFINE_EQUALITY_PRED()
->   to kernel/trace/trace_events_filter.c
+On Wed, Sep 09, 2009 at 05:44:23PM -0700, H. Peter Anvin wrote:
+> On 09/09/2009 12:38 PM, Jack Steiner wrote:
+> >  
+> >  static inline void uv_write_local_mmr8(unsigned long offset, unsigned char val)
+> >  {
+> > -	*((unsigned char *)uv_local_mmr_address(offset)) = val;
+> > +	*((volatile unsigned char *)uv_local_mmr_address(offset)) = val;
+> >  }
+> >  
 > 
+> Why aren't you simply using __writeb() here, and the other memory
+> accessors we already have in the other places?
 
-Actually, Li if you don't mind, I'm going to break this up into separate
-patches. Each of the above "topics" really should be a separate patch.
-It makes bisecting and such nicer if for some strange reason this patch
-became the cause.
+Excellent idea. New patch to follow...
 
--- Steve
 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
-> 
-> I've split hw_breakpoint code out.
-> 
-> ---
->  kernel/trace/trace.h               |   86 +++++-------------------------------
->  kernel/trace/trace_events_filter.c |   41 +++++++++++++++++
->  2 files changed, 52 insertions(+), 75 deletions(-)
-> 
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index ea7e0bc..76ed0db 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -125,14 +125,6 @@ struct print_entry {
->  	char			buf[];
->  };
->  
-> -#define TRACE_OLD_SIZE		88
-> -
-> -struct trace_field_cont {
-> -	unsigned char		type;
-> -	/* Temporary till we get rid of this completely */
-> -	char			buf[TRACE_OLD_SIZE - 1];
-> -};
-> -
->  struct trace_mmiotrace_rw {
->  	struct trace_entry	ent;
->  	struct mmiotrace_rw	rw;
-> @@ -182,20 +174,20 @@ enum kmemtrace_type_id {
->  
->  struct kmemtrace_alloc_entry {
->  	struct trace_entry	ent;
-> -	enum kmemtrace_type_id type_id;
-> -	unsigned long call_site;
-> -	const void *ptr;
-> -	size_t bytes_req;
-> -	size_t bytes_alloc;
-> -	gfp_t gfp_flags;
-> -	int node;
-> +	enum kmemtrace_type_id	type_id;
-> +	unsigned long		call_site;
-> +	const void		*ptr;
-> +	size_t			bytes_req;
-> +	size_t			bytes_alloc;
-> +	gfp_t			gfp_flags;
-> +	int			node;
->  };
->  
->  struct kmemtrace_free_entry {
->  	struct trace_entry	ent;
-> -	enum kmemtrace_type_id type_id;
-> -	unsigned long call_site;
-> -	const void *ptr;
-> +	enum kmemtrace_type_id	type_id;
-> +	unsigned long		call_site;
-> +	const void		*ptr;
->  };
->  
->  struct syscall_trace_enter {
-> @@ -226,7 +218,7 @@ struct ksym_trace_entry {
->   * states when a trace occurs. These are:
->   *  IRQS_OFF		- interrupts were disabled
->   *  IRQS_NOSUPPORT	- arch does not support irqs_disabled_flags
-> - *  NEED_RESCED		- reschedule is requested
-> + *  NEED_RESCHED	- reschedule is requested
->   *  HARDIRQ		- inside an interrupt handler
->   *  SOFTIRQ		- inside a softirq handler
->   */
-> @@ -406,7 +398,6 @@ struct tracer {
->  	struct tracer		*next;
->  	int			print_max;
->  	struct tracer_flags	*flags;
-> -	struct tracer_stat	*stats;
->  };
->  
-> 
-> @@ -525,20 +516,6 @@ static inline void __trace_stack(struct trace_array *tr, unsigned long flags,
->  
->  extern cycle_t ftrace_now(int cpu);
->  
-> -#ifdef CONFIG_CONTEXT_SWITCH_TRACER
-> -typedef void
-> -(*tracer_switch_func_t)(void *private,
-> -			void *__rq,
-> -			struct task_struct *prev,
-> -			struct task_struct *next);
-> -
-> -struct tracer_switch_ops {
-> -	tracer_switch_func_t		func;
-> -	void				*private;
-> -	struct tracer_switch_ops	*next;
-> -};
-> -#endif /* CONFIG_CONTEXT_SWITCH_TRACER */
-> -
->  extern void trace_find_cmdline(int pid, char comm[]);
->  
->  #ifdef CONFIG_DYNAMIC_FTRACE
-> @@ -841,47 +818,6 @@ filter_check_discard(struct ftrace_event_call *call, void *rec,
->  	return 0;
->  }
->  
-> -#define DEFINE_COMPARISON_PRED(type)					\
-> -static int filter_pred_##type(struct filter_pred *pred, void *event,	\
-> -			      int val1, int val2)			\
-> -{									\
-> -	type *addr = (type *)(event + pred->offset);			\
-> -	type val = (type)pred->val;					\
-> -	int match = 0;							\
-> -									\
-> -	switch (pred->op) {						\
-> -	case OP_LT:							\
-> -		match = (*addr < val);					\
-> -		break;							\
-> -	case OP_LE:							\
-> -		match = (*addr <= val);					\
-> -		break;							\
-> -	case OP_GT:							\
-> -		match = (*addr > val);					\
-> -		break;							\
-> -	case OP_GE:							\
-> -		match = (*addr >= val);					\
-> -		break;							\
-> -	default:							\
-> -		break;							\
-> -	}								\
-> -									\
-> -	return match;							\
-> -}
-> -
-> -#define DEFINE_EQUALITY_PRED(size)					\
-> -static int filter_pred_##size(struct filter_pred *pred, void *event,	\
-> -			      int val1, int val2)			\
-> -{									\
-> -	u##size *addr = (u##size *)(event + pred->offset);		\
-> -	u##size val = (u##size)pred->val;				\
-> -	int match;							\
-> -									\
-> -	match = (val == *addr) ^ pred->not;				\
-> -									\
-> -	return match;							\
-> -}
-> -
->  extern struct mutex event_mutex;
->  extern struct list_head ftrace_events;
->  
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index 93660fb..2324578 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -121,6 +121,47 @@ struct filter_parse_state {
->  	} operand;
->  };
->  
-> +#define DEFINE_COMPARISON_PRED(type)					\
-> +static int filter_pred_##type(struct filter_pred *pred, void *event,	\
-> +			      int val1, int val2)			\
-> +{									\
-> +	type *addr = (type *)(event + pred->offset);			\
-> +	type val = (type)pred->val;					\
-> +	int match = 0;							\
-> +									\
-> +	switch (pred->op) {						\
-> +	case OP_LT:							\
-> +		match = (*addr < val);					\
-> +		break;							\
-> +	case OP_LE:							\
-> +		match = (*addr <= val);					\
-> +		break;							\
-> +	case OP_GT:							\
-> +		match = (*addr > val);					\
-> +		break;							\
-> +	case OP_GE:							\
-> +		match = (*addr >= val);					\
-> +		break;							\
-> +	default:							\
-> +		break;							\
-> +	}								\
-> +									\
-> +	return match;							\
-> +}
-> +
-> +#define DEFINE_EQUALITY_PRED(size)					\
-> +static int filter_pred_##size(struct filter_pred *pred, void *event,	\
-> +			      int val1, int val2)			\
-> +{									\
-> +	u##size *addr = (u##size *)(event + pred->offset);		\
-> +	u##size val = (u##size)pred->val;				\
-> +	int match;							\
-> +									\
-> +	match = (val == *addr) ^ pred->not;				\
-> +									\
-> +	return match;							\
-> +}
-> +
->  DEFINE_COMPARISON_PRED(s64);
->  DEFINE_COMPARISON_PRED(u64);
->  DEFINE_COMPARISON_PRED(s32);
-
+--- jack
