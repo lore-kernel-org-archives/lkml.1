@@ -1,99 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751873AbZIJPTY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751994AbZIJP2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751873AbZIJPTY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 11:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZIJPTX
+	id S1751994AbZIJP2b (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 11:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751709AbZIJP2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 11:19:23 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:42839 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751589AbZIJPTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 11:19:23 -0400
-Message-ID: <4AA918C1.6070907@redhat.com>
-Date: Thu, 10 Sep 2009 17:18:25 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [RFC] IO scheduler based IO controller V9
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1251495072-7780-1-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Sep 2009 11:28:31 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:35978 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751599AbZIJP23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 11:28:29 -0400
+Date: Thu, 10 Sep 2009 08:26:59 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>, arnd@arndb.de,
+       Containers <containers@lists.linux-foundation.org>, sukadev@us.ibm.com
+Subject: Re: [RFC][v6][PATCH 9/9]: Document clone_with_pids() syscall
+Message-Id: <20090910082659.033ab8fd.randy.dunlap@oracle.com>
+In-Reply-To: <20090910061413.GH25883@us.ibm.com>
+References: <20090910060627.GA24343@us.ibm.com>
+	<20090910061413.GH25883@us.ibm.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt016.oracle.com [141.146.116.25]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.4AA91AC7.014E:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> Hi All,
+On Wed, 9 Sep 2009 23:14:13 -0700 Sukadev Bhattiprolu wrote:
+
 > 
-> Here is the V9 of the IO controller patches generated on top of 2.6.31-rc7.
- 
-Hi Vivek,
+> Subject: [RFC][v6][PATCH 9/9]: Document clone_with_pids() syscall
+> 
+> This gives a brief overview of the clone_with_pids() system call.  We should
+> eventually describe more details either in clone(2) or in a new man page.
+> 
+> Signed-off-by: Sukadev Bhattiprolu <sukadev@vnet.linux.ibm.com>
+> ---
+>  Documentation/clone-with-pids |   58 ++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 58 insertions(+)
+> 
+> Index: linux-2.6/Documentation/clone-with-pids
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/Documentation/clone-with-pids	2009-09-09 21:53:30.000000000 -0700
+> @@ -0,0 +1,58 @@
+> +
+> +struct pid_set {
+> +	unsigned int num_pids;
+> +	pid_t pids[];
+> +};
+> +
+> +clone_with_pids(int flags, void *child_stack_base, int *parent_tid_ptr,
+> +			int *child_tid_ptr, NULL, struct pid_set *pid_setp)
+> +
+> +	The clone_with_pids() system call is identical to clone(), except
+> +	that it allows the user to specify a pid for the child process
+> +	in each of the child processes' pid name spaces.
+> +
+	                                    namespaces.  {as below}
 
-I've run some postgresql benchmarks for io-controller. Tests have been
-made with 2.6.31-rc6 kernel, without io-controller patches (when
-relevant) and with io-controller v8 and v9 patches.
-I set up two instances of the TPC-H database, each running in their
-own io-cgroup. I ran two clients to these databases and tested on each
-that simple request:
-$ select count(*) from LINEITEM;
-where LINEITEM is the biggest table of TPC-H (6001215 entries,
-720MB). That request generates a steady stream of IOs.
+> +	This system call is meant to be used when restarting an application
+> +	from an earlier checkpoint. When restarting the application, the
+> +	processes in the application must get the same pids they had at the
+> +	time of the checkpoint.
+> +
+> +	The 'pid_setp' parameter defines a set of pids to use, one for each
+> +	pid-namespace of the child process.  The order pids in '->pids[]'
 
-Time is measure by psql (\timing switched on). Each test is run twice
-or more if there is any significant difference between the first two
-runs. Before each run, the cache is flush:
-$ echo 3 > /proc/sys/vm/drop_caches
+	                                         order of pids
 
+> +	corresponds to the nesting order of pid-namespaces, with ->pids[0]
+> +	corresponding to the init_pid_ns.
+> +
+> +	If a pid in the ->pids list is 0, the kernel will assign the next
+> +	available pid in the pid namespace, for the process.
+> +
+> +	If a pid in the ->pids[] list is non-zero, the kernel tries to assign
+> +	the specified pid in that namespace.  If that pid is already in use
+> +	by another process, the system call fails with -EBUSY.
+> +
+> +	On success, the system call returns the pid of the child process in
+> +	the parent's active pid namespace.
+> +
+> +	On failure, clone_with_pids() returns -1 and sets 'errno' to one of
+> +	following values (the child process is not created).
+> +
+> +	EPERM	Caller does not have the SYS_ADMIN privilege needed to excute
 
-Results with 2 groups of same io policy (BE) and same io weight (1000):
+		                                                       execute
 
-	w/o io-scheduler	io-scheduler v8		io-scheduler v9
-	first	second		first	second		first	second
-	DB	DB		DB	DB		DB	DB
+> +		this call.
+> +
+> +	EINVAL	The number of pids specified in 'pid_set.num_pids' exceeds
+> +		the current nesting level of parent process
+> +
+> +	EBUSY	A requested 'pid' is in use by another process in that name
+> +		space.
+> +
+> +Example:
+> +
+> +	struct pid_set pid_set { 3, {0, 99, 177} };
+> +	void *child_stack = malloc(STACKSIZE);
+> +
+> +	/* set up child_stack, like with clone() */
+> +	rc = clone_with_pids(clone_flags, child_stack, NULL, NULL, &pid_set);
+> +
+> +	if (rc < 0) {
+> +		perror("clone_with_pids()");
+> +		exit(1);
+> +	}
 
-CFQ	48.4s	48.4s		48.2s	48.2s		48.1s	48.5s
-Noop	138.0s	138.0s		48.3s	48.4s		48.5s	48.8s
-AS	46.3s	47.0s		48.5s	48.7s		48.3s	48.5s
-Deadl.	137.1s	137.1s		48.2s	48.3s		48.3s	48.5s
+What happens when one of the pids is busy?  Say the last one in the
+example above [177].  Are the first 2 children already cloned
+or are all pids checked for availability before cloning?
+If the latter, is there a race there?
+and what value is returned?
 
-As you can see, there is no significant difference for CFQ
-scheduler. There is big improvement for noop and deadline schedulers
-(why is that happening?). The performance with anticipatory scheduler
-is a bit lower (~4%).
-
-
-Results with 2 groups of same io policy (BE), different io weights and
-CFQ scheduler:
-			io-scheduler v8		io-scheduler v9
-weights = 1000, 500	35.6s	46.7s		35.6s	46.7s
-weigths = 1000, 250	29.2s	45.8s		29.2s	45.6s
-
-The result in term of fairness is close to what we can expect from the
-ideal theoric case: with io weights of 1000 and 500 (1000 and 250),
-the first request get 2/3 (4/5) of io time as long as it runs and thus
-finish in about 3/4 (5/8) of total time. 
-
-
-Results  with 2 groups of different io policies, same io weight and
-CFQ scheduler:
-			io-scheduler v8		io-scheduler v9
-policy = RT, BE		22.5s	45.3s		22.4s	45.0s
-policy = BE, IDLE	22.6s	44.8s		22.4s	45.0s
-
-Here again, the result in term of fairness is very close from what we
-expect.
-
-Thanks,
-Jerome
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
