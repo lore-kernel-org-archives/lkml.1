@@ -1,55 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752060AbZIJQHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752169AbZIJQI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752060AbZIJQHP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 12:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZIJQHN
+	id S1752169AbZIJQI3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 12:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751607AbZIJQI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 12:07:13 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:61394 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750827AbZIJQHM (ORCPT
+	Thu, 10 Sep 2009 12:08:29 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:34849 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751150AbZIJQI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 12:07:12 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [PATCH 5/6] thermal: Only set passive_delay for forced passive cooling
-Date: Thu, 10 Sep 2009 18:07:12 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Zhang Rui <rui.zhang@intel.com>
-References: <1251303445-25317-1-git-send-email-elendil@planet.nl> <1251303445-25317-6-git-send-email-elendil@planet.nl> <20090826162537.GC15868@srcf.ucam.org>
-In-Reply-To: <20090826162537.GC15868@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 10 Sep 2009 12:08:28 -0400
+Date: Thu, 10 Sep 2009 09:08:06 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: David Vrabel <david.vrabel@csr.com>, Roman Zippel <zippel@linux-m68k.org>,
+       linux-usb <linux-usb@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: UWB Kconfig: cannot set UWB to N in gconfig
+Message-Id: <20090910090806.e8db2300.randy.dunlap@oracle.com>
+In-Reply-To: <1252577154.2340.12.camel@castor>
+References: <1252577154.2340.12.camel@castor>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909101807.13874.elendil@planet.nl>
-X-OriginalArrivalTime: 10 Sep 2009 16:07:14.0280 (UTC) FILETIME=[C2E09E80:01CA3230]
+X-Source-IP: abhmt016.oracle.com [141.146.116.25]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AA9246A.0062:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matthew,
+On Thu, 10 Sep 2009 11:05:54 +0100 Richard Kennedy wrote:
 
-On Wednesday 26 August 2009, Matthew Garrett wrote:
-> On Wed, Aug 26, 2009 at 06:17:24PM +0200, Frans Pop wrote:
-> > Setting polling_delay is useless as passive_delay has priority,
-> > so the value shown in proc isn't the actual polling delay. It
-> > also gives the impression to the user that he can change the
-> > polling interval through proc, while in fact he can't.
-> >
-> > Also, unset passive_delay when the forced passive trip point is
-> > unbound to allow polling to be disabled.
-> >
-> > Signed-off-by: Frans Pop <elendil@planet.nl>
-> > Cc: Matthew Garrett <mjg@redhat.com>
-> > Cc: Zhang Rui <rui.zhang@intel.com>
->
-> I'll look over this - I seem to remember having some reason to set
-> that, but it escapes me now.
+> I sometimes use 'make gconfig' and I noticed that I cannot disable the
+> UWB option -- it just won't let me set it to N.
 
-Have you had a chance to check this?
+Not specific to 'gconfig'.
 
-Cheers,
-FJP
+> AFAICT this is because the CONFIG USB_WUSB selects UWB which forces it
+> on.
+
+Yes.
+
+> applying this patch fixes the issue but I'm not sure if this is the
+> right way to go about it.
+> 
+> any thoughts?
+
+UWB can be disabled by disabling both of these options that are several
+entries below it in the same menu:
+
+USB_WHCI_HCD and USB_HWA_HCD
+
+and then returning to UWB and disabling it.
+
+Should users have to figure that out?  no.
+
+
+> This is against 2.6.31
+> 
+> 
+> diff --git a/drivers/usb/wusbcore/Kconfig b/drivers/usb/wusbcore/Kconfig
+> index eb09a0a..cc97041 100644
+> --- a/drivers/usb/wusbcore/Kconfig
+> +++ b/drivers/usb/wusbcore/Kconfig
+> @@ -5,7 +5,7 @@ config USB_WUSB
+>  	tristate "Enable Wireless USB extensions (EXPERIMENTAL)"
+>  	depends on EXPERIMENTAL
+>  	depends on USB
+> -        select UWB
+> +        depends on UWB
+>          select CRYPTO
+>          select CRYPTO_BLKCIPHER
+>          select CRYPTO_CBC
+
+use tabs, not spaces.
+
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
