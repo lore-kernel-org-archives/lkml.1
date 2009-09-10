@@ -1,145 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZIJJbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755273AbZIJJdq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbZIJJbY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 05:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZIJJbY
+	id S1755273AbZIJJdq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 05:33:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752684AbZIJJdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 05:31:24 -0400
-Received: from mail-px0-f196.google.com ([209.85.216.196]:57326 "EHLO
-	mail-px0-f196.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750781AbZIJJbX convert rfc822-to-8bit (ORCPT
+	Thu, 10 Sep 2009 05:33:45 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:33699 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752353AbZIJJdo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 05:31:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=gC7f3hcwSLRTMHYrMCjJOy//DqdaTvohufqcwzqiDtGjXOjkEO+MMX2ComtfEDS3OK
-         Un0V3JJiKkjSTt6Wag31Mf1JUC8OoYsckcZdesEFpPaB8GCtiHhoD3FLc9C2mlaLWvNv
-         zxb77Wkm+wyT+feYLjpcjfXp4dBczzOxCj4m0=
+	Thu, 10 Sep 2009 05:33:44 -0400
+Message-ID: <4AA8C7E2.1080002@linux.vnet.ibm.com>
+Date: Thu, 10 Sep 2009 15:03:22 +0530
+From: Rishikesh <risrajak@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
 MIME-Version: 1.0
-In-Reply-To: <af3ea28a0909100107q328d1288x8d677d4d5f79f728@mail.gmail.com>
-References: <af3ea28a0909090035t710f5895i135760a2c7bd8a02@mail.gmail.com>
-	 <1252537622.9883.24.camel@localhost.localdomain>
-	 <af3ea28a0909100107q328d1288x8d677d4d5f79f728@mail.gmail.com>
-Date: Thu, 10 Sep 2009 17:31:25 +0800
-Message-ID: <2674af740909100231x582851dbv9b71bc2914be7030@mail.gmail.com>
-Subject: Re: [PATCH] update clocksource raw_time in timekeeping_suspend
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: ye janboe <janboe.ye@gmail.com>
-Cc: john stultz <johnstul@us.ibm.com>, zippel@linux-m68k.org,
-       akpm@linux-foundation.org, mingo@elte.hu,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: containers@lists.osdl.org, linux-kernel@vger.kernel.org
+CC: risrajak@in.ibm.com, iranna.ankad@in.ibm.com, svishuku@in.ibm.com,
+       bharanga@in.ibm.com, santwana.samantray@in.ibm.com, mbeeraka@in.ibm.com,
+       serue@us.ibm.com, bharata.rao@in.ibm.com, sharyath@linux.vnet.ibm.com
+Subject: BUG: soft lockup - CPU#3 stuck for 61s! , while running cpu controller
+ latency testcase on two containers parallaly
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 4:07 PM, ye janboe <janboe.ye@gmail.com> wrote:
-> hi, John
->
-> Thanks for your comments.
->
-> After sent this patch, I realize that this patch exposes the hardware
-> detail ugly in common code.
->
-> In embed system, user space apps need to have a method to get the
-> right time which will not be impacted by NTP and suspend.
->
-> Yes, you are right. I want to add sleep_length to the raw time and
-> user space apps could get the right time after suspend.
->
+Hi,
 
-What I get from the code is that CLOCK_MONOTONIC doesn't consider
-sleep_length either. Do I miss something?
+I am hitting this soft lock issue while running this scenario on 
+2.6.31-rc7 kernel on SystemX 32 bit on multiple machines.
 
-IMO, CLOCK_MONOTONIC_RAW should be coordinate with
-CLOCK_MONOTONIC. The difference between them is
-whether it's modified by NTP or not.
+Opened bug : http://bugzilla.kernel.org/show_bug.cgi?id=14150
 
-Correct me if I'm wrong.
+Scenario:
+    - While running cpu controller latency testcase from LTP same time 
+on two containers.
 
--Yong
+Steps:
+1. Create two container e.g:
+    lxc-execute -n foo1 -f /usr/etc/lxc/lxc-macvlan.conf /bin/bash
+    lxc-execute -n foo2 -f /usr/etc/lxc/lxc-macvlan.conf /bin/bash
+2. Compile ltp-full-20090731.tgz on host.
+3. Either you run cpu_latency testcase alone or run "./runltp -f 
+controllers" at same time on both the containers.
+4. After testcase execution completes, you can see this message in dmesg.
 
-> Is this right semantics of CLOCK_MONOTONIC_RAW?
->
-> Janboe
-> 2009/9/10 john stultz <johnstul@us.ibm.com>:
->> On Wed, 2009-09-09 at 15:35 +0800, ye janboe wrote:
->>> after resume from suspend, raw_time is not updated in
->>> timekeeping_suspend. CLOCK_MONOTONIC_RAW could not get the real hw
->>> time.
->>> This patch fix this issue.
->>
->> Hmm.. I'll admit suspend probably was less considered with
->> CLOCK_MONOTONIC_RAW, so the semantics aren't well established.
->>
->> However, I do think we want CLOCK_MONOTONIC_RAW to at-least closely map
->> to CLOCK_MONOTONIC (but *not* be NTP adjusted). I think that is what
->> folks would most likely expect.
->>
->> However, that isn't what this patch seems to do.
->>
->> Over suspend, I believe all hardware counters reset, so this patch would
->> seem to try to subtract the value back.
->>
->> This sort of makes sense for something like the TSC, which never wraps,
->> so the raw_time would be set back to a tranlation of the actual TSC
->> counter,  but for other clocksources like the ACPI PM, it would only
->> subtract at most 5 seconds. So this leaks hardware specific detail in an
->> ugly way.
->>
->> Instead I suspect the most intuitive change would be to add in the
->> sleep_length to the raw time. This keeps CLOCK_MONOTONIC_RAW behaving
->> similarly to CLOCK_MONOTONIC, which I believe makes it more useful for
->> folks using CLOCK_MONOTONIC_RAW for things like tuning time
->> synchronization.
->>
->> But let me know more why you chose this implementation and maybe that
->> will show some better insight in to how you expect it to behave.
->>
->> thanks
->> -john
->>
->>
->>
->>> Signed-off-by: janboe <janboe.ye@gmail.com>
->>> ---
->>>  kernel/time/timekeeping.c |    6 ++++++
->>>  1 files changed, 6 insertions(+), 0 deletions(-)
->>>
->>> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
->>> index e8c77d9..8420b85 100644
->>> --- a/kernel/time/timekeeping.c
->>> +++ b/kernel/time/timekeeping.c
->>> @@ -331,6 +331,8 @@ static unsigned long timekeeping_suspend_time;
->>>  static int timekeeping_resume(struct sys_device *dev)
->>>  {
->>>         unsigned long flags;
->>> +       s64 nsec;
->>> +       cycle_t last_cycle, cycle_delta;
->>>         unsigned long now = read_persistent_clock();
->>>
->>>         clocksource_resume();
->>> @@ -346,8 +348,12 @@ static int timekeeping_resume(struct sys_device *dev)
->>>         }
->>>         update_xtime_cache(0);
->>>         /* re-base the last cycle value */
->>> +       last_cycle = clock->cycle_last;
->>>         clock->cycle_last = 0;
->>>         clock->cycle_last = clocksource_read(clock);
->>> +       cycle_delta = clock->cycle_last - last_cycle;
->>> +       nsec = cyc2ns(clock, cycle_delta);
->>> +       timespec_add_ns(&clock->raw_time, nsec);
->>>         clock->error = 0;
->>>         timekeeping_suspended = 0;
->>>         write_sequnlock_irqrestore(&xtime_lock, flags);
->>
->>
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Expected Result:
+    - Should not reproduce soft lock up issue.
+- This reproduces 3 times out of 5 tries.
+
+hrtimer: interrupt too slow, forcing clock min delta to 5843235 ns
+hrtimer: interrupt too slow, forcing clock min delta to 5842476 ns
+Clocksource tsc unstable (delta = 18749057581 ns)
+BUG: soft lockup - CPU#3 stuck for 61s! [cpuctl_latency_:17174]
+Modules linked in: bridge stp llc bnep sco l2cap bluetooth sunrpc ipv6 
+p4_clockmod dm_multipath uinput qla2xxx ata_generic pata_acpi 
+usb_storage e1000 scsi_transport_fc joydev scsi_tgt i2c_piix4 
+pata_serverworks pcspkr serio_raw mptspi mptscsih mptbase 
+scsi_transport_spi radeon ttm drm i2c_algo_bit i2c_core [last unloaded: 
+scsi_wait_scan]
+
+Pid: 17174, comm: cpuctl_latency_ Tainted: G        W  (2.6.31-rc7 #1) 
+IBM eServer BladeCenter HS40 -[883961X]-                    
+EIP: 0060:[<c058aded>] EFLAGS: 00000283 CPU: 3
+EIP is at find_next_bit+0x9/0x79
+EAX: c2c437a0 EBX: f3d433c0 ECX: 00000000 EDX: 00000020
+ESI: c2c436bc EDI: 00000000 EBP: f063be6c ESP: f063be64
+ DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+CR0: 80050033 CR2: 008765a4 CR3: 314d7000 CR4: 000006d0
+DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+DR6: ffff0ff0 DR7: 00000400
+Call Trace:
+ [<c0427b6e>] cpumask_next+0x17/0x19
+ [<c042c28d>] tg_shares_up+0x53/0x149
+ [<c0424082>] ? tg_nop+0x0/0xc
+ [<c0424082>] ? tg_nop+0x0/0xc
+ [<c042406e>] walk_tg_tree+0x63/0x77
+ [<c042c23a>] ? tg_shares_up+0x0/0x149
+ [<c042e836>] update_shares+0x5d/0x65
+ [<c0432af3>] rebalance_domains+0x114/0x460
+ [<c0403393>] ? restore_all_notrace+0x0/0x18
+ [<c0432e75>] run_rebalance_domains+0x36/0xa3
+ [<c043c324>] __do_softirq+0xbc/0x173
+ [<c043c416>] do_softirq+0x3b/0x5f
+ [<c043c52d>] irq_exit+0x3a/0x68
+ [<c0417846>] smp_apic_timer_interrupt+0x6d/0x7b
+ [<c0403c9b>] apic_timer_interrupt+0x2f/0x34
+BUG: soft lockup - CPU#2 stuck for 61s! [watchdog/2:11]
+Modules linked in: bridge stp llc bnep sco l2cap bluetooth sunrpc ipv6 
+p4_clockmod dm_multipath uinput qla2xxx ata_generic pata_acpi 
+usb_storage e1000 scsi_transport_fc joydev scsi_tgt i2c_piix4 
+pata_serverworks pcspkr serio_raw mptspi mptscsih mptbase 
+scsi_transport_spi radeon ttm drm i2c_algo_bit i2c_core [last unloaded: 
+scsi_wait_scan]
+
+Pid: 11, comm: watchdog/2 Tainted: G        W  (2.6.31-rc7 #1) IBM 
+eServer BladeCenter HS40 -[883961X]-                    
+EIP: 0060:[<c042c313>] EFLAGS: 00000246 CPU: 2
+EIP is at tg_shares_up+0xd9/0x149
+EAX: 00000000 EBX: f09b3c00 ECX: f0baac00 EDX: 00000100
+ESI: 00000002 EDI: 00000400 EBP: f6cb7de0 ESP: f6cb7db8
+ DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+CR0: 8005003b CR2: 08070680 CR3: 009c8000 CR4: 000006d0
+DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
+DR6: ffff0ff0 DR7: 00000400
+Call Trace:
+ [<c0424082>] ? tg_nop+0x0/0xc
+ [<c0424082>] ? tg_nop+0x0/0xc
+ [<c042406e>] walk_tg_tree+0x63/0x77
+ [<c042c23a>] ? tg_shares_up+0x0/0x149
+ [<c042e836>] update_shares+0x5d/0x65
+ [<c0432af3>] rebalance_domains+0x114/0x460
+ [<c0432e75>] run_rebalance_domains+0x36/0xa3
+ [<c043c324>] __do_softirq+0xbc/0x173
+ [<c043c416>] do_softirq+0x3b/0x5f
+ [<c043c52d>] irq_exit+0x3a/0x68
+ [<c0417846>] smp_apic_timer_interrupt+0x6d/0x7b
+ [<c0403c9b>] apic_timer_interrupt+0x2f/0x34
+ [<c0430d37>] ? finish_task_switch+0x5d/0xc4
+ [<c0744b11>] schedule+0x74c/0x7b2
+ [<c0590e28>] ? trace_hardirqs_on_thunk+0xc/0x10
+ [<c0403393>] ? restore_all_notrace+0x0/0x18
+ [<c0471e19>] ? watchdog+0x0/0x79
+ [<c0471e19>] ? watchdog+0x0/0x79
+ [<c0471e63>] watchdog+0x4a/0x79
+ [<c0449a53>] kthread+0x70/0x75
+ [<c04499e3>] ? kthread+0x0/0x75
+ [<c0403e93>] kernel_thread_helper+0x7/0x10
+[root@hs40 ltp-full-20090731]# uname -a
+Linux hs40.in.ibm.com 2.6.31-rc7 #1 SMP Thu Sep 3 10:14:41 IST 2009 i686 
+i686 i386 GNU/Linux
+[root@hs40 ltp-full-20090731]#
