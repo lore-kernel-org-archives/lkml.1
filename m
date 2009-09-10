@@ -1,65 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754966AbZIJDse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755028AbZIJDvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754966AbZIJDse (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 23:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZIJDsd
+	id S1755028AbZIJDvg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 23:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752375AbZIJDvf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 23:48:33 -0400
-Received: from smtp105.prem.mail.sp1.yahoo.com ([98.136.44.60]:43442 "HELO
-	smtp105.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753169AbZIJDsc (ORCPT
+	Wed, 9 Sep 2009 23:51:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56357
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752091AbZIJDve (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 23:48:32 -0400
-X-Yahoo-SMTP: OIJXglSswBDfgLtXluJ6wiAYv6_cnw--
-X-YMail-OSG: jXY6VlUVM1mgILvXDxGyYAAY2mGWy3UbtSO8BzIOSabN_hM7O.GvBnDa_aJg_mGSaqoprHaGxAob1MA5UH8otKSk6nsqkWNec0RU5QlI9iCx6Q_Nigih0hc9LnqtnyvTatPa7QsI2N7F6fbEi7Lw9okR7V6.z8omF5qwvn1iDRgEjpB8SVo5k4B529FHlDSxMNn2xqY.14N.i4mD4YTYJEMlO3lDbpDo5p8oGsJ0XJq9eY1aoANv5qhcfisyibWkbvsb4zE1B.DDaawMIY0jPTbQ9XZW6qaSTw7Rp3rh
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4AA87710.9010901@schaufler-ca.com>
-Date: Wed, 09 Sep 2009 20:48:32 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
-       Casey Schaufler <casey@schaufler-ca.com>
-Subject: Re: [PATCH 3/3] sysfs: Add labeling support for sysfs
-References: <1252002358-6612-1-git-send-email-dpquigl@tycho.nsa.gov> <1252002358-6612-4-git-send-email-dpquigl@tycho.nsa.gov> <alpine.LRH.2.00.0909071147100.2538@tundra.namei.org> <1252520737.13634.833.camel@moss-pluto.epoch.ncsc.mil> <alpine.LRH.2.00.0909101040460.30636@tundra.namei.org> <20090910030121.GA32239@suse.de>
-In-Reply-To: <20090910030121.GA32239@suse.de>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 Sep 2009 23:51:34 -0400
+Date: Wed, 09 Sep 2009 20:51:51 -0700 (PDT)
+Message-Id: <20090909.205151.123091735.davem@davemloft.net>
+To: dwalker@fifo99.com
+Cc: tilman@imap.cc, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       i4ldeveloper@listserv.isdn4linux.de, hjlipp@web.de
+Subject: Re: [PATCH 00/12] Gigaset driver patches for 2.6.32
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1252554477.30578.167.camel@desktop>
+References: <20090909223205.E9D632269516@fifo99.com>
+	<1252554477.30578.167.camel@desktop>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Thu, Sep 10, 2009 at 10:40:59AM +1000, James Morris wrote:
->   
->> Thanks, all applied to
->> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
->>     
->
-> Um, wait, what about the sysfs maintainer's review?  :)
->
-> I also want to see Casey agree with this as well.
->   
+From: Daniel Walker <dwalker@fifo99.com>
+Date: Wed, 09 Sep 2009 20:47:57 -0700
 
-Without being able to provide a better solution in a reasonable
-time I don't see that I can responsibly raise an objection. Sure,
-I'd rather see a real implementation of xattrs on memory based
-file systems, but I can't put the time in to make it happen and
-I don't see that it would be "fair" for these people to be held
-up by my petty idiosyncrasies on the topic if I'm not willing to
-make the investment and do it myself.
+> On Thu, 2009-09-10 at 00:32 +0200, Tilman Schmidt wrote:
+>> Daniel Walker wrote 07.09.09 16:30:
+>> > Yeah, it looks like the whole file needs a checkpatch clean up..
+>> Sounds
+>> like your not willing to do that?
+>> 
+>> It's not a question of willingness. You may notice I did a lot of
+>> cleanup work already. But it's very time consuming work, and there has
+>> been more important work to attend to first.
+>> 
+>> > Usually if a checkpatch cleanup comes
+>> first prior to all your other changes , it doesn't usually cloud the
+>> rest of the changes..
+>> 
+>> Sure. But that would mean postponing the merging of bugfixes until
+>> someone finds the time to do a complete checkpatch cleanup of the
+>> affected code. I don't think that's a sensible approach.
+> 
+> You shouldn't be adding any new checkpatch errors, but you currently
+> are .. Just clean up the individual patches w/o the entire gigaset
+> driver, that should be do-able (it's even a basic submission
+> requirement). The other issue is that your adding new files which aren't
+> clean, those can certainly be cleaned up.
 
-Maybe the next time I'm out of work ("Nuts! And I finally got
-asking if they wanted to SuperSize it down!") I'll revive my
-efforts to eliminate secids from the kernel entirely.
-
-> thanks,
->
-> greg k-h
->
->
->   
-
+Right, this is a very reasonable request.
