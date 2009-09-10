@@ -1,68 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZIJDZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753421AbZIJDeo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755034AbZIJDZs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 23:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755013AbZIJDZr
+	id S1753421AbZIJDeo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 23:34:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752091AbZIJDeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 23:25:47 -0400
-Received: from mail-px0-f194.google.com ([209.85.216.194]:43878 "EHLO
-	mail-px0-f194.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755009AbZIJDZq convert rfc822-to-8bit (ORCPT
+	Wed, 9 Sep 2009 23:34:44 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60109
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751822AbZIJDen (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 23:25:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=p8IMRs88tGTBSM/ypw2tyHHj5DoZeFP3V9f817A0+vMOGfv82ua8AOAUsH8RXEU4Rp
-         BvagvnsdkOk72kbK9s5FuL5ag5H0Y8Pw6KlzTXgUpCYtLAh7er8FxngrV0KjN482jeW5
-         A9oaWoSkENKN7jC8TjlGmuDEqVnQfxi/4ntok=
-MIME-Version: 1.0
-In-Reply-To: <6278d2220909091420g688bd11fybc33be4e472757b1@mail.gmail.com>
-References: <6278d2220909091420g688bd11fybc33be4e472757b1@mail.gmail.com>
-Date: Thu, 10 Sep 2009 11:25:49 +0800
-Message-ID: <d82e647a0909092025q377729fau88e39214c349d746@mail.gmail.com>
-Subject: Re: [2.6.31-rc9] hotplug SATA vs lockdep: false positive?
-From: Ming Lei <tom.leiming@gmail.com>
-To: Daniel J Blueman <daniel.blueman@gmail.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 9 Sep 2009 23:34:43 -0400
+Date: Wed, 09 Sep 2009 20:35:00 -0700 (PDT)
+Message-Id: <20090909.203500.53952434.davem@davemloft.net>
+To: martin@decky.cz
+Cc: j@w1.fi, linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org
+Subject: Re: [PATCH] hostap: Revert a toxic part of the conversion to
+ net_device_ops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.2.00.0909100333230.4334@hefaistos.decky.cz>
+References: <alpine.LFD.2.00.0909100333230.4334@hefaistos.decky.cz>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/10 Daniel J Blueman <daniel.blueman@gmail.com>:
-> When hot-plugging my SATA DVD drive into my laptop, I see a lockdep
-> warning [1]. On closer inspection, both flush_workqueue() and
-> worker_thread() do tricks with lockdep maps. False positive?
+From: Martin Decky <martin@decky.cz>
+Date: Thu, 10 Sep 2009 03:44:47 +0200 (CEST)
 
-> Call Trace:
->  [<ffffffff8108c8a7>] print_circular_bug_tail+0xa7/0x100
->  [<ffffffff8108ebe1>] __lock_acquire+0xef1/0x1240
->  [<ffffffff8108a808>] ? add_lock_to_list+0x58/0xf0
->  [<ffffffff8108f04e>] lock_acquire+0x11e/0x170
->  [<ffffffff81073a70>] ? flush_workqueue+0x0/0xf0 (workqueue.c:397)
->  [<ffffffff812f6ebd>] ? acpi_os_execute_hp_deferred+0x0/0x3e
->  [<ffffffff81073acc>] flush_workqueue+0x5c/0xf0 (workqueue.c:403)
+Thanks, linux-wireless CC:'d, please CC: them on all wireless
+patches in the future.
 
-The lockdep warning is caused by calling flush_workqueue() from the
-work function of
-acpi_os_execute_hp_deferred. I don't know if it is safe to do that.
+> From: Martin Decky <martin@decky.cz>
+> 
+> As the hostap driver was converted to use net_device_ops, a mistake was 
+> made in hostap_main.c (commit 5ae4efbcd2611562a8b93596be034e63495706a5). 
+> Originally, the tx_queue_len was set to 0 for every other interface than 
+> HOSTAP_INTERFACE_MASTER, but the new fragment of code sets tx_queue_len to 
+> 0 only for HOSTAP_INTERFACE_MASTER. The opposite of the previous 
+> behavior makes the driver to drop all packets in AP mode.
+> 
+> Change the way 0 is assigned to tx_queue_len according to the original 
+> logic.
+> 
+> Signed-off-by: Martin Decky <martin@decky.cz>
 
->  [<ffffffff81073a70>] ? flush_workqueue+0x0/0xf0 (workqueue.c:397)
->  [<ffffffff812f6eaf>] acpi_os_wait_events_complete+0x10/0x1e drivers/acpi/osl.c
->  [<ffffffff812f6ee7>] acpi_os_execute_hp_deferred+0x2a/0x3e
->  [<ffffffff81072a98>] worker_thread+0x248/0x3c0 (workqueue.c:292)
->  [<ffffffff81072a42>] ? worker_thread+0x1f2/0x3c0
->  [<ffffffff81077900>] ? autoremove_wake_function+0x0/0x40
->  [<ffffffff81072850>] ? worker_thread+0x0/0x3c0
->  [<ffffffff81077456>] kthread+0xa6/0xc0
->  [<ffffffff8100d29a>] child_rip+0xa/0x20
->  [<ffffffff8100cbd4>] ? restore_args+0x0/0x30
->  [<ffffffff810773b0>] ? kthread+0x0/0xc0
->  [<ffffffff8100d290>] ? child_rip+0x0/0x20
->
-
--- 
-Lei Ming
+> ----
+> diff -Naurp linux-2.6.30.orig/drivers/net/wireless/hostap/hostap_main.c linux-2.6.30/drivers/net/wireless/hostap/hostap_main.c
+> --- linux-2.6.30.orig/drivers/net/wireless/hostap/hostap_main.c	2009-06-10 05:05:27.000000000 +0200
+> +++ linux-2.6.30/drivers/net/wireless/hostap/hostap_main.c	2009-09-08 11:11:23.892816045 +0200
+> @@ -875,15 +875,16 @@ void hostap_setup_dev(struct net_device 
+>  
+>  	switch(type) {
+>  	case HOSTAP_INTERFACE_AP:
+> +		dev->tx_queue_len = 0;	/* use main radio device queue */
+>  		dev->netdev_ops = &hostap_mgmt_netdev_ops;
+>  		dev->type = ARPHRD_IEEE80211;
+>  		dev->header_ops = &hostap_80211_ops;
+>  		break;
+>  	case HOSTAP_INTERFACE_MASTER:
+> -		dev->tx_queue_len = 0;	/* use main radio device queue */
+>  		dev->netdev_ops = &hostap_master_ops;
+>  		break;
+>  	default:
+> +		dev->tx_queue_len = 0;	/* use main radio device queue */
+>  		dev->netdev_ops = &hostap_netdev_ops;
+>  	}
+>  
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
