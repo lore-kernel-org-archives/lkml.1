@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbZIJISn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZIJIWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755232AbZIJISn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 04:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZIJISm
+	id S1755242AbZIJIWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 04:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZIJIWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 04:18:42 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:57748 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbZIJISl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 04:18:41 -0400
-Subject: Re: iwlagn: order 2 page allocation failures
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       ipw3945-devel@lists.sourceforge.net,
-       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
-       Assaf Krauss <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Mohamed Abbas <mohamed.abbas@intel.com>
-In-Reply-To: <20090909165545.GK24614@csn.ul.ie>
-References: <200909060941.01810.elendil@planet.nl>
-	 <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie>
-	 <200909091759.33655.elendil@planet.nl>  <20090909165545.GK24614@csn.ul.ie>
-Date: Thu, 10 Sep 2009 11:18:42 +0300
-Message-Id: <1252570722.4876.23.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 10 Sep 2009 04:22:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54468 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752111AbZIJIWa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 04:22:30 -0400
+Date: Thu, 10 Sep 2009 10:22:32 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Michal Sojka <sojkam1@fel.cvut.cz>
+Cc: srostedt@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing/events: Fixed typo
+In-Reply-To: <1252562541-32609-1-git-send-email-sojkam1@fel.cvut.cz>
+Message-ID: <alpine.LNX.2.00.0909101022140.23856@wotan.suse.de>
+References: <1252562541-32609-1-git-send-email-sojkam1@fel.cvut.cz>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 17:55 +0100, Mel Gorman wrote:
-> On Wed, Sep 09, 2009 at 05:59:30PM +0200, Frans Pop wrote:
-> > On Wednesday 09 September 2009, Mel Gorman wrote:
-> > > Franz, in the full dmesg was there any mention of "SLUB: Unable to
-> > > allocate memory on node"?
-> > 
-> > No, nothing at all. I double checked the kernel log, but it was completely 
-> > quiet in the hours before and after the messages I already posted.
-> > 
-> 
-> Ok, that in itself is unexpected.
-> 
-> Pekka, it looks from the stack trace that the failure is from
-> __alloc_skb and I am guessing the failure path is around here
-> 
->         size = SKB_DATA_ALIGN(size);
->         data = kmalloc_node_track_caller(size + sizeof(struct skb_shared_info),
->                         gfp_mask, node);
->         if (!data)
->                 goto nodata;
-> 
-> Why would the SLUB out-of-memory message not appear? It's hardly
-> tripping up on printk_ratelimit() is it?
+On Thu, 10 Sep 2009, Michal Sojka wrote:
 
-That's because it's a large allocation that's passed directly to the
-page allocator. See kmalloc_large_node(), for example.
+> Signed-off-by: Michal Sojka <sojkam1@fel.cvut.cz>
+> ---
+>  Documentation/trace/events.txt |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
+> index f157d75..8efb969 100644
+> --- a/Documentation/trace/events.txt
+> +++ b/Documentation/trace/events.txt
+> @@ -72,7 +72,7 @@ To enable all events in sched subsystem:
+>  
+>  	# echo 1 > /debug/tracing/events/sched/enable
+>  
+> -To eanble all events:
+> +To enable all events:
+>  
+>  	# echo 1 > /debug/tracing/events/enable
 
-			Pekka
+Applied to trivial queue, thanks Michal.
 
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
