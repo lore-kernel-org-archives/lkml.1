@@ -1,73 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754428AbZIJV5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZIJWQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754428AbZIJV5b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 17:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753454AbZIJV5b
+	id S1754546AbZIJWQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 18:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbZIJWQ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 17:57:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52349 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752979AbZIJV5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 17:57:30 -0400
-X-Authenticated: #12255092
-X-Provags-ID: V01U2FsdGVkX1/QfqJvm5vQpp9i/bwjrwvWpceB5bg4diS47lrbAh
-	upDxk/tmN1gRQz
-From: Peter Huewe <PeterHuewe@gmx.de>
-To: devel@driverdev.osuosl.org
-Subject: Re: Staging tree status for the .32 kernel merge
-Date: Thu, 10 Sep 2009 23:57:27 +0200
-User-Agent: KMail/1.9.10
-Cc: Greg KH <greg@kroah.com>, Willy Tarreau <w@1wt.eu>,
-       devel@driverdev.osuosl.org, linux-kernel@vger.kernel.org
-References: <20090903041429.GA29875@kroah.com> <20090905123951.GA1120@1wt.eu> <20090905145035.GA20698@kroah.com>
-In-Reply-To: <20090905145035.GA20698@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 10 Sep 2009 18:16:58 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:56917 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754453AbZIJWQ6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 18:16:58 -0400
+Subject: Re: [PATCH] update clocksource raw_time in timekeeping_suspend
+From: john stultz <johnstul@us.ibm.com>
+To: Yong Zhang <yong.zhang0@gmail.com>
+Cc: ye janboe <janboe.ye@gmail.com>, zippel@linux-m68k.org,
+       akpm@linux-foundation.org, mingo@elte.hu,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <2674af740909100231x582851dbv9b71bc2914be7030@mail.gmail.com>
+References: <af3ea28a0909090035t710f5895i135760a2c7bd8a02@mail.gmail.com>
+	 <1252537622.9883.24.camel@localhost.localdomain>
+	 <af3ea28a0909100107q328d1288x8d677d4d5f79f728@mail.gmail.com>
+	 <2674af740909100231x582851dbv9b71bc2914be7030@mail.gmail.com>
+Content-Type: text/plain
+Date: Thu, 10 Sep 2009 15:15:38 -0700
+Message-Id: <1252620938.7319.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909102357.27867.PeterHuewe@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Saturday 05 September 2009 16:50:35 schrieb Greg KH:
-> On Sat, Sep 05, 2009 at 02:39:51PM +0200, Willy Tarreau wrote:
-> > Hi Greg,
+On Thu, 2009-09-10 at 17:31 +0800, Yong Zhang wrote:
+> On Thu, Sep 10, 2009 at 4:07 PM, ye janboe <janboe.ye@gmail.com> wrote:
+> > hi, John
 > >
-> > On Wed, Sep 02, 2009 at 09:14:30PM -0700, Greg KH wrote:
-> > > 	- panel.  Another one that should be simple to merge.  Anyone?
+> > Thanks for your comments.
 > >
-> > I just got an email from a guy who proposed to work on it and who
-> > showed me he's currently running tests and fixing a bug when removing
-> > the module.
+> > After sent this patch, I realize that this patch exposes the hardware
+> > detail ugly in common code.
 > >
-> > Hopefully he'll make enough progress to get the driver merged.
+> > In embed system, user space apps need to have a method to get the
+> > right time which will not be impacted by NTP and suspend.
 > >
-> > This proves that the principle of the staging tree seems to work,
-> > and that your call was useful ;-)
->
-> Glad to hear it!
+> > Yes, you are right. I want to add sleep_length to the raw time and
+> > user space apps could get the right time after suspend.
+> >
+> 
+> What I get from the code is that CLOCK_MONOTONIC doesn't consider
+> sleep_length either. Do I miss something?
 
-yeah - Greg's call definitely was useful!
-Although I'm still not sure if there is a point to getting the driver merged 
-or not -- see discussion: "staging panel driver"
-http://driverdev.linuxdriverproject.org/pipermail/devel/2009-September/001610.html
+You're quite right. I forgot we drop sleep_length from
+wall_to_monotonic, so it should not increase while we're suspended.
 
-More opinions/suggestions are welcomed - especially from people who are more 
-into lcdproc than I am.
+Janboe: So I think things are fine as they stand. No patch necessary.
 
-However I'm currently working on it anyways - I already eliminated the bug:
-while removing the module misc_deregister gets called twice (keypad and led - 
-both twice) - once in the  panel_detach function and once in the 
-panel_cleanup_module function.
+But please let me know if I'm yet again forgetting something or you're
+finding CLOCK_MONOTONIC_RAW to be insufficient in some way.
 
-And of course the second call fails :)
-I will provide a (very simple :) patch to these issues tomorrow.
+thanks
+-john
 
-
-
-Thanks,
-Peter
