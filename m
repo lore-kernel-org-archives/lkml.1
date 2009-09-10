@@ -1,188 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750849AbZIJEFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750736AbZIJENA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750849AbZIJEFp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 00:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750714AbZIJEFo
+	id S1750736AbZIJENA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 00:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750804AbZIJEM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 00:05:44 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41483 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750704AbZIJEFn (ORCPT
+	Thu, 10 Sep 2009 00:12:59 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:41341 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750728AbZIJEM6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 00:05:43 -0400
-Date: Thu, 10 Sep 2009 01:05:12 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Alan Cox <alan@linux.intel.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
- devices are requested
-Message-ID: <20090910010512.60a1f523@caramujo.chehab.org>
-In-Reply-To: <4AA73309.8030302@zytor.com>
-References: <20090908144942.76ddf0e7@caramujo.chehab.org>
-	<4AA6DF50.3030603@zytor.com>
-	<20090908203323.486c129c@caramujo.chehab.org>
-	<4AA6F63F.7090009@zytor.com>
-	<20090908235441.04549a29@caramujo.chehab.org>
-	<4AA73309.8030302@zytor.com>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 10 Sep 2009 00:12:58 -0400
+Message-Id: <20090910041219.149954890@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 10 Sep 2009 00:12:19 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH 0/6] [GIT PULL] tracing/ring-buffer: various fixes and cleanups
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With kernel 2.6, the number of minors is not 255 anymore. So, it is
-possible to have more than 255 pty devices.
 
-However, the pty_line_name() only provides device names for the first
-256 tty/pty devices. After that, it will duplicate existing names while
-trying to register at sysfs.
+Ingo,
 
-This is a bug, since there's no limits for the maximum number of legacy
-pty devices at Kconfig or at pty.legacy_count.
+Please pull the latest tip/tracing/core tree, which can be found at:
 
-This fix preserves the old nomenclature for tty/pty devices for the
-first 256 devices.
-
-To preserve backward compatibility, the device index is broken into
-nibbles, each nibble generating a letter, at the following order:
-* The second nibble of the index is represented by one of pqrstuvwxyzabcde
-  letters, indicating the 1st through 16th nibble value;
-* The remaining nibbles are represented by one of 0123456789abcdef letters,
-  indicating the 1st through 16th nibble value, starting from the most
-  significative nibble to the least significative nibble, excluding the
-  second nibble (that were already represented).
-
-  So, device numbers will be:
-
-	0     = ptyp0
-	1     = ptyp1
-	...
-	255   = ptyef
-	256   = ptyp10
-	...
-	4095  = ptyeff
-	4096  = ptyp100
-	...
-	65535 = ptyefff
-	65536 = ptyp1000
-	...
-
-Thanks to H. Peter Anvin <hpa@zytor.com> for proposing this algorithm.
-
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
-diff --git a/Documentation/devices.txt b/Documentation/devices.txt
-index 53d64d3..6a74635 100644
---- a/Documentation/devices.txt
-+++ b/Documentation/devices.txt
-@@ -114,17 +114,30 @@ Your cooperation is appreciated.
- 		the initrd.
- 
-   2 char	Pseudo-TTY masters
--		  0 = /dev/ptyp0	First PTY master
--		  1 = /dev/ptyp1	Second PTY master
-+		   0 = /dev/ptyp0	First PTY master
-+		   1 = /dev/ptyp1	Second PTY master
- 		    ...
--		255 = /dev/ptyef	256th PTY master
-+		 255 = /dev/ptyef	256th PTY master
-+		 256 = /dev/ptyp10	257th PTY master
-+		 257 = /dev/ptyp11	258th PTY master
-+		   ...
-+		4095 = /dev/ptyeff	4095th PTY master
-+		4096 = /dev/ptyp100	4096th PTY master
-+		   ...
- 
- 		Pseudo-tty's are named as follows:
--		* Masters are "pty", slaves are "tty";
--		* the fourth letter is one of pqrstuvwxyzabcde indicating
--		  the 1st through 16th series of 16 pseudo-ttys each, and
--		* the fifth letter is one of 0123456789abcdef indicating
--		  the position within the series.
-+		Masters are "pty", slaves are "tty";
-+
-+		The device index is broken into nibbles, each nibble
-+		generating a letter, at the following order:
-+		* The second nibble of the index is represented by one
-+		  of pqrstuvwxyzabcde letters, indicating the 1st
-+		  through 16th nibble value;
-+		* The remaining nibbles are represented by one of
-+		  0123456789abcdef letters, indicating the 1st through
-+		  16th nibble value, starting from the most
-+		  significative nibble to the least significative nibble,
-+		  excluding the second nibble.
- 
- 		These are the old-style (BSD) PTY devices; Unix98
- 		devices are on major 128 and above and use the PTY
-@@ -189,10 +202,18 @@ Your cooperation is appreciated.
- 		the drive type is insignificant for these devices.
- 
-   3 char	Pseudo-TTY slaves
--		  0 = /dev/ttyp0	First PTY slave
--		  1 = /dev/ttyp1	Second PTY slave
--		    ...
--		255 = /dev/ttyef	256th PTY slave
-+		   0 = /dev/ttyp0	First PTY slave
-+		   1 = /dev/ttyp1	Second PTY slave
-+		  ...
-+		 255 = /dev/ttyef	256th PTY slave
-+		 256 = /dev/ttyp10	257th PTY slave
-+		 257 = /dev/ttyp11	258th PTY slave
-+		   ...
-+		4095 = /dev/ttyeff	4095th PTY slave
-+		4096 = /dev/ttyp100	4096th PTY slave
-+		   ...
-+
-+		See char major number 2 for the used rules to name them.
- 
- 		These are the old-style (BSD) PTY devices; Unix98
- 		devices are on major 136 and above.
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index a3afa0c..db86461 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -1093,8 +1093,6 @@ ssize_t redirected_tty_write(struct file *file, const char __user *buf,
- 	return tty_write(file, buf, count, ppos);
- }
- 
--static char ptychar[] = "pqrstuvwxyzabcde";
--
- /**
-  *	pty_line_name	-	generate name for a pty
-  *	@driver: the tty driver in use
-@@ -1108,11 +1106,23 @@ static char ptychar[] = "pqrstuvwxyzabcde";
-  */
- static void pty_line_name(struct tty_driver *driver, int index, char *p)
- {
-+	static char ptychar[] = "pqrstuvwxyzabcde";
-+
- 	int i = index + driver->name_base;
--	/* ->name is initialized to "ttyp", but "tty" is expected */
-+	/*
-+	 * On slave, driver->name is initialized to "ttyp",
-+	 *	but "tty" is expected.
-+	 * The index part of the name is broken into nibbles, following
-+	 * this sequence:
-+	 *   The second nibble encoded with ptychar;
-+	 *   The first nibble, printed in hexadecimal;
-+	 *   The other nibbles, printed in hexadecimal.
-+	 * This is done to preserve backward compatibility with the older
-+	 * naming conventions.
-+	 */
- 	sprintf(p, "%s%c%x",
- 		driver->subtype == PTY_TYPE_SLAVE ? "tty" : driver->name,
--		ptychar[i >> 4 & 0xf], i & 0xf);
-+		ptychar[(i >> 4) & 0xf], (i & 0xf) | ((i >> 4) & ~0xf);
- }
- 
- /**
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core
 
 
+Li Zefan (4):
+      tracing: remove dead code
+      tracing: format clean ups
+      tracing: remove stats from struct tracer
+      tracing: move PRED macros to trace_events_filter.c
 
+Robert Richter (1):
+      ring-buffer: consolidate interface of rb_buffer_peek()
+
+Steven Rostedt (1):
+      tracing: do not grab lock in wakeup latency function tracing
+
+----
+ kernel/trace/ring_buffer.c         |   11 ++---
+ kernel/trace/trace.h               |   86 +++++-------------------------------
+ kernel/trace/trace_events_filter.c |   41 +++++++++++++++++
+ kernel/trace/trace_sched_wakeup.c  |   36 +++++++++------
+ 4 files changed, 78 insertions(+), 96 deletions(-)
+-- 
