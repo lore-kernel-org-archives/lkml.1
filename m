@@ -1,159 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753601AbZIJT1H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753498AbZIJTX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753601AbZIJT1H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 15:27:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZIJT1G
+	id S1753498AbZIJTX7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 15:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZIJTX6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 15:27:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32626 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753586AbZIJT1D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 15:27:03 -0400
-Date: Thu, 10 Sep 2009 21:22:25 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Jiri Slaby <jirislaby@gmail.com>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>, Peter Zijlstra <peterz@infradead.org>,
+	Thu, 10 Sep 2009 15:23:58 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46884 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753092AbZIJTX5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 15:23:57 -0400
+Date: Thu, 10 Sep 2009 21:23:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Christoph Hellwig <hch@lst.de>,
        "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/3] cpu hotplug: don't play with current->cpus_allowed
-Message-ID: <20090910192225.GA618@redhat.com>
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+Message-ID: <20090910192354.GD23356@elf.ucw.cz>
+References: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com> <200908312119.12121.rjw@sisk.pl> <c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com> <c4e36d110909031529q77b53122kdb85785ba293c478@mail.gmail.com> <20090903232317.GA6760@lst.de> <87ljkvmt71.fsf@devron.myhome.or.jp> <c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com> <87iqfx5mss.fsf@devron.myhome.or.jp> <20090907125130.GA1595@ucw.cz> <87ljko5k3v.fsf@devron.myhome.or.jp>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <87ljko5k3v.fsf@devron.myhome.or.jp>
+X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(replaces cpu_hotplug-dont-affect-current-tasks-affinity.patch)
+On Wed 2009-09-09 22:21:56, OGAWA Hirofumi wrote:
+> Pavel Machek <pavel@ucw.cz> writes:
+> 
+> >> It seems
+> >> 
+> >>     1) sync() (probabry "sync" command)
+> >>     2) sync as part of suspend sequence
+> >>     3) sync_filesystem() by mmc remove event
+> >> 
+> >> I guess the root-cause of the problem would be 3). However, it would not
+> >> be easy to fix, at least, we would need to think about what we want to
+> >> do for it. So, to workaround it for now, I've made this patch.
+> >
+> > MMC driver trying to synchronize filesystems looks like ugly layering
+> > violation to me. Why are we doing that?
+> 
+> There is no _layering violation_ here. IIRC, mmc just tells card removed
+> event to another layer (on some points of view, to tell event can be
+> wrong though). The partition (block) layer does it by event.
 
-_cpu_down() changes the current task's affinity and then recovers it at
-the end. The problems are well known: we can't restore old_allowed if it
-was bound to the now-dead-cpu, and we can race with the userspace which
-can change cpu-affinity during unplug.
+So what is the problem? Emulating sync when card is already removed
+seems little ... interesting?
 
-_cpu_down() should not play with current->cpus_allowed at all. Instead,
-take_cpu_down() can migrate the caller of _cpu_down() after __cpu_disable()
-removes the dying cpu from cpu_online_mask.
-
-Reported-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
-
- include/linux/sched.h |    1 +
- kernel/sched.c        |    2 +-
- kernel/cpu.c          |   19 ++++++-------------
- 3 files changed, 8 insertions(+), 14 deletions(-)
-
---- CPUHP/include/linux/sched.h~3_CPU_DOWN_AFFINITY	2009-08-01 04:28:56.000000000 +0200
-+++ CPUHP/include/linux/sched.h	2009-09-10 20:54:00.000000000 +0200
-@@ -1794,6 +1794,7 @@ extern void sched_clock_idle_sleep_event
- extern void sched_clock_idle_wakeup_event(u64 delta_ns);
- 
- #ifdef CONFIG_HOTPLUG_CPU
-+extern void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p);
- extern void idle_task_exit(void);
- #else
- static inline void idle_task_exit(void) {}
---- CPUHP/kernel/sched.c~3_CPU_DOWN_AFFINITY	2009-09-10 20:27:29.000000000 +0200
-+++ CPUHP/kernel/sched.c	2009-09-10 20:54:00.000000000 +0200
-@@ -7118,7 +7118,7 @@ static int __migrate_task_irq(struct tas
- /*
-  * Figure out where task on dead CPU should go, use force if necessary.
-  */
--static void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
-+void move_task_off_dead_cpu(int dead_cpu, struct task_struct *p)
- {
- 	int dest_cpu;
- 	const struct cpumask *nodemask = cpumask_of_node(cpu_to_node(dead_cpu));
---- CPUHP/kernel/cpu.c~3_CPU_DOWN_AFFINITY	2009-08-01 04:28:56.000000000 +0200
-+++ CPUHP/kernel/cpu.c	2009-09-10 20:54:00.000000000 +0200
-@@ -163,6 +163,7 @@ static inline void check_for_tasks(int c
- }
- 
- struct take_cpu_down_param {
-+	struct task_struct *caller;
- 	unsigned long mod;
- 	void *hcpu;
- };
-@@ -171,6 +172,7 @@ struct take_cpu_down_param {
- static int __ref take_cpu_down(void *_param)
- {
- 	struct take_cpu_down_param *param = _param;
-+	unsigned int cpu = (unsigned long)param->hcpu;
- 	int err;
- 
- 	/* Ensure this CPU doesn't handle any more interrupts. */
-@@ -181,6 +183,8 @@ static int __ref take_cpu_down(void *_pa
- 	raw_notifier_call_chain(&cpu_chain, CPU_DYING | param->mod,
- 				param->hcpu);
- 
-+	if (task_cpu(param->caller) == cpu)
-+		move_task_off_dead_cpu(cpu, param->caller);
- 	/* Force idle task to run as soon as we yield: it should
- 	   immediately notice cpu is offline and die quickly. */
- 	sched_idle_next();
-@@ -191,10 +195,10 @@ static int __ref take_cpu_down(void *_pa
- static int __ref _cpu_down(unsigned int cpu, int tasks_frozen)
- {
- 	int err, nr_calls = 0;
--	cpumask_var_t old_allowed;
- 	void *hcpu = (void *)(long)cpu;
- 	unsigned long mod = tasks_frozen ? CPU_TASKS_FROZEN : 0;
- 	struct take_cpu_down_param tcd_param = {
-+		.caller = current,
- 		.mod = mod,
- 		.hcpu = hcpu,
- 	};
-@@ -205,9 +209,6 @@ static int __ref _cpu_down(unsigned int 
- 	if (!cpu_online(cpu))
- 		return -EINVAL;
- 
--	if (!alloc_cpumask_var(&old_allowed, GFP_KERNEL))
--		return -ENOMEM;
--
- 	cpu_hotplug_begin();
- 	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
- 					hcpu, -1, &nr_calls);
-@@ -221,11 +222,6 @@ static int __ref _cpu_down(unsigned int 
- 		goto out_release;
- 	}
- 
--	/* Ensure that we are not runnable on dying cpu */
--	cpumask_copy(old_allowed, &current->cpus_allowed);
--	set_cpus_allowed_ptr(current,
--			     cpumask_of(cpumask_any_but(cpu_online_mask, cpu)));
--
- 	err = __stop_machine(take_cpu_down, &tcd_param, cpumask_of(cpu));
- 	if (err) {
- 		/* CPU didn't die: tell everyone.  Can't complain. */
-@@ -233,7 +229,7 @@ static int __ref _cpu_down(unsigned int 
- 					    hcpu) == NOTIFY_BAD)
- 			BUG();
- 
--		goto out_allowed;
-+		goto out_release;
- 	}
- 	BUG_ON(cpu_online(cpu));
- 
-@@ -251,8 +247,6 @@ static int __ref _cpu_down(unsigned int 
- 
- 	check_for_tasks(cpu);
- 
--out_allowed:
--	set_cpus_allowed_ptr(current, old_allowed);
- out_release:
- 	cpu_hotplug_done();
- 	if (!err) {
-@@ -260,7 +254,6 @@ out_release:
- 					    hcpu) == NOTIFY_BAD)
- 			BUG();
- 	}
--	free_cpumask_var(old_allowed);
- 	return err;
- }
- 
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
