@@ -1,86 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753851AbZIJBOh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753887AbZIJBPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753851AbZIJBOh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 21:14:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZIJBOh
+	id S1753887AbZIJBPI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 21:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753320AbZIJBPH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 21:14:37 -0400
-Received: from e24smtp05.br.ibm.com ([32.104.18.26]:52396 "EHLO
-	e24smtp05.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753093AbZIJBOg (ORCPT
+	Wed, 9 Sep 2009 21:15:07 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43637 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751679AbZIJBPG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 21:14:36 -0400
-Subject: Re: [PATCH] TPM: Fixup boot probe timeout for tpm_tis driver
-From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Cc: linux-kernel@vger.kernel.org, tpmdd-devel@lists.sourceforge.net,
-       Debora Velarde <debora@linux.vnet.ibm.com>,
-       Marcel Selhorst <m.selhorst@sirrix.com>,
-       James Morris <jmorris@namei.org>, Jan Beulich <jbeulich@novell.com>,
-       adi@vmware.com
-In-Reply-To: <20090909232218.GK406@obsidianresearch.com>
-References: <20090909232218.GK406@obsidianresearch.com>
-Content-Type: text/plain
-Date: Wed, 09 Sep 2009 22:14:27 -0300
-Message-Id: <1252545267.4837.62.camel@blackbox>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.2 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 21:15:06 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Subject: Re: [rfc] lru_add_drain_all() vs isolation
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Ingo Molnar <mingo@elte.hu>, linux-mm <linux-mm@kvack.org>,
+       Oleg Nesterov <onestero@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090910100057.a1375276.minchan.kim@barrios-desktop>
+References: <20090910084602.9CBD.A69D9226@jp.fujitsu.com> <20090910100057.a1375276.minchan.kim@barrios-desktop>
+Message-Id: <20090910101051.9CCC.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 10 Sep 2009 10:15:07 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy Isaacson sent this a while ago in a patchset, I think I lost track
-of it in the middle of the other patches, sorry. In any case, ACK.
+> On Thu, 10 Sep 2009 08:58:20 +0900 (JST)
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> 
+> > > On Wed, Sep 9, 2009 at 1:27 PM, KOSAKI Motohiro
+> > > <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > >> The usefulness of a scheme like this requires:
+> > > >>
+> > > >> 1. There are cpus that continually execute user space code
+> > > >>    without system interaction.
+> > > >>
+> > > >> 2. There are repeated VM activities that require page isolation /
+> > > >>    migration.
+> > > >>
+> > > >> The first page isolation activity will then clear the lru caches of the
+> > > >> processes doing number crunching in user space (and therefore the first
+> > > >> isolation will still interrupt). The second and following isolation will
+> > > >> then no longer interrupt the processes.
+> > > >>
+> > > >> 2. is rare. So the question is if the additional code in the LRU handling
+> > > >> can be justified. If lru handling is not time sensitive then yes.
+> > > >
+> > > > Christoph, I'd like to discuss a bit related (and almost unrelated) thing.
+> > > > I think page migration don't need lru_add_drain_all() as synchronous, because
+> > > > page migration have 10 times retry.
+> > > >
+> > > > Then asynchronous lru_add_drain_all() cause
+> > > >
+> > > >  - if system isn't under heavy pressure, retry succussfull.
+> > > >  - if system is under heavy pressure or RT-thread work busy busy loop, retry failure.
+> > > >
+> > > > I don't think this is problematic bahavior. Also, mlock can use asynchrounous lru drain.
+> > > 
+> > > I think, more exactly, we don't have to drain lru pages for mlocking.
+> > > Mlocked pages will go into unevictable lru due to
+> > > try_to_unmap when shrink of lru happens.
+> > 
+> > Right.
+> > 
+> > > How about removing draining in case of mlock?
+> > 
+> > Umm, I don't like this. because perfectly no drain often make strange test result.
+> > I mean /proc/meminfo::Mlock might be displayed unexpected value. it is not leak. it's only lazy cull.
+> > but many tester and administrator wiill think it's bug... ;)
+> 
+> I agree. I have no objection to your approach. :)
+> 
+> > Practically, lru_add_drain_all() is nearly zero cost. because mlock's page fault is very
+> > costly operation. it hide drain cost. now, we only want to treat corner case issue. 
+> > I don't hope dramatic change.
+> 
+> Another problem is as follow.
+> 
+> Although some CPUs don't have any thing to do, we do it. 
+> HPC guys don't want to consume CPU cycle as Christoph pointed out.
+> I liked Peter's idea with regard to this. 
+> My approach can solve it, too. 
+> But I agree it would be dramatic change. 
 
-http://marc.info/?l=linux-kernel&m=124650185023490&w=2
+Is Perter's + mine approach bad?
 
-Thanks,
-Rajiv 
+It mean,
 
-On Wed, 2009-09-09 at 17:22 -0600, Jason Gunthorpe wrote:
-> When probing the device in tpm_tis_init the call request_locality
-> uses timeout_a, which wasn't being initalized until after
-> request_locality. This results in request_locality falsely timing
-> out if the chip is still starting. Move the initialization to before
-> request_locality.
-> 
-> This probably only matters for embedded cases (ie mine), a BIOS likely
-> gets the TPM into a state where this code path isn't necessary.
-> 
-> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-> ---
->  drivers/char/tpm/tpm_tis.c |   12 ++++++------
->  1 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/drivers/char/tpm/tpm_tis.c b/drivers/char/tpm/tpm_tis.c
-> index 241b5ae..c1e5ab8 100644
-> --- a/drivers/char/tpm/tpm_tis.c
-> +++ b/drivers/char/tpm/tpm_tis.c
-> @@ -450,6 +450,12 @@ static int tpm_tis_init(struct device *dev, u32 start,
->  		goto out_err;
->  	}
-> 
-> +	/* Default timeouts */
-> +	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-> +	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
-> +	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-> +	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-> +
->  	if (request_locality(chip, 0) != 0) {
->  		rc = -ENODEV;
->  		goto out_err;
-> @@ -457,12 +463,6 @@ static int tpm_tis_init(struct device *dev, u32 start,
-> 
->  	vendor = ioread32(chip->vendor.iobase + TPM_DID_VID(0));
-> 
-> -	/* Default timeouts */
-> -	chip->vendor.timeout_a = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-> -	chip->vendor.timeout_b = msecs_to_jiffies(TIS_LONG_TIMEOUT);
-> -	chip->vendor.timeout_c = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-> -	chip->vendor.timeout_d = msecs_to_jiffies(TIS_SHORT_TIMEOUT);
-> -
->  	dev_info(dev,
->  		 "1.2 TPM (device-id 0x%X, rev-id %d)\n",
->  		 vendor >> 16, ioread8(chip->vendor.iobase + TPM_RID(0)));
+  - RT-thread binding cpu is not grabbing the page
+	-> mlock successful by Peter's improvement
+  - RT-thread binding cpu is grabbing the page
+	-> mlock successful by mine approach
+	   the page is culled later.
+
+
+
 
