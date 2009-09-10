@@ -1,108 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZIJAiW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZIJAkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZIJAiW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 Sep 2009 20:38:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754780AbZIJAiV
+	id S1754786AbZIJAkm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 Sep 2009 20:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752863AbZIJAkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 Sep 2009 20:38:21 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:39878 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753402AbZIJAiU (ORCPT
+	Wed, 9 Sep 2009 20:40:41 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:40867 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752861AbZIJAkl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 Sep 2009 20:38:20 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Thu, 10 Sep 2009 09:36:23 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/2] do_wait-wakeup-optimization: fix
- child_wait_callback()->eligible_child() usage
-Message-Id: <20090910093623.4d655410.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090901122325.GB20989@redhat.com>
-References: <20090827144453.25f1161b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827160532.d6386722.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827093441.GA3451@redhat.com>
-	<20090827184303.500ac1f0.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827100846.GA6462@redhat.com>
-	<20090827193133.b7eed4a9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090827105209.GA8469@redhat.com>
-	<20090828171724.GA17445@redhat.com>
-	<20090828191624.0F5BC45B02@magilla.sf.frob.com>
-	<20090901122240.GA20989@redhat.com>
-	<20090901122325.GB20989@redhat.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 Sep 2009 20:40:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type;
+        b=cO7Xh/hGhw0oB3HnkW8u3jn9udop2kG3zNaazpr65VOpPvE7uwsgHcMfZeO88Qxqey
+         T8yQSPWT/wMOIRZcAXHU2jzGkcBfDK1b8gqRTac0kX9BFvmQSorCvcVIwRIj+VJsbpjY
+         YpKAMtkvjUxUyi5lKIVT/Qi9d/r1TtAo/iZZE=
+MIME-Version: 1.0
+In-Reply-To: <1252507740.14793.115.camel@desktop>
+References: <20090909075024.GA1400@ucw.cz> <1252507740.14793.115.camel@desktop>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Thu, 10 Sep 2009 08:40:24 +0800
+Message-ID: <f17812d70909091740m3ef98e44t18dffc6a2c7c1126@mail.gmail.com>
+Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Pavel Machek <pavel@ucw.cz>, rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       Russell King <rmk@arm.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 Sep 2009 14:23:25 +0200
-Oleg Nesterov <oleg@redhat.com> wrote:
+On Wed, Sep 9, 2009 at 10:49 PM, Daniel Walker <dwalker@fifo99.com> wrote:
+> On Wed, 2009-09-09 at 09:50 +0200, Pavel Machek wrote:
+>> Hi, Linus!
+>>
+>> Spitz resume was broken for year or likely two, and it would be very
+>> nice to fix it for 2.6.31 release. One liner is below, and it really
+>> can not harm. It already is in Eric's fix queue, so pulling that for
+>> .31 should work, too.
+>>
+>> Do you think you could take it?
+>
+> One checkpatch error here..
+>
+> ERROR: trailing whitespace
+> #77: FILE: arch/arm/mach-pxa/sharpsl_pm.c:681:
+> +^Iif ((!sharpsl_pm.machinfo->read_devdata(SHARPSL_STATUS_LOCK)) || $
+>
+> total: 1 errors, 0 warnings, 10 lines checked
+>
 
-> (on top of do_wait-wakeup-optimization-child_wait_callback-check-__wnothread-case.patch,
->  fixes do_wait-wakeup-optimization-change-__wake_up_parent-to-use-filtered-wakeup.patch)
-> 
-> child_wait_callback()->eligible_child() is not right, we can miss the
-> wakeup if the task was detached before __wake_up_parent() and the caller
-> of do_wait() didn't use __WALL.
-> 
-> Move ->wo_pid checks from eligible_child() to the new helper, eligible_pid(),
-> and change child_wait_callback() to use it instead of eligible_child().
-> 
-> Note: actually I think it would be better to fix the __WCLONE check in
-> eligible_child(), it doesn't look exactly right. But it is not clear what
-> is the supposed behaviour, and any change is user-visible.
-> 
-> Reported-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Oleg Nesterov <oleg@redhat.com>
-Confirmed this version works well with my troublesome scripts.
-
-Tested-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-
-
-> ---
-> 
->  kernel/exit.c |   15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
-> 
-> --- WAIT/kernel/exit.c~2_WAKE_PARENT_ELIGIBLE_FIX	2009-09-01 12:49:27.000000000 +0200
-> +++ WAIT/kernel/exit.c	2009-09-01 12:59:23.000000000 +0200
-> @@ -1106,13 +1106,16 @@ static struct pid *task_pid_type(struct 
->  	return pid;
->  }
->  
-> -static int eligible_child(struct wait_opts *wo, struct task_struct *p)
-> +static inline int eligible_pid(struct wait_opts *wo, struct task_struct *p)
->  {
-> -	if (wo->wo_type < PIDTYPE_MAX) {
-> -		if (task_pid_type(p, wo->wo_type) != wo->wo_pid)
-> -			return 0;
-> -	}
-> +	return	wo->wo_type == PIDTYPE_MAX ||
-> +		task_pid_type(p, wo->wo_type) == wo->wo_pid;
-> +}
->  
-> +static int eligible_child(struct wait_opts *wo, struct task_struct *p)
-> +{
-> +	if (!eligible_pid(wo, p))
-> +		return 0;
->  	/* Wait for all children (clone and not) if __WALL is set;
->  	 * otherwise, wait for clone children *only* if __WCLONE is
->  	 * set; otherwise, wait for non-clone children *only*.  (Note:
-> @@ -1564,7 +1567,7 @@ static int child_wait_callback(wait_queu
->  						child_wait);
->  	struct task_struct *p = key;
->  
-> -	if (!eligible_child(wo, p))
-> +	if (!eligible_pid(wo, p))
->  		return 0;
->  
->  	if ((wo->wo_flags & __WNOTHREAD) && wait->private != p->parent)
-> 
-> 
-
+This has been fixed in the version I sent to Russell.
