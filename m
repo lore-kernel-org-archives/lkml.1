@@ -1,143 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbZIJUyG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754332AbZIJUx7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754387AbZIJUyG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 16:54:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbZIJUyE
+	id S1754332AbZIJUx7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 16:53:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754251AbZIJUx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 16:54:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56752 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754344AbZIJUyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 16:54:02 -0400
-Date: Thu, 10 Sep 2009 16:52:27 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [RFC] IO scheduler based IO controller V9
-Message-ID: <20090910205227.GB3617@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA918C1.6070907@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA918C1.6070907@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 10 Sep 2009 16:53:58 -0400
+Received: from casper.infradead.org ([85.118.1.10]:40502 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751728AbZIJUx6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 16:53:58 -0400
+Subject: Re: [PATCH 0/3] resend, cpuset/hotplug fixes
+From: Peter Zijlstra <peterz@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Gautham Shenoy <ego@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090910192153.GA584@redhat.com>
+References: <20090910192153.GA584@redhat.com>
+Content-Type: text/plain
+Date: Thu, 10 Sep 2009 22:53:16 +0200
+Message-Id: <1252615996.7205.99.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 05:18:25PM +0200, Jerome Marchand wrote:
-> Vivek Goyal wrote:
-> > Hi All,
-> > 
-> > Here is the V9 of the IO controller patches generated on top of 2.6.31-rc7.
->  
-> Hi Vivek,
-> 
-> I've run some postgresql benchmarks for io-controller. Tests have been
-> made with 2.6.31-rc6 kernel, without io-controller patches (when
-> relevant) and with io-controller v8 and v9 patches.
-> I set up two instances of the TPC-H database, each running in their
-> own io-cgroup. I ran two clients to these databases and tested on each
-> that simple request:
-> $ select count(*) from LINEITEM;
-> where LINEITEM is the biggest table of TPC-H (6001215 entries,
-> 720MB). That request generates a steady stream of IOs.
-> 
-> Time is measure by psql (\timing switched on). Each test is run twice
-> or more if there is any significant difference between the first two
-> runs. Before each run, the cache is flush:
-> $ echo 3 > /proc/sys/vm/drop_caches
+On Thu, 2009-09-10 at 21:21 +0200, Oleg Nesterov wrote:
+> (my apologies to those who see this twice).
 > 
 > 
-> Results with 2 groups of same io policy (BE) and same io weight (1000):
+> The 1st patch is preparation. 2-3 fix different problems, the 3rd one
+> depends on 2nd.
 > 
-> 	w/o io-scheduler	io-scheduler v8		io-scheduler v9
-> 	first	second		first	second		first	second
-> 	DB	DB		DB	DB		DB	DB
+> These patches change the code which I don't really understand, please
+> review.
 > 
-> CFQ	48.4s	48.4s		48.2s	48.2s		48.1s	48.5s
-> Noop	138.0s	138.0s		48.3s	48.4s		48.5s	48.8s
-> AS	46.3s	47.0s		48.5s	48.7s		48.3s	48.5s
-> Deadl.	137.1s	137.1s		48.2s	48.3s		48.3s	48.5s
 > 
-> As you can see, there is no significant difference for CFQ
-> scheduler.
-
-Thanks Jerome.  
-
-> There is big improvement for noop and deadline schedulers
-> (why is that happening?).
-
-I think because now related IO is in a single queue and it gets to run
-for 100ms or so (like CFQ). So previously, IO from both the instances
-will go into a single queue which should lead to more seeks as requests
-from two groups will kind of get interleaved.
-
-With io controller, both groups have separate queues so requests from
-both the data based instances will not get interleaved (This almost
-becomes like CFQ where ther are separate queues for each io context
-and for sequential reader, one io context gets to run nicely for certain
-ms based on its priority).
-
-> The performance with anticipatory scheduler
-> is a bit lower (~4%).
+> As for the 3rd patch, it replaces
 > 
-
-I will run some tests with AS and see if I can reproduce this lower
-performance and attribute it to a particular piece of code.
-
+> 	cpu_hotplug-dont-affect-current-tasks-affinity.patch
 > 
-> Results with 2 groups of same io policy (BE), different io weights and
-> CFQ scheduler:
-> 			io-scheduler v8		io-scheduler v9
-> weights = 1000, 500	35.6s	46.7s		35.6s	46.7s
-> weigths = 1000, 250	29.2s	45.8s		29.2s	45.6s
-> 
-> The result in term of fairness is close to what we can expect from the
-> ideal theoric case: with io weights of 1000 and 500 (1000 and 250),
-> the first request get 2/3 (4/5) of io time as long as it runs and thus
-> finish in about 3/4 (5/8) of total time. 
-> 
+> in -mm tree. Imho the new patch is more simple and clean, but of course
+> this is subjective and I am biased.
 
-Jerome, after 36.6 seconds, disk will be fully given to second group.
-Hence these times might not reflect the accurate measure of who got how
-much of disk time.
+Look good to me.
 
-Can you just capture the output of "io.disk_time" file in both the cgroups
-at the time of completion of task in higher weight group. Alternatively,
-you can just run this a script in a loop which prints the output of
- "cat io.disk_time | grep major:minor" every  2 seconds. That way we can
-see how disk times are being distributed between groups.
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 
-> 
-> Results  with 2 groups of different io policies, same io weight and
-> CFQ scheduler:
-> 			io-scheduler v8		io-scheduler v9
-> policy = RT, BE		22.5s	45.3s		22.4s	45.0s
-> policy = BE, IDLE	22.6s	44.8s		22.4s	45.0s
-> 
-> Here again, the result in term of fairness is very close from what we
-> expect.
+Ingo, will you stick them in -tip?
 
-Same as above in this case too.
-
-These seem to be good test for fairness measurement in case of streaming 
-readers. I think one more interesting test case will be do how are the 
-random read latencies in case of multiple streaming readers present.
-
-So if we can launch 4-5 dd processes in one group and then issue some
-random small queueries on postgresql in second group, I am keen to see
-how quickly the query can be completed with and without io controller.
-Would be interesting to see at results for all 4 io schedulers.
-
-Thanks
-Vivek
