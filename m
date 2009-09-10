@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZIJM6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755632AbZIJM6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbZIJM6O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 08:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755311AbZIJM6O
+	id S1755632AbZIJM6h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 08:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbZIJM6h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 08:58:14 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:53452 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753224AbZIJM6N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 08:58:13 -0400
-Date: Thu, 10 Sep 2009 08:57:42 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Dave Chinner <david@fromorbit.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Hellwig <hch@infradead.org>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [RFC][PATCH 7/7] writeback: balance_dirty_pages() shall write
- more than dirtied pages
-Message-ID: <20090910125742.GH5106@think>
-Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
-	Wu Fengguang <fengguang.wu@intel.com>, Jan Kara <jack@suse.cz>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jens Axboe <jens.axboe@oracle.com>,
-	Dave Chinner <david@fromorbit.com>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Christoph Hellwig <hch@infradead.org>,
-	Artem Bityutskiy <dedekind1@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-References: <20090909145141.293229693@intel.com>
- <20090909150601.159061863@intel.com>
- <20090909154413.GC7949@duck.suse.cz>
- <20090910014201.GB10957@localhost>
+	Thu, 10 Sep 2009 08:58:37 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:55886 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752787AbZIJM6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 08:58:36 -0400
+Date: Thu, 10 Sep 2009 13:58:41 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       ipw3945-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>, cl@linux-foundation.org,
+       Assaf Krauss <assaf.krauss@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Mohamed Abbas <mohamed.abbas@intel.com>
+Subject: Re: iwlagn: order 2 page allocation failures
+Message-ID: <20090910125841.GD31153@csn.ul.ie>
+References: <200909060941.01810.elendil@planet.nl> <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie> <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie> <1252570722.4876.23.camel@penberg-laptop> <20090910123445.GC31153@csn.ul.ie> <1252586376.4876.29.camel@penberg-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090910014201.GB10957@localhost>
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090208.4AA8F7CA.00D1:SCFSTAT5015188,ss=1,fgs=0
+In-Reply-To: <1252586376.4876.29.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 09:42:01AM +0800, Wu Fengguang wrote:
-> On Wed, Sep 09, 2009 at 11:44:13PM +0800, Jan Kara wrote:
-> > On Wed 09-09-09 22:51:48, Wu Fengguang wrote:
-> > > Some filesystem may choose to write much more than ratelimit_pages
-> > > before calling balance_dirty_pages_ratelimited_nr(). So it is safer to
-> > > determine number to write based on real number of dirtied pages.
-> > > 
-> > > The increased write_chunk may make the dirtier more bumpy.  This is
-> > > filesystem writers' duty not to dirty too much at a time without
-> > > checking the ratelimit.
-> >   I don't get this. balance_dirty_pages_ratelimited_nr() is called when we
-> > dirty the page, not when we write it out. So a problem would only happen if
-> > filesystem dirties pages by set_page_dirty() and won't call
-> > balance_dirty_pages_ratelimited_nr(). But e.g. generic_perform_write()
-> > and do_wp_page() takes care of that. So where's the problem?
+On Thu, Sep 10, 2009 at 03:39:36PM +0300, Pekka Enberg wrote:
+> Hi Mel,
 > 
-> It seems that btrfs_file_write() is writing in chunks of up to 1024-pages
-> (1024 is the computed nrptrs value in a 32bit kernel). And it calls
-> balance_dirty_pages_ratelimited_nr() each time it dirtied such a chunk.
+> On Thu, 2009-09-10 at 13:34 +0100, Mel Gorman wrote:
+> > > That's because it's a large allocation that's passed directly to the
+> > > page allocator. See kmalloc_large_node(), for example. 
+> > 
+> > Pants. Is there any chance that could be fixed so that allocation
+> > failures within SLUB get consistently reported?
+> 
+> Did you have something specific in mind? I am not sure it's worth it,
+> really.
+> 
+> The kmalloc_large() function is a static inline in
+> include/linux/slub_def.h that gets inlined nicely to a get_order() +
+> __get_free_pages() pair in the caller for production configs. I'm not
+> sure what we should print either. There's no known "object size" or
+> "buffer size" nor do we any of the variable order things or backing
+> struct kmem_cache_nodes.
+> 
 
-I can easily change this to call more often, but we do always call
-balance_dirty_pages to reflect how much ram we've really sent down.
+All I had in mind really was to grab the size of the buffer that was
+passed into kmalloc such as here;
 
--chris
+void *__kmalloc(size_t size, gfp_t flags)
+{
+        struct kmem_cache *s;
+        void *ret;
 
+        if (unlikely(size > SLUB_MAX_SIZE))
+                return kmalloc_large(size, flags);
+
+and to have consistent reporting of slub-allocation failures but if you
+reckon it's not worth it, I wouldn't push strongly on it.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
