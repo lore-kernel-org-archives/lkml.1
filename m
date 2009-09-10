@@ -1,75 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751201AbZIJEp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbZIJEsI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751201AbZIJEp7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 00:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750916AbZIJEp7
+	id S1752595AbZIJEsI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 00:48:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751068AbZIJEsH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 00:45:59 -0400
-Received: from mail-yw0-f175.google.com ([209.85.211.175]:59418 "EHLO
-	mail-yw0-f175.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750842AbZIJEp6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 00:45:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=fZQNKeysWQNqCSzkJT2urAZfVO8Qqh0kHN+hflj8DXdXni+WYBXJZ0ZbPEXg/v9y3z
-         1y/IP+Zc77Yx1WH9Tg3JH5jFFq6x0CGt1HwOCMOYlnnMSrCKQ3mBO4xYHJjS+oGMhYbn
-         tFl0i/YbdCEharLZ0VkjAj2ZjkZ+Z7HtIDGtI=
-Subject: Re: [PATCH 4/6] perf_counter: Add PERF_COUNTER_IOC_SET_FILTER ioctl
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AA71080.7030503@cn.fujitsu.com>
-References: <4AA4C04D.1050201@cn.fujitsu.com>
-	 <4AA4C0B3.3070300@cn.fujitsu.com> <1252341871.7959.37.camel@laptop>
-	 <20090907164852.GA6485@elte.hu>  <1252342545.7959.42.camel@laptop>
-	 <1252393315.10919.4.camel@tropicana>  <4AA71080.7030503@cn.fujitsu.com>
-Content-Type: text/plain
-Date: Wed, 09 Sep 2009 23:45:57 -0500
-Message-Id: <1252557957.6431.2.camel@tropicana>
+	Thu, 10 Sep 2009 00:48:07 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55582 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750842AbZIJEsG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 00:48:06 -0400
+Date: Thu, 10 Sep 2009 14:48:01 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ed Cashin <ecashin@coraid.com>
+Subject: linux-next: manual merge of the block tree with the  tree
+Message-Id: <20090910144801.2b604ee7.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-09-09 at 10:18 +0800, Li Zefan wrote:
-> >>>> Hrm,.. not at all sure about this.. what are the ABI implications?
-> >>> I think the ABI should be fine if it's always a sub-set of C syntax. 
-> >>> That would be C expressions initially. Hm?
-> >> Right, so I've no clue what filter expressions look like, and the
-> >> changelog doesn't help us at all. It doesn't mention its a well
-> >> considered decision to henceforth freeze the expression syntax.
-> >>
-> >> Of course, since filters so far only work with tracepoint things, and
-> >> since you can only come by tracepoint things through debugfs, and since
-> >> anything debugfs is basically a free-for-all ABI-less world, we might be
-> >> good, but then this is a very ill-defined ioctl() indeed.
-> >>
-> >> So please, consider this well -- there might not be a second chance.
-> >>
-> > 
-> > I've been meaning to write up something about the event filters - here's
-> > a first stab that hopefully helps explain them...
-> > 
-> 
-> Great!
-> 
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-> 
-> Could you add your SOB and send it to Ingo?
-> 
-> Some nitpicks below:
+Hi Jens,
 
-Sure, I'll send a new version shortly - thanks for the suggestions.
+Today's linux-next merge of the block tree got a conflict in
+drivers/block/aoe/aoeblk.c between commit
+7135a71b19be1faf48b7148d77844d03bc0717d6 ("aoe: allocate unused
+request_queue for sysfs") from Linus' tree and commit
+5063fe01e7dc205ebca89877f8eb01d6a5b0ebd6 ("writeback: add name to
+backing_dev_info") from the block tree.
 
-Tom
- 
+I fixed it up (see below) and can carry the fix for a while.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-
+diff --cc drivers/block/aoe/aoeblk.c
+index 1e15889,0efb8fc..0000000
+--- a/drivers/block/aoe/aoeblk.c
++++ b/drivers/block/aoe/aoeblk.c
+@@@ -264,12 -264,10 +264,13 @@@ aoeblk_gdalloc(void *vp
+  		goto err_disk;
+  	}
+  
+ -	blk_queue_make_request(&d->blkq, aoeblk_make_request);
+ -	d->blkq.backing_dev_info.name = "aoe";
+ -	if (bdi_init(&d->blkq.backing_dev_info))
+ +	d->blkq = blk_alloc_queue(GFP_KERNEL);
+ +	if (!d->blkq)
+  		goto err_mempool;
+ +	blk_queue_make_request(d->blkq, aoeblk_make_request);
+++	d->blkq->backing_dev_info.name = "aoe";
+ +	if (bdi_init(&d->blkq->backing_dev_info))
+ +		goto err_blkq;
+  	spin_lock_irqsave(&d->lock, flags);
+  	gd->major = AOE_MAJOR;
+  	gd->first_minor = d->sysminor * AOE_PARTITIONS;
