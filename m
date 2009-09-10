@@ -1,102 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZIJLrF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZIJLus@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbZIJLrF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 07:47:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZIJLrE
+	id S1755491AbZIJLus (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 07:50:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753261AbZIJLur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 07:47:04 -0400
-Received: from nox.protox.org ([88.191.38.29]:46663 "EHLO nox.protox.org"
+	Thu, 10 Sep 2009 07:50:47 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:57603 "EHLO poutre.nerim.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752356AbZIJLrE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 07:47:04 -0400
-From: Jerome Glisse <jglisse@redhat.com>
-To: airlied@gmail.com
-Cc: dri-devel@lists.sf.net, linux-kernel@vger.kernel.org,
-       Jerome Glisse <jglisse@redhat.com>
-Subject: [PATCH] drm/radeon/kms: R3XX/R4XX AGP asic use PCI GART not PCIE GART
-Date: Thu, 10 Sep 2009 13:47:09 +0200
-Message-Id: <1252583229-13754-1-git-send-email-jglisse@redhat.com>
-X-Mailer: git-send-email 1.6.4.2
+	id S1751718AbZIJLuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 07:50:46 -0400
+Date: Thu, 10 Sep 2009 13:50:47 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Crane Cai <crane.cai@amd.com>
+Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] I2C: add new AMD SMBus device ID
+Message-ID: <20090910135047.2a55ccca@hyperion.delvare>
+In-Reply-To: <20090910080427.GA10945@crane-desktop>
+References: <20090910080427.GA10945@crane-desktop>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-R3XX/R4XX AGP asic use the old PCI GART block, not the new PCIE GART.
-Make sure we pick the right GART when disabling AGP.
+Hi Crane,
 
-Signed-off-by: Jerome Glisse <jglisse@redhat.com>
----
- drivers/gpu/drm/radeon/r300.c          |    6 ++++++
- drivers/gpu/drm/radeon/r420.c          |    9 +++++++--
- drivers/gpu/drm/radeon/radeon.h        |    4 ++++
- drivers/gpu/drm/radeon/radeon_device.c |    2 +-
- 4 files changed, 18 insertions(+), 3 deletions(-)
+On Thu, 10 Sep 2009 16:04:27 +0800, Crane Cai wrote:
+> Add new SMBus device ID for SB900
+> 
+> ---
+> Hi Jean,
+> 
+> We follow your point, new patch submitted, please apply.
 
-diff --git a/drivers/gpu/drm/radeon/r300.c b/drivers/gpu/drm/radeon/r300.c
-index a5f82f7..9c17b78 100644
---- a/drivers/gpu/drm/radeon/r300.c
-+++ b/drivers/gpu/drm/radeon/r300.c
-@@ -181,6 +181,12 @@ int r300_gart_enable(struct radeon_device *rdev)
- 		rdev->asic->gart_set_page = &rv370_pcie_gart_set_page;
- 		return rv370_pcie_gart_enable(rdev);
- 	}
-+	if (rdev->flags & RADEON_IS_PCI) {
-+		rdev->asic->gart_disable = &r100_pci_gart_disable;
-+		rdev->asic->gart_tlb_flush = &r100_pci_gart_tlb_flush;
-+		rdev->asic->gart_set_page = &r100_pci_gart_set_page;
-+		return r100_pci_gart_enable(rdev);
-+	}
- 	return r100_pci_gart_enable(rdev);
- }
- 
-diff --git a/drivers/gpu/drm/radeon/r420.c b/drivers/gpu/drm/radeon/r420.c
-index 96303f0..551d699 100644
---- a/drivers/gpu/drm/radeon/r420.c
-+++ b/drivers/gpu/drm/radeon/r420.c
-@@ -101,8 +101,13 @@ int r420_mc_init(struct radeon_device *rdev)
- 
- void r420_mc_fini(struct radeon_device *rdev)
- {
--	rv370_pcie_gart_disable(rdev);
--	radeon_gart_table_vram_free(rdev);
-+	if (rdev->flags & RADEON_IS_PCIE) {
-+		rv370_pcie_gart_disable(rdev);
-+		radeon_gart_table_vram_free(rdev);
-+	} else {
-+		r100_pci_gart_disable(rdev);
-+		radeon_gart_table_ram_free(rdev);
-+	}
- 	radeon_gart_fini(rdev);
- }
- 
-diff --git a/drivers/gpu/drm/radeon/radeon.h b/drivers/gpu/drm/radeon/radeon.h
-index fa84c77..d6ff4e0 100644
---- a/drivers/gpu/drm/radeon/radeon.h
-+++ b/drivers/gpu/drm/radeon/radeon.h
-@@ -935,6 +935,10 @@ static inline void radeon_ring_write(struct radeon_device *rdev, uint32_t v)
- 
- /* r100,rv100,rs100,rv200,rs200,r200,rv250,rs300,rv280 */
- void r100_cp_disable(struct radeon_device *rdev);
-+void r100_pci_gart_tlb_flush(struct radeon_device *rdev);
-+int r100_pci_gart_enable(struct radeon_device *rdev);
-+void r100_pci_gart_disable(struct radeon_device *rdev);
-+int r100_pci_gart_set_page(struct radeon_device *rdev, int i, uint64_t addr);
- 
- /* r420,r423,rv410 */
- u32 r420_mc_rreg(struct radeon_device *rdev, u32 reg);
-diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
-index 05e1af0..bf69394 100644
---- a/drivers/gpu/drm/radeon/radeon_device.c
-+++ b/drivers/gpu/drm/radeon/radeon_device.c
-@@ -503,7 +503,7 @@ int radeon_device_init(struct radeon_device *rdev,
- 
- 	if (radeon_agpmode == -1) {
- 		rdev->flags &= ~RADEON_IS_AGP;
--		if (rdev->family > CHIP_RV515 ||
-+		if (rdev->family >= CHIP_RV515 ||
- 		    rdev->family == CHIP_RV380 ||
- 		    rdev->family == CHIP_RV410 ||
- 		    rdev->family == CHIP_R423) {
+Applied, thanks. FYI, I also had to list the SB900 in
+Documentation/i2c/busses/i2c-piix4 and drivers/i2c/busses/Kconfig. Next
+time, please include these changes in your patch. The completed patch
+can be seen at:
+ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-i2c/i2c-piix4-add-amd-SB900-smbus-device-id.patch
+
+Will a datasheet for the SB900 be released to the public at some point
+in the future? That would be useful for us developers.
+
+Thanks,
 -- 
-1.6.4.2
-
+Jean Delvare
+http://khali.linux-fr.org/wishlist.html
