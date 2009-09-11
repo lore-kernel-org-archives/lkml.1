@@ -1,88 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752193AbZIKHI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZIKHQF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752193AbZIKHI6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 03:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZIKHI6
+	id S1752401AbZIKHQF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 03:16:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZIKHQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 03:08:58 -0400
-Received: from mga14.intel.com ([143.182.124.37]:37138 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751258AbZIKHI5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 03:08:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,369,1249282800"; 
-   d="scan'208";a="186494404"
-Date: Fri, 11 Sep 2009 15:08:47 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Enrik Berkhan <Enrik.Berkhan@ge.com>
-Cc: Clemens Eisserer <linuxhippy@gmail.com>, linux-kernel@vger.kernel.org,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       Neil Brown <neilb@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-fsdevel@vger.kernel.org
-Subject: [RFC] md: don't scale up readahead size if RAID chunk size >= 4MB
-Message-ID: <20090911070847.GI6267@localhost>
-References: <194f62550909050551n3ac70080u528ae8a9322d4a5a@mail.gmail.com> <194f62550909090405t531dac0die78761fd000802e5@mail.gmail.com> <4AA9170B.70306@ge.com>
+	Fri, 11 Sep 2009 03:16:04 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50669 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751263AbZIKHQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 03:16:03 -0400
+Message-ID: <4AA9F902.4030306@cn.fujitsu.com>
+Date: Fri, 11 Sep 2009 15:15:14 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA9170B.70306@ge.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Gautham Shenoy <ego@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
+       Paul Menage <menage@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] resend, cpuset/hotplug fixes
+References: <20090910192153.GA584@redhat.com> <1252615996.7205.99.camel@laptop>
+In-Reply-To: <1252615996.7205.99.camel@laptop>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 05:11:07PM +0200, Enrik Berkhan wrote:
-> Clemens Eisserer wrote:
->> Does nobody have an idea what could be the cause of this OOM situation?
+Peter Zijlstra wrote:
+> On Thu, 2009-09-10 at 21:21 +0200, Oleg Nesterov wrote:
+>> (my apologies to those who see this twice).
+>>
+>>
+>> The 1st patch is preparation. 2-3 fix different problems, the 3rd one
+>> depends on 2nd.
+>>
+>> These patches change the code which I don't really understand, please
+>> review.
+>>
+>>
+>> As for the 3rd patch, it replaces
+>>
+>> 	cpu_hotplug-dont-affect-current-tasks-affinity.patch
+>>
+>> in -mm tree. Imho the new patch is more simple and clean, but of course
+>> this is subjective and I am biased.
+> 
+> Look good to me.
+> 
+> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> Ingo, will you stick them in -tip?
+> 
 >
-> I guess it's too large readahead. I had this situation recently, too,  
-> with a raid0 of 8 disks (4MB chunks) that set the file readahead count  
-> to 32MB or so (on a 60MB NOMMU system).
 
-The default readahead size would be 2 * 8 * 4MB = 64MB for such an
-software RAID. However max_sane_readahead() will limit runtime
-readahead size to available_cache / 2, which is ~30MB for your system.
+Sorry. I was taken ill for weeks and forgot to follow these discussions.
+Especially I should say sorry to Oleg.
 
-> When I tried to read a 100MB file via sendfile(), the kernel insisted on  
-> doing the 32MB readahead ... (in __do_page_cache_readahead, like in your  
-> trace).
+I have different concept. cpuset_cpus_allowed() is not called at atomic
+context nor non-preemptable context nor other critical context.
+So it should be allowed to use mutexs. That's what I think.
 
-You could configure readahead size with the blockdev command.
+There is a bug when migration_call() requires a mutex
+before migration has been finished when cpu offline as Oleg described.
 
-But I admit that the default 64MB ra size is insanely large.
-I tended to change this long ago. Though I'm not sure if that
-is exactly someone with big arrays wanted. Anyway here is the
-patch. Maybe some storage gurus can drop us some hint of use
-cases.
+Bug this bug is only happened when cpu offline. cpu offline is rare and
+is slowpath. I think we should fix cpu offline and ensure it requires
+the mutex safely.
 
-Thanks,
-Fengguang
----
-md: don't scale up readahead size for large RAID chunk size
+Oleg's patch moves all dirty things into CPUSET subsystem and makes
+cpuset_cpus_allowed() does not require any mutex and increases CPUSET's
+coupling. I don't feel it's good.
 
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/md/raid0.c |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+Anyway, Oleg's patch works good.
 
---- linux.orig/drivers/md/raid0.c	2009-09-11 14:36:02.000000000 +0800
-+++ linux/drivers/md/raid0.c	2009-09-11 14:51:13.000000000 +0800
-@@ -341,12 +341,16 @@ static int raid0_run(mddev_t *mddev)
- 	 * chunk size, then we will not drive that device as hard as it
- 	 * wants.  We consider this a configuration error: a larger
- 	 * chunksize should be used in that case.
-+	 * Also don't touch readahead size if the chunk size is large enough
-+	 * (4MB), so that individual devices can already receive good enough
-+	 * IO sizes, and otherwise (2 * stripe) would grow too large.
- 	 */
- 	{
- 		int stripe = mddev->raid_disks *
- 			(mddev->chunk_sectors << 9) / PAGE_SIZE;
--		if (mddev->queue->backing_dev_info.ra_pages < 2* stripe)
--			mddev->queue->backing_dev_info.ra_pages = 2* stripe;
-+		if (mddev->chunk_sectors < (4 * 1024 * 1024 / 512) &&
-+			mddev->queue->backing_dev_info.ra_pages < 2 * stripe)
-+			mddev->queue->backing_dev_info.ra_pages = 2 * stripe;
- 	}
- 
- 	blk_queue_merge_bvec(mddev->queue, raid0_mergeable_bvec);
+> > cpuset_cpus_allowed() is not only  used for CPU offline.
+> > >
+> > > sched_setaffinity() also uses it.
+> 
+> Sure. And it must take get_online_cpus() to avoid the races with hotplug.
+
+Oleg hasn't answered that
+"is it safe when pdflush() calls cpuset_cpus_allowed()?".
+A patch may be needed to ensure pdflush() calls cpuset_cpus_allowed() safely.
+
+One other minor thing:
+Oleg's patch may introduce a trouble in PREEEMPT_RT tree, because
+spinlock in RT is also mutex. Likely I'm wrong.
+
+- Lai
+
+
+
+
+
