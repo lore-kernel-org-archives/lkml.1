@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756031AbZIKTN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZIKTNg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756031AbZIKTN3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 15:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbZIKTN2
+	id S1756091AbZIKTNg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 15:13:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756080AbZIKTNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 11 Sep 2009 15:13:35 -0400
+Received: from fifo99.com ([67.223.236.141]:34518 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756013AbZIKTN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Sep 2009 15:13:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55823
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756001AbZIKTNZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 15:13:25 -0400
-Date: Fri, 11 Sep 2009 12:13:42 -0700 (PDT)
-Message-Id: <20090911.121342.40455624.davem@davemloft.net>
-To: julia@diku.dk
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 5/8] drivers/net/phy: introduce missing kfree
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0909111821520.10552@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0909111821520.10552@pc-004.diku.dk>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Subject: Re: [git patches] libata updates for .32
+From: Daniel Walker <dwalker@fifo99.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090911185401.GA31416@havoc.gtf.org>
+References: <20090911185401.GA31416@havoc.gtf.org>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 12:13:58 -0700
+Message-Id: <1252696438.28368.9.camel@desktop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
-Date: Fri, 11 Sep 2009 18:22:09 +0200 (CEST)
-
-> Error handling code following a kzalloc should free the allocated data.
+On Fri, 2009-09-11 at 14:54 -0400, Jeff Garzik wrote:
+> Please pull from 'upstream-linus' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git upstream-linus
 > 
-> The semantic match that finds the problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
- ...
-> Signed-off-by: Julia Lawall <julia@diku.dk>
 
-Applied.
+
+Would you be willing to fix a few checkpatch errors in there? I don't
+usually check pull requests, but the patch you included did have a
+couple errors.
+
+Daniel
+
