@@ -1,64 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZIKVvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757008AbZIKVvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756962AbZIKVvY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 17:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756406AbZIKVvX
+	id S1757008AbZIKVvw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbZIKVvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 17:51:23 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:49481 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755992AbZIKVvW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 17:51:22 -0400
-Date: Fri, 11 Sep 2009 23:51:17 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-Message-ID: <20090911215117.GA11441@elf.ucw.cz>
-References: <c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com> <87iqfx5mss.fsf@devron.myhome.or.jp> <20090907125130.GA1595@ucw.cz> <87ljko5k3v.fsf@devron.myhome.or.jp> <20090910192354.GD23356@elf.ucw.cz> <87bplim1ce.fsf@devron.myhome.or.jp> <20090911200922.GF8137@elf.ucw.cz> <c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com> <20090911213204.GC25544@elf.ucw.cz> <c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 11 Sep 2009 17:51:51 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:58936 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756876AbZIKVvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 17:51:50 -0400
+Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket
+ numbers
+From: Eric Paris <eparis@redhat.com>
+To: Jamie Lokier <jamie@shareable.org>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
+In-Reply-To: <20090911212731.GA19901@shareable.org>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+	 <20090911.114620.260824240.davem@davemloft.net>
+	 <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>
+	 <20090911204602.GA19371@shareable.org>
+	 <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
+	 <20090911212731.GA19901@shareable.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 11 Sep 2009 17:51:42 -0400
+Message-Id: <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-09-11 23:45:01, Zdenek Kabelac wrote:
-> 2009/9/11 Pavel Machek <pavel@ucw.cz>:
-> >
-> >> And why suspend of mmc should generate card removal ??
-> >
-> > Card is powered down during suspend -> mmc can't guarantee the card is
-> > same and unchanged -> it makes some sense to simulate
-> > removal/reinsert.
+On Fri, 2009-09-11 at 22:27 +0100, Jamie Lokier wrote:
+> Eric Paris wrote:
+> > On Fri, 2009-09-11 at 21:46 +0100, Jamie Lokier wrote:
+> > > Eric Paris wrote:
+> > > > > I would really prefer if you worked on eliminating the problem that
+> > > > > prevents you from using netlink instead.
+> > > > 
+> > > > I'm not really sure if I can, although I'd love to hear input from
+> > > > someone who knows the netlink code on how I can make it do what I need.
+> > > > I'm really not duplicating much other than the NLMSG_OK and NLMSG_NEXT
+> > > > macros.  My code doesn't even use skbs and I'm not savy enough to really
+> > > > know how I could.  I'm more than willing to work on it if someone can
+> > > > point me to how it might work.
+> > > 
+> > > Let's turn the question around.
+> > > 
+> > > Since you're doing lots of non-sockety things, and can't tolerate
+> > > dropped packets - why isn't it a character device?  What's the reason
+> > > for using a socket at all?
+> > > 
+> > > (I'm reminded of /dev/poll, /dev/epoll and /dev/inotify :-)
+> > 
+> > Originally it was a char device and I was told to use a socket protocol
+> > so I could use get/set sockopt rather than ioctl, because ioctl is the
+> > devil (even if those aren't THAT much better).
+> > 
+> > The queuing being done using events instead of skbs was done reusing
+> > inotify code, reusing network code would be just as good with me.  What
+> > I really need is a way to convey a pointer from one process to another.
+> > That's why I claim loss is not an option, since I'm holding a reference
+> > to the pointer I can't have that conveyance disappear under us.
 > 
-> But how is this going to work when I keep the device mounted and
-> blockdev is basically destroyed -  what if I'm reading file from card
-> during suspend ?
+> It's fine as long as the disappearing knows to releas the reference.
 
-"Don't do it".
+Absolutely.
 
-> >> if I suspend and resume my laptop and I keep the card inside - all
-> >> those step looks plain wrong.
-> >
-> > Unfortunately system can't tell.
-> 
-> Well system could check basic card ids if they match after resume - if
-> some users wants to crash his card by randomly swapping it during
-> suspend/resume - I'd have no problem with that....
+> But I suspect fanotify would be awfully hard to use if messages were
+> unreliable.
 
-Well, I do have small problem with that :-).
+For some things yes, some things no.  I'd have to understand where loss
+can happen to know if it's feasible.  If I know loss happens in the
+sender context that's great.  If it's somewhere in the middle and the
+sender doesn't immediately know it'll never be delivered, yes, I don't
+think it can solve all my needs.  How many places can and skb get lost
+between the sender and the receiver?
 
-Anyway, patch for rechecking IDs would probably be accepted, but
-that's not how it works now.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+> Does fanotify need "lots of ioctls", or could it fit comfortably into
+> say 2-5 strongly typed system calls, like inotify and epoll do?
+
+Certainly not a lot.  I do it now with 5 setsockopt calls.  I could do
+it with a limited number of syscalls (what I have today in about 4) but
+I still don't believe I know all the future use cases or how to define
+them in syscalls.  People are still coming up with things they want
+inotify to do but we can't implement them in the syscalls we have.  I
+think we all know it's a hell of a lot easier to implement a new
+setsockopt call than a new syscall.
+
+I don't think I know everything everyone is going to want out of a new
+notification system yet, so I'm reticent to go down that path.  I know
+how to solve some of the suck of inotify, I know how to solve a number
+of people's problems (and have all the patches to do it) but when it
+comes to the organic nature of things and what I hope to be the growing
+future of fanotify to solve everything for everyone, I don't think I can
+define it all yet.  I just don't want to end up with another inotify, it
+works, the syscalls do what they do very very well, but people want new
+things out of it, and we can't reasonably give it to them.
+
+Maybe syscalls are the right thing, and I know I can solve a lot of use
+cases with syscalls, but I don't even know if I know all the use cases.
+
+-Eric
+
