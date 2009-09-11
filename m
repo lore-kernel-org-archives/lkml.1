@@ -1,124 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756006AbZIKStq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbZIKSu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756006AbZIKStq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 14:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755951AbZIKSso
+	id S1755995AbZIKSu5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755929AbZIKSuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 14:48:44 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54021 "EHLO
+	Fri, 11 Sep 2009 14:50:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54028 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755901AbZIKSsj (ORCPT
+	with ESMTP id S1755925AbZIKSsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 14:48:39 -0400
+	Fri, 11 Sep 2009 14:48:40 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090911848.933193846@firstfloor.org>
 In-Reply-To: <20090911848.933193846@firstfloor.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] [13/21] HWPOISON: Define a new error_remove_page address space op for async truncation
-Message-Id: <20090911184842.2F5EFB1757@basil.firstfloor.org>
-Date: Fri, 11 Sep 2009 20:48:42 +0200 (CEST)
+To: fengguang.wu@intel.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] [14/21] HWPOISON: shmem: call set_page_dirty() with locked page
+Message-Id: <20090911184843.32078B1757@basil.firstfloor.org>
+Date: Fri, 11 Sep 2009 20:48:43 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Truncating metadata pages is not safe right now before
-we haven't audited all file systems.
+From: Wu Fengguang <fengguang.wu@intel.com>
 
-To enable truncation only for data address space define
-a new address_space callback error_remove_page.
+The dirtying of page and set_page_dirty() can be moved into the page lock.
 
-This is used for memory_failure.c memory error handling.
+- In shmem_write_end(), the page was dirtied while the page lock was held,
+  but it's being marked dirty just after dropping the page lock.
+- In shmem_symlink(), both dirtying and marking can be moved into page lock.
 
-This can be then set to truncate_inode_page()
+It's valuable for the hwpoison code to know whether one bad page can be dropped
+without losing data. It mainly judges by testing the PG_dirty bit after taking
+the page lock. So it becomes important that the dirtying of page and the
+marking of dirtiness are both done inside the page lock. Which is a common
+practice, but sadly not a rule.
 
-This patch just defines the new operation and adds documentation.
+The noticeable exceptions are
+- mapped pages
+- pages with buffer_heads
+The above pages could go dirty at any time. Fortunately the hwpoison will
+unmap the page and release the buffer_heads beforehand anyway.
 
-Callers and users come in followon patches.
+Many other types of pages (eg. metadata pages) can also be dirtied at will by
+their owners, the hwpoison code cannot do meaningful things to them anyway. 
+Only the dirtiness of pagecache pages owned by regular files are interested.
 
+Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
-
+Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- Documentation/filesystems/vfs.txt |    7 +++++++
- include/linux/fs.h                |    1 +
- include/linux/mm.h                |    1 +
- mm/truncate.c                     |   17 +++++++++++++++++
- 4 files changed, 26 insertions(+)
+ mm/shmem.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux/include/linux/fs.h
+Index: linux/mm/shmem.c
 ===================================================================
---- linux.orig/include/linux/fs.h
-+++ linux/include/linux/fs.h
-@@ -595,6 +595,7 @@ struct address_space_operations {
- 	int (*launder_page) (struct page *);
- 	int (*is_partially_uptodate) (struct page *, read_descriptor_t *,
- 					unsigned long);
-+	int (*error_remove_page)(struct address_space *, struct page *);
- };
+--- linux.orig/mm/shmem.c
++++ linux/mm/shmem.c
+@@ -1630,8 +1630,8 @@ shmem_write_end(struct file *file, struc
+ 	if (pos + copied > inode->i_size)
+ 		i_size_write(inode, pos + copied);
  
- /*
-Index: linux/Documentation/filesystems/vfs.txt
-===================================================================
---- linux.orig/Documentation/filesystems/vfs.txt
-+++ linux/Documentation/filesystems/vfs.txt
-@@ -536,6 +536,7 @@ struct address_space_operations {
- 	/* migrate the contents of a page to the specified target */
- 	int (*migratepage) (struct page *, struct page *);
- 	int (*launder_page) (struct page *);
-+	int (*error_remove_page) (struct mapping *mapping, struct page *page);
- };
+-	unlock_page(page);
+ 	set_page_dirty(page);
++	unlock_page(page);
+ 	page_cache_release(page);
  
-   writepage: called by the VM to write a dirty page to backing store.
-@@ -694,6 +695,12 @@ struct address_space_operations {
-   	prevent redirtying the page, it is kept locked during the whole
- 	operation.
- 
-+  error_remove_page: normally set to generic_error_remove_page if truncation
-+	is ok for this address space. Used for memory failure handling.
-+	Setting this implies you deal with pages going away under you,
-+	unless you have them locked or reference counts increased.
-+
-+
- The File Object
- ===============
- 
-Index: linux/mm/truncate.c
-===================================================================
---- linux.orig/mm/truncate.c
-+++ linux/mm/truncate.c
-@@ -147,6 +147,23 @@ int truncate_inode_page(struct address_s
- }
- 
- /*
-+ * Used to get rid of pages on hardware memory corruption.
-+ */
-+int generic_error_remove_page(struct address_space *mapping, struct page *page)
-+{
-+	if (!mapping)
-+		return -EINVAL;
-+	/*
-+	 * Only punch for normal data pages for now.
-+	 * Handling other types like directories would need more auditing.
-+	 */
-+	if (!S_ISREG(mapping->host->i_mode))
-+		return -EIO;
-+	return truncate_inode_page(mapping, page);
-+}
-+EXPORT_SYMBOL(generic_error_remove_page);
-+
-+/*
-  * Safely invalidate one page from its pagecache mapping.
-  * It only drops clean, unused pages. The page must be locked.
-  *
-Index: linux/include/linux/mm.h
-===================================================================
---- linux.orig/include/linux/mm.h
-+++ linux/include/linux/mm.h
-@@ -795,6 +795,7 @@ extern int vmtruncate(struct inode * ino
- extern int vmtruncate_range(struct inode * inode, loff_t offset, loff_t end);
- 
- int truncate_inode_page(struct address_space *mapping, struct page *page);
-+int generic_error_remove_page(struct address_space *mapping, struct page *page);
- 
- int invalidate_inode_page(struct page *page);
- 
+ 	return copied;
+@@ -1968,13 +1968,13 @@ static int shmem_symlink(struct inode *d
+ 			iput(inode);
+ 			return error;
+ 		}
+-		unlock_page(page);
+ 		inode->i_mapping->a_ops = &shmem_aops;
+ 		inode->i_op = &shmem_symlink_inode_operations;
+ 		kaddr = kmap_atomic(page, KM_USER0);
+ 		memcpy(kaddr, symname, len);
+ 		kunmap_atomic(kaddr, KM_USER0);
+ 		set_page_dirty(page);
++		unlock_page(page);
+ 		page_cache_release(page);
+ 	}
+ 	if (dir->i_mode & S_ISGID)
