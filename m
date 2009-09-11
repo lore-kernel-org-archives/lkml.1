@@ -1,82 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752900AbZIKBZQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbZIKBax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752900AbZIKBZQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 21:25:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZIKBZP
+	id S1752945AbZIKBax (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 21:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZIKBax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 21:25:15 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54610 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752616AbZIKBZO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 21:25:14 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH][mmotm][BUGFIX] kcore use registered physmem information ia64-fix (Was Re: mmotm 2009-09-03-16-35 uploaded
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@csn.ul.ie>
-In-Reply-To: <20090910115859.c2291eb8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090910103850.9CCF.A69D9226@jp.fujitsu.com> <20090910115859.c2291eb8.kamezawa.hiroyu@jp.fujitsu.com>
-Message-Id: <20090911102351.DB5F.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 11 Sep 2009 10:25:14 +0900 (JST)
+	Thu, 10 Sep 2009 21:30:53 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:54706 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751929AbZIKBaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 21:30:52 -0400
+Date: Thu, 10 Sep 2009 20:30:54 -0500
+From: Dimitri Sivanich <sivanich@sgi.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] Add memory mapped RTC driver for UV
+Message-ID: <20090911013054.GA6567@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ok, I confirmed this one fixes the issue.
+This driver memory maps the UV Hub RTC.
 
-mmotm-2009-09-09 + this patch booted successful on my box.
+Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
-	Tested-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
 
-Andrew, could you please pick it up?
+ drivers/char/Kconfig      |    8 +
+ drivers/char/Makefile     |    1 
+ drivers/char/uv_mmtimer.c |  214 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 223 insertions(+)
 
-
-
-> ==
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> kcore-use-registerd-physmem-information.patch registers physmem information
-> based on ioresource. Then, this addition is unnecessary.
-> 
-> Why panic:
->   At boot, rebuilding kclist for physmem, all KCORE_RAM entries are kfreed.
->   Because this ramaining one entires kclist of KCORE_RAM in kernel data area
->   to ther list, this causes panic in kclist rebuilding which calls kfree().
-> 
-> Reported-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  arch/ia64/mm/init.c |    3 ---
->  1 file changed, 3 deletions(-)
-> 
-> Index: mmotm-2.6.31-Sep3/arch/ia64/mm/init.c
-> ===================================================================
-> --- mmotm-2.6.31-Sep3.orig/arch/ia64/mm/init.c
-> +++ mmotm-2.6.31-Sep3/arch/ia64/mm/init.c
-> @@ -617,7 +617,6 @@ mem_init (void)
->  	long reserved_pages, codesize, datasize, initsize;
->  	pg_data_t *pgdat;
->  	int i;
-> -	static struct kcore_list kcore_mem;
->  
->  	BUG_ON(PTRS_PER_PGD * sizeof(pgd_t) != PAGE_SIZE);
->  	BUG_ON(PTRS_PER_PMD * sizeof(pmd_t) != PAGE_SIZE);
-> @@ -639,8 +638,6 @@ mem_init (void)
->  
->  	high_memory = __va(max_low_pfn * PAGE_SIZE);
->  
-> -	kclist_add(&kcore_mem, __va(0), max_low_pfn * PAGE_SIZE, KCORE_RAM);
-> -
->  	for_each_online_pgdat(pgdat)
->  		if (pgdat->bdata->node_bootmem_map)
->  			totalram_pages += free_all_bootmem_node(pgdat);
-> 
-
-
-
+Index: linux/drivers/char/Kconfig
+===================================================================
+--- linux.orig/drivers/char/Kconfig	2009-09-10 12:38:30.000000000 -0500
++++ linux/drivers/char/Kconfig	2009-09-10 12:40:12.000000000 -0500
+@@ -1087,6 +1087,14 @@ config MMTIMER
+ 	  The mmtimer device allows direct userspace access to the
+ 	  Altix system timer.
+ 
++config UV_MMTIMER
++	tristate "UV_MMTIMER Memory mapped RTC for SGI UV"
++	depends on X86_UV
++	default m
++	help
++	  The uv_mmtimer device allows direct userspace access to the
++	  UV system timer.
++
+ source "drivers/char/tpm/Kconfig"
+ 
+ config TELCLOCK
+Index: linux/drivers/char/Makefile
+===================================================================
+--- linux.orig/drivers/char/Makefile	2009-09-10 12:38:30.000000000 -0500
++++ linux/drivers/char/Makefile	2009-09-10 12:40:12.000000000 -0500
+@@ -58,6 +58,7 @@ obj-$(CONFIG_RAW_DRIVER)	+= raw.o
+ obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
+ obj-$(CONFIG_MSPEC)		+= mspec.o
+ obj-$(CONFIG_MMTIMER)		+= mmtimer.o
++obj-$(CONFIG_UV_MMTIMER)	+= uv_mmtimer.o
+ obj-$(CONFIG_VIOTAPE)		+= viotape.o
+ obj-$(CONFIG_HVCS)		+= hvcs.o
+ obj-$(CONFIG_IBM_BSR)		+= bsr.o
+Index: linux/drivers/char/uv_mmtimer.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux/drivers/char/uv_mmtimer.c	2009-09-10 14:09:35.000000000 -0500
+@@ -0,0 +1,214 @@
++/*
++ * Timer device implementation for SGI UV platform.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (c) 2009 Silicon Graphics, Inc.  All rights reserved.
++ *
++ */
++
++#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/ioctl.h>
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/mm.h>
++#include <linux/fs.h>
++#include <linux/mmtimer.h>
++#include <linux/miscdevice.h>
++#include <linux/posix-timers.h>
++#include <linux/interrupt.h>
++#include <linux/time.h>
++#include <linux/math64.h>
++#include <linux/smp_lock.h>
++
++#include <asm/genapic.h>
++#include <asm/uv/uv_hub.h>
++#include <asm/uv/bios.h>
++#include <asm/uv/uv.h>
++
++MODULE_AUTHOR("Dimitri Sivanich <sivanich@sgi.com>");
++MODULE_DESCRIPTION("SGI UV Memory Mapped RTC Timer");
++MODULE_LICENSE("GPL");
++
++/* name of the device, usually in /dev */
++#define UV_MMTIMER_NAME "mmtimer"
++#define UV_MMTIMER_DESC "SGI UV Memory Mapped RTC Timer"
++#define UV_MMTIMER_VERSION "1.0"
++
++static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
++						unsigned long arg);
++static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma);
++
++/*
++ * Period in femtoseconds (10^-15 s)
++ */
++static unsigned long uv_mmtimer_femtoperiod;
++
++static const struct file_operations uv_mmtimer_fops = {
++	.owner = THIS_MODULE,
++	.mmap =	uv_mmtimer_mmap,
++	.unlocked_ioctl = uv_mmtimer_ioctl,
++};
++
++/**
++ * uv_mmtimer_ioctl - ioctl interface for /dev/uv_mmtimer
++ * @file: file structure for the device
++ * @cmd: command to execute
++ * @arg: optional argument to command
++ *
++ * Executes the command specified by @cmd.  Returns 0 for success, < 0 for
++ * failure.
++ *
++ * Valid commands:
++ *
++ * %MMTIMER_GETOFFSET - Should return the offset (relative to the start
++ * of the page where the registers are mapped) for the counter in question.
++ *
++ * %MMTIMER_GETRES - Returns the resolution of the clock in femto (10^-15)
++ * seconds
++ *
++ * %MMTIMER_GETFREQ - Copies the frequency of the clock in Hz to the address
++ * specified by @arg
++ *
++ * %MMTIMER_GETBITS - Returns the number of bits in the clock's counter
++ *
++ * %MMTIMER_MMAPAVAIL - Returns 1 if registers can be mmap'd into userspace
++ *
++ * %MMTIMER_GETCOUNTER - Gets the current value in the counter and places it
++ * in the address specified by @arg.
++ */
++static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
++						unsigned long arg)
++{
++	int ret = 0;
++
++	switch (cmd) {
++	case MMTIMER_GETOFFSET:	/* offset of the counter */
++		/*
++		 * UV RTC register is on it's own page
++		 */
++		if (PAGE_SIZE <= (1 << 16))
++			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
++				/ 8;
++		else
++			ret = -ENOSYS;
++		break;
++
++	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
++		if (copy_to_user((unsigned long __user *)arg,
++				&uv_mmtimer_femtoperiod, sizeof(unsigned long)))
++			ret = -EFAULT;
++		break;
++
++	case MMTIMER_GETFREQ: /* frequency in Hz */
++		if (copy_to_user((unsigned long __user *)arg,
++				&sn_rtc_cycles_per_second,
++				sizeof(unsigned long)))
++			ret = -EFAULT;
++		break;
++
++	case MMTIMER_GETBITS: /* number of bits in the clock */
++		ret = hweight64(UVH_RTC_REAL_TIME_CLOCK_MASK);
++		break;
++
++	case MMTIMER_MMAPAVAIL: /* can we mmap the clock into userspace? */
++		ret = (PAGE_SIZE <= (1 << 16)) ? 1 : 0;
++		break;
++
++	case MMTIMER_GETCOUNTER:
++		if (copy_to_user((unsigned long __user *)arg,
++				(unsigned long *)uv_local_mmr_address(UVH_RTC),
++				sizeof(unsigned long)))
++			ret = -EFAULT;
++		break;
++	default:
++		ret = -ENOTTY;
++		break;
++	}
++	return ret;
++}
++
++/**
++ * uv_mmtimer_mmap - maps the clock's registers into userspace
++ * @file: file structure for the device
++ * @vma: VMA to map the registers into
++ *
++ * Calls remap_pfn_range() to map the clock's registers into
++ * the calling process' address space.
++ */
++static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	unsigned long uv_mmtimer_addr;
++
++	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
++		return -EINVAL;
++
++	if (vma->vm_flags & VM_WRITE)
++		return -EPERM;
++
++	if (PAGE_SIZE > (1 << 16))
++		return -ENOSYS;
++
++	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
++
++	uv_mmtimer_addr = UV_LOCAL_MMR_BASE | UVH_RTC;
++	uv_mmtimer_addr &= ~(PAGE_SIZE - 1);
++	uv_mmtimer_addr &= 0xfffffffffffffffUL;
++
++	if (remap_pfn_range(vma, vma->vm_start, uv_mmtimer_addr >> PAGE_SHIFT,
++					PAGE_SIZE, vma->vm_page_prot)) {
++		printk(KERN_ERR "remap_pfn_range failed in uv_mmtimer_mmap\n");
++		return -EAGAIN;
++	}
++
++	return 0;
++}
++
++static struct miscdevice uv_mmtimer_miscdev = {
++	MISC_DYNAMIC_MINOR,
++	UV_MMTIMER_NAME,
++	&uv_mmtimer_fops
++};
++
++
++/**
++ * uv_mmtimer_init - device initialization routine
++ *
++ * Does initial setup for the uv_mmtimer device.
++ */
++static int __init uv_mmtimer_init(void)
++{
++	if (!is_uv_system())
++		return 0;
++
++	/*
++	 * Sanity check the cycles/sec variable
++	 */
++	if (sn_rtc_cycles_per_second < 100000) {
++		printk(KERN_ERR "%s: unable to determine clock frequency\n",
++		       UV_MMTIMER_NAME);
++		return -1;
++	}
++
++	uv_mmtimer_femtoperiod = ((unsigned long)1E15 +
++				sn_rtc_cycles_per_second / 2) /
++				sn_rtc_cycles_per_second;
++
++	if (misc_register(&uv_mmtimer_miscdev)) {
++		printk(KERN_ERR "%s: failed to register device\n",
++		       UV_MMTIMER_NAME);
++		return -1;
++	}
++
++	printk(KERN_INFO "%s: v%s, %ld MHz\n", UV_MMTIMER_DESC,
++		UV_MMTIMER_VERSION,
++		sn_rtc_cycles_per_second/(unsigned long)1E6);
++
++	return 0;
++}
++
++module_init(uv_mmtimer_init);
