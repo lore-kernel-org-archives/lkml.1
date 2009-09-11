@@ -1,111 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbZIKATn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbZIKAUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752540AbZIKATn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 20:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZIKATm
+	id S1752824AbZIKAUG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 20:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751654AbZIKAUF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 20:19:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32813 "EHLO hera.kernel.org"
+	Thu, 10 Sep 2009 20:20:05 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17068 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751519AbZIKATl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 20:19:41 -0400
-Date: Fri, 11 Sep 2009 00:19:15 GMT
-From: tip-bot for Ben Hutchings <ben@decadent.org.uk>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, ben@decadent.org.uk
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, ben@decadent.org.uk
-In-Reply-To: <1252547631.3423.134.camel@localhost>
-References: <1252547631.3423.134.camel@localhost>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:x86/cpu] x86: Fix code patching for paravirt-alternatives on 486
-Message-ID: <tip-5367b6887e7d8c870a5da7d9b8c6e9c207684e43@git.kernel.org>
-Git-Commit-ID: 5367b6887e7d8c870a5da7d9b8c6e9c207684e43
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 11 Sep 2009 00:19:17 +0000 (UTC)
+	id S1752604AbZIKAUE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 20:20:04 -0400
+Date: Thu, 10 Sep 2009 20:19:32 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, samba@lists.samba.org,
+       linux-cifs-client@lists.samba.org
+Subject: Re: 2.6.31-rc8: CIFS with 5 seconds hiccups
+Message-ID: <20090910201932.5b8356e2@tlielax.poochiereds.net>
+In-Reply-To: <alpine.DEB.1.10.0909101721180.27669@V090114053VZO-1>
+References: <alpine.DEB.1.10.0909041217520.7209@V090114053VZO-1>
+	<20090905071052.50501826@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091009120.28070@V090114053VZO-1>
+	<20090909125352.1c7b57d2@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091304001.32067@V090114053VZO-1>
+	<20090909132039.1ca47cd4@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091327370.32067@V090114053VZO-1>
+	<20090909140257.35ede0cc@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909091724200.15746@V090114053VZO-1>
+	<20090909205548.4858b524@zanovar.poochiereds.net>
+	<alpine.DEB.1.10.0909101419310.29762@V090114053VZO-1>
+	<20090910153347.2f2616e8@barsoom.rdu.redhat.com>
+	<alpine.DEB.1.10.0909101541460.28418@V090114053VZO-1>
+	<20090910165757.43b77874@tlielax.poochiereds.net>
+	<alpine.DEB.1.10.0909101721180.27669@V090114053VZO-1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5367b6887e7d8c870a5da7d9b8c6e9c207684e43
-Gitweb:     http://git.kernel.org/tip/5367b6887e7d8c870a5da7d9b8c6e9c207684e43
-Author:     Ben Hutchings <ben@decadent.org.uk>
-AuthorDate: Thu, 10 Sep 2009 02:53:50 +0100
-Committer:  H. Peter Anvin <hpa@zytor.com>
-CommitDate: Thu, 10 Sep 2009 16:50:19 -0700
+On Thu, 10 Sep 2009 17:27:53 -0400 (EDT)
+Christoph Lameter <cl@linux-foundation.org> wrote:
 
-x86: Fix code patching for paravirt-alternatives on 486
+> Right. 32 bit cannot mount the clameter directory for strange reasons. I
+> have to go one level higher.
+[...]
+> One other issue that may be important: The mounting operation is very slow
+> on 32 bit. Could it be that the handshake does not work out?
 
-As reported in <http://bugs.debian.org/511703> and
-<http://bugs.debian.org/515982>, kernels with paravirt-alternatives
-enabled crash in text_poke_early() on at least some 486-class
-processors.
+Ok, looks like the 64 bit client is using a different level of interest
+than the 32 bit on the FIND_FIRST call. I suspect that that difference
+may account for the difference in response time.
 
-The problem is that text_poke_early() itself uses inline functions
-affected by paravirt-alternatives and so will modify instructions that
-have already been prefetched.  Pentium and later processors will
-invalidate the prefetched instructions in this case, but 486-class
-processors do not.
+It's not completely clear to me why that would be. Maybe a windows bug
+that causes a slowdown with that LOI?
 
-Change sync_core() to limit prefetching on 486-class (and 386-class)
-processors, and move the call to sync_core() above the call to the
-modifiable local_irq_restore().
+In any case, I think we need to look closely at what's happening at
+mount time. First, I'll need some other info:
 
-Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
-LKML-Reference: <1252547631.3423.134.camel@localhost>
-Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+1) output of "/sbin/mount.cifs -V" from both machines
 
+2) mount options that you're using on both boxes
 
----
- arch/x86/include/asm/processor.h |   16 +++++++++++++---
- arch/x86/kernel/alternative.c    |    2 +-
- 2 files changed, 14 insertions(+), 4 deletions(-)
+3) wire captures from mount attempts on both machines. Try to mount the
+"clameter" dir on both boxes and do captures of each attempt. Maybe
+this time use -s 0 with tcpdump so we get all of the traffic.
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index c776826..2db56c5 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -703,13 +703,23 @@ static inline void cpu_relax(void)
- 	rep_nop();
- }
- 
--/* Stop speculative execution: */
-+/* Stop speculative execution and prefetching of modified code. */
- static inline void sync_core(void)
- {
- 	int tmp;
- 
--	asm volatile("cpuid" : "=a" (tmp) : "0" (1)
--		     : "ebx", "ecx", "edx", "memory");
-+#if defined(CONFIG_M386) || defined(CONFIG_M486)
-+	if (boot_cpu_data.x86 < 5)
-+		/* There is no speculative execution.
-+		 * jmp is a barrier to prefetching. */
-+		asm volatile("jmp 1f\n1:\n" ::: "memory");
-+	else
-+#endif
-+		/* cpuid is a barrier to speculative execution.
-+		 * Prefetched instructions are automatically
-+		 * invalidated when modified. */
-+		asm volatile("cpuid" : "=a" (tmp) : "0" (1)
-+			     : "ebx", "ecx", "edx", "memory");
- }
- 
- static inline void __monitor(const void *eax, unsigned long ecx,
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index f576587..b8ebd0b 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -490,8 +490,8 @@ void *text_poke_early(void *addr, const void *opcode, size_t len)
- 	unsigned long flags;
- 	local_irq_save(flags);
- 	memcpy(addr, opcode, len);
--	local_irq_restore(flags);
- 	sync_core();
-+	local_irq_restore(flags);
- 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
- 	   that causes hangs on some VIA CPUs. */
- 	return addr;
+There may be crackable password hashes in the captures, so you may want
+to send them to me privately and not cc the list.
+
+Thanks,
+-- 
+Jeff Layton <jlayton@redhat.com>
