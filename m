@@ -1,140 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZIKMlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752320AbZIKNS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752483AbZIKMlG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 08:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZIKMlG
+	id S1752320AbZIKNS0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 09:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZIKNS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 08:41:06 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:50462 "EHLO kernel.dk"
+	Fri, 11 Sep 2009 09:18:26 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:39317 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678AbZIKMlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 08:41:04 -0400
-Date: Fri, 11 Sep 2009 14:41:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: What's in linux-2.6-block.git for 2.6.32
-Message-ID: <20090911124106.GC14984@kernel.dk>
+	id S1751627AbZIKNSZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 09:18:25 -0400
+Message-ID: <4AAA4DA7.8010909@redhat.com>
+Date: Fri, 11 Sep 2009 15:16:23 +0200
+From: Jerome Marchand <jmarchan@redhat.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [RFC] IO scheduler based IO controller V9
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA918C1.6070907@redhat.com> <20090910205227.GB3617@redhat.com> <20090910205657.GD3617@redhat.com>
+In-Reply-To: <20090910205657.GD3617@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Vivek Goyal wrote:
+> On Thu, Sep 10, 2009 at 04:52:27PM -0400, Vivek Goyal wrote:
+>> On Thu, Sep 10, 2009 at 05:18:25PM +0200, Jerome Marchand wrote:
+>>> Vivek Goyal wrote:
+>>>> Hi All,
+>>>>
+>>>> Here is the V9 of the IO controller patches generated on top of 2.6.31-rc7.
+>>>  
+>>> Hi Vivek,
+>>>
+>>> I've run some postgresql benchmarks for io-controller. Tests have been
+>>> made with 2.6.31-rc6 kernel, without io-controller patches (when
+>>> relevant) and with io-controller v8 and v9 patches.
+>>> I set up two instances of the TPC-H database, each running in their
+>>> own io-cgroup. I ran two clients to these databases and tested on each
+>>> that simple request:
+>>> $ select count(*) from LINEITEM;
+>>> where LINEITEM is the biggest table of TPC-H (6001215 entries,
+>>> 720MB). That request generates a steady stream of IOs.
+>>>
+>>> Time is measure by psql (\timing switched on). Each test is run twice
+>>> or more if there is any significant difference between the first two
+>>> runs. Before each run, the cache is flush:
+>>> $ echo 3 > /proc/sys/vm/drop_caches
+>>>
+>>>
+>>> Results with 2 groups of same io policy (BE) and same io weight (1000):
+>>>
+>>> 	w/o io-scheduler	io-scheduler v8		io-scheduler v9
+>>> 	first	second		first	second		first	second
+>>> 	DB	DB		DB	DB		DB	DB
+>>>
+>>> CFQ	48.4s	48.4s		48.2s	48.2s		48.1s	48.5s
+>>> Noop	138.0s	138.0s		48.3s	48.4s		48.5s	48.8s
+>>> AS	46.3s	47.0s		48.5s	48.7s		48.3s	48.5s
+>>> Deadl.	137.1s	137.1s		48.2s	48.3s		48.3s	48.5s
+>>>
+>>> As you can see, there is no significant difference for CFQ
+>>> scheduler.
+>> Thanks Jerome.  
+>>
+>>> There is big improvement for noop and deadline schedulers
+>>> (why is that happening?).
+>> I think because now related IO is in a single queue and it gets to run
+>> for 100ms or so (like CFQ). So previously, IO from both the instances
+>> will go into a single queue which should lead to more seeks as requests
+>> from two groups will kind of get interleaved.
+>>
+>> With io controller, both groups have separate queues so requests from
+>> both the data based instances will not get interleaved (This almost
+>> becomes like CFQ where ther are separate queues for each io context
+>> and for sequential reader, one io context gets to run nicely for certain
+>> ms based on its priority).
+>>
+>>> The performance with anticipatory scheduler
+>>> is a bit lower (~4%).
+>>>
+> 
+> Hi Jerome, 
+> 
+> Can you also run the AS test with io controller patches and both the
+> database in root group (basically don't put them in to separate group). I 
+> suspect that this regression might come from that fact that we now have
+> to switch between queues and in AS we wait for request to finish from
+> previous queue before next queue is scheduled in and probably that is
+> slowing down things a bit.., just a wild guess..
+> 
 
-This is just the core block bits, I have other branches pending. And a
-heads up that I had to rebase this branch today, something I haven't
-done during the .31 cycle. This was due to the history being really odd,
-with modified patches of for-2.6.32 patches being forwarded to mainline.
-So I though it would be better to clean this history and merge fixups.
-There was also a middle point that would break bisection.
+Hi Vivek,
 
-Nothing really earth shattering in here, nor are there really big
-changes for this cycle.
+I guess that's not the reason. I got 46.6s for both DB in root group with
+io-controller v9 patches. I also rerun the test with DB in different groups
+and found about the same result as above (48.3s and 48.6s).
 
-- Some updates to CFQ to improve interactiveness.
-- Some cleanups and sanitization of the bio IO flags.
-- blk-iopoll, an experimental API for doing NAPI like polled completions
-  for really fast devices. In testing this has shown to be faster for
-  some cases, while slower for others. The included patch is just the
-  core bits, no driver support is being merged yet.
-- Enable CPU IO completion by default. My testing has shown this to be
-  faster, and independent testing by Intel confirms that as well.
-- A fix to only issue a block queue trace when we actually intend to
-  queue.
-- A fix for splice to update mtime and atime on files.
-- A cleanup of the failfast bits and merge fixups for the same.
-
-The changes are availble at:
-
-  git://git.kernel.dk/linux-2.6-block.git for-2.6.32
-
-Ed L. Cashin (1):
-      aoe: end barrier bios with EOPNOTSUPP
-
-Eric Dumazet (1):
-      cciss: memory leak in cciss_init_one()
-
-Hannes Reinecke (1):
-      Send uevents for write_protect changes
-
-Jens Axboe (12):
-      cfq-iosched: drain device queue before switching to a sync queue
-      block: make bio_rw_flagged() return a bool
-      bio: first step in sanitizing the bio->bi_rw flag testing
-      block: improve queue_should_plug() by looking at IO depths
-      block: add blk-iopoll, a NAPI like approach for block devices
-      block: fix long lines in block/blk-iopoll.c
-      block: adjust default budget for blk-iopoll
-      block: fix comment in blk-iopoll.c
-      block: use interrupts disabled version of raise_softirq_irqoff()
-      cfq-iosched: get rid of must_alloc flag
-      block: make blk_iopoll_prep_sched() follow normal 0/1 return convention
-      block: enable rq CPU completion affinity by default
-
-Marcin Slusarz (1):
-      block: use printk_once
-
-Miklos Szeredi (1):
-      splice: update mtime and atime on files
-
-Minchan Kim (1):
-      block: trace bio queueing trial only when it occurs
-
-Nikanth Karthikesan (1):
-      Seperate read and write statistics of in_flight requests
-
-Shan Wei (1):
-      cfq: fix the log message after dispatched a request
-
-Tejun Heo (3):
-      block: use the same failfast bits for bio and request
-      block: implement mixed merge of different failfast requests
-      scsi,block: update SCSI to handle mixed merge failures
-
-Vivek Goyal (1):
-      cfq-iosched: no need to keep track of busy_rt_queues
-
- block/Makefile              |    2 +-
- block/blk-core.c            |  166 +++++++++++++++++++++++++------
- block/blk-iopoll.c          |  227 +++++++++++++++++++++++++++++++++++++++++++
- block/blk-merge.c           |   51 ++++++++--
- block/blk.h                 |    1 +
- block/cfq-iosched.c         |   71 ++++++--------
- block/elevator.c            |   16 +---
- block/genhd.c               |   22 ++++-
- drivers/block/aoe/aoeblk.c  |    3 +
- drivers/block/cciss.c       |    4 +-
- drivers/block/loop.c        |    2 +-
- drivers/block/paride/pcd.c  |   12 +--
- drivers/block/sx8.c         |    4 +-
- drivers/block/viodasd.c     |   12 +--
- drivers/md/dm-raid1.c       |    2 +-
- drivers/md/dm-stripe.c      |    2 +-
- drivers/md/dm.c             |   28 +++---
- drivers/md/linear.c         |    2 +-
- drivers/md/multipath.c      |    4 +-
- drivers/md/raid0.c          |    2 +-
- drivers/md/raid1.c          |   14 ++-
- drivers/md/raid10.c         |    6 +-
- drivers/md/raid5.c          |    2 +-
- drivers/scsi/scsi_lib.c     |    6 +-
- drivers/staging/dst/dcore.c |    5 +-
- fs/btrfs/volumes.c          |    4 +-
- fs/partitions/check.c       |   12 ++-
- fs/splice.c                 |    8 +-
- include/linux/bio.h         |   69 ++++++-------
- include/linux/blk-iopoll.h  |   48 +++++++++
- include/linux/blkdev.h      |   34 +++++--
- include/linux/genhd.h       |   21 +++--
- include/linux/interrupt.h   |    1 +
- kernel/sysctl.c             |   10 ++-
- 34 files changed, 661 insertions(+), 212 deletions(-)
- create mode 100644 block/blk-iopoll.c
- create mode 100644 include/linux/blk-iopoll.h
+Jerome
 
 
--- 
-Jens Axboe
+
+> Thanks
+> Vivek
+> 
+>> I will run some tests with AS and see if I can reproduce this lower
+>> performance and attribute it to a particular piece of code.
+>>
+>>> Results with 2 groups of same io policy (BE), different io weights and
+>>> CFQ scheduler:
+>>> 			io-scheduler v8		io-scheduler v9
+>>> weights = 1000, 500	35.6s	46.7s		35.6s	46.7s
+>>> weigths = 1000, 250	29.2s	45.8s		29.2s	45.6s
+>>>
+>>> The result in term of fairness is close to what we can expect from the
+>>> ideal theoric case: with io weights of 1000 and 500 (1000 and 250),
+>>> the first request get 2/3 (4/5) of io time as long as it runs and thus
+>>> finish in about 3/4 (5/8) of total time. 
+>>>
+>> Jerome, after 36.6 seconds, disk will be fully given to second group.
+>> Hence these times might not reflect the accurate measure of who got how
+>> much of disk time.
+>>
+>> Can you just capture the output of "io.disk_time" file in both the cgroups
+>> at the time of completion of task in higher weight group. Alternatively,
+>> you can just run this a script in a loop which prints the output of
+>>  "cat io.disk_time | grep major:minor" every  2 seconds. That way we can
+>> see how disk times are being distributed between groups.
+>>
+>>> Results  with 2 groups of different io policies, same io weight and
+>>> CFQ scheduler:
+>>> 			io-scheduler v8		io-scheduler v9
+>>> policy = RT, BE		22.5s	45.3s		22.4s	45.0s
+>>> policy = BE, IDLE	22.6s	44.8s		22.4s	45.0s
+>>>
+>>> Here again, the result in term of fairness is very close from what we
+>>> expect.
+>> Same as above in this case too.
+>>
+>> These seem to be good test for fairness measurement in case of streaming 
+>> readers. I think one more interesting test case will be do how are the 
+>> random read latencies in case of multiple streaming readers present.
+>>
+>> So if we can launch 4-5 dd processes in one group and then issue some
+>> random small queueries on postgresql in second group, I am keen to see
+>> how quickly the query can be completed with and without io controller.
+>> Would be interesting to see at results for all 4 io schedulers.
+>>
+>> Thanks
+>> Vivek
 
