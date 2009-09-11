@@ -1,70 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756319AbZIKUDd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756417AbZIKUEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756319AbZIKUDd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 16:03:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756197AbZIKUDa
+	id S1756417AbZIKUEA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 16:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZIKUD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 16:03:30 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:34055 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754699AbZIKUD2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 16:03:28 -0400
-Date: Fri, 11 Sep 2009 16:03:17 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mark Wielaard <mjw@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH tracing/kprobes 0/7] tracing/kprobes: kprobe-based
-	event tracer update and perf support
-Message-ID: <20090911200317.GA3827@infradead.org>
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090911013332.GB16396@nowhere> <y0mr5udjoc8.fsf@fche.csb> <20090911190651.GA22065@infradead.org> <1252698613.2470.6.camel@hermans.wildebeest.org>
+	Fri, 11 Sep 2009 16:03:59 -0400
+Received: from mx2.compro.net ([216.54.166.4]:36209 "EHLO mx2.compro.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756236AbZIKUD6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 16:03:58 -0400
+X-IronPort-AV: E=Sophos;i="4.44,372,1249272000"; 
+   d="scan'208";a="4354162"
+Message-ID: <4AAAAD30.4040704@compro.net>
+Date: Fri, 11 Sep 2009 16:04:00 -0400
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252698613.2470.6.camel@hermans.wildebeest.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: markh@compro.net
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@vger.kernel.org,
+       Mark Hounschell <dmarkh@cfl.rr.com>, linux-kernel@vger.kernel.org
+Subject: Re: problems doing direct dma from a pci device to pci-e device
+References: <4AAA5B1F.3020103@compro.net> <20090911154714.70a94454@lxorguk.ukuu.org.uk> <4AAA6BE7.8040306@compro.net>
+In-Reply-To: <4AAA6BE7.8040306@compro.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 09:50:13PM +0200, Mark Wielaard wrote:
-> On Fri, 2009-09-11 at 15:06 -0400, Christoph Hellwig wrote:
-> > On Fri, Sep 11, 2009 at 03:03:35PM -0400, Frank Ch. Eigler wrote:
-> > > Frederic Weisbecker <fweisbec@gmail.com> writes:
-> > > 
-> > > > [...]  I'm really looking forward seeing this C expression-like
-> > > > kprobe creation tool.  It seems powerful enough to replace printk +
-> > > > kernel rebuild.  No need anymore to write some printk to debug,
-> > > > worrying, [...]
-> > > 
-> > > To a large extent, systemtap had delivered this already some years
-> > > ago, including the cushy ponies dancing in the sunlight.  While such
-> > > low-level machinery is fine, some of our experience indicates that it
-> > > is dramatically easier to use if high-level, symbolic, debugging data
-> > > is used to compute probe locations and variable names/types/locations.
-> > 
-> > No, systemtap has been for years failing to delivers this in a way that
-> > it could be usefully integrated into the kernel.
+Mark Hounschell wrote:
+> Alan Cox wrote:
+>>> I now have an AM3 based DFI DK 790FXB-M3H5 motherboard. This board has 3 regular
+>>> PCI slots and 3 PCI-E (16x) slots. I also have a PCI-E (x4) version of the VMIC-5565
+>>> reflective memory  card in one of the PCI-E slots and our gpiohsd card in one of the regular
+>>> PCI slots. All on the motherboard. No expansion slots being used. However I cannot get
+>>> data from our gpiohsd into the PCI-E VMIC-5565 cards memory. I can certainly get the data there
+>>> from a userland buffer, no problem. Just not from one card to the other directly. Oh and when
+>>> I put the regular PCI version of the VMIC into one of the regular PCI slots everything works
+>>> as expected. They are then both on the same PCI bus and no bridges are involved though.
+>> Have you verified with the vendor that such DMA works properly ? There is
+>> a long history of there being boards where some device to device DMA
+>> exploded or vanished. The arrival of PCI capture cards doing direct to
+>> video DMA cleaned the world up (eg the BT848) but I wouldn't be suprised
+>> if this recurred somewhere since they were popular and nobody really
+>> noticed as they didn't run such an unusual config.
+>>
 > 
-> You are saying "No" to a claim Frank didn't even make.
+> I have not made an inquiry with the vendor yet. I'm pretty sure I have done 
+> this with this very card in another mother board. I guess I need to dig that one 
+> up and verify it before I go much further.  
+> 
+> But it's much like you describe above. The data seems to just vanish. I can't
+> see any way to use my v-metro to find out where it's going either.
+> 
+>> Also does the board have a true IOMMU in the PCI-E side of the system ?
+>> It's not a chipset I know.
+>>
+> 
+> That I don't know for sure but I thought they all did??
+> 
 
-He said systemtap had delivered it, which is not the case.  It has
-implemented it, but not actually delivered it in a useful way.
+A quick readup on the IOMMU makes me think that if it does use one, that could certainly
+cause my problem. I'm using bus addresses plugged into page tables that live in the gpiohsd card
+obtained from virt2bus. They do match what lcpsi says they are. But it would appear from what
+I read, that an IOMMU, could still be causing me grief if there is one being used. 
+   
+> I'll verify that the VMIC card is in fact capable in that other MB before
+> I do anything else.
 
+I still haven't done this yet. Maybe the MB this all worked on didn't have an IOMMU though?
+
+I'll investigate futher.
+
+Regards
+Mark
