@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752478AbZIKN4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZIKN40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752478AbZIKN4Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 09:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZIKN4Y
+	id S1752575AbZIKN40 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 09:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752122AbZIKN4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 09:56:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:33581 "EHLO
+	Fri, 11 Sep 2009 09:56:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42896 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZIKN4X (ORCPT
+	with ESMTP id S1751857AbZIKN4X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Sep 2009 09:56:23 -0400
-Message-Id: <20090911135452.866274568@goodmis.org>
+Message-Id: <20090911135626.114364825@goodmis.org>
+References: <20090911135452.866274568@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 11 Sep 2009 09:54:52 -0400
+Date: Fri, 11 Sep 2009 09:54:53 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: [PATCH 0/3] [GIT PULL] tracing: various updates
+Subject: [PATCH 1/3] x86/tracing: comment need for atomic nop
+Content-Disposition: inline; filename=0001-x86-tracing-comment-need-for-atomic-nop.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <srostedt@redhat.com>
 
-Ingo,
+The dynamic function tracer relys on the macro P6_NOP5 always being
+an atomic NOP. If for some reason it is changed to be two operations
+(like a nop2 nop3) it can faults within the kernel when the function
+tracer modifies the code.
 
-Note, this is bassed off of my last pull request of tip/tracing/core.
+This patch adds a comment to note that the P6_NOPs are expected to
+be atomic. This will hopefully prevent anyone from changing that.
 
-Please pull the latest tip/tracing/core2 tree, which can be found at:
+Reported-by: Mathieu Desnoyer <mathieu.desnoyers@polymtl.ca>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ arch/x86/include/asm/nops.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/core2
+diff --git a/arch/x86/include/asm/nops.h b/arch/x86/include/asm/nops.h
+index ad2668e..6d8723a 100644
+--- a/arch/x86/include/asm/nops.h
++++ b/arch/x86/include/asm/nops.h
+@@ -65,6 +65,8 @@
+    6: osp nopl 0x00(%eax,%eax,1)
+    7: nopl 0x00000000(%eax)
+    8: nopl 0x00000000(%eax,%eax,1)
++   Note: All the above are assumed to be a single instruction.
++	There is kernel code that depends on this.
+ */
+ #define P6_NOP1	GENERIC_NOP1
+ #define P6_NOP2	".byte 0x66,0x90\n"
+-- 
+1.6.3.3
 
-
-Steven Rostedt (3):
-      x86/tracing: comment need for atomic nop
-      tracing/profile: add ref count for registering profile events
-      tracing: add latency format to function_graph tracer
-
-----
- arch/x86/include/asm/nops.h          |    2 +
- include/trace/ftrace.h               |   22 +++++++++-
- kernel/trace/trace_functions_graph.c |   74 +++++++++++++++++++++++++++++++---
- 3 files changed, 90 insertions(+), 8 deletions(-)
 -- 
