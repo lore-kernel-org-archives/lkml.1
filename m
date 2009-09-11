@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZIKVN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbZIKVOL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZIKVN5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 17:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbZIKVN5
+	id S1756840AbZIKVOL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:14:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756876AbZIKVOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 17:13:57 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:11344 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756841AbZIKVN4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 17:13:56 -0400
-Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket
- numbers
-From: Eric Paris <eparis@redhat.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
-In-Reply-To: <20090911204602.GA19371@shareable.org>
-References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
-	 <20090911.114620.260824240.davem@davemloft.net>
-	 <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>
-	 <20090911204602.GA19371@shareable.org>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Sep 2009 17:13:46 -0400
-Message-Id: <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 17:14:10 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:52160 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756877AbZIKVOG convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 17:14:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=HQvDB8fOCGTvH86pBI7rqLE6ZpJ0lGgjzDDy+Dk568p7Gij4i+1zAEoY7mNuC5SEt4
+         rpdjbV4ROy2E5nlR3lwKks/cTeFP5ojYXBubQFxqXo9XarpdWI6jH/TticMcw/KgT/rt
+         WcDWnNBzGX6RZpHnpZzoerkOhsjRnH+5N7Jtk=
+MIME-Version: 1.0
+In-Reply-To: <20090911200922.GF8137@elf.ucw.cz>
+References: <c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
+	 <20090903232317.GA6760@lst.de> <87ljkvmt71.fsf@devron.myhome.or.jp>
+	 <c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
+	 <87iqfx5mss.fsf@devron.myhome.or.jp> <20090907125130.GA1595@ucw.cz>
+	 <87ljko5k3v.fsf@devron.myhome.or.jp>
+	 <20090910192354.GD23356@elf.ucw.cz>
+	 <87bplim1ce.fsf@devron.myhome.or.jp>
+	 <20090911200922.GF8137@elf.ucw.cz>
+Date: Fri, 11 Sep 2009 23:14:08 +0200
+Message-ID: <c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com>
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 21:46 +0100, Jamie Lokier wrote:
-> Eric Paris wrote:
-> > > I would really prefer if you worked on eliminating the problem that
-> > > prevents you from using netlink instead.
-> > 
-> > I'm not really sure if I can, although I'd love to hear input from
-> > someone who knows the netlink code on how I can make it do what I need.
-> > I'm really not duplicating much other than the NLMSG_OK and NLMSG_NEXT
-> > macros.  My code doesn't even use skbs and I'm not savy enough to really
-> > know how I could.  I'm more than willing to work on it if someone can
-> > point me to how it might work.
-> 
-> Let's turn the question around.
-> 
-> Since you're doing lots of non-sockety things, and can't tolerate
-> dropped packets - why isn't it a character device?  What's the reason
-> for using a socket at all?
-> 
-> (I'm reminded of /dev/poll, /dev/epoll and /dev/inotify :-)
+2009/9/11 Pavel Machek <pavel@ucw.cz>:
+>
+>> Um..., sorry, I'm not sure what are you talking about. Of course, the
+>> problem of this is that system freeze on suspend.
+>>
+>> Or are you asking my guess of the cause, or something?  If so, although
+>> I'm not reading all emails on this thread, from Zdenek's backtrace, the
+>> sequence would be
+>>
+>>     1) suspend mmc
+>>     2) mmc generates card removed event
+>>     3) prepare to invalidate blockdev
+>>     4) sync fs on invalidating blockdev
+>>     5) flush buffers on invalidating blockdev (partitions)
+>>     6) delete blockdev (partitions)
+>>
+>> or like the above. And I can guess some possible issues/root-cause we
+>> have to handle from it.
+>>
+>>     a) card removed event from mmc for suspend is right design?
+>>     b) the card can be changed/removed before system was resumed, mmc
+>>        can be detect/handle it properly?
+>>     c) flushing buffers on _deleted_ device is right design?
+>>
+>> and I suspect there are more issues in detail and resume process though.
+>
+> I guess c) is main problem. If device is not there, how do you want to
+> flush buffers on it?
+>
 
-Originally it was a char device and I was told to use a socket protocol
-so I could use get/set sockopt rather than ioctl, because ioctl is the
-devil (even if those aren't THAT much better).
+Well I do not even understand why someone wants to sync something when
+card is removed ??
+And why suspend of mmc should generate card removal ??
 
-The queuing being done using events instead of skbs was done reusing
-inotify code, reusing network code would be just as good with me.  What
-I really need is a way to convey a pointer from one process to another.
-That's why I claim loss is not an option, since I'm holding a reference
-to the pointer I can't have that conveyance disappear under us.
+IMHO steps 2..6 are only valid for the case I would 'remove'
+unexpectedly card - but
+if I suspend and resume my laptop and I keep the card inside - all
+those step looks plain wrong.
 
-If network people want me to get back out of the network system I can go
-back to a char file with lots of ioctls.  I'd love to reuse code, I just
-don't know what's possible...
-
--Eric
-
+Zdenek
