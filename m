@@ -1,29 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755814AbZIKR7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbZIKSBG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755814AbZIKR7b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 13:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbZIKR73
+	id S1755826AbZIKSBG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:01:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZIKSBE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 13:59:29 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55499 "EHLO
+	Fri, 11 Sep 2009 14:01:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55845 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753465AbZIKR73 (ORCPT
+	with ESMTP id S1754380AbZIKSBD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 13:59:29 -0400
-Date: Fri, 11 Sep 2009 13:59:30 -0400
+	Fri, 11 Sep 2009 14:01:03 -0400
+Date: Fri, 11 Sep 2009 14:01:06 -0400
 From: Christoph Hellwig <hch@infradead.org>
 To: Jens Axboe <jens.axboe@oracle.com>
 Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
        akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 1/4] writeback: merely wakeup flusher thread if work
-	allocation fails for WB_SYNC_NONE
-Message-ID: <20090911175930.GA19598@infradead.org>
-References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com> <1252669832-13553-2-git-send-email-jens.axboe@oracle.com>
+Subject: Re: [PATCH 2/4] Assign bdi in super_block
+Message-ID: <20090911180106.GB19598@infradead.org>
+References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com> <1252669832-13553-3-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1252669832-13553-2-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <1252669832-13553-3-git-send-email-jens.axboe@oracle.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
 	See http://www.infradead.org/rpr.html
@@ -31,23 +30,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	/*
-> +	 * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
-> +	 * bdi_queue_work() will wake up the thread and flush old data. This
-> +	 * should ensure some amount of progress in freeing memory.
-> +	 */
-> +	if (wbc->sync_mode != WB_SYNC_ALL) {
-> +		struct bdi_work *w = bdi_alloc_work(wbc);
->  
-> +		bdi_queue_work(wbc->bdi, w);
-> +	} else {
-> +		struct bdi_work work;
->  
-> +		bdi_work_init(&work, wbc);
-> +		work.state |= WS_ONSTACK;
->  
-> +		bdi_queue_work(wbc->bdi, &work);
-> +		bdi_wait_on_work_clear(&work);
+On Fri, Sep 11, 2009 at 01:50:30PM +0200, Jens Axboe wrote:
+> We do this automatically in get_sb_bdev() from the set_bdev_super()
+> callback. Filesystems that have their own private backing_dev_info
+> must assign that in ->fill_super().
+> 
+> Note that ->s_bdi assignment is required for proper writeback!
 
-That's even nice than my version, great.
+Looks good to me.   Can we get rid of BDI_CAP_NO_WRITEBACK with this by
+simply not assigning a bdi?
 
