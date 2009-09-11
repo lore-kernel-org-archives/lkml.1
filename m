@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754613AbZIKQEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZIKQIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754613AbZIKQEo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZIKQEn
+	id S1754650AbZIKQIE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbZIKQID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:04:43 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:5511 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754532AbZIKQEm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:04:42 -0400
-Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket
- numbers
-From: Eric Paris <eparis@redhat.com>
-To: Andreas Gruenbacher <agruen@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, davem@davemloft.net, viro@zeniv.linux.org.uk,
-       alan@linux.intel.com, hch@infradead.org
-In-Reply-To: <200909111632.50477.agruen@suse.de>
-References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
-	 <200909111632.50477.agruen@suse.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Fri, 11 Sep 2009 12:04:33 -0400
-Message-Id: <1252685073.2305.9.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 12:08:03 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:57721 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595AbZIKQIC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:08:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=NfNMJvHpyOIbcjNYeY9FPGkXykZVC/vklL1NQLkPELFyJwSkjpliBg0JG9vfUGD84N
+         9mXQ3XMXNavRk0Tsj1U8SQ87rwF5UzyhrjLQ5ROgOQuWMeR/5AZf3WmCcv+9A8muCV6O
+         P3GHICfyTyLttNmdOTsnZmQJUF2MafjxDi5XI=
+Message-ID: <4AAA75E0.6020604@gmail.com>
+Date: Fri, 11 Sep 2009 19:08:00 +0300
+From: =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+MIME-Version: 1.0
+To: rostedt@goodmis.org
+CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
+       Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Subject: Re: [PATCH 3/3] tracing: add latency format to function_graph tracer
+References: <20090911135452.866274568@goodmis.org>	 <20090911135626.824079836@goodmis.org> <20090911145521.GA6119@nowhere>	 <1252681916.18996.697.camel@gandalf.stny.rr.com>	 <20090911151811.GB6119@nowhere>  <4AAA6EE2.8000807@gmail.com> <1252684229.18996.699.camel@gandalf.stny.rr.com>
+In-Reply-To: <1252684229.18996.699.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 16:32 +0200, Andreas Gruenbacher wrote:
-> The patches did apply and build against next-20090910. I wrote a small user-
-> space utility for testing (attached); see how painless the socket interface 
-> is. The patches seem to be working well, except that some required 
-> functionality is missing still.
-> 
-> Currently, the CAP_NET_RAW capability is needed for being able to create 
-> watches. This seems too strict to me; I don't see why I shouldn't be able to 
-> watch my own files, or files which I have read access to (like inotify).
+On 2009-09-11 18:50, Steven Rostedt wrote:
+> On Fri, 2009-09-11 at 18:38 +0300, Török Edwin wrote:
+>   
+>> On 2009-09-11 18:18, Frederic Weisbecker wrote:
+>>     
+>>> On Fri, Sep 11, 2009 at 11:11:56AM -0400, Steven Rostedt wrote:
+>>>       
+>>   
+>>     
+>>>> Ug! I just noticed that tgid was added to struct trace_entry, with the
+>>>> only user as the user stack entry. This should be in the user stack
+>>>> field not something that goes into every event!
+>>>>
+>>>> I guess I need to fix that too.
+>>>>     
+>>>>         
+>> Indeed tgid should be part of struct userstack_entry, and set in
+>> ftrace_trace_userstack.
+>> Do you want to me to write up a patch for that, or have you already
+>> fixed it?
+>>     
+>
+> I've just fixed it, thanks!
 
-I agree completely.  However since I don't yet have limits on how many
-marks a user can add, nor the number of events they can hold in their
-queue I'm leaving it as root only for the moment.  Patches have started
-to flush out usability by non-root users.
+Ok.
 
-> There are some actions like creating hardlinks in directories or removing 
-> files which don't trigger events. From a user point of view, I would prefer to 
-> receive those events as well. (I notice that it's not easy to to pass file 
-> descriptors to listeners for those events.)
+BTW any plans on integrating an in-kernel unwinder like systemtap has?
 
-Yes, a number of event types hook into the vfs in places where we do not
-have at least a struct path.  I'm certainly considering how to move
-hoooks to get that ability.
+Even if I build libc with framepointers, a userspace stacktrace on
+x86-64 can't go beyond most pthreads routines, like __read_nocancel
+(they're written in asm maybe?).
 
--Eric
-
+Best regards,
+--Edwin
