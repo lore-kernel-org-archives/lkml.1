@@ -1,69 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbZIKRfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZIKRqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755710AbZIKRfT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 13:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753404AbZIKRfS
+	id S1755807AbZIKRqS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 13:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbZIKRqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 13:35:18 -0400
-Received: from mail-yx0-f176.google.com ([209.85.210.176]:35641 "EHLO
-	mail-yx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbZIKRfR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 13:35:17 -0400
-Message-ID: <4AAA8A56.3040707@codemonkey.ws>
-Date: Fri, 11 Sep 2009 12:35:18 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090825)
-MIME-Version: 1.0
-To: Amit Shah <amit.shah@redhat.com>
-CC: Alan Cox <alan@linux.intel.com>, rusty@rustcorp.com.au,
-       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for generic
- guest and host communication
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <1252678386-17404-2-git-send-email-amit.shah@redhat.com> <20090911170010.34c80f2d@linux.intel.com> <20090911163806.GB25535@amit-x200.redhat.com> <4AAA8838.1080106@codemonkey.ws> <20090911173307.GB27046@amit-x200.redhat.com>
-In-Reply-To: <20090911173307.GB27046@amit-x200.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Sep 2009 13:46:16 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41141 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755776AbZIKRqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 13:46:16 -0400
+Subject: [PATCH] mn10300 syscall.h
+From: Mark Salter <msalter@redhat.com>
+To: dhowells <dhowells@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Red Hat, Inc
+Date: Fri, 11 Sep 2009 13:46:18 -0400
+Message-Id: <1252691178.2174.34.camel@deneb.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Amit Shah wrote:
-> On (Fri) Sep 11 2009 [12:26:16], Anthony Liguori wrote:
->   
->> Amit Shah wrote:
->>     
->>> Right; there was some discussion about this. A few alternatives were
->>> suggested like
->>>
->>> - udev scripts to create symlinks from ports to function, like:
->>>
->>>   /dev/vcon3 -> /dev/virtio-console/clipboard
->>>
->>> - Some fqdn-like hierarchy, like
->>>
->>>   /dev/virtio-console/com/redhat/clipboard
->>>
->>>   which again can be created by udev scripts
->>>   
->>>       
->> And I dislike all of them.  What I'd rather have is these devices  
->> exposed as tty's with a sys attribute that exposed the name of the 
->> device.
->>     
->
-> A sysfs attribute can even be exposed with a char device.
->
-> I didn't want to venture more into tty after the hvc thing and the
-> unexpected bugs that crept up (memory corruption, which is now fixed in
-> linux-next). I'd rather just keep it limited to the subsystems I know.
->   
+This adds missing asm/syscall.h to mn10300 arch.
 
-I don't think that's a good justification.
+Signed-off-by: Mark Salter <msalter@redhat.com>
 
-This device is very much a serial port.  I don't see any reason not to 
-treat it like one.
+diff --git a/arch/mn10300/include/asm/syscall.h b/arch/mn10300/include/asm/syscall.h
+new file mode 100644
+index 0000000..cc5a1f1
+--- /dev/null
++++ b/arch/mn10300/include/asm/syscall.h
+@@ -0,0 +1,131 @@
++/* syscall parameter access functions
++ *
++ * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
++ * Written by Mark Salter <msalter@redhat.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _ASM_SYSCALL_H
++#define _ASM_SYSCALL_H
++
++#include <linux/err.h>
++#include <asm/ptrace.h>
++
++/*
++ * Get the system call number or -1
++ */
++static inline long syscall_get_nr(struct task_struct *task,
++				  struct pt_regs *regs)
++{
++	return regs->orig_d0;
++}
++
++/*
++ * Restore the clobbered d0 register
++ */
++static inline void syscall_rollback(struct task_struct *task,
++				    struct pt_regs *regs)
++{
++	regs->d0 = regs->orig_d0;
++}
++
++/*
++ * See if the syscall return value is an error, returning it if it is and 0 if
++ * not
++ */
++static inline long syscall_get_error(struct task_struct *task,
++				     struct pt_regs *regs)
++{
++	return IS_ERR_VALUE(regs->d0) ? regs->d0 : 0;
++}
++
++/*
++ * Get the syscall return value
++ */
++static inline long syscall_get_return_value(struct task_struct *task,
++					    struct pt_regs *regs)
++{
++	return regs->d0;
++}
++
++/*
++ * Set the syscall return value
++ */
++static inline void syscall_set_return_value(struct task_struct *task,
++					    struct pt_regs *regs,
++					    int error, long val)
++{
++	regs->d0 = (long) error ?: val;
++}
++
++/*
++ * Retrieve the system call arguments
++ */
++static inline void syscall_get_arguments(struct task_struct *task,
++					 struct pt_regs *regs,
++					 unsigned int i, unsigned int n,
++					 unsigned long *args)
++{
++	/*
++	 * Do this simply for now. If we need to start supporting
++	 * fetching arguments from arbitrary indices, this will need some
++	 * extra logic. Presently there are no in-tree users that depend
++	 * on this behaviour.
++	 */
++	BUG_ON(i);
++
++	/* Argument pattern is: a0, d1, a3, a2, d3, d2 */
++	switch (n) {
++	case 6:
++		args[5] = regs->d2;
++	case 5:
++		args[4] = regs->d3;
++	case 4:
++		args[3] = regs->a2;
++	case 3:
++		args[2] = regs->a3;
++	case 2:
++		args[1] = regs->d1;
++	case 1:
++		args[0] = regs->a0;
++		break;
++	default:
++		BUG();
++	}
++}
++
++/*
++ * Alter the system call arguments
++ */
++static inline void syscall_set_arguments(struct task_struct *task,
++					 struct pt_regs *regs,
++					 unsigned int i, unsigned int n,
++					 const unsigned long *args)
++{
++	/* Same note as above applies */
++	BUG_ON(i);
++
++	switch (n) {
++	case 6:
++		regs->d2 = args[5];
++	case 5:
++		regs->d3 = args[4];
++	case 4:
++		regs->a2 = args[3];
++	case 3:
++		regs->a3 = args[2];
++	case 2:
++		regs->d1 = args[1];
++	case 1:
++		regs->a0 = args[0];
++		break;
++	default:
++		BUG();
++	}
++}
++
++#endif /* _ASM_SYSCALL_H */
 
-Regards,
 
-Anthony Liguori
