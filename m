@@ -1,58 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZIKSKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbZIKSJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755833AbZIKSKs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 14:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZIKSKs
+	id S1755821AbZIKSJj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753387AbZIKSJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 14:10:48 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:46971 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753387AbZIKSKr (ORCPT
+	Fri, 11 Sep 2009 14:09:38 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:50071 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751519AbZIKSJh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 14:10:47 -0400
-Subject: Re: [PATCH] update clocksource raw_time in timekeeping_suspend
-From: john stultz <johnstul@us.ibm.com>
-To: ye janboe <janboe.ye@gmail.com>
-Cc: Yong Zhang <yong.zhang0@gmail.com>, zippel@linux-m68k.org,
-       akpm@linux-foundation.org, mingo@elte.hu,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <af3ea28a0909102035r5b39f3f5he8885996cf55fa65@mail.gmail.com>
-References: <af3ea28a0909090035t710f5895i135760a2c7bd8a02@mail.gmail.com>
-	 <1252537622.9883.24.camel@localhost.localdomain>
-	 <af3ea28a0909100107q328d1288x8d677d4d5f79f728@mail.gmail.com>
-	 <2674af740909100231x582851dbv9b71bc2914be7030@mail.gmail.com>
-	 <1252620938.7319.3.camel@localhost.localdomain>
-	 <af3ea28a0909102035r5b39f3f5he8885996cf55fa65@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 11:09:04 -0700
-Message-Id: <1252692544.7913.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 14:09:37 -0400
+Date: Fri, 11 Sep 2009 14:09:40 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 3/4] writeback: only use bdi_writeback_all() for
+	WB_SYNC_NONE writeout
+Message-ID: <20090911180940.GC19598@infradead.org>
+References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com> <1252669832-13553-4-git-send-email-jens.axboe@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252669832-13553-4-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 11:35 +0800, ye janboe wrote:
-> So CLOCK_MONOTONIC_RAW is not suitable for getting real hw time which
-> includes sleep time.
+> -static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+> +static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+> +				 struct writeback_control *wbc)
+>  {
+>  	struct bdi_work *work;
+>  
+> @@ -195,7 +196,7 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+>  	if (work)
+>  		bdi_work_init(work, wbc);
+>  
+> -	return work;
+> +	bdi_queue_work(bdi, work);
 
-Hmm.. This is sort of an odd request. 
+This is now the only caller of bdi_queue_work that has a NULL work
+argument.  I would recommend removing the !work half of bdi_queue_work
+and just inline it into this function (or make it a separate helper).
 
-The clocksource hardware counters stop in during suspend, so any "real
-hw time that includes sleep" is likely to be combined from different
-sources (with slightly different drifts), so I'm not sure why
-CLOCK_MONOTONIC_RAW would be preferred over CLOCK_MONOTONIC?
+>  /*
+> + * Schedule writeback for all backing devices. Can only be used for
+> + * WB_SYNC_NONE writeback, WB_SYNC_ALL should use bdi_start_writeback()
+> + * and pass in the superblock.
+>   */
+>  static void bdi_writeback_all(struct writeback_control *wbc)
+>  {
+>  	struct backing_dev_info *bdi;
+>  
+> +	WARN_ON(wbc->sync_mode == WB_SYNC_ALL);
+> +
+>  	spin_lock(&bdi_lock);
+>  
+>  	list_for_each_entry(bdi, &bdi_list, bdi_list) {
+>  		if (!bdi_has_dirty_io(bdi))
+>  			continue;
+>  
+> +		bdi_alloc_queue_work(bdi, wbc);
+>  	}
 
 
-> Is there other timer suitable for this?
+Much nicer than before.  Could be even further simplified to:
 
-Maybe the CMOS / RTC?  Would that suffice?
+		if (bdi_has_dirty_io(bdi))
+			bdi_alloc_queue_work(bdi, wbc);
 
-Could you maybe provide more details about why you need this? Maybe
-better understanding your needs would help point to a solution.
+> @@ -1157,6 +1115,7 @@ long sync_inodes_sb(struct super_block *sb)
+>  {
+>  	struct writeback_control wbc = {
+>  		.sb		= sb,
+> +		.bdi		= sb->s_bdi,
+>  		.sync_mode	= WB_SYNC_ALL,
+>  		.range_start	= 0,
+>  		.range_end	= LLONG_MAX,
+> @@ -1164,7 +1123,7 @@ long sync_inodes_sb(struct super_block *sb)
+>  	long nr_to_write = LONG_MAX; /* doesn't actually matter */
+>  
+>  	wbc.nr_to_write = nr_to_write;
+> -	bdi_writeback_all(&wbc);
+> +	bdi_start_writeback(&wbc);
 
-thanks
--john
-
+So here we have a WB_SYNC_ALL caller of bdi_writeback_all and the
+only other caller is WB_SYNC_NONE.  Given that after patch two those
+are entirely different codepathes in bdi_start_writeback I would just
+split bdi_start_writeback into two separate functions.
 
