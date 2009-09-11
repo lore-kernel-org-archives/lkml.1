@@ -1,98 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752401AbZIKHQF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbZIKHQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752401AbZIKHQF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 03:16:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751585AbZIKHQE
+	id S1752715AbZIKHQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 03:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZIKHQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 03:16:04 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50669 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751263AbZIKHQD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 03:16:03 -0400
-Message-ID: <4AA9F902.4030306@cn.fujitsu.com>
-Date: Fri, 11 Sep 2009 15:15:14 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 11 Sep 2009 03:16:25 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35428 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbZIKHQY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 03:16:24 -0400
+Date: Fri, 11 Sep 2009 09:16:16 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: arve@android.com, swetland@google.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: newer version of HTC Dream support
+Message-ID: <20090911071155.GA1386@ucw.cz>
+References: <20090824092204.GB25591@elf.ucw.cz> <20090901131832.GA1835@ucw.cz> <20090904090303.024e981a.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>, Oleg Nesterov <oleg@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, Gautham Shenoy <ego@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Miao Xie <miaox@cn.fujitsu.com>,
-       Paul Menage <menage@google.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] resend, cpuset/hotplug fixes
-References: <20090910192153.GA584@redhat.com> <1252615996.7205.99.camel@laptop>
-In-Reply-To: <1252615996.7205.99.camel@laptop>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090904090303.024e981a.randy.dunlap@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-09-10 at 21:21 +0200, Oleg Nesterov wrote:
->> (my apologies to those who see this twice).
->>
->>
->> The 1st patch is preparation. 2-3 fix different problems, the 3rd one
->> depends on 2nd.
->>
->> These patches change the code which I don't really understand, please
->> review.
->>
->>
->> As for the 3rd patch, it replaces
->>
->> 	cpu_hotplug-dont-affect-current-tasks-affinity.patch
->>
->> in -mm tree. Imho the new patch is more simple and clean, but of course
->> this is subjective and I am biased.
+Hi!
+
+> > > With 2.6.31 being closer... is there a git tree or set of patches to
+> > > make it boot on HTC Dream?
+> > > 
+> > > Quite a lot of hw should be supported in linux-next, and it would be
+> > > nice to get arch-specific code working with linux-next and eventually
+> > > merged...
+> > 
+> > Any news here? If you need some more kernel hackers I guess I'm
+> > looking for a job :-).
 > 
-> Look good to me.
-> 
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> 
-> Ingo, will you stick them in -tip?
-> 
->
+> well, mmotm and linux-next dream builds fail like this:
 
-Sorry. I was taken ill for weeks and forgot to follow these discussions.
-Especially I should say sorry to Oleg.
+Ok, is the goal here to get it to compile, or get it to boot?
 
-I have different concept. cpuset_cpus_allowed() is not called at atomic
-context nor non-preemptable context nor other critical context.
-So it should be allowed to use mutexs. That's what I think.
+I have recent tree that compiles, somewhere, but getting it to boot is
+'slightly more interesting'.
+								Pavel
 
-There is a bug when migration_call() requires a mutex
-before migration has been finished when cpu offline as Oleg described.
-
-Bug this bug is only happened when cpu offline. cpu offline is rare and
-is slowpath. I think we should fix cpu offline and ensure it requires
-the mutex safely.
-
-Oleg's patch moves all dirty things into CPUSET subsystem and makes
-cpuset_cpus_allowed() does not require any mutex and increases CPUSET's
-coupling. I don't feel it's good.
-
-Anyway, Oleg's patch works good.
-
-> > cpuset_cpus_allowed() is not only  used for CPU offline.
-> > >
-> > > sched_setaffinity() also uses it.
-> 
-> Sure. And it must take get_online_cpus() to avoid the races with hotplug.
-
-Oleg hasn't answered that
-"is it safe when pdflush() calls cpuset_cpus_allowed()?".
-A patch may be needed to ensure pdflush() calls cpuset_cpus_allowed() safely.
-
-One other minor thing:
-Oleg's patch may introduce a trouble in PREEEMPT_RT tree, because
-spinlock in RT is also mutex. Likely I'm wrong.
-
-- Lai
-
-
-
-
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
