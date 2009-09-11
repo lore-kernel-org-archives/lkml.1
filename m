@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZIKVZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756899AbZIKV1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbZIKVZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 17:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbZIKVZ5
+	id S1756899AbZIKV1o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756862AbZIKV1k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 17:25:57 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:45226 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755435AbZIKVZ4 (ORCPT
+	Fri, 11 Sep 2009 17:27:40 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:41897 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752363AbZIKV1j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 17:25:56 -0400
-Date: Fri, 11 Sep 2009 14:25:48 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Andrew Vasquez <andrew.vasquez@qlogic.com>
-Cc: Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>
-Subject: Re: qla2xxx: Correct compilation issues when CONFIG_MOUDLES=n (was:
- Re: linux-next: Tree for September 7 (scsi/qla2x))
-Message-Id: <20090911142548.b91cb917.randy.dunlap@oracle.com>
-In-Reply-To: <20090911175341.GH710@plap4-2.local>
-References: <20090907210206.7830ba68.sfr@canb.auug.org.au>
-	<20090907102747.ac6b98ff.randy.dunlap@oracle.com>
-	<20090908182541.GB44157@plap4-2.local>
-	<20090911175341.GH710@plap4-2.local>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt006.oracle.com [141.146.116.15]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4AAAC05F.018C:SCFSTAT5015188,ss=1,fgs=0
+	Fri, 11 Sep 2009 17:27:39 -0400
+Date: Fri, 11 Sep 2009 22:27:31 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Eric Paris <eparis@redhat.com>
+Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
+Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
+Message-ID: <20090911212731.GA19901@shareable.org>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com> <20090911.114620.260824240.davem@davemloft.net> <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com> <20090911204602.GA19371@shareable.org> <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009 10:53:41 -0700 Andrew Vasquez wrote:
-
-> Randy Dunlap noted:
+Eric Paris wrote:
+> On Fri, 2009-09-11 at 21:46 +0100, Jamie Lokier wrote:
+> > Eric Paris wrote:
+> > > > I would really prefer if you worked on eliminating the problem that
+> > > > prevents you from using netlink instead.
+> > > 
+> > > I'm not really sure if I can, although I'd love to hear input from
+> > > someone who knows the netlink code on how I can make it do what I need.
+> > > I'm really not duplicating much other than the NLMSG_OK and NLMSG_NEXT
+> > > macros.  My code doesn't even use skbs and I'm not savy enough to really
+> > > know how I could.  I'm more than willing to work on it if someone can
+> > > point me to how it might work.
+> > 
+> > Let's turn the question around.
+> > 
+> > Since you're doing lots of non-sockety things, and can't tolerate
+> > dropped packets - why isn't it a character device?  What's the reason
+> > for using a socket at all?
+> > 
+> > (I'm reminded of /dev/poll, /dev/epoll and /dev/inotify :-)
 > 
->   when CONFIG_MODULES=n:
+> Originally it was a char device and I was told to use a socket protocol
+> so I could use get/set sockopt rather than ioctl, because ioctl is the
+> devil (even if those aren't THAT much better).
 > 
-> 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> 
->   in
-> 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> 		KOBJ_CHANGE, envp);
-> 
-> Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> The queuing being done using events instead of skbs was done reusing
+> inotify code, reusing network code would be just as good with me.  What
+> I really need is a way to convey a pointer from one process to another.
+> That's why I claim loss is not an option, since I'm holding a reference
+> to the pointer I can't have that conveyance disappear under us.
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+It's fine as long as the disappearing knows to releas the reference.
+But I suspect fanotify would be awfully hard to use if messages were
+unreliable.
 
+> If network people want me to get back out of the network system I can go
+> back to a char file with lots of ioctls.  I'd love to reuse code, I just
+> don't know what's possible...
 
-> Ok, So any strong objections to just having the functionality present
-> when module support is enabled?
+Ok.  I understand you're pushed in different directions by different
+schools of thought.
 
-Fine with me.  Thanks.
+Let's look at some history.  What happened to /dev/epoll.  It worked
+very well (and several OSes have /dev/poll which is similar).  There
+was no technical reason to change the interface.
 
-> diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
-> index 29396c0..3887adb 100644
-> --- a/drivers/scsi/qla2xxx/qla_os.c
-> +++ b/drivers/scsi/qla2xxx/qla_os.c
-> @@ -2671,6 +2671,7 @@ qla2x00_post_uevent_work(struct scsi_qla_host *vha, u32 code)
->  static void
->  qla2x00_uevent_emit(struct scsi_qla_host *vha, u32 code)
->  {
-> +#ifdef CONFIG_MODULES
->  	char event_string[40];
->  	char *envp[] = { event_string, NULL };
->  
-> @@ -2685,6 +2686,7 @@ qla2x00_uevent_emit(struct scsi_qla_host *vha, u32 code)
->  	}
->  	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
->  	    KOBJ_CHANGE, envp);
-> +#endif
->  }
->  
->  void
-> 
+But when it came to mainlining it, Linus objected, and forced it to
+become a small set of system calls.  It's quite a nice interface to
+use now.
 
+Then /dev/inotify.  You know what happened.  The history was similar:
+Linux objected to the device, and forced it to use a few system calls.
 
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+More recently, people skipped over the /dev path, having seen how it
+went before, and just implemented things like timerfd, eventfd and
+signalfd system calls.
+
+That seems to be the Linux way - if the interface can be exposed as a
+small set of sensible system calls, and it's really a core kernel
+facility.
+
+Does fanotify need "lots of ioctls", or could it fit comfortably into
+say 2-5 strongly typed system calls, like inotify and epoll do?
+
+-- Jamie
