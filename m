@@ -1,125 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753973AbZIKGmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751779AbZIKHEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753973AbZIKGmo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 02:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752339AbZIKGmo
+	id S1751779AbZIKHEt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 03:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZIKHEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 02:42:44 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:57553 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750704AbZIKGmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 02:42:43 -0400
-Date: Fri, 11 Sep 2009 02:42:46 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: linux-ide@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: What's in libata-dev.git?
-Message-ID: <20090911064246.GA8422@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Sep 2009 03:04:48 -0400
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:51179 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751100AbZIKHEs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 03:04:48 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [long] Another BFS versus CFS shakedown
+Date: Fri, 11 Sep 2009 09:04:49 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Jens Axboe <jens.axboe@oracle.com>
+References: <200909090142.41738.elendil@planet.nl> <20090911062032.GB27833@elte.hu>
+In-Reply-To: <20090911062032.GB27833@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200909110904.50487.elendil@planet.nl>
+X-OriginalArrivalTime: 11 Sep 2009 07:04:50.0745 (UTC) FILETIME=[27D50290:01CA32AE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 11 September 2009, Ingo Molnar wrote:
+> Note, the one you used was a still buggy version of latt.c producing
+> bogus latency numbers - you will need the fix to it attached below.
 
-This is a summary of the changes current queued on the #upstream branch
-of git://git.kernel.org/pub/scm/linux/kernel/git/jgarzik/libata-dev.git
+Yes, I'm aware of that and have already copied Jens' latest version.
 
-These will be pushed to Linus in the next day or so, when merges start
-flowing.
+> Furthermore, the following tune might be needed on mainline to make
+> it produce consistently good max numbers (not just good averages):
+>
+>    echo 0 > /proc/sys/kernel/sched_wakeup_granularity_ns
 
-linux-ide hackers, speak up is something is obviously wrong or missing.
+Ack. I've seen the patches to change some defaults floating by.
+Hmmm. I think the proposed new default for my system is 2ms with 2 CPUs?
 
-The only outstanding patch is Robert Hancock's enhance-command-parsing
-patch:  I'm still on the fence about leaving the huge switch table, or
-choosing a better data structure.
+I will not test against TIP at this time, but I plan to do the following:
+- repeat my tests now using vanilla 2.6.31 for both BFS and CFS
+  This will provide a baseline to verify improvements.
+- do two additional runs with CFS with some modified tunables
+- do one more run probably when .32-rc2 is out
+  I'd expect that to have the scheduler fixes, while the worst post-merge
+  issues should be resolved.
 
+I also have a couple of ideas for getting additional data. I'll post my 
+results as follow-ups.
 
-Alan Cox (1):
-      [libata] Add pata_rdc driver for RDC ATA devices
+I'm very impressed with the responses to the issues that have been raised, 
+but I think we do owe Con a huge thank you for setting off that process.
 
-Ashish Kalra (1):
-      sata_fsl: Defer non-ncq commands when ncq commands active
+I also think there is a lot to be said for having a very straightforward 
+alternative scheduler available for baseline comparisons. It's much 
+easier to come out and say "something's broken" if you know some latency 
+issue is not due to buggy hardware or applications or orange bunnies with 
+a cosmic ray gun. I'll not go into the question whether such a scheduler 
+should be in mainline or not.
 
-Jeff Garzik (2):
-      [libata] EH: freeze port before aborting commands
-      [libata] sata_sil: disable DMA engine in sil_freeze()
-
-Joe Perches (1):
-      drivers/ata: Remove unnecessary semicolons
-
-Julia Lawall (1):
-      drivers/ata: use resource_size
-
-Marcin Slusarz (1):
-      pata_rz1000: use printk_once
-
-Martin K. Petersen (1):
-      libata: Delegate nonrot flag setting to SCSI
-
-Matthew Garrett (1):
-      libata: Export AHCI capabilities
-
-Otavio Salvador (1):
-      pata_cs5535: add pci id for AMD based CS5535 controllers
-
-Robert Hancock (2):
-      libata: add command name parsing for error output
-      sata_sil24: always set protocol override for non-ATAPI data commands
-
-Shane Huang (3):
-      libata: add SATA PMP revision information for spec 1.2
-      ahci: Add AMD SB900 SATA/IDE controller device IDs
-      ahci: kill @force_restart and refine CLO for ahci_kick_engine()
-
-Shaohua Li (1):
-      [libata] add DMA setup FIS auto-activate feature
-
-Tejun Heo (9):
-      libata: clear eh_info on reset completion
-      libata: remove spindown skipping and warning
-      sata_sis: convert to slave_link
-      libata: unbreak TPM filtering by reorganizing ata_scsi_pass_thru()
-      dmi: fix date handling in dmi_get_year()
-      dmi: extend dmi_get_year() to dmi_get_date()
-      ahci: make ahci_asus_m2a_vm_32bit_only() quirk more generic
-      ahci: Gigabyte GA-MA69VM-S2 can't do 64bit DMA
-      libata: fix off-by-one error in ata_tf_read_block()
-
-
- Documentation/feature-removal-schedule.txt |   18 -
- arch/x86/pci/direct.c                      |    5 
- drivers/acpi/blacklist.c                   |    5 
- drivers/ata/Kconfig                        |   21 +
- drivers/ata/Makefile                       |    1 
- drivers/ata/ahci.c                         |  143 +++++++---
- drivers/ata/libata-acpi.c                  |    7 
- drivers/ata/libata-core.c                  |   44 ++-
- drivers/ata/libata-eh.c                    |  146 ++++++++++
- drivers/ata/libata-pmp.c                   |    2 
- drivers/ata/libata-scsi.c                  |  159 +++--------
- drivers/ata/libata.h                       |    1 
- drivers/ata/pata_atiixp.c                  |    1 
- drivers/ata/pata_cs5535.c                  |    3 
- drivers/ata/pata_octeon_cf.c               |    4 
- drivers/ata/pata_platform.c                |    8 
- drivers/ata/pata_rb532_cf.c                |    2 
- drivers/ata/pata_rdc.c                     |  400 +++++++++++++++++++++++++++++
- drivers/ata/pata_rz1000.c                  |    4 
- drivers/ata/sata_fsl.c                     |    1 
- drivers/ata/sata_inic162x.c                |    2 
- drivers/ata/sata_mv.c                      |    2 
- drivers/ata/sata_sil.c                     |   13 
- drivers/ata/sata_sil24.c                   |   11 
- drivers/ata/sata_sis.c                     |   75 +----
- drivers/firmware/dmi_scan.c                |   77 ++++-
- drivers/ide/atiixp.c                       |    1 
- drivers/pci/quirks.c                       |    4 
- include/linux/ata.h                        |   36 ++
- include/linux/dmi.h                        |   13 
- include/linux/libata.h                     |    3 
- include/linux/pci_ids.h                    |    4 
- 32 files changed, 946 insertions(+), 270 deletions(-)
-
+Cheers,
+FJP
