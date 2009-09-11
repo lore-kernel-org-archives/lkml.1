@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751419AbZIKE5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751929AbZIKFCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751419AbZIKE5g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 00:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbZIKE5f
+	id S1751929AbZIKFCx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 01:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751144AbZIKFCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 00:57:35 -0400
-Received: from mail-px0-f189.google.com ([209.85.216.189]:45243 "EHLO
-	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbZIKE5f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 00:57:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=GUo05IDPo0SqFL4jhXGDwWNDOX395+rVwwIX3Rs1zjgqvYq3Lp4KXZt/mgwgceXg4x
-         nWJA3l14BkWpvIwcEpCahN1KGg1Ahv8rJPdgLj1XPwIVUKtkwEDoNKtIIBQIiZcR5+wM
-         g8Gi452MWGNvZ4vKZdVbDNg2yH+0vRZLKRuLQ=
-Date: Thu, 10 Sep 2009 21:57:31 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Cc: Jiri Kosina <jkosina@suse.cz>, Linux Input <linux-input@vger.kernel.org>,
-       LKLM <linux-kernel@vger.kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Subject: Re: [PATCH -next] Input: i8042 - Fix pagefault caused by
-	i8042_dmi_laptop_table
-Message-ID: <20090911045731.GA23210@core.coreip.homeip.net>
-References: <4AA9C0F1.6060708@np.css.fujitsu.com>
-MIME-Version: 1.0
+	Fri, 11 Sep 2009 01:02:52 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:58533 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750859AbZIKFCv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 01:02:51 -0400
+Date: Fri, 11 Sep 2009 00:02:53 -0500
+From: Bob Tracy <rct@gherkin.frus.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Michal Schmidt <mschmidt@redhat.com>
+Subject: Re: [Bug #14136] readcd Oops
+Message-ID: <20090911050253.GA31423@gherkin.frus.com>
+References: <2ehA7xoGvXL.A.4PB.3eBpKB@chimera> <Vm51Upp4EV.A.p8B.DfBpKB@chimera> <20090907053833.GA15287@gherkin.frus.com> <200909102311.26544.rjw@sisk.pl>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AA9C0F1.6060708@np.css.fujitsu.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <200909102311.26544.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jin,
+On Thu, Sep 10, 2009 at 11:11:26PM +0200, Rafael J. Wysocki wrote:
+> On Monday 07 September 2009, Bob Tracy wrote:
+> > On Sun, Sep 06, 2009 at 07:24:57PM +0200, Rafael J. Wysocki wrote:
+> > > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=14136
+> > > Subject		: readcd Oops
+> > > Submitter	: Bob Tracy <rct@gherkin.frus.com>
+> > > Date		: 2009-09-03 3:39 (4 days old)
+> > > References	: http://marc.info/?l=linux-kernel&m=125195043617418&w=4
+> > > Handled-By	: Michal Schmidt <mschmidt@redhat.com>
+> > > Patch		: http://patchwork.kernel.org/patch/45347/
+> > 
+> > I ack'd the fix a few days ago: please remove this bug entry from the
+> > list of 2.6.30 regressions.
+> 
+> Hmm.  Has the fix been merged already?
 
-On Fri, Sep 11, 2009 at 12:16:01PM +0900, Jin Dongming wrote:
-> (This patch fixes bug of commit 1c49cd1bbb6e41e97079d389e86063ba5de825ed
->  titled "Input: i8042 - bypass AUX IRQ delivery test on laptops")
-> 
-> When dmi_platform_init is called, the table i8042_dmi_laptop_table[] will
-> be checked. Because the end of this table is not "NULL", dmi_check_system
-> will lead to pagefault and oops will be happened.
-> 
-> In fact I got following oops on boot:
-> Call Trace:
->   [<ffffffff813f86b8>] panic+0x7a/0x131
->   [<ffffffff8105b29b>] ? exit_ptrace+0x94/0x114
->   [<ffffffff81054acc>] do_exit+0x7a/0x695
->   [<ffffffff813fbaec>] oops_end+0xb9/0xc1
->   [<ffffffff81034037>] no_context+0x1f6/0x205
->   [<ffffffff81034212>] __bad_area_nosemaphore+0x1cc/0x1f2
->   [<ffffffff811f1739>] ? string+0x40/0x9f
->   [<ffffffff811f20cf>] ? vsnprintf+0x8b/0x426
->   [<ffffffff813fac0a>] ?_spin_unlock_irqrestore+0x29/0x41
->   [<ffffffff8103424b>] bad_area_nosemaphore+0x13/0x15
->   [<ffffffff813fcf9d>] do_page_fault+0x154/0x2a5
->   [<ffffffff813faef5>] page_fault+0x25/0x30
->   [<ffffffff81335895>] ? dmi_check_system+0x30/0x4b
->   [<ffffffff816eee5f>] i8042_init+0x2ca/0x3c1
->   [<ffffffff816ee5eb>] ? uhci_hcd_init+0x88/0xc0
->   [<ffffffff816eeb95>] ? i8042_init+0x0/0x3c1
->   [<ffffffff8100a069>] do_one_initcall+0x5e/0x15e
->   [<ffffffff816be167>] kernel_init+0x170/0x1ca
->   [<ffffffff81012c5a>] child_rip+0xa/0x20
->   [<ffffffff810125bd>] ? restore_args+0x0/0x30
->   [<ffffffff81bbdff7>] ? kernel_init+0x0/0x1ca
->   [<ffffffff81012c50>] ? child_rip+0x0/0x20
-> 
-> I confirmed this patch fix this problem.
-> 
+Good question: I don't think so.  It's not in mainline as of 2.6.31.
+Looks like we need to keep this bug open a while longer...  Sorry 'bout
+that.
 
-Thank you for the patch, I will ford it into the original change so that
-we don't crash the box in case someone will be bisecting...
-
--- 
-Dmitry
+--Bob
