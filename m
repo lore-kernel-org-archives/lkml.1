@@ -1,103 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZIKUYL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZIKUiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756123AbZIKUYL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 16:24:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZIKUYK
+	id S1755865AbZIKUiR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 16:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZIKUiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 16:24:10 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:58747 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751722AbZIKUYK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 16:24:10 -0400
-Subject: Re: [PATCH] [14/21] HWPOISON: shmem: call set_page_dirty() with
- locked page
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
-       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
-In-Reply-To: <20090911184843.32078B1757@basil.firstfloor.org>
-References: <20090911848.933193846@firstfloor.org>
-	 <20090911184843.32078B1757@basil.firstfloor.org>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 22:24:06 +0200
-Message-Id: <1252700646.7126.44.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 16:38:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45287 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751923AbZIKUiP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 16:38:15 -0400
+Date: Fri, 11 Sep 2009 22:38:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/6] [GIT PULL] tracing: more updates
+Message-ID: <20090911203807.GA9420@elte.hu>
+References: <20090911193153.444303577@goodmis.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090911193153.444303577@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 20:48 +0200, Andi Kleen wrote:
-> From: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> The dirtying of page and set_page_dirty() can be moved into the page lock.
-> 
-> - In shmem_write_end(), the page was dirtied while the page lock was held,
->   but it's being marked dirty just after dropping the page lock.
-> - In shmem_symlink(), both dirtying and marking can be moved into page lock.
-> 
-> It's valuable for the hwpoison code to know whether one bad page can be dropped
-> without losing data. It mainly judges by testing the PG_dirty bit after taking
-> the page lock. So it becomes important that the dirtying of page and the
-> marking of dirtiness are both done inside the page lock. Which is a common
-> practice, but sadly not a rule.
-> 
-> The noticeable exceptions are
-> - mapped pages
-> - pages with buffer_heads
-> The above pages could go dirty at any time. Fortunately the hwpoison will
-> unmap the page and release the buffer_heads beforehand anyway.
-> 
-> Many other types of pages (eg. metadata pages) can also be dirtied at will by
-> their owners, the hwpoison code cannot do meaningful things to them anyway. 
-> Only the dirtiness of pagecache pages owned by regular files are interested.
 
-Its not clear to me what this patch achieves.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Will it, from now on, be mandatory to dirty pages under PG_lock, and
-does this patch correct the last few such cases that didn't yet do that,
-or does it still leave holes?
-
-Can we document the requirements and or holes to it someplace near
-set_page_dirty()?
-
-> Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/shmem.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> Index: linux/mm/shmem.c
-> ===================================================================
-> --- linux.orig/mm/shmem.c
-> +++ linux/mm/shmem.c
-> @@ -1630,8 +1630,8 @@ shmem_write_end(struct file *file, struc
->  	if (pos + copied > inode->i_size)
->  		i_size_write(inode, pos + copied);
->  
-> -	unlock_page(page);
->  	set_page_dirty(page);
-> +	unlock_page(page);
->  	page_cache_release(page);
->  
->  	return copied;
-> @@ -1968,13 +1968,13 @@ static int shmem_symlink(struct inode *d
->  			iput(inode);
->  			return error;
->  		}
-> -		unlock_page(page);
->  		inode->i_mapping->a_ops = &shmem_aops;
->  		inode->i_op = &shmem_symlink_inode_operations;
->  		kaddr = kmap_atomic(page, KM_USER0);
->  		memcpy(kaddr, symname, len);
->  		kunmap_atomic(kaddr, KM_USER0);
->  		set_page_dirty(page);
-> +		unlock_page(page);
->  		page_cache_release(page);
->  	}
->  	if (dir->i_mode & S_ISGID)
+> Ingo,
+> 
+> Please pull the latest tip/tracing/core3 tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/core3
+> 
+> 
+> Steven Rostedt (3):
+>       tracing: move tgid out of generic entry and into userstack
+>       tracing: add lock depth to entries
+>       tracing: consolidate code between trace_output.c and trace_function_graph.c
+> 
+> jolsa@redhat.com (3):
+>       tracing: create generic trace parser
+>       tracing: trace parser support for set_event
+>       tracing: trace parser support for function and graph
+> 
+> ----
+>  include/linux/ftrace_event.h         |    2 +-
+>  kernel/trace/ftrace.c                |  150 +++++++++-------------------------
+>  kernel/trace/trace.c                 |  117 +++++++++++++++++++++++++-
+>  kernel/trace/trace.h                 |   36 ++++++++
+>  kernel/trace/trace_events.c          |   64 ++++-----------
+>  kernel/trace/trace_functions_graph.c |   26 ++-----
+>  kernel/trace/trace_output.c          |   42 ++++++++--
+>  kernel/trace/trace_output.h          |    2 +
+>  8 files changed, 246 insertions(+), 193 deletions(-)
 
+Pulled, thanks Steve!
+
+	Ingo
