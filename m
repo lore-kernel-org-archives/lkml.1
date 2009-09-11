@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZIKNqK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754410AbZIKRsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753125AbZIKNqK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 09:46:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZIKNqJ
+	id S1754410AbZIKRsd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 13:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZIKRsc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 09:46:09 -0400
-Received: from smtp.ispras.ru ([83.149.198.201]:58576 "EHLO smtp.ispras.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752089AbZIKNqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 09:46:07 -0400
-From: iceberg <strakh@ispras.ru>
-Organization: ISP RAS
-To: Jonathan Corbet <corbet@lwn.net>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
-Date: Fri, 11 Sep 2009 17:47:39 +0000
-User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
-References: <200909101837.34472.strakh@ispras.ru> <20090910093003.194c300f@bike.lwn.net>
-In-Reply-To: <20090910093003.194c300f@bike.lwn.net>
+	Fri, 11 Sep 2009 13:48:32 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:47658 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754184AbZIKRsb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 13:48:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=QezZuhJJKDrxPchSE8Rp9Lp5ZaGtiBzbetDDw4iOqvMBvl0/gppbJYuFWg4Ueqa+7n
+         48kbXUvPKcg8J/og2ILmougfodirB3xE8NzlWTVq0V2sBIfaw1X89cJ5FbbEIWVjUmSB
+         jRmrpvj3i3jlQTRVxfesZIFiM2cpZx9qQ9eJ0=
+Date: Fri, 11 Sep 2009 13:48:31 -0400
+From: Ben Gamari <bgamari.foss@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 7/9] PM: Measure device suspend and resume times
+Message-ID: <20090911174831.GA11467@ben-laptop>
+Mail-Followup-To: LKML <linux-kernel@vger.kernel.org>
+References: <200909100127.11252.rjw@sisk.pl>
+ <200909100139.21954.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200909111747.40238.strakh@ispras.ru>
+In-Reply-To: <200909100139.21954.rjw@sisk.pl>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 September 2009 15:30:03 you wrote:
+On Thu, Sep 10, 2009 at 01:39:21AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Measure and print the time of suspending and resuming all devices.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-	Incorrect patch. See path starting with "if (cam->sensor == null) {" in line 
-1960. In this case we goto out_smbs and try mutex_unlock on unlocking mutex.
+Do you have any rough numbers describing actual suspend/resume times
+before and after this patch set?  Of what order of magnitude is the
+improvement on standard x86 hardware? Just curious.
 
-> On Thu, 10 Sep 2009 18:37:34 +0000
->
-> iceberg <strakh@ispras.ru> wrote:
-> > In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe:
-> > Mutex must be unlocked before exit
-> > 	1. On paths starting with mutex lock in line 1912, then continuing in
-> > lines: 1929, 1936 (goto unreg) and 1940 (goto iounmap) .
-> > 	2. On path starting in line 1971 mutex lock, and then continuing in line
-> > 1978 (goto out_smbus) mutex.
->
-> That's a definite bug, but I hate all those unlocks in the error
-> branches.  As it happens, we don't really need the mutex until the
-> device has been exposed to the rest of the kernel, so I propose the
-> following as a better patch.
->
-> Thanks for pointing this out,
->
-> jon
->
-> ---
-> Fix a mutex leak
->
-> Certain error exits from cafe_pci_probe() can leave the camera mutex
-> locked.  For much of the time, we didn't need the mutex anyway; take it out
-> and add an unlock in the path where it is needed.
->
-> Reported-by: Alexander Strakh <strakh@ispras.ru>
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> ---
->  drivers/media/video/cafe_ccic.c |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/media/video/cafe_ccic.c
-> b/drivers/media/video/cafe_ccic.c index c4d181d..0f62b5e 100644
-> --- a/drivers/media/video/cafe_ccic.c
-> +++ b/drivers/media/video/cafe_ccic.c
-> @@ -1909,7 +1909,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
->  		goto out_free;
->
->  	mutex_init(&cam->s_mutex);
-> -	mutex_lock(&cam->s_mutex);
->  	spin_lock_init(&cam->dev_lock);
->  	cam->state = S_NOTREADY;
->  	cafe_set_config_needed(cam, 1);
-> @@ -1949,7 +1948,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
->  	 * because the sensor could attach in this call chain, leading to
->  	 * unsightly deadlocks.
->  	 */
-> -	mutex_unlock(&cam->s_mutex);  /* attach can deadlock */
->  	ret = cafe_smbus_setup(cam);
->  	if (ret)
->  		goto out_freeirq;
-> @@ -1991,6 +1989,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
->  	return 0;
->
->  out_smbus:
-> +	mutex_unlock(&cam->s_mutex);
->  	cafe_smbus_shutdown(cam);
->  out_freeirq:
->  	cafe_ctlr_power_down(cam);
+Thanks,
 
-
-
+- Ben
