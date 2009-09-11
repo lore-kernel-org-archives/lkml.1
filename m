@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZIKOH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753011AbZIKOIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbZIKOH7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbZIKOH7
+	id S1753011AbZIKOIT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZIKOIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:07:59 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:54813 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751627AbZIKOH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:07:58 -0400
-Subject: Re: [PATCH tracing/kprobes 5/7] tracing/kprobes: Add argument name
- support
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-In-Reply-To: <20090910235337.22412.77383.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20090910235337.22412.77383.stgit@dhcp-100-2-132.bos.redhat.com>
+	Fri, 11 Sep 2009 10:08:18 -0400
+Received: from fifo99.com ([67.223.236.141]:47307 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751643AbZIKOIR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:08:17 -0400
+Subject: Re: [PATCH 8/8] fanotify: send events to userspace over socket
+ reads
+From: Daniel Walker <dwalker@fifo99.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, viro@zeniv.linux.org.uk,
+       alan@linux.intel.com, hch@infradead.org
+In-Reply-To: <20090911052649.32359.18553.stgit@paris.rdu.redhat.com>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+	 <20090911052649.32359.18553.stgit@paris.rdu.redhat.com>
 Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Fri, 11 Sep 2009 10:07:59 -0400
-Message-Id: <1252678079.18996.665.camel@gandalf.stny.rr.com>
+Date: Fri, 11 Sep 2009 07:08:50 -0700
+Message-Id: <1252678130.30578.848.camel@desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 19:53 -0400, Masami Hiramatsu wrote:
+On Fri, 2009-09-11 at 01:26 -0400, Eric Paris wrote:
+> fanotify sends event notification to userspace when userspace reads from the
+> fanotify socket. This patch implements the operations that happen at read
+> time.  These include opening the file descriptor to the original object and
+> then filling the userspace buffer.  The fd should be pollable to indicate when
+> it has data present and it should return how much data it has to send when the
+> FIONREAD ioctl is checked.
+> 
 
-> @@ -870,9 +892,13 @@ print_kprobe_event(struct trace_iterator *iter, int flags)
->  {
->  	struct kprobe_trace_entry *field;
->  	struct trace_seq *s = &iter->seq;
-> +	struct trace_event *event;
-> +	struct trace_probe *tp;
->  	int i;
->  
->  	field = (struct kprobe_trace_entry *)iter->ent;
-> +	event = ftrace_find_event(field->ent.type);
-> +	tp = container_of(event, struct trace_probe, event);
+This patch has one checkpatch error, could you fix that? .. Also your
+whole series has several very long lines over 80 characters , you might
+want to consider trimming those down to 80 or less.. If you run these
+patches through checkpatch you should output like the following denoting
+the issues,
 
-Can this function be called the data is in the ring buffer, but the
-probe has been unregistered? If so, the result of ftrace_find_event be
-NULL?
+ERROR: "(foo*)" should be "(foo *)"
+#381: FILE: include/linux/fanotify.h:84:
++                                  (struct fanotify_event_metadata*)(((char *)(meta)) + \
 
--- Steve
+WARNING: line over 80 characters
+#384: FILE: include/linux/fanotify.h:87:
++#define FAN_EVENT_OK(meta, len)        ((long)(len) >= (long)FAN_EVENT_METADATA_LEN && \
 
->  
->  	if (!seq_print_ip_sym(s, field->ip, flags | TRACE_ITER_SYM_OFFSET))
->  		goto partial;
-> @@ -881,7 +907,8 @@ print_kprobe_event(struct trace_iterator *iter, int flags)
->  		goto partial;
->  
->  	for (i = 0; i < field->nargs; i++)
-> -		if (!trace_seq_printf(s, " 0x%lx", field->args[i]))
-> +		if (!trace_seq_printf(s, " %s=%lx",
-> +				      tp->args[i].name, field->args[i]))
->  			goto partial;
->  
->  	if (!trace_seq_puts(s, "\n"))
 
+Daniel
 
