@@ -1,20 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754804AbZIKQWs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754786AbZIKQXH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754804AbZIKQWs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:22:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZIKQWr
+	id S1754786AbZIKQXH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:23:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754705AbZIKQXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:22:47 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:34683 "EHLO mgw1.diku.dk"
+	Fri, 11 Sep 2009 12:23:05 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:34701 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbZIKQWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:22:46 -0400
-Date: Fri, 11 Sep 2009 18:22:47 +0200 (CEST)
+	id S1754697AbZIKQXD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:23:03 -0400
+Date: Fri, 11 Sep 2009 18:23:04 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: Chris Mason <chris.mason@oracle.com>, linux-btrfs@vger.kernel.org,
+To: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>, alsa-devel@alsa-project.org,
        linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 7/8] fs/btrfs: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0909111822280.10552@pc-004.diku.dk>
+Subject: [PATCH 8/8] sound/soc: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0909111822480.10552@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -24,8 +26,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 From: Julia Lawall <julia@diku.dk>
 
 Error handling code following a kzalloc should free the allocated data.
+Error handling code following an ioremap should iounmap the allocated data.
 
-The semantic match that finds the problem is as follows:
+The semantic match that finds the first problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
 
 // <smpl>
@@ -67,22 +70,23 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- fs/btrfs/volumes.c                  |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ sound/soc/fsl/mpc5200_dma.c         |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/fs/btrfs/volumes.c b/fs/btrfs/volumes.c
-index 5cf405b..4ced7c3 100644
---- a/fs/btrfs/volumes.c
-+++ b/fs/btrfs/volumes.c
-@@ -446,8 +446,10 @@ static struct btrfs_fs_devices *clone_fs_devices(struct btrfs_fs_devices *orig)
- 			goto error;
+diff --git a/sound/soc/fsl/mpc5200_dma.c b/sound/soc/fsl/mpc5200_dma.c
+index 9ff62e3..41ffd57 100644
+--- a/sound/soc/fsl/mpc5200_dma.c
++++ b/sound/soc/fsl/mpc5200_dma.c
+@@ -469,8 +469,11 @@ int mpc5200_audio_dma_create(struct of_device *op)
  
- 		device->name = kstrdup(orig_dev->name, GFP_NOFS);
--		if (!device->name)
-+		if (!device->name) {
-+			kfree(device);
- 			goto error;
-+		}
+ 	/* Get the PSC ID */
+ 	prop = of_get_property(op->node, "cell-index", &size);
+-	if (!prop || size < sizeof *prop)
++	if (!prop || size < sizeof *prop) {
++		iounmap(regs);
++		kfree(psc_dma);
+ 		return -ENODEV;
++	}
  
- 		device->devid = orig_dev->devid;
- 		device->work.func = pending_bios_fn;
+ 	spin_lock_init(&psc_dma->lock);
+ 	mutex_init(&psc_dma->mutex);
