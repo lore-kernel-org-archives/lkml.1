@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755842AbZIKSLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755833AbZIKSKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755842AbZIKSLa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 14:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbZIKSL2
+	id S1755833AbZIKSKs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZIKSKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 14:11:28 -0400
-Received: from web32408.mail.mud.yahoo.com ([68.142.207.201]:48000 "HELO
-	web32408.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754479AbZIKSL2 (ORCPT
+	Fri, 11 Sep 2009 14:10:48 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:46971 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753387AbZIKSKr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 14:11:28 -0400
-X-Greylist: delayed 402 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 14:11:28 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=JpLBN+wyFPVRaHh7706jWY4v8xhHUgv2acSeMmSP0j9t+a5ksW44bcEOs/9QLkAmm89gvfFLsrml+xpztR4pZkg8diXJZahX3tJSSFZyW+dY2b3x2p6oTv6SlcOu8UHgwX1STCWWgowlxgvN/h4GTAjFZsjARxJ13JkbKjd/TkU=;
-Message-ID: <12538.96333.qm@web32408.mail.mud.yahoo.com>
-X-YMail-OSG: eDG6zQ0VM1m.mEqJN_.lYblMrFmkpuRom8SaVOOQwYqn9D90DjANMAhDZzBkwCWjeATSgpckTXMh9ZbNIMdYIhvIrmq7XWxnQcHlHZnaWpzEks9IqxH8YFQErD.U8qDY4vkf44F6L42qdp7qTNDOXraVWHOAw3Jw.N.4H3dbCdI7vwOK3LVhNTdEaqS1PS5mz46ccKhanXYQv0ydpOgnDLCQ4m4gg.Zn7sgxEHkWhN8CLrE0uOdpv3tKbPhMYznVKeqW_Plx9aKzEjTiljcrhjTNOuMcVU8G_oCwdaoosZufiPSYsfRx9FdY.vhoIFc3Kofim7t12w7r4OS0rfR8FjeC29w4rHlD0sQ-
-X-Mailer: YahooMailClassic/6.1.2 YahooMailWebService/0.7.338.2
-Date: Fri, 11 Sep 2009 11:04:49 -0700 (PDT)
-From: Anil kumar <anils_r@yahoo.com>
-Subject: hibernate takes long time with huge file transfers
-To: linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 Sep 2009 14:10:47 -0400
+Subject: Re: [PATCH] update clocksource raw_time in timekeeping_suspend
+From: john stultz <johnstul@us.ibm.com>
+To: ye janboe <janboe.ye@gmail.com>
+Cc: Yong Zhang <yong.zhang0@gmail.com>, zippel@linux-m68k.org,
+       akpm@linux-foundation.org, mingo@elte.hu,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <af3ea28a0909102035r5b39f3f5he8885996cf55fa65@mail.gmail.com>
+References: <af3ea28a0909090035t710f5895i135760a2c7bd8a02@mail.gmail.com>
+	 <1252537622.9883.24.camel@localhost.localdomain>
+	 <af3ea28a0909100107q328d1288x8d677d4d5f79f728@mail.gmail.com>
+	 <2674af740909100231x582851dbv9b71bc2914be7030@mail.gmail.com>
+	 <1252620938.7319.3.camel@localhost.localdomain>
+	 <af3ea28a0909102035r5b39f3f5he8885996cf55fa65@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 11:09:04 -0700
+Message-Id: <1252692544.7913.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 2009-09-11 at 11:35 +0800, ye janboe wrote:
+> So CLOCK_MONOTONIC_RAW is not suitable for getting real hw time which
+> includes sleep time.
 
-I am running a huge file transfer by using simple dd command. I see that the process state of this dd is "D" uninterruptible sleep. Now I hibernate the system.
+Hmm.. This is sort of an odd request. 
 
-what I observe is that hibernate takes long time to complete. Looks like its waiting for the "dd" command to complete. 
-My understanding is that since the process is in uninterruptible sleep, hibernate is not able to stop the task.
-
-Question:
-1. Does hibernation work this way wherein it waits for the process to complete and then hibernate. Especially if the process is in uninterruptible sleep state.
-2. What if the process is not in uninterruptible sleep?
-3. Does sync'ing also adds to longer durations? 
-
-Thanks in advance for the help.
-
-With regards,
-   Anil
+The clocksource hardware counters stop in during suspend, so any "real
+hw time that includes sleep" is likely to be combined from different
+sources (with slightly different drifts), so I'm not sure why
+CLOCK_MONOTONIC_RAW would be preferred over CLOCK_MONOTONIC?
 
 
-      
+> Is there other timer suitable for this?
+
+Maybe the CMOS / RTC?  Would that suffice?
+
+Could you maybe provide more details about why you need this? Maybe
+better understanding your needs would help point to a solution.
+
+thanks
+-john
+
+
