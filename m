@@ -1,108 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756854AbZIKWq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757170AbZIKWzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756854AbZIKWq4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 18:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752563AbZIKWq4
+	id S1757170AbZIKWzR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 18:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbZIKWzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 18:46:56 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:32144 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751365AbZIKWqz (ORCPT
+	Fri, 11 Sep 2009 18:55:16 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:40069 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755793AbZIKWzO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 18:46:55 -0400
-Date: Fri, 11 Sep 2009 15:46:45 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] docs: fix various Documentation/ paths in header files
-Message-Id: <20090911154645.3c8cb87e.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+	Fri, 11 Sep 2009 18:55:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:subject:from:reply-to:to:cc:in-reply-to:references
+         :content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=ArK3hyOPT/7pLqWDKipsopPpDPopS7eooF4798w5+4PXgpCVcbmxd5lr4KYZIpB+M7
+         c49hVQu9dh6mOvT5yJhoFXhzJrcbu2GEyod2zv9YyWbFKxejepT4+xkHEDO4w+QJbbrV
+         iZg7t/rJ+WzFGqOyse6WbMJaUSE9DfH9DKDZE=
+Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket
+	numbers
+From: jamal <hadi@cyberus.ca>
+Reply-To: hadi@cyberus.ca
+To: Jamie Lokier <jamie@shareable.org>
+Cc: Eric Paris <eparis@redhat.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org, balbir@in.ibm.com
+In-Reply-To: <20090911214254.GB19901@shareable.org>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+	 <20090911.114620.260824240.davem@davemloft.net>
+	 <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>
+	 <1252704102.25158.36.camel@dogo.mojatatu.com>
+	 <20090911214254.GB19901@shareable.org>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 18:52:47 -0400
+Message-Id: <1252709567.25158.61.camel@dogo.mojatatu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.22.3.1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090204.4AAAD357.0009:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Fri, 2009-09-11 at 22:42 +0100, Jamie Lokier wrote:
 
-Fix various Documentation/ paths in include/linux/.
+> One of the uses of fanotify is as a security or auditing mechanism.
+> That can't tolerate gaps.
+> 
+> It's fundemantally different from inotify in one important respect:
+> inotify apps can recover from losing events by checking what they are
+> watching.
+> 
+> The fanotify application will know that it missed events, but what
+> happens to the other application which _caused_ those events?  Does it
+> get to do things it shouldn't, or hide them from the fanotify app, by
+> simply overloading the system?  Or the opposite, does it get access
+> denied - spurious file errors when the system is overloaded?
+> 
+> There's no way to handle that by dropping events.  A transport
+> mechanism can be dropped (say skbs), but the event itself has to be
+> kept, and then retried.
+> 
+>
+> Since you have to keep an event object around until it's handled,
+> there's no point tying it to an unreliable delivery mechanism which
+> you'd have to wrap a retry mechanism around.
+> 
+> In other words, that part of netlink is a poor match.  It would match
+> inotify much better.
+> 
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/configfs.h   |    4 ++--
- include/linux/debugfs.h    |    2 +-
- include/linux/marker.h     |    2 +-
- include/linux/relay.h      |    2 +-
- include/linux/tracepoint.h |    2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
-
---- linux-2.6.31-git1.orig/include/linux/configfs.h
-+++ linux-2.6.31-git1/include/linux/configfs.h
-@@ -27,8 +27,8 @@
-  *
-  * configfs Copyright (C) 2005 Oracle.  All rights reserved.
-  *
-- * Please read Documentation/filesystems/configfs.txt before using the
-- * configfs interface, ESPECIALLY the parts about reference counts and
-+ * Please read Documentation/filesystems/configfs/configfs.txt before using
-+ * the configfs interface, ESPECIALLY the parts about reference counts and
-  * item destructors.
-  */
- 
---- linux-2.6.31-git1.orig/include/linux/debugfs.h
-+++ linux-2.6.31-git1/include/linux/debugfs.h
-@@ -9,7 +9,7 @@
-  *	2 as published by the Free Software Foundation.
-  *
-  *  debugfs is for people to use instead of /proc or /sys.
-- *  See Documentation/DocBook/kernel-api for more details.
-+ *  See Documentation/DocBook/filesystems for more details.
-  */
- 
- #ifndef _DEBUGFS_H_
---- linux-2.6.31-git1.orig/include/linux/marker.h
-+++ linux-2.6.31-git1/include/linux/marker.h
-@@ -4,7 +4,7 @@
- /*
-  * Code markup for dynamic and static tracing.
-  *
-- * See Documentation/marker.txt.
-+ * See Documentation/markers.txt.
-  *
-  * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-  *
---- linux-2.6.31-git1.orig/include/linux/relay.h
-+++ linux-2.6.31-git1/include/linux/relay.h
-@@ -140,7 +140,7 @@ struct rchan_callbacks
- 	 * cause relay_open() to create a single global buffer rather
- 	 * than the default set of per-cpu buffers.
- 	 *
--	 * See Documentation/filesystems/relayfs.txt for more info.
-+	 * See Documentation/filesystems/relay.txt for more info.
- 	 */
- 	struct dentry *(*create_buf_file)(const char *filename,
- 					  struct dentry *parent,
---- linux-2.6.31-git1.orig/include/linux/tracepoint.h
-+++ linux-2.6.31-git1/include/linux/tracepoint.h
-@@ -4,7 +4,7 @@
- /*
-  * Kernel Tracepoint API.
-  *
-- * See Documentation/tracepoint.txt.
-+ * See Documentation/trace/tracepoints.txt.
-  *
-  * (C) Copyright 2008 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-  *
+Reliability is something that you should build in. Netlink provides you
+all the necessary tools. What you are asking for here is essentially 
+reliable multicasting.  You dont have infinite memory, therefore there
+will be times when you will overload one of the users, and they wont
+have sufficient buffer space and then you have to retransmit. You have
+to factor in processing speed mismatch between the different listeners.
+As an example, you could ensure that all users receive the message and
+if user #49 didnt, then you wait until they do before multicasting the
+next message to all 50 listeners.
+Is the current proposed mechanism capable of reliably multicasting
+without need for retransmit?
 
 
+> Speaking of skbs, how fast and compact are they for this?
 
+They are largish relative to say if you trimmed down to basic necessity.
+But then you get a lot of the buffer management aspects for free.
+In this case, the concept of multicasting is built in so for one event
+to be sent to X users - you only need one skb.
 
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+> Eric's explained that it would be normal for _every_ file operation on
+> some systems to trigger a fanotify event and possibly wait on the
+> response, or at least in major directory trees on the filesystem.
+> Even if it's just for the fanotify app to say "oh I don't care about
+> that file, carry on".
+> 
+
+That doesnt sound very scalable. Should it not be you get nothing unless
+you register for interest in something?
+
+> File performance is one of those things which really needs to be fast
+> for a good user experience - and it's not unusual to grep the odd
+> 10,000 files here or there (just think of what a kernel developer
+> does), or to replace a few thousand quickly (rpm/dpkg) and things like
+> that.
+> 
+
+So grepping 10000 files would cause 10000 events? I am not sure how the
+scheme works; filtering of what events get delivered sounds more
+reasonable if it happens in the kernel.
+
+> While skbs and netlink aren't that slow, I suspect they're an order of
+> magnitude or two slower than, say, epoll or inotify at passing events
+> around.
+> 
+
+not familiar with inotify. Theres a difference between events which are
+abbreviated in the form "hey some read happened on fd you are listening
+on" vs "hey a read of file X for 16 bytes at offset 200 by process Y
+just occured while at the same time process Z was writting at offset
+2000". The later (which netlink will give you) includes a lot more
+attribute details which could be filtered or can be extended to include
+a lot more. The former(what epoll will give you) is merely a signal.
+
+cheers,
+jamal
+
