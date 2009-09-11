@@ -1,88 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbZIKWek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757156AbZIKWfg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbZIKWek (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 18:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750857AbZIKWek
+	id S1757156AbZIKWfg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 18:35:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbZIKWfg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 18:34:40 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:43778 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752058AbZIKWej (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 18:34:39 -0400
-Date: Fri, 11 Sep 2009 15:34:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, arve@android.com, swetland@google.com,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] Re: newer version of HTC Dream support
-Message-Id: <20090911153422.7d523a73.randy.dunlap@oracle.com>
-In-Reply-To: <20090911212751.GA25544@elf.ucw.cz>
-References: <20090824092204.GB25591@elf.ucw.cz>
-	<20090901131832.GA1835@ucw.cz>
-	<20090904090303.024e981a.randy.dunlap@oracle.com>
-	<20090911071155.GA1386@ucw.cz>
-	<20090911075847.2fb7210a.randy.dunlap@oracle.com>
-	<20090911161335.GA8137@elf.ucw.cz>
-	<20090911092157.ba202b0a.randy.dunlap@oracle.com>
-	<20090911212751.GA25544@elf.ucw.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Sep 2009 18:35:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46304 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757131AbZIKWfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 18:35:33 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Chris Ball <cjb@laptop.org>
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+Date: Sat, 12 Sep 2009 00:36:41 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@lst.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+References: <20090903232317.GA6760@lst.de> <c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com> <m3eiqdqfnm.fsf@pullcord.laptop.org>
+In-Reply-To: <m3eiqdqfnm.fsf@pullcord.laptop.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt007.oracle.com [141.146.116.16]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4AAAD070.01D9:SCFSTAT5015188,ss=1,fgs=0
+Message-Id: <200909120036.41725.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009 23:27:52 +0200 Pavel Machek wrote:
-
+On Saturday 12 September 2009, Chris Ball wrote:
+> Hi,
 > 
-> > > > Can you do b. (boot) without a. (compile)?
-> > > 
-> > > Well, hardly, but I can do a) without b), and it is very much
-> > > easier. So... which is it?
-> > 
-> > I'm only targeting compile/build.
+>    > Well system could check basic card ids if they match after resume
 > 
-> Ok, I guess I should appologize for testing patch in wrong
-> configuration. This should fix it:
+> No.  That (arguably) guarantees that it's the same card, but not that
+> it wasn't modified in another machine during the suspend.
+
+Generally speaking, we'd also need to check superblocks for this to work.
+ 
+>    > if some users wants to crash his card by randomly swapping it
+>    > during suspend/resume - I'd have no problem with that....
 > 
-> ---
-> 
-> Fix compilation of gpio_* input drivers on -next kernel. Adds needed
-> headers and removes unprotected wakelock/earlysuspend dependencies.
->     
-> Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> You should have a problem with it.  Taking a card from a suspended
+> machine and working on it with a different machine is not a bizarre
+> thing to want to do.
 
+Agreed.
 
-
-Still doesn't build for me, but if it builds for you, that's great.
-(could be a tool chain problem on my side)
-
-(I had to enable CONFIG_ANDROID [due to staging/Makefile:
-obj-$(CONFIG_ANDROID)		+= dream/
-] to get dream code to try to build,
-but I think that this has already been mentioned.)
-
-
-
-Where is these header files?
-
-(from linux-next-20090911:)
-
-drivers/staging/dream/camera/msm_camera.c:21:32: linux/android_pmem.h: No such file or directory
-drivers/staging/dream/camera/msm_vfe7x.c:8:32: linux/android_pmem.h: No such file or directory
-drivers/staging/dream/camera/msm_vfe7x.c:9:27: mach/msm_adsp.h: No such file or directory
-drivers/staging/dream/camera/msm_camera.c:23:30: media/msm_camera.h: No such file or directory
-drivers/staging/dream/camera/msm_vfe7x.h:6:30: media/msm_camera.h: No such file or directory
-
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Thanks,
+Rafael
