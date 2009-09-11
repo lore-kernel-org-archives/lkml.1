@@ -1,194 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZIKJb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZIKJWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754303AbZIKJb6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 05:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbZIKJb6
+	id S1753112AbZIKJWI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 05:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751150AbZIKJWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 05:31:58 -0400
-Received: from smtp201.iad.emailsrvr.com ([207.97.245.201]:52585 "EHLO
-	smtp201.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752476AbZIKJb5 (ORCPT
+	Fri, 11 Sep 2009 05:22:08 -0400
+Received: from ppsw-0.csi.cam.ac.uk ([131.111.8.130]:41176 "EHLO
+	ppsw-0.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751146AbZIKJWH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 05:31:57 -0400
-X-Greylist: delayed 638 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 05:31:57 EDT
-From: HighPoint Linux Team <linux@highpoint-tech.com>
-Organization: HighPoint Technologies, Inc.
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: [PATCH][SCSI] hptiop: Add RR44xx adapter support
-Date: Fri, 11 Sep 2009 17:21:27 +0800
-User-Agent: KMail/1.5.3
-Cc: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
+	Fri, 11 Sep 2009 05:22:07 -0400
+X-Cam-AntiVirus: no malware found
+X-Cam-SpamDetails: not scanned
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+Message-ID: <4AAA16C8.9030904@cam.ac.uk>
+Date: Fri, 11 Sep 2009 10:22:16 +0100
+From: Jonathan Cameron <jic23@cam.ac.uk>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090803)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Zhang Rui <rui.zhang@intel.com>
+CC: LKML <linux-kernel@vger.kernel.org>, Jean Delvare <khali@linux-fr.org>,
+       "alan@linux.intel.com" <alan@linux.intel.com>,
+       "lenb@kernel.org" <lenb@kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>,
+       "Cory T. Tusar" <ctusar@videon-central.com>,
+       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
+       linux-acpi <linux-acpi@vger.kernel.org>
+Subject: Re: RFC: Light sensors, unifying current options?
+References: <4A9FC9D7.20000@cam.ac.uk> <1252308744.3483.414.camel@rzhang-dt>	 <4AA4F194.1070507@cam.ac.uk> <1252467684.3483.446.camel@rzhang-dt>	 <4AA79144.8060104@cam.ac.uk> <1252546449.3483.476.camel@rzhang-dt>	 <4AA8CF57.4010409@cam.ac.uk> <1252634101.3483.514.camel@rzhang-dt>
+In-Reply-To: <1252634101.3483.514.camel@rzhang-dt>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909111721.27450.linux@highpoint-tech.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Most code changes were made to support RR44xx adapters.
-- add more PCI device ID.
-- using PCI BAR[2] to access RR44xx IOP. 
-- using PCI BAR[0] to check and clear RR44xx IRQ.
 
-Signed-off-by: HighPoint Linux Team <linux@highpoint-tech.com>
+> 
+> so, if there are two sensors that support visible and infrared,
+> sensor 1:
+> illuminance:	xxx
+> infrared:	yyy
+> sensor 2:
+> illuminance:	xxx
+> infrared:	yyy
+> 
+> does this mean the ambient light of these two sensors are the same?
+If the values are the same, then probably up to variations in the
+sensitivity of the two sensors (and things like calibration etc
+afterall we don't really have a ready consistent measure for infrared
+in the same way as the perception scaled illuminance)
 
- Documentation/scsi/hptiop.txt |   21 ++++++++++++++++++++-
- drivers/scsi/hptiop.c         |   37 ++++++++++++++++++++++++++-----------
- drivers/scsi/hptiop.h         |    3 ++-
- 3 files changed, 48 insertions(+), 13 deletions(-)
+It's entirely possible that two sensors on a given device might get
+different readings, both of which are useful. e.g. one of those
+phones with a screen on the outside then a flip lid with another one
+underneath for example. 
 
-diff -urN linux-2.6.31.orig/Documentation/scsi/hptiop.txt linux-2.6.31/Documentation/scsi/hptiop.txt
---- linux-2.6.31.orig/Documentation/scsi/hptiop.txt	2009-09-11 16:11:48.000000000 +0800
-+++ linux-2.6.31/Documentation/scsi/hptiop.txt	2009-09-11 16:11:48.000000000 +0800
-@@ -3,6 +3,25 @@
- Controller Register Map
- -------------------------
- 
-+For RR44xx Intel IOP based adapters, the controller IOP is accessed via PCI BAR0 and BAR2:
-+
-+     BAR0 offset    Register
-+            0x11C5C Link Interface IRQ Set
-+            0x11C60 Link Interface IRQ Clear
-+
-+     BAR2 offset    Register
-+            0x10    Inbound Message Register 0
-+            0x14    Inbound Message Register 1
-+            0x18    Outbound Message Register 0
-+            0x1C    Outbound Message Register 1
-+            0x20    Inbound Doorbell Register
-+            0x24    Inbound Interrupt Status Register
-+            0x28    Inbound Interrupt Mask Register
-+            0x30    Outbound Interrupt Status Register
-+            0x34    Outbound Interrupt Mask Register
-+            0x40    Inbound Queue Port
-+            0x44    Outbound Queue Port
-+
- For Intel IOP based adapters, the controller IOP is accessed via PCI BAR0:
- 
-      BAR0 offset    Register
-@@ -93,7 +112,7 @@
- 
- 
- -----------------------------------------------------------------------------
--Copyright (C) 2006-2007 HighPoint Technologies, Inc. All Rights Reserved.
-+Copyright (C) 2006-2009 HighPoint Technologies, Inc. All Rights Reserved.
- 
-   This file is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-diff -urN linux-2.6.31.orig/drivers/scsi/hptiop.c linux-2.6.31/drivers/scsi/hptiop.c
---- linux-2.6.31.orig/drivers/scsi/hptiop.c	2009-09-11 16:11:48.000000000 +0800
-+++ linux-2.6.31/drivers/scsi/hptiop.c	2009-09-11 16:11:48.000000000 +0800
-@@ -1,6 +1,6 @@
- /*
-  * HighPoint RR3xxx/4xxx controller driver for Linux
-- * Copyright (C) 2006-2007 HighPoint Technologies, Inc. All Rights Reserved.
-+ * Copyright (C) 2006-2009 HighPoint Technologies, Inc. All Rights Reserved.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -41,7 +41,7 @@
- 
- static char driver_name[] = "hptiop";
- static const char driver_name_long[] = "RocketRAID 3xxx/4xxx Controller driver";
--static const char driver_ver[] = "v1.3 (071203)";
-+static const char driver_ver[] = "v1.6 (090910)";
- 
- static int iop_send_sync_msg(struct hptiop_hba *hba, u32 msg, u32 millisec);
- static void hptiop_finish_scsi_req(struct hptiop_hba *hba, u32 tag,
-@@ -115,9 +115,13 @@
- static int iop_intr_itl(struct hptiop_hba *hba)
- {
- 	struct hpt_iopmu_itl __iomem *iop = hba->u.itl.iop;
-+	void __iomem *plx = hba->u.itl.plx;
- 	u32 status;
- 	int ret = 0;
- 
-+	if (plx && readl(plx + 0x11C5C) & 0xf)
-+		writel(1, plx + 0x11C60);
-+
- 	status = readl(&iop->outbound_intstatus);
- 
- 	if (status & IOPMU_OUTBOUND_INT_MSG0) {
-@@ -460,15 +464,25 @@
- 
- static int hptiop_map_pci_bar_itl(struct hptiop_hba *hba)
- {
-+	struct pci_dev *pcidev = hba->pcidev;
- 	hba->u.itl.iop = hptiop_map_pci_bar(hba, 0);
--	if (hba->u.itl.iop)
--		return 0;
--	else
-+	if (hba->u.itl.iop == NULL)
- 		return -1;
-+	if ((pcidev->device & 0xff00) == 0x4400) {
-+		hba->u.itl.plx = hba->u.itl.iop;
-+		hba->u.itl.iop = hptiop_map_pci_bar(hba, 2);
-+		if (hba->u.itl.iop == NULL) {
-+			iounmap(hba->u.itl.plx);
-+			return -1;
-+		}
-+	}
-+	return 0;
- }
- 
- static void hptiop_unmap_pci_bar_itl(struct hptiop_hba *hba)
- {
-+	if (hba->u.itl.plx)
-+		iounmap(hba->u.itl.plx);
- 	iounmap(hba->u.itl.iop);
- }
- 
-@@ -1239,22 +1253,23 @@
- static struct pci_device_id hptiop_id_table[] = {
- 	{ PCI_VDEVICE(TTI, 0x3220), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3320), (kernel_ulong_t)&hptiop_itl_ops },
--	{ PCI_VDEVICE(TTI, 0x3520), (kernel_ulong_t)&hptiop_itl_ops },
--	{ PCI_VDEVICE(TTI, 0x4320), (kernel_ulong_t)&hptiop_itl_ops },
-+	{ PCI_VDEVICE(TTI, 0x3410), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3510), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3511), (kernel_ulong_t)&hptiop_itl_ops },
-+	{ PCI_VDEVICE(TTI, 0x3520), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3521), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3522), (kernel_ulong_t)&hptiop_itl_ops },
--	{ PCI_VDEVICE(TTI, 0x3410), (kernel_ulong_t)&hptiop_itl_ops },
--	{ PCI_VDEVICE(TTI, 0x3540), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3530), (kernel_ulong_t)&hptiop_itl_ops },
-+	{ PCI_VDEVICE(TTI, 0x3540), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3560), (kernel_ulong_t)&hptiop_itl_ops },
--	{ PCI_VDEVICE(TTI, 0x4322), (kernel_ulong_t)&hptiop_itl_ops },
--	{ PCI_VDEVICE(TTI, 0x4321), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x4210), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x4211), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x4310), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x4311), (kernel_ulong_t)&hptiop_itl_ops },
-+	{ PCI_VDEVICE(TTI, 0x4320), (kernel_ulong_t)&hptiop_itl_ops },
-+	{ PCI_VDEVICE(TTI, 0x4321), (kernel_ulong_t)&hptiop_itl_ops },
-+	{ PCI_VDEVICE(TTI, 0x4322), (kernel_ulong_t)&hptiop_itl_ops },
-+	{ PCI_VDEVICE(TTI, 0x4400), (kernel_ulong_t)&hptiop_itl_ops },
- 	{ PCI_VDEVICE(TTI, 0x3120), (kernel_ulong_t)&hptiop_mv_ops },
- 	{ PCI_VDEVICE(TTI, 0x3122), (kernel_ulong_t)&hptiop_mv_ops },
- 	{ PCI_VDEVICE(TTI, 0x3020), (kernel_ulong_t)&hptiop_mv_ops },
-diff -urN linux-2.6.31.orig/drivers/scsi/hptiop.h linux-2.6.31/drivers/scsi/hptiop.h
---- linux-2.6.31.orig/drivers/scsi/hptiop.h	2009-09-11 16:11:48.000000000 +0800
-+++ linux-2.6.31/drivers/scsi/hptiop.h	2009-09-11 16:11:48.000000000 +0800
-@@ -1,6 +1,6 @@
- /*
-  * HighPoint RR3xxx/4xxx controller driver for Linux
-- * Copyright (C) 2006-2007 HighPoint Technologies, Inc. All Rights Reserved.
-+ * Copyright (C) 2006-2009 HighPoint Technologies, Inc. All Rights Reserved.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -228,6 +228,7 @@
- 	union {
- 		struct {
- 			struct hpt_iopmu_itl __iomem *iop;
-+			void __iomem *plx;
- 		} itl;
- 		struct {
- 			struct hpt_iopmv_regs *regs;
+> 
+> If no, I can't image how the userspace app uses these attributes?
+That depends if your aim is to use them to control the brightness of
+a screen and similar, or for example to use them for environmental
+monitoring.
+
+I agree with Jean (next email) in many ways that it is useful to
+hide some complexity within a given driver (so as to provide
+consistent interfaces etc to userspace.) However, if we can
+also provide device specific access to other features of the device
+I see no reason not to make them available.  As already stated, there
+are several applications where that infrared measurement is useful
+even if only available as a raw adc count. (typically you'd have a
+calibration function from measured values of what ever you care about
+anyway).
+
+As long as we have illuminance (the generally useful one that all such
+sensors seem to provide) then any other values the driver wants to export
+are fine as long as we maintain decent documentation of what they are.
+
+Jonathan
 
