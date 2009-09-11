@@ -1,197 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756157AbZIKT5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756255AbZIKUAd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756157AbZIKT5c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 15:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbZIKT5a
+	id S1756255AbZIKUAd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 16:00:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756105AbZIKUAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 15:57:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42030 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755978AbZIKT5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 15:57:30 -0400
-Date: Fri, 11 Sep 2009 21:57:20 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] x86/setup for v2.6.32
-Message-ID: <20090911195720.GA1146@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 11 Sep 2009 16:00:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:47605 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179AbZIKUAa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 16:00:30 -0400
+Message-Id: <20090911195849.451244684@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 11 Sep 2009 15:58:49 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
+       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
+       Dick Streefland <dick@streefland.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: [PATCH 00/15] [GIT PULL] kconfig: localmodconfig for v2.6.32
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Linus,
 
-Please pull the latest x86-setup-for-linus git tree from:
+This is the patch set that creates localmodconfig and localyesconfig.
+This will facilitate testers by removing the thousand modules that
+distributions enable with only the ones that they have loaded.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-setup-for-linus
+Yes it may miss usb devices that you don't have plugged in, but it will
+save a lot of time in compiling by only compiling the code that you
+have loaded.
 
- Thanks,
+The usage is quite simple. Just download the latest kernel.org kernel
+(with this changeset in), cd to that directory and then do:
 
-	Ingo
+  make localmodconfig
 
------------------->
-Cyrill Gorcunov (1):
-      x86, e820: Guard against array overflowed in __e820_add_region()
+It will search for a .config locally first, then will look for
+/proc/config.gz, then it will search the /boot directory for configs
+matching the local kernel (uname -r). If it still does not find one
+It search for configurations in the local binarys (vmlinux, /lib/modules..,
+kernel/configs.ko, etc).
 
-H. Peter Anvin (1):
-      x86, setup: remove obsolete pre-Kconfig CONFIG_VIDEO_ variables
+Once it finds a config to use, it will then read all the Kconfigs
+and Makefiles to find out what config compiles what module. Then lsmod
+is used to see what modules are loaded, and it will keep enabled all
+the configs (including dependencies) that those modules require to
+build. It disables all modules not needed.
+
+Note, it only disables it does not enable, because a lot of modules
+can be enabled by more than one config, and I don't want to guess.
+I could someday enable easy configs (1 to 1 matches of config to module).
+
+It also does nothing with built in code (=y). It does not enable or
+disable them.
+
+I've been using this code (various versions of) since 2005, and
+so have others. When I get a new box, the first thing I do is
+boot up the distribution kernel, download kernel.org kernel, and run
+this script to get the modules needed to boot the kernel.
+
+** CONFLICTS **
+
+linux-next has proven that there is a conflict between these patches
+and Sam Ravnborg's tree. I've tried to get in contact with Sam, but
+he seems to be out. I don't want to hold up this push on that account.
+But if you want, I could wait to fix the conflicts, or you can pull
+this and he can fix it on his end. I'm fine with it. I just think
+that this tool is important enough to get into mainline, especially
+early in the merge window since it will help others test it. ;-)
+
+Please pull kconfig updates for v2.6.32 from:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-kconfig.git
+     for-linus
 
 
- arch/x86/boot/video-vesa.c |    7 +------
- arch/x86/boot/video-vga.c  |   10 ----------
- arch/x86/boot/video.c      |    5 -----
- arch/x86/boot/video.h      |   20 ++------------------
- arch/x86/kernel/e820.c     |    2 +-
- 5 files changed, 4 insertions(+), 40 deletions(-)
+Steven Rostedt (15):
+      kconfig: add streamline_config.pl to scripts
+      kconfig: make localmodconfig to run streamline_config.pl
+      kconfig: add make localyesconfig option
+      kconfig: streamline_config.pl do not stop with no depends
+      kconfig: do not warn about modules built in
+      kconfig: enable CONFIG_IKCONFIG from streamline_config.pl
+      kconfig: add check if end exists in extract-ikconfig
+      kconfig: have extract-ikconfig read ELF files
+      kconfig: keep config.gz around even if CONFIG_IKCONFIG_PROC is not set
+      kconfig: search for a config to base the local(mod|yes)config on
+      kconfig: unset IKCONFIG_PROC and clean up nesting
+      kconfig: test for /boot/config-uname after /proc/config.gz in localconfig
+      kconfig: make local .config default for streamline_config
+      kconfig: test if a .config already exists
+      kconfig: add missing dependency of conf to localyesconfig
 
-diff --git a/arch/x86/boot/video-vesa.c b/arch/x86/boot/video-vesa.c
-index c700147..d7ef26b 100644
---- a/arch/x86/boot/video-vesa.c
-+++ b/arch/x86/boot/video-vesa.c
-@@ -31,7 +31,6 @@ static inline void vesa_store_mode_params_graphics(void) {}
- 
- static int vesa_probe(void)
- {
--#if defined(CONFIG_VIDEO_VESA) || defined(CONFIG_FIRMWARE_EDID)
- 	struct biosregs ireg, oreg;
- 	u16 mode;
- 	addr_t mode_ptr;
-@@ -49,8 +48,7 @@ static int vesa_probe(void)
- 	    vginfo.signature != VESA_MAGIC ||
- 	    vginfo.version < 0x0102)
- 		return 0;	/* Not present */
--#endif /* CONFIG_VIDEO_VESA || CONFIG_FIRMWARE_EDID */
--#ifdef CONFIG_VIDEO_VESA
-+
- 	set_fs(vginfo.video_mode_ptr.seg);
- 	mode_ptr = vginfo.video_mode_ptr.off;
- 
-@@ -102,9 +100,6 @@ static int vesa_probe(void)
- 	}
- 
- 	return nmodes;
--#else
--	return 0;
--#endif /* CONFIG_VIDEO_VESA */
- }
- 
- static int vesa_set_mode(struct mode_info *mode)
-diff --git a/arch/x86/boot/video-vga.c b/arch/x86/boot/video-vga.c
-index 8f8d827..819caa1 100644
---- a/arch/x86/boot/video-vga.c
-+++ b/arch/x86/boot/video-vga.c
-@@ -47,14 +47,6 @@ static u8 vga_set_basic_mode(void)
- 
- 	initregs(&ireg);
- 
--#ifdef CONFIG_VIDEO_400_HACK
--	if (adapter >= ADAPTER_VGA) {
--		ireg.ax = 0x1202;
--		ireg.bx = 0x0030;
--		intcall(0x10, &ireg, NULL);
--	}
--#endif
--
- 	ax = 0x0f00;
- 	intcall(0x10, &ireg, &oreg);
- 	mode = oreg.al;
-@@ -62,11 +54,9 @@ static u8 vga_set_basic_mode(void)
- 	set_fs(0);
- 	rows = rdfs8(0x484);	/* rows minus one */
- 
--#ifndef CONFIG_VIDEO_400_HACK
- 	if ((oreg.ax == 0x5003 || oreg.ax == 0x5007) &&
- 	    (rows == 0 || rows == 24))
- 		return mode;
--#endif
- 
- 	if (mode != 3 && mode != 7)
- 		mode = 3;
-diff --git a/arch/x86/boot/video.c b/arch/x86/boot/video.c
-index bad728b..d42da38 100644
---- a/arch/x86/boot/video.c
-+++ b/arch/x86/boot/video.c
-@@ -221,7 +221,6 @@ static unsigned int mode_menu(void)
- 	}
- }
- 
--#ifdef CONFIG_VIDEO_RETAIN
- /* Save screen content to the heap */
- static struct saved_screen {
- 	int x, y;
-@@ -299,10 +298,6 @@ static void restore_screen(void)
- 	ireg.dl = saved.curx;
- 	intcall(0x10, &ireg, NULL);
- }
--#else
--#define save_screen()		((void)0)
--#define restore_screen()	((void)0)
--#endif
- 
- void set_video(void)
- {
-diff --git a/arch/x86/boot/video.h b/arch/x86/boot/video.h
-index 5bb174a..ff339c5 100644
---- a/arch/x86/boot/video.h
-+++ b/arch/x86/boot/video.h
-@@ -17,19 +17,8 @@
- 
- #include <linux/types.h>
- 
--/* Enable autodetection of SVGA adapters and modes. */
--#undef CONFIG_VIDEO_SVGA
--
--/* Enable autodetection of VESA modes */
--#define CONFIG_VIDEO_VESA
--
--/* Retain screen contents when switching modes */
--#define CONFIG_VIDEO_RETAIN
--
--/* Force 400 scan lines for standard modes (hack to fix bad BIOS behaviour */
--#undef CONFIG_VIDEO_400_HACK
--
--/* This code uses an extended set of video mode numbers. These include:
-+/*
-+ * This code uses an extended set of video mode numbers. These include:
-  * Aliases for standard modes
-  *      NORMAL_VGA (-1)
-  *      EXTENDED_VGA (-2)
-@@ -67,13 +56,8 @@
- /* The "recalculate timings" flag */
- #define VIDEO_RECALC 0x8000
- 
--/* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
--#ifdef CONFIG_VIDEO_RETAIN
- void store_screen(void);
- #define DO_STORE() store_screen()
--#else
--#define DO_STORE() ((void)0)
--#endif /* CONFIG_VIDEO_RETAIN */
- 
- /*
-  * Mode table structures
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 7271fa3..2e5e0fa 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -115,7 +115,7 @@ static void __init __e820_add_region(struct e820map *e820x, u64 start, u64 size,
- {
- 	int x = e820x->nr_map;
- 
--	if (x == ARRAY_SIZE(e820x->map)) {
-+	if (x >= ARRAY_SIZE(e820x->map)) {
- 		printk(KERN_ERR "Ooops! Too many entries in the memory map!\n");
- 		return;
- 	}
+----
+ kernel/Makefile                      |    2 +-
+ scripts/extract-ikconfig             |   14 ++
+ scripts/kconfig/Makefile             |   34 +++-
+ scripts/kconfig/streamline_config.pl |  366 ++++++++++++++++++++++++++++++++++
+ 4 files changed, 414 insertions(+), 2 deletions(-)
+-- 
