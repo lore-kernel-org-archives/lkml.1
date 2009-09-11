@@ -1,1350 +1,683 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753315AbZIKOOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753054AbZIKO2I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753315AbZIKOOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZIKOOR
+	id S1753054AbZIKO2I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:28:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZIKO2H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:14:17 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:42053 "EHLO mx1.redhat.com"
+	Fri, 11 Sep 2009 10:28:07 -0400
+Received: from mx2.compro.net ([216.54.166.4]:21464 "EHLO mx2.compro.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753254AbZIKOOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:14:09 -0400
-From: Amit Shah <amit.shah@redhat.com>
-To: rusty@rustcorp.com.au
-Cc: alan@linux.intel.com, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Amit Shah <amit.shah@redhat.com>
-Subject: [PATCH] virtio_console: Add support for multiple ports for generic guest and host communication
-Date: Fri, 11 Sep 2009 19:43:06 +0530
-Message-Id: <1252678386-17404-2-git-send-email-amit.shah@redhat.com>
-In-Reply-To: <1252678386-17404-1-git-send-email-amit.shah@redhat.com>
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com>
+	id S1751557AbZIKO2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:28:04 -0400
+X-Greylist: delayed 853 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 10:28:02 EDT
+X-IronPort-AV: E=Sophos;i="4.44,370,1249272000"; 
+   d="scan'208";a="4352405"
+Message-ID: <4AAA5B1F.3020103@compro.net>
+Date: Fri, 11 Sep 2009 10:13:51 -0400
+From: Mark Hounschell <markh@compro.net>
+Reply-To: markh@compro.net
+Organization: Compro Computer Svcs.
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: linux-pci@vger.kernel.org
+CC: Mark Hounschell <dmarkh@cfl.rr.com>, linux-kernel@vger.kernel.org
+Subject: problems doing direct dma from a pci device to pci-e device
+Content-Type: multipart/mixed;
+ boundary="------------060304020500030809030202"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Expose multiple char devices ("ports") for simple communication
-between the host userspace and guest.
+This is a multi-part message in MIME format.
+--------------060304020500030809030202
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-Sample offline usages can be: poking around in a guest to find out
-the file systems used, applications installed, etc. Online usages
-can be sharing of clipboard data between the guest and the host,
-sending information about logged-in users to the host, locking the
-screen or session when a vnc session is closed, and so on.
+I know this is really just a pci issue but have CC'd LKML just in case. Sorry LKML for the noise.
 
-The interface presented to guest userspace is of a simple char
-device, so it can be used like this:
+I have a situation where a card on a regular PCI bus (Compro gpiohsd) does dma's
+directly into another PCI cards memory (VMIC-5565 reflective memory) living on
+another PCI bus. These 2 cards are sometimes seperated by many bridges.
+Expansion racks etc. We've been doing this forever. No problem (mostly).
 
-    fd = open("/dev/vcon2", O_RDWR);
-    ret = read(fd, buf, 100);
-    ret = write(fd, string, strlen(string));
+I now have an AM3 based DFI DK 790FXB-M3H5 motherboard. This board has 3 regular
+PCI slots and 3 PCI-E (16x) slots. I also have a PCI-E (x4) version of the VMIC-5565
+reflective memory  card in one of the PCI-E slots and our gpiohsd card in one of the regular
+PCI slots. All on the motherboard. No expansion slots being used. However I cannot get
+data from our gpiohsd into the PCI-E VMIC-5565 cards memory. I can certainly get the data there
+from a userland buffer, no problem. Just not from one card to the other directly. Oh and when
+I put the regular PCI version of the VMIC into one of the regular PCI slots everything works
+as expected. They are then both on the same PCI bus and no bridges are involved though.
 
-Each port is to be assigned a unique function, for example, the
-first 4 ports may be reserved for libvirt usage, the next 4 for
-generic streaming data and so on. This port-function mapping
-isn't finalised yet.
 
-For requirements, use-cases and some history see
+Here is some information about my system configuration. I would very much appreciate any
+help or pointers as to why this doesn't work. I'm no PCI expert but do have a basic understanding
+of it and I don't see anything wrong myself.  I'm using a vanilla 2.6.26.8 kernel BTW and all
+drivers involved are GPL.
 
-    http://www.linux-kvm.org/page/VMchannel_Requirements
 
-Signed-off-by: Amit Shah <amit.shah@redhat.com>
----
- drivers/char/Kconfig           |    4 +-
- drivers/char/virtio_console.c  | 1076 +++++++++++++++++++++++++++++++++++-----
- include/linux/virtio_console.h |   60 +++-
- 3 files changed, 1001 insertions(+), 139 deletions(-)
+Attached is a complete lspci -vvv 
 
-diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
-index 6a06913..fe76627 100644
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -678,7 +678,9 @@ config VIRTIO_CONSOLE
- 	select HVC_DRIVER
- 	help
- 	  Virtio console for use with lguest and other hypervisors.
--
-+	  Also serves as a general-purpose serial device for data transfer
-+	  between the guest and host. Character devices at /dev/vconNN will
-+	  be created when corresponding ports are found.
- 
- config HVCS
- 	tristate "IBM Hypervisor Virtual Console Server support"
-diff --git a/drivers/char/virtio_console.c b/drivers/char/virtio_console.c
-index 0d328b5..719d855 100644
---- a/drivers/char/virtio_console.c
-+++ b/drivers/char/virtio_console.c
-@@ -9,10 +9,8 @@
-  * functions.
-  :*/
- 
--/*M:002 The console can be flooded: while the Guest is processing input the
-- * Host can send more.  Buffering in the Host could alleviate this, but it is a
-- * difficult problem in general. :*/
- /* Copyright (C) 2006, 2007 Rusty Russell, IBM Corporation
-+ * Copyright (C) 2009, Amit Shah, Red Hat, Inc.
-  *
-  * This program is free software; you can redistribute it and/or modify
-  * it under the terms of the GNU General Public License as published by
-@@ -28,116 +26,424 @@
-  * along with this program; if not, write to the Free Software
-  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-  */
-+
-+#include <linux/cdev.h>
-+#include <linux/device.h>
- #include <linux/err.h>
-+#include <linux/fs.h>
- #include <linux/init.h>
-+#include <linux/poll.h>
-+#include <linux/spinlock.h>
- #include <linux/virtio.h>
- #include <linux/virtio_ids.h>
- #include <linux/virtio_console.h>
-+#include <linux/workqueue.h>
- #include "hvc_console.h"
- 
--/*D:340 These represent our input and output console queues, and the virtio
-- * operations for them. */
--static struct virtqueue *in_vq, *out_vq;
--static struct virtio_device *vdev;
-+/* This struct stores data that's common to all the ports */
-+struct virtio_console_struct {
-+	/*
-+	 * Workqueue handlers where we process deferred work after an
-+	 * interrupt
-+	 */
-+	struct work_struct rx_work;
-+	struct work_struct tx_work;
-+	struct work_struct config_work;
- 
--/* This is our input buffer, and how much data is left in it. */
--static unsigned int in_len;
--static char *in, *inbuf;
-+	struct list_head port_head;
-+	struct list_head unused_read_head;
-+	struct list_head unused_write_head;
- 
--/* The operations for our console. */
--static struct hv_ops virtio_cons;
-+	/* To protect the list of unused write buffers */
-+	spinlock_t write_list_lock;
- 
--/* The hvc device */
--static struct hvc_struct *hvc;
-+	struct virtio_device *vdev;
-+	struct class *class;
-+	/* The input and the output queues */
-+	struct virtqueue *in_vq, *out_vq;
- 
--/*D:310 The put_chars() callback is pretty straightforward.
-- *
-- * We turn the characters into a scatter-gather list, add it to the output
-- * queue and then kick the Host.  Then we sit here waiting for it to finish:
-- * inefficient in theory, but in practice implementations will do it
-- * immediately (lguest's Launcher does). */
--static int put_chars(u32 vtermno, const char *buf, int count)
-+	/* The current config space is stored here */
-+	struct virtio_console_config *config;
-+};
-+
-+/* This struct holds individual buffers received for each port */
-+struct virtio_console_port_buffer {
-+	struct list_head next;
-+
-+	char *buf;
-+
-+	size_t len; /* length of the buffer */
-+	size_t offset; /* offset in the buf from which to consume data */
-+};
-+
-+/* This struct holds the per-port data */
-+struct virtio_console_port {
-+	/* Next port in the list, head is in the virtio_console_struct */
-+	struct list_head next;
-+
-+	/* Buffer management */
-+	struct list_head readbuf_head;
-+	/* A waitqueue for poll() or blocking read operations */
-+	wait_queue_head_t waitqueue;
-+
-+	/* Each port associates with a separate char device */
-+	struct cdev cdev;
-+	struct device *dev;
-+
-+	/* The hvc device, if this port is associated with a console */
-+	struct hvc_struct *hvc;
-+
-+	bool host_connected;  /* Is the host device open */
-+};
-+
-+static struct virtio_console_struct virtconsole;
-+
-+static int major = 60; /* from the experimental range */
-+
-+static struct virtio_console_port *get_port_from_id(u32 id)
- {
--	struct scatterlist sg[1];
--	unsigned int len;
--
--	/* This is a convenient routine to initialize a single-elem sg list */
--	sg_init_one(sg, buf, count);
--
--	/* add_buf wants a token to identify this buffer: we hand it any
--	 * non-NULL pointer, since there's only ever one buffer. */
--	if (out_vq->vq_ops->add_buf(out_vq, sg, 1, 0, (void *)1) >= 0) {
--		/* Tell Host to go! */
--		out_vq->vq_ops->kick(out_vq);
--		/* Chill out until it's done with the buffer. */
--		while (!out_vq->vq_ops->get_buf(out_vq, &len))
--			cpu_relax();
-+	struct virtio_console_port *port;
-+
-+	list_for_each_entry(port, &virtconsole.port_head, next) {
-+		if (MINOR(port->dev->devt) == id)
-+			return port;
- 	}
-+	return NULL;
-+}
- 
--	/* We're expected to return the amount of data we wrote: all of it. */
--	return count;
-+static int get_id_from_port(struct virtio_console_port *port)
-+{
-+	return MINOR(port->dev->devt);
- }
- 
--/* Create a scatter-gather list representing our input buffer and put it in the
-- * queue. */
--static void add_inbuf(void)
-+static bool is_console_port(struct virtio_console_port *port)
- {
--	struct scatterlist sg[1];
--	sg_init_one(sg, inbuf, PAGE_SIZE);
-+	u32 port_nr = get_id_from_port(port);
- 
--	/* We should always be able to add one buffer to an empty queue. */
--	if (in_vq->vq_ops->add_buf(in_vq, sg, 0, 1, inbuf) < 0)
--		BUG();
--	in_vq->vq_ops->kick(in_vq);
-+	if (port_nr == VIRTIO_CONSOLE_CONSOLE_PORT ||
-+	    port_nr == VIRTIO_CONSOLE_CONSOLE2_PORT)
-+		return true;
-+	return false;
- }
- 
--/*D:350 get_chars() is the callback from the hvc_console infrastructure when
-- * an interrupt is received.
-- *
-- * Most of the code deals with the fact that the hvc_console() infrastructure
-- * only asks us for 16 bytes at a time.  We keep in_offset and in_used fields
-- * for partially-filled buffers. */
--static int get_chars(u32 vtermno, char *buf, int count)
-+static inline bool use_multiport(void)
- {
--	/* If we don't have an input queue yet, we can't get input. */
--	BUG_ON(!in_vq);
-+	/*
-+	 * This condition can be true when put_chars is called from
-+	 * early_init
-+	 */
-+	if (!virtconsole.vdev)
-+		return 0;
-+	return virtconsole.vdev->features[0] & (1 << VIRTIO_CONSOLE_F_MULTIPORT);
-+}
-+
-+static inline bool is_internal(u32 flags)
-+{
-+	return flags & VIRTIO_CONSOLE_ID_INTERNAL;
-+}
-+
-+/*
-+ * Give out the data that's requested from the buffers that we have
-+ * queued up per port
-+ */
-+static ssize_t fill_readbuf(struct virtio_console_port *port,
-+			    char *out_buf, size_t out_count, bool to_user)
-+{
-+	struct virtio_console_port_buffer *buf, *buf2;
-+	ssize_t out_offset, ret;
- 
--	/* No buffer?  Try to get one. */
--	if (!in_len) {
--		in = in_vq->vq_ops->get_buf(in_vq, &in_len);
--		if (!in)
-+	out_offset = 0;
-+	list_for_each_entry_safe(buf, buf2, &port->readbuf_head, next) {
-+		size_t copy_size;
-+
-+		copy_size = out_count;
-+		if (copy_size > buf->len - buf->offset)
-+			copy_size = buf->len - buf->offset;
-+
-+		if (to_user) {
-+			ret = copy_to_user(out_buf + out_offset,
-+					   buf->buf + buf->offset,
-+					   copy_size);
-+			/* FIXME: Deal with ret != 0 */
-+		} else {
-+			memcpy(out_buf + out_offset,
-+			       buf->buf + buf->offset,
-+			       copy_size);
-+			ret = 0; /* Emulate copy_to_user behaviour */
-+		}
-+
-+		/* Return the number of bytes actually copied */
-+		ret = copy_size - ret;
-+		buf->offset += ret;
-+		out_offset += ret;
-+		out_count -= ret;
-+
-+		if (buf->len - buf->offset == 0) {
-+			list_del(&buf->next);
-+			kfree(buf->buf);
-+			kfree(buf);
-+		}
-+		if (!out_count)
-+			break;
-+	}
-+	return out_offset;
-+}
-+
-+/* The condition that must be true for polling to end */
-+static bool wait_is_over(struct virtio_console_port *port)
-+{
-+	return !list_empty(&port->readbuf_head) || !port->host_connected;
-+}
-+
-+static ssize_t virtconsole_read(struct file *filp, char __user *ubuf,
-+			       size_t count, loff_t *offp)
-+{
-+	struct virtio_console_port *port;
-+	ssize_t ret;
-+
-+	port = filp->private_data;
-+
-+	if (list_empty(&port->readbuf_head)) {
-+		/*
-+		 * If nothing's connected on the host just return 0 in
-+		 * case of list_empty; this tells the userspace app
-+		 * that there's no connection
-+		 */
-+		if (!port->host_connected)
- 			return 0;
-+		if (filp->f_flags & O_NONBLOCK)
-+			return -EAGAIN;
-+
-+		ret = wait_event_interruptible(port->waitqueue,
-+					       wait_is_over(port));
-+		if (ret < 0)
-+			return ret;
-+	}
-+	/*
-+	 * We could've received a disconnection message while we were
-+	 * waiting for more data.
-+	 *
-+	 * This check is not clubbed in the if() statement above as we
-+	 * might receive some data as well as the host could get
-+	 * disconnected after we got woken up from our wait. So we
-+	 * really want to give off whatever data we have and only then
-+	 * check for host_connected
-+	 */
-+	if (list_empty(&port->readbuf_head) && !port->host_connected)
-+		return 0;
-+
-+	return fill_readbuf(port, ubuf, count, true);
-+}
-+
-+static ssize_t send_buf(struct virtio_console_port *port,
-+			const char *in_buf, size_t in_count,
-+			u32 flags, bool from_user)
-+{
-+	struct virtqueue *out_vq;
-+	struct virtio_console_port_buffer *buf, *buf2;
-+	struct scatterlist sg[1];
-+	struct virtio_console_header header;
-+	size_t in_offset, copy_size;
-+	ssize_t ret;
-+	unsigned int header_len;
-+
-+	if (!in_count)
-+		return 0;
-+
-+	out_vq = virtconsole.out_vq;
-+	/*
-+	 * We should not send internal messages to a host that won't
-+	 * understand them
-+	 */
-+	if (!use_multiport() && is_internal(flags))
-+		return 0;
-+	header_len = 0;
-+	if (use_multiport()) {
-+		header.id = get_id_from_port(port);
-+		header.flags = flags;
-+		header.size = in_count;
-+		header_len = sizeof(header);
-+	}
-+	in_offset = 0; /* offset in the user buffer */
-+	while (in_count - in_offset) {
-+		copy_size = min(in_count - in_offset + header_len, PAGE_SIZE);
-+
-+		spin_lock(&virtconsole.write_list_lock);
-+		list_for_each_entry_safe(buf, buf2,
-+					 &virtconsole.unused_write_head,
-+					 next) {
-+			list_del(&buf->next);
-+			break;
-+		}
-+		spin_unlock(&virtconsole.write_list_lock);
-+		if (!buf)
-+			break;
-+		if (header_len) {
-+			memcpy(buf->buf, &header, header_len);
-+			copy_size -= header_len;
-+		}
-+		if (from_user)
-+			ret = copy_from_user(buf->buf + header_len,
-+					     in_buf + in_offset, copy_size);
-+		else {
-+			/*
-+			 * Since we're not sure when the host will actually
-+			 * consume the data and tell us about it, we have
-+			 * to copy the data here in case the caller
-+			 * frees the in_buf
-+			 */
-+			memcpy(buf->buf + header_len,
-+			       in_buf + in_offset, copy_size);
-+			ret = 0; /* Emulate copy_from_user behaviour */
-+		}
-+		buf->len = header_len + copy_size - ret;
-+		sg_init_one(sg, buf->buf, buf->len);
-+
-+		ret = out_vq->vq_ops->add_buf(out_vq, sg, 1, 0, buf);
-+		if (ret < 0) {
-+			memset(buf->buf, 0, buf->len);
-+			spin_lock(&virtconsole.write_list_lock);
-+			list_add_tail(&buf->next,
-+				      &virtconsole.unused_write_head);
-+			spin_unlock(&virtconsole.write_list_lock);
-+			break;
-+		}
-+		in_offset += buf->len - header_len;
-+		/*
-+		 * Only send size with the first buffer.  This way
-+		 * userspace can find out a continuous stream of data
-+		 * belonging to one write request and consume it
-+		 * appropriately
-+		 */
-+		header.size = 0;
-+
-+		/* No space left in the vq anyway */
-+		if (!ret)
-+			break;
- 	}
-+	/* Tell Host to go! */
-+	out_vq->vq_ops->kick(out_vq);
- 
--	/* You want more than we have to give?  Well, try wanting less! */
--	if (in_len < count)
--		count = in_len;
-+	/* We're expected to return the amount of data we wrote */
-+	return in_offset;
-+}
- 
--	/* Copy across to their buffer and increment offset. */
--	memcpy(buf, in, count);
--	in += count;
--	in_len -= count;
-+static ssize_t virtconsole_write(struct file *filp, const char __user *ubuf,
-+				 size_t count, loff_t *offp)
-+{
-+	struct virtio_console_port *port;
- 
--	/* Finished?  Re-register buffer so Host will use it again. */
--	if (in_len == 0)
--		add_inbuf();
-+	port = filp->private_data;
- 
--	return count;
-+	return send_buf(port, ubuf, count, 0, true);
- }
--/*:*/
- 
--/*D:320 Console drivers are initialized very early so boot messages can go out,
-- * so we do things slightly differently from the generic virtio initialization
-- * of the net and block drivers.
-+static unsigned int virtconsole_poll(struct file *filp, poll_table *wait)
-+{
-+	struct virtio_console_port *port;
-+	unsigned int ret;
-+
-+	port = filp->private_data;
-+	poll_wait(filp, &port->waitqueue, wait);
-+
-+	ret = 0;
-+	if (!list_empty(&port->readbuf_head))
-+		ret |= POLLIN | POLLRDNORM;
-+	if (!port->host_connected)
-+		ret |= POLLHUP;
-+
-+	return ret;
-+}
-+
-+static int virtconsole_release(struct inode *inode, struct file *filp)
-+{
-+	struct virtio_console_control cpkt;
-+
-+	/* Notify host of port being closed */
-+	cpkt.event = VIRTIO_CONSOLE_PORT_OPEN;
-+	cpkt.value = 0;
-+	send_buf(filp->private_data, (char *)&cpkt, sizeof(cpkt),
-+		 VIRTIO_CONSOLE_ID_INTERNAL, false);
-+	return 0;
-+}
-+
-+static int virtconsole_open(struct inode *inode, struct file *filp)
-+{
-+	struct cdev *cdev = inode->i_cdev;
-+	struct virtio_console_port *port;
-+	struct virtio_console_control cpkt;
-+
-+	port = container_of(cdev, struct virtio_console_port, cdev);
-+	filp->private_data = port;
-+
-+	/* Notify host of port being opened */
-+	cpkt.event = VIRTIO_CONSOLE_PORT_OPEN;
-+	cpkt.value = 1;
-+	send_buf(filp->private_data, (char *)&cpkt, sizeof(cpkt),
-+		 VIRTIO_CONSOLE_ID_INTERNAL, false);
-+
-+	return 0;
-+}
-+
-+/*
-+ * The file operations that we support: programs in the guest can open
-+ * a console device, read from it, write to it, poll for data and
-+ * close it. The devices are at /dev/vconNN
-+ */
-+static const struct file_operations virtconsole_fops = {
-+	.owner = THIS_MODULE,
-+	.open  = virtconsole_open,
-+	.read  = virtconsole_read,
-+	.write = virtconsole_write,
-+	.poll  = virtconsole_poll,
-+	.release = virtconsole_release,
-+};
-+
-+/*D:310
-+ * The cons_put_chars() callback is pretty straightforward.
-  *
-- * At this stage, the console is output-only.  It's too early to set up a
-- * virtqueue, so we let the drivers do some boutique early-output thing. */
--int __init virtio_cons_early_init(int (*put_chars)(u32, const char *, int))
-+ * We turn the characters into a scatter-gather list, add it to the output
-+ * queue and then kick the Host.
-+ *
-+ * If the data to be outpu spans more than a page, it's split into
-+ * page-sized buffers and then individual buffers are pushed to Host.
-+ */
-+static int cons_put_chars(u32 vtermno, const char *buf, int count)
- {
--	virtio_cons.put_chars = put_chars;
--	return hvc_instantiate(0, 0, &virtio_cons);
-+	struct virtio_console_port *port;
-+
-+	port = get_port_from_id(vtermno);
-+	if (!port)
-+		return 0;
-+
-+	return send_buf(port, buf, count, 0, false);
- }
- 
-+/*D:350
-+ * cons_get_chars() is the callback from the hvc_console
-+ * infrastructure when an interrupt is received.
-+ *
-+ * We call out to fill_readbuf that gets us the required data from the
-+ * buffers that are queued up.
-+ */
-+static int cons_get_chars(u32 vtermno, char *buf, int count)
-+{
-+	struct virtio_console_port *port;
-+
-+	/* If we don't have an input queue yet, we can't get input. */
-+	BUG_ON(!virtconsole.in_vq);
-+
-+	port = get_port_from_id(vtermno);
-+	if (!port)
-+		return 0;
-+
-+	if (list_empty(&port->readbuf_head))
-+		return 0;
-+
-+	return fill_readbuf(port, buf, count, false);
-+}
-+/*:*/
-+
- /*
-  * virtio console configuration. This supports:
-  * - console resize
-@@ -153,98 +459,575 @@ static void virtcons_apply_config(struct virtio_device *dev)
- 		dev->config->get(dev,
- 				 offsetof(struct virtio_console_config, rows),
- 				 &ws.ws_row, sizeof(u16));
--		hvc_resize(hvc, ws);
-+		/*
-+		 * We'll use this way of resizing only for legacy
-+		 * support. For newer userspace (VIRTIO_CONSOLE_F_MULTPORT+),
-+		 * use internal messages to indicate console size
-+		 * changes so that it can be done per-port
-+		 */
-+		hvc_resize(get_port_from_id(VIRTIO_CONSOLE_CONSOLE_PORT)->hvc, ws);
- 	}
- }
- 
- /*
-- * we support only one console, the hvc struct is a global var
-  * We set the configuration at this point, since we now have a tty
-  */
--static int notifier_add_vio(struct hvc_struct *hp, int data)
-+static int cons_notifier_add_vio(struct hvc_struct *hp, int data)
- {
- 	hp->irq_requested = 1;
--	virtcons_apply_config(vdev);
-+	virtcons_apply_config(virtconsole.vdev);
- 
- 	return 0;
- }
- 
--static void notifier_del_vio(struct hvc_struct *hp, int data)
-+static void cons_notifier_del_vio(struct hvc_struct *hp, int data)
- {
- 	hp->irq_requested = 0;
- }
- 
--static void hvc_handle_input(struct virtqueue *vq)
-+/* The operations for our console. */
-+static struct hv_ops virtio_cons = {
-+	.get_chars = cons_get_chars,
-+	.put_chars = cons_put_chars,
-+	.notifier_add = cons_notifier_add_vio,
-+	.notifier_del = cons_notifier_del_vio,
-+	.notifier_hangup = cons_notifier_del_vio,
-+};
-+
-+/*D:320
-+ * Console drivers are initialized very early so boot messages can go out,
-+ * so we do things slightly differently from the generic virtio initialization
-+ * of the net and block drivers.
-+ *
-+ * At this stage, the console is output-only.  It's too early to set up a
-+ * virtqueue, so we let the drivers do some boutique early-output thing.
-+ */
-+int __init virtio_cons_early_init(int (*put_chars)(u32, const char *, int))
-+{
-+	virtio_cons.put_chars = put_chars;
-+	return hvc_instantiate(0, 0, &virtio_cons);
-+}
-+
-+
-+/* Any secret messages that the Host and Guest want to share */
-+static void handle_control_message(struct virtio_console_port *port,
-+				   struct virtio_console_control *cpkt)
-+{
-+	switch (cpkt->event) {
-+	case VIRTIO_CONSOLE_PORT_OPEN:
-+		port->host_connected = cpkt->value;
-+		break;
-+	}
-+}
-+
-+
-+static struct virtio_console_port_buffer *get_buf(size_t buf_size)
-+{
-+	struct virtio_console_port_buffer *buf;
-+
-+	buf = kzalloc(sizeof(*buf), GFP_KERNEL);
-+	if (!buf)
-+		goto out;
-+	buf->buf = kzalloc(buf_size, GFP_KERNEL);
-+	if (!buf->buf) {
-+		kfree(buf);
-+		goto out;
-+	}
-+	buf->len = buf_size;
-+out:
-+	return buf;
-+}
-+
-+static void fill_queue(struct virtqueue *vq, size_t buf_size,
-+		       struct list_head *unused_head)
-+{
-+	struct scatterlist sg[1];
-+	struct virtio_console_port_buffer *buf;
-+	int ret;
-+
-+	do {
-+		buf = get_buf(buf_size);
-+		if (!buf)
-+			break;
-+		sg_init_one(sg, buf->buf, buf_size);
-+
-+		ret = vq->vq_ops->add_buf(vq, sg, 0, 1, buf);
-+		if (ret < 0) {
-+			kfree(buf->buf);
-+			kfree(buf);
-+			break;
-+		}
-+		/* We have to keep track of the unused buffers
-+		 * so that they can be freed when the module
-+		 * is being removed
-+		 */
-+		list_add_tail(&buf->next, unused_head);
-+	} while (ret > 0);
-+	vq->vq_ops->kick(vq);
-+}
-+
-+static void fill_receive_queue(void)
- {
--	if (hvc_poll(hvc))
-+	fill_queue(virtconsole.in_vq, PAGE_SIZE, &virtconsole.unused_read_head);
-+}
-+
-+/*
-+ * This function is only called from the init routine so the spinlock
-+ * for the unused_write_head list isn't taken
-+ */
-+static void alloc_write_bufs(void)
-+{
-+	struct virtio_console_port_buffer *buf;
-+	int i;
-+
-+	for (i = 0; i < 1024; i++) {
-+		buf = get_buf(PAGE_SIZE);
-+		if (!buf)
-+			break;
-+		list_add_tail(&buf->next, &virtconsole.unused_write_head);
-+	}
-+}
-+
-+/*
-+ * The workhandle for any buffers that appear on our input queue.
-+ * Pick the buffer; if it's some communication meant for the Guest,
-+ * just process it. Otherwise queue it up for the read() or
-+ * get_chars() routines to pick the data up later.
-+ */
-+static void virtio_console_rx_work_handler(struct work_struct *work)
-+{
-+	struct virtio_console_port *port;
-+	struct virtio_console_port_buffer *buf;
-+	struct virtio_console_header header;
-+	struct virtqueue *vq;
-+	unsigned int tmplen, header_len;
-+
-+	header_len = use_multiport() ? sizeof(header) : 0;
-+
-+	port = NULL;
-+	vq = virtconsole.in_vq;
-+	while ((buf = vq->vq_ops->get_buf(vq, &tmplen))) {
-+		/* The buffer is no longer unused */
-+		list_del(&buf->next);
-+
-+		if (use_multiport()) {
-+			memcpy(&header, buf->buf, header_len);
-+			port = get_port_from_id(header.id);
-+		} else
-+			port = get_port_from_id(VIRTIO_CONSOLE_CONSOLE_PORT);
-+		if (!port) {
-+			 /* No valid header at start of buffer. Drop it. */
-+			pr_debug("%s: invalid index in buffer, %c %d\n",
-+				 __func__, buf->buf[0], buf->buf[0]);
-+			/*
-+			 * OPT: This buffer can be added to the unused
-+			 * list to avoid free / alloc
-+			 */
-+			kfree(buf->buf);
-+			kfree(buf);
-+			break;
-+		}
-+		if (use_multiport() && is_internal(header.flags)) {
-+			handle_control_message(port,
-+					       (struct virtio_console_control *)
-+					       (buf->buf + header_len));
-+			/*
-+			 * OPT: This buffer can be added to the unused
-+			 * list to avoid free/alloc
-+			 */
-+			kfree(buf->buf);
-+			kfree(buf);
-+		} else {
-+			buf->len = tmplen;
-+			buf->offset = header_len;
-+			list_add_tail(&buf->next, &port->readbuf_head);
-+			/* We might have missed a connection
-+			 * notification, e.g. before the queues were
-+			 * initialised.
-+			 */
-+			port->host_connected = true;
-+		}
-+		wake_up_interruptible(&port->waitqueue);
-+	}
-+	if (port && is_console_port(port) && hvc_poll(port->hvc))
- 		hvc_kick();
-+
-+	/* Allocate buffers for all the ones that got used up */
-+	fill_receive_queue();
- }
- 
--/*D:370 Once we're further in boot, we get probed like any other virtio device.
-- * At this stage we set up the output virtqueue.
-+/*
-+ * This is the workhandler for buffers that get received on the output
-+ * virtqueue, which is an indication that Host consumed the data we
-+ * sent it. Since all our buffers going out are of a fixed size we can
-+ * just reuse them instead of freeing them and allocating new ones.
-+ *
-+ * Zero out the buffer so that we don't leak any information from
-+ * other processes. There's a small optimisation here as well: the
-+ * buffers are PAGE_SIZE-sized; but instead of zeroing the entire
-+ * page, we just zero the length that was most recently used and we
-+ * can be sure the rest of the page is already set to 0s.
-+ *
-+ * So once we zero them out we add them back to the unused buffers
-+ * list
-+ */
-+
-+static void virtio_console_tx_work_handler(struct work_struct *work)
-+{
-+	struct virtqueue *vq;
-+	struct virtio_console_port_buffer *buf;
-+	unsigned int tmplen;
-+
-+	vq = virtconsole.out_vq;
-+	while ((buf = vq->vq_ops->get_buf(vq, &tmplen))) {
-+		/* 0 the buffer to not leak data from other processes */
-+		memset(buf->buf, 0, buf->len);
-+		spin_lock(&virtconsole.write_list_lock);
-+		list_add_tail(&buf->next, &virtconsole.unused_write_head);
-+		spin_unlock(&virtconsole.write_list_lock);
-+	}
-+}
-+
-+static void rx_intr(struct virtqueue *vq)
-+{
-+	schedule_work(&virtconsole.rx_work);
-+}
-+
-+static void tx_intr(struct virtqueue *vq)
-+{
-+	schedule_work(&virtconsole.tx_work);
-+}
-+
-+static void config_intr(struct virtio_device *vdev)
-+{
-+	/* Handle port hot-add */
-+	schedule_work(&virtconsole.config_work);
-+
-+	/* Handle console size changes */
-+	virtcons_apply_config(vdev);
-+}
-+
-+/*
-+ * Compare the current config and the new config that we just got and
-+ * find out where a particular port was added.
-+ */
-+static u32 virtconsole_get_hot_add_port(struct virtio_console_config *config)
-+{
-+	u32 i;
-+	u32 port_nr;
-+
-+	for (i = 0; i < virtconsole.config->max_nr_ports / 32; i++) {
-+		port_nr = ffs(config->ports_map[i] ^ virtconsole.config->ports_map[i]);
-+		if (port_nr)
-+			break;
-+	}
-+	if (unlikely(!port_nr))
-+		return VIRTIO_CONSOLE_BAD_ID;
-+
-+	/* We used ffs above */
-+	port_nr--;
-+
-+	/* FIXME: Do this only when add_port is successful */
-+	virtconsole.config->ports_map[i] |= 1U << port_nr;
-+
-+	port_nr += i * 32;
-+	return port_nr;
-+}
-+
-+/*
-+ * Cycle throught the list of active ports and return the next port
-+ * that has to be activated.
-+ */
-+static u32 virtconsole_find_next_port(u32 *map, int *map_i)
-+{
-+	u32 port_nr;
-+
-+	while (1) {
-+		port_nr = ffs(*map);
-+		if (port_nr)
-+			break;
-+
-+		if (unlikely(*map_i >= virtconsole.config->max_nr_ports / 32))
-+			return VIRTIO_CONSOLE_BAD_ID;
-+		++*map_i;
-+		*map = virtconsole.config->ports_map[*map_i];
-+	}
-+	/* We used ffs above */
-+	port_nr--;
-+
-+	/* FIXME: Do this only when add_port is successful / reset bit
-+	 * in config space if add_port was unsuccessful
-+	 */
-+	*map &= ~(1U << port_nr);
-+
-+	port_nr += *map_i * 32;
-+	return port_nr;
-+}
-+
-+static int virtconsole_add_port(u32 port_nr)
-+{
-+	struct virtio_console_port *port;
-+	dev_t devt;
-+	int ret;
-+
-+	port = kzalloc(sizeof(*port), GFP_KERNEL);
-+	if (!port)
-+		return -ENOMEM;
-+
-+	devt = MKDEV(major, port_nr);
-+	cdev_init(&port->cdev, &virtconsole_fops);
-+
-+	ret = register_chrdev_region(devt, 1, "virtio-console");
-+	if (ret < 0) {
-+		pr_err("%s: error registering chrdev region, ret = %d\n",
-+		       __func__, ret);
-+		goto free_cdev;
-+	}
-+	ret = cdev_add(&port->cdev, devt, 1);
-+	if (ret < 0) {
-+		pr_err("%s: error adding cdev, ret = %d\n", __func__, ret);
-+		goto free_cdev;
-+	}
-+	port->dev = device_create(virtconsole.class, NULL, devt, NULL,
-+				  "vcon%u", port_nr);
-+	if (IS_ERR(port->dev)) {
-+		ret = PTR_ERR(port->dev);
-+		pr_err("%s: Error creating device, ret = %d\n", __func__, ret);
-+		goto free_cdev;
-+	}
-+	INIT_LIST_HEAD(&port->readbuf_head);
-+	init_waitqueue_head(&port->waitqueue);
-+
-+	list_add_tail(&port->next, &virtconsole.port_head);
-+
-+	if (is_console_port(port)) {
-+		/*
-+		 * To set up and manage our virtual console, we call
-+		 * hvc_alloc().
-+		 *
-+		 * The first argument of hvc_alloc() is the virtual
-+		 * console number, so we use zero.  The second
-+		 * argument is the parameter for the notification
-+		 * mechanism (like irq number). We currently leave
-+		 * this as zero, virtqueues have implicit
-+		 * notifications.
-+		 *
-+		 * The third argument is a "struct hv_ops" containing
-+		 * the put_chars() get_chars(), notifier_add() and
-+		 * notifier_del() pointers.  The final argument is the
-+		 * output buffer size: we can do any size, so we put
-+		 * PAGE_SIZE here.
-+		 */
-+		port->hvc = hvc_alloc(port_nr, 0, &virtio_cons, PAGE_SIZE);
-+		if (IS_ERR(port->hvc)) {
-+			ret = PTR_ERR(port->hvc);
-+			goto free_cdev;
-+		}
-+	}
-+	pr_info("virtio-console port found at id %u\n", port_nr);
-+
-+	return 0;
-+free_cdev:
-+	unregister_chrdev(major, "virtio-console");
-+	return ret;
-+}
-+
-+/* max_ports is always a multiple of 32; enforced in the Host */
-+static u32 get_ports_map_size(u32 max_ports)
-+{
-+	return sizeof(u32) * (max_ports / 32);
-+}
-+
-+/* The workhandler for config-space updates
-  *
-- * To set up and manage our virtual console, we call hvc_alloc().  Since we
-- * never remove the console device we never need this pointer again.
-+ * This is used when new ports are added
-+ */
-+static void virtio_console_config_work_handler(struct work_struct *work)
-+{
-+	struct virtio_console_config *virtconconf;
-+	struct virtio_device *vdev = virtconsole.vdev;
-+	u32 i, port_nr;
-+	int ret;
-+
-+	virtconconf = kzalloc(sizeof(*virtconconf) +
-+			      get_ports_map_size(virtconsole.config->max_nr_ports),
-+			      GFP_KERNEL);
-+	vdev->config->get(vdev,
-+			  offsetof(struct virtio_console_config, nr_active_ports),
-+			  &virtconconf->nr_active_ports,
-+			  sizeof(virtconconf->nr_active_ports));
-+	vdev->config->get(vdev,
-+			  offsetof(struct virtio_console_config, ports_map),
-+			  virtconconf->ports_map,
-+			  get_ports_map_size(virtconsole.config->max_nr_ports));
-+
-+	/* Hot-add ports */
-+	for (i = virtconsole.config->nr_active_ports;
-+	     i < virtconconf->nr_active_ports; i++) {
-+		port_nr = virtconsole_get_hot_add_port(virtconconf);
-+		if (port_nr == VIRTIO_CONSOLE_BAD_ID)
-+			continue;
-+		ret = virtconsole_add_port(port_nr);
-+		if (!ret)
-+			virtconsole.config->nr_active_ports++;
-+	}
-+	kfree(virtconconf);
-+}
-+
-+/*D:370
-+ * Once we're further in boot, we get probed like any other virtio device.
-+ * At this stage we set up the output virtqueue.
-  *
-- * Finally we put our input buffer in the input queue, ready to receive. */
--static int __devinit virtcons_probe(struct virtio_device *dev)
-+ * Finally we put our input buffer in the input queue, ready to receive.
-+ */
-+static int __devinit virtcons_probe(struct virtio_device *vdev)
- {
--	vq_callback_t *callbacks[] = { hvc_handle_input, NULL};
-+	vq_callback_t *callbacks[] = { rx_intr, tx_intr };
- 	const char *names[] = { "input", "output" };
- 	struct virtqueue *vqs[2];
--	int err;
-+	u32 i, map;
-+	int ret, map_i;
-+	u32 max_nr_ports;
-+	bool multiport;
- 
--	vdev = dev;
-+	virtconsole.vdev = vdev;
- 
--	/* This is the scratch page we use to receive console input */
--	inbuf = kmalloc(PAGE_SIZE, GFP_KERNEL);
--	if (!inbuf) {
--		err = -ENOMEM;
--		goto fail;
--	}
-+	multiport = false;
-+	if (virtio_has_feature(vdev, VIRTIO_CONSOLE_F_MULTIPORT)) {
-+		multiport = true;
-+		vdev->features[0] |= 1 << VIRTIO_CONSOLE_F_MULTIPORT;
-+		vdev->config->finalize_features(vdev);
-+
-+		vdev->config->get(vdev,
-+				  offsetof(struct virtio_console_config,
-+					   max_nr_ports),
-+				  &max_nr_ports,
-+				  sizeof(max_nr_ports));
-+		/*
-+		 * We have a variable-sized config space that's dependent
-+		 * on the maximum number of ports a guest can have.
-+		 * So we first get the max number of ports we can have
-+		 * and then allocate the config space
-+		 */
-+		virtconsole.config = kzalloc(sizeof(struct virtio_console_config)
-+					     + get_ports_map_size(max_nr_ports),
-+					     GFP_KERNEL);
-+		if (!virtconsole.config)
-+			return -ENOMEM;
-+
-+		virtconsole.config->max_nr_ports = max_nr_ports;
- 
-+		vdev->config->get(vdev, offsetof(struct virtio_console_config,
-+						 nr_active_ports),
-+				  &virtconsole.config->nr_active_ports,
-+				  sizeof(virtconsole.config->nr_active_ports));
-+		vdev->config->get(vdev,
-+				  offsetof(struct virtio_console_config,
-+					   ports_map),
-+				  virtconsole.config->ports_map,
-+				  get_ports_map_size(max_nr_ports));
-+	}
- 	/* Find the queues. */
- 	/* FIXME: This is why we want to wean off hvc: we do nothing
- 	 * when input comes in. */
--	err = vdev->config->find_vqs(vdev, 2, vqs, callbacks, names);
--	if (err)
--		goto free;
-+	ret = vdev->config->find_vqs(vdev, 2, vqs, callbacks, names);
-+	if (ret)
-+		goto fail;
- 
--	in_vq = vqs[0];
--	out_vq = vqs[1];
-+	virtconsole.in_vq = vqs[0];
-+	virtconsole.out_vq = vqs[1];
- 
--	/* Start using the new console output. */
--	virtio_cons.get_chars = get_chars;
--	virtio_cons.put_chars = put_chars;
--	virtio_cons.notifier_add = notifier_add_vio;
--	virtio_cons.notifier_del = notifier_del_vio;
--	virtio_cons.notifier_hangup = notifier_del_vio;
--
--	/* The first argument of hvc_alloc() is the virtual console number, so
--	 * we use zero.  The second argument is the parameter for the
--	 * notification mechanism (like irq number). We currently leave this
--	 * as zero, virtqueues have implicit notifications.
--	 *
--	 * The third argument is a "struct hv_ops" containing the put_chars()
--	 * get_chars(), notifier_add() and notifier_del() pointers.
--	 * The final argument is the output buffer size: we can do any size,
--	 * so we put PAGE_SIZE here. */
--	hvc = hvc_alloc(0, 0, &virtio_cons, PAGE_SIZE);
--	if (IS_ERR(hvc)) {
--		err = PTR_ERR(hvc);
--		goto free_vqs;
--	}
-+	INIT_LIST_HEAD(&virtconsole.port_head);
-+	INIT_LIST_HEAD(&virtconsole.unused_read_head);
-+	INIT_LIST_HEAD(&virtconsole.unused_write_head);
-+
-+	if (multiport) {
-+		map_i = 0;
-+		map = virtconsole.config->ports_map[map_i];
-+		for (i = 0; i < virtconsole.config->nr_active_ports; i++) {
-+			u32 port_nr;
-+
-+			port_nr = virtconsole_find_next_port(&map, &map_i);
-+			if (unlikely(port_nr == VIRTIO_CONSOLE_BAD_ID))
-+				continue;
-+			virtconsole_add_port(port_nr);
-+		}
-+	} else
-+		virtconsole_add_port(VIRTIO_CONSOLE_CONSOLE_PORT);
-+
-+	INIT_WORK(&virtconsole.rx_work, &virtio_console_rx_work_handler);
-+	INIT_WORK(&virtconsole.tx_work, &virtio_console_tx_work_handler);
-+	INIT_WORK(&virtconsole.config_work, &virtio_console_config_work_handler);
-+	spin_lock_init(&virtconsole.write_list_lock);
- 
--	/* Register the input buffer the first time. */
--	add_inbuf();
-+	fill_receive_queue();
-+	alloc_write_bufs();
- 	return 0;
- 
--free_vqs:
--	vdev->config->del_vqs(vdev);
--free:
--	kfree(inbuf);
- fail:
--	return err;
-+	return ret;
-+}
-+
-+static void virtcons_remove_port_data(struct virtio_console_port *port)
-+{
-+	struct virtio_console_port_buffer *buf, *buf2;
-+
-+#if 0 /* hvc_console is compiled in, at least on Fedora. */
-+	if (is_console_port(port))
-+		hvc_remove(hvc);
-+#endif
-+	device_destroy(virtconsole.class, port->dev->devt);
-+	unregister_chrdev_region(port->dev->devt, 1);
-+	cdev_del(&port->cdev);
-+
-+	/* Remove the buffers in which we have unconsumed data */
-+	list_for_each_entry_safe(buf, buf2, &port->readbuf_head, next) {
-+		list_del(&buf->next);
-+		kfree(buf->buf);
-+		kfree(buf);
-+	}
-+}
-+
-+static void virtcons_remove(struct virtio_device *vdev)
-+{
-+	struct virtio_console_port *port, *port2;
-+	struct virtio_console_port_buffer *buf, *buf2;
-+	char *tmpbuf;
-+	int len;
-+
-+	unregister_chrdev(major, "virtio-console");
-+	class_destroy(virtconsole.class);
-+
-+	cancel_work_sync(&virtconsole.rx_work);
-+	/*
-+	 * Free up the buffers that we queued up for the Host to pass
-+	 * us data
-+	 */
-+	while ((tmpbuf = virtconsole.in_vq->vq_ops->get_buf(virtconsole.in_vq,
-+							    &len)))
-+		kfree(tmpbuf);
-+
-+	vdev->config->del_vqs(vdev);
-+	/*
-+	 * Free up the buffers that were sent to us by Host but were
-+	 * left unused
-+	 */
-+	list_for_each_entry_safe(buf, buf2, &virtconsole.unused_read_head, next) {
-+		list_del(&buf->next);
-+		kfree(buf->buf);
-+		kfree(buf);
-+	}
-+	list_for_each_entry_safe(buf, buf2, &virtconsole.unused_write_head, next) {
-+		list_del(&buf->next);
-+		kfree(buf->buf);
-+		kfree(buf);
-+	}
-+	list_for_each_entry_safe(port, port2, &virtconsole.port_head, next) {
-+		list_del(&port->next);
-+		virtcons_remove_port_data(port);
-+		kfree(port);
-+	}
-+	kfree(virtconsole.config);
- }
- 
- static struct virtio_device_id id_table[] = {
-@@ -254,6 +1037,7 @@ static struct virtio_device_id id_table[] = {
- 
- static unsigned int features[] = {
- 	VIRTIO_CONSOLE_F_SIZE,
-+	VIRTIO_CONSOLE_F_MULTIPORT,
- };
- 
- static struct virtio_driver virtio_console = {
-@@ -263,14 +1047,34 @@ static struct virtio_driver virtio_console = {
- 	.driver.owner =	THIS_MODULE,
- 	.id_table =	id_table,
- 	.probe =	virtcons_probe,
--	.config_changed = virtcons_apply_config,
-+	.remove =	virtcons_remove,
-+	.config_changed = config_intr,
- };
- 
- static int __init init(void)
- {
--	return register_virtio_driver(&virtio_console);
-+	int ret;
-+
-+	virtconsole.class = class_create(THIS_MODULE, "virtio-console");
-+	if (IS_ERR(virtconsole.class)) {
-+		pr_err("Error creating virtio-console class\n");
-+		ret = PTR_ERR(virtconsole.class);
-+		return ret;
-+	}
-+	ret = register_virtio_driver(&virtio_console);
-+	if (ret) {
-+		class_destroy(virtconsole.class);
-+		return ret;
-+	}
-+	return 0;
-+}
-+
-+static void __exit fini(void)
-+{
-+	unregister_virtio_driver(&virtio_console);
- }
- module_init(init);
-+module_exit(fini);
- 
- MODULE_DEVICE_TABLE(virtio, id_table);
- MODULE_DESCRIPTION("Virtio console driver");
-diff --git a/include/linux/virtio_console.h b/include/linux/virtio_console.h
-index b5f5198..7f2444c 100644
---- a/include/linux/virtio_console.h
-+++ b/include/linux/virtio_console.h
-@@ -2,20 +2,76 @@
- #define _LINUX_VIRTIO_CONSOLE_H
- #include <linux/types.h>
- #include <linux/virtio_config.h>
--/* This header, excluding the #ifdef __KERNEL__ part, is BSD licensed so
-- * anyone can use the definitions to implement compatible drivers/servers. */
-+/*
-+ * This header, excluding the #ifdef __KERNEL__ part, is BSD licensed so
-+ * anyone can use the definitions to implement compatible drivers/servers.
-+ *
-+ * Copyright (C) Red Hat, Inc., 2009
-+ */
- 
- /* Feature bits */
- #define VIRTIO_CONSOLE_F_SIZE	0	/* Does host provide console size? */
-+#define VIRTIO_CONSOLE_F_MULTIPORT 1	/* Does host provide multiple ports? */
-+
-+#define VIRTIO_CONSOLE_BAD_ID	(~(u32)0) /* Invalid port number */
-+
-+/* Port at which the virtio console is spawned */
-+#define VIRTIO_CONSOLE_CONSOLE_PORT	0
-+#define VIRTIO_CONSOLE_CONSOLE2_PORT	1
- 
- struct virtio_console_config {
- 	/* colums of the screens */
- 	__u16 cols;
- 	/* rows of the screens */
- 	__u16 rows;
-+	/*
-+	 * max. number of ports supported for each PCI device. Always
-+	 * a multiple of 32
-+	 */
-+	__u32 max_nr_ports;
-+	/* number of ports in use */
-+	__u32 nr_active_ports;
-+	/*
-+	 * locations of the ports in use; variable-size array: should
-+	 * be the last in this struct.
-+	 */
-+	__u32 ports_map[0 /* max_nr_ports / 32 */];
- } __attribute__((packed));
- 
- 
-+/*
-+ * An internal-only message that's passed between the Host and the
-+ * Guest for a particular port.
-+ */
-+struct virtio_console_control {
-+	__u16 event;
-+	__u16 value;
-+};
-+
-+/* Some events for internal messages (control packets) */
-+#define VIRTIO_CONSOLE_PORT_OPEN	0
-+
-+
-+/*
-+ * This struct is put in each buffer that gets passed to userspace and
-+ * vice-versa
-+ */
-+struct virtio_console_header {
-+	/* Port number */
-+	u32 id;
-+	/* Some message between host and guest */
-+	u32 flags;
-+	/*
-+	 * Complete size of the write request - only sent with the
-+	 * first buffer for each write request
-+	 */
-+	u32 size;
-+} __attribute__((packed));
-+
-+/* Messages between host and guest ('flags' field in the header above) */
-+#define VIRTIO_CONSOLE_ID_INTERNAL	(1 << 0)
-+
-+
- #ifdef __KERNEL__
- int __init virtio_cons_early_init(int (*put_chars)(u32, const char *, int));
- #endif /* __KERNEL__ */
--- 
-1.6.2.5
+Short version:
 
+# lspci -tv
+-[0000:00]-+-00.0  ATI Technologies Inc RD790 Northbridge only dual slot PCI-e_GFX and HT3 K8 part
+------>  +-02.0-[0000:01-02]----00.0-[0000:02]----0c.0  VMIC Device 5565
+|          +-04.0-[0000:03-04]----00.0-[0000:04]--
+|          +-09.0-[0000:05]----00.0  Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller
+|          +-0b.0-[0000:06]----00.0  nVidia Corporation G70 [GeForce 7800 GT]
+|          +-11.0  ATI Technologies Inc SB700/SB800 SATA Controller [IDE mode]
+|          +-14.0  ATI Technologies Inc SBx00 SMBus Controller
+|          +-14.1  ATI Technologies Inc SB700/SB800 IDE Controller
+|          +-14.2  ATI Technologies Inc SBx00 Azalia
+|          +-14.3  ATI Technologies Inc SB700/SB800 LPC host controller
+|          +-14.4-[0000:07]--+-05.0  Compro Computer Services, Inc. Device 4610
+--------<  |                 \-07.0  PLX Technology, Inc. Device 0480
+           +-18.0  Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] HyperTransport Configuration
+           +-18.1  Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] Address Map
+           +-18.2  Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] DRAM Controller
+           +-18.3  Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] Miscellaneous Control
+           \-18.4  Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] Link Control
+
+
+And also the lspci -vvv info on just the cards and bridges involved.
+
+Motherboard bridge that the VMIC card with it's internal bridge is attached to:
+
+00:02.0 PCI bridge: ATI Technologies Inc RD790 PCI to PCI bridge (external gfx0 port A) (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 32 bytes
+        Bus: primary=00, secondary=01, subordinate=02, sec-latency=0
+        I/O behind bridge: 0000c000-0000cfff
+        Memory behind bridge: b0000000-cfffffff
+        Prefetchable memory behind bridge: 00000000fde00000-00000000fdefffff
+        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+        Capabilities: [50] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [58] Express (v2) Root Port (Slot-), MSI 00
+                DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+                        ExtTag+ RBE+ FLReset-
+                DevCtl: Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+                        MaxPayload 128 bytes, MaxReadReq 128 bytes
+                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+                LnkCap: Port #0, Speed 5GT/s, Width x16, ASPM L0s L1, Latency L0 <64ns, L1 <1us
+                        ClockPM- Suprise- LLActRep+ BwNot+
+                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive+ BWMgmt+ ABWMgmt-
+                RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+                RootCap: CRSVisible-
+                RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+        Capabilities: [a0] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
+                Address: fee0300c  Data: 41c9
+        Capabilities: [b0] Subsystem: ATI Technologies Inc Device 5956
+        Capabilities: [b8] HyperTransport: MSI Mapping Enable+ Fixed+
+        Capabilities: [100] Vendor Specific Information <?>
+        Capabilities: [110] Virtual Channel <?>
+        Kernel driver in use: pcieport-driver
+        Kernel modules: shpchp
+
+
+VMIC card with internal bridge:
+
+01:00.0 PCI bridge: Intel Corporation Device 032d (rev 09) (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 32 bytes
+        Bus: primary=01, secondary=02, subordinate=02, sec-latency=64
+        I/O behind bridge: 0000c000-0000cfff
+        Memory behind bridge: b0000000-cfffffff
+        Prefetchable memory behind bridge: 00000000fde00000-00000000fdefffff
+        Secondary status: 66MHz+ FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+        Capabilities: [44] Express (v1) PCI/PCI-X Bridge, MSI 00
+                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal+ Unsupported-
+                        RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop- BrConfRtry-
+                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+                DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr- TransPend-
+                LnkCap: Port #0, Speed 2.5GT/s, Width x8, ASPM L0s, Latency L0 <256ns, L1 unlimited
+                        ClockPM- Suprise- LLActRep- BwNot-
+                LnkCtl: ASPM Disabled; Disabled- Retrain- CommClk+
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk- DLActive- BWMgmt- ABWMgmt-
+        Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [6c] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [d8] PCI-X bridge device
+                Secondary Status: 64bit+ 133MHz+ SCD- USC- SCO- SRD- Freq=conv
+                Status: Dev=01:00.0 64bit- 133MHz- SCD- USC- SCO- SRD-
+                Upstream: Capacity=65535 CommitmentLimit=65535
+                Downstream: Capacity=65535 CommitmentLimit=65535
+        Capabilities: [100] Advanced Error Reporting <?>
+        Capabilities: [300] Power Budgeting <?>
+        Kernel modules: shpchp
+
+02:0c.0 Network controller: VMIC Device 5565
+        Subsystem: PLD APPLICATIONS Device 0080
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64
+        Interrupt: pin A routed to IRQ 18
+        Region 0: Memory at cffff000 (32-bit, non-prefetchable) [size=512]
+        Region 1: I/O ports at ce00 [size=256]
+        Region 2: Memory at cfffe000 (32-bit, non-prefetchable) [size=64]
+        Region 3: Memory at b0000000 (32-bit, non-prefetchable) [size=256M]
+        Capabilities: [78] Power Management version 3
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+
+
+Here is the bridge on the MB and gpiohsd card info:
+
+00:14.4 PCI bridge: ATI Technologies Inc SBx00 PCI to PCI Bridge (prog-if 01 [Subtractive decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop+ ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64
+        Bus: primary=00, secondary=07, subordinate=07, sec-latency=64
+        I/O behind bridge: 0000a000-0000afff
+        Memory behind bridge: fc800000-fd7fffff
+        Prefetchable memory behind bridge: fdb00000-fdbfffff
+        Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+        BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+
+07:07.0 Intelligent controller [0e80]: PLX Technology, Inc. Device 0480 (rev 52)
+        Subsystem: Compro Computer Services, Inc. Device 4620
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 64, Cache Line Size: 32 bytes
+        Interrupt: pin A routed to IRQ 22
+        BIST result: 00
+        Region 0: Memory at fd7fe000 (32-bit, non-prefetchable) [size=1K]
+        Region 1: Memory at fc800000 (32-bit, non-prefetchable) [size=8M]
+        Region 2: Memory at fd7fd000 (32-bit, non-prefetchable) [size=16]
+        Capabilities: [40] #00 [0000]
+        Capabilities: [54] #00 [0080]
+        Capabilities: [58] Vital Product Data <?>
+
+
+Again, any help as to why this doesn't work would be appreciated. 
+
+Thanks in advance
+Mark
+
+
+
+
+
+
+--------------060304020500030809030202
+Content-Type: text/plain;
+ name="d.lspci-vvv"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="d.lspci-vvv"
+
+00:00.0 Host bridge: ATI Technologies Inc RD790 Northbridge only dual slot PCI-e_GFX and HT3 K8 part
+	Subsystem: ATI Technologies Inc RD790 Northbridge only dual slot PCI-e_GFX and HT3 K8 part
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ >SERR- <PERR- INTx-
+	Latency: 64
+	Region 3: Memory at <ignored> (64-bit, non-prefetchable)
+	Capabilities: [c4] HyperTransport: Slave or Primary Interface
+		Command: BaseUnitID=0 UnitCnt=12 MastHost- DefDir- DUL-
+		Link Control 0: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0 IsocEn- LSEn- ExtCTL- 64b-
+		Link Config 0: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut- LWI=16bit DwFcInEn- LWO=16bit DwFcOutEn-
+		Link Control 1: CFlE- CST- CFE- <LkFail+ Init- EOC+ TXO+ <CRCErr=0 IsocEn- LSEn- ExtCTL- 64b-
+		Link Config 1: MLWI=8bit DwFcIn- MLWO=8bit DwFcOut- LWI=8bit DwFcInEn- LWO=8bit DwFcOutEn-
+		Revision ID: 3.00
+		Link Frequency 0: [b]
+		Link Error 0: <Prot- <Ovfl- <EOC- CTLTm-
+		Link Frequency Capability 0: 200MHz+ 300MHz- 400MHz+ 500MHz- 600MHz+ 800MHz+ 1.0GHz+ 1.2GHz+ 1.4GHz- 1.6GHz- Vend-
+		Feature Capability: IsocFC- LDTSTOP+ CRCTM- ECTLT- 64bA- UIDRD-
+		Link Frequency 1: 200MHz
+		Link Error 1: <Prot- <Ovfl- <EOC- CTLTm-
+		Link Frequency Capability 1: 200MHz- 300MHz- 400MHz- 500MHz- 600MHz- 800MHz- 1.0GHz- 1.2GHz- 1.4GHz- 1.6GHz- Vend-
+		Error Handling: PFlE- OFlE- PFE- OFE- EOCFE- RFE- CRCFE- SERRFE- CF- RE- PNFE- ONFE- EOCNFE- RNFE- CRCNFE- SERRNFE-
+		Prefetchable memory behind bridge Upper: 00-00
+		Bus Number: 00
+	Capabilities: [40] HyperTransport: Retry Mode
+	Capabilities: [54] HyperTransport: UnitID Clumping
+	Capabilities: [9c] HyperTransport: #1a
+	Kernel modules: ati-agp
+
+00:02.0 PCI bridge: ATI Technologies Inc RD790 PCI to PCI bridge (external gfx0 port A) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=00, secondary=01, subordinate=02, sec-latency=0
+	I/O behind bridge: 0000c000-0000cfff
+	Memory behind bridge: b0000000-cfffffff
+	Prefetchable memory behind bridge: 00000000fde00000-00000000fdefffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+	Capabilities: [50] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [58] Express (v2) Root Port (Slot-), MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+			ExtTag+ RBE+ FLReset-
+		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+			MaxPayload 128 bytes, MaxReadReq 128 bytes
+		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+		LnkCap:	Port #0, Speed 5GT/s, Width x16, ASPM L0s L1, Latency L0 <64ns, L1 <1us
+			ClockPM- Suprise- LLActRep+ BwNot+
+		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk+ DLActive+ BWMgmt+ ABWMgmt-
+		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+		RootCap: CRSVisible-
+		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+	Capabilities: [a0] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
+		Address: fee0300c  Data: 41c9
+	Capabilities: [b0] Subsystem: ATI Technologies Inc Device 5956
+	Capabilities: [b8] HyperTransport: MSI Mapping Enable+ Fixed+
+	Capabilities: [100] Vendor Specific Information <?>
+	Capabilities: [110] Virtual Channel <?>
+	Kernel driver in use: pcieport-driver
+	Kernel modules: shpchp
+
+00:04.0 PCI bridge: ATI Technologies Inc RD790 PCI to PCI bridge (PCI express gpp port A) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=00, secondary=03, subordinate=04, sec-latency=0
+	I/O behind bridge: 0000b000-0000bfff
+	Memory behind bridge: fdd00000-fddfffff
+	Prefetchable memory behind bridge: 00000000fdc00000-00000000fdcfffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+	Capabilities: [50] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [58] Express (v2) Root Port (Slot-), MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+			ExtTag+ RBE+ FLReset-
+		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+			MaxPayload 128 bytes, MaxReadReq 128 bytes
+		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+		LnkCap:	Port #0, Speed 5GT/s, Width x4, ASPM L0s L1, Latency L0 <64ns, L1 <1us
+			ClockPM- Suprise- LLActRep+ BwNot+
+		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive+ BWMgmt+ ABWMgmt-
+		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+		RootCap: CRSVisible-
+		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+	Capabilities: [a0] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
+		Address: fee0300c  Data: 41d1
+	Capabilities: [b0] Subsystem: ATI Technologies Inc Device 5956
+	Capabilities: [b8] HyperTransport: MSI Mapping Enable+ Fixed+
+	Capabilities: [100] Vendor Specific Information <?>
+	Capabilities: [110] Virtual Channel <?>
+	Kernel driver in use: pcieport-driver
+	Kernel modules: shpchp
+
+00:09.0 PCI bridge: ATI Technologies Inc RD790 PCI to PCI bridge (PCI express gpp port E) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=00, secondary=05, subordinate=05, sec-latency=0
+	I/O behind bridge: 0000e000-0000efff
+	Memory behind bridge: fda00000-fdafffff
+	Prefetchable memory behind bridge: 00000000fdf00000-00000000fdffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+	Capabilities: [50] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [58] Express (v2) Root Port (Slot-), MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+			ExtTag+ RBE+ FLReset-
+		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+			MaxPayload 128 bytes, MaxReadReq 128 bytes
+		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+		LnkCap:	Port #1, Speed 5GT/s, Width x2, ASPM L0s L1, Latency L0 <64ns, L1 <1us
+			ClockPM- Suprise- LLActRep+ BwNot+
+		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive+ BWMgmt+ ABWMgmt-
+		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+		RootCap: CRSVisible-
+		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+	Capabilities: [a0] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
+		Address: fee0300c  Data: 41d9
+	Capabilities: [b0] Subsystem: ATI Technologies Inc Device 5956
+	Capabilities: [b8] HyperTransport: MSI Mapping Enable+ Fixed+
+	Capabilities: [100] Vendor Specific Information <?>
+	Capabilities: [110] Virtual Channel <?>
+	Kernel driver in use: pcieport-driver
+	Kernel modules: shpchp
+
+00:0b.0 PCI bridge: ATI Technologies Inc RD790 PCI to PCI bridge (external gfx1 port A) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=00, secondary=06, subordinate=06, sec-latency=0
+	I/O behind bridge: 0000d000-0000dfff
+	Memory behind bridge: f9000000-fbffffff
+	Prefetchable memory behind bridge: 00000000d0000000-00000000dfffffff
+	Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA- VGA+ MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+	Capabilities: [50] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [58] Express (v2) Root Port (Slot-), MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+			ExtTag+ RBE+ FLReset-
+		DevCtl:	Report errors: Correctable+ Non-Fatal+ Fatal+ Unsupported+
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+			MaxPayload 128 bytes, MaxReadReq 128 bytes
+		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+		LnkCap:	Port #0, Speed 5GT/s, Width x16, ASPM L0s L1, Latency L0 <64ns, L1 <1us
+			ClockPM- Suprise- LLActRep+ BwNot+
+		LnkCtl:	ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x16, TrErr- Train- SlotClk+ DLActive+ BWMgmt+ ABWMgmt-
+		RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+		RootCap: CRSVisible-
+		RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+	Capabilities: [a0] Message Signalled Interrupts: Mask- 64bit- Queue=0/0 Enable+
+		Address: fee0300c  Data: 41e1
+	Capabilities: [b0] Subsystem: ATI Technologies Inc Device 5956
+	Capabilities: [b8] HyperTransport: MSI Mapping Enable+ Fixed+
+	Capabilities: [100] Vendor Specific Information <?>
+	Capabilities: [110] Virtual Channel <?>
+	Kernel driver in use: pcieport-driver
+	Kernel modules: shpchp
+
+00:11.0 SATA controller: ATI Technologies Inc SB700/SB800 SATA Controller [IDE mode] (prog-if 01 [AHCI 1.0])
+	Subsystem: ATI Technologies Inc SB700/SB800 SATA Controller [IDE mode]
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 64
+	Interrupt: pin A routed to IRQ 22
+	Region 0: I/O ports at ff00 [size=8]
+	Region 1: I/O ports at fe00 [size=4]
+	Region 2: I/O ports at fd00 [size=8]
+	Region 3: I/O ports at fc00 [size=4]
+	Region 4: I/O ports at fb00 [size=16]
+	Region 5: Memory at fe02f000 (32-bit, non-prefetchable) [size=1K]
+	Capabilities: [60] Power Management version 2
+		Flags: PMEClk- DSI+ D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [70] SATA HBA <?>
+	Kernel driver in use: ahci
+	Kernel modules: ahci
+
+00:14.0 SMBus: ATI Technologies Inc SBx00 SMBus Controller (rev 3a)
+	Subsystem: ATI Technologies Inc SBx00 SMBus Controller
+	Control: I/O+ Mem+ BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort+ <MAbort- >SERR+ <PERR- INTx-
+	Capabilities: [b0] HyperTransport: MSI Mapping Enable- Fixed+
+	Kernel driver in use: piix4_smbus
+	Kernel modules: i2c-piix4
+
+00:14.1 IDE interface: ATI Technologies Inc SB700/SB800 IDE Controller (prog-if 8a [Master SecP PriP])
+	Subsystem: ATI Technologies Inc SB700/SB800 IDE Controller
+	Control: I/O+ Mem- BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 64
+	Interrupt: pin A routed to IRQ 16
+	Region 0: I/O ports at 01f0 [size=8]
+	Region 1: I/O ports at 03f4 [size=1]
+	Region 2: I/O ports at 0170 [size=8]
+	Region 3: I/O ports at 0374 [size=1]
+	Region 4: I/O ports at fa00 [size=16]
+	Capabilities: [70] Message Signalled Interrupts: Mask- 64bit- Queue=0/1 Enable-
+		Address: 00000000  Data: 0000
+	Kernel driver in use: pata_atiixp
+	Kernel modules: atiixp, pata_atiixp
+
+00:14.2 Audio device: ATI Technologies Inc SBx00 Azalia
+	Subsystem: ATI Technologies Inc Device 4384
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 64, Cache Line Size: 32 bytes
+	Interrupt: pin ? routed to IRQ 16
+	Region 0: Memory at fe024000 (64-bit, non-prefetchable) [size=16K]
+	Capabilities: [50] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=55mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Kernel driver in use: HDA Intel
+	Kernel modules: snd-hda-intel
+
+00:14.3 ISA bridge: ATI Technologies Inc SB700/SB800 LPC host controller
+	Subsystem: ATI Technologies Inc Device 4383
+	Control: I/O+ Mem+ BusMaster+ SpecCycle+ MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz+ UDF- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+
+00:14.4 PCI bridge: ATI Technologies Inc SBx00 PCI to PCI Bridge (prog-if 01 [Subtractive decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop+ ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz+ UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 64
+	Bus: primary=00, secondary=07, subordinate=07, sec-latency=64
+	I/O behind bridge: 0000a000-0000afff
+	Memory behind bridge: fc800000-fd7fffff
+	Prefetchable memory behind bridge: fdb00000-fdbfffff
+	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+
+00:18.0 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] HyperTransport Configuration
+	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Capabilities: [80] HyperTransport: Host or Secondary Interface
+		Command: WarmRst+ DblEnd- DevNum=0 ChainSide- HostHide+ Slave- <EOCErr- DUL-
+		Link Control: CFlE- CST- CFE- <LkFail- Init+ EOC- TXO- <CRCErr=0 IsocEn- LSEn+ ExtCTL- 64b-
+		Link Config: MLWI=16bit DwFcIn- MLWO=16bit DwFcOut- LWI=16bit DwFcInEn- LWO=16bit DwFcOutEn-
+		Revision ID: 3.00
+		Link Frequency: [b]
+		Link Error: <Prot- <Ovfl- <EOC- CTLTm-
+		Link Frequency Capability: 200MHz+ 300MHz- 400MHz+ 500MHz- 600MHz+ 800MHz+ 1.0GHz+ 1.2GHz+ 1.4GHz- 1.6GHz- Vend-
+		Feature Capability: IsocFC+ LDTSTOP+ CRCTM- ECTLT- 64bA+ UIDRD- ExtRS- UCnfE-
+
+00:18.1 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] Address Map
+	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+
+00:18.2 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] DRAM Controller
+	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+
+00:18.3 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] Miscellaneous Control
+	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Capabilities: [f0] Secure device <?>
+
+00:18.4 Host bridge: Advanced Micro Devices [AMD] Family 10h [Opteron, Athlon64, Sempron] Link Control
+	Control: I/O- Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+
+01:00.0 PCI bridge: Intel Corporation Device 032d (rev 09) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=01, secondary=02, subordinate=02, sec-latency=64
+	I/O behind bridge: 0000c000-0000cfff
+	Memory behind bridge: b0000000-cfffffff
+	Prefetchable memory behind bridge: 00000000fde00000-00000000fdefffff
+	Secondary status: 66MHz+ FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+	Capabilities: [44] Express (v1) PCI/PCI-X Bridge, MSI 00
+		DevCap:	MaxPayload 256 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+			ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal+ Unsupported-
+			RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop- BrConfRtry-
+			MaxPayload 128 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr- TransPend-
+		LnkCap:	Port #0, Speed 2.5GT/s, Width x8, ASPM L0s, Latency L0 <256ns, L1 unlimited
+			ClockPM- Suprise- LLActRep- BwNot-
+		LnkCtl:	ASPM Disabled; Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x4, TrErr- Train- SlotClk- DLActive- BWMgmt- ABWMgmt-
+	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [6c] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [d8] PCI-X bridge device
+		Secondary Status: 64bit+ 133MHz+ SCD- USC- SCO- SRD- Freq=conv
+		Status: Dev=01:00.0 64bit- 133MHz- SCD- USC- SCO- SRD-
+		Upstream: Capacity=65535 CommitmentLimit=65535
+		Downstream: Capacity=65535 CommitmentLimit=65535
+	Capabilities: [100] Advanced Error Reporting <?>
+	Capabilities: [300] Power Budgeting <?>
+	Kernel modules: shpchp
+
+02:0c.0 Network controller: VMIC Device 5565
+	Subsystem: PLD APPLICATIONS Device 0080
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz+ UDF- FastB2B- ParErr- DEVSEL=slow >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 64
+	Interrupt: pin A routed to IRQ 18
+	Region 0: Memory at cffff000 (32-bit, non-prefetchable) [size=512]
+	Region 1: I/O ports at ce00 [size=256]
+	Region 2: Memory at cfffe000 (32-bit, non-prefetchable) [size=64]
+	Region 3: Memory at b0000000 (32-bit, non-prefetchable) [size=256M]
+	Capabilities: [78] Power Management version 3
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+
+03:00.0 PCI bridge: Texas Instruments XIO2000(A)/XIO2200(A) PCI Express-to-PCI Bridge (rev 03) (prog-if 00 [Normal decode])
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Bus: primary=03, secondary=04, subordinate=04, sec-latency=64
+	I/O behind bridge: 0000b000-0000bfff
+	Memory behind bridge: fdd00000-fddfffff
+	Prefetchable memory behind bridge: 00000000fdc00000-00000000fdcfffff
+	Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+	BridgeCtl: Parity- SERR- NoISA- VGA- MAbort- >Reset- FastB2B-
+		PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+	Capabilities: [50] Power Management version 2
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+		Bridge: PM- B3+
+	Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+ Queue=0/4 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [80] Subsystem: Gammagraphx, Inc. Device 0000
+	Capabilities: [90] Express (v1) PCI/PCI-X Bridge, MSI 00
+		DevCap:	MaxPayload 512 bytes, PhantFunc 0, Latency L0s <4us, L1 <64us
+			ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+			RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop+ BrConfRtry-
+			MaxPayload 128 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+		LnkCap:	Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <16us
+			ClockPM- Suprise- LLActRep- BwNot-
+		LnkCtl:	ASPM Disabled; Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+	Capabilities: [100] Advanced Error Reporting <?>
+	Kernel modules: shpchp
+
+05:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8056 PCI-E Gigabit Ethernet Controller (rev 12)
+	Subsystem: DFI Inc Device 1102
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 219
+	Region 0: Memory at fdafc000 (64-bit, non-prefetchable) [size=16K]
+	Region 2: I/O ports at ee00 [size=256]
+	[virtual] Expansion ROM at fdf00000 [disabled] [size=128K]
+	Capabilities: [48] Power Management version 3
+		Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+		Status: D0 PME-Enable- DSel=0 DScale=1 PME-
+	Capabilities: [50] Vital Product Data <?>
+	Capabilities: [5c] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable+
+		Address: 00000000fee0f00c  Data: 4132
+	Capabilities: [e0] Express (v1) Legacy Endpoint, MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s unlimited, L1 unlimited
+			ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
+		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+			RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+			MaxPayload 128 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr+ UncorrErr- FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+		LnkCap:	Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <256ns, L1 unlimited
+			ClockPM+ Suprise- LLActRep- BwNot-
+		LnkCtl:	ASPM Disabled; RCB 128 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+	Capabilities: [100] Advanced Error Reporting <?>
+	Kernel driver in use: sky2
+	Kernel modules: sky2
+
+06:00.0 VGA compatible controller: nVidia Corporation G70 [GeForce 7800 GT] (rev a1) (prog-if 00 [VGA controller])
+	Subsystem: eVga.com. Corp. Device c517
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 0
+	Interrupt: pin A routed to IRQ 19
+	Region 0: Memory at f9000000 (32-bit, non-prefetchable) [size=16M]
+	Region 1: Memory at d0000000 (64-bit, prefetchable) [size=256M]
+	Region 3: Memory at fa000000 (64-bit, non-prefetchable) [size=16M]
+	Region 5: I/O ports at df00 [size=128]
+	[virtual] Expansion ROM at fb000000 [disabled] [size=128K]
+	Capabilities: [60] Power Management version 2
+		Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0-,D1-,D2-,D3hot-,D3cold-)
+		Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+	Capabilities: [68] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+		Address: 0000000000000000  Data: 0000
+	Capabilities: [78] Express (v1) Endpoint, MSI 00
+		DevCap:	MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <4us
+			ExtTag- AttnBtn- AttnInd- PwrInd- RBE- FLReset-
+		DevCtl:	Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+			RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+			MaxPayload 128 bytes, MaxReadReq 512 bytes
+		DevSta:	CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+		LnkCap:	Port #0, Speed 2.5GT/s, Width x16, ASPM L0s L1, Latency L0 <256ns, L1 <4us
+			ClockPM- Suprise- LLActRep- BwNot-
+		LnkCtl:	ASPM Disabled; RCB 128 bytes Disabled- Retrain- CommClk+
+			ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+		LnkSta:	Speed 2.5GT/s, Width x16, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+	Capabilities: [100] Virtual Channel <?>
+	Capabilities: [128] Power Budgeting <?>
+	Kernel driver in use: nvidia
+	Kernel modules: nvidiafb, nvidia
+
+07:05.0 Class ff00: Compro Computer Services, Inc. Device 4610 (rev 03)
+	Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 64
+	Interrupt: pin A routed to IRQ 20
+	Region 0: I/O ports at af00 [size=64]
+	Region 1: Memory at fd7ff000 (32-bit, non-prefetchable) [size=4K]
+
+07:07.0 Intelligent controller [0e80]: PLX Technology, Inc. Device 0480 (rev 52)
+	Subsystem: Compro Computer Services, Inc. Device 4620
+	Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+	Status: Cap+ 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+	Latency: 64, Cache Line Size: 32 bytes
+	Interrupt: pin A routed to IRQ 22
+	BIST result: 00
+	Region 0: Memory at fd7fe000 (32-bit, non-prefetchable) [size=1K]
+	Region 1: Memory at fc800000 (32-bit, non-prefetchable) [size=8M]
+	Region 2: Memory at fd7fd000 (32-bit, non-prefetchable) [size=16]
+	Capabilities: [40] #00 [0000]
+	Capabilities: [54] #00 [0080]
+	Capabilities: [58] Vital Product Data <?>
+
+
+
+--------------060304020500030809030202--
