@@ -1,40 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZIKRcM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbZIKReM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbZIKRcM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 13:32:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752806AbZIKRcI
+	id S1754588AbZIKReM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 13:34:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZIKReL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 13:32:08 -0400
-Received: from mail-in-09.arcor-online.net ([151.189.21.49]:58143 "EHLO
-	mail-in-09.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751519AbZIKRcI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 13:32:08 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-14.arcor-online.net 577D828B0B7
-Message-ID: <4AAA899B.5080705@arcor.de>
-Date: Fri, 11 Sep 2009 20:32:11 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
+	Fri, 11 Sep 2009 13:34:11 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16717 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753130AbZIKReL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 13:34:11 -0400
+Date: Fri, 11 Sep 2009 23:03:07 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Alan Cox <alan@linux.intel.com>, rusty@rustcorp.com.au,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
+	generic guest and host communication
+Message-ID: <20090911173307.GB27046@amit-x200.redhat.com>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <1252678386-17404-2-git-send-email-amit.shah@redhat.com> <20090911170010.34c80f2d@linux.intel.com> <20090911163806.GB25535@amit-x200.redhat.com> <4AAA8838.1080106@codemonkey.ws>
 MIME-Version: 1.0
-To: Jon Masters <jonathan@jonmasters.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: LKML Summary Podcast
-References: <1252609203.30338.138.camel@perihelion.bos.jonmasters.org>
-In-Reply-To: <1252609203.30338.138.camel@perihelion.bos.jonmasters.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAA8838.1080106@codemonkey.ws>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/10/2009 10:00 PM, Jon Masters wrote:
-> Hi folks,
+On (Fri) Sep 11 2009 [12:26:16], Anthony Liguori wrote:
+> Amit Shah wrote:
+>> Right; there was some discussion about this. A few alternatives were
+>> suggested like
+>>
+>> - udev scripts to create symlinks from ports to function, like:
+>>
+>>   /dev/vcon3 -> /dev/virtio-console/clipboard
+>>
+>> - Some fqdn-like hierarchy, like
+>>
+>>   /dev/virtio-console/com/redhat/clipboard
+>>
+>>   which again can be created by udev scripts
+>>   
 >
-> For those who enjoy listening to the podcast...good news. I am nearly up
-> to date with the last two week's worth of episodes and expect to do a
-> massive push tonight. Sorry for the lag - it's tough sometimes :)
+> And I dislike all of them.  What I'd rather have is these devices  
+> exposed as tty's with a sys attribute that exposed the name of the 
+> device.
 
-With that kind of "objectivity" in your comments about the experimental 
-BFS and Con's work, I didn't have any patience left to listen to any 
-more of it.  Thanks, but I'll pass.
+A sysfs attribute can even be exposed with a char device.
+
+I didn't want to venture more into tty after the hvc thing and the
+unexpected bugs that crept up (memory corruption, which is now fixed in
+linux-next). I'd rather just keep it limited to the subsystems I know.
+
+		Amit
