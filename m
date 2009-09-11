@@ -1,147 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZIKQA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbZIKQA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbZIKQA0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752749AbZIKQAZ
+	id S1754596AbZIKQA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZIKQA2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:00:25 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:41651 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752100AbZIKQAX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:00:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=VDL+oiTG7tDpGGmRCdsOGKbeIfJj1Pv+AELZ5J1phdhLehPIXcF0/hU/u1MlniDJxl
-         FX0VhVA2fElr0Ntb5fCqjp94mxXmcBrYr/TUH6PXFeMDYM5j4Ax37iUF52lwIlHATtVJ
-         VdLcvka/+nSqRoXMGqVRKbvpPv9n3QfBcQcgY=
-Message-ID: <4AAA7415.5080204@gmail.com>
-Date: Fri, 11 Sep 2009 12:00:21 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Fri, 11 Sep 2009 12:00:28 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:51451 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752749AbZIKQA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:00:26 -0400
+Message-ID: <4AAA74D2.9060203@redhat.com>
+Date: Fri, 11 Sep 2009 12:03:30 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: "Ira W. Snyder" <iws@ovro.caltech.edu>
-CC: "Michael S. Tsirkin" <mst@redhat.com>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu>
-In-Reply-To: <20090908172035.GB319@ovro.caltech.edu>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig44D4489987F3DAB472725FC4"
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH tracing/kprobes 0/7] tracing/kprobes: kprobe-based	event
+ tracer update and perf support
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090911013332.GB16396@nowhere>
+In-Reply-To: <20090911013332.GB16396@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig44D4489987F3DAB472725FC4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Frederic Weisbecker wrote:
+> On Thu, Sep 10, 2009 at 07:52:58PM -0400, Masami Hiramatsu wrote:
+>> Hi Frederic,
+>>
+>> This series fixes bugs and upgrades kprobe-based event tracer
+>> as a dynamic event tracer on ftrace/perf tools. This also enhances
+>> tracer output format to show each argument name and event name on
+>> each entry.
+>>
+>> With this series, users can add trace events dynamically on ftrace
+>> and use those events with perf tools as below.
+>>
+>> (Step.1) Define new events under new group
+>>
+>> $ echo p:mygroup/myprobe do_sys_open dfd=a0 filename=a1 flags=a2 mode=a3 \
+>>   >  /debug/tracing/kprobes_events
+>> $ echo r:mygroup/myretprobe do_sys_open rv>>  /debug/tracing/kprobes_events
+>> $ cat /debug/tracing/kprobes_events
+>> p:myprobe do_sys_open+0 dfd=a0 filename=a1 flags=a2 mode=a3
+>> r:myretprobe do_sys_open+0 rv=rv
+>>
+>> (You can see that each argument has its name.)
+>>
+>>
+>> (Step.2) Perf shows new events
+>>
+>> $ perf list
+>> ...
+>>     mygroup:myretprobe                         [Tracepoint event]
+>>     mygroup:myprobe                            [Tracepoint event]
+>> ...
+>>
+>>
+>> (Step.3) Record events with perf
+>>
+>> $ perf record -f -e mygroup:myprobe:record -F 1 -a ls
+>> ...
+>> [ perf record: Captured and wrote 0.081 MB perf.data (~3544 samples) ]
+>>
+>>
+>> (Step.4) Perf trace shows the result
+>>
+>> $ perf trace
+>> version = 0.5
+>>              perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=810d3f7 flags=98800 mode=1
+>>              perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=bff7650c flags=8000 mode=1b6
+>>              perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=bff7650c flags=98800 mode=bff7450c
+>>              perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=bff7650c flags=8000 mode=1b6
+>
+>
+> Nice!
+>
+> May be another step in the todo-list that would be nice: define the format
+> for a type. Like it's done from ftrace events.
 
-Ira W. Snyder wrote:
-> On Mon, Sep 07, 2009 at 01:15:37PM +0300, Michael S. Tsirkin wrote:
->> On Thu, Sep 03, 2009 at 11:39:45AM -0700, Ira W. Snyder wrote:
->>> On Thu, Aug 27, 2009 at 07:07:50PM +0300, Michael S. Tsirkin wrote:
->>>> What it is: vhost net is a character device that can be used to redu=
-ce
->>>> the number of system calls involved in virtio networking.
->>>> Existing virtio net code is used in the guest without modification.
->>>>
->>>> There's similarity with vringfd, with some differences and reduced s=
-cope
->>>> - uses eventfd for signalling
->>>> - structures can be moved around in memory at any time (good for mig=
-ration)
->>>> - support memory table and not just an offset (needed for kvm)
->>>>
->>>> common virtio related code has been put in a separate file vhost.c a=
-nd
->>>> can be made into a separate module if/when more backends appear.  I =
-used
->>>> Rusty's lguest.c as the source for developing this part : this suppl=
-ied
->>>> me with witty comments I wouldn't be able to write myself.
->>>>
->>>> What it is not: vhost net is not a bus, and not a generic new system=
+Thanks!
 
->>>> call. No assumptions are made on how guest performs hypercalls.
->>>> Userspace hypervisors are supported as well as kvm.
->>>>
->>>> How it works: Basically, we connect virtio frontend (configured by
->>>> userspace) to a backend. The backend could be a network device, or a=
-
->>>> tun-like device. In this version I only support raw socket as a back=
-end,
->>>> which can be bound to e.g. SR IOV, or to macvlan device.  Backend is=
-
->>>> also configured by userspace, including vlan/mac etc.
->>>>
->>>> Status:
->>>> This works for me, and I haven't see any crashes.
->>>> I have done some light benchmarking (with v4), compared to userspace=
-, I
->>>> see improved latency (as I save up to 4 system calls per packet) but=
- not
->>>> bandwidth/CPU (as TSO and interrupt mitigation are not supported).  =
-For
->>>> ping benchmark (where there's no TSO) troughput is also improved.
->>>>
->>>> Features that I plan to look at in the future:
->>>> - tap support
->>>> - TSO
->>>> - interrupt mitigation
->>>> - zero copy
->>>>
->>> Hello Michael,
->>>
->>> I've started looking at vhost with the intention of using it over PCI=
- to
->>> connect physical machines together.
->>>
->>> The part that I am struggling with the most is figuring out which par=
-ts
->>> of the rings are in the host's memory, and which parts are in the
->>> guest's memory.
->> All rings are in guest's memory, to match existing virtio code.
->=20
-> Ok, this makes sense.
->=20
->> vhost
->> assumes that the memory space of the hypervisor userspace process cove=
-rs
->> the whole of guest memory.
->=20
-> Is this necessary? Why? The assumption seems very wrong when you're
-> doing data transport between two physical systems via PCI.
-
-FWIW: VBUS handles this situation via the "memctx" abstraction.  IOW,
-the memory is not assumed to be a userspace address.  Rather, it is a
-memctx-specific address, which can be userspace, or any other type
-(including hardware, dma-engine, etc).  As long as the memctx knows how
-to translate it, it will work.
-
-Kind Regards,
--Greg
+BTW, I'm not sure what the type means. Each event already has its own
+event ID and event_call. Could you tell me which part of ftrace I should
+refer to ?
 
 
---------------enig44D4489987F3DAB472725FC4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+>>
+>>
+>> (Step.5) You can also use return probes.
+>>
+>> $ perf record -f -e mygroup:myretprobe:record -F 1 -a ls
+>> ...
+>> [ perf record: Captured and wrote 0.081 MB perf.data (~3544 samples) ]
+>> $ perf trace
+>> version = 0.5
+>>              perf-1408  [000]     0.000000: myretprobe: (c04b0a5c<- c04b0b7d) rv=b
+>>              perf-1408  [000]     0.000000: myretprobe: (c04b0a5c<- c04b0b7d) rv=c
+>>              perf-1408  [000]     0.000000: myretprobe: (c04b0a5c<- c04b0b7d) rv=d
+>>              perf-1408  [000]     0.000000: myretprobe: (c04b0a5c<- c04b0b7d) rv=c
+>>
+>>
+>> TODO:
+>> - Implement perf kprobe command to help defining new probes.
+>
+>
+>
+> Yeah!
+>
+> I wonder what could be the best workflow to use it.
+>
+> Imagine the following steps:
+>
+> - perf kprobe = define kprobes using C expression
+> - perf record -e our_kprobes
+> - perf trace
+>
+> That's way too much.
+> Especially it's sad to be forced to define a kprobe, then
+> get back its name, use it with record, and eventually
+> unsheathe perf trace.
+>
+> I guess we should choose between the low level, very granular
+> but uninviting method "kprobe + record + trace" and also an all
+> in one quick approach.
+>
+> And that could be chosen from perf kprobe:
+>
+> Low level:
+>
+> perf kprobe --define-only [-p|-r] [probe_name] -a1 [arg1] -a2 [arg2] \
+> 	    --format="%s %...."
+>
+> perf record -e kprobes:probe_name
+> perf trace
+>
+> Quick:
+>
+> perf kprobe -p probe_name -a1 ..... cmdline| -a
+>
+> And after the profiled task is finished, it could launch perf trace
+> by itself (or wait for a Ctrl + C if -a/wide profiling)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+Another thought: expand record subcommand.
 
-iEYEARECAAYFAkqqdBYACgkQP5K2CMvXmqG10wCeMsWj8pZ67IwUC/p5CWgPbkcS
-1E8An17le37yKs06FqAvx8ohzQF+yphQ
-=VaYm
------END PGP SIGNATURE-----
+perf record -E "p|r:probe_name,place,arg1,arg2..."
+perf trace
 
---------------enig44D4489987F3DAB472725FC4--
+And kprobe accept multiple definitions
+
+perf kprobe -E "p|r:probe_name,place,arg1,arg2..." -E ...
+
+
+
+Thank you,
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
