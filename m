@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753281AbZIKA3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZIKAdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753281AbZIKA3K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 20:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752945AbZIKA3I
+	id S1752181AbZIKAdv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 20:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZIKAdt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 20:29:08 -0400
-Received: from kroah.org ([198.145.64.141]:38056 "EHLO coco.kroah.org"
+	Thu, 10 Sep 2009 20:33:49 -0400
+Received: from kroah.org ([198.145.64.141]:33150 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752472AbZIKA3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 20:29:01 -0400
-Date: Thu, 10 Sep 2009 17:26:16 -0700
+	id S1752353AbZIKAdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 20:33:49 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Sep 10 17:30:38 2009
+Message-Id: <20090911003038.700143413@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 10 Sep 2009 17:29:24 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/22] 2.6.30.7-stable review
-Message-ID: <20090911002616.GA12087@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
+       akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
+       =?ISO-8859-15?q?Krzysztof=20Ha=C5=82asa?= <khc@pm.waw.pl>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 1/4] E100: fix interaction with swiotlb on X86.
+References: <20090911002923.745284267@mini.kroah.org>
+Content-Disposition: inline; filename=e100-fix-interaction-with-swiotlb-on-x86.patch
+In-Reply-To: <20090911003124.GA12842@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.30.7 release.
-There are 22 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
+From: Krzysztof Hałasa <khc@pm.waw.pl>
 
-Responses should be made by Sunday, September 12, 2009 00:00:00 UTC.
-Anything received after that time might be too late.
+[ Upstream commit 6ff9c2e7fa8ca63a575792534b63c5092099c286 ]
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.30.7-rc1.gz
-and the diffstat can be found below.
+E100 places it's RX packet descriptors inside skb->data and uses them
+with bidirectional streaming DMA mapping. Data in descriptors is
+accessed simultaneously by the chip (writing status and size when
+a packet is received) and CPU (reading to check if the packet was
+received). This isn't a valid usage of PCI DMA API, which requires use
+of the coherent (consistent) memory for such purpose. Unfortunately e100
+chips working in "simplified" RX mode have to store received data
+directly after the descriptor. Fixing the driver to conform to the API
+would require using unsupported "flexible" RX mode or receiving data
+into a coherent memory and using CPU to copy it to network buffers.
+
+This patch, while not yet making the driver conform to the PCI DMA API,
+allows it to work correctly on X86 with swiotlb (while not breaking
+other architectures).
+
+Signed-off-by: Krzysztof Hałasa <khc@pm.waw.pl>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/net/e100.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/drivers/net/e100.c
++++ b/drivers/net/e100.c
+@@ -1842,7 +1842,7 @@ static int e100_rx_indicate(struct nic *
+ 				nic->ru_running = RU_SUSPENDED;
+ 		pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
+ 					       sizeof(struct rfd),
+-					       PCI_DMA_BIDIRECTIONAL);
++					       PCI_DMA_FROMDEVICE);
+ 		return -ENODATA;
+ 	}
+ 
 
 
-thanks,
-
-greg k-h
-
------------
-
- Makefile                            |    2 +-
- arch/sparc/include/asm/pgtable_64.h |   12 ++++-
- arch/sparc/kernel/irq_64.c          |    2 +-
- arch/sparc/kernel/ktlb.S            |   42 +++++++++++++++--
- arch/sparc/kernel/nmi.c             |    2 +-
- arch/sparc/kernel/sys32.S           |    2 +-
- arch/sparc/mm/init_64.c             |   43 +++++++++--------
- arch/sparc/mm/init_64.h             |    7 ++-
- arch/sparc/prom/misc_64.c           |    2 +-
- arch/sparc/prom/printf.c            |    7 +--
- drivers/md/dm-exception-store.c     |   13 +++++
- drivers/md/dm-exception-store.h     |    4 ++
- drivers/md/dm-raid1.c               |    8 +++-
- drivers/md/dm-snap-persistent.c     |   88 +++++++++++++++++++++--------------
- drivers/net/e100.c                  |    2 +-
- drivers/net/ppp_generic.c           |   34 +++++++------
- drivers/net/pppol2tp.c              |    1 +
- drivers/pci/iov.c                   |   23 +++++++++
- drivers/pci/pci.h                   |   13 +++++
- drivers/pci/setup-bus.c             |    4 +-
- drivers/pci/setup-res.c             |    6 +-
- drivers/scsi/sd.c                   |   45 ++++++++---------
- fs/jffs2/wbuf.c                     |   10 ++++
- fs/nilfs2/btnode.c                  |    2 +-
- mm/slub.c                           |    4 +-
- net/core/net_namespace.c            |    2 +-
- net/dccp/proto.c                    |    1 +
- net/ipv4/ip_gre.c                   |    2 +-
- sound/pci/oxygen/oxygen_lib.c       |    3 +
- sound/pci/oxygen/oxygen_pcm.c       |    2 +
- 30 files changed, 264 insertions(+), 124 deletions(-)
