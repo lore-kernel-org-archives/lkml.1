@@ -1,134 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753609AbZIKOrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752620AbZIKOp5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753609AbZIKOrE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZIKOrD
+	id S1752620AbZIKOp5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:45:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752021AbZIKOp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:47:03 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:25319 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbZIKOrC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:47:02 -0400
-Message-ID: <4AAA6255.70807@redhat.com>
-Date: Fri, 11 Sep 2009 16:44:37 +0200
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [RFC] IO scheduler based IO controller V9
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA918C1.6070907@redhat.com> <20090910205227.GB3617@redhat.com> <20090910205657.GD3617@redhat.com> <4AAA4DA7.8010909@redhat.com> <20090911143040.GB6758@redhat.com>
-In-Reply-To: <20090911143040.GB6758@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Sep 2009 10:45:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44189 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751883AbZIKOp4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:45:56 -0400
+Date: Fri, 11 Sep 2009 15:47:14 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: markh@compro.net
+Cc: linux-pci@vger.kernel.org, Mark Hounschell <dmarkh@cfl.rr.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: problems doing direct dma from a pci device to pci-e device
+Message-ID: <20090911154714.70a94454@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AAA5B1F.3020103@compro.net>
+References: <4AAA5B1F.3020103@compro.net>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Fri, Sep 11, 2009 at 03:16:23PM +0200, Jerome Marchand wrote:
->> Vivek Goyal wrote:
->>> On Thu, Sep 10, 2009 at 04:52:27PM -0400, Vivek Goyal wrote:
->>>> On Thu, Sep 10, 2009 at 05:18:25PM +0200, Jerome Marchand wrote:
->>>>> Vivek Goyal wrote:
->>>>>> Hi All,
->>>>>>
->>>>>> Here is the V9 of the IO controller patches generated on top of 2.6.31-rc7.
->>>>>  
->>>>> Hi Vivek,
->>>>>
->>>>> I've run some postgresql benchmarks for io-controller. Tests have been
->>>>> made with 2.6.31-rc6 kernel, without io-controller patches (when
->>>>> relevant) and with io-controller v8 and v9 patches.
->>>>> I set up two instances of the TPC-H database, each running in their
->>>>> own io-cgroup. I ran two clients to these databases and tested on each
->>>>> that simple request:
->>>>> $ select count(*) from LINEITEM;
->>>>> where LINEITEM is the biggest table of TPC-H (6001215 entries,
->>>>> 720MB). That request generates a steady stream of IOs.
->>>>>
->>>>> Time is measure by psql (\timing switched on). Each test is run twice
->>>>> or more if there is any significant difference between the first two
->>>>> runs. Before each run, the cache is flush:
->>>>> $ echo 3 > /proc/sys/vm/drop_caches
->>>>>
->>>>>
->>>>> Results with 2 groups of same io policy (BE) and same io weight (1000):
->>>>>
->>>>> 	w/o io-scheduler	io-scheduler v8		io-scheduler v9
->>>>> 	first	second		first	second		first	second
->>>>> 	DB	DB		DB	DB		DB	DB
->>>>>
->>>>> CFQ	48.4s	48.4s		48.2s	48.2s		48.1s	48.5s
->>>>> Noop	138.0s	138.0s		48.3s	48.4s		48.5s	48.8s
->>>>> AS	46.3s	47.0s		48.5s	48.7s		48.3s	48.5s
->>>>> Deadl.	137.1s	137.1s		48.2s	48.3s		48.3s	48.5s
->>>>>
->>>>> As you can see, there is no significant difference for CFQ
->>>>> scheduler.
->>>> Thanks Jerome.  
->>>>
->>>>> There is big improvement for noop and deadline schedulers
->>>>> (why is that happening?).
->>>> I think because now related IO is in a single queue and it gets to run
->>>> for 100ms or so (like CFQ). So previously, IO from both the instances
->>>> will go into a single queue which should lead to more seeks as requests
->>>> from two groups will kind of get interleaved.
->>>>
->>>> With io controller, both groups have separate queues so requests from
->>>> both the data based instances will not get interleaved (This almost
->>>> becomes like CFQ where ther are separate queues for each io context
->>>> and for sequential reader, one io context gets to run nicely for certain
->>>> ms based on its priority).
->>>>
->>>>> The performance with anticipatory scheduler
->>>>> is a bit lower (~4%).
->>>>>
->>> Hi Jerome, 
->>>
->>> Can you also run the AS test with io controller patches and both the
->>> database in root group (basically don't put them in to separate group). I 
->>> suspect that this regression might come from that fact that we now have
->>> to switch between queues and in AS we wait for request to finish from
->>> previous queue before next queue is scheduled in and probably that is
->>> slowing down things a bit.., just a wild guess..
->>>
->> Hi Vivek,
->>
->> I guess that's not the reason. I got 46.6s for both DB in root group with
->> io-controller v9 patches. I also rerun the test with DB in different groups
->> and found about the same result as above (48.3s and 48.6s).
->>
-> 
-> Hi Jerome,
-> 
-> Ok, so when both the DB's are in root group (with io-controller V9
-> patches), then you get 46.6 seconds time for both the DBs. That means there
-> is no regression in this case. In this case there is only one queue of 
-> root group and AS is running timed read/write batches on this queue.
-> 
-> But when both the DBs are put in separate groups then you get 48.3 and
-> 48.6 seconds respectively and we see regression. In this case there are
-> two queues belonging to each group. Elevator layer takes care of queue
-> group queue switch and AS runs timed read/write batches on these queues.
-> 
-> If it is correct, then it does not exclude the possiblity that it is queue
-> switching overhead between groups?
 
-Yes it's correct. I misunderstood you.
+> I now have an AM3 based DFI DK 790FXB-M3H5 motherboard. This board has 3 regular
+> PCI slots and 3 PCI-E (16x) slots. I also have a PCI-E (x4) version of the VMIC-5565
+> reflective memory  card in one of the PCI-E slots and our gpiohsd card in one of the regular
+> PCI slots. All on the motherboard. No expansion slots being used. However I cannot get
+> data from our gpiohsd into the PCI-E VMIC-5565 cards memory. I can certainly get the data there
+> from a userland buffer, no problem. Just not from one card to the other directly. Oh and when
+> I put the regular PCI version of the VMIC into one of the regular PCI slots everything works
+> as expected. They are then both on the same PCI bus and no bridges are involved though.
 
-Jerome
+Have you verified with the vendor that such DMA works properly ? There is
+a long history of there being boards where some device to device DMA
+exploded or vanished. The arrival of PCI capture cards doing direct to
+video DMA cleaned the world up (eg the BT848) but I wouldn't be suprised
+if this recurred somewhere since they were popular and nobody really
+noticed as they didn't run such an unusual config.
 
->  
-> Thanks
-> Vivek
-
+Also does the board have a true IOMMU in the PCI-E side of the system ?
+It's not a chipset I know.
