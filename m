@@ -1,265 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZIKP5z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZIKP7Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZIKP5z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 11:57:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbZIKP5z
+	id S1754547AbZIKP7Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 11:59:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753634AbZIKP7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 11:57:55 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:41583 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754248AbZIKP5y (ORCPT
+	Fri, 11 Sep 2009 11:59:15 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:13390 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbZIKP7N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 11:57:54 -0400
-Date: Fri, 11 Sep 2009 08:57:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] tracing/filters: add filter Documentation
-Message-Id: <20090911085730.f09aa680.randy.dunlap@oracle.com>
-In-Reply-To: <1252642431.8016.9.camel@tropicana>
-References: <1252642431.8016.9.camel@tropicana>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 Sep 2009 11:59:13 -0400
+Message-ID: <4AAA73A4.9010601@caviumnetworks.com>
+Date: Fri, 11 Sep 2009 08:58:28 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Michael Buesch <mb@bu3sch.de>
+CC: linuxppc-dev@lists.ozlabs.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-mips@linux-mips.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-s390@vger.kernel.org, linux-am33-list@redhat.com,
+       Helge Deller <deller@gmx.de>, x86@kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Mike Frysinger <vapier@gentoo.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Richard Henderson <rth@twiddle.net>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-alpha@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Subject: Re: [PATCH 01/10] Add support for GCC-4.5's __builtin_unreachable()
+ to compiler.h
+References: <4AA991C1.1050800@caviumnetworks.com> <1252627011-2933-1-git-send-email-ddaney@caviumnetworks.com> <200909111633.00665.mb@bu3sch.de>
+In-Reply-To: <200909111633.00665.mb@bu3sch.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt010.oracle.com [141.146.116.19]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090206.4AAA736F.017B:SCFSTAT5015188,ss=1,fgs=0
+X-OriginalArrivalTime: 11 Sep 2009 15:58:28.0891 (UTC) FILETIME=[B4225EB0:01CA32F8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Sep 2009 23:13:51 -0500 Tom Zanussi wrote:
-
-> Documentation for event filters and formats.
+Michael Buesch wrote:
+> On Friday 11 September 2009 01:56:42 David Daney wrote:
+>> +/* Unreachable code */
+>> +#ifndef unreachable
+>> +# define unreachable() do { for (;;) ; } while (0)
+>> +#endif
 > 
-> v2 changes: fix a few problems noticed by Randy Dunlap. 
+> # define unreachable() do { } while (1)
 > 
-> Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+> ? :)
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Clearly I was not thinking clearly when I wrote that part.  RTH noted 
+the same thing.  I will fix it.
 
-Thanks.
-
-
-> 
-> ---
->  Documentation/trace/events.txt |  184 +++++++++++++++++++++++++++++++++++++++-
->  1 files changed, 183 insertions(+), 1 deletions(-)
-> 
-> diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
-> index 2bcc8d4..27c62b3 100644
-> --- a/Documentation/trace/events.txt
-> +++ b/Documentation/trace/events.txt
-> @@ -1,7 +1,7 @@
->  			     Event Tracing
->  
->  		Documentation written by Theodore Ts'o
-> -			Updated by Li Zefan
-> +		Updated by Li Zefan and Tom Zanussi
->  
->  1. Introduction
->  ===============
-> @@ -97,3 +97,185 @@ The format of this boot option is the same as described in section 2.1.
->  
->  See The example provided in samples/trace_events
->  
-> +4. Event formats
-> +================
-> +
-> +Each trace event has a 'format' file associated with it that contains
-> +a description of each field in a logged event.  This information can
-> +be used to parse the binary trace stream, and is also the place to
-> +find the field names that can be used in event filters (see section 5).
-> +
-> +It also displays the format string that will be used to print the
-> +event in text mode, along with the event name and ID used for
-> +profiling.
-> +
-> +Every event has a set of 'common' fields associated with it; these are
-> +the fields prefixed with 'common_'.  The other fields vary between
-> +events and correspond to the fields defined in the TRACE_EVENT
-> +definition for that event.
-> +
-> +Each field in the format has the form:
-> +
-> +     field:field-type field-name; offset:N; size:N;
-> +
-> +where offset is the offset of the field in the trace record and size
-> +is the size of the data item, in bytes.
-> +
-> +For example, here's the information displayed for the 'sched_wakeup'
-> +event:
-> +
-> +# cat /debug/tracing/events/sched/sched_wakeup/format
-> +
-> +name: sched_wakeup
-> +ID: 60
-> +format:
-> +	field:unsigned short common_type;	offset:0;	size:2;
-> +	field:unsigned char common_flags;	offset:2;	size:1;
-> +	field:unsigned char common_preempt_count;	offset:3;	size:1;
-> +	field:int common_pid;	offset:4;	size:4;
-> +	field:int common_tgid;	offset:8;	size:4;
-> +
-> +	field:char comm[TASK_COMM_LEN];	offset:12;	size:16;
-> +	field:pid_t pid;	offset:28;	size:4;
-> +	field:int prio;	offset:32;	size:4;
-> +	field:int success;	offset:36;	size:4;
-> +	field:int cpu;	offset:40;	size:4;
-> +
-> +print fmt: "task %s:%d [%d] success=%d [%03d]", REC->comm, REC->pid,
-> +	   REC->prio, REC->success, REC->cpu
-> +
-> +This event contains 10 fields, the first 5 common and the remaining 5
-> +event-specific.  All the fields for this event are numeric, except for
-> +'comm' which is a string, a distinction important for event filtering.
-> +
-> +5. Event filtering
-> +==================
-> +
-> +Trace events can be filtered in the kernel by associating boolean
-> +'filter expressions' with them.  As soon as an event is logged into
-> +the trace buffer, its fields are checked against the filter expression
-> +associated with that event type.  An event with field values that
-> +'match' the filter will appear in the trace output, and an event whose
-> +values don't match will be discarded.  An event with no filter
-> +associated with it matches everything, and is the default when no
-> +filter has been set for an event.
-> +
-> +5.1 Expression syntax
-> +---------------------
-> +
-> +A filter expression consists of one or more 'predicates' that can be
-> +combined using the logical operators '&&' and '||'.  A predicate is
-> +simply a clause that compares the value of a field contained within a
-> +logged event with a constant value and returns either 0 or 1 depending
-> +on whether the field value matched (1) or didn't match (0):
-> +
-> +	  field-name relational-operator value
-> +
-> +Parentheses can be used to provide arbitrary logical groupings and
-> +double-quotes can be used to prevent the shell from interpreting
-> +operators as shell metacharacters.
-> +
-> +The field-names available for use in filters can be found in the
-> +'format' files for trace events (see section 4).
-> +
-> +The relational-operators depend on the type of the field being tested:
-> +
-> +The operators available for numeric fields are:
-> +    
-> +==, !=, <, <=, >, >=
-> +
-> +And for string fields they are:
-> +    
-> +==, !=
-> +
-> +Currently, only exact string matches are supported.
-> +
-> +Currently, the maximum number of predicates in a filter is 16.
-> +
-> +5.2 Setting filters
-> +-------------------
-> +
-> +A filter for an individual event is set by writing a filter expression
-> +to the 'filter' file for the given event.
-> +
-> +For example:
-> +
-> +# cd /debug/tracing/events/sched/sched_wakeup
-> +# echo "common_preempt_count > 4" > filter
-> +
-> +A slightly more involved example:
-> +
-> +# cd /debug/tracing/events/sched/sched_signal_send
-> +# echo "((sig >= 10 && sig < 15) || sig == 17) && comm != bash" > filter
-> +
-> +If there is an error in the expression, you'll get an 'Invalid
-> +argument' error when setting it, and the erroneous string along with
-> +an error message can be seen by looking at the filter e.g.:
-> +
-> +# cd /debug/tracing/events/sched/sched_signal_send
-> +# echo "((sig >= 10 && sig < 15) || dsig == 17) && comm != bash" > filter
-> +-bash: echo: write error: Invalid argument
-> +# cat filter
-> +((sig >= 10 && sig < 15) || dsig == 17) && comm != bash
-> +^
-> +parse_error: Field not found
-> +
-> +Currently the caret ('^') for an error always appears at the beginning of
-> +the filter string; the error message should still be useful though
-> +even without more accurate position info.
-> +
-> +5.3 Clearing filters
-> +--------------------
-> +    
-> +To clear the filter for an event, write a '0' to the event's filter
-> +file.
-> +
-> +To clear the filters for all events in a subsystem, write a '0' to the
-> +subsystem's filter file.
-> +
-> +5.3 Subsystem filters
-> +---------------------
-> +
-> +For convenience, filters for every event in a subsystem can be set or
-> +cleared as a group by writing a filter expression into the filter file
-> +at the root of the subsytem.  Note however, that if a filter for any
-> +event within the subsystem lacks a field specified in the subsystem
-> +filter, or if the filter can't be applied for any other reason, the
-> +filter for that event will retain its previous setting.  This can
-> +result in an unintended mixture of filters which could lead to
-> +confusing (to the user who might think different filters are in
-> +effect) trace output.  Only filters that reference just the common
-> +fields can be guaranteed to propagate successfully to all events.
-> +
-> +Here are a few subsystem filter examples that also illustrate the
-> +above points:
-> +
-> +Clear the filters on all events in the sched subsytem:
-> +
-> +# cd /sys/kernel/debug/tracing/events/sched
-> +# echo 0 > filter
-> +# cat sched_switch/filter
-> +none
-> +# cat sched_wakeup/filter
-> +none
-> +
-> +Set a filter using only common fields for all events in the sched
-> +subsytem (all events end up with the same filter):
-> +
-> +# cd /sys/kernel/debug/tracing/events/sched
-> +# echo common_pid == 0 > filter
-> +# cat sched_switch/filter
-> +common_pid == 0
-> +# cat sched_wakeup/filter
-> +common_pid == 0
-> +
-> +Attempt to set a filter using a non-common field for all events in the
-> +sched subsytem (all events but those that have a prev_pid field retain
-> +their old filters):
-> +
-> +# cd /sys/kernel/debug/tracing/events/sched
-> +# echo prev_pid == 0 > filter
-> +# cat sched_switch/filter
-> +prev_pid == 0
-> +# cat sched_wakeup/filter
-> +common_pid == 0
-> -- 
-> 1.5.6.3
-> 
-> 
-> 
-
-
----
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+Thanks,
+David Daney
