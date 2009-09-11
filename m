@@ -1,68 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZIKOjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753999AbZIKOjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZIKOjj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZIKOji
+	id S1753999AbZIKOjo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753824AbZIKOjn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:39:38 -0400
-Received: from mga14.intel.com ([143.182.124.37]:36819 "EHLO mga14.intel.com"
+	Fri, 11 Sep 2009 10:39:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41826 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752122AbZIKOji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:39:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,370,1249282800"; 
-   d="scan'208";a="186608456"
-Date: Fri, 11 Sep 2009 22:39:29 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "chris.mason@oracle.com" <chris.mason@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "jack@suse.cz" <jack@suse.cz>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090911143929.GA25499@localhost>
-References: <1252654450-25721-1-git-send-email-jens.axboe@oracle.com> <20090911134241.GB19707@mit.edu> <20090911141659.GA3508@infradead.org> <20090911142926.GI14984@kernel.dk>
+	id S1753803AbZIKOjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:39:42 -0400
+Date: Fri, 11 Sep 2009 16:39:44 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, hch@infradead.org,
+       jack@suse.cz
+Subject: [GIT PULL] writeback rewrite
+Message-ID: <20090911143944.GJ14984@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090911142926.GI14984@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 10:29:26PM +0800, Jens Axboe wrote:
-> On Fri, Sep 11 2009, Christoph Hellwig wrote:
-> > On Fri, Sep 11, 2009 at 09:42:41AM -0400, Theodore Tso wrote:
-> > > > v19 include:
-> > > > 
-> > > > - Drop the max writeback pages patch from Ted. I think we should do
-> > > >   something to that effect, but there's really no reason to entangle
-> > > >   it with this patchset.
-> > > 
-> > > That's reasonable, but I'd really like to know whether some VM hacker
-> > > going to try to deal with this during the 2.6.32 window?  Such as
-> > > maybe Wu Fengguang's patches, perhaps?  
-> > > 
-> > > Or do I need to put in some kind of hack into ext4 ala what XFS did to
-> > > work around this problem until we can come up with a longer-term fix?
-> > 
-> > I defintively want to see something in the VM, but I also agree with
-> > Jens' decision not to include it in the patchkit.  It's not really
-> > related to the patchkit except for depending on it, and we still
-> > have a lot of discussion going on.  If we can't get an agreement with
-> > the VM people by the end of the regular merge window I'm all for pushing
-> > your simple patch.
-> 
-> I'd also appreciate if we can keep Wu (or Ted's) patch out of the merge
-> until after -rc1 or at least with a few -git releases in between, so
-> it'll be easier to check for regressions.
+Hi Linus,
 
-That would be good. Sorry for the late work. I'll allocate some time
-in mid next week to help review and benchmark recent writeback works,
-and hope to get things done in this merge window.
+This is something that I have been working on for many months now.
+Originally I wanted to merge it for .31, but it was a bit too early. At
+least now Jan Kara and Christoph is happy with it, so it should be good
+to go.
 
-Thanks,
-Fengguang
+Essentially this gets rid of pdflush for writeback completely. pdflush
+has a number of issues that largely stem from the fact that it has to
+work multiple queues at once. So it has to back off on congestion, which
+can cause queue access starvation and lumpy writeback. The latter is
+very apparent on many setups.
+
+This patchset adds a thread per backing device. The thread will exit if
+it has been idle for too long, and will get re-created if we start
+seeing dirty inodes on the bdi again. Care is taken to ensure that we
+don't get stuck doing that.
+
+Writeback intensive behaviour is much better. I recently generated a
+graph with seekwatcher of XFS writing 2 20G files using normal buffered
+writeout. The existing code does:
+
+http://kernel.dk/dd-md0-xfs-pdflush.png
+
+while with the patchset we get both a faster and more smooth writeout:
+
+http://kernel.dk/dd-md0-xfs-flush.png
+
+The patchset has been well tested and has been in -next for 3-4 months
+or so.
+
+I have a follow-up writeback-postmerge branch with some good cleanups
+and performance enhancements too, but I'd like to get this in a day or
+two first since I didn't want to mess with the core of these bits
+without doing a lot more testing again. That testing can happen while
+this is out in the wild.
+
+So please pull this patchset, I think we should merge it early so we
+have a good chance to ensure we fixup any regressions should they occur.
+
+  git://git.kernel.dk/linux-2.6-block.git writeback
+
+Jens Axboe (7):
+      writeback: get rid of generic_sync_sb_inodes() export
+      writeback: move dirty inodes from super_block to backing_dev_info
+      writeback: switch to per-bdi threads for flushing data
+      writeback: get rid of pdflush completely
+      writeback: add some debug inode list counters to bdi stats
+      writeback: add name to backing_dev_info
+      writeback: check for registered bdi in flusher add and inode dirty
+
+ block/blk-core.c                 |    1 +
+ drivers/block/aoe/aoeblk.c       |    1 +
+ drivers/char/mem.c               |    1 +
+ drivers/staging/pohmelfs/inode.c |    9 +-
+ fs/btrfs/disk-io.c               |    1 +
+ fs/buffer.c                      |    2 +-
+ fs/char_dev.c                    |    1 +
+ fs/configfs/inode.c              |    1 +
+ fs/fs-writeback.c                | 1065 ++++++++++++++++++++++++++++----------
+ fs/fuse/inode.c                  |    1 +
+ fs/hugetlbfs/inode.c             |    1 +
+ fs/nfs/client.c                  |    1 +
+ fs/ocfs2/dlm/dlmfs.c             |    1 +
+ fs/ramfs/inode.c                 |    1 +
+ fs/super.c                       |    5 +-
+ fs/sync.c                        |   20 +-
+ fs/sysfs/inode.c                 |    1 +
+ fs/ubifs/budget.c                |   16 +-
+ fs/ubifs/super.c                 |    9 +-
+ include/linux/backing-dev.h      |   55 ++-
+ include/linux/fs.h               |    9 +-
+ include/linux/writeback.h        |   23 +-
+ kernel/cgroup.c                  |    1 +
+ mm/Makefile                      |    2 +-
+ mm/backing-dev.c                 |  381 +++++++++++++-
+ mm/page-writeback.c              |  182 +------
+ mm/pdflush.c                     |  269 ----------
+ mm/swap_state.c                  |    1 +
+ mm/vmscan.c                      |    2 +-
+ 29 files changed, 1285 insertions(+), 778 deletions(-)
+ delete mode 100644 mm/pdflush.c
+
+-- 
+Jens Axboe
+
