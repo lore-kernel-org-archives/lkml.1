@@ -1,81 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754562AbZIKP7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754488AbZIKPuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754562AbZIKP7y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 11:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZIKP7x
+	id S1754488AbZIKPuN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 11:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752089AbZIKPuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 11:59:53 -0400
-Received: from smtp56.dc2.safesecureweb.com ([65.36.215.98]:37024 "EHLO
-	smtp56.dc2.safesecureweb.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753634AbZIKP7x (ORCPT
+	Fri, 11 Sep 2009 11:50:13 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:15690 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752021AbZIKPuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 11:59:53 -0400
-X-Greylist: delayed 756 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 11:59:53 EDT
-Message-ID: <48E3B73EAC22453CA65D2431F2F47B69@Route495PC>
-From: "Richard B. Johnson" <RJohnson@Route495Software.com>
-To: "\"Mark Hounschell\"" <dmarkh@cfl.rr.com>
-Cc: <linux-pci@vger.kernel.org>, "Mark Hounschell" <dmarkh@cfl.rr.com>,
-       <linux-kernel@vger.kernel.org>
-References: <4AAA5B1F.3020103@compro.net> <20090911154714.70a94454@lxorguk.ukuu.org.uk> <4AAA6BE7.8040306@compro.net>
-In-Reply-To: <4AAA6BE7.8040306@compro.net>
-Subject: Re: problems doing direct dma from a pci device to pci-e device
-Date: Fri, 11 Sep 2009 11:46:09 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Windows Mail 6.0.6001.18000
-X-MimeOLE: Produced By Microsoft MimeOLE V6.0.6001.18049
+	Fri, 11 Sep 2009 11:50:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=w3KbOcaernz0cnbNtJGNNkXc5g2PLBiFVwBb3SuBeLIpwxOx+G/9ZVaYAQjBBU54+J
+         wl0FYfRErjaZFeITNytUsxzq6SOGu8GXGR7E9AsUkSxdhbUSBfC5gu4clso7S30xXW+M
+         OEdh8QvHElBxnF1IdLLbbKIWmlu2jfHMf1G+k=
+From: janboe <janboe.ye@gmail.com>
+To: dwmw2@infradead.org, jj@chaosbits.net
+Cc: linux-kernel@vger.kernel.org, janboe <janboe.ye@gmail.com>
+Subject: [PATCH] tuner-xc2028: remove variable length array
+Date: Fri, 11 Sep 2009 23:49:51 +0800
+Message-Id: <1252684191-22623-1-git-send-email-janboe.ye@gmail.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------ Original Message ----- 
-From: "Mark Hounschell" <markh@compro.net>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: <linux-pci@vger.kernel.org>; "Mark Hounschell" <dmarkh@cfl.rr.com>; 
-<linux-kernel@vger.kernel.org>
-Sent: Friday, September 11, 2009 11:25 AM
-Subject: Re: problems doing direct dma from a pci device to pci-e device
+using variable length array on kernel stack is not safe, so this patch
+using kmalloc instead variable length array in tuner-xc2028
 
+Signed-off-by: janboe <janboe.ye@gmail.com>
+---
+ drivers/media/common/tuners/tuner-xc2028.c |   30 +++++++++++++++++----------
+ 1 files changed, 19 insertions(+), 11 deletions(-)
 
-> Alan Cox wrote:
->>> I now have an AM3 based DFI DK 790FXB-M3H5 motherboard. This board has 3 
->>> regular
->>> PCI slots and 3 PCI-E (16x) slots. I also have a PCI-E (x4) version of 
->>> the VMIC-5565
->>> reflective memory  card in one of the PCI-E slots and our gpiohsd card 
->>> in one of the regular
->>> PCI slots. All on the motherboard. No expansion slots being used. 
->>> However I cannot get
->>> data from our gpiohsd into the PCI-E VMIC-5565 cards memory. I can 
->>> certainly get the data there
->>> from a userland buffer, no problem. Just not from one card to the other 
->>> directly. Oh and when
->>> I put the regular PCI version of the VMIC into one of the regular PCI 
->>> slots everything works
->>> as expected. They are then both on the same PCI bus and no bridges are 
->>> involved though.
-
-The read I mentioned was a read immediately following the DMA operation. 
-Some PCI (PCI-X using
-a HyperTransport serial bus) implimentations deliberately time-out to 
-prevent a hung system. The result
-that I've seen was no data anywhere. It just vanished!
-
-Reading the destination a few milliseconds (or seconds) later won't prevent 
-this timeout!
-
-Cheers,
-Richard B. Johnson
-http://Route495Software.com/
-
-
-
-
-
+diff --git a/drivers/media/common/tuners/tuner-xc2028.c b/drivers/media/common/tuners/tuner-xc2028.c
+index 1adce9f..3b5c60d 100644
+--- a/drivers/media/common/tuners/tuner-xc2028.c
++++ b/drivers/media/common/tuners/tuner-xc2028.c
+@@ -516,8 +516,8 @@ static int load_firmware(struct dvb_frontend *fe, unsigned int type,
+ 			 v4l2_std_id *id)
+ {
+ 	struct xc2028_data *priv = fe->tuner_priv;
+-	int                pos, rc;
+-	unsigned char      *p, *endp, buf[priv->ctrl.max_len];
++	int                pos, rc, ret = -EINVAL;
++	unsigned char      *p, *endp, *buf;
+ 
+ 	tuner_dbg("%s called\n", __func__);
+ 
+@@ -532,6 +532,9 @@ static int load_firmware(struct dvb_frontend *fe, unsigned int type,
+ 
+ 	p = priv->firm[pos].ptr;
+ 	endp = p + priv->firm[pos].size;
++	buf = kmalloc(priv->ctrl.max_len, GFP_KERNEL);
++	if (!buf)
++		return -ENOMEM;
+ 
+ 	while (p < endp) {
+ 		__u16 size;
+@@ -539,14 +542,16 @@ static int load_firmware(struct dvb_frontend *fe, unsigned int type,
+ 		/* Checks if there's enough bytes to read */
+ 		if (p + sizeof(size) > endp) {
+ 			tuner_err("Firmware chunk size is wrong\n");
+-			return -EINVAL;
++			goto fail;
+ 		}
+ 
+ 		size = le16_to_cpu(*(__u16 *) p);
+ 		p += sizeof(size);
+ 
+-		if (size == 0xffff)
+-			return 0;
++		if (size == 0xffff) {
++			ret = 0;
++			goto fail;
++		}
+ 
+ 		if (!size) {
+ 			/* Special callback command received */
+@@ -554,7 +559,7 @@ static int load_firmware(struct dvb_frontend *fe, unsigned int type,
+ 			if (rc < 0) {
+ 				tuner_err("Error at RESET code %d\n",
+ 					   (*p) & 0x7f);
+-				return -EINVAL;
++				goto fail;
+ 			}
+ 			continue;
+ 		}
+@@ -565,13 +570,13 @@ static int load_firmware(struct dvb_frontend *fe, unsigned int type,
+ 				if (rc < 0) {
+ 					tuner_err("Error at RESET code %d\n",
+ 						  (*p) & 0x7f);
+-					return -EINVAL;
++					goto fail;
+ 				}
+ 				break;
+ 			default:
+ 				tuner_info("Invalid RESET code %d\n",
+ 					   size & 0x7f);
+-				return -EINVAL;
++				goto fail;
+ 
+ 			}
+ 			continue;
+@@ -586,7 +591,7 @@ static int load_firmware(struct dvb_frontend *fe, unsigned int type,
+ 		if ((size + p > endp)) {
+ 			tuner_err("missing bytes: need %d, have %d\n",
+ 				   size, (int)(endp - p));
+-			return -EINVAL;
++			goto fail;
+ 		}
+ 
+ 		buf[0] = *p;
+@@ -603,14 +608,17 @@ static int load_firmware(struct dvb_frontend *fe, unsigned int type,
+ 			rc = i2c_send(priv, buf, len + 1);
+ 			if (rc < 0) {
+ 				tuner_err("%d returned from send\n", rc);
+-				return -EINVAL;
++				goto fail;
+ 			}
+ 
+ 			p += len;
+ 			size -= len;
+ 		}
+ 	}
+-	return 0;
++	ret = 0;
++fail:
++	kfree(buf);
++	return ret;
+ }
+ 
+ static int load_scode(struct dvb_frontend *fe, unsigned int type,
+-- 
+1.6.3.3
 
