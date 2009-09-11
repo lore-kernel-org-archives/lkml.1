@@ -1,57 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZIKQmy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753318AbZIKQqs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbZIKQmy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:42:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZIKQmx
+	id S1753318AbZIKQqs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:46:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZIKQqr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:42:53 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:8930 "EHLO mx1.redhat.com"
+	Fri, 11 Sep 2009 12:46:47 -0400
+Received: from kroah.org ([198.145.64.141]:60934 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753130AbZIKQmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:42:52 -0400
-Date: Fri, 11 Sep 2009 19:42:47 +0300
-From: Gleb Natapov <gleb@redhat.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Roland Dreier <rdreier@cisco.com>, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org, jsquyres@cisco.com,
-       linux-rdma@vger.kernel.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT PULL] please pull ummunotify
-Message-ID: <20090911164247.GA6736@redhat.com>
-References: <20090911145036.DB65.A69D9226@jp.fujitsu.com>
- <adatyzahvbm.fsf@cisco.com>
- <20090911150552.DB68.A69D9226@jp.fujitsu.com>
+	id S1751679AbZIKQqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:46:46 -0400
+Date: Fri, 11 Sep 2009 09:44:28 -0700
+From: Greg KH <greg@kroah.com>
+To: Martyn Welch <martyn.welch@gefanuc.com>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
+       Linux-Next <linux-next@vger.kernel.org>
+Subject: Re: drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined
+ from 'boolean' to 'tristate'
+Message-ID: <20090911164428.GA17883@kroah.com>
+References: <10f740e80909110726x313e3e3coe2321c683163e3a5@mail.gmail.com>
+ <20090911150210.GB16593@kroah.com>
+ <4AAA7AEB.803@gefanuc.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090911150552.DB68.A69D9226@jp.fujitsu.com>
+In-Reply-To: <4AAA7AEB.803@gefanuc.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 03:11:36PM +0900, KOSAKI Motohiro wrote:
-> Hi
+On Fri, Sep 11, 2009 at 05:29:31PM +0100, Martyn Welch wrote:
+> Greg KH wrote:
+> > On Fri, Sep 11, 2009 at 04:26:36PM +0200, Geert Uytterhoeven wrote:
+> >   
+> >> http://kisskb.ellerman.id.au/kisskb/buildresult/1221192/:
+> >> drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined from
+> >> 'boolean' to 'tristate'
+> >> drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined from
+> >> 'boolean' to 'tristate'
+> >>
+> >> We already have:
+> >>
+> >> arch/m68k/Kconfig:config VME
+> >> arch/m68k/Kconfig:      bool "VME (Motorola and BVM) support"
+> >> arch/m68k/Kconfig:        Say Y here if you want to build a kernel for
+> >> a 680x0 based VME
+> >>     
+> >
+> > Ah, not good.
+> >
+> > Are these a board-specific thing?  It's not the "VME bus" is it?
+> >
+> > Martyn, maybe we should rename CONFIG_VME to CONFIG_VME_BUS ?
+> >
+> > thanks,
+> >
+> > greg k-h
+> >   
+> Agreed - Not good.
 > 
-> Thank you explanation.
-> 
-> > 
-> >  > Can I this version already solved fork() + COW issue? if so, could you
-> >  > please explain what happen at fork. Obviously RDMA point to either parent
-> >  > or child page, not both. but Corrent COW rule is, first touch process
-> >  > get copyed page and other process still own original page. I think it's 
-> >  > unpecected behavior form RDMA.
-> > 
-> > No, ummunotify doesn't really help that much with fork() + COW.  If a
-> > parent forks and then touches pages that are actively in use for RDMA,
-> > then of course they get COWed and RDMA goes to the wrong memory (from
-> > the point of view of the parent).
-> 
-> So, Can we assume OpenMPI user process doesn't such thing?
-> 
-> Parhaps, madvise(DONTFORK) or vfork() avoid this issue. but I'm not
-> sure all program in the world do that.
-> 
-MPI (or is it libibverbs?) marks all registered memory as DONTFORK.
+> I'll try and rustle up a patch ASAP, but it might not be until Monday 
+> now - I unfortunately have a rather busy weekend. I'm more than happy 
+> with CONFIG_VME_BUS if someone beats me to it.
 
---
-			Gleb.
+I'll go do it right now.
+
+thanks,
+
+greg k-h
