@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755379AbZIKU7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZIKVDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755379AbZIKU7W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 16:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZIKU7U
+	id S1756631AbZIKVDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756622AbZIKVDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 16:59:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49889 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755380AbZIKU7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 16:59:19 -0400
-Date: Fri, 11 Sep 2009 16:59:15 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, torvalds@linux-foundation.org,
-       jakub@redhat.com, linux-kernel@vger.kernel.org,
-       linux-arch@vger.kernel.org, x86@kernel.org
-Subject: Re: [PATCH 1/2] UNREACHABLE() macro
-Message-ID: <20090911205915.GA19494@bombadil.infradead.org>
-References: <20090910015923.8FB628AE5F@magilla.sf.frob.com> <20090910020031.87DC68BF6E@magilla.sf.frob.com> <20090911134528.cd1782d9.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911134528.cd1782d9.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Fri, 11 Sep 2009 17:03:36 -0400
+Received: from fifo99.com ([67.223.236.141]:59806 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756617AbZIKVDf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 17:03:35 -0400
+Subject: Re: [patch] zaurus family: battery cleanups
+From: Daniel Walker <dwalker@fifo99.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@Opfer-Online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, eric.y.miao@gmail.com,
+       utx@penguin.cz, Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20090911195635.GD8137@elf.ucw.cz>
+References: <20090909073904.GE1327@ucw.cz>
+	 <1252507631.14793.113.camel@desktop>  <20090911195635.GD8137@elf.ucw.cz>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 14:04:10 -0700
+Message-Id: <1252703050.28368.26.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 01:45:28PM -0700, Andrew Morton wrote:
-> On Wed,  9 Sep 2009 19:00:31 -0700 (PDT)
-> Roland McGrath <roland@redhat.com> wrote:
+On Fri, 2009-09-11 at 21:56 +0200, Pavel Machek wrote:
+> On Wed 2009-09-09 07:47:11, Daniel Walker wrote:
+> > On Wed, 2009-09-09 at 09:39 +0200, Pavel Machek wrote:
+> > > This cleans up battery code to conform to codingstyle. The only real
+> > > change is that we should now refuse to charge if we can't read battery
+> > > temperature.
+> > 
+> > This patch has a number of checkpatch errors. Mostly trailing
+> > whitespace, or just spacing issues..
 > 
-> > +/*
-> > + * __builtin_unreachable is available in GCC 4.5+ and
-> > + * also in Fedora/Red Hat GCC 4.4.1-10+.
-> > + */
-> > +#if (__GNUC_MINOR__ > 4					\
-> > +     || (__GNUC_MINOR__ == 4				\
-> > +	 && defined __GNUC_RH_RELEASE__			\
-> > +	 && (__GNUC_PATCHLEVEL__ > 1			\
-> > +	     || (__GNUC_PATCHLEVEL__ == 1		\
-> > +		 && __GNUC_RH_RELEASE__ >= 10))))
-> > +#define UNREACHABLE()		__builtin_unreachable()
-> > +#endif
-> 
-> That's a bit of a mouthful.  Did you consider a runtime probe with
-> scripts/Kbuild.include's try-run, cc-option, etc?  
+> Well, original code has problems, too, and I'm trying to slowly clean
+> that up.
 
-If the crap for determining if it's a RH gcc is removed, then it becomes
-really straightforward... Should probably just do that and then apply a
-patch to Fedora if it's so damned important it can't just wait for the
-next GCC release.
+Ok, but your adding new problems to the code .. So eventually these new
+problems would also need to get cleaned up.. If you don't add new
+problems and just clean up old problems, then your moving in the right
+direction (eventually no problems at all) ..
 
-regards, Kyle
+Daniel
+
