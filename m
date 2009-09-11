@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753359AbZIKBnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753338AbZIKBnI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753359AbZIKBnl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 21:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZIKBnl
+	id S1753338AbZIKBnI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 21:43:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752946AbZIKBnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 21:43:41 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34750 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZIKBnk (ORCPT
+	Thu, 10 Sep 2009 21:43:07 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:33413 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752472AbZIKBnG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 21:43:40 -0400
-Message-ID: <4AA9AB00.9030607@zytor.com>
-Date: Thu, 10 Sep 2009 18:42:24 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Daney <ddaney@caviumnetworks.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, x86@kernel.org
-Subject: Re: [PATCH 02/10] x86: Convert BUG() to use unreachable()
-References: <4AA991C1.1050800@caviumnetworks.com>	<1252627011-2933-2-git-send-email-ddaney@caviumnetworks.com>	<4AA9A031.5000602@zytor.com>	<alpine.LFD.2.01.0909101806110.3654@localhost.localdomain> <20090911013743.1CF13AEF@magilla.sf.frob.com>
-In-Reply-To: <20090911013743.1CF13AEF@magilla.sf.frob.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 10 Sep 2009 21:43:06 -0400
+Subject: Re: [PATCH tracing/kprobes 1/7] x86/ptrace: Fix
+ regs_get_argument_nth() to add correct offset
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+In-Reply-To: <20090910235306.22412.31613.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>
+	 <20090910235306.22412.31613.stgit@dhcp-100-2-132.bos.redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Thu, 10 Sep 2009 21:43:06 -0400
+Message-Id: <1252633386.18996.60.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/10/2009 06:37 PM, Roland McGrath wrote:
->> There are other cases where that kind of config-time testing could be 
->> useful, and we could avoid doing various gcc checks dynamically from 
->> within 'make' (along with checking for known-buggy versions etc).
+On Thu, 2009-09-10 at 19:53 -0400, Masami Hiramatsu wrote:
+
+> ---
 > 
-> I quite agree that this would be an improvement for many sorts of compiler
-> feature (and other tool detail) conditionalization.
+>  arch/x86/kernel/ptrace.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
+> index a33a17d..caffb68 100644
+> --- a/arch/x86/kernel/ptrace.c
+> +++ b/arch/x86/kernel/ptrace.c
+> @@ -150,7 +150,7 @@ static const int arg_offs_table[] = {
+>  unsigned long regs_get_argument_nth(struct pt_regs *regs, unsigned int n)
+>  {
+>  	if (n < ARRAY_SIZE(arg_offs_table))
+> -		return *((unsigned long *)regs + arg_offs_table[n]);
+> +		return *(unsigned long *)((char *)regs + arg_offs_table[n]);
 
-The nicest, of course, would be if gcc exported its internal support,
-similar to the way it nowadays export macros for the various internal
-data types.
+That definitely looks like a bug.
 
-	-hpa
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+
+-- Steve
+
+>  	else {
+>  		/*
+>  		 * The typical case: arg n is on the stack.
+> 
+> 
+
