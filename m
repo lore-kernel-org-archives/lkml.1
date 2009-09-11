@@ -1,94 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZIKOLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755839AbZIKSOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753167AbZIKOLt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZIKOLt
+	id S1755839AbZIKSOb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZIKSOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:11:49 -0400
-Received: from smtp.ispras.ru ([83.149.198.201]:58682 "EHLO smtp.ispras.ru"
+	Fri, 11 Sep 2009 14:14:30 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:33026 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750966AbZIKOLs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:11:48 -0400
-Content-Disposition: inline
-From: iceberg <strakh@ispras.ru>
-Organization: ISP RAS
-To: Jonathan Corbet <corbet@lwn.net>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Fwd: Re: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
-Date: Fri, 11 Sep 2009 18:13:21 +0000
-User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+	id S1751789AbZIKSO3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 14:14:29 -0400
+Date: Fri, 11 Sep 2009 20:14:32 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, tytso@mit.edu, akpm@linux-foundation.org,
+       jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 3/4] writeback: only use bdi_writeback_all() for
+	WB_SYNC_NONE writeout
+Message-ID: <20090911181431.GN14984@kernel.dk>
+References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com> <1252669832-13553-4-git-send-email-jens.axboe@oracle.com> <20090911180940.GC19598@infradead.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200909111813.21232.strakh@ispras.ru>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090911180940.GC19598@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 09:30:03AM -0600, Jonathan Corbet wrote:
-> On Thu, 10 Sep 2009 18:37:34 +0000
-> iceberg <strakh@ispras.ru> wrote:
+On Fri, Sep 11 2009, Christoph Hellwig wrote:
+> > -static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+> > +static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+> > +				 struct writeback_control *wbc)
+> >  {
+> >  	struct bdi_work *work;
+> >  
+> > @@ -195,7 +196,7 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+> >  	if (work)
+> >  		bdi_work_init(work, wbc);
+> >  
+> > -	return work;
+> > +	bdi_queue_work(bdi, work);
 > 
-> > In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe: 
-> > Mutex must be unlocked before exit
-> >     1. On paths starting with mutex lock in line 1912, then continuing in 
-lines: 
-> > 1929, 1936 (goto unreg) and 1940 (goto iounmap) . 
-> >     2. On path starting in line 1971 mutex lock, and then continuing in 
-line 1978 
-> > (goto out_smbus) mutex.
+> This is now the only caller of bdi_queue_work that has a NULL work
+> argument.  I would recommend removing the !work half of bdi_queue_work
+> and just inline it into this function (or make it a separate helper).
+
+Yep agreed.
+
+> >  /*
+> > + * Schedule writeback for all backing devices. Can only be used for
+> > + * WB_SYNC_NONE writeback, WB_SYNC_ALL should use bdi_start_writeback()
+> > + * and pass in the superblock.
+> >   */
+> >  static void bdi_writeback_all(struct writeback_control *wbc)
+> >  {
+> >  	struct backing_dev_info *bdi;
+> >  
+> > +	WARN_ON(wbc->sync_mode == WB_SYNC_ALL);
+> > +
+> >  	spin_lock(&bdi_lock);
+> >  
+> >  	list_for_each_entry(bdi, &bdi_list, bdi_list) {
+> >  		if (!bdi_has_dirty_io(bdi))
+> >  			continue;
+> >  
+> > +		bdi_alloc_queue_work(bdi, wbc);
+> >  	}
 > 
-> That's a definite bug, but I hate all those unlocks in the error
-> branches.  As it happens, we don't really need the mutex until the
-> device has been exposed to the rest of the kernel, so I propose the
-> following as a better patch.
 > 
-> Thanks for pointing this out,
-	If we can first pair of mutex_lock and mutex_unlock:
+> Much nicer than before.  Could be even further simplified to:
+> 
+> 		if (bdi_has_dirty_io(bdi))
+> 			bdi_alloc_queue_work(bdi, wbc);
 
-Fix lock imbalances in function device_authorization.
+Sure, matter of style.
 
-Signed-off-by: Alexander Strakh <strakh@ispras.ru>
+> > @@ -1157,6 +1115,7 @@ long sync_inodes_sb(struct super_block *sb)
+> >  {
+> >  	struct writeback_control wbc = {
+> >  		.sb		= sb,
+> > +		.bdi		= sb->s_bdi,
+> >  		.sync_mode	= WB_SYNC_ALL,
+> >  		.range_start	= 0,
+> >  		.range_end	= LLONG_MAX,
+> > @@ -1164,7 +1123,7 @@ long sync_inodes_sb(struct super_block *sb)
+> >  	long nr_to_write = LONG_MAX; /* doesn't actually matter */
+> >  
+> >  	wbc.nr_to_write = nr_to_write;
+> > -	bdi_writeback_all(&wbc);
+> > +	bdi_start_writeback(&wbc);
+> 
+> So here we have a WB_SYNC_ALL caller of bdi_writeback_all and the
+> only other caller is WB_SYNC_NONE.  Given that after patch two those
+> are entirely different codepathes in bdi_start_writeback I would just
+> split bdi_start_writeback into two separate functions.
 
----
-diff --git a/./drivers/media/video/cafe_ccic.c 
-b/../b/drivers/media/video/cafe_ccic.c
-index c4d181d..4c6bc86 100644
---- a/./drivers/media/video/cafe_ccic.c
-+++ b/../b/drivers/media/video/cafe_ccic.c
-@@ -1909,7 +1909,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 		goto out_free;
- 
- 	mutex_init(&cam->s_mutex);
--	mutex_lock(&cam->s_mutex);
- 	spin_lock_init(&cam->dev_lock);
- 	cam->state = S_NOTREADY;
- 	cafe_set_config_needed(cam, 1);
-@@ -1949,7 +1948,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 	 * because the sensor could attach in this call chain, leading to
- 	 * unsightly deadlocks.
- 	 */
--	mutex_unlock(&cam->s_mutex);  /* attach can deadlock */
- 	ret = cafe_smbus_setup(cam);
- 	if (ret)
- 		goto out_freeirq;
-@@ -1975,7 +1973,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 	cam->vdev.v4l2_dev = &cam->v4l2_dev;
- 	ret = video_register_device(&cam->vdev, VFL_TYPE_GRABBER, -1);
- 	if (ret)
--		goto out_smbus;
-+		goto out_unlock;
- 	video_set_drvdata(&cam->vdev, cam);
- 
- 	/*
-@@ -1990,6 +1988,8 @@ static int cafe_pci_probe(struct pci_dev *pdev,
- 	mutex_unlock(&cam->s_mutex);
- 	return 0;
- 
-+out_unlock:
-+	mutex_unlock(&cam->s_mutex);
- out_smbus:
- 	cafe_smbus_shutdown(cam);
- out_freeirq:
+Sure, it'll draw a sharper line between WB_SYNC_NONE and WB_SYNC_ALL.
+I'll work on this and the bdi cap dirty flag removal as a follow up.
+
+-- 
+Jens Axboe
+
