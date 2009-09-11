@@ -1,140 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753235AbZIKB6K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752831AbZIKC0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753235AbZIKB6K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 21:58:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752026AbZIKB6J
+	id S1752831AbZIKC0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 22:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752110AbZIKC0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 21:58:09 -0400
-Received: from mga11.intel.com ([192.55.52.93]:13853 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751360AbZIKB6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 21:58:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,367,1249282800"; 
-   d="scan'208";a="492432002"
-Subject: Re: RFC: Light sensors, unifying current options?
-From: Zhang Rui <rui.zhang@intel.com>
-To: Jonathan Cameron <jic23@cam.ac.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jean Delvare <khali@linux-fr.org>,
-       "alan@linux.intel.com" <alan@linux.intel.com>,
-       "lenb@kernel.org" <lenb@kernel.org>, "pavel@ucw.cz" <pavel@ucw.cz>,
-       "Cory T. Tusar" <ctusar@videon-central.com>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>,
-       linux-acpi <linux-acpi@vger.kernel.org>
-In-Reply-To: <4AA8CF57.4010409@cam.ac.uk>
-References: <4A9FC9D7.20000@cam.ac.uk> <1252308744.3483.414.camel@rzhang-dt>
-	 <4AA4F194.1070507@cam.ac.uk> <1252467684.3483.446.camel@rzhang-dt>
-	 <4AA79144.8060104@cam.ac.uk> <1252546449.3483.476.camel@rzhang-dt>
-	 <4AA8CF57.4010409@cam.ac.uk>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 09:55:01 +0800
-Message-Id: <1252634101.3483.514.camel@rzhang-dt>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Sep 2009 22:26:18 -0400
+Received: from mail-pz0-f184.google.com ([209.85.222.184]:53229 "EHLO
+	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751832AbZIKC0R convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 22:26:17 -0400
+X-Greylist: delayed 1615 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 Sep 2009 22:26:16 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LlQ8jc8Fmrwuj6Ruc6HE4FNbWVfmz5nMQzANvgmuRndJzvFAp9dAujUmR1AursErKt
+         3I7hxX++/qQ+jb7Ynaue6ec/bqtEPQUB97WeiNSoY9he0y0AE2+RYMTF01YQWm/KeKJH
+         adz2ECS4XKRjebvM3blNBoxgCEdPVFPn2OdSs=
+MIME-Version: 1.0
+In-Reply-To: <1252597402.7205.75.camel@laptop>
+References: <6278d2220909091420g688bd11fybc33be4e472757b1@mail.gmail.com>
+	 <1252597402.7205.75.camel@laptop>
+Date: Fri, 11 Sep 2009 09:59:23 +0800
+Message-ID: <d82e647a0909101859t48f4a494l75040b47a7474760@mail.gmail.com>
+Subject: Re: [2.6.31-rc9] hotplug SATA vs lockdep: false positive?
+From: Ming Lei <tom.leiming@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Daniel J Blueman <daniel.blueman@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linux-acpi@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-09-10 at 18:05 +0800, Jonathan Cameron wrote:
-> Zhang Rui wrote:
-> > On Wed, 2009-09-09 at 19:28 +0800, Jonathan Cameron wrote:
-> >> Zhang Rui wrote:
-> >>> On Mon, 2009-09-07 at 19:42 +0800, Jonathan Cameron wrote:
-> >>>> Zhang Rui wrote:
-> > 
-> >>>> Maybe similar to hwmon approach allowing for multiple readings of a given
-> >>>> type?
-> >>>>
-> >>>> illumiance[n]
-> >>>> illuminmance_type[n]
-> >>> what's the value in illuminance_type, infrared/visible/ultraviolet?
-> >> Probably a mask allowing for a given sensor to cover several of these.
-> >> Hence if you have an infrared and an visible + infrared, userspace can
-> >> pull the visible out.  Or we could do that separation in kernel, so
-> >> in this case export
-> >>
-> >> visible, visible+infrared and infrared.
-> >>
-> >> Perhaps we might do it via sysfs naming instead.
-> >>
-> >> illuminance[n] - defined to be visible (which is what term means anyway)
-> >>
-> >> infrared[n] - hmm.. will be in different units to illuminance - perhaps we leave
-> >> these raw with suitable documentation?
-> >>
-> >> illuminance_and_infrared[n]
-> >>
-> > what's the unit of this?
-> Indeed, there in lies a problem.  I guess we export any we that don't fit
-> within the standard set (e.g. that infrared sensor etc) as raw values with
-> suitable documentation.  If people want to use them it is up to them, but they
-> shouldn't assume that two different sensors give equivalent readings.
+2009/9/10 Peter Zijlstra <peterz@infradead.org>:
+> On Wed, 2009-09-09 at 22:20 +0100, Daniel J Blueman wrote:
+>
+>> When hot-plugging my SATA DVD drive into my laptop, I see a lockdep
+>> warning [1]. On closer inspection, both flush_workqueue() and
+>> worker_thread() do tricks with lockdep maps. False positive?
+>
+> No, looks like a typical case of a workqueue trying to flush itself,
+> something that can easily deadlock for real.
 
-> > what does the value of this file mean?
-> It's really just an adc count.
-> > I think we should make sure that there are more sensors need this and
-> > the same "visible + infrared" reading on different sensors stands for
-> > the same ambient light environment.
-> From what I've encountered it is a fairly common way of getting illuminance,
-> the question is merely whether the relevant processing is done on the sensor
-> or in software.  If in software the two values are available, in hardware
-> they probably only export illuminance.
-> > Or else we should convert it to something generic. what do you think?
-> Would be nice to be generic, but given they exact frequency ranges will change
-> between different sensors even if they do use this approach, I'm not sure what
-> it would be.
+Hi,Peter
 
-so, if there are two sensors that support visible and infrared,
-sensor 1:
-illuminance:	xxx
-infrared:	yyy
-sensor 2:
-illuminance:	xxx
-infrared:	yyy
+IMHO, it seems flushing other workqueues in one workqueue, so it
+may be a false positive. Since the three workqueue instances share one
+lock class, maybe lockdep_set_class*() or other similar annotations
+is needed in acpi_os_initialize1() to avoid the warning.
 
-does this mean the ambient light of these two sensors are the same?
+Thanks.
 
-If no, I can't image how the userspace app uses these attributes?
+>
+>> =======================================================
+>> [ INFO: possible circular locking dependency detected ]
+>> 2.6.31-rc9-290cd #1
+>> -------------------------------------------------------
+>> kacpi_hotplug/198 is trying to acquire lock:
+>>  (kacpid){+.+.+.}, at: [<ffffffff81073a70>] flush_workqueue+0x0/0xf0
+>> (workqueue.c:292)
+>>
+>> but task is already holding lock:
+>>  (&dpc->work){+.+.+.}, at: [<ffffffff81072a42>]
+>> worker_thread+0x1f2/0x3c0 (bitops.h:101)
+>> which lock already depends on the new lock.
+>>
+>> the existing dependency chain (in reverse order) is:
+>>
+>> -> #1 (&dpc->work){+.+.+.}:
+>>        [<ffffffff8108eb19>] __lock_acquire+0xe29/0x1240
+>>        [<ffffffff8108f04e>] lock_acquire+0x11e/0x170
+>>        [<ffffffff81072a92>] worker_thread+0x242/0x3c0 (workqueue.c:291)
+>>        [<ffffffff81077456>] kthread+0xa6/0xc0
+>>        [<ffffffff8100d29a>] child_rip+0xa/0x20
+>>        [<ffffffffffffffff>] 0xffffffffffffffff
+>>
+>> -> #0 (kacpid){+.+.+.}:
+>>        [<ffffffff8108ebe1>] __lock_acquire+0xef1/0x1240
+>>        [<ffffffff8108f04e>] lock_acquire+0x11e/0x170
+>>        [<ffffffff81073acc>] flush_workqueue+0x5c/0xf0 (workqueue.c:403)
+>>        [<ffffffff812f6eaf>] acpi_os_wait_events_complete+0x10/0x1e
+>>        [<ffffffff812f6ee7>] acpi_os_execute_hp_deferred+0x2a/0x3e
+>>        [<ffffffff81072a98>] worker_thread+0x248/0x3c0 (workqueue.c:292)
+>>        [<ffffffff81077456>] kthread+0xa6/0xc0
+>>        [<ffffffff8100d29a>] child_rip+0xa/0x20
+>>        [<ffffffffffffffff>] 0xffffffffffffffff
+>>
+>> other info that might help us debug this:
+>>
+>> 2 locks held by kacpi_hotplug/198:
+>>  #0:  (kacpi_hotplug){+.+...}, at: [<ffffffff81072a42>]
+>> worker_thread+0x1f2/0x3c0
+>>  #1:  (&dpc->work){+.+.+.}, at: [<ffffffff81072a42>] worker_thread+0x1f2/0x3c0
+>>
+>> stack backtrace:
+>> Pid: 198, comm: kacpi_hotplug Tainted: G         C 2.6.31-rc9-290cd #1
+>>
+>> Call Trace:
+>>  [<ffffffff8108c8a7>] print_circular_bug_tail+0xa7/0x100
+>>  [<ffffffff8108ebe1>] __lock_acquire+0xef1/0x1240
+>>  [<ffffffff8108a808>] ? add_lock_to_list+0x58/0xf0
+>>  [<ffffffff8108f04e>] lock_acquire+0x11e/0x170
+>>  [<ffffffff81073a70>] ? flush_workqueue+0x0/0xf0 (workqueue.c:397)
+>>  [<ffffffff812f6ebd>] ? acpi_os_execute_hp_deferred+0x0/0x3e
+>>  [<ffffffff81073acc>] flush_workqueue+0x5c/0xf0 (workqueue.c:403)
+>>  [<ffffffff81073a70>] ? flush_workqueue+0x0/0xf0 (workqueue.c:397)
+>>  [<ffffffff812f6eaf>] acpi_os_wait_events_complete+0x10/0x1e drivers/acpi/osl.c
+>>  [<ffffffff812f6ee7>] acpi_os_execute_hp_deferred+0x2a/0x3e
+>>  [<ffffffff81072a98>] worker_thread+0x248/0x3c0 (workqueue.c:292)
+>>  [<ffffffff81072a42>] ? worker_thread+0x1f2/0x3c0
+>>  [<ffffffff81077900>] ? autoremove_wake_function+0x0/0x40
+>>  [<ffffffff81072850>] ? worker_thread+0x0/0x3c0
+>>  [<ffffffff81077456>] kthread+0xa6/0xc0
+>>  [<ffffffff8100d29a>] child_rip+0xa/0x20
+>>  [<ffffffff8100cbd4>] ? restore_args+0x0/0x30
+>>  [<ffffffff810773b0>] ? kthread+0x0/0xc0
+>>  [<ffffffff8100d290>] ? child_rip+0x0/0x20
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-> > 
-> >>   If they are capable of
-> >> exporting other things all well and good.  The naming can be decided as and
-> >> when people post drivers with new functionality.
-> >>
-> > 
-> >> The other obvious question is whether it makes sense to cache values from sensors?
-> >> (as per many hwmon drivers)  These things are pretty slow, so there is no point in
-> >> taking a new reading unless there has been sufficient time for it to update.
-> >> Still this is again a documentation issue rather than core code, as it would be
-> >> down to the individual drivers.
-> >>
-> > 
-> > I think this depends and it's the individual drivers responsibility to
-> > keep these values valid.
-> Agreed.
-> > 
-> > For example, ACPI ALS can get a notification "whenever the lux reading
-> > changes more than 10% (from the last reading that resulted in a
-> > notification)". So it can use cache values because they're refreshed
-> > from time to time.
-> > 
-> > But maybe there are some other sensors that don't have this asynchronous
-> > notification so that the cached values don't have a chance to get
-> > updated.
-> > then we need to read the sensor every time the sysfs I/F is poked.
-> Some sensors, e.g. tsl2561 use an internal clock to do sampling and hence
-> have some predefined period in which the reading taken doesn't change.
-> Perhaps exporting said period would be useful to userspace?
-> 
-I don't think so.
-IMO, the tsl2561 driver should handle this, and there is no need to
-annoy the user space.
-i.e. users always assume the content of "illuminance" attribute is
-valid, and it's the driver's job to make this true. We don't need to
-document this.
-what do you think?
 
-thanks,
-rui
 
+-- 
+Lei Ming
