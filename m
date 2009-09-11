@@ -1,48 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbZIKWRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932104AbZIKWVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757091AbZIKWRZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 18:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZIKWRY
+	id S932104AbZIKWVo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 18:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756982AbZIKWVo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 18:17:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46243 "EHLO ogre.sisk.pl"
+	Fri, 11 Sep 2009 18:21:44 -0400
+Received: from claw.goop.org ([74.207.240.146]:53349 "EHLO claw.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756996AbZIKWRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 18:17:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ben Gamari <bgamari.foss@gmail.com>
-Subject: Re: [PATCH 7/9] PM: Measure device suspend and resume times
-Date: Sat, 12 Sep 2009 00:18:23 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <200909100127.11252.rjw@sisk.pl> <200909100139.21954.rjw@sisk.pl> <20090911174831.GA11467@ben-laptop>
-In-Reply-To: <20090911174831.GA11467@ben-laptop>
+	id S1753021AbZIKWVn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 18:21:43 -0400
+Message-ID: <4AAACD79.5020105@goop.org>
+Date: Fri, 11 Sep 2009 15:21:45 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jesper Juhl <jj@chaosbits.net>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] x86/xen for v2.6.32
+References: <20090911200135.GA1426@elte.hu> <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net>
+In-Reply-To: <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net>
+X-Enigmail-Version: 0.97a
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909120018.23375.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 September 2009, Ben Gamari wrote:
-> On Thu, Sep 10, 2009 at 01:39:21AM +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Measure and print the time of suspending and resuming all devices.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Do you have any rough numbers describing actual suspend/resume times
-> before and after this patch set?  Of what order of magnitude is the
-> improvement on standard x86 hardware? Just curious.
+On 09/11/09 15:07, Jesper Juhl wrote:
+> Why is this cast of 'va' needed?  As far as I can see, 'va' already has 
+> the correct type of "unsigned long".
+> Pointless casts do more harm than good, let's remove this one :-)
+>   
 
-Depending on the system on which it's run, it gives up to 15% speedup,
-but please note that only PCI and ACPI devices are now allowed to
-suspend/resume asynchronously, while on my test systems the most significant
-stalls are from USB, serio devices and (SATA) drives which are still
-suspended/resumed synchronously.
+Yup.  Don't know what lead me to put it there; cut'n'paste, possibly. 
+Anyway, I'll send out a fix when I get around to it.
 
-Thanks,
-Rafael
+    J
