@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753372AbZIKOQ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753403AbZIKOVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753372AbZIKOQ7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:16:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZIKOQ7
+	id S1753403AbZIKOVq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752835AbZIKOVp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:16:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48334 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752249AbZIKOQ6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:16:58 -0400
-Date: Fri, 11 Sep 2009 10:16:59 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, hch@infradead.org, akpm@linux-foundation.org,
-       jack@suse.cz, Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090911141659.GA3508@infradead.org>
-References: <1252654450-25721-1-git-send-email-jens.axboe@oracle.com> <20090911134241.GB19707@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911134241.GB19707@mit.edu>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 11 Sep 2009 10:21:45 -0400
+Received: from fifo99.com ([67.223.236.141]:57823 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752563AbZIKOVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:21:44 -0400
+Subject: Re: [PATCH 8/8] fanotify: send events to userspace over socket
+ reads
+From: Daniel Walker <dwalker@fifo99.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, viro@zeniv.linux.org.uk,
+       alan@linux.intel.com, hch@infradead.org
+In-Reply-To: <1252678545.2305.4.camel@dhcp231-106.rdu.redhat.com>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+	 <20090911052649.32359.18553.stgit@paris.rdu.redhat.com>
+	 <1252678130.30578.848.camel@desktop>
+	 <1252678545.2305.4.camel@dhcp231-106.rdu.redhat.com>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 07:22:18 -0700
+Message-Id: <1252678938.30578.851.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 09:42:41AM -0400, Theodore Tso wrote:
-> > v19 include:
-> > 
-> > - Drop the max writeback pages patch from Ted. I think we should do
-> >   something to that effect, but there's really no reason to entangle
-> >   it with this patchset.
-> 
-> That's reasonable, but I'd really like to know whether some VM hacker
-> going to try to deal with this during the 2.6.32 window?  Such as
-> maybe Wu Fengguang's patches, perhaps?  
-> 
-> Or do I need to put in some kind of hack into ext4 ala what XFS did to
-> work around this problem until we can come up with a longer-term fix?
+On Fri, 2009-09-11 at 10:15 -0400, Eric Paris wrote:
 
-I defintively want to see something in the VM, but I also agree with
-Jens' decision not to include it in the patchkit.  It's not really
-related to the patchkit except for depending on it, and we still
-have a lot of discussion going on.  If we can't get an agreement with
-the VM people by the end of the regular merge window I'm all for pushing
-your simple patch.
+> I will look at all of the my 80+ character lines again.  This one in
+> particular, I will not break up.  I might read a little too broadly in
+> CodingStyle where it says the "exception to this is where exceeding 80
+> columns significantly increases readability and does not hide
+> information".
+
+Yeah, it's ok if you don't break up any, or just do some. The fewer long
+lines tho the cleaner it is I think.
+
+Daniel
+
