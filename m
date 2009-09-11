@@ -1,76 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZIKWHr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbZIKWJq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbZIKWHr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 18:07:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756857AbZIKWHr
+	id S1757013AbZIKWJq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 18:09:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbZIKWJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 18:07:47 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:11683 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756854AbZIKWHq (ORCPT
+	Fri, 11 Sep 2009 18:09:45 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:51916 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756841AbZIKWJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 18:07:46 -0400
-Date: Sat, 12 Sep 2009 00:07:49 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [GIT PULL] x86/xen for v2.6.32
-In-Reply-To: <20090911200135.GA1426@elte.hu>
-Message-ID: <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net>
-References: <20090911200135.GA1426@elte.hu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 11 Sep 2009 18:09:44 -0400
+Message-ID: <4AAACAA4.2030707@web.de>
+Date: Sat, 12 Sep 2009 00:09:40 +0200
+From: Jan Kiszka <jan.kiszka@web.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); de; rv:1.8.1.12) Gecko/20080226 SUSE/2.0.0.12-1.1 Thunderbird/2.0.0.12 Mnenhy/0.7.5.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 3/5] hw-breakpoints: Rewrite the hw-breakpoints layer
+ on top of perf counters
+References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com> <1252571367-25876-4-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <1252571367-25876-4-git-send-email-fweisbec@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD0A703AE4E77CD1205CE3488"
+X-Provags-ID: V01U2FsdGVkX19ON6uJARJoenjYR3kf2liHbrgkhTK+2cHX61Wv
+	fZi0fvVRYnOArfrWsR1bndPTVlGBcV0l31aF85gNa7YzLvYOx1
+	EDX9fpLr0=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009, Ingo Molnar wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD0A703AE4E77CD1205CE3488
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-[...]
-> +static __init void xen_load_gdt_boot(const struct desc_ptr *dtr)
-> +{
-> +	unsigned long va = dtr->address;
-> +	unsigned int size = dtr->size + 1;
-> +	unsigned pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
-> +	unsigned long frames[pages];
-> +	int f;
-> +
-> +	/*
-> +	 * A GDT can be up to 64k in size, which corresponds to 8192
-> +	 * 8-byte entries, or 16 4k pages..
-> +	 */
-> +
-> +	BUG_ON(size > 65536);
-> +	BUG_ON(va & ~PAGE_MASK);
-> +
-> +	for (f = 0; va < dtr->address + size; va += PAGE_SIZE, f++) {
-> +		pte_t pte;
-> +		unsigned long pfn, mfn;
-> +
-> +		pfn = virt_to_pfn(va);
-> +		mfn = pfn_to_mfn(pfn);
-> +
-> +		pte = pfn_pte(pfn, PAGE_KERNEL_RO);
-> +
-> +		if (HYPERVISOR_update_va_mapping((unsigned long)va, pte, 0))
-> +			BUG();
-[...]
+Frederic Weisbecker wrote:
+> This patch rebase the implementation of the breakpoints API on top of
+> perf counters instances.
+>=20
+> The core breakpoint API has changed a bit:
+>=20
+> - register_kernel_hw_breakpoint() now takes a cpu as a parameter. For
+>   now it doesn't support all cpu wide breakpoints but this may be
+>   implemented soon.
+>=20
+> - unregister_kernel_hw_breakpoint() and unregister_user_hw_breakpoint()=
 
-Why is this cast of 'va' needed?  As far as I can see, 'va' already has 
-the correct type of "unsigned long".
-Pointless casts do more harm than good, let's remove this one :-)
+>   have been unified in a single unregister_hw_breakpoint()
+>=20
+> Each breakpoints now match a perf counter which now handles the
+> register scheduling, thread/cpu attachment, etc..
+>=20
+> The new layering is now made as follows:
+>=20
+>        ptrace       kgdb      ftrace   perf syscall
+>           \          |          /         /
+>            \         |         /         /
 
-Sorry that all I could comment on was this trivial thing, but I thought it 
-better to comment than keep silent now that I had read the patch and 
-spotted it...
+kgdb doesn't fit here as it requires nmi-safe services.
+
+I don't think you want to make the whole stack nmi-safe but rather
+provide a separate interface that allows kgdb to announce to the kernel
+when it uses some slot. Those slots should simply be excluded from
+hardware updates. That's roughly the logic we use in KVM for guest
+debugging: when the host starts to use debug registers for that purpose,
+the guest's setting will not effect the real hardware anymore.
+
+>                                         /
+>             Core breakpoint API        /
+>                                       /
+>                      |               /
+>                      |              /
+>=20
+>               Breakpoints perf counters
+>=20
+>                      |
+>                      |
+>=20
+>                Breakpoints PMU ---- Debug Register constraints handling=
+
+>                                     (Part of core breakpoint API)
+>                      |
+>                      |
+>=20
+>              Hardware debug registers
+>=20
+> Reasons of this rewrite:
+>=20
+> - Use the centralized/optimized pmu registers scheduling,
+>   implying an easier arch integration
+> - More powerful register handling: perf attributes (pinned/flexible
+>   events, exclusive/non-exclusive, tunable period, etc...)
+>=20
+> Impact:
+>=20
+> - New perf ABI: the hardware breakpoints counters
+> - Ptrace breakpoints setting remains tricky and still needs some per
+>   thread breakpoints references.
+>=20
+> Todo (in the order):
+>=20
+> - Drop struct hw_breakpoint and store generic breakpoints fields inside=
+
+>   struct perf_counter_attr to have a common way to set breakpoints
+>   parameters.
+> - Support breakpoints perf counter events for perf tools (ie: implement=
+
+>   perf_bpcounter_event())
+> - Support from perf tools
+
+Still on my wishlist for KVM is a cheap & easy way to obtain the current
+register content or to refresh it in hardware. It's not yet clear to me
+where to hook this in the given design. It looks like this information
+can be scattered over the current thread and some perf counters.
+
+Jan
 
 
--- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+--------------enigD0A703AE4E77CD1205CE3488
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkqqyqkACgkQniDOoMHTA+kfKACfU8WL+22jJK7CHKisI4Mgl3/L
+O78An1F6Ku5ToSCo71KIrxIZlSz4JgMY
+=nW5l
+-----END PGP SIGNATURE-----
+
+--------------enigD0A703AE4E77CD1205CE3488--
