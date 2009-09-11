@@ -1,285 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752945AbZIKBax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752616AbZIKBdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752945AbZIKBax (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 21:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752035AbZIKBax
+	id S1752616AbZIKBdg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 21:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751519AbZIKBdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 21:30:53 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:54706 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751929AbZIKBaw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 21:30:52 -0400
-Date: Thu, 10 Sep 2009 20:30:54 -0500
-From: Dimitri Sivanich <sivanich@sgi.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] Add memory mapped RTC driver for UV
-Message-ID: <20090911013054.GA6567@sgi.com>
-Mime-Version: 1.0
+	Thu, 10 Sep 2009 21:33:35 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:45321 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751448AbZIKBdf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 21:33:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=sYwd5kPf9FeGd7b+Gt+3sfab7WN18Rve7tvD7IEX63q1j2BUwQ7iuN8yB9dH04Gj6G
+         VdtmTQKclKBRtsyJwdE4Hm6nG75IB+QLh7GJJB1R/NkzxTcp60M+GPcoyw/nou29sR9j
+         68pT0uBb/M/VCR1Fukfq3FS4oBXcQyeoms2Ms=
+Date: Fri, 11 Sep 2009 03:33:33 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH tracing/kprobes 0/7] tracing/kprobes: kprobe-based
+	event tracer update and perf support
+Message-ID: <20090911013332.GB16396@nowhere>
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This driver memory maps the UV Hub RTC.
+On Thu, Sep 10, 2009 at 07:52:58PM -0400, Masami Hiramatsu wrote:
+> Hi Frederic,
+> 
+> This series fixes bugs and upgrades kprobe-based event tracer
+> as a dynamic event tracer on ftrace/perf tools. This also enhances
+> tracer output format to show each argument name and event name on
+> each entry.
+> 
+> With this series, users can add trace events dynamically on ftrace
+> and use those events with perf tools as below.
+> 
+> (Step.1) Define new events under new group
+> 
+> $ echo p:mygroup/myprobe do_sys_open dfd=a0 filename=a1 flags=a2 mode=a3 \
+>  > /debug/tracing/kprobes_events
+> $ echo r:mygroup/myretprobe do_sys_open rv >> /debug/tracing/kprobes_events
+> $ cat /debug/tracing/kprobes_events
+> p:myprobe do_sys_open+0 dfd=a0 filename=a1 flags=a2 mode=a3
+> r:myretprobe do_sys_open+0 rv=rv
+> 
+> (You can see that each argument has its name.)
+> 
+> 
+> (Step.2) Perf shows new events
+> 
+> $ perf list
+> ...
+>    mygroup:myretprobe                         [Tracepoint event]
+>    mygroup:myprobe                            [Tracepoint event]
+> ...
+> 
+> 
+> (Step.3) Record events with perf
+> 
+> $ perf record -f -e mygroup:myprobe:record -F 1 -a ls
+> ...
+> [ perf record: Captured and wrote 0.081 MB perf.data (~3544 samples) ]
+> 
+> 
+> (Step.4) Perf trace shows the result
+> 
+> $ perf trace
+> version = 0.5
+>             perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=810d3f7 flags=98800 mode=1
+>             perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=bff7650c flags=8000 mode=1b6
+>             perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=bff7650c flags=98800 mode=bff7450c
+>             perf-1405  [000]     0.000000: myprobe: (c04b0a5c) dfd=ffffff9c filename=bff7650c flags=8000 mode=1b6
 
-Signed-off-by: Dimitri Sivanich <sivanich@sgi.com>
 
----
+Nice!
 
- drivers/char/Kconfig      |    8 +
- drivers/char/Makefile     |    1 
- drivers/char/uv_mmtimer.c |  214 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 223 insertions(+)
+May be another step in the todo-list that would be nice: define the format
+for a type. Like it's done from ftrace events.
 
-Index: linux/drivers/char/Kconfig
-===================================================================
---- linux.orig/drivers/char/Kconfig	2009-09-10 12:38:30.000000000 -0500
-+++ linux/drivers/char/Kconfig	2009-09-10 12:40:12.000000000 -0500
-@@ -1087,6 +1087,14 @@ config MMTIMER
- 	  The mmtimer device allows direct userspace access to the
- 	  Altix system timer.
- 
-+config UV_MMTIMER
-+	tristate "UV_MMTIMER Memory mapped RTC for SGI UV"
-+	depends on X86_UV
-+	default m
-+	help
-+	  The uv_mmtimer device allows direct userspace access to the
-+	  UV system timer.
-+
- source "drivers/char/tpm/Kconfig"
- 
- config TELCLOCK
-Index: linux/drivers/char/Makefile
-===================================================================
---- linux.orig/drivers/char/Makefile	2009-09-10 12:38:30.000000000 -0500
-+++ linux/drivers/char/Makefile	2009-09-10 12:40:12.000000000 -0500
-@@ -58,6 +58,7 @@ obj-$(CONFIG_RAW_DRIVER)	+= raw.o
- obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
- obj-$(CONFIG_MSPEC)		+= mspec.o
- obj-$(CONFIG_MMTIMER)		+= mmtimer.o
-+obj-$(CONFIG_UV_MMTIMER)	+= uv_mmtimer.o
- obj-$(CONFIG_VIOTAPE)		+= viotape.o
- obj-$(CONFIG_HVCS)		+= hvcs.o
- obj-$(CONFIG_IBM_BSR)		+= bsr.o
-Index: linux/drivers/char/uv_mmtimer.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux/drivers/char/uv_mmtimer.c	2009-09-10 14:09:35.000000000 -0500
-@@ -0,0 +1,214 @@
-+/*
-+ * Timer device implementation for SGI UV platform.
-+ *
-+ * This file is subject to the terms and conditions of the GNU General Public
-+ * License.  See the file "COPYING" in the main directory of this archive
-+ * for more details.
-+ *
-+ * Copyright (c) 2009 Silicon Graphics, Inc.  All rights reserved.
-+ *
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/ioctl.h>
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/mm.h>
-+#include <linux/fs.h>
-+#include <linux/mmtimer.h>
-+#include <linux/miscdevice.h>
-+#include <linux/posix-timers.h>
-+#include <linux/interrupt.h>
-+#include <linux/time.h>
-+#include <linux/math64.h>
-+#include <linux/smp_lock.h>
-+
-+#include <asm/genapic.h>
-+#include <asm/uv/uv_hub.h>
-+#include <asm/uv/bios.h>
-+#include <asm/uv/uv.h>
-+
-+MODULE_AUTHOR("Dimitri Sivanich <sivanich@sgi.com>");
-+MODULE_DESCRIPTION("SGI UV Memory Mapped RTC Timer");
-+MODULE_LICENSE("GPL");
-+
-+/* name of the device, usually in /dev */
-+#define UV_MMTIMER_NAME "mmtimer"
-+#define UV_MMTIMER_DESC "SGI UV Memory Mapped RTC Timer"
-+#define UV_MMTIMER_VERSION "1.0"
-+
-+static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
-+						unsigned long arg);
-+static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma);
-+
-+/*
-+ * Period in femtoseconds (10^-15 s)
-+ */
-+static unsigned long uv_mmtimer_femtoperiod;
-+
-+static const struct file_operations uv_mmtimer_fops = {
-+	.owner = THIS_MODULE,
-+	.mmap =	uv_mmtimer_mmap,
-+	.unlocked_ioctl = uv_mmtimer_ioctl,
-+};
-+
-+/**
-+ * uv_mmtimer_ioctl - ioctl interface for /dev/uv_mmtimer
-+ * @file: file structure for the device
-+ * @cmd: command to execute
-+ * @arg: optional argument to command
-+ *
-+ * Executes the command specified by @cmd.  Returns 0 for success, < 0 for
-+ * failure.
-+ *
-+ * Valid commands:
-+ *
-+ * %MMTIMER_GETOFFSET - Should return the offset (relative to the start
-+ * of the page where the registers are mapped) for the counter in question.
-+ *
-+ * %MMTIMER_GETRES - Returns the resolution of the clock in femto (10^-15)
-+ * seconds
-+ *
-+ * %MMTIMER_GETFREQ - Copies the frequency of the clock in Hz to the address
-+ * specified by @arg
-+ *
-+ * %MMTIMER_GETBITS - Returns the number of bits in the clock's counter
-+ *
-+ * %MMTIMER_MMAPAVAIL - Returns 1 if registers can be mmap'd into userspace
-+ *
-+ * %MMTIMER_GETCOUNTER - Gets the current value in the counter and places it
-+ * in the address specified by @arg.
-+ */
-+static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
-+						unsigned long arg)
-+{
-+	int ret = 0;
-+
-+	switch (cmd) {
-+	case MMTIMER_GETOFFSET:	/* offset of the counter */
-+		/*
-+		 * UV RTC register is on it's own page
-+		 */
-+		if (PAGE_SIZE <= (1 << 16))
-+			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
-+				/ 8;
-+		else
-+			ret = -ENOSYS;
-+		break;
-+
-+	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
-+		if (copy_to_user((unsigned long __user *)arg,
-+				&uv_mmtimer_femtoperiod, sizeof(unsigned long)))
-+			ret = -EFAULT;
-+		break;
-+
-+	case MMTIMER_GETFREQ: /* frequency in Hz */
-+		if (copy_to_user((unsigned long __user *)arg,
-+				&sn_rtc_cycles_per_second,
-+				sizeof(unsigned long)))
-+			ret = -EFAULT;
-+		break;
-+
-+	case MMTIMER_GETBITS: /* number of bits in the clock */
-+		ret = hweight64(UVH_RTC_REAL_TIME_CLOCK_MASK);
-+		break;
-+
-+	case MMTIMER_MMAPAVAIL: /* can we mmap the clock into userspace? */
-+		ret = (PAGE_SIZE <= (1 << 16)) ? 1 : 0;
-+		break;
-+
-+	case MMTIMER_GETCOUNTER:
-+		if (copy_to_user((unsigned long __user *)arg,
-+				(unsigned long *)uv_local_mmr_address(UVH_RTC),
-+				sizeof(unsigned long)))
-+			ret = -EFAULT;
-+		break;
-+	default:
-+		ret = -ENOTTY;
-+		break;
-+	}
-+	return ret;
-+}
-+
-+/**
-+ * uv_mmtimer_mmap - maps the clock's registers into userspace
-+ * @file: file structure for the device
-+ * @vma: VMA to map the registers into
-+ *
-+ * Calls remap_pfn_range() to map the clock's registers into
-+ * the calling process' address space.
-+ */
-+static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma)
-+{
-+	unsigned long uv_mmtimer_addr;
-+
-+	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
-+		return -EINVAL;
-+
-+	if (vma->vm_flags & VM_WRITE)
-+		return -EPERM;
-+
-+	if (PAGE_SIZE > (1 << 16))
-+		return -ENOSYS;
-+
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+
-+	uv_mmtimer_addr = UV_LOCAL_MMR_BASE | UVH_RTC;
-+	uv_mmtimer_addr &= ~(PAGE_SIZE - 1);
-+	uv_mmtimer_addr &= 0xfffffffffffffffUL;
-+
-+	if (remap_pfn_range(vma, vma->vm_start, uv_mmtimer_addr >> PAGE_SHIFT,
-+					PAGE_SIZE, vma->vm_page_prot)) {
-+		printk(KERN_ERR "remap_pfn_range failed in uv_mmtimer_mmap\n");
-+		return -EAGAIN;
-+	}
-+
-+	return 0;
-+}
-+
-+static struct miscdevice uv_mmtimer_miscdev = {
-+	MISC_DYNAMIC_MINOR,
-+	UV_MMTIMER_NAME,
-+	&uv_mmtimer_fops
-+};
-+
-+
-+/**
-+ * uv_mmtimer_init - device initialization routine
-+ *
-+ * Does initial setup for the uv_mmtimer device.
-+ */
-+static int __init uv_mmtimer_init(void)
-+{
-+	if (!is_uv_system())
-+		return 0;
-+
-+	/*
-+	 * Sanity check the cycles/sec variable
-+	 */
-+	if (sn_rtc_cycles_per_second < 100000) {
-+		printk(KERN_ERR "%s: unable to determine clock frequency\n",
-+		       UV_MMTIMER_NAME);
-+		return -1;
-+	}
-+
-+	uv_mmtimer_femtoperiod = ((unsigned long)1E15 +
-+				sn_rtc_cycles_per_second / 2) /
-+				sn_rtc_cycles_per_second;
-+
-+	if (misc_register(&uv_mmtimer_miscdev)) {
-+		printk(KERN_ERR "%s: failed to register device\n",
-+		       UV_MMTIMER_NAME);
-+		return -1;
-+	}
-+
-+	printk(KERN_INFO "%s: v%s, %ld MHz\n", UV_MMTIMER_DESC,
-+		UV_MMTIMER_VERSION,
-+		sn_rtc_cycles_per_second/(unsigned long)1E6);
-+
-+	return 0;
-+}
-+
-+module_init(uv_mmtimer_init);
+
+> 
+> 
+> (Step.5) You can also use return probes.
+> 
+> $ perf record -f -e mygroup:myretprobe:record -F 1 -a ls
+> ...
+> [ perf record: Captured and wrote 0.081 MB perf.data (~3544 samples) ]
+> $ perf trace
+> version = 0.5
+>             perf-1408  [000]     0.000000: myretprobe: (c04b0a5c <- c04b0b7d) rv=b
+>             perf-1408  [000]     0.000000: myretprobe: (c04b0a5c <- c04b0b7d) rv=c
+>             perf-1408  [000]     0.000000: myretprobe: (c04b0a5c <- c04b0b7d) rv=d
+>             perf-1408  [000]     0.000000: myretprobe: (c04b0a5c <- c04b0b7d) rv=c
+> 
+> 
+> TODO:
+> - Implement perf kprobe command to help defining new probes.
+
+
+
+Yeah!
+
+I wonder what could be the best workflow to use it.
+
+Imagine the following steps:
+
+- perf kprobe = define kprobes using C expression
+- perf record -e our_kprobes
+- perf trace
+
+That's way too much.
+Especially it's sad to be forced to define a kprobe, then
+get back its name, use it with record, and eventually
+unsheathe perf trace.
+
+I guess we should choose between the low level, very granular
+but uninviting method "kprobe + record + trace" and also an all
+in one quick approach.
+
+And that could be chosen from perf kprobe:
+
+Low level:
+
+perf kprobe --define-only [-p|-r] [probe_name] -a1 [arg1] -a2 [arg2] \
+	    --format="%s %...."
+
+perf record -e kprobes:probe_name
+perf trace
+
+Quick:
+
+perf kprobe -p probe_name -a1 ..... cmdline| -a
+
+And after the profiled task is finished, it could launch perf trace
+by itself (or wait for a Ctrl + C if -a/wide profiling)
+
+Well, it's just a brainstorming, having the low level method first
+would be already a very nice thing.
+
+I'm really looking forward seeing this C expression-like kprobe creation
+tool.
+
+It seems powerful enough to replace printk + kernel rebuild.
+
+No need anymore to write some printk to debug, worrying,
+sweating, feeling guilty because we know we'll need yet another
+printk() after the reboot, and we even already know where while
+it is compiling.
+
+We would build less kernels, then drink less coffee, becoming
+less nervous, more friendly. Everyone will offer flowers in
+the street, the icebergs will grow back and white bears will...
+
+And eventually we'll be inspired enough to write perf love,
+the more than expected tool to post process ftrace "love" events.
+
+Thanks,
+Frederic.
+
