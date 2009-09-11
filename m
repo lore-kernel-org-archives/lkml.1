@@ -1,50 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754821AbZIKRAh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZIKRAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754821AbZIKRAh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 13:00:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZIKRAg
+	id S1754842AbZIKRAo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 13:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbZIKRAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 13:00:36 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:54208 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754796AbZIKRAf (ORCPT
+	Fri, 11 Sep 2009 13:00:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55900 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754808AbZIKRAi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 13:00:35 -0400
-Message-ID: <4AAA8213.8070008@nortel.com>
-Date: Fri, 11 Sep 2009 11:00:03 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Linux kernel <linux-kernel@vger.kernel.org>
-Subject: BUG?  possible race between tasklet_action and tasklet_kill
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Sep 2009 13:00:38 -0400
+Subject: Re: [RFC][v6][PATCH 0/9] clone_with_pids() syscall
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>,
+       container@us.ibm.com, sukadev@us.ibm.com
+In-Reply-To: <20090911164703.GA29169@us.ibm.com>
+References: <20090910060627.GA24343@us.ibm.com>
+	 <1252668148.7126.13.camel@laptop> <200909111334.45241.arnd@arndb.de>
+	 <20090911164703.GA29169@us.ibm.com>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 19:00:04 +0200
+Message-Id: <1252688404.7126.40.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 11 Sep 2009 17:00:36.0581 (UTC) FILETIME=[6202B950:01CA3301]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think I may have discovered a race between tasklet_action and
-tasklet_kill.  Given how long this code has been around, I assume that
-I'm simply not understanding the purposes of tasklet_kill correctly, but
-it seems like there's a mechanism whereby we could hit the BUG path in
-tasklet_action().
+On Fri, 2009-09-11 at 09:47 -0700, Sukadev Bhattiprolu wrote:
+> | Also, if you're passing a struct, why not put nr_pids in there, and
+> | replace clone_pid_struct with a simple array? That would give us
+> | 
+> | struct clone_struct {
+> |         u64 flags;
+> |         u64 child_stack;
+> |         u32 child_tid;
+> |         u32 parent_tid;
+> | 	u32 nr_pids;
+> | 	u32 reserved1;
+> | 	u64 reserved2;
+> | };
+> | 
+> | int clone2(struct clone_struct *cs, pid_t *pids);
+> 
+> My only concern with this approach was the extra copy_from_user() in the
+> common case (i.e when not using the extended features).  I assume the
+> overhead of copy_from_user() is small enough to be ignored ?
 
-cpu A                             cpu B
-starts tasklet_kill()
-does while loop until
-  TASKLET_STATE_SCHED not set
-                                  runs tasklet_schedule()
-                                  starts tasklet_action()
-tasklet_unlock_wait()
-                                  if (tasklet_trylock(t)) {
-clear_bit(TASKLET_STATE_SCHED)
-                                  test_and_clear_bit(TASKLET_STATE_SCHED
-                                  BUG
+I would think so, esp for small structure, it would be a cache hot copy.
+That is, for x86 I doubt it'll show up. No idea what hoops other arch
+have to jump through to get copy_from_user() doing what it does.
 
-
-Is this a valid issue, or is this an improper usage pattern somehow?
-
-Thanks,
-
-Chris
