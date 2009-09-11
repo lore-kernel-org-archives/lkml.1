@@ -1,95 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752634AbZIKLHF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752728AbZIKLMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752634AbZIKLHF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 07:07:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZIKLHE
+	id S1752728AbZIKLMu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 07:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZIKLMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 07:07:04 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:37817 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZIKLHD (ORCPT
+	Fri, 11 Sep 2009 07:12:49 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:33674 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751920AbZIKLMt convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 07:07:03 -0400
-X-Greylist: delayed 367 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 07:07:03 EDT
-Date: Fri, 11 Sep 2009 13:00:56 +0200
-From: Louis Rilling <Louis.Rilling@kerlabs.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-       Containers <containers@lists.linux-foundation.org>,
-       Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-       mingo@elte.hu, torvalds@linux-foundation.org,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>
-Subject: Re: [RFC][v6][PATCH 8/9]: Define clone_with_pids() syscall
-Message-ID: <20090911110056.GA12824@hawkmoon.kerlabs.com>
-Mail-Followup-To: Arnd Bergmann <arnd@arndb.de>,
-	Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
-	Containers <containers@lists.linux-foundation.org>,
-	Nathan Lynch <nathanl@austin.ibm.com>, linux-kernel@vger.kernel.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>, hpa@zytor.com,
-	mingo@elte.hu, torvalds@linux-foundation.org,
-	Alexey Dobriyan <adobriyan@gmail.com>,
-	Pavel Emelyanov <xemul@openvz.org>
-References: <20090910060627.GA24343@us.ibm.com> <200909100931.25585.arnd@arndb.de> <20090910212837.GA31459@us.ibm.com> <200909111231.30495.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_bohort-29211-1252666815-0001-2"
-Content-Disposition: inline
-In-Reply-To: <200909111231.30495.arnd@arndb.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 11 Sep 2009 07:12:49 -0400
+X-Greylist: delayed 338 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 07:12:48 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=C3bLTXaQQ8NG1LqjymLCD3u/9W+c3C3aBmzQKLw9MgosLkSHfg00/lZvqBXAVEWRyv
+         MoyQXXIwAUw6lgOE8bi0dy7xIXbhXdracbWcxWtZJhn+SPVRPHJDUiTSfRmHys300/yz
+         aV0Hm524gRznCqOWQ6xU2WSobLU3q5ZvT6JXk=
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.64.0909072227140.15430@sister.anvils>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
+	 <Pine.LNX.4.64.0909072227140.15430@sister.anvils>
+Date: Fri, 11 Sep 2009 20:07:13 +0900
+Message-ID: <82e12e5f0909110407h178ab6e0hbd6ac9e204738ae7@mail.gmail.com>
+Subject: Re: [PATCH 1/8] mm: munlock use follow_page
+From: Hiroaki Wakabayashi <primulaelatior@gmail.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <lee.schermerhorn@hp.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+2009/9/8 Hugh Dickins <hugh.dickins@tiscali.co.uk>:
+> Hiroaki Wakabayashi points out that when mlock() has been interrupted
+> by SIGKILL, the subsequent munlock() takes unnecessarily long because
+> its use of __get_user_pages() insists on faulting in all the pages
+> which mlock() never reached.
+>
+> It's worse than slowness if mlock() is terminated by Out Of Memory kill:
+> the munlock_vma_pages_all() in exit_mmap() insists on faulting in all the
+> pages which mlock() could not find memory for; so innocent bystanders are
+> killed too, and perhaps the system hangs.
+>
+> __get_user_pages() does a lot that's silly for munlock(): so remove the
+> munlock option from __mlock_vma_pages_range(), and use a simple loop of
+> follow_page()s in munlock_vma_pages_range() instead; ignoring absent
+> pages, and not marking present pages as accessed or dirty.
+>
+> (Change munlock() to only go so far as mlock() reached?  That does not
+> work out, given the convention that mlock() claims complete success even
+> when it has to give up early - in part so that an underlying file can be
+> extended later, and those pages locked which earlier would give SIGBUS.)
+>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
 
---=_bohort-29211-1252666815-0001-2
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Reviewed-by: Hiroaki Wakabayashi <primulaelatior@gmail.com>
 
-On 11/09/09 12:31 +0200, Arnd Bergmann wrote:
-> On Thursday 10 September 2009, Sukadev Bhattiprolu wrote:
-> > Since this is a variant of clone() and clone is listed as a PTREGSCALL(=
-),
-> > I pass in the pt_regs.
-> >=20
-> > arch/x86/kernel/entry_32.S lists clone() under this comment:
-> >=20
-> > /*
-> >  * System calls that need a pt_regs pointer.
-> >  */
-> >=20
-> > Is there a guideline on what system calls use/need pt_regs ?
->=20
-> You need pt_regs if you access any registers from the user task
-> other than the argument registers. In case of clone(), this is
-> the user stack pointer.
+It very simple and so cool! I have learned something.
 
-AFAICS clone() actually needs _all_ registers (see x86 copy_thread() for
-instance). Any variant of clone() will have this requirement.
-
-Louis
-
---=20
-Dr Louis Rilling			Kerlabs
-Skype: louis.rilling			Batiment Germanium
-Phone: (+33|0) 6 80 89 08 23		80 avenue des Buttes de Coesmes
-http://www.kerlabs.com/			35700 Rennes
-
---=_bohort-29211-1252666815-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqqLegACgkQVKcRuvQ9Q1TSUQCguOM4SiZDaN6vYaxukoMfnggt
-xCEAn0ixmZQL/6PoIqEMqLO7lyn+9sBE
-=QGGS
------END PGP SIGNATURE-----
-
---=_bohort-29211-1252666815-0001-2--
+--
+Thanks,
+Hiroaki Wakabayashi
