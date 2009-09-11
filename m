@@ -1,86 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZIKTsG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756098AbZIKTw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbZIKTsG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 15:48:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZIKTsE
+	id S1756098AbZIKTw1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 15:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbZIKTw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 15:48:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41647 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbZIKTsD (ORCPT
+	Fri, 11 Sep 2009 15:52:26 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50799
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755908AbZIKTwZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 15:48:03 -0400
-Date: Fri, 11 Sep 2009 21:51:31 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: "John Stoffel" <john@stoffel.org>
-Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, peterz@infradead.org,
-       yanmin_zhang@linux.intel.com, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com
-Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
- performance
-Message-ID: <20090911215131.67d9f39f@infradead.org>
-In-Reply-To: <19114.41505.479086.782442@stoffel.org>
-References: <20090911174019.1ed02737@infradead.org>
-	<19114.41505.479086.782442@stoffel.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Fri, 11 Sep 2009 15:52:25 -0400
+Date: Fri, 11 Sep 2009 12:52:42 -0700 (PDT)
+Message-Id: <20090911.125242.244008840.davem@davemloft.net>
+To: eric.dumazet@gmail.com
+Cc: albcamus@gmail.com, parag.lkml@gmail.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] net: Fix sock_wfree() race
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090911.114337.150207703.davem@davemloft.net>
+References: <4AA64A11.7090804@gmail.com>
+	<4AA6DF7B.7060105@gmail.com>
+	<20090911.114337.150207703.davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009 15:16:49 -0400
-"John Stoffel" <john@stoffel.org> wrote:
+From: David Miller <davem@davemloft.net>
+Date: Fri, 11 Sep 2009 11:43:37 -0700 (PDT)
 
-> >>>>> "Arjan" == Arjan van de Ven <arjan@infradead.org> writes:
+> From: Eric Dumazet <eric.dumazet@gmail.com>
+> Date: Wed, 09 Sep 2009 00:49:31 +0200
 > 
-> Arjan> From: Arjan van de Ven <arjan@linux.intel.com>
-> Arjan> Subject: [PATCH] cpuidle: A new variant of the menu governor
+>> [PATCH] net: Fix sock_wfree() race
+>> 
+>> Commit 2b85a34e911bf483c27cfdd124aeb1605145dc80
+>> (net: No more expensive sock_hold()/sock_put() on each tx)
+>> opens a window in sock_wfree() where another cpu
+>> might free the socket we are working on.
+>> 
+>> Fix is to call sk->sk_write_space(sk) only
+>> while still holding a reference on sk.
+>> 
+>> Since doing this call is done before the 
+>> atomic_sub(truesize, &sk->sk_wmem_alloc), we should pass truesize as 
+>> a bias for possible sk_wmem_alloc evaluations.
+>> 
+>> Reported-by: Jike Song <albcamus@gmail.com>
+>> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
 > 
-> Arjan> This patch adds a new idle governor which balances power
-> Arjan> savings, energy efficiency and performance impact.
-> 
-> Arjan> The reason for a reworked governor is that there have been
-> Arjan> serious performance issues reported with the existing code
-> Arjan> on Nehalem server systems.
-> 
-> Arjan> To show this I'm sure Andrew wants to see benchmark results:
-> Arjan> (benchmark is "fio", "no cstates" is using "idle=poll")
-> 
-> Arjan> 		no cstates	current linux	new
-> Arjan> algorithm 1 disk		107 Mb/s	85
-> Arjan> Mb/s		105 Mb/s 2 disks		215
-> Arjan> Mb/s	123 Mb/s	209 Mb/s 12 disks	590
-> Arjan> Mb/s	320 Mb/s	585 Mb/s
-> 
-> Don't you need another row or three where you show a) how much time
-> each test took, and b) how much (or average) power used for the
-> duration of the test?  
-> 
-> I'm just curious if the new algorithm (or even the current one!) saves
-> any appreciable power over the 'no cstates' case.  It's not clear what
-> the savings are.  
+> Applied to net-next-2.6, thanks.  I'll queue up your simpler
+> version for -stable.
 
-if you don't do C states your cpu is likely using 50 Watts more power.
-not an option in general.
+Eric, I have to revert, as you didn't update the callbacks
+of several protocols such as SCTP and RDS in this change.
 
-> 
-> Also, latency in terms of switching to higher power and then back down
-> would be nice to see.
-
-these are C states not P states.
-
-
-latency depends on the cpu; this is exposed in sysfs;
-tends to be for the deepest C state in the 80 to 200 usec range.
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Let me know when you have a fixed version of this patch :-)
