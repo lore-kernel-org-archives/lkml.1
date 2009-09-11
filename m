@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756323AbZIKUAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756437AbZIKUBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756323AbZIKUAj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 16:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756307AbZIKUAg
+	id S1756437AbZIKUBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 16:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756308AbZIKUAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 16:00:36 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:41119 "EHLO
+	Fri, 11 Sep 2009 16:00:38 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:65129 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755850AbZIKUAa (ORCPT
+	with ESMTP id S1755905AbZIKUAb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 16:00:30 -0400
-Message-Id: <20090911200033.244007539@goodmis.org>
+	Fri, 11 Sep 2009 16:00:31 -0400
+Message-Id: <20090911200033.537674063@goodmis.org>
 References: <20090911195849.451244684@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 11 Sep 2009 15:58:52 -0400
+Date: Fri, 11 Sep 2009 15:58:53 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,65 +23,53 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
        Dick Streefland <dick@streefland.net>,
        Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH 03/15] kconfig: add make localyesconfig option
-Content-Disposition: inline; filename=0003-kconfig-add-make-localyesconfig-option.patch
+Subject: [PATCH 04/15] kconfig: streamline_config.pl do not stop with no depends
+Content-Disposition: inline; filename=0004-kconfig-streamline_config.pl-do-not-stop-with-no-dep.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-This adds the option localyesconfig to make. This is similar to
-localmodconfig, but after it removes unnecessary modules it runs
+If a config does not have a prompt, it must be selected.
+streamline_config.pl keeps track of all configs that select other configs.
+If a config that does not have a prompt needs to be set to enable a
+current module, it will include all configs that select it.
+Note, streamline_config.pl does not enable modules that are not already
+enabled. It only keeps enabled those that were enabled and might be
+needed to compile the current modules.
 
-  sed -i s/=m/=y/
-
-on the .config file. It then runs "make silentoldconfig" to fix any
-wholes that were created by the conversion of modules to core.
+The code to find the selects of a config is after the code that
+adds the depends. But if a config needed selects but had no dependencies,
+it would not be set. Because the code would stop before getting to
+the select.
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- scripts/kconfig/Makefile |   13 ++++++++++++-
- 1 files changed, 12 insertions(+), 1 deletions(-)
+ scripts/kconfig/streamline_config.pl |    8 +++-----
+ 1 files changed, 3 insertions(+), 5 deletions(-)
 
-diff --git a/scripts/kconfig/Makefile b/scripts/kconfig/Makefile
-index e4d8394..12a4d9e 100644
---- a/scripts/kconfig/Makefile
-+++ b/scripts/kconfig/Makefile
-@@ -3,7 +3,7 @@
- # These targets are used from top-level makefile
+diff --git a/scripts/kconfig/streamline_config.pl b/scripts/kconfig/streamline_config.pl
+index 79d8557..1774905 100644
+--- a/scripts/kconfig/streamline_config.pl
++++ b/scripts/kconfig/streamline_config.pl
+@@ -237,13 +237,11 @@ while ($repeat) {
+     foreach my $config (keys %configs) {
+ 	$config =~ s/^CONFIG_//;
  
- PHONY += oldconfig xconfig gconfig menuconfig config silentoldconfig update-po-config \
--	localmodconfig
-+	localmodconfig localyesconfig
+-	if (!defined($depends{$config})) {
+-	    next;
++	if (defined($depends{$config})) {
++	    # This config has dependencies. Make sure they are also included
++	    parse_config_dep_select $depends{$config};
+ 	}
  
- ifdef KBUILD_KCONFIG
- Kconfig := $(KBUILD_KCONFIG)
-@@ -38,6 +38,16 @@ localmodconfig: $(obj)/streamline_config.pl $(obj)/conf
- 		 mv -f .config.old.1 .config.old)
- 	$(Q)rm -f .tmp.config
- 
-+localyesconfig: $(obj)/streamline_config.pl
-+	$(Q)perl $< $(Kconfig) > .tmp.config
-+	$(Q)sed -i s/=m/=y/ .tmp.config
-+	$(Q)cmp -s .tmp.config .config ||		\
-+		(mv -f .config .config.old.1;		\
-+		 mv -f .tmp.config .config;		\
-+		 $(obj)/conf -s $(Kconfig);		\
-+		 mv -f .config.old.1 .config.old)
-+	$(Q)rm -f .tmp.config
-+
- # Create new linux.pot file
- # Adjust charset to UTF-8 in .po file to accept UTF-8 in Kconfig files
- # The symlink is used to repair a deficiency in arch/um
-@@ -94,6 +104,7 @@ help:
- 	@echo  '  gconfig	  - Update current config utilising a GTK based front-end'
- 	@echo  '  oldconfig	  - Update current config utilising a provided .config as base'
- 	@echo  '  localmodconfig  - Update current config disabling modules not loaded'
-+	@echo  '  localyesconfig  - Update current config converting local mods to core'
- 	@echo  '  silentoldconfig - Same as oldconfig, but quietly, additionally update deps'
- 	@echo  '  randconfig	  - New config with random answer to all options'
- 	@echo  '  defconfig	  - New config with default answer to all options'
+-	# This config has dependencies. Make sure they are also included
+-	parse_config_dep_select $depends{$config};
+-
+ 	if (defined($prompt{$config}) || !defined($selects{$config})) {
+ 	    next;
+ 	}
 -- 
 1.6.3.3
 
