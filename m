@@ -1,60 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754405AbZIKPRc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbZIKPR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754405AbZIKPRc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 11:17:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754335AbZIKPR1
-	(ORCPT <rfc822;linux-kernel-outgoing>);
+	id S1754346AbZIKPR1 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 11 Sep 2009 11:17:27 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:33577 "EHLO
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZIKPR0
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 11 Sep 2009 11:17:26 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:50422 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753467AbZIKPRQ (ORCPT
+	with ESMTP id S1752536AbZIKPRQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Sep 2009 11:17:16 -0400
-Message-Id: <20090911151718.820062651@goodmis.org>
+Message-Id: <20090911151719.109982729@goodmis.org>
 References: <20090911151544.006804282@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 11 Sep 2009 11:15:45 -0400
+Date: Fri, 11 Sep 2009 11:15:46 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: [PATCH 1/2] x86/tracing: comment need for atomic nop
-Content-Disposition: inline; filename=0001-x86-tracing-comment-need-for-atomic-nop.patch
+Subject: [PATCH 2/2] tracing: add latency format to function_graph tracer
+Content-Disposition: inline; filename=0002-tracing-add-latency-format-to-function_graph-tracer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The dynamic function tracer relys on the macro P6_NOP5 always being
-an atomic NOP. If for some reason it is changed to be two operations
-(like a nop2 nop3) it can faults within the kernel when the function
-tracer modifies the code.
+While debugging something with the function_graph tracer, I found the
+need to see the preempt count of the traces. Unfortunately, since
+the function graph tracer has its own output formatting, it does not
+honor the latency-format option.
 
-This patch adds a comment to note that the P6_NOPs are expected to
-be atomic. This will hopefully prevent anyone from changing that.
+This patch makes the function_graph tracer honor the latency-format
+option, but still keeps control of the output. But now we have the
+same details that the latency-format supplies.
 
-Reported-by: Mathieu Desnoyer <mathieu.desnoyers@polymtl.ca>
+ # tracer: function_graph
+ #
+ #      _-----=> irqs-off
+ #     / _----=> need-resched
+ #    | / _---=> hardirq/softirq
+ #    || / _--=> preempt-depth
+ #    ||| /
+ #    ||||
+ # CPU||||  DURATION                  FUNCTION CALLS
+ # |  ||||   |   |                     |   |   |   |
+  3)  d..1  1.333 us    |        idle_cpu();
+  3)  d.h1              |        tick_check_idle() {
+  3)  d.h1  0.550 us    |          tick_check_oneshot_broadcast();
+  3)  d.h1              |          tick_nohz_stop_idle() {
+  3)  d.h1              |            ktime_get() {
+  3)  d.h1              |              ktime_get_ts() {
+
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- arch/x86/include/asm/nops.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ kernel/trace/trace_functions_graph.c |   74 +++++++++++++++++++++++++++++++---
+ 1 files changed, 68 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/nops.h b/arch/x86/include/asm/nops.h
-index ad2668e..6d8723a 100644
---- a/arch/x86/include/asm/nops.h
-+++ b/arch/x86/include/asm/nops.h
-@@ -65,6 +65,8 @@
-    6: osp nopl 0x00(%eax,%eax,1)
-    7: nopl 0x00000000(%eax)
-    8: nopl 0x00000000(%eax,%eax,1)
-+   Note: All the above are assumed to be a single instruction.
-+	There is kernel code that depends on this.
- */
- #define P6_NOP1	GENERIC_NOP1
- #define P6_NOP2	".byte 0x66,0x90\n"
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index b3749a2..ee791a9 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -364,6 +364,29 @@ print_graph_proc(struct trace_seq *s, pid_t pid)
+ }
+ 
+ 
++static enum print_line_t
++print_graph_lat_fmt(struct trace_seq *s, struct trace_entry *entry)
++{
++	int hardirq, softirq;
++
++	hardirq = entry->flags & TRACE_FLAG_HARDIRQ;
++	softirq = entry->flags & TRACE_FLAG_SOFTIRQ;
++
++	if (!trace_seq_printf(s, " %c%c%c",
++			      (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' :
++				(entry->flags & TRACE_FLAG_IRQS_NOSUPPORT) ?
++				  'X' : '.',
++			      (entry->flags & TRACE_FLAG_NEED_RESCHED) ?
++				'N' : '.',
++			      (hardirq && softirq) ? 'H' :
++				hardirq ? 'h' : softirq ? 's' : '.'))
++		return 0;
++
++	if (entry->preempt_count)
++		return trace_seq_printf(s, "%x", entry->preempt_count);
++	return trace_seq_puts(s, ".");
++}
++
+ /* If the pid changed since the last trace, output this event */
+ static enum print_line_t
+ verif_pid(struct trace_seq *s, pid_t pid, int cpu, struct fgraph_data *data)
+@@ -521,6 +544,7 @@ print_graph_irq(struct trace_iterator *iter, unsigned long addr,
+ 		if (ret == TRACE_TYPE_PARTIAL_LINE)
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
++
+ 	/* Proc */
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
+ 		ret = print_graph_proc(s, pid);
+@@ -758,6 +782,13 @@ print_graph_prologue(struct trace_iterator *iter, struct trace_seq *s,
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
+ 
++	/* Latency format */
++	if (trace_flags & TRACE_ITER_LATENCY_FMT) {
++		ret = print_graph_lat_fmt(s, ent);
++		if (ret == TRACE_TYPE_PARTIAL_LINE)
++			return TRACE_TYPE_PARTIAL_LINE;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -952,28 +983,59 @@ print_graph_function(struct trace_iterator *iter)
+ 	return TRACE_TYPE_HANDLED;
+ }
+ 
++static void print_lat_header(struct seq_file *s)
++{
++	static const char spaces[] = "                "	/* 16 spaces */
++		"    "					/* 4 spaces */
++		"                 ";			/* 17 spaces */
++	int size = 0;
++
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
++		size += 16;
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
++		size += 4;
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
++		size += 17;
++
++	seq_printf(s, "#%.*s  _-----=> irqs-off        \n", size, spaces);
++	seq_printf(s, "#%.*s / _----=> need-resched    \n", size, spaces);
++	seq_printf(s, "#%.*s| / _---=> hardirq/softirq \n", size, spaces);
++	seq_printf(s, "#%.*s|| / _--=> preempt-depth   \n", size, spaces);
++	seq_printf(s, "#%.*s||| /                      \n", size, spaces);
++	seq_printf(s, "#%.*s||||                       \n", size, spaces);
++}
++
+ static void print_graph_headers(struct seq_file *s)
+ {
++	int lat = trace_flags & TRACE_ITER_LATENCY_FMT;
++
++	if (lat)
++		print_lat_header(s);
++
+ 	/* 1st line */
+-	seq_printf(s, "# ");
++	seq_printf(s, "#");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
+ 		seq_printf(s, "     TIME       ");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
+-		seq_printf(s, "CPU");
++		seq_printf(s, " CPU");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
+-		seq_printf(s, "  TASK/PID      ");
++		seq_printf(s, "  TASK/PID       ");
++	if (lat)
++		seq_printf(s, "||||");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
+ 		seq_printf(s, "  DURATION   ");
+ 	seq_printf(s, "               FUNCTION CALLS\n");
+ 
+ 	/* 2nd line */
+-	seq_printf(s, "# ");
++	seq_printf(s, "#");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
+ 		seq_printf(s, "      |         ");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
+-		seq_printf(s, "|  ");
++		seq_printf(s, " |  ");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
+-		seq_printf(s, "  |    |        ");
++		seq_printf(s, "   |    |        ");
++	if (lat)
++		seq_printf(s, "||||");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
+ 		seq_printf(s, "   |   |      ");
+ 	seq_printf(s, "               |   |   |   |\n");
 -- 
 1.6.3.3
 
