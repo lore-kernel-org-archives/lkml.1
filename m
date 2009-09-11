@@ -1,177 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756954AbZIKV2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756940AbZIKVan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756954AbZIKV2m (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 17:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756938AbZIKV2k
+	id S1756940AbZIKVan (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZIKVak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 17:28:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57799 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756904AbZIKV2j (ORCPT
+	Fri, 11 Sep 2009 17:30:40 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:11317 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753345AbZIKVak (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 17:28:39 -0400
-Date: Fri, 11 Sep 2009 14:28:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       risrajak@linux.vnet.ibm.com, iranna.ankad@in.ibm.com
-Subject: Re: [Bugme-new] [Bug 14150] New: BUG: soft lockup - CPU#3 stuck for
- 61s!, while running cpu controller latency testcase on two containers
- parallaly
-Message-Id: <20090911142813.dc823bf1.akpm@linux-foundation.org>
-In-Reply-To: <bug-14150-10286@http.bugzilla.kernel.org/>
-References: <bug-14150-10286@http.bugzilla.kernel.org/>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 17:30:40 -0400
+Date: Fri, 11 Sep 2009 23:30:42 +0200 (CEST)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] x86/fpu for v2.6.32
+In-Reply-To: <20090911194432.GA29736@elte.hu>
+Message-ID: <alpine.LNX.2.00.0909112318190.31018@swampdragon.chaosbits.net>
+References: <20090911194432.GA29736@elte.hu>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(switched to email.  Please respond via emailed reply-to-all, not via the
-bugzilla web interface).
+Hi Ingo,
 
-On Thu, 10 Sep 2009 09:32:30 GMT
-bugzilla-daemon@bugzilla.kernel.org wrote:
+First of all, I want to say that I have no real objections to the patch 
+what-so-ever. The following is merely to satisfy my own personal 
+curiosity - and I'm sure you have better things to do than satisfy my 
+curiosity, so if you want to ignore me; feel free :-)
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=14150
-> 
->            Summary: BUG: soft lockup - CPU#3 stuck for 61s!, while running
->                     cpu controller latency testcase on two containers
->                     parallaly
->            Product: Process Management
->            Version: 2.5
->     Kernel Version: 2.6.31-rc7
->           Platform: All
->         OS/Version: Linux
->               Tree: Mainline
->             Status: NEW
->           Severity: high
->           Priority: P1
->          Component: Scheduler
->         AssignedTo: mingo@elte.hu
->         ReportedBy: risrajak@linux.vnet.ibm.com
->                 CC: serue@us.ibm.com, iranna.ankad@in.ibm.com,
->                     risrajak@in.ibm.com
->         Regression: No
-> 
-> 
-> Created an attachment (id=23055)
->  --> (http://bugzilla.kernel.org/attachment.cgi?id=23055)
-> Config-file-used
-> 
-> Hitting this soft lock issue while running this scenario on 2.6.31-rc7 kernel
-> on SystemX 32 bit on multiple machines.
-> 
-> Scenario:
->     - While running cpu controller latency testcase from LTP same time on two
-> containers.
-> 
-> Steps:
-> 1. Compile ltp-full-20090731.tgz on host.
-> 2. Create two container (Used lxc tool
-> (http://sourceforge.net/projects/lxc/lxc-0.6.3.tar.gz) for creating container )
-> e.g:
->     lxc-create -n foo1
->     lxc-create -n foo2
-> On first shell:
->     lxc-execute -n foo1 -f /usr/etc/lxc/lxc-macvlan.conf /bin/bash
-> on Second shell:
->     lxc-execute -n foo2 -f /usr/etc/lxc/lxc-macvlan.conf /bin/bash
-> 
-> 3. Either you run cpu_latency testcase alone or run "./runltp -f controllers"
-> at same time on both the containers.
-> 4. After testcase execution completes, you can see this message in dmesg.
-> 
-> Expected Result:
->     - Should not reproduce soft lock up issue.
-> - This reproduces 3 times out of 5 tries.
-> 
-> hrtimer: interrupt too slow, forcing clock min delta to 5843235 ns
-> hrtimer: interrupt too slow, forcing clock min delta to 5842476 ns
-> Clocksource tsc unstable (delta = 18749057581 ns)
-> BUG: soft lockup - CPU#3 stuck for 61s! [cpuctl_latency_:17174]
-> Modules linked in: bridge stp llc bnep sco l2cap bluetooth sunrpc ipv6
-> p4_clockmod dm_multipath uinput qla2xxx ata_generic pata_acpi usb_storage e1000
-> scsi_transport_fc joydev scsi_tgt i2c_piix4 pata_serverworks pcspkr serio_raw
-> mptspi mptscsih mptbase scsi_transport_spi radeon ttm drm i2c_algo_bit i2c_core
-> [last unloaded: scsi_wait_scan]
-> 
-> Pid: 17174, comm: cpuctl_latency_ Tainted: G        W  (2.6.31-rc7 #1) IBM
-> eServer BladeCenter HS40 -[883961X]-                    
-> EIP: 0060:[<c058aded>] EFLAGS: 00000283 CPU: 3
-> EIP is at find_next_bit+0x9/0x79
-> EAX: c2c437a0 EBX: f3d433c0 ECX: 00000000 EDX: 00000020
-> ESI: c2c436bc EDI: 00000000 EBP: f063be6c ESP: f063be64
->  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> CR0: 80050033 CR2: 008765a4 CR3: 314d7000 CR4: 000006d0
-> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> DR6: ffff0ff0 DR7: 00000400
-> Call Trace:
->  [<c0427b6e>] cpumask_next+0x17/0x19
->  [<c042c28d>] tg_shares_up+0x53/0x149
->  [<c0424082>] ? tg_nop+0x0/0xc
->  [<c0424082>] ? tg_nop+0x0/0xc
->  [<c042406e>] walk_tg_tree+0x63/0x77
->  [<c042c23a>] ? tg_shares_up+0x0/0x149
->  [<c042e836>] update_shares+0x5d/0x65
->  [<c0432af3>] rebalance_domains+0x114/0x460
->  [<c0403393>] ? restore_all_notrace+0x0/0x18
->  [<c0432e75>] run_rebalance_domains+0x36/0xa3
->  [<c043c324>] __do_softirq+0xbc/0x173
->  [<c043c416>] do_softirq+0x3b/0x5f
->  [<c043c52d>] irq_exit+0x3a/0x68
->  [<c0417846>] smp_apic_timer_interrupt+0x6d/0x7b
->  [<c0403c9b>] apic_timer_interrupt+0x2f/0x34
-> BUG: soft lockup - CPU#2 stuck for 61s! [watchdog/2:11]
-> Modules linked in: bridge stp llc bnep sco l2cap bluetooth sunrpc ipv6
-> p4_clockmod dm_multipath uinput qla2xxx ata_generic pata_acpi usb_storage e1000
-> scsi_transport_fc joydev scsi_tgt i2c_piix4 pata_serverworks pcspkr serio_raw
-> mptspi mptscsih mptbase scsi_transport_spi radeon ttm drm i2c_algo_bit i2c_core
-> [last unloaded: scsi_wait_scan]
-> 
-> Pid: 11, comm: watchdog/2 Tainted: G        W  (2.6.31-rc7 #1) IBM eServer
-> BladeCenter HS40 -[883961X]-                    
-> EIP: 0060:[<c042c313>] EFLAGS: 00000246 CPU: 2
-> EIP is at tg_shares_up+0xd9/0x149
-> EAX: 00000000 EBX: f09b3c00 ECX: f0baac00 EDX: 00000100
-> ESI: 00000002 EDI: 00000400 EBP: f6cb7de0 ESP: f6cb7db8
->  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> CR0: 8005003b CR2: 08070680 CR3: 009c8000 CR4: 000006d0
-> DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> DR6: ffff0ff0 DR7: 00000400
-> Call Trace:
->  [<c0424082>] ? tg_nop+0x0/0xc
->  [<c0424082>] ? tg_nop+0x0/0xc
->  [<c042406e>] walk_tg_tree+0x63/0x77
->  [<c042c23a>] ? tg_shares_up+0x0/0x149
->  [<c042e836>] update_shares+0x5d/0x65
->  [<c0432af3>] rebalance_domains+0x114/0x460
->  [<c0432e75>] run_rebalance_domains+0x36/0xa3
->  [<c043c324>] __do_softirq+0xbc/0x173
->  [<c043c416>] do_softirq+0x3b/0x5f
->  [<c043c52d>] irq_exit+0x3a/0x68
->  [<c0417846>] smp_apic_timer_interrupt+0x6d/0x7b
->  [<c0403c9b>] apic_timer_interrupt+0x2f/0x34
->  [<c0430d37>] ? finish_task_switch+0x5d/0xc4
->  [<c0744b11>] schedule+0x74c/0x7b2
->  [<c0590e28>] ? trace_hardirqs_on_thunk+0xc/0x10
->  [<c0403393>] ? restore_all_notrace+0x0/0x18
->  [<c0471e19>] ? watchdog+0x0/0x79
->  [<c0471e19>] ? watchdog+0x0/0x79
->  [<c0471e63>] watchdog+0x4a/0x79
->  [<c0449a53>] kthread+0x70/0x75
->  [<c04499e3>] ? kthread+0x0/0x75
->  [<c0403e93>] kernel_thread_helper+0x7/0x10
-> [root@hs40 ltp-full-20090731]# uname -a
-> Linux hs40.in.ibm.com 2.6.31-rc7 #1 SMP Thu Sep 3 10:14:41 IST 2009 i686 i686
-> i386 GNU/Linux
-> [root@hs40 ltp-full-20090731]#
-> 
+On Fri, 11 Sep 2009, Ingo Molnar wrote:
+
+[...]
+> +	bool preload_fpu;
+>  
+>  	/* never put a printk in __switch_to... printk() calls wake_up*() indirectly */
+>  
+> -	__unlazy_fpu(prev_p);
+> +	/*
+> +	 * If the task has used fpu the last 5 timeslices, just do a full
+> +	 * restore of the math state immediately to avoid the trap; the
+> +	 * chances of needing FPU soon are obviously high now
+> +	 */
+> +	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter > 5;
+>  
+> +	__unlazy_fpu(prev_p);
+>  
+[...]
+> +	 * If the task has used fpu the last 5 timeslices, just do a full
+> +	 * restore of the math state immediately to avoid the trap; the
+> +	 * chances of needing FPU soon are obviously high now
+> +	 */
+> +	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter > 5;
+>  
+
+I'm wondering about two things:
+
+1) Where did that magic constant "5" come from?
+Is there some fundamental thing about CPU's, cache layout, scheduling, 
+benchmarks or something else that I just don't know that makes 5 the magic 
+"right number"?  Why not 2, 3, 9 or 42?
+
+2) Instead of writing that constant "5" multiple places, wouldn't it be 
+nicer to use a  '#define FPU_RESTORE_TIMESLICES 5'  or  'static const 
+unsigned int FPU_RESTORE_TIMESLICES = 5;'  instead?
+Personally I hate magic numbers that are used in more than one location. 
+I'd much rather have a constant with a sane name defined once (with a 
+comment explaining it) and then see the name used in multiple places.
+
+
+That's all.  :)
+
+
+-- 
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
 
