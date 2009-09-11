@@ -1,96 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754333AbZIKJcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754197AbZIKJ0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754333AbZIKJcB (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 05:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753690AbZIKJcA
+	id S1754197AbZIKJ0K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 05:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZIKJ0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 05:32:00 -0400
-Received: from os.eurotux.com ([216.75.63.6]:43943 "EHLO os.eurotux.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754307AbZIKJb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 05:31:58 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 05:31:58 EDT
-Date: Fri, 11 Sep 2009 10:25:17 +0100
-From: Luciano Rocha <luciano@eurotux.com>
-To: Brian McGrew <brian@visionpro.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: mmap vs. real memory
-Message-ID: <20090911092517.GA5450@bit.office.eurotux.com>
-Mail-Followup-To: Luciano Rocha <luciano@eurotux.com>,
-	Brian McGrew <brian@visionpro.com>, linux-kernel@vger.kernel.org
-References: <C6CECDE3.13A4A%brian@visionpro.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="SLDf9lqlvOQaIe6s"
-Content-Disposition: inline
-In-Reply-To: <C6CECDE3.13A4A%brian@visionpro.com>
-User-Agent: Mutt/1.5.20 (2009-08-08)
+	Fri, 11 Sep 2009 05:26:09 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:44226 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752249AbZIKJ0H (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 05:26:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=BHQQ4AMoIJsde/0VinZbGwAYUJ+L/x2y2KET0rVwIeL+u+Hej0a2ZAiDzDZwa1Dnrw
+         lWdXxXPe22tE2hATMtzGUr5j7fX3AAVyXAUiQnim7Z8M34vMHq1ZtRIa4Zzdh2vCPUsC
+         fZE+WYV+vrWABIdqUP8/htljRYzppwmYJtsmw=
+From: Wu <wuzhangjin@gmail.com>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, huhb@lemote.com,
+       zhangfx@lemote.com, Wu Zhangjin <wuzhangjin@gmail.com>,
+       Yan Hua <yanh@lemote.com>
+Subject: [PATCH] ide: fixup for fujitsu disk
+Date: Fri, 11 Sep 2009 17:25:58 +0800
+Message-Id: <1252661158-8219-1-git-send-email-wuzhangjin@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Wu Zhangjin <wuzhangjin@gmail.com>
 
---SLDf9lqlvOQaIe6s
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+This patch will fix the following problem on Yeeloong netbook with
+fujitsu disk.
 
-On Thu, Sep 10, 2009 at 03:38:11PM -0700, Brian McGrew wrote:
-> Good afternoon all,
->=20
-> Right now, I'm in what appears [to me] to be a very tricky situation.  We
-> have several programs that all need access to the same memory.  Currently,
-> we use mmap and map to a file on disk like this:
->=20
-> const u_long    kCommsegSize            =3D 1024L * 1024L * 1024L;
-> const u_long    kCommsegMappedAddress   =3D 0xb0000000;
->=20
-> And then the code is:
->=20
->     char *cseg_addr =3D reinterpret_cast<char *>(mmap(
->             reinterpret_cast<char *>(kCommsegMappedAddress),
->             size,
->             PROT_READ  | PROT_WRITE,
->             MAP_SHARED | MAP_FIXED,
->             fd,
->             0));
->     gShmemOffset =3D kCommsegMappedAddress - kCommseg;
->     return(cseg_addr);
->=20
-> And, all of this has worked great ever since we went from a physical shar=
-ed
-> memory board on a vme bus to emulating shared memory on the computer.  In
-> the beginning, kCommsegSize was only 4MB (4L * 1024L * 1024L).
->=20
-> Now that we are needing more and more shared memory, we're seeing random
-> performance issues.  With 16MB, 64MB and 256MB (in recent past) all was
-> good.  But now, trying to allocate 1GB of shared memory, we see it taking
-> anywhere from .6 to 9 SEONDS to access the file.  No good!
->=20
-> What I'm wondering and needed to do is map a chunk of mymoery (1GB today,
-> maybe 2GB later on) so that all my apps can access it.  Short of creating=
- a
-> ramdisk and moving the mmap'ed file to ramdisk, what is the best way to do
-> this???
+irq 14: nobody cared (try booting with the "irqpoll" option)
+Call Trace:
+[<ffffffff8020d438>] dump_stack+0x8/0x40
+[<ffffffff8027ec64>] __report_bad_irq+0x58/0xe4
+[<ffffffff8027ee6c>] note_interrupt+0x17c/0x23c
+[<ffffffff8027f9b8>] handle_level_irq+0xcc/0x134
+[<ffffffff802125b0>] mach_irq_dispatch+0xb8/0x1e0
+[<ffffffff8020041c>] ret_from_irq+0x0/0x4
+[<ffffffff8029e678>] free_hot_cold_page+0x224/0x2a0
+[<ffffffff8026f794>] swsusp_free+0xb0/0x14c
+[<ffffffff8026ec08>] hibernate+0x198/0x218
+[<ffffffff8026cfa8>] state_store+0x90/0x138
+[<ffffffff8032b5a4>] sysfs_write_file+0x130/0x194
+[<ffffffff802c94fc>] vfs_write+0xb8/0x180
+[<ffffffff802c96b8>] SyS_write+0x50/0x98
+[<ffffffff80203fd8>] handle_sys+0x158/0x174
 
-Were are you storing the file? For memory-only, you should use /dev/shm.
-Another more portable solution is to use shm_open(3), that will open the
-file were the system wants it.
+handlers:
+[<ffffffff80429670>] (ide_intr+0x0/0x300)
+Disabling IRQ #14
 
---=20
-Luciano Rocha <luciano@eurotux.com>
-Eurotux Inform=E1tica, S.A. <http://www.eurotux.com/>
+References:
 
---SLDf9lqlvOQaIe6s
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+1. commit 1fde02e7146d4a1bab80fd1506f9018fe71e8521 of
+git://dev.lemote.com/linux_loongson.git
+2. 8bc1e5aa06a2a9a425c4a6795fc564cba1521487 (ide: respect quirk_drives[]
+list on all controllers)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Signed-off-by: Yan Hua <yanh@lemote.com>
+Signed-off-by: Wu Zhangjin <wuzhangjin@gmail.com>
+---
+ drivers/ide/ide-iops.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-iEYEARECAAYFAkqqF30ACgkQinSul6a7oB+miwCeNf5Aaat9DqgE5VezeZ9wXvS0
-rRQAn1MU9WDzBUTPFZK1jlhCb4lo9pRw
-=bVvP
------END PGP SIGNATURE-----
+diff --git a/drivers/ide/ide-iops.c b/drivers/ide/ide-iops.c
+index 2892b24..821af66 100644
+--- a/drivers/ide/ide-iops.c
++++ b/drivers/ide/ide-iops.c
+@@ -292,6 +292,7 @@ static const char *nien_quirk_list[] = {
+ 	"QUANTUM FIREBALLP KX27.3",
+ 	"QUANTUM FIREBALLP LM20.4",
+ 	"QUANTUM FIREBALLP LM20.5",
++	"FUJITSU MHZ2160BH G2",
+ 	NULL
+ };
+ 
+-- 
+1.6.2.1
 
---SLDf9lqlvOQaIe6s--
