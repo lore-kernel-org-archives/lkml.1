@@ -1,143 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751917AbZIKAR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752540AbZIKATn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751917AbZIKAR3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 20:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751087AbZIKAR3
+	id S1752540AbZIKATn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 20:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751631AbZIKATm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 20:17:29 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51357 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751001AbZIKAR2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 20:17:28 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Enrik Berkhan <Enrik.Berkhan@ge.com>
-Subject: Re: [ARM9] OOM with plenty of free swap space?
-Cc: kosaki.motohiro@jp.fujitsu.com, Clemens Eisserer <linuxhippy@gmail.com>,
-       linux-kernel@vger.kernel.org, Wu Fengguang <fengguang.wu@intel.com>
-In-Reply-To: <4AA9170B.70306@ge.com>
-References: <194f62550909090405t531dac0die78761fd000802e5@mail.gmail.com> <4AA9170B.70306@ge.com>
-Message-Id: <20090911091544.DB4E.A69D9226@jp.fujitsu.com>
+	Thu, 10 Sep 2009 20:19:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32813 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751519AbZIKATl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 20:19:41 -0400
+Date: Fri, 11 Sep 2009 00:19:15 GMT
+From: tip-bot for Ben Hutchings <ben@decadent.org.uk>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, ben@decadent.org.uk
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, ben@decadent.org.uk
+In-Reply-To: <1252547631.3423.134.camel@localhost>
+References: <1252547631.3423.134.camel@localhost>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:x86/cpu] x86: Fix code patching for paravirt-alternatives on 486
+Message-ID: <tip-5367b6887e7d8c870a5da7d9b8c6e9c207684e43@git.kernel.org>
+Git-Commit-ID: 5367b6887e7d8c870a5da7d9b8c6e9c207684e43
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 11 Sep 2009 09:17:24 +0900 (JST)
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 11 Sep 2009 00:19:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Commit-ID:  5367b6887e7d8c870a5da7d9b8c6e9c207684e43
+Gitweb:     http://git.kernel.org/tip/5367b6887e7d8c870a5da7d9b8c6e9c207684e43
+Author:     Ben Hutchings <ben@decadent.org.uk>
+AuthorDate: Thu, 10 Sep 2009 02:53:50 +0100
+Committer:  H. Peter Anvin <hpa@zytor.com>
+CommitDate: Thu, 10 Sep 2009 16:50:19 -0700
 
-> Clemens Eisserer wrote:
-> > Does nobody have an idea what could be the cause of this OOM situation?
-> 
-> I guess it's too large readahead. I had this situation recently, too, 
-> with a raid0 of 8 disks (4MB chunks) that set the file readahead count 
-> to 32MB or so (on a 60MB NOMMU system).
-> 
-> When I tried to read a 100MB file via sendfile(), the kernel insisted on 
-> doing the 32MB readahead ... (in __do_page_cache_readahead, like in your 
-> trace).
-> 
-> I solved my problem by switching to dm.
+x86: Fix code patching for paravirt-alternatives on 486
 
-IIRC, Wu recently changed readahead code. Wu, could you please give us comment?
+As reported in <http://bugs.debian.org/511703> and
+<http://bugs.debian.org/515982>, kernels with paravirt-alternatives
+enabled crash in text_poke_early() on at least some 486-class
+processors.
 
+The problem is that text_poke_early() itself uses inline functions
+affected by paravirt-alternatives and so will modify instructions that
+have already been prefetched.  Pentium and later processors will
+invalidate the prefetched instructions in this case, but 486-class
+processors do not.
 
-> 
-> Enrik
-> 
-> > 2009/9/5 Clemens Eisserer <linuxhippy@gmail.com>:
-> >> Hi,
-> >>
-> >> I am using a Nokia-770 internet tablet (ARM9) running a 2.6.16.27
-> >> (precompiled wlan driver) kernel as a small buissness server
-> >> (postgres, tor, samba, lighttp).
-> >>
-> >> It works quite well, however I recently discovered that postgres was
-> >> killed by the oom killer (log below),
-> >> although plenty of free swap was available. Its a really small
-> >> database so it should easily fit in the 64mb main memory.
-> >>
-> >> Any idea what could the reason for this OOM?
-> >>
-> >> Thank you in advance, Clemens
-> >>
-> >>
-> >> [17676.783874] oom-killer: gfp_mask=0x201d2, order=0
-> >> [17676.797241] [<c0026890>] (dump_stack+0x0/0x14) from [<c0071850>]
-> >> (out_of_memory+0x40/0x1d8)
-> >> [17676.797393] [<c0071810>] (out_of_memory+0x0/0x1d8) from
-> >> [<c0072d50>] (__alloc_pages+0x240/0x2c4)
-> >> [17676.797515] [<c0072b10>] (__alloc_pages+0x0/0x2c4) from
-> >> [<c0075648>] (__do_page_cache_readahead+0x150/0x324)
-> >> [17676.797637] [<c00754f8>] (__do_page_cache_readahead+0x0/0x324) from
-> >> [<c0075914>] (do_page_cache_readahead+0x64/0x70)
-> >> [17676.797760] [<c00758b0>] (do_page_cache_readahead+0x0/0x70) from
-> >> [<c006eba0>] (filemap_nopage+0x190/0x3ec)
-> >> [17676.797943]  r7 = 00000000  r6 = 00219560  r5 = 00000000  r4 =
-> >> C25E0000
-> >> [17676.798004] [<c006ea10>] (filemap_nopage+0x0/0x3ec) from
-> >> [<c007cc04>] (__handle_mm_fault+0x2fc/0x96c)
-> >> [17676.798126] [<c007c908>] (__handle_mm_fault+0x0/0x96c) from
-> >> [<c0029364>] (do_page_fault+0xe4/0x214)
-> >> [17676.798248] [<c0029280>] (do_page_fault+0x0/0x214) from
-> >> [<c00295e0>] (do_DataAbort+0x3c/0xa4)
-> >> [17676.798339] [<c00295a4>] (do_DataAbort+0x0/0xa4) from [<c0020da8>]
-> >> (ret_from_exception+0x0/0x10)
-> >> [17676.798461]  r8 = 00000000  r7 = 40639540  r6 = 40639560  r5 =
-> >> 00000001
-> >> [17676.798553]  r4 = FFFFFFFF
-> >> [17676.798583] Mem-info:
-> >> [17676.798614] DMA per-cpu:
-> >> [17676.798675] cpu 0 hot: high 18, batch 3 used:2
-> >> [17676.798706] cpu 0 cold: high 6, batch 1 used:0
-> >> [17676.798767] DMA32 per-cpu: empty
-> >> [17676.798797] Normal per-cpu: empty
-> >> [17676.798828] HighMem per-cpu: empty
-> >> [17676.798950] Free pages:        1172kB (0kB HighMem)
-> >> [17676.799011] Active:5576 inactive:6815 dirty:0 writeback:231
-> >> unstable:0 free:293 slab:1257 mapped:12129 pagetables:374
-> >> [17676.799133] DMA free:1172kB min:1024kB low:1280kB high:1536kB
-> >> active:22304kB inactive:27260kB present:65536kB pages_scanned:91
-> >> all_unreclaimable? no
-> >> [17676.799224] lowmem_reserve[]: 0 0 0 0
-> >> [17676.799285] DMA32 free:0kB min:0kB low:0kB high:0kB active:0kB
-> >> inactive:0kB present:0kB pages_scanned:0 all_unreclaimable? no
-> >> [17676.799377] lowmem_reserve[]: 0 0 0 0
-> >> [17676.799468] Normal free:0kB min:0kB low:0kB high:0kB active:0kB
-> >> inactive:0kB present:0kB pages_scanned:0 all_unreclaimable? no
-> >> [17676.799530] lowmem_reserve[]: 0 0 0 0
-> >> [17676.799621] HighMem free:0kB min:128kB low:128kB high:128kB
-> >> active:0kB inactive:0kB present:0kB pages_scanned:0 all_unreclaimable?
-> >> no
-> >> [17676.799682] lowmem_reserve[]: 0 0 0 0
-> >> [17676.799743] DMA: 33*4kB 4*8kB 1*16kB 1*32kB 1*64kB 1*128kB 1*256kB
-> >> 1*512kB 0*1024kB 0*2048kB 0*4096kB = 1172kB
-> >> [17676.799896] DMA32: empty
-> >> [17676.799926] Normal: empty
-> >> [17676.799957] HighMem: empty
-> >> [17676.800018] Swap cache: add 12847, delete 11756, find 42323/43010, race 0+0
-> >> [17676.800079] Free swap  = 167716kB
-> >> [17676.800109] Total swap = 198272kB
-> >> [17676.800170] Free swap:       167716kB
-> >> [17676.804534] 16384 pages of RAM
-> >> [17676.804565] 638 free pages
-> >> [17676.804595] 1096 reserved pages
-> >> [17676.804626] 1257 slab pages
-> >> [17676.804656] 19580 pages shared
-> >> [17676.804718] 1091 pages swap cached
-> >> [17676.805267] Out of Memory: Kill process 1535 (postgres) score 11478
-> >> and children.
-> >> [17676.805358] Out of memory: Killed process 1537 (postgres).
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Change sync_core() to limit prefetching on 486-class (and 386-class)
+processors, and move the call to sync_core() above the call to the
+modifiable local_irq_restore().
+
+Signed-off-by: Ben Hutchings <ben@decadent.org.uk>
+LKML-Reference: <1252547631.3423.134.camel@localhost>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
 
 
+---
+ arch/x86/include/asm/processor.h |   16 +++++++++++++---
+ arch/x86/kernel/alternative.c    |    2 +-
+ 2 files changed, 14 insertions(+), 4 deletions(-)
 
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index c776826..2db56c5 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -703,13 +703,23 @@ static inline void cpu_relax(void)
+ 	rep_nop();
+ }
+ 
+-/* Stop speculative execution: */
++/* Stop speculative execution and prefetching of modified code. */
+ static inline void sync_core(void)
+ {
+ 	int tmp;
+ 
+-	asm volatile("cpuid" : "=a" (tmp) : "0" (1)
+-		     : "ebx", "ecx", "edx", "memory");
++#if defined(CONFIG_M386) || defined(CONFIG_M486)
++	if (boot_cpu_data.x86 < 5)
++		/* There is no speculative execution.
++		 * jmp is a barrier to prefetching. */
++		asm volatile("jmp 1f\n1:\n" ::: "memory");
++	else
++#endif
++		/* cpuid is a barrier to speculative execution.
++		 * Prefetched instructions are automatically
++		 * invalidated when modified. */
++		asm volatile("cpuid" : "=a" (tmp) : "0" (1)
++			     : "ebx", "ecx", "edx", "memory");
+ }
+ 
+ static inline void __monitor(const void *eax, unsigned long ecx,
+diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
+index f576587..b8ebd0b 100644
+--- a/arch/x86/kernel/alternative.c
++++ b/arch/x86/kernel/alternative.c
+@@ -490,8 +490,8 @@ void *text_poke_early(void *addr, const void *opcode, size_t len)
+ 	unsigned long flags;
+ 	local_irq_save(flags);
+ 	memcpy(addr, opcode, len);
+-	local_irq_restore(flags);
+ 	sync_core();
++	local_irq_restore(flags);
+ 	/* Could also do a CLFLUSH here to speed up CPU recovery; but
+ 	   that causes hangs on some VIA CPUs. */
+ 	return addr;
