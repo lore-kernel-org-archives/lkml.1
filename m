@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754725AbZIKQ1o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754694AbZIKQ3M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754725AbZIKQ1o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:27:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754623AbZIKQ1n
+	id S1754694AbZIKQ3M (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:29:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZIKQ3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:27:43 -0400
-Received: from exprod5og114.obsmtp.com ([64.18.0.28]:33710 "EHLO
-	exprod5og114.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754622AbZIKQ1m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:27:42 -0400
-Message-ID: <4AAA7AEB.803@gefanuc.com>
-Date: Fri, 11 Sep 2009 17:29:31 +0100
-From: Martyn Welch <martyn.welch@gefanuc.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	Fri, 11 Sep 2009 12:29:12 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:15053 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752021AbZIKQ3L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:29:11 -0400
+Message-ID: <4AAA7B90.8010002@redhat.com>
+Date: Fri, 11 Sep 2009 12:32:16 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Geert Uytterhoeven <geert@linux-m68k.org>, linux-kernel@vger.kernel.org,
-       Linux-Next <linux-next@vger.kernel.org>
-Subject: Re: drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined
- from 'boolean' to 'tristate'
-References: <10f740e80909110726x313e3e3coe2321c683163e3a5@mail.gmail.com> <20090911150210.GB16593@kroah.com>
-In-Reply-To: <20090911150210.GB16593@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: rostedt@goodmis.org
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH tracing/kprobes 5/7] tracing/kprobes: Add argument name
+ support
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>	 <20090910235337.22412.77383.stgit@dhcp-100-2-132.bos.redhat.com> <1252678079.18996.665.camel@gandalf.stny.rr.com> <4AAA76B1.3020208@redhat.com>
+In-Reply-To: <4AAA76B1.3020208@redhat.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> On Fri, Sep 11, 2009 at 04:26:36PM +0200, Geert Uytterhoeven wrote:
->   
->> http://kisskb.ellerman.id.au/kisskb/buildresult/1221192/:
->> drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined from
->> 'boolean' to 'tristate'
->> drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined from
->> 'boolean' to 'tristate'
+Masami Hiramatsu wrote:
+> Steven Rostedt wrote:
+>> On Thu, 2009-09-10 at 19:53 -0400, Masami Hiramatsu wrote:
 >>
->> We already have:
+>>> @@ -870,9 +892,13 @@ print_kprobe_event(struct trace_iterator *iter, int flags)
+>>>    {
+>>>    	struct kprobe_trace_entry *field;
+>>>    	struct trace_seq *s =&iter->seq;
+>>> +	struct trace_event *event;
+>>> +	struct trace_probe *tp;
+>>>    	int i;
+>>>
+>>>    	field = (struct kprobe_trace_entry *)iter->ent;
+>>> +	event = ftrace_find_event(field->ent.type);
+>>> +	tp = container_of(event, struct trace_probe, event);
 >>
->> arch/m68k/Kconfig:config VME
->> arch/m68k/Kconfig:      bool "VME (Motorola and BVM) support"
->> arch/m68k/Kconfig:        Say Y here if you want to build a kernel for
->> a 680x0 based VME
->>     
->
-> Ah, not good.
->
-> Are these a board-specific thing?  It's not the "VME bus" is it?
->
-> Martyn, maybe we should rename CONFIG_VME to CONFIG_VME_BUS ?
->
-> thanks,
->
-> greg k-h
->   
-Agreed - Not good.
+>> Can this function be called the data is in the ring buffer, but the
+>> probe has been unregistered? If so, the result of ftrace_find_event be
+>> NULL?
+> 
+> Hmm, it will depend on ftrace implementation. Before releasing
+> trace_probe, kprobe tracer tries to unregister event call.
+> If it's correctly locking mutex or some rw_lock for both of
+> unregistering and printing, it will be safe.
+> 
+> Unfortunately, it seems not :-(.
+> 
+> In trace_events.c,
+> 1054 static void __trace_remove_event_call(struct ftrace_event_call *call)
+> 1055 {
+> 1056         ftrace_event_enable_disable(call, 0);
+> 1057         if (call->event)
+> 1058                 __unregister_ftrace_event(call->event);
+> 
+> What we need to do is calling unregister_ftrace_event() instead of
+> __unregister_ftrace_event.
 
-I'll try and rustle up a patch ASAP, but it might not be until Monday 
-now - I unfortunately have a rather busy weekend. I'm more than happy 
-with CONFIG_VME_BUS if someone beats me to it.
+Aah, NO. the caller of trace_remove_event_call() should have
+trace_event_mutex before calling!
 
-Martyn
 
 -- 
-Martyn Welch MEng MPhil MIET (Principal Software Engineer)   T:+44(0)1327322748
-GE Fanuc Intelligent Platforms Ltd,        |Registered in England and Wales
-Tove Valley Business Park, Towcester,      |(3828642) at 100 Barbirolli Square,
-Northants, NN12 6PF, UK T:+44(0)1327359444 |Manchester,M2 3AB  VAT:GB 927559189
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
