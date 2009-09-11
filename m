@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756929AbZIKV4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757017AbZIKV4r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756929AbZIKV4c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 17:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755381AbZIKV4c
+	id S1757017AbZIKV4r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:56:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756983AbZIKV4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 17:56:32 -0400
-Received: from mx1-old.redhat.com ([66.187.233.31]:60167 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752822AbZIKV4b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 17:56:31 -0400
+	Fri, 11 Sep 2009 17:56:46 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55830 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756879AbZIKV4p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 17:56:45 -0400
+Date: Fri, 11 Sep 2009 23:56:47 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH] [14/21] HWPOISON: shmem: call set_page_dirty() with
+	locked page
+Message-ID: <20090911215647.GF32562@basil.fritz.box>
+References: <20090911848.933193846@firstfloor.org> <20090911184843.32078B1757@basil.firstfloor.org> <1252700646.7126.44.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: torvalds@linux-foundation.org, jakub@redhat.com,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       x86@kernel.org
-Subject: Re: [PATCH 1/2] UNREACHABLE() macro
-In-Reply-To: Andrew Morton's message of  Friday, 11 September 2009 13:45:28 -0700 <20090911134528.cd1782d9.akpm@linux-foundation.org>
-References: <20090910015923.8FB628AE5F@magilla.sf.frob.com>
-	<20090910020031.87DC68BF6E@magilla.sf.frob.com>
-	<20090911134528.cd1782d9.akpm@linux-foundation.org>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20090911215525.12B366A98F@magilla.sf.frob.com>
-Date: Fri, 11 Sep 2009 14:55:25 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <1252700646.7126.44.camel@laptop>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> That's a bit of a mouthful.  Did you consider a runtime probe with
-> scripts/Kbuild.include's try-run, cc-option, etc?  
+> Will it, from now on, be mandatory to dirty pages under PG_lock, and
 
-I did not see any precedent in the sources for using those to test for
-features by compiling particular test sources (i.e. in autoconf style).
-I just followed the model I saw.  Those methods seem sufficiently costly
-to make it a little questionable to pile on too many more that get
-repeated all the time by make, so I just was not opening that can of worms.
+Only data pages with mapping.
 
-As has been mentioned:
+It's not a strict requirement, but if it's not done then in theory
+you could not propagate an error if the page gets an memory error
+at exactly the wrong time. It's probably only worth caring if you
+expect to have a lot of pages like this.
 
-	#if __GNUC_MINOR__ > 4
+> does this patch correct the last few such cases that didn't yet do that,
+> or does it still leave holes?
 
-is a sufficient test for the long run.  People using Fedora gcc-4.4 will
-not mind applying a trivial kernel patch to get the benefits sooner.
+I believe in metadata it's still widely there, but hwpoison ignores
+those pages anyways.
 
+> 
+> Can we document the requirements and or holes to it someplace near
+> set_page_dirty()?
 
-Thanks,
-Roland
+Ok I'll add a comment there.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
