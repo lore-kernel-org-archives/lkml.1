@@ -1,50 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755847AbZIKSM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753167AbZIKOLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755847AbZIKSM0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 14:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZIKSMZ
+	id S1753167AbZIKOLt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZIKOLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 14:12:25 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:33008 "EHLO kernel.dk"
+	Fri, 11 Sep 2009 10:11:49 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:58682 "EHLO smtp.ispras.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753940AbZIKSMY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 14:12:24 -0400
-Date: Fri, 11 Sep 2009 20:12:27 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, tytso@mit.edu, akpm@linux-foundation.org,
-       jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 2/4] Assign bdi in super_block
-Message-ID: <20090911181227.GM14984@kernel.dk>
-References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com> <1252669832-13553-3-git-send-email-jens.axboe@oracle.com> <20090911180106.GB19598@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750966AbZIKOLs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:11:48 -0400
 Content-Disposition: inline
-In-Reply-To: <20090911180106.GB19598@infradead.org>
+From: iceberg <strakh@ispras.ru>
+Organization: ISP RAS
+To: Jonathan Corbet <corbet@lwn.net>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Fwd: Re: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
+Date: Fri, 11 Sep 2009 18:13:21 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200909111813.21232.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11 2009, Christoph Hellwig wrote:
-> On Fri, Sep 11, 2009 at 01:50:30PM +0200, Jens Axboe wrote:
-> > We do this automatically in get_sb_bdev() from the set_bdev_super()
-> > callback. Filesystems that have their own private backing_dev_info
-> > must assign that in ->fill_super().
-> > 
-> > Note that ->s_bdi assignment is required for proper writeback!
+On Thu, Sep 10, 2009 at 09:30:03AM -0600, Jonathan Corbet wrote:
+> On Thu, 10 Sep 2009 18:37:34 +0000
+> iceberg <strakh@ispras.ru> wrote:
 > 
-> Looks good to me.   Can we get rid of BDI_CAP_NO_WRITEBACK with this by
-> simply not assigning a bdi?
+> > In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe: 
+> > Mutex must be unlocked before exit
+> >     1. On paths starting with mutex lock in line 1912, then continuing in 
+lines: 
+> > 1929, 1936 (goto unreg) and 1940 (goto iounmap) . 
+> >     2. On path starting in line 1971 mutex lock, and then continuing in 
+line 1978 
+> > (goto out_smbus) mutex.
+> 
+> That's a definite bug, but I hate all those unlocks in the error
+> branches.  As it happens, we don't really need the mutex until the
+> device has been exposed to the rest of the kernel, so I propose the
+> following as a better patch.
+> 
+> Thanks for pointing this out,
+	If we can first pair of mutex_lock and mutex_unlock:
 
-Good question, I was indeed looking for an sb equivalent of that bdi
-flag. And now ->s_bdi being set or not is indeed that. Some of our
-generated writeback originates at the bdi level though, so we may or may
-not have the sb. From a quick look at fs-writeback.c, it looks feasible
-though. I'll try.
+Fix lock imbalances in function device_authorization.
 
-Can I take that as an acked-by?
+Signed-off-by: Alexander Strakh <strakh@ispras.ru>
 
--- 
-Jens Axboe
-
+---
+diff --git a/./drivers/media/video/cafe_ccic.c 
+b/../b/drivers/media/video/cafe_ccic.c
+index c4d181d..4c6bc86 100644
+--- a/./drivers/media/video/cafe_ccic.c
++++ b/../b/drivers/media/video/cafe_ccic.c
+@@ -1909,7 +1909,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ 		goto out_free;
+ 
+ 	mutex_init(&cam->s_mutex);
+-	mutex_lock(&cam->s_mutex);
+ 	spin_lock_init(&cam->dev_lock);
+ 	cam->state = S_NOTREADY;
+ 	cafe_set_config_needed(cam, 1);
+@@ -1949,7 +1948,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ 	 * because the sensor could attach in this call chain, leading to
+ 	 * unsightly deadlocks.
+ 	 */
+-	mutex_unlock(&cam->s_mutex);  /* attach can deadlock */
+ 	ret = cafe_smbus_setup(cam);
+ 	if (ret)
+ 		goto out_freeirq;
+@@ -1975,7 +1973,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ 	cam->vdev.v4l2_dev = &cam->v4l2_dev;
+ 	ret = video_register_device(&cam->vdev, VFL_TYPE_GRABBER, -1);
+ 	if (ret)
+-		goto out_smbus;
++		goto out_unlock;
+ 	video_set_drvdata(&cam->vdev, cam);
+ 
+ 	/*
+@@ -1990,6 +1988,8 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+ 	mutex_unlock(&cam->s_mutex);
+ 	return 0;
+ 
++out_unlock:
++	mutex_unlock(&cam->s_mutex);
+ out_smbus:
+ 	cafe_smbus_shutdown(cam);
+ out_freeirq:
