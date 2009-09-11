@@ -1,72 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZIKQIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754681AbZIKQIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZIKQIE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbZIKQID
+	id S1754681AbZIKQIR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbZIKQIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:08:03 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:57721 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754595AbZIKQIC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:08:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=NfNMJvHpyOIbcjNYeY9FPGkXykZVC/vklL1NQLkPELFyJwSkjpliBg0JG9vfUGD84N
-         9mXQ3XMXNavRk0Tsj1U8SQ87rwF5UzyhrjLQ5ROgOQuWMeR/5AZf3WmCcv+9A8muCV6O
-         P3GHICfyTyLttNmdOTsnZmQJUF2MafjxDi5XI=
-Message-ID: <4AAA75E0.6020604@gmail.com>
-Date: Fri, 11 Sep 2009 19:08:00 +0300
-From: =?ISO-8859-15?Q?T=F6r=F6k_Edwin?= <edwintorok@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090701)
+	Fri, 11 Sep 2009 12:08:15 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57177 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754652AbZIKQIO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:08:14 -0400
+Message-ID: <4AAA76B1.3020208@redhat.com>
+Date: Fri, 11 Sep 2009 12:11:29 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
 To: rostedt@goodmis.org
-CC: Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: Re: [PATCH 3/3] tracing: add latency format to function_graph tracer
-References: <20090911135452.866274568@goodmis.org>	 <20090911135626.824079836@goodmis.org> <20090911145521.GA6119@nowhere>	 <1252681916.18996.697.camel@gandalf.stny.rr.com>	 <20090911151811.GB6119@nowhere>  <4AAA6EE2.8000807@gmail.com> <1252684229.18996.699.camel@gandalf.stny.rr.com>
-In-Reply-To: <1252684229.18996.699.camel@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
+CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH tracing/kprobes 5/7] tracing/kprobes: Add argument name
+ support
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>	 <20090910235337.22412.77383.stgit@dhcp-100-2-132.bos.redhat.com> <1252678079.18996.665.camel@gandalf.stny.rr.com>
+In-Reply-To: <1252678079.18996.665.camel@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-09-11 18:50, Steven Rostedt wrote:
-> On Fri, 2009-09-11 at 18:38 +0300, Török Edwin wrote:
->   
->> On 2009-09-11 18:18, Frederic Weisbecker wrote:
->>     
->>> On Fri, Sep 11, 2009 at 11:11:56AM -0400, Steven Rostedt wrote:
->>>       
->>   
->>     
->>>> Ug! I just noticed that tgid was added to struct trace_entry, with the
->>>> only user as the user stack entry. This should be in the user stack
->>>> field not something that goes into every event!
->>>>
->>>> I guess I need to fix that too.
->>>>     
->>>>         
->> Indeed tgid should be part of struct userstack_entry, and set in
->> ftrace_trace_userstack.
->> Do you want to me to write up a patch for that, or have you already
->> fixed it?
->>     
->
-> I've just fixed it, thanks!
+Steven Rostedt wrote:
+> On Thu, 2009-09-10 at 19:53 -0400, Masami Hiramatsu wrote:
+> 
+>> @@ -870,9 +892,13 @@ print_kprobe_event(struct trace_iterator *iter, int flags)
+>>   {
+>>   	struct kprobe_trace_entry *field;
+>>   	struct trace_seq *s =&iter->seq;
+>> +	struct trace_event *event;
+>> +	struct trace_probe *tp;
+>>   	int i;
+>>
+>>   	field = (struct kprobe_trace_entry *)iter->ent;
+>> +	event = ftrace_find_event(field->ent.type);
+>> +	tp = container_of(event, struct trace_probe, event);
+> 
+> Can this function be called the data is in the ring buffer, but the
+> probe has been unregistered? If so, the result of ftrace_find_event be
+> NULL?
 
-Ok.
+Hmm, it will depend on ftrace implementation. Before releasing
+trace_probe, kprobe tracer tries to unregister event call.
+If it's correctly locking mutex or some rw_lock for both of
+unregistering and printing, it will be safe.
 
-BTW any plans on integrating an in-kernel unwinder like systemtap has?
+Unfortunately, it seems not :-(.
 
-Even if I build libc with framepointers, a userspace stacktrace on
-x86-64 can't go beyond most pthreads routines, like __read_nocancel
-(they're written in asm maybe?).
+In trace_events.c,
+1054 static void __trace_remove_event_call(struct ftrace_event_call *call)
+1055 {
+1056         ftrace_event_enable_disable(call, 0);
+1057         if (call->event)
+1058                 __unregister_ftrace_event(call->event);
 
-Best regards,
---Edwin
+What we need to do is calling unregister_ftrace_event() instead of
+__unregister_ftrace_event.
+
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
