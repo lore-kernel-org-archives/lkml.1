@@ -1,197 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752627AbZIKBR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZIKBTh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752627AbZIKBR1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 21:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZIKBR1
+	id S1752970AbZIKBTh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 21:19:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752679AbZIKBTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 21:17:27 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62234 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751315AbZIKBR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 21:17:26 -0400
-Message-ID: <4AA9A4BE.30005@cn.fujitsu.com>
-Date: Fri, 11 Sep 2009 09:15:42 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 10 Sep 2009 21:19:36 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:36709 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751103AbZIKBTg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 21:19:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=EHdqlKRkS2lzlyY65rkknESHyVfUEycJnwakXeyhFC5E4EHbjmp6mQrx6t+4pmgQOL
+         wUNVKcySEalucJrKTmbhIC8D1M93U1fi5n0pkNl1yZuJYNol4sgkwXBjm9ZBY7iKALkO
+         118WletM676wYI49+zNZxgmGEdXFpX3lPmIfs=
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>, jens.axboe@oracle.com
-CC: linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       dm-devel@redhat.com, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: [PATCH] io-controller: Fix task hanging when there are more than
- one groups
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com>
-In-Reply-To: <20090909150537.GD8256@redhat.com>
+In-Reply-To: <20090910224159.GA4360@n2100.arm.linux.org.uk>
+References: <20090909075024.GA1400@ucw.cz> <f17812d70909090737n4315d0cbh82c0a63e9222fdb5@mail.gmail.com> 
+	<20090909182340.GA5235@n2100.arm.linux.org.uk> <20090910191932.GA23721@elf.ucw.cz> 
+	<20090910224159.GA4360@n2100.arm.linux.org.uk>
+From: Eric Miao <eric.y.miao@gmail.com>
+Date: Fri, 11 Sep 2009 09:19:19 +0800
+Message-ID: <f17812d70909101819o2467c5a6jf65579cd9aebb1e@mail.gmail.com>
+Subject: Re: [patch for 2.6.31] zaurus c3000 aka spitz: fix resume
+To: Pavel Machek <pavel@ucw.cz>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: rpurdie@rpsys.net, lenz@cs.wisc.edu,
+       kernel list <linux-kernel@vger.kernel.org>, Dirk@opfer-online.de,
+       arminlitzel@web.de, Cyril Hrubis <metan@ucw.cz>, thommycheck@gmail.com,
+       linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+       dbaryshkov@gmail.com, omegamoon@gmail.com, utx@penguin.cz,
+       Linus Torvalds <torvalds@linux-foundation.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, Sep 09, 2009 at 03:38:25PM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->>> On Mon, Sep 07, 2009 at 03:40:53PM +0800, Gui Jianfeng wrote:
->>>> Hi Vivek,
->>>>
->>>> I happened to encount a bug when i test IO Controller V9.
->>>> When there are three tasks to run concurrently in three group,
->>>> that is, one is parent group, and other two tasks are running 
->>>> in two different child groups respectively to read or write 
->>>> files in some disk, say disk "hdb", The task may hang up, and 
->>>> other tasks which access into "hdb" will also hang up.
->>>>
->>>> The bug only happens when using AS io scheduler.
->>>> The following scirpt can reproduce this bug in my box.
->>>>
->>> Hi Gui,
->>>
->>> I tried reproducing this on my system and can't reproduce it. All the
->>> three processes get killed and system does not hang.
->>>
->>> Can you please dig deeper a bit into it. 
->>>
->>> - If whole system hangs or it is just IO to disk seems to be hung.
->>     Only when the task is trying do IO to disk it will hang up.
+On Fri, Sep 11, 2009 at 6:41 AM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Thu, Sep 10, 2009 at 09:19:32PM +0200, Pavel Machek wrote:
+>> On Wed 2009-09-09 19:23:40, Russell King - ARM Linux wrote:
+>> > On Wed, Sep 09, 2009 at 10:37:41PM +0800, Eric Miao wrote:
+>> > > On Wed, Sep 9, 2009 at 3:50 PM, Pavel Machek<pavel@ucw.cz> wrote:
+>> > > > Hi, Linus!
+>> > > >
+>> > > > Spitz resume was broken for year or likely two, and it would be very
+>> > > > nice to fix it for 2.6.31 release. One liner is below, and it really
+>> > > > can not harm. It already is in Eric's fix queue, so pulling that for
+>> > > > .31 should work, too.
+>> > > >
+>> > >
+>> > > This should be sitting in rmk's git tree and I'm not sure if Russell
+>> > > has sent the pull request already.
+>> >
+>> > It's just Pavel being his obnoxious impatient self...
 >>
->>> - Does io scheduler switch on the device work
->>     yes, io scheduler can be switched, and the hung task will be resumed.
+>> Aha, Russell, being polite and helpful, as usual.
 >>
->>> - If the system is not hung, can you capture the blktrace on the device.
->>>   Trace might give some idea, what's happening.
->> I run a "find" task to do some io on that disk, it seems that task hangs 
->> when it is issuing getdents() syscall.
->> kernel generates the following message:
->>
->> INFO: task find:3260 blocked for more than 120 seconds.
->> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
->> find          D a1e95787  1912  3260   2897 0x00000004
->>  f6af2db8 00000096 f660075c a1e95787 00000032 f6600270 f6600508 c2037820
->>  00000000 c09e0820 f655f0c0 f6af2d8c fffebbf1 00000000 c0447323 f7152a1c
->>  0006a144 f7152a1c 0006a144 f6af2e04 f6af2db0 c04438df c2037820 c2037820
->> Call Trace:
->>  [<c0447323>] ? getnstimeofday+0x57/0xe0
->>  [<c04438df>] ? ktime_get_ts+0x4a/0x4e
->>  [<c068ab68>] io_schedule+0x47/0x79
->>  [<c04c12ee>] sync_buffer+0x36/0x3a
->>  [<c068ae14>] __wait_on_bit+0x36/0x5d
->>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
->>  [<c068ae93>] out_of_line_wait_on_bit+0x58/0x60
->>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
->>  [<c0440fa4>] ? wake_bit_function+0x0/0x43
->>  [<c04c1249>] __wait_on_buffer+0x19/0x1c
->>  [<f81e4186>] ext3_bread+0x5e/0x79 [ext3]
->>  [<f81e77a8>] htree_dirblock_to_tree+0x1f/0x120 [ext3]
->>  [<f81e7923>] ext3_htree_fill_tree+0x7a/0x1bb [ext3]
->>  [<c04a01f9>] ? kmem_cache_alloc+0x86/0xf3
->>  [<c044c428>] ? trace_hardirqs_on_caller+0x107/0x12f
->>  [<c044c45b>] ? trace_hardirqs_on+0xb/0xd
->>  [<f81e09e4>] ? ext3_readdir+0x9e/0x692 [ext3]
->>  [<f81e0b34>] ext3_readdir+0x1ee/0x692 [ext3]
->>  [<c04b1100>] ? filldir64+0x0/0xcd
->>  [<c068b86a>] ? mutex_lock_killable_nested+0x2b1/0x2c5
->>  [<c068b874>] ? mutex_lock_killable_nested+0x2bb/0x2c5
->>  [<c04b12db>] ? vfs_readdir+0x46/0x94
->>  [<c04b12fd>] vfs_readdir+0x68/0x94
->>  [<c04b1100>] ? filldir64+0x0/0xcd
->>  [<c04b1387>] sys_getdents64+0x5e/0x9f
->>  [<c04028b4>] sysenter_do_call+0x12/0x32
->> 1 lock held by find/3260:
->>  #0:  (&sb->s_type->i_mutex_key#7){+.+.+.}, at: [<c04b12db>] vfs_readdir+0x46/0x94
->>
->> ext3 calls wait_on_buffer() to wait buffer, and schedule the task out in TASK_UNINTERRUPTIBLE
->> state, and I found this task will be resumed after a quite long period(more than 10 mins).
-> 
-> Thanks Gui. As Jens said, it does look like a case of missing queue
-> restart somewhere and now we are stuck, no requests are being dispatched
-> to the disk and queue is already unplugged.
-> 
-> Can you please also try capturing the trace of events at io scheduler
-> (blktrace) to see how did we get into that situation.
-> 
-> Are you using ide drivers and not libata? As jens said, I will try to make
-> use of ide drivers and see if I can reproduce it.
-> 
+>> Only that, you know, you missed the deadline, so... perhaps I had
+>> reason to be impatient?
+>
+> I missed the deadline because I was waiting on others to sort out telling
+> me whether a bugfix patch was actually correct, and then it took several
+> days and mails to get an attributation line out of them.  I finally got
+> that yesterday, and since I'm not doing kernel work (in fact, I'm hardly
+> in front of the computer at the moment) these things are going to _HAVE_
+> to wait until this weekend.
+>
+> By agreement with Linus, I do not send pull requests more often than once
+> a week, absolute maximum.  So if I've something pending in the queue, I
+> hold off sending the queue until that issue is resolved.
+>
+> Don't like it?  Tough.  This is the workflow that I've been forced into
+> by other flame wars.  It would be my personal preference to ensure that
+> fixes make their way in a timely manner into mainline, but due to that,
+> it's just not possible.
+>
 
-Hi Vivek, Jens,
+Pavel,
 
-Currently, If there's only the root cgroup and no other child cgroup available, io-controller will
-optimize to stop expiring the current ioq, and we thought the current ioq belongs to root group. But
-in some cases, this assumption is not true. Consider the following scenario, if there is a child cgroup
-located in root cgroup, and task A is running in the child cgroup, and task A issues some IOs. Then we
-kill task A and remove the child cgroup, at this time, there is only root cgroup available. But the ioq
-is still under service, and from now on, this ioq won't expire because "only root" optimization.
-The following patch ensures the ioq do belongs to the root group if there's only root group existing.
-
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
-
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index b723c12..3f86552 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -2338,9 +2338,10 @@ void elv_reset_request_ioq(struct request_queue *q, struct request *rq)
- 	}
- }
- 
--static inline int is_only_root_group(void)
-+static inline int is_only_root_group(struct elv_fq_data *efqd)
- {
--	if (list_empty(&io_root_cgroup.css.cgroup->children))
-+	if (list_empty(&io_root_cgroup.css.cgroup->children) &&
-+	    efqd->busy_queues == 1 && efqd->root_group->ioq)
- 		return 1;
- 
- 	return 0;
-@@ -2383,7 +2384,7 @@ static void io_free_root_group(struct elevator_queue *e)
- int elv_iog_should_idle(struct io_queue *ioq) { return 0; }
- EXPORT_SYMBOL(elv_iog_should_idle);
- 
--static inline int is_only_root_group(void)
-+static inline int is_only_root_group(struct elv_fq_data *efqd)
- {
- 	return 1;
- }
-@@ -2547,7 +2548,7 @@ elv_iosched_expire_ioq(struct request_queue *q, int slice_expired, int force)
- 	struct elevator_queue *e = q->elevator;
- 	struct io_queue *ioq = elv_active_ioq(q->elevator);
- 	int ret = 1;
--
-+	
- 	if (e->ops->elevator_expire_ioq_fn) {
- 		ret = e->ops->elevator_expire_ioq_fn(q, ioq->sched_queue,
- 							slice_expired, force);
-@@ -2969,7 +2970,7 @@ void *elv_select_ioq(struct request_queue *q, int force)
- 	 * single queue ioschedulers (noop, deadline, AS).
- 	 */
- 
--	if (is_only_root_group() && elv_iosched_single_ioq(q->elevator))
-+	if (is_only_root_group(efqd) && elv_iosched_single_ioq(q->elevator))
- 		goto keep_queue;
- 
- 	/* We are waiting for this group to become busy before it expires.*/
-@@ -3180,7 +3181,7 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
- 		 * unnecessary overhead.
- 		 */
- 
--		if (is_only_root_group() &&
-+		if (is_only_root_group(ioq->efqd) &&
- 			elv_iosched_single_ioq(q->elevator)) {
- 			elv_log_ioq(efqd, ioq, "select: only root group,"
- 					" no expiry");
--- 
-1.5.4.rc3
-
-
-
-
-
-
+It is still possible to get this into the stable release so take easy.
