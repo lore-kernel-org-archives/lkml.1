@@ -1,58 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753648AbZIKLuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZIKLug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753648AbZIKLuc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 07:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZIKLub
+	id S1753866AbZIKLug (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 07:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbZIKLud
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 07:50:31 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:53684 "EHLO kernel.dk"
+	Fri, 11 Sep 2009 07:50:33 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53694 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752613AbZIKLub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752760AbZIKLub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 Sep 2009 07:50:31 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: [PATCH 0/4] Post merge per-bdi writeback patches
-Date: Fri, 11 Sep 2009 13:50:28 +0200
-Message-Id: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com>
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 1/4] writeback: merely wakeup flusher thread if work allocation fails for WB_SYNC_NONE
+Date: Fri, 11 Sep 2009 13:50:29 +0200
+Message-Id: <1252669832-13553-2-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.4.1.207.g68ea
+In-Reply-To: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com>
+References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Christoph Hellwig <hch@infradead.org>
 
-This is what I currently have queued up for post merge of the
-writeback patchset. It contains:
+Since it's an opportunistic writeback and not a data integrity action,
+don't punt to blocking writeback. Just wakeup the thread and it will
+flush old data.
 
-- The bdi work allocation and queue cleanup from Christoph.
-- An sb->s_bdi pointer that gets assigned in get_sb_bdev(), OR
-  from the fs ->fill_super() if the file system doesn't use
-  get_sb_bdev(). It is required for WB_SYNC_ALL writeback. Someone
-  more familiar with this code should check that it is done in the
-  right place. As usual, I'm unsure of NFS...
-- Once the ->s_bdi is in place, we can get rid of bdi_writeback_all()
-  for WB_SYNC_ALL. WB_SYNC_ALL now has to use bdi_start_writeback().
-  This cleans up bdi_writeback_all() nicely.
-- With bdi_writeback_all() only doing WB_SYNC_NONE, we can drop
-  the bdi_lock requirement and move to RCU for bdi_list.
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ fs/fs-writeback.c |   46 ++++++++++++++--------------------------------
+ 1 files changed, 14 insertions(+), 32 deletions(-)
 
-Please take a good look and review/comment, thanks! This patchset
-is based on top of writeback-v20. It boots and works fine for me.
-
- fs/btrfs/disk-io.c          |    1 
- fs/fs-writeback.c           |  111 ++++++++----------------------------
- fs/fuse/inode.c             |    2 
- fs/super.c                  |    6 +
- fs/sync.c                   |    9 ++
- fs/ubifs/super.c            |    1 
- include/linux/backing-dev.h |    1 
- include/linux/fs.h          |    1 
- mm/backing-dev.c            |   76 +++++++++++++++++-------
- mm/page-writeback.c         |    8 +-
- 10 files changed, 105 insertions(+), 111 deletions(-)
-
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index da86ef5..1873fd0 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -75,13 +75,6 @@ static inline void bdi_work_init(struct bdi_work *work,
+ 	work->state = WS_USED;
+ }
+ 
+-static inline void bdi_work_init_on_stack(struct bdi_work *work,
+-					  struct writeback_control *wbc)
+-{
+-	bdi_work_init(work, wbc);
+-	work->state |= WS_ONSTACK;
+-}
+-
+ /**
+  * writeback_in_progress - determine whether there is writeback in progress
+  * @bdi: the device's backing_dev_info structure.
+@@ -207,34 +200,23 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+ 
+ void bdi_start_writeback(struct writeback_control *wbc)
+ {
+-	const bool must_wait = wbc->sync_mode == WB_SYNC_ALL;
+-	struct bdi_work work_stack, *work = NULL;
+-
+-	if (!must_wait)
+-		work = bdi_alloc_work(wbc);
++	/*
++	 * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
++	 * bdi_queue_work() will wake up the thread and flush old data. This
++	 * should ensure some amount of progress in freeing memory.
++	 */
++	if (wbc->sync_mode != WB_SYNC_ALL) {
++		struct bdi_work *w = bdi_alloc_work(wbc);
+ 
+-	if (!work) {
+-		work = &work_stack;
+-		bdi_work_init_on_stack(work, wbc);
+-	}
++		bdi_queue_work(wbc->bdi, w);
++	} else {
++		struct bdi_work work;
+ 
+-	bdi_queue_work(wbc->bdi, work);
++		bdi_work_init(&work, wbc);
++		work.state |= WS_ONSTACK;
+ 
+-	/*
+-	 * If the sync mode is WB_SYNC_ALL, block waiting for the work to
+-	 * complete. If not, we only need to wait for the work to be started,
+-	 * if we allocated it on-stack. We use the same mechanism, if the
+-	 * wait bit is set in the bdi_work struct, then threads will not
+-	 * clear pending until after they are done.
+-	 *
+-	 * Note that work == &work_stack if must_wait is true, so we don't
+-	 * need to do call_rcu() here ever, since the completion path will
+-	 * have done that for us.
+-	 */
+-	if (must_wait || work == &work_stack) {
+-		bdi_wait_on_work_clear(work);
+-		if (work != &work_stack)
+-			call_rcu(&work->rcu_head, bdi_work_free);
++		bdi_queue_work(wbc->bdi, &work);
++		bdi_wait_on_work_clear(&work);
+ 	}
+ }
+ 
 -- 
-Jens Axboe
+1.6.4.1.207.g68ea
 
