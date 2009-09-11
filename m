@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754451AbZIKQNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754638AbZIKQOA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754451AbZIKQNk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZIKQNk
+	id S1754638AbZIKQOA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:14:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbZIKQN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:13:40 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58331 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754234AbZIKQNj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:13:39 -0400
-Date: Fri, 11 Sep 2009 18:13:35 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: arve@android.com, swetland@google.com,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: newer version of HTC Dream support
-Message-ID: <20090911161335.GA8137@elf.ucw.cz>
-References: <20090824092204.GB25591@elf.ucw.cz> <20090901131832.GA1835@ucw.cz> <20090904090303.024e981a.randy.dunlap@oracle.com> <20090911071155.GA1386@ucw.cz> <20090911075847.2fb7210a.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911075847.2fb7210a.randy.dunlap@oracle.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 11 Sep 2009 12:13:59 -0400
+Received: from mga02.intel.com ([134.134.136.20]:36773 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754481AbZIKQN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:13:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,371,1249282800"; 
+   d="scan'208";a="447752913"
+Subject: Re: iwlagn: order 2 page allocation failures
+From: reinette chatre <reinette.chatre@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "Krauss, Assaf" <assaf.krauss@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Abbas, Mohamed" <mohamed.abbas@intel.com>
+In-Reply-To: <20090911084542.GA32497@csn.ul.ie>
+References: <200909060941.01810.elendil@planet.nl>
+	 <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie>
+	 <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie>
+	 <1252526738.30150.91.camel@rc-desk> <20090910090206.GA22276@csn.ul.ie>
+	 <1252606547.30150.304.camel@rc-desk>  <20090911084542.GA32497@csn.ul.ie>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 09:14:00 -0700
+Message-Id: <1252685640.30150.391.camel@rc-desk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > > > With 2.6.31 being closer... is there a git tree or set of patches to
-> > > > > make it boot on HTC Dream?
-> > > > > 
-> > > > > Quite a lot of hw should be supported in linux-next, and it would be
-> > > > > nice to get arch-specific code working with linux-next and eventually
-> > > > > merged...
-> > > > 
-> > > > Any news here? If you need some more kernel hackers I guess I'm
-> > > > looking for a job :-).
-> > > 
-> > > well, mmotm and linux-next dream builds fail like this:
-> > 
-> > Ok, is the goal here to get it to compile, or get it to boot?
+On Fri, 2009-09-11 at 01:45 -0700, Mel Gorman wrote:
+> Otherwise, it looks just the finest and I think it will address the
+> problem to some extent - in that it won't print alarming messages when
+> they are not needed.
 > 
-> Can you do b. (boot) without a. (compile)?
-
-Well, hardly, but I can do a) without b), and it is very much
-easier. So... which is it?
-
-> > I have recent tree that compiles, somewhere, but getting it to boot is
-> > 'slightly more interesting'.
+> The additional changes with respect to GFP_ATOMIC are optional. Whether
+> you do it or not.
 > 
-> Sure, booting is more interesting.  Especially if one has the device.
+> Acked-by: Mel Gorman <mel@csn.ul.ie>
 
-Do you have one?
+Thank you very much. I'll make the changes you suggested.
 
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Reinette
+
+
