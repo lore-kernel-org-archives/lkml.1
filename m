@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753531AbZIKLrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZIKLlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753531AbZIKLrs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 07:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753276AbZIKLrs
+	id S1753549AbZIKLlt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 07:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753391AbZIKLls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 07:47:48 -0400
-Received: from averell.mail.tiscali.it ([213.205.33.55]:46521 "EHLO
-	averell.mail.tiscali.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752835AbZIKLrr convert rfc822-to-8bit (ORCPT
+	Fri, 11 Sep 2009 07:41:48 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47282 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753268AbZIKLls (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 07:47:47 -0400
-X-Greylist: delayed 484 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 07:47:47 EDT
-From: Giuseppe Scrivano <gscrivano@gnu.org>
-To: Eric Paris <eparis@parisplace.org>
-Cc: linux-kernel@vger.kernel.org, bug-coreutils@gnu.org
-Subject: Re: extend inotify to support file descriptors in addition to paths
-References: <87fxaxvuh6.fsf@master.homenet>
-	<7e0fb38c0909100727t51d3d523o403e05a225881403@mail.gmail.com>
-Date: Fri, 11 Sep 2009 13:39:38 +0200
-In-Reply-To: <7e0fb38c0909100727t51d3d523o403e05a225881403@mail.gmail.com>
-	(Eric Paris's message of "Thu, 10 Sep 2009 10:27:25 -0400")
-Message-ID: <87k505bthh.fsf@master.homenet>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.1.50 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 11 Sep 2009 07:41:48 -0400
+Subject: Re: [RFC][v6][PATCH 0/9] clone_with_pids() syscall
+From: Peter Zijlstra <peterz@infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>,
+       container@us.ibm.com, sukadev@us.ibm.com
+In-Reply-To: <200909111334.45241.arnd@arndb.de>
+References: <20090910060627.GA24343@us.ibm.com>
+	 <1252668148.7126.13.camel@laptop>  <200909111334.45241.arnd@arndb.de>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 13:40:05 +0200
+Message-Id: <1252669205.7126.23.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris <eparis@parisplace.org> writes:
+On Fri, 2009-09-11 at 13:34 +0200, Arnd Bergmann wrote:
+> On Friday 11 September 2009, Peter Zijlstra wrote:
 
-> On Tue, Sep 8, 2009 at 8:21 PM, Giuseppe Scrivano <gscrivano@gnu.org> wrote:
->
->> at the moment inotify permits to add new files to be watched using their
->> path.  There are situations where the file path is not know but a
->> descriptor is available.  It would be desiderable to have the
->> possibility to use the inotify system even in these (rare) cases.
->
-> I don't think specifying the inode in question by fd is fundamentally
-> a bad idea.  It is the reason I decided to use fd's when registering
-> event's in the upcoming fanotify rather than pathnames.  I do however
-> question if we really want to add yet another syscall for inotify.
-> We've already seen that inotify is very hard to expand.  The fixed
-> message length, lack of information a number of users want, and
-> difficultly in extending those things make me reticent to support more
-> extentions.
+> > If you then get passed a longer clone_struct than you know about, all is
+> > well IFF the tail is 0, otherwise fail with -E2BIG.
+> > 
+> > If you get passed a short clone_struct, zero out the tail.
+> 
+> I would leave out the size argument. We can put a few reserved fields
+> and flag bits in there for possible extensions, but if we ever run out
+> of these, just define a new syscall.
 
-> Personally I'd rather see us/you move to fanotify which is (I hope)
-> extensible forever.  If only I could get networking people to review
-> it.  Have you looked at fanotify?  I'm going to repost the series in a
-> couple minutes, maybe you could tell me if fanotify might work for
-> you?
+Why? If we can avoid this new syscall isn't that nicer?
 
-Sure, I'll take a look at it.  I have few questions before look at
-details: is it an attempt to replace inotify?  Does fanotify use only
-fd?  Have the possibility to watch a file by its path, like inotify
-does, is not a bad idea when the file is not already opened.
+> Also, if you're passing a struct, why not put nr_pids in there, and
+> replace clone_pid_struct with a simple array? That would give us
 
-Thanks,
-Giuseppe
+Sure..
+
+
