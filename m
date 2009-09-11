@@ -1,42 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755777AbZIKSP7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755832AbZIKSXD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755777AbZIKSP7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 14:15:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZIKSP6
+	id S1755832AbZIKSXD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:23:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755764AbZIKSXB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 14:15:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52358 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754450AbZIKSP6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 14:15:58 -0400
-Date: Fri, 11 Sep 2009 14:16:00 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 2/4] Assign bdi in super_block
-Message-ID: <20090911181600.GA21792@infradead.org>
-References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com> <1252669832-13553-3-git-send-email-jens.axboe@oracle.com> <20090911180106.GB19598@infradead.org> <20090911181227.GM14984@kernel.dk>
+	Fri, 11 Sep 2009 14:23:01 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46755 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754243AbZIKSXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 14:23:00 -0400
+Date: Fri, 11 Sep 2009 18:22:27 GMT
+From: tip-bot for Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, jens.axboe@oracle.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, jens.axboe@oracle.com,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090911153305.3fe9a361@skybase>
+References: <20090911153305.3fe9a361@skybase>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/core] clocksource: Resolve cpu hotplug dead lock with TSC unstable, fix crash
+Message-ID: <tip-f79e0258ea1f04d63db499479b5fb855dff6dbc5@git.kernel.org>
+Git-Commit-ID: f79e0258ea1f04d63db499479b5fb855dff6dbc5
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090911181227.GM14984@kernel.dk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 11 Sep 2009 18:22:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 08:12:27PM +0200, Jens Axboe wrote:
-> Good question, I was indeed looking for an sb equivalent of that bdi
-> flag. And now ->s_bdi being set or not is indeed that. Some of our
-> generated writeback originates at the bdi level though, so we may or may
-> not have the sb. From a quick look at fs-writeback.c, it looks feasible
-> though. I'll try.
-> 
-> Can I take that as an acked-by?
+Commit-ID:  f79e0258ea1f04d63db499479b5fb855dff6dbc5
+Gitweb:     http://git.kernel.org/tip/f79e0258ea1f04d63db499479b5fb855dff6dbc5
+Author:     Martin Schwidefsky <schwidefsky@de.ibm.com>
+AuthorDate: Fri, 11 Sep 2009 15:33:05 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 11 Sep 2009 20:17:18 +0200
 
-Yes.
+clocksource: Resolve cpu hotplug dead lock with TSC unstable, fix crash
+
+The watchdog timer is started after the watchdog clocksource
+and at least one watched clocksource have been registered. The
+clocksource work element watchdog_work is initialized just
+before the clocksource timer is started. This is too late for
+the clocksource_mark_unstable call from native_cpu_up. To fix
+this use a static initializer for watchdog_work.
+
+This resolves a boot crash reported by multiple people.
+
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: John Stultz <johnstul@us.ibm.com>
+LKML-Reference: <20090911153305.3fe9a361@skybase>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/time/clocksource.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+index a0af4ff..5697155 100644
+--- a/kernel/time/clocksource.c
++++ b/kernel/time/clocksource.c
+@@ -123,10 +123,12 @@ static DEFINE_MUTEX(clocksource_mutex);
+ static char override_name[32];
+ 
+ #ifdef CONFIG_CLOCKSOURCE_WATCHDOG
++static void clocksource_watchdog_work(struct work_struct *work);
++
+ static LIST_HEAD(watchdog_list);
+ static struct clocksource *watchdog;
+ static struct timer_list watchdog_timer;
+-static struct work_struct watchdog_work;
++static DECLARE_WORK(watchdog_work, clocksource_watchdog_work);
+ static DEFINE_SPINLOCK(watchdog_lock);
+ static cycle_t watchdog_last;
+ static int watchdog_running;
+@@ -257,7 +259,6 @@ static inline void clocksource_start_watchdog(void)
+ {
+ 	if (watchdog_running || !watchdog || list_empty(&watchdog_list))
+ 		return;
+-	INIT_WORK(&watchdog_work, clocksource_watchdog_work);
+ 	init_timer(&watchdog_timer);
+ 	watchdog_timer.function = clocksource_watchdog;
+ 	watchdog_last = watchdog->read(watchdog);
