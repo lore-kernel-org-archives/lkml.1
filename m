@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753149AbZIKHdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbZIKHea@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753149AbZIKHdq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 03:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZIKHdp
+	id S1753610AbZIKHea (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 03:34:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZIKHe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 03:33:45 -0400
-Received: from gate.crashing.org ([63.228.1.57]:58197 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750704AbZIKHdp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 03:33:45 -0400
-Subject: Re: [PATCH v2 4/5] powerpc: remove unused __page_aligned
- definition.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1252464546-26394-5-git-send-email-tabbott@ksplice.com>
-References: <1252464546-26394-1-git-send-email-tabbott@ksplice.com>
-	 <1252464546-26394-5-git-send-email-tabbott@ksplice.com>
+	Fri, 11 Sep 2009 03:34:27 -0400
+Received: from casper.infradead.org ([85.118.1.10]:47800 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753000AbZIKHeZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 03:34:25 -0400
+Subject: Re: [PATCH 0/3] resend, cpuset/hotplug fixes
+From: Peter Zijlstra <peterz@infradead.org>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Jiri Slaby <jirislaby@gmail.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Miao Xie <miaox@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
+In-Reply-To: <4AA9F902.4030306@cn.fujitsu.com>
+References: <20090910192153.GA584@redhat.com>
+	 <1252615996.7205.99.camel@laptop>  <4AA9F902.4030306@cn.fujitsu.com>
 Content-Type: text/plain
-Date: Fri, 11 Sep 2009 17:33:21 +1000
-Message-Id: <1252654401.8566.101.camel@pasglop>
+Date: Fri, 11 Sep 2009 09:33:30 +0200
+Message-Id: <1252654410.7126.1.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -28,41 +32,13 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-08 at 22:49 -0400, Tim Abbott wrote:
-> There is already an architecture-independent __page_aligned_data macro
-> for this purpose, so removing the powerpc-specific macro should be
-> harmless.
+On Fri, 2009-09-11 at 15:15 +0800, Lai Jiangshan wrote:
+> One other minor thing:
+> Oleg's patch may introduce a trouble in PREEEMPT_RT tree, because
+> spinlock in RT is also mutex. Likely I'm wrong.
 
-Thanks. I'll pick these up.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Tim Abbott <tabbott@ksplice.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Sam Ravnborg <sam@ravnborg.org>
-> ---
->  arch/powerpc/include/asm/page_64.h |    8 --------
->  1 files changed, 0 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-> index 5817a3b..22e4795 100644
-> --- a/arch/powerpc/include/asm/page_64.h
-> +++ b/arch/powerpc/include/asm/page_64.h
-> @@ -152,14 +152,6 @@ do {						\
->  
->  #endif /* !CONFIG_HUGETLB_PAGE */
->  
-> -#ifdef MODULE
-> -#define __page_aligned __attribute__((__aligned__(PAGE_SIZE)))
-> -#else
-> -#define __page_aligned \
-> -	__attribute__((__aligned__(PAGE_SIZE), \
-> -		__section__(".data.page_aligned")))
-> -#endif
-> -
->  #define VM_DATA_DEFAULT_FLAGS \
->  	(test_thread_flag(TIF_32BIT) ? \
->  	 VM_DATA_DEFAULT_FLAGS32 : VM_DATA_DEFAULT_FLAGS64)
+But they have priority-inheritance, hence you cannot create a deadlock
+through preemption. If the kstopmachine thread blocks on a mutex, the
+owner gets boosted to kstopmachine's prio and runs to completion, after
+that kstopmachine continues.
 
