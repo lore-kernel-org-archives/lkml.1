@@ -1,140 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753120AbZIKMgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752483AbZIKMlG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753120AbZIKMgZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 08:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZIKMgY
+	id S1752483AbZIKMlG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 08:41:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752119AbZIKMlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 08:36:24 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:56475 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751678AbZIKMgX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 08:36:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=adS6lEsXpLjIHW7or+yuwEyrskLRgIHj4VxRqxTTxGGPZ3GazqQdD7ArAHm5rOd4m4
-         tQoAFacUIRULKMVxaWU8qU9TkZflcNuIFDp2msSy0n8mJwa3x+8ktobsHWhaxxyga/vt
-         0URwf6bAywQJotacVvPZ6bgYYCMcnoplPZYKw=
+	Fri, 11 Sep 2009 08:41:06 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:50462 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751678AbZIKMlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 08:41:04 -0400
+Date: Fri, 11 Sep 2009 14:41:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: What's in linux-2.6-block.git for 2.6.32
+Message-ID: <20090911124106.GC14984@kernel.dk>
 MIME-Version: 1.0
-Reply-To: q-funk@iki.fi
-In-Reply-To: <20090816210134.GA14972@elte.hu>
-References: <AuPdDySr74O.A.5LC.Pj1fKB@chimera> <200908131654.45227.rjw@sisk.pl>
-	 <11fae7c70908130800q7b4a5293t5c373613d736d74@mail.gmail.com>
-	 <200908132034.34951.rjw@sisk.pl>
-	 <11fae7c70908161217p33830075p783880315a31b2e5@mail.gmail.com>
-	 <20090816205706.GB3463@elte.hu> <20090816210134.GA14972@elte.hu>
-Date: Fri, 11 Sep 2009 15:36:25 +0300
-X-Google-Sender-Auth: 5a4c86cc02e9150b
-Message-ID: <11fae7c70909110536i72d0607fxb03df74be0afe7a7@mail.gmail.com>
-Subject: Re: [Bug #13941] x86 Geode issue
-From: =?UTF-8?Q?Martin=2D=C3=89ric_Racine?= <q-funk@iki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/8/17 Ingo Molnar <mingo@elte.hu>:
->
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->>
->> * Martin-Éric Racine <q-funk@iki.fi> wrote:
->>
->> > On Thu, Aug 13, 2009 at 9:34 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
->> > > On Thursday 13 August 2009, Martin-Éric Racine wrote:
->> > >> On Thu, Aug 13, 2009 at 5:54 PM, Rafael J. Wysocki<rjw@sisk.pl> wrote:
->> > >> > On Thursday 13 August 2009, Martin-Éric Racine wrote:
->> > >> >> 2009/8/13 Martin-Éric Racine <q-funk@iki.fi>:
->> > >> >> > On Thu, Aug 13, 2009 at 12:07 PM, Ingo Molnar<mingo@elte.hu> wrote:
->> > >> >> >> * Martin-Éric Racine <q-funk@iki.fi> wrote:
->> > >> >> >>> Yes, this bug is still valid.
->> > >> >> >>>
->> > >> >> >>> Ubuntu kernel team member Leann Ogasawara and I are slowly
->> > >> >> >>> bisecting our way through the changes that took place since 2.6.30
->> > >> >> >>> to find the commit that introduced this regression. Please stay
->> > >> >> >>> tuned.
->> > >> >> >>
->> > >> >> >> hm, the only outright Geode related commit was:
->> > >> >> >>
->> > >> >> >>  d6c585a: x86: geode: Mark mfgpt irq IRQF_TIMER to prevent resume failure
->> > >> >> >>
->> > >> >> >> the jpg at:
->> > >> >> >>
->> > >> >> >>  http://launchpadlibrarian.net/28892781/00002.jpg
->> > >> >> >>
->> > >> >> >> is very out of focus - but what i could decypher suggests a
->> > >> >> >> pagefault crash in the VFS code, in generic_delete_inode().
->> > >> >>
->> > >> >> This one might be a bit better:
->> > >> >>
->> > >> >> http://launchpadlibrarian.net/30267494/2.6.31-5.24.jpg
->> > >
->> > > Hmm.  This looks like a sysfs oops to my untrained eye.
->> >
->> > The bisect I did with Leann Ogasawara has narrowed the kernel panic
->> > down to the following:
->> >
->> > commit f19d4a8fa6f9b6ccf54df0971c97ffcaa390b7b0
->> > Author: Al Viro <viro@zeniv.linux.org.uk>
->> > Date: Mon Jun 8 19:50:45 2009 -0400
->> >
->> >     add caching of ACLs in struct inode
->> >
->> >     No helpers, no conversions yet.
->> >
->> >     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
->>
->> Weird. If the functions do what their name suggests, i.e. if
->> inode_init_always() is an always called constructor and if
->> destroy_inode() is an unconditional destructor then this patch
->> should have no functional effect on the VFS side.
->>
->> It increases the size of struct inode, so if you have some old
->> module (built to an older version of fs.h) still around it might
->> corrupt your inode data structure.
->>
->> Or the size change might trigger some dormant bug. It might move a
->> critical inode right into the path of a pre-existing (but not
->> visibly crash-triggering) data corruption.
->>
->> The possibilities on the 'weird bug' front are endless - the
->> crash/oops itself should be turned into text, posted here and
->> analyzed.
->
-> Btw., before you invest any time into the 'weird crash' theory, i'd
-> suggest to double check the bisection result:
->
->  f19d4a8fa6f9b6ccf54df0971c97ffcaa390b7b0    crashes
->  f19d4a8fa6f9b6ccf54df0971c97ffcaa390b7b0~1  boots fine
->
-> You can save yourself from a lot of head scratching that way - the
-> bisection result looks weird. (albeit plausible - a VFS crash points
-> to a VFS commit.)
->
-> _Maybe_ the bisection is just off a little bit (there was a
-> bisection mistake in the last few steps), and the real buggy commit
-> is one of the nearby ones:
+Hi,
 
-We double checked again last week with fresh builds and validated that
-the above result is correct.
+This is just the core block bits, I have other branches pending. And a
+heads up that I had to rebase this branch today, something I haven't
+done during the .31 cycle. This was due to the history being really odd,
+with modified patches of for-2.6.32 patches being forwarded to mainline.
+So I though it would be better to clean this history and merge fixups.
+There was also a middle point that would break bisection.
 
-What puzzles us is the start of the crash:
+Nothing really earth shattering in here, nor are there really big
+changes for this cycle.
+
+- Some updates to CFQ to improve interactiveness.
+- Some cleanups and sanitization of the bio IO flags.
+- blk-iopoll, an experimental API for doing NAPI like polled completions
+  for really fast devices. In testing this has shown to be faster for
+  some cases, while slower for others. The included patch is just the
+  core bits, no driver support is being merged yet.
+- Enable CPU IO completion by default. My testing has shown this to be
+  faster, and independent testing by Intel confirms that as well.
+- A fix to only issue a block queue trace when we actually intend to
+  queue.
+- A fix for splice to update mtime and atime on files.
+- A cleanup of the failfast bits and merge fixups for the same.
+
+The changes are availble at:
+
+  git://git.kernel.dk/linux-2.6-block.git for-2.6.32
+
+Ed L. Cashin (1):
+      aoe: end barrier bios with EOPNOTSUPP
+
+Eric Dumazet (1):
+      cciss: memory leak in cciss_init_one()
+
+Hannes Reinecke (1):
+      Send uevents for write_protect changes
+
+Jens Axboe (12):
+      cfq-iosched: drain device queue before switching to a sync queue
+      block: make bio_rw_flagged() return a bool
+      bio: first step in sanitizing the bio->bi_rw flag testing
+      block: improve queue_should_plug() by looking at IO depths
+      block: add blk-iopoll, a NAPI like approach for block devices
+      block: fix long lines in block/blk-iopoll.c
+      block: adjust default budget for blk-iopoll
+      block: fix comment in blk-iopoll.c
+      block: use interrupts disabled version of raise_softirq_irqoff()
+      cfq-iosched: get rid of must_alloc flag
+      block: make blk_iopoll_prep_sched() follow normal 0/1 return convention
+      block: enable rq CPU completion affinity by default
+
+Marcin Slusarz (1):
+      block: use printk_once
+
+Miklos Szeredi (1):
+      splice: update mtime and atime on files
+
+Minchan Kim (1):
+      block: trace bio queueing trial only when it occurs
+
+Nikanth Karthikesan (1):
+      Seperate read and write statistics of in_flight requests
+
+Shan Wei (1):
+      cfq: fix the log message after dispatched a request
+
+Tejun Heo (3):
+      block: use the same failfast bits for bio and request
+      block: implement mixed merge of different failfast requests
+      scsi,block: update SCSI to handle mixed merge failures
+
+Vivek Goyal (1):
+      cfq-iosched: no need to keep track of busy_rt_queues
+
+ block/Makefile              |    2 +-
+ block/blk-core.c            |  166 +++++++++++++++++++++++++------
+ block/blk-iopoll.c          |  227 +++++++++++++++++++++++++++++++++++++++++++
+ block/blk-merge.c           |   51 ++++++++--
+ block/blk.h                 |    1 +
+ block/cfq-iosched.c         |   71 ++++++--------
+ block/elevator.c            |   16 +---
+ block/genhd.c               |   22 ++++-
+ drivers/block/aoe/aoeblk.c  |    3 +
+ drivers/block/cciss.c       |    4 +-
+ drivers/block/loop.c        |    2 +-
+ drivers/block/paride/pcd.c  |   12 +--
+ drivers/block/sx8.c         |    4 +-
+ drivers/block/viodasd.c     |   12 +--
+ drivers/md/dm-raid1.c       |    2 +-
+ drivers/md/dm-stripe.c      |    2 +-
+ drivers/md/dm.c             |   28 +++---
+ drivers/md/linear.c         |    2 +-
+ drivers/md/multipath.c      |    4 +-
+ drivers/md/raid0.c          |    2 +-
+ drivers/md/raid1.c          |   14 ++-
+ drivers/md/raid10.c         |    6 +-
+ drivers/md/raid5.c          |    2 +-
+ drivers/scsi/scsi_lib.c     |    6 +-
+ drivers/staging/dst/dcore.c |    5 +-
+ fs/btrfs/volumes.c          |    4 +-
+ fs/partitions/check.c       |   12 ++-
+ fs/splice.c                 |    8 +-
+ include/linux/bio.h         |   69 ++++++-------
+ include/linux/blk-iopoll.h  |   48 +++++++++
+ include/linux/blkdev.h      |   34 +++++--
+ include/linux/genhd.h       |   21 +++--
+ include/linux/interrupt.h   |    1 +
+ kernel/sysctl.c             |   10 ++-
+ 34 files changed, 661 insertions(+), 212 deletions(-)
+ create mode 100644 block/blk-iopoll.c
+ create mode 100644 include/linux/blk-iopoll.h
 
 
-BUG: unable to handle kernel paging request at ffffb4ff
-IP: [<c01f716b>] __destroy_inode+0x4b/0x80
-*pde = 00810067 *pte = 00000000
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/power/resume
+-- 
+Jens Axboe
 
-
-Any ideas?
-Martin-Éric
