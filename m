@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755873AbZIKSnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755899AbZIKSqI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755873AbZIKSnX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 14:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755854AbZIKSnW
+	id S1755899AbZIKSqI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:46:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZIKSqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 14:43:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54126
+	Fri, 11 Sep 2009 14:46:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54129
 	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755766AbZIKSnV (ORCPT
+	by vger.kernel.org with ESMTP id S1755877AbZIKSqE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 14:43:21 -0400
-Date: Fri, 11 Sep 2009 11:43:37 -0700 (PDT)
-Message-Id: <20090911.114337.150207703.davem@davemloft.net>
-To: eric.dumazet@gmail.com
-Cc: albcamus@gmail.com, parag.lkml@gmail.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] net: Fix sock_wfree() race
+	Fri, 11 Sep 2009 14:46:04 -0400
+Date: Fri, 11 Sep 2009 11:46:20 -0700 (PDT)
+Message-Id: <20090911.114620.260824240.davem@davemloft.net>
+To: eparis@redhat.com
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket
+ numbers
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <4AA6DF7B.7060105@gmail.com>
-References: <df9815e70909080109r3d61ee76v3dcba41dbd87b998@mail.gmail.com>
-	<4AA64A11.7090804@gmail.com>
-	<4AA6DF7B.7060105@gmail.com>
+In-Reply-To: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
 X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -29,32 +29,30 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Dumazet <eric.dumazet@gmail.com>
-Date: Wed, 09 Sep 2009 00:49:31 +0200
+From: Eric Paris <eparis@redhat.com>
+Date: Fri, 11 Sep 2009 01:25:58 -0400
 
-> [PATCH] net: Fix sock_wfree() race
+> fanotify's user interface uses a custom socket (it doesn't use netlink
+> since work must be done in the context of the receive side of the socket)
 > 
-> Commit 2b85a34e911bf483c27cfdd124aeb1605145dc80
-> (net: No more expensive sock_hold()/sock_put() on each tx)
-> opens a window in sock_wfree() where another cpu
-> might free the socket we are working on.
+> This patch simply defines the fanotify socket number declarations.  The
+> actual implementation of the socket is in a later patch.
 > 
-> Fix is to call sk->sk_write_space(sk) only
-> while still holding a reference on sk.
-> 
-> Since doing this call is done before the 
-> atomic_sub(truesize, &sk->sk_wmem_alloc), we should pass truesize as 
-> a bias for possible sk_wmem_alloc evaluations.
-> 
-> Reported-by: Jike Song <albcamus@gmail.com>
-> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+> Signed-off-by: Eric Paris <eparis@redhat.com>
 
-Applied to net-next-2.6, thanks.  I'll queue up your simpler
-version for -stable.
+I would really prefer if you worked on eliminating the problem that
+prevents you from using netlink instead.
 
-BTW, if most if not all of the sock_writeable() calls are now
-sock_writeable_bias(), it's probably better to just add the
-bias argument to sock_writable().
+You're just duplicating tons of netlink functionality only because of
+this apparent limitation, and that's not good.
 
-And a quick grep shows that only a few plain sock_writeable()
-calls remain in the less often used protocols.
+If you use netlink you'll be able to define arbitrary attributes,
+they'll be optional and thus you can allow notification application to
+set filters on those attributes, as well as all sorts of other things.
+
+You can reimplement that, but I really would rather see you make
+netlink suit your needs.  This is how we make existing facilities
+more powerful and useful to consumers, when someone tries to use
+it in a new way and with new requirements.
+
+Thanks.
