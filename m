@@ -1,82 +1,229 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbZIKPcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZIKOex@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754470AbZIKPcw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 11:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbZIKPcv
+	id S1753834AbZIKOex (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:34:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZIKOex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 11:32:51 -0400
-Received: from relay1.vsu.ru ([62.76.169.14]:48259 "EHLO relay1.vsu.ru"
+	Fri, 11 Sep 2009 10:34:53 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53417 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752536AbZIKPcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 11:32:51 -0400
-X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 11:32:50 EDT
-X-drweb-hash: 
-To: linux-kernel@vger.kernel.org
-Subject: i915 and x11 freezes
-From: Vladimir Volovich <vvv@vsu.ru>
-Date: Fri, 11 Sep 2009 18:32:39 +0400
-Message-ID: <87zl91wnzs.fsf@vvv.org.vrn.ru>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	id S1753133AbZIKOev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:34:51 -0400
+From: Andreas Gruenbacher <agruen@suse.de>
+Organization: SUSE Labs, Novell
+To: Eric Paris <eparis@redhat.com>
+Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
+Date: Fri, 11 Sep 2009 16:32:49 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.30-rc6-git3-4-pae; KDE/4.1.3; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, davem@davemloft.net, viro@zeniv.linux.org.uk,
+       alan@linux.intel.com, hch@infradead.org
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+In-Reply-To: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_S+lqKToL9s78RMI"
+Message-Id: <200909111632.50477.agruen@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+--Boundary-00=_S+lqKToL9s78RMI
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-there are very annoying freezes of X11 recently on my desktop running
-2.6.30-1-amd64 (from debian) on the DG33TL motherboard. i think, it is
-the same as described here:
+The patches did apply and build against next-20090910. I wrote a small user-
+space utility for testing (attached); see how painless the socket interface 
+is. The patches seem to be working well, except that some required 
+functionality is missing still.
 
-https://bugs.freedesktop.org/show_bug.cgi?id=20560
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=525231
+Currently, the CAP_NET_RAW capability is needed for being able to create 
+watches. This seems too strict to me; I don't see why I shouldn't be able to 
+watch my own files, or files which I have read access to (like inotify).
 
-such freezes happen during output to the screen under X11, and could
-occur while scrolling gnome-terminal, running firefox (iceweasel),
-switching virtual desktops, etc.
+There are some actions like creating hardlinks in directories or removing 
+files which don't trigger events. From a user point of view, I would prefer to 
+receive those events as well. (I notice that it's not easy to to pass file 
+descriptors to listeners for those events.)
 
-when such "freeze" occurs, i can usually move the mouse pointer but
-nothing more (and the keyboard is locked, e.g. the caps lock led could
-not be toggled); although i can remotely login via ssh, and even via
-remote X11.
+Thanks,
+Andreas
 
-interestingly, when i run remotely "init 6" to reboot, it sometimes does
-not reboot until i move the mouse (or press some keys on keyboard), and
-also recently i saw these messages in dmesg:
+--Boundary-00=_S+lqKToL9s78RMI
+Content-Type: text/x-csrc;
+  charset="UTF-8";
+  name="fanotify.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="fanotify.c"
 
-[19320.640013] INFO: task events/1:16 blocked for more than 120 seconds.
-[19320.640017] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-[19320.640020] events/1      D ffff8800280600c0     0    16      2
-[19320.640026]  ffff88022b1414d0 0000000000000046 0000000000000000 0000000000000000
-[19320.640031]  ffffffff8020e5a9 00000000000120c0 000000000000e250 ffff88022b1807f0
-[19320.640036]  ffff88022b180ae0 0000000128062a48 ffffffff80235f65 ffff880028060128
-[19320.640040] Call Trace:
-[19320.640049]  [<ffffffff8020e5a9>] ? __switch_to+0xae/0x263
-[19320.640054]  [<ffffffff80235f65>] ? dequeue_entity+0xf/0x11f
-[19320.640061]  [<ffffffff804b4ad5>] ? __mutex_lock_common+0x10f/0x17f
-[19320.640077]  [<ffffffffa071de52>] ? i915_gem_retire_work_handler+0x0/0x64 [i915]
-[19320.640082]  [<ffffffff804b4944>] ? mutex_lock+0x12/0x28
-[19320.640095]  [<ffffffffa071de79>] ? i915_gem_retire_work_handler+0x27/0x64 [i915]
-[19320.640100]  [<ffffffff80250fe1>] ? worker_thread+0x174/0x211
-[19320.640104]  [<ffffffff8025473e>] ? autoremove_wake_function+0x0/0x2e
-[19320.640108]  [<ffffffff80250e6d>] ? worker_thread+0x0/0x211
-[19320.640112]  [<ffffffff80250e6d>] ? worker_thread+0x0/0x211
-[19320.640117]  [<ffffffff80254382>] ? kthread+0x54/0x80
-[19320.640121]  [<ffffffff80210aca>] ? child_rip+0xa/0x20
-[19320.640125]  [<ffffffff8025432e>] ? kthread+0x0/0x80
-[19320.640129]  [<ffffffff80210ac0>] ? child_rip+0x0/0x20
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
+#include <unistd.h>
+#include <inttypes.h>
+#include <stdbool.h>
 
-which suggests that there is probably some incorrect locking going on
-(which is supported by the above-described behavior that i usually need
-to do some mouse moving, which generates interrupts, to get the reboot
-process to proceed).
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
-since i was seeing the above dmesg output, i don't exclude the
-possibility that this hang is caused by some bug in the kernel, rather
-than e.g. in the xserver-xorg-video-intel driver.
+#include "linux/fanotify.h"
 
-hope some gurus could help to fix this very annoying bug.
+int watch_inode(int fan_fd, const char *path, uint32_t mask)
+{
+	struct fanotify_so_inode_mark mark;
 
-Best,
-v.
+	memset(&mark, 0, sizeof(mark));
+	mark.fd = open(path, 0);
+	if (mark.fd == -1)
+		return -1;
+	mark.mask = mask;
+	if (setsockopt(fan_fd, SOL_FANOTIFY, FANOTIFY_SET_MARK,
+		       &mark, sizeof(mark)) != 0)
+		return -1;
+	close(mark.fd);
+	return 0;
+}
+
+void synopsis(const char *progname, int status)
+{
+	FILE *file = status ? stderr : stdout;
+
+	fprintf(file, "USAGE: %s [-cg] [-o {open,close,access,modify}] file ...\n",
+		progname);
+	exit(status);
+}
+
+int main(int argc, char *argv[])
+{
+	int opt;
+	int fan_fd;
+	uint32_t fan_mask = FAN_OPEN | FAN_CLOSE | FAN_ACCESS | FAN_MODIFY;
+	bool opt_child = false, opt_global = false;
+	ssize_t len;
+	struct fanotify_addr addr;
+	char buf[4096];
+#ifdef WITH_PID
+	pid_t pid;
+#endif
+
+	while ((opt = getopt(argc, argv, "o:cgh")) != -1) {
+		switch(opt) {
+			case 'o': {
+				char *str, *tok;
+
+				fan_mask = 0;
+				str = optarg;
+				while ((tok = strtok(str, ",")) != NULL) {
+					str = NULL;
+					if (strcmp(tok, "open") == 0)
+						fan_mask |= FAN_OPEN;
+					else if (strcmp(tok, "close") == 0)
+						fan_mask |= FAN_CLOSE;
+					else if (strcmp(tok, "access") == 0)
+						fan_mask |= FAN_ACCESS;
+					else if (strcmp(tok, "modify") == 0)
+						fan_mask |= FAN_MODIFY;
+					else
+						synopsis(argv[0], 1);
+				}
+				break;
+			}
+			case 'c':
+				opt_child = true;
+				break;
+			case 'g':
+				opt_global = true;
+				break;
+			case 'h':
+				synopsis(argv[0], 0);
+			default:  /* '?' */
+				synopsis(argv[0], 1);
+		}
+	}
+	if (optind == argc && !opt_global)
+		synopsis(argv[0], 1);
+
+	if (opt_child)
+		fan_mask |= FAN_EVENT_ON_CHILD;
+
+	memset(&addr, 0, sizeof(addr));
+	addr.family = AF_FANOTIFY;
+	addr.priority = 32768;
+	addr.mask = opt_global ? fan_mask : 0;
+
+	fan_fd = socket(PF_FANOTIFY, SOCK_RAW, 0);
+	if (fan_fd == -1)
+		goto fail;
+	if (bind(fan_fd, (struct sockaddr *)&addr, sizeof(addr)) != 0)
+		goto fail;
+
+	for (; optind < argc; optind++)
+		if (watch_inode(fan_fd, argv[optind], fan_mask) != 0)
+			goto fail;
+
+#if WITH_PID
+	pid = getpid();
+#endif
+	while ((len = recv(fan_fd, buf, sizeof(buf), 0)) > 0) {
+		struct fanotify_event_metadata *metadata;
+
+		metadata = (void *)buf;
+		while(FAN_EVENT_OK(metadata, len)) {
+			struct stat st;
+
+#if WITH_PID
+			if (metadata->pid == pid)
+				goto skip;
+#endif
+
+			if (metadata->fd >= 0) {
+				char path[PATH_MAX];
+
+				sprintf(path, "/proc/self/fd/%d", metadata->fd);
+				if (readlink(path, path, sizeof(path)) == -1)
+					goto fail;
+				printf("%s:", path);
+			} else
+				printf("?:");
+
+#if WITH_PID
+			if (metadata->pid >= 0)
+				printf(" pid=%ld", metadata->pid);
+#endif
+
+			if (metadata->mask & FAN_ACCESS)
+				printf(" access");
+			if (metadata->mask & FAN_OPEN)
+				printf(" open");
+			if (metadata->mask & FAN_MODIFY)
+				printf(" modify");
+			if (metadata->mask & FAN_CLOSE) {
+				if (metadata->mask & FAN_CLOSE_WRITE)
+					printf(" close(writable)");
+				else
+					printf(" close");
+			}
+			printf("\n");
+
+		skip:
+			if (metadata->fd >= 0 && close(metadata->fd) != 0)
+				goto fail;
+			metadata = FAN_EVENT_NEXT(metadata, len);
+		}
+	}
+	if (len < 0)
+		goto fail;
+	return 0;
+
+fail:
+	fprintf(stderr, "%s\n", strerror(errno));
+	return 1;
+}
+
+--Boundary-00=_S+lqKToL9s78RMI--
