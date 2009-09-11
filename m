@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756950AbZIKVnN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756978AbZIKVpB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756950AbZIKVnN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 17:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755436AbZIKVnM
+	id S1756978AbZIKVpB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:45:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756851AbZIKVpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 17:43:12 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:46913 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752479AbZIKVnL (ORCPT
+	Fri, 11 Sep 2009 17:45:00 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:46856 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752479AbZIKVo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 17:43:11 -0400
-Date: Fri, 11 Sep 2009 22:42:54 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: jamal <hadi@cyberus.ca>
-Cc: Eric Paris <eparis@redhat.com>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org, balbir@in.ibm.com
-Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
-Message-ID: <20090911214254.GB19901@shareable.org>
-References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com> <20090911.114620.260824240.davem@davemloft.net> <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com> <1252704102.25158.36.camel@dogo.mojatatu.com>
+	Fri, 11 Sep 2009 17:44:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=cnfjkjuQloXM9EryeW8CHzWhJ04qztxXU+7RngVwpC2hRNt1yFEYr8jSJJU68aGaEM
+         P7pMYtICJxbxEU7qDB8P8T4whR3tRJZjKudpRy3UizGcQrJSBCM33Hnkc3fnuwN2edBC
+         QEyiUyQHcIlPPEXDOxeIq7eyM/ctcSI0nhevQ=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252704102.25158.36.camel@dogo.mojatatu.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090911213204.GC25544@elf.ucw.cz>
+References: <20090903232317.GA6760@lst.de>
+	 <c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
+	 <87iqfx5mss.fsf@devron.myhome.or.jp> <20090907125130.GA1595@ucw.cz>
+	 <87ljko5k3v.fsf@devron.myhome.or.jp>
+	 <20090910192354.GD23356@elf.ucw.cz>
+	 <87bplim1ce.fsf@devron.myhome.or.jp>
+	 <20090911200922.GF8137@elf.ucw.cz>
+	 <c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com>
+	 <20090911213204.GC25544@elf.ucw.cz>
+Date: Fri, 11 Sep 2009 23:45:01 +0200
+Message-ID: <c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com>
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jamal wrote:
-> 1) Netlink messages wont get lost unless the listener is not keeping up
-> and the kernel sending it messages ends up filling its queues. In such a
-> case your event message will be delivered to the 49 other users but
-> not the overloaded one. You can add sequence numbers to the event
-> messages you send to the listeners and any gaps in sequences on received
-> events imply lost events. You can add a mechanism to query your user
-> space kernel when something like that gets lost.
+2009/9/11 Pavel Machek <pavel@ucw.cz>:
+>
+>> And why suspend of mmc should generate card removal ??
+>
+> Card is powered down during suspend -> mmc can't guarantee the card is
+> same and unchanged -> it makes some sense to simulate
+> removal/reinsert.
 
-One of the uses of fanotify is as a security or auditing mechanism.
-That can't tolerate gaps.
+But how is this going to work when I keep the device mounted and
+blockdev is basically destroyed -  what if I'm reading file from card
+during suspend ?
 
-It's fundemantally different from inotify in one important respect:
-inotify apps can recover from losing events by checking what they are
-watching.
+>> if I suspend and resume my laptop and I keep the card inside - all
+>> those step looks plain wrong.
+>
+> Unfortunately system can't tell.
 
-The fanotify application will know that it missed events, but what
-happens to the other application which _caused_ those events?  Does it
-get to do things it shouldn't, or hide them from the fanotify app, by
-simply overloading the system?  Or the opposite, does it get access
-denied - spurious file errors when the system is overloaded?
+Well system could check basic card ids if they match after resume - if
+some users wants to crash his card by randomly swapping it during
+suspend/resume - I'd have no problem with that....
 
-There's no way to handle that by dropping events.  A transport
-mechanism can be dropped (say skbs), but the event itself has to be
-kept, and then retried.
-
-Since you have to keep an event object around until it's handled,
-there's no point tying it to an unreliable delivery mechanism which
-you'd have to wrap a retry mechanism around.
-
-In other words, that part of netlink is a poor match.  It would match
-inotify much better.
-
-> 2) Your architecture has to take care of maintaining the state of what
-> you want to deliver. So your editing has nothing to do with skbs.
-> i.e an event happens, you update your state. If you need to send the
-> event to the listeners, you alloc an skb - populate it with the info;
-> multicast it to all the listeners. If something else happens, i would
-> suggest for sake of simplicity you rinse and repeat. Sure, the listener
-> may get contradicting events - but they should be able to handle it.
-
-Speaking of skbs, how fast and compact are they for this?
-
-Eric's explained that it would be normal for _every_ file operation on
-some systems to trigger a fanotify event and possibly wait on the
-response, or at least in major directory trees on the filesystem.
-Even if it's just for the fanotify app to say "oh I don't care about
-that file, carry on".
-
-File performance is one of those things which really needs to be fast
-for a good user experience - and it's not unusual to grep the odd
-10,000 files here or there (just think of what a kernel developer
-does), or to replace a few thousand quickly (rpm/dpkg) and things like
-that.
-
-While skbs and netlink aren't that slow, I suspect they're an order of
-magnitude or two slower than, say, epoll or inotify at passing events
-around.
-
--- Jamie
+Zdenek
