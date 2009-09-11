@@ -1,128 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753821AbZIKGKw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752872AbZIKGKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753821AbZIKGKw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 02:10:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZIKGKw
+	id S1752872AbZIKGKd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 02:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZIKGKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 02:10:52 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65017 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752401AbZIKGKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 02:10:51 -0400
-Message-ID: <4AA9E9B3.8060901@cn.fujitsu.com>
-Date: Fri, 11 Sep 2009 14:09:55 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 11 Sep 2009 02:10:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36607 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751388AbZIKGKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 02:10:31 -0400
+Date: Fri, 11 Sep 2009 08:10:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
+Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Re: Epic regression in throughput since v2.6.23
+Message-ID: <20090911061024.GA27833@elte.hu>
+References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru> <873a6xdqwq.fsf@depni.sinp.msu.ru> <20090909155223.GA12065@elte.hu> <87my53vo6d.fsf@depni.sinp.msu.ru> <20090910065306.GB3920@elte.hu> <87ljkm9yew.fsf@depni.sinp.msu.ru>
 MIME-Version: 1.0
-To: Jiri Slaby <jirislaby@gmail.com>
-CC: peterz@infradead.org, rjw@sisk.pl, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 1/1] sched: fix cpu_down deadlock
-References: <4AA0FEBF.7040104@gmail.com> <1252496510-11898-1-git-send-email-jirislaby@gmail.com>
-In-Reply-To: <1252496510-11898-1-git-send-email-jirislaby@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87ljkm9yew.fsf@depni.sinp.msu.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby wrote:
-> Jiri Slaby wrote:
->> Thanks, in the end I found it manually. Goddammit! It's an -mm thing:
->> cpu_hotplug-dont-affect-current-tasks-affinity.patch
->>
->> Well, I don't know why, but when the kthread overthere runs under
->> suspend conditions and gets rescheduled (e.g. by the might_sleep()
->> inside) it never returns. pick_next_task always returns the idle task
->> from the idle queue. State of the thread is TASK_RUNNING.
->>
->> Why is it not enqueued into some queue? I tried also
->> sched_setscheduler(current, FIFO, 99) in the thread itself. Unless I did
->> it wrong, it seems like a global scheduler problem?
-> 
-> Actually not, it definitely seems like a cpu_down problem.
->  
->> Ingo, any ideas?
-> 
-> Apparently not, but nevermind :). What about the patch below?
-> 
-> --
-> 
-> After a cpu is taken down in __stop_machine, the kcpu_thread still may be
-> rescheduled to that cpu, but in fact the cpu is not running at that
-> moment.
-> 
-> This causes kcpu_thread to never run again, because its enqueued on another
-> runqueue, hence pick_next_task never selects it on the set of newly
-> running cpus.
-> 
-> We do set_cpus_allowed_ptr in _cpu_down_thread, but cpu_active_mask is
-> updated to not contain the cpu which goes down even after the thread finishes
-> (and _cpu_down returns).
-> 
-> For me this triggers mostly while suspending a SMP machine with
-> FAIR_GROUP_SCHED enabled and
-> cpu_hotplug-dont-affect-current-tasks-affinity patch applied. The patch
-> adds kthread to the cpu_down pipeline.
-> 
-> Fix this issue by eliminating the to-be-killed-cpu from active_cpu
-> locally.
-> 
-> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> ---
->  kernel/cpu.c |   12 ++++++++++--
->  1 files changed, 10 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/cpu.c b/kernel/cpu.c
-> index be9c5ad..17a3635 100644
-> --- a/kernel/cpu.c
-> +++ b/kernel/cpu.c
-> @@ -196,6 +196,14 @@ static int __ref _cpu_down_thread(void *_param)
->  	unsigned long mod = param->mod;
->  	unsigned int cpu = param->cpu;
->  	void *hcpu = (void *)(long)cpu;
-> +	cpumask_var_t active_mask;
-> +
-> +	if (!alloc_cpumask_var(&active_mask, GFP_KERNEL))
-> +		return -ENOMEM;
-> +
-> +	/* make sure we are not running on the cpu which goes down,
-> +	   cpu_active_mask is altered even after we return! */
-> +	cpumask_andnot(active_mask, cpu_active_mask, cpumask_of(cpu));
->  
->  	cpu_hotplug_begin();
->  	err = __raw_notifier_call_chain(&cpu_chain, CPU_DOWN_PREPARE | mod,
-> @@ -211,7 +219,7 @@ static int __ref _cpu_down_thread(void *_param)
->  	}
->  
->  	/* Ensure that we are not runnable on dying cpu */
-> -	set_cpus_allowed_ptr(current, cpu_active_mask);
-> +	set_cpus_allowed_ptr(current, active_mask);
->  
->  	err = __stop_machine(take_cpu_down, param, cpumask_of(cpu));
->  	if (err) {
-> @@ -237,9 +245,9 @@ static int __ref _cpu_down_thread(void *_param)
->  		BUG();
->  
->  	check_for_tasks(cpu);
-> -
->  out_release:
->  	cpu_hotplug_done();
-> +	free_cpumask_var(active_mask);
->  	if (!err) {
->  		if (raw_notifier_call_chain(&cpu_chain, CPU_POST_DEAD | mod,
->  					    hcpu) == NOTIFY_BAD)
 
+* Serge Belyshev <belyshev@depni.sinp.msu.ru> wrote:
 
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> >    perf stat --repeat 3 make -j4 bzImage
+> 
+> BFS hangs here:
+> 
+> [  128.859000] BUG: soft lockup - CPU#2 stuck for 61s! [sh:7946]
+> [  128.859016] Modules linked in:
+> [  128.859016] CPU 2:
+> [  128.859016] Modules linked in:
+> [  128.859016] Pid: 7946, comm: sh Not tainted 2.6.31-bfs211-dirty #4 GA-MA790FX-DQ6
+> [  128.859016] RIP: 0010:[<ffffffff81055a52>]  [<ffffffff81055a52>] task_oncpu_function_call+0x22/0x40
+> [  128.859016] RSP: 0018:ffff880205967e18  EFLAGS: 00000246
+> [  128.859016] RAX: 0000000000000002 RBX: ffff880205964cc0 RCX: 000000000000dd00
+> [  128.859016] RDX: ffff880211138c00 RSI: ffffffff8108d3f0 RDI: ffff88022e42a100
+> [  128.859016] RBP: ffffffff8102d76e R08: ffff880028066000 R09: 0000000000000000
+> [  128.859016] R10: 0000000000000000 R11: 0000000000000058 R12: ffffffff8108d3f0
+> [  128.859016] R13: ffff880211138c00 R14: 0000000000000001 R15: 000000000000e260
+> [  128.859016] FS:  00002b9ba0924e00(0000) GS:ffff880028066000(0000) knlGS:0000000000000000
+> [  128.859016] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [  128.859016] CR2: 00002b9ba091e4a8 CR3: 0000000001001000 CR4: 00000000000006e0
+> [  128.859016] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> [  128.859016] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> [  128.859016] Call Trace:
+> [  128.859016]  [<ffffffff8108ee3b>] ? perf_counter_remove_from_context+0x3b/0x90
+> [  128.859016]  [<ffffffff810904b4>] ? perf_counter_exit_task+0x114/0x340
+> [  128.859016]  [<ffffffff810c3f66>] ? filp_close+0x56/0x90
+> [  128.859016]  [<ffffffff8105d3ac>] ? do_exit+0x14c/0x6f0
+> [  128.859016]  [<ffffffff8105d991>] ? do_group_exit+0x41/0xb0
+> [  128.859016]  [<ffffffff8105da12>] ? sys_exit_group+0x12/0x20
+> [  128.859016]  [<ffffffff8102cceb>] ? system_call_fastpath+0x16/0x1b
+> 
+> So, got nothing to compare with.
 
-Hi, Jiri Slaby
+Could still compare -j5 to -j4 on -tip, to see why -j4 is 3% short 
+of -j5's throughput.
 
-Does this bug occur when a cpu is being offlined or
-when the system is being suspended?
-Or Both?
+(Plus maybe the NEW_FAIR_SLEEPERS change in -tip fixes the 3% drop.)
 
-Lai
-
+	Ingo
