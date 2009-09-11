@@ -1,187 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754346AbZIKPR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZIKPRx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754346AbZIKPR1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 11:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZIKPR0
+	id S1754449AbZIKPRx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 11:17:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZIKPRw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 11:17:26 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:50422 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752536AbZIKPRQ (ORCPT
+	Fri, 11 Sep 2009 11:17:52 -0400
+Received: from mga01.intel.com ([192.55.52.88]:20743 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754421AbZIKPRu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 11:17:16 -0400
-Message-Id: <20090911151719.109982729@goodmis.org>
-References: <20090911151544.006804282@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 11 Sep 2009 11:15:46 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: [PATCH 2/2] tracing: add latency format to function_graph tracer
-Content-Disposition: inline; filename=0002-tracing-add-latency-format-to-function_graph-tracer.patch
+	Fri, 11 Sep 2009 11:17:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,370,1249282800"; 
+   d="scan'208";a="726079886"
+From: "Xin, Xiaohui" <xiaohui.xin@intel.com>
+To: "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>
+CC: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+       "virtualization@lists.linux-foundation.org" 
+	<virtualization@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "gregory.haskins@gmail.com" <gregory.haskins@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       "s.hetze@linux-ag.com" <s.hetze@linux-ag.com>
+Date: Fri, 11 Sep 2009 23:17:33 +0800
+Subject: RE: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+Thread-Topic: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+Thread-Index: AcowwWX/F+DiTtfHR6uaB3YEadPi2wCLS5tg
+Message-ID: <C85CEDA13AB1CF4D9D597824A86D2B9006AECB9C1D@PDSMSX501.ccr.corp.intel.com>
+References: <cover.1251388414.git.mst@redhat.com>
+ <20090827160750.GD23722@redhat.com>
+ <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com>
+ <20090908172035.GB319@ovro.caltech.edu> <20090908201428.GA12420@redhat.com>
+In-Reply-To: <20090908201428.GA12420@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+Michael,
+We are very interested in your patch and want to have a try with it.
+I have collected your 3 patches in kernel side and 4 patches in queue side.
+The patches are listed here:
 
-While debugging something with the function_graph tracer, I found the
-need to see the preempt count of the traces. Unfortunately, since
-the function graph tracer has its own output formatting, it does not
-honor the latency-format option.
+PATCHv5-1-3-mm-export-use_mm-unuse_mm-to-modules.patch
+PATCHv5-2-3-mm-reduce-atomic-use-on-use_mm-fast-path.patch
+PATCHv5-3-3-vhost_net-a-kernel-level-virtio-server.patch
 
-This patch makes the function_graph tracer honor the latency-format
-option, but still keeps control of the output. But now we have the
-same details that the latency-format supplies.
+PATCHv3-1-4-qemu-kvm-move-virtio-pci[1].o-to-near-pci.o.patch
+PATCHv3-2-4-virtio-move-features-to-an-inline-function.patch
+PATCHv3-3-4-qemu-kvm-vhost-net-implementation.patch
+PATCHv3-4-4-qemu-kvm-add-compat-eventfd.patch
 
- # tracer: function_graph
- #
- #      _-----=> irqs-off
- #     / _----=> need-resched
- #    | / _---=> hardirq/softirq
- #    || / _--=> preempt-depth
- #    ||| /
- #    ||||
- # CPU||||  DURATION                  FUNCTION CALLS
- # |  ||||   |   |                     |   |   |   |
-  3)  d..1  1.333 us    |        idle_cpu();
-  3)  d.h1              |        tick_check_idle() {
-  3)  d.h1  0.550 us    |          tick_check_oneshot_broadcast();
-  3)  d.h1              |          tick_nohz_stop_idle() {
-  3)  d.h1              |            ktime_get() {
-  3)  d.h1              |              ktime_get_ts() {
+I applied the kernel patches on v2.6.31-rc4 and the qemu patches on latest kvm qemu.
+But seems there are some patches are needed at least irqfd and ioeventfd patches on
+current qemu. I cannot create a kvm guest with "-net nic,model=virtio,vhost=vethX".
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace_functions_graph.c |   74 +++++++++++++++++++++++++++++++---
- 1 files changed, 68 insertions(+), 6 deletions(-)
+May you kindly advice us the patch lists all exactly to make it work?
+Thanks a lot. :-)
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index b3749a2..ee791a9 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -364,6 +364,29 @@ print_graph_proc(struct trace_seq *s, pid_t pid)
- }
- 
- 
-+static enum print_line_t
-+print_graph_lat_fmt(struct trace_seq *s, struct trace_entry *entry)
-+{
-+	int hardirq, softirq;
-+
-+	hardirq = entry->flags & TRACE_FLAG_HARDIRQ;
-+	softirq = entry->flags & TRACE_FLAG_SOFTIRQ;
-+
-+	if (!trace_seq_printf(s, " %c%c%c",
-+			      (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' :
-+				(entry->flags & TRACE_FLAG_IRQS_NOSUPPORT) ?
-+				  'X' : '.',
-+			      (entry->flags & TRACE_FLAG_NEED_RESCHED) ?
-+				'N' : '.',
-+			      (hardirq && softirq) ? 'H' :
-+				hardirq ? 'h' : softirq ? 's' : '.'))
-+		return 0;
-+
-+	if (entry->preempt_count)
-+		return trace_seq_printf(s, "%x", entry->preempt_count);
-+	return trace_seq_puts(s, ".");
-+}
-+
- /* If the pid changed since the last trace, output this event */
- static enum print_line_t
- verif_pid(struct trace_seq *s, pid_t pid, int cpu, struct fgraph_data *data)
-@@ -521,6 +544,7 @@ print_graph_irq(struct trace_iterator *iter, unsigned long addr,
- 		if (ret == TRACE_TYPE_PARTIAL_LINE)
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
-+
- 	/* Proc */
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
- 		ret = print_graph_proc(s, pid);
-@@ -758,6 +782,13 @@ print_graph_prologue(struct trace_iterator *iter, struct trace_seq *s,
- 			return TRACE_TYPE_PARTIAL_LINE;
- 	}
- 
-+	/* Latency format */
-+	if (trace_flags & TRACE_ITER_LATENCY_FMT) {
-+		ret = print_graph_lat_fmt(s, ent);
-+		if (ret == TRACE_TYPE_PARTIAL_LINE)
-+			return TRACE_TYPE_PARTIAL_LINE;
-+	}
-+
- 	return 0;
- }
- 
-@@ -952,28 +983,59 @@ print_graph_function(struct trace_iterator *iter)
- 	return TRACE_TYPE_HANDLED;
- }
- 
-+static void print_lat_header(struct seq_file *s)
-+{
-+	static const char spaces[] = "                "	/* 16 spaces */
-+		"    "					/* 4 spaces */
-+		"                 ";			/* 17 spaces */
-+	int size = 0;
-+
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
-+		size += 16;
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
-+		size += 4;
-+	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
-+		size += 17;
-+
-+	seq_printf(s, "#%.*s  _-----=> irqs-off        \n", size, spaces);
-+	seq_printf(s, "#%.*s / _----=> need-resched    \n", size, spaces);
-+	seq_printf(s, "#%.*s| / _---=> hardirq/softirq \n", size, spaces);
-+	seq_printf(s, "#%.*s|| / _--=> preempt-depth   \n", size, spaces);
-+	seq_printf(s, "#%.*s||| /                      \n", size, spaces);
-+	seq_printf(s, "#%.*s||||                       \n", size, spaces);
-+}
-+
- static void print_graph_headers(struct seq_file *s)
- {
-+	int lat = trace_flags & TRACE_ITER_LATENCY_FMT;
-+
-+	if (lat)
-+		print_lat_header(s);
-+
- 	/* 1st line */
--	seq_printf(s, "# ");
-+	seq_printf(s, "#");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
- 		seq_printf(s, "     TIME       ");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
--		seq_printf(s, "CPU");
-+		seq_printf(s, " CPU");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
--		seq_printf(s, "  TASK/PID      ");
-+		seq_printf(s, "  TASK/PID       ");
-+	if (lat)
-+		seq_printf(s, "||||");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
- 		seq_printf(s, "  DURATION   ");
- 	seq_printf(s, "               FUNCTION CALLS\n");
- 
- 	/* 2nd line */
--	seq_printf(s, "# ");
-+	seq_printf(s, "#");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
- 		seq_printf(s, "      |         ");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
--		seq_printf(s, "|  ");
-+		seq_printf(s, " |  ");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
--		seq_printf(s, "  |    |        ");
-+		seq_printf(s, "   |    |        ");
-+	if (lat)
-+		seq_printf(s, "||||");
- 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
- 		seq_printf(s, "   |   |      ");
- 	seq_printf(s, "               |   |   |   |\n");
--- 
-1.6.3.3
+Thanks
+Xiaohui
+-----Original Message-----
+From: kvm-owner@vger.kernel.org [mailto:kvm-owner@vger.kernel.org] On Behalf Of Michael S. Tsirkin
+Sent: Wednesday, September 09, 2009 4:14 AM
+To: Ira W. Snyder
+Cc: netdev@vger.kernel.org; virtualization@lists.linux-foundation.org; kvm@vger.kernel.org; linux-kernel@vger.kernel.org; mingo@elte.hu; linux-mm@kvack.org; akpm@linux-foundation.org; hpa@zytor.com; gregory.haskins@gmail.com; Rusty Russell; s.hetze@linux-ag.com
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
 
--- 
+On Tue, Sep 08, 2009 at 10:20:35AM -0700, Ira W. Snyder wrote:
+> On Mon, Sep 07, 2009 at 01:15:37PM +0300, Michael S. Tsirkin wrote:
+> > On Thu, Sep 03, 2009 at 11:39:45AM -0700, Ira W. Snyder wrote:
+> > > On Thu, Aug 27, 2009 at 07:07:50PM +0300, Michael S. Tsirkin wrote:
+> > > > What it is: vhost net is a character device that can be used to reduce
+> > > > the number of system calls involved in virtio networking.
+> > > > Existing virtio net code is used in the guest without modification.
+> > > > 
+> > > > There's similarity with vringfd, with some differences and reduced scope
+> > > > - uses eventfd for signalling
+> > > > - structures can be moved around in memory at any time (good for migration)
+> > > > - support memory table and not just an offset (needed for kvm)
+> > > > 
+> > > > common virtio related code has been put in a separate file vhost.c and
+> > > > can be made into a separate module if/when more backends appear.  I used
+> > > > Rusty's lguest.c as the source for developing this part : this supplied
+> > > > me with witty comments I wouldn't be able to write myself.
+> > > > 
+> > > > What it is not: vhost net is not a bus, and not a generic new system
+> > > > call. No assumptions are made on how guest performs hypercalls.
+> > > > Userspace hypervisors are supported as well as kvm.
+> > > > 
+> > > > How it works: Basically, we connect virtio frontend (configured by
+> > > > userspace) to a backend. The backend could be a network device, or a
+> > > > tun-like device. In this version I only support raw socket as a backend,
+> > > > which can be bound to e.g. SR IOV, or to macvlan device.  Backend is
+> > > > also configured by userspace, including vlan/mac etc.
+> > > > 
+> > > > Status:
+> > > > This works for me, and I haven't see any crashes.
+> > > > I have done some light benchmarking (with v4), compared to userspace, I
+> > > > see improved latency (as I save up to 4 system calls per packet) but not
+> > > > bandwidth/CPU (as TSO and interrupt mitigation are not supported).  For
+> > > > ping benchmark (where there's no TSO) troughput is also improved.
+> > > > 
+> > > > Features that I plan to look at in the future:
+> > > > - tap support
+> > > > - TSO
+> > > > - interrupt mitigation
+> > > > - zero copy
+> > > > 
+> > > 
+> > > Hello Michael,
+> > > 
+> > > I've started looking at vhost with the intention of using it over PCI to
+> > > connect physical machines together.
+> > > 
+> > > The part that I am struggling with the most is figuring out which parts
+> > > of the rings are in the host's memory, and which parts are in the
+> > > guest's memory.
+> > 
+> > All rings are in guest's memory, to match existing virtio code.
+> 
+> Ok, this makes sense.
+> 
+> > vhost
+> > assumes that the memory space of the hypervisor userspace process covers
+> > the whole of guest memory.
+> 
+> Is this necessary? Why?
+
+Because with virtio ring can give us arbitrary guest addresses.  If
+guest was limited to using a subset of addresses, hypervisor would only
+have to map these.
+
+> The assumption seems very wrong when you're
+> doing data transport between two physical systems via PCI.
+> I know vhost has not been designed for this specific situation, but it
+> is good to be looking toward other possible uses.
+> 
+> > And there's a translation table.
+> > Ring addresses are userspace addresses, they do not undergo translation.
+> > 
+> > > If I understand everything correctly, the rings are all userspace
+> > > addresses, which means that they can be moved around in physical memory,
+> > > and get pushed out to swap.
+> > 
+> > Unless they are locked, yes.
+> > 
+> > > AFAIK, this is impossible to handle when
+> > > connecting two physical systems, you'd need the rings available in IO
+> > > memory (PCI memory), so you can ioreadXX() them instead. To the best of
+> > > my knowledge, I shouldn't be using copy_to_user() on an __iomem address.
+> > > Also, having them migrate around in memory would be a bad thing.
+> > > 
+> > > Also, I'm having trouble figuring out how the packet contents are
+> > > actually copied from one system to the other. Could you point this out
+> > > for me?
+> > 
+> > The code in net/packet/af_packet.c does it when vhost calls sendmsg.
+> > 
+> 
+> Ok. The sendmsg() implementation uses memcpy_fromiovec(). Is it possible
+> to make this use a DMA engine instead?
+
+Maybe.
+
+> I know this was suggested in an earlier thread.
+
+Yes, it might even give some performance benefit with e.g. I/O AT.
+
+> > > Is there somewhere I can find the userspace code (kvm, qemu, lguest,
+> > > etc.) code needed for interacting with the vhost misc device so I can
+> > > get a better idea of how userspace is supposed to work?
+> > 
+> > Look in archives for kvm@vger.kernel.org. the subject is qemu-kvm: vhost net.
+> > 
+> > > (Features
+> > > negotiation, etc.)
+> > > 
+> > 
+> > That's not yet implemented as there are no features yet.  I'm working on
+> > tap support, which will add a feature bit.  Overall, qemu does an ioctl
+> > to query supported features, and then acks them with another ioctl.  I'm
+> > also trying to avoid duplicating functionality available elsewhere.  So
+> > that to check e.g. TSO support, you'd just look at the underlying
+> > hardware device you are binding to.
+> > 
+> 
+> Ok. Do you have plans to support the VIRTIO_NET_F_MRG_RXBUF feature in
+> the future? I found that this made an enormous improvement in throughput
+> on my virtio-net <-> virtio-net system. Perhaps it isn't needed with
+> vhost-net.
+
+Yes, I'm working on it.
+
+> Thanks for replying,
+> Ira
+--
+To unsubscribe from this list: send the line "unsubscribe kvm" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
