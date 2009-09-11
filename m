@@ -1,167 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZIKJdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754315AbZIKJkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbZIKJdp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 05:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZIKJdo
+	id S1754315AbZIKJkQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 05:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752418AbZIKJkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 05:33:44 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:25275 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753677AbZIKJdo (ORCPT
+	Fri, 11 Sep 2009 05:40:15 -0400
+Received: from mail.atheros.com ([12.36.123.2]:19074 "EHLO mail.atheros.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751899AbZIKJkO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 05:33:44 -0400
-Date: Fri, 11 Sep 2009 11:33:46 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: ye janboe <janboe.ye@gmail.com>
-cc: dwmw2@infradead.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] remove variable length array tuner-xc2028
-In-Reply-To: <af3ea28a0909110211o559657e6hc62947708b4fc55d@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.0909111128250.31018@swampdragon.chaosbits.net>
-References: <af3ea28a0909110211o559657e6hc62947708b4fc55d@mail.gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Fri, 11 Sep 2009 05:40:14 -0400
+From: Madula Sasikiran <Madula.Sasikiran@Atheros.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Fri, 11 Sep 2009 15:10:11 +0530
+Subject: [bluetooth device not working fine]issue with usb core probe at
+ hibernate & resume
+Thread-Topic: [bluetooth device not working fine]issue with usb core probe
+ at hibernate & resume
+Thread-Index: AQHKMsPahMxNOFDGqEyxn2rWhOW8fQ==
+Message-ID: <44EE5C37ADC36343B0625A05DD408C48506872FB7A@CHEXMB-01.global.atheros.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009, ye janboe wrote:
+Hi,
 
-> hi
-> 
-> using variable length array on kernel stack is not safe, so this patch
-> using kmalloc instead variable length array in tuner-xc2028
-> 
-> Signed-off-by: janboe <janboe.ye@gmail.com>
-> ---
->  drivers/media/common/tuners/tuner-xc2028.c |   26 ++++++++++++++++----------
->  1 files changed, 16 insertions(+), 10 deletions(-)
-> 
-> diff --git a/drivers/media/common/tuners/tuner-xc2028.c
-> b/drivers/media/common/tuners/tuner-xc2028.c
-> index 1adce9f..96259c5 100644
-> --- a/drivers/media/common/tuners/tuner-xc2028.c
-> +++ b/drivers/media/common/tuners/tuner-xc2028.c
-> @@ -516,8 +516,8 @@ static int load_firmware(struct dvb_frontend *fe,
-> unsigned int type,
->  			 v4l2_std_id *id)
->  {
->  	struct xc2028_data *priv = fe->tuner_priv;
-> -	int                pos, rc;
-> -	unsigned char      *p, *endp, buf[priv->ctrl.max_len];
-> +	int                pos, rc, ret = -EINVAL;
-> +	unsigned char      *p, *endp, *buf;
-> 
->  	tuner_dbg("%s called\n", __func__);
-> 
-> @@ -532,6 +532,7 @@ static int load_firmware(struct dvb_frontend *fe,
-> unsigned int type,
-> 
->  	p = priv->firm[pos].ptr;
->  	endp = p + priv->firm[pos].size;
-> +	buf = kmalloc(priv->ctrl.max_len, GFP_KERNEL);
-> 
+I am a bluetooth developer, came into bluetooth field recently. My bluetooth device is not working fine when I do hibernate and resume in linux 2.6.28 (ubuntu 9.0.4). It is working fine in the older versions. When I debugged the issue I see that when usb core is calling probe for the usb bluetooth dongle and the driver related to that is loading the firmware into the device. When I suspend and resume, usb core is calling probe and the firmware is getting loaded fine. For hibernate resume usb core is not calling probe and firmware is not getting loaded. I would like to know whether it is the issue with the usb core or Do I need to do any changes in the driver for this. Can I call the probe of my usb bluetooth dongle explicitly using any scripts?
 
-The call to kmalloc() could fail, so shouldn't we make this
-
-     buf = kmalloc(priv->ctrl.max_len, GFP_KERNEL);
-     if (!buf)
-       return -ENOMEM;
-
-or?
-
-
->  	while (p < endp) {
->  		__u16 size;
-> @@ -539,14 +540,16 @@ static int load_firmware(struct dvb_frontend
-> *fe, unsigned int type,
->  		/* Checks if there's enough bytes to read */
->  		if (p + sizeof(size) > endp) {
->  			tuner_err("Firmware chunk size is wrong\n");
-> -			return -EINVAL;
-> +			goto fail;
->  		}
-> 
->  		size = le16_to_cpu(*(__u16 *) p);
->  		p += sizeof(size);
-> 
-> -		if (size == 0xffff)
-> -			return 0;
-> +		if (size == 0xffff) {
-> +			ret = 0;
-> +			goto fail;
-> +		}
-> 
->  		if (!size) {
->  			/* Special callback command received */
-> @@ -554,7 +557,7 @@ static int load_firmware(struct dvb_frontend *fe,
-> unsigned int type,
->  			if (rc < 0) {
->  				tuner_err("Error at RESET code %d\n",
->  					   (*p) & 0x7f);
-> -				return -EINVAL;
-> +				goto fail;
->  			}
->  			continue;
->  		}
-> @@ -565,13 +568,13 @@ static int load_firmware(struct dvb_frontend
-> *fe, unsigned int type,
->  				if (rc < 0) {
->  					tuner_err("Error at RESET code %d\n",
->  						  (*p) & 0x7f);
-> -					return -EINVAL;
-> +					goto fail;
->  				}
->  				break;
->  			default:
->  				tuner_info("Invalid RESET code %d\n",
->  					   size & 0x7f);
-> -				return -EINVAL;
-> +				goto fail;
-> 
->  			}
->  			continue;
-> @@ -586,7 +589,7 @@ static int load_firmware(struct dvb_frontend *fe,
-> unsigned int type,
->  		if ((size + p > endp)) {
->  			tuner_err("missing bytes: need %d, have %d\n",
->  				   size, (int)(endp - p));
-> -			return -EINVAL;
-> +			goto fail;
->  		}
-> 
->  		buf[0] = *p;
-> @@ -603,7 +606,7 @@ static int load_firmware(struct dvb_frontend *fe,
-> unsigned int type,
->  			rc = i2c_send(priv, buf, len + 1);
->  			if (rc < 0) {
->  				tuner_err("%d returned from send\n", rc);
-> -				return -EINVAL;
-> +				goto fail;
->  			}
-> 
->  			p += len;
-> @@ -611,6 +614,9 @@ static int load_firmware(struct dvb_frontend *fe,
-> unsigned int type,
->  		}
->  	}
->  	return 0;
-
-Why are we not freeing 'buf' here?
-Previously it was an array on the stack and would be gone now and I don't 
-see what has changed so that it should live on after we return here.
-
-
-> +fail:
-> +	kfree(buf);
-> +	return ret;
->  }
-> 
->  static int load_scode(struct dvb_frontend *fe, unsigned int type,
-
-
--- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-
+Thanks and Regards,
+Sasikiran.
