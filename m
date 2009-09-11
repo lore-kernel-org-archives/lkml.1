@@ -1,76 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754175AbZIKH6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZIKIIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754175AbZIKH6b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 03:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754138AbZIKH6a
+	id S1754123AbZIKIIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 04:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZIKIIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 03:58:30 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36539 "EHLO kernel.dk"
+	Fri, 11 Sep 2009 04:08:19 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:46062 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753945AbZIKH6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 03:58:30 -0400
-Date: Fri, 11 Sep 2009 09:58:32 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [long] Another BFS versus CFS shakedown
-Message-ID: <20090911075832.GG18599@kernel.dk>
-References: <200909090142.41738.elendil@planet.nl> <20090911062032.GB27833@elte.hu> <200909110904.50487.elendil@planet.nl> <20090911071710.GB18599@kernel.dk> <20090911075331.GA14489@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911075331.GA14489@elte.hu>
+	id S1752272AbZIKIIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 04:08:18 -0400
+Date: Fri, 11 Sep 2009 18:08:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Dave Airlie <airlied@linux.ie>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: linux-next: drm tree build warning
+Message-Id: <20090911180809.4c372992.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11 2009, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Fri, Sep 11 2009, Frans Pop wrote:
-> > > On Friday 11 September 2009, Ingo Molnar wrote:
-> > > > Note, the one you used was a still buggy version of latt.c producing
-> > > > bogus latency numbers - you will need the fix to it attached below.
-> > > 
-> > > Yes, I'm aware of that and have already copied Jens' latest version.
-> > 
-> > BTW, I put it in a git repo, it quickly gets really confusing with so
-> > many version going around. So that can be accessed here:
-> > 
-> > git://git.kernel.dk/latt.git
-> > 
-> > and as with my other repos, snapshots are automatically generated every
-> > hour when new commits have been made. To get the very latest latt and
-> > not have to use git, download:
-> > 
-> > http://brick.kernel.dk/snaps/latt-git-latest.tar.gz
-> 
-> Btw., your earlier latt reports should be discarded as invalid due 
-> to that bug.
+--Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Yes
+Hi Dave,
 
-> With the fixed latt.c version the mainline latencies (both 
-> worst-case and average) were reported to be better after the poll() 
-> bug got fixed, so in that area, for this kind of measurement, 
-> mainline seems to be working well.
-> 
-> [ What happened is that the poll() bug was creating false latencies
->   in the mainline scheduler tests. (BFS avoided measuring that bug
->   incidentally, by its agressive balancer moved the wakee tasks away
->   from the buggy busy-looping poll() looping parent task. Two
->   instances of latt.c would possibly have shown similar latencies.) ]
-> 
-> I see you added new 'work generator' changes to latt.c now, will 
-> check/validate that version of latt.c too.
+Today's linux-next build (x86_64 allmodconfig) produced this warning:
 
-I did, it's a simple 'generate random data and compress it' work piece
-for each client. You can control the amount of work with -x, which sets
-the kb of data it'll work on. Stats are generated both for wakeup
-latency, and work processing latency.
+drivers/gpu/drm/radeon/r100.c: In function 'r100_cs_parse':
+drivers/gpu/drm/radeon/r100.c:1623: warning: the frame size of 3120 bytes i=
+s larger than 2048 bytes
+drivers/gpu/drm/radeon/r300.c: In function 'r300_cs_parse':
+drivers/gpu/drm/radeon/r300.c:1270: warning: the frame size of 3104 bytes i=
+s larger than 2048 bytes
 
--- 
-Jens Axboe
+Probably caused by commit 551ebd837c75fc75df81811a18b7136c39cab487
+("drm/radeon/kms: add rn50/r100/r200 CS tracker") which added a very
+large structure to the stack of each of these functions.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkqqBWkACgkQjjKRsyhoI8zzWQCfUnF2LZrFoIVAveV03scwKIrR
+1HAAn2nSGgvHa7XW++2Z3Fb9fnMgIwxn
+=+tkk
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os--
