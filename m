@@ -1,92 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZIKQTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZIKQWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbZIKQTO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZIKQTO
+	id S1754790AbZIKQWa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZIKQW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:19:14 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2582 "EHLO mx1.redhat.com"
+	Fri, 11 Sep 2009 12:22:29 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:34661 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754544AbZIKQTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:19:13 -0400
-Message-ID: <4AAA7938.7070200@redhat.com>
-Date: Fri, 11 Sep 2009 12:22:16 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1754748AbZIKQW0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:22:26 -0400
+Date: Fri, 11 Sep 2009 18:22:27 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Greg Kroah-Hartman <gregkh@suse.de>, devel@driverdev.osuosl.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 6/8] drivers/staging: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0909111822100.10552@pc-004.diku.dk>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH tracing/kprobes 4/7] tracing/kprobes: Add event	profiling
- support
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere>
-In-Reply-To: <20090911031253.GD16396@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
->> +static int probe_profile_enable(struct ftrace_event_call *call)
->> +{
->> +	struct trace_probe *tp = (struct trace_probe *)call->data;
->> +
->> +	if (atomic_inc_return(&call->profile_count))
->> +		return 0;
->> +
->> +	if (probe_is_return(tp)) {
->> +		tp->rp.handler = kretprobe_profile_func;
->> +		return enable_kretprobe(&tp->rp);
->> +	} else {
->> +		tp->rp.kp.pre_handler = kprobe_profile_func;
->> +		return enable_kprobe(&tp->rp.kp);
->> +	}
->> +}
->
->
->
-> May be I misunderstood but it seems that concurrent uses of
-> ftrace and perf would really mess up the result, as one would
-> overwrite the handler of the other.
->
-> Even though it's hard to imagine one using both at the same
-> time on the same probe, but still...
+From: Julia Lawall <julia@diku.dk>
 
-Oops, it's my misunderstanding. I thought those are exclusively
-enabled each other.
+Error handling code following a kmalloc or kzalloc should free the
+allocated data.
 
-> Is it possible to have two kprobes having the exact same
-> properties? (pointing to the same address, having the same
-> probe handlers, etc...)
->
-> Another solution would be to allow kprobes to have multiple
-> handlers.
+The semantic match that finds the problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-It could be to have multiple kprobes on same point, but I think
-it's waste of the memory and time in this case.
+// <smpl>
+@r exists@
+local idexpression x;
+statement S;
+expression E;
+identifier f,f1,l;
+position p1,p2;
+expression *ptr != NULL;
+@@
 
-I'd like to have a dispatcher function and flags internally :)
+x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+...
+if (x == NULL) S
+<... when != x
+     when != if (...) { <+...x...+> }
+(
+x->f1 = E
+|
+ (x->f1 == NULL || ...)
+|
+ f(...,x->f1,...)
+)
+...>
+(
+ return \(0\|<+...x...+>\|ptr\);
+|
+ return@p2 ...;
+)
 
-Thank you,
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
 
--- 
-Masami Hiramatsu
+print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ drivers/staging/dream/camera/msm_v4l2.c       |    8 ++++++--
+ drivers/staging/dream/camera/msm_vfe8x_proc.c |   16 ++++++++++++----
+ drivers/staging/iio/accel/lis3l02dq_ring.c    |    1 +
+ 3 files changed, 19 insertions(+), 6 deletions(-)
 
-e-mail: mhiramat@redhat.com
-
+diff --git a/drivers/staging/iio/accel/lis3l02dq_ring.c b/drivers/staging/iio/accel/lis3l02dq_ring.c
+index c21198d..a6b7c72 100644
+--- a/drivers/staging/iio/accel/lis3l02dq_ring.c
++++ b/drivers/staging/iio/accel/lis3l02dq_ring.c
+@@ -286,6 +286,7 @@ static void lis3l02dq_trigger_bh_to_ring(struct work_struct *work_s)
+ 	rx_array = kmalloc(4 * (st->indio_dev->scan_count), GFP_KERNEL);
+ 	if (rx_array == NULL) {
+ 		dev_err(&st->us->dev, "memory alloc failed in ring bh");
++		kfree(data);
+ 		return;
+ 	}
+ 
+diff --git a/drivers/staging/dream/camera/msm_vfe8x_proc.c b/drivers/staging/dream/camera/msm_vfe8x_proc.c
+index 5436f71..10aef0e 100644
+--- a/drivers/staging/dream/camera/msm_vfe8x_proc.c
++++ b/drivers/staging/dream/camera/msm_vfe8x_proc.c
+@@ -967,8 +967,10 @@ vfe_send_af_stats_msg(uint32_t afBufAddress)
+ 	/* fill message with right content. */
+ 	/* @todo This is causing issues, need further investigate */
+ 	/* spin_lock_irqsave(&ctrl->state_lock, flags); */
+-	if (ctrl->vstate != VFE_STATE_ACTIVE)
++	if (ctrl->vstate != VFE_STATE_ACTIVE) {
++		kfree(msg);
+ 		goto af_stats_done;
++	}
+ 
+ 	msg->_d = VFE_MSG_ID_STATS_AUTOFOCUS;
+ 	msg->_u.msgStatsAf.afBuffer = afBufAddress;
+@@ -1053,8 +1055,10 @@ static void vfe_send_awb_stats_msg(uint32_t awbBufAddress)
+ 	/* fill message with right content. */
+ 	/* @todo This is causing issues, need further investigate */
+ 	/* spin_lock_irqsave(&ctrl->state_lock, flags); */
+-	if (ctrl->vstate != VFE_STATE_ACTIVE)
++	if (ctrl->vstate != VFE_STATE_ACTIVE) {
++		kfree(msg);
+ 		goto awb_stats_done;
++	}
+ 
+ 	msg->_d = VFE_MSG_ID_STATS_WB_EXP;
+ 	msg->_u.msgStatsWbExp.awbBuffer = awbBufAddress;
+@@ -1483,8 +1487,10 @@ static void vfe_send_output2_msg(
+ 	/* fill message with right content. */
+ 	/* @todo This is causing issues, need further investigate */
+ 	/* spin_lock_irqsave(&ctrl->state_lock, flags); */
+-	if (ctrl->vstate != VFE_STATE_ACTIVE)
++	if (ctrl->vstate != VFE_STATE_ACTIVE) {
++		kfree(msg);
+ 		goto output2_msg_done;
++	}
+ 
+ 	msg->_d = VFE_MSG_ID_OUTPUT2;
+ 
+@@ -1518,8 +1524,10 @@ static void vfe_send_output1_msg(
+ 
+ 	/* @todo This is causing issues, need further investigate */
+ 	/* spin_lock_irqsave(&ctrl->state_lock, flags); */
+-	if (ctrl->vstate != VFE_STATE_ACTIVE)
++	if (ctrl->vstate != VFE_STATE_ACTIVE) {
++		kfree(msg);
+ 		goto output1_msg_done;
++	}
+ 
+ 	msg->_d = VFE_MSG_ID_OUTPUT1;
+ 	memmove(&(msg->_u),
+diff --git a/drivers/staging/dream/camera/msm_v4l2.c b/drivers/staging/dream/camera/msm_v4l2.c
+index 46a6eb1..6a7d46c 100644
+--- a/drivers/staging/dream/camera/msm_v4l2.c
++++ b/drivers/staging/dream/camera/msm_v4l2.c
+@@ -521,13 +521,17 @@ static int msm_v4l2_s_fmt_cap(struct file *f,
+   ctrlcmd->value      = pfmt;
+   ctrlcmd->timeout_ms = 10000;
+ 
+-	if (pfmt->type != V4L2_BUF_TYPE_VIDEO_CAPTURE)
++	if (pfmt->type != V4L2_BUF_TYPE_VIDEO_CAPTURE) {
++		kfree(ctrlcmd);
+ 		return -1;
++	}
+ 
+ #if 0
+ 	/* FIXEME */
+-	if (pfmt->fmt.pix.pixelformat != V4L2_PIX_FMT_YVU420)
++	if (pfmt->fmt.pix.pixelformat != V4L2_PIX_FMT_YVU420) {
++		kfree(ctrlcmd);
+ 		return -EINVAL;
++	}
+ #endif
+ 
+ 	/* Ok, but check other params, too. */
