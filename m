@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZIKEcL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZIKEiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbZIKEcL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 00:32:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZIKEcK
+	id S1752500AbZIKEiY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 00:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbZIKEiY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 00:32:10 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47522 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751343AbZIKEcJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 00:32:09 -0400
-Date: Fri, 11 Sep 2009 14:32:03 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: block tree build failure
-Message-Id: <20090911143203.e52e294d.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__11_Sep_2009_14_32_03_+1000_0VOaJ.i2npdZb73u"
+	Fri, 11 Sep 2009 00:38:24 -0400
+Received: from sj-iport-1.cisco.com ([171.71.176.70]:19966 "EHLO
+	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750736AbZIKEiX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 00:38:23 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAH9xqUqrR7O6/2dsb2JhbADEUYhGAZA1BYQYgks
+X-IronPort-AV: E=Sophos;i="4.44,368,1249257600"; 
+   d="scan'208";a="240286611"
+From: Roland Dreier <rdreier@cisco.com>
+To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       jsquyres@cisco.com
+Cc: linux-rdma@vger.kernel.org, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PULL] please pull ummunotify
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 10 Sep 2009 21:38:22 -0700
+Message-ID: <aday6omhz9d.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 11 Sep 2009 04:38:22.0925 (UTC) FILETIME=[B1E217D0:01CA3299]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__11_Sep_2009_14_32_03_+1000_0VOaJ.i2npdZb73u
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Linus, please consider pulling from
 
-Hi Jens,
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git ummunotify
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+This tree is also available from kernel.org mirrors at:
 
-drivers/block/aoe/aoeblk.c: In function 'aoeblk_gdalloc':
-drivers/block/aoe/aoeblk.c:271: error: request for member 'backing_dev_info=
-' in something not a structure or union
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git ummunotify
 
-Caused by commit 7cd6134162529e6b7f9eaa5d72b1ef8fe3b355c9 ("writeback:
-add name to backing_dev_info"). 'q->blkq' changed to be a pointer in
-commit 7135a71b19be1faf48b7148d77844d03bc0717d6 ("aoe: allocate unused
-request_queue for sysfs").
+This will get "ummunotify," a new character device that allows a
+userspace library to register for MMU notifications; this is
+particularly useful for MPI implementions (message passing libraries
+used in HPC) to be able to keep track of what wacky things consumers
+do to their memory mappings.  My colleague Jeff Squyres from the Open
+MPI project posted a blog entry about why MPI wants this:
 
-Please be a bit more careful with rebases.
+http://blogs.cisco.com/ciscotalk/performance/comments/better_linux_memory_tracking/
 
-I have used the version of the block tree from next-20090910 for today.
+His summary of ummunotify:
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+  "It’s elegant, doesn’t require strange linker tricks, and seems to
+   work in all cases.  Yay!"
 
---Signature=_Fri__11_Sep_2009_14_32_03_+1000_0VOaJ.i2npdZb73u
-Content-Type: application/pgp-signature
+This code went through several review iterations on lkml and was in
+-mm and -next for quite a few weeks.  Andrew is OK with merging it (I
+think -- Andrew please correct me if I misunderstood you).
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+Roland Dreier (1):
+      ummunotify: Userspace support for MMU notifications
 
-iEYEARECAAYFAkqp0sMACgkQjjKRsyhoI8xrEwCfToWOUF9/uqXbrnhn5TbnDKX+
-Mh8AoJn20E/T8FV9GUuYv/D3iXchge/R
-=47xf
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Sep_2009_14_32_03_+1000_0VOaJ.i2npdZb73u--
+ Documentation/Makefile                  |    3 +-
+ Documentation/ummunotify/Makefile       |    7 +
+ Documentation/ummunotify/ummunotify.txt |  150 ++++++++
+ Documentation/ummunotify/umn-test.c     |  200 +++++++++++
+ drivers/char/Kconfig                    |   12 +
+ drivers/char/Makefile                   |    1 +
+ drivers/char/ummunotify.c               |  566 +++++++++++++++++++++++++++++++
+ include/linux/Kbuild                    |    1 +
+ include/linux/ummunotify.h              |  121 +++++++
+ 9 files changed, 1060 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/ummunotify/Makefile
+ create mode 100644 Documentation/ummunotify/ummunotify.txt
+ create mode 100644 Documentation/ummunotify/umn-test.c
+ create mode 100644 drivers/char/ummunotify.c
+ create mode 100644 include/linux/ummunotify.h
