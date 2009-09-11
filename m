@@ -1,291 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbZIKW0p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757135AbZIKWbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbZIKW0p (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 18:26:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZIKW0p
+	id S1757135AbZIKWbp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 18:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753257AbZIKWbo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 18:26:45 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47626 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751913AbZIKW0n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 18:26:43 -0400
-Date: Fri, 11 Sep 2009 18:26:44 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: liml@rtr.ca, jens.axboe@oracle.com, matthew@wil.cx, dwmw2@infradead.org
-Subject: Re: [PATCH 2/7] block: use blkdev_issue_discard in
-	blk_ioctl_discard
-Message-ID: <20090911222644.GA7197@infradead.org>
-References: <20090829230332.017137693@bombadil.infradead.org> <20090829231121.385741993@bombadil.infradead.org>
+	Fri, 11 Sep 2009 18:31:44 -0400
+Received: from void.printf.net ([89.145.121.20]:45914 "EHLO void.printf.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750857AbZIKWbo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 18:31:44 -0400
+X-Greylist: delayed 357 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 18:31:43 EDT
+From: Chris Ball <cjb@laptop.org>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+References: <20090903232317.GA6760@lst.de>
+	<c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
+	<87iqfx5mss.fsf@devron.myhome.or.jp> <20090907125130.GA1595@ucw.cz>
+	<87ljko5k3v.fsf@devron.myhome.or.jp>
+	<20090910192354.GD23356@elf.ucw.cz>
+	<87bplim1ce.fsf@devron.myhome.or.jp>
+	<20090911200922.GF8137@elf.ucw.cz>
+	<c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com>
+	<20090911213204.GC25544@elf.ucw.cz>
+	<c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com>
+Date: Fri, 11 Sep 2009 18:29:17 -0400
+In-Reply-To: <c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com>
+	(Zdenek Kabelac's message of "Fri, 11 Sep 2009 23:45:01 +0200")
+Message-ID: <m3eiqdqfnm.fsf@pullcord.laptop.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090829231121.385741993@bombadil.infradead.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens, can we put this one and possible Dave's treat discard requests
-as writes patch in early for 2.6.32?  That'll make the discard patch
-queue quite a bit smaller and will allow easier experimenting.
+Hi,
 
-On Sat, Aug 29, 2009 at 07:03:34PM -0400, Christoph Hellwig wrote:
-> blk_ioctl_discard duplicates large amounts of code from blkdev_issue_discard,
-> the only difference between the two is that blkdev_issue_discard needs to
-> send a barrier discard request and blk_ioctl_discard a non-barrier one,
-> and blk_ioctl_discard needs to wait on the request.  To facilitates this
-> add a flags argument to blkdev_issue_discard to control both aspects of the
-> behaviour.  This will be very useful later on for using the waiting
-> funcitonality for other callers.
-> 
-> Based on an earlier patch from Matthew Wilcox <matthew@wil.cx>.
-> 
-> 
-> Signed-off-by: Christoph Hellwig <hch@lst.de>
-> 
-> Index: linux-2.6/block/blk-barrier.c
-> ===================================================================
-> --- linux-2.6.orig/block/blk-barrier.c	2009-08-29 16:49:43.067370900 -0300
-> +++ linux-2.6/block/blk-barrier.c	2009-08-29 17:43:30.407344330 -0300
-> @@ -348,6 +348,9 @@ static void blkdev_discard_end_io(struct
->  		clear_bit(BIO_UPTODATE, &bio->bi_flags);
->  	}
->  
-> +	if (bio->bi_private)
-> +		complete(bio->bi_private);
-> +
->  	bio_put(bio);
->  }
->  
-> @@ -357,21 +360,20 @@ static void blkdev_discard_end_io(struct
->   * @sector:	start sector
->   * @nr_sects:	number of sectors to discard
->   * @gfp_mask:	memory allocation flags (for bio_alloc)
-> + * @flags:	DISCARD_FL_* flags to control behaviour
->   *
->   * Description:
-> - *    Issue a discard request for the sectors in question. Does not wait.
-> + *    Issue a discard request for the sectors in question.
->   */
-> -int blkdev_issue_discard(struct block_device *bdev,
-> -			 sector_t sector, sector_t nr_sects, gfp_t gfp_mask)
-> +int blkdev_issue_discard(struct block_device *bdev, sector_t sector,
-> +		sector_t nr_sects, gfp_t gfp_mask, int flags)
->  {
-> -	struct request_queue *q;
-> -	struct bio *bio;
-> +	DECLARE_COMPLETION_ONSTACK(wait);
-> +	struct request_queue *q = bdev_get_queue(bdev);
-> +	int type = flags & DISCARD_FL_BARRIER ?
-> +		DISCARD_BARRIER : DISCARD_NOBARRIER;
->  	int ret = 0;
->  
-> -	if (bdev->bd_disk == NULL)
-> -		return -ENXIO;
-> -
-> -	q = bdev_get_queue(bdev);
->  	if (!q)
->  		return -ENXIO;
->  
-> @@ -379,12 +381,14 @@ int blkdev_issue_discard(struct block_de
->  		return -EOPNOTSUPP;
->  
->  	while (nr_sects && !ret) {
-> -		bio = bio_alloc(gfp_mask, 0);
-> +		struct bio *bio = bio_alloc(gfp_mask, 0);
->  		if (!bio)
->  			return -ENOMEM;
->  
->  		bio->bi_end_io = blkdev_discard_end_io;
->  		bio->bi_bdev = bdev;
-> +		if (flags & DISCARD_FL_WAIT)
-> +			bio->bi_private = &wait;
->  
->  		bio->bi_sector = sector;
->  
-> @@ -396,10 +400,13 @@ int blkdev_issue_discard(struct block_de
->  			bio->bi_size = nr_sects << 9;
->  			nr_sects = 0;
->  		}
-> +
->  		bio_get(bio);
-> -		submit_bio(DISCARD_BARRIER, bio);
-> +		submit_bio(type, bio);
-> +
-> +		if (flags & DISCARD_FL_WAIT)
-> +			wait_for_completion(&wait);
->  
-> -		/* Check if it failed immediately */
->  		if (bio_flagged(bio, BIO_EOPNOTSUPP))
->  			ret = -EOPNOTSUPP;
->  		else if (!bio_flagged(bio, BIO_UPTODATE))
-> Index: linux-2.6/block/ioctl.c
-> ===================================================================
-> --- linux-2.6.orig/block/ioctl.c	2009-08-29 16:49:43.075370172 -0300
-> +++ linux-2.6/block/ioctl.c	2009-08-29 16:49:52.743341374 -0300
-> @@ -112,22 +112,9 @@ static int blkdev_reread_part(struct blo
->  	return res;
->  }
->  
-> -static void blk_ioc_discard_endio(struct bio *bio, int err)
-> -{
-> -	if (err) {
-> -		if (err == -EOPNOTSUPP)
-> -			set_bit(BIO_EOPNOTSUPP, &bio->bi_flags);
-> -		clear_bit(BIO_UPTODATE, &bio->bi_flags);
-> -	}
-> -	complete(bio->bi_private);
-> -}
-> -
->  static int blk_ioctl_discard(struct block_device *bdev, uint64_t start,
->  			     uint64_t len)
->  {
-> -	struct request_queue *q = bdev_get_queue(bdev);
-> -	int ret = 0;
-> -
->  	if (start & 511)
->  		return -EINVAL;
->  	if (len & 511)
-> @@ -137,40 +124,8 @@ static int blk_ioctl_discard(struct bloc
->  
->  	if (start + len > (bdev->bd_inode->i_size >> 9))
->  		return -EINVAL;
-> -
-> -	if (!q->prepare_discard_fn)
-> -		return -EOPNOTSUPP;
-> -
-> -	while (len && !ret) {
-> -		DECLARE_COMPLETION_ONSTACK(wait);
-> -		struct bio *bio;
-> -
-> -		bio = bio_alloc(GFP_KERNEL, 0);
-> -
-> -		bio->bi_end_io = blk_ioc_discard_endio;
-> -		bio->bi_bdev = bdev;
-> -		bio->bi_private = &wait;
-> -		bio->bi_sector = start;
-> -
-> -		if (len > queue_max_hw_sectors(q)) {
-> -			bio->bi_size = queue_max_hw_sectors(q) << 9;
-> -			len -= queue_max_hw_sectors(q);
-> -			start += queue_max_hw_sectors(q);
-> -		} else {
-> -			bio->bi_size = len << 9;
-> -			len = 0;
-> -		}
-> -		submit_bio(DISCARD_NOBARRIER, bio);
-> -
-> -		wait_for_completion(&wait);
-> -
-> -		if (bio_flagged(bio, BIO_EOPNOTSUPP))
-> -			ret = -EOPNOTSUPP;
-> -		else if (!bio_flagged(bio, BIO_UPTODATE))
-> -			ret = -EIO;
-> -		bio_put(bio);
-> -	}
-> -	return ret;
-> +	return blkdev_issue_discard(bdev, start, len, GFP_KERNEL,
-> +				    DISCARD_FL_WAIT);
->  }
->  
->  static int put_ushort(unsigned long arg, unsigned short val)
-> Index: linux-2.6/fs/btrfs/extent-tree.c
-> ===================================================================
-> --- linux-2.6.orig/fs/btrfs/extent-tree.c	2009-08-29 16:49:43.079341766 -0300
-> +++ linux-2.6/fs/btrfs/extent-tree.c	2009-08-29 16:49:52.743341374 -0300
-> @@ -1511,7 +1511,8 @@ static int remove_extent_backref(struct 
->  static void btrfs_issue_discard(struct block_device *bdev,
->  				u64 start, u64 len)
->  {
-> -	blkdev_issue_discard(bdev, start >> 9, len >> 9, GFP_KERNEL);
-> +	blkdev_issue_discard(bdev, start >> 9, len >> 9, GFP_KERNEL,
-> +			     DISCARD_FL_BARRIER);
->  }
->  #endif
->  
-> Index: linux-2.6/fs/gfs2/rgrp.c
-> ===================================================================
-> --- linux-2.6.orig/fs/gfs2/rgrp.c	2009-08-29 16:49:43.139342340 -0300
-> +++ linux-2.6/fs/gfs2/rgrp.c	2009-08-29 16:49:52.747373241 -0300
-> @@ -857,7 +857,8 @@ static void gfs2_rgrp_send_discards(stru
->  					goto start_new_extent;
->  				if ((start + nr_sects) != blk) {
->  					rv = blkdev_issue_discard(bdev, start,
-> -							    nr_sects, GFP_NOFS);
-> +							    nr_sects, GFP_NOFS,
-> +							    DISCARD_FL_BARRIER);
->  					if (rv)
->  						goto fail;
->  					nr_sects = 0;
-> @@ -871,7 +872,8 @@ start_new_extent:
->  		}
->  	}
->  	if (nr_sects) {
-> -		rv = blkdev_issue_discard(bdev, start, nr_sects, GFP_NOFS);
-> +		rv = blkdev_issue_discard(bdev, start, nr_sects, GFP_NOFS,
-> +					 DISCARD_FL_BARRIER);
->  		if (rv)
->  			goto fail;
->  	}
-> Index: linux-2.6/include/linux/blkdev.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/blkdev.h	2009-08-29 16:49:43.147343148 -0300
-> +++ linux-2.6/include/linux/blkdev.h	2009-08-29 17:43:19.767342397 -0300
-> @@ -977,15 +977,18 @@ static inline struct request *blk_map_qu
->  }
->  
->  extern int blkdev_issue_flush(struct block_device *, sector_t *);
-> -extern int blkdev_issue_discard(struct block_device *,
-> -				sector_t sector, sector_t nr_sects, gfp_t);
-> +#define DISCARD_FL_WAIT		0x01	/* wait for completion */
-> +#define DISCARD_FL_BARRIER	0x02	/* issue DISCARD_BARRIER request */
-> +extern int blkdev_issue_discard(struct block_device *, sector_t sector,
-> +		sector_t nr_sects, gfp_t, int flags);
->  
->  static inline int sb_issue_discard(struct super_block *sb,
->  				   sector_t block, sector_t nr_blocks)
->  {
->  	block <<= (sb->s_blocksize_bits - 9);
->  	nr_blocks <<= (sb->s_blocksize_bits - 9);
-> -	return blkdev_issue_discard(sb->s_bdev, block, nr_blocks, GFP_KERNEL);
-> +	return blkdev_issue_discard(sb->s_bdev, block, nr_blocks, GFP_KERNEL,
-> +				    DISCARD_FL_BARRIER);
->  }
->  
->  extern int blk_verify_command(unsigned char *cmd, fmode_t has_write_perm);
-> Index: linux-2.6/mm/swapfile.c
-> ===================================================================
-> --- linux-2.6.orig/mm/swapfile.c	2009-08-29 16:49:43.151342120 -0300
-> +++ linux-2.6/mm/swapfile.c	2009-08-29 16:49:52.755377749 -0300
-> @@ -161,7 +161,8 @@ static int discard_swap(struct swap_info
->  		}
->  
->  		err = blkdev_issue_discard(si->bdev, start_block,
-> -						nr_blocks, GFP_KERNEL);
-> +						nr_blocks, GFP_KERNEL,
-> +						DISCARD_FL_BARRIER);
->  		if (err)
->  			break;
->  
-> @@ -200,7 +201,8 @@ static void discard_swap_cluster(struct 
->  			start_block <<= PAGE_SHIFT - 9;
->  			nr_blocks <<= PAGE_SHIFT - 9;
->  			if (blkdev_issue_discard(si->bdev, start_block,
-> -							nr_blocks, GFP_NOIO))
-> +							nr_blocks, GFP_NOIO,
-> +							DISCARD_FL_BARRIER))
->  				break;
->  		}
->  
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
----end quoted text---
+   > Well system could check basic card ids if they match after resume
+
+No.  That (arguably) guarantees that it's the same card, but not that
+it wasn't modified in another machine during the suspend.
+
+   > if some users wants to crash his card by randomly swapping it
+   > during suspend/resume - I'd have no problem with that....
+
+You should have a problem with it.  Taking a card from a suspended
+machine and working on it with a different machine is not a bizarre
+thing to want to do.
+
+-- 
+Chris Ball   <cjb@laptop.org>
+One Laptop Per Child
