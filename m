@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753965AbZIKHh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754067AbZIKHjB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753965AbZIKHh5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 03:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZIKHhz
+	id S1754067AbZIKHjB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 03:39:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754029AbZIKHjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 03:37:55 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42960 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753286AbZIKHhy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 03:37:54 -0400
-Date: Fri, 11 Sep 2009 09:37:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       John Stultz <johnstul@us.ibm.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: [crash, bisected] Re: clocksource: Resolve cpu hotplug dead
-	lock with TSC unstable
-Message-ID: <20090911073747.GA8209@elte.hu>
-References: <20090909091009.GR18599@kernel.dk> <20090909115429.GY18599@kernel.dk> <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop> <20090910065856.GL18599@kernel.dk> <20090910073317.GP18599@kernel.dk> <20090910074902.GA10634@elte.hu> <20090910075357.GT18599@kernel.dk> <20090910100214.GB21314@elte.hu> <20090910180049.GA10579@elte.hu>
+	Fri, 11 Sep 2009 03:39:00 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50692 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751144AbZIKHi7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 03:38:59 -0400
+Message-ID: <4AA9FE67.5000503@cn.fujitsu.com>
+Date: Fri, 11 Sep 2009 15:38:15 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090910180049.GA10579@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jiri Slaby <jirislaby@gmail.com>
+CC: peterz@infradead.org, rjw@sisk.pl, akpm@linux-foundation.org,
+       rusty@rustcorp.com.au, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 1/1] sched: fix cpu_down deadlock
+References: <4AA0FEBF.7040104@gmail.com> <1252496510-11898-1-git-send-email-jirislaby@gmail.com> <4AA9E9B3.8060901@cn.fujitsu.com> <4AA9EE21.5040007@gmail.com>
+In-Reply-To: <4AA9EE21.5040007@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jiri Slaby wrote:
+> On 09/11/2009 08:09 AM, Lai Jiangshan wrote:
+>> Does this bug occur when a cpu is being offlined or
+>> when the system is being suspended?
+>> Or Both?
+> 
+> Hi, I tried echo 0/1 > /sys/devices/system/cpu/cpu1/online in a loop,
+> but it didn't trigger the bug. It happened only on suspend/resume cycle
+> (in the end I found even swsusp in qemu suffers from this).
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+OK, I knew where this bug is.
 
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > I went to try -tip btw, but it crashes on boot. Here's the 
-> > > backtrace, typed manually, it's crashing in 
-> > > queue_work_on+0x28/0x60.
-> > > 
-> > > Call Trace:
-> > >         queue_work
-> > >         schedule_work
-> > >         clocksource_mark_unstable
-> > >         mark_tsc_unstable
-> > >         check_tsc_sync_source
-> > >         native_cpu_up
-> > >         relay_hotcpu_callback
-> > >         do_forK_idle
-> > >         _cpu_up
-> > >         cpu_up
-> > >         kernel_init
-> > >         kernel_thread_helper
-> > 
-> > hm, that looks like an old bug i fixed days ago via:
-> > 
-> >   00a3273: Revert "x86: Make tsc=reliable override boot time stability checks"
-> > 
-> > Have you tested tip:master - do you still know which sha1?
-> 
-> Ok, i reproduced it on a testbox and bisected it, the crash is 
-> caused by:
-> 
->  7285dd7fd375763bfb8ab1ac9cf3f1206f503c16 is first bad commit
->  commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
->  Author: Thomas Gleixner <tglx@linutronix.de>
->  Date:   Fri Aug 28 20:25:24 2009 +0200
-> 
->     clocksource: Resolve cpu hotplug dead lock with TSC unstable
->     
->     Martin Schwidefsky analyzed it:
-> 
-> I've reverted it in tip/master for now.
+I thought the corresponding bit in cpu_active_mask is cleared before
+_cpu_down(), but I missed the system-suspend path:disable_nonboot_cpus().
 
-and that uncovers the circular locking bug that this commit was 
-supposed to fix ...
+There is a bug in disable_nonboot_cpus() even if my patch is removed.
 
-Martin?
+cpu_active_map is wrong during suspending.(scheduler system who uses
+cpu_active_map are still working while suspending)
 
-	Ingo
+You need:
+
+int disable_nonboot_cpus(void)
+{
+	....
+	....
+
+	/*
+	 * You need adding 'set_cpu_active(cpu, false);' here
+	 * to fix this bug and make my patch works well.
+	 */
+	error = _cpu_down(cpu, 1);
+
+	....
+	....
+}
+
+Lai.
+
