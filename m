@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbZIKIIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbZIKImE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbZIKIIU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 04:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752967AbZIKIIT
+	id S1754092AbZIKImE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 04:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753423AbZIKImD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 04:08:19 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46062 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752272AbZIKIIS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 04:08:18 -0400
-Date: Fri, 11 Sep 2009 18:08:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Dave Airlie <airlied@linux.ie>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: linux-next: drm tree build warning
-Message-Id: <20090911180809.4c372992.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	Fri, 11 Sep 2009 04:42:03 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:59557 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753323AbZIKImC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 04:42:02 -0400
+Date: Fri, 11 Sep 2009 09:43:10 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Alan Cox <alan@linux.intel.com>, LKML <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH] char/tty_io: fix legacy pty name when more than 256 pty
+ devices are requested
+Message-ID: <20090911094310.23126814@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AA92487.5080401@zytor.com>
+References: <20090908144942.76ddf0e7@caramujo.chehab.org>
+	<4AA6DF50.3030603@zytor.com>
+	<20090908203323.486c129c@caramujo.chehab.org>
+	<4AA6F63F.7090009@zytor.com>
+	<20090908235441.04549a29@caramujo.chehab.org>
+	<4AA73309.8030302@zytor.com>
+	<20090910010512.60a1f523@caramujo.chehab.org>
+	<4AA89B02.1050909@zytor.com>
+	<20090910093301.4ccfd786@caramujo.chehab.org>
+	<20090910150716.66310f02@lxorguk.ukuu.org.uk>
+	<4AA92487.5080401@zytor.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> hardly significant in the namespace pollution sense.  Can you imagine
+> ttyp1 being a BSD pty and ttyp10 being a completely different kind of
+> device?
 
-Hi Dave,
+No but I can imagine
 
-Today's linux-next build (x86_64 allmodconfig) produced this warning:
+		ttyp1
 
-drivers/gpu/drm/radeon/r100.c: In function 'r100_cs_parse':
-drivers/gpu/drm/radeon/r100.c:1623: warning: the frame size of 3120 bytes i=
-s larger than 2048 bytes
-drivers/gpu/drm/radeon/r300.c: In function 'r300_cs_parse':
-drivers/gpu/drm/radeon/r300.c:1270: warning: the frame size of 3104 bytes i=
-s larger than 2048 bytes
+		ttypr0
+		ttypr1
 
-Probably caused by commit 551ebd837c75fc75df81811a18b7136c39cab487
-("drm/radeon/kms: add rn50/r100/r200 CS tracker") which added a very
-large structure to the stack of each of these functions.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+being different devices (and we have upper case examples of that where
+single case is running tight now)
 
---Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqqBWkACgkQjjKRsyhoI8zzWQCfUnF2LZrFoIVAveV03scwKIrR
-1HAAn2nSGgvHa7XW++2Z3Fb9fnMgIwxn
-=+tkk
------END PGP SIGNATURE-----
-
---Signature=_Fri__11_Sep_2009_18_08_09_+1000_O4+IqYNPYKvU86Os--
+Anyway, we don't need over 256 BSD pty devices and the libraries can't do
+it so I still believe its a waste of electrons
