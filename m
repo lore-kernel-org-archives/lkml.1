@@ -1,99 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757066AbZIKWDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756985AbZIKWf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757066AbZIKWDf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 18:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757054AbZIKWDe
+	id S1756985AbZIKWf1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 18:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZIKWf0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 18:03:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46210 "EHLO ogre.sisk.pl"
+	Fri, 11 Sep 2009 18:35:26 -0400
+Received: from toro.web-alm.net ([62.245.132.31]:36721 "EHLO toro.web-alm.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757047AbZIKWDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 18:03:33 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-Date: Sat, 12 Sep 2009 00:04:02 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-References: <c4e36d110908310451t7c238e09u5af112fa3321cc23@mail.gmail.com> <20090910192354.GD23356@elf.ucw.cz> <87bplim1ce.fsf@devron.myhome.or.jp>
-In-Reply-To: <87bplim1ce.fsf@devron.myhome.or.jp>
+	id S1753114AbZIKWfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 18:35:25 -0400
+X-Greylist: delayed 1465 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 18:35:25 EDT
+Message-ID: <4AAAC9B1.9060505@osadl.org>
+Date: Sat, 12 Sep 2009 00:05:37 +0200
+From: Carsten Emde <Carsten.Emde@osadl.org>
+Organization: Open Source Automation Development Lab (OSADL) eG
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Prevent NULL pointer dereference in ftrace_raw_event_block_bio_bounce
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909120004.02146.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 September 2009, OGAWA Hirofumi wrote:
-> Pavel Machek <pavel@ucw.cz> writes:
-> 
-> > On Wed 2009-09-09 22:21:56, OGAWA Hirofumi wrote:
-> >> Pavel Machek <pavel@ucw.cz> writes:
-> >> 
-> >> >> It seems
-> >> >> 
-> >> >>     1) sync() (probabry "sync" command)
-> >> >>     2) sync as part of suspend sequence
-> >> >>     3) sync_filesystem() by mmc remove event
-> >> >> 
-> >> >> I guess the root-cause of the problem would be 3). However, it would not
-> >> >> be easy to fix, at least, we would need to think about what we want to
-> >> >> do for it. So, to workaround it for now, I've made this patch.
-> >> >
-> >> > MMC driver trying to synchronize filesystems looks like ugly layering
-> >> > violation to me. Why are we doing that?
-> >> 
-> >> There is no _layering violation_ here. IIRC, mmc just tells card removed
-> >> event to another layer (on some points of view, to tell event can be
-> >> wrong though). The partition (block) layer does it by event.
-> >
-> > So what is the problem?  Emulating sync when card is already removed
-> > seems little ... interesting?
-> 
-> Um..., sorry, I'm not sure what are you talking about. Of course, the
-> problem of this is that system freeze on suspend.
-> 
-> Or are you asking my guess of the cause, or something?  If so, although
-> I'm not reading all emails on this thread, from Zdenek's backtrace, the
-> sequence would be
-> 
->     1) suspend mmc
->     2) mmc generates card removed event
+Booting 2.6.31 and executing
+   echo 1 >/sys/kernel/debug/tracing/events/enable
+leads to
+BUG: unable to handle kernel NULL pointer dereference at (null)
+IP: [<c032a583>] ftrace_raw_event_block_bio_bounce+0x4b/0xb9
 
-Which shouldn't happen.
+Apparently,
+   bio = bio_map_user(q, NULL, uaddr, len, reading, gfp_mask);
+is called in block/blk-map.c:58 where bio->bi_bdev in set to NULL and 
+still is NULL when an attempt is made to evaluate bio->bi_bdev->bd_dev 
+in include/trace/events/block.h:189.
 
->     3) prepare to invalidate blockdev
->     4) sync fs on invalidating blockdev
->     5) flush buffers on invalidating blockdev (partitions)
->     6) delete blockdev (partitions)
-> 
-> or like the above. And I can guess some possible issues/root-cause we
-> have to handle from it.
-> 
->     a) card removed event from mmc for suspend is right design?
+The tracepoint should ensure bio->bi_bdev is not dereferenced, if NULL.
 
-Not with the current suspend/resume design.
+Signed-Off-By: Carsten Emde <C.Emde@osadl.org>
 
->     b) the card can be changed/removed before system was resumed, mmc
->        can be detect/handle it properly?
->     c) flushing buffers on _deleted_ device is right design?
-> 
-> and I suspect there are more issues in detail and resume process though.
+--- a/include/trace/events/block.h 2009-09-11 21:20:56.000000000 +0200
++++ b/include/trace/events/block.h 2009-09-11 22:01:52.000000000 +0200
+@@ -186,7 +186,8 @@
+  	),
 
-Well, first, there's a limit to which file systems can ignore the
-suspend/resume process and we're hitting it right now.
+  	TP_fast_assign(
+-		__entry->dev		= bio->bi_bdev->bd_dev;
++		__entry->dev		= bio->bi_bdev ?
++					  bio->bi_bdev->bd_dev : 0;
+  		__entry->sector		= bio->bi_sector;
+  		__entry->nr_sector	= bio->bi_size >> 9;
+  		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
 
-Second, we need a general solution for handling file systems over
-suspend/resume _and_ possibly removable devices that can be gone while
-suspended.  We don't have any solution like this right now and I have a little
-experience with file systems, so I'm not going to take care of this in the
-foreseeable future.  If someone else can, that's going to be appreciated very
-much.
-
-Thanks,
-Rafael
