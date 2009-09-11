@@ -1,88 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752333AbZIKNjw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751678AbZIKNdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752333AbZIKNjw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 09:39:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZIKNjv
+	id S1751678AbZIKNdM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 09:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751122AbZIKNdL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 09:39:51 -0400
-Received: from smtp-out2.tiscali.nl ([195.241.79.177]:48554 "EHLO
-	smtp-out2.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751399AbZIKNjv (ORCPT
+	Fri, 11 Sep 2009 09:33:11 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:43776 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750966AbZIKNdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 09:39:51 -0400
-X-Greylist: delayed 845 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 09:39:50 EDT
-Date: Fri, 11 Sep 2009 15:25:30 +0200
-From: Arjan Opmeer <arjan@opmeer.net>
-To: dtor@mail.ru, linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <20090911132530.GA2708@adopmeer.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ado@adopmeer.homeip.net
-Subject: How to handle laptop with Elantech touchpad that chokes on current
- driver configuration values?
-X-SA-Exim-Version: 4.2.1 (built Sat, 01 Aug 2009 12:09:26 +0000)
-X-SA-Exim-Scanned: Yes (on ado.lan)
+	Fri, 11 Sep 2009 09:33:10 -0400
+Date: Fri, 11 Sep 2009 15:33:05 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jens Axboe <jens.axboe@oracle.com>, John Stultz <johnstul@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: [crash, bisected] Re: clocksource: Resolve cpu hotplug dead
+ lock with TSC unstable
+Message-ID: <20090911153305.3fe9a361@skybase>
+In-Reply-To: <20090911073747.GA8209@elte.hu>
+References: <20090909091009.GR18599@kernel.dk>
+	<20090909115429.GY18599@kernel.dk>
+	<20090909122006.GA18599@kernel.dk>
+	<1252565738.7205.29.camel@laptop>
+	<20090910065856.GL18599@kernel.dk>
+	<20090910073317.GP18599@kernel.dk>
+	<20090910074902.GA10634@elte.hu>
+	<20090910075357.GT18599@kernel.dk>
+	<20090910100214.GB21314@elte.hu>
+	<20090910180049.GA10579@elte.hu>
+	<20090911073747.GA8209@elte.hu>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 11 Sep 2009 09:37:47 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Recently I debugged a problem for a user where the Elantech touchpad of his
-laptop chokes on the configuration values that the current kernel driver is
-using. After sending a conflicting value the PS/2 controller freezes and
-doesn't accept any subsequent bytes.
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > I went to try -tip btw, but it crashes on boot. Here's the 
+> > > > backtrace, typed manually, it's crashing in 
+> > > > queue_work_on+0x28/0x60.
+> > > > 
+> > > > Call Trace:
+> > > >         queue_work
+> > > >         schedule_work
+> > > >         clocksource_mark_unstable
+> > > >         mark_tsc_unstable
+> > > >         check_tsc_sync_source
+> > > >         native_cpu_up
+> > > >         relay_hotcpu_callback
+> > > >         do_forK_idle
+> > > >         _cpu_up
+> > > >         cpu_up
+> > > >         kernel_init
+> > > >         kernel_thread_helper
+> > > 
+> > > hm, that looks like an old bug i fixed days ago via:
+> > > 
+> > >   00a3273: Revert "x86: Make tsc=reliable override boot time stability checks"
+> > > 
+> > > Have you tested tip:master - do you still know which sha1?
+> > 
+> > Ok, i reproduced it on a testbox and bisected it, the crash is 
+> > caused by:
+> > 
+> >  7285dd7fd375763bfb8ab1ac9cf3f1206f503c16 is first bad commit
+> >  commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
+> >  Author: Thomas Gleixner <tglx@linutronix.de>
+> >  Date:   Fri Aug 28 20:25:24 2009 +0200
+> > 
+> >     clocksource: Resolve cpu hotplug dead lock with TSC unstable
+> >     
+> >     Martin Schwidefsky analyzed it:
+> > 
+> > I've reverted it in tip/master for now.
+> 
+> and that uncovers the circular locking bug that this commit was 
+> supposed to fix ...
+> 
+> Martin?
 
-The current configuration values for hardware version 2 (EeePC style) come
-from the touchpad driver in the original Xandros Linux distribution for the
-EeePC. And until now I haven't heard of problems with them. They look like
-this:
+This patch should fix the obvious problem that the watchdog_work
+structure is not yet initialized if the clocksource watchdog is not
+running yet.
+--
+Subject: [PATCH] clocksource: statically initialize watchdog workqueue
 
-   etd->reg_10 = 0x54;
-   etd->reg_11 = 0x88;
-   etd->reg_21 = 0x60;
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-Some time ago I received the updated touchpad driver that is used in the
-Dell mini Ubuntu distribution. Here the values are changed to be the same as
-most of the Windows driver are using. Notice the difference in register 0x11
-and how they dropped configuring register 0x21:
+The watchdog timer is started after the watchdog clocksource and at least
+one watched clocksource have been registered. The clocksource work element
+watchdog_work is initialized just before the clocksource timer is started.
+This is too late for the clocksource_mark_unstable call from native_cpu_up.
+To fix this use a static initializer for watchdog_work.
 
-   etd->reg_10 = 0x54;
-   etd->reg_11 = 0x8a;
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+ kernel/time/clocksource.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-However for the laptop of the user mentioned above the values of his Windows
-driver are like this:
+Index: linux-2.6/kernel/time/clocksource.c
+===================================================================
+--- linux-2.6.orig/kernel/time/clocksource.c
++++ linux-2.6/kernel/time/clocksource.c
+@@ -123,10 +123,12 @@ static DEFINE_MUTEX(clocksource_mutex);
+ static char override_name[32];
+ 
+ #ifdef CONFIG_CLOCKSOURCE_WATCHDOG
++static void clocksource_watchdog_work(struct work_struct *work);
++
+ static LIST_HEAD(watchdog_list);
+ static struct clocksource *watchdog;
+ static struct timer_list watchdog_timer;
+-static struct work_struct watchdog_work;
++static DECLARE_WORK(watchdog_work, clocksource_watchdog_work);
+ static DEFINE_SPINLOCK(watchdog_lock);
+ static cycle_t watchdog_last;
+ static int watchdog_running;
+@@ -230,7 +232,6 @@ static inline void clocksource_start_wat
+ {
+ 	if (watchdog_running || !watchdog || list_empty(&watchdog_list))
+ 		return;
+-	INIT_WORK(&watchdog_work, clocksource_watchdog_work);
+ 	init_timer(&watchdog_timer);
+ 	watchdog_timer.function = clocksource_watchdog;
+ 	watchdog_last = watchdog->read(watchdog);
 
-   etd->reg_10 = 0x64;
-   etd->reg_11 = 0x8a;
+-- 
+blue skies,
+   Martin.
 
-Notice the different values for registers 0x10 and 0x11 in comparison with
-the current kernel driver. Also the registers _must_ be configured like
-this. Using the current kernel driver values for either one of the registers
-makes the touchpad freeze up.
+"Reality continues to ruin my life." - Calvin.
 
-Remember that there isn't any publicly available documentation for the
-hardware, so these configuration values are "black magic numbers" and the
-only source of them is snooping what Windows drivers do or the source of
-drivers in dedicated Linux distributions that happen to come my way.
-
-In all cases this is about touchpads with a firmware version reply of 0x02,
-0x00, 0x30. So even though the touchpad in this users laptops seems to be
-the same as in the EeePC it really requires different values to be
-configured.
-
-My question now is what is a prudent way to go forward?
-
-Is it OK that add a DMI check to the kernel driver that matches this users
-laptop and dynamically adjust the configuration values?
-
-And how about the common case? Do we keep the values in the driver as they
-are, or do we update them to the revised numbers as learned from the Ubuntu
-driver?
-
-What are your thoughts on this?
-
-
-Arjan
