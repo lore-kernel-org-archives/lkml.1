@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754719AbZIKQVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754736AbZIKQVg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754719AbZIKQVU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZIKQVT
+	id S1754736AbZIKQVg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:21:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754723AbZIKQVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:21:19 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:42670 "EHLO mgw2.diku.dk"
+	Fri, 11 Sep 2009 12:21:35 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:42704 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754694AbZIKQVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:21:17 -0400
-Date: Fri, 11 Sep 2009 18:21:18 +0200 (CEST)
+	id S1754644AbZIKQVe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:21:34 -0400
+Date: Fri, 11 Sep 2009 18:21:35 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Laurent Pinchart <laurent.pinchart@skynet.be>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 2/8] drivers/media/video/uvc: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0909111821010.10552@pc-004.diku.dk>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 3/8] drivers/media/video/hdpvr: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0909111821180.10552@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -25,7 +23,7 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Julia Lawall <julia@diku.dk>
 
-Error handling code following kmalloc should free the allocated data.
+Error handling code following a kzalloc should free the allocated data.
 
 The semantic match that finds the problem is as follows:
 (http://www.emn.fr/x-info/coccinelle/)
@@ -69,24 +67,28 @@ print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
 
 Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
- drivers/media/video/uvc/uvc_video.c |    7 +++++--
- 1 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/media/video/hdpvr/hdpvr-video.c        |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
-index 5b757f3..ce2c484 100644
---- a/drivers/media/video/uvc/uvc_video.c
-+++ b/drivers/media/video/uvc/uvc_video.c
-@@ -128,8 +128,11 @@ static int uvc_get_video_ctrl(struct uvc_streaming *stream,
- 	if (data == NULL)
- 		return -ENOMEM;
+diff --git a/drivers/media/video/hdpvr/hdpvr-video.c b/drivers/media/video/hdpvr/hdpvr-video.c
+index 2eb9dc2..0d17ce5 100644
+--- a/drivers/media/video/hdpvr/hdpvr-video.c
++++ b/drivers/media/video/hdpvr/hdpvr-video.c
+@@ -132,7 +132,7 @@ int hdpvr_alloc_buffers(struct hdpvr_device *dev, uint count)
+ 		buf = kzalloc(sizeof(struct hdpvr_buffer), GFP_KERNEL);
+ 		if (!buf) {
+ 			v4l2_err(&dev->v4l2_dev, "cannot allocate buffer\n");
+-			goto exit;
++			goto exit_nobuf;
+ 		}
+ 		buf->dev = dev;
  
--	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) && query == UVC_GET_DEF)
--		return -EIO;
-+	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) &&
-+			query == UVC_GET_DEF) {
-+		ret = -EIO;
-+		goto out;
-+	}
- 
- 	ret = __uvc_query_ctrl(stream->dev, query, 0, stream->intfnum,
- 		probe ? UVC_VS_PROBE_CONTROL : UVC_VS_COMMIT_CONTROL, data,
+@@ -162,6 +162,8 @@ int hdpvr_alloc_buffers(struct hdpvr_device *dev, uint count)
+ 	}
+ 	return 0;
+ exit:
++	kfree(buf);
++exit_nobuf:
+ 	hdpvr_free_buffers(dev);
+ 	return retval;
+ }
