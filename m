@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZIKRAo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755701AbZIKRWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbZIKRAo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 13:00:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754827AbZIKRAk
+	id S1755701AbZIKRWP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 13:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZIKRWO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 13:00:40 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55900 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754808AbZIKRAi (ORCPT
+	Fri, 11 Sep 2009 13:22:14 -0400
+Received: from mail-pz0-f184.google.com ([209.85.222.184]:51212 "EHLO
+	mail-pz0-f184.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753940AbZIKRWN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 13:00:38 -0400
-Subject: Re: [RFC][v6][PATCH 0/9] clone_with_pids() syscall
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>,
-       container@us.ibm.com, sukadev@us.ibm.com
-In-Reply-To: <20090911164703.GA29169@us.ibm.com>
-References: <20090910060627.GA24343@us.ibm.com>
-	 <1252668148.7126.13.camel@laptop> <200909111334.45241.arnd@arndb.de>
-	 <20090911164703.GA29169@us.ibm.com>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 19:00:04 +0200
-Message-Id: <1252688404.7126.40.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 13:22:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=R/AEwesIfzVMojUsLO/rhLvwBq8B/FMm8GODlW9zZzQkhiK75Yb/ry+XpksDp9UJPx
+         gYorxwheYvkx/ZJ6CloG7F1ibnoT1gE+9lWNeQ7s2ztonaNHMrC/drzeWL/XB52iNWO4
+         wn5Toddm7N3QLc2REo3Pf0WbuiFrQ+Up7Dpuw=
+MIME-Version: 1.0
+In-Reply-To: <20090911150210.GB16593@kroah.com>
+References: <10f740e80909110726x313e3e3coe2321c683163e3a5@mail.gmail.com>
+	 <20090911150210.GB16593@kroah.com>
+Date: Fri, 11 Sep 2009 19:22:16 +0200
+X-Google-Sender-Auth: fa7931801b98d495
+Message-ID: <10f740e80909111022t50d8beb9qf94cfd13413fb29e@mail.gmail.com>
+Subject: Re: drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined 
+	from 'boolean' to 'tristate'
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg KH <greg@kroah.com>
+Cc: Martyn Welch <martyn.welch@gefanuc.com>, linux-kernel@vger.kernel.org,
+       Linux-Next <linux-next@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 09:47 -0700, Sukadev Bhattiprolu wrote:
-> | Also, if you're passing a struct, why not put nr_pids in there, and
-> | replace clone_pid_struct with a simple array? That would give us
-> | 
-> | struct clone_struct {
-> |         u64 flags;
-> |         u64 child_stack;
-> |         u32 child_tid;
-> |         u32 parent_tid;
-> | 	u32 nr_pids;
-> | 	u32 reserved1;
-> | 	u64 reserved2;
-> | };
-> | 
-> | int clone2(struct clone_struct *cs, pid_t *pids);
-> 
-> My only concern with this approach was the extra copy_from_user() in the
-> common case (i.e when not using the extended features).  I assume the
-> overhead of copy_from_user() is small enough to be ignored ?
+On Fri, Sep 11, 2009 at 17:02, Greg KH<greg@kroah.com> wrote:
+> On Fri, Sep 11, 2009 at 04:26:36PM +0200, Geert Uytterhoeven wrote:
+>> http://kisskb.ellerman.id.au/kisskb/buildresult/1221192/:
+>> drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined from
+>> 'boolean' to 'tristate'
+>> drivers/staging/vme/Kconfig:5:warning: type of 'VME' redefined from
+>> 'boolean' to 'tristate'
+>>
+>> We already have:
+>>
+>> arch/m68k/Kconfig:config VME
+>> arch/m68k/Kconfig:      bool "VME (Motorola and BVM) support"
+>> arch/m68k/Kconfig:        Say Y here if you want to build a kernel for
+>> a 680x0 based VME
+>
+> Ah, not good.
+>
+> Are these a board-specific thing?  It's not the "VME bus" is it?
 
-I would think so, esp for small structure, it would be a cache hot copy.
-That is, for x86 I doubt it'll show up. No idea what hoops other arch
-have to jump through to get copy_from_user() doing what it does.
+These are to enable support for the original VME-based machines (VME
+started it's life on m68k).
 
+>From a historical point of view, it's a bit funny to see the new
+CONFIG_VME(_BUS) depends on PCI ;-)
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
