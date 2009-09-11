@@ -1,208 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbZIKFww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752897AbZIKF4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752913AbZIKFww (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 01:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZIKFwv
+	id S1752897AbZIKF4Q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 01:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZIKF4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 01:52:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43190 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752823AbZIKFwu (ORCPT
+	Fri, 11 Sep 2009 01:56:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51175 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbZIKF4N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 01:52:50 -0400
-Date: Thu, 10 Sep 2009 22:52:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Dimitri Sivanich <sivanich@sgi.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Subject: Re: [PATCH] Add memory mapped RTC driver for UV
-Message-Id: <20090910225242.5c3f8ca1.akpm@linux-foundation.org>
-In-Reply-To: <20090911013054.GA6567@sgi.com>
-References: <20090911013054.GA6567@sgi.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 01:56:13 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [GIT PULL] please pull ummunotify
+Cc: kosaki.motohiro@jp.fujitsu.com, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jsquyres@cisco.com,
+       linux-rdma@vger.kernel.org, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <aday6omhz9d.fsf@cisco.com>
+References: <aday6omhz9d.fsf@cisco.com>
+Message-Id: <20090911145036.DB65.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 11 Sep 2009 14:56:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Sep 2009 20:30:54 -0500 Dimitri Sivanich <sivanich@sgi.com> wrote:
+Hi Roland,
 
-> This driver memory maps the UV Hub RTC.
->
-> ...
->
-> +/**
-> + * uv_mmtimer_ioctl - ioctl interface for /dev/uv_mmtimer
-> + * @file: file structure for the device
-> + * @cmd: command to execute
-> + * @arg: optional argument to command
-> + *
-> + * Executes the command specified by @cmd.  Returns 0 for success, < 0 for
-> + * failure.
-> + *
-> + * Valid commands:
-> + *
-> + * %MMTIMER_GETOFFSET - Should return the offset (relative to the start
-> + * of the page where the registers are mapped) for the counter in question.
-> + *
-> + * %MMTIMER_GETRES - Returns the resolution of the clock in femto (10^-15)
-> + * seconds
-> + *
-> + * %MMTIMER_GETFREQ - Copies the frequency of the clock in Hz to the address
-> + * specified by @arg
-> + *
-> + * %MMTIMER_GETBITS - Returns the number of bits in the clock's counter
-> + *
-> + * %MMTIMER_MMAPAVAIL - Returns 1 if registers can be mmap'd into userspace
-> + *
-> + * %MMTIMER_GETCOUNTER - Gets the current value in the counter and places it
-> + * in the address specified by @arg.
+> Linus, please consider pulling from
+> 
+>     master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git ummunotify
+> 
+> This tree is also available from kernel.org mirrors at:
+> 
+>     git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git ummunotify
+> 
+> This will get "ummunotify," a new character device that allows a
+> userspace library to register for MMU notifications; this is
+> particularly useful for MPI implementions (message passing libraries
+> used in HPC) to be able to keep track of what wacky things consumers
+> do to their memory mappings.  My colleague Jeff Squyres from the Open
+> MPI project posted a blog entry about why MPI wants this:
+> 
+> http://blogs.cisco.com/ciscotalk/performance/comments/better_linux_memory_tracking/
+> 
+> His summary of ummunotify:
+> 
+>   "It’s elegant, doesn’t require strange linker tricks, and seems to
+>    work in all cases.  Yay!"
+> 
+> This code went through several review iterations on lkml and was in
+> -mm and -next for quite a few weeks.  Andrew is OK with merging it (I
+> think -- Andrew please correct me if I misunderstood you).
 
-Are these % thingies part of kerneldoc?
+I'm sorry. I haven't review this code and I didn't track this discussion
+carefully. but I have one stupid question. May I ask? 
+Can I this version already solved fork() + COW issue? if so, could you
+please explain what happen at fork. Obviously RDMA point to either parent
+or child page, not both. but Corrent COW rule is, first touch process
+get copyed page and other process still own original page. I think it's 
+unpecected behavior form RDMA.
 
-> + */
-> +static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
-> +						unsigned long arg)
-> +{
-> +	int ret = 0;
-> +
-> +	switch (cmd) {
-> +	case MMTIMER_GETOFFSET:	/* offset of the counter */
-> +		/*
-> +		 * UV RTC register is on it's own page
-
-"its" ;)
-
-> +		 */
-> +		if (PAGE_SIZE <= (1 << 16))
-> +			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
-> +				/ 8;
-> +		else
-> +			ret = -ENOSYS;
-> +		break;
-> +
-> +	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
-> +		if (copy_to_user((unsigned long __user *)arg,
-> +				&uv_mmtimer_femtoperiod, sizeof(unsigned long)))
-> +			ret = -EFAULT;
-> +		break;
-> +
-> +	case MMTIMER_GETFREQ: /* frequency in Hz */
-> +		if (copy_to_user((unsigned long __user *)arg,
-> +				&sn_rtc_cycles_per_second,
-> +				sizeof(unsigned long)))
-> +			ret = -EFAULT;
-> +		break;
-> +
-> +	case MMTIMER_GETBITS: /* number of bits in the clock */
-> +		ret = hweight64(UVH_RTC_REAL_TIME_CLOCK_MASK);
-> +		break;
-> +
-> +	case MMTIMER_MMAPAVAIL: /* can we mmap the clock into userspace? */
-> +		ret = (PAGE_SIZE <= (1 << 16)) ? 1 : 0;
-> +		break;
-> +
-> +	case MMTIMER_GETCOUNTER:
-> +		if (copy_to_user((unsigned long __user *)arg,
-> +				(unsigned long *)uv_local_mmr_address(UVH_RTC),
-> +				sizeof(unsigned long)))
-> +			ret = -EFAULT;
-> +		break;
-> +	default:
-> +		ret = -ENOTTY;
-> +		break;
-> +	}
-> +	return ret;
-> +}
-> +
-> +/**
-> + * uv_mmtimer_mmap - maps the clock's registers into userspace
-> + * @file: file structure for the device
-> + * @vma: VMA to map the registers into
-> + *
-> + * Calls remap_pfn_range() to map the clock's registers into
-> + * the calling process' address space.
-> + */
-> +static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma)
-> +{
-> +	unsigned long uv_mmtimer_addr;
-> +
-> +	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
-> +		return -EINVAL;
-> +
-> +	if (vma->vm_flags & VM_WRITE)
-> +		return -EPERM;
-> +
-> +	if (PAGE_SIZE > (1 << 16))
-> +		return -ENOSYS;
-> +
-> +	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-> +
-> +	uv_mmtimer_addr = UV_LOCAL_MMR_BASE | UVH_RTC;
-> +	uv_mmtimer_addr &= ~(PAGE_SIZE - 1);
-> +	uv_mmtimer_addr &= 0xfffffffffffffffUL;
-> +
-> +	if (remap_pfn_range(vma, vma->vm_start, uv_mmtimer_addr >> PAGE_SHIFT,
-> +					PAGE_SIZE, vma->vm_page_prot)) {
-> +		printk(KERN_ERR "remap_pfn_range failed in uv_mmtimer_mmap\n");
-> +		return -EAGAIN;
-> +	}
-> +
-> +	return 0;
-> +}
-
-Methinks we should be setting vma->vm_flags's VM_IO here and perhaps
-also VM_RESERVED.
-
-> +static struct miscdevice uv_mmtimer_miscdev = {
-> +	MISC_DYNAMIC_MINOR,
-> +	UV_MMTIMER_NAME,
-> +	&uv_mmtimer_fops
-> +};
-> +
-> +
-> +/**
-> + * uv_mmtimer_init - device initialization routine
-> + *
-> + * Does initial setup for the uv_mmtimer device.
-> + */
-> +static int __init uv_mmtimer_init(void)
-> +{
-> +	if (!is_uv_system())
-> +		return 0;
-
-This will leave the module loaded but inactive.  Would it make more
-sense to return an error code in this case so that a) the user
-discovers that he wasted his time and b) the module will get booted out
-again?
-
-> +	/*
-> +	 * Sanity check the cycles/sec variable
-> +	 */
-> +	if (sn_rtc_cycles_per_second < 100000) {
-> +		printk(KERN_ERR "%s: unable to determine clock frequency\n",
-> +		       UV_MMTIMER_NAME);
-> +		return -1;
-> +	}
-> +
-> +	uv_mmtimer_femtoperiod = ((unsigned long)1E15 +
-> +				sn_rtc_cycles_per_second / 2) /
-> +				sn_rtc_cycles_per_second;
-> +
-> +	if (misc_register(&uv_mmtimer_miscdev)) {
-> +		printk(KERN_ERR "%s: failed to register device\n",
-> +		       UV_MMTIMER_NAME);
-> +		return -1;
-> +	}
-> +
-> +	printk(KERN_INFO "%s: v%s, %ld MHz\n", UV_MMTIMER_DESC,
-> +		UV_MMTIMER_VERSION,
-> +		sn_rtc_cycles_per_second/(unsigned long)1E6);
-> +
-> +	return 0;
-> +}
-> +
-> +module_init(uv_mmtimer_init);
 
