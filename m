@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753905AbZIKAcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbZIKAa3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753905AbZIKAcQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 20:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753730AbZIKAcL
+	id S1753612AbZIKAa3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 20:30:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZIKA3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 20:32:11 -0400
-Received: from kroah.org ([198.145.64.141]:38084 "EHLO coco.kroah.org"
+	Thu, 10 Sep 2009 20:29:11 -0400
+Received: from kroah.org ([198.145.64.141]:38090 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753044AbZIKA3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 20:29:06 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Sep 10 17:24:10 2009
-Message-Id: <20090911002410.794447090@mini.kroah.org>
+	id S1751679AbZIKA3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 20:29:07 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Sep 10 17:24:11 2009
+Message-Id: <20090911002410.971758034@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 10 Sep 2009 17:22:58 -0700
+Date: Thu, 10 Sep 2009 17:22:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Eric Dumazet <eric.dumazet@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [patch 12/22] slub: Fix kmem_cache_destroy() with SLAB_DESTROY_BY_RCU
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [patch 13/22] nilfs2: fix preempt count underflow in nilfs_btnode_prepare_change_key
 References: <20090911002246.666327880@mini.kroah.org>
-Content-Disposition: inline; filename=slub-fix-kmem_cache_destroy-with-slab_destroy_by_rcu.patch
+Content-Disposition: inline; filename=nilfs2-fix-preempt-count-underflow-in-nilfs_btnode_prepare_change_key.patch
 In-Reply-To: <20090911002616.GA12087@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,46 +29,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Eric Dumazet <eric.dumazet@gmail.com>
+From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
 
-commit d76b1590e06a63a3d8697168cd0aabf1c4b3cb3a upstream.
+commit b1f1b8ce0a1d71cbc72f7540134d52b79bd8f5ac upstream.
 
-kmem_cache_destroy() should call rcu_barrier() *after* kmem_cache_close() and
-*before* sysfs_slab_remove() or risk rcu_free_slab() being called after
-kmem_cache is deleted (kfreed).
+This will fix the following preempt count underflow reported from
+users with the title "[NILFS users] segctord problem" (Message-ID:
+<949415.6494.qm@web58808.mail.re1.yahoo.com> and Message-ID:
+<debc30fc0908270825v747c1734xa59126623cfd5b05@mail.gmail.com>):
 
-rmmod nf_conntrack can crash the machine because it has to kmem_cache_destroy()
-a SLAB_DESTROY_BY_RCU enabled cache.
+ WARNING: at kernel/sched.c:4890 sub_preempt_count+0x95/0xa0()
+ Hardware name: HP Compaq 6530b (KR980UT#ABC)
+ Modules linked in: bridge stp llc bnep rfcomm l2cap xfs exportfs nilfs2 cowloop loop vboxnetadp vboxnetflt vboxdrv btusb bluetooth uvcvideo videodev v4l1_compat v4l2_compat_ioctl32 arc4 snd_hda_codec_analog ecb iwlagn iwlcore rfkill lib80211 mac80211 snd_hda_intel snd_hda_codec ehci_hcd uhci_hcd usbcore snd_hwdep snd_pcm tg3 cfg80211 psmouse snd_timer joydev libphy ohci1394 snd_page_alloc hp_accel lis3lv02d ieee1394 led_class i915 drm i2c_algo_bit video backlight output i2c_core dm_crypt dm_mod
+ Pid: 4197, comm: segctord Not tainted 2.6.30-gentoo-r4-64 #7
+ Call Trace:
+  [<ffffffff8023fa05>] ? sub_preempt_count+0x95/0xa0
+  [<ffffffff802470f8>] warn_slowpath_common+0x78/0xd0
+  [<ffffffff8024715f>] warn_slowpath_null+0xf/0x20
+  [<ffffffff8023fa05>] sub_preempt_count+0x95/0xa0
+  [<ffffffffa04ce4db>] nilfs_btnode_prepare_change_key+0x11b/0x190 [nilfs2]
+  [<ffffffffa04d01ad>] nilfs_btree_assign_p+0x19d/0x1e0 [nilfs2]
+  [<ffffffffa04d10ad>] nilfs_btree_assign+0xbd/0x130 [nilfs2]
+  [<ffffffffa04cead7>] nilfs_bmap_assign+0x47/0x70 [nilfs2]
+  [<ffffffffa04d9bc6>] nilfs_segctor_do_construct+0x956/0x20f0 [nilfs2]
+  [<ffffffff805ac8e2>] ? _spin_unlock_irqrestore+0x12/0x40
+  [<ffffffff803c06e0>] ? __up_write+0xe0/0x150
+  [<ffffffff80262959>] ? up_write+0x9/0x10
+  [<ffffffffa04ce9f3>] ? nilfs_bmap_test_and_clear_dirty+0x43/0x60 [nilfs2]
+  [<ffffffffa04cd627>] ? nilfs_mdt_fetch_dirty+0x27/0x60 [nilfs2]
+  [<ffffffffa04db5fc>] nilfs_segctor_construct+0x8c/0xd0 [nilfs2]
+  [<ffffffffa04dc3dc>] nilfs_segctor_thread+0x15c/0x3a0 [nilfs2]
+  [<ffffffffa04dbe20>] ? nilfs_construction_timeout+0x0/0x10 [nilfs2]
+  [<ffffffff80252633>] ? add_timer+0x13/0x20
+  [<ffffffff802370da>] ? __wake_up_common+0x5a/0x90
+  [<ffffffff8025e960>] ? autoremove_wake_function+0x0/0x40
+  [<ffffffffa04dc280>] ? nilfs_segctor_thread+0x0/0x3a0 [nilfs2]
+  [<ffffffffa04dc280>] ? nilfs_segctor_thread+0x0/0x3a0 [nilfs2]
+  [<ffffffff8025e556>] kthread+0x56/0x90
+  [<ffffffff8020cdea>] child_rip+0xa/0x20
+  [<ffffffff8025e500>] ? kthread+0x0/0x90
+  [<ffffffff8020cde0>] ? child_rip+0x0/0x20
 
-Reported-by: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+This problem was caused due to a missing radix_tree_preload() call in
+the retry path of nilfs_btnode_prepare_change_key() function.
+
+Reported-by: Eric A <eric225125@yahoo.com>
+Reported-by: Jerome Poulin <jeromepoulin@gmail.com>
+Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Tested-by: Jerome Poulin <jeromepoulin@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/slub.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ fs/nilfs2/btnode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2490,8 +2490,6 @@ static inline int kmem_cache_close(struc
-  */
- void kmem_cache_destroy(struct kmem_cache *s)
- {
--	if (s->flags & SLAB_DESTROY_BY_RCU)
--		rcu_barrier();
- 	down_write(&slub_lock);
- 	s->refcount--;
- 	if (!s->refcount) {
-@@ -2502,6 +2500,8 @@ void kmem_cache_destroy(struct kmem_cach
- 				"still has objects.\n", s->name, __func__);
- 			dump_stack();
- 		}
-+		if (s->flags & SLAB_DESTROY_BY_RCU)
-+			rcu_barrier();
- 		sysfs_slab_remove(s);
- 	} else
- 		up_write(&slub_lock);
+--- a/fs/nilfs2/btnode.c
++++ b/fs/nilfs2/btnode.c
+@@ -206,6 +206,7 @@ int nilfs_btnode_prepare_change_key(stru
+ 		 * We cannot call radix_tree_preload for the kernels older
+ 		 * than 2.6.23, because it is not exported for modules.
+ 		 */
++retry:
+ 		err = radix_tree_preload(GFP_NOFS & ~__GFP_HIGHMEM);
+ 		if (err)
+ 			goto failed_unlock;
+@@ -216,7 +217,6 @@ int nilfs_btnode_prepare_change_key(stru
+ 				       (unsigned long long)oldkey,
+ 				       (unsigned long long)newkey);
+ 
+-retry:
+ 		spin_lock_irq(&btnc->tree_lock);
+ 		err = radix_tree_insert(&btnc->page_tree, newkey, obh->b_page);
+ 		spin_unlock_irq(&btnc->tree_lock);
 
 
