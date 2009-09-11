@@ -1,176 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752255AbZIKFTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752427AbZIKF0I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752255AbZIKFTm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 01:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751832AbZIKFTl
+	id S1752427AbZIKF0I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 01:26:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751343AbZIKF0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 01:19:41 -0400
-Received: from mail-yx0-f176.google.com ([209.85.210.176]:36914 "EHLO
-	mail-yx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbZIKFTk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 01:19:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KQXOXb+0tSoH9ckOLtq1t0WOCILyaYUCH2y2Q8wNBmkMnu3/sfZQd0pzRuP19Gv29S
-         p8hdC1/R5HB3PNSvMiOh2iHh1MVledqR3/z8v/FxJCyniOs/mSiNHrx5EaTwIAHS/lg5
-         VKfTJbSctoDfhLgXYtCgTLSppQ6RmEV/Pp49o=
-Date: Thu, 10 Sep 2009 22:19:39 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org, stable-review@kernel.org,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/22] 2.6.30.7-stable review
-Message-ID: <20090911051939.GE23210@core.coreip.homeip.net>
-References: <20090911002616.GA12087@kroah.com>
+	Fri, 11 Sep 2009 01:26:08 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1051 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751201AbZIKF0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 01:26:06 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org
+Cc: davem@davemloft.net, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+Date: Fri, 11 Sep 2009 01:25:58 -0400
+Message-ID: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911002616.GA12087@kroah.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 05:26:16PM -0700, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.30.7 release.
-> There are 22 patches in this series, all will be posted as a response to
-> this one.  If anyone has any issues with these being applied, please let
-> us know.  If anyone is a maintainer of the proper subsystem, and wants
-> to add a Signed-off-by: line to the patch, please respond with it.
-> 
+fanotify's user interface uses a custom socket (it doesn't use netlink
+since work must be done in the context of the receive side of the socket)
 
-Please consider adding the following commit to the stable:
+This patch simply defines the fanotify socket number declarations.  The
+actual implementation of the socket is in a later patch.
 
-	ec8b4b7085605e801a7740a2c3c33256aebe249c
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-Thanks!
+ include/linux/socket.h |    5 ++++-
+ net/core/sock.c        |    6 +++---
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
--- 
-Dmitry
+diff --git a/include/linux/socket.h b/include/linux/socket.h
+index 3b461df..e03f47b 100644
+--- a/include/linux/socket.h
++++ b/include/linux/socket.h
+@@ -195,7 +195,8 @@ struct ucred {
+ #define AF_ISDN		34	/* mISDN sockets 		*/
+ #define AF_PHONET	35	/* Phonet sockets		*/
+ #define AF_IEEE802154	36	/* IEEE802154 sockets		*/
+-#define AF_MAX		37	/* For now.. */
++#define AF_FANOTIFY	37	/* fscking all access sockets	*/
++#define AF_MAX		38	/* For now.. */
+ 
+ /* Protocol families, same as address families. */
+ #define PF_UNSPEC	AF_UNSPEC
+@@ -235,6 +236,7 @@ struct ucred {
+ #define PF_ISDN		AF_ISDN
+ #define PF_PHONET	AF_PHONET
+ #define PF_IEEE802154	AF_IEEE802154
++#define PF_FANOTIFY	AF_FANOTIFY
+ #define PF_MAX		AF_MAX
+ 
+ /* Maximum queue length specifiable by listen.  */
+@@ -306,6 +308,7 @@ struct ucred {
+ #define SOL_PNPIPE	275
+ #define SOL_RDS		276
+ #define SOL_IUCV	277
++#define SOL_FANOTIFY	278
+ 
+ /* IPX options */
+ #define IPX_TYPE	1
+diff --git a/net/core/sock.c b/net/core/sock.c
+index 30d5446..28a99bf 100644
+--- a/net/core/sock.c
++++ b/net/core/sock.c
+@@ -155,7 +155,7 @@ static const char *const af_family_key_strings[AF_MAX+1] = {
+   "sk_lock-27"       , "sk_lock-28"          , "sk_lock-AF_CAN"      ,
+   "sk_lock-AF_TIPC"  , "sk_lock-AF_BLUETOOTH", "sk_lock-IUCV"        ,
+   "sk_lock-AF_RXRPC" , "sk_lock-AF_ISDN"     , "sk_lock-AF_PHONET"   ,
+-  "sk_lock-AF_IEEE802154",
++  "sk_lock-AF_IEEE802154", "sk_lock-AF_FANOTIFY",
+   "sk_lock-AF_MAX"
+ };
+ static const char *const af_family_slock_key_strings[AF_MAX+1] = {
+@@ -171,7 +171,7 @@ static const char *const af_family_slock_key_strings[AF_MAX+1] = {
+   "slock-27"       , "slock-28"          , "slock-AF_CAN"      ,
+   "slock-AF_TIPC"  , "slock-AF_BLUETOOTH", "slock-AF_IUCV"     ,
+   "slock-AF_RXRPC" , "slock-AF_ISDN"     , "slock-AF_PHONET"   ,
+-  "slock-AF_IEEE802154",
++  "slock-AF_IEEE802154", "slock=AF_FANOTIFY",
+   "slock-AF_MAX"
+ };
+ static const char *const af_family_clock_key_strings[AF_MAX+1] = {
+@@ -187,7 +187,7 @@ static const char *const af_family_clock_key_strings[AF_MAX+1] = {
+   "clock-27"       , "clock-28"          , "clock-AF_CAN"      ,
+   "clock-AF_TIPC"  , "clock-AF_BLUETOOTH", "clock-AF_IUCV"     ,
+   "clock-AF_RXRPC" , "clock-AF_ISDN"     , "clock-AF_PHONET"   ,
+-  "clock-AF_IEEE802154",
++  "clock-AF_IEEE802154", "clock-AF_FANOTIFY",
+   "clock-AF_MAX"
+ };
+ 
 
-
-commit ec8b4b7085605e801a7740a2c3c33256aebe249c
-Author: Stephen Kitt <steve@sk2.org>
-Date:   Wed Aug 12 01:12:08 2009 -0700
-
-    Input: joydev - decouple axis and button map ioctls from input constants
-    
-    The KEY_MAX change in 2.6.28 changed the values of the JSIOCSBTNMAP and
-    JSIOCGBTNMAP constants; software compiled with the old values no longer
-    works with kernels following 2.6.28, because the ioctl switch statement
-    no longer matches the values given by the software. This patch handles
-    these ioctls independently of the length of data specified, and applies the
-    same treatment to JSIOCSAXMAP and JSIOCGAXMAP which currently depend on
-    ABS_MAX.
-    
-    Signed-off-by: Stephen Kitt <steve@sk2.org>
-    Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
-
-diff --git a/drivers/input/joydev.c b/drivers/input/joydev.c
-index 4cfd084..9a1d55b 100644
---- a/drivers/input/joydev.c
-+++ b/drivers/input/joydev.c
-@@ -456,8 +456,11 @@ static int joydev_ioctl_common(struct joydev *joydev,
- 				unsigned int cmd, void __user *argp)
- {
- 	struct input_dev *dev = joydev->handle.dev;
-+	size_t len;
- 	int i, j;
-+	const char *name;
- 
-+	/* Process fixed-sized commands. */
- 	switch (cmd) {
- 
- 	case JS_SET_CAL:
-@@ -499,9 +502,22 @@ static int joydev_ioctl_common(struct joydev *joydev,
- 		return copy_to_user(argp, joydev->corr,
- 			sizeof(joydev->corr[0]) * joydev->nabs) ? -EFAULT : 0;
- 
--	case JSIOCSAXMAP:
--		if (copy_from_user(joydev->abspam, argp,
--				   sizeof(__u8) * (ABS_MAX + 1)))
-+	}
-+
-+	/*
-+	 * Process variable-sized commands (the axis and button map commands
-+	 * are considered variable-sized to decouple them from the values of
-+	 * ABS_MAX and KEY_MAX).
-+	 */
-+	switch (cmd & ~IOCSIZE_MASK) {
-+
-+	case (JSIOCSAXMAP & ~IOCSIZE_MASK):
-+		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->abspam));
-+		/*
-+		 * FIXME: we should not copy into our axis map before
-+		 * validating the data.
-+		 */
-+		if (copy_from_user(joydev->abspam, argp, len))
- 			return -EFAULT;
- 
- 		for (i = 0; i < joydev->nabs; i++) {
-@@ -511,13 +527,17 @@ static int joydev_ioctl_common(struct joydev *joydev,
- 		}
- 		return 0;
- 
--	case JSIOCGAXMAP:
--		return copy_to_user(argp, joydev->abspam,
--			sizeof(__u8) * (ABS_MAX + 1)) ? -EFAULT : 0;
--
--	case JSIOCSBTNMAP:
--		if (copy_from_user(joydev->keypam, argp,
--				   sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)))
-+	case (JSIOCGAXMAP & ~IOCSIZE_MASK):
-+		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->abspam));
-+		return copy_to_user(argp, joydev->abspam, len) ? -EFAULT : 0;
-+
-+	case (JSIOCSBTNMAP & ~IOCSIZE_MASK):
-+		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->keypam));
-+		/*
-+		 * FIXME: we should not copy into our keymap before
-+		 * validating the data.
-+		 */
-+		if (copy_from_user(joydev->keypam, argp, len))
- 			return -EFAULT;
- 
- 		for (i = 0; i < joydev->nkey; i++) {
-@@ -529,25 +549,19 @@ static int joydev_ioctl_common(struct joydev *joydev,
- 
- 		return 0;
- 
--	case JSIOCGBTNMAP:
--		return copy_to_user(argp, joydev->keypam,
--			sizeof(__u16) * (KEY_MAX - BTN_MISC + 1)) ? -EFAULT : 0;
-+	case (JSIOCGBTNMAP & ~IOCSIZE_MASK):
-+		len = min_t(size_t, _IOC_SIZE(cmd), sizeof(joydev->keypam));
-+		return copy_to_user(argp, joydev->keypam, len) ? -EFAULT : 0;
- 
--	default:
--		if ((cmd & ~IOCSIZE_MASK) == JSIOCGNAME(0)) {
--			int len;
--			const char *name = dev->name;
--
--			if (!name)
--				return 0;
--			len = strlen(name) + 1;
--			if (len > _IOC_SIZE(cmd))
--				len = _IOC_SIZE(cmd);
--			if (copy_to_user(argp, name, len))
--				return -EFAULT;
--			return len;
--		}
-+	case JSIOCGNAME(0):
-+		name = dev->name;
-+		if (!name)
-+			return 0;
-+
-+		len = min_t(size_t, _IOC_SIZE(cmd), strlen(name) + 1);
-+		return copy_to_user(argp, name, len) ? -EFAULT : len;
- 	}
-+
- 	return -EINVAL;
- }
- 
