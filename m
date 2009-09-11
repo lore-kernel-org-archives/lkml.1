@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbZIKHQ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752280AbZIKHRK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752715AbZIKHQ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 03:16:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752524AbZIKHQZ
+	id S1752280AbZIKHRK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 03:17:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751987AbZIKHRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 03:16:25 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35428 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655AbZIKHQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 03:16:24 -0400
-Date: Fri, 11 Sep 2009 09:16:16 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: arve@android.com, swetland@google.com,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: newer version of HTC Dream support
-Message-ID: <20090911071155.GA1386@ucw.cz>
-References: <20090824092204.GB25591@elf.ucw.cz> <20090901131832.GA1835@ucw.cz> <20090904090303.024e981a.randy.dunlap@oracle.com>
+	Fri, 11 Sep 2009 03:17:09 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52418 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751585AbZIKHRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 03:17:08 -0400
+Date: Fri, 11 Sep 2009 09:17:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [long] Another BFS versus CFS shakedown
+Message-ID: <20090911071710.GB18599@kernel.dk>
+References: <200909090142.41738.elendil@planet.nl> <20090911062032.GB27833@elte.hu> <200909110904.50487.elendil@planet.nl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090904090303.024e981a.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200909110904.50487.elendil@planet.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > With 2.6.31 being closer... is there a git tree or set of patches to
-> > > make it boot on HTC Dream?
-> > > 
-> > > Quite a lot of hw should be supported in linux-next, and it would be
-> > > nice to get arch-specific code working with linux-next and eventually
-> > > merged...
-> > 
-> > Any news here? If you need some more kernel hackers I guess I'm
-> > looking for a job :-).
+On Fri, Sep 11 2009, Frans Pop wrote:
+> On Friday 11 September 2009, Ingo Molnar wrote:
+> > Note, the one you used was a still buggy version of latt.c producing
+> > bogus latency numbers - you will need the fix to it attached below.
 > 
-> well, mmotm and linux-next dream builds fail like this:
+> Yes, I'm aware of that and have already copied Jens' latest version.
 
-Ok, is the goal here to get it to compile, or get it to boot?
+BTW, I put it in a git repo, it quickly gets really confusing with so
+many version going around. So that can be accessed here:
 
-I have recent tree that compiles, somewhere, but getting it to boot is
-'slightly more interesting'.
-								Pavel
+git://git.kernel.dk/latt.git
+
+and as with my other repos, snapshots are automatically generated every
+hour when new commits have been made. To get the very latest latt and
+not have to use git, download:
+
+http://brick.kernel.dk/snaps/latt-git-latest.tar.gz
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Jens Axboe
+
