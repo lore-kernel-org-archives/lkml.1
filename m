@@ -1,58 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753450AbZIKO3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753640AbZIKOcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753450AbZIKO3Z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752664AbZIKO3Y
+	id S1753640AbZIKOcf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753551AbZIKOce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:29:24 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:36514 "EHLO kernel.dk"
+	Fri, 11 Sep 2009 10:32:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:7659 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbZIKO3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:29:24 -0400
-Date: Fri, 11 Sep 2009 16:29:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       akpm@linux-foundation.org, jack@suse.cz,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 0/7] Per-bdi writeback flusher threads v20
-Message-ID: <20090911142926.GI14984@kernel.dk>
-References: <1252654450-25721-1-git-send-email-jens.axboe@oracle.com> <20090911134241.GB19707@mit.edu> <20090911141659.GA3508@infradead.org>
+	id S1753508AbZIKOcd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:32:33 -0400
+Date: Fri, 11 Sep 2009 10:30:40 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Jerome Marchand <jmarchan@redhat.com>
+Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
+       akpm@linux-foundation.org, peterz@infradead.org,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [RFC] IO scheduler based IO controller V9
+Message-ID: <20090911143040.GB6758@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA918C1.6070907@redhat.com> <20090910205227.GB3617@redhat.com> <20090910205657.GD3617@redhat.com> <4AAA4DA7.8010909@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090911141659.GA3508@infradead.org>
+In-Reply-To: <4AAA4DA7.8010909@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11 2009, Christoph Hellwig wrote:
-> On Fri, Sep 11, 2009 at 09:42:41AM -0400, Theodore Tso wrote:
-> > > v19 include:
-> > > 
-> > > - Drop the max writeback pages patch from Ted. I think we should do
-> > >   something to that effect, but there's really no reason to entangle
-> > >   it with this patchset.
+On Fri, Sep 11, 2009 at 03:16:23PM +0200, Jerome Marchand wrote:
+> Vivek Goyal wrote:
+> > On Thu, Sep 10, 2009 at 04:52:27PM -0400, Vivek Goyal wrote:
+> >> On Thu, Sep 10, 2009 at 05:18:25PM +0200, Jerome Marchand wrote:
+> >>> Vivek Goyal wrote:
+> >>>> Hi All,
+> >>>>
+> >>>> Here is the V9 of the IO controller patches generated on top of 2.6.31-rc7.
+> >>>  
+> >>> Hi Vivek,
+> >>>
+> >>> I've run some postgresql benchmarks for io-controller. Tests have been
+> >>> made with 2.6.31-rc6 kernel, without io-controller patches (when
+> >>> relevant) and with io-controller v8 and v9 patches.
+> >>> I set up two instances of the TPC-H database, each running in their
+> >>> own io-cgroup. I ran two clients to these databases and tested on each
+> >>> that simple request:
+> >>> $ select count(*) from LINEITEM;
+> >>> where LINEITEM is the biggest table of TPC-H (6001215 entries,
+> >>> 720MB). That request generates a steady stream of IOs.
+> >>>
+> >>> Time is measure by psql (\timing switched on). Each test is run twice
+> >>> or more if there is any significant difference between the first two
+> >>> runs. Before each run, the cache is flush:
+> >>> $ echo 3 > /proc/sys/vm/drop_caches
+> >>>
+> >>>
+> >>> Results with 2 groups of same io policy (BE) and same io weight (1000):
+> >>>
+> >>> 	w/o io-scheduler	io-scheduler v8		io-scheduler v9
+> >>> 	first	second		first	second		first	second
+> >>> 	DB	DB		DB	DB		DB	DB
+> >>>
+> >>> CFQ	48.4s	48.4s		48.2s	48.2s		48.1s	48.5s
+> >>> Noop	138.0s	138.0s		48.3s	48.4s		48.5s	48.8s
+> >>> AS	46.3s	47.0s		48.5s	48.7s		48.3s	48.5s
+> >>> Deadl.	137.1s	137.1s		48.2s	48.3s		48.3s	48.5s
+> >>>
+> >>> As you can see, there is no significant difference for CFQ
+> >>> scheduler.
+> >> Thanks Jerome.  
+> >>
+> >>> There is big improvement for noop and deadline schedulers
+> >>> (why is that happening?).
+> >> I think because now related IO is in a single queue and it gets to run
+> >> for 100ms or so (like CFQ). So previously, IO from both the instances
+> >> will go into a single queue which should lead to more seeks as requests
+> >> from two groups will kind of get interleaved.
+> >>
+> >> With io controller, both groups have separate queues so requests from
+> >> both the data based instances will not get interleaved (This almost
+> >> becomes like CFQ where ther are separate queues for each io context
+> >> and for sequential reader, one io context gets to run nicely for certain
+> >> ms based on its priority).
+> >>
+> >>> The performance with anticipatory scheduler
+> >>> is a bit lower (~4%).
+> >>>
 > > 
-> > That's reasonable, but I'd really like to know whether some VM hacker
-> > going to try to deal with this during the 2.6.32 window?  Such as
-> > maybe Wu Fengguang's patches, perhaps?  
+> > Hi Jerome, 
 > > 
-> > Or do I need to put in some kind of hack into ext4 ala what XFS did to
-> > work around this problem until we can come up with a longer-term fix?
+> > Can you also run the AS test with io controller patches and both the
+> > database in root group (basically don't put them in to separate group). I 
+> > suspect that this regression might come from that fact that we now have
+> > to switch between queues and in AS we wait for request to finish from
+> > previous queue before next queue is scheduled in and probably that is
+> > slowing down things a bit.., just a wild guess..
+> > 
 > 
-> I defintively want to see something in the VM, but I also agree with
-> Jens' decision not to include it in the patchkit.  It's not really
-> related to the patchkit except for depending on it, and we still
-> have a lot of discussion going on.  If we can't get an agreement with
-> the VM people by the end of the regular merge window I'm all for pushing
-> your simple patch.
+> Hi Vivek,
+> 
+> I guess that's not the reason. I got 46.6s for both DB in root group with
+> io-controller v9 patches. I also rerun the test with DB in different groups
+> and found about the same result as above (48.3s and 48.6s).
+> 
 
-I'd also appreciate if we can keep Wu (or Ted's) patch out of the merge
-until after -rc1 or at least with a few -git releases in between, so
-it'll be easier to check for regressions.
+Hi Jerome,
 
--- 
-Jens Axboe
+Ok, so when both the DB's are in root group (with io-controller V9
+patches), then you get 46.6 seconds time for both the DBs. That means there
+is no regression in this case. In this case there is only one queue of 
+root group and AS is running timed read/write batches on this queue.
 
+But when both the DBs are put in separate groups then you get 48.3 and
+48.6 seconds respectively and we see regression. In this case there are
+two queues belonging to each group. Elevator layer takes care of queue
+group queue switch and AS runs timed read/write batches on these queues.
+
+If it is correct, then it does not exclude the possiblity that it is queue
+switching overhead between groups?
+ 
+Thanks
+Vivek
