@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZIKAbz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753687AbZIKAbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753893AbZIKAbz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 20:31:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbZIKAbx
+	id S1753687AbZIKAbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 20:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZIKAbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 20:31:53 -0400
-Received: from kroah.org ([198.145.64.141]:38094 "EHLO coco.kroah.org"
+	Thu, 10 Sep 2009 20:31:31 -0400
+Received: from kroah.org ([198.145.64.141]:38100 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbZIKA3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 20:29:08 -0400
+	id S1753228AbZIKA3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 20:29:09 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Sep 10 17:24:11 2009
-Message-Id: <20090911002411.157180912@mini.kroah.org>
+Message-Id: <20090911002411.326362527@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 10 Sep 2009 17:23:00 -0700
+Date: Thu, 10 Sep 2009 17:23:01 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Chris Wright <chrisw@sous-sol.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Matthew Wilcox <matthew@wil.cx>, Yu Zhao <yu.zhao@intel.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [patch 14/22] PCI SR-IOV: correct broken resource alignment calculations
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+Subject: [patch 15/22] SCSI: sd: fix bug in SCSI async probing
 References: <20090911002246.666327880@mini.kroah.org>
-Content-Disposition: inline; filename=pci-sr-iov-correct-broken-resource-alignment-calculations.patch
+Content-Disposition: inline; filename=scsi-sd-fix-bug-in-scsi-async-probing.patch
 In-Reply-To: <20090911002616.GA12087@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -32,159 +29,98 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Chris Wright <chrisw@sous-sol.org>
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 
-commit 6faf17f6f1ffc586d16efc2f9fa2083a7785ee74 upstream.
+commit 601e7638254c118fca135af9b1a9f35061420f62 upstream.
 
-An SR-IOV capable device includes an SR-IOV PCIe capability which
-describes the Virtual Function (VF) BAR requirements.  A typical SR-IOV
-device can support multiple VFs whose BARs must be in a contiguous region,
-effectively an array of VF BARs.  The BAR reports the size requirement
-for a single VF.  We calculate the full range needed by simply multiplying
-the VF BAR size with the number of possible VFs and create a resource
-spanning the full range.
+The async split up of probing in sd.c created a potential failure case where
+something goes wrong with device_add(), but which we don't recover properly.
+Since, in general, asynchronous error handling is hard, move the device_add()
+into the asynchronous path (it should be fast) and make sure all the deferred
+processing cannot fail.
 
-This all seems sane enough except it artificially inflates the alignment
-requirement for the VF BAR.  The VF BAR need only be aligned to the size
-of a single BAR not the contiguous range of VF BARs.  This can cause us
-to fail to allocate resources for the BAR despite the fact that we
-actually have enough space.
-
-This patch adds a thin PCI specific layer over the generic
-resource_alignment() function which is aware of the special nature of
-VF BARs and does sorting and allocation based on the smaller alignment
-requirement.
-
-I recognize that while resource_alignment is generic, it's basically a
-PCI helper.  An alternative to this patch is to add PCI VF BAR specific
-information to struct resource.  I opted for the extra layer rather than
-adding such PCI specific information to struct resource.  This does
-have the slight downside that we don't cache the BAR size and re-read
-for each alignment query (happens a small handful of times during boot
-for each VF BAR).
-
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Yu Zhao <yu.zhao@intel.com>
-Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/iov.c       |   23 +++++++++++++++++++++++
- drivers/pci/pci.h       |   13 +++++++++++++
- drivers/pci/setup-bus.c |    4 ++--
- drivers/pci/setup-res.c |    6 +++---
- 4 files changed, 41 insertions(+), 5 deletions(-)
+ drivers/scsi/sd.c |   45 +++++++++++++++++++++------------------------
+ 1 file changed, 21 insertions(+), 24 deletions(-)
 
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -595,6 +595,29 @@ int pci_iov_resource_bar(struct pci_dev 
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -1902,24 +1902,6 @@ static void sd_probe_async(void *data, a
+ 	index = sdkp->index;
+ 	dev = &sdp->sdev_gendev;
+ 
+-	if (!sdp->request_queue->rq_timeout) {
+-		if (sdp->type != TYPE_MOD)
+-			blk_queue_rq_timeout(sdp->request_queue, SD_TIMEOUT);
+-		else
+-			blk_queue_rq_timeout(sdp->request_queue,
+-					     SD_MOD_TIMEOUT);
+-	}
+-
+-	device_initialize(&sdkp->dev);
+-	sdkp->dev.parent = &sdp->sdev_gendev;
+-	sdkp->dev.class = &sd_disk_class;
+-	dev_set_name(&sdkp->dev, dev_name(&sdp->sdev_gendev));
+-
+-	if (device_add(&sdkp->dev))
+-		goto out_free_index;
+-
+-	get_device(&sdp->sdev_gendev);
+-
+ 	if (index < SD_MAX_DISKS) {
+ 		gd->major = sd_major((index & 0xf0) >> 4);
+ 		gd->first_minor = ((index & 0xf) << 4) | (index & 0xfff00);
+@@ -1954,11 +1936,6 @@ static void sd_probe_async(void *data, a
+ 
+ 	sd_printk(KERN_NOTICE, sdkp, "Attached SCSI %sdisk\n",
+ 		  sdp->removable ? "removable " : "");
+-
+-	return;
+-
+- out_free_index:
+-	ida_remove(&sd_index_ida, index);
  }
  
  /**
-+ * pci_sriov_resource_alignment - get resource alignment for VF BAR
-+ * @dev: the PCI device
-+ * @resno: the resource number
-+ *
-+ * Returns the alignment of the VF BAR found in the SR-IOV capability.
-+ * This is not the same as the resource size which is defined as
-+ * the VF BAR size multiplied by the number of VFs.  The alignment
-+ * is just the VF BAR size.
-+ */
-+int pci_sriov_resource_alignment(struct pci_dev *dev, int resno)
-+{
-+	struct resource tmp;
-+	enum pci_bar_type type;
-+	int reg = pci_iov_resource_bar(dev, resno, &type);
-+
-+	if (!reg)
-+		return 0;
-+
-+	 __pci_read_base(dev, type, &tmp, reg);
-+	return resource_alignment(&tmp);
-+}
-+
-+/**
-  * pci_restore_iov_state - restore the state of the IOV capability
-  * @dev: the PCI device
-  */
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -234,6 +234,7 @@ extern int pci_iov_init(struct pci_dev *
- extern void pci_iov_release(struct pci_dev *dev);
- extern int pci_iov_resource_bar(struct pci_dev *dev, int resno,
- 				enum pci_bar_type *type);
-+extern int pci_sriov_resource_alignment(struct pci_dev *dev, int resno);
- extern void pci_restore_iov_state(struct pci_dev *dev);
- extern int pci_iov_bus_range(struct pci_bus *bus);
- #else
-@@ -259,4 +260,16 @@ static inline int pci_iov_bus_range(stru
- }
- #endif /* CONFIG_PCI_IOV */
+@@ -2026,6 +2003,24 @@ static int sd_probe(struct device *dev)
+ 	sdkp->openers = 0;
+ 	sdkp->previous_state = 1;
  
-+static inline int pci_resource_alignment(struct pci_dev *dev,
-+					 struct resource *res)
-+{
-+#ifdef CONFIG_PCI_IOV
-+	int resno = res - dev->resource;
++	if (!sdp->request_queue->rq_timeout) {
++		if (sdp->type != TYPE_MOD)
++			blk_queue_rq_timeout(sdp->request_queue, SD_TIMEOUT);
++		else
++			blk_queue_rq_timeout(sdp->request_queue,
++					     SD_MOD_TIMEOUT);
++	}
 +
-+	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
-+		return pci_sriov_resource_alignment(dev, resno);
-+#endif
-+	return resource_alignment(res);
-+}
++	device_initialize(&sdkp->dev);
++	sdkp->dev.parent = &sdp->sdev_gendev;
++	sdkp->dev.class = &sd_disk_class;
++	dev_set_name(&sdkp->dev, dev_name(&sdp->sdev_gendev));
 +
- #endif /* DRIVERS_PCI_H */
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -25,7 +25,7 @@
- #include <linux/ioport.h>
- #include <linux/cache.h>
- #include <linux/slab.h>
--
-+#include "pci.h"
++	if (device_add(&sdkp->dev))
++		goto out_free_index;
++
++	get_device(&sdp->sdev_gendev);
++
+ 	async_schedule(sd_probe_async, sdkp);
  
- static void pbus_assign_resources_sorted(const struct pci_bus *bus)
+ 	return 0;
+@@ -2055,8 +2050,10 @@ static int sd_probe(struct device *dev)
+  **/
+ static int sd_remove(struct device *dev)
  {
-@@ -355,7 +355,7 @@ static int pbus_size_mem(struct pci_bus 
- 				continue;
- 			r_size = resource_size(r);
- 			/* For bridges size != alignment */
--			align = resource_alignment(r);
-+			align = pci_resource_alignment(dev, r);
- 			order = __ffs(align) - 20;
- 			if (order > 11) {
- 				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -145,7 +145,7 @@ int pci_assign_resource(struct pci_dev *
- 	size = resource_size(res);
- 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
+-	struct scsi_disk *sdkp = dev_get_drvdata(dev);
++	struct scsi_disk *sdkp;
  
--	align = resource_alignment(res);
-+	align = pci_resource_alignment(dev, res);
- 	if (!align) {
- 		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
- 			"alignment) %pR flags %#lx\n",
-@@ -236,7 +236,7 @@ void pdev_sort_resources(struct pci_dev 
- 		if (!(r->flags) || r->parent)
- 			continue;
- 
--		r_align = resource_alignment(r);
-+		r_align = pci_resource_alignment(dev, r);
- 		if (!r_align) {
- 			dev_warn(&dev->dev, "BAR %d: bogus alignment "
- 				"%pR flags %#lx\n",
-@@ -248,7 +248,7 @@ void pdev_sort_resources(struct pci_dev 
- 			struct resource_list *ln = list->next;
- 
- 			if (ln)
--				align = resource_alignment(ln->res);
-+				align = pci_resource_alignment(ln->dev, ln->res);
- 
- 			if (r_align > align) {
- 				tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
++	async_synchronize_full();
++	sdkp = dev_get_drvdata(dev);
+ 	device_del(&sdkp->dev);
+ 	del_gendisk(sdkp->disk);
+ 	sd_shutdown(dev);
 
 
