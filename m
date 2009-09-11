@@ -1,66 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbZIKBpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZIKBuI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753388AbZIKBpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 21:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753157AbZIKBpn
+	id S1753485AbZIKBuI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 21:50:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZIKBuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 21:45:43 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38509 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752946AbZIKBpm (ORCPT
+	Thu, 10 Sep 2009 21:50:07 -0400
+Received: from mga10.intel.com ([192.55.52.92]:4943 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751975AbZIKBuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 21:45:42 -0400
-Subject: Re: [PATCH tracing/kprobes 0/7] tracing/kprobes: kprobe-based
- event tracer update and perf support
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-In-Reply-To: <20090911013332.GB16396@nowhere>
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com>
-	 <20090911013332.GB16396@nowhere>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Thu, 10 Sep 2009 21:45:43 -0400
-Message-Id: <1252633543.18996.61.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 Sep 2009 21:50:06 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,367,1249282800"; 
+   d="asc'?scan'208";a="725910767"
+Date: Fri, 11 Sep 2009 09:49:54 +0800
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, stern@rowland.harvard.edu
+Subject: Re: [PATCH 1/3] agp/intel: remove restore in resume
+Message-ID: <20090911014954.GB15773@zhen-devel.sh.intel.com>
+Reply-To: Zhenyu Wang <zhenyuw@linux.intel.com>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+	stable@kernel.org, stern@rowland.harvard.edu
+References: <1252028615-13785-1-git-send-email-zhenyuw@linux.intel.com>
+ <20090910134252.5fc54ce2.akpm@linux-foundation.org>
+ <20090911010342.GA6819@zhen-devel.sh.intel.com>
+ <20090910182257.91c66541.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="GRPZ8SYKNexpdSJ7"
+Content-Disposition: inline
+In-Reply-To: <20090910182257.91c66541.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 03:33 +0200, Frederic Weisbecker wrote:
 
-> It seems powerful enough to replace printk + kernel rebuild.
-> 
-> No need anymore to write some printk to debug, worrying,
-> sweating, feeling guilty because we know we'll need yet another
-> printk() after the reboot, and we even already know where while
-> it is compiling.
-> 
-> We would build less kernels, then drink less coffee, becoming
-> less nervous, more friendly. Everyone will offer flowers in
-> the street, the icebergs will grow back and white bears will...
-> 
-> And eventually we'll be inspired enough to write perf love,
-> the more than expected tool to post process ftrace "love" events.
+--GRPZ8SYKNexpdSJ7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK Frederic,
+On 2009.09.10 18:22:57 -0700, Andrew Morton wrote:
+>=20
+> We still don't have a changelog for this patch which explains to the
+> -stable maintainers (and those who follow -stable commits):
+>=20
+> a) what bug this patch fixes and
+>=20
+> b) why they should merge it - this should be ovbious if a) is provided.
+>=20
+> this isn't pointless paperwork - it matters to those who maintain and
+> use the -stable tree.  Vague references to traffic on the linux-pm list
+> aren't at all useful.
 
-Time for you to take a holiday!  ;-)
+Yes, thanks. I'll try to make it clear the bug it fixes.=20
 
--- Steve
+> >From my reading of the above, it appears that Alan was experiencing
+> <secretbug> and this patch was tested and fixed it, yes?
 
+secretbug? Alan found resume hang on his 845G machine during his pm test,
+and root cause that to extra pci config restore in agp/intel resume functio=
+n,
+which was having a fix to workaround resume order problem for host bridge a=
+nd
+gfx device for pci restore. But now this is handled by early pci resume alr=
+eady,
+but the extra restore in resume caused machine hang. So remove them fixed
+Alan's hang issue.
+
+Sorry, I might misread on something, "early version merged" seems nonsense.
+I'll try to send them again.
+
+--=20
+Open Source Technology Center, Intel ltd.
+
+$gpg --keyserver wwwkeys.pgp.net --recv-keys 4D781827
+
+--GRPZ8SYKNexpdSJ7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkqprMIACgkQsQQaM014GCdCZwCgh+lL8qotvJm8Y5Dws20Ohbby
+rz8AnR3tFZSl5Jg93buLME8csNh91kHV
+=wA2O
+-----END PGP SIGNATURE-----
+
+--GRPZ8SYKNexpdSJ7--
