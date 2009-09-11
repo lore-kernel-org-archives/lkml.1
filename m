@@ -1,58 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754032AbZIKJ3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbZIKJdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754032AbZIKJ3e (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 05:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751728AbZIKJ3d
+	id S1754327AbZIKJdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 05:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZIKJdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 05:29:33 -0400
-Received: from cam-admin0.cambridge.arm.com ([193.131.176.58]:47577 "EHLO
-	cam-admin0.cambridge.arm.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751150AbZIKJ3d (ORCPT
+	Fri, 11 Sep 2009 05:33:44 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:25275 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753677AbZIKJdo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 05:29:33 -0400
-To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.31] Memory leak in load_module()?
-References: <200909111638.IDC17135.FOHJOtFFMQSVLO@I-love.SAKURA.ne.jp>
-From: Catalin Marinas <catalin.marinas@arm.com>
-Date: Fri, 11 Sep 2009 10:29:25 +0100
-In-Reply-To: <200909111638.IDC17135.FOHJOtFFMQSVLO@I-love.SAKURA.ne.jp> (Tetsuo Handa's message of "Fri\, 11 Sep 2009 16\:38\:46 +0900")
-Message-ID: <tnxhbv97rt6.fsf@pc1117.cambridge.arm.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1 (gnu/linux)
+	Fri, 11 Sep 2009 05:33:44 -0400
+Date: Fri, 11 Sep 2009 11:33:46 +0200 (CEST)
+From: Jesper Juhl <jj@chaosbits.net>
+To: ye janboe <janboe.ye@gmail.com>
+cc: dwmw2@infradead.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] remove variable length array tuner-xc2028
+In-Reply-To: <af3ea28a0909110211o559657e6hc62947708b4fc55d@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.0909111128250.31018@swampdragon.chaosbits.net>
+References: <af3ea28a0909110211o559657e6hc62947708b4fc55d@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 11 Sep 2009 09:29:26.0761 (UTC) FILETIME=[5B23FD90:01CA32C2]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp> wrote:
-> I changed CONFIG_DEBUG_KMEMLEAK_EARLY_LOG_SIZE to 2000 and did
->
-> # insmod /lib/modules/2.6.31/kernel/drivers/edac/r82600_edac.ko
-> insmod: error inserting '/lib/modules/2.6.31/kernel/drivers/edac/r82600_edac.ko': -1 Unknown symbol in module
-> # echo scan > /sys/kernel/debug/kmemleak
-> # dmesg
-> r82600_edac: Unknown symbol edac_mc_del_mc
-> r82600_edac: Unknown symbol edac_mc_add_mc
-> r82600_edac: Unknown symbol edac_pci_create_generic_ctl
-> r82600_edac: Unknown symbol edac_mc_alloc
-> r82600_edac: Unknown symbol edac_mc_find_csrow_by_page
-> r82600_edac: Unknown symbol edac_mc_free
-> r82600_edac: Unknown symbol edac_mc_handle_ce
-> r82600_edac: Unknown symbol edac_mc_handle_ue
-> r82600_edac: Unknown symbol edac_pci_release_generic_ctl
-> kmemleak: 1 new suspected memory leaks (see /sys/kernel/debug/kmemleak)
-> # tail -n 4 /sys/kernel/debug/kmemleak
-> unreferenced object 0xd643a788 (size 32):
->   comm "insmod", pid 2854, jiffies 4294791099
->   backtrace:
->     [<ffffffff>] 0xffffffff
->
-> Is this real memory leak?
+On Fri, 11 Sep 2009, ye janboe wrote:
 
-It could be but isn't stack tracing enabled on your system? The
-backtrace doesn't seem very useful.
+> hi
+> 
+> using variable length array on kernel stack is not safe, so this patch
+> using kmalloc instead variable length array in tuner-xc2028
+> 
+> Signed-off-by: janboe <janboe.ye@gmail.com>
+> ---
+>  drivers/media/common/tuners/tuner-xc2028.c |   26 ++++++++++++++++----------
+>  1 files changed, 16 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/media/common/tuners/tuner-xc2028.c
+> b/drivers/media/common/tuners/tuner-xc2028.c
+> index 1adce9f..96259c5 100644
+> --- a/drivers/media/common/tuners/tuner-xc2028.c
+> +++ b/drivers/media/common/tuners/tuner-xc2028.c
+> @@ -516,8 +516,8 @@ static int load_firmware(struct dvb_frontend *fe,
+> unsigned int type,
+>  			 v4l2_std_id *id)
+>  {
+>  	struct xc2028_data *priv = fe->tuner_priv;
+> -	int                pos, rc;
+> -	unsigned char      *p, *endp, buf[priv->ctrl.max_len];
+> +	int                pos, rc, ret = -EINVAL;
+> +	unsigned char      *p, *endp, *buf;
+> 
+>  	tuner_dbg("%s called\n", __func__);
+> 
+> @@ -532,6 +532,7 @@ static int load_firmware(struct dvb_frontend *fe,
+> unsigned int type,
+> 
+>  	p = priv->firm[pos].ptr;
+>  	endp = p + priv->firm[pos].size;
+> +	buf = kmalloc(priv->ctrl.max_len, GFP_KERNEL);
+> 
+
+The call to kmalloc() could fail, so shouldn't we make this
+
+     buf = kmalloc(priv->ctrl.max_len, GFP_KERNEL);
+     if (!buf)
+       return -ENOMEM;
+
+or?
+
+
+>  	while (p < endp) {
+>  		__u16 size;
+> @@ -539,14 +540,16 @@ static int load_firmware(struct dvb_frontend
+> *fe, unsigned int type,
+>  		/* Checks if there's enough bytes to read */
+>  		if (p + sizeof(size) > endp) {
+>  			tuner_err("Firmware chunk size is wrong\n");
+> -			return -EINVAL;
+> +			goto fail;
+>  		}
+> 
+>  		size = le16_to_cpu(*(__u16 *) p);
+>  		p += sizeof(size);
+> 
+> -		if (size == 0xffff)
+> -			return 0;
+> +		if (size == 0xffff) {
+> +			ret = 0;
+> +			goto fail;
+> +		}
+> 
+>  		if (!size) {
+>  			/* Special callback command received */
+> @@ -554,7 +557,7 @@ static int load_firmware(struct dvb_frontend *fe,
+> unsigned int type,
+>  			if (rc < 0) {
+>  				tuner_err("Error at RESET code %d\n",
+>  					   (*p) & 0x7f);
+> -				return -EINVAL;
+> +				goto fail;
+>  			}
+>  			continue;
+>  		}
+> @@ -565,13 +568,13 @@ static int load_firmware(struct dvb_frontend
+> *fe, unsigned int type,
+>  				if (rc < 0) {
+>  					tuner_err("Error at RESET code %d\n",
+>  						  (*p) & 0x7f);
+> -					return -EINVAL;
+> +					goto fail;
+>  				}
+>  				break;
+>  			default:
+>  				tuner_info("Invalid RESET code %d\n",
+>  					   size & 0x7f);
+> -				return -EINVAL;
+> +				goto fail;
+> 
+>  			}
+>  			continue;
+> @@ -586,7 +589,7 @@ static int load_firmware(struct dvb_frontend *fe,
+> unsigned int type,
+>  		if ((size + p > endp)) {
+>  			tuner_err("missing bytes: need %d, have %d\n",
+>  				   size, (int)(endp - p));
+> -			return -EINVAL;
+> +			goto fail;
+>  		}
+> 
+>  		buf[0] = *p;
+> @@ -603,7 +606,7 @@ static int load_firmware(struct dvb_frontend *fe,
+> unsigned int type,
+>  			rc = i2c_send(priv, buf, len + 1);
+>  			if (rc < 0) {
+>  				tuner_err("%d returned from send\n", rc);
+> -				return -EINVAL;
+> +				goto fail;
+>  			}
+> 
+>  			p += len;
+> @@ -611,6 +614,9 @@ static int load_firmware(struct dvb_frontend *fe,
+> unsigned int type,
+>  		}
+>  	}
+>  	return 0;
+
+Why are we not freeing 'buf' here?
+Previously it was an array on the stack and would be gone now and I don't 
+see what has changed so that it should live on after we return here.
+
+
+> +fail:
+> +	kfree(buf);
+> +	return ret;
+>  }
+> 
+>  static int load_scode(struct dvb_frontend *fe, unsigned int type,
+
 
 -- 
-Catalin
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+
