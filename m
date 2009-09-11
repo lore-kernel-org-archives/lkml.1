@@ -1,69 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757088AbZIKWVH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZIKWgJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757088AbZIKWVH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 18:21:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZIKWVG
+	id S1757174AbZIKWgJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 18:36:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757145AbZIKWgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 18:21:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46252 "EHLO ogre.sisk.pl"
+	Fri, 11 Sep 2009 18:36:08 -0400
+Received: from void.printf.net ([89.145.121.20]:49370 "EHLO void.printf.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751343AbZIKWVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 18:21:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-Date: Sat, 12 Sep 2009 00:22:10 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Christoph Hellwig <hch@lst.de>,
+	id S1757129AbZIKWgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 18:36:07 -0400
+From: Chris Ball <cjb@laptop.org>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: Pavel Machek <pavel@ucw.cz>, OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-References: <c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com> <c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com> <20090911215117.GA11441@elf.ucw.cz>
-In-Reply-To: <20090911215117.GA11441@elf.ucw.cz>
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+References: <c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
+	<20090903232317.GA6760@lst.de> <87ljkvmt71.fsf@devron.myhome.or.jp>
+	<c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
+	<87iqfx5mss.fsf@devron.myhome.or.jp> <20090907125130.GA1595@ucw.cz>
+	<87ljko5k3v.fsf@devron.myhome.or.jp>
+	<20090910192354.GD23356@elf.ucw.cz>
+	<87bplim1ce.fsf@devron.myhome.or.jp>
+	<20090911200922.GF8137@elf.ucw.cz>
+	<c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com>
+Date: Fri, 11 Sep 2009 18:22:42 -0400
+In-Reply-To: <c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com>
+	(Zdenek Kabelac's message of "Fri, 11 Sep 2009 23:14:08 +0200")
+Message-ID: <m3k505qfyl.fsf@pullcord.laptop.org>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909120022.10808.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 11 September 2009, Pavel Machek wrote:
-> On Fri 2009-09-11 23:45:01, Zdenek Kabelac wrote:
-> > 2009/9/11 Pavel Machek <pavel@ucw.cz>:
-> > >
-> > >> And why suspend of mmc should generate card removal ??
-> > >
-> > > Card is powered down during suspend -> mmc can't guarantee the card is
-> > > same and unchanged -> it makes some sense to simulate
-> > > removal/reinsert.
-> > 
-> > But how is this going to work when I keep the device mounted and
-> > blockdev is basically destroyed -  what if I'm reading file from card
-> > during suspend ?
-> 
-> "Don't do it".
-> 
-> > >> if I suspend and resume my laptop and I keep the card inside - all
-> > >> those step looks plain wrong.
-> > >
-> > > Unfortunately system can't tell.
-> > 
-> > Well system could check basic card ids if they match after resume - if
-> > some users wants to crash his card by randomly swapping it during
-> > suspend/resume - I'd have no problem with that....
-> 
-> Well, I do have small problem with that :-).
-> 
-> Anyway, patch for rechecking IDs would probably be accepted,
+Hi,
 
-By whom exactly?
+   > IMHO steps 2..6 are only valid for the case I would 'remove'
+   > unexpectedly card - but if I suspend and resume my laptop and I
+   > keep the card inside - all those step looks plain wrong.
 
-> but that's not how it works now.
+How can the MMC stack tell whether you kept the card inside or
+modified it during suspend?
 
-Indeed.
+There's no way to know, and an incorrect guess gives you filesystem
+corruption, so we remove cards on suspend and reprobe them on resume.
+(If you did know that cards would never be removed during suspend,
+you could set CONFIG_MMC_UNSAFE_RESUME=y.)
 
-Thanks,
-Rafael
+So, I'd say:
+
+   >> a) card removed event from mmc for suspend is right design?
+
+Yes, for a card containing a filesystem with CONFIG_MMC_UNSAFE_RESUME
+not set.
+
+   >> b) the card can be changed/removed before system was resumed, mmc
+   >> can be detect/handle it properly?
+
+Yes, precisely because we removed it before suspend.
+
+   >> c) flushing buffers on _deleted_ device is right design?
+
+No, something's obviously gone wrong here.
+
+-- 
+Chris Ball   <cjb@laptop.org>
+One Laptop Per Child
