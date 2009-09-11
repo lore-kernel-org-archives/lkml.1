@@ -1,84 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbZIKVOL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZIKVOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbZIKVOL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 17:14:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756876AbZIKVOK
+	id S1756883AbZIKVOl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 17:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbZIKVOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 17:14:10 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:52160 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756877AbZIKVOG convert rfc822-to-8bit (ORCPT
+	Fri, 11 Sep 2009 17:14:40 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:53136 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755421AbZIKVOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 17:14:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=HQvDB8fOCGTvH86pBI7rqLE6ZpJ0lGgjzDDy+Dk568p7Gij4i+1zAEoY7mNuC5SEt4
-         rpdjbV4ROy2E5nlR3lwKks/cTeFP5ojYXBubQFxqXo9XarpdWI6jH/TticMcw/KgT/rt
-         WcDWnNBzGX6RZpHnpZzoerkOhsjRnH+5N7Jtk=
+	Fri, 11 Sep 2009 17:14:39 -0400
+Message-ID: <4AAABDBB.7010400@austin.ibm.com>
+Date: Fri, 11 Sep 2009 16:14:35 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-In-Reply-To: <20090911200922.GF8137@elf.ucw.cz>
-References: <c4e36d110909010234i5f1b9357l805132137725a4f8@mail.gmail.com>
-	 <20090903232317.GA6760@lst.de> <87ljkvmt71.fsf@devron.myhome.or.jp>
-	 <c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
-	 <87iqfx5mss.fsf@devron.myhome.or.jp> <20090907125130.GA1595@ucw.cz>
-	 <87ljko5k3v.fsf@devron.myhome.or.jp>
-	 <20090910192354.GD23356@elf.ucw.cz>
-	 <87bplim1ce.fsf@devron.myhome.or.jp>
-	 <20090911200922.GF8137@elf.ucw.cz>
-Date: Fri, 11 Sep 2009 23:14:08 +0200
-Message-ID: <c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com>
-Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
-From: Zdenek Kabelac <zdenek.kabelac@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: linuxppc-dev@ozlabs.org
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH 4/5] kernel handling of memory DLPAR
+References: <4AAABC55.4070207@austin.ibm.com>
+In-Reply-To: <4AAABC55.4070207@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/9/11 Pavel Machek <pavel@ucw.cz>:
->
->> Um..., sorry, I'm not sure what are you talking about. Of course, the
->> problem of this is that system freeze on suspend.
->>
->> Or are you asking my guess of the cause, or something?  If so, although
->> I'm not reading all emails on this thread, from Zdenek's backtrace, the
->> sequence would be
->>
->>     1) suspend mmc
->>     2) mmc generates card removed event
->>     3) prepare to invalidate blockdev
->>     4) sync fs on invalidating blockdev
->>     5) flush buffers on invalidating blockdev (partitions)
->>     6) delete blockdev (partitions)
->>
->> or like the above. And I can guess some possible issues/root-cause we
->> have to handle from it.
->>
->>     a) card removed event from mmc for suspend is right design?
->>     b) the card can be changed/removed before system was resumed, mmc
->>        can be detect/handle it properly?
->>     c) flushing buffers on _deleted_ device is right design?
->>
->> and I suspect there are more issues in detail and resume process though.
->
-> I guess c) is main problem. If device is not there, how do you want to
-> flush buffers on it?
->
+This adds the capability to DLPAR add and remove memory from the kernel.  The
+patch extends the powerpc handling of memory_add_physaddr_to_nid(), which is
+called from the sysfs memory 'probe' file to first ensure that the memory
+has been added to the system.  This is done by creating a platform specific
+callout from the routine.  The pseries implementation of this handles the
+DLPAR work to add the memory to the system and update the device tree.
 
-Well I do not even understand why someone wants to sync something when
-card is removed ??
-And why suspend of mmc should generate card removal ??
+The patch also creates a pseries only 'release' sys file, 
+/sys/devices/system/memory/release.  This file handles the DLPAR release of
+memory back to firmware and updating of the device-tree.
 
-IMHO steps 2..6 are only valid for the case I would 'remove'
-unexpectedly card - but
-if I suspend and resume my laptop and I keep the card inside - all
-those step looks plain wrong.
+Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+---
 
-Zdenek
+Index: powerpc/arch/powerpc/platforms/pseries/dlpar.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/dlpar.c	2009-09-11 12:51:52.000000000 -0500
++++ powerpc/arch/powerpc/platforms/pseries/dlpar.c	2009-09-11 13:05:23.000000000 -0500
+@@ -16,6 +16,10 @@
+ #include <linux/notifier.h>
+ #include <linux/proc_fs.h>
+ #include <linux/spinlock.h>
++#include <linux/memory_hotplug.h>
++#include <linux/sysdev.h>
++#include <linux/sysfs.h>
++
+ 
+ #include <asm/prom.h>
+ #include <asm/machdep.h>
+@@ -404,13 +408,174 @@
+ 	return 0;
+ }
+ 
++static void free_property(struct property *prop)
++{
++	if (prop->name)
++		kfree(prop->name);
++	if (prop->value)
++		kfree(prop->value);
++	kfree(prop);
++}
++
++static struct property *clone_property(struct property *old_prop)
++{
++	struct property *new_prop;
++
++	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
++	if (!new_prop)
++		return NULL;
++
++	new_prop->name = kzalloc(strlen(old_prop->name) + 1, GFP_KERNEL);
++	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
++	if (!new_prop->name || !new_prop->value) {
++		free_property(new_prop);
++		return NULL;
++	}
++
++	strcpy(new_prop->name, old_prop->name);
++	memcpy(new_prop->value, old_prop->value, old_prop->length);
++	new_prop->length = old_prop->length;
++
++	return new_prop;
++}
++
++int platform_probe_memory(u64 phys_addr)
++{
++	struct device_node *dn;
++	struct property *new_prop, *old_prop;
++	struct property *lmb_sz_prop;
++	struct of_drconf_cell *drmem;
++	u64 lmb_size;
++	int num_entries, i, rc;
++
++	if (!phys_addr)
++		return -EINVAL;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return -EINVAL;
++
++	lmb_sz_prop = of_find_property(dn, "ibm,lmb-size", NULL);
++	lmb_size = *(u64 *)lmb_sz_prop->value;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++
++	num_entries = *(u32 *)old_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)old_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		u64 lmb_end_addr = drmem[i].base_addr + lmb_size;
++		if (phys_addr >= drmem[i].base_addr
++		    && phys_addr < lmb_end_addr)
++			break;
++	}
++
++	if (i >= num_entries) {
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	if (drmem[i].flags & DRCONF_MEM_ASSIGNED) {
++		of_node_put(dn);
++		return 0;
++	}
++
++	rc = acquire_drc(drmem[i].drc_index);
++	if (rc) {
++		of_node_put(dn);
++		return -1;
++	}
++
++	new_prop = clone_property(old_prop);
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	drmem[i].flags |= DRCONF_MEM_ASSIGNED;
++	prom_update_property(dn, new_prop, old_prop);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_ADD,
++					  &drmem[i].base_addr);
++	if (rc == NOTIFY_BAD) {
++		prom_update_property(dn, old_prop, new_prop);
++		release_drc(drmem[i].drc_index);
++	}
++
++	of_node_put(dn);
++	return rc == NOTIFY_BAD ? -1 : 0;
++}
++
++static ssize_t memory_release_store(struct class *class, const char *buf,
++				    size_t count)
++{
++	u32 drc_index;
++	struct device_node *dn;
++	struct property *new_prop, *old_prop;
++	struct of_drconf_cell *drmem;
++	int num_entries;
++	int i, rc;
++
++	drc_index = simple_strtoull(buf, NULL, 0);
++	if (!drc_index)
++		return -EINVAL;
++
++	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
++	if (!dn)
++		return 0;
++
++	old_prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
++	new_prop = clone_property(old_prop);
++
++	num_entries = *(u32 *)new_prop->value;
++	drmem = (struct of_drconf_cell *)
++				((char *)new_prop->value + sizeof(u32));
++
++	for (i = 0; i < num_entries; i++) {
++		if (drmem[i].drc_index == drc_index)
++			break;
++	}
++
++	if (i >= num_entries) {
++		free_property(new_prop);
++		of_node_put(dn);
++		return -EINVAL;
++	}
++
++	drmem[i].flags &= ~DRCONF_MEM_ASSIGNED;
++	prom_update_property(dn, new_prop, old_prop);
++
++	rc = blocking_notifier_call_chain(&pSeries_reconfig_chain,
++					  PSERIES_DRCONF_MEM_REMOVE,
++					  &drmem[i].base_addr);
++	if (rc != NOTIFY_BAD)
++		rc = release_drc(drc_index);
++
++	if (rc)
++		prom_update_property(dn, old_prop, new_prop);
++
++	of_node_put(dn);
++	return rc ? -1 : count;
++}
++
++static struct class_attribute class_attr_mem_release =
++			__ATTR(release, S_IWUSR, NULL, memory_release_store);
++
+ static int pseries_dlpar_init(void)
+ {
++	int rc;
++
+ 	spin_lock_init(&workarea_lock);
+ 
+ 	if (!machine_is(pseries))
+ 		return 0;
+ 
++	rc = sysfs_create_file(&memory_sysdev_class.kset.kobj,
++			       &class_attr_mem_release.attr);
++	if (rc)
++		printk(KERN_INFO "DLPAR: Could not create sysfs memory "
++		       "release file\n");
++
+ 	return 0;
+ }
+ __initcall(pseries_dlpar_init);
+Index: powerpc/arch/powerpc/mm/mem.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/mem.c	2009-09-11 12:43:39.000000000 -0500
++++ powerpc/arch/powerpc/mm/mem.c	2009-09-11 12:52:42.000000000 -0500
+@@ -111,8 +111,19 @@
+ #ifdef CONFIG_MEMORY_HOTPLUG
+ 
+ #ifdef CONFIG_NUMA
++int __attribute ((weak)) platform_probe_memory(u64 start)
++{
++	return 0;
++}
++
+ int memory_add_physaddr_to_nid(u64 start)
+ {
++	int rc;
++
++	rc = platform_probe_memory(start);
++	if (rc)
++		return rc;
++
+ 	return hot_add_scn_to_nid(start);
+ }
+ #endif
