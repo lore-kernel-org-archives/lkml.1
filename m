@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754495AbZIKPeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbZIKPch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754495AbZIKPeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 11:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754415AbZIKPeK
+	id S1754446AbZIKPch (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 11:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbZIKPcg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 11:34:10 -0400
-Received: from kroah.org ([198.145.64.141]:57382 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754411AbZIKPeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 11:34:09 -0400
-Date: Fri, 11 Sep 2009 08:31:29 -0700
-From: Greg KH <greg@kroah.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org, stable@kernel.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       stable-review@kernel.org, alan@lxorguk.ukuu.org.uk
-Subject: Re: [stable] [patch 00/22] 2.6.30.7-stable review
-Message-ID: <20090911153129.GA17127@kroah.com>
-References: <20090911002616.GA12087@kroah.com>
- <20090911051939.GE23210@core.coreip.homeip.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911051939.GE23210@core.coreip.homeip.net>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+	Fri, 11 Sep 2009 11:32:36 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:64233 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751365AbZIKPcg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 11:32:36 -0400
+Subject: Re: [PATCHv3 0/3] tracing - adding common method for
+ reading/parsing user input
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: jolsa@redhat.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <1252682969-3366-1-git-send-email-jolsa@redhat.com>
+References: <1252682969-3366-1-git-send-email-jolsa@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Fri, 11 Sep 2009 11:32:38 -0400
+Message-Id: <1252683158.18996.698.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 10:19:39PM -0700, Dmitry Torokhov wrote:
-> On Thu, Sep 10, 2009 at 05:26:16PM -0700, Greg KH wrote:
-> > This is the start of the stable review cycle for the 2.6.30.7 release.
-> > There are 22 patches in this series, all will be posted as a response to
-> > this one.  If anyone has any issues with these being applied, please let
-> > us know.  If anyone is a maintainer of the proper subsystem, and wants
-> > to add a Signed-off-by: line to the patch, please respond with it.
-> > 
+On Fri, 2009-09-11 at 17:29 +0200, jolsa@redhat.com wrote:
+> As 3 different places for 4 user input files were using the same way
+> of reading and parsing user's input, I made one common routine to be
+> used. 
 > 
-> Please consider adding the following commit to the stable:
+> The mentioned files are:
+> 	set_graph_function
+> 	set_event
+> 	set_ftrace_filter
+> 	set_ftrace_notrace
 > 
-> 	ec8b4b7085605e801a7740a2c3c33256aebe249c
+> wbr,
+> jirka
 
-I will queue it up for the next release.
+Thanks Jirka, much better.
 
-thanks,
+I'll pull them in and try them out.
 
-greg k-h
+-- Steve
+
+
