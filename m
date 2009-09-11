@@ -1,79 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752593AbZIKQjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZIKQmy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752593AbZIKQjJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751679AbZIKQjI
+	id S1753532AbZIKQmy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753169AbZIKQmx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:39:08 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:53507 "EHLO mx1.redhat.com"
+	Fri, 11 Sep 2009 12:42:53 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:8930 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751081AbZIKQjH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:39:07 -0400
-Date: Fri, 11 Sep 2009 22:08:06 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Alan Cox <alan@linux.intel.com>
-Cc: rusty@rustcorp.com.au, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
-	generic guest and host communication
-Message-ID: <20090911163806.GB25535@amit-x200.redhat.com>
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <1252678386-17404-2-git-send-email-amit.shah@redhat.com> <20090911170010.34c80f2d@linux.intel.com>
+	id S1753130AbZIKQmw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:42:52 -0400
+Date: Fri, 11 Sep 2009 19:42:47 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Roland Dreier <rdreier@cisco.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, jsquyres@cisco.com,
+       linux-rdma@vger.kernel.org, general@lists.openfabrics.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PULL] please pull ummunotify
+Message-ID: <20090911164247.GA6736@redhat.com>
+References: <20090911145036.DB65.A69D9226@jp.fujitsu.com>
+ <adatyzahvbm.fsf@cisco.com>
+ <20090911150552.DB68.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090911170010.34c80f2d@linux.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090911150552.DB68.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (Fri) Sep 11 2009 [17:00:10], Alan Cox wrote:
-> > The interface presented to guest userspace is of a simple char
-> > device, so it can be used like this:
+On Fri, Sep 11, 2009 at 03:11:36PM +0900, KOSAKI Motohiro wrote:
+> Hi
+> 
+> Thank you explanation.
+> 
 > > 
-> >     fd = open("/dev/vcon2", O_RDWR);
-> >     ret = read(fd, buf, 100);
-> >     ret = write(fd, string, strlen(string));
+> >  > Can I this version already solved fork() + COW issue? if so, could you
+> >  > please explain what happen at fork. Obviously RDMA point to either parent
+> >  > or child page, not both. but Corrent COW rule is, first touch process
+> >  > get copyed page and other process still own original page. I think it's 
+> >  > unpecected behavior form RDMA.
 > > 
-> > Each port is to be assigned a unique function, for example, the
-> > first 4 ports may be reserved for libvirt usage, the next 4 for
-> > generic streaming data and so on. This port-function mapping
-> > isn't finalised yet.
+> > No, ummunotify doesn't really help that much with fork() + COW.  If a
+> > parent forks and then touches pages that are actively in use for RDMA,
+> > then of course they get COWed and RDMA goes to the wrong memory (from
+> > the point of view of the parent).
 > 
-> Unless I am missing something this looks completely bonkers
+> So, Can we assume OpenMPI user process doesn't such thing?
 > 
-> Every time we have a table of numbers for functionality it ends in
-> tears. We have to keep tables up to date and managed, we have to
-> administer the magical number to name space.
-
-Right; there was some discussion about this. A few alternatives were
-suggested like
-
-- udev scripts to create symlinks from ports to function, like:
-
-  /dev/vcon3 -> /dev/virtio-console/clipboard
-
-- Some fqdn-like hierarchy, like
-
-  /dev/virtio-console/com/redhat/clipboard
-
-  which again can be created by udev scripts
-
-> Anyway - you don't seem to need a fixed number you can use dynamic
-> allocation and udev.
+> Parhaps, madvise(DONTFORK) or vfork() avoid this issue. but I'm not
+> sure all program in the world do that.
 > 
-> There are at least two better ways to do this
-> 
-> - Using sysfs nodes so you have a proper heirarchy of names/functions
-> - Using a simple file system which provides a heirarchy of nodes whose
->   enumeration and access is backed by calls to whatever happyvisor you
->   are using.
-> 
-> it then self enumerates, self populates, doesn't need anyone to keep
-> updating magic tables of guest code and expands cleanly - yes ?
+MPI (or is it libibverbs?) marks all registered memory as DONTFORK.
 
-Agreed. I'd prefer udev scripts doing it vs doing it in the code as it
-keeps everything simple and the policy isn't laid out in the kernel
-module. Is that fine?
-
-		Amit
+--
+			Gleb.
