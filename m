@@ -1,103 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752653AbZIKN43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752784AbZIKN4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752653AbZIKN43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 09:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZIKN42
+	id S1752784AbZIKN4v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 09:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZIKN4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 09:56:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:33629 "EHLO
+	Fri, 11 Sep 2009 09:56:50 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:56410 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752122AbZIKN41 (ORCPT
+	with ESMTP id S1751964AbZIKN4Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 09:56:27 -0400
-Message-Id: <20090911135626.421489476@goodmis.org>
+	Fri, 11 Sep 2009 09:56:24 -0400
+Message-Id: <20090911135626.824079836@goodmis.org>
 References: <20090911135452.866274568@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 11 Sep 2009 09:54:54 -0400
+Date: Fri, 11 Sep 2009 09:54:55 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Subject: [PATCH 2/3] tracing/profile: add ref count for registering profile events
-Content-Disposition: inline; filename=0002-tracing-profile-add-ref-count-for-registering-profil.patch
+Subject: [PATCH 3/3] tracing: add latency format to function_graph tracer
+Content-Disposition: inline; filename=0003-tracing-add-latency-format-to-function_graph-tracer.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Li Zefan discovered that doing the following:
+While debugging something with the function_graph tracer, I found the
+need to see the preempt count of the traces. Unfortunately, since
+the function graph tracer has its own output formatting, it does not
+honor the latency-format option.
 
- # insmod trace-events-sample.ko
- # perf record -f -a -e sample:foo_bar sleep 3 &
- # sleep 1
- # rmmod trace_events_sample
- # insmod trace-events-sample.ko
+This patch makes the function_graph tracer honor the latency-format
+option, but still keeps control of the output. But now we have the
+same details that the latency-format supplies.
 
-Would cause an OOPS. This was because the registering of the profiler
-registers inside the module and does not unregister when unloaded.
+ # tracer: function_graph
+ #
+ #      _-----=> irqs-off
+ #     / _----=> need-resched
+ #    | / _---=> hardirq/softirq
+ #    || / _--=> preempt-depth
+ #    ||| /
+ #    ||||
+ # CPU||||  DURATION                  FUNCTION CALLS
+ # |  ||||   |   |                     |   |   |   |
+  3)  d..1  1.333 us    |        idle_cpu();
+  3)  d.h1              |        tick_check_idle() {
+  3)  d.h1  0.550 us    |          tick_check_oneshot_broadcast();
+  3)  d.h1              |          tick_nohz_stop_idle() {
+  3)  d.h1              |            ktime_get() {
+  3)  d.h1              |              ktime_get_ts() {
 
-This patch adds an increment of the module refcount when a profile
-registers a tracepoint, to prevent a module from being unloaded
-while being profiled.
-
-Reported-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4A9214E3.2070807@cn.fujitsu.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/ftrace.h |   22 ++++++++++++++++++++--
- 1 files changed, 20 insertions(+), 2 deletions(-)
+ kernel/trace/trace_functions_graph.c |   74 +++++++++++++++++++++++++++++++---
+ 1 files changed, 68 insertions(+), 6 deletions(-)
 
-diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-index 308bafd..59e09f9 100644
---- a/include/trace/ftrace.h
-+++ b/include/trace/ftrace.h
-@@ -400,6 +400,20 @@ static inline int ftrace_get_offsets_##call(				\
-  *
-  */
- 
-+#ifdef MODULE
-+# define event_trace_up_ref()					\
-+	do {							\
-+		if (!try_module_get(THIS_MODULE)) {		\
-+			atomic_dec(&event_call->profile_count);	\
-+			return -ENOENT;				\
-+		}						\
-+	} while (0)
-+# define event_trace_down_ref() module_put(THIS_MODULE)
-+#else
-+# define event_trace_up_ref() do { } while (0)
-+# define event_trace_down_ref() do { } while (0)
-+#endif
-+
- #undef TRACE_EVENT
- #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
- 									\
-@@ -409,16 +423,20 @@ static int ftrace_profile_enable_##call(struct ftrace_event_call *event_call) \
- {									\
- 	int ret = 0;							\
- 									\
--	if (!atomic_inc_return(&event_call->profile_count))		\
-+	if (!atomic_inc_return(&event_call->profile_count)) {		\
-+		event_trace_up_ref();					\
- 		ret = register_trace_##call(ftrace_profile_##call);	\
-+	}								\
- 									\
- 	return ret;							\
- }									\
- 									\
- static void ftrace_profile_disable_##call(struct ftrace_event_call *event_call)\
- {									\
--	if (atomic_add_negative(-1, &event_call->profile_count))	\
-+	if (atomic_add_negative(-1, &event_call->profile_count)) {	\
- 		unregister_trace_##call(ftrace_profile_##call);		\
-+		event_trace_down_ref();					\
-+	}								\
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index b3749a2..ee791a9 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -364,6 +364,29 @@ print_graph_proc(struct trace_seq *s, pid_t pid)
  }
  
- #include TRACE_INCLUDE(TRACE_INCLUDE_FILE)
+ 
++static enum print_line_t
++print_graph_lat_fmt(struct trace_seq *s, struct trace_entry *entry)
++{
++	int hardirq, softirq;
++
++	hardirq = entry->flags & TRACE_FLAG_HARDIRQ;
++	softirq = entry->flags & TRACE_FLAG_SOFTIRQ;
++
++	if (!trace_seq_printf(s, " %c%c%c",
++			      (entry->flags & TRACE_FLAG_IRQS_OFF) ? 'd' :
++				(entry->flags & TRACE_FLAG_IRQS_NOSUPPORT) ?
++				  'X' : '.',
++			      (entry->flags & TRACE_FLAG_NEED_RESCHED) ?
++				'N' : '.',
++			      (hardirq && softirq) ? 'H' :
++				hardirq ? 'h' : softirq ? 's' : '.'))
++		return 0;
++
++	if (entry->preempt_count)
++		return trace_seq_printf(s, "%x", entry->preempt_count);
++	return trace_seq_puts(s, ".");
++}
++
+ /* If the pid changed since the last trace, output this event */
+ static enum print_line_t
+ verif_pid(struct trace_seq *s, pid_t pid, int cpu, struct fgraph_data *data)
+@@ -521,6 +544,7 @@ print_graph_irq(struct trace_iterator *iter, unsigned long addr,
+ 		if (ret == TRACE_TYPE_PARTIAL_LINE)
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
++
+ 	/* Proc */
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC) {
+ 		ret = print_graph_proc(s, pid);
+@@ -758,6 +782,13 @@ print_graph_prologue(struct trace_iterator *iter, struct trace_seq *s,
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
+ 
++	/* Latency format */
++	if (trace_flags & TRACE_ITER_LATENCY_FMT) {
++		ret = print_graph_lat_fmt(s, ent);
++		if (ret == TRACE_TYPE_PARTIAL_LINE)
++			return TRACE_TYPE_PARTIAL_LINE;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -952,28 +983,59 @@ print_graph_function(struct trace_iterator *iter)
+ 	return TRACE_TYPE_HANDLED;
+ }
+ 
++static void print_lat_header(struct seq_file *s)
++{
++	static const char spaces[] = "                "	/* 16 spaces */
++		"    "					/* 4 spaces */
++		"                 ";			/* 17 spaces */
++	int size = 0;
++
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
++		size += 16;
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
++		size += 4;
++	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
++		size += 17;
++
++	seq_printf(s, "#%.*s  _-----=> irqs-off        \n", size, spaces);
++	seq_printf(s, "#%.*s / _----=> need-resched    \n", size, spaces);
++	seq_printf(s, "#%.*s| / _---=> hardirq/softirq \n", size, spaces);
++	seq_printf(s, "#%.*s|| / _--=> preempt-depth   \n", size, spaces);
++	seq_printf(s, "#%.*s||| /                      \n", size, spaces);
++	seq_printf(s, "#%.*s||||                       \n", size, spaces);
++}
++
+ static void print_graph_headers(struct seq_file *s)
+ {
++	int lat = trace_flags & TRACE_ITER_LATENCY_FMT;
++
++	if (lat)
++		print_lat_header(s);
++
+ 	/* 1st line */
+-	seq_printf(s, "# ");
++	seq_printf(s, "#");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
+ 		seq_printf(s, "     TIME       ");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
+-		seq_printf(s, "CPU");
++		seq_printf(s, " CPU");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
+-		seq_printf(s, "  TASK/PID      ");
++		seq_printf(s, "  TASK/PID       ");
++	if (lat)
++		seq_printf(s, "||||");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
+ 		seq_printf(s, "  DURATION   ");
+ 	seq_printf(s, "               FUNCTION CALLS\n");
+ 
+ 	/* 2nd line */
+-	seq_printf(s, "# ");
++	seq_printf(s, "#");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_ABS_TIME)
+ 		seq_printf(s, "      |         ");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_CPU)
+-		seq_printf(s, "|  ");
++		seq_printf(s, " |  ");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_PROC)
+-		seq_printf(s, "  |    |        ");
++		seq_printf(s, "   |    |        ");
++	if (lat)
++		seq_printf(s, "||||");
+ 	if (tracer_flags.val & TRACE_GRAPH_PRINT_DURATION)
+ 		seq_printf(s, "   |   |      ");
+ 	seq_printf(s, "               |   |   |   |\n");
 -- 
 1.6.3.3
 
