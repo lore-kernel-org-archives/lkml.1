@@ -1,80 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752500AbZIKEiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751419AbZIKE5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752500AbZIKEiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 00:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbZIKEiY
+	id S1751419AbZIKE5g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 00:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751052AbZIKE5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 00:38:24 -0400
-Received: from sj-iport-1.cisco.com ([171.71.176.70]:19966 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750736AbZIKEiX convert rfc822-to-8bit (ORCPT
+	Fri, 11 Sep 2009 00:57:35 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:45243 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbZIKE5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 00:38:23 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAH9xqUqrR7O6/2dsb2JhbADEUYhGAZA1BYQYgks
-X-IronPort-AV: E=Sophos;i="4.44,368,1249257600"; 
-   d="scan'208";a="240286611"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       jsquyres@cisco.com
-Cc: linux-rdma@vger.kernel.org, general@lists.openfabrics.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull ummunotify
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 10 Sep 2009 21:38:22 -0700
-Message-ID: <aday6omhz9d.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 11 Sep 2009 00:57:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=GUo05IDPo0SqFL4jhXGDwWNDOX395+rVwwIX3Rs1zjgqvYq3Lp4KXZt/mgwgceXg4x
+         nWJA3l14BkWpvIwcEpCahN1KGg1Ahv8rJPdgLj1XPwIVUKtkwEDoNKtIIBQIiZcR5+wM
+         g8Gi452MWGNvZ4vKZdVbDNg2yH+0vRZLKRuLQ=
+Date: Thu, 10 Sep 2009 21:57:31 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, Linux Input <linux-input@vger.kernel.org>,
+       LKLM <linux-kernel@vger.kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Subject: Re: [PATCH -next] Input: i8042 - Fix pagefault caused by
+	i8042_dmi_laptop_table
+Message-ID: <20090911045731.GA23210@core.coreip.homeip.net>
+References: <4AA9C0F1.6060708@np.css.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 11 Sep 2009 04:38:22.0925 (UTC) FILETIME=[B1E217D0:01CA3299]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA9C0F1.6060708@np.css.fujitsu.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please consider pulling from
+Hi Jin,
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git ummunotify
+On Fri, Sep 11, 2009 at 12:16:01PM +0900, Jin Dongming wrote:
+> (This patch fixes bug of commit 1c49cd1bbb6e41e97079d389e86063ba5de825ed
+>  titled "Input: i8042 - bypass AUX IRQ delivery test on laptops")
+> 
+> When dmi_platform_init is called, the table i8042_dmi_laptop_table[] will
+> be checked. Because the end of this table is not "NULL", dmi_check_system
+> will lead to pagefault and oops will be happened.
+> 
+> In fact I got following oops on boot:
+> Call Trace:
+>   [<ffffffff813f86b8>] panic+0x7a/0x131
+>   [<ffffffff8105b29b>] ? exit_ptrace+0x94/0x114
+>   [<ffffffff81054acc>] do_exit+0x7a/0x695
+>   [<ffffffff813fbaec>] oops_end+0xb9/0xc1
+>   [<ffffffff81034037>] no_context+0x1f6/0x205
+>   [<ffffffff81034212>] __bad_area_nosemaphore+0x1cc/0x1f2
+>   [<ffffffff811f1739>] ? string+0x40/0x9f
+>   [<ffffffff811f20cf>] ? vsnprintf+0x8b/0x426
+>   [<ffffffff813fac0a>] ?_spin_unlock_irqrestore+0x29/0x41
+>   [<ffffffff8103424b>] bad_area_nosemaphore+0x13/0x15
+>   [<ffffffff813fcf9d>] do_page_fault+0x154/0x2a5
+>   [<ffffffff813faef5>] page_fault+0x25/0x30
+>   [<ffffffff81335895>] ? dmi_check_system+0x30/0x4b
+>   [<ffffffff816eee5f>] i8042_init+0x2ca/0x3c1
+>   [<ffffffff816ee5eb>] ? uhci_hcd_init+0x88/0xc0
+>   [<ffffffff816eeb95>] ? i8042_init+0x0/0x3c1
+>   [<ffffffff8100a069>] do_one_initcall+0x5e/0x15e
+>   [<ffffffff816be167>] kernel_init+0x170/0x1ca
+>   [<ffffffff81012c5a>] child_rip+0xa/0x20
+>   [<ffffffff810125bd>] ? restore_args+0x0/0x30
+>   [<ffffffff81bbdff7>] ? kernel_init+0x0/0x1ca
+>   [<ffffffff81012c50>] ? child_rip+0x0/0x20
+> 
+> I confirmed this patch fix this problem.
+> 
 
-This tree is also available from kernel.org mirrors at:
+Thank you for the patch, I will ford it into the original change so that
+we don't crash the box in case someone will be bisecting...
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git ummunotify
-
-This will get "ummunotify," a new character device that allows a
-userspace library to register for MMU notifications; this is
-particularly useful for MPI implementions (message passing libraries
-used in HPC) to be able to keep track of what wacky things consumers
-do to their memory mappings.  My colleague Jeff Squyres from the Open
-MPI project posted a blog entry about why MPI wants this:
-
-http://blogs.cisco.com/ciscotalk/performance/comments/better_linux_memory_tracking/
-
-His summary of ummunotify:
-
-  "It’s elegant, doesn’t require strange linker tricks, and seems to
-   work in all cases.  Yay!"
-
-This code went through several review iterations on lkml and was in
--mm and -next for quite a few weeks.  Andrew is OK with merging it (I
-think -- Andrew please correct me if I misunderstood you).
-
-Roland Dreier (1):
-      ummunotify: Userspace support for MMU notifications
-
- Documentation/Makefile                  |    3 +-
- Documentation/ummunotify/Makefile       |    7 +
- Documentation/ummunotify/ummunotify.txt |  150 ++++++++
- Documentation/ummunotify/umn-test.c     |  200 +++++++++++
- drivers/char/Kconfig                    |   12 +
- drivers/char/Makefile                   |    1 +
- drivers/char/ummunotify.c               |  566 +++++++++++++++++++++++++++++++
- include/linux/Kbuild                    |    1 +
- include/linux/ummunotify.h              |  121 +++++++
- 9 files changed, 1060 insertions(+), 1 deletions(-)
- create mode 100644 Documentation/ummunotify/Makefile
- create mode 100644 Documentation/ummunotify/ummunotify.txt
- create mode 100644 Documentation/ummunotify/umn-test.c
- create mode 100644 drivers/char/ummunotify.c
- create mode 100644 include/linux/ummunotify.h
+-- 
+Dmitry
