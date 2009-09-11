@@ -1,229 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753834AbZIKOex@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753945AbZIKOhv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753834AbZIKOex (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:34:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZIKOex
+	id S1753945AbZIKOhv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 10:37:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZIKOht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:34:53 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53417 "EHLO mx1.suse.de"
+	Fri, 11 Sep 2009 10:37:49 -0400
+Received: from bu3sch.de ([62.75.166.246]:59446 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753133AbZIKOev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:34:51 -0400
-From: Andreas Gruenbacher <agruen@suse.de>
-Organization: SUSE Labs, Novell
-To: Eric Paris <eparis@redhat.com>
-Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
-Date: Fri, 11 Sep 2009 16:32:49 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.30-rc6-git3-4-pae; KDE/4.1.3; i686; ; )
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, davem@davemloft.net, viro@zeniv.linux.org.uk,
-       alan@linux.intel.com, hch@infradead.org
-References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+	id S1751365AbZIKOhr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 10:37:47 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 01/10] Add support for GCC-4.5's __builtin_unreachable() to compiler.h
+Date: Fri, 11 Sep 2009 16:32:58 +0200
+User-Agent: KMail/1.9.9
+Cc: David Daney <ddaney@caviumnetworks.com>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, linux-mips@linux-mips.org,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-s390@vger.kernel.org, linux-am33-list@redhat.com,
+       Helge Deller <deller@gmx.de>, x86@kernel.org,
+       Ingo Molnar <mingo@redhat.com>, Mike Frysinger <vapier@gentoo.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Richard Henderson <rth@twiddle.net>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-alpha@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+References: <4AA991C1.1050800@caviumnetworks.com> <1252627011-2933-1-git-send-email-ddaney@caviumnetworks.com>
+In-Reply-To: <1252627011-2933-1-git-send-email-ddaney@caviumnetworks.com>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_S+lqKToL9s78RMI"
-Message-Id: <200909111632.50477.agruen@suse.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909111633.00665.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Boundary-00=_S+lqKToL9s78RMI
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Friday 11 September 2009 01:56:42 David Daney wrote:
+> +/* Unreachable code */
+> +#ifndef unreachable
+> +# define unreachable() do { for (;;) ; } while (0)
+> +#endif
 
-The patches did apply and build against next-20090910. I wrote a small user-
-space utility for testing (attached); see how painless the socket interface 
-is. The patches seem to be working well, except that some required 
-functionality is missing still.
+# define unreachable() do { } while (1)
 
-Currently, the CAP_NET_RAW capability is needed for being able to create 
-watches. This seems too strict to me; I don't see why I shouldn't be able to 
-watch my own files, or files which I have read access to (like inotify).
+? :)
 
-There are some actions like creating hardlinks in directories or removing 
-files which don't trigger events. From a user point of view, I would prefer to 
-receive those events as well. (I notice that it's not easy to to pass file 
-descriptors to listeners for those events.)
-
-Thanks,
-Andreas
-
---Boundary-00=_S+lqKToL9s78RMI
-Content-Type: text/x-csrc;
-  charset="UTF-8";
-  name="fanotify.c"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="fanotify.c"
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <inttypes.h>
-#include <stdbool.h>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-
-#include "linux/fanotify.h"
-
-int watch_inode(int fan_fd, const char *path, uint32_t mask)
-{
-	struct fanotify_so_inode_mark mark;
-
-	memset(&mark, 0, sizeof(mark));
-	mark.fd = open(path, 0);
-	if (mark.fd == -1)
-		return -1;
-	mark.mask = mask;
-	if (setsockopt(fan_fd, SOL_FANOTIFY, FANOTIFY_SET_MARK,
-		       &mark, sizeof(mark)) != 0)
-		return -1;
-	close(mark.fd);
-	return 0;
-}
-
-void synopsis(const char *progname, int status)
-{
-	FILE *file = status ? stderr : stdout;
-
-	fprintf(file, "USAGE: %s [-cg] [-o {open,close,access,modify}] file ...\n",
-		progname);
-	exit(status);
-}
-
-int main(int argc, char *argv[])
-{
-	int opt;
-	int fan_fd;
-	uint32_t fan_mask = FAN_OPEN | FAN_CLOSE | FAN_ACCESS | FAN_MODIFY;
-	bool opt_child = false, opt_global = false;
-	ssize_t len;
-	struct fanotify_addr addr;
-	char buf[4096];
-#ifdef WITH_PID
-	pid_t pid;
-#endif
-
-	while ((opt = getopt(argc, argv, "o:cgh")) != -1) {
-		switch(opt) {
-			case 'o': {
-				char *str, *tok;
-
-				fan_mask = 0;
-				str = optarg;
-				while ((tok = strtok(str, ",")) != NULL) {
-					str = NULL;
-					if (strcmp(tok, "open") == 0)
-						fan_mask |= FAN_OPEN;
-					else if (strcmp(tok, "close") == 0)
-						fan_mask |= FAN_CLOSE;
-					else if (strcmp(tok, "access") == 0)
-						fan_mask |= FAN_ACCESS;
-					else if (strcmp(tok, "modify") == 0)
-						fan_mask |= FAN_MODIFY;
-					else
-						synopsis(argv[0], 1);
-				}
-				break;
-			}
-			case 'c':
-				opt_child = true;
-				break;
-			case 'g':
-				opt_global = true;
-				break;
-			case 'h':
-				synopsis(argv[0], 0);
-			default:  /* '?' */
-				synopsis(argv[0], 1);
-		}
-	}
-	if (optind == argc && !opt_global)
-		synopsis(argv[0], 1);
-
-	if (opt_child)
-		fan_mask |= FAN_EVENT_ON_CHILD;
-
-	memset(&addr, 0, sizeof(addr));
-	addr.family = AF_FANOTIFY;
-	addr.priority = 32768;
-	addr.mask = opt_global ? fan_mask : 0;
-
-	fan_fd = socket(PF_FANOTIFY, SOCK_RAW, 0);
-	if (fan_fd == -1)
-		goto fail;
-	if (bind(fan_fd, (struct sockaddr *)&addr, sizeof(addr)) != 0)
-		goto fail;
-
-	for (; optind < argc; optind++)
-		if (watch_inode(fan_fd, argv[optind], fan_mask) != 0)
-			goto fail;
-
-#if WITH_PID
-	pid = getpid();
-#endif
-	while ((len = recv(fan_fd, buf, sizeof(buf), 0)) > 0) {
-		struct fanotify_event_metadata *metadata;
-
-		metadata = (void *)buf;
-		while(FAN_EVENT_OK(metadata, len)) {
-			struct stat st;
-
-#if WITH_PID
-			if (metadata->pid == pid)
-				goto skip;
-#endif
-
-			if (metadata->fd >= 0) {
-				char path[PATH_MAX];
-
-				sprintf(path, "/proc/self/fd/%d", metadata->fd);
-				if (readlink(path, path, sizeof(path)) == -1)
-					goto fail;
-				printf("%s:", path);
-			} else
-				printf("?:");
-
-#if WITH_PID
-			if (metadata->pid >= 0)
-				printf(" pid=%ld", metadata->pid);
-#endif
-
-			if (metadata->mask & FAN_ACCESS)
-				printf(" access");
-			if (metadata->mask & FAN_OPEN)
-				printf(" open");
-			if (metadata->mask & FAN_MODIFY)
-				printf(" modify");
-			if (metadata->mask & FAN_CLOSE) {
-				if (metadata->mask & FAN_CLOSE_WRITE)
-					printf(" close(writable)");
-				else
-					printf(" close");
-			}
-			printf("\n");
-
-		skip:
-			if (metadata->fd >= 0 && close(metadata->fd) != 0)
-				goto fail;
-			metadata = FAN_EVENT_NEXT(metadata, len);
-		}
-	}
-	if (len < 0)
-		goto fail;
-	return 0;
-
-fail:
-	fprintf(stderr, "%s\n", strerror(errno));
-	return 1;
-}
-
---Boundary-00=_S+lqKToL9s78RMI--
+-- 
+Greetings, Michael.
