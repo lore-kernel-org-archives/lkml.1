@@ -1,86 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754762AbZIKQWL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbZIKQTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754762AbZIKQWL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 12:22:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754666AbZIKQWK
+	id S1754654AbZIKQTO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 12:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZIKQTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 12:22:10 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:34621 "EHLO mgw1.diku.dk"
+	Fri, 11 Sep 2009 12:19:14 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2582 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754411AbZIKQWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 12:22:08 -0400
-Date: Fri, 11 Sep 2009 18:22:09 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 5/8] drivers/net/phy: introduce missing kfree
-Message-ID: <Pine.LNX.4.64.0909111821520.10552@pc-004.diku.dk>
+	id S1754544AbZIKQTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 12:19:13 -0400
+Message-ID: <4AAA7938.7070200@redhat.com>
+Date: Fri, 11 Sep 2009 12:22:16 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH tracing/kprobes 4/7] tracing/kprobes: Add event	profiling
+ support
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere>
+In-Reply-To: <20090911031253.GD16396@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Frederic Weisbecker wrote:
+>> +static int probe_profile_enable(struct ftrace_event_call *call)
+>> +{
+>> +	struct trace_probe *tp = (struct trace_probe *)call->data;
+>> +
+>> +	if (atomic_inc_return(&call->profile_count))
+>> +		return 0;
+>> +
+>> +	if (probe_is_return(tp)) {
+>> +		tp->rp.handler = kretprobe_profile_func;
+>> +		return enable_kretprobe(&tp->rp);
+>> +	} else {
+>> +		tp->rp.kp.pre_handler = kprobe_profile_func;
+>> +		return enable_kprobe(&tp->rp.kp);
+>> +	}
+>> +}
+>
+>
+>
+> May be I misunderstood but it seems that concurrent uses of
+> ftrace and perf would really mess up the result, as one would
+> overwrite the handler of the other.
+>
+> Even though it's hard to imagine one using both at the same
+> time on the same probe, but still...
 
-Error handling code following a kzalloc should free the allocated data.
+Oops, it's my misunderstanding. I thought those are exclusively
+enabled each other.
 
-The semantic match that finds the problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+> Is it possible to have two kprobes having the exact same
+> properties? (pointing to the same address, having the same
+> probe handlers, etc...)
+>
+> Another solution would be to allow kprobes to have multiple
+> handlers.
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,f1,l;
-position p1,p2;
-expression *ptr != NULL;
-@@
+It could be to have multiple kprobes on same point, but I think
+it's waste of the memory and time in this case.
 
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-...
-if (x == NULL) S
-<... when != x
-     when != if (...) { <+...x...+> }
-(
-x->f1 = E
-|
- (x->f1 == NULL || ...)
-|
- f(...,x->f1,...)
-)
-...>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
+I'd like to have a dispatcher function and flags internally :)
 
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-@@
+Thank you,
 
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
+-- 
+Masami Hiramatsu
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
- drivers/net/phy/mdio-gpio.c         |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-diff --git a/drivers/net/phy/mdio-gpio.c b/drivers/net/phy/mdio-gpio.c
-index 22cdd45..250e10f 100644
---- a/drivers/net/phy/mdio-gpio.c
-+++ b/drivers/net/phy/mdio-gpio.c
-@@ -211,7 +211,7 @@ static int __devinit mdio_ofgpio_probe(struct of_device *ofdev,
- 
- 	new_bus = mdio_gpio_bus_init(&ofdev->dev, pdata, pdata->mdc);
- 	if (!new_bus)
--		return -ENODEV;
-+		goto out_free;
- 
- 	ret = of_mdiobus_register(new_bus, ofdev->node);
- 	if (ret)
+e-mail: mhiramat@redhat.com
 
