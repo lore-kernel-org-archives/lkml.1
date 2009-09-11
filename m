@@ -1,88 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753989AbZIKHrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZIKHsa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753989AbZIKHrW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 03:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZIKHrV
+	id S1754059AbZIKHsa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 03:48:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753462AbZIKHs3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 03:47:21 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45125 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753053AbZIKHrV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 03:47:21 -0400
-Date: Fri, 11 Sep 2009 09:47:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, david@fromorbit.com, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz
-Subject: Re: [PATCH 2/8] writeback: move dirty inodes from super_block to
-	backing_dev_info
-Message-ID: <20090911074723.GF18599@kernel.dk>
-References: <1251880967-1136-1-git-send-email-jens.axboe@oracle.com> <1251880967-1136-3-git-send-email-jens.axboe@oracle.com> <20090904025609.GC3658@infradead.org> <20090904065357.GP18599@kernel.dk> <20090904154305.GA10002@infradead.org> <20090906184358.GM18599@kernel.dk> <20090908184442.GB5956@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090908184442.GB5956@infradead.org>
+	Fri, 11 Sep 2009 03:48:29 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:44380 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753423AbZIKHs2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 03:48:28 -0400
+Date: Fri, 11 Sep 2009 09:48:28 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jens Axboe <jens.axboe@oracle.com>, John Stultz <johnstul@us.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
+Subject: Re: [crash, bisected] Re: clocksource: Resolve cpu hotplug dead
+ lock with TSC unstable
+Message-ID: <20090911094828.024a4098@skybase>
+In-Reply-To: <20090911073747.GA8209@elte.hu>
+References: <20090909091009.GR18599@kernel.dk>
+	<20090909115429.GY18599@kernel.dk>
+	<20090909122006.GA18599@kernel.dk>
+	<1252565738.7205.29.camel@laptop>
+	<20090910065856.GL18599@kernel.dk>
+	<20090910073317.GP18599@kernel.dk>
+	<20090910074902.GA10634@elte.hu>
+	<20090910075357.GT18599@kernel.dk>
+	<20090910100214.GB21314@elte.hu>
+	<20090910180049.GA10579@elte.hu>
+	<20090911073747.GA8209@elte.hu>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 08 2009, Christoph Hellwig wrote:
-> On Sun, Sep 06, 2009 at 08:43:59PM +0200, Jens Axboe wrote:
-> > On Fri, Sep 04 2009, Christoph Hellwig wrote:
-> > > On Fri, Sep 04, 2009 at 08:53:57AM +0200, Jens Axboe wrote:
-> > > > > +	if (wbc->sync_mode == WB_SYNC_ALL)
-> > > > > +		bdi_wait_on_work_clear(&work);
-> > > > >  }
-> > > > 
-> > > > That doesn't work, you have to wait for on-stack work. So either we just
-> > > > punt and not do anything for WB_SYNC_NONE if the allocation fails, or we
-> > > > punt to stack and do the wait. Since it's a cleaning action and
-> > > > allocation fails, falling back to the stack and waiting seems like the
-> > > > most appropriate choice.
-> > > 
-> > > True, the wait needs to be unconditional.  Updated version below.
-> > 
-> > (did you forget that patch? it's not there).
+On Fri, 11 Sep 2009 09:37:47 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> Here we go, sorry:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > 
+> > > 
+> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > I went to try -tip btw, but it crashes on boot. Here's the 
+> > > > backtrace, typed manually, it's crashing in 
+> > > > queue_work_on+0x28/0x60.
+> > > > 
+> > > > Call Trace:
+> > > >         queue_work
+> > > >         schedule_work
+> > > >         clocksource_mark_unstable
+> > > >         mark_tsc_unstable
+> > > >         check_tsc_sync_source
+> > > >         native_cpu_up
+> > > >         relay_hotcpu_callback
+> > > >         do_forK_idle
+> > > >         _cpu_up
+> > > >         cpu_up
+> > > >         kernel_init
+> > > >         kernel_thread_helper
+> > > 
+> > > hm, that looks like an old bug i fixed days ago via:
+> > > 
+> > >   00a3273: Revert "x86: Make tsc=reliable override boot time stability checks"
+> > > 
+> > > Have you tested tip:master - do you still know which sha1?
+> > 
+> > Ok, i reproduced it on a testbox and bisected it, the crash is 
+> > caused by:
+> > 
+> >  7285dd7fd375763bfb8ab1ac9cf3f1206f503c16 is first bad commit
+> >  commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
+> >  Author: Thomas Gleixner <tglx@linutronix.de>
+> >  Date:   Fri Aug 28 20:25:24 2009 +0200
+> > 
+> >     clocksource: Resolve cpu hotplug dead lock with TSC unstable
+> >     
+> >     Martin Schwidefsky analyzed it:
+> > 
+> > I've reverted it in tip/master for now.
+> 
+> and that uncovers the circular locking bug that this commit was 
+> supposed to fix ...
+> 
+> Martin?
 
-I have applied this to a postmerge writeback branch. I made one change,
-though:
-
-> +	if (wbc->sync_mode != WB_SYNC_ALL) {
-> +		struct bdi_work *w = bdi_alloc_work(wbc);
-> +		if (w) {
-> +			bdi_queue_work(wbc->bdi, w);
-> +			return;
-> +		}
-
-We should make that bdi_queue_work() unconditional, if you want to make
-sure that we current thread wakes up and actually flushes some old data
-when allocation fails.
-
-void bdi_start_writeback(struct writeback_control *wbc)
-{
-        /*
-         * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
-         * bdi_queue_work() will wake up the thread and flush old data. This
-         * should ensure some amount of progress in freeing memory.
-         */
-        if (wbc->sync_mode != WB_SYNC_ALL) {
-                struct bdi_work *w = bdi_alloc_work(wbc);
-
-                bdi_queue_work(wbc->bdi, w);
-        } else {
-                struct bdi_work work;
-
-                bdi_work_init(&work, wbc);
-                work.state |= WS_ONSTACK;
-
-                bdi_queue_work(wbc->bdi, &work);
-                bdi_wait_on_work_clear(&work);
-        }
-}
+Damn, back to running around in circles ..
 
 -- 
-Jens Axboe
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
 
