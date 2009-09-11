@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753570AbZIKOcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754470AbZIKPcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753570AbZIKOcA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 10:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZIKOb6
+	id S1754470AbZIKPcw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 11:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754212AbZIKPcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 10:31:58 -0400
-Received: from fifo99.com ([67.223.236.141]:48131 "EHLO fifo99.com"
+	Fri, 11 Sep 2009 11:32:51 -0400
+Received: from relay1.vsu.ru ([62.76.169.14]:48259 "EHLO relay1.vsu.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752724AbZIKOb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 10:31:57 -0400
-Subject: Re: [PATCH 8/8] fanotify: send events to userspace over socket
- reads
-From: Daniel Walker <dwalker@fifo99.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, davem@davemloft.net, viro@zeniv.linux.org.uk,
-       alan@linux.intel.com, hch@infradead.org
-In-Reply-To: <1252678545.2305.4.camel@dhcp231-106.rdu.redhat.com>
-References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
-	 <20090911052649.32359.18553.stgit@paris.rdu.redhat.com>
-	 <1252678130.30578.848.camel@desktop>
-	 <1252678545.2305.4.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 07:32:31 -0700
-Message-Id: <1252679551.30578.857.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1752536AbZIKPcv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 11:32:51 -0400
+X-Greylist: delayed 3601 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 11:32:50 EDT
+X-drweb-hash: 
+To: linux-kernel@vger.kernel.org
+Subject: i915 and x11 freezes
+From: Vladimir Volovich <vvv@vsu.ru>
+Date: Fri, 11 Sep 2009 18:32:39 +0400
+Message-ID: <87zl91wnzs.fsf@vvv.org.vrn.ru>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 10:15 -0400, Eric Paris wrote:
+Hi!
 
-> I will look at all of the my 80+ character lines again.  This one in
-> particular, I will not break up.  I might read a little too broadly in
-> CodingStyle where it says the "exception to this is where exceeding 80
-> columns significantly increases readability and does not hide
-> information".
+there are very annoying freezes of X11 recently on my desktop running
+2.6.30-1-amd64 (from debian) on the DG33TL motherboard. i think, it is
+the same as described here:
 
-There is a point when longer lines get too long tho .. Maybe over 100 is
-too long.. Where if your terminal only displays 80 characters , and the
-text is way over 80 the lines just get wrapped and all the intended
-readability goes out the window.
+https://bugs.freedesktop.org/show_bug.cgi?id=20560
+http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=525231
 
-Daniel
+such freezes happen during output to the screen under X11, and could
+occur while scrolling gnome-terminal, running firefox (iceweasel),
+switching virtual desktops, etc.
 
+when such "freeze" occurs, i can usually move the mouse pointer but
+nothing more (and the keyboard is locked, e.g. the caps lock led could
+not be toggled); although i can remotely login via ssh, and even via
+remote X11.
+
+interestingly, when i run remotely "init 6" to reboot, it sometimes does
+not reboot until i move the mouse (or press some keys on keyboard), and
+also recently i saw these messages in dmesg:
+
+[19320.640013] INFO: task events/1:16 blocked for more than 120 seconds.
+[19320.640017] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+[19320.640020] events/1      D ffff8800280600c0     0    16      2
+[19320.640026]  ffff88022b1414d0 0000000000000046 0000000000000000 0000000000000000
+[19320.640031]  ffffffff8020e5a9 00000000000120c0 000000000000e250 ffff88022b1807f0
+[19320.640036]  ffff88022b180ae0 0000000128062a48 ffffffff80235f65 ffff880028060128
+[19320.640040] Call Trace:
+[19320.640049]  [<ffffffff8020e5a9>] ? __switch_to+0xae/0x263
+[19320.640054]  [<ffffffff80235f65>] ? dequeue_entity+0xf/0x11f
+[19320.640061]  [<ffffffff804b4ad5>] ? __mutex_lock_common+0x10f/0x17f
+[19320.640077]  [<ffffffffa071de52>] ? i915_gem_retire_work_handler+0x0/0x64 [i915]
+[19320.640082]  [<ffffffff804b4944>] ? mutex_lock+0x12/0x28
+[19320.640095]  [<ffffffffa071de79>] ? i915_gem_retire_work_handler+0x27/0x64 [i915]
+[19320.640100]  [<ffffffff80250fe1>] ? worker_thread+0x174/0x211
+[19320.640104]  [<ffffffff8025473e>] ? autoremove_wake_function+0x0/0x2e
+[19320.640108]  [<ffffffff80250e6d>] ? worker_thread+0x0/0x211
+[19320.640112]  [<ffffffff80250e6d>] ? worker_thread+0x0/0x211
+[19320.640117]  [<ffffffff80254382>] ? kthread+0x54/0x80
+[19320.640121]  [<ffffffff80210aca>] ? child_rip+0xa/0x20
+[19320.640125]  [<ffffffff8025432e>] ? kthread+0x0/0x80
+[19320.640129]  [<ffffffff80210ac0>] ? child_rip+0x0/0x20
+
+which suggests that there is probably some incorrect locking going on
+(which is supported by the above-described behavior that i usually need
+to do some mouse moving, which generates interrupts, to get the reboot
+process to proceed).
+
+since i was seeing the above dmesg output, i don't exclude the
+possibility that this hang is caused by some bug in the kernel, rather
+than e.g. in the xserver-xorg-video-intel driver.
+
+hope some gurus could help to fix this very annoying bug.
+
+Best,
+v.
