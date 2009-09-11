@@ -1,168 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755807AbZIKRqS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753125AbZIKNqK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755807AbZIKRqS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 13:46:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755794AbZIKRqQ
+	id S1753125AbZIKNqK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 09:46:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZIKNqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 13:46:16 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41141 "EHLO mx1.redhat.com"
+	Fri, 11 Sep 2009 09:46:09 -0400
+Received: from smtp.ispras.ru ([83.149.198.201]:58576 "EHLO smtp.ispras.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755776AbZIKRqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 13:46:16 -0400
-Subject: [PATCH] mn10300 syscall.h
-From: Mark Salter <msalter@redhat.com>
-To: dhowells <dhowells@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Organization: Red Hat, Inc
-Date: Fri, 11 Sep 2009 13:46:18 -0400
-Message-Id: <1252691178.2174.34.camel@deneb.localdomain>
-Mime-Version: 1.0
+	id S1752089AbZIKNqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 09:46:07 -0400
+From: iceberg <strakh@ispras.ru>
+Organization: ISP RAS
+To: Jonathan Corbet <corbet@lwn.net>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix lock imbalances in /drivers/media/video/cafe_ccic.c
+Date: Fri, 11 Sep 2009 17:47:39 +0000
+User-Agent: KMail/1.10.3 (Linux/2.6.27.29-0.1-default; KDE/4.1.3; x86_64; ; )
+References: <200909101837.34472.strakh@ispras.ru> <20090910093003.194c300f@bike.lwn.net>
+In-Reply-To: <20090910093003.194c300f@bike.lwn.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200909111747.40238.strakh@ispras.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds missing asm/syscall.h to mn10300 arch.
+On Thursday 10 September 2009 15:30:03 you wrote:
 
-Signed-off-by: Mark Salter <msalter@redhat.com>
+	Incorrect patch. See path starting with "if (cam->sensor == null) {" in line 
+1960. In this case we goto out_smbs and try mutex_unlock on unlocking mutex.
 
-diff --git a/arch/mn10300/include/asm/syscall.h b/arch/mn10300/include/asm/syscall.h
-new file mode 100644
-index 0000000..cc5a1f1
---- /dev/null
-+++ b/arch/mn10300/include/asm/syscall.h
-@@ -0,0 +1,131 @@
-+/* syscall parameter access functions
-+ *
-+ * Copyright (C) 2009 Red Hat, Inc. All Rights Reserved.
-+ * Written by Mark Salter <msalter@redhat.com>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#ifndef _ASM_SYSCALL_H
-+#define _ASM_SYSCALL_H
-+
-+#include <linux/err.h>
-+#include <asm/ptrace.h>
-+
-+/*
-+ * Get the system call number or -1
-+ */
-+static inline long syscall_get_nr(struct task_struct *task,
-+				  struct pt_regs *regs)
-+{
-+	return regs->orig_d0;
-+}
-+
-+/*
-+ * Restore the clobbered d0 register
-+ */
-+static inline void syscall_rollback(struct task_struct *task,
-+				    struct pt_regs *regs)
-+{
-+	regs->d0 = regs->orig_d0;
-+}
-+
-+/*
-+ * See if the syscall return value is an error, returning it if it is and 0 if
-+ * not
-+ */
-+static inline long syscall_get_error(struct task_struct *task,
-+				     struct pt_regs *regs)
-+{
-+	return IS_ERR_VALUE(regs->d0) ? regs->d0 : 0;
-+}
-+
-+/*
-+ * Get the syscall return value
-+ */
-+static inline long syscall_get_return_value(struct task_struct *task,
-+					    struct pt_regs *regs)
-+{
-+	return regs->d0;
-+}
-+
-+/*
-+ * Set the syscall return value
-+ */
-+static inline void syscall_set_return_value(struct task_struct *task,
-+					    struct pt_regs *regs,
-+					    int error, long val)
-+{
-+	regs->d0 = (long) error ?: val;
-+}
-+
-+/*
-+ * Retrieve the system call arguments
-+ */
-+static inline void syscall_get_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 unsigned long *args)
-+{
-+	/*
-+	 * Do this simply for now. If we need to start supporting
-+	 * fetching arguments from arbitrary indices, this will need some
-+	 * extra logic. Presently there are no in-tree users that depend
-+	 * on this behaviour.
-+	 */
-+	BUG_ON(i);
-+
-+	/* Argument pattern is: a0, d1, a3, a2, d3, d2 */
-+	switch (n) {
-+	case 6:
-+		args[5] = regs->d2;
-+	case 5:
-+		args[4] = regs->d3;
-+	case 4:
-+		args[3] = regs->a2;
-+	case 3:
-+		args[2] = regs->a3;
-+	case 2:
-+		args[1] = regs->d1;
-+	case 1:
-+		args[0] = regs->a0;
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+/*
-+ * Alter the system call arguments
-+ */
-+static inline void syscall_set_arguments(struct task_struct *task,
-+					 struct pt_regs *regs,
-+					 unsigned int i, unsigned int n,
-+					 const unsigned long *args)
-+{
-+	/* Same note as above applies */
-+	BUG_ON(i);
-+
-+	switch (n) {
-+	case 6:
-+		regs->d2 = args[5];
-+	case 5:
-+		regs->d3 = args[4];
-+	case 4:
-+		regs->a2 = args[3];
-+	case 3:
-+		regs->a3 = args[2];
-+	case 2:
-+		regs->d1 = args[1];
-+	case 1:
-+		regs->a0 = args[0];
-+		break;
-+	default:
-+		BUG();
-+	}
-+}
-+
-+#endif /* _ASM_SYSCALL_H */
+> On Thu, 10 Sep 2009 18:37:34 +0000
+>
+> iceberg <strakh@ispras.ru> wrote:
+> > In ./drivers/media/video/cafe_ccic.c, in function cafe_pci_probe:
+> > Mutex must be unlocked before exit
+> > 	1. On paths starting with mutex lock in line 1912, then continuing in
+> > lines: 1929, 1936 (goto unreg) and 1940 (goto iounmap) .
+> > 	2. On path starting in line 1971 mutex lock, and then continuing in line
+> > 1978 (goto out_smbus) mutex.
+>
+> That's a definite bug, but I hate all those unlocks in the error
+> branches.  As it happens, we don't really need the mutex until the
+> device has been exposed to the rest of the kernel, so I propose the
+> following as a better patch.
+>
+> Thanks for pointing this out,
+>
+> jon
+>
+> ---
+> Fix a mutex leak
+>
+> Certain error exits from cafe_pci_probe() can leave the camera mutex
+> locked.  For much of the time, we didn't need the mutex anyway; take it out
+> and add an unlock in the path where it is needed.
+>
+> Reported-by: Alexander Strakh <strakh@ispras.ru>
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> ---
+>  drivers/media/video/cafe_ccic.c |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/media/video/cafe_ccic.c
+> b/drivers/media/video/cafe_ccic.c index c4d181d..0f62b5e 100644
+> --- a/drivers/media/video/cafe_ccic.c
+> +++ b/drivers/media/video/cafe_ccic.c
+> @@ -1909,7 +1909,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+>  		goto out_free;
+>
+>  	mutex_init(&cam->s_mutex);
+> -	mutex_lock(&cam->s_mutex);
+>  	spin_lock_init(&cam->dev_lock);
+>  	cam->state = S_NOTREADY;
+>  	cafe_set_config_needed(cam, 1);
+> @@ -1949,7 +1948,6 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+>  	 * because the sensor could attach in this call chain, leading to
+>  	 * unsightly deadlocks.
+>  	 */
+> -	mutex_unlock(&cam->s_mutex);  /* attach can deadlock */
+>  	ret = cafe_smbus_setup(cam);
+>  	if (ret)
+>  		goto out_freeirq;
+> @@ -1991,6 +1989,7 @@ static int cafe_pci_probe(struct pci_dev *pdev,
+>  	return 0;
+>
+>  out_smbus:
+> +	mutex_unlock(&cam->s_mutex);
+>  	cafe_smbus_shutdown(cam);
+>  out_freeirq:
+>  	cafe_ctlr_power_down(cam);
+
 
 
