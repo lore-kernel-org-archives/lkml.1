@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753612AbZIKAa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753893AbZIKAbz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753612AbZIKAa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 20:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753301AbZIKA3L
+	id S1753893AbZIKAbz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 20:31:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753235AbZIKAbx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 20:29:11 -0400
-Received: from kroah.org ([198.145.64.141]:38090 "EHLO coco.kroah.org"
+	Thu, 10 Sep 2009 20:31:53 -0400
+Received: from kroah.org ([198.145.64.141]:38094 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751679AbZIKA3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 20:29:07 -0400
+	id S1753132AbZIKA3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 20:29:08 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu Sep 10 17:24:11 2009
-Message-Id: <20090911002410.971758034@mini.kroah.org>
+Message-Id: <20090911002411.157180912@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 10 Sep 2009 17:22:59 -0700
+Date: Thu, 10 Sep 2009 17:23:00 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Subject: [patch 13/22] nilfs2: fix preempt count underflow in nilfs_btnode_prepare_change_key
+       Chris Wright <chrisw@sous-sol.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Matthew Wilcox <matthew@wil.cx>, Yu Zhao <yu.zhao@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 14/22] PCI SR-IOV: correct broken resource alignment calculations
 References: <20090911002246.666327880@mini.kroah.org>
-Content-Disposition: inline; filename=nilfs2-fix-preempt-count-underflow-in-nilfs_btnode_prepare_change_key.patch
+Content-Disposition: inline; filename=pci-sr-iov-correct-broken-resource-alignment-calculations.patch
 In-Reply-To: <20090911002616.GA12087@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,77 +32,159 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.30-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+From: Chris Wright <chrisw@sous-sol.org>
 
-commit b1f1b8ce0a1d71cbc72f7540134d52b79bd8f5ac upstream.
+commit 6faf17f6f1ffc586d16efc2f9fa2083a7785ee74 upstream.
 
-This will fix the following preempt count underflow reported from
-users with the title "[NILFS users] segctord problem" (Message-ID:
-<949415.6494.qm@web58808.mail.re1.yahoo.com> and Message-ID:
-<debc30fc0908270825v747c1734xa59126623cfd5b05@mail.gmail.com>):
+An SR-IOV capable device includes an SR-IOV PCIe capability which
+describes the Virtual Function (VF) BAR requirements.  A typical SR-IOV
+device can support multiple VFs whose BARs must be in a contiguous region,
+effectively an array of VF BARs.  The BAR reports the size requirement
+for a single VF.  We calculate the full range needed by simply multiplying
+the VF BAR size with the number of possible VFs and create a resource
+spanning the full range.
 
- WARNING: at kernel/sched.c:4890 sub_preempt_count+0x95/0xa0()
- Hardware name: HP Compaq 6530b (KR980UT#ABC)
- Modules linked in: bridge stp llc bnep rfcomm l2cap xfs exportfs nilfs2 cowloop loop vboxnetadp vboxnetflt vboxdrv btusb bluetooth uvcvideo videodev v4l1_compat v4l2_compat_ioctl32 arc4 snd_hda_codec_analog ecb iwlagn iwlcore rfkill lib80211 mac80211 snd_hda_intel snd_hda_codec ehci_hcd uhci_hcd usbcore snd_hwdep snd_pcm tg3 cfg80211 psmouse snd_timer joydev libphy ohci1394 snd_page_alloc hp_accel lis3lv02d ieee1394 led_class i915 drm i2c_algo_bit video backlight output i2c_core dm_crypt dm_mod
- Pid: 4197, comm: segctord Not tainted 2.6.30-gentoo-r4-64 #7
- Call Trace:
-  [<ffffffff8023fa05>] ? sub_preempt_count+0x95/0xa0
-  [<ffffffff802470f8>] warn_slowpath_common+0x78/0xd0
-  [<ffffffff8024715f>] warn_slowpath_null+0xf/0x20
-  [<ffffffff8023fa05>] sub_preempt_count+0x95/0xa0
-  [<ffffffffa04ce4db>] nilfs_btnode_prepare_change_key+0x11b/0x190 [nilfs2]
-  [<ffffffffa04d01ad>] nilfs_btree_assign_p+0x19d/0x1e0 [nilfs2]
-  [<ffffffffa04d10ad>] nilfs_btree_assign+0xbd/0x130 [nilfs2]
-  [<ffffffffa04cead7>] nilfs_bmap_assign+0x47/0x70 [nilfs2]
-  [<ffffffffa04d9bc6>] nilfs_segctor_do_construct+0x956/0x20f0 [nilfs2]
-  [<ffffffff805ac8e2>] ? _spin_unlock_irqrestore+0x12/0x40
-  [<ffffffff803c06e0>] ? __up_write+0xe0/0x150
-  [<ffffffff80262959>] ? up_write+0x9/0x10
-  [<ffffffffa04ce9f3>] ? nilfs_bmap_test_and_clear_dirty+0x43/0x60 [nilfs2]
-  [<ffffffffa04cd627>] ? nilfs_mdt_fetch_dirty+0x27/0x60 [nilfs2]
-  [<ffffffffa04db5fc>] nilfs_segctor_construct+0x8c/0xd0 [nilfs2]
-  [<ffffffffa04dc3dc>] nilfs_segctor_thread+0x15c/0x3a0 [nilfs2]
-  [<ffffffffa04dbe20>] ? nilfs_construction_timeout+0x0/0x10 [nilfs2]
-  [<ffffffff80252633>] ? add_timer+0x13/0x20
-  [<ffffffff802370da>] ? __wake_up_common+0x5a/0x90
-  [<ffffffff8025e960>] ? autoremove_wake_function+0x0/0x40
-  [<ffffffffa04dc280>] ? nilfs_segctor_thread+0x0/0x3a0 [nilfs2]
-  [<ffffffffa04dc280>] ? nilfs_segctor_thread+0x0/0x3a0 [nilfs2]
-  [<ffffffff8025e556>] kthread+0x56/0x90
-  [<ffffffff8020cdea>] child_rip+0xa/0x20
-  [<ffffffff8025e500>] ? kthread+0x0/0x90
-  [<ffffffff8020cde0>] ? child_rip+0x0/0x20
+This all seems sane enough except it artificially inflates the alignment
+requirement for the VF BAR.  The VF BAR need only be aligned to the size
+of a single BAR not the contiguous range of VF BARs.  This can cause us
+to fail to allocate resources for the BAR despite the fact that we
+actually have enough space.
 
-This problem was caused due to a missing radix_tree_preload() call in
-the retry path of nilfs_btnode_prepare_change_key() function.
+This patch adds a thin PCI specific layer over the generic
+resource_alignment() function which is aware of the special nature of
+VF BARs and does sorting and allocation based on the smaller alignment
+requirement.
 
-Reported-by: Eric A <eric225125@yahoo.com>
-Reported-by: Jerome Poulin <jeromepoulin@gmail.com>
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Tested-by: Jerome Poulin <jeromepoulin@gmail.com>
+I recognize that while resource_alignment is generic, it's basically a
+PCI helper.  An alternative to this patch is to add PCI VF BAR specific
+information to struct resource.  I opted for the extra layer rather than
+adding such PCI specific information to struct resource.  This does
+have the slight downside that we don't cache the BAR size and re-read
+for each alignment query (happens a small handful of times during boot
+for each VF BAR).
+
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Matthew Wilcox <matthew@wil.cx>
+Cc: Yu Zhao <yu.zhao@intel.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nilfs2/btnode.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/pci/iov.c       |   23 +++++++++++++++++++++++
+ drivers/pci/pci.h       |   13 +++++++++++++
+ drivers/pci/setup-bus.c |    4 ++--
+ drivers/pci/setup-res.c |    6 +++---
+ 4 files changed, 41 insertions(+), 5 deletions(-)
 
---- a/fs/nilfs2/btnode.c
-+++ b/fs/nilfs2/btnode.c
-@@ -206,6 +206,7 @@ int nilfs_btnode_prepare_change_key(stru
- 		 * We cannot call radix_tree_preload for the kernels older
- 		 * than 2.6.23, because it is not exported for modules.
- 		 */
-+retry:
- 		err = radix_tree_preload(GFP_NOFS & ~__GFP_HIGHMEM);
- 		if (err)
- 			goto failed_unlock;
-@@ -216,7 +217,6 @@ int nilfs_btnode_prepare_change_key(stru
- 				       (unsigned long long)oldkey,
- 				       (unsigned long long)newkey);
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -595,6 +595,29 @@ int pci_iov_resource_bar(struct pci_dev 
+ }
  
--retry:
- 		spin_lock_irq(&btnc->tree_lock);
- 		err = radix_tree_insert(&btnc->page_tree, newkey, obh->b_page);
- 		spin_unlock_irq(&btnc->tree_lock);
+ /**
++ * pci_sriov_resource_alignment - get resource alignment for VF BAR
++ * @dev: the PCI device
++ * @resno: the resource number
++ *
++ * Returns the alignment of the VF BAR found in the SR-IOV capability.
++ * This is not the same as the resource size which is defined as
++ * the VF BAR size multiplied by the number of VFs.  The alignment
++ * is just the VF BAR size.
++ */
++int pci_sriov_resource_alignment(struct pci_dev *dev, int resno)
++{
++	struct resource tmp;
++	enum pci_bar_type type;
++	int reg = pci_iov_resource_bar(dev, resno, &type);
++
++	if (!reg)
++		return 0;
++
++	 __pci_read_base(dev, type, &tmp, reg);
++	return resource_alignment(&tmp);
++}
++
++/**
+  * pci_restore_iov_state - restore the state of the IOV capability
+  * @dev: the PCI device
+  */
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -234,6 +234,7 @@ extern int pci_iov_init(struct pci_dev *
+ extern void pci_iov_release(struct pci_dev *dev);
+ extern int pci_iov_resource_bar(struct pci_dev *dev, int resno,
+ 				enum pci_bar_type *type);
++extern int pci_sriov_resource_alignment(struct pci_dev *dev, int resno);
+ extern void pci_restore_iov_state(struct pci_dev *dev);
+ extern int pci_iov_bus_range(struct pci_bus *bus);
+ #else
+@@ -259,4 +260,16 @@ static inline int pci_iov_bus_range(stru
+ }
+ #endif /* CONFIG_PCI_IOV */
+ 
++static inline int pci_resource_alignment(struct pci_dev *dev,
++					 struct resource *res)
++{
++#ifdef CONFIG_PCI_IOV
++	int resno = res - dev->resource;
++
++	if (resno >= PCI_IOV_RESOURCES && resno <= PCI_IOV_RESOURCE_END)
++		return pci_sriov_resource_alignment(dev, resno);
++#endif
++	return resource_alignment(res);
++}
++
+ #endif /* DRIVERS_PCI_H */
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -25,7 +25,7 @@
+ #include <linux/ioport.h>
+ #include <linux/cache.h>
+ #include <linux/slab.h>
+-
++#include "pci.h"
+ 
+ static void pbus_assign_resources_sorted(const struct pci_bus *bus)
+ {
+@@ -355,7 +355,7 @@ static int pbus_size_mem(struct pci_bus 
+ 				continue;
+ 			r_size = resource_size(r);
+ 			/* For bridges size != alignment */
+-			align = resource_alignment(r);
++			align = pci_resource_alignment(dev, r);
+ 			order = __ffs(align) - 20;
+ 			if (order > 11) {
+ 				dev_warn(&dev->dev, "BAR %d bad alignment %llx: "
+--- a/drivers/pci/setup-res.c
++++ b/drivers/pci/setup-res.c
+@@ -145,7 +145,7 @@ int pci_assign_resource(struct pci_dev *
+ 	size = resource_size(res);
+ 	min = (res->flags & IORESOURCE_IO) ? PCIBIOS_MIN_IO : PCIBIOS_MIN_MEM;
+ 
+-	align = resource_alignment(res);
++	align = pci_resource_alignment(dev, res);
+ 	if (!align) {
+ 		dev_info(&dev->dev, "BAR %d: can't allocate resource (bogus "
+ 			"alignment) %pR flags %#lx\n",
+@@ -236,7 +236,7 @@ void pdev_sort_resources(struct pci_dev 
+ 		if (!(r->flags) || r->parent)
+ 			continue;
+ 
+-		r_align = resource_alignment(r);
++		r_align = pci_resource_alignment(dev, r);
+ 		if (!r_align) {
+ 			dev_warn(&dev->dev, "BAR %d: bogus alignment "
+ 				"%pR flags %#lx\n",
+@@ -248,7 +248,7 @@ void pdev_sort_resources(struct pci_dev 
+ 			struct resource_list *ln = list->next;
+ 
+ 			if (ln)
+-				align = resource_alignment(ln->res);
++				align = pci_resource_alignment(ln->dev, ln->res);
+ 
+ 			if (r_align > align) {
+ 				tmp = kmalloc(sizeof(*tmp), GFP_KERNEL);
 
 
