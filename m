@@ -1,86 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756391AbZIKUVO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756123AbZIKUYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756391AbZIKUVO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 16:21:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZIKUVL
+	id S1756123AbZIKUYL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 16:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752271AbZIKUYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 16:21:11 -0400
-Received: from brigitte.telenet-ops.be ([195.130.137.66]:49643 "EHLO
-	brigitte.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751988AbZIKUVL (ORCPT
+	Fri, 11 Sep 2009 16:24:10 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:58747 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbZIKUYK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 16:21:11 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 Sep 2009 16:21:10 EDT
-Date: Fri, 11 Sep 2009 22:16:11 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jason Wessel <jason.wessel@windriver.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-cc: kgdb-bugreport@lists.sourceforge.net,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] kgdb: Replace strstr() by strchr() for single-character
- needles
-Message-ID: <alpine.DEB.2.00.0909112214370.15464@ayla.of.borg>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Sep 2009 16:24:10 -0400
+Subject: Re: [PATCH] [14/21] HWPOISON: shmem: call set_page_dirty() with
+ locked page
+From: Peter Zijlstra <peterz@infradead.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: fengguang.wu@intel.com, linux-kernel@vger.kernel.org,
+       "hugh.dickins" <hugh.dickins@tiscali.co.uk>
+In-Reply-To: <20090911184843.32078B1757@basil.firstfloor.org>
+References: <20090911848.933193846@firstfloor.org>
+	 <20090911184843.32078B1757@basil.firstfloor.org>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 22:24:06 +0200
+Message-Id: <1252700646.7126.44.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some versions of gcc replace calls to strstr() with single-character
-"needle" string parameters by calls to strchr() behind our back.
-This causes linking errors if strchr() is defined as an inline function
-in <asm/string.h> (e.g. on m68k, which BTW doesn't have kgdb support).
+On Fri, 2009-09-11 at 20:48 +0200, Andi Kleen wrote:
+> From: Wu Fengguang <fengguang.wu@intel.com>
+> 
+> The dirtying of page and set_page_dirty() can be moved into the page lock.
+> 
+> - In shmem_write_end(), the page was dirtied while the page lock was held,
+>   but it's being marked dirty just after dropping the page lock.
+> - In shmem_symlink(), both dirtying and marking can be moved into page lock.
+> 
+> It's valuable for the hwpoison code to know whether one bad page can be dropped
+> without losing data. It mainly judges by testing the PG_dirty bit after taking
+> the page lock. So it becomes important that the dirtying of page and the
+> marking of dirtiness are both done inside the page lock. Which is a common
+> practice, but sadly not a rule.
+> 
+> The noticeable exceptions are
+> - mapped pages
+> - pages with buffer_heads
+> The above pages could go dirty at any time. Fortunately the hwpoison will
+> unmap the page and release the buffer_heads beforehand anyway.
+> 
+> Many other types of pages (eg. metadata pages) can also be dirtied at will by
+> their owners, the hwpoison code cannot do meaningful things to them anyway. 
+> Only the dirtiness of pagecache pages owned by regular files are interested.
 
-Prevent this by explicitly calling strchr() instead.
+Its not clear to me what this patch achieves.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-This is the single remaining case where strstr() is used with a
-single-character needle.  Cfr.
-commit 0d03d59d9b31cd1e33b7e46a80b6fef66244b1f2 ("md: Fix "strchr"
-[drivers/md/dm-log-userspace.ko] undefined!")
-commit d8b0fb51ef1563c631d26cb649a5479b5cc4899c ("[PATCH] libertas link error
-due to gcc `smartness'")
+Will it, from now on, be mandatory to dirty pages under PG_lock, and
+does this patch correct the last few such cases that didn't yet do that,
+or does it still leave holes?
 
- drivers/misc/kgdbts.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+Can we document the requirements and or holes to it someplace near
+set_page_dirty()?
 
-diff --git a/drivers/misc/kgdbts.c b/drivers/misc/kgdbts.c
-index e4ff50b..2a43d8c 100644
---- a/drivers/misc/kgdbts.c
-+++ b/drivers/misc/kgdbts.c
-@@ -885,16 +885,16 @@ static void kgdbts_run_tests(void)
- 	int nmi_sleep = 0;
- 	int i;
- 
--	ptr = strstr(config, "F");
-+	ptr = strchr(config, 'F');
- 	if (ptr)
- 		fork_test = simple_strtol(ptr + 1, NULL, 10);
--	ptr = strstr(config, "S");
-+	ptr = strchr(config, 'S');
- 	if (ptr)
- 		do_sys_open_test = simple_strtol(ptr + 1, NULL, 10);
--	ptr = strstr(config, "N");
-+	ptr = strchr(config, 'N');
- 	if (ptr)
- 		nmi_sleep = simple_strtol(ptr+1, NULL, 10);
--	ptr = strstr(config, "I");
-+	ptr = strchr(config, 'I');
- 	if (ptr)
- 		sstep_test = simple_strtol(ptr+1, NULL, 10);
- 
--- 
-1.6.0.4
+> Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> Reviewed-by: WANG Cong <xiyou.wangcong@gmail.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  mm/shmem.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux/mm/shmem.c
+> ===================================================================
+> --- linux.orig/mm/shmem.c
+> +++ linux/mm/shmem.c
+> @@ -1630,8 +1630,8 @@ shmem_write_end(struct file *file, struc
+>  	if (pos + copied > inode->i_size)
+>  		i_size_write(inode, pos + copied);
+>  
+> -	unlock_page(page);
+>  	set_page_dirty(page);
+> +	unlock_page(page);
+>  	page_cache_release(page);
+>  
+>  	return copied;
+> @@ -1968,13 +1968,13 @@ static int shmem_symlink(struct inode *d
+>  			iput(inode);
+>  			return error;
+>  		}
+> -		unlock_page(page);
+>  		inode->i_mapping->a_ops = &shmem_aops;
+>  		inode->i_op = &shmem_symlink_inode_operations;
+>  		kaddr = kmap_atomic(page, KM_USER0);
+>  		memcpy(kaddr, symname, len);
+>  		kunmap_atomic(kaddr, KM_USER0);
+>  		set_page_dirty(page);
+> +		unlock_page(page);
+>  		page_cache_release(page);
+>  	}
+>  	if (dir->i_mode & S_ISGID)
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
