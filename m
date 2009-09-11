@@ -1,106 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756009AbZIKSs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZIKSsw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756009AbZIKSs7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 14:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZIKSsv
+	id S1755997AbZIKSsw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 14:48:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbZIKSst
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 14:48:51 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54044 "EHLO
+	Fri, 11 Sep 2009 14:48:49 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54033 "EHLO
 	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755956AbZIKSsp (ORCPT
+	with ESMTP id S1755919AbZIKSsq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 14:48:45 -0400
+	Fri, 11 Sep 2009 14:48:46 -0400
 From: Andi Kleen <andi@firstfloor.org>
 References: <20090911848.933193846@firstfloor.org>
 In-Reply-To: <20090911848.933193846@firstfloor.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH] [19/21] HWPOISON: Add madvise() based injector for hardware poisoned pages v4
-Message-Id: <20090911184848.40D9DB1757@basil.firstfloor.org>
-Date: Fri, 11 Sep 2009 20:48:48 +0200 (CEST)
+Subject: [PATCH] [20/21] HWPOISON: Add simple debugfs interface to inject hwpoison on arbitary PFNs
+Message-Id: <20090911184849.43820B1757@basil.firstfloor.org>
+Date: Fri, 11 Sep 2009 20:48:49 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: optional, useful for debugging
+Useful for some testing scenarios, although specific testing is often
+done better through MADV_POISON
 
-Add a new madvice sub command to inject poison for some
-pages in a process' address space.  This is useful for
-testing the poison page handling.
+This can be done with the x86 level MCE injector too, but this interface
+allows it to do independently from low level x86 changes.
 
-This patch can allow root to tie up large amounts of memory.
-I got feedback from container developers and they didn't see any 
-problem.
-
-v2: Use write flag for get_user_pages to make sure to always get
-a fresh page
-v3: Don't request write mapping (Fengguang Wu)
-v4: Move MADV_* number to avoid conflict with KSM (Hugh Dickins)
+v2: Add module license (Haicheng Li)
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 
 ---
- include/asm-generic/mman-common.h |    1 +
- mm/madvise.c                      |   30 ++++++++++++++++++++++++++++++
- 2 files changed, 31 insertions(+)
+ mm/Kconfig           |    6 +++++-
+ mm/Makefile          |    1 +
+ mm/hwpoison-inject.c |   41 +++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 47 insertions(+), 1 deletion(-)
 
-Index: linux/mm/madvise.c
+Index: linux/mm/hwpoison-inject.c
 ===================================================================
---- linux.orig/mm/madvise.c
-+++ linux/mm/madvise.c
-@@ -207,6 +207,32 @@ static long madvise_remove(struct vm_are
- 	return error;
- }
- 
-+#ifdef CONFIG_MEMORY_FAILURE
-+/*
-+ * Error injection support for memory error handling.
-+ */
-+static int madvise_hwpoison(unsigned long start, unsigned long end)
-+{
-+	int ret = 0;
+--- /dev/null
++++ linux/mm/hwpoison-inject.c
+@@ -0,0 +1,41 @@
++/* Inject a hwpoison memory failure on a arbitary pfn */
++#include <linux/module.h>
++#include <linux/debugfs.h>
++#include <linux/kernel.h>
++#include <linux/mm.h>
 +
++static struct dentry *hwpoison_dir, *corrupt_pfn;
++
++static int hwpoison_inject(void *data, u64 val)
++{
 +	if (!capable(CAP_SYS_ADMIN))
 +		return -EPERM;
-+	for (; start < end; start += PAGE_SIZE) {
-+		struct page *p;
-+		int ret = get_user_pages(current, current->mm, start, 1,
-+						0, 0, &p, NULL);
-+		if (ret != 1)
-+			return ret;
-+		printk(KERN_INFO "Injecting memory failure for page %lx at %lx\n",
-+		       page_to_pfn(p), start);
-+		/* Ignore return value for now */
-+		__memory_failure(page_to_pfn(p), 0, 1);
-+		put_page(p);
-+	}
-+	return ret;
++	printk(KERN_INFO "Injecting memory failure at pfn %Lx\n", val);
++	return __memory_failure(val, 18, 0);
 +}
-+#endif
 +
- static long
- madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
- 		unsigned long start, unsigned long end, int behavior)
-@@ -307,6 +333,10 @@ SYSCALL_DEFINE3(madvise, unsigned long,
- 	int write;
- 	size_t len;
- 
-+#ifdef CONFIG_MEMORY_FAILURE
-+	if (behavior == MADV_HWPOISON)
-+		return madvise_hwpoison(start, start+len_in);
-+#endif
- 	if (!madvise_behavior_valid(behavior))
- 		return error;
- 
-Index: linux/include/asm-generic/mman-common.h
++DEFINE_SIMPLE_ATTRIBUTE(hwpoison_fops, NULL, hwpoison_inject, "%lli\n");
++
++static void pfn_inject_exit(void)
++{
++	if (hwpoison_dir)
++		debugfs_remove_recursive(hwpoison_dir);
++}
++
++static int pfn_inject_init(void)
++{
++	hwpoison_dir = debugfs_create_dir("hwpoison", NULL);
++	if (hwpoison_dir == NULL)
++		return -ENOMEM;
++	corrupt_pfn = debugfs_create_file("corrupt-pfn", 0600, hwpoison_dir,
++					  NULL, &hwpoison_fops);
++	if (corrupt_pfn == NULL) {
++		pfn_inject_exit();
++		return -ENOMEM;
++	}
++	return 0;
++}
++
++module_init(pfn_inject_init);
++module_exit(pfn_inject_exit);
++MODULE_LICENSE("GPL");
+Index: linux/mm/Kconfig
 ===================================================================
---- linux.orig/include/asm-generic/mman-common.h
-+++ linux/include/asm-generic/mman-common.h
-@@ -34,6 +34,7 @@
- #define MADV_REMOVE	9		/* remove these pages & resources */
- #define MADV_DONTFORK	10		/* don't inherit across fork */
- #define MADV_DOFORK	11		/* do inherit across fork */
-+#define MADV_HWPOISON	100		/* poison a page for testing */
+--- linux.orig/mm/Kconfig
++++ linux/mm/Kconfig
+@@ -236,12 +236,16 @@ config DEFAULT_MMAP_MIN_ADDR
+ config MEMORY_FAILURE
+ 	depends on MMU
+ 	depends on X86_MCE
+-	bool "Enable memory failure recovery"
++	bool "Enable recovery from hardware memory errors"
+ 	help
+ 	  Enables code to recover from some memory failures on systems
+ 	  with MCA recovery. This allows a system to continue running
+ 	  even when some of its memory has uncorrected errors.
  
- /* compatibility flags */
- #define MAP_FILE	0
++config HWPOISON_INJECT
++	tristate "Poison pages injector"
++	depends on MEMORY_FAILURE && DEBUG_KERNEL
++
+ config NOMMU_INITIAL_TRIM_EXCESS
+ 	int "Turn on mmap() excess space trimming before booting"
+ 	depends on !MMU
+Index: linux/mm/Makefile
+===================================================================
+--- linux.orig/mm/Makefile
++++ linux/mm/Makefile
+@@ -41,5 +41,6 @@ endif
+ obj-$(CONFIG_QUICKLIST) += quicklist.o
+ obj-$(CONFIG_CGROUP_MEM_RES_CTLR) += memcontrol.o page_cgroup.o
+ obj-$(CONFIG_MEMORY_FAILURE) += memory-failure.o
++obj-$(CONFIG_HWPOISON_INJECT) += hwpoison-inject.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK) += kmemleak.o
+ obj-$(CONFIG_DEBUG_KMEMLEAK_TEST) += kmemleak-test.o
