@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756490AbZIKUDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756457AbZIKUCq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756490AbZIKUDQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 16:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZIKUDO
+	id S1756457AbZIKUCq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 16:02:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756311AbZIKUCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 16:03:14 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41145 "EHLO
+	Fri, 11 Sep 2009 16:02:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53756 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756191AbZIKUAb (ORCPT
+	with ESMTP id S1756197AbZIKUAc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 16:00:31 -0400
-Message-Id: <20090911200034.376726399@goodmis.org>
+	Fri, 11 Sep 2009 16:00:32 -0400
+Message-Id: <20090911200034.663899948@goodmis.org>
 References: <20090911195849.451244684@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 11 Sep 2009 15:58:56 -0400
+Date: Fri, 11 Sep 2009 15:58:57 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -23,37 +23,54 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>,
        Dick Streefland <dick@streefland.net>,
        Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH 07/15] kconfig: add check if end exists in extract-ikconfig
-Content-Disposition: inline; filename=0007-kconfig-add-check-if-end-exists-in-extract-ikconfig.patch
+Subject: [PATCH 08/15] kconfig: have extract-ikconfig read ELF files
+Content-Disposition: inline; filename=0008-kconfig-have-extract-ikconfig-read-ELF-files.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Both start and end should be tested for existence before continuing
-to parse the config.gz file.
+It would be nice to use extract-ikconfig to find the congfig.gz
+in either vmlinux (not vmlinuz) or configs.ko.
+
+This patch changes the script to also be able to read ELF files directly.
+
+[ Impact: find config.gz in vmlinux and configs.ko ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- scripts/extract-ikconfig |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+ scripts/extract-ikconfig |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
 diff --git a/scripts/extract-ikconfig b/scripts/extract-ikconfig
-index 72997c3..42d6bce 100755
+index 42d6bce..de233ff 100755
 --- a/scripts/extract-ikconfig
 +++ b/scripts/extract-ikconfig
-@@ -17,6 +17,10 @@ dump_config() {
- 	return
-     fi
-     end=`$binoffset $file $IKCFG_ED 2>/dev/null`
-+    [ "$?" != "0" ] && end="-1"
-+    if [ "$end" -eq "-1" ]; then
-+	return
-+    fi
+@@ -59,6 +59,8 @@ dump_config "$image"
+ GZHDR1="0x1f 0x8b 0x08 0x00"
+ GZHDR2="0x1f 0x8b 0x08 0x08"
  
-     start=`expr $start + 8`
-     size=`expr $end - $start`
++ELFHDR="0x7f 0x45 0x4c 0x46"
++
+ # vmlinux.gz: Check for a compressed images
+ off=`$binoffset "$image" $GZHDR1 2>/dev/null`
+ [ "$?" != "0" ] && off="-1"
+@@ -73,6 +75,14 @@ elif [ "$off" -ne "-1" ]; then
+ 	(dd ibs="$off" skip=1 count=0 && dd bs=512k) <"$image" 2>/dev/null | \
+ 		zcat >"$TMPFILE"
+ 	dump_config "$TMPFILE"
++
++# check if this is simply an ELF file
++else
++	off=`$binoffset "$image" $ELFHDR 2>/dev/null`
++	[ "$?" != "0" ] && off="-1"
++	if [ "$off" -eq "0" ]; then
++		dump_config "$image"
++	fi
+ fi
+ 
+ echo "ERROR: Unable to extract kernel configuration information."
 -- 
 1.6.3.3
 
