@@ -1,92 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752450AbZIKFwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752913AbZIKFww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752450AbZIKFwh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 01:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752015AbZIKFwg
+	id S1752913AbZIKFww (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 01:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZIKFwv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 01:52:36 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:33209 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751926AbZIKFwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 01:52:36 -0400
-Date: Fri, 11 Sep 2009 06:52:40 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jerome Glisse <jglisse@redhat.com>
-cc: airlied@gmail.com, linux-kernel@vger.kernel.org, dri-devel@lists.sf.net
-Subject: Re: [PATCH 2/3] drm/radeon/kms: move mtrr range add and memory
- information
-In-Reply-To: <1252612057-1993-1-git-send-email-jglisse@redhat.com>
-Message-ID: <alpine.DEB.2.00.0909110651450.29694@skynet.skynet.ie>
-References: <1252612057-1993-1-git-send-email-jglisse@redhat.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 Sep 2009 01:52:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43190 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752823AbZIKFwu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 01:52:50 -0400
+Date: Thu, 10 Sep 2009 22:52:42 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Dimitri Sivanich <sivanich@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Subject: Re: [PATCH] Add memory mapped RTC driver for UV
+Message-Id: <20090910225242.5c3f8ca1.akpm@linux-foundation.org>
+In-Reply-To: <20090911013054.GA6567@sgi.com>
+References: <20090911013054.GA6567@sgi.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  
->  /*
-> + * Printing helpers
+On Thu, 10 Sep 2009 20:30:54 -0500 Dimitri Sivanich <sivanich@sgi.com> wrote:
+
+> This driver memory maps the UV Hub RTC.
+>
+> ...
+>
+> +/**
+> + * uv_mmtimer_ioctl - ioctl interface for /dev/uv_mmtimer
+> + * @file: file structure for the device
+> + * @cmd: command to execute
+> + * @arg: optional argument to command
+> + *
+> + * Executes the command specified by @cmd.  Returns 0 for success, < 0 for
+> + * failure.
+> + *
+> + * Valid commands:
+> + *
+> + * %MMTIMER_GETOFFSET - Should return the offset (relative to the start
+> + * of the page where the registers are mapped) for the counter in question.
+> + *
+> + * %MMTIMER_GETRES - Returns the resolution of the clock in femto (10^-15)
+> + * seconds
+> + *
+> + * %MMTIMER_GETFREQ - Copies the frequency of the clock in Hz to the address
+> + * specified by @arg
+> + *
+> + * %MMTIMER_GETBITS - Returns the number of bits in the clock's counter
+> + *
+> + * %MMTIMER_MMAPAVAIL - Returns 1 if registers can be mmap'd into userspace
+> + *
+> + * %MMTIMER_GETCOUNTER - Gets the current value in the counter and places it
+> + * in the address specified by @arg.
+
+Are these % thingies part of kerneldoc?
+
 > + */
-> +#define PINF(s, arg...) printk(KERN_INFO "radeon " s, ##arg)
-> +#define PWRN(s, arg...) \
-> +	printk(KERN_WARNING "radeon (WR:%s:%d) " s, __FILE__, __LINE__, ##arg)
-> +#define PERR(s, arg...) \
-> +	printk(KERN_ERR "radeon (ER:%s:%d) " s, __FILE__, __LINE__, ##arg)
+> +static long uv_mmtimer_ioctl(struct file *file, unsigned int cmd,
+> +						unsigned long arg)
+> +{
+> +	int ret = 0;
 > +
+> +	switch (cmd) {
+> +	case MMTIMER_GETOFFSET:	/* offset of the counter */
+> +		/*
+> +		 * UV RTC register is on it's own page
 
-eh? no.
+"its" ;)
 
-No more printf wrappers please, use DRM_*, or make them better,
-or use drv_* or make them better.
-
-but no sneaking stuff like this in a patch that doesn't mention it
-introduces printf wrapping.
-
-Dave.
-
+> +		 */
+> +		if (PAGE_SIZE <= (1 << 16))
+> +			ret = ((UV_LOCAL_MMR_BASE | UVH_RTC) & (PAGE_SIZE-1))
+> +				/ 8;
+> +		else
+> +			ret = -ENOSYS;
+> +		break;
 > +
-> +/*
->   * ASICs macro.
->   */
->  #define radeon_init(rdev) (rdev)->asic->init((rdev))
-> diff --git a/drivers/gpu/drm/radeon/radeon_device.c b/drivers/gpu/drm/radeon/radeon_device.c
-> index 72f6262..07ef8b6 100644
-> --- a/drivers/gpu/drm/radeon/radeon_device.c
-> +++ b/drivers/gpu/drm/radeon/radeon_device.c
-> @@ -598,14 +598,6 @@ int radeon_device_init(struct radeon_device *rdev,
->  		/* Get vram informations */
->  		radeon_vram_info(rdev);
->  
-> -		/* Add an MTRR for the VRAM */
-> -		rdev->mc.vram_mtrr = mtrr_add(rdev->mc.aper_base, rdev->mc.aper_size,
-> -				MTRR_TYPE_WRCOMB, 1);
-> -		DRM_INFO("Detected VRAM RAM=%uM, BAR=%uM\n",
-> -				(unsigned)(rdev->mc.mc_vram_size >> 20),
-> -				(unsigned)(rdev->mc.aper_size >> 20));
-> -		DRM_INFO("RAM width %dbits %cDR\n",
-> -				rdev->mc.vram_width, rdev->mc.vram_is_ddr ? 'D' : 'S');
->  		/* Initialize memory controller (also test AGP) */
->  		r = radeon_mc_init(rdev);
->  		if (r) {
-> diff --git a/drivers/gpu/drm/radeon/radeon_object.c b/drivers/gpu/drm/radeon/radeon_object.c
-> index b85fb83..0100b3b 100644
-> --- a/drivers/gpu/drm/radeon/radeon_object.c
-> +++ b/drivers/gpu/drm/radeon/radeon_object.c
-> @@ -369,6 +369,13 @@ void radeon_object_force_delete(struct radeon_device *rdev)
->  
->  int radeon_object_init(struct radeon_device *rdev)
->  {
-> +	/* Add an MTRR for the VRAM */
-> +	rdev->mc.vram_mtrr = mtrr_add(rdev->mc.aper_base, rdev->mc.aper_size,
-> +			MTRR_TYPE_WRCOMB, 1);
-> +	PINF("Detected VRAM RAM=%lluM, BAR=%lluM\n",
-> +		rdev->mc.mc_vram_size >> 20, rdev->mc.aper_size >> 20);
-> +	PINF("RAM width %dbits %cDR\n",
-> +			rdev->mc.vram_width, rdev->mc.vram_is_ddr ? 'D' : 'S');
->  	return radeon_ttm_init(rdev);
->  }
->  
-> 
+> +	case MMTIMER_GETRES: /* resolution of the clock in 10^-15 s */
+> +		if (copy_to_user((unsigned long __user *)arg,
+> +				&uv_mmtimer_femtoperiod, sizeof(unsigned long)))
+> +			ret = -EFAULT;
+> +		break;
+> +
+> +	case MMTIMER_GETFREQ: /* frequency in Hz */
+> +		if (copy_to_user((unsigned long __user *)arg,
+> +				&sn_rtc_cycles_per_second,
+> +				sizeof(unsigned long)))
+> +			ret = -EFAULT;
+> +		break;
+> +
+> +	case MMTIMER_GETBITS: /* number of bits in the clock */
+> +		ret = hweight64(UVH_RTC_REAL_TIME_CLOCK_MASK);
+> +		break;
+> +
+> +	case MMTIMER_MMAPAVAIL: /* can we mmap the clock into userspace? */
+> +		ret = (PAGE_SIZE <= (1 << 16)) ? 1 : 0;
+> +		break;
+> +
+> +	case MMTIMER_GETCOUNTER:
+> +		if (copy_to_user((unsigned long __user *)arg,
+> +				(unsigned long *)uv_local_mmr_address(UVH_RTC),
+> +				sizeof(unsigned long)))
+> +			ret = -EFAULT;
+> +		break;
+> +	default:
+> +		ret = -ENOTTY;
+> +		break;
+> +	}
+> +	return ret;
+> +}
+> +
+> +/**
+> + * uv_mmtimer_mmap - maps the clock's registers into userspace
+> + * @file: file structure for the device
+> + * @vma: VMA to map the registers into
+> + *
+> + * Calls remap_pfn_range() to map the clock's registers into
+> + * the calling process' address space.
+> + */
+> +static int uv_mmtimer_mmap(struct file *file, struct vm_area_struct *vma)
+> +{
+> +	unsigned long uv_mmtimer_addr;
+> +
+> +	if (vma->vm_end - vma->vm_start != PAGE_SIZE)
+> +		return -EINVAL;
+> +
+> +	if (vma->vm_flags & VM_WRITE)
+> +		return -EPERM;
+> +
+> +	if (PAGE_SIZE > (1 << 16))
+> +		return -ENOSYS;
+> +
+> +	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+> +
+> +	uv_mmtimer_addr = UV_LOCAL_MMR_BASE | UVH_RTC;
+> +	uv_mmtimer_addr &= ~(PAGE_SIZE - 1);
+> +	uv_mmtimer_addr &= 0xfffffffffffffffUL;
+> +
+> +	if (remap_pfn_range(vma, vma->vm_start, uv_mmtimer_addr >> PAGE_SHIFT,
+> +					PAGE_SIZE, vma->vm_page_prot)) {
+> +		printk(KERN_ERR "remap_pfn_range failed in uv_mmtimer_mmap\n");
+> +		return -EAGAIN;
+> +	}
+> +
+> +	return 0;
+> +}
+
+Methinks we should be setting vma->vm_flags's VM_IO here and perhaps
+also VM_RESERVED.
+
+> +static struct miscdevice uv_mmtimer_miscdev = {
+> +	MISC_DYNAMIC_MINOR,
+> +	UV_MMTIMER_NAME,
+> +	&uv_mmtimer_fops
+> +};
+> +
+> +
+> +/**
+> + * uv_mmtimer_init - device initialization routine
+> + *
+> + * Does initial setup for the uv_mmtimer device.
+> + */
+> +static int __init uv_mmtimer_init(void)
+> +{
+> +	if (!is_uv_system())
+> +		return 0;
+
+This will leave the module loaded but inactive.  Would it make more
+sense to return an error code in this case so that a) the user
+discovers that he wasted his time and b) the module will get booted out
+again?
+
+> +	/*
+> +	 * Sanity check the cycles/sec variable
+> +	 */
+> +	if (sn_rtc_cycles_per_second < 100000) {
+> +		printk(KERN_ERR "%s: unable to determine clock frequency\n",
+> +		       UV_MMTIMER_NAME);
+> +		return -1;
+> +	}
+> +
+> +	uv_mmtimer_femtoperiod = ((unsigned long)1E15 +
+> +				sn_rtc_cycles_per_second / 2) /
+> +				sn_rtc_cycles_per_second;
+> +
+> +	if (misc_register(&uv_mmtimer_miscdev)) {
+> +		printk(KERN_ERR "%s: failed to register device\n",
+> +		       UV_MMTIMER_NAME);
+> +		return -1;
+> +	}
+> +
+> +	printk(KERN_INFO "%s: v%s, %ld MHz\n", UV_MMTIMER_DESC,
+> +		UV_MMTIMER_VERSION,
+> +		sn_rtc_cycles_per_second/(unsigned long)1E6);
+> +
+> +	return 0;
+> +}
+> +
+> +module_init(uv_mmtimer_init);
+
