@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZIKAdv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754019AbZIKAek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbZIKAdv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 Sep 2009 20:33:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZIKAdt
+	id S1754019AbZIKAek (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 Sep 2009 20:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbZIKAej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 Sep 2009 20:33:49 -0400
-Received: from kroah.org ([198.145.64.141]:33150 "EHLO coco.kroah.org"
+	Thu, 10 Sep 2009 20:34:39 -0400
+Received: from kroah.org ([198.145.64.141]:33156 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752353AbZIKAdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 Sep 2009 20:33:49 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu Sep 10 17:30:38 2009
-Message-Id: <20090911003038.700143413@mini.kroah.org>
+	id S1752353AbZIKAdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 Sep 2009 20:33:50 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu Sep 10 17:30:39 2009
+Message-Id: <20090911003038.870978807@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 10 Sep 2009 17:29:24 -0700
+Date: Thu, 10 Sep 2009 17:29:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: stable-review@kernel.org, torvalds@linux-foundation.org,
        akpm@linux-foundation.org, alan@lxorguk.ukuu.org.uk,
-       =?ISO-8859-15?q?Krzysztof=20Ha=C5=82asa?= <khc@pm.waw.pl>,
+       Eric Dumazet <eric.dumazet@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>,
        "David S. Miller" <davem@davemloft.net>
-Subject: [patch 1/4] E100: fix interaction with swiotlb on X86.
+Subject: [patch 2/4] net: net_assign_generic() fix
 References: <20090911002923.745284267@mini.kroah.org>
-Content-Disposition: inline; filename=e100-fix-interaction-with-swiotlb-on-x86.patch
+Content-Disposition: inline; filename=net-net_assign_generic-fix.patch
 In-Reply-To: <20090911003124.GA12842@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -30,42 +31,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
-From: Krzysztof Hałasa <khc@pm.waw.pl>
+From: Eric Dumazet <eric.dumazet@gmail.com>
 
-[ Upstream commit 6ff9c2e7fa8ca63a575792534b63c5092099c286 ]
+[ Upstream commit 144586301f6af5ae5943a002f030d8c626fa4fdd ]
 
-E100 places it's RX packet descriptors inside skb->data and uses them
-with bidirectional streaming DMA mapping. Data in descriptors is
-accessed simultaneously by the chip (writing status and size when
-a packet is received) and CPU (reading to check if the packet was
-received). This isn't a valid usage of PCI DMA API, which requires use
-of the coherent (consistent) memory for such purpose. Unfortunately e100
-chips working in "simplified" RX mode have to store received data
-directly after the descriptor. Fixing the driver to conform to the API
-would require using unsupported "flexible" RX mode or receiving data
-into a coherent memory and using CPU to copy it to network buffers.
+memcpy() should take into account size of pointers,
+not only number of pointers to copy.
 
-This patch, while not yet making the driver conform to the PCI DMA API,
-allows it to work correctly on X86 with swiotlb (while not breaking
-other architectures).
-
-Signed-off-by: Krzysztof Hałasa <khc@pm.waw.pl>
+Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Acked-by: Pavel Emelyanov <xemul@openvz.org>
 Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/e100.c |    2 +-
+ net/core/net_namespace.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/e100.c
-+++ b/drivers/net/e100.c
-@@ -1842,7 +1842,7 @@ static int e100_rx_indicate(struct nic *
- 				nic->ru_running = RU_SUSPENDED;
- 		pci_dma_sync_single_for_device(nic->pdev, rx->dma_addr,
- 					       sizeof(struct rfd),
--					       PCI_DMA_BIDIRECTIONAL);
-+					       PCI_DMA_FROMDEVICE);
- 		return -ENODATA;
- 	}
+--- a/net/core/net_namespace.c
++++ b/net/core/net_namespace.c
+@@ -446,7 +446,7 @@ int net_assign_generic(struct net *net, 
  
+ 	ng->len = id;
+ 	INIT_RCU_HEAD(&ng->rcu);
+-	memcpy(&ng->ptr, &old_ng->ptr, old_ng->len);
++	memcpy(&ng->ptr, &old_ng->ptr, old_ng->len * sizeof(void*));
+ 
+ 	rcu_assign_pointer(net->gen, ng);
+ 	call_rcu(&old_ng->rcu, net_generic_release);
 
 
