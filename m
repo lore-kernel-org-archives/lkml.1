@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754854AbZILVxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752460AbZILWHM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754854AbZILVxc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 17:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754797AbZILVxa
+	id S1752460AbZILWHM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 18:07:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbZILWHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 17:53:30 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:22327 "EHLO
+	Sat, 12 Sep 2009 18:07:10 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:22470 "EHLO
 	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754771AbZILVx3 (ORCPT
+	with ESMTP id S1750904AbZILWHJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 17:53:29 -0400
-Date: Sat, 12 Sep 2009 23:53:31 +0200 (CEST)
+	Sat, 12 Sep 2009 18:07:09 -0400
+Date: Sun, 13 Sep 2009 00:07:11 +0200 (CEST)
 From: Jesper Juhl <jj@chaosbits.net>
-To: Arjan van de Ven <arjan@infradead.org>
-cc: Ingo Molnar <mingo@elte.hu>,
+To: Ingo Molnar <mingo@elte.hu>
+cc: Tony Luck <tony.luck@intel.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [GIT PULL] x86/fpu for v2.6.32
-In-Reply-To: <20090912054747.730d4abe@infradead.org>
-Message-ID: <alpine.LNX.2.00.0909122352190.23341@swampdragon.chaosbits.net>
-References: <20090911194432.GA29736@elte.hu> <alpine.LNX.2.00.0909112318190.31018@swampdragon.chaosbits.net> <20090912054747.730d4abe@infradead.org>
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Galbraith <efault@gmx.de>
+Subject: Re: [GIT PULL] sched/core for v2.6.32
+In-Reply-To: <20090912054917.GB9420@elte.hu>
+Message-ID: <alpine.LNX.2.00.0909122354260.23341@swampdragon.chaosbits.net>
+References: <20090911192505.GA20006@elte.hu> <alpine.LNX.2.00.0909120032270.31018@swampdragon.chaosbits.net> <alpine.LFD.2.01.0909111546050.3654@localhost.localdomain> <alpine.LNX.2.00.0909120119190.31018@swampdragon.chaosbits.net>
+ <12c511ca0909111924s42d000dsbf378009d9434ddc@mail.gmail.com> <20090912054917.GB9420@elte.hu>
 User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -28,67 +29,67 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Sep 2009, Arjan van de Ven wrote:
+On Sat, 12 Sep 2009, Ingo Molnar wrote:
 
-> On Fri, 11 Sep 2009 23:30:42 +0200 (CEST)
-> Jesper Juhl <jj@chaosbits.net> wrote:
 > 
+> * Tony Luck <tony.luck@intel.com> wrote:
+> 
+> > On Fri, Sep 11, 2009 at 4:34 PM, Jesper Juhl <jj@chaosbits.net> wrote:
+> > > That may be so; but most people I've ever talked to about multiple
+> > > processes, fork, vfork and the like, have mostly assumed child-runs-first.
+> > > That is just my personal experience.
+> > > So I get worried when that assumption is made false.
 > > 
-> > Hi Ingo,
-> > 
-> > First of all, I want to say that I have no real objections to the
-> > patch what-so-ever. The following is merely to satisfy my own
-> > personal curiosity - and I'm sure you have better things to do than
-> > satisfy my curiosity, so if you want to ignore me; feel free :-)
-> > 
-> > On Fri, 11 Sep 2009, Ingo Molnar wrote:
-> > 
-> > [...]
-> > > +	bool preload_fpu;
-> > >  
-> > >  	/* never put a printk in __switch_to... printk() calls
-> > > wake_up*() indirectly */ 
-> > > -	__unlazy_fpu(prev_p);
-> > > +	/*
-> > > +	 * If the task has used fpu the last 5 timeslices, just do
-> > > a full
-> > > +	 * restore of the math state immediately to avoid the
-> > > trap; the
-> > > +	 * chances of needing FPU soon are obviously high now
-> > > +	 */
-> > > +	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter
-> > > > 5; 
-> > > +	__unlazy_fpu(prev_p);
-> > >  
-> > [...]
-> > > +	 * If the task has used fpu the last 5 timeslices, just do
-> > > a full
-> > > +	 * restore of the math state immediately to avoid the
-> > > trap; the
-> > > +	 * chances of needing FPU soon are obviously high now
-> > > +	 */
-> > > +	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter
-> > > > 5; 
-> > 
-> > I'm wondering about two things:
-> > 
+> > With multi-core cpus becoming (being?) the norm, almost all 
+> > systems are SMP now.  So child and parent can surely end up 
+> > running in parallel very often.  So applications that make 
+> > assumptions about child running first are going to be frequently 
+> > surprised.  Aren't they?
 > 
-> (btw this is not new code)
+> We had parent-runs-first briefly, in v2.6.23 - this got changed by 
+> v2.6.24 - but yes, it did trigger at least one app bug that i 
+> remember (dont remember which one it was though).
 > 
-> > 1) Where did that magic constant "5" come from?
+> We are almost two years later now - maybe it works fine now.
 > 
-> from me running a bunch of experiments noticing that tasks that do 5
-> do on average many more. Could it be 4? Perhaps. 
+> In any case, as a precaution i made the sched_child_runs_first 
+> sysctl knob unconditional (previously it was under 
+> CONFIG_SCHED_DEBUG).
 > 
-> > Is there some fundamental thing about CPU's, cache layout,
-> > scheduling, benchmarks or something else that I just don't know that
-> > makes 5 the magic "right number"?  Why not 2, 3, 9 or 42?
+> So if an old distro is upgraded with a new kernel (and user-space is 
+> not updated), it can be worked around by putting this into 
+> /etc/sysctl.conf:
 > 
-> At some point *a* number must be taken. That is currently 5.
-> Show us that any other number is better and we'll switch ;-)
+>     kernel.sched_child_runs_first = 1
 > 
-Thank you for taking the time to answer and explain.
-I'm sure 5 is fine, I was merely currious :-)
+
+Always goo to have a workaround if something unexpectedly breaks. Makes 
+perfect sense for that knob to now be unconditional - and with it, 
+changing the behaviour is a much less risky operation. Glad to have it.
+
+> You are right to suggest that due to SMP and due to the general 
+> non-determinism of preemption we _never_ made any 'promise' to run 
+> the child first.
+> 
+> It was a statistical property based on performance considerations - 
+> and now we flipped it around based on latency and for kbuild 
+> performance/throughput reasons: Serge Belyshev reported a 7% 
+> increase on a quad due to this change and i measured a 1.5% 
+> peak-kbuild performance increase.
+> 
+Impressive. I wouldn't have expected that much gain by running the parent 
+first. Actually I personally would have expected child-first to perform 
+better since (in my experience) it's usually the child that's just forked 
+that matters the most. A server process that spawns a child to service a 
+request wants the child to run asap and process that forks, then execs 
+cares primarily about the child.
+
+> So it's worth it for multiple reasons and even in the worst-case 
+> problems can be worked around easily and without rebooting the 
+> system.
+> 
+Perfect :-)
+
 
 -- 
 Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
