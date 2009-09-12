@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756819AbZILDhx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbZILDoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756819AbZILDhx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 23:37:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZILDhx
+	id S1755910AbZILDoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 23:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753408AbZILDoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 23:37:53 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:48691 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751923AbZILDhw (ORCPT
+	Fri, 11 Sep 2009 23:44:21 -0400
+Received: from casper.infradead.org ([85.118.1.10]:55162 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753305AbZILDoU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 23:37:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type;
-        b=ncI9mQVPWkaaN3Fggi7ABqMP7u4oajsw9YmZF007jrox17Crf+GWfCrmCpRRW7lNq6
-         1DYtoQfSlLTdOdVEx/m5bMVuhH5kaNj+kwEN5Q7qB2KF94g2qunod7lfiHA7jB4Cbhmy
-         M1LDiw26RYdSBXKLJJfdvLEGewWPtM07IY3sw=
-MIME-Version: 1.0
-In-Reply-To: <25410990.post@talk.nabble.com>
-References: <25410990.post@talk.nabble.com>
-From: Bryan Donlan <bdonlan@gmail.com>
-Date: Fri, 11 Sep 2009 23:37:35 -0400
-Message-ID: <3e8340490909112037p3b4d4f32p2dc6dda01cfcb8ea@mail.gmail.com>
-Subject: Re: Controlling memory allocation
-To: sidc7 <siddhartha.chhabra@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 Sep 2009 23:44:20 -0400
+Date: Sat, 12 Sep 2009 05:47:47 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [GIT PULL] x86/fpu for v2.6.32
+Message-ID: <20090912054747.730d4abe@infradead.org>
+In-Reply-To: <alpine.LNX.2.00.0909112318190.31018@swampdragon.chaosbits.net>
+References: <20090911194432.GA29736@elte.hu>
+	<alpine.LNX.2.00.0909112318190.31018@swampdragon.chaosbits.net>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 10:23 PM, sidc7 <siddhartha.chhabra@gmail.com> wrote:
->
-> I had a question regarding memory allocation. On a contemporary system, the
-> kernel will allocate physical frames on the DRAM based on availability. Is
-> it possible for the kernel to somehow restrict frame allocation for a
-> particular process to a particular address range. For e.g. Lets assume the
-> DRAM ranges from 00-FF, on a contemporary system, the entire range is
-> available for the kernel to allocate to the processes. Is it possible for
-> the kernel to say PID 1: the frames will be allocated only in 00-A0, PID2:
-> the frames will be allocated from A1 - D0 and PID3: will get frames from D1
-> - FF.
+On Fri, 11 Sep 2009 23:30:42 +0200 (CEST)
+Jesper Juhl <jj@chaosbits.net> wrote:
 
-The kernel has a concept of 'zones' that can be used to restrict
-allocations as you say - however, user processes are the _least_
-restricted. These zones are used to deal with old devices that can't
-do DMAs above 16mb (so memory for their DMA buffers is allocated from
-the 'DMA' zone), as well as to keep the kernel's internal
-datastructures within the first 700mb or so of RAM (zone 'normal').
-Memory used directly by userspace processes, including cache, can come
-from any zone, including zone 'highmem'.
+> 
+> Hi Ingo,
+> 
+> First of all, I want to say that I have no real objections to the
+> patch what-so-ever. The following is merely to satisfy my own
+> personal curiosity - and I'm sure you have better things to do than
+> satisfy my curiosity, so if you want to ignore me; feel free :-)
+> 
+> On Fri, 11 Sep 2009, Ingo Molnar wrote:
+> 
+> [...]
+> > +	bool preload_fpu;
+> >  
+> >  	/* never put a printk in __switch_to... printk() calls
+> > wake_up*() indirectly */ 
+> > -	__unlazy_fpu(prev_p);
+> > +	/*
+> > +	 * If the task has used fpu the last 5 timeslices, just do
+> > a full
+> > +	 * restore of the math state immediately to avoid the
+> > trap; the
+> > +	 * chances of needing FPU soon are obviously high now
+> > +	 */
+> > +	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter
+> > > 5; 
+> > +	__unlazy_fpu(prev_p);
+> >  
+> [...]
+> > +	 * If the task has used fpu the last 5 timeslices, just do
+> > a full
+> > +	 * restore of the math state immediately to avoid the
+> > trap; the
+> > +	 * chances of needing FPU soon are obviously high now
+> > +	 */
+> > +	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter
+> > > 5; 
+> 
+> I'm wondering about two things:
+> 
 
-There's also some work on NUMA memory allocation policies - I'm not
-too familiar with the details, but it does involve setting a
-preference that pages for certain user processes get allocated from
-certain memory banks near the CPU(s) that are executing the process.
+(btw this is not new code)
 
-Note that in both cases the assignments are somewhat static - zones
-are set at compile time and are used solely as a workaround for
-hardware limitations; exactly which are used depend on your
-architecture (although the _types_ of zones available are fixed). See
-include/linux/mmzones.h NUMA is determined by your hardware
-configuration. And processes are never assigned just a contiguous,
-exclusive range of pages to use, as there's no benefit in doing so -
-what happens if something else took some of those first and it runs
-out, after all?
+> 1) Where did that magic constant "5" come from?
 
-For more information about zones, see
-http://lxr.linux.no/linux+v2.6.31/include/linux/mmzone.h#L190 and the
-x86 arch init code starting at
-http://lxr.linux.no/linux+v2.6.31/arch/x86/mm/init_32.c#L737 etc.
-For more info on NUMA, see the userspace API at
-http://linux.die.net/man/3/numa and the paper at
-http://www.kernel.org/pub/linux/kernel/people/christoph/pmig/numamemory.pdf
+from me running a bunch of experiments noticing that tasks that do 5
+do on average many more. Could it be 4? Perhaps. 
+
+> Is there some fundamental thing about CPU's, cache layout,
+> scheduling, benchmarks or something else that I just don't know that
+> makes 5 the magic "right number"?  Why not 2, 3, 9 or 42?
+
+At some point *a* number must be taken. That is currently 5.
+Show us that any other number is better and we'll switch ;-)
+
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
