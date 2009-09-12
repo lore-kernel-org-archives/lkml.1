@@ -1,78 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752579AbZILJDu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752880AbZILJRm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752579AbZILJDu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 05:03:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZILJDt
+	id S1752880AbZILJRm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 05:17:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752568AbZILJRm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 05:03:49 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:41321 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751097AbZILJDt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 05:03:49 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-17.arcor-online.net DA9033B25AE
-Message-ID: <4AAB63F8.1060301@arcor.de>
-Date: Sat, 12 Sep 2009 12:03:52 +0300
-From: Nikos Chantziaras <realnc@arcor.de>
-Organization: Lucas Barks
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Volker Armin Hemmann <volkerarmin@googlemail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Con Kolivas <kernel@kolivas.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-References: <200909112033.34445.volkerarmin@googlemail.com> <4AAB4FC9.4060402@arcor.de> <200909121027.08244.volkerarmin@googlemail.com>
-In-Reply-To: <200909121027.08244.volkerarmin@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sat, 12 Sep 2009 05:17:42 -0400
+Received: from poutre.nerim.net ([62.4.16.124]:52699 "EHLO poutre.nerim.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752273AbZILJRl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 05:17:41 -0400
+Date: Sat, 12 Sep 2009 11:12:26 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Kari Laine <klaine8@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-i2c@vger.kernel.org
+Subject: Re: I2C -bus programming
+Message-ID: <20090912111226.1bd13542@hyperion.delvare>
+In-Reply-To: <4A854936.5060409@gmail.com>
+References: <4A8491E3.4070907@gmail.com>
+	<4A854936.5060409@gmail.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/12/2009 11:27 AM, Volker Armin Hemmann wrote:
-> Hi,
->
-> On Samstag 12 September 2009, Nikos Chantziaras wrote:
->>
->> On 09/11/2009 09:33 PM, Volker Armin Hemmann wrote:
->>>
->>> this is with 2.6.31+reiser4+fglrx
->>> Phenom II X4 955
->>>
->>> KDE 4.3.1, composite temporary disabled.
->>> tvtime running.
->>>
->>> load:
->>> fat emerge with make -j5 running in one konsole tab (xulrunner being
->>> compiled).
->>>
->>> without NO_NEW_FAIR_SLEEPERS:
->>>
->>> tvtime is smooth most of the time
->>>
->>> with NO_NEW_FAIR_SLEEPERS:
->>>
->>> tvtime is more jerky. Very visible in scenes with movement.
->>
->> Is the make -j5 running niced 0?
->
-> yes. It always is.
->
->> If yes, that would be actually the
->> correct behavior.
->
-> maybe. But I do not complain about jerks at all. I have
->
-> [ 3618.305918] hpet1: lost 1 rtc interrupts
->
-> with tvtime running since I switched cpus - so something is wrong anyway.
+Hi Kari,
 
-Seeing the "lost 1 rtc interrupts" message makes me wonder if this could 
-possibly relate to problems with the C1E state on AMD systems (missing 
-timer interrupts):
+Kari Laine wrote:
+> this is my first post here and I am not sure if this is a suitable topic
+> here. Anyway I have a Velleman K8000 IO-card and it uses I2C over
+> parallel port to communicate.
+>
+> when I modprobe i2c-parport it does not complain. I tested without card
+> connected and it complained so it seems to find the card.
 
-   http://lkml.org/lkml/2008/6/12/127
+This doesn't mean the card is handled properly. You must pass the
+proper card type parameter. The Velleman K8000 is type 2, so:
 
-That thread is one year old though and your Phenom II CPU was released 7 
-months later.
+modprobe i2c-parport type=2
+
+Alternatively you can add:
+
+options i2c-parport type=2
+
+to /etc/modprobe.conf or whatever modprobe configuration file your
+system uses.
+
+You didn't tell which kernel you are using, but kernel 2.6.17 and later
+wouldn't let you load i2c-parport without a type parameter.
+
+> modprobe pcf8591
+>
+> modprobe i2c-core
+>
+> modprobe i2c-dev
+>
+> I am not sure I am doing it right. Should i2c-core probed first ?
+
+It doesn't matter. i2c-core gets loaded automatically when any other
+module needs it.
+
+> anyway now I have
+>
+> /dev/i2c-0  /dev/i2c-1
+>
+> Now I don't know whether these i2c-devices refer to this Velleman  board
+> or some other i2c-device which happen to be in the computer...
+
+You should install i2c-tools and use the command "i2cdetect -l". This
+will tell you what each i2c bus on your system is.
+
+Then you can try "i2cdetect <n>" where <n> is a bus number, to scan the
+bus in question. This is a good way to test whether the driver and
+device are working properly.
+
+> If these devices probably refer to Velleman - then how I can refer
+> different i2c-devices on the board.
+
+Depends on the device. In the case of the Philips PCF8591, which
+apparently you are using, sysfs attributes will be created somewhere
+under /sys/bus/i2c/drivers/pcf8591. Each device has a name of the form
+<bus number>-<device address>, for example "1-0048" for a PCF8591.
+
+The sysfs attributes in question are described in
+Documentation/hwmon/pcf8591 (or Documentation/i2c/chips/pcf8591 on
+kernels older than 2.6.30.)
+
+Hope this helps,
+-- 
+Jean Delvare
+http://khali.linux-fr.org/wishlist.html
