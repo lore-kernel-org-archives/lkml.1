@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754068AbZILLEc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753978AbZILLEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754068AbZILLEc (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 07:04:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZILLEM
+	id S1753978AbZILLEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 07:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753660AbZILLEN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 07:04:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43142 "EHLO
+	Sat, 12 Sep 2009 07:04:13 -0400
+Received: from casper.infradead.org ([85.118.1.10]:43143 "EHLO
 	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbZILLEH convert rfc822-to-8bit (ORCPT
+	with ESMTP id S1753382AbZILLEH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 12 Sep 2009 07:04:07 -0400
-Date: Sat, 12 Sep 2009 13:04:40 +0200
+Date: Sat, 12 Sep 2009 13:05:11 +0200
 From: Arjan van de Ven <arjan@infradead.org>
 To: linux-kernel@vger.kernel.org
 Cc: Arjan van de Ven <arjan@infradead.org>, mingo@elte.hu, fweisbec@gmail.com,
        peterz@infradead.org
-Subject: [PATCH 3/8] perf: Allow perf utilities to have "callback" options
- without arguments
-Message-ID: <20090912130440.548666c1@infradead.org>
+Subject: [PATCH 4/8] perf: Add a sample_event type to the event_union
+Message-ID: <20090912130511.411434b5@infradead.org>
 In-Reply-To: <20090912130306.5d0086ea@infradead.org>
 References: <20090912130306.5d0086ea@infradead.org>
 Organization: Intel
@@ -31,35 +30,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->From b37c714203e12c2104b2fae41c6f4ea4fa589528 Mon Sep 17 00:00:00 2001
+>From 4837fa586ab440d6a79f542b90994c1dde9be8ef Mon Sep 17 00:00:00 2001
 From: Arjan van de Ven <arjan@linux.intel.com>
-Date: Sat, 12 Sep 2009 07:52:54 +0200
-Subject: [PATCH] perf: Allow perf utilities to have "callback" options without arguments
+Date: Sat, 12 Sep 2009 07:53:00 +0200
+Subject: [PATCH] perf: Add a sample_event type to the event_union
 
-timechart needs to add a "callback" type command line argument that does
-not take arguments.
-
-This patch adds the parse-options.h infrastructure to make this possible.
+Add a sample_event type to the event_union so that raw samples
+can be processed easily.
 
 Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 ---
- tools/perf/util/parse-options.h |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+ tools/perf/util/event.h |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/tools/perf/util/parse-options.h b/tools/perf/util/parse-options.h
-index 8aa3464..2ee248f 100644
---- a/tools/perf/util/parse-options.h
-+++ b/tools/perf/util/parse-options.h
-@@ -104,6 +104,8 @@ struct option {
- 	{ .type = OPTION_CALLBACK, .short_name = (s), .long_name = (l), .value = (v), .argh = "time", .help = (h), .callback = parse_opt_approxidate_cb }
- #define OPT_CALLBACK(s, l, v, a, h, f) \
- 	{ .type = OPTION_CALLBACK, .short_name = (s), .long_name = (l), .value = (v), (a), .help = (h), .callback = (f) }
-+#define OPT_CALLBACK_NOOPT(s, l, v, a, h, f) \
-+	{ .type = OPTION_CALLBACK, .short_name = (s), .long_name = (l), .value = (v), (a), .help = (h), .callback = (f), .flags = PARSE_OPT_NOARG }
- #define OPT_CALLBACK_DEFAULT(s, l, v, a, h, f, d) \
- 	{ .type = OPTION_CALLBACK, .short_name = (s), .long_name = (l), .value = (v), (a), .help = (h), .callback = (f), .defval = (intptr_t)d, .flags = PARSE_OPT_LASTARG_DEFAULT }
+diff --git a/tools/perf/util/event.h b/tools/perf/util/event.h
+index 1545349..33ced5a 100644
+--- a/tools/perf/util/event.h
++++ b/tools/perf/util/event.h
+@@ -60,6 +60,12 @@ struct read_event {
+ 	u64 id;
+ };
  
++struct sample_event{
++	struct perf_event_header        header;
++	u64 array[];
++};
++
++
+ typedef union event_union {
+ 	struct perf_event_header	header;
+ 	struct ip_event			ip;
+@@ -68,6 +74,7 @@ typedef union event_union {
+ 	struct fork_event		fork;
+ 	struct lost_event		lost;
+ 	struct read_event		read;
++	struct sample_event		sample;
+ } event_t;
+ 
+ struct map {
 -- 
 1.6.0.6
 
