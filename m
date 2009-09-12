@@ -1,84 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752179AbZILHrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752291AbZILHwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752179AbZILHrr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 03:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751774AbZILHrq
+	id S1752291AbZILHwk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 03:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZILHwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 03:47:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49121 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbZILHrq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 03:47:46 -0400
-Date: Sat, 12 Sep 2009 09:51:10 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Nikos Chantziaras <realnc@arcor.de>
-Cc: Volker Armin Hemmann <volkerarmin@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Con Kolivas <kernel@kolivas.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Message-ID: <20090912095110.6db75091@infradead.org>
-In-Reply-To: <4AAB4FC9.4060402@arcor.de>
-References: <200909112033.34445.volkerarmin@googlemail.com>
-	<4AAB4FC9.4060402@arcor.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sat, 12 Sep 2009 03:52:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33424 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751519AbZILHwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 03:52:38 -0400
+Date: Sat, 12 Sep 2009 07:52:16 GMT
+From: tip-bot for Robert Richter <robert.richter@amd.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       robert.richter@amd.com, rostedt@goodmis.org, tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       robert.richter@amd.com, rostedt@goodmis.org, tglx@linutronix.de
+In-Reply-To: <1249045084-3028-1-git-send-email-robert.richter@amd.com>
+References: <1249045084-3028-1-git-send-email-robert.richter@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:tracing/core] ring-buffer: consolidate interface of rb_buffer_peek()
+Message-ID: <tip-d8eeb2d3b26d25c44c10f28430e2157a2d20bd1d@git.kernel.org>
+Git-Commit-ID: d8eeb2d3b26d25c44c10f28430e2157a2d20bd1d
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 12 Sep 2009 07:52:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Sep 2009 10:37:45 +0300
-Nikos Chantziaras <realnc@arcor.de> wrote:
+Commit-ID:  d8eeb2d3b26d25c44c10f28430e2157a2d20bd1d
+Gitweb:     http://git.kernel.org/tip/d8eeb2d3b26d25c44c10f28430e2157a2d20bd1d
+Author:     Robert Richter <robert.richter@amd.com>
+AuthorDate: Fri, 31 Jul 2009 14:58:04 +0200
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Wed, 9 Sep 2009 23:54:02 -0400
 
-> (Volker stripped all CCs from his posts; I restored them manually.)
-> 
-> On 09/11/2009 09:33 PM, Volker Armin Hemmann wrote:
-> > Hi,
-> >
-> > this is with 2.6.31+reiser4+fglrx
-> > Phenom II X4 955
-> >
-> > KDE 4.3.1, composite temporary disabled.
-> > tvtime running.
-> >
-> > load:
-> > fat emerge with make -j5 running in one konsole tab (xulrunner being
-> > compiled).
-> >
-> > without NO_NEW_FAIR_SLEEPERS:
-> >
-> > tvtime is smooth most of the time
-> >
-> > with NO_NEW_FAIR_SLEEPERS:
-> >
-> > tvtime is more jerky. Very visible in scenes with movement.
-> 
-> Is the make -j5 running niced 0?  If yes, that would be actually the 
-> correct behavior.  Unfortunately, I can't test tvtime specifically (I 
-> don't have a TV card), but other applications displaying video
-> continue to work smooth on my dual core machine (Core 2 Duo E6600)
-> even if I do "nice -n 19 make -j20".  If I don't nice it, the video
-> is skippy here too though.
-> 
-> Question to Ingo:
-> Would posting perf results help in any way with finding differences 
-> between mainline NEW_FAIR_SLEEPERS/NO_NEW_FAIR_SLEEPERS and BFS?
+ring-buffer: consolidate interface of rb_buffer_peek()
 
-please also post latencytop output for the app you care about
-(the system wide latencytop numbers aren't as relevant; to some large
-degree what is happening is that if you oversubscribe, you need to pay
-the price for that period, all you can do is move the cost around to
-those tasks you don't care about. For that reason, latencytop output
-for the task you care about is relevant ;-)
+rb_buffer_peek() operates with struct ring_buffer_per_cpu *cpu_buffer
+only. Thus, instead of passing variables buffer and cpu it is better
+to use cpu_buffer directly. This also reduces the risk of races since
+cpu_buffer is not calculated twice.
+
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+LKML-Reference: <1249045084-3028-1-git-send-email-robert.richter@amd.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+---
+ kernel/trace/ring_buffer.c |   11 ++++-------
+ 1 files changed, 4 insertions(+), 7 deletions(-)
+
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index 454e74e..8786c35 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -2997,15 +2997,12 @@ static void rb_advance_iter(struct ring_buffer_iter *iter)
+ }
+ 
+ static struct ring_buffer_event *
+-rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
++rb_buffer_peek(struct ring_buffer_per_cpu *cpu_buffer, u64 *ts)
+ {
+-	struct ring_buffer_per_cpu *cpu_buffer;
+ 	struct ring_buffer_event *event;
+ 	struct buffer_page *reader;
+ 	int nr_loops = 0;
+ 
+-	cpu_buffer = buffer->buffers[cpu];
+-
+  again:
+ 	/*
+ 	 * We repeat when a timestamp is encountered. It is possible
+@@ -3049,7 +3046,7 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	case RINGBUF_TYPE_DATA:
+ 		if (ts) {
+ 			*ts = cpu_buffer->read_stamp + event->time_delta;
+-			ring_buffer_normalize_time_stamp(buffer,
++			ring_buffer_normalize_time_stamp(cpu_buffer->buffer,
+ 							 cpu_buffer->cpu, ts);
+ 		}
+ 		return event;
+@@ -3168,7 +3165,7 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	local_irq_save(flags);
+ 	if (dolock)
+ 		spin_lock(&cpu_buffer->reader_lock);
+-	event = rb_buffer_peek(buffer, cpu, ts);
++	event = rb_buffer_peek(cpu_buffer, ts);
+ 	if (event && event->type_len == RINGBUF_TYPE_PADDING)
+ 		rb_advance_reader(cpu_buffer);
+ 	if (dolock)
+@@ -3237,7 +3234,7 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+ 	if (dolock)
+ 		spin_lock(&cpu_buffer->reader_lock);
+ 
+-	event = rb_buffer_peek(buffer, cpu, ts);
++	event = rb_buffer_peek(cpu_buffer, ts);
+ 	if (event)
+ 		rb_advance_reader(cpu_buffer);
+ 
