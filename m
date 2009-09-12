@@ -1,129 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751205AbZILEBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752031AbZILEGm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751205AbZILEBm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 00:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbZILEBl
+	id S1752031AbZILEGm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 00:06:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750754AbZILEGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 00:01:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56057
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750705AbZILEBl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 00:01:41 -0400
-Date: Fri, 11 Sep 2009 21:01:56 -0700 (PDT)
-Message-Id: <20090911.210156.127191632.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sat, 12 Sep 2009 00:06:41 -0400
+Received: from cantor.suse.de ([195.135.220.2]:36210 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750713AbZILEGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 00:06:40 -0400
+Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
+ CONFIG_MOUDLES=n.
+From: James Bottomley <James.Bottomley@suse.de>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Cc: Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Giridhar Malavali <giridhar.malavali@qlogic.com>,
+       Ravi Anand <ravi.anand@qlogic.com>,
+       Lalit Chandivade <lalit.chandivade@qlogic.com>
+In-Reply-To: <20090912003808.GD12098@plap4-2.local>
+References: <20090907210206.7830ba68.sfr@canb.auug.org.au>
+	 <20090907102747.ac6b98ff.randy.dunlap@oracle.com>
+	 <20090908182541.GB44157@plap4-2.local> <20090911175341.GH710@plap4-2.local>
+	 <1252708951.13282.151.camel@mulgrave.site>
+	 <20090912000742.GB12098@plap4-2.local>
+	 <20090912001752.GC12098@plap4-2.local>
+	 <20090912003808.GD12098@plap4-2.local>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 23:06:33 -0500
+Message-Id: <1252728393.13282.485.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-09-11 at 17:38 -0700, Andrew Vasquez wrote:
+> Randy Dunlap noted:
+> 
+>   when CONFIG_MODULES=n:
+> 
+> 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+> 
+>   in
+> 
+> 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> 		KOBJ_CHANGE, envp);
+> 
+> Trigger kobject event on the 'struct device' hanging off the pci_dev.
+> 
+> Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> ---
+> 
+> > On Fri, 11 Sep 2009, Andrew Vasquez wrote:
+> > 
+> > > The struct device's kobj from pdev->dev?
+> > > 
+> > > My udev-foo is pathetic, so how exactly would that get multiplexed at
+> > > the udev side?
+> > > 
+> > > 	KERNEL=="???", SUBSYSTEM=="???", ACTION=="change", RUN+="qla2xxx_udev.sh"
+> > 
+> > Ok, udevadm helps a bit...  Let me see if I can convert this uevent
+> > off of:
+> > 
+> > 	kobject_uevent_env(&(&vha->hw->pdev->dev)->kobj, KOBJ_CHANGE, envp);
+> > 
+> > to something meaningful:
+> > 
+> > 	UEVENT[1252714722.263731] change
+> > 	/devices/pci0000:17/0000:17:08.0/0000:1e:00.0 (pci)
+> > 	ACTION=change
+> > 	DEVPATH=/devices/pci0000:17/0000:17:08.0/0000:1e:00.0
+> > 	SUBSYSTEM=pci
+> > 	FW_DUMP=6
+> > 	DRIVER=qla2xxx
+> > 	PHYSDEVBUS=pci
+> > 	PHYSDEVDRIVER=qla2xxx
+> > 	PCI_CLASS=C0400
+> > 	PCI_ID=1077:2532
+> > 	PCI_SUBSYS_ID=1077:015C
+> > 	PCI_SLOT_NAME=0000:1e:00.0
+> > 	MODALIAS=pci:v00001077d00002532sv00001077sd0000015Cbc0Csc04i00
+> > 	SEQNUM=3574
+> 
+> Ok, with the kobject_uevent_env() change and the udev-rule modified to:
+> 
+> 	SUBSYSTEM=="pci", ENV{DRIVER}="qla2xxx", ACTION=="change", RUN+="qla2xxx_udev.sh"
+> 
+> we're working again.
+> 
+> This seem reasonable?
+> 
+> Thanks, AV
+> 
+> diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
+> index 29396c0..369a270 100644
+> --- a/drivers/scsi/qla2xxx/qla_os.c
+> +++ b/drivers/scsi/qla2xxx/qla_os.c
+> @@ -2683,8 +2683,7 @@ qla2x00_uevent_emit(struct scsi_qla_host *vha, u32 code)
+>  		/* do nothing */
+>  		break;
+>  	}
+> -	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> -	    KOBJ_CHANGE, envp);
+> +	kobject_uevent_env(&(&vha->hw->pdev->dev)->kobj, KOBJ_CHANGE, envp);
 
-Items of note here:
+Much better.  Of course to be perfect, you might like to remember that
+(&x)->y is actually x.y
 
-1) Initial LEON processor support, from Konrad Eisele
+so 
 
-2) Basic SW perf counter support from Jens Axboe
+kobject_uevent_env(&vha->hw->pdev->dev.kobj, ...
 
-3) Very simple HW counter support for UltraSPARC-IIIi and Niagara-2
+James
 
-Please pull, thanks a lot!
 
-The following changes since commit 86d710146fb9975f04c505ec78caa43d227c1018:
-  Linus Torvalds (1):
-        Merge git://git.linux-nfs.org/projects/trondmy/nfs-2.6
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-next-2.6.git master
-
-Alexey Dobriyan (2):
-      sparc64: cheaper asm/uaccess.h inclusion
-      sparc: convert /proc/io_map, /proc/dvma_map to seq_file
-
-David S. Miller (13):
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-      sparc64: Manage NMI watchdog enabling like x86.
-      sparc64: Kill unnecessary cast in profile_timer_exceptions_notify().
-      sparc64: Make touch_nmi_watchdog() actually work.
-      sparc64: Provide extern decls for sparc_??u_type strings.
-      sparc64: Use nmi_enter() and nmi_exit(), as needed.
-      sparc64: Implement a real set_perf_counter_pending().
-      sparc64: Initial hw perf counter support.
-      sparc64: Provide hypervisor tracing bit support for perf counters.
-      sparc64: Provide a way to specify a perf counter overflow IRQ enable bit.
-      sparc64: Perf counter 'nop' event is not constant.
-      sparc64: Initial niagara2 perf counter support.
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-
-Jaswinder Singh Rajput (1):
-      SPARC: fix duplicate declaration
-
-Jens Axboe (1):
-      sparc: add basic support for 'perf'
-
-Jurij Smakov (1):
-      sparc64: build compressed image (zImage) by default
-
-Konrad Eisele (5):
-      sparc,leon: CONFIG_SPARC_LEON option and leon specific files.
-      sparc,leon: Redefine MMU register access asi if CONFIG_LEON
-      sparc,leon: Introduce the sparc-leon CPU type.
-      sparc,leon: Added support for AMBAPP bus.
-      sparc, leon: sparc-leon specific SRMMU initialization and bootup fixes.
-
- arch/sparc/Kconfig                    |   13 +
- arch/sparc/Makefile                   |   12 +-
- arch/sparc/boot/Makefile              |    3 +
- arch/sparc/include/asm/asi.h          |    4 +
- arch/sparc/include/asm/leon.h         |  362 +++++++++++++++++++++
- arch/sparc/include/asm/leon_amba.h    |  263 ++++++++++++++++
- arch/sparc/include/asm/machines.h     |    6 +-
- arch/sparc/include/asm/nmi.h          |    5 +-
- arch/sparc/include/asm/perf_counter.h |   14 +
- arch/sparc/include/asm/pgtsrmmu.h     |    4 +
- arch/sparc/include/asm/prom.h         |    3 +
- arch/sparc/include/asm/system_32.h    |    1 +
- arch/sparc/include/asm/system_64.h    |    4 +
- arch/sparc/include/asm/types.h        |   27 +--
- arch/sparc/include/asm/uaccess_64.h   |    2 +-
- arch/sparc/include/asm/unistd.h       |    3 +-
- arch/sparc/kernel/Makefile            |    5 +
- arch/sparc/kernel/cpu.c               |    5 +
- arch/sparc/kernel/head_32.S           |    5 +
- arch/sparc/kernel/idprom.c            |    2 +
- arch/sparc/kernel/ioport.c            |   32 ++-
- arch/sparc/kernel/irq_32.c            |    5 +
- arch/sparc/kernel/leon_kernel.c       |  203 ++++++++++++
- arch/sparc/kernel/nmi.c               |   72 +++--
- arch/sparc/kernel/of_device_32.c      |   40 +++
- arch/sparc/kernel/pcr.c               |   14 +-
- arch/sparc/kernel/perf_counter.c      |  557 +++++++++++++++++++++++++++++++++
- arch/sparc/kernel/prom_32.c           |   33 ++
- arch/sparc/kernel/prom_common.c       |   10 +-
- arch/sparc/kernel/setup_32.c          |    5 +
- arch/sparc/kernel/sysfs.c             |    1 +
- arch/sparc/kernel/systbls_32.S        |    2 +-
- arch/sparc/kernel/systbls_64.S        |    4 +-
- arch/sparc/mm/Makefile                |    1 +
- arch/sparc/mm/init_32.c               |    4 +
- arch/sparc/mm/leon_mm.c               |  260 +++++++++++++++
- arch/sparc/mm/loadmmu.c               |    1 +
- arch/sparc/mm/srmmu.c                 |   53 +++-
- arch/sparc/oprofile/init.c            |    4 +-
- samples/kprobes/kretprobe_example.c   |    1 +
- tools/perf/perf.h                     |    6 +
- 41 files changed, 1981 insertions(+), 70 deletions(-)
- create mode 100644 arch/sparc/include/asm/leon.h
- create mode 100644 arch/sparc/include/asm/leon_amba.h
- create mode 100644 arch/sparc/include/asm/perf_counter.h
- create mode 100644 arch/sparc/kernel/leon_kernel.c
- create mode 100644 arch/sparc/kernel/perf_counter.c
- create mode 100644 arch/sparc/mm/leon_mm.c
