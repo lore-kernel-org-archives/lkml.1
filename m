@@ -1,74 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZILMTO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZILMZh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbZILMTO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 08:19:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZILMTO
+	id S1754313AbZILMZh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 08:25:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZILMZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 08:19:14 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45556 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750887AbZILMTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 08:19:13 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18WtSp4Ca4WnVq/SH3I0vxqwKgoQZ+cVIkA9bHuFl
-	jcPfJowGJML6H5
-Subject: Re: [tip:sched/core] sched: Keep kthreads at default priority
-From: Mike Galbraith <efault@gmx.de>
-To: Martin Steigerwald <Martin@lichtvoll.de>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>, mingo@redhat.com,
-       hpa@zytor.com, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <200909121348.38528.Martin@lichtvoll.de>
-References: <1252486344.28645.18.camel@marge.simson.net>
-	 <1252516001.22918.6.camel@laptop>
-	 <1252517696.6220.9.camel@marge.simson.net>
-	 (sfid-20090909_202324_097104_7D52F860)  <200909121348.38528.Martin@lichtvoll.de>
-Content-Type: text/plain
-Date: Sat, 12 Sep 2009 14:19:11 +0200
-Message-Id: <1252757951.6084.5.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.55
+	Sat, 12 Sep 2009 08:25:36 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:50135 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752576AbZILMZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 08:25:35 -0400
+Date: Sat, 12 Sep 2009 14:25:35 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Liam Girdwood <lrg@slimlogic.co.uk>, alsa-devel@alsa-project.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 8/8, retry] sound/soc: introduce missing kfree
+Message-ID: <Pine.LNX.4.64.0909121424420.8557@pc-004.diku.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-12 at 13:48 +0200, Martin Steigerwald wrote:
-> Am Mittwoch 09 September 2009 schrieb Mike Galbraith:
-> > On Wed, 2009-09-09 at 19:06 +0200, Peter Zijlstra wrote:
-> > > On Wed, 2009-09-09 at 09:55 -0700, Dmitry Torokhov wrote:
-> > > > On Wed, Sep 09, 2009 at 03:37:34PM +0000, tip-bot for Mike Galbraith 
-> wrote:
-> > > > > diff --git a/kernel/kthread.c b/kernel/kthread.c
-> > > > > index eb8751a..5fe7099 100644
-> > > > > --- a/kernel/kthread.c
-> > > > > +++ b/kernel/kthread.c
-> > > > > @@ -16,8 +16,6 @@
-> > > > >  #include <linux/mutex.h>
-> > > > >  #include <trace/events/sched.h>
-> > > > >
-> > > > > -#define KTHREAD_NICE_LEVEL (-5)
-> > > > > -
-> > > >
-> > > > Why don't we just redefine it to 0? We may find out later that we'd
-> > > > still prefer to have kernel threads have boost.
-> > >
-> > > Seems sensible, also the traditional reasoning behind this nice level
-> > > is that kernel threads do work on behalf of multiple tasks. Its a
-> > > kind of prio ceiling thing.
-> > 
-> > True.  None of our current threads are heavy enough to matter much.
-> 
-> Does it make sense to have this as a tunable? Where does it matter? Server 
-> workloads?
+From: Julia Lawall <julia@diku.dk>
 
-I don't think it should be a knob.  It only makes a difference to
-kthreads that are heavy CPU users.  If one pops up as a performance
-problem, IMHO, it should be tweaked separately.  Running at default
-weight saves a bit of unnecessary math for the common case.
+Error handling code following a kzalloc should free the allocated data.
+Error handling code following an ioremap should iounmap the allocated data.
 
-	-Mike
+The semantic match that finds the first problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
+// <smpl>
+@r exists@
+local idexpression x;
+statement S;
+expression E;
+identifier f,f1,l;
+position p1,p2;
+expression *ptr != NULL;
+@@
+
+x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+...
+if (x == NULL) S
+<... when != x
+     when != if (...) { <+...x...+> }
+(
+x->f1 = E
+|
+ (x->f1 == NULL || ...)
+|
+ f(...,x->f1,...)
+)
+...>
+(
+ return \(0\|<+...x...+>\|ptr\);
+|
+ return@p2 ...;
+)
+
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ sound/soc/fsl/mpc5200_dma.c         |   33 ++++++++++++--------
+ 1 files changed, 20 insertions(+), 13 deletions(-)
+
+diff --git a/var/linuxes/linux-next/sound/soc/fsl/mpc5200_dma.c b/var/julia/linuxcopy/sound/soc/fsl/mpc5200_dma.c
+index 9ff62e3..6096d22 100644
+--- a/var/linuxes/linux-next/sound/soc/fsl/mpc5200_dma.c
++++ b/var/julia/linuxcopy/sound/soc/fsl/mpc5200_dma.c
+@@ -447,6 +447,7 @@ int mpc5200_audio_dma_create(struct of_device *op)
+ 	int size, irq, rc;
+ 	const __be32 *prop;
+ 	void __iomem *regs;
++	int ret;
+ 
+ 	/* Fetch the registers and IRQ of the PSC */
+ 	irq = irq_of_parse_and_map(op->node, 0);
+@@ -463,14 +464,16 @@ int mpc5200_audio_dma_create(struct of_device *op)
+ 	/* Allocate and initialize the driver private data */
+ 	psc_dma = kzalloc(sizeof *psc_dma, GFP_KERNEL);
+ 	if (!psc_dma) {
+-		iounmap(regs);
+-		return -ENOMEM;
++		ret = -ENOMEM;
++		goto out_unmap;
+ 	}
+ 
+ 	/* Get the PSC ID */
+ 	prop = of_get_property(op->node, "cell-index", &size);
+-	if (!prop || size < sizeof *prop)
+-		return -ENODEV;
++	if (!prop || size < sizeof *prop) {
++		ret = -ENODEV;
++		goto out_free;
++	}
+ 
+ 	spin_lock_init(&psc_dma->lock);
+ 	mutex_init(&psc_dma->mutex);
+@@ -493,9 +496,8 @@ int mpc5200_audio_dma_create(struct of_device *op)
+ 	if (!psc_dma->capture.bcom_task ||
+ 	    !psc_dma->playback.bcom_task) {
+ 		dev_err(&op->dev, "Could not allocate bestcomm tasks\n");
+-		iounmap(regs);
+-		kfree(psc_dma);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_free;
+ 	}
+ 
+ 	/* Disable all interrupts and reset the PSC */
+@@ -537,12 +539,8 @@ int mpc5200_audio_dma_create(struct of_device *op)
+ 			  &psc_dma_bcom_irq_tx, IRQF_SHARED,
+ 			  "psc-dma-playback", &psc_dma->playback);
+ 	if (rc) {
+-		free_irq(psc_dma->irq, psc_dma);
+-		free_irq(psc_dma->capture.irq,
+-			 &psc_dma->capture);
+-		free_irq(psc_dma->playback.irq,
+-			 &psc_dma->playback);
+-		return -ENODEV;
++		ret = -ENODEV;
++		goto out_irq;
+ 	}
+ 
+ 	/* Save what we've done so it can be found again later */
+@@ -550,6 +548,15 @@ int mpc5200_audio_dma_create(struct of_device *op)
+ 
+ 	/* Tell the ASoC OF helpers about it */
+ 	return snd_soc_register_platform(&mpc5200_audio_dma_platform);
++out_irq:
++	free_irq(psc_dma->irq, psc_dma);
++	free_irq(psc_dma->capture.irq, &psc_dma->capture);
++	free_irq(psc_dma->playback.irq, &psc_dma->playback);
++out_free:
++	kfree(psc_dma);
++out_unmap:
++	iounmap(regs);
++	return ret;
+ }
+ EXPORT_SYMBOL_GPL(mpc5200_audio_dma_create);
+ 
