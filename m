@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757265AbZILC4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZILDIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757265AbZILC4W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 22:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753578AbZILC4V
+	id S1757278AbZILDIT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 23:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757208AbZILDIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 22:56:21 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:46712 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753374AbZILC4U (ORCPT
+	Fri, 11 Sep 2009 23:08:18 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:29123 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753018AbZILDIR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 22:56:20 -0400
-Date: Fri, 11 Sep 2009 19:56:23 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Greg KH <greg@kroah.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>,
-       Ravi Anand <ravi.anand@qlogic.com>,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>
-Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
- CONFIG_MOUDLES=n.
-Message-ID: <20090912025623.GA14824@plap4-2.local>
-References: <20090907210206.7830ba68.sfr@canb.auug.org.au>
- <20090907102747.ac6b98ff.randy.dunlap@oracle.com>
- <20090908182541.GB44157@plap4-2.local>
- <20090911175341.GH710@plap4-2.local>
- <1252708951.13282.151.camel@mulgrave.site>
- <20090912000742.GB12098@plap4-2.local>
- <20090912001752.GC12098@plap4-2.local>
- <20090912003808.GD12098@plap4-2.local>
- <20090912005446.GA11691@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090912005446.GA11691@kroah.com>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 12 Sep 2009 02:55:53.0263 (UTC) FILETIME=[8ACFE3F0:01CA3354]
+	Fri, 11 Sep 2009 23:08:17 -0400
+X-YMail-OSG: d1_UvdwVM1nFvsNDVIiXpk2luQaTdlGSW_eD3tGcKQS3Vk.iGvJNFy1hPFy5C0HunLkd917p22hJUJnIwl.QZ2NuwA5rA6rvRsaYe0.GQsD1Hii2rB1Os7pDK.roJjqHaDsn1jRdOOepkR93kktmvwcdL.eHD4psJOlU72.md.pspgdZ70MO6gcxgriqFDVXdpEuWXG93kEFq7MPnGNBNg--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic
+	target engine for Linux v2.6.32
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+In-Reply-To: <1252723060.28368.48.camel@desktop>
+References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
+	 <1252723060.28368.48.camel@desktop>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 20:08:04 -0700
+Message-Id: <1252724884.2067.251.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009, Greg KH wrote:
-
-> On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
-> > Randy Dunlap noted:
-> > 
-> >   when CONFIG_MODULES=n:
-> > 
-> > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> > 
-> >   in
-> > 
-> > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> > 		KOBJ_CHANGE, envp);
-> > 
-> > Trigger kobject event on the 'struct device' hanging off the pci_dev.
+On Fri, 2009-09-11 at 19:37 -0700, Daniel Walker wrote:
+> On Fri, 2009-09-11 at 18:55 -0700, Nicholas A. Bellinger wrote:
+> > There is cleanup work continuing to make the TCM code to use
+> > dprintk(),
+> > and some include cleanups, and other minor fixes.  The code has also
+> > been run through checkpatch again since the posting in April, and all
+> > errors have been removed, with the exception of one ConfigFS macro
+> > define triggering a checkpatch false positive.
 > 
-> Um, why?  What are you trying to do here?  kobject change should not be
-> for a device, or a "normal" kobject.
+
+Greetings Daniel,
+
 > 
-> What do you expect userspace to do with this?  Where have you documented
-> it?
+> One show stopping issue is that your adding new semaphore usage in patch
+> 5 and 16 (and in 16 it's a LOCKED one wtf!!). Which you should not be
+> doing .. You need to really evaluate the warnings from checkpatch, cause
+> those still have meaning.. 
+> 
 
-The purpose was described here:
+Ok, I will have a look at converting the HBA semaphore to a mutex in
+patch 5, and use some single use waitqueues in patch 16.  Btw, the ones
+using init_MUTEX_LOCKED() in the latter source file are being used when
+shutting down target_core_mod allocated kernel threads to sychronize
+between the stopping processing threads and configfs process context
+that waitqueues would work better for.  Thanks for pointing this out!
 
-	http://article.gmane.org/gmane.linux.scsi/54155
+> It's basically telling you what you should be doing in the warnings..
+> For instance, don't add new semaphore usage, and it tells you what you
+> need to be using in place of them..
 
-Basically we'd like to instruct user-space to retrieve a blob of data
-automatically. Original implementation used the kboject hanging off
-the module which does not exist when CONFIG_MODULES=n.  It was
-suggested that perhaps an alternative would be to use 'struct device'
-kobj.  Any tips on how to trigger such a driver-specific event,
-perhaps a dedicated kobject exported by the driver itself???
+Ok, so I will also do the struct sempahore -> struct mutex conversion
+where it makes sense to protect lists and see about the rest..
 
-> confused,
+>  Also typedefs are frowned upon, so
+> you could remove those..
+> 
 
-anch'io...
+I was thinking about going through the typedefs with a sed chainsaw, but
+I decided against for this TCM patch series because it makes keeping
+backward ports to <= v2.6.31 slightly easier to maintain for me for the
+current users of LIO kernel code.
 
-Thanks, AV
+However, I have been starting to not use typedef for the newest ALUA and
+pieces of PR code, and I would be happy to have another look at typedef
+style comments on this once the other larger interest items are on the
+way to being resolved.
+
+Thanks!
+
+--nab
+
+> Daniel
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
