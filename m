@@ -1,109 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbZILOOJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754474AbZILOaQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753541AbZILOOJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 10:14:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZILOOJ
+	id S1754474AbZILOaQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 10:30:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZILOaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 10:14:09 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:37601 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752360AbZILOOH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 10:14:07 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AigFAANGq0pMROOX/2dsb2JhbACBU9h5hBgF
-Date: Sat, 12 Sep 2009 10:14:08 -0400
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH 2/3] tracing/profile: add ref count for registering
-	profile events
-Message-ID: <20090912141408.GD22876@Krystal>
-References: <20090911135452.866274568@goodmis.org> <20090911135626.421489476@goodmis.org> <1252677861.7126.32.camel@laptop> <1252678183.7126.34.camel@laptop> <1252679606.18996.681.camel@gandalf.stny.rr.com> <1252679849.7126.37.camel@laptop>
+	Sat, 12 Sep 2009 10:30:16 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58061 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753825AbZILOaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 10:30:14 -0400
+Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
+ CONFIG_MOUDLES=n.
+From: James Bottomley <James.Bottomley@suse.de>
+To: Greg KH <greg@kroah.com>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Giridhar Malavali <giridhar.malavali@qlogic.com>,
+       Ravi Anand <ravi.anand@qlogic.com>,
+       Lalit Chandivade <lalit.chandivade@qlogic.com>
+In-Reply-To: <20090912043333.GA12349@kroah.com>
+References: <20090907210206.7830ba68.sfr@canb.auug.org.au>
+	 <20090907102747.ac6b98ff.randy.dunlap@oracle.com>
+	 <20090908182541.GB44157@plap4-2.local> <20090911175341.GH710@plap4-2.local>
+	 <1252708951.13282.151.camel@mulgrave.site>
+	 <20090912000742.GB12098@plap4-2.local>
+	 <20090912001752.GC12098@plap4-2.local>
+	 <20090912003808.GD12098@plap4-2.local> <20090912005446.GA11691@kroah.com>
+	 <20090912025623.GA14824@plap4-2.local>  <20090912043333.GA12349@kroah.com>
+Content-Type: text/plain
+Date: Sat, 12 Sep 2009 09:30:07 -0500
+Message-Id: <1252765807.4238.74.camel@mulgrave.site>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <1252679849.7126.37.camel@laptop>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.27.31-grsec (i686)
-X-Uptime: 09:59:10 up 25 days, 48 min,  4 users,  load average: 0.09, 0.18,
-	0.16
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Peter Zijlstra (peterz@infradead.org) wrote:
-> On Fri, 2009-09-11 at 10:33 -0400, Steven Rostedt wrote:
-> > > Or we can go with Li's original patch, that was less ugly.
+On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
+> On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
+> > On Fri, 11 Sep 2009, Greg KH wrote:
 > > 
-> > I can go back to Li's original patch, but the talk on that was
-> > "fragile". If you no longer feel that way, then I'll use his instead.
-> > 
-> > For now, I'll pull out this patch altogether, and resubmit the pull
-> > request without it. I'd like the other changes to not be held up by
-> > this.
-> 
-> Right, I still think its at the wrong level,. see below.
-> 
+> > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
+> > > > Randy Dunlap noted:
+> > > > 
+> > > >   when CONFIG_MODULES=n:
+> > > > 
+> > > > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+> > > > 
+> > > >   in
+> > > > 
+> > > > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> > > > 		KOBJ_CHANGE, envp);
+> > > > 
+> > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
 > > > 
-> > > I still think tracepoints/markers should sort this out, because we now
-> > > have a sematic difference between the two wrt modules.
+> > > Um, why?  What are you trying to do here?  kobject change should not be
+> > > for a device, or a "normal" kobject.
+> > > 
+> > > What do you expect userspace to do with this?  Where have you documented
+> > > it?
 > > 
-> > I originally tried to do it in the tracepoint logic, but that broke a
-> > lot of assumptions about tracepoints that Mathieu pointed out. This is
-> > not a normal use of tracepoints. It is expected that if you register a
-> > probe in a module, you will unregister it before exiting.
+> > The purpose was described here:
 > > 
-> > I can't remember all the details, but at the end, it seemed that the fix
-> > belonged at the ftrace level.
+> > 	http://article.gmane.org/gmane.linux.scsi/54155
+> > 
+> > Basically we'd like to instruct user-space to retrieve a blob of data
+> > automatically.
 > 
-> Right, Mathieu thinks its sane to be able to attach to
-> tracepoints/markers before they exist, so you can put them in module
-> init code. I disagree.
-
-I know we disagree on this topic, but AFAIK you did not propose any
-solution to solve the problem of tracepoints in module init code. This
-leaves a tracepoint user who need to trace module init with no way to do
-it, because he will run in the chicken and egg problem of having to load
-the module to make the tracepoint appear, but needing to trace module
-load. A similar problem applies to kernel boot tracing for tracepoints
-in init code of the kernel image.
-
-Maybe you have a solution for this in mind ? Or is it simply to reduce
-tracepoint instrumentation coverage to exclude init functions ? You not
-caring about this use case does not mean no one care about it.
-
+> Hm, like a firmware object perhaps?
 > 
-> ftrace doesn't mirror this behaviour, that is the source of the problem.
-> If it did the ftrace structures wouldn't go away on unload and there
-> wouldn't be no crash.
-
-Ftrace and lttng need to perform refcounting the probe module
-independently of this specific behavior, because they offer an interface
-located outside of tracepoint or probe module to manage the
-tracepoints/probes connected. Ftrace does it in ftrace, LTTng does it
-within the markers. It therefore make sense to keep a global registry of
-loaded probes, and to refcount the probe module before connecting a
-probe to a tracepoint. I think the solution Li proposed is good.
-
-Thanks,
-
-Mathieu
-
+> > Original implementation used the kboject hanging off
+> > the module which does not exist when CONFIG_MODULES=n.  It was
+> > suggested that perhaps an alternative would be to use 'struct device'
+> > kobj.  Any tips on how to trigger such a driver-specific event,
+> > perhaps a dedicated kobject exported by the driver itself???
 > 
-> But if you want to maintain this disparity between the two frameworks
-> then yes Li's patch, or yours (they're identical) seems the way to solve
-> it.
-> 
-> Still think its daft though.
-> 
+> Why not use the firmware interface for it, that is what it is designed
+> for, and you will not have to craft any new udev rules.
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+The data is going the wrong way to use the current firmware interface,
+which is designed to load data from userspace into the kernel.  For this
+interface, we want the data to go the other way (i.e. the kernel has a
+blob of dump data it would like userspace to save if it can).
+
+I'd be amenable to updating the firmware interface to do this, but it
+looks like adding a completely new codepath, which it's not clear even
+belongs there.
+
+James
+
+
