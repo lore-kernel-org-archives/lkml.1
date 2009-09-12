@@ -1,94 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZILH4X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752344AbZILH7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753175AbZILH4X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 03:56:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZILH4W
+	id S1752344AbZILH7L (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 03:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZILH7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 03:56:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39038 "EHLO hera.kernel.org"
+	Sat, 12 Sep 2009 03:59:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57989 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752568AbZILH4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 03:56:21 -0400
-Date: Sat, 12 Sep 2009 07:55:41 GMT
-From: tip-bot for Josh Triplett <josh@joshtriplett.org>
-Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, rostedt@goodmis.org, josh@joshtriplett.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, rostedt@goodmis.org, tglx@linutronix.de,
-       josh@joshtriplett.org, mingo@elte.hu
-In-Reply-To: <12524504772607-git-send-email->
-References: <12524504772607-git-send-email->
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] rcutorture: Occasionally delay readers enough to make RCU force_quiescent_state
-Message-ID: <tip-f4a82a059aea43947d4f37dba9da1782d11caece@git.kernel.org>
-Git-Commit-ID: f4a82a059aea43947d4f37dba9da1782d11caece
-X-Mailer: tip-git-log-daemon
+	id S1751307AbZILH7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 03:59:09 -0400
+Date: Sat, 12 Sep 2009 09:58:16 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
+       Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [origin tree boot crash #2] kernel BUG at kernel/cred.c:855!
+Message-ID: <20090912075816.GA27306@elte.hu>
+References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com> <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org> <20090912072450.GA6767@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 12 Sep 2009 07:55:42 +0000 (UTC)
+In-Reply-To: <20090912072450.GA6767@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f4a82a059aea43947d4f37dba9da1782d11caece
-Gitweb:     http://git.kernel.org/tip/f4a82a059aea43947d4f37dba9da1782d11caece
-Author:     Josh Triplett <josh@joshtriplett.org>
-AuthorDate: Tue, 8 Sep 2009 15:54:35 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 12 Sep 2009 09:47:07 +0200
 
-rcutorture: Occasionally delay readers enough to make RCU force_quiescent_state
+below is another boot crash. This is with the revert in place so 
+sourced elsewhere. I already bisected the other one, making this one 
+much more difficult to bisect ...
 
-rcutorture already delays readers, but never for long enough to
-make RCU force a quiescent state.  Add an occasional delay of
-50ms.
+[    0.022999] Security Framework initialized
+[    0.023999] SELinux:  Disabled at boot.
+[    0.024999] Mount-cache hash table entries: 512
+[    0.028999] CPU: L1 I Cache: 64K (64 bytes/line), D cache 64K (64 bytes/line)
+[    0.029999] CPU: L2 Cache: 512K (64 bytes/line)
+[    0.030999] CPU: Physical Processor ID: 0
+[    0.031999] CPU: Processor Core ID: 0
+[    0.032999] Checking 'hlt' instruction... OK.
+[    0.038999] CRED: Invalid process credentials
+[    0.039999] CRED: At kernel/cred.c:267
+[    0.040999] CRED: Real credentials: c19ab770 [init][real][eff]
+[    0.041999] CRED: ->magic=43736564, put_addr=(null)
+[    0.042999] CRED: ->usage=4, subscr=2
+[    0.043999] CRED: ->*uid = { 0,0,0,0 }
+[    0.044999] CRED: ->*gid = { 0,0,0,0 }
+[    0.045999] CRED: ->security is (null)
+[    0.046999] CRED: Effective creds == Real creds
+[    0.047999] ------------[ cut here ]------------
+[    0.047999] kernel BUG at kernel/cred.c:855!
+[    0.047999] invalid opcode: 0000 [#1] SMP DEBUG_PAGEALLOC
+[    0.047999] last sysfs file: 
+[    0.047999] Modules linked in:
+[    0.047999] 
+[    0.047999] Pid: 0, comm: swapper Not tainted (2.6.31-tip-02294-g6f4c721-dirty #12983) System Product Name
+[    0.047999] EIP: 0060:[<c1064f9c>] EFLAGS: 00010282 CPU: 0
+[    0.047999] EIP is at __validate_process_creds+0xd6/0xfe
+[    0.047999] EAX: c18642ba EBX: c19ab770 ECX: c106d02f EDX: c16cde5d
+[    0.047999] ESI: c19a5960 EDI: 0000010b EBP: c199fea4 ESP: c199fe94
+[    0.047999]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
+[    0.047999] Process swapper (pid: 0, ti=c199f000 task=c19a5960 task.ti=c199f000)
+[    0.047999] Stack:
+[    0.047999]  c18642e2 f7868000 c19a5960 00000000 c199feb8 c10653b1 f7868000 00800b00
+[    0.047999] <0> 00000000 c199fed4 c1065771 f7868000 00000000 f7868000 00000000 00000000
+[    0.047999] <0> c199ff04 c104c8d8 f7868000 c199ff84 00000000 00800b00 00000001 00000000
+[    0.047999] Call Trace:
+[    0.047999]  [<c10653b1>] ? prepare_creds+0x1e/0xb1
+[    0.047999]  [<c1065771>] ? copy_creds+0x85/0x1cc
+[    0.047999]  [<c104c8d8>] ? copy_process+0x18b/0xc75
+[    0.047999]  [<c104d4d5>] ? do_fork+0x113/0x28d
+[    0.047999]  [<c106faef>] ? __lock_release+0x15e/0x164
+[    0.047999]  [<c16ccd91>] ? __mutex_unlock_slowpath+0xf8/0x107
+[    0.047999]  [<c1017b13>] ? kernel_thread+0x80/0x88
+[    0.047999]  [<c1a15331>] ? kernel_init+0x0/0xa6
+[    0.047999]  [<c1a15331>] ? kernel_init+0x0/0xa6
+[    0.047999]  [<c1019ab0>] ? kernel_thread_helper+0x0/0x10
+[    0.047999]  [<c169c241>] ? rest_init+0x19/0x5f
+[    0.047999]  [<c1a158c7>] ? start_kernel+0x310/0x315
+[    0.047999]  [<c1a15098>] ? __init_begin+0x98/0x9d
+[    0.047999] Code: ff 8b 86 dc 02 00 00 83 c4 10 3b 86 d8 02 00 00 74 0e 89 f1 ba b0 42 86 c1 e8 55 fe ff ff eb 0b 68 ba 42 86 c1 e8 d9 6f 66 00 58 <0f> 0b eb fe 81 7b 0c 64 65 73 43 75 9f e9 58 ff ff ff 81 79 0c 
+[    0.047999] EIP: [<c1064f9c>] __validate_process_creds+0xd6/0xfe SS:ESP 0068:c199fe94
 
-Signed-off-by: Josh Triplett <josh@joshtriplett.org>
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-Cc: laijs@cn.fujitsu.com
-Cc: dipankar@in.ibm.com
-Cc: akpm@linux-foundation.org
-Cc: mathieu.desnoyers@polymtl.ca
-Cc: josht@linux.vnet.ibm.com
-Cc: dvhltc@us.ibm.com
-Cc: niv@us.ibm.com
-Cc: peterz@infradead.org
-LKML-Reference: <12524504772607-git-send-email->
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I'll try a blind (and manual) revert of:
 
+ee18d64: KEYS: Add a keyctl to install a process's session keyring on its parent [try #6
 
----
- kernel/rcutorture.c |   15 +++++++++------
- 1 files changed, 9 insertions(+), 6 deletions(-)
-
-diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-index b33db53..328a825 100644
---- a/kernel/rcutorture.c
-+++ b/kernel/rcutorture.c
-@@ -281,14 +281,17 @@ static int rcu_torture_read_lock(void) __acquires(RCU)
- 
- static void rcu_read_delay(struct rcu_random_state *rrsp)
- {
--	long delay;
--	const long longdelay = 200;
-+	const unsigned long shortdelay_us = 200;
-+	const unsigned long longdelay_ms = 50;
- 
--	/* We want there to be long-running readers, but not all the time. */
-+	/* We want a short delay sometimes to make a reader delay the grace
-+	 * period, and we want a long delay occasionally to trigger
-+	 * force_quiescent_state. */
- 
--	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay);
--	if (!delay)
--		udelay(longdelay);
-+	if (!(rcu_random(rrsp) % (nrealreaders * 2000 * longdelay_ms)))
-+		mdelay(longdelay_ms);
-+	if (!(rcu_random(rrsp) % (nrealreaders * 2 * shortdelay_us)))
-+		udelay(shortdelay_us);
- }
- 
- static void rcu_torture_read_unlock(int idx) __releases(RCU)
+	Ingo
