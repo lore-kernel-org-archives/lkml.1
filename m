@@ -1,116 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757247AbZILAFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932233AbZILAHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757247AbZILAFx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 20:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751931AbZILAFw
+	id S932233AbZILAHm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 20:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753194AbZILAHl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 20:05:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56432 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751448AbZILAFw (ORCPT
+	Fri, 11 Sep 2009 20:07:41 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:39418 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751931AbZILAHk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 20:05:52 -0400
-Date: Fri, 11 Sep 2009 17:05:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: mtosatti@redhat.com, gregkh@suse.de, broonie@opensource.wolfsonmicro.com,
-       johannes@sipsolutions.net, avi@qumranet.com, fengguang.wu@intel.com,
-       andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] devmem: cleanup unxlate_dev_mem_ptr() calls
-Message-Id: <20090911170500.8db04cb7.akpm@linux-foundation.org>
-In-Reply-To: <20090911023200.767391440@intel.com>
-References: <20090911022333.324128054@intel.com>
-	<20090911023200.767391440@intel.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 20:07:40 -0400
+Date: Fri, 11 Sep 2009 17:07:42 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Giridhar Malavali <giridhar.malavali@qlogic.com>
+Subject: Re: qla2xxx: Correct compilation issues when CONFIG_MOUDLES=n
+ (was: Re: linux-next: Tree for September 7 (scsi/qla2x))
+Message-ID: <20090912000742.GB12098@plap4-2.local>
+References: <20090907210206.7830ba68.sfr@canb.auug.org.au>
+ <20090907102747.ac6b98ff.randy.dunlap@oracle.com>
+ <20090908182541.GB44157@plap4-2.local>
+ <20090911175341.GH710@plap4-2.local>
+ <1252708951.13282.151.camel@mulgrave.site>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252708951.13282.151.camel@mulgrave.site>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 12 Sep 2009 00:07:12.0944 (UTC) FILETIME=[FAA1C300:01CA333C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009 10:23:36 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+On Fri, 11 Sep 2009, James Bottomley wrote:
 
-> No behavior change.
+> On Fri, 2009-09-11 at 10:53 -0700, Andrew Vasquez wrote:
+> > Randy Dunlap noted:
+> > 
+> >   when CONFIG_MODULES=n:
+> > 
+> > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+> > 
+> >   in
+> > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> > 		KOBJ_CHANGE, envp);
+> > 
+> > Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> > ---
+> > 
+> > On Tue, 08 Sep 2009, Andrew Vasquez wrote:
+> > 
+> > > On Mon, 07 Sep 2009, Randy Dunlap wrote:
+> > > 
+> > > > On Mon, 7 Sep 2009 21:02:06 +1000 Stephen Rothwell wrote:
+> > > > 
+> > > > > Hi all,
+> > > > > 
+> > > > > Changes since 20090904:
+> > > > 
+> > > > 
+> > > > when CONFIG_MODULES=n:
+> > > > 
+> > > > drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+> > > > 
+> > > > in
+> > > > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> > > > 	    KOBJ_CHANGE, envp);
+> > > 
+> > > Argg...  Some history here...  During several unwelcome
+> > > hardware/firmware events (ISP system error, mailbox command timeouts,
+> > > etc), the qla2xxx driver can store a 'firmware-dump' (essentially a
+> > > snapshot of the current state of the ISP firmware).  This snapshot is
+> > > then captured via a user-space tool querying a driver sysfs-node
+> > > hanging off of a scsi_host's device tree:
+> > > 
+> > > 	/sys/class/scsi_host/host4/device/fw_dump
+> > > 
+> > > The dump is then used by our firmware engineering group to help triage
+> > > the issue.
+> > > 
+> > > This recent change:
+> > > 
+> > > 	commit 10a71b40153a19279428053ad9743e15ef414148
+> > > 	Author: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> > > 	Date:   Tue Aug 25 11:36:15 2009 -0700
+> > > 
+> > > 	    [SCSI] qla2xxx: Add firmware-dump kobject uevent notification.
+> > > 
+> > > 	    Signed-off-by: Andrew Vasquez <andrew.vasquez@qlogic.com>
+> > > 	    Signed-off-by: Giridhar Malavali <giridhar.malavali@qlogic.com>
+> > > 	    Signed-off-by: James Bottomley <James.Bottomley@suse.de>
+> > > 
+> > > attempted to help 'automate' the task of retrieval by signaling udev
+> > > to automatically run the 'retrieval' script anytime the driver
+> > > captured the firmware-dump.  Here's a snippet of the udev rule:
+> > > 
+> > > 	# qla2xxx driver
+> > > 	KERNEL=="qla2xxx", SUBSYSTEM=="module", ACTION=="change", RUN+="qla2xxx_udev.sh"
+> > > 
+> > > Any suggestions here on an alternate driver-specific kobject an LLD
+> > > can/should use for something like this?  I looked previously at other
+> > > callers of kobject_uevent_env(), but didn't really see a simlar
+> > > usage-pattern of a driver wanting to signal events to userspace...
+> > > 
+> > > Thanks, AV
+> > 
+> > Ok, So any strong objections to just having the functionality present
+> > when module support is enabled?
+> > 
+> > diff --git a/drivers/scsi/qla2xxx/qla_os.c b/drivers/scsi/qla2xxx/qla_os.c
+> > index 29396c0..3887adb 100644
+> > --- a/drivers/scsi/qla2xxx/qla_os.c
+> > +++ b/drivers/scsi/qla2xxx/qla_os.c
+> > @@ -2671,6 +2671,7 @@ qla2x00_post_uevent_work(struct scsi_qla_host *vha, u32 code)
+> >  static void
+> >  qla2x00_uevent_emit(struct scsi_qla_host *vha, u32 code)
+> >  {
+> > +#ifdef CONFIG_MODULES
+> >  	char event_string[40];
+> >  	char *envp[] = { event_string, NULL };
+> >  
+> > @@ -2685,6 +2686,7 @@ qla2x00_uevent_emit(struct scsi_qla_host *vha, u32 code)
+> >  	}
+> >  	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> >  	    KOBJ_CHANGE, envp);
+> > +#endif
 > 
-> CC: Marcelo Tosatti <mtosatti@redhat.com>
-> CC: Greg Kroah-Hartman <gregkh@suse.de>
-> CC: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> CC: Johannes Berg <johannes@sipsolutions.net>
-> CC: Avi Kivity <avi@qumranet.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  drivers/char/mem.c |   13 +++++--------
->  1 file changed, 5 insertions(+), 8 deletions(-)
-> 
-> --- linux-mm.orig/drivers/char/mem.c	2009-09-10 21:59:39.000000000 +0800
-> +++ linux-mm/drivers/char/mem.c	2009-09-10 22:00:12.000000000 +0800
-> @@ -131,6 +131,7 @@ static ssize_t read_mem(struct file * fi
->  			size_t count, loff_t *ppos)
->  {
->  	unsigned long p = *ppos;
-> +	unsigned long ret;
->  	ssize_t read, sz;
->  	char *ptr;
->  
-> @@ -169,12 +170,10 @@ static ssize_t read_mem(struct file * fi
->  		if (!ptr)
->  			return -EFAULT;
->  
-> -		if (copy_to_user(buf, ptr, sz)) {
-> -			unxlate_dev_mem_ptr(p, ptr);
-> -			return -EFAULT;
-> -		}
-> -
-> +		ret = copy_to_user(buf, ptr, sz);
->  		unxlate_dev_mem_ptr(p, ptr);
-> +		if (ret)
-> +			return -EFAULT;
->  
->  		buf += sz;
->  		p += sz;
+> Only emitting events if the thing is compiled as a module doesn't really
+> look like the right solution.  The first question that springs to mind
+> is why are you emitting events against the module kobject in the first
+> place?  Why not emit them against the device kobject (which is always
+> present)?
 
-- local var `ret' didn't need function-wide scope.  I think it's
-  better to reduce its scope if poss.
+The struct device's kobj from pdev->dev?
 
-- conventionally the identifier `ret' refers to "the value which this
-  function will return".  Ditto `retval' and `rc'.
+My udev-foo is pathetic, so how exactly would that get multiplexed at
+the udev side?
 
-  But that's not what `ret' does here so let's call it something
-  else?  `remaining' is rather verbose and formal, but accurate.
+	KERNEL=="???", SUBSYSTEM=="???", ACTION=="change", RUN+="qla2xxx_udev.sh"
 
-
---- a/drivers/char/mem.c~dev-mem-cleanup-unxlate_dev_mem_ptr-calls-fix
-+++ a/drivers/char/mem.c
-@@ -131,7 +131,6 @@ static ssize_t read_mem(struct file * fi
- 			size_t count, loff_t *ppos)
- {
- 	unsigned long p = *ppos;
--	unsigned long ret;
- 	ssize_t read, sz;
- 	char *ptr;
- 
-@@ -156,6 +155,8 @@ static ssize_t read_mem(struct file * fi
- #endif
- 
- 	while (count > 0) {
-+		unsigned long remaining;
-+
- 		sz = size_inside_page(p, count);
- 
- 		if (!range_is_allowed(p >> PAGE_SHIFT, count))
-@@ -170,9 +171,9 @@ static ssize_t read_mem(struct file * fi
- 		if (!ptr)
- 			return -EFAULT;
- 
--		ret = copy_to_user(buf, ptr, sz);
-+		remaining = copy_to_user(buf, ptr, sz);
- 		unxlate_dev_mem_ptr(p, ptr);
--		if (ret)
-+		if (remaining)
- 			return -EFAULT;
- 
- 		buf += sz;
-_
-
+Thanks, AV
