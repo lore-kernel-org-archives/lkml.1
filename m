@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757312AbZILCN2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZILCXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757312AbZILCN2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 22:13:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757259AbZILCN0
+	id S1757272AbZILCXu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 22:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbZILCXt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 22:13:26 -0400
-Received: from fifo99.com ([67.223.236.141]:47307 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757172AbZILCN0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 22:13:26 -0400
-Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard
- ATP867X controllers
-From: Daniel Walker <dwalker@fifo99.com>
-To: "Jung-Ik (John) Lee" <jilee@google.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Grant Grundler <grundler@google.com>,
-       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>
-In-Reply-To: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com>
-References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 19:14:01 -0700
-Message-Id: <1252721641.28368.34.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Fri, 11 Sep 2009 22:23:49 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:60261 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757212AbZILCXt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 22:23:49 -0400
+Message-ID: <25410990.post@talk.nabble.com>
+Date: Fri, 11 Sep 2009 19:23:52 -0700 (PDT)
+From: sidc7 <siddhartha.chhabra@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Controlling memory allocation
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Nabble-From: siddhartha.chhabra@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 19:06 -0700, Jung-Ik (John) Lee wrote:
-> From: John(Jung-Ik) Lee <jilee@google.com>
-> 
-> This is a new pata driver for ARTOP 867X 64bit 4-channel UDMA133 ATA
-> ctrls.
-> Based on the Atp867 data sheet rev 1.2, Acard, and in part on early
-> ide codes
-> from Eric Uhrhane <ericu@google.com>.
 
-This driver has numerous checkpatch errors .. Could you run this though
-scripts/checkpatch.pl and correct anything it finds?
+I had a question regarding memory allocation. On a contemporary system, the
+kernel will allocate physical frames on the DRAM based on availability. Is
+it possible for the kernel to somehow restrict frame allocation for a
+particular process to a particular address range. For e.g. Lets assume the
+DRAM ranges from 00-FF, on a contemporary system, the entire range is
+available for the kernel to allocate to the processes. Is it possible for
+the kernel to say PID 1: the frames will be allocated only in 00-A0, PID2:
+the frames will be allocated from A1 - D0 and PID3: will get frames from D1
+- FF.
 
-Daniel
+Thanks for your time and help in advance and I really hope someone can help
+me with this question
+
+Regards
+-SC
+-- 
+View this message in context: http://www.nabble.com/Controlling-memory-allocation-tp25410990p25410990.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
