@@ -1,58 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754227AbZILLlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZILLpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754227AbZILLlk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 07:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZILLlj
+	id S1753671AbZILLpE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 07:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751916AbZILLpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 07:41:39 -0400
-Received: from mail-yx0-f176.google.com ([209.85.210.176]:55946 "EHLO
-	mail-yx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753541AbZILLlj convert rfc822-to-8bit (ORCPT
+	Sat, 12 Sep 2009 07:45:04 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:33081 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750887AbZILLpC convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 07:41:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=szS17dWfoZcAf8vxEPEi49fy8vUkdSSReenEdoI0HsKeym84p86V6ffwNJSdWLK6Nf
-         oNsZMO80TAxNVK4593ApIsF62SHJrsQa8FzujqY0LZOBVzjODuYQjoRBSvZc0I1dlW13
-         8wYUNpul6jBxZCtgYhx4OKagdpaeh3RQXeCks=
+	Sat, 12 Sep 2009 07:45:02 -0400
+Date: Sat, 12 Sep 2009 13:45:03 +0200
+Message-Id: <909257926@web.de>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0909121218020.488@sister.anvils>
-References: <alpine.LRH.2.00.0908241110420.21562@tundra.namei.org> 
-	<Pine.LNX.4.64.0908241258070.27704@sister.anvils> <4A929BF5.2050105@gmail.com> 
-	<Pine.LNX.4.64.0908241532470.9322@sister.anvils> <8bd0f97a0909110703o4d496a45jddc0d7d6fd8674b4@mail.gmail.com> 
-	<Pine.LNX.4.64.0909121212560.488@sister.anvils> <Pine.LNX.4.64.0909121218020.488@sister.anvils>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Sat, 12 Sep 2009 07:41:22 -0400
-Message-ID: <8bd0f97a0909120441y764174d3pc78929438492c6dd@mail.gmail.com>
-Subject: Re: [PATCH] fix undefined reference to user_shm_unlock
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefan Huber <shuber2@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Meerwald <pmeerw@cosy.sbg.ac.at>,
-       James Morris <jmorris@namei.org>, William Irwin <wli@movementarian.org>,
-       Mel Gorman <mel@csn.ul.ie>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, stable@kernel.org
-Content-Type: text/plain; charset=UTF-8
+From: devzero@web.de
+To: linux-kernel@vger.kernel.org
+Cc: Hannes Reinecke <hare@suse.de>, "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH] Disable partition scan
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX18hciE8qh/AB3au/uvAcMoDXshWxv67nLanJEHSZU6dGJPzg
+ Og+oxdlBj2cQtHOyWoPQANGPQW+PbUm5NwQLGkQA8qTf6BxtME=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 12, 2009 at 07:21, Hugh Dickins wrote:
-> My 353d5c30c666580347515da609dd74a2b8e9b828 "mm: fix hugetlb bug due to
-> user_shm_unlock call" broke the CONFIG_SYSVIPC !CONFIG_MMU build of both
-> 2.6.31 and 2.6.30.6: "undefined reference to `user_shm_unlock'".
+Hello, 
+
+iirc i had a setup a while ago where i also found disabling partition scanning would be nice to have.
+
+actually, we have a bugzilla entry for this - have a look at:
+
+http://bugzilla.kernel.org/show_bug.cgi?id=8588
+
+anyway, wouldn`t it be better to disable that on a per device basis or at least be able to exclude 
+the boot/system devices from being skipped? 
+
+regards
+roland
+
+
+>Hi all again,
 >
-> gcc didn't understand my comment! so couldn't figure out to optimize
-> away user_shm_unlock() from the error path in the hugetlb-less case,
-> as it does elsewhere. Â Help it to do so, in a language it understands.
+>Hannes Reinecke wrote:
+>> Hi all,
+>> 
+>> for some setups (eg dmraid or multipathing) the in-kernel partition scan
+>> is pointless; the (block) partitions won't be used anywhere. Instead the
+>> system will be using kpartx-generated device-mapper devices.
+>> Worse, on some setups (RAID0 dmraid or active/passive multipath devices)
+>> the in-kernel partition scan will generate plenty of I/O errors as the
+>> partitions table might not be accessible or invalid for this device.
+>> 
+>> This patch implements a new kernel command-line option 'no_partition_scan'
+>> which will switch off the partition scan globally. The partition scan can
+>> be re-enabled for individual devices by echoing any positive number smaller
+>> than the number of minors into
+>> /sys/class/block/XXX/range
+>> 
+>> and rescanning the device.
+>> 
+>> Please apply.
+>> 
+>Yeah, cool. One should take care not to mangle to patches.
+>Should teach me to use git properly. Oh well.
+>
+>Corrected patch attached.
+>
+>Cheers,
+>
+>Hannes
+>
+>-- 
+>Dr. Hannes Reinecke		      zSeries & Storage
+>hare@suse.de			      +49 911 74053 688
+>SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+>GF: Markus Rex, HRB 16746 (AG Nürnberg)
 
-thanks, this works for me
+["no-partition-scan" (text/plain)]
 
-> Cc: stable@kernel.org
+Disable partition scan
 
-should go into 2.6.30.7 and 2.6.31.1
--mike
+For some setups (multipath or dmraid) the in-kernel partition scan
+is pointless as the (block) partitions won't be used anywhere.
+Worse, it might trigger I/O errors as the partition table might not
+be accessible (eg for the passive path of a multipath device) or
+even invalid (eg for RAID0 dmraid).
+This patch allows to switch off the in-kernel partition scan by adding
+'no_partition_scan' to the kernel commandline. Partitions scan can be
+allowed for individual disk by echoing a positive number into
+/sys/block/XXX/range and rescan the disk.
+
+Signed-off-by: Hannes Reinecke <hare@suse.de>
+
+diff --git a/block/genhd.c b/block/genhd.c
+index 656c2c7..3d6a53b 100644
+--- a/block/genhd.c
++++ b/block/genhd.c
+@@ -173,6 +173,18 @@ static int exact_lock(dev_t devt, void *data)
+ 	return 0;
+ }
+ 
++static int __read_mostly no_partition_scan;
++
++static int __init no_partition_scan_setup(char *str)
++{
++	no_partition_scan = 1;
++	printk(KERN_INFO "genhd: omit partition scan.\n");
++
++	return 1;
++}
++
++__setup("no_partition_scan", no_partition_scan_setup);
++
+ /**
+  * add_disk - add partitioning information to kernel list
+  * @disk: per-device partitioning information
+@@ -186,6 +198,8 @@ void add_disk(struct gendisk *disk)
+ 	int retval;
+ 
+ 	disk->flags |= GENHD_FL_UP;
++	if (no_partition_scan)
++		disk->flags |= GENHD_FL_NO_PARTITION_SCAN;
+ 	blk_register_region(MKDEV(disk->major, disk->first_minor),
+ 			    disk->minors, NULL, exact_match, exact_lock, disk);
+ 	register_disk(disk);
+@@ -419,7 +433,27 @@ static ssize_t disk_range_show(struct device *dev,
+ {
+ 	struct gendisk *disk = dev_to_disk(dev);
+ 
+-	return sprintf(buf, "%d\n", disk->minors);
++	return sprintf(buf, "%d\n",
++		       (disk->flags & GENHD_FL_NO_PARTITION_SCAN ? 0 : disk->minors));
++}
++
++static ssize_t disk_range_store(struct device *dev,
++				struct device_attribute *attr,
++				const char *buf, size_t count)
++{
++	struct gendisk *disk = dev_to_disk(dev);
++	int i;
++
++	if (count > 0 && sscanf(buf, "%d", &i) > 0) {
++		if (i == 0)
++			disk->flags |= GENHD_FL_NO_PARTITION_SCAN;
++		else if (i <= disk->minors)
++			disk->flags &= ~GENHD_FL_NO_PARTITION_SCAN;
++		else
++			count = -EINVAL;
++	}
++
++	return count;
+ }
+ 
+ static ssize_t disk_removable_show(struct device *dev,
+@@ -509,7 +543,7 @@ static ssize_t disk_fail_store(struct device *dev,
+ 
+ #endif
+ 
+-static DEVICE_ATTR(range, S_IRUGO, disk_range_show, NULL);
++static DEVICE_ATTR(range, S_IRUGO|S_IWUSR, disk_range_show, disk_range_store);
+ static DEVICE_ATTR(removable, S_IRUGO, disk_removable_show, NULL);
+ static DEVICE_ATTR(ro, S_IRUGO, disk_ro_show, NULL);
+ static DEVICE_ATTR(size, S_IRUGO, disk_size_show, NULL);
+diff --git a/fs/partitions/check.c b/fs/partitions/check.c
+index 7d6b34e..a73f6dc 100644
+--- a/fs/partitions/check.c
++++ b/fs/partitions/check.c
+@@ -485,6 +485,8 @@ int rescan_partitions(struct gendisk *disk, struct block_device *bdev)
+ 		delete_partition(disk, p);
+ 	if (disk->fops->revalidate_disk)
+ 		disk->fops->revalidate_disk(disk);
++	if (disk->flags & GENHD_FL_NO_PARTITION_SCAN)
++		return 0;
+ 	if (!get_capacity(disk) || !(state = check_partition(disk, bdev)))
+ 		return 0;
+ 	if (IS_ERR(state))	/* I/O error reading the partition table */
+diff --git a/include/linux/genhd.h b/include/linux/genhd.h
+index 118216f..87c45ad 100644
+--- a/include/linux/genhd.h
++++ b/include/linux/genhd.h
+@@ -109,6 +109,7 @@ struct hd_struct {
+ #define GENHD_FL_UP				16
+ #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
+ #define GENHD_FL_FAIL				64
++#define GENHD_FL_NO_PARTITION_SCAN		128
+ 
+ #define BLK_SCSI_MAX_CMDS	(256)
+ #define BLK_SCSI_CMD_PER_LONG	(BLK_SCSI_MAX_CMDS / (sizeof(long) * 8))
+diff --git a/include/linux/virtio_blk.h b/include/linux/virtio_blk.h
+
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
+
+[prev in list] [next in list] [prev in thread] [next in thread] 
+
+________________________________________________________________
+Neu: WEB.DE Doppel-FLAT mit Internet-Flatrate + Telefon-Flatrate
+für nur 19,99 Euro/mtl.!* http://produkte.web.de/go/02/
+
