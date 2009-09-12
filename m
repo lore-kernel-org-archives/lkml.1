@@ -1,76 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752464AbZILWK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753779AbZILWvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752464AbZILWK2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 18:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751372AbZILWK0
+	id S1753779AbZILWvs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 18:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZILWvq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 18:10:26 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:22518 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750966AbZILWK0 (ORCPT
+	Sat, 12 Sep 2009 18:51:46 -0400
+Received: from eddie.linux-mips.org ([78.24.191.182]:41940 "EHLO
+	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751789AbZILWvq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 18:10:26 -0400
-Date: Sun, 13 Sep 2009 00:10:28 +0200 (CEST)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [GIT PULL] x86/xen for v2.6.32
-In-Reply-To: <20090912071428.GC12702@elte.hu>
-Message-ID: <alpine.LNX.2.00.0909130007580.23341@swampdragon.chaosbits.net>
-References: <20090911200135.GA1426@elte.hu> <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net> <20090912071428.GC12702@elte.hu>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Sat, 12 Sep 2009 18:51:46 -0400
+Date: Sat, 12 Sep 2009 23:51:40 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: Daniel Walker <dwalker@fifo99.com>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Julia Lawall <julia@diku.dk>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: apic: convert BUG() to BUG_ON()
+In-Reply-To: <1252779641.28368.81.camel@desktop>
+Message-ID: <alpine.LFD.2.00.0909122336330.12448@eddie.linux-mips.org>
+References: <1252777220-30796-1-git-send-email-dwalker@fifo99.com>  <20090912180527.GA4893@lenovo> <1252779641.28368.81.camel@desktop>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Sep 2009, Ingo Molnar wrote:
+On Sat, 12 Sep 2009, Daniel Walker wrote:
 
+> For one it condenses duplicate code (i.e. the if()). If the BUG_ON()
+> macro gets updated with something new, all the users get the updates
+> automatically. The other thing is your re-using potentially more
+> advanced code that's inside the macro. In this case it's fairly trivial,
 > 
-> * Jesper Juhl <jj@chaosbits.net> wrote:
+> #define BUG_ON(condition) do { if (unlikely(condition)) BUG(); } while(0)
 > 
-[...]
-> > 
-> > Why is this cast of 'va' needed?  As far as I can see, 'va' already has 
-> > the correct type of "unsigned long".
-> > Pointless casts do more harm than good, let's remove this one :-)
-> > 
-> > Sorry that all I could comment on was this trivial thing, but I thought it 
-> > better to comment than keep silent now that I had read the patch and 
-> > spotted it...
-> 
-> Yes, that cast could be removed.
-> 
-> Btw., i'd suggest that if you have trivial review feedback please 
-> comment on the originating patches, in the original, finegrained 
-> context, not the summary pull request. (Incidentally i did that too 
-> there and the above patches did result in a few cleanups when they 
-> were submitted.)
-> 
-> The reason is that the originating threads all have full changelogs 
-> and have all the right people Cc:-ed in general - and by reviewing 
-> them you will also influence the patches before they are sent to 
-> Linus. The pull requests have Linus and the affected maintainers 
-> Cc:-ed mainly. So for example you did not Cc: Jeremy to the x86/fpu 
-> pull request comments you did so he had no chance to comment on them 
-> unless he happened to run across your comments on lkml.
-> 
-> Bug/crash reports and serious gotcha feedback can go to the pull 
-> requests too just fine - but even then, if you know what the 
-> originating commit is, try to include the people who originated the 
-> commit. (And feel free to Cc: Linus to that trivial feedback if you 
-> think it's important enough.)
-> 
+> So we're getting the benefit on the new "unlikely" in the apic code.
+> unlikely/likely calls will usually allow the compiler to create smaller,
+> and or, more optimized code. 
 
-You are making a lot of sense Ingo. I'll try to remember that.
+ For non-x86 platforms the use of the BUG_ON() macro may result in more 
+efficient code GCC may not be able to optimise to with if (...) BUG();.  
+For example the macro may expand to inline assembly with a conditional 
+trap instruction GCC would not emit for an if () clause.  While GCC does 
+have a __builtin_trap() intrinsic that could be optimised if alone in a 
+conditional block, such usage may not be frequent enough for a dedicated 
+optimisation to be provided and build-time efficiency of the compiler does 
+matter too, so such an optimisation might be of too questionable a value 
+to incur an additional performance hit for the compiler.
 
+ Just a general note on patches of this kind, or to put it short, yes I 
+agree it's a good idea.
 
--- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-
+  Maciej
