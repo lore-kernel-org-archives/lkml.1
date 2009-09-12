@@ -1,93 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753988AbZILBUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757219AbZILCBC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753988AbZILBUt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 21:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZILBUs
+	id S1757219AbZILCBC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 22:01:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753975AbZILCBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 21:20:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:61153 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752942AbZILBUs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 21:20:48 -0400
-Message-ID: <4AAAF829.3070302@redhat.com>
-Date: Fri, 11 Sep 2009 21:23:53 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Mark Wielaard <mjw@redhat.com>, "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH tracing/kprobes 0/7] tracing/kprobes: kprobe-based	event
- tracer update and perf support
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090911013332.GB16396@nowhere> <y0mr5udjoc8.fsf@fche.csb> <20090911190651.GA22065@infradead.org> <1252698613.2470.6.camel@hermans.wildebeest.org> <20090911200317.GA3827@infradead.org>
-In-Reply-To: <20090911200317.GA3827@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 Sep 2009 22:01:01 -0400
+Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:20393 "HELO
+	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753713AbZILCBA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 22:01:00 -0400
+X-YMail-OSG: DJ9v6JQVM1kyjQTUgM19gBoE4d6eM9sLtknZjtMxZO6O9zAmSll7UI1lqgcV8q4YRyu_OPdrIR6lslz3bik1L5y0wC706gQvUtt4AqwUJpDREqrsxLccKSPs5TJHYOsaI6UejpRgJjsM.2mI76SeIPFHRe3QEpx08t4lcyyqvF7Ng_ruxi3wLRjOiL6w_QohRznO1q4o9aSQK1leObxZ181wAN3VA.6zelK8M.m5924Htc9m_89suES_.tpCXkrZc7myGUYniP8Oe0BMUOGz2xwFE1Q-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [RFC PATCH 0/19] A kernel-level configfs enabled generic target
+	engine for Linux v2.6.32
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Content-Type: text/plain
+Date: Fri, 11 Sep 2009 18:55:08 -0700
+Message-Id: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, Sep 11, 2009 at 09:50:13PM +0200, Mark Wielaard wrote:
->> On Fri, 2009-09-11 at 15:06 -0400, Christoph Hellwig wrote:
->>> On Fri, Sep 11, 2009 at 03:03:35PM -0400, Frank Ch. Eigler wrote:
->>>> Frederic Weisbecker<fweisbec@gmail.com>  writes:
->>>>
->>>>> [...]  I'm really looking forward seeing this C expression-like
->>>>> kprobe creation tool.  It seems powerful enough to replace printk +
->>>>> kernel rebuild.  No need anymore to write some printk to debug,
->>>>> worrying, [...]
->>>>
->>>> To a large extent, systemtap had delivered this already some years
->>>> ago, including the cushy ponies dancing in the sunlight.  While such
->>>> low-level machinery is fine, some of our experience indicates that it
->>>> is dramatically easier to use if high-level, symbolic, debugging data
->>>> is used to compute probe locations and variable names/types/locations.
->>>
->>> No, systemtap has been for years failing to delivers this in a way that
->>> it could be usefully integrated into the kernel.
->>
->> You are saying "No" to a claim Frank didn't even make.
->
-> He said systemtap had delivered it, which is not the case.  It has
-> implemented it, but not actually delivered it in a useful way.
+Greetings all,
 
-I assume that he has meant that systemtap had delivered to end-users,
-and that is certainly true. Systemtap has been released and distributed
-with many distributions. I know there are many systemtap users nowadays.
+This is my humble request for review and inclusion of
+Target_Core_Mod/ConfigFS v3.2 from lio-core-2.6.git code into mainline
+v2.6.32.  With TCM v3.2, the two major SPC-4 SCSI target mode fabric
+features that have now been completed: Persistent Reservation APTPL and
+implict/explict ALUA are the first all optional SPC4 defined feature
+implementation of PR and ALUA in the Linux OSS target theatre using an
+upstream user-driven virtual filesystem directory hierarchy structure
+based on configfs that can be configured in realtime in combination with
+interpreted userspace code.
 
-However, indeed, that was not so useful way especially for kernel developers.
-Systemtap developers have also recognized this problem, and we are trying
-to fix it for good relationship with upstream kernel.
+Both of these new features are now being used to provide Persistent Reservations
+across target power loss and asymmetric multipath I/O to both Linux and non-Linux
+clients.  There is also an optional ALUA transition delay logic that has been
+included to futher debug and improve existing upstream client side Linux kernel code
+using TCM v3.2. These patches have been diffed against v2.6.31, and tested on x86
+32-bit HVM, x86_64 KVM, and powerpc.
 
-I'd like to make my work useful not only for upstream kernel and ftrace,
-but also for systemtap. Through this enhancement, knowledge and
-experiences of systemtap will be transferred to upstream. I think
-systemtap can also use it by re-implementing on in-kernel tracing
-functions. I believe we can collaborate on this work, at least
-on stabilizing tracing functions.
+There is cleanup work continuing to make the TCM code to use dprintk(),
+and some include cleanups, and other minor fixes.  The code has also
+been run through checkpatch again since the posting in April, and all
+errors have been removed, with the exception of one ConfigFS macro
+define triggering a checkpatch false positive.
+
+As with the posting of the TCM v3.0 code earlier in April, I have
+decided to break up the submissions into the generic target_core_mod
+piece (this patch series) and then a seperate one that will be appearing
+in the next days for v3.2 of the LIO-Target iSCSI fabric module.
+
+More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
+
+http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
+http://www.linux-iscsi.org/index.php/Persistent_Reservations
+http://www.linux-iscsi.org/index.php/ALUA
+
+The complete v3.x TCM CLI operations set can be found here:
+
+http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
+
+Instructions and examples for getting setup:
+
+http://linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
+http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
+
+Constructive comments are welcome,
+
+--nab
+
+==> target_core_alua.patch <==
+[RFC PATCH 1/19] Target_Core_Mod Asymmetric Logical Unit Assignment (ALUA) support
+==> target_core_configfs.patch <==
+[RFC PATCH 2/19] Target_Core_Mod ConfigFS infrastructure
+==> target_core_device.patch <==
+[RFC PATCH 3/19] Target_Core_Mod device core infrastructure
+==> target_core_file.patch <==
+[RFC PATCH 4/19] Target_Core_Mod FILEIO <-> Linux/VFS subsystem
+==> target_core_hba.patch <==
+[RFC PATCH 5/19] Target_Core_Mod HBA core infrastructure
+==> target_core_iblock.patch <==
+[RFC PATCH 6/19] Target_Core_Mod IBLOCK <-> Linux/Block subsystem plugin
+==> target_core_mib.patch <==
+[RFC PATCH 7/19] Target_Core_Mod SCSI MIBs
+==> target_core_plugin.patch <==
+[RFC PATCH 8/19] Target_Core_Mod Subsystem and SE Object plugin infrastructure
+==> target_core_pr.patch <==
+[RFC PATCH 9/19] Target_Core_Mod SPC-4 Persistent Reservations
+==> target_core_pscsi.patch <==
+[RFC PATCH 10/19] Target_Core_Mod PSCSI <-> Linux/SCSI subsystem plugin
+==> target_core_rd.patch <==
+[RFC PATCH 11/19] Target_Core_Mod RAMDISK_DR and RAMDISK_MCP subsystem plugin
+==> target_core_scdb.patch <==
+[RFC PATCH 12/19] Target_Core_Mod READ/WRITE command descriptor block generation code
+==> target_core_seobj.patch <==
+[RFC PATCH 13/19] Target_Core_Mod Storage Engine Object infrastructure
+==> target_core_tmr.patch <==
+[RFC PATCH 14/19] Target_Core_Mod Task Management infrastructure
+==> target_core_tpg.patch <==
+[RFC PATCH 15/19] Target_Core_Mod portal group endpoint infrastructure
+==> target_core_transport.patch <==
+[RFC PATCH 16/19] Target_Core_Mod Generic Transport Core
+==> target_core_ua.patch <==
+[RFC PATCH 17/19] Target_Core_Mod Unit Attention emulation support
+==> target_core_base_includes.patch <==
+[RFC PATCH 18/19] Target_Core_Mod base and fabric_module includes
+==> target_core_misc.patch <==
+[RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
 
 
-Thank you,
 
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
