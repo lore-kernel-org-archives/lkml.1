@@ -1,45 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZILCXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZILCcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbZILCXu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 22:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbZILCXt
+	id S1757275AbZILCcl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 22:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757230AbZILCcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 22:23:49 -0400
-Received: from kuber.nabble.com ([216.139.236.158]:60261 "EHLO
-	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757212AbZILCXt (ORCPT
+	Fri, 11 Sep 2009 22:32:41 -0400
+Received: from mail-yx0-f176.google.com ([209.85.210.176]:48988 "EHLO
+	mail-yx0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757227AbZILCck (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 22:23:49 -0400
-Message-ID: <25410990.post@talk.nabble.com>
-Date: Fri, 11 Sep 2009 19:23:52 -0700 (PDT)
-From: sidc7 <siddhartha.chhabra@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Controlling memory allocation
+	Fri, 11 Sep 2009 22:32:40 -0400
+Message-ID: <4AAB065D.3070602@vflare.org>
+Date: Sat, 12 Sep 2009 07:54:29 +0530
+From: Nitin Gupta <ngupta@vflare.org>
+Reply-To: ngupta@vflare.org
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Ed Tomlinson <edt@aei.ca>, Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mm-cc <linux-mm-cc@laptop.org>
+Subject: Re: [PATCH 0/4] compcache: in-memory compressed swapping v2
+References: <200909100215.36350.ngupta@vflare.org> <200909100332.55910.ngupta@vflare.org>
+In-Reply-To: <200909100332.55910.ngupta@vflare.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Nabble-From: siddhartha.chhabra@gmail.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-I had a question regarding memory allocation. On a contemporary system, the
-kernel will allocate physical frames on the DRAM based on availability. Is
-it possible for the kernel to somehow restrict frame allocation for a
-particular process to a particular address range. For e.g. Lets assume the
-DRAM ranges from 00-FF, on a contemporary system, the entire range is
-available for the kernel to allocate to the processes. Is it possible for
-the kernel to say PID 1: the frames will be allocated only in 00-A0, PID2:
-the frames will be allocated from A1 - D0 and PID3: will get frames from D1
-- FF.
 
-Thanks for your time and help in advance and I really hope someone can help
-me with this question
+On 09/10/2009 03:32 AM, Nitin Gupta wrote:
+> Project home: http://compcache.googlecode.com/
+>
+> * Changelog: v2 vs initial revision
+>   - Use 'struct page' instead of 32-bit PFNs in ramzswap driver and xvmalloc.
+>     This is to make these 64-bit safe.
+>   - xvmalloc is no longer a separate module and does not export any symbols.
+>     Its compiled directly with ramzswap block driver. This is to avoid any
+>     last bit of confusion with any other allocator.
+>   - set_swap_free_notify() now accepts block_device as parameter instead of
+>     swp_entry_t (interface cleanup).
+>   - Fix: Make sure ramzswap disksize matches usable pages in backing swap file.
+>     This caused initialization error in case backing swap file had intra-page
+>     fragmentation.
+>
+>    
 
-Regards
--SC
--- 
-View this message in context: http://www.nabble.com/Controlling-memory-allocation-tp25410990p25410990.html
-Sent from the linux-kernel mailing list archive at Nabble.com.
+
+Can anyone please review these patches for possible inclusion in 2.6.32?
+Sorry for the weird email threading.
+
+Thanks,
+Nitin
+
+
+> It creates RAM based block devices which can be used (only) as swap disks.
+> Pages swapped to these disks are compressed and stored in memory itself. This
+> is a big win over swapping to slow hard-disk which are typically used as swap
+> disk. For flash, these suffer from wear-leveling issues when used as swap disk
+> - so again its helpful. For swapless systems, it allows more apps to run for a
+> given amount of memory.
+>
+> It can create multiple ramzswap devices (/dev/ramzswapX, X = 0, 1, 2, ...).
+> Each of these devices can have separate backing swap (file or disk partition)
+> which is used when incompressible page is found or memory limit for device is
+> reached.
+>
+> A separate userspace utility called rzscontrol is used to manage individual
+> ramzswap devices.
+>
+> * Testing notes
+>
+> Tested on x86, x64, ARM
+> ARM:
+>   - Cortex-A8 (Beagleboard)
+>   - ARM11 (Android G1)
+>   - OMAP2420 (Nokia N810)
+>
+> * Performance
+>
+> All performance numbers/plots can be found at:
+> http://code.google.com/p/compcache/wiki/Performance
+>
+> Below is a summary of this data:
+>
+> General:
+>   - Swap R/W times are reduced from milliseconds (in case of hard disks)
+> down to microseconds.
+>
+> Positive cases:
+>   - Shows 33% improvement in 'scan' benchmark which allocates given amount
+> of memory and linearly reads/writes to this region. This benchmark also
+> exposes bottlenecks in ramzswap code (global mutex) due to which this gain
+> is so small.
+>   - On Linux thin clients, it gives the effect of nearly doubling the amount of
+> memory.
+>
+> Negative cases:
+> Any workload that has active working set w.r.t. filesystem cache that is
+> nearly equal to amount of RAM while has minimal anonymous memory requirement,
+> is expected to suffer maximum loss in performance with ramzswap enabled.
+>
+> Iozone filesystem benchmark can simulate exactly this kind of workload.
+> As expected, this test shows performance loss of ~25% with ramzswap.
+>
+> (Sorry for long patch[2/4] but its now very hard to split it up).
+>
+>   Documentation/blockdev/00-INDEX       |    2 +
+>   Documentation/blockdev/ramzswap.txt   |   50 ++
+>   drivers/block/Kconfig                 |   22 +
+>   drivers/block/Makefile                |    1 +
+>   drivers/block/ramzswap/Makefile       |    3 +
+>   drivers/block/ramzswap/ramzswap_drv.c | 1529 +++++++++++++++++++++++++++++++++
+>   drivers/block/ramzswap/ramzswap_drv.h |  183 ++++
+>   drivers/block/ramzswap/xvmalloc.c     |  533 ++++++++++++
+>   drivers/block/ramzswap/xvmalloc.h     |   30 +
+>   drivers/block/ramzswap/xvmalloc_int.h |   86 ++
+>   include/linux/ramzswap_ioctl.h        |   51 ++
+>   include/linux/swap.h                  |    5 +
+>   mm/swapfile.c                         |   34 +
+>   13 files changed, 2529 insertions(+), 0 deletions(-)
+> _______________________________________________
+>    
 
