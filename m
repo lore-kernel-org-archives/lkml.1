@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753875AbZILOQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754472AbZILNjg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753875AbZILOQW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 10:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZILOQV
+	id S1754472AbZILNjg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 09:39:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbZILNjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 10:16:21 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:39620 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbZILOQV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 10:16:21 -0400
-Date: Sat, 12 Sep 2009 14:30:14 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Amerigo Wang <amwang@redhat.com>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [Patch 1/2] ia32: use generic sys_pipe()
-Message-ID: <20090912133014.GA5858@ZenIV.linux.org.uk>
-References: <20090722091051.6621.15184.sendpatchset@localhost.localdomain> <20090804122432.GB4367@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090804122432.GB4367@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 12 Sep 2009 09:39:35 -0400
+Received: from vena.lwn.net ([206.168.112.25]:58258 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753955AbZILNjf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 09:39:35 -0400
+Date: Sat, 12 Sep 2009 07:39:37 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: [PULL] docs tree
+Message-ID: <20090912073937.75b33db8@bike.lwn.net>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Aug 04, 2009 at 02:24:32PM +0200, Ingo Molnar wrote:
+Hi, Linus,
 
-> Please _ALWAYS_ mention the change in behavior in the changelog, 
-> just in case someone ends up bisecting it. I only found out when i 
-> reviewed the two syscalls out of caution.
-> 
-> The syscall you remove kept stale fd's around in case of -EFAULT 
-> from copy_to_user(). The generic version does an explicit close of 
-> those files:
-> 
->                         sys_close(fd[0]);
->                         sys_close(fd[1]);
->                         error = -EFAULT;
+There's a couple of patches in my docs tree - one fix and one new
+document.  The flex_array doc looks to be rendered quickly dated by
+pending changes, but I hereby solemnly swear to update it when that
+happens.
 
-> The generic version looks like the better choice to me but this 
-> difference should be mentioned in the changelog nevertheless, just 
-> in case some buggy app runs into this issue.
+  git://git.lwn.net/linux-2.6.git docs-next
 
-It's not a matter of QOI, actually - sys32_pipe() is supposed to do what
-sys_pipe() would do on i386 host.  So any difference in handling of an
-error case is simply wrong.
+Jesper Dangaard Brouer (1):
+      Doc: seq_file.txt fix wrong dd command example.
 
-Whether we want those sys_close() in sys_pipe() or not is a separate
-question, but we definitely want the same behaviour when 32bit process is
-run natively and when it's run on amd64.  So sys32_pipe() has no business
-existing at all.
+Jonathan Corbet (1):
+      Document the flex_array library.
+
+ Documentation/filesystems/seq_file.txt |    2 +-
+ Documentation/flexible-arrays.txt      |   99 ++++++++++++++++++++++++++++++++
+ 2 files changed, 100 insertions(+), 1 deletions(-)
+ create mode 100644 Documentation/flexible-arrays.txt
+
+Thanks,
+
+jon
