@@ -1,54 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753051AbZILH4K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753175AbZILH4X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753051AbZILH4K (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 03:56:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752546AbZILH4J
+	id S1753175AbZILH4X (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 03:56:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZILH4W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 03:56:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39030 "EHLO hera.kernel.org"
+	Sat, 12 Sep 2009 03:56:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39038 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752856AbZILH4G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 03:56:06 -0400
-Date: Sat, 12 Sep 2009 07:55:28 GMT
-From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	id S1752568AbZILH4V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 03:56:21 -0400
+Date: Sat, 12 Sep 2009 07:55:41 GMT
+From: tip-bot for Josh Triplett <josh@joshtriplett.org>
 Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
-       mingo@redhat.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
+       mingo@redhat.com, rostedt@goodmis.org, josh@joshtriplett.org,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
        linux-kernel@vger.kernel.org, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <12524504773190-git-send-email->
-References: <12524504773190-git-send-email->
+       josh@joshtriplett.org, mingo@elte.hu
+In-Reply-To: <12524504772607-git-send-email->
+References: <12524504772607-git-send-email->
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:core/urgent] rcu: Initialize multi-level RCU grace periods holding locks
-Message-ID: <tip-ef6d39655ce7472cc30f221586fb81144be8bf8e@git.kernel.org>
-Git-Commit-ID: ef6d39655ce7472cc30f221586fb81144be8bf8e
+Subject: [tip:core/urgent] rcutorture: Occasionally delay readers enough to make RCU force_quiescent_state
+Message-ID: <tip-f4a82a059aea43947d4f37dba9da1782d11caece@git.kernel.org>
+Git-Commit-ID: f4a82a059aea43947d4f37dba9da1782d11caece
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 12 Sep 2009 07:55:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 12 Sep 2009 07:55:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ef6d39655ce7472cc30f221586fb81144be8bf8e
-Gitweb:     http://git.kernel.org/tip/ef6d39655ce7472cc30f221586fb81144be8bf8e
-Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-AuthorDate: Tue, 8 Sep 2009 15:54:37 -0700
+Commit-ID:  f4a82a059aea43947d4f37dba9da1782d11caece
+Gitweb:     http://git.kernel.org/tip/f4a82a059aea43947d4f37dba9da1782d11caece
+Author:     Josh Triplett <josh@joshtriplett.org>
+AuthorDate: Tue, 8 Sep 2009 15:54:35 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Sat, 12 Sep 2009 09:47:07 +0200
 
-rcu: Initialize multi-level RCU grace periods holding locks
+rcutorture: Occasionally delay readers enough to make RCU force_quiescent_state
 
-Prior implementations initialized the root and any internal
-nodes without holding locks, then initialized the leaves
-holding locks.
+rcutorture already delays readers, but never for long enough to
+make RCU force a quiescent state.  Add an occasional delay of
+50ms.
 
-This is a false economy, as the leaf nodes will usually greatly
-outnumber the root and internal nodes.  Acquiring locks on all
-nodes is conceptually much simpler as well.
-
+Signed-off-by: Josh Triplett <josh@joshtriplett.org>
 Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 Acked-by: Steven Rostedt <rostedt@goodmis.org>
 Cc: laijs@cn.fujitsu.com
@@ -59,69 +56,39 @@ Cc: josht@linux.vnet.ibm.com
 Cc: dvhltc@us.ibm.com
 Cc: niv@us.ibm.com
 Cc: peterz@infradead.org
-LKML-Reference: <12524504773190-git-send-email->
+LKML-Reference: <12524504772607-git-send-email->
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/rcutree.c |   41 ++++++++++++-----------------------------
- 1 files changed, 12 insertions(+), 29 deletions(-)
+ kernel/rcutorture.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index c634a92..da301e2 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -645,41 +645,24 @@ rcu_start_gp(struct rcu_state *rsp, unsigned long flags)
- 	spin_lock(&rsp->onofflock);  /* irqs already disabled. */
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+index b33db53..328a825 100644
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -281,14 +281,17 @@ static int rcu_torture_read_lock(void) __acquires(RCU)
  
- 	/*
--	 * Set the quiescent-state-needed bits in all the non-leaf RCU
--	 * nodes for all currently online CPUs.  This operation relies
--	 * on the layout of the hierarchy within the rsp->node[] array.
--	 * Note that other CPUs will access only the leaves of the
--	 * hierarchy, which still indicate that no grace period is in
--	 * progress.  In addition, we have excluded CPU-hotplug operations.
--	 *
--	 * We therefore do not need to hold any locks.  Any required
--	 * memory barriers will be supplied by the locks guarding the
--	 * leaf rcu_nodes in the hierarchy.
--	 */
--
--	rnp_end = rsp->level[NUM_RCU_LVLS - 1];
--	for (rnp_cur = &rsp->node[0]; rnp_cur < rnp_end; rnp_cur++) {
--		rnp_cur->qsmask = rnp_cur->qsmaskinit;
--		rnp->gpnum = rsp->gpnum;
--	}
--
--	/*
--	 * Now set up the leaf nodes.  Here we must be careful.  First,
--	 * we need to hold the lock in order to exclude other CPUs, which
--	 * might be contending for the leaf nodes' locks.  Second, as
--	 * soon as we initialize a given leaf node, its CPUs might run
--	 * up the rest of the hierarchy.  We must therefore acquire locks
--	 * for each node that we touch during this stage.  (But we still
--	 * are excluding CPU-hotplug operations.)
-+	 * Set the quiescent-state-needed bits in all the rcu_node
-+	 * structures for all currently online CPUs in breadth-first
-+	 * order, starting from the root rcu_node structure.  This
-+	 * operation relies on the layout of the hierarchy within the
-+	 * rsp->node[] array.  Note that other CPUs will access only
-+	 * the leaves of the hierarchy, which still indicate that no
-+	 * grace period is in progress, at least until the corresponding
-+	 * leaf node has been initialized.  In addition, we have excluded
-+	 * CPU-hotplug operations.
- 	 *
- 	 * Note that the grace period cannot complete until we finish
- 	 * the initialization process, as there will be at least one
- 	 * qsmask bit set in the root node until that time, namely the
--	 * one corresponding to this CPU.
-+	 * one corresponding to this CPU, due to the fact that we have
-+	 * irqs disabled.
- 	 */
- 	rnp_end = &rsp->node[NUM_RCU_NODES];
--	rnp_cur = rsp->level[NUM_RCU_LVLS - 1];
--	for (; rnp_cur < rnp_end; rnp_cur++) {
-+	for (rnp_cur = &rsp->node[0]; rnp_cur < rnp_end; rnp_cur++) {
- 		spin_lock(&rnp_cur->lock);	/* irqs already disabled. */
- 		rnp_cur->qsmask = rnp_cur->qsmaskinit;
- 		rnp->gpnum = rsp->gpnum;
+ static void rcu_read_delay(struct rcu_random_state *rrsp)
+ {
+-	long delay;
+-	const long longdelay = 200;
++	const unsigned long shortdelay_us = 200;
++	const unsigned long longdelay_ms = 50;
+ 
+-	/* We want there to be long-running readers, but not all the time. */
++	/* We want a short delay sometimes to make a reader delay the grace
++	 * period, and we want a long delay occasionally to trigger
++	 * force_quiescent_state. */
+ 
+-	delay = rcu_random(rrsp) % (nrealreaders * 2 * longdelay);
+-	if (!delay)
+-		udelay(longdelay);
++	if (!(rcu_random(rrsp) % (nrealreaders * 2000 * longdelay_ms)))
++		mdelay(longdelay_ms);
++	if (!(rcu_random(rrsp) % (nrealreaders * 2 * shortdelay_us)))
++		udelay(shortdelay_us);
+ }
+ 
+ static void rcu_torture_read_unlock(int idx) __releases(RCU)
