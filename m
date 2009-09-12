@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753174AbZILKZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZILKoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753174AbZILKZn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 06:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752750AbZILKZm
+	id S1753642AbZILKoi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 06:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753530AbZILKoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 06:25:42 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:33701 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752338AbZILKZl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 06:25:41 -0400
-Date: Sat, 12 Sep 2009 11:25:07 +0100
-From: Matt Fleming <matt@console-pimps.org>
-To: =?iso-8859-1?B?VPZy9ms=?= Edwin <edwintorok@gmail.com>
-Cc: rostedt@goodmis.org, Frederic Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Mathieu Desnoyers <compudj@krystal.dyndns.org>,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [PATCH 3/3] tracing: add latency format to function_graph
- tracer
-Message-ID: <20090912102506.GC21695@console-pimps.org>
-References: <20090911135452.866274568@goodmis.org>
- <20090911135626.824079836@goodmis.org>
- <20090911145521.GA6119@nowhere>
- <1252681916.18996.697.camel@gandalf.stny.rr.com>
- <20090911151811.GB6119@nowhere>
- <4AAA6EE2.8000807@gmail.com>
- <1252684229.18996.699.camel@gandalf.stny.rr.com>
- <4AAA75E0.6020604@gmail.com>
+	Sat, 12 Sep 2009 06:44:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:60706 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753524AbZILKoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 06:44:37 -0400
+Date: Sat, 12 Sep 2009 12:43:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Paris <eparis@redhat.com>
+Cc: James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [origin tree boot crash] Revert "selinux: clean up avc node
+	cache when disabling selinux"
+Message-ID: <20090912104346.GB27935@elte.hu>
+References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com> <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org> <20090912072450.GA6767@elte.hu> <1252748791.2305.89.camel@dhcp231-106.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4AAA75E0.6020604@gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1252748791.2305.89.camel@dhcp231-106.rdu.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 07:08:00PM +0300, Török Edwin wrote:
-> 
-> BTW any plans on integrating an in-kernel unwinder like systemtap has?
-> 
-> Even if I build libc with framepointers, a userspace stacktrace on
-> x86-64 can't go beyond most pthreads routines, like __read_nocancel
-> (they're written in asm maybe?).
-> 
 
-fyi SH has an in-kernel DWARF unwinder. It was my intention to shake out
-most of the bugs (of which there have been a few) by having it in the SH
-tree and then submit it for generic inclusion.
+* Eric Paris <eparis@redhat.com> wrote:
 
-So by carefully placing .cfi_* directives in assembly, you can get
-stacktraces for assembly routines in the kernel.
+> On Sat, 2009-09-12 at 09:24 +0200, Ingo Molnar wrote:
+> > James - i did not see a security pull request email from you in my 
+> > lkml folder so i created this new thread. -tip testing found the 
+> > easy crash below. It reverts cleanly so i went that easy route.
+> > 
+> > At a really quick 10-seconds glance the crash happens because we 
+> > destroy the slab cache twice, if the sysctl is toggled twice?
+> 
+> No, it's only being free'd once (and can only be freed once since 
+> the /selinuxfs file disappears when it happens).  It's being freed 
+> while there are still entries in it.
+> 
+> This actually points out to me that SELinux was leaking memory 
+> when disabled at run time (not when disabled from the kernel 
+> command line) and that's the real problem.
+> 
+> I'll take a look at it tonight, James, if you haven't ask Linus to 
+> pull can you hold off until I get this long standing memory leak 
+> fixed?  If Linus already took the change we should revert and do 
+> them both again. (This patch is right, just obviously incomplete)
 
-The branch containing the latest code is here,
-http://git.kernel.org/?p=linux/kernel/git/lethal/sh-2.6.git;a=shortlog;h=sh/dwarf-unwinder
+FYI, the changes went all upstream yesterday.
+
+	Ingo
