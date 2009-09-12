@@ -1,79 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754696AbZILGxG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbZILHOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754696AbZILGxG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 02:53:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754098AbZILGxF
+	id S1754316AbZILHOl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 03:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbZILHOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 02:53:05 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:41024 "EHLO smtps.tip.net.au"
+	Sat, 12 Sep 2009 03:14:40 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:41980 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbZILGxE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 02:53:04 -0400
-Date: Sat, 12 Sep 2009 16:53:00 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Warning from ring buffer code (Was: Re: linux-next: tip tree build
- warning)
-Message-Id: <20090912165300.9d257283.sfr@canb.auug.org.au>
-In-Reply-To: <1249403089.4634.139.camel@localhost.localdomain>
-References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-	<1249403089.4634.139.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__12_Sep_2009_16_53_00_+1000_JmHg6_AHH_VBQy.O"
+	id S1750754AbZILHOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 03:14:39 -0400
+Date: Sat, 12 Sep 2009 09:14:28 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [GIT PULL] x86/xen for v2.6.32
+Message-ID: <20090912071428.GC12702@elte.hu>
+References: <20090911200135.GA1426@elte.hu> <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__12_Sep_2009_16_53_00_+1000_JmHg6_AHH_VBQy.O
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-Hi Steve,
+* Jesper Juhl <jj@chaosbits.net> wrote:
 
-On Tue, 04 Aug 2009 12:24:49 -0400 Steven Rostedt <srostedt@redhat.com> wro=
-te:
->
-> On Tue, 2009-08-04 at 16:16 +1000, Stephen Rothwell wrote:
-> >=20
-> > Today's linux-next build (powerpc ppc64_defconfig) produced these warni=
-ngs:
-> >=20
-> > kernel/trace/ring_buffer.c: In function 'rb_head_page_set':
-> > kernel/trace/ring_buffer.c:704: warning: initialization makes pointer f=
-rom integer without a cast
-> > kernel/trace/ring_buffer.c:704: warning: initialization makes pointer f=
-rom integer without a cast
-> > kernel/trace/ring_buffer.c: In function 'rb_head_page_replace':
-> > kernel/trace/ring_buffer.c:797: warning: initialization makes integer f=
-rom pointer without a cast
-> >=20
-> > Introduced by commit 77ae365eca895061c8bf2b2e3ae1d9ea62869739
-> > ("ring-buffer: make lockless").
->=20
-> Thanks, I'll take a look at it.
+> On Fri, 11 Sep 2009, Ingo Molnar wrote:
+> 
+> [...]
+> > +static __init void xen_load_gdt_boot(const struct desc_ptr *dtr)
+> > +{
+> > +	unsigned long va = dtr->address;
+> > +	unsigned int size = dtr->size + 1;
+> > +	unsigned pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
+> > +	unsigned long frames[pages];
+> > +	int f;
+> > +
+> > +	/*
+> > +	 * A GDT can be up to 64k in size, which corresponds to 8192
+> > +	 * 8-byte entries, or 16 4k pages..
+> > +	 */
+> > +
+> > +	BUG_ON(size > 65536);
+> > +	BUG_ON(va & ~PAGE_MASK);
+> > +
+> > +	for (f = 0; va < dtr->address + size; va += PAGE_SIZE, f++) {
+> > +		pte_t pte;
+> > +		unsigned long pfn, mfn;
+> > +
+> > +		pfn = virt_to_pfn(va);
+> > +		mfn = pfn_to_mfn(pfn);
+> > +
+> > +		pte = pfn_pte(pfn, PAGE_KERNEL_RO);
+> > +
+> > +		if (HYPERVISOR_update_va_mapping((unsigned long)va, pte, 0))
+> > +			BUG();
+> [...]
+> 
+> Why is this cast of 'va' needed?  As far as I can see, 'va' already has 
+> the correct type of "unsigned long".
+> Pointless casts do more harm than good, let's remove this one :-)
+> 
+> Sorry that all I could comment on was this trivial thing, but I thought it 
+> better to comment than keep silent now that I had read the patch and 
+> spotted it...
 
-Now that this is in Linus' tree, can we have a fix for the waning, please?
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Yes, that cast could be removed.
 
---Signature=_Sat__12_Sep_2009_16_53_00_+1000_JmHg6_AHH_VBQy.O
-Content-Type: application/pgp-signature
+Btw., i'd suggest that if you have trivial review feedback please 
+comment on the originating patches, in the original, finegrained 
+context, not the summary pull request. (Incidentally i did that too 
+there and the above patches did result in a few cleanups when they 
+were submitted.)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+The reason is that the originating threads all have full changelogs 
+and have all the right people Cc:-ed in general - and by reviewing 
+them you will also influence the patches before they are sent to 
+Linus. The pull requests have Linus and the affected maintainers 
+Cc:-ed mainly. So for example you did not Cc: Jeremy to the x86/fpu 
+pull request comments you did so he had no chance to comment on them 
+unless he happened to run across your comments on lkml.
 
-iEYEARECAAYFAkqrRUwACgkQjjKRsyhoI8ypXwCdFzQgJhErDla1/9LB51onZGWG
-nLUAn2h9uga9PZstEr/GB4FSLgy+Anrp
-=6m+c
------END PGP SIGNATURE-----
+Bug/crash reports and serious gotcha feedback can go to the pull 
+requests too just fine - but even then, if you know what the 
+originating commit is, try to include the people who originated the 
+commit. (And feel free to Cc: Linus to that trivial feedback if you 
+think it's important enough.)
 
---Signature=_Sat__12_Sep_2009_16_53_00_+1000_JmHg6_AHH_VBQy.O--
+Thanks,
+
+	Ingo
