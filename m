@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZILJwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753415AbZILJrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbZILJwB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 05:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbZILJwB
+	id S1753415AbZILJrl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 05:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753309AbZILJrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 05:52:01 -0400
-Received: from borg.medozas.de ([188.40.89.202]:33410 "EHLO borg.medozas.de"
+	Sat, 12 Sep 2009 05:47:40 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57415 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753077AbZILJwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 05:52:00 -0400
-X-Greylist: delayed 435 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Sep 2009 05:52:00 EDT
-Date: Sat, 12 Sep 2009 11:44:47 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>, Fra@jasper.es
-Subject: Re: [ANNOUNCE] 2.6.29.6-rt23
-In-Reply-To: <alpine.LSU.2.00.0908111140280.5036@fbirervta.pbzchgretzou.qr>
-Message-ID: <alpine.LSU.2.00.0909121124340.15677@obet.zrqbmnf.qr>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>  <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>  <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain> 
- <alpine.LFD. <alpine.LFD.2.00.0907102023500.2768@localhost.localdomain> <alpine.LSU.2.00.0908111140280.5036@fbirervta.pbzchgretzou.qr>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753303AbZILJrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 05:47:39 -0400
+Subject: Re: [origin tree boot crash] Revert "selinux: clean up avc node
+ cache when disabling selinux"
+From: Eric Paris <eparis@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090912072450.GA6767@elte.hu>
+References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com>
+	 <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org>
+	 <20090912072450.GA6767@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 12 Sep 2009 05:46:31 -0400
+Message-Id: <1252748791.2305.89.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, 2009-09-12 at 09:24 +0200, Ingo Molnar wrote:
+> James - i did not see a security pull request email from you in my 
+> lkml folder so i created this new thread. -tip testing found the 
+> easy crash below. It reverts cleanly so i went that easy route.
+> 
+> At a really quick 10-seconds glance the crash happens because we 
+> destroy the slab cache twice, if the sysctl is toggled twice?
 
-On Tuesday 2009-08-11 12:52, Jan Engelhardt wrote:
->On Friday 2009-07-10 20:29, Thomas Gleixner wrote:
->>On Fri, 10 Jul 2009, Fernando Lopez-Lezcano wrote:
->>> 
->>> I'm getting slightly weird behavior from rt23 in an intel quad core
->>> machine (my T61 laptop is fine), rt22 was fine. It is some timer issue,
->>> if I type continuously I get (every few seconds) repeated keys. Nothing
->>> in the logs, nothing in dmesg that is (significantly) different from an
->>> rt22 boot. 
->
->I am getting the same issue, reliably reproducibly - though ironically
->only with the proprietary NVIDIA. Key repeats, screen going "No signal"
->for a sec, sometimes comes back, sometimes hangs the whole machine.
+No, it's only being free'd once (and can only be freed once since
+the /selinuxfs file disappears when it happens).  It's being freed while
+there are still entries in it.
 
-The problem is reproducible on 2.6.31-rc8-rt9. Keys repeat, and the
-patch for 2.6.31-rt does not want to compile anymore.
+This actually points out to me that SELinux was leaking memory when
+disabled at run time (not when disabled from the kernel command line)
+and that's the real problem.
+
+I'll take a look at it tonight, James, if you haven't ask Linus to pull
+can you hold off until I get this long standing memory leak fixed?  If
+Linus already took the change we should revert and do them both again.
+(This patch is right, just obviously incomplete)
+
+-Eric
+
