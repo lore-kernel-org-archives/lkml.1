@@ -1,125 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZILPgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753703AbZILP5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbZILPgT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 11:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754761AbZILPgS
+	id S1753703AbZILP5j (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 11:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755872AbZILP5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 11:36:18 -0400
-Received: from mga03.intel.com ([143.182.124.21]:40587 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754745AbZILPgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 11:36:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,376,1249282800"; 
-   d="scan'208";a="186920222"
-Date: Sat, 12 Sep 2009 23:36:09 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@linux.intel.com>,
-       Avi Kivity <avi@qumranet.com>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] devmem: remove redundant parameter from
-	do_write_kmem()
-Message-ID: <20090912153609.GA12510@localhost>
-References: <20090912152039.479536123@intel.com> <20090912152259.384529634@intel.com> <1252769454.28368.66.camel@desktop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252769454.28368.66.camel@desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 12 Sep 2009 11:57:34 -0400
+Received: from www84.your-server.de ([213.133.104.84]:53818 "EHLO
+	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755961AbZILP5d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 11:57:33 -0400
+Subject: Re: [PATCH] Fix proc_file_write missing ppos update
+From: Stefani Seibold <stefani@seibold.net>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090912152814.GG5858@ZenIV.linux.org.uk>
+References: <1251563892.13287.11.camel@wall-e>
+	 <20090829231650.GA29419@infradead.org> <1251659144.20987.18.camel@wall-e>
+	 <20090912152814.GG5858@ZenIV.linux.org.uk>
+Content-Type: text/plain
+Date: Sat, 12 Sep 2009 17:57:48 +0200
+Message-Id: <1252771068.29135.25.camel@wall-e>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
+X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 12, 2009 at 11:30:54PM +0800, Daniel Walker wrote:
-> On Sat, 2009-09-12 at 23:20 +0800, Wu Fengguang wrote:
-> >  static inline ssize_t
-> > -do_write_kmem(void *p, unsigned long realp, const char __user * buf,
-> > +do_write_kmem(unsigned long p, const char __user * buf,
-> >               size_t count, loff_t *ppos)
-> >  {
+Am Samstag, den 12.09.2009, 16:28 +0100 schrieb Al Viro:
+> On Sun, Aug 30, 2009 at 09:05:44PM +0200, Stefani Seibold wrote:
+> > Switching all users of read_proc_t/write_proc_t to file operation is a
+> > huge job. About 180 files must be fixed.
+> > 
+> > But the main reason not to do this is because the breakage of "out of
+> > tree" drivers.
 > 
-> There's one style issue in the block above. Could you run your patches
-> through checkpatch and fix whatever errors it reports?
+> > I like the current simplified proc interface. It saves a lot of code
+> > duplication because the basic operations will be handled inside the
+> > kernel and not in the driver.
+> 
+> _What_ code duplication?  Would that be
+>         struct proc_dir_entry *pde = PDE(file->f_path.dentry->d_inode);
+> and calculation of pde->data currently done by proc_file_write()?
+> Pardon me, but that's hard to take seriously.  As for the ->read() side,
+> most of those suckers end up switched to use of seq_read() and there's
+> not a lot of boilerplate code in the resulting variants...
 
-Thanks for catching it!  Here is the updated patch.
-(I ran checkpatch against the first two bugs but forgot this last one..)
+Hi Al, you are 2 weeks to late, the discussion has already ended. But
+lets start it again.... 
 
---
-devmem: remove redundant parameter from do_write_kmem()
+There is some code duplication, proc_file_write has 17 lines of code.
+And together with my path it will be 19 lines of code. How much lines of
+duplicated code are necessary for take them seriously? 
 
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Avi Kivity <avi@qumranet.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Johannes Berg <johannes@sipsolutions.net>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: Daniel Walker <dwalker@fifo99.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |   14 ++++++--------
- 1 file changed, 6 insertions(+), 8 deletions(-)
+I know that the current mainstream development targets enterprise and
+maybe sometime desktop systems. But the truth is that linux will be
+mostly used in embedded system with very limited memory constrains.
 
---- linux-mm.orig/drivers/char/mem.c	2009-09-12 23:17:12.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2009-09-12 23:35:18.000000000 +0800
-@@ -465,7 +465,7 @@ static ssize_t read_kmem(struct file *fi
- 
- 
- static inline ssize_t
--do_write_kmem(void *p, unsigned long realp, const char __user * buf,
-+do_write_kmem(unsigned long p, const char __user *buf,
- 	      size_t count, loff_t *ppos)
- {
- 	ssize_t written, sz;
-@@ -474,12 +474,11 @@ do_write_kmem(void *p, unsigned long rea
- 	written = 0;
- #ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
- 	/* we don't have page 0 mapped on sparc and m68k.. */
--	if (realp < PAGE_SIZE) {
--		sz = size_inside_page(realp, count);
-+	if (p < PAGE_SIZE) {
-+		sz = size_inside_page(p, count);
- 		/* Hmm. Do something? */
- 		buf += sz;
- 		p += sz;
--		realp += sz;
- 		count -= sz;
- 		written += sz;
- 	}
-@@ -488,14 +487,14 @@ do_write_kmem(void *p, unsigned long rea
- 	while (count > 0) {
- 		char *ptr;
- 
--		sz = size_inside_page(realp, count);
-+		sz = size_inside_page(p, count);
- 
- 		/*
- 		 * On ia64 if a page has been mapped somewhere as
- 		 * uncached, then it must also be accessed uncached
- 		 * by the kernel or data corruption may occur
- 		 */
--		ptr = xlate_dev_kmem_ptr(p);
-+		ptr = xlate_dev_kmem_ptr((char *)p);
- 
- 		copied = copy_from_user(ptr, buf, sz);
- 		if (copied) {
-@@ -506,7 +505,6 @@ do_write_kmem(void *p, unsigned long rea
- 		}
- 		buf += sz;
- 		p += sz;
--		realp += sz;
- 		count -= sz;
- 		written += sz;
- 	}
-@@ -530,7 +528,7 @@ static ssize_t write_kmem(struct file * 
- 	if (p < (unsigned long) high_memory) {
- 		unsigned long to_write = min_t(unsigned long, count,
- 					       (unsigned long)high_memory - p);
--		wrote = do_write_kmem((void *)p, p, buf, to_write, ppos);
-+		wrote = do_write_kmem(p, buf, to_write, ppos);
- 		if (wrote != to_write)
- 			return wrote;
- 		p += wrote;
+BTW: I personally think the whole seq_.... interface is IMHO to
+complicate to use, procfs is much simpler. But this is only my personal
+opinion! 
+
+Greetings,
+Stefani
+
+
