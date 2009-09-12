@@ -1,49 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbZILNmL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754516AbZILNpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754498AbZILNmL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 09:42:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbZILNmK
+	id S1754516AbZILNpQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 09:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754455AbZILNpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 09:42:10 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41726 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754445AbZILNmJ (ORCPT
+	Sat, 12 Sep 2009 09:45:15 -0400
+Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:41605 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754448AbZILNpN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 09:42:09 -0400
-Date: Sat, 12 Sep 2009 14:42:11 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-Cc: Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org,
-       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-Subject: Re: [RFC][PATCH 1/2] pin kern mounts as writable
-Message-ID: <20090912134211.GC5858@ZenIV.linux.org.uk>
-References: <20090803215940.DF984602@kernel>
-MIME-Version: 1.0
+	Sat, 12 Sep 2009 09:45:13 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFAOs/q0pMROOX/2dsb2JhbACBU9kShBgFgVY
+Date: Sat, 12 Sep 2009 09:45:15 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
+       rostedt@goodmis.org, srostedt@redhat.com, tglx@linutronix.de
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/core] x86/tracing: comment need for atomic nop
+Message-ID: <20090912134515.GC22876@Krystal>
+References: <tip-fc06b8520b3bf9aaeb2e27debe6719c215bd4916@git.kernel.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090803215940.DF984602@kernel>
+In-Reply-To: <tip-fc06b8520b3bf9aaeb2e27debe6719c215bd4916@git.kernel.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 09:44:33 up 25 days, 34 min,  3 users,  load average: 0.09, 0.15,
+	0.12
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Aug 03, 2009 at 02:59:40PM -0700, Dave Hansen wrote:
-
-> If we are going to continue to use mnt_clone_write() inside
-> of init_file(), then we're going to need some kind of extra
-> handling.
+* tip-bot for Steven Rostedt (srostedt@redhat.com) wrote:
+> Commit-ID:  fc06b8520b3bf9aaeb2e27debe6719c215bd4916
+> Gitweb:     http://git.kernel.org/tip/fc06b8520b3bf9aaeb2e27debe6719c215bd4916
+> Author:     Steven Rostedt <srostedt@redhat.com>
+> AuthorDate: Thu, 10 Sep 2009 17:22:44 -0400
+> Committer:  Steven Rostedt <rostedt@goodmis.org>
+> CommitDate: Thu, 10 Sep 2009 17:22:44 -0400
 > 
-> What I want to do in the next patch is add a debugging check
-> in mnt_clone_write() to double-check that there *is* a real
-> writer on the mount before mnt_clone_write() succeeds.  To
-> do that, we either need to check for MS_KERNMOUNT around
-> that debug check, or we need to make sure that these kern
-> mounts *have* a write already.
+> x86/tracing: comment need for atomic nop
 > 
-> I'm choosing to make sure they always have a write.
+> The dynamic function tracer relys on the macro P6_NOP5 always being
+> an atomic NOP. If for some reason it is changed to be two operations
+> (like a nop2 nop3) it can faults within the kernel when the function
+> tracer modifies the code.
+> 
+> This patch adds a comment to note that the P6_NOPs are expected to
+> be atomic. This will hopefully prevent anyone from changing that.
+> 
+> Reported-by: Mathieu Desnoyer <mathieu.desnoyers@polymtl.ca>
 
-> +	err = mnt_want_write(mnt);
-> +	WARN_ON(err);
+With an added "s" to my last name, that will be good.
 
-And what would happen to that when we do it to a filesystem that is
-made read-only by its ->get_sb()?
+Thanks !
+
+Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> 
+> 
+> ---
+>  arch/x86/include/asm/nops.h |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/nops.h b/arch/x86/include/asm/nops.h
+> index ad2668e..6d8723a 100644
+> --- a/arch/x86/include/asm/nops.h
+> +++ b/arch/x86/include/asm/nops.h
+> @@ -65,6 +65,8 @@
+>     6: osp nopl 0x00(%eax,%eax,1)
+>     7: nopl 0x00000000(%eax)
+>     8: nopl 0x00000000(%eax,%eax,1)
+> +   Note: All the above are assumed to be a single instruction.
+> +	There is kernel code that depends on this.
+>  */
+>  #define P6_NOP1	GENERIC_NOP1
+>  #define P6_NOP2	".byte 0x66,0x90\n"
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
