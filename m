@@ -1,105 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754316AbZILHOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbZILHWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754316AbZILHOl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 03:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750824AbZILHOk
+	id S1754746AbZILHWn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 03:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZILHWm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 03:14:40 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:41980 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbZILHOj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 03:14:39 -0400
-Date: Sat, 12 Sep 2009 09:14:28 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jesper Juhl <jj@chaosbits.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [GIT PULL] x86/xen for v2.6.32
-Message-ID: <20090912071428.GC12702@elte.hu>
-References: <20090911200135.GA1426@elte.hu> <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net>
+	Sat, 12 Sep 2009 03:22:42 -0400
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:35264 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750824AbZILHWl convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 03:22:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=kVElTN3oryoBOHPcgT/LgC+poKPhTuTX7tc3M01PI9YoXDjRPcBjx2R4hfxlPCt51J
+         B/0hUVUG47xe05glhIW4g2MTlj3KPXDP5H3kVREmjA61kOZ/T7cNY9z5PWfYNpJzMeyT
+         JtnlJYzhsypIcFsReHLr34R1zBTyl1EhFLmFw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LNX.2.00.0909120000010.31018@swampdragon.chaosbits.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4AAA73A4.9010601@caviumnetworks.com>
+References: <4AA991C1.1050800@caviumnetworks.com>
+	 <1252627011-2933-1-git-send-email-ddaney@caviumnetworks.com>
+	 <200909111633.00665.mb@bu3sch.de>
+	 <4AAA73A4.9010601@caviumnetworks.com>
+Date: Sat, 12 Sep 2009 09:22:43 +0200
+X-Google-Sender-Auth: 42a0362e6b437612
+Message-ID: <10f740e80909120022m72ad5ea7t692fba93cd3114e9@mail.gmail.com>
+Subject: Re: [PATCH 01/10] Add support for GCC-4.5's __builtin_unreachable() 
+	to compiler.h
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: Michael Buesch <mb@bu3sch.de>, linuxppc-dev@lists.ozlabs.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-s390@vger.kernel.org,
+       linux-am33-list@redhat.com, Helge Deller <deller@gmx.de>,
+       x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Mike Frysinger <vapier@gentoo.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Richard Henderson <rth@twiddle.net>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-alpha@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Sep 11, 2009 at 17:58, David Daney<ddaney@caviumnetworks.com> wrote:
+> Michael Buesch wrote:
+>>
+>> On Friday 11 September 2009 01:56:42 David Daney wrote:
+>>>
+>>> +/* Unreachable code */
+>>> +#ifndef unreachable
+>>> +# define unreachable() do { for (;;) ; } while (0)
+>>> +#endif
+>>
+>> # define unreachable() do { } while (1)
+>>
+>> ? :)
+>
+> Clearly I was not thinking clearly when I wrote that part.  RTH noted the
+> same thing.  I will fix it.
 
-* Jesper Juhl <jj@chaosbits.net> wrote:
+However, people are so used to seeing the `do { } while (0)' idiom,
+that they might miss
+there's a `1' here, not a `0'.
 
-> On Fri, 11 Sep 2009, Ingo Molnar wrote:
-> 
-> [...]
-> > +static __init void xen_load_gdt_boot(const struct desc_ptr *dtr)
-> > +{
-> > +	unsigned long va = dtr->address;
-> > +	unsigned int size = dtr->size + 1;
-> > +	unsigned pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
-> > +	unsigned long frames[pages];
-> > +	int f;
-> > +
-> > +	/*
-> > +	 * A GDT can be up to 64k in size, which corresponds to 8192
-> > +	 * 8-byte entries, or 16 4k pages..
-> > +	 */
-> > +
-> > +	BUG_ON(size > 65536);
-> > +	BUG_ON(va & ~PAGE_MASK);
-> > +
-> > +	for (f = 0; va < dtr->address + size; va += PAGE_SIZE, f++) {
-> > +		pte_t pte;
-> > +		unsigned long pfn, mfn;
-> > +
-> > +		pfn = virt_to_pfn(va);
-> > +		mfn = pfn_to_mfn(pfn);
-> > +
-> > +		pte = pfn_pte(pfn, PAGE_KERNEL_RO);
-> > +
-> > +		if (HYPERVISOR_update_va_mapping((unsigned long)va, pte, 0))
-> > +			BUG();
-> [...]
-> 
-> Why is this cast of 'va' needed?  As far as I can see, 'va' already has 
-> the correct type of "unsigned long".
-> Pointless casts do more harm than good, let's remove this one :-)
-> 
-> Sorry that all I could comment on was this trivial thing, but I thought it 
-> better to comment than keep silent now that I had read the patch and 
-> spotted it...
+So perhaps it's better to use plain `for (;;)' for infinite loops?
 
-Yes, that cast could be removed.
+Gr{oetje,eeting}s,
 
-Btw., i'd suggest that if you have trivial review feedback please 
-comment on the originating patches, in the original, finegrained 
-context, not the summary pull request. (Incidentally i did that too 
-there and the above patches did result in a few cleanups when they 
-were submitted.)
+						Geert
 
-The reason is that the originating threads all have full changelogs 
-and have all the right people Cc:-ed in general - and by reviewing 
-them you will also influence the patches before they are sent to 
-Linus. The pull requests have Linus and the affected maintainers 
-Cc:-ed mainly. So for example you did not Cc: Jeremy to the x86/fpu 
-pull request comments you did so he had no chance to comment on them 
-unless he happened to run across your comments on lkml.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Bug/crash reports and serious gotcha feedback can go to the pull 
-requests too just fine - but even then, if you know what the 
-originating commit is, try to include the people who originated the 
-commit. (And feel free to Cc: Linus to that trivial feedback if you 
-think it's important enough.)
-
-Thanks,
-
-	Ingo
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
