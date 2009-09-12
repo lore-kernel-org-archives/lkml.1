@@ -1,76 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753006AbZILOBL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753541AbZILOOJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753006AbZILOBL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 10:01:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751576AbZILOBK
+	id S1753541AbZILOOJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 10:14:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbZILOOJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 10:01:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:43655 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbZILOBJ (ORCPT
+	Sat, 12 Sep 2009 10:14:09 -0400
+Received: from tomts10.bellnexxia.net ([209.226.175.54]:37601 "EHLO
+	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752360AbZILOOH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 10:01:09 -0400
-Date: Sat, 12 Sep 2009 16:04:40 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, peterz@infradead.org,
-       yanmin_zhang@linux.intel.com, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com
-Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
- performance
-Message-ID: <20090912160440.2189a60e@infradead.org>
-In-Reply-To: <20090912113939.GA7119@srcf.ucam.org>
-References: <20090911174019.1ed02737@infradead.org>
-	<20090911220309.GB30989@srcf.ucam.org>
-	<20090912052647.3b6dcb78@infradead.org>
-	<20090912113939.GA7119@srcf.ucam.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Sat, 12 Sep 2009 10:14:07 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AigFAANGq0pMROOX/2dsb2JhbACBU9h5hBgF
+Date: Sat, 12 Sep 2009 10:14:08 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH 2/3] tracing/profile: add ref count for registering
+	profile events
+Message-ID: <20090912141408.GD22876@Krystal>
+References: <20090911135452.866274568@goodmis.org> <20090911135626.421489476@goodmis.org> <1252677861.7126.32.camel@laptop> <1252678183.7126.34.camel@laptop> <1252679606.18996.681.camel@gandalf.stny.rr.com> <1252679849.7126.37.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+In-Reply-To: <1252679849.7126.37.camel@laptop>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.27.31-grsec (i686)
+X-Uptime: 09:59:10 up 25 days, 48 min,  4 users,  load average: 0.09, 0.18,
+	0.16
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Sep 2009 12:39:39 +0100
-Matthew Garrett <mjg59@srcf.ucam.org> wrote:
-
-> On Sat, Sep 12, 2009 at 05:26:47AM +0200, Arjan van de Ven wrote:
-> > On Fri, 11 Sep 2009 23:03:09 +0100
-> > Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+* Peter Zijlstra (peterz@infradead.org) wrote:
+> On Fri, 2009-09-11 at 10:33 -0400, Steven Rostedt wrote:
+> > > Or we can go with Li's original patch, that was less ugly.
 > > 
-> > > When you say that a bit more power was used, is that instantaneous
-> > > power draw or total power consumption over the run of the
-> > > benchmark? I'd have expected that completing it 50% faster and
-> > > then going idle would be a win overall.
+> > I can go back to Li's original patch, but the talk on that was
+> > "fragile". If you no longer feel that way, then I'll use his instead.
 > > 
-> > I meant power, not total energy :-)
-> > 
-> > in terms of energy it's a win if you only do a fixed amount of
-> > work...
+> > For now, I'll pull out this patch altogether, and resubmit the pull
+> > request without it. I'd like the other changes to not be held up by
+> > this.
 > 
-> Ok, so not really a downside.
+> Right, I still think its at the wrong level,. see below.
+> 
+> > > 
+> > > I still think tracepoints/markers should sort this out, because we now
+> > > have a sematic difference between the two wrt modules.
+> > 
+> > I originally tried to do it in the tracepoint logic, but that broke a
+> > lot of assumptions about tracepoints that Mathieu pointed out. This is
+> > not a normal use of tracepoints. It is expected that if you register a
+> > probe in a module, you will unregister it before exiting.
+> > 
+> > I can't remember all the details, but at the end, it seemed that the fix
+> > belonged at the ftrace level.
+> 
+> Right, Mathieu thinks its sane to be able to attach to
+> tracepoints/markers before they exist, so you can put them in module
+> init code. I disagree.
 
-correct.
+I know we disagree on this topic, but AFAIK you did not propose any
+solution to solve the problem of tracepoints in module init code. This
+leaves a tracepoint user who need to trace module init with no way to do
+it, because he will run in the chicken and egg problem of having to load
+the module to make the tracepoint appear, but needing to trace module
+load. A similar problem applies to kernel boot tracing for tracepoints
+in init code of the kernel image.
 
-> Not entirely relatedly, we've also seen
-> io throughput issues related to P-states - using ondemand, we get
-> reduced throughput until the number of clients becomes high enough to
-> push the system into a higher P state. Is this something you've been
-> able to measure?
+Maybe you have a solution for this in mind ? Or is it simply to reduce
+tracepoint instrumentation coverage to exclude init functions ? You not
+caring about this use case does not mean no one care about it.
 
-so far, with a 10 msec ondemand interval, there is room for
-improvement, but it's not too bleak either. With longer intervals there
-clearly are problems.
+> 
+> ftrace doesn't mirror this behaviour, that is the source of the problem.
+> If it did the ftrace structures wouldn't go away on unload and there
+> wouldn't be no crash.
 
-I have some patches for that. However the gain is not nearly as clear
-as with this C state patch, and they need some more tweaking...
+Ftrace and lttng need to perform refcounting the probe module
+independently of this specific behavior, because they offer an interface
+located outside of tracepoint or probe module to manage the
+tracepoints/probes connected. Ftrace does it in ftrace, LTTng does it
+within the markers. It therefore make sense to keep a global registry of
+loaded probes, and to refcount the probe module before connecting a
+probe to a tracepoint. I think the solution Li proposed is good.
+
+Thanks,
+
+Mathieu
+
+> 
+> But if you want to maintain this disparity between the two frameworks
+> then yes Li's patch, or yours (they're identical) seems the way to solve
+> it.
+> 
+> Still think its daft though.
+> 
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
