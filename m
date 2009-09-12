@@ -1,77 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZILSF3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbZILSNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbZILSF3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 14:05:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZILSF1
+	id S1754545AbZILSNv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 14:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752464AbZILSNu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 14:05:27 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:44682 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752655AbZILSF0 (ORCPT
+	Sat, 12 Sep 2009 14:13:50 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:24190 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751746AbZILSNu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 14:05:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wSLxSdoOAipL9Bg5DRslC7HZR849Mbrx2tcEeygdNJ6gXq/nYaWbZR31YsdlKOq8jL
-         B+P3MK8MIDtmBjj9Ow02BMZer/Z7BjJPOgNzskggXifD2ON8wJE035eSmgnblURDM3Q2
-         3N3R0sP0p+J9OxhVjl1HG9YAe5qnK9d0mg71Q=
-Date: Sat, 12 Sep 2009 22:05:27 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Julia Lawall <julia@diku.dk>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: apic: convert BUG() to BUG_ON()
-Message-ID: <20090912180527.GA4893@lenovo>
-References: <1252777220-30796-1-git-send-email-dwalker@fifo99.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252777220-30796-1-git-send-email-dwalker@fifo99.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 12 Sep 2009 14:13:50 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: TEXT/PLAIN; charset=US-ASCII
+Date: Sat, 12 Sep 2009 14:13:52 -0400 (EDT)
+From: Marc Dionne <marc.c.dionne@gmail.com>
+To: David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] KEYS: unlock tasklist when exiting early from
+ keyctl_session_to_parent
+Message-id: <alpine.LFD.2.00.0909121347400.4263@tornado>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Daniel Walker - Sat, Sep 12, 2009 at 10:40:20AM -0700]
-| This was done using Coccinelle's BUG_ON semantic patch.
-| 
-| Signed-off-by: Daniel Walker <dwalker@fifo99.com>
-| ---
-|  arch/x86/kernel/apic/apic.c |    3 +--
-|  1 files changed, 1 insertions(+), 2 deletions(-)
-| 
-| diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-| index a34601f..e3d467e 100644
-| --- a/arch/x86/kernel/apic/apic.c
-| +++ b/arch/x86/kernel/apic/apic.c
-| @@ -1197,8 +1197,7 @@ void __cpuinit setup_local_APIC(void)
-|  	 * Double-check whether this APIC is really registered.
-|  	 * This is meaningless in clustered apic mode, so we skip it.
-|  	 */
-| -	if (!apic->apic_id_registered())
-| -		BUG();
-| +	BUG_ON(!apic->apic_id_registered());
-|  
-|  	/*
-|  	 * Intel recommends to set DFR, LDR and TPR before enabling
-| -- 
-| 1.5.6.3
-| 
+When we exit early from keyctl_session_to_parent because of permissions
+or because the session keyring is the same as the parent, we need to
+unlock the tasklist.
 
-Hi Daniel,
+The missing unlock causes the system to hang completely when
+using keyctl(KEYCTL_SESSION_TO_PARENT) with a keyring shared with
+the parent.
 
-I believe having a changelog like
+Signed-off-by: Marc Dionne <marc.c.dionne@gmail.com>
+---
+ security/keys/keyctl.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-	Use short form of "if() BUG()" sequence
+diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
+index 74c9685..60983f3 100644
+--- a/security/keys/keyctl.c
++++ b/security/keys/keyctl.c
+@@ -1319,6 +1319,7 @@ long keyctl_session_to_parent(void)
+ already_same:
+ 	ret = 0;
+ not_permitted:
++	write_unlock_irq(&tasklist_lock);
+ 	put_cred(cred);
+ 	return ret;
+ 
+-- 
+1.6.4.2
 
-would be better perhaps? Since "Coccinelle's BUG_ON semantic patch"
-somehow doesn't describe why it's done.
-
-Don't get me wrong please. It's trivial and seen from patch
-itself _why_ it's done though changelog doesn't say the same.
-
-Perhaps I'm too nagging :) Feel free to ignore me.
-
-	-- Cyrill
