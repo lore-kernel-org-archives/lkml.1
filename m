@@ -1,95 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753814AbZILMIe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZILMTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753814AbZILMIe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 08:08:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZILMId
+	id S1753761AbZILMTO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 08:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZILMTO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 08:08:33 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:56518 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752877AbZILMId (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 08:08:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :x-enigmail-version:content-type:content-transfer-encoding;
-        b=hd/j2fcCTvLbpYBESTKvGQgGLrePwpBFlRT6xe9vLJ2QE+CvN2cguF5YlbLP0cQYwl
-         q/wltuBPE/lli3bXZXa8pRj2C65VTZD0ybFLyGcPGhgH03q3JhiRzQVdaam/yi2ZYNJj
-         q+H/ZHf3+0Zeqgdg8NUduTnqEJ8rFiyQJtwc8=
-Message-ID: <4AAB8F3F.40403@googlemail.com>
-Date: Sat, 12 Sep 2009 14:08:31 +0200
-From: e9hack <e9hack@googlemail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Greg KH <greg@kroah.com>
-Subject: Trouble with USB serial driver (ftdi_sio.c) on 2.6.31
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Sat, 12 Sep 2009 08:19:14 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45556 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750887AbZILMTN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 08:19:13 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18WtSp4Ca4WnVq/SH3I0vxqwKgoQZ+cVIkA9bHuFl
+	jcPfJowGJML6H5
+Subject: Re: [tip:sched/core] sched: Keep kthreads at default priority
+From: Mike Galbraith <efault@gmx.de>
+To: Martin Steigerwald <Martin@lichtvoll.de>
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>, mingo@redhat.com,
+       hpa@zytor.com, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+In-Reply-To: <200909121348.38528.Martin@lichtvoll.de>
+References: <1252486344.28645.18.camel@marge.simson.net>
+	 <1252516001.22918.6.camel@laptop>
+	 <1252517696.6220.9.camel@marge.simson.net>
+	 (sfid-20090909_202324_097104_7D52F860)  <200909121348.38528.Martin@lichtvoll.de>
+Content-Type: text/plain
+Date: Sat, 12 Sep 2009 14:19:11 +0200
+Message-Id: <1252757951.6084.5.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.55
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 2009-09-12 at 13:48 +0200, Martin Steigerwald wrote:
+> Am Mittwoch 09 September 2009 schrieb Mike Galbraith:
+> > On Wed, 2009-09-09 at 19:06 +0200, Peter Zijlstra wrote:
+> > > On Wed, 2009-09-09 at 09:55 -0700, Dmitry Torokhov wrote:
+> > > > On Wed, Sep 09, 2009 at 03:37:34PM +0000, tip-bot for Mike Galbraith 
+> wrote:
+> > > > > diff --git a/kernel/kthread.c b/kernel/kthread.c
+> > > > > index eb8751a..5fe7099 100644
+> > > > > --- a/kernel/kthread.c
+> > > > > +++ b/kernel/kthread.c
+> > > > > @@ -16,8 +16,6 @@
+> > > > >  #include <linux/mutex.h>
+> > > > >  #include <trace/events/sched.h>
+> > > > >
+> > > > > -#define KTHREAD_NICE_LEVEL (-5)
+> > > > > -
+> > > >
+> > > > Why don't we just redefine it to 0? We may find out later that we'd
+> > > > still prefer to have kernel threads have boost.
+> > >
+> > > Seems sensible, also the traditional reasoning behind this nice level
+> > > is that kernel threads do work on behalf of multiple tasks. Its a
+> > > kind of prio ceiling thing.
+> > 
+> > True.  None of our current threads are heavy enough to matter much.
+> 
+> Does it make sense to have this as a tunable? Where does it matter? Server 
+> workloads?
 
-I've some trouble with the USB serial driver (ftdi_sio.c for a FT232RL from FTDI). If the 
-port is opened for the first time, the driver works perfectly. If the port is closed and 
-open again, it isn't possible to read any data from port. Writing data to the port works. 
-The FT232RL must be reconnect to get it working again. A reboot without reconnect doesn't 
-solve this problem. If I look at the debug output, I don't see read requests from 
-ftdi_sio.c. If reading is possible, I see this read messages:
+I don't think it should be a knob.  It only makes a difference to
+kthreads that are heavy CPU users.  If one pops up as a performance
+problem, IMHO, it should be tweaked separately.  Running at default
+weight saves a bit of unnecessary math for the common case.
 
-...
-Sep 12 13:36:21 vdr kernel: [  147.338926] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: Status only: 001o 000o
-Sep 12 13:36:21 vdr kernel: [  147.339921] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_read_bulk_callback - port 0
-Sep 12 13:36:21 vdr kernel: [  147.339927] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_process_read - port 0
-Sep 12 13:36:21 vdr kernel: [  147.339930] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: Status only: 001o 000o
-Sep 12 13:36:21 vdr kernel: [  147.340931] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_read_bulk_callback - port 0
-Sep 12 13:36:21 vdr kernel: [  147.340936] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_process_read - port 0
-Sep 12 13:36:21 vdr kernel: [  147.340940] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: Status only: 001o 000o
-Sep 12 13:36:21 vdr kernel: [  147.341927] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_read_bulk_callback - port 0
-Sep 12 13:36:21 vdr kernel: [  147.341932] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_process_read - port 0
-Sep 12 13:36:21 vdr kernel: [  147.341936] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: Status only: 001o 000o
-Sep 12 13:36:21 vdr kernel: [  147.342924] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_read_bulk_callback - port 0
-Sep 12 13:36:21 vdr kernel: [  147.342928] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_process_read - port 0
-Sep 12 13:36:21 vdr kernel: [  147.342932] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: Status only: 001o 000o
-Sep 12 13:36:21 vdr kernel: [  147.343924] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_read_bulk_callback - port 0
-Sep 12 13:36:21 vdr kernel: [  147.343929] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_process_read - port 0
-Sep 12 13:36:21 vdr kernel: [  147.343933] ftdi_sio ttyUSB0: ftdi_process_read - length = 
-7, data = 01 00 aa 40 0a 00 64
-Sep 12 13:36:21 vdr kernel: [  147.344930] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_read_bulk_callback - port 0
-Sep 12 13:36:21 vdr kernel: [  147.344936] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_process_read - port 0
-Sep 12 13:36:21 vdr kernel: [  147.344940] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: Status only: 001o 000o
-Sep 12 13:36:21 vdr kernel: [  147.345923] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_read_bulk_callback - port 0
-Sep 12 13:36:21 vdr kernel: [  147.345928] 
-/usr/src/linux-2.6.31-rc3/drivers/usb/serial/ftdi_sio.c: ftdi_process_read - port 0
-...
+	-Mike
 
-This occurs with 2.6.31 and 2.6.31-rc3. I don't see this problem with 2.6.30.5. It exist 
-one exception: If I reboot from 2.6.31 to 2.6.30.5, I get the same problem. If I reconnect 
-the FT232RL, the FT232RL works perfectly. I don't see any problems after closing and 
-reopening.
-
-Regards,
-Hartmut
