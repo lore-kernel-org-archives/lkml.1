@@ -1,76 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZILDRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757271AbZILDYE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756822AbZILDRN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 23:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbZILDRN
+	id S1757271AbZILDYE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 23:24:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZILDYD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 23:17:13 -0400
-Received: from fifo99.com ([67.223.236.141]:45756 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752795AbZILDRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 23:17:12 -0400
-Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic
- target engine for Linux v2.6.32
-From: Daniel Walker <dwalker@fifo99.com>
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-In-Reply-To: <1252724884.2067.251.camel@haakon2.linux-iscsi.org>
-References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
-	 <1252723060.28368.48.camel@desktop>
-	 <1252724884.2067.251.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 20:17:48 -0700
-Message-Id: <1252725468.28368.54.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 23:24:03 -0400
+Received: from mail-pz0-f190.google.com ([209.85.222.190]:48032 "EHLO
+	mail-pz0-f190.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753457AbZILDYC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 Sep 2009 23:24:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=k/ZBuTEnKGi8bNInIM/ea4Pa95rqkcZlFiZgRraYmE1ofnC9tdticZ40Rwzcbmz740
+         YqpjIbS4nE3ZoXvURHQXWF6dk31uuXrh2NkwyKs59Mwl7Jui48oJ8gFOrn5RzALcy9Hi
+         fXeTQZcbX9HQukj1jDwcUuOIQ4ILfl9KixYL8=
+MIME-Version: 1.0
+Date: Sat, 12 Sep 2009 08:54:02 +0530
+Message-ID: <1f808b4a0909112024l11815fcbiad9a2d3748a6bafb@mail.gmail.com>
+Subject: one question about shared mappings between user space and kernel 
+	space.
+From: Peter Chacko <peterchacko35@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 20:08 -0700, Nicholas A. Bellinger wrote:
+Hi kernel geeks,
 
+Please forgive me if this questions was asked already in the past !!!
 
-> 
-> Ok, I will have a look at converting the HBA semaphore to a mutex in
-> patch 5, and use some single use waitqueues in patch 16.  Btw, the ones
-> using init_MUTEX_LOCKED() in the latter source file are being used when
-> shutting down target_core_mod allocated kernel threads to sychronize
-> between the stopping processing threads and configfs process context
-> that waitqueues would work better for.  Thanks for pointing this out!
+I  have a question about shared memory mappings between kernel and
+user process...(.like accessing device memory directly from user space
+through device mmap interface)...I  presume this mechanism use
+remap_pfn_range() or similar....when such mappings are in place, (
+whats the "U/S" flag in the underlying physical page indicating CPL of
+the page) for such pages ? such page  descriptors  are stored in
+normal GDT  or considered as global pages ? Any special  policies of
+TLB flush of  translations to such pages ?
 
-You could also use completions in patch 16 if the waitqueues turn out to
-be not what your looking for. Completion can sometimes be a find&replace
-substitute for the locked semaphores.
+With a shared memory between user process and kernel using such
+mechanism, is it equivalent to  zero-copy transfer between user space
+and kernel space? ( I mean any extra overhead in  memory access to
+such pages)
 
+I would appreciate your thoughts on this.
 
-> I was thinking about going through the typedefs with a sed chainsaw, but
-> I decided against for this TCM patch series because it makes keeping
-> backward ports to <= v2.6.31 slightly easier to maintain for me for the
-> current users of LIO kernel code.
-> 
-> However, I have been starting to not use typedef for the newest ALUA and
-> pieces of PR code, and I would be happy to have another look at typedef
-> style comments on this once the other larger interest items are on the
-> way to being resolved.
+-- 
+Best regards,
+Peter Chacko
 
-It's up to you, but you should schedule the typedefs for removal at some
-point.
-
-Daniel
-
+NetDiox computing systems,
+Network storage & OS  training and research.
+Bangalore, India.
+www.netdiox.com
+080 2664 0708
