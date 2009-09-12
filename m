@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZILJlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZILJwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753164AbZILJlL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 05:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZILJlK
+	id S1753349AbZILJwB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 05:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbZILJwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 05:41:10 -0400
-Received: from tservice.net.ru ([195.178.208.66]:35637 "EHLO tservice.net.ru"
+	Sat, 12 Sep 2009 05:52:01 -0400
+Received: from borg.medozas.de ([188.40.89.202]:33410 "EHLO borg.medozas.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752318AbZILJlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 05:41:09 -0400
-Date: Sat, 12 Sep 2009 13:41:10 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Eric Paris <eparis@redhat.com>
-Cc: Jamie Lokier <jamie@shareable.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org
-Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
-Message-ID: <20090912094110.GB24709@ioremap.net>
-References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com> <20090911.114620.260824240.davem@davemloft.net> <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com> <20090911204602.GA19371@shareable.org> <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com> <20090911212731.GA19901@shareable.org> <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+	id S1753077AbZILJwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 05:52:00 -0400
+X-Greylist: delayed 435 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 Sep 2009 05:52:00 EDT
+Date: Sat, 12 Sep 2009 11:44:47 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+cc: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>, Fra@jasper.es
+Subject: Re: [ANNOUNCE] 2.6.29.6-rt23
+In-Reply-To: <alpine.LSU.2.00.0908111140280.5036@fbirervta.pbzchgretzou.qr>
+Message-ID: <alpine.LSU.2.00.0909121124340.15677@obet.zrqbmnf.qr>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>  <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>  <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>  <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain> 
+ <alpine.LFD. <alpine.LFD.2.00.0907102023500.2768@localhost.localdomain> <alpine.LSU.2.00.0908111140280.5036@fbirervta.pbzchgretzou.qr>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 05:51:42PM -0400, Eric Paris (eparis@redhat.com) wrote:
-> For some things yes, some things no.  I'd have to understand where loss
-> can happen to know if it's feasible.  If I know loss happens in the
-> sender context that's great.  If it's somewhere in the middle and the
-> sender doesn't immediately know it'll never be delivered, yes, I don't
-> think it can solve all my needs.  How many places can and skb get lost
-> between the sender and the receiver?
 
-When queue is full or you do not have enough RAM. Both are reported at
-'sending' time.
+On Tuesday 2009-08-11 12:52, Jan Engelhardt wrote:
+>On Friday 2009-07-10 20:29, Thomas Gleixner wrote:
+>>On Fri, 10 Jul 2009, Fernando Lopez-Lezcano wrote:
+>>> 
+>>> I'm getting slightly weird behavior from rt23 in an intel quad core
+>>> machine (my T61 laptop is fine), rt22 was fine. It is some timer issue,
+>>> if I type continuously I get (every few seconds) repeated keys. Nothing
+>>> in the logs, nothing in dmesg that is (significantly) different from an
+>>> rt22 boot. 
+>
+>I am getting the same issue, reliably reproducibly - though ironically
+>only with the proprietary NVIDIA. Key repeats, screen going "No signal"
+>for a sec, sometimes comes back, sometimes hangs the whole machine.
 
-As of your description of netlink/socket usage - you will have to peek
-skb queue, which is rather error-prone operation. Also you will have to
-implement own skb destructor to mess with private reference counters and
-netlink bits.
-
--- 
-	Evgeniy Polyakov
+The problem is reproducible on 2.6.31-rc8-rt9. Keys repeat, and the
+patch for 2.6.31-rt does not want to compile anymore.
