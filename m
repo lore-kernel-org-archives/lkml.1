@@ -1,94 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZILLS3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZILLTc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZILLS3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 07:18:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753734AbZILLS2
+	id S1754101AbZILLTc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 07:19:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZILLTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 07:18:28 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:19871 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752926AbZILLS1 (ORCPT
+	Sat, 12 Sep 2009 07:19:31 -0400
+Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:60287 "EHLO
+	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752926AbZILLTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 07:18:27 -0400
-X-Trace: 261150089/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.93.26/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.93.26
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AigFAI4gq0pQKV0a/2dsb2JhbACBU9kKhBgF
-X-IronPort-AV: E=Sophos;i="4.44,375,1249254000"; 
-   d="scan'208";a="261150089"
-Date: Sat, 12 Sep 2009 12:17:49 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Mike Frysinger <vapier.adi@gmail.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Stefan Huber <shuber2@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Meerwald <pmeerw@cosy.sbg.ac.at>,
-       James Morris <jmorris@namei.org>, William Irwin <wli@movementarian.org>,
-       Mel Gorman <mel@csn.ul.ie>, Ravikiran G Thirumalai <kiran@scalex86.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH] mm: fix hugetlb bug due to user_shm_unlock call
-In-Reply-To: <8bd0f97a0909110703o4d496a45jddc0d7d6fd8674b4@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0909121212560.488@sister.anvils>
-References: <alpine.LRH.2.00.0908241110420.21562@tundra.namei.org> 
- <Pine.LNX.4.64.0908241258070.27704@sister.anvils> <4A929BF5.2050105@gmail.com>
-  <Pine.LNX.4.64.0908241532470.9322@sister.anvils>
- <8bd0f97a0909110703o4d496a45jddc0d7d6fd8674b4@mail.gmail.com>
+	Sat, 12 Sep 2009 07:19:31 -0400
+Date: Sat, 12 Sep 2009 13:19:28 +0200
+From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
+To: dm-devel@redhat.com
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org
+Subject: recent bdi changes result in WARN_ON on luksClose / dm
+Message-ID: <20090912111928.GA8013@Chamillionaire.breakpoint.cc>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323584-1181830492-1252754269=:488"
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+X-Key-Id: FE3F4706
+X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+| Orion:/# cryptsetup luksClose crypto
+|------------[ cut here ]------------
+|WARNING: at /home/bigeasy/git/cryptodev-2.6/mm/backing-dev.c:637 bdi_destroy+0x44/0x60()
+|Modules linked in: cbc sha256_generic dm_crypt [last unloaded: mv_cesa]
+|[<c0028dd8>] (unwind_backtrace+0x0/0xdc) from [<c003adb0>] (warn_slowpath_common+0x4c/0x80)
+|[<c003adb0>] (warn_slowpath_common+0x4c/0x80) from [<c007f2e0>] (bdi_destroy+0x44/0x60)
+|[<c007f2e0>] (bdi_destroy+0x44/0x60) from [<c012e3a0>] (blk_release_queue+0x3c/0x54)
+|[<c012e3a0>] (blk_release_queue+0x3c/0x54) from [<c01399a8>] (kobject_release+0x5c/0x74)
+|[<c01399a8>] (kobject_release+0x5c/0x74) from [<c013a6ac>] (kref_put+0x68/0x7c)
+|[<c013a6ac>] (kref_put+0x68/0x7c) from [<c01b7098>] (dm_put+0x148/0x178)
+|[<c01b7098>] (dm_put+0x148/0x178) from [<c01bb82c>] (dev_remove+0x98/0xb4)
+|[<c01bb82c>] (dev_remove+0x98/0xb4) from [<c01bbec0>] (dm_ctl_ioctl+0x21c/0x29c)
+|[<c01bbec0>] (dm_ctl_ioctl+0x21c/0x29c) from [<c00a153c>] (vfs_ioctl+0x2c/0x8c)
+|[<c00a153c>] (vfs_ioctl+0x2c/0x8c) from [<c00a1bac>] (do_vfs_ioctl+0x524/0x590)
+|[<c00a1bac>] (do_vfs_ioctl+0x524/0x590) from [<c00a1c50>] (sys_ioctl+0x38/0x5c)
+|[<c00a1c50>] (sys_ioctl+0x38/0x5c) from [<c0023e80>] (ret_fast_syscall+0x0/0x2c)
+|---[ end trace b3c544a14b51605c ]---
 
---8323584-1181830492-1252754269=:488
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+This is on v2.6.31-1335-g86d7101. A bisect between a12e4d3 and 89af571
+leads to 
+|commit 66f3b8e2e103a0b93b945764d98e9ba46cb926dd
+|Author: Jens Axboe <jens.axboe@oracle.com>
+|Date:   Wed Sep 2 09:19:46 2009 +0200
+|
+|    writeback: move dirty inodes from super_block to backing_dev_info
+|    
+|    This is a first step at introducing per-bdi flusher threads. We should
+|    have no change in behaviour, although sb_has_dirty_inodes() is now
+|    ridiculously expensive, as there's no easy way to answer that question.
+|    Not a huge problem, since it'll be deleted in subsequent patches.
+|    
+|    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+|
+|:040000 040000 08d15594747641d496850833378666fccc301872 9bd487d9aa4778cc2b4faabd94f9e4e378f09ed4 M      fs
+|:040000 040000 84292cade24750adfd88aa4ef104209573ea8d7e 986c9bf3552ecc52337c69d62fd39ab67e928f3c M      include
+|:040000 040000 8feddafc4d976199f9842b2f138f93e395afc746 d33936f4946f1ff4e4a5c7a7eab226b174d104d8 M      mm
 
-On Fri, 11 Sep 2009, Mike Frysinger wrote:
-> On Mon, Aug 24, 2009 at 11:30, Hugh Dickins wrote:
-> >
-> > =C2=A0no_id:
-> > + =C2=A0 =C2=A0 =C2=A0 if (shp->mlock_user) =C2=A0 =C2=A0/* shmflg & SH=
-M_HUGETLB case */
-> > + =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 user_shm_unlock(size=
-, shp->mlock_user);
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0fput(file);
-> > =C2=A0no_file:
-> > =C2=A0 =C2=A0 =C2=A0 =C2=A0security_shm_free(shp);
->=20
-> this breaks on no-mmu systems due to user_shm_unlock() being
-> mmu-specific.  normally gcc is smart enough to do dead code culling so
-> it hasnt caused problems, but not here.  hugetlb support is not
-> available on no-mmu systems, so the stubbed hugepage functions prevent
-> calls to user_shm_unlock() and such, but here gcc cant figure it out:
->=20
-=2E..
->=20
-> hugetlb_file_setup() expands to nothing and so mlock_user will never
-> come back from NULL, but gcc still emits a reference to
-> user_shm_unlock() in the error path.  perhaps the best thing here is
-> to just add an #ifdef ?
->  no_id:
-> +#ifdef CONFIG_HUGETLB_PAGE
-> +    /* gcc isn't smart enough to see that mlock_user goes non-NULL
-> only by hugetlb */
->     if (shp->mlock_user)    /* shmflg & SHM_HUGETLB case */
->         user_shm_unlock(size, shp->mlock_user);
-> +#endif
-
-Many thanks for reporting that, Mike.
-Sorry, I've messed up both 2.6.31 final and 2.6.30.6 stable.
-My preference is to avoid the #ifdef and use precisely the same
-optimization technique as is working for it elsewhere.
-Patch follows immediately in separate mail.
-
-Hugh
---8323584-1181830492-1252754269=:488--
+Sebastian
