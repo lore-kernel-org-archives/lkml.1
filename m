@@ -1,51 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752984AbZILJe1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753164AbZILJlL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752984AbZILJe1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 05:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbZILJe0
+	id S1753164AbZILJlL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 05:41:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZILJlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 05:34:26 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:45634 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751214AbZILJe0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 05:34:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=YBwmSWNBmpCH72gNK/kx7hsxk+ulaXCVGBT6rBfkqSeIbkZmaTaq28FFM3jIq6L7lz
-         zpnwc7e4e4xRCWz5a/oSbpXtdIr1qIvFFEc8p7ImHYqE98+/gvoiISsqS6w5HJCvXh8u
-         73OP6Pbp2zZXb1AKvP2Qo5GTmEd/9URRQS1yQ=
-From: Volker Armin Hemmann <volkerarmin@googlemail.com>
-To: Nikos Chantziaras <realnc@arcor.de>
-Subject: Re: BFS vs. mainline scheduler benchmarks and measurements
-Date: Sat, 12 Sep 2009 11:34:25 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31r4; KDE/4.3.1; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Mike Galbraith <efault@gmx.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Con Kolivas <kernel@kolivas.org>, LKML <linux-kernel@vger.kernel.org>
-References: <200909112033.34445.volkerarmin@googlemail.com> <200909121027.08244.volkerarmin@googlemail.com> <4AAB63F8.1060301@arcor.de>
-In-Reply-To: <4AAB63F8.1060301@arcor.de>
+	Sat, 12 Sep 2009 05:41:10 -0400
+Received: from tservice.net.ru ([195.178.208.66]:35637 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbZILJlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 05:41:09 -0400
+Date: Sat, 12 Sep 2009 13:41:10 +0400
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Eric Paris <eparis@redhat.com>
+Cc: Jamie Lokier <jamie@shareable.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org
+Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
+Message-ID: <20090912094110.GB24709@ioremap.net>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com> <20090911.114620.260824240.davem@davemloft.net> <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com> <20090911204602.GA19371@shareable.org> <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com> <20090911212731.GA19901@shareable.org> <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909121134.25243.volkerarmin@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Samstag 12 September 2009, Nikos Chantziaras wrote:
+On Fri, Sep 11, 2009 at 05:51:42PM -0400, Eric Paris (eparis@redhat.com) wrote:
+> For some things yes, some things no.  I'd have to understand where loss
+> can happen to know if it's feasible.  If I know loss happens in the
+> sender context that's great.  If it's somewhere in the middle and the
+> sender doesn't immediately know it'll never be delivered, yes, I don't
+> think it can solve all my needs.  How many places can and skb get lost
+> between the sender and the receiver?
 
-> Seeing the "lost 1 rtc interrupts" message makes me wonder if this could
-> possibly relate to problems with the C1E state on AMD systems (missing
-> timer interrupts):
-> 
->    http://lkml.org/lkml/2008/6/12/127
-> 
-> That thread is one year old though and your Phenom II CPU was released 7
-> months later.
-> 
+When queue is full or you do not have enough RAM. Both are reported at
+'sending' time.
 
-thanks for the link!
+As of your description of netlink/socket usage - you will have to peek
+skb queue, which is rather error-prone operation. Also you will have to
+implement own skb destructor to mess with private reference counters and
+netlink bits.
+
+-- 
+	Evgeniy Polyakov
