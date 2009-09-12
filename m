@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754288AbZILSFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZILSF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754288AbZILSFI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 14:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752655AbZILSFG
+	id S1754524AbZILSF3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 14:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZILSF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 14:05:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:45430 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752624AbZILSFF (ORCPT
+	Sat, 12 Sep 2009 14:05:27 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:44682 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752655AbZILSF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 14:05:05 -0400
-Subject: Re: [tip:tracing/core] x86/tracing: comment need for atomic nop
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, mingo@redhat.com, hpa@zytor.com,
-       srostedt@redhat.com, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090912134515.GC22876@Krystal>
-References: <tip-fc06b8520b3bf9aaeb2e27debe6719c215bd4916@git.kernel.org>
-	 <20090912134515.GC22876@Krystal>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Sat, 12 Sep 2009 14:05:06 -0400
-Message-Id: <1252778706.18996.754.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 Sep 2009 14:05:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wSLxSdoOAipL9Bg5DRslC7HZR849Mbrx2tcEeygdNJ6gXq/nYaWbZR31YsdlKOq8jL
+         B+P3MK8MIDtmBjj9Ow02BMZer/Z7BjJPOgNzskggXifD2ON8wJE035eSmgnblURDM3Q2
+         3N3R0sP0p+J9OxhVjl1HG9YAe5qnK9d0mg71Q=
+Date: Sat, 12 Sep 2009 22:05:27 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Daniel Walker <dwalker@fifo99.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Julia Lawall <julia@diku.dk>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: apic: convert BUG() to BUG_ON()
+Message-ID: <20090912180527.GA4893@lenovo>
+References: <1252777220-30796-1-git-send-email-dwalker@fifo99.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252777220-30796-1-git-send-email-dwalker@fifo99.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-09-12 at 09:45 -0400, Mathieu Desnoyers wrote:
-> * tip-bot for Steven Rostedt (srostedt@redhat.com) wrote:
-> > Commit-ID:  fc06b8520b3bf9aaeb2e27debe6719c215bd4916
-> > Gitweb:     http://git.kernel.org/tip/fc06b8520b3bf9aaeb2e27debe6719c215bd4916
-> > Author:     Steven Rostedt <srostedt@redhat.com>
-> > AuthorDate: Thu, 10 Sep 2009 17:22:44 -0400
-> > Committer:  Steven Rostedt <rostedt@goodmis.org>
-> > CommitDate: Thu, 10 Sep 2009 17:22:44 -0400
-> > 
-> > x86/tracing: comment need for atomic nop
-> > 
-> > The dynamic function tracer relys on the macro P6_NOP5 always being
-> > an atomic NOP. If for some reason it is changed to be two operations
-> > (like a nop2 nop3) it can faults within the kernel when the function
-> > tracer modifies the code.
-> > 
-> > This patch adds a comment to note that the P6_NOPs are expected to
-> > be atomic. This will hopefully prevent anyone from changing that.
-> > 
-> > Reported-by: Mathieu Desnoyer <mathieu.desnoyers@polymtl.ca>
-> 
-> With an added "s" to my last name, that will be good.
+[Daniel Walker - Sat, Sep 12, 2009 at 10:40:20AM -0700]
+| This was done using Coccinelle's BUG_ON semantic patch.
+| 
+| Signed-off-by: Daniel Walker <dwalker@fifo99.com>
+| ---
+|  arch/x86/kernel/apic/apic.c |    3 +--
+|  1 files changed, 1 insertions(+), 2 deletions(-)
+| 
+| diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+| index a34601f..e3d467e 100644
+| --- a/arch/x86/kernel/apic/apic.c
+| +++ b/arch/x86/kernel/apic/apic.c
+| @@ -1197,8 +1197,7 @@ void __cpuinit setup_local_APIC(void)
+|  	 * Double-check whether this APIC is really registered.
+|  	 * This is meaningless in clustered apic mode, so we skip it.
+|  	 */
+| -	if (!apic->apic_id_registered())
+| -		BUG();
+| +	BUG_ON(!apic->apic_id_registered());
+|  
+|  	/*
+|  	 * Intel recommends to set DFR, LDR and TPR before enabling
+| -- 
+| 1.5.6.3
+| 
 
-Oops, sorry. I seem to always do that to your name. I was too busy
-concentrating in getting your email correct (wrote the commit on a
-different box than my email client) that I didn't notice your name was
-wrong.
+Hi Daniel,
 
--- Steve
+I believe having a changelog like
 
-> 
-> Thanks !
-> 
-> Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> 
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+	Use short form of "if() BUG()" sequence
 
+would be better perhaps? Since "Coccinelle's BUG_ON semantic patch"
+somehow doesn't describe why it's done.
 
+Don't get me wrong please. It's trivial and seen from patch
+itself _why_ it's done though changelog doesn't say the same.
+
+Perhaps I'm too nagging :) Feel free to ignore me.
+
+	-- Cyrill
