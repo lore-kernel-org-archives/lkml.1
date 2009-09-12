@@ -1,105 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757278AbZILDIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757212AbZILDOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757278AbZILDIT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 23:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757208AbZILDIS
+	id S1757212AbZILDOX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 23:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbZILDOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 23:08:18 -0400
-Received: from smtp125.sbc.mail.sp1.yahoo.com ([69.147.65.184]:29123 "HELO
-	smtp125.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753018AbZILDIR (ORCPT
+	Fri, 11 Sep 2009 23:14:23 -0400
+Received: from mail-qy0-f172.google.com ([209.85.221.172]:40454 "EHLO
+	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755407AbZILDOW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 23:08:17 -0400
-X-YMail-OSG: d1_UvdwVM1nFvsNDVIiXpk2luQaTdlGSW_eD3tGcKQS3Vk.iGvJNFy1hPFy5C0HunLkd917p22hJUJnIwl.QZ2NuwA5rA6rvRsaYe0.GQsD1Hii2rB1Os7pDK.roJjqHaDsn1jRdOOepkR93kktmvwcdL.eHD4psJOlU72.md.pspgdZ70MO6gcxgriqFDVXdpEuWXG93kEFq7MPnGNBNg--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic
-	target engine for Linux v2.6.32
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-In-Reply-To: <1252723060.28368.48.camel@desktop>
-References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
-	 <1252723060.28368.48.camel@desktop>
-Content-Type: text/plain
-Date: Fri, 11 Sep 2009 20:08:04 -0700
-Message-Id: <1252724884.2067.251.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 Sep 2009 23:14:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Ras15+DMxvkIBBpXoy4jn9HgqD4Su9qVK9D4NSkQuTH8U5o8sp5BDE06Y/ljmC8PM9
+         FTQhPsP1cGOelVDUZMTVsfG9TAzbgIlBJx5o7BoWgZyXf61WO5dyho6s3ueV19n9hR9f
+         JAy4gMfujlExVYx4Ipj+45WToTEiUqY17Shq8=
+MIME-Version: 1.0
+In-Reply-To: <20090911215958.GA30989@srcf.ucam.org>
+References: <84fb38e30909110812r23ed0db0y80ae17178395694e@mail.gmail.com>
+	 <20090911215958.GA30989@srcf.ucam.org>
+Date: Fri, 11 Sep 2009 22:14:24 -0500
+Message-ID: <84fb38e30909112014h7efd120dnef85794e3ba3fc39@mail.gmail.com>
+Subject: Re: sony-laptop platform driver
+From: tsuraan <tsuraan@gmail.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 19:37 -0700, Daniel Walker wrote:
-> On Fri, 2009-09-11 at 18:55 -0700, Nicholas A. Bellinger wrote:
-> > There is cleanup work continuing to make the TCM code to use
-> > dprintk(),
-> > and some include cleanups, and other minor fixes.  The code has also
-> > been run through checkpatch again since the posting in April, and all
-> > errors have been removed, with the exception of one ConfigFS macro
-> > define triggering a checkpatch false positive.
-> 
+> The interface used for that isn't sony-specific, so sony-laptop is the
+> wrong place to put it. I've just submitted a patch to the nouveau
+> developers.
 
-Greetings Daniel,
-
-> 
-> One show stopping issue is that your adding new semaphore usage in patch
-> 5 and 16 (and in 16 it's a LOCKED one wtf!!). Which you should not be
-> doing .. You need to really evaluate the warnings from checkpatch, cause
-> those still have meaning.. 
-> 
-
-Ok, I will have a look at converting the HBA semaphore to a mutex in
-patch 5, and use some single use waitqueues in patch 16.  Btw, the ones
-using init_MUTEX_LOCKED() in the latter source file are being used when
-shutting down target_core_mod allocated kernel threads to sychronize
-between the stopping processing threads and configfs process context
-that waitqueues would work better for.  Thanks for pointing this out!
-
-> It's basically telling you what you should be doing in the warnings..
-> For instance, don't add new semaphore usage, and it tells you what you
-> need to be using in place of them..
-
-Ok, so I will also do the struct sempahore -> struct mutex conversion
-where it makes sense to protect lists and see about the rest..
-
->  Also typedefs are frowned upon, so
-> you could remove those..
-> 
-
-I was thinking about going through the typedefs with a sed chainsaw, but
-I decided against for this TCM patch series because it makes keeping
-backward ports to <= v2.6.31 slightly easier to maintain for me for the
-current users of LIO kernel code.
-
-However, I have been starting to not use typedef for the newest ALUA and
-pieces of PR code, and I would be happy to have another look at typedef
-style comments on this once the other larger interest items are on the
-way to being resolved.
-
-Thanks!
-
---nab
-
-> Daniel
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-
+In my case, I never want the nvidia card to be running.  Would I load
+the nouveau driver for the sole purpose of shutting down the card?  I
+don't want X to be using nouveau; it uses my intel card without any
+problems, and with a small fraction of the power consumption.  Does
+nouveau work without X?  I'm not familiar with how it is split between
+user and kernel space.
