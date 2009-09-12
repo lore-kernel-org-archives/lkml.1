@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932186AbZILCBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932240AbZILCCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932186AbZILCBt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 Sep 2009 22:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZILCBq
+	id S932240AbZILCCA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 Sep 2009 22:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753062AbZILCB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 Sep 2009 22:01:46 -0400
-Received: from smtp102.sbc.mail.gq1.yahoo.com ([67.195.15.61]:34364 "HELO
-	smtp102.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753975AbZILCBl (ORCPT
+	Fri, 11 Sep 2009 22:01:58 -0400
+Received: from smtp101.sbc.mail.gq1.yahoo.com ([67.195.15.60]:47612 "HELO
+	smtp101.sbc.mail.gq1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753916AbZILCBw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 Sep 2009 22:01:41 -0400
+	Fri, 11 Sep 2009 22:01:52 -0400
 X-Yahoo-SMTP: RrAacJSswBBjW0Obe5dhTHj7mfiuboERhd4hX4HvWHq2RmBoxiTUVqFaT6p3
-X-YMail-OSG: 4KDZe2EVM1m8TZoxkEwlQn5IYOWoxs25Eqhw5GazIumiu52M0X5YVwvourQdLdaQqNPpNy70xDX0D8tsaUU8rvubhtXy.h4GbXQFcyIGPaR2SXsS7G9V5P4j9LNVmN5cmhNN4UnAIPaPpJDkudaSLGM4sdRNlEH6.lkP2kM7VUuvRaOilJIEa3bHICHaw8SQTm0GzcTHc6SvCyy71w0cqjcoFM7htYPdGxln27idDvCkvRvTmA--
+X-YMail-OSG: xQ_QwbgVM1mtVi_Iqrs6qjIJtIo6Wbceseeo7ciTk6KRlt5UkLLgWSE1V8lTjTtx7ilqoP8kO2JxlR2K7R6gziAcOa3OhVwApoeDWziOS3ZrpEPH.DYCIgsgTv.UjoNSLu8hq94Wyek1kS9zPOBvZmL3imvEzY53scZ0F5tAba_Pc.YAIOOjlWVmoHaLofosLf8o8E2M9AmUL424rncbHjk8AJ8LKmflSP06bm7kck2laU5fmbzbP38WiVkM
 X-Yahoo-Newman-Property: ymail-3
-Subject: [RFC PATCH 3/19] Target_Core_Mod device core infrastructure
+Subject: [RFC PATCH 4/19] Target_Core_Mod FILEIO <-> Linux/VFS subsystem
 From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
 To: LKML <linux-kernel@vger.kernel.org>,
        linux-scsi <linux-scsi@vger.kernel.org>
@@ -32,8 +32,8 @@ Cc: Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
        Florian Haas <florian.haas@linbit.com>,
        Philipp Reisner <philipp.reisner@linbit.com>
 Content-Type: text/plain
-Date: Fri, 11 Sep 2009 18:55:45 -0700
-Message-Id: <1252720545.2067.202.camel@haakon2.linux-iscsi.org>
+Date: Fri, 11 Sep 2009 18:55:57 -0700
+Message-Id: <1252720557.2067.204.camel@haakon2.linux-iscsi.org>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
@@ -41,25 +41,27 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[RFC PATCH 3/19] Target_Core_Mod device core infrastructure
+[RFC PATCH 4/19] Target_Core_Mod FILEIO <-> Linux/VFS subsystem
 
-The patch adds the core se_device_t functionality that is used internally by
-target_core_mod, as well generically by TCM/ConfigFS enabled fabric modules.
+This patch adds the buffered FILEIO subsystem plugin for accessing struct file
+from upstream Linux/VFS code.
+
+It also includes AIO kernel code and O_DIRECT (needs seperate kernel patch for non buffered kernel file I/O),
+that are currently disabled.
 
 Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
-diff --git a/drivers/target/target_core_device.c b/drivers/target/target_core_device.c
+diff --git a/drivers/target/target_core_file.c b/drivers/target/target_core_file.c
 new file mode 100644
-index 0000000..b8a78f5
+index 0000000..4ac2916
 --- /dev/null
-+++ b/drivers/target/target_core_device.c
-@@ -0,0 +1,1454 @@
++++ b/drivers/target/target_core_file.c
+@@ -0,0 +1,1227 @@
 +/*******************************************************************************
-+ * Filename:  target_core_device.c (based on iscsi_target_device.c)
++ * Filename:  target_core_file.c
 + *
-+ * This file contains the iSCSI Virtual Device and Disk Transport
-+ * agnostic related functions.
++ * This file contains the Storage Engine <-> FILEIO transport specific functions
 + *
-+ * Copyright (c) 2003, 2004, 2005 PyX Technologies, Inc.
++ * Copyright (c) 2005 PyX Technologies, Inc.
 + * Copyright (c) 2005-2006 SBE, Inc.  All Rights Reserved.
 + * Copyright (c) 2007-2009 Rising Tide Software, Inc.
 + * Copyright (c) 2008-2009 Linux-iSCSI.org
@@ -83,1440 +85,1217 @@ index 0000000..b8a78f5
 + ******************************************************************************/
 +
 +
-+#define TARGET_CORE_DEVICE_C
++#define TARGET_CORE_FILE_C
 +
-+#include <linux/net.h>
++#include <linux/version.h>
 +#include <linux/string.h>
-+#include <linux/delay.h>
 +#include <linux/timer.h>
++#include <linux/blkdev.h>
 +#include <linux/slab.h>
 +#include <linux/spinlock.h>
 +#include <linux/smp_lock.h>
-+#include <linux/in.h>
-+#include <net/sock.h>
-+#include <net/tcp.h>
 +#include <scsi/scsi.h>
++#include <scsi/scsi_host.h>
 +
 +#include <target/target_core_base.h>
 +#include <target/target_core_device.h>
-+#include <target/target_core_hba.h>
-+#include <target/target_core_alua.h>
-+#include <target/target_core_pr.h>
-+#include <target/target_core_tpg.h>
 +#include <target/target_core_transport.h>
-+#include <target/target_core_ua.h>
-+#include <target/target_core_fabric_ops.h>
-+#include <target/target_core_plugin.h>
-+#include <target/target_core_seobj.h>
++#include <target/target_core_file.h>
 +
-+#undef TARGET_CORE_DEVICE_C
++#undef TARGET_CORE_FILE_C
 +
-+struct block_device *__linux_blockdevice_claim(
-+	int major,
-+	int minor,
-+	void *claim_ptr,
-+	int *ret)
++/*	fd_attach_hba(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++int fd_attach_hba(se_hba_t *hba, u32 host_id)
 +{
-+	dev_t dev;
-+	struct block_device *bd;
++	fd_host_t *fd_host;
 +
-+	dev = MKDEV(major, minor);
-+
-+	bd = bdget(dev);
-+	if (!(bd)) {
-+		*ret = -1;
-+		return NULL;
++	fd_host = kzalloc(sizeof(fd_host_t), GFP_KERNEL);
++	if (!(fd_host)) {
++		printk(KERN_ERR "Unable to allocate memory for fd_host_t\n");
++		return -1;
 +	}
 +
-+	if (blkdev_get(bd, FMODE_WRITE|FMODE_READ) < 0) {
-+		*ret = -1;
-+		return NULL;
-+	}
-+	/*
-+	 * If no claim pointer was passed from claimee, use struct block_device.
-+	 */
-+	if (!claim_ptr)
-+		claim_ptr = (void *)bd;
++	fd_host->fd_host_id = host_id;
 +
-+	if (bd_claim(bd, claim_ptr) < 0) {
-+		blkdev_put(bd, FMODE_WRITE|FMODE_READ);
-+		*ret = 0;
-+		return bd;
-+	}
++	atomic_set(&hba->left_queue_depth, FD_HBA_QUEUE_DEPTH);
++	atomic_set(&hba->max_queue_depth, FD_HBA_QUEUE_DEPTH);
++	hba->hba_ptr = (void *) fd_host;
++	hba->transport = &fileio_template;
 +
-+	*ret = 1;
-+	return bd;
++	printk(KERN_INFO "CORE_HBA[%d] - %s FILEIO HBA Driver %s on Generic"
++		" Target Core Stack %s\n", hba->hba_id,
++		PYX_ISCSI_VENDOR, FD_VERSION, TARGET_CORE_MOD_VERSION);
++	printk(KERN_INFO "CORE_HBA[%d] - Attached FILEIO HBA: %u to Generic"
++		" Target Core with TCQ Depth: %d MaxSectors: %u\n",
++		hba->hba_id, fd_host->fd_host_id,
++		atomic_read(&hba->max_queue_depth), FD_MAX_SECTORS);
++
++	return 0;
 +}
 +
-+struct block_device *linux_blockdevice_claim(
-+	int major,
-+	int minor,
-+	void *claim_ptr)
++/*	fd_detach_hba(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++int fd_detach_hba(se_hba_t *hba)
 +{
-+	dev_t dev;
-+	struct block_device *bd;
++	fd_host_t *fd_host;
 +
-+	dev = MKDEV(major, minor);
-+
-+	bd = bdget(dev);
-+	if (!(bd))
-+		return NULL;
-+
-+	if (blkdev_get(bd, FMODE_WRITE|FMODE_READ) < 0)
-+		return NULL;
-+	/*
-+	 * If no claim pointer was passed from claimee, use struct block_device.
-+	 */
-+	if (!claim_ptr)
-+		claim_ptr = (void *)bd;
-+
-+	if (bd_claim(bd, claim_ptr) < 0) {
-+		blkdev_put(bd, FMODE_WRITE|FMODE_READ);
-+		return NULL;
++	if (!hba->hba_ptr) {
++		printk(KERN_ERR "hba->hba_ptr is NULL!\n");
++		return -1;
 +	}
++	fd_host = (fd_host_t *) hba->hba_ptr;
 +
-+	return bd;
++	printk(KERN_INFO "CORE_HBA[%d] - Detached FILEIO HBA: %u from Generic"
++		" Target Core\n", hba->hba_id, fd_host->fd_host_id);
++
++	kfree(fd_host);
++	hba->hba_ptr = NULL;
++
++	return 0;
 +}
 +
-+int linux_blockdevice_release(int major, int minor, struct block_device *bd_p)
++int fd_claim_phydevice(se_hba_t *hba, se_device_t *dev)
 +{
-+	dev_t dev;
++	fd_dev_t *fd_dev = (fd_dev_t *)dev->dev_ptr;
 +	struct block_device *bd;
 +
-+	if (!bd_p) {
-+		dev = MKDEV(major, minor);
++	if (fd_dev->fd_bd)
++		return 0;
 +
-+		bd = bdget(dev);
++	if (dev->dev_flags & DF_READ_ONLY) {
++		printk(KERN_INFO "FILEIO: Using previously claimed %p Major"
++			":Minor - %d:%d\n", fd_dev->fd_bd, fd_dev->fd_major,
++			fd_dev->fd_minor);
++	} else {
++		printk(KERN_INFO "FILEIO: Claiming %p Major:Minor - %d:%d\n",
++			fd_dev, fd_dev->fd_major, fd_dev->fd_minor);
++
++		bd = linux_blockdevice_claim(fd_dev->fd_major,
++				fd_dev->fd_minor, (void *)fd_dev);
 +		if (!(bd))
 +			return -1;
-+	} else
-+		bd = bd_p;
 +
-+	bd_release(bd);
-+	blkdev_put(bd, FMODE_WRITE|FMODE_READ);
-+
-+	return 0;
-+}
-+
-+int linux_blockdevice_check(int major, int minor)
-+{
-+	struct block_device *bd;
-+
-+	bd = linux_blockdevice_claim(major, minor, NULL);
-+	if (!(bd))
-+		return -1;
-+	/*
-+	 * Blockdevice was able to be claimed, now unclaim it and return success
-+	 */
-+	linux_blockdevice_release(major, minor, NULL);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(linux_blockdevice_check);
-+
-+int se_check_devices_access(se_hba_t *hba)
-+{
-+	se_device_t *dev;
-+	int ret = 0;
-+
-+	spin_lock(&hba->device_lock);
-+	list_for_each_entry(dev, &hba->hba_dev_list, dev_list) {
-+		if (DEV_OBJ_API(dev)->check_count(&dev->dev_feature_obj) != 0) {
-+			printk(KERN_ERR "check_count(&dev->dev_feature_obj):"
-+				" %u\n", DEV_OBJ_API(dev)->check_count(
-+					&dev->dev_feature_obj));
-+			ret = -1;
-+		}
++		fd_dev->fd_bd = bd;
++		fd_dev->fd_bd->bd_contains = bd;
 +	}
-+	spin_unlock(&hba->device_lock);
 +
-+	return ret;
++	return 0;
 +}
 +
-+/*	se_disable_devices_for_hba():
++int fd_release_phydevice(se_device_t *dev)
++{
++	fd_dev_t *fd_dev = (fd_dev_t *)dev->dev_ptr;
++
++	if (!fd_dev->fd_bd)
++		return 0;
++
++	if (dev->dev_flags & DF_READ_ONLY) {
++		printk(KERN_INFO "FILEIO: Calling blkdev_put() for Major:Minor"
++			" - %d:%d\n", fd_dev->fd_major, fd_dev->fd_minor);
++		blkdev_put((struct block_device *)fd_dev->fd_bd, FMODE_READ);
++	} else {
++		printk(KERN_INFO "FILEIO: Releasing Major:Minor - %d:%d\n",
++			fd_dev->fd_major, fd_dev->fd_minor);
++		linux_blockdevice_release(fd_dev->fd_major, fd_dev->fd_minor,
++			(struct block_device *)fd_dev->fd_bd);
++	}
++	fd_dev->fd_bd = NULL;
++
++	return 0;
++}
++
++void *fd_allocate_virtdevice(se_hba_t *hba, const char *name)
++{
++	fd_dev_t *fd_dev;
++	fd_host_t *fd_host = (fd_host_t *) hba->hba_ptr;
++
++	fd_dev = kzalloc(sizeof(fd_dev_t), GFP_KERNEL);
++	if (!(fd_dev)) {
++		printk(KERN_ERR "Unable to allocate memory for fd_dev_t\n");
++		return NULL;
++	}
++
++	fd_dev->fd_host = fd_host;
++
++	printk(KERN_INFO "FILEIO: Allocated fd_dev for %p\n", name);
++
++	return fd_dev;
++}
++
++/*	fd_create_virtdevice(): (Part of se_subsystem_api_t template)
 + *
 + *
 + */
-+void se_disable_devices_for_hba(se_hba_t *hba)
++se_device_t *fd_create_virtdevice(
++	se_hba_t *hba,
++	se_subsystem_dev_t *se_dev,
++	void *p)
 +{
++	char *dev_p = NULL;
 +	se_device_t *dev;
++	fd_dev_t *fd_dev = (fd_dev_t *) p;
++	fd_host_t *fd_host = (fd_host_t *) hba->hba_ptr;
++	mm_segment_t old_fs;
++	struct block_device *bd = NULL;
++	struct file *file;
++	struct inode *inode = NULL;
++	struct request_queue *q;
++	unsigned long long blocks_long;
++	int dev_flags = 0, flags;
 +
-+	spin_lock(&hba->device_lock);
-+	list_for_each_entry(dev, &hba->hba_dev_list, dev_list) {
++	old_fs = get_fs();
++	set_fs(get_ds());
++	dev_p = getname(fd_dev->fd_dev_name);
++	set_fs(old_fs);
 +
-+		spin_lock(&dev->dev_status_lock);
-+		if ((dev->dev_status & TRANSPORT_DEVICE_ACTIVATED) ||
-+		    (dev->dev_status & TRANSPORT_DEVICE_DEACTIVATED) ||
-+		    (dev->dev_status & TRANSPORT_DEVICE_OFFLINE_ACTIVATED) ||
-+		    (dev->dev_status & TRANSPORT_DEVICE_OFFLINE_DEACTIVATED)) {
-+			dev->dev_status |= TRANSPORT_DEVICE_SHUTDOWN;
-+			dev->dev_status &= ~TRANSPORT_DEVICE_ACTIVATED;
-+			dev->dev_status &= ~TRANSPORT_DEVICE_DEACTIVATED;
-+			dev->dev_status &= ~TRANSPORT_DEVICE_OFFLINE_ACTIVATED;
-+			dev->dev_status &=
-+					~TRANSPORT_DEVICE_OFFLINE_DEACTIVATED;
-+
-+			wake_up_interruptible(&dev->dev_queue_obj->thread_wq);
-+		}
-+		spin_unlock(&dev->dev_status_lock);
++	if (IS_ERR(dev_p)) {
++		printk(KERN_ERR "getname(%s) failed: %lu\n",
++			fd_dev->fd_dev_name, IS_ERR(dev_p));
++		goto fail;
 +	}
-+	spin_unlock(&hba->device_lock);
-+
-+	return;
-+}
-+
-+extern int __transport_get_lun_for_cmd(
-+	se_cmd_t *se_cmd,
-+	u32 unpacked_lun)
-+{
-+	se_dev_entry_t *deve;
-+	se_lun_t *se_lun = NULL;
-+	se_session_t *se_sess = SE_SESS(se_cmd);
-+	unsigned long flags;
-+	int read_only = 0;
-+
-+	spin_lock_bh(&SE_NODE_ACL(se_sess)->device_list_lock);
-+	deve = se_cmd->se_deve =
-+			&SE_NODE_ACL(se_sess)->device_list[unpacked_lun];
-+	if (deve->lun_flags & TRANSPORT_LUNFLAGS_INITIATOR_ACCESS) {
-+		if (se_cmd) {
-+			deve->total_cmds++;
-+			deve->total_bytes += se_cmd->data_length;
-+
-+			if (se_cmd->data_direction == SE_DIRECTION_WRITE) {
-+				if (deve->lun_flags &
-+						TRANSPORT_LUNFLAGS_READ_ONLY) {
-+					read_only = 1;
-+					goto out;
-+				}
-+#ifdef SNMP_SUPPORT
-+				deve->write_bytes += se_cmd->data_length;
-+#endif /* SNMP_SUPPORT */
-+			} else if (se_cmd->data_direction ==
-+				   SE_DIRECTION_READ) {
-+#ifdef SNMP_SUPPORT
-+				deve->read_bytes += se_cmd->data_length;
-+#endif /* SNMP_SUPPORT */
-+			}
-+		}
-+		deve->deve_cmds++;
-+
-+		se_lun = se_cmd->se_lun = deve->se_lun;
-+		se_cmd->pr_res_key = deve->pr_res_key;
-+		se_cmd->orig_fe_lun = unpacked_lun;
-+		se_cmd->se_orig_obj_api = SE_LUN(se_cmd)->lun_obj_api;
-+		se_cmd->se_orig_obj_ptr = SE_LUN(se_cmd)->lun_type_ptr;
-+		se_cmd->se_cmd_flags |= SCF_SE_LUN_CMD;
-+	}
-+out:
-+	spin_unlock_bh(&SE_NODE_ACL(se_sess)->device_list_lock);
-+
-+	if (!se_lun) {
-+		if (read_only) {
-+			se_cmd->scsi_sense_reason = WRITE_PROTECTED;
-+			printk("TARGET_CORE[%s]: Detected WRITE_PROTECTED LUN"
-+				" Access for 0x%08x\n",
-+				CMD_TFO(se_cmd)->get_fabric_name(),
-+				unpacked_lun);
-+		} else {
-+			se_cmd->scsi_sense_reason = NON_EXISTENT_LUN;
-+			printk("TARGET_CORE[%s]: Detected NON_EXISTENT_LUN"
-+				" Access for 0x%08x\n",
-+				CMD_TFO(se_cmd)->get_fabric_name(),
-+				unpacked_lun);
-+		}
-+		se_cmd->se_cmd_flags |= SCF_SCSI_CDB_EXCEPTION;
-+		return -1;
-+	}
-+	/*
-+	 * Determine if the se_lun_t is online.
-+	 */
-+/* #warning FIXME: Check for LUN_RESET + UNIT Attention */
-+	if (LUN_OBJ_API(se_lun)->check_online(se_lun->lun_type_ptr) != 0) {
-+		se_cmd->scsi_sense_reason = NON_EXISTENT_LUN;
-+		se_cmd->se_cmd_flags |= SCF_SCSI_CDB_EXCEPTION;
-+		return -1;
-+	}
-+
-+#ifdef SNMP_SUPPORT
-+	{
-+	se_device_t *dev = se_lun->se_dev;
-+	spin_lock(&dev->stats_lock);
-+	dev->num_cmds++;
-+	if (se_cmd->data_direction == SE_DIRECTION_WRITE)
-+		dev->write_bytes += se_cmd->data_length;
-+	else if (se_cmd->data_direction == SE_DIRECTION_READ)
-+		dev->read_bytes += se_cmd->data_length;
-+	spin_unlock(&dev->stats_lock);
-+	}
-+#endif /* SNMP_SUPPORT */
-+
-+	/*
-+	 * Add the iscsi_cmd_t to the se_lun_t's cmd list.  This list is used
-+	 * for tracking state of se_cmd_ts during LUN shutdown events.
-+	 */
-+	spin_lock_irqsave(&se_lun->lun_cmd_lock, flags);
-+	list_add_tail(&se_cmd->se_lun_list, &se_lun->lun_cmd_list);
-+	atomic_set(&T_TASK(se_cmd)->transport_lun_active, 1);
 +#if 0
-+	printk(KERN_INFO "Adding ITT: 0x%08x to LUN LIST[%d]\n",
-+		CMD_TFO(se_cmd)->get_task_tag(se_cmd), se_lun->unpacked_lun);
++	if (di->no_create_file)
++		flags = O_RDWR | O_LARGEFILE;
++	else
++		flags = O_RDWR | O_CREAT | O_LARGEFILE;
++#else
++	flags = O_RDWR | O_CREAT | O_LARGEFILE;
 +#endif
-+	spin_unlock_irqrestore(&se_lun->lun_cmd_lock, flags);
++/*	flags |= O_DIRECT; */
 +
-+	return 0;
-+}
++	file = filp_open(dev_p, flags, 0600);
 +
-+extern int transport_get_lun_for_tmr(
-+	se_cmd_t *se_cmd,
-+	u32 unpacked_lun)
-+{
-+	se_device_t *dev = NULL;
-+	se_dev_entry_t *deve;
-+	se_lun_t *se_lun = NULL;
-+	se_session_t *se_sess = SE_SESS(se_cmd);
-+	se_tmr_req_t *se_tmr = se_cmd->se_tmr_req;
-+
-+	spin_lock_bh(&SE_NODE_ACL(se_sess)->device_list_lock);
-+	deve = se_cmd->se_deve =
-+			&SE_NODE_ACL(se_sess)->device_list[unpacked_lun];
-+	if (deve->lun_flags & TRANSPORT_LUNFLAGS_INITIATOR_ACCESS) {
-+		se_lun = se_cmd->se_lun = se_tmr->tmr_lun = deve->se_lun;
-+		dev = se_tmr->tmr_dev = se_lun->se_dev;
-+		se_cmd->pr_res_key = deve->pr_res_key;
-+		se_cmd->orig_fe_lun = unpacked_lun;
-+		se_cmd->se_orig_obj_api = SE_LUN(se_cmd)->lun_obj_api;
-+		se_cmd->se_orig_obj_ptr = SE_LUN(se_cmd)->lun_type_ptr;
-+/*		se_cmd->se_cmd_flags |= SCF_SE_LUN_CMD; */
++	if (IS_ERR(file) || !file || !file->f_dentry) {
++		printk(KERN_ERR "filp_open(%s) failed\n", dev_p);
++		goto fail;
 +	}
-+	spin_unlock_bh(&SE_NODE_ACL(se_sess)->device_list_lock);
-+
-+	if (!se_lun) {
-+		printk(KERN_INFO "TARGET_CORE[%s]: Detected NON_EXISTENT_LUN"
-+			" Access for 0x%08x\n",
-+			CMD_TFO(se_cmd)->get_fabric_name(),
-+			unpacked_lun);
-+		se_cmd->se_cmd_flags |= SCF_SCSI_CDB_EXCEPTION;
-+		return -1;
++	fd_dev->fd_file = file;
++	/*
++	 * If we are claiming a blockend for this struct file, we extract
++	 * fd_dev->fd_size from struct block_device.
++	 *
++	 * Otherwise, we use the passed fd_size= from configfs
++	 */
++	inode = igrab(file->f_mapping->host);
++	if (!(inode)) {
++		printk(KERN_ERR "FILEIO: Unable to locate struct inode from"
++			" struct file\n");
++		goto fail;
 +	}
 +	/*
-+	 * Determine if the se_lun_t is online.
++	 * If struct file is referencing a underlying struct block_device,
++	 * claim it now.
 +	 */
-+/* #warning FIXME: Check for LUN_RESET + UNIT Attention */
-+	if (LUN_OBJ_API(se_lun)->check_online(se_lun->lun_type_ptr) != 0) {
-+		se_cmd->se_cmd_flags |= SCF_SCSI_CDB_EXCEPTION;
-+		return -1;
++	if (S_ISBLK(inode->i_mode)) {
++		fd_dev->fd_bd = I_BDEV(file->f_mapping->host);
++		if (!(fd_dev->fd_bd)) {
++			printk(KERN_ERR "FILEIO: Unable to locate struct"
++				" block_device\n");
++			goto fail;
++		}
++		fd_dev->fd_major = fd_dev->fd_bd->bd_disk->major;
++		fd_dev->fd_minor = fd_dev->fd_bd->bd_disk->first_minor;
++
++		printk(KERN_INFO "FILEIO: Claiming %p Major:Minor - %d:%d\n",
++			fd_dev, fd_dev->fd_major, fd_dev->fd_minor);
++
++		bd = linux_blockdevice_claim(fd_dev->fd_bd->bd_disk->major,
++					fd_dev->fd_bd->bd_disk->first_minor,
++					fd_dev);
++		if (!(bd)) {
++			printk(KERN_ERR "FILEIO: Unable to claim"
++				" struct block_device\n");
++			goto fail;
++		}
++
++		dev_flags |= DF_CLAIMED_BLOCKDEV;
++		if (dev_flags & DF_CLAIMED_BLOCKDEV)
++			fd_dev->fd_bd->bd_contains = bd;
++		/*
++		 * Determine the number of bytes for this FILEIO device from
++		 * struct block_device's block count and block_size.
++		 */
++		blocks_long = (get_capacity(bd->bd_disk) - 1);
++		q = bdev_get_queue(bd);
++		fd_dev->fd_dev_size = ((unsigned long long)blocks_long *
++					bdev_logical_block_size(bd));
++		printk(KERN_INFO "FILEIO: Using size: %llu bytes from struct"
++			" block_device blocks: %llu logical_block_size: %d\n",
++				fd_dev->fd_dev_size, blocks_long,
++				bdev_logical_block_size(bd));
++	} else {
++		if (!(fd_dev->fbd_flags & FBDF_HAS_SIZE)) {
++			printk(KERN_ERR "FILEIO: Missing fd_dev_size="
++				" parameter, and no backing struct"
++				" block_device\n");
++			goto fail;
++		}
 +	}
++	/*
++	 * Pass dev_flags for linux_blockdevice_claim_bd or
++	 * linux_blockdevice_claim() from the usage above.
++	 *
++	 * Note that transport_add_device_to_core_hba() will call
++	 * linux_blockdevice_release() internally on failure to
++	 * call bd_release() on the referenced struct block_device.
++	 */
++	dev = transport_add_device_to_core_hba(hba, &fileio_template,
++				se_dev, dev_flags, (void *)fd_dev);
++	if (!(dev))
++		goto fail;
 +
-+	spin_lock(&dev->se_tmr_lock);
-+	list_add_tail(&se_tmr->tmr_list, &dev->dev_tmr_list);
-+	spin_unlock(&dev->se_tmr_lock);
++	fd_dev->fd_dev_id = fd_host->fd_host_dev_id_count++;
++	fd_dev->fd_queue_depth = dev->queue_depth;
 +
-+	return 0;
-+}
-+EXPORT_SYMBOL(transport_get_lun_for_tmr);
++	printk(KERN_INFO "CORE_FILE[%u] - Added LIO FILEIO Device ID: %u at %s,"
++		" %llu total bytes\n", fd_host->fd_host_id, fd_dev->fd_dev_id,
++			fd_dev->fd_dev_name, fd_dev->fd_dev_size);
 +
-+/*
-+ * This function is called from core_scsi3_emulate_pro_register_and_move()
-+ * and will call configfs_depend_item() for &deve->se_lun_acl->se_lun_group
-+ * to obtain the dependancy for the struct config_group's configfs item.
-+ *
-+ * core_scsi3_emulate_pro_register_and_move() (and any other code) is
-+ * expected to call configfs_undepend_item() once they are done.
-+ */
-+se_dev_entry_t *core_get_se_deve_from_rtpi(
-+	se_node_acl_t *nacl,
-+	u16 rtpi)
-+{
-+	se_dev_entry_t *deve;
-+	se_lun_t *lun;
-+	se_port_t *port;
-+	se_portal_group_t *tpg = nacl->se_tpg;
-+	struct target_core_fabric_ops *tf_ops = TPG_TFO(tpg);
-+	u32 i;
-+	int ret;
-+
-+	spin_lock_bh(&nacl->device_list_lock);
-+	for (i = 0; i < TRANSPORT_MAX_LUNS_PER_TPG; i++) {
-+		deve = &nacl->device_list[i];
-+
-+		if (!(deve->lun_flags & TRANSPORT_LUNFLAGS_INITIATOR_ACCESS))
-+			continue;
-+
-+		lun = deve->se_lun;
-+		if (!(lun)) {
-+			printk(KERN_ERR "%s device entries device pointer is"
-+				" NULL, but Initiator has access.\n",
-+				TPG_TFO(tpg)->get_fabric_name());
-+			continue;
-+		}
-+		port = lun->lun_sep;
-+		if (!(port)) {
-+			printk(KERN_ERR "%s device entries device pointer is"
-+				" NULL, but Initiator has access.\n",
-+				TPG_TFO(tpg)->get_fabric_name());
-+			continue;
-+		}
-+		if (port->sep_rtpi != rtpi)
-+			continue;
-+		spin_unlock_bh(&nacl->device_list_lock);
-+		if (!(deve->se_lun_acl)) {
-+			printk(KERN_ERR "%s device entries device pointer to"
-+				" se_lun_acl cannot be located\n",
-+				TPG_TFO(tpg)->get_fabric_name());
-+			continue;
-+		}
-+		ret = configfs_depend_item(tf_ops->tf_subsys,
-+				&deve->se_lun_acl->se_lun_group.cg_item);
-+		if (ret != 0) {
-+			printk(KERN_ERR "configfs_depend_item() failed for"
-+				"&deve->se_lun_acl->se_lun_group\n");
-+			continue;
-+		}
-+		return deve;
++	iput(inode);
++	putname(dev_p);
++	return dev;
++fail:
++	if (fd_dev->fd_file) {
++		filp_close(fd_dev->fd_file, NULL);
++		fd_dev->fd_file = NULL;
 +	}
-+	spin_unlock_bh(&nacl->device_list_lock);
-+
++	fd_dev->fd_bd = NULL;
++	fd_dev->fd_major = 0;
++	fd_dev->fd_minor = 0;
++	if (inode)
++		iput(inode);
++	putname(dev_p);
 +	return NULL;
 +}
 +
-+int core_free_device_list_for_node(
-+	se_node_acl_t *nacl,
-+	se_portal_group_t *tpg)
++/*	fd_activate_device(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++int fd_activate_device(se_device_t *dev)
 +{
-+	se_dev_entry_t *deve;
-+	se_lun_t *lun;
-+	u32 i;
++	fd_dev_t *fd_dev = (fd_dev_t *) dev->dev_ptr;
++	fd_host_t *fd_host = fd_dev->fd_host;
 +
-+	if (!nacl->device_list)
-+		return 0;
-+
-+	spin_lock_bh(&nacl->device_list_lock);
-+	for (i = 0; i < TRANSPORT_MAX_LUNS_PER_TPG; i++) {
-+		deve = &nacl->device_list[i];
-+
-+		if (!(deve->lun_flags & TRANSPORT_LUNFLAGS_INITIATOR_ACCESS))
-+			continue;
-+
-+		if (!deve->se_lun) {
-+			printk(KERN_ERR "%s device entries device pointer is"
-+				" NULL, but Initiator has access.\n",
-+				TPG_TFO(tpg)->get_fabric_name());
-+			continue;
-+		}
-+		lun = deve->se_lun;
-+
-+		spin_unlock_bh(&nacl->device_list_lock);
-+		core_update_device_list_for_node(lun, NULL, deve->mapped_lun,
-+			TRANSPORT_LUNFLAGS_NO_ACCESS, nacl, tpg, 0);
-+		spin_lock_bh(&nacl->device_list_lock);
-+	}
-+	spin_unlock_bh(&nacl->device_list_lock);
-+
-+	kfree(nacl->device_list);
-+	nacl->device_list = NULL;
++	printk(KERN_INFO "CORE_FILE[%u] - Activating Device with TCQ: %d at"
++		" FILEIO Device ID: %d\n", fd_host->fd_host_id,
++		fd_dev->fd_queue_depth, fd_dev->fd_dev_id);
 +
 +	return 0;
 +}
 +
-+void core_dec_lacl_count(se_node_acl_t *se_nacl, se_cmd_t *se_cmd)
-+{
-+	se_dev_entry_t *deve;
-+
-+	spin_lock_bh(&se_nacl->device_list_lock);
-+	deve = &se_nacl->device_list[se_cmd->orig_fe_lun];
-+	deve->deve_cmds--;
-+	spin_unlock_bh(&se_nacl->device_list_lock);
-+
-+	return;
-+}
-+
-+void core_update_device_list_access(
-+	u32 mapped_lun,
-+	u32 lun_access,
-+	se_node_acl_t *nacl)
-+{
-+	se_dev_entry_t *deve;
-+
-+	spin_lock_bh(&nacl->device_list_lock);
-+	deve = &nacl->device_list[mapped_lun];
-+	if (lun_access & TRANSPORT_LUNFLAGS_READ_WRITE) {
-+		deve->lun_flags &= ~TRANSPORT_LUNFLAGS_READ_ONLY;
-+		deve->lun_flags |= TRANSPORT_LUNFLAGS_READ_WRITE;
-+	} else {
-+		deve->lun_flags &= ~TRANSPORT_LUNFLAGS_READ_WRITE;
-+		deve->lun_flags |= TRANSPORT_LUNFLAGS_READ_ONLY;
-+	}
-+	spin_unlock_bh(&nacl->device_list_lock);
-+
-+	return;
-+}
-+EXPORT_SYMBOL(core_update_device_list_access);
-+
-+/*      core_update_device_list_for_node():
++/*	fd_deactivate_device(): (Part of se_subsystem_api_t template)
 + *
 + *
 + */
-+void core_update_device_list_for_node(
-+	se_lun_t *lun,
-+	se_lun_acl_t *lun_acl,
-+	u32 mapped_lun,
-+	u32 lun_access,
-+	se_node_acl_t *nacl,
-+	se_portal_group_t *tpg,
-+	int enable)
++void fd_deactivate_device(se_device_t *dev)
 +{
-+	se_port_t *port = lun->lun_sep;
-+	se_dev_entry_t *deve;
++	fd_dev_t *fd_dev = (fd_dev_t *) dev->dev_ptr;
++	fd_host_t *fd_host = fd_dev->fd_host;
 +
-+	spin_lock_bh(&nacl->device_list_lock);
-+	deve = &nacl->device_list[mapped_lun];
-+	if (enable) {
-+		deve->se_lun = lun;
-+		deve->se_lun_acl = lun_acl;
-+		deve->mapped_lun = mapped_lun;
-+		deve->lun_flags |= TRANSPORT_LUNFLAGS_INITIATOR_ACCESS;
++	printk(KERN_INFO "CORE_FILE[%u] - Deactivating Device with TCQ: %d at"
++		" FILEIO Device ID: %d\n", fd_host->fd_host_id,
++		fd_dev->fd_queue_depth, fd_dev->fd_dev_id);
 +
-+		if (lun_access & TRANSPORT_LUNFLAGS_READ_WRITE) {
-+			deve->lun_flags &= ~TRANSPORT_LUNFLAGS_READ_ONLY;
-+			deve->lun_flags |= TRANSPORT_LUNFLAGS_READ_WRITE;
-+		} else {
-+			deve->lun_flags &= ~TRANSPORT_LUNFLAGS_READ_WRITE;
-+			deve->lun_flags |= TRANSPORT_LUNFLAGS_READ_ONLY;
-+		}
-+#ifdef SNMP_SUPPORT
-+		deve->creation_time = get_jiffies_64();
-+		deve->attach_count++;
-+#endif /* SNMP_SUPPORT */
-+		spin_unlock_bh(&nacl->device_list_lock);
-+
-+		spin_lock_bh(&port->sep_alua_lock);
-+		list_add_tail(&deve->alua_port_list, &port->sep_alua_list);
-+		spin_unlock_bh(&port->sep_alua_lock);
-+
-+		return;
-+	}
-+	/*
-+	 * Disable se_dev_entry_t LUN ACL mapping
-+	 */
-+	core_scsi3_ua_release_all(deve);
-+	deve->se_lun = NULL;
-+	deve->se_lun_acl = NULL;
-+	deve->lun_flags = 0;
-+#ifdef SNMP_SUPPORT
-+	deve->creation_time = 0;
-+	deve->attach_count--;
-+#endif /* SNMP_SUPPORT */
-+	spin_unlock_bh(&nacl->device_list_lock);
-+
-+	spin_lock_bh(&port->sep_alua_lock);
-+	list_del(&deve->alua_port_list);
-+	spin_unlock_bh(&port->sep_alua_lock);
-+
-+	core_scsi3_free_pr_reg_from_nacl(lun->se_dev, nacl);
 +	return;
 +}
 +
-+/*      core_clear_lun_from_tpg():
++/*	fd_free_device(): (Part of se_subsystem_api_t template)
 + *
 + *
 + */
-+void core_clear_lun_from_tpg(se_lun_t *lun, se_portal_group_t *tpg)
++void fd_free_device(void *p)
 +{
-+	se_node_acl_t *nacl;
-+	se_dev_entry_t *deve;
-+	u32 i;
++	fd_dev_t *fd_dev = (fd_dev_t *) p;
 +
-+	spin_lock_bh(&tpg->acl_node_lock);
-+	list_for_each_entry(nacl, &tpg->acl_node_list, acl_list) {
-+		spin_unlock_bh(&tpg->acl_node_lock);
-+
-+		spin_lock_bh(&nacl->device_list_lock);
-+		for (i = 0; i < TRANSPORT_MAX_LUNS_PER_TPG; i++) {
-+			deve = &nacl->device_list[i];
-+			if (lun != deve->se_lun)
-+				continue;
-+			spin_unlock_bh(&nacl->device_list_lock);
-+
-+			core_update_device_list_for_node(lun, NULL,
-+				deve->mapped_lun, TRANSPORT_LUNFLAGS_NO_ACCESS,
-+				nacl, tpg, 0);
-+
-+			spin_lock_bh(&nacl->device_list_lock);
-+		}
-+		spin_unlock_bh(&nacl->device_list_lock);
-+
-+		spin_lock_bh(&tpg->acl_node_lock);
++	if (fd_dev->fd_file) {
++		filp_close(fd_dev->fd_file, NULL);
++		fd_dev->fd_file = NULL;
 +	}
-+	spin_unlock_bh(&tpg->acl_node_lock);
 +
-+	return;
++	kfree(fd_dev);
 +}
 +
-+se_port_t *core_alloc_port(se_device_t *dev)
++/*	fd_transport_complete(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++int fd_transport_complete(se_task_t *task)
 +{
-+	se_port_t *port, *port_tmp;
++	return 0;
++}
 +
-+	port = kzalloc(sizeof(se_port_t), GFP_KERNEL);
-+	if (!(port)) {
-+		printk(KERN_ERR "Unable to allocate se_port_t\n");
++/*	fd_allocate_request(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++void *fd_allocate_request(
++	se_task_t *task,
++	se_device_t *dev)
++{
++	fd_request_t *fd_req;
++
++	fd_req = kzalloc(sizeof(fd_request_t), GFP_KERNEL);
++	if (!(fd_req)) {
++		printk(KERN_ERR "Unable to allocate fd_request_t\n");
 +		return NULL;
 +	}
-+	INIT_LIST_HEAD(&port->sep_alua_list);
-+	INIT_LIST_HEAD(&port->sep_list);
-+	atomic_set(&port->sep_tg_pt_secondary_offline, 0);
-+	spin_lock_init(&port->sep_alua_lock);
-+	mutex_init(&port->sep_tg_pt_md_mutex);
 +
-+	spin_lock(&dev->se_port_lock);
-+	if (dev->dev_port_count == 0x0000ffff) {
-+		printk(KERN_WARNING "Reached dev->dev_port_count =="
-+				" 0x0000ffff\n");
-+		spin_unlock(&dev->se_port_lock);
-+		return NULL;
-+	}
-+again:
-+	/*
-+	 * Allocate the next RELATIVE TARGET PORT IDENTIFER for this se_device_t
-+	 * Here is the table from spc4r17 section 7.7.3.8.
-+	 *
-+	 *    Table 473 -- RELATIVE TARGET PORT IDENTIFIER field
-+	 *
-+	 * Code      Description
-+	 * 0h        Reserved
-+	 * 1h        Relative port 1, historically known as port A
-+	 * 2h        Relative port 2, historically known as port B
-+	 * 3h to FFFFh    Relative port 3 through 65 535
-+	 */
-+	port->sep_rtpi = dev->dev_rpti_counter++;
-+	if (!(port->sep_rtpi))
-+		goto again;
++	fd_req->fd_dev = (fd_dev_t *) dev->dev_ptr;
 +
-+	list_for_each_entry(port_tmp, &dev->dev_sep_list, sep_list) {
-+		/*
-+		 * Make sure RELATIVE TARGET PORT IDENTIFER is unique
-+		 * for 16-bit wrap..
-+		 */
-+		if (port->sep_rtpi == port_tmp->sep_rtpi)
-+			goto again;
-+	}
-+	spin_unlock(&dev->se_port_lock);
-+
-+	return port;
++	return (void *)fd_req;
 +}
 +
-+void core_export_port(
-+	se_device_t *dev,
-+	se_portal_group_t *tpg,
-+	se_port_t *port,
-+	se_lun_t *lun)
-+{
-+	se_subsystem_dev_t *su_dev = SU_DEV(dev);
-+	t10_alua_tg_pt_gp_member_t *tg_pt_gp_mem = NULL;
-+
-+	spin_lock(&dev->se_port_lock);
-+	spin_lock(&lun->lun_sep_lock);
-+	port->sep_tpg = tpg;
-+	port->sep_lun = lun;
-+	lun->lun_sep = port;
-+	spin_unlock(&lun->lun_sep_lock);
-+
-+	list_add_tail(&port->sep_list, &dev->dev_sep_list);
-+	spin_unlock(&dev->se_port_lock);
-+
-+	if (T10_ALUA(su_dev)->alua_type == SPC3_ALUA_EMULATED) {
-+		tg_pt_gp_mem = core_alua_allocate_tg_pt_gp_mem(port);
-+		if (IS_ERR(tg_pt_gp_mem) || !tg_pt_gp_mem) {
-+			printk(KERN_ERR "Unable to allocate t10_alua_tg_pt"
-+					"_gp_member_t\n");
-+			return;
-+		}
-+		spin_lock(&tg_pt_gp_mem->tg_pt_gp_mem_lock);
-+		__core_alua_attach_tg_pt_gp_mem(tg_pt_gp_mem,
-+			T10_ALUA(su_dev)->default_tg_pt_gp);
-+		spin_unlock(&tg_pt_gp_mem->tg_pt_gp_mem_lock);
-+		printk(KERN_INFO "%s/%s: Adding to default ALUA Target Port"
-+			" Group: alua/default_tg_pt_gp\n",
-+			TRANSPORT(dev)->name, TPG_TFO(tpg)->get_fabric_name());
-+	}
-+
-+	dev->dev_port_count++;
-+#ifdef SNMP_SUPPORT
-+	port->sep_index = port->sep_rtpi; /* RELATIVE TARGET PORT IDENTIFER */
-+#endif
-+	return;
-+}
-+
-+/*
-+ *	Called with se_device_t->se_port_lock spinlock held.
++/*	fd_emulate_inquiry():
++ *
++ *
 + */
-+void core_release_port(se_device_t *dev, se_port_t *port)
++int fd_emulate_inquiry(se_task_t *task)
 +{
-+	core_alua_free_tg_pt_gp_mem(port);
++	unsigned char prod[64], se_location[128];
++	se_cmd_t *cmd = TASK_CMD(task);
++	fd_dev_t *fdev = (fd_dev_t *) task->se_dev->dev_ptr;
++	se_hba_t *hba = task->se_dev->se_hba;
 +
-+	list_del(&port->sep_list);
-+	dev->dev_port_count--;
-+	kfree(port);
++	memset(prod, 0, 64);
++	memset(se_location, 0, 128);
 +
-+	return;
++	sprintf(prod, "FILEIO");
++	sprintf(se_location, "%u_%u", hba->hba_id, fdev->fd_dev_id);
++
++	return transport_generic_emulate_inquiry(cmd, TYPE_DISK, prod,
++		FD_VERSION, se_location);
 +}
 +
-+int transport_core_report_lun_response(se_cmd_t *se_cmd)
++/*	fd_emulate_read_cap():
++ *
++ *
++ */
++static int fd_emulate_read_cap(se_task_t *task)
 +{
-+	se_dev_entry_t *deve;
-+	se_lun_t *se_lun;
-+	se_session_t *se_sess = SE_SESS(se_cmd);
-+	se_task_t *se_task;
-+	unsigned char *buf = (unsigned char *)T_TASK(se_cmd)->t_task_buf;
-+	u32 cdb_offset = 0, lun_count = 0, offset = 8;
-+	u64 i, lun;
++	fd_dev_t *fd_dev = (fd_dev_t *) task->se_dev->dev_ptr;
++	u32 blocks = (fd_dev->fd_dev_size /
++		       DEV_ATTRIB(task->se_dev)->block_size);
 +
-+	list_for_each_entry(se_task, &T_TASK(se_cmd)->t_task_list, t_list)
++	if ((fd_dev->fd_dev_size / DEV_ATTRIB(task->se_dev)->block_size)
++	      >= 0x00000000ffffffff)
++		blocks = 0xffffffff;
++
++	return transport_generic_emulate_readcapacity(TASK_CMD(task), blocks);
++}
++
++static int fd_emulate_read_cap16(se_task_t *task)
++{
++	fd_dev_t *fd_dev = (fd_dev_t *) task->se_dev->dev_ptr;
++	unsigned long long blocks_long = ((fd_dev->fd_dev_size /
++				  DEV_ATTRIB(task->se_dev)->block_size) - 1);
++
++	return transport_generic_emulate_readcapacity_16(TASK_CMD(task),
++		blocks_long);
++}
++
++/*	fd_emulate_scsi_cdb():
++ *
++ *
++ */
++static int fd_emulate_scsi_cdb(se_task_t *task)
++{
++	int ret;
++	se_cmd_t *cmd = TASK_CMD(task);
++	fd_request_t *fd_req = (fd_request_t *) task->transport_req;
++
++	switch (fd_req->fd_scsi_cdb[0]) {
++	case INQUIRY:
++		if (fd_emulate_inquiry(task) < 0)
++			return PYX_TRANSPORT_INVALID_CDB_FIELD;
 +		break;
-+
-+	if (!(se_task)) {
-+		printk(KERN_ERR "Unable to locate se_task_t for se_cmd_t\n");
-+		return PYX_TRANSPORT_LU_COMM_FAILURE;
++	case READ_CAPACITY:
++		ret = fd_emulate_read_cap(task);
++		if (ret < 0)
++			return ret;
++		break;
++	case MODE_SENSE:
++		ret = transport_generic_emulate_modesense(TASK_CMD(task),
++				fd_req->fd_scsi_cdb, fd_req->fd_buf, 0,
++				TYPE_DISK);
++		if (ret < 0)
++			return ret;
++		break;
++	case MODE_SENSE_10:
++		ret = transport_generic_emulate_modesense(TASK_CMD(task),
++				fd_req->fd_scsi_cdb, fd_req->fd_buf, 1,
++				TYPE_DISK);
++		if (ret < 0)
++			return ret;
++		break;
++	case SERVICE_ACTION_IN:
++		if ((T_TASK(cmd)->t_task_cdb[1] & 0x1f) !=
++		     SAI_READ_CAPACITY_16) {
++			printk(KERN_ERR "Unsupported SA: 0x%02x\n",
++				T_TASK(cmd)->t_task_cdb[1] & 0x1f);
++			return PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
++		}
++		ret = fd_emulate_read_cap16(task);
++		if (ret < 0)
++			return ret;
++		break;
++	case REQUEST_SENSE:
++		ret = transport_generic_emulate_request_sense(cmd,
++				T_TASK(cmd)->t_task_cdb);
++		if (ret < 0)
++			return ret;
++		break;
++	case ALLOW_MEDIUM_REMOVAL:
++	case ERASE:
++	case REZERO_UNIT:
++	case SEEK_10:
++	case SPACE:
++	case START_STOP:
++	case SYNCHRONIZE_CACHE:
++	case TEST_UNIT_READY:
++	case VERIFY:
++	case WRITE_FILEMARKS:
++	case RESERVE:
++	case RESERVE_10:
++	case RELEASE:
++	case RELEASE_10:
++		break;
++	default:
++		printk(KERN_ERR "Unsupported SCSI Opcode: 0x%02x for FILEIO\n",
++				fd_req->fd_scsi_cdb[0]);
++		return PYX_TRANSPORT_UNKNOWN_SAM_OPCODE;
 +	}
 +
-+	/*
-+	 * If no se_session_t pointer is present, this se_cmd_t is
-+	 * coming via a target_core_mod PASSTHROUGH op, and not through
-+	 * a $FABRIC_MOD.  In that case, report LUN=0 only.
-+	 */
-+	if (!(se_sess)) {
-+		lun = 0;
-+		buf[offset++] = ((lun >> 56) & 0xff);
-+		buf[offset++] = ((lun >> 48) & 0xff);
-+		buf[offset++] = ((lun >> 40) & 0xff);
-+		buf[offset++] = ((lun >> 32) & 0xff);
-+		buf[offset++] = ((lun >> 24) & 0xff);
-+		buf[offset++] = ((lun >> 16) & 0xff);
-+		buf[offset++] = ((lun >> 8) & 0xff);
-+		buf[offset++] = (lun & 0xff);
-+		lun_count = 1;
-+		goto done;
-+	}
-+
-+	spin_lock_bh(&SE_NODE_ACL(se_sess)->device_list_lock);
-+	for (i = 0; i < TRANSPORT_MAX_LUNS_PER_TPG; i++) {
-+		deve = &SE_NODE_ACL(se_sess)->device_list[i];
-+		if (!(deve->lun_flags & TRANSPORT_LUNFLAGS_INITIATOR_ACCESS))
-+			continue;
-+		se_lun = deve->se_lun;
-+		/*
-+		 * We determine the correct LUN LIST LENGTH even once we
-+		 * have reached the initial allocation length.
-+		 * See SPC2-R20 7.19.
-+		 */
-+		lun_count++;
-+		if ((cdb_offset + 8) >= se_cmd->data_length)
-+			continue;
-+
-+		lun = cpu_to_be64(CMD_TFO(se_cmd)->pack_lun(deve->mapped_lun));
-+		buf[offset++] = ((lun >> 56) & 0xff);
-+		buf[offset++] = ((lun >> 48) & 0xff);
-+		buf[offset++] = ((lun >> 40) & 0xff);
-+		buf[offset++] = ((lun >> 32) & 0xff);
-+		buf[offset++] = ((lun >> 24) & 0xff);
-+		buf[offset++] = ((lun >> 16) & 0xff);
-+		buf[offset++] = ((lun >> 8) & 0xff);
-+		buf[offset++] = (lun & 0xff);
-+		cdb_offset += 8;
-+	}
-+	spin_unlock_bh(&SE_NODE_ACL(se_sess)->device_list_lock);
-+
-+	/*
-+	 * See SPC3 r07, page 159.
-+	 */
-+done:
-+	lun_count *= 8;
-+	buf[0] = ((lun_count >> 24) & 0xff);
-+	buf[1] = ((lun_count >> 16) & 0xff);
-+	buf[2] = ((lun_count >> 8) & 0xff);
-+	buf[3] = (lun_count & 0xff);
++	task->task_scsi_status = GOOD;
++	transport_complete_task(task, 1);
 +
 +	return PYX_TRANSPORT_SENT_TO_TRANSPORT;
 +}
 +
-+/*	se_release_device_for_hba():
-+ *
-+ *
-+ */
-+void se_release_device_for_hba(se_device_t *dev)
++static inline int fd_iovec_alloc(fd_request_t *req)
 +{
-+	se_hba_t *hba = dev->se_hba;
-+
-+	if ((dev->dev_status & TRANSPORT_DEVICE_ACTIVATED) ||
-+	    (dev->dev_status & TRANSPORT_DEVICE_DEACTIVATED) ||
-+	    (dev->dev_status & TRANSPORT_DEVICE_SHUTDOWN) ||
-+	    (dev->dev_status & TRANSPORT_DEVICE_OFFLINE_ACTIVATED) ||
-+	    (dev->dev_status & TRANSPORT_DEVICE_OFFLINE_DEACTIVATED))
-+		se_dev_stop(dev);
-+
-+	transport_generic_free_device(dev);
-+
-+	spin_lock(&hba->device_lock);
-+	list_del(&dev->dev_list);
-+	hba->dev_count--;
-+	spin_unlock(&hba->device_lock);
-+
-+	core_scsi3_free_all_registrations(dev);
-+	se_release_vpd_for_dev(dev);
-+
-+	kfree(dev->dev_status_queue_obj);
-+	kfree(dev->dev_queue_obj);
-+	kfree(dev);
-+
-+	return;
-+}
-+
-+void se_release_vpd_for_dev(se_device_t *dev)
-+{
-+	t10_vpd_t *vpd, *vpd_tmp;
-+
-+	spin_lock(&DEV_T10_WWN(dev)->t10_vpd_lock);
-+	list_for_each_entry_safe(vpd, vpd_tmp,
-+			&DEV_T10_WWN(dev)->t10_vpd_list, vpd_list) {
-+		list_del(&vpd->vpd_list);
-+		kfree(vpd);
-+	}
-+	spin_unlock(&DEV_T10_WWN(dev)->t10_vpd_lock);
-+
-+	return;
-+}
-+
-+int transport_get_lun_for_cmd(
-+	se_cmd_t *se_cmd,
-+	unsigned char *cdb,
-+	u32 unpacked_lun)
-+{
-+	return __transport_get_lun_for_cmd(se_cmd, unpacked_lun);
-+}
-+EXPORT_SYMBOL(transport_get_lun_for_cmd);
-+
-+/*
-+ * Called with se_hba_t->device_lock held.
-+ */
-+void se_clear_dev_ports(se_device_t *dev)
-+{
-+	se_hba_t *hba = dev->se_hba;
-+	se_lun_t *lun;
-+	se_portal_group_t *tpg;
-+	se_port_t *sep, *sep_tmp;
-+
-+	spin_lock(&dev->se_port_lock);
-+	list_for_each_entry_safe(sep, sep_tmp, &dev->dev_sep_list, sep_list) {
-+		spin_unlock(&dev->se_port_lock);
-+		spin_unlock(&hba->device_lock);
-+
-+		lun = sep->sep_lun;
-+		tpg = sep->sep_tpg;
-+		spin_lock(&lun->lun_sep_lock);
-+		if (lun->lun_type_ptr == NULL) {
-+			spin_unlock(&lun->lun_sep_lock);
-+			continue;
-+		}
-+		spin_unlock(&lun->lun_sep_lock);
-+
-+		LUN_OBJ_API(lun)->del_obj_from_lun(tpg, lun);
-+
-+		spin_lock(&hba->device_lock);
-+		spin_lock(&dev->se_port_lock);
-+	}
-+	spin_unlock(&dev->se_port_lock);
-+
-+	return;
-+}
-+
-+/*	se_free_virtual_device():
-+ *
-+ *	Used for IBLOCK, RAMDISK, and FILEIO Transport Drivers.
-+ */
-+int se_free_virtual_device(se_device_t *dev, se_hba_t *hba)
-+{
-+	spin_lock(&hba->device_lock);
-+	se_clear_dev_ports(dev);
-+	spin_unlock(&hba->device_lock);
-+
-+	core_alua_free_lu_gp_mem(dev);
-+	se_release_device_for_hba(dev);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(se_free_virtual_device);
-+
-+void se_dev_start(se_device_t *dev)
-+{
-+	se_hba_t *hba = dev->se_hba;
-+
-+	spin_lock(&hba->device_lock);
-+	DEV_OBJ_API(dev)->inc_count(&dev->dev_obj);
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_obj) == 1) {
-+		if (dev->dev_status & TRANSPORT_DEVICE_DEACTIVATED) {
-+			dev->dev_status &= ~TRANSPORT_DEVICE_DEACTIVATED;
-+			dev->dev_status |= TRANSPORT_DEVICE_ACTIVATED;
-+		} else if (dev->dev_status &
-+			   TRANSPORT_DEVICE_OFFLINE_DEACTIVATED) {
-+			dev->dev_status &=
-+				~TRANSPORT_DEVICE_OFFLINE_DEACTIVATED;
-+			dev->dev_status |= TRANSPORT_DEVICE_OFFLINE_ACTIVATED;
-+		}
-+	}
-+	spin_unlock(&hba->device_lock);
-+}
-+
-+void se_dev_stop(se_device_t *dev)
-+{
-+	se_hba_t *hba = dev->se_hba;
-+
-+	spin_lock(&hba->device_lock);
-+	DEV_OBJ_API(dev)->dec_count(&dev->dev_obj);
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_obj) == 0) {
-+		if (dev->dev_status & TRANSPORT_DEVICE_ACTIVATED) {
-+			dev->dev_status &= ~TRANSPORT_DEVICE_ACTIVATED;
-+			dev->dev_status |= TRANSPORT_DEVICE_DEACTIVATED;
-+		} else if (dev->dev_status &
-+			   TRANSPORT_DEVICE_OFFLINE_ACTIVATED) {
-+			dev->dev_status &= ~TRANSPORT_DEVICE_OFFLINE_ACTIVATED;
-+			dev->dev_status |= TRANSPORT_DEVICE_OFFLINE_DEACTIVATED;
-+		}
-+	}
-+	spin_unlock(&hba->device_lock);
-+
-+	while (atomic_read(&hba->dev_mib_access_count))
-+		msleep(10);
-+}
-+
-+void se_dev_set_default_attribs(se_device_t *dev)
-+{
-+	DEV_ATTRIB(dev)->emulate_ua_intlck_ctrl = DA_EMULATE_UA_INTLLCK_CTRL;
-+	DEV_ATTRIB(dev)->emulate_tas = DA_EMULATE_TAS;
-+	DEV_ATTRIB(dev)->emulate_reservations = DA_EMULATE_RESERVATIONS;
-+	DEV_ATTRIB(dev)->emulate_alua = DA_EMULATE_ALUA;
-+	/*
-+	 * block_size is based on subsystem plugin dependent requirements.
-+	 */
-+	DEV_ATTRIB(dev)->hw_block_size = TRANSPORT(dev)->get_blocksize(dev);
-+	DEV_ATTRIB(dev)->block_size = TRANSPORT(dev)->get_blocksize(dev);
-+	/*
-+	 * max_sectors is based on subsystem plugin dependent requirements.
-+	 */
-+	DEV_ATTRIB(dev)->hw_max_sectors = TRANSPORT(dev)->get_max_sectors(dev);
-+	DEV_ATTRIB(dev)->max_sectors = TRANSPORT(dev)->get_max_sectors(dev);
-+	/*
-+	 * queue_depth is based on subsystem plugin dependent requirements.
-+	 */
-+	DEV_ATTRIB(dev)->hw_queue_depth = TRANSPORT(dev)->get_queue_depth(dev);
-+	DEV_ATTRIB(dev)->queue_depth = TRANSPORT(dev)->get_queue_depth(dev);
-+	/*
-+	 * task_timeout is based on device type.
-+	 */
-+#if 1
-+	/*
-+	 * Disabled by default due to known BUG in some cases when task_timeout
-+	 * fires..  task_timeout, status_thread and status_thread_tur may end
-+	 * up being removed in v3.0.
-+	 */
-+	DEV_ATTRIB(dev)->task_timeout = 0;
-+#else
-+	DEV_ATTRIB(dev)->task_timeout = transport_get_default_task_timeout(dev);
-+#endif
-+}
-+
-+int se_dev_set_task_timeout(se_device_t *dev, u32 task_timeout)
-+{
-+	if (task_timeout > DA_TASK_TIMEOUT_MAX) {
-+		printk(KERN_ERR "dev[%p]: Passed task_timeout: %u larger then"
-+			" DA_TASK_TIMEOUT_MAX\n", dev, task_timeout);
++	req->fd_iovs = kzalloc(sizeof(struct iovec) * req->fd_sg_count,
++				GFP_KERNEL);
++	if (!(req->fd_iovs)) {
++		printk(KERN_ERR "Unable to allocate req->fd_iovs\n");
 +		return -1;
-+	} else {
-+		DEV_ATTRIB(dev)->task_timeout = task_timeout;
-+		printk(KERN_INFO "dev[%p]: Set SE Device task_timeout: %u\n",
-+			dev, task_timeout);
 +	}
 +
 +	return 0;
 +}
 +
-+int se_dev_set_emulate_ua_intlck_ctrl(se_device_t *dev, int flag)
++static inline int fd_seek(
++	struct file *fd,
++	unsigned long long lba,
++	u32 block_size)
 +{
-+	if ((flag != 0) && (flag != 1) && (flag != 2)) {
-+		printk(KERN_ERR "Illegal value %d\n", flag);
-+		return -1;
-+	}
++	mm_segment_t old_fs;
++	unsigned long long offset;
 +
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-+		printk(KERN_ERR "dev[%p]: Unable to change SE Device"
-+			" UA_INTRLCK_CTRL while dev_export_obj: %d count"
-+			" exists\n", dev,
-+			DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj));
-+		return -1;
-+	}
-+	DEV_ATTRIB(dev)->emulate_ua_intlck_ctrl = flag;
-+	printk(KERN_INFO "dev[%p]: SE Device UA_INTRLCK_CTRL flag: %d\n",
-+		dev, DEV_ATTRIB(dev)->emulate_ua_intlck_ctrl);
-+
-+	return 0;
-+}
-+
-+int se_dev_set_emulate_tas(se_device_t *dev, int flag)
-+{
-+	if ((flag != 0) && (flag != 1)) {
-+		printk(KERN_ERR "Illegal value %d\n", flag);
-+		return -1;
-+	}
-+
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-+		printk(KERN_ERR "dev[%p]: Unable to change SE Device TAS while"
-+			" dev_export_obj: %d count exists\n", dev,
-+			DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj));
-+		return -1;
-+	}
-+	DEV_ATTRIB(dev)->emulate_tas = flag;
-+	printk(KERN_INFO "dev[%p]: SE Device TASK_ABORTED status bit: %s\n",
-+		dev, (DEV_ATTRIB(dev)->emulate_tas) ? "Enabled" : "Disabled");
-+
-+	return 0;
-+}
-+
-+/*
-+ * Note, this can only be called on unexported SE Device Object.
-+ */
-+int se_dev_set_queue_depth(se_device_t *dev, u32 queue_depth)
-+{
-+	u32 orig_queue_depth = dev->queue_depth;
-+
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-+		printk(KERN_ERR "dev[%p]: Unable to change SE Device TCQ while"
-+			" dev_export_obj: %d count exists\n", dev,
-+			DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj));
-+		return -1;
-+	}
-+	if (!(queue_depth)) {
-+		printk(KERN_ERR "dev[%p]: Illegal ZERO value for queue"
-+			"_depth\n", dev);
-+		return -1;
-+	}
-+
-+	if (TRANSPORT(dev)->transport_type == TRANSPORT_PLUGIN_PHBA_PDEV) {
-+		if (queue_depth > TRANSPORT(dev)->get_queue_depth(dev)) {
-+			printk(KERN_ERR "dev[%p]: Passed queue_depth: %u"
-+				" exceeds LIO-Core/SE_Device TCQ: %u\n",
-+				dev, queue_depth,
-+				TRANSPORT(dev)->get_queue_depth(dev));
-+			return -1;
-+		}
-+	} else {
-+		if (queue_depth > TRANSPORT(dev)->get_queue_depth(dev)) {
-+			if (!(TRANSPORT(dev)->get_max_queue_depth)) {
-+				printk(KERN_ERR "dev[%p]: Unable to locate "
-+					"get_max_queue_depth() function"
-+					" pointer\n", dev);
-+				return -1;
-+			}
-+			if (queue_depth > TRANSPORT(dev)->get_max_queue_depth(
-+					dev)) {
-+				printk(KERN_ERR "dev[%p]: Passed queue_depth:"
-+					" %u exceeds LIO-Core/SE_Device MAX"
-+					" TCQ: %u\n", dev, queue_depth,
-+					TRANSPORT(dev)->get_max_queue_depth(
-+						dev));
-+				return -1;
-+			}
-+		}
-+	}
-+
-+	DEV_ATTRIB(dev)->queue_depth = dev->queue_depth = queue_depth;
-+	if (queue_depth > orig_queue_depth)
-+		atomic_add(queue_depth - orig_queue_depth, &dev->depth_left);
-+	else if (queue_depth < orig_queue_depth)
-+		atomic_sub(orig_queue_depth - queue_depth, &dev->depth_left);
-+
-+	printk(KERN_INFO "dev[%p]: SE Device TCQ Depth changed to: %u\n",
-+			dev, queue_depth);
-+	return 0;
-+}
-+
-+/* #warning FIXME: Forcing max_sectors greater than
-+	get_max_sectors() disabled */
-+int se_dev_set_max_sectors(se_device_t *dev, u32 max_sectors)
-+{
-+	int force = 0; /* Force setting for VDEVS */
-+
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-+		printk(KERN_ERR "dev[%p]: Unable to change SE Device"
-+			" max_sectors while dev_export_obj: %d count exists\n",
-+			dev, DEV_OBJ_API(dev)->check_count(
-+				&dev->dev_export_obj));
-+		return -1;
-+	}
-+	if (!(max_sectors)) {
-+		printk(KERN_ERR "dev[%p]: Illegal ZERO value for"
-+			" max_sectors\n", dev);
-+		return -1;
-+	}
-+	if (max_sectors < DA_STATUS_MAX_SECTORS_MIN) {
-+		printk(KERN_ERR "dev[%p]: Passed max_sectors: %u less than"
-+			" DA_STATUS_MAX_SECTORS_MIN: %u\n", dev, max_sectors,
-+				DA_STATUS_MAX_SECTORS_MIN);
-+		return -1;
-+	}
-+	if (TRANSPORT(dev)->transport_type == TRANSPORT_PLUGIN_PHBA_PDEV) {
-+		if (max_sectors > TRANSPORT(dev)->get_max_sectors(dev)) {
-+			printk(KERN_ERR "dev[%p]: Passed max_sectors: %u"
-+				" greater than LIO-Core/SE_Device max_sectors:"
-+				" %u\n", dev, max_sectors,
-+				TRANSPORT(dev)->get_max_sectors(dev));
-+			 return -1;
-+		}
-+	} else {
-+		if (!(force) && (max_sectors >
-+				 TRANSPORT(dev)->get_max_sectors(dev))) {
-+			printk(KERN_ERR "dev[%p]: Passed max_sectors: %u"
-+				" greater than LIO-Core/SE_Device max_sectors"
-+				": %u, use force=1 to override.\n", dev,
-+				max_sectors,
-+				TRANSPORT(dev)->get_max_sectors(dev));
-+			return -1;
-+		}
-+		if (max_sectors > DA_STATUS_MAX_SECTORS_MAX) {
-+			printk(KERN_ERR "dev[%p]: Passed max_sectors: %u"
-+				" greater than DA_STATUS_MAX_SECTORS_MAX:"
-+				" %u\n", dev, max_sectors,
-+				DA_STATUS_MAX_SECTORS_MAX);
-+			return -1;
-+		}
-+	}
-+
-+	DEV_ATTRIB(dev)->max_sectors = max_sectors;
-+	printk("dev[%p]: SE Device max_sectors changed to %u\n",
-+			dev, max_sectors);
-+	return 0;
-+}
-+
-+int se_dev_set_block_size(se_device_t *dev, u32 block_size)
-+{
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj)) {
-+		printk(KERN_ERR "dev[%p]: Unable to change SE Device block_size"
-+			" while dev_export_obj: %d count exists\n", dev,
-+			DEV_OBJ_API(dev)->check_count(&dev->dev_export_obj));
-+		return -1;
-+	}
-+
-+	if ((block_size != 512) &&
-+	    (block_size != 1024) &&
-+	    (block_size != 2048) &&
-+	    (block_size != 4096)) {
-+		printk(KERN_ERR "dev[%p]: Illegal value for block_device: %u"
-+			" for SE device, must be 512, 1024, 2048 or 4096\n",
-+			dev, block_size);
-+		return -1;
-+	}
-+
-+	if (TRANSPORT(dev)->transport_type == TRANSPORT_PLUGIN_PHBA_PDEV) {
-+		printk(KERN_ERR "dev[%p]: Not allowed to change block_size for"
-+			" Physical Device, use for Linux/SCSI to change"
-+			" block_size for underlying hardware\n", dev);
-+		return -1;
-+	}
-+
-+	DEV_ATTRIB(dev)->block_size = block_size;
-+	printk(KERN_INFO "dev[%p]: SE Device block_size changed to %u\n",
-+			dev, block_size);
-+	return 0;
-+}
-+
-+se_lun_t *core_dev_add_lun(
-+	se_portal_group_t *tpg,
-+	se_hba_t *hba,
-+	se_device_t *dev,
-+	u32 lun)
-+{
-+	se_lun_t *lun_p;
-+	u32 lun_access = 0;
-+
-+	if (DEV_OBJ_API(dev)->check_count(&dev->dev_access_obj) != 0) {
-+		printk(KERN_ERR "Unable to export se_device_t while dev_access_obj: %d\n",
-+			DEV_OBJ_API(dev)->check_count(&dev->dev_access_obj));
-+		return NULL;
-+	}
-+
-+	lun_p = core_tpg_pre_addlun(tpg, lun);
-+	if ((IS_ERR(lun_p)) || !(lun_p))
-+		return NULL;
-+
-+	if (DEV_OBJ_API(dev)->get_device_access((void *)dev) == 0)
-+		lun_access = TRANSPORT_LUNFLAGS_READ_ONLY;
++	old_fs = get_fs();
++	set_fs(get_ds());
++	if (fd->f_op->llseek)
++		offset = fd->f_op->llseek(fd, lba * block_size, 0);
 +	else
-+		lun_access = TRANSPORT_LUNFLAGS_READ_WRITE;
-+
-+	if (core_tpg_post_addlun(tpg, lun_p, TRANSPORT_LUN_TYPE_DEVICE,
-+			lun_access, dev, dev->dev_obj_api) < 0) {
-+		return NULL;
++		offset = default_llseek(fd, lba * block_size, 0);
++	set_fs(old_fs);
++#if 0
++	printk(KERN_INFO "lba: %llu : block_size: %d\n", lba, block_size);
++	printk(KERN_INFO "offset from llseek: %llu\n", offset);
++	printk(KERN_INFO "(lba * block_size): %llu\n", (lba * block_size));
++#endif
++	if (offset != (lba * block_size)) {
++		printk(KERN_ERR "offset: %llu not equal to LBA: %llu\n",
++			offset, (lba * block_size));
++		return -1;
 +	}
 +
-+	printk(KERN_INFO "%s_TPG[%u]_LUN[%u] - Activated %s Logical Unit from"
-+		" CORE HBA: %u\n", TPG_TFO(tpg)->get_fabric_name(),
-+		TPG_TFO(tpg)->tpg_get_tag(tpg), lun_p->unpacked_lun,
-+		TPG_TFO(tpg)->get_fabric_name(), hba->hba_id);
-+	/*
-+	 * Update LUN maps for dynamically added initiators when
-+	 * generate_node_acl is enabled.
-+	 */
-+	if (TPG_TFO(tpg)->tpg_check_demo_mode(tpg)) {
-+		se_node_acl_t *acl;
-+		spin_lock_bh(&tpg->acl_node_lock);
-+		list_for_each_entry(acl, &tpg->acl_node_list, acl_list) {
-+			if (acl->nodeacl_flags & NAF_DYNAMIC_NODE_ACL) {
-+				spin_unlock_bh(&tpg->acl_node_lock);
-+				core_tpg_add_node_to_devs(acl, tpg);
-+				spin_lock_bh(&tpg->acl_node_lock);
-+			}
-+		}
-+		spin_unlock_bh(&tpg->acl_node_lock);
-+	}
-+
-+	return lun_p;
++	return 0;
 +}
-+EXPORT_SYMBOL(core_dev_add_lun);
 +
-+/*      core_dev_del_lun():
-+ *
-+ *
-+ */
-+int core_dev_del_lun(
-+	se_portal_group_t *tpg,
-+	u32 unpacked_lun)
++static int fd_do_readv(fd_request_t *req, se_task_t *task)
 +{
-+	se_lun_t *lun;
 +	int ret = 0;
++	u32 i;
++	mm_segment_t old_fs;
++	struct file *fd = req->fd_dev->fd_file;
++	struct scatterlist *sg = task->task_sg;
++	struct iovec iov[req->fd_sg_count];
 +
-+	lun = core_tpg_pre_dellun(tpg, unpacked_lun, TRANSPORT_LUN_TYPE_DEVICE,
-+			&ret);
-+	if (!(lun))
++	memset(iov, 0, sizeof(struct iovec) + req->fd_sg_count);
++
++	if (fd_seek(fd, req->fd_lba, DEV_ATTRIB(task->se_dev)->block_size) < 0)
++		return -1;
++
++	for (i = 0; i < req->fd_sg_count; i++) {
++		iov[i].iov_len = sg[i].length;
++		iov[i].iov_base = sg_virt(&sg[i]);
++	}
++
++	old_fs = get_fs();
++	set_fs(get_ds());
++	ret = vfs_readv(fd, &iov[0], req->fd_sg_count, &fd->f_pos);
++	set_fs(old_fs);
++
++	if (ret < 0) {
++		printk(KERN_ERR "vfs_readv() returned %d\n", ret);
++		return -1;
++	}
++
++	return 1;
++}
++
++#if 0
++
++static void fd_aio_intr(struct kiocb *kcb)
++{
++	se_task_t *task = (se_task_t *)kcb->private;
++
++	printk(KERN_INFO "Got AIO_READ Response: task: %p\n", task);
++
++	task->task_scsi_status = GOOD;
++	transport_complete_task(task, 1);
++}
++
++static ssize_t fd_aio_retry(struct kiocb *kcb)
++{
++	printk(KERN_WARNING "fd_aio_retry() called for %p\n", kcb);
++	return 0;
++}
++
++static int fd_do_aio_read(fd_request_t *req, se_task_t *task)
++{
++	int ret = 0;
++	u32 i, length = 0;
++	u32 block_size = DEV_ATTRIB(task->se_dev)->block_size;
++	unsigned long long offset, lba = req->fd_lba;;
++	mm_segment_t old_fs;
++	struct file *fd = req->fd_dev->fd_file;
++	struct scatterlist *sg = task->task_sg;
++	struct iovec *iov;
++	struct kiocb	*iocb;
++
++	if (fd_iovec_alloc(req) < 0)
++		return -1;
++
++	old_fs = get_fs();
++	set_fs(get_ds());
++	if (fd->f_op->llseek)
++		offset = fd->f_op->llseek(fd, lba * block_size, 0);
++	else
++		offset = default_llseek(fd, lba * block_size, 0);
++	set_fs(old_fs);
++
++	printk(KERN_INFO "lba: %llu : block_size: %d\n", lba, block_size);
++	printk(KERN_INFO "offset from llseek: %llu\n", offset);
++	printk(KERN_INFO "(lba * block_size): %llu\n", (lba * block_size));
++
++	if (offset != (lba * block_size)) {
++		printk(KERN_ERR "offset: %llu not equal to LBA: %llu\n",
++				offset, (lba * block_size));
++		return -1;
++	}
++	printk(KERN_INFO "req->fd_lba: %llu\n", req->fd_lba);
++
++	for (i = 0; i < req->fd_sg_count; i++) {
++		iov = &req->fd_iovs[i];
++		printk(KERN_INFO "sg->length: %d sg->page: %p\n",
++				sg[i].length, sg[i].page);
++		length += sg[i].length;
++		iov->iov_len = sg[i].length;
++		iov->iov_base = sg_virt(&sg[i]);
++		printk(KERN_INFO "iov_iov_len: %d iov_iov_base: %p\n",
++			iov->iov_len, iov->iov_base);
++	}
++
++	init_sync_kiocb(&req->fd_iocb, fd);
++	req->fd_iocb.ki_opcode = IOCB_CMD_PREAD;
++	req->fd_iocb.ki_nbytes = length;
++	req->fd_iocb.private = (void *) task;
++	req->fd_iocb.ki_dtor = &fd_aio_intr;
++	req->fd_iocb.ki_retry = &fd_aio_retry;
++
++	printk(KERN_INFO "Launching AIO_READ: %p iovecs: %p total length:"
++		" %u\n", &req->fd_iocb, &req->fd_iovs[0], length);
++	printk(KERN_INFO "fd->f_pos: %d\n", fd->f_pos);
++	printk(KERN_INFO "req->fd_iocb.ki_pos: %d\n", req->fd_iocb.ki_pos);
++
++	old_fs = get_fs();
++	set_fs(get_ds());
++	ret = __generic_file_aio_read(&req->fd_iocb, &req->fd_iovs[0],
++			req->fd_sg_count, &fd->f_pos);
++	set_fs(old_fs);
++
++	printk(KERN_INFO"__generic_file_aio_read() returned %d\n", ret);
++
++	if (ret <= 0)
++		return PYX_TRANSPORT_LU_COMM_FAILURE;
++
++	if (ret != length)
++		printk(KERN_ERR "ret [%d] != LENGTH [%d]\n", ret, length);
++
++	return 1;
++}
++
++void fd_sendfile_free_DMA(se_cmd_t *cmd)
++{
++	printk(KERN_INFO "Release reference to pages now..\n");
++}
++
++static int fd_sendactor(
++	read_descriptor_t *desc,
++	struct page *page,
++	unsigned long offset,
++	unsigned long size)
++{
++	unsigned long count = desc->count;
++	se_task_t *task = desc->arg.data;
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++	struct scatterlist *sg = task->task_sg;
++
++	printk(KERN_INFO "page: %p offset: %lu size: %lu\n", page,
++			offset, size);
++
++	__free_page(sg[req->fd_cur_offset].page);
++
++	printk(KERN_INFO "page_address(page): %p\n", page_address(page));
++	sg[req->fd_cur_offset].page = page;
++	sg[req->fd_cur_offset].offset = offset;
++	sg[req->fd_cur_offset].length = size;
++
++	printk(KERN_INFO "sg[%d:%p].page %p length: %d\n", req->fd_cur_offset,
++		&sg[req->fd_cur_offset], sg[req->fd_cur_offset].page,
++		sg[req->fd_cur_offset].length);
++
++	req->fd_cur_size += size;
++	printk(KERN_INFO "fd_cur_size: %u\n", req->fd_cur_size);
++
++	req->fd_cur_offset++;
++
++	desc->count--;
++	desc->written += size;
++	return size;
++}
++
++static int fd_do_sendfile(fd_request_t *req, se_task_t *task)
++{
++	int ret = 0;
++	struct file *fd = req->fd_dev->fd_file;
++
++	if (fd_seek(fd, req->fd_lba, DEV_ATTRIB(task->se_dev)->block_size) < 0)
++		return -1;
++
++	TASK_CMD(task)->transport_free_DMA = &fd_sendfile_free_DMA;
++
++	ret = fd->f_op->sendfile(fd, &fd->f_pos, req->fd_sg_count,
++			fd_sendactor, (void *)task);
++
++	if (ret < 0) {
++		printk(KERN_ERR "fd->f_op->sendfile() returned %d\n", ret);
++		return -1;
++	}
++
++	return 1;
++}
++#endif
++
++static int fd_do_writev(fd_request_t *req, se_task_t *task)
++{
++	int ret = 0;
++	u32 i;
++	struct file *fd = req->fd_dev->fd_file;
++	struct scatterlist *sg = task->task_sg;
++	mm_segment_t old_fs;
++	struct iovec iov[req->fd_sg_count];
++
++	memset(iov, 0, sizeof(struct iovec) + req->fd_sg_count);
++
++	if (fd_seek(fd, req->fd_lba, DEV_ATTRIB(task->se_dev)->block_size) < 0)
++		return -1;
++
++	for (i = 0; i < req->fd_sg_count; i++) {
++		iov[i].iov_len = sg[i].length;
++		iov[i].iov_base = sg_virt(&sg[i]);
++	}
++
++	old_fs = get_fs();
++	set_fs(get_ds());
++	ret = vfs_writev(fd, &iov[0], req->fd_sg_count, &fd->f_pos);
++	set_fs(old_fs);
++
++	if (ret < 0) {
++		printk(KERN_ERR "vfs_writev() returned %d\n", ret);
++		return -1;
++	}
++
++	return 1;
++}
++
++#if 0
++
++static int fd_do_aio_write(fd_request_t *req, se_task_t *task)
++{
++	int ret = 0;
++	u32 i, length = 0;
++	u32 block_size = DEV_ATTRIB(task->se_dev)->block_size;
++	unsigned long long offset, lba = req->fd_lba;
++	mm_segment_t old_fs;
++	struct file *fd = req->fd_dev->fd_file;
++	struct scatterlist *sg = task->task_sg;
++	struct iovec *iov;
++	struct kiocb    *iocb;
++
++	if (fd_iovec_alloc(req) < 0)
++		return -1;
++
++	old_fs = get_fs();
++	set_fs(get_ds());
++	if (fd->f_op->llseek)
++		offset = fd->f_op->llseek(fd, lba * block_size, 0);
++	else
++		offset = default_llseek(fd, lba * block_size, 0);
++	set_fs(old_fs);
++
++	printk(KERN_INFO "lba: %llu : block_size: %d\n", lba, block_size);
++	printk(KERN_INFO "offset from llseek: %llu\n", offset);
++	printk(KERN_INFO "(lba * block_size): %llu\n", (lba * block_size));
++
++	if (offset != (lba * block_size)) {
++		printk(KERN_ERR "offset: %llu not equal to LBA: %llu\n",
++			offset, (lba * block_size));
++		return -1;
++	}
++
++	for (i = 0; i < req->fd_sg_count; i++) {
++		iov = &req->fd_iovs[i];
++		printk(KERN_INFO "sg->length: %d sg->page: %p\n",
++			sg[i].length, sg[i].page);
++
++		length += sg[i].length;
++		iov->iov_len = sg[i].length;
++		iov->iov_base = sg_virt(&sg[i]);
++		printk(KERN_INFO "iov_iov_len: %d iov_iov_base: %p\n",
++			iov->iov_len, iov->iov_base);
++	}
++
++	init_sync_kiocb(&req->fd_iocb, fd);
++	req->fd_iocb.ki_opcode = IOCB_CMD_PWRITE;
++	req->fd_iocb.ki_nbytes = length;
++	req->fd_iocb.private = (void *) task;
++	req->fd_iocb.ki_dtor = &fd_aio_intr;
++	req->fd_iocb.ki_retry = &fd_aio_retry;
++
++	printk(KERN_INFO "Launching AIO_WRITE: %p iovecs: %p total length:"
++		" %u\n", &req->fd_iocb, &req->fd_iovs[0], length);
++	printk(KERN_INFO "fd->f_pos: %d\n", fd->f_pos);
++	printk(KERN_INFO "req->fd_iocb.ki_pos: %d\n", req->fd_iocb.ki_pos);
++
++	old_fs = get_fs();
++	set_fs(get_ds());
++	ret = generic_file_aio_write_nolock(&req->fd_iocb, &req->fd_iovs[0],
++			req->fd_sg_count, &fd->f_pos);
++	set_fs(old_fs);
++
++	printk(KERN_INFO "generic_file_aio_write_nolock() returned %d\n", ret);
++
++	if (ret <= 0)
++		return PYX_TRANSPORT_LU_COMM_FAILURE;
++
++	if (ret != length)
++		printk(KERN_ERR "ret [%d] != WRITE LENGTH [%d]\n", ret, length);
++
++	return 1;
++}
++#endif
++
++int fd_do_task(se_task_t *task)
++{
++	int ret = 0;
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++
++	if (!(TASK_CMD(task)->se_cmd_flags & SCF_SCSI_DATA_SG_IO_CDB))
++		return fd_emulate_scsi_cdb(task);
++
++	req->fd_lba = task->task_lba;
++	req->fd_size = task->task_size;
++
++	if (req->fd_data_direction == FD_DATA_READ) {
++		/* ret = fd_do_aio_read(req, task); */
++		/* ret = fd_do_sendfile(req, task); */
++		ret = fd_do_readv(req, task);
++	} else {
++		/* ret = fd_do_aio_write(req, task); */
++		ret = fd_do_writev(req, task);
++	}
++
++	if (ret < 0)
 +		return ret;
 +
-+	core_tpg_post_dellun(tpg, lun);
-+
-+	printk(KERN_INFO "%s_TPG[%u]_LUN[%u] - Deactivated %s Logical Unit from"
-+		" device object\n", TPG_TFO(tpg)->get_fabric_name(),
-+		TPG_TFO(tpg)->tpg_get_tag(tpg), unpacked_lun,
-+		TPG_TFO(tpg)->get_fabric_name());
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(core_dev_del_lun);
-+
-+se_lun_t *core_get_lun_from_tpg(se_portal_group_t *tpg, u32 unpacked_lun)
-+{
-+	se_lun_t *lun;
-+
-+	spin_lock(&tpg->tpg_lun_lock);
-+	if (unpacked_lun > (TRANSPORT_MAX_LUNS_PER_TPG-1)) {
-+		printk(KERN_ERR "%s LUN: %u exceeds TRANSPORT_MAX_LUNS"
-+			"_PER_TPG-1: %u for Target Portal Group: %hu\n",
-+			TPG_TFO(tpg)->get_fabric_name(), unpacked_lun,
-+			TRANSPORT_MAX_LUNS_PER_TPG-1,
-+			TPG_TFO(tpg)->tpg_get_tag(tpg));
-+		spin_unlock(&tpg->tpg_lun_lock);
-+		return NULL;
++	if (ret) {
++		task->task_scsi_status = GOOD;
++		transport_complete_task(task, 1);
 +	}
-+	lun = &tpg->tpg_lun_list[unpacked_lun];
 +
-+	if (lun->lun_status != TRANSPORT_LUN_STATUS_FREE) {
-+		printk(KERN_ERR "%s Logical Unit Number: %u is not free on"
-+			" Target Portal Group: %hu, ignoring request.\n",
-+			TPG_TFO(tpg)->get_fabric_name(), unpacked_lun,
-+			TPG_TFO(tpg)->tpg_get_tag(tpg));
-+		spin_unlock(&tpg->tpg_lun_lock);
-+		return NULL;
-+	}
-+	spin_unlock(&tpg->tpg_lun_lock);
-+
-+	return lun;
++	return PYX_TRANSPORT_SENT_TO_TRANSPORT;
 +}
-+EXPORT_SYMBOL(core_get_lun_from_tpg);
 +
-+/*      core_dev_get_lun():
++/*	fd_free_task(): (Part of se_subsystem_api_t template)
 + *
 + *
 + */
-+static se_lun_t *core_dev_get_lun(se_portal_group_t *tpg, u32 unpacked_lun)
++void fd_free_task(se_task_t *task)
 +{
-+	se_lun_t *lun;
++	fd_request_t *req;
 +
-+	spin_lock(&tpg->tpg_lun_lock);
-+	if (unpacked_lun > (TRANSPORT_MAX_LUNS_PER_TPG-1)) {
-+		printk(KERN_ERR "%s LUN: %u exceeds TRANSPORT_MAX_LUNS_PER"
-+			"_TPG-1: %u for Target Portal Group: %hu\n",
-+			TPG_TFO(tpg)->get_fabric_name(), unpacked_lun,
-+			TRANSPORT_MAX_LUNS_PER_TPG-1,
-+			TPG_TFO(tpg)->tpg_get_tag(tpg));
-+		spin_unlock(&tpg->tpg_lun_lock);
-+		return NULL;
-+	}
-+	lun = &tpg->tpg_lun_list[unpacked_lun];
++	req = (fd_request_t *) task->transport_req;
++	kfree(req->fd_iovs);
 +
-+	if (lun->lun_status != TRANSPORT_LUN_STATUS_ACTIVE) {
-+		printk(KERN_ERR "%s Logical Unit Number: %u is not active on"
-+			" Target Portal Group: %hu, ignoring request.\n",
-+			TPG_TFO(tpg)->get_fabric_name(), unpacked_lun,
-+			TPG_TFO(tpg)->tpg_get_tag(tpg));
-+		spin_unlock(&tpg->tpg_lun_lock);
-+		return NULL;
-+	}
-+	spin_unlock(&tpg->tpg_lun_lock);
-+
-+	return lun;
++	kfree(req);
 +}
 +
-+se_lun_acl_t *core_dev_init_initiator_node_lun_acl(
-+	se_portal_group_t *tpg,
-+	u32 mapped_lun,
-+	char *initiatorname,
-+	int *ret)
++ssize_t fd_set_configfs_dev_params(
++	se_hba_t *hba,
++	se_subsystem_dev_t *se_dev,
++	const char *page, ssize_t count)
 +{
-+	se_lun_acl_t *lacl;
-+	se_node_acl_t *nacl;
++	fd_dev_t *fd_dev = (fd_dev_t *) se_dev->se_dev_su_ptr;
++	char *buf, *cur, *ptr, *ptr2;
++	int params = 0;
 +
-+	if (strlen(initiatorname) > TRANSPORT_IQN_LEN) {
-+		printk(KERN_ERR "%s InitiatorName exceeds maximum size.\n",
-+			TPG_TFO(tpg)->get_fabric_name());
-+		*ret = -EOVERFLOW;
-+		return NULL;
++	buf = kzalloc(count, GFP_KERNEL);
++	if (!(buf)) {
++		printk(KERN_ERR "Unable to allocate memory for"
++				" temporary buffer\n");
++		return 0;
 +	}
-+	nacl = core_tpg_get_initiator_node_acl(tpg, initiatorname);
-+	if (!(nacl)) {
-+		*ret = -EINVAL;
-+		return NULL;
-+	}
-+	lacl = kzalloc(sizeof(se_lun_acl_t), GFP_KERNEL);
-+	if (!(lacl)) {
-+		printk(KERN_ERR "Unable to allocate memory for se_lun_acl_t.\n");
-+		*ret = -ENOMEM;
-+		return NULL;
++	memcpy(buf, page, count);
++	cur = buf;
++
++	while (cur) {
++		ptr = strstr(cur, "=");
++		if (!(ptr))
++			goto out;
++
++		*ptr = '\0';
++		ptr++;
++
++		ptr2 = strstr(cur, "fd_dev_name");
++		if (ptr2) {
++			transport_check_dev_params_delim(ptr, &cur);
++			ptr = strstrip(ptr);
++			snprintf(fd_dev->fd_dev_name, FD_MAX_DEV_NAME,
++					"%s", ptr);
++			printk(KERN_INFO "FILEIO: Referencing Path: %s\n",
++					fd_dev->fd_dev_name);
++			fd_dev->fbd_flags |= FBDF_HAS_PATH;
++			params++;
++			continue;
++		}
++		ptr2 = strstr(cur, "fd_dev_size");
++		if (ptr2) {
++			transport_check_dev_params_delim(ptr, &cur);
++			if (strict_strtoull(ptr, 0, &fd_dev->fd_dev_size) < 0) {
++				printk(KERN_ERR "strict_strtoull() failed for"
++						" fd_dev_size=\n");
++				continue;
++			}
++			printk(KERN_INFO "FILEIO: Referencing Size: %llu"
++					" bytes\n", fd_dev->fd_dev_size);
++			fd_dev->fbd_flags |= FBDF_HAS_SIZE;
++			params++;
++			continue;
++		} else
++			cur = NULL;
 +	}
 +
-+	INIT_LIST_HEAD(&lacl->lacl_list);
-+	lacl->mapped_lun = mapped_lun;
-+	lacl->se_lun_nacl = nacl;
-+	snprintf(lacl->initiatorname, TRANSPORT_IQN_LEN, "%s", initiatorname);
-+
-+	return lacl;
++out:
++	kfree(buf);
++	return (params) ? count : -EINVAL;
 +}
-+EXPORT_SYMBOL(core_dev_init_initiator_node_lun_acl);
 +
-+int core_dev_add_initiator_node_lun_acl(
-+	se_portal_group_t *tpg,
-+	se_lun_acl_t *lacl,
-+	u32 unpacked_lun,
-+	u32 lun_access)
++ssize_t fd_check_configfs_dev_params(se_hba_t *hba, se_subsystem_dev_t *se_dev)
 +{
-+	se_lun_t *lun;
-+	se_node_acl_t *nacl;
++	fd_dev_t *fd_dev = (fd_dev_t *) se_dev->se_dev_su_ptr;
 +
-+	lun = core_dev_get_lun(tpg, unpacked_lun);
-+	if (!(lun)) {
-+		printk(KERN_ERR "%s Logical Unit Number: %u is not active on"
-+			" Target Portal Group: %hu, ignoring request.\n",
-+			TPG_TFO(tpg)->get_fabric_name(), unpacked_lun,
-+			TPG_TFO(tpg)->tpg_get_tag(tpg));
-+		return -EINVAL;
++	if (!(fd_dev->fbd_flags & FBDF_HAS_PATH)) {
++		printk(KERN_ERR "Missing fd_dev_name=\n");
++		return -1;
 +	}
 +
-+	nacl = core_tpg_get_initiator_node_acl(tpg, lacl->initiatorname);
-+	if (!(nacl))
-+		return -EINVAL;
-+
-+	spin_lock(&lun->lun_acl_lock);
-+	list_add_tail(&lacl->lacl_list, &lun->lun_acl_list);
-+	atomic_inc(&lun->lun_acl_count);
-+	smp_mb__after_atomic_inc();
-+	spin_unlock(&lun->lun_acl_lock);
-+
-+	if ((lun->lun_access & TRANSPORT_LUNFLAGS_READ_ONLY) &&
-+	    (lun_access & TRANSPORT_LUNFLAGS_READ_WRITE))
-+		lun_access = TRANSPORT_LUNFLAGS_READ_ONLY;
-+
-+	lacl->se_lun = lun;
-+
-+	core_update_device_list_for_node(lun, lacl, lacl->mapped_lun,
-+			lun_access, nacl, tpg, 1);
-+
-+	printk(KERN_INFO "%s_TPG[%hu]_LUN[%u->%u] - Added %s ACL for "
-+		" InitiatorNode: %s\n", TPG_TFO(tpg)->get_fabric_name(),
-+		TPG_TFO(tpg)->tpg_get_tag(tpg), unpacked_lun, lacl->mapped_lun,
-+		(lun_access & TRANSPORT_LUNFLAGS_READ_WRITE) ? "RW" : "RO",
-+		lacl->initiatorname);
-+	/*
-+	 * Check to see if there are any existing persistent reservation APTPL
-+	 * pre-registrations that need to be enabled for this LUN ACL..
-+	 */
-+	core_scsi3_check_aptpl_registration(lun->se_dev, tpg, lun, lacl);
 +	return 0;
 +}
-+EXPORT_SYMBOL(core_dev_add_initiator_node_lun_acl);
 +
-+/*      core_dev_del_initiator_node_lun_acl():
++ssize_t fd_show_configfs_dev_params(
++	se_hba_t *hba,
++	se_subsystem_dev_t *se_dev,
++	char *page)
++{
++	fd_dev_t *fd_dev = (fd_dev_t *) se_dev->se_dev_su_ptr;
++	int bl = 0;
++
++	__fd_get_dev_info(fd_dev, page, &bl);
++	return (ssize_t)bl;
++}
++
++void fd_get_plugin_info(void *p, char *b, int *bl)
++{
++	*bl += sprintf(b + *bl, "%s FILEIO Plugin %s\n",
++			PYX_ISCSI_VENDOR, FD_VERSION);
++}
++
++void fd_get_hba_info(se_hba_t *hba, char *b, int *bl)
++{
++	fd_host_t *fd_host = (fd_host_t *)hba->hba_ptr;
++
++	*bl += sprintf(b + *bl, "SE Host ID: %u  FD Host ID: %u\n",
++		 hba->hba_id, fd_host->fd_host_id);
++	*bl += sprintf(b + *bl, "        LIO FILEIO HBA\n");
++}
++
++void fd_get_dev_info(se_device_t *dev, char *b, int *bl)
++{
++	fd_dev_t *fd_dev = (fd_dev_t *) dev->dev_ptr;
++
++	__fd_get_dev_info(fd_dev, b, bl);
++}
++
++void __fd_get_dev_info(fd_dev_t *fd_dev, char *b, int *bl)
++{
++	*bl += sprintf(b + *bl, "LIO FILEIO ID: %u", fd_dev->fd_dev_id);
++	*bl += sprintf(b + *bl, "        File: %s  Size: %llu  ",
++		fd_dev->fd_dev_name, fd_dev->fd_dev_size);
++
++	if (fd_dev->fd_bd) {
++		struct block_device *bd = fd_dev->fd_bd;
++
++		*bl += sprintf(b + *bl, "%s\n",
++				(!bd->bd_contains) ? "" :
++				(bd->bd_holder == (fd_dev_t *)fd_dev) ?
++					"CLAIMED: FILEIO" : "CLAIMED: OS");
++	} else
++		*bl += sprintf(b + *bl, "\n");
++}
++
++/*	fd_map_task_non_SG():
 + *
 + *
 + */
-+int core_dev_del_initiator_node_lun_acl(
-+	se_portal_group_t *tpg,
-+	se_lun_t *lun,
-+	se_lun_acl_t *lacl)
++void fd_map_task_non_SG(se_task_t *task)
 +{
-+	se_node_acl_t *nacl;
++	se_cmd_t *cmd = TASK_CMD(task);
++	fd_request_t *req = (fd_request_t *) task->transport_req;
 +
-+	nacl = core_tpg_get_initiator_node_acl(tpg, lacl->initiatorname);
-+	if (!(nacl))
-+		return -EINVAL;
++	req->fd_bufflen		= task->task_size;
++	req->fd_buf		= (void *) T_TASK(cmd)->t_task_buf;
++	req->fd_sg_count	= 0;
++}
 +
-+	spin_lock(&lun->lun_acl_lock);
-+	list_del(&lacl->lacl_list);
-+	atomic_dec(&lun->lun_acl_count);
-+	smp_mb__after_atomic_dec();
-+	spin_unlock(&lun->lun_acl_lock);
++/*	fd_map_task_SG():
++ *
++ *
++ */
++void fd_map_task_SG(se_task_t *task)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
 +
-+	core_update_device_list_for_node(lun, NULL, lacl->mapped_lun,
-+		TRANSPORT_LUNFLAGS_NO_ACCESS, nacl, tpg, 0);
++	req->fd_bufflen		= task->task_size;
++	req->fd_buf		= NULL;
++	req->fd_sg_count	= task->task_sg_num;
++}
 +
-+	lacl->se_lun = NULL;
++/*      fd_CDB_inquiry():
++ *
++ *
++ */
++int fd_CDB_inquiry(se_task_t *task, u32 size)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
 +
-+	printk(KERN_INFO "%s_TPG[%hu]_LUN[%u] - Removed ACL for"
-+		" InitiatorNode: %s Mapped LUN: %u\n",
-+		TPG_TFO(tpg)->get_fabric_name(),
-+		TPG_TFO(tpg)->tpg_get_tag(tpg), lun->unpacked_lun,
-+		lacl->initiatorname, lacl->mapped_lun);
++	req->fd_data_direction  = FD_DATA_READ;
++	fd_map_task_non_SG(task);
 +
 +	return 0;
 +}
-+EXPORT_SYMBOL(core_dev_del_initiator_node_lun_acl);
 +
-+void core_dev_free_initiator_node_lun_acl(
-+	se_portal_group_t *tpg,
-+	se_lun_acl_t *lacl)
++/*      fd_CDB_none():
++ *
++ *
++ */
++int fd_CDB_none(se_task_t *task, u32 size)
 +{
-+	printk("%s_TPG[%hu] - Freeing ACL for %s InitiatorNode: %s"
-+		" Mapped LUN: %u\n", TPG_TFO(tpg)->get_fabric_name(),
-+		TPG_TFO(tpg)->tpg_get_tag(tpg),
-+		TPG_TFO(tpg)->get_fabric_name(),
-+		lacl->initiatorname, lacl->mapped_lun);
++	fd_request_t *req = (fd_request_t *) task->transport_req;
 +
-+	kfree(lacl);
++	req->fd_data_direction	= FD_DATA_NONE;
++	req->fd_bufflen		= 0;
++	req->fd_sg_count	= 0;
++	req->fd_buf		= NULL;
++
++	return 0;
 +}
-+EXPORT_SYMBOL(core_dev_free_initiator_node_lun_acl);
-diff --git a/include/target/target_core_device.h b/include/target/target_core_device.h
++
++/*	fd_CDB_read_non_SG():
++ *
++ *
++ */
++int fd_CDB_read_non_SG(se_task_t *task, u32 size)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++
++	req->fd_data_direction = FD_DATA_READ;
++	fd_map_task_non_SG(task);
++
++	return 0;
++}
++
++/*	fd_CDB_read_SG):
++ *
++ *
++ */
++int fd_CDB_read_SG(se_task_t *task, u32 size)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++
++	req->fd_data_direction = FD_DATA_READ;
++	fd_map_task_SG(task);
++
++	return req->fd_sg_count;
++}
++
++/*	fd_CDB_write_non_SG():
++ *
++ *
++ */
++int fd_CDB_write_non_SG(se_task_t *task, u32 size)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++
++	req->fd_data_direction = FD_DATA_WRITE;
++	fd_map_task_non_SG(task);
++
++	return 0;
++}
++
++/*	fd_CDB_write_SG():
++ *
++ *
++ */
++int fd_CDB_write_SG(se_task_t *task, u32 size)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++
++	req->fd_data_direction = FD_DATA_WRITE;
++	fd_map_task_SG(task);
++
++	return req->fd_sg_count;
++}
++
++/*	fd_check_lba():
++ *
++ *
++ */
++int fd_check_lba(unsigned long long lba, se_device_t *dev)
++{
++	return 0;
++}
++
++/*	fd_check_for_SG(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++int fd_check_for_SG(se_task_t *task)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++
++	return req->fd_sg_count;
++}
++
++/*	fd_get_cdb(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++unsigned char *fd_get_cdb(se_task_t *task)
++{
++	fd_request_t *req = (fd_request_t *) task->transport_req;
++
++	return req->fd_scsi_cdb;
++}
++
++/*	fd_get_blocksize(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++u32 fd_get_blocksize(se_device_t *dev)
++{
++	return FD_BLOCKSIZE;
++}
++
++/*	fd_get_device_rev(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++u32 fd_get_device_rev(se_device_t *dev)
++{
++	return SCSI_SPC_2; /* Returns SPC-3 in Initiator Data */
++}
++
++/*	fd_get_device_type(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++u32 fd_get_device_type(se_device_t *dev)
++{
++	return TYPE_DISK;
++}
++
++/*	fd_get_dma_length(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++u32 fd_get_dma_length(u32 task_size, se_device_t *dev)
++{
++	return PAGE_SIZE;
++}
++
++/*	fd_get_max_sectors(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++u32 fd_get_max_sectors(se_device_t *dev)
++{
++	return FD_MAX_SECTORS;
++}
++
++/*	fd_get_queue_depth(): (Part of se_subsystem_api_t template)
++ *
++ *
++ */
++u32 fd_get_queue_depth(se_device_t *dev)
++{
++	return FD_DEVICE_QUEUE_DEPTH;
++}
++
++u32 fd_get_max_queue_depth(se_device_t *dev)
++{
++	return FD_MAX_DEVICE_QUEUE_DEPTH;
++}
+diff --git a/include/target/target_core_file.h b/include/target/target_core_file.h
 new file mode 100644
-index 0000000..6708e69
+index 0000000..1f299e3
 --- /dev/null
-+++ b/include/target/target_core_device.h
-@@ -0,0 +1,81 @@
++++ b/include/target/target_core_file.h
+@@ -0,0 +1,220 @@
 +/*******************************************************************************
-+ * Filename:  target_core_device.h
++ * Filename:  target_core_file.h
 + *
-+ * Copyright (c) 2003, 2004, 2005 PyX Technologies, Inc.
++ * This file contains the Storage Engine <-> FILEIO transport specific
++ * definitions and prototypes.
++ *
++ * Copyright (c) 2005 PyX Technologies, Inc.
 + * Copyright (c) 2006 SBE, Inc.  All Rights Reserved.
 + * Copyright (c) 2007-2009 Rising Tide Software, Inc.
 + * Copyright (c) 2008-2009 Linux-iSCSI.org
@@ -1540,59 +1319,195 @@ index 0000000..6708e69
 + ******************************************************************************/
 +
 +
-+#ifndef TARGET_CORE_DEVICE_H
-+#define TARGET_CORE_DEVICE_H
++#ifndef TARGET_CORE_FILE_H
++#define TARGET_CORE_FILE_H
++
++#define FD_VERSION		"3.1"
++
++#define FD_MAX_DEV_NAME		256
++/* Maximum queuedepth for the FILEIO HBA */
++#define FD_HBA_QUEUE_DEPTH	256
++#define FD_DEVICE_QUEUE_DEPTH	32
++#define FD_MAX_DEVICE_QUEUE_DEPTH 128
++#define FD_BLOCKSIZE		512
++#define FD_MAX_SECTORS		1024
++
++#define FD_DATA_READ		1
++#define FD_DATA_WRITE		2
++#define FD_DATA_NONE		3
 +
 +extern se_global_t *se_global;
-+
 +extern struct block_device *__linux_blockdevice_claim(int, int, void *, int *);
 +extern struct block_device *linux_blockdevice_claim(int, int, void *);
 +extern int linux_blockdevice_release(int, int, struct block_device *);
 +extern int linux_blockdevice_check(int, int);
-+extern int se_check_devices_access(se_hba_t *);
-+extern void se_disable_devices_for_hba(se_hba_t *);
-+extern int transport_get_lun_for_cmd(struct se_cmd_s *, unsigned char *, u32);
-+extern int transport_get_lun_for_tmr(struct se_cmd_s *, u32);
-+extern struct se_dev_entry_s *core_get_se_deve_from_rtpi(struct se_node_acl_s *, u16);
-+extern int core_free_device_list_for_node(se_node_acl_t *,
-+					se_portal_group_t *);
-+extern void core_dec_lacl_count(struct se_node_acl_s *, struct se_cmd_s *);
-+extern void core_update_device_list_access(u32, u32, se_node_acl_t *);
-+extern void core_update_device_list_for_node(se_lun_t *, se_lun_acl_t *, u32,
-+					u32, se_node_acl_t *,
-+					se_portal_group_t *, int);
-+extern void core_clear_lun_from_tpg(se_lun_t *, se_portal_group_t *);
-+extern struct se_port_s *core_alloc_port(struct se_device_s *);
-+extern void core_export_port(struct se_device_s *, struct se_portal_group_s *,
-+					struct se_port_s *, struct se_lun_s *);
-+extern void core_release_port(struct se_device_s *, struct se_port_s *);
-+extern int transport_core_report_lun_response(se_cmd_t *);
-+extern void se_release_device_for_hba(se_device_t *);
-+extern void se_release_vpd_for_dev(se_device_t *);
-+extern void se_clear_dev_ports(se_device_t *);
-+extern int se_free_virtual_device(se_device_t *, se_hba_t *);
-+extern void se_dev_start(se_device_t *);
-+extern void se_dev_stop(se_device_t *);
-+extern void se_dev_set_default_attribs(se_device_t *);
-+extern int se_dev_set_task_timeout(se_device_t *, u32);
-+extern int se_dev_set_emulate_ua_intlck_ctrl(se_device_t *, int);
-+extern int se_dev_set_emulate_tas(se_device_t *, int);
-+extern int se_dev_set_queue_depth(se_device_t *, u32);
-+extern int se_dev_set_max_sectors(se_device_t *, u32);
-+extern int se_dev_set_block_size(se_device_t *, u32);
-+extern se_lun_t *core_dev_add_lun(se_portal_group_t *, se_hba_t *,
-+					se_device_t *, u32);
-+extern int core_dev_del_lun(se_portal_group_t *, u32);
-+extern se_lun_t *core_get_lun_from_tpg(se_portal_group_t *, u32);
-+extern se_lun_acl_t *core_dev_init_initiator_node_lun_acl(se_portal_group_t *,
-+							u32, char *, int *);
-+extern int core_dev_add_initiator_node_lun_acl(se_portal_group_t *,
-+						se_lun_acl_t *, u32, u32);
-+extern int core_dev_del_initiator_node_lun_acl(se_portal_group_t *,
-+						se_lun_t *, se_lun_acl_t *);
-+extern void core_dev_free_initiator_node_lun_acl(se_portal_group_t *,
-+						se_lun_acl_t *lacl);
 +
-+#endif /* TARGET_CORE_DEVICE_H */
++#ifndef FD_INCLUDE_STRUCTS
++extern int fd_CDB_inquiry(se_task_t *, u32);
++extern int fd_CDB_none(se_task_t *, u32);
++extern int fd_CDB_read_non_SG(se_task_t *, u32);
++extern int fd_CDB_read_SG(se_task_t *, u32);
++extern int fd_CDB_write_non_SG(se_task_t *, u32);
++extern int fd_CDB_write_SG(se_task_t *, u32);
++
++extern int fd_attach_hba(se_hba_t *, u32);
++extern int fd_detach_hba(se_hba_t *);
++extern int fd_claim_phydevice(se_hba_t *, se_device_t *);
++extern int fd_release_phydevice(se_device_t *);
++extern void *fd_allocate_virtdevice(se_hba_t *, const char *);
++extern se_device_t *fd_create_virtdevice(se_hba_t *, se_subsystem_dev_t *,
++					void *);
++extern int fd_activate_device(se_device_t *);
++extern void fd_deactivate_device(se_device_t *);
++extern void fd_free_device(void *);
++extern int fd_transport_complete(se_task_t *);
++extern void *fd_allocate_request(se_task_t *, se_device_t *);
++extern int fd_do_task(se_task_t *);
++extern void fd_free_task(se_task_t *);
++extern ssize_t fd_set_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *,
++					const char *, ssize_t);
++extern ssize_t fd_check_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *);
++extern ssize_t fd_show_configfs_dev_params(se_hba_t *, se_subsystem_dev_t *,
++					char *);
++extern void fd_get_plugin_info(void *, char *, int *);
++extern void fd_get_hba_info(se_hba_t *, char *, int *);
++extern void fd_get_dev_info(se_device_t *, char *, int *);
++extern int fd_check_lba(unsigned long long, se_device_t *);
++extern int fd_check_for_SG(se_task_t *);
++extern unsigned char *fd_get_cdb(se_task_t *);
++extern u32 fd_get_blocksize(se_device_t *);
++extern u32 fd_get_device_rev(se_device_t *);
++extern u32 fd_get_device_type(se_device_t *);
++extern u32 fd_get_dma_length(u32, se_device_t *);
++extern u32 fd_get_max_sectors(se_device_t *);
++extern u32 fd_get_queue_depth(se_device_t *);
++extern u32 fd_get_max_queue_depth(se_device_t *);
++#endif /* ! FD_INCLUDE_STRUCTS */
++
++#define RRF_EMULATE_CDB		0x01
++#define RRF_GOT_LBA		0x02
++
++typedef struct fd_request_s {
++	/* SCSI CDB from iSCSI Command PDU */
++	unsigned char	fd_scsi_cdb[SCSI_CDB_SIZE];
++	/* Data Direction */
++	u8		fd_data_direction;
++	/* Total length of request */
++	u32		fd_bufflen;
++	/* RD request flags */
++	u32		fd_req_flags;
++	/* Offset from start of page */
++	u32		fd_offset;
++	u32		fd_cur_size;
++	u32		fd_cur_offset;
++	/* Scatterlist count */
++	u32		fd_sg_count;
++	/* Logical Block Address */
++	unsigned long long	fd_lba;
++	u64		fd_size;
++	struct kiocb	fd_iocb;
++	struct iovec	*fd_iovs;
++	/* Data buffer containing scatterlists(s) or contingous
++	   memory segments */
++	void		*fd_buf;
++	/* FILEIO device */
++	struct fd_dev_s	*fd_dev;
++} ____cacheline_aligned fd_request_t;
++
++typedef struct fd_dev_sg_table_s {
++	u32		page_start_offset;
++	u32		page_end_offset;
++	u32		fd_sg_count;
++	struct scatterlist *sg_table;
++} ____cacheline_aligned fd_dev_sg_table_t;
++
++#define FBDF_HAS_PATH		0x01
++#define FBDF_HAS_SIZE		0x02
++
++typedef struct fd_dev_s {
++	u32		fbd_flags;
++	unsigned char	fd_dev_name[FD_MAX_DEV_NAME];
++	int		fd_claim_bd;
++	int		fd_major;
++	int		fd_minor;
++	/* Unique Ramdisk Device ID in Ramdisk HBA */
++	u32		fd_dev_id;
++	/* Number of SG tables in sg_table_array */
++	u32		fd_table_count;
++	u32		fd_queue_depth;
++	unsigned long long fd_dev_size;
++	struct file	*fd_file;
++	struct block_device *fd_bd;
++	/* FILEIO HBA device is connected to */
++	struct fd_host_s *fd_host;
++	/* Next FILEIO Device entry in list */
++	struct fd_dev_s *next;
++} ____cacheline_aligned fd_dev_t;
++
++extern void __fd_get_dev_info(struct fd_dev_s *, char *, int *);
++
++typedef struct fd_host_s {
++	u32		fd_host_dev_id_count;
++	/* Unique FILEIO Host ID */
++	u32		fd_host_id;
++} ____cacheline_aligned fd_host_t;
++
++#ifndef FD_INCLUDE_STRUCTS
++/*
++ * We use the generic command sequencer, so we must setup
++ * se_subsystem_spc_t.
++ */
++se_subsystem_spc_t fileio_template_spc = {
++	.inquiry		= fd_CDB_inquiry,
++	.none			= fd_CDB_none,
++	.read_non_SG		= fd_CDB_read_non_SG,
++	.read_SG		= fd_CDB_read_SG,
++	.write_non_SG		= fd_CDB_write_non_SG,
++	.write_SG		= fd_CDB_write_SG,
++};
++
++/*#warning FIXME v2.8: transport_type for FILEIO will need to change
++  with DIRECT_IO to blockdevs */
++
++se_subsystem_api_t fileio_template = {
++	.name			= "fileio",
++	.type			= FILEIO,
++	.transport_type		= TRANSPORT_PLUGIN_VHBA_PDEV,
++	.attach_hba		= fd_attach_hba,
++	.detach_hba		= fd_detach_hba,
++	.claim_phydevice	= fd_claim_phydevice,
++	.release_phydevice	= fd_release_phydevice,
++	.allocate_virtdevice	= fd_allocate_virtdevice,
++	.create_virtdevice	= fd_create_virtdevice,
++	.activate_device	= fd_activate_device,
++	.deactivate_device	= fd_deactivate_device,
++	.free_device		= fd_free_device,
++	.transport_complete	= fd_transport_complete,
++	.allocate_request	= fd_allocate_request,
++	.do_task		= fd_do_task,
++	.free_task		= fd_free_task,
++	.check_configfs_dev_params = fd_check_configfs_dev_params,
++	.set_configfs_dev_params = fd_set_configfs_dev_params,
++	.show_configfs_dev_params = fd_show_configfs_dev_params,
++	.get_plugin_info	= fd_get_plugin_info,
++	.get_hba_info		= fd_get_hba_info,
++	.get_dev_info		= fd_get_dev_info,
++	.check_lba		= fd_check_lba,
++	.check_for_SG		= fd_check_for_SG,
++	.get_cdb		= fd_get_cdb,
++	.get_blocksize		= fd_get_blocksize,
++	.get_device_rev		= fd_get_device_rev,
++	.get_device_type	= fd_get_device_type,
++	.get_dma_length		= fd_get_dma_length,
++	.get_max_sectors	= fd_get_max_sectors,
++	.get_queue_depth	= fd_get_queue_depth,
++	.get_max_queue_depth	= fd_get_max_queue_depth,
++	.write_pending		= NULL,
++	.spc			= &fileio_template_spc,
++};
++
++#endif /* ! FD_INCLUDE_STRUCTS */
++
++#endif /* TARGET_CORE_FILE_H */
 
 
