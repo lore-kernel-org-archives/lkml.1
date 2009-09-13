@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755057AbZIMUgv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755084AbZIMUih@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755057AbZIMUgv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 16:36:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZIMUgt
+	id S1755084AbZIMUih (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 16:38:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbZIMUig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 16:36:49 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:49315 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751719AbZIMUgs (ORCPT
+	Sun, 13 Sep 2009 16:38:36 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:58115 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751944AbZIMUif (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 16:36:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=NwsG7krqhjzhSrOcRnN7CsPuTEwbZKTUrT2iXxnMuDS16rRmid3bf8quXQdSq++YVh
-         pooMaNusKaXiUARB5CEbomIZknLMwamnO4LAq5z8JdlMKhxvLqbQgJFXLDRM3OFQudal
-         YDryAZS6Zc0umvER+mNXJOI/Zpbz8RCJFN554=
+	Sun, 13 Sep 2009 16:38:35 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 2/8] drivers/media/video/uvc: introduce missing kfree
+Date: Sun, 13 Sep 2009 22:39:21 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.30.3; KDE/4.3.1; x86_64; ; )
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0909111821010.10552@pc-004.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0909111821010.10552@pc-004.diku.dk>
 MIME-Version: 1.0
-In-Reply-To: <1252873141-20496-1-git-send-email-felipe.contreras@gmail.com>
-References: <1252873141-20496-1-git-send-email-felipe.contreras@gmail.com>
-Date: Sun, 13 Sep 2009 23:36:50 +0300
-Message-ID: <94a0d4530909131336i4612b0c0jf19adaa4e6c3f166@mail.gmail.com>
-Subject: Re: [PATCH] omap3-iommu: reorganize
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Felipe Contreras <felipe.contreras@gmail.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       "Tony Lindgren <tony@atomide.com> <tony@atomide.com>, Hiroshi DOYU
-	<Hiroshi.DOYU@nokia.com>," <linux-omap@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909132239.21806.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 13, 2009 at 11:19 PM, Felipe Contreras
-<felipe.contreras@gmail.com> wrote:
-> This way it's more object oriented and easier to see what is happening.
-> No functional changes.
-@@ -16,7 +16,7 @@
+On Friday 11 September 2009 18:21:18 Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
+> 
+> Error handling code following kmalloc should free the allocated data.
+> 
+> The semantic match that finds the problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
+> 
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> statement S;
+> expression E;
+> identifier f,f1,l;
+> position p1,p2;
+> expression *ptr != NULL;
+> @@
+> 
+> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+> ...
+> if (x == NULL) S
+> <... when != x
+>      when != if (...) { <+...x...+> }
+> (
+> x->f1 = E
+> 
+>  (x->f1 == NULL || ...)
+> 
+>  f(...,x->f1,...)
+> )
+> ...>
+> (
+>  return \(0\|<+...x...+>\|ptr\);
+> 
+>  return@p2 ...;
+> )
+> 
+> @script:python@
+> p1 << r.p1;
+> p2 << r.p2;
+> @@
+> 
+> print "* file: %s kmalloc %s return %s" %
+>  (p1[0].file,p1[0].line,p2[0].line) // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
+> ---
+>  drivers/media/video/uvc/uvc_video.c |    7 +++++--
+>  1 files changed, 5 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/media/video/uvc/uvc_video.c
+>  b/drivers/media/video/uvc/uvc_video.c index 5b757f3..ce2c484 100644
+> --- a/drivers/media/video/uvc/uvc_video.c
+> +++ b/drivers/media/video/uvc/uvc_video.c
+> @@ -128,8 +128,11 @@ static int uvc_get_video_ctrl(struct uvc_streaming
+>  *stream, if (data == NULL)
+>  		return -ENOMEM;
+> 
+> -	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) && query == UVC_GET_DEF)
+> -		return -EIO;
+> +	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) &&
+> +			query == UVC_GET_DEF) {
+> +		ret = -EIO;
+> +		goto out;
+> +	}
 
-Sorry, I forgot to address some comments from Russell from a previous
-version. I'll resend.
+This check can be moved before kmalloc(), removing the need to free memory in 
+case of error.
 
- struct iommu_device {
-        resource_size_t base;
--       resource_size_t irq;
-+       int irq;
-        struct iommu_platform_data pdata;
-        struct resource res[2];
- };
-@@ -67,7 +67,7 @@ static int __init omap3_iommu_init(void)
-
-                res[0].start = d->base;
-                res[0].end = d->base + MMU_REG_SIZE - 1;
--               res[1].start = d->irq;
-+               res[1].start = res[1].end = d->irq;
-
-                err = platform_device_add_resources(pdev, res,
-                                                    ARRAY_SIZE(res));
+Julia, do you want to submit a modified patch or should I do it myself ?
+ 
+>  	ret = __uvc_query_ctrl(stream->dev, query, 0, stream->intfnum,
+>  		probe ? UVC_VS_PROBE_CONTROL : UVC_VS_COMMIT_CONTROL, data,
+> 
 
 -- 
-Felipe Contreras
+Regards,
+
+Laurent Pinchart
