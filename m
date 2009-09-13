@@ -1,54 +1,219 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752247AbZIMJNp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZIMJvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752247AbZIMJNp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 05:13:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751488AbZIMJNm
+	id S1752463AbZIMJvd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 05:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbZIMJvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 05:13:42 -0400
-Received: from Chamillionaire.breakpoint.cc ([85.10.199.196]:53431 "EHLO
-	Chamillionaire.breakpoint.cc" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750874AbZIMJNm (ORCPT
+	Sun, 13 Sep 2009 05:51:32 -0400
+Received: from dip-colo-pa.panasas.com ([67.152.220.67]:52132 "EHLO
+	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750784AbZIMJva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 05:13:42 -0400
-Date: Sun, 13 Sep 2009 11:13:37 +0200
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: recent bdi changes result in WARN_ON on luksClose / dm
-Message-ID: <20090913091337.GA21969@Chamillionaire.breakpoint.cc>
-References: <20090912111928.GA8013@Chamillionaire.breakpoint.cc>
- <20090912195212.GF14984@kernel.dk>
- <20090912195839.GG14984@kernel.dk>
+	Sun, 13 Sep 2009 05:51:30 -0400
+Message-ID: <4AACC085.3000805@panasas.com>
+Date: Sun, 13 Sep 2009 12:51:01 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090722 Remi/fc10 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <20090912195839.GG14984@kernel.dk>
-X-Key-Id: FE3F4706
-X-Key-Fingerprint: FFDA BBBB 3563 1B27 75C9  925B 98D5 5C1C FE3F 4706
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Subject: Re: [RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
+References: <1252720726.2067.234.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1252720726.2067.234.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 Sep 2009 09:51:33.0918 (UTC) FILETIME=[C70393E0:01CA3457]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jens Axboe | 2009-09-12 21:58:40 [+0200]:
+On 09/12/2009 04:58 AM, Nicholas A. Bellinger wrote:
+> [RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
+> 
+> This patch adds the remaining misc Makefile and Kconfig changes
+> 
+> It also has wrappers for unsigned long division in div64c, that will be converted to
+> include/asm-generic/div64.h
+> 
+> Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+> diff --git a/drivers/target/div64.c b/drivers/target/div64.c
+> new file mode 100644
+> index 0000000..6d59864
+> --- /dev/null
+> +++ b/drivers/target/div64.c
+> @@ -0,0 +1,16 @@
+> +#include <asm/types.h>
+> +#include <asm/div64.h>
+> +
+> +#if BITS_PER_LONG == 32
+> +
+> +u64 __udivdi3(u64 a, u64 b)
+> +{
+> +  do_div(a, b);
+> +  return a;
+> +}
+> +
+> +u64 __umoddi3(u64 a, u64 b)
+> +{
+> +  return do_div(a, b);
+> +}
+> +#endif
+> diff --git a/drivers/target/Makefile b/drivers/target/Makefile
 
->Don't count this as a real fix, I'll investigate closer on monday. Does
->the warning go away with this hack? It'll ensure that pending dirty
->inodes are flushed.
+I like Kbuild better then Makefile. And so does the Kernel documentation.
+It says new code should use Kbuild
 
-That warning goes away but another pops up:
+> new file mode 100644
+> index 0000000..3e413b0
+> --- /dev/null
+> +++ b/drivers/target/Makefile
+> @@ -0,0 +1,96 @@
+> +CWD=$(shell pwd)
+> +
+> +PYX_ISCSI_VENDOR ?="Linux-iSCSI.org"
+> +
+> +# Transport Plugins and Devices.
+> + #
+> +LINUX_PARALLEL_SCSI ?= 1
+> +LINUX_STGT ?= 1
+> +LINUX_SCSI_MEDIA_ROM ?= 1
+> +LINUX_PARALLEL_ATA ?= 0
+> +LINUX_IBLOCK ?= 1
+> +LINUX_RAMDISK ?= 1
+> +LINUX_FILEIO ?= 1
+> +
+> +LINUX_VPD_PAGE_CHECK?=1
+> +LIO_TARGET_CONFIGFS?=1
+> +
+> +MODVER ?= 1
+> +USEGDB ?= 1
+> +DEBUG_DEV ?= 0
+> +SNMP_FEATURE ?= 1
+> +
 
-|------------[ cut here ]------------
-|WARNING: at /home/bigeasy/git/cryptodev-2.6/fs/fs-writeback.c:504 writeback_inodes_wb+0x2cc/0x49c()
-|Modules linked in: sha256_generic cbc dm_crypt
-|[<c0028dd8>] (unwind_backtrace+0x0/0xdc) from [<c003adb0>] (warn_slowpath_common+0x4c/0x80)
-|[<c003adb0>] (warn_slowpath_common+0x4c/0x80) from [<c00b0998>] (writeback_inodes_wb+0x2cc/0x49c)
-|[<c00b0998>] (writeback_inodes_wb+0x2cc/0x49c) from [<c00b0c98>] (wb_writeback+0x130/0x180)
-|[<c00b0c98>] (wb_writeback+0x130/0x180) from [<c00b10f8>] (wb_do_writeback+0x7c/0x1d0)
-|[<c00b10f8>] (wb_do_writeback+0x7c/0x1d0) from [<c00b1284>] (bdi_writeback_task+0x38/0xb0)
-|[<c00b1284>] (bdi_writeback_task+0x38/0xb0) from [<c007f788>] (bdi_start_fn+0x74/0xe0)
-|[<c007f788>] (bdi_start_fn+0x74/0xe0) from [<c004f2cc>] (kthread+0x7c/0x84)
-|[<c004f2cc>] (kthread+0x7c/0x84) from [<c0024858>] (kernel_thread_exit+0x0/0x8)
-|---[ end trace e1f395241bdb07ff ]---
+Now when in-Kernel don't you need to use Kconfig for all this "configuration".
 
-Sebastian
+What's with the re-invent the wheel, here.
+
+> +obj-$(CONFIG_TARGET_CORE)		+=	target_core_mod.o
+> +target_core_mod-objs			:=	target_core_configfs.o \
+> +						target_core_device.o \
+> +						target_core_hba.o \
+> +						target_core_plugin.o \
+> +						target_core_pr.o \
+> +						target_core_alua.o \
+> +						target_core_scdb.o \
+> +						target_core_seobj.o \
+> +						target_core_tmr.o \
+> +						target_core_tpg.o \
+> +						target_core_transport.o \
+> +						target_core_ua.o \
+> +						div64.o
+> +
+> +ifeq ($(LINUX_IBLOCK), 1)
+> +target_core_mod-objs			+=	target_core_iblock.o
+> +EXTRA_CFLAGS				+=	-DPYX_IBLOCK
+> +endif
+> +ifeq ($(LINUX_PARALLEL_SCSI), 1)
+> +target_core_mod-objs			+=	target_core_pscsi.o
+> +EXTRA_CFLAGS				+=	-DPARALLEL_SCSI
+> +endif
+> +ifeq ($(LINUX_STGT), 1)
+> +target_core_mod-objs			+=	target_core_stgt.o
+> +EXTRA_CFLAGS				+=	-DSTGT_PLUGIN
+> +endif
+> +ifeq ($(LINUX_RAMDISK), 1)
+> +target_core_mod-objs			+=	target_core_rd.o
+> +EXTRA_CFLAGS				+=	-DPYX_RAMDISK
+> +endif
+> +ifeq ($(LINUX_FILEIO), 1)
+> +target_core_mod-objs			+=	target_core_file.o
+> +EXTRA_CFLAGS				+=	-DPYX_FILEIO
+> +endif
+> +ifeq ($(SNMP_FEATURE), 1)
+> +target_core_mod-objs			+=	target_core_mib.o
+> +EXTRA_CFLAGS				+=	-DSNMP_SUPPORT
+> +endif
+> +ifeq ($(LINUX_VPD_PAGE_CHECK), 1)
+> +EXTRA_CFLAGS += -DLINUX_VPD_PAGE_CHECK
+> +endif
+> +ifeq ($(LINUX_SCSI_MEDIA_ROM), 1)
+> +EXTRA_CFLAGS += -DLINUX_SCSI_MEDIA_ROM
+> +endif
+> +ifeq ($(DEBUG_DEV), 1)
+> +EXTRA_CFLAGS += -DDEBUG_DEV
+> +endif
+> +
+
+You see what I mean. Try with Kconfig variables all this disappears.
+
+> +
+> +EXTRA_CFLAGS+=-I$(CWD)/drivers/target/ -I$(CWD)/drivers/scsi/
+> +EXTRA_CFLAGS+=-D_TARGET -DLINUX -DLINUX_KERNEL_26 -DLINUX_SCSI_HOST_LOCK -DLINUX_USE_SIGHAND
+
+?? are you sure
+
+> +EXTRA_CFLAGS+=-DLINUX_SCATTERLIST_HAS_PAGE -DPYX_ISCSI_VENDOR='"Linux-iSCSI.org"'
+
+And these are for ??
+
+<Makefile>
+> +
+> +all:
+> +	$(MAKE) -C $(KERNEL_DIR) SUBDIRS=$(CWD) modules CWD=$(CWD) ARCH=$(ARCH) KBUILD_VERBOSE=0
+> +
+> +install ins:
+> +	rm -f /lib/modules/`uname -r`/kernel/drivers/scsi/iscsi_target_mod.ko
+> +	rm -f /lib/modules/`uname -r`/kernel/drivers/iscsi/iscsi_target_mod.ko
+> +	mkdir -p /lib/modules/`uname -r`/kernel/drivers/iscsi
+> +	cp -f iscsi_target_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
+> +	cp -f target_core_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
+> +	depmod -ae
+> +
+> +
+> +
+> +clean:
+> +	rm -f $(foreach prog,$(target_core_mod-objs) $(obj-m),$(CWD)/$(prog)) $(CWD)/target_core_mod.mod.o
+> +	rm -f target_core_mod.ko target_core_mod.mod.c
+> +	rm -f .*.cmd ../common/.*.cmd .make_autoconfig *~
+> +	rm -fr .tmp_versions
+> +
+</Makefile>
+
+OK this should go in a Makefile and kept out-of-tree
+
+> +
+> diff --git a/drivers/target/Kconfig b/drivers/target/Kconfig
+> new file mode 100644
+> index 0000000..04564f1
+> --- /dev/null
+> +++ b/drivers/target/Kconfig
+> @@ -0,0 +1,7 @@
+> +config TARGET_CORE
+> +        tristate "Generic Target Core Engine and ConfigFS Infrastructure"
+> +	select CONFIGFS_FS
+> +	select SCSI_TGT
+> +        default m
+> +        ---help---
+> +        Say Y here to enable the Storage Engine, Subsystem Plugins, and ConfigFS enabled control path for the Generic Target Engine.
+> 
+> 
+
+Lots of more configs missing here
+
+Cheers
+Boaz
