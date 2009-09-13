@@ -1,76 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbZIMTHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753417AbZIMTPX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754956AbZIMTHu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 15:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbZIMTHr
+	id S1753417AbZIMTPX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 15:15:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZIMTPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 15:07:47 -0400
-Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:3303 "EHLO
-	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754442AbZIMTHq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 15:07:46 -0400
-X-Trace: 261521830/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.13.41/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 80.41.13.41
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqQEACvgrEpQKQ0p/2dsb2JhbACBUtZmhBgF
-X-IronPort-AV: E=Sophos;i="4.44,379,1249254000"; 
-   d="scan'208";a="261521830"
-Date: Sun, 13 Sep 2009 20:07:05 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Nitin Gupta <ngupta@vflare.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-mm-cc <linux-mm-cc@laptop.org>
-Subject: Re: [PATCH 0/4] compcache: in-memory compressed swapping v2
-In-Reply-To: <4AAB065D.3070602@vflare.org>
-Message-ID: <Pine.LNX.4.64.0909131956590.28668@sister.anvils>
-References: <200909100215.36350.ngupta@vflare.org> <200909100332.55910.ngupta@vflare.org>
- <4AAB065D.3070602@vflare.org>
+	Sun, 13 Sep 2009 15:15:19 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:56256 "EHLO mgw2.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751055AbZIMTPS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 15:15:18 -0400
+Date: Sun, 13 Sep 2009 21:15:18 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
+In-Reply-To: <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
+Message-ID: <Pine.LNX.4.64.0909132113520.31000@ask.diku.dk>
+References: <Pine.LNX.4.64.0909111820370.10552@pc-004.diku.dk>
+ <20090913.232548.253168283.anemo@mba.ocn.ne.jp> <Pine.LNX.4.64.0909131708190.25903@ask.diku.dk>
+ <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 Sep 2009, Nitin Gupta wrote:
-> On 09/10/2009 03:32 AM, Nitin Gupta wrote:
-> > Project home: http://compcache.googlecode.com/
-> >
-> > * Changelog: v2 vs initial revision
-> >   - Use 'struct page' instead of 32-bit PFNs in ramzswap driver and
-> >   xvmalloc.
-> >     This is to make these 64-bit safe.
-> >   - xvmalloc is no longer a separate module and does not export any symbols.
-> >     Its compiled directly with ramzswap block driver. This is to avoid any
-> >     last bit of confusion with any other allocator.
-> >   - set_swap_free_notify() now accepts block_device as parameter instead of
-> >     swp_entry_t (interface cleanup).
-> >   - Fix: Make sure ramzswap disksize matches usable pages in backing swap
-> >   file.
-> >     This caused initialization error in case backing swap file had
-> >     intra-page
-> >     fragmentation.
-> 
-> Can anyone please review these patches for possible inclusion in 2.6.32?
+From: Julia Lawall <julia@diku.dk>
 
-Sorry, I certainly wouldn't be able to review them for 2.6.32 myself.
+Error handling code following a kzalloc should free the allocated data.
+Error handling code following an ioremap should iounmap the allocated data.
 
-Since we're already in the merge window, and this work has not yet
-had exposure in mmotm (preferably) or linux-next, I really doubt
-anyone should be pushing it for 2.6.32.
+The semantic match that finds the first problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-I'd be quite glad to see it and experiment with it in mmotm,
-so it could go into 2.6.33 if all okay.  And I now fully accept
-that the discard/trim situation is so hazy that you are quite
-right to be asking for your own well-defined notifier instead.
+// <smpl>
+@r exists@
+local idexpression x;
+statement S;
+expression E;
+identifier f,f1,l;
+position p1,p2;
+expression *ptr != NULL;
+@@
 
-But I'm not going to pretend to have reviewed it.
+x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+...
+if (x == NULL) S
+<... when != x
+     when != if (...) { <+...x...+> }
+(
+x->f1 = E
+|
+ (x->f1 == NULL || ...)
+|
+ f(...,x->f1,...)
+)
+...>
+(
+ return \(0\|<+...x...+>\|ptr\);
+|
+ return@p2 ...;
+)
 
-Hugh
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
+
+print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
+
+Signed-off-by: Julia Lawall <julia@diku.dk>
+---
+ arch/mips/txx9/generic/setup.c      |   17 +++++++++++++----
+ 1 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/arch/mips/txx9/generic/setup.c b/arch/mips/txx9/generic/setup.c
+index a205e2b..c860810 100644
+--- a/arch/mips/txx9/generic/setup.c
++++ b/arch/mips/txx9/generic/setup.c
+@@ -782,7 +782,7 @@ void __init txx9_iocled_init(unsigned long baseaddr,
+ 		return;
+ 	iocled->mmioaddr = ioremap(baseaddr, 1);
+ 	if (!iocled->mmioaddr)
+-		return;
++		goto out_free;
+ 	iocled->chip.get = txx9_iocled_get;
+ 	iocled->chip.set = txx9_iocled_set;
+ 	iocled->chip.direction_input = txx9_iocled_dir_in;
+@@ -791,13 +791,13 @@ void __init txx9_iocled_init(unsigned long baseaddr,
+ 	iocled->chip.base = basenum;
+ 	iocled->chip.ngpio = num;
+ 	if (gpiochip_add(&iocled->chip))
+-		return;
++		goto out_unmap;
+ 	if (basenum < 0)
+ 		basenum = iocled->chip.base;
+ 
+ 	pdev = platform_device_alloc("leds-gpio", basenum);
+ 	if (!pdev)
+-		return;
++		goto out_gpio;
+ 	iocled->pdata.num_leds = num;
+ 	iocled->pdata.leds = iocled->leds;
+ 	for (i = 0; i < num; i++) {
+@@ -812,7 +812,16 @@ void __init txx9_iocled_init(unsigned long baseaddr,
+ 	}
+ 	pdev->dev.platform_data = &iocled->pdata;
+ 	if (platform_device_add(pdev))
+-		platform_device_put(pdev);
++		goto out_pdev;
++	return;
++out_pdev:
++	platform_device_put(pdev);
++out_gpio:
++	gpio_remove(&iocled->chip);
++out_unmap:
++	iounmap(iocled->mmioaddr);
++out_free:
++	kfree(iocled);
+ }
+ #else /* CONFIG_LEDS_GPIO */
+ void __init txx9_iocled_init(unsigned long baseaddr,
