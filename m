@@ -1,83 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755115AbZIMUyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbZIMUzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755115AbZIMUyh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 16:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbZIMUyg
+	id S1755147AbZIMUzb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 16:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbZIMUza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 16:54:36 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:27370 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751350AbZIMUyf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 16:54:35 -0400
-Date: Sun, 13 Sep 2009 13:54:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Greg KH <greg@kroah.com>, arve@android.com, swetland@google.com,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: [patch] Re: newer version of HTC Dream support
-Message-Id: <20090913135422.f2d7cb88.randy.dunlap@oracle.com>
-In-Reply-To: <20090913083719.GA6645@elf.ucw.cz>
-References: <20090824092204.GB25591@elf.ucw.cz>
-	<20090901131832.GA1835@ucw.cz>
-	<20090904090303.024e981a.randy.dunlap@oracle.com>
-	<20090911071155.GA1386@ucw.cz>
-	<20090911075847.2fb7210a.randy.dunlap@oracle.com>
-	<20090911161335.GA8137@elf.ucw.cz>
-	<20090911092157.ba202b0a.randy.dunlap@oracle.com>
-	<20090911212751.GA25544@elf.ucw.cz>
-	<20090911153422.7d523a73.randy.dunlap@oracle.com>
-	<20090913083719.GA6645@elf.ucw.cz>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt001.oracle.com [141.146.116.10]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.4AAD5C01.00A1:SCFSTAT5015188,ss=1,fgs=0
+	Sun, 13 Sep 2009 16:55:30 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:54620 "EHLO mgw1.diku.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751592AbZIMUz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 16:55:29 -0400
+Date: Sun, 13 Sep 2009 22:55:30 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 2/8] drivers/media/video/uvc: introduce missing kfree
+In-Reply-To: <200909132239.21806.laurent.pinchart@ideasonboard.com>
+Message-ID: <Pine.LNX.4.64.0909132254430.31000@ask.diku.dk>
+References: <Pine.LNX.4.64.0909111821010.10552@pc-004.diku.dk>
+ <200909132239.21806.laurent.pinchart@ideasonboard.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Sep 2009 10:37:19 +0200 Pavel Machek wrote:
+From: Julia Lawall <julia@diku.dk>
 
-> Hi!
-> 
-> > > Fix compilation of gpio_* input drivers on -next kernel. Adds needed
-> > > headers and removes unprotected wakelock/earlysuspend dependencies.
-> > >     
-> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
-> > 
-> > Still doesn't build for me, but if it builds for you, that's great.
-> > (could be a tool chain problem on my side)
-> 
-> No, it does not look like toolchain problem :-(. I had parts disabled
-> in Kconfig. This should make it _compile_ (but not link); somehow
-> MSM_ADSP is neccessary for camera to link and I can't see how to
-> enable it.
-> 
-> Thanks for the patience.
-> 								Pavel
-> 
-> ---
-> 
-> Add pieces neccessary for compilation of msm_camera.
+Move the kzalloc and associated test after the stream/query test, to avoid
+the need to free the allocated if the stream/query test fails.
 
+The semantic match that finds the problem is as follows:
+(http://www.emn.fr/x-info/coccinelle/)
 
-drivers/staging/dream/camera/msm_camera.c:122: undefined reference to `get_pmem_file'
-drivers/staging/dream/camera/msm_camera.c:305: undefined reference to `put_pmem_file'
-drivers/staging/dream/camera/msm_vfe7x.c:173: undefined reference to `msm_adsp_enable'
-drivers/staging/dream/camera/msm_vfe7x.c:186: undefined reference to `msm_adsp_disable'
-drivers/staging/dream/camera/msm_vfe7x.c:195: undefined reference to `msm_adsp_write'
-drivers/staging/dream/camera/msm_vfe7x.c:225: undefined reference to `msm_adsp_put'
-drivers/staging/dream/camera/msm_vfe7x.c:264: undefined reference to `msm_adsp_get'
+// <smpl>
+@r exists@
+local idexpression x;
+statement S;
+expression E;
+identifier f,f1,l;
+position p1,p2;
+expression *ptr != NULL;
+@@
 
+x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+...
+if (x == NULL) S
+<... when != x
+     when != if (...) { <+...x...+> }
+(
+x->f1 = E
+|
+ (x->f1 == NULL || ...)
+|
+ f(...,x->f1,...)
+)
+...>
+(
+ return \(0\|<+...x...+>\|ptr\);
+|
+ return@p2 ...;
+)
 
-hint:  CONFIG_MSM_ADSP is not enabled.  I don't see a way to enable it.
+@script:python@
+p1 << r.p1;
+p2 << r.p2;
+@@
 
+print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
+// </smpl>
 
+Signed-off-by: Julia Lawall <julia@diku.dk>
 ---
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+ drivers/media/video/uvc/uvc_video.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/media/video/uvc/uvc_video.c b/drivers/media/video/uvc/uvc_video.c
+index 5b757f3..f960e8e 100644
+--- a/drivers/media/video/uvc/uvc_video.c
++++ b/drivers/media/video/uvc/uvc_video.c
+@@ -124,13 +124,14 @@ static int uvc_get_video_ctrl(struct uvc_streaming *stream,
+ 	int ret;
+ 
+ 	size = stream->dev->uvc_version >= 0x0110 ? 34 : 26;
++	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) &&
++			query == UVC_GET_DEF)
++		return -EIO;
++
+ 	data = kmalloc(size, GFP_KERNEL);
+ 	if (data == NULL)
+ 		return -ENOMEM;
+ 
+-	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) && query == UVC_GET_DEF)
+-		return -EIO;
+-
+ 	ret = __uvc_query_ctrl(stream->dev, query, 0, stream->intfnum,
+ 		probe ? UVC_VS_PROBE_CONTROL : UVC_VS_COMMIT_CONTROL, data,
+ 		size, UVC_CTRL_STREAMING_TIMEOUT);
