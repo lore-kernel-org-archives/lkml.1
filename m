@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZIMNow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbZIMOBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754074AbZIMNow (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 09:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZIMNor
+	id S1754238AbZIMOBR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 10:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbZIMOBP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 09:44:47 -0400
-Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:43715 "EHLO
-	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753958AbZIMNoq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 09:44:46 -0400
-X-Cloudmark-SP-Filtered: true
-X-Cloudmark-SP-Result: v=1.0 c=1 a=7aL8QoKEyJsA:10 a=w4iE+TBsmj5y1WloLYF40w==:17
- a=ULMWahI2Lg760u-EGLQA:9 a=S9yS_lCc-0GTMMX_5_pAARpMZMAA:4
-From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
-Reply-To: tfjellstrom@shaw.ca
-To: "linux-kernel" <linux-kernel@vger.kernel.org>
-Subject: mmc0: Timeout waiting for hardware interrupt.
-Date: Sun, 13 Sep 2009 07:44:47 -0600
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9; KDE/4.3.1; x86_64; ; )
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 13 Sep 2009 10:01:15 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:45091 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754069AbZIMOBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 10:01:14 -0400
+Subject: Re: [PATCH] hwmon: Driver for SCSI/ATA temperature sensors
+From: James Bottomley <James.Bottomley@suse.de>
+To: Constantin Baranov <const@mimas.ru>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <20090913040104.ab1d0b69.const@mimas.ru>
+References: <20090913040104.ab1d0b69.const@mimas.ru>
+Content-Type: text/plain
+Date: Sun, 13 Sep 2009 09:00:53 -0500
+Message-Id: <1252850453.23599.13.camel@mulgrave.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909130744.47312.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I got the following from inserting a plain old 2G SD card into my Lenovo SL500 
-laptop:
+On Sun, 2009-09-13 at 04:01 +0500, Constantin Baranov wrote:
+> The scsitemp module attaches a device to each SCSI device
+> and registers it in hwmon. Currently the only method of
+> reading temperature is ATA SMART. Adding support of the
+> pure SCSI methods is provided.
 
-[177156.720126] mmc0: Timeout waiting for hardware interrupt.
-[177156.720129] sdhci: ============== REGISTER DUMP ==============
-[177156.720134] sdhci: Sys addr: 0x1c512d8c | Version:  0x00000400
-[177156.720137] sdhci: Blk size: 0x00007008 | Blk cnt:  0x00000001
-[177156.720141] sdhci: Argument: 0x00000000 | Trn mode: 0x00000013
-[177156.720144] sdhci: Present:  0x01ff0206 | Host ctl: 0x00000001
-[177156.720147] sdhci: Power:    0x0000000f | Blk gap:  0x00000000
-[177156.720150] sdhci: Wake-up:  0x00000000 | Clock:    0x00008007
-[177156.720153] sdhci: Timeout:  0x00000009 | Int stat: 0x00000000
-[177156.720162] sdhci: Int enab: 0x02ff00cb | Sig enab: 0x02ff00cb
-[177156.720165] sdhci: AC12 err: 0x00000000 | Slot int: 0x00000000
-[177156.720168] sdhci: Caps:     0x01e021a1 | Max curr: 0x00000040
-[177156.720170] sdhci: ===========================================
-[177156.723183] mmc0: error -110 whilst initialising SD card
+The code, as you wrote it looks fine.
 
-Once I removed and re inserted the card it started working, but I thought I'd 
-report it.
+The basic problem are the effects.  Right at the moment it tries to send
+an ATA_16 encapsulated SMART command to every SCSI device in the system.
+We simply can't allow this.  A huge number of SCSI presenting USB
+devices are known to lock up when they see either ATA_X encapsulation or
+SMART commands.  It's not really even safe to send ATA_X to SCSI
+devices.  The modern ones should all error out fine, but the older ones
+are likely to be less tolerant.
 
--- 
-Thomas Fjellstrom
-tfjellstrom@shaw.ca
+Finally, this:
+
+> +               if (attr[2] == 194) {
+> +                       *temp = attr[7] * 1000;
+> +                       err = 0;
+> +                       break;
+
+Smart attribute 194 is highly vendor specific ... for instance my new
+SATA drive doesn't implement it (it does implement 190 instead).
+
+So really, given the complexity of just obtaining the data and the
+problem of matching which data to obtain to which device you have, why
+not just use smartctl from userspace for monitoring?  you could even
+just plug into smartd, it seems to have most of the necessary heuristics
+built in already.
+
+James
+
+
