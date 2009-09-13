@@ -1,76 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbZIMBuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZIMBu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbZIMBuk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 21:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZIMBuZ
+	id S1754836AbZIMBu0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 21:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbZIMBuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 21:50:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59659 "EHLO
+	Sat, 12 Sep 2009 21:50:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:61262 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754520AbZIMBuV (ORCPT
+	with ESMTP id S1754471AbZIMBuV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 12 Sep 2009 21:50:21 -0400
-Message-Id: <20090913015023.021281495@goodmis.org>
+Message-Id: <20090913015023.371158736@goodmis.org>
 References: <20090913014906.407896305@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Sat, 12 Sep 2009 21:49:07 -0400
+Date: Sat, 12 Sep 2009 21:49:08 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
        Carsten Emde <Carsten.Emde@osadl.org>, Carsten Emde <C.Emde@osadl.org>
-Subject: [PATCH 1/3] tracing: prevent NULL pointer dereference in ftrace_raw_event_block_bio_bounce
-Content-Disposition: inline; filename=0001-tracing-prevent-NULL-pointer-dereference-in-ftrace_r.patch
+Subject: [PATCH 2/3] tracing: remove unused local variables in tracer probe functions
+Content-Disposition: inline; filename=0002-tracing-remove-unused-local-variables-in-tracer-prob.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Carsten Emde <Carsten.Emde@osadl.org>
 
-Booting 2.6.31 and executing
-   echo 1 >/sys/kernel/debug/tracing/events/enable
-leads to
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<c032a583>] ftrace_raw_event_block_bio_bounce+0x4b/0xb9
-
-Apparently,
-   bio = bio_map_user(q, NULL, uaddr, len, reading, gfp_mask);
-is called in block/blk-map.c:58 where bio->bi_bdev in set to NULL and
-still is NULL when an attempt is made to evaluate bio->bi_bdev->bd_dev
-in include/trace/events/block.h:189.
-
-The tracepoint should ensure bio->bi_bdev is not dereferenced, if NULL.
+When the nsecs_to_usecs() conversion in probe_wakeup_sched_switch() and
+check_critical_timing() was moved to a later stage in order to avoid
+unnecessary computing, it was overlooked to remove the original
+variables, assignments and comments..
 
 Signed-off-by: Carsten Emde <C.Emde@osadl.org>
-LKML-Reference: <4AAAC9B1.9060505@osadl.org>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/block.h |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
+ kernel/trace/trace_irqsoff.c      |   12 +-----------
+ kernel/trace/trace_sched_wakeup.c |   10 ----------
+ 2 files changed, 1 insertions(+), 21 deletions(-)
 
-diff --git a/include/trace/events/block.h b/include/trace/events/block.h
-index 9a74b46..d86af94 100644
---- a/include/trace/events/block.h
-+++ b/include/trace/events/block.h
-@@ -171,6 +171,7 @@ TRACE_EVENT(block_rq_complete,
- 		  (unsigned long long)__entry->sector,
- 		  __entry->nr_sector, __entry->errors)
- );
-+
- TRACE_EVENT(block_bio_bounce,
+diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
+index 5555b75..06f8ea9 100644
+--- a/kernel/trace/trace_irqsoff.c
++++ b/kernel/trace/trace_irqsoff.c
+@@ -129,15 +129,10 @@ check_critical_timing(struct trace_array *tr,
+ 		      unsigned long parent_ip,
+ 		      int cpu)
+ {
+-	unsigned long latency, t0, t1;
+ 	cycle_t T0, T1, delta;
+ 	unsigned long flags;
+ 	int pc;
  
- 	TP_PROTO(struct request_queue *q, struct bio *bio),
-@@ -186,7 +187,8 @@ TRACE_EVENT(block_bio_bounce,
- 	),
+-	/*
+-	 * usecs conversion is slow so we try to delay the conversion
+-	 * as long as possible:
+-	 */
+ 	T0 = data->preempt_timestamp;
+ 	T1 = ftrace_now(cpu);
+ 	delta = T1-T0;
+@@ -157,17 +152,12 @@ check_critical_timing(struct trace_array *tr,
  
- 	TP_fast_assign(
--		__entry->dev		= bio->bi_bdev->bd_dev;
-+		__entry->dev		= bio->bi_bdev ?
-+					  bio->bi_bdev->bd_dev : 0;
- 		__entry->sector		= bio->bi_sector;
- 		__entry->nr_sector	= bio->bi_size >> 9;
- 		blk_fill_rwbs(__entry->rwbs, bio->bi_rw, bio->bi_size);
+ 	trace_function(tr, CALLER_ADDR0, parent_ip, flags, pc);
+ 
+-	latency = nsecs_to_usecs(delta);
+-
+ 	if (data->critical_sequence != max_sequence)
+ 		goto out_unlock;
+ 
+-	tracing_max_latency = delta;
+-	t0 = nsecs_to_usecs(T0);
+-	t1 = nsecs_to_usecs(T1);
+-
+ 	data->critical_end = parent_ip;
+ 
++	tracing_max_latency = delta;
+ 	update_max_tr_single(tr, current, cpu);
+ 
+ 	max_sequence++;
+diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
+index cf43bdb..6e1529b 100644
+--- a/kernel/trace/trace_sched_wakeup.c
++++ b/kernel/trace/trace_sched_wakeup.c
+@@ -110,7 +110,6 @@ static void notrace
+ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
+ 	struct task_struct *next)
+ {
+-	unsigned long latency = 0, t0 = 0, t1 = 0;
+ 	struct trace_array_cpu *data;
+ 	cycle_t T0, T1, delta;
+ 	unsigned long flags;
+@@ -156,10 +155,6 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
+ 	trace_function(wakeup_trace, CALLER_ADDR0, CALLER_ADDR1, flags, pc);
+ 	tracing_sched_switch_trace(wakeup_trace, prev, next, flags, pc);
+ 
+-	/*
+-	 * usecs conversion is slow so we try to delay the conversion
+-	 * as long as possible:
+-	 */
+ 	T0 = data->preempt_timestamp;
+ 	T1 = ftrace_now(cpu);
+ 	delta = T1-T0;
+@@ -167,12 +162,7 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
+ 	if (!report_latency(delta))
+ 		goto out_unlock;
+ 
+-	latency = nsecs_to_usecs(delta);
+-
+ 	tracing_max_latency = delta;
+-	t0 = nsecs_to_usecs(T0);
+-	t1 = nsecs_to_usecs(T1);
+-
+ 	update_max_tr(wakeup_trace, wakeup_task, wakeup_cpu);
+ 
+ out_unlock:
 -- 
 1.6.3.3
 
