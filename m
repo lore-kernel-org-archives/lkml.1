@@ -1,112 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZIMBui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754737AbZIMCaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZIMBui (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 21:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZIMBuY
+	id S1754737AbZIMCaE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 22:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZIMCaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 21:50:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51053 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754504AbZIMBuV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 21:50:21 -0400
-Message-Id: <20090913015023.650251718@goodmis.org>
-References: <20090913014906.407896305@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Sat, 12 Sep 2009 21:49:09 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Carsten Emde <Carsten.Emde@osadl.org>, Carsten Emde <C.Emde@osadl.org>
-Subject: [PATCH 3/3] tracing: do not update tracing_max_latency when tracer is stopped
-Content-Disposition: inline; filename=0003-tracing-do-not-update-tracing_max_latency-when-trace.patch
+	Sat, 12 Sep 2009 22:30:01 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35220 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751405AbZIMCaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 22:30:01 -0400
+Subject: Re: [origin tree boot crash] Revert "selinux: clean up avc node
+ cache when disabling selinux"
+From: Eric Paris <eparis@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090912072450.GA6767@elte.hu>
+References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com>
+	 <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org>
+	 <20090912072450.GA6767@elte.hu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 12 Sep 2009 22:28:59 -0400
+Message-Id: <1252808939.13780.30.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Carsten Emde <Carsten.Emde@osadl.org>
+On Sat, 2009-09-12 at 09:24 +0200, Ingo Molnar wrote:
+> James - i did not see a security pull request email from you in my 
+> lkml folder so i created this new thread. -tip testing found the 
+> easy crash below. It reverts cleanly so i went that easy route.
+> 
+> At a really quick 10-seconds glance the crash happens because we 
+> destroy the slab cache twice, if the sysctl is toggled twice?
 
-The state of the function pair tracing_stop()/tracing_start() is
-correctly considered when tracer data are updated. However, the global
-and externally accessible variable tracing_max_latency is always updated
-- even when tracing is stopped.
+Something a lot worse than SELinux here.  I added this exact code and
+got this warning.  Something is wrong in the world of
+kmem_cache_destroy.....
 
-The update should only occur, if tracing was not stopped.
+static struct kmem_cache *tmp_cachep;
+tmp_cachep = kmem_cache_create("tmp_cache", sizeof(struct avc_node), 0, SLAB_PANIC, NULL);
+        if (tmp_cachep)
+                kmem_cache_destroy(tmp_cachep);
 
-Signed-off-by: Carsten Emde <C.Emde@osadl.org>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.c              |    5 +++++
- kernel/trace/trace.h              |    1 +
- kernel/trace/trace_irqsoff.c      |    6 ++++--
- kernel/trace/trace_sched_wakeup.c |    6 ++++--
- 4 files changed, 14 insertions(+), 4 deletions(-)
+[    0.006076] ------------[ cut here ]------------
+[    0.007019] WARNING: at lib/kobject.c:595 kobject_put+0x6e/0x80()
+[    0.008011] Hardware name:
+[    0.009006] kobject: '<NULL>' (ffff88001f8da128): is not initialized, yet kobject_put() is being called.
+[    0.010005] Modules linked in:
+[    0.011284] Pid: 0, comm: swapper Not tainted 2.6.31-next-20090911 #17
+[    0.012011] Call Trace:
+[    0.013008]  [<ffffffff8129460e>] ? kobject_put+0x6e/0x80
+[    0.014009]  [<ffffffff81070b71>] warn_slowpath_common+0x91/0xd0
+[    0.015006]  [<ffffffff81070c66>] warn_slowpath_fmt+0x76/0xa0
+[    0.016016]  [<ffffffff811dd8c3>] ? sysfs_remove_dir+0x43/0xf0
+[    0.017007]  [<ffffffff810b3a5d>] ? trace_hardirqs_on_caller+0x14d/0x1e0
+[    0.018007]  [<ffffffff8129460e>] kobject_put+0x6e/0x80
+[    0.019005]  [<ffffffff8129607e>] ? kobject_uevent+0x1e/0x40
+[    0.020016]  [<ffffffff81159933>] kmem_cache_destroy+0x213/0x250
+[    0.021008]  [<ffffffff812a3d37>] ? __spin_lock_init+0x47/0x90
+[    0.022012]  [<ffffffff819e6860>] ? early_idt_handler+0x0/0x71
+[    0.023008]  [<ffffffff81a18da3>] avc_init+0xd3/0x120
+[    0.024010]  [<ffffffff81a1903e>] selinux_init+0xfe/0x210
+[    0.025006]  [<ffffffff819e6860>] ? early_idt_handler+0x0/0x71
+[    0.026004]  [<ffffffff81a18bb2>] security_init+0x52/0x80
+[    0.027005]  [<ffffffff81a18a16>] ? key_init+0xc6/0xf0
+[    0.028009]  [<ffffffff819e764a>] start_kernel+0x35a/0x490
+[    0.029005]  [<ffffffff819e69d4>] x86_64_start_reservations+0x94/0xf0
+[    0.030004]  [<ffffffff819e6b38>] x86_64_start_kernel+0x108/0x150
+[    0.031015] ---[ end trace a7919e7f17c0a725 ]---
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 45c3f03..ef82a7f 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -825,6 +825,11 @@ static void trace_init_cmdlines(void)
- 	cmdline_idx = 0;
- }
- 
-+int is_tracing_stopped(void)
-+{
-+	return trace_stop_count;
-+}
-+
- /**
-  * ftrace_off_permanent - disable all ftrace code permanently
-  *
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 28247ce..4ad4e1d 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -461,6 +461,7 @@ void tracing_stop_sched_switch_record(void);
- void tracing_start_sched_switch_record(void);
- int register_tracer(struct tracer *type);
- void unregister_tracer(struct tracer *type);
-+int is_tracing_stopped(void);
- 
- extern unsigned long nsecs_to_usecs(unsigned long nsecs);
- 
-diff --git a/kernel/trace/trace_irqsoff.c b/kernel/trace/trace_irqsoff.c
-index 06f8ea9..3aa7eaa 100644
---- a/kernel/trace/trace_irqsoff.c
-+++ b/kernel/trace/trace_irqsoff.c
-@@ -157,8 +157,10 @@ check_critical_timing(struct trace_array *tr,
- 
- 	data->critical_end = parent_ip;
- 
--	tracing_max_latency = delta;
--	update_max_tr_single(tr, current, cpu);
-+	if (likely(!is_tracing_stopped())) {
-+		tracing_max_latency = delta;
-+		update_max_tr_single(tr, current, cpu);
-+	}
- 
- 	max_sequence++;
- 
-diff --git a/kernel/trace/trace_sched_wakeup.c b/kernel/trace/trace_sched_wakeup.c
-index 6e1529b..26185d7 100644
---- a/kernel/trace/trace_sched_wakeup.c
-+++ b/kernel/trace/trace_sched_wakeup.c
-@@ -162,8 +162,10 @@ probe_wakeup_sched_switch(struct rq *rq, struct task_struct *prev,
- 	if (!report_latency(delta))
- 		goto out_unlock;
- 
--	tracing_max_latency = delta;
--	update_max_tr(wakeup_trace, wakeup_task, wakeup_cpu);
-+	if (likely(!is_tracing_stopped())) {
-+		tracing_max_latency = delta;
-+		update_max_tr(wakeup_trace, wakeup_task, wakeup_cpu);
-+	}
- 
- out_unlock:
- 	__wakeup_reset(wakeup_trace);
--- 
-1.6.3.3
-
--- 
