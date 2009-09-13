@@ -1,95 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbZIMS4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbZIMTFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754916AbZIMS4W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 14:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbZIMS4V
+	id S1754933AbZIMTFU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 15:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZIMTFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 14:56:21 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:52430 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754441AbZIMS4U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 14:56:20 -0400
-Date: Sun, 13 Sep 2009 14:54:47 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       righi.andrea@gmail.com, m-ikeda@ds.jp.nec.com, agk@redhat.com,
-       akpm@linux-foundation.org, peterz@infradead.org,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [RFC] IO scheduler based IO controller V9
-Message-ID: <20090913185447.GA11003@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA918C1.6070907@redhat.com>
+	Sun, 13 Sep 2009 15:05:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34525 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754452AbZIMTFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 15:05:17 -0400
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX1+AhNxtWqSAoKxdUwo3av78W+8dQpUa0l9xkKggh+
+	psYRfbDkedJW1R
+Message-ID: <4AAD425A.8010605@gmx.de>
+Date: Sun, 13 Sep 2009 21:04:58 +0200
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA918C1.6070907@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       JosephChan@via.com.tw, ScottFang@viatech.com.cn
+Subject: Re: [PATCH 3/3] viafb: use read-only mode parsing
+References: <1252290284-3668-1-git-send-email-FlorianSchandinat@gmx.de>	<1252290284-3668-2-git-send-email-FlorianSchandinat@gmx.de>	<1252290284-3668-3-git-send-email-FlorianSchandinat@gmx.de> <20090909133956.c682bf4a.akpm@linux-foundation.org>
+In-Reply-To: <20090909133956.c682bf4a.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 05:18:25PM +0200, Jerome Marchand wrote:
-> Vivek Goyal wrote:
-> > Hi All,
-> > 
-> > Here is the V9 of the IO controller patches generated on top of 2.6.31-rc7.
->  
-> Hi Vivek,
+Andrew Morton schrieb:
+> On Mon,  7 Sep 2009 02:24:44 +0000
+> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
 > 
-> I've run some postgresql benchmarks for io-controller. Tests have been
-> made with 2.6.31-rc6 kernel, without io-controller patches (when
-> relevant) and with io-controller v8 and v9 patches.
-> I set up two instances of the TPC-H database, each running in their
-> own io-cgroup. I ran two clients to these databases and tested on each
-> that simple request:
-> $ select count(*) from LINEITEM;
-> where LINEITEM is the biggest table of TPC-H (6001215 entries,
-> 720MB). That request generates a steady stream of IOs.
+>> +static void parse_mode(const char *str, u32 *xres, u32 *yres)
+>> +{
+>> +	char *ptr;
+>> +
+>> +	*xres = simple_strtoul(str, &ptr, 10);
+>> +	if (ptr[0] != 'x')
+>> +		goto out_default;
+>> +
+>> +	*yres = simple_strtoul(&ptr[1], &ptr, 10);
+>> +	if (ptr[0])
+>> +		goto out_default;
+>> +
+>> +	return;
+>> +
+>> +out_default:
+>> +	printk(KERN_WARNING "viafb received invalid mode string: %s\n", str);
+>> +	*xres = 640;
+>> +	*yres = 480;
+>> +}
 > 
-> Time is measure by psql (\timing switched on). Each test is run twice
-> or more if there is any significant difference between the first two
-> runs. Before each run, the cache is flush:
-> $ echo 3 > /proc/sys/vm/drop_caches
-> 
-> 
-> Results with 2 groups of same io policy (BE) and same io weight (1000):
-> 
-> 	w/o io-scheduler	io-scheduler v8		io-scheduler v9
-> 	first	second		first	second		first	second
-> 	DB	DB		DB	DB		DB	DB
-> 
-> CFQ	48.4s	48.4s		48.2s	48.2s		48.1s	48.5s
-> Noop	138.0s	138.0s		48.3s	48.4s		48.5s	48.8s
-> AS	46.3s	47.0s		48.5s	48.7s		48.3s	48.5s
-> Deadl.	137.1s	137.1s		48.2s	48.3s		48.3s	48.5s
-> 
-> As you can see, there is no significant difference for CFQ
-> scheduler. There is big improvement for noop and deadline schedulers
-> (why is that happening?). The performance with anticipatory scheduler
-> is a bit lower (~4%).
-> 
+> One wonders if we could use sscanf here?
 
-Ok, I think what's happening here is that by default slice lenght for
-a queue is 100ms. When you put two instances of DB in two different
-groups, one streaming reader can run at max for 100ms at a go and then 
-we switch to next reader.
+You're right.
+But I am planning to add the optional arguments -<bpp> and @<refresh> to 
+make it easier to select a mode and slowly move towards generic modedb 
+format. I think that can be done easier with pointer handling than 
+sscanf usage but I don't have a strong opinion about it so feel free to 
+request me to change it.
 
-But when both the readers are in root group, then AS lets run one reader
-to run at max 250ms (sometimes 125ms and sometimes 250ms based on at what
-time as_fifo_expired() was invoked).
+Example: (new format)
+viafb_mode=800x480-16@60
+instead (old format)
+viafb_mode=800x480 viafb_bpp=16 viafb_refresh=60
 
-So because a reader gets to run longer at one stretch in root group, it
-reduces number of seeks and leads to little enhanced throughput.
+> The second simple_strtoul() could use strict_strtoul(), but that's not
+> obviously superior IMO.
 
-If you change the /sys/block/<disk>/queue/iosched/slice_sync to 250 ms, then
-one group queue can run at max for 250ms before we switch the queue. In
-this case you should be able to get same performance as in root group.
+True.
 
-Thanks
-Vivek
+
+Thanks,
+
+Florian Tobias Schandinat
