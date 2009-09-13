@@ -1,155 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753873AbZIMM02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZIMNZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753873AbZIMM02 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 08:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZIMM0Y
+	id S1753932AbZIMNZs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 09:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZIMNZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 08:26:24 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:44349 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753305AbZIMM0X (ORCPT
+	Sun, 13 Sep 2009 09:25:45 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:22203 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753374AbZIMNZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 08:26:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=u02NVJcUn1+W5C75ajy+yldr7D8x9bDHMsmryVoD6QbqHYewWgoAgOSk6mz9wyHzcj
-         acU+IBGjdIw7CdVGeu5bQFwoiLPXzWqAaF/deT4BKXccaJUyfAHfoytpwoI9kgIVf3Sh
-         mGuHu/lXSE5MtcRDawEif7G6MCg7WJzDJ3M3c=
-Message-ID: <4AACE4EE.4080707@tuffmail.co.uk>
-Date: Sun, 13 Sep 2009 13:26:22 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Sun, 13 Sep 2009 09:25:44 -0400
+X-Trace: 258081819/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.102.79/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.102.79
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqQEAAKQrEpPRWZP/2dsb2JhbACBUtZshBgFgVaJAg
+X-IronPort-AV: E=Sophos;i="4.44,379,1249254000"; 
+   d="scan'208";a="258081819"
+Date: Sun, 13 Sep 2009 14:24:58 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Eric Whitney <eric.whitney@hp.com>,
+       stable@kernel.org
+Subject: Re: [PATCH] mmap:  avoid unnecessary anon_vma lock acquisition in
+ vma_adjust()
+In-Reply-To: <1252527046.4102.162.camel@useless.americas.hpqcorp.net>
+Message-ID: <Pine.LNX.4.64.0909131332280.22041@sister.anvils>
+References: <1252527046.4102.162.camel@useless.americas.hpqcorp.net>
 MIME-Version: 1.0
-To: Jay Vosburgh <fubar@us.ibm.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       bonding-devel@lists.sourceforge.net
-Subject: INFO: possible circular locking detected [when unloading the bonding
- driver]
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I found this warning after loading and unloading all the modules I had
-available.  I can reproduce it by hibernating the system, then loading
-and unloading the bonding module. 
+[I've kept stable@kernel.org in the Cc list only to put on record
+that I don't think that this patch is really suitable for -stable]
 
-Regards
-Alan
+On Wed, 9 Sep 2009, Lee Schermerhorn wrote:
+> 
+Thanks for this.  Interesting stuff snipped and repeated below.
 
-[  123.484225] Ethernet Channel Bonding Driver: v3.5.0 (November 4, 2008)
-[  123.484229] bonding: Warning: either miimon or arp_interval and
-arp_ip_target module parameters must be specified, otherwise bonding
-will not detect link failures! see bonding.txt for details.
-[  125.790929]
-[  125.790931] =======================================================
-[  125.790936] [ INFO: possible circular locking dependency detected ]
-[  125.790940] 2.6.31-rc8debug #50
-[  125.790942] -------------------------------------------------------
-[  125.790946] modprobe/8372 is trying to acquire lock:
-[  125.790948]  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff81048ef2>]
-cpu_maps_update_begin+0x12/0x20
-[  125.790961]
-[  125.790962] but task is already holding lock:
-[  125.790965]  (rtnl_mutex){+.+.+.}, at: [<ffffffff812d0aa2>]
-rtnl_lock+0x12/0x20
-[  125.790974]
-[  125.790975] which lock already depends on the new lock.
-[  125.790976]
-[  125.790978]
-[  125.790979] the existing dependency chain (in reverse order) is:
-[  125.790982]
-[  125.790983] -> #3 (rtnl_mutex){+.+.+.}:
-[  125.790989]        [<ffffffff810741d9>] validate_chain+0xb99/0x11d0
-[  125.790996]        [<ffffffff81074b6e>] __lock_acquire+0x35e/0xa30
-[  125.791001]        [<ffffffff810752d7>] lock_acquire+0x97/0x110
-[  125.791006]        [<ffffffff8134f046>] mutex_lock_nested+0x56/0x310
-[  125.791012]        [<ffffffff812d0aa2>] rtnl_lock+0x12/0x20
-[  125.791016]        [<ffffffff812d2079>] linkwatch_event+0x9/0x40
-[  125.791021]        [<ffffffff8105cafa>] worker_thread+0x23a/0x350
-[  125.791027]        [<ffffffff81060f56>] kthread+0xa6/0xb0
-[  125.791032]        [<ffffffff8100ce5a>] child_rip+0xa/0x20
-[  125.791037]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  125.791051]
-[  125.791052] -> #2 ((linkwatch_work).work){+.+.+.}:
-[  125.791058]        [<ffffffff810741d9>] validate_chain+0xb99/0x11d0
-[  125.791063]        [<ffffffff81074b6e>] __lock_acquire+0x35e/0xa30
-[  125.791068]        [<ffffffff810752d7>] lock_acquire+0x97/0x110
-[  125.791073]        [<ffffffff8105caf4>] worker_thread+0x234/0x350
-[  125.791077]        [<ffffffff81060f56>] kthread+0xa6/0xb0
-[  125.791082]        [<ffffffff8100ce5a>] child_rip+0xa/0x20
-[  125.791087]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  125.791092]
-[  125.791093] -> #1 (events){+.+.+.}:
-[  125.791098]        [<ffffffff810741d9>] validate_chain+0xb99/0x11d0
-[  125.791104]        [<ffffffff81074b6e>] __lock_acquire+0x35e/0xa30
-[  125.791108]        [<ffffffff810752d7>] lock_acquire+0x97/0x110
-[  125.791114]        [<ffffffff8105b758>]
-cleanup_workqueue_thread+0x48/0xd0
-[  125.791119]        [<ffffffff8133dffa>] workqueue_cpu_callback+0x9a/0x130
-[  125.791125]        [<ffffffff81353dce>] notifier_call_chain+0x5e/0xa0
-[  125.791130]        [<ffffffff81065549>]
-__raw_notifier_call_chain+0x9/0x10
-[  125.791136]        [<ffffffff81065561>] raw_notifier_call_chain+0x11/0x20
-[  125.791141]        [<ffffffff8133c213>] _cpu_down+0x173/0x2b0
-[  125.791145]        [<ffffffff81049148>] disable_nonboot_cpus+0x98/0x130
-[  125.791150]        [<ffffffff81081f97>] hibernation_snapshot+0x187/0x250
-[  125.791156]        [<ffffffff81082178>] hibernate+0x118/0x1c0
-[  125.791160]        [<ffffffff81080863>] state_store+0xd3/0xf0
-[  125.791165]        [<ffffffff81199fe7>] kobj_attr_store+0x17/0x20
-[  125.791172]        [<ffffffff8113e7b4>] sysfs_write_file+0xf4/0x150
-[  125.791178]        [<ffffffff810e3557>] vfs_write+0xc7/0x1a0
-[  125.791184]        [<ffffffff810e3ba0>] sys_write+0x50/0x90
-[  125.791189]        [<ffffffff8100bdab>] system_call_fastpath+0x16/0x1b
-[  125.791194]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  125.791205]
-[  125.791205] -> #0 (cpu_add_remove_lock){+.+.+.}:
-[  125.791211]        [<ffffffff81073c0d>] validate_chain+0x5cd/0x11d0
-[  125.791216]        [<ffffffff81074b6e>] __lock_acquire+0x35e/0xa30
-[  125.791221]        [<ffffffff810752d7>] lock_acquire+0x97/0x110
-[  125.791225]        [<ffffffff8134f046>] mutex_lock_nested+0x56/0x310
-[  125.791230]        [<ffffffff81048ef2>] cpu_maps_update_begin+0x12/0x20
-[  125.791235]        [<ffffffff8105b842>] destroy_workqueue+0x22/0xc0
-[  125.791240]        [<ffffffffa03afdfa>] bond_uninit+0x3a/0x70 [bonding]
-[  125.791252]        [<ffffffff812c5e8d>] rollback_registered+0xbd/0x120
-[  125.791258]        [<ffffffff812c5f0d>] unregister_netdevice+0x1d/0x70
-[  125.791262]        [<ffffffffa03ad71f>] bond_free_all+0x4f/0xa0 [bonding]
-[  125.791273]        [<ffffffffa03ba075>] bonding_exit+0x35/0x3c [bonding]
-[  125.791283]        [<ffffffff8107ddc6>] sys_delete_module+0x176/0x230
-[  125.791288]        [<ffffffff8100bdab>] system_call_fastpath+0x16/0x1b
-[  125.791293]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  125.791298]
-[  125.791299] other info that might help us debug this:
-[  125.791300]
-[  125.791304] 1 lock held by modprobe/8372:
-[  125.791306]  #0:  (rtnl_mutex){+.+.+.}, at: [<ffffffff812d0aa2>]
-rtnl_lock+0x12/0x20
-[  125.791314]
-[  125.791315] stack backtrace:
-[  125.791319] Pid: 8372, comm: modprobe Not tainted 2.6.31-rc8debug #50
-[  125.791322] Call Trace:
-[  125.791328]  [<ffffffff81073494>] print_circular_bug_tail+0x94/0xe0
-[  125.791333]  [<ffffffff81073c0d>] validate_chain+0x5cd/0x11d0
-[  125.791338]  [<ffffffff81074b6e>] __lock_acquire+0x35e/0xa30
-[  125.791343]  [<ffffffff810752d7>] lock_acquire+0x97/0x110
-[  125.791349]  [<ffffffff81048ef2>] ? cpu_maps_update_begin+0x12/0x20
-[  125.791354]  [<ffffffff8134f046>] mutex_lock_nested+0x56/0x310
-[  125.791358]  [<ffffffff81048ef2>] ? cpu_maps_update_begin+0x12/0x20
-[  125.791363]  [<ffffffff8113f974>] ? release_sysfs_dirent+0x54/0xc0
-[  125.791368]  [<ffffffff81048ef2>] cpu_maps_update_begin+0x12/0x20
-[  125.791373]  [<ffffffff8105b842>] destroy_workqueue+0x22/0xc0
-[  125.791383]  [<ffffffffa03afdfa>] bond_uninit+0x3a/0x70 [bonding]
-[  125.791388]  [<ffffffff812c5e8d>] rollback_registered+0xbd/0x120
-[  125.791397]  [<ffffffffa03abfb6>] ? bond_work_cancel_all+0x16/0x130
-[bonding]
-[  125.791402]  [<ffffffff812c5f0d>] unregister_netdevice+0x1d/0x70
-[  125.791411]  [<ffffffffa03ad71f>] bond_free_all+0x4f/0xa0 [bonding]
-[  125.791421]  [<ffffffffa03ba075>] bonding_exit+0x35/0x3c [bonding]
-[  125.791425]  [<ffffffff8107ddc6>] sys_delete_module+0x176/0x230
-[  125.791430]  [<ffffffff8107186d>] ? trace_hardirqs_on_caller+0x14d/0x1a0
-[  125.791435]  [<ffffffff81350a04>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-[  125.791441]  [<ffffffff8100bdab>] system_call_fastpath+0x16/0x1b
+> 
+> A comment in mm/mmap.c:vma_adjust() suggests that we don't really
+> need the anon_vma lock when we're only adjusting the end of a vma,
 
+I feel a warm smugness from having foreseen the possibility that we
+might want to optimize that away.  I didn't do so, because it needs
+more thought (and more branches) than seemed worthwhile at the time:
+you've found similar difficulty, but now it does seem worthwhile.
+
+> We can detect this condition--no overlap with next vma--by noting
+> a NULL "importer".  The anon_vma pointer will also be NULL in this
+> case, so simply avoid loading vma->anon_vma to avoid the lock.
+> However, we apparently DO need to take the anon_vma lock when
+> we're inserting a vma ['insert' non-NULL] even when we have no
+> overlap [NULL "importer"], so we need to check for 'insert', as well.
+
+Those importer and insert checks are good and relevant, but not
+quite enough.  The anon_vma lock should also be guaranteeing the
+integrity of the relationship between vm_start and vm_pgoff for
+all the vmas attached to the anon_vma, so that rmap.c can rely
+upon vma_address() to work correctly while it holds anon_vma lock.
+
+That's a considerably less important consideration than the integrity
+of the list threading itself.  Anything BUGging on a wrong page->index
+is holding mmap_sem, which would keep vma_adjust off.  So it's just a
+matter of whether rmap.c can be expected to find all instances of a
+page at all times, which nothing absolutely requires (and in checking
+this patch, I notice fs/exec.c's shift_arg_pages() use of vma_adjust()
+a little violatory in that respect).
+
+But it is something the anon_vma lock has protected in the past,
+and it shouldn't affect your sbrk() case at all, so I'd like to
+check we're not changing vm_start too (vm_pgoff should be changing
+with it, but shift_arg_pages() deals with that in a different way,
+keeping vm_pgoff unchanged but shifting the pages).
+
+(Compare with how stack's expand_downwards() has anon_vma_lock()
+when it adjusts vm_start and vm_pgoff - though that's also because
+it has only down_read of mmap_sem, not the down_write we'd usually
+require for such adjustments.)
+
+> 
+> I have tested with and without the 'file || ' test in the patch.
+> This does not seem to matter for stability nor performance.  I
+> left this check/filter in, so we only optimize away the
+> anon_vma lock acquisition when adjusting the end of a non-
+> importing, non-inserting, anon vma.
+
+I dislike that: the "file" test just has no relevance at all
+(beyond that you've no interest in the case when there is a file),
+and two years down the line will make people like me worry for
+hours on end what it's there for.  I've removed it below.
+
+> 
+> If accepted, this patch may benefit the stable tree as well.
+
+We seem to have a different perception of what the stable tree is for!
+But I'm not against any distro picking up this patch if it chooses.
+Here's a version with my signoff:
+
+
+[PATCH] mmap: avoid unnecessary anon_vma lock acquisition in vma_adjust()
+
+From: Lee Schermerhorn <lee.schermerhorn@hp.com>
+
+We noticed very erratic behavior [throughput] with the AIM7 shared
+workload running on recent distro [SLES11] and mainline kernels on
+an 8-socket, 32-core, 256GB x86_64 platform.  On the SLES11 kernel
+[2.6.27.19+] with Barcelona processors, as we increased the load
+[10s of thousands of tasks], the throughput would vary between two
+"plateaus"--one at ~65K jobs per minute and one at ~130K jpm.  The
+simple patch below causes the results to smooth out at the ~130k
+plateau.
+
+But wait, there's more:
+
+We do not see this behavior on smaller platforms--e.g., 4 socket/8
+core.  This could be the result of the larger number of cpus on
+the larger platform--a scalability issue--or it could be the result
+of the larger number of interconnect "hops" between some nodes in
+this platform and how the tasks for a given load end up distributed
+over the nodes' cpus and memories--a stochastic NUMA effect.
+
+The variability in the results are less pronounced [on the same
+platform] with Shanghai processors and with mainline kernels.  With
+31-rc6 on Shanghai processors and 288 file systems on 288 fibre
+attached storage volumes, the curves [jpm vs load] are both quite
+flat with the patched kernel consistently producing ~3.9% better
+throughput [~80K jpm vs ~77K jpm] than the unpatched kernel.
+
+Profiling indicated that the "slow" runs were incurring high[er]
+contention on an anon_vma lock in vma_adjust(), apparently called
+from the sbrk() system call.
+
+The patch:
+
+A comment in mm/mmap.c:vma_adjust() suggests that we don't really
+need the anon_vma lock when we're only adjusting the end of a vma,
+as is the case for brk().  The comment questions whether it's worth
+while to optimize for this case.  Apparently, on the newer, larger
+x86_64 platforms, with interesting NUMA topologies, it is worth
+while--especially considering that the patch [if correct!] is 
+quite simple.
+
+We can detect this condition--no overlap with next vma--by noting
+a NULL "importer".  The anon_vma pointer will also be NULL in this
+case, so simply avoid loading vma->anon_vma to avoid the lock.
+
+However, we DO need to take the anon_vma lock when we're inserting a
+vma ['insert' non-NULL] even when we have no overlap [NULL "importer"],
+so we need to check for 'insert', as well.  And Hugh points out that
+we should also take it when adjusting vm_start (so that rmap.c can
+rely upon vma_address() while it holds the anon_vma lock).
+
+Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Eric Whitney <eric.whitney@hp.com>
+---
+
+ mm/mmap.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- 2.6.31/mm/mmap.c	2009-09-09 23:13:59.000000000 +0100
++++ linux/mm/mmap.c	2009-09-13 13:08:40.000000000 +0100
+@@ -570,9 +570,9 @@ again:			remove_next = 1 + (end > next->
+ 
+ 	/*
+ 	 * When changing only vma->vm_end, we don't really need
+-	 * anon_vma lock: but is that case worth optimizing out?
++	 * anon_vma lock.
+ 	 */
+-	if (vma->anon_vma)
++	if (vma->anon_vma && (insert || importer || start != vma->vm_start))
+ 		anon_vma = vma->anon_vma;
+ 	if (anon_vma) {
+ 		spin_lock(&anon_vma->lock);
