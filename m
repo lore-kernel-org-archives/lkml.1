@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbZIMOBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754338AbZIMOFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754238AbZIMOBR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 10:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754110AbZIMOBP
+	id S1754338AbZIMOFT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 10:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbZIMOFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 10:01:15 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45091 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754069AbZIMOBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 10:01:14 -0400
-Subject: Re: [PATCH] hwmon: Driver for SCSI/ATA temperature sensors
-From: James Bottomley <James.Bottomley@suse.de>
-To: Constantin Baranov <const@mimas.ru>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <20090913040104.ab1d0b69.const@mimas.ru>
-References: <20090913040104.ab1d0b69.const@mimas.ru>
-Content-Type: text/plain
-Date: Sun, 13 Sep 2009 09:00:53 -0500
-Message-Id: <1252850453.23599.13.camel@mulgrave.site>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Sep 2009 10:05:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:14721 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753294AbZIMOFQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 10:05:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=XCEvc21X4Ui62eOElADUwcGrTn8x+DebdBtNX8D7x/f8gsL9dmO4IiDnAGBx5iuaMp
+         okTdKgjUw4P/YujCbAQCjUrJPS28pTpzvpup3gfiq9myAQLGpdhxlWyzE/qsf/a6LorO
+         AE2ze+qutG0ZFKzw2zWumr6Hfqe6MrsEGumQU=
+MIME-Version: 1.0
+In-Reply-To: <4A21EA8E.6060507@redhat.com>
+References: <20090515075229.11346.6710.sendpatchset@localhost.localdomain>
+	 <20090528004100.3716e00d.akpm@linux-foundation.org>
+	 <4A21EA8E.6060507@redhat.com>
+Date: Sun, 13 Sep 2009 17:05:18 +0300
+Message-ID: <94a0d4530909130705o6886d496o670d1b978a9fc75f@mail.gmail.com>
+Subject: Re: [Patch] kbuild: fix a compile warning
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Amerigo Wang <amwang@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-13 at 04:01 +0500, Constantin Baranov wrote:
-> The scsitemp module attaches a device to each SCSI device
-> and registers it in hwmon. Currently the only method of
-> reading temperature is ATA SMART. Adding support of the
-> pure SCSI methods is provided.
+On Sun, May 31, 2009 at 5:25 AM, Amerigo Wang <amwang@redhat.com> wrote:
+> Andrew Morton wrote:
+>>
+>> On Fri, 15 May 2009 03:51:18 -0400 Amerigo Wang <amwang@redhat.com> wrote:
+>>
+>>
+>>>
+>>> I got this warning:
+>>>
+>>
+>> With which gcc version?
+>>
+>
+> gcc version 4.4.0 (GCC)
 
-The code, as you wrote it looks fine.
+I'm also getting this warning on 4.4.1. Can we merge this patch?
 
-The basic problem are the effects.  Right at the moment it tries to send
-an ATA_16 encapsulated SMART command to every SCSI device in the system.
-We simply can't allow this.  A huge number of SCSI presenting USB
-devices are known to lock up when they see either ATA_X encapsulation or
-SMART commands.  It's not really even safe to send ATA_X to SCSI
-devices.  The modern ones should all error out fine, but the older ones
-are likely to be less tolerant.
-
-Finally, this:
-
-> +               if (attr[2] == 194) {
-> +                       *temp = attr[7] * 1000;
-> +                       err = 0;
-> +                       break;
-
-Smart attribute 194 is highly vendor specific ... for instance my new
-SATA drive doesn't implement it (it does implement 190 instead).
-
-So really, given the complexity of just obtaining the data and the
-problem of matching which data to obtain to which device you have, why
-not just use smartctl from userspace for monitoring?  you could even
-just plug into smartd, it seems to have most of the necessary heuristics
-built in already.
-
-James
-
-
+-- 
+Felipe Contreras
