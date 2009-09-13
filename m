@@ -1,80 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbZIMTFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754956AbZIMTHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbZIMTFU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 15:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZIMTFS
+	id S1754956AbZIMTHu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 15:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbZIMTHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 15:05:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34525 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754452AbZIMTFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 15:05:17 -0400
-X-Authenticated: #10250065
-X-Provags-ID: V01U2FsdGVkX1+AhNxtWqSAoKxdUwo3av78W+8dQpUa0l9xkKggh+
-	psYRfbDkedJW1R
-Message-ID: <4AAD425A.8010605@gmx.de>
-Date: Sun, 13 Sep 2009 21:04:58 +0200
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
+	Sun, 13 Sep 2009 15:07:47 -0400
+Received: from mk-filter-1-a-1.mail.uk.tiscali.com ([212.74.100.52]:3303 "EHLO
+	mk-filter-1-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754442AbZIMTHq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 15:07:46 -0400
+X-Trace: 261521830/mk-filter-1.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.13.41/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 80.41.13.41
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqQEACvgrEpQKQ0p/2dsb2JhbACBUtZmhBgF
+X-IronPort-AV: E=Sophos;i="4.44,379,1249254000"; 
+   d="scan'208";a="261521830"
+Date: Sun, 13 Sep 2009 20:07:05 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Nitin Gupta <ngupta@vflare.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Ed Tomlinson <edt@aei.ca>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-mm-cc <linux-mm-cc@laptop.org>
+Subject: Re: [PATCH 0/4] compcache: in-memory compressed swapping v2
+In-Reply-To: <4AAB065D.3070602@vflare.org>
+Message-ID: <Pine.LNX.4.64.0909131956590.28668@sister.anvils>
+References: <200909100215.36350.ngupta@vflare.org> <200909100332.55910.ngupta@vflare.org>
+ <4AAB065D.3070602@vflare.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-fbdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       JosephChan@via.com.tw, ScottFang@viatech.com.cn
-Subject: Re: [PATCH 3/3] viafb: use read-only mode parsing
-References: <1252290284-3668-1-git-send-email-FlorianSchandinat@gmx.de>	<1252290284-3668-2-git-send-email-FlorianSchandinat@gmx.de>	<1252290284-3668-3-git-send-email-FlorianSchandinat@gmx.de> <20090909133956.c682bf4a.akpm@linux-foundation.org>
-In-Reply-To: <20090909133956.c682bf4a.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.53
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton schrieb:
-> On Mon,  7 Sep 2009 02:24:44 +0000
-> Florian Tobias Schandinat <FlorianSchandinat@gmx.de> wrote:
+On Sat, 12 Sep 2009, Nitin Gupta wrote:
+> On 09/10/2009 03:32 AM, Nitin Gupta wrote:
+> > Project home: http://compcache.googlecode.com/
+> >
+> > * Changelog: v2 vs initial revision
+> >   - Use 'struct page' instead of 32-bit PFNs in ramzswap driver and
+> >   xvmalloc.
+> >     This is to make these 64-bit safe.
+> >   - xvmalloc is no longer a separate module and does not export any symbols.
+> >     Its compiled directly with ramzswap block driver. This is to avoid any
+> >     last bit of confusion with any other allocator.
+> >   - set_swap_free_notify() now accepts block_device as parameter instead of
+> >     swp_entry_t (interface cleanup).
+> >   - Fix: Make sure ramzswap disksize matches usable pages in backing swap
+> >   file.
+> >     This caused initialization error in case backing swap file had
+> >     intra-page
+> >     fragmentation.
 > 
->> +static void parse_mode(const char *str, u32 *xres, u32 *yres)
->> +{
->> +	char *ptr;
->> +
->> +	*xres = simple_strtoul(str, &ptr, 10);
->> +	if (ptr[0] != 'x')
->> +		goto out_default;
->> +
->> +	*yres = simple_strtoul(&ptr[1], &ptr, 10);
->> +	if (ptr[0])
->> +		goto out_default;
->> +
->> +	return;
->> +
->> +out_default:
->> +	printk(KERN_WARNING "viafb received invalid mode string: %s\n", str);
->> +	*xres = 640;
->> +	*yres = 480;
->> +}
-> 
-> One wonders if we could use sscanf here?
+> Can anyone please review these patches for possible inclusion in 2.6.32?
 
-You're right.
-But I am planning to add the optional arguments -<bpp> and @<refresh> to 
-make it easier to select a mode and slowly move towards generic modedb 
-format. I think that can be done easier with pointer handling than 
-sscanf usage but I don't have a strong opinion about it so feel free to 
-request me to change it.
+Sorry, I certainly wouldn't be able to review them for 2.6.32 myself.
 
-Example: (new format)
-viafb_mode=800x480-16@60
-instead (old format)
-viafb_mode=800x480 viafb_bpp=16 viafb_refresh=60
+Since we're already in the merge window, and this work has not yet
+had exposure in mmotm (preferably) or linux-next, I really doubt
+anyone should be pushing it for 2.6.32.
 
-> The second simple_strtoul() could use strict_strtoul(), but that's not
-> obviously superior IMO.
+I'd be quite glad to see it and experiment with it in mmotm,
+so it could go into 2.6.33 if all okay.  And I now fully accept
+that the discard/trim situation is so hazy that you are quite
+right to be asking for your own well-defined notifier instead.
 
-True.
+But I'm not going to pretend to have reviewed it.
 
-
-Thanks,
-
-Florian Tobias Schandinat
+Hugh
