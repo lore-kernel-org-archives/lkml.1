@@ -1,143 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752766AbZIMKKm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752962AbZIMKMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752766AbZIMKKm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 06:10:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZIMKKg
+	id S1752962AbZIMKMU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 06:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZIMKMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 06:10:36 -0400
-Received: from dip-colo-pa.panasas.com ([67.152.220.67]:2789 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752452AbZIMKKf (ORCPT
+	Sun, 13 Sep 2009 06:12:16 -0400
+Received: from a-pb-sasl-sd.pobox.com ([64.74.157.62]:39998 "EHLO
+	sasl.smtp.pobox.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752695AbZIMKMP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 06:10:35 -0400
-Message-ID: <4AACC4FD.8050402@panasas.com>
-Date: Sun, 13 Sep 2009 13:10:05 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090722 Remi/fc10 Thunderbird/3.0b3
+	Sun, 13 Sep 2009 06:12:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws; d=pobox.com; h=to:subject:from
+	:date:message-id:mime-version:content-type; q=dns; s=sasl; b=mp2
+	gX/srxJC/OeujuJym+/RwC89PvblJzUJFzLbemCv3c42CAKYE6fyFEufCTvGlrHi
+	Pj0cyJrrEl3cmXoP12H7pjDF5vEuzKRGP3zhd+QlmJiee9l1GLuRuZOUWxzSHN1O
+	QLIh1QS7P24mH+PdfoOiRq/7bxyb3EP5QLuXjaho=
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.4.3
+From: Junio C Hamano <gitster@pobox.com>
+Date: Sun, 13 Sep 2009 03:12:02 -0700
+Message-ID: <7v1vmbw3v1.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic target
- engine for Linux v2.6.32
-References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Sep 2009 10:10:38.0369 (UTC) FILETIME=[7128F110:01CA345A]
+Content-Type: text/plain; charset=us-ascii
+X-Pobox-Relay-ID: E873C8EE-A04D-11DE-92EF-8B19076EA04E-77302942!a-pb-sasl-sd.pobox.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/12/2009 04:55 AM, Nicholas A. Bellinger wrote:
-> Greetings all,
-> 
-> This is my humble request for review and inclusion of
-> Target_Core_Mod/ConfigFS v3.2 from lio-core-2.6.git code into mainline
-> v2.6.32.  With TCM v3.2, the two major SPC-4 SCSI target mode fabric
-> features that have now been completed: Persistent Reservation APTPL and
-> implict/explict ALUA are the first all optional SPC4 defined feature
-> implementation of PR and ALUA in the Linux OSS target theatre using an
-> upstream user-driven virtual filesystem directory hierarchy structure
-> based on configfs that can be configured in realtime in combination with
-> interpreted userspace code.
-> 
-> Both of these new features are now being used to provide Persistent Reservations
-> across target power loss and asymmetric multipath I/O to both Linux and non-Linux
-> clients.  There is also an optional ALUA transition delay logic that has been
-> included to futher debug and improve existing upstream client side Linux kernel code
-> using TCM v3.2. These patches have been diffed against v2.6.31, and tested on x86
-> 32-bit HVM, x86_64 KVM, and powerpc.
-> 
-> There is cleanup work continuing to make the TCM code to use dprintk(),
-> and some include cleanups, and other minor fixes.  The code has also
-> been run through checkpatch again since the posting in April, and all
-> errors have been removed, with the exception of one ConfigFS macro
-> define triggering a checkpatch false positive.
-> 
-> As with the posting of the TCM v3.0 code earlier in April, I have
-> decided to break up the submissions into the generic target_core_mod
-> piece (this patch series) and then a seperate one that will be appearing
-> in the next days for v3.2 of the LIO-Target iSCSI fabric module.
-> 
-> More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
-> 
-> http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
-> http://www.linux-iscsi.org/index.php/Persistent_Reservations
-> http://www.linux-iscsi.org/index.php/ALUA
-> 
-> The complete v3.x TCM CLI operations set can be found here:
-> 
-> http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
-> 
-> Instructions and examples for getting setup:
-> 
-> http://linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
-> http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
-> 
-> Constructive comments are welcome,
-> 
-> --nab
-> 
-> ==> target_core_alua.patch <==
-> [RFC PATCH 1/19] Target_Core_Mod Asymmetric Logical Unit Assignment (ALUA) support
-> ==> target_core_configfs.patch <==
-> [RFC PATCH 2/19] Target_Core_Mod ConfigFS infrastructure
-> ==> target_core_device.patch <==
-> [RFC PATCH 3/19] Target_Core_Mod device core infrastructure
-> ==> target_core_file.patch <==
-> [RFC PATCH 4/19] Target_Core_Mod FILEIO <-> Linux/VFS subsystem
-> ==> target_core_hba.patch <==
-> [RFC PATCH 5/19] Target_Core_Mod HBA core infrastructure
-> ==> target_core_iblock.patch <==
-> [RFC PATCH 6/19] Target_Core_Mod IBLOCK <-> Linux/Block subsystem plugin
-> ==> target_core_mib.patch <==
-> [RFC PATCH 7/19] Target_Core_Mod SCSI MIBs
-> ==> target_core_plugin.patch <==
-> [RFC PATCH 8/19] Target_Core_Mod Subsystem and SE Object plugin infrastructure
-> ==> target_core_pr.patch <==
-> [RFC PATCH 9/19] Target_Core_Mod SPC-4 Persistent Reservations
-> ==> target_core_pscsi.patch <==
-> [RFC PATCH 10/19] Target_Core_Mod PSCSI <-> Linux/SCSI subsystem plugin
-> ==> target_core_rd.patch <==
-> [RFC PATCH 11/19] Target_Core_Mod RAMDISK_DR and RAMDISK_MCP subsystem plugin
-> ==> target_core_scdb.patch <==
-> [RFC PATCH 12/19] Target_Core_Mod READ/WRITE command descriptor block generation code
-> ==> target_core_seobj.patch <==
-> [RFC PATCH 13/19] Target_Core_Mod Storage Engine Object infrastructure
-> ==> target_core_tmr.patch <==
-> [RFC PATCH 14/19] Target_Core_Mod Task Management infrastructure
-> ==> target_core_tpg.patch <==
-> [RFC PATCH 15/19] Target_Core_Mod portal group endpoint infrastructure
-> ==> target_core_transport.patch <==
-> [RFC PATCH 16/19] Target_Core_Mod Generic Transport Core
-> ==> target_core_ua.patch <==
-> [RFC PATCH 17/19] Target_Core_Mod Unit Attention emulation support
-> ==> target_core_base_includes.patch <==
-> [RFC PATCH 18/19] Target_Core_Mod base and fabric_module includes
-> ==> target_core_misc.patch <==
-> [RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
-> 
+The latest maintenance release GIT 1.6.4.3 is available at the
+usual places:
 
-I would like to see a documentation patch which adds a file under Documentation/
-With some abstraction, design, usability, URLs
+  http://www.kernel.org/pub/software/scm/git/
 
-I promise to read it ;-)
+  git-1.6.4.3.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.4.3.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.4.3.tar.{gz,bz2}		(preformatted docs)
 
-I'm sure you have lots of stuff written laying around. Could you edit them up for
-Linux?
+The RPM binary packages for a few architectures are found in:
 
-Boaz
+  RPMS/$arch/git-*-1.6.4.3-1.fc9.$arch.rpm	(RPM)
+
+
+GIT v1.6.4.3 Release Notes
+==========================
+
+Fixes since v1.6.4.2
+--------------------
+
+* "git clone" from an empty repository gave unnecessary error message,
+  even though it did everything else correctly.
+
+* "git cvsserver" invoked git commands via "git-foo" style, which has long
+  been deprecated.
+
+* "git fetch" and "git clone" had an extra sanity check to verify the
+  presense of the corresponding *.pack file before downloading *.idx
+  file by issuing a HEAD request.  Github server however sometimes
+  gave 500 (Internal server error) response to HEAD even if a GET
+  request for *.pack file to the same URL would have succeeded, and broke
+  clone over HTTP from some of their repositories.  As a workaround, this
+  verification has been removed (as it is not absolutely necessary).
+
+* "git grep" did not like relative pathname to refer outside the current
+  directory when run from a subdirectory.
+
+* an error message from "git push" was formatted in a very ugly way.
+
+* "git svn" did not quote the subversion user name correctly when
+  running its author-prog helper program.
+
+Other minor documentation updates are included.
