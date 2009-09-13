@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZIMPtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754777AbZIMP7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZIMPtm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 11:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZIMPtk
+	id S1754777AbZIMP7T (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 11:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbZIMP7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 11:49:40 -0400
-Received: from mgw2.diku.dk ([130.225.96.92]:50683 "EHLO mgw2.diku.dk"
+	Sun, 13 Sep 2009 11:59:16 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44896 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751130AbZIMPtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 11:49:39 -0400
-Date: Sun, 13 Sep 2009 17:49:40 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
-In-Reply-To: <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
-Message-ID: <Pine.LNX.4.64.0909131749150.25903@ask.diku.dk>
-References: <Pine.LNX.4.64.0909111820370.10552@pc-004.diku.dk>
- <20090913.232548.253168283.anemo@mba.ocn.ne.jp> <Pine.LNX.4.64.0909131708190.25903@ask.diku.dk>
- <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
+	id S1754569AbZIMP7P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 11:59:15 -0400
+Date: Sun, 13 Sep 2009 17:59:14 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       linux-input@vger.kernel.org
+Subject: Re: special HID & Kconfig: odd behavior in gconfig
+In-Reply-To: <1252681027.2282.23.camel@castor>
+Message-ID: <alpine.LNX.2.00.0909131758280.17028@wotan.suse.de>
+References: <1252681027.2282.23.camel@castor>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Atsushi Nemoto wrote:
+On Fri, 11 Sep 2009, Richard Kennedy wrote:
 
-> On Sun, 13 Sep 2009 17:14:06 +0200 (CEST), Julia Lawall <julia@diku.dk> wrote:
-> > > This patch add some correctness, but obviously incomplete: there are
-> > > more error pathes without iounmap/kfree/etc. in this function.
-> > 
-> > The only other error path that I see is:
-> > 
-> >        pdev = platform_device_alloc("leds-gpio", basenum);
-> >         if (!pdev)
-> >                 return;
-> > 
-> > But at that point the call gpiochip_add(&iocled->chip) has already 
-> > succeeded.  From looking at this function, I have the impression that it 
-> > makes the iocled structure available from a global array, gpio_desc.  
-> > Since the function containing the above code doesn't return any error 
-> > code, perhaps the caller will not know whether this platform_device_alloc 
-> > error occurred or not.  There would also be at least the problem of 
-> > getting the pointer out of the gpio_desc structure.  I guess this could be 
-> > done with gpiochip_remove?
-> > 
-> > I can certainly make a new patch using the goto style, but let me know 
-> > what to do about the above issue.
+> I use gconfig & and cannot turn off any of the special HID devices.
 > 
-> Yes, this gpiochip is only used by leds-gpio driver.  So
-> gpiochip_remove() would be the right thing to do when something
-> failed.
+> the Kconfig for them all have the same pattern e.g.
 > 
-> Also there is one another error path: platform_device_add() failure at
-> the end of this function.
+> config HID_DRAGONRISE
+> 	tristate "DragonRise Inc. support" if EMBEDDED
+> 	depends on USB_HID
+> 	default !EMBEDDED
+> 
+> The 'if EMBEDDED' on the tristate line seems to confuse gconfig and it
+> sets them all to m & does not let me set them to N. I'm building this on
+> a standard desktop machine.
+> 
+> Any idea what the intention of this was? or can we just remove the if
+> embedded part?
 
-OK, I see.  I will submit an improved patch.  Thanks for the explanations.
+Hi Richard,
 
-julia
+actually this question has been raised by several people in the past
+already. Copy/pasting the latest reply I have sent on this topic
+
+===
+
+mostly this is because we don't want to bother users with asking for every 
+single quirky device/vendor, as there are unfortunately a lot of them. 
+Usually compiling everything in doesn't waste runtime footprint (the 
+modules don't get loaded unless needed), and they don't cost too much disk 
+space either. And if you really want to disable them, CONFIG_EMBEDDED 
+allows you to do that.
+
+Please see last paragraph on
+
+        http://lkml.org/lkml/2008/10/14/284
+
+===
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
