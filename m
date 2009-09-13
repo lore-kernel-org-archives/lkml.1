@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZIMVGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755165AbZIMVMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbZIMVGV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 17:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754975AbZIMVGT
+	id S1755165AbZIMVMs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 17:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZIMVMp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 17:06:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:12064 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754695AbZIMVGT (ORCPT
+	Sun, 13 Sep 2009 17:12:45 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:33813 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751572AbZIMVMp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 17:06:19 -0400
+	Sun, 13 Sep 2009 17:12:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=D/9MG7bT2h4FHQGUWGT55Hw4v+naueebzQU+A/Yo1mXO0Etzt5fIDeQ9Cw+U/lZOc+
-         Q9Ol+PSeYXXn3W5Rl8kArRhbgnjG5pEMDp4K8NYLub5CYdubxu/798BDR3L7H1fkUoSW
-         0fwJxFVbCDY6nZwxauEdX7pnbHcUisFxn9zVM=
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Felipe Contreras <felipe.contreras@gmail.com>,
-       Russell King <linux@arm.linux.org.uk>,
-       linux-arm-kernel@lists.infradead.org
-Subject: [PATCH] arm: remove unused code in delay.S
-Date: Mon, 14 Sep 2009 00:05:59 +0300
-Message-Id: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>
-X-Mailer: git-send-email 1.6.5.rc1
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=JbVNHI8Z9ydE+OqlBr036ErYumFKa+LgWgrzH5avbPDhOEQWxJYrgVyxUnyPQEpona
+         V9vhpcISxlgG9pFthURsKdql2OwBliLGeQrqrS9hOyU0PpAsxqKVUsffjGCrrUTh4DGs
+         Y549qUw32PypFkCrVfTGZxfjcN/70Kme5gz6w=
+MIME-Version: 1.0
+In-Reply-To: <1252870707-4824-3-git-send-email-felipe.contreras@gmail.com>
+References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com> 
+	<1252870707-4824-2-git-send-email-felipe.contreras@gmail.com> 
+	<1252870707-4824-3-git-send-email-felipe.contreras@gmail.com>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sun, 13 Sep 2009 17:12:28 -0400
+Message-ID: <8bd0f97a0909131412v6ba29823ube9aab20302aaca0@mail.gmail.com>
+Subject: Re: [PATCH 2/5] kbuild: fix warning when domainname is not available
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Felipe Contreras <felipe.contreras@gmail.com>
----
- arch/arm/lib/delay.S |   16 ----------------
- 1 files changed, 0 insertions(+), 16 deletions(-)
+On Sun, Sep 13, 2009 at 15:38, Felipe Contreras wrote:
+> +  if $domain; then
 
-diff --git a/arch/arm/lib/delay.S b/arch/arm/lib/delay.S
-index 8d6a876..b741eb4 100644
---- a/arch/arm/lib/delay.S
-+++ b/arch/arm/lib/delay.S
-@@ -42,22 +42,6 @@ ENTRY(__const_udelay)				@ 0 <= r0 <= 0x7fffff06
- @ Delay routine
- ENTRY(__delay)
- 		subs	r0, r0, #1
--#if 0
--		movls	pc, lr
--		subs	r0, r0, #1
--		movls	pc, lr
--		subs	r0, r0, #1
--		movls	pc, lr
--		subs	r0, r0, #1
--		movls	pc, lr
--		subs	r0, r0, #1
--		movls	pc, lr
--		subs	r0, r0, #1
--		movls	pc, lr
--		subs	r0, r0, #1
--		movls	pc, lr
--		subs	r0, r0, #1
--#endif
- 		bhi	__delay
- 		mov	pc, lr
- ENDPROC(__udelay)
--- 
-1.6.5.rc1
-
+is this really correct ?  i think you meant to use:
+[ -n "$domain" ]
+-mike
