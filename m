@@ -1,91 +1,257 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754646AbZIMPDN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754688AbZIMPDe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754646AbZIMPDN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 11:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZIMPDK
+	id S1754688AbZIMPDe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 11:03:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754671AbZIMPDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 11:03:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32858 "EHLO hera.kernel.org"
+	Sun, 13 Sep 2009 11:03:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32876 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754560AbZIMPDJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 11:03:09 -0400
-Date: Sun, 13 Sep 2009 15:02:48 GMT
-From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+	id S1754573AbZIMPDZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 11:03:25 -0400
+Date: Sun, 13 Sep 2009 15:03:01 GMT
+From: tip-bot for Tom Zanussi <tzanussi@gmail.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, lizf@cn.fujitsu.com, tglx@linutronix.de
+       tzanussi@gmail.com, lizf@cn.fujitsu.com, randy.dunlap@oracle.com,
+       rostedt@goodmis.org, tglx@linutronix.de
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <4A9214E3.2070807@cn.fujitsu.com>
-References: <4A9214E3.2070807@cn.fujitsu.com>
+       tzanussi@gmail.com, rostedt@goodmis.org, lizf@cn.fujitsu.com,
+       tglx@linutronix.de, randy.dunlap@oracle.com
+In-Reply-To: <1252642431.8016.9.camel@tropicana>
+References: <1252642431.8016.9.camel@tropicana>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] tracing/profile: fix profile_disable vs module_unload
-Message-ID: <tip-558e6547e4b8a2b13608a24a9d3679802f91c4c7@git.kernel.org>
-Git-Commit-ID: 558e6547e4b8a2b13608a24a9d3679802f91c4c7
+Subject: [tip:tracing/core] tracing/filters: add filter Documentation
+Message-ID: <tip-95b696088c1cf152c3bb62560bbe3a441922d68b@git.kernel.org>
+Git-Commit-ID: 95b696088c1cf152c3bb62560bbe3a441922d68b
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 13 Sep 2009 15:02:49 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 13 Sep 2009 15:03:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  558e6547e4b8a2b13608a24a9d3679802f91c4c7
-Gitweb:     http://git.kernel.org/tip/558e6547e4b8a2b13608a24a9d3679802f91c4c7
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Mon, 24 Aug 2009 12:19:47 +0800
+Commit-ID:  95b696088c1cf152c3bb62560bbe3a441922d68b
+Gitweb:     http://git.kernel.org/tip/95b696088c1cf152c3bb62560bbe3a441922d68b
+Author:     Tom Zanussi <tzanussi@gmail.com>
+AuthorDate: Thu, 10 Sep 2009 23:13:51 -0500
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Sat, 12 Sep 2009 22:28:38 -0400
+CommitDate: Sat, 12 Sep 2009 22:33:12 -0400
 
-tracing/profile: fix profile_disable vs module_unload
+tracing/filters: add filter Documentation
 
-If the correspoding module is unloaded before ftrace_profile_disable()
-is called, event->profile_disable() won't be called, which can
-cause oops:
+Documentation for event filters and formats.
 
-  # insmod trace-events-sample.ko
-  # perf record -f -a -e sample:foo_bar sleep 3 &
-  # sleep 1
-  # rmmod trace_events_sample
-  # insmod trace-events-sample.ko
-  OOPS!
+v2 changes: fix a few problems noticed by Randy Dunlap.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-LKML-Reference: <4A9214E3.2070807@cn.fujitsu.com>
+Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+LKML-Reference: <1252642431.8016.9.camel@tropicana>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
 ---
- kernel/trace/trace_event_profile.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+ Documentation/trace/events.txt |  184 +++++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 183 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index 11ba5bb..55a25c9 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -5,6 +5,7 @@
-  *
-  */
+diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
+index 2bcc8d4..6e5f35e 100644
+--- a/Documentation/trace/events.txt
++++ b/Documentation/trace/events.txt
+@@ -1,7 +1,7 @@
+ 			     Event Tracing
  
-+#include <linux/module.h>
- #include "trace.h"
+ 		Documentation written by Theodore Ts'o
+-			Updated by Li Zefan
++		Updated by Li Zefan and Tom Zanussi
  
- int ftrace_profile_enable(int event_id)
-@@ -14,7 +15,8 @@ int ftrace_profile_enable(int event_id)
+ 1. Introduction
+ ===============
+@@ -97,3 +97,185 @@ The format of this boot option is the same as described in section 2.1.
  
- 	mutex_lock(&event_mutex);
- 	list_for_each_entry(event, &ftrace_events, list) {
--		if (event->id == event_id && event->profile_enable) {
-+		if (event->id == event_id && event->profile_enable &&
-+		    try_module_get(event->mod)) {
- 			ret = event->profile_enable(event);
- 			break;
- 		}
-@@ -32,6 +34,7 @@ void ftrace_profile_disable(int event_id)
- 	list_for_each_entry(event, &ftrace_events, list) {
- 		if (event->id == event_id) {
- 			event->profile_disable(event);
-+			module_put(event->mod);
- 			break;
- 		}
- 	}
+ See The example provided in samples/trace_events
+ 
++4. Event formats
++================
++
++Each trace event has a 'format' file associated with it that contains
++a description of each field in a logged event.  This information can
++be used to parse the binary trace stream, and is also the place to
++find the field names that can be used in event filters (see section 5).
++
++It also displays the format string that will be used to print the
++event in text mode, along with the event name and ID used for
++profiling.
++
++Every event has a set of 'common' fields associated with it; these are
++the fields prefixed with 'common_'.  The other fields vary between
++events and correspond to the fields defined in the TRACE_EVENT
++definition for that event.
++
++Each field in the format has the form:
++
++     field:field-type field-name; offset:N; size:N;
++
++where offset is the offset of the field in the trace record and size
++is the size of the data item, in bytes.
++
++For example, here's the information displayed for the 'sched_wakeup'
++event:
++
++# cat /debug/tracing/events/sched/sched_wakeup/format
++
++name: sched_wakeup
++ID: 60
++format:
++	field:unsigned short common_type;	offset:0;	size:2;
++	field:unsigned char common_flags;	offset:2;	size:1;
++	field:unsigned char common_preempt_count;	offset:3;	size:1;
++	field:int common_pid;	offset:4;	size:4;
++	field:int common_tgid;	offset:8;	size:4;
++
++	field:char comm[TASK_COMM_LEN];	offset:12;	size:16;
++	field:pid_t pid;	offset:28;	size:4;
++	field:int prio;	offset:32;	size:4;
++	field:int success;	offset:36;	size:4;
++	field:int cpu;	offset:40;	size:4;
++
++print fmt: "task %s:%d [%d] success=%d [%03d]", REC->comm, REC->pid,
++	   REC->prio, REC->success, REC->cpu
++
++This event contains 10 fields, the first 5 common and the remaining 5
++event-specific.  All the fields for this event are numeric, except for
++'comm' which is a string, a distinction important for event filtering.
++
++5. Event filtering
++==================
++
++Trace events can be filtered in the kernel by associating boolean
++'filter expressions' with them.  As soon as an event is logged into
++the trace buffer, its fields are checked against the filter expression
++associated with that event type.  An event with field values that
++'match' the filter will appear in the trace output, and an event whose
++values don't match will be discarded.  An event with no filter
++associated with it matches everything, and is the default when no
++filter has been set for an event.
++
++5.1 Expression syntax
++---------------------
++
++A filter expression consists of one or more 'predicates' that can be
++combined using the logical operators '&&' and '||'.  A predicate is
++simply a clause that compares the value of a field contained within a
++logged event with a constant value and returns either 0 or 1 depending
++on whether the field value matched (1) or didn't match (0):
++
++	  field-name relational-operator value
++
++Parentheses can be used to provide arbitrary logical groupings and
++double-quotes can be used to prevent the shell from interpreting
++operators as shell metacharacters.
++
++The field-names available for use in filters can be found in the
++'format' files for trace events (see section 4).
++
++The relational-operators depend on the type of the field being tested:
++
++The operators available for numeric fields are:
++
++==, !=, <, <=, >, >=
++
++And for string fields they are:
++
++==, !=
++
++Currently, only exact string matches are supported.
++
++Currently, the maximum number of predicates in a filter is 16.
++
++5.2 Setting filters
++-------------------
++
++A filter for an individual event is set by writing a filter expression
++to the 'filter' file for the given event.
++
++For example:
++
++# cd /debug/tracing/events/sched/sched_wakeup
++# echo "common_preempt_count > 4" > filter
++
++A slightly more involved example:
++
++# cd /debug/tracing/events/sched/sched_signal_send
++# echo "((sig >= 10 && sig < 15) || sig == 17) && comm != bash" > filter
++
++If there is an error in the expression, you'll get an 'Invalid
++argument' error when setting it, and the erroneous string along with
++an error message can be seen by looking at the filter e.g.:
++
++# cd /debug/tracing/events/sched/sched_signal_send
++# echo "((sig >= 10 && sig < 15) || dsig == 17) && comm != bash" > filter
++-bash: echo: write error: Invalid argument
++# cat filter
++((sig >= 10 && sig < 15) || dsig == 17) && comm != bash
++^
++parse_error: Field not found
++
++Currently the caret ('^') for an error always appears at the beginning of
++the filter string; the error message should still be useful though
++even without more accurate position info.
++
++5.3 Clearing filters
++--------------------
++
++To clear the filter for an event, write a '0' to the event's filter
++file.
++
++To clear the filters for all events in a subsystem, write a '0' to the
++subsystem's filter file.
++
++5.3 Subsystem filters
++---------------------
++
++For convenience, filters for every event in a subsystem can be set or
++cleared as a group by writing a filter expression into the filter file
++at the root of the subsytem.  Note however, that if a filter for any
++event within the subsystem lacks a field specified in the subsystem
++filter, or if the filter can't be applied for any other reason, the
++filter for that event will retain its previous setting.  This can
++result in an unintended mixture of filters which could lead to
++confusing (to the user who might think different filters are in
++effect) trace output.  Only filters that reference just the common
++fields can be guaranteed to propagate successfully to all events.
++
++Here are a few subsystem filter examples that also illustrate the
++above points:
++
++Clear the filters on all events in the sched subsytem:
++
++# cd /sys/kernel/debug/tracing/events/sched
++# echo 0 > filter
++# cat sched_switch/filter
++none
++# cat sched_wakeup/filter
++none
++
++Set a filter using only common fields for all events in the sched
++subsytem (all events end up with the same filter):
++
++# cd /sys/kernel/debug/tracing/events/sched
++# echo common_pid == 0 > filter
++# cat sched_switch/filter
++common_pid == 0
++# cat sched_wakeup/filter
++common_pid == 0
++
++Attempt to set a filter using a non-common field for all events in the
++sched subsytem (all events but those that have a prev_pid field retain
++their old filters):
++
++# cd /sys/kernel/debug/tracing/events/sched
++# echo prev_pid == 0 > filter
++# cat sched_switch/filter
++prev_pid == 0
++# cat sched_wakeup/filter
++common_pid == 0
