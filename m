@@ -1,75 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbZIMSUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751626AbZIMSeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754355AbZIMSUM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 14:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753172AbZIMSUJ
+	id S1751626AbZIMSeH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 14:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZIMSeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 14:20:09 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:54113 "EHLO kernel.dk"
+	Sun, 13 Sep 2009 14:34:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:58192 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751871AbZIMSUI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 14:20:08 -0400
-Date: Sun, 13 Sep 2009 20:20:11 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, tytso@mit.edu, akpm@linux-foundation.org,
-       jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 3/4] writeback: only use bdi_writeback_all() for
-	WB_SYNC_NONE writeout
-Message-ID: <20090913182011.GQ14984@kernel.dk>
-References: <1252669832-13553-1-git-send-email-jens.axboe@oracle.com> <1252669832-13553-4-git-send-email-jens.axboe@oracle.com> <20090911180940.GC19598@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911180940.GC19598@infradead.org>
+	id S1750958AbZIMSeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 14:34:05 -0400
+Subject: [GIT BISECT] BUG kmalloc-8192: Object already free from
+ kmem_cache_destroy
+From: Eric Paris <eparis@redhat.com>
+To: cl@linux-foundation.org, dfeng@redhat.com, penberg@cs.helsinki.fi
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 13 Sep 2009 14:33:55 -0400
+Message-Id: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11 2009, Christoph Hellwig wrote:
-> > -static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
-> > +static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
-> > +				 struct writeback_control *wbc)
-> >  {
-> >  	struct bdi_work *work;
-> >  
-> > @@ -195,7 +196,7 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
-> >  	if (work)
-> >  		bdi_work_init(work, wbc);
-> >  
-> > -	return work;
-> > +	bdi_queue_work(bdi, work);
-> 
-> This is now the only caller of bdi_queue_work that has a NULL work
-> argument.  I would recommend removing the !work half of bdi_queue_work
-> and just inline it into this function (or make it a separate helper).
+2a38a002fbee06556489091c30b04746222167e4 is first bad commit
+commit 2a38a002fbee06556489091c30b04746222167e4
+Author: Xiaotian Feng <dfeng@redhat.com>
+Date:   Wed Jul 22 17:03:57 2009 +0800
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=cd932613c5b86a5bb2eefee726749acb0ed1a5b8
+    slub: sysfs_slab_remove should free kmem_cache when debug is enabled
+    
+    kmem_cache_destroy use sysfs_slab_remove to release the kmem_cache,
+    but when CONFIG_SLUB_DEBUG is enabled, sysfs_slab_remove just release
+    related kobject, the whole kmem_cache is missed to release and cause
+    a memory leak.
+    
+    Acked-by: Christoph Lameer <cl@linux-foundation.org>
+    Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+    Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 
- 
-> > @@ -1157,6 +1115,7 @@ long sync_inodes_sb(struct super_block *sb)
-> >  {
-> >  	struct writeback_control wbc = {
-> >  		.sb		= sb,
-> > +		.bdi		= sb->s_bdi,
-> >  		.sync_mode	= WB_SYNC_ALL,
-> >  		.range_start	= 0,
-> >  		.range_end	= LLONG_MAX,
-> > @@ -1164,7 +1123,7 @@ long sync_inodes_sb(struct super_block *sb)
-> >  	long nr_to_write = LONG_MAX; /* doesn't actually matter */
-> >  
-> >  	wbc.nr_to_write = nr_to_write;
-> > -	bdi_writeback_all(&wbc);
-> > +	bdi_start_writeback(&wbc);
-> 
-> So here we have a WB_SYNC_ALL caller of bdi_writeback_all and the
-> only other caller is WB_SYNC_NONE.  Given that after patch two those
-> are entirely different codepathes in bdi_start_writeback I would just
-> split bdi_start_writeback into two separate functions.
+CONFIG_SLUB_DEBUG=y
+CONFIG_SLUB=y
+CONFIG_SLUB_DEBUG_ON=y
+# CONFIG_SLUB_STATS is not set
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=479364efda68ae0d954f325fa52a3bbe94916783
+I created a very simple kernel module which consisted only of:
 
--- 
-Jens Axboe
+static int __init kmem_cache_test_init_module(void)
+{
+	struct kmem_cache *test_cachep;
+
+	test_cachep = kmem_cache_create("test_cachep", 32, 0, 0, NULL);
+	if (test_cachep)
+		kmem_cache_destroy(test_cachep);
+
+        return 0;
+}
+
+Before this patch it works just fine.  After this patch I get a bug like
+this:
+
+[   59.921431] kmem_cache_test_init_module:
+[   59.922415] =============================================================================
+[   59.922418] BUG kmalloc-8192: Object already free
+[   59.922419] -----------------------------------------------------------------------------
+[   59.922420]
+[   59.922453] INFO: Allocated in kmem_cache_create+0x70/0x320 age=1 cpu=3 pid=1781
+[   59.922458] INFO: Freed in kmem_cache_release+0x23/0x40 age=0 cpu=3 pid=1781
+[   59.922461] INFO: Slab 0xffffea0000373cc0 objects=3 used=1 fp=0xffff8800087fa048 flags=0x200000000040c3
+[   59.922463] INFO: Object 0xffff8800087fa048 @offset=8264 fp=0xffff8800087fc090
+[   59.922463]
+[   59.922465] Bytes b4 0xffff8800087fa038:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a ........ZZZZZZZZ
+[   59.922477]   Object 0xffff8800087fa048:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   59.922487]   Object 0xffff8800087fa058:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[snip]
+[   59.923261]   Object 0xffff8800087fb028:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   59.923261]   Object 0xffff8800087fb038:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+[   59.923261]  Redzone 0xffff8800087fc048:  bb bb bb bb bb bb bb bb                         »»»»»»»»
+[   59.923261]  Padding 0xffff8800087fc088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ
+[   59.923261] Pid: 1781, comm: insmod Not tainted 2.6.31-rc2 #33
+[   59.923261] Call Trace:
+[   59.923261]  [<ffffffff81142e1b>] print_trailer+0xfb/0x160
+[   59.923261]  [<ffffffff81142ec9>] object_err+0x49/0x70
+[   59.923261]  [<ffffffff81146166>] __slab_free+0x266/0x3c0
+[   59.923261]  [<ffffffff811463ac>] kfree+0xec/0x220
+[   59.923261]  [<ffffffff81146c4e>] ? kmem_cache_destroy+0x20e/0x230
+[   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
+[   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
+[   59.923261]  [<ffffffff81146c4e>] kmem_cache_destroy+0x20e/0x230
+[   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
+[   59.923261]  [<ffffffffa02d104f>] kmem_cache_test_init_module+0x4f/0x67 [cache_test]
+[   59.923261]  [<ffffffff8100a07b>] do_one_initcall+0x4b/0x1a0
+[   59.923261]  [<ffffffff810b5f08>] sys_init_module+0x108/0x260
+[   59.923261]  [<ffffffff81014282>] system_call_fastpath+0x16/0x1b
+[   59.923261] FIX kmalloc-8192: Object at 0xffff8800087fa048 not freed
 
