@@ -1,219 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752463AbZIMJvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbZIMJ73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752463AbZIMJvd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 05:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751033AbZIMJvc
+	id S1752613AbZIMJ73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 05:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZIMJ70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 05:51:32 -0400
-Received: from dip-colo-pa.panasas.com ([67.152.220.67]:52132 "EHLO
-	daytona.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750784AbZIMJva (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 05:51:30 -0400
-Message-ID: <4AACC085.3000805@panasas.com>
-Date: Sun, 13 Sep 2009 12:51:01 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090722 Remi/fc10 Thunderbird/3.0b3
+	Sun, 13 Sep 2009 05:59:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47440 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751033AbZIMJ70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 05:59:26 -0400
+Date: Sun, 13 Sep 2009 09:59:28 +0000
+From: Willy Tarreau <wtarreau@hera.kernel.org>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.4.37.6
+Message-ID: <20090913095928.GA23158@hera.kernel.org>
+Reply-To: w@1wt.eu
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Subject: Re: [RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
-References: <1252720726.2067.234.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1252720726.2067.234.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 13 Sep 2009 09:51:33.0918 (UTC) FILETIME=[C70393E0:01CA3457]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 13 Sep 2009 09:59:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/12/2009 04:58 AM, Nicholas A. Bellinger wrote:
-> [RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
-> 
-> This patch adds the remaining misc Makefile and Kconfig changes
-> 
-> It also has wrappers for unsigned long division in div64c, that will be converted to
-> include/asm-generic/div64.h
-> 
-> Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
-> diff --git a/drivers/target/div64.c b/drivers/target/div64.c
-> new file mode 100644
-> index 0000000..6d59864
-> --- /dev/null
-> +++ b/drivers/target/div64.c
-> @@ -0,0 +1,16 @@
-> +#include <asm/types.h>
-> +#include <asm/div64.h>
-> +
-> +#if BITS_PER_LONG == 32
-> +
-> +u64 __udivdi3(u64 a, u64 b)
-> +{
-> +  do_div(a, b);
-> +  return a;
-> +}
-> +
-> +u64 __umoddi3(u64 a, u64 b)
-> +{
-> +  return do_div(a, b);
-> +}
-> +#endif
-> diff --git a/drivers/target/Makefile b/drivers/target/Makefile
+I've just released Linux 2.4.37.6.
 
-I like Kbuild better then Makefile. And so does the Kernel documentation.
-It says new code should use Kbuild
+This version focuses on various vulnerabilities causing information
+leaks to user processes. I would personally call them minor since at
+most a few bytes per call or another task's pointer can be can be
+collected. Still, those were fixed in 2.6 so it's better to have 2.4
+at the same level. Most of them are recent, except the proc/pid/maps
+which I missed one year ago and the netlink padding issue which was
+fixed 4 years ago.
 
-> new file mode 100644
-> index 0000000..3e413b0
-> --- /dev/null
-> +++ b/drivers/target/Makefile
-> @@ -0,0 +1,96 @@
-> +CWD=$(shell pwd)
-> +
-> +PYX_ISCSI_VENDOR ?="Linux-iSCSI.org"
-> +
-> +# Transport Plugins and Devices.
-> + #
-> +LINUX_PARALLEL_SCSI ?= 1
-> +LINUX_STGT ?= 1
-> +LINUX_SCSI_MEDIA_ROM ?= 1
-> +LINUX_PARALLEL_ATA ?= 0
-> +LINUX_IBLOCK ?= 1
-> +LINUX_RAMDISK ?= 1
-> +LINUX_FILEIO ?= 1
-> +
-> +LINUX_VPD_PAGE_CHECK?=1
-> +LIO_TARGET_CONFIGFS?=1
-> +
-> +MODVER ?= 1
-> +USEGDB ?= 1
-> +DEBUG_DEV ?= 0
-> +SNMP_FEATURE ?= 1
-> +
+Most of them have CVE numbers assigned but I forgot to check them
+while committing. I don't think users are reading them that much
+anyway.
 
-Now when in-Kernel don't you need to use Kconfig for all this "configuration".
+If you don't know whether you need to upgrade, it's simple : if you're
+running something older than 2.4.37.5, you're potentially at risk so
+you should upgrade anyway. If you have untrusted local users, I would
+recommend you to upgrade. Otherwise you can wait for a more sensible
+update.
 
-What's with the re-invent the wheel, here.
+The patch and changelog will appear soon at the following locations:
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.37.6.bz2
+  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.37.6
 
-> +obj-$(CONFIG_TARGET_CORE)		+=	target_core_mod.o
-> +target_core_mod-objs			:=	target_core_configfs.o \
-> +						target_core_device.o \
-> +						target_core_hba.o \
-> +						target_core_plugin.o \
-> +						target_core_pr.o \
-> +						target_core_alua.o \
-> +						target_core_scdb.o \
-> +						target_core_seobj.o \
-> +						target_core_tmr.o \
-> +						target_core_tpg.o \
-> +						target_core_transport.o \
-> +						target_core_ua.o \
-> +						div64.o
-> +
-> +ifeq ($(LINUX_IBLOCK), 1)
-> +target_core_mod-objs			+=	target_core_iblock.o
-> +EXTRA_CFLAGS				+=	-DPYX_IBLOCK
-> +endif
-> +ifeq ($(LINUX_PARALLEL_SCSI), 1)
-> +target_core_mod-objs			+=	target_core_pscsi.o
-> +EXTRA_CFLAGS				+=	-DPARALLEL_SCSI
-> +endif
-> +ifeq ($(LINUX_STGT), 1)
-> +target_core_mod-objs			+=	target_core_stgt.o
-> +EXTRA_CFLAGS				+=	-DSTGT_PLUGIN
-> +endif
-> +ifeq ($(LINUX_RAMDISK), 1)
-> +target_core_mod-objs			+=	target_core_rd.o
-> +EXTRA_CFLAGS				+=	-DPYX_RAMDISK
-> +endif
-> +ifeq ($(LINUX_FILEIO), 1)
-> +target_core_mod-objs			+=	target_core_file.o
-> +EXTRA_CFLAGS				+=	-DPYX_FILEIO
-> +endif
-> +ifeq ($(SNMP_FEATURE), 1)
-> +target_core_mod-objs			+=	target_core_mib.o
-> +EXTRA_CFLAGS				+=	-DSNMP_SUPPORT
-> +endif
-> +ifeq ($(LINUX_VPD_PAGE_CHECK), 1)
-> +EXTRA_CFLAGS += -DLINUX_VPD_PAGE_CHECK
-> +endif
-> +ifeq ($(LINUX_SCSI_MEDIA_ROM), 1)
-> +EXTRA_CFLAGS += -DLINUX_SCSI_MEDIA_ROM
-> +endif
-> +ifeq ($(DEBUG_DEV), 1)
-> +EXTRA_CFLAGS += -DDEBUG_DEV
-> +endif
-> +
+Git repository:
+   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
 
-You see what I mean. Try with Kconfig variables all this disappears.
+Git repository through the gitweb interface:
+  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.37.y.git
 
-> +
-> +EXTRA_CFLAGS+=-I$(CWD)/drivers/target/ -I$(CWD)/drivers/scsi/
-> +EXTRA_CFLAGS+=-D_TARGET -DLINUX -DLINUX_KERNEL_26 -DLINUX_SCSI_HOST_LOCK -DLINUX_USE_SIGHAND
 
-?? are you sure
+Willy
 
-> +EXTRA_CFLAGS+=-DLINUX_SCATTERLIST_HAS_PAGE -DPYX_ISCSI_VENDOR='"Linux-iSCSI.org"'
+--
+Summary of changes from v2.4.37.5 to v2.4.37.6
+============================================
 
-And these are for ??
+Eric Dumazet (6):
+      tc: Fix unitialized kernel memory leak
+      appletalk: fix atalk_getname() leak
+      econet: Fix econet_getname() leak
+      irda: Fix irda_getname() leak
+      netrom: Fix nr_getname() leak
+      rose: Fix rose_getname() leak
 
-<Makefile>
-> +
-> +all:
-> +	$(MAKE) -C $(KERNEL_DIR) SUBDIRS=$(CWD) modules CWD=$(CWD) ARCH=$(ARCH) KBUILD_VERBOSE=0
-> +
-> +install ins:
-> +	rm -f /lib/modules/`uname -r`/kernel/drivers/scsi/iscsi_target_mod.ko
-> +	rm -f /lib/modules/`uname -r`/kernel/drivers/iscsi/iscsi_target_mod.ko
-> +	mkdir -p /lib/modules/`uname -r`/kernel/drivers/iscsi
-> +	cp -f iscsi_target_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
-> +	cp -f target_core_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
-> +	depmod -ae
-> +
-> +
-> +
-> +clean:
-> +	rm -f $(foreach prog,$(target_core_mod-objs) $(obj-m),$(CWD)/$(prog)) $(CWD)/target_core_mod.mod.o
-> +	rm -f target_core_mod.ko target_core_mod.mod.c
-> +	rm -f .*.cmd ../common/.*.cmd .make_autoconfig *~
-> +	rm -fr .tmp_versions
-> +
-</Makefile>
+Jake Edge (1):
+      proc: avoid information leaks to non-privileged processes
 
-OK this should go in a Makefile and kept out-of-tree
+Linus Torvalds (1):
+      do_sigaltstack: avoid copying 'stack_t' as a structure to user space
 
-> +
-> diff --git a/drivers/target/Kconfig b/drivers/target/Kconfig
-> new file mode 100644
-> index 0000000..04564f1
-> --- /dev/null
-> +++ b/drivers/target/Kconfig
-> @@ -0,0 +1,7 @@
-> +config TARGET_CORE
-> +        tristate "Generic Target Core Engine and ConfigFS Infrastructure"
-> +	select CONFIGFS_FS
-> +	select SCSI_TGT
-> +        default m
-> +        ---help---
-> +        Say Y here to enable the Storage Engine, Subsystem Plugins, and ConfigFS enabled control path for the Generic Target Engine.
-> 
-> 
+Patrick McHardy (3):
+      [NETLINK]: Missing initializations in dumped data
+      [NETLINK]: Clear padding in netlink messages
+      [NETLINK]: Missing padding fields in dumped structures
 
-Lots of more configs missing here
+Willy Tarreau (2):
+      restrict reading from /proc/<pid>/maps to those who share ->mm or can ptrace pid
+      Change VERSION to 2.4.37.6
 
-Cheers
-Boaz
