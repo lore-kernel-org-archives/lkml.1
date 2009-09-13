@@ -1,97 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751626AbZIMSeH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752434AbZIMSgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751626AbZIMSeH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 14:34:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZIMSeG
+	id S1752434AbZIMSgt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 14:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZIMSgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 14:34:06 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:58192 "EHLO mx1.redhat.com"
+	Sun, 13 Sep 2009 14:36:47 -0400
+Received: from cantor.suse.de ([195.135.220.2]:48657 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbZIMSeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 14:34:05 -0400
-Subject: [GIT BISECT] BUG kmalloc-8192: Object already free from
- kmem_cache_destroy
-From: Eric Paris <eparis@redhat.com>
-To: cl@linux-foundation.org, dfeng@redhat.com, penberg@cs.helsinki.fi
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 13 Sep 2009 14:33:55 -0400
-Message-Id: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 8bit
+	id S1751466AbZIMSgr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 14:36:47 -0400
+Date: Sun, 13 Sep 2009 20:36:45 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jkosina@wotan.suse.de
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT] HID patches for 2.6.32 merge window
+Message-ID: <alpine.LNX.2.00.0909132014310.17028@wotan.suse.de>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2a38a002fbee06556489091c30b04746222167e4 is first bad commit
-commit 2a38a002fbee06556489091c30b04746222167e4
-Author: Xiaotian Feng <dfeng@redhat.com>
-Date:   Wed Jul 22 17:03:57 2009 +0800
+Linus,
 
-    slub: sysfs_slab_remove should free kmem_cache when debug is enabled
-    
-    kmem_cache_destroy use sysfs_slab_remove to release the kmem_cache,
-    but when CONFIG_SLUB_DEBUG is enabled, sysfs_slab_remove just release
-    related kobject, the whole kmem_cache is missed to release and cause
-    a memory leak.
-    
-    Acked-by: Christoph Lameer <cl@linux-foundation.org>
-    Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
-    Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+could you please pull from 'for-linus' branch of
 
-CONFIG_SLUB_DEBUG=y
-CONFIG_SLUB=y
-CONFIG_SLUB_DEBUG_ON=y
-# CONFIG_SLUB_STATS is not set
+        git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
 
-I created a very simple kernel module which consisted only of:
+to receive HID patches accumulated for 2.6.32 merge window.
 
-static int __init kmem_cache_test_init_module(void)
-{
-	struct kmem_cache *test_cachep;
+Thanks!
 
-	test_cachep = kmem_cache_create("test_cachep", 32, 0, 0, NULL);
-	if (test_cachep)
-		kmem_cache_destroy(test_cachep);
+ drivers/hid/Kconfig             |   29 +--
+ drivers/hid/Makefile            |    6 +-
+ drivers/hid/hid-a4tech.c        |    4 +-
+ drivers/hid/hid-apple.c         |    4 +-
+ drivers/hid/hid-belkin.c        |    4 +-
+ drivers/hid/hid-cherry.c        |    4 +-
+ drivers/hid/hid-chicony.c       |    4 +-
+ drivers/hid/hid-core.c          |   71 +++++--
+ drivers/hid/hid-cypress.c       |    4 +-
+ drivers/hid/hid-debug.c         |  439 ++++++++++++++++++++++++++++++++-------
+ drivers/hid/hid-ezkey.c         |    4 +-
+ drivers/hid/hid-gyration.c      |    4 +-
+ drivers/hid/hid-ids.h           |   14 +-
+ drivers/hid/hid-input.c         |   13 +-
+ drivers/hid/hid-kensington.c    |    4 +-
+ drivers/hid/hid-kye.c           |    4 +-
+ drivers/hid/hid-lg.c            |    6 +-
+ drivers/hid/hid-lgff.c          |    6 +-
+ drivers/hid/hid-microsoft.c     |    4 +-
+ drivers/hid/hid-monterey.c      |    4 +-
+ drivers/hid/hid-ntrig.c         |   37 +++-
+ drivers/hid/hid-petalynx.c      |    4 +-
+ drivers/hid/hid-pl.c            |    4 +-
+ drivers/hid/hid-samsung.c       |   43 ++++-
+ drivers/hid/hid-sjoy.c          |    4 +-
+ drivers/hid/hid-sony.c          |    4 +-
+ drivers/hid/hid-sunplus.c       |    4 +-
+ drivers/hid/hid-tmff.c          |   10 +-
+ drivers/hid/hid-topseed.c       |    4 +-
+ drivers/hid/hid-twinhan.c       |  147 +++++++++++++
+ drivers/hid/hid-wacom.c         |    4 +-
+ drivers/hid/hid-zpff.c          |    4 +-
+ drivers/hid/usbhid/hid-core.c   |   12 +-
+ drivers/hid/usbhid/hid-quirks.c |    2 +-
+ drivers/hid/usbhid/hiddev.c     |    2 +-
+ include/linux/hid-debug.h       |   48 +++--
+ include/linux/hid.h             |   22 +--
+ 37 files changed, 755 insertions(+), 232 deletions(-)
 
-        return 0;
-}
+Bruno Premont (1):
+      HID: driver for Twinhan USB 6253:0100 remote control
 
-Before this patch it works just fine.  After this patch I get a bug like
-this:
+H Hartley Sweeten (1):
+      HID: local function should be static
 
-[   59.921431] kmem_cache_test_init_module:
-[   59.922415] =============================================================================
-[   59.922418] BUG kmalloc-8192: Object already free
-[   59.922419] -----------------------------------------------------------------------------
-[   59.922420]
-[   59.922453] INFO: Allocated in kmem_cache_create+0x70/0x320 age=1 cpu=3 pid=1781
-[   59.922458] INFO: Freed in kmem_cache_release+0x23/0x40 age=0 cpu=3 pid=1781
-[   59.922461] INFO: Slab 0xffffea0000373cc0 objects=3 used=1 fp=0xffff8800087fa048 flags=0x200000000040c3
-[   59.922463] INFO: Object 0xffff8800087fa048 @offset=8264 fp=0xffff8800087fc090
-[   59.922463]
-[   59.922465] Bytes b4 0xffff8800087fa038:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a ........ZZZZZZZZ
-[   59.922477]   Object 0xffff8800087fa048:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-[   59.922487]   Object 0xffff8800087fa058:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-[snip]
-[   59.923261]   Object 0xffff8800087fb028:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-[   59.923261]   Object 0xffff8800087fb038:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-[   59.923261]  Redzone 0xffff8800087fc048:  bb bb bb bb bb bb bb bb                         »»»»»»»»
-[   59.923261]  Padding 0xffff8800087fc088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ
-[   59.923261] Pid: 1781, comm: insmod Not tainted 2.6.31-rc2 #33
-[   59.923261] Call Trace:
-[   59.923261]  [<ffffffff81142e1b>] print_trailer+0xfb/0x160
-[   59.923261]  [<ffffffff81142ec9>] object_err+0x49/0x70
-[   59.923261]  [<ffffffff81146166>] __slab_free+0x266/0x3c0
-[   59.923261]  [<ffffffff811463ac>] kfree+0xec/0x220
-[   59.923261]  [<ffffffff81146c4e>] ? kmem_cache_destroy+0x20e/0x230
-[   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
-[   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
-[   59.923261]  [<ffffffff81146c4e>] kmem_cache_destroy+0x20e/0x230
-[   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
-[   59.923261]  [<ffffffffa02d104f>] kmem_cache_test_init_module+0x4f/0x67 [cache_test]
-[   59.923261]  [<ffffffff8100a07b>] do_one_initcall+0x4b/0x1a0
-[   59.923261]  [<ffffffff810b5f08>] sys_init_module+0x108/0x260
-[   59.923261]  [<ffffffff81014282>] system_call_fastpath+0x16/0x1b
-[   59.923261] FIX kmalloc-8192: Object at 0xffff8800087fa048 not freed
+Henning Glawe (1):
+      HID: ignore Philips IEEE802.15.4 RF Dongle
+
+Jan Scholz (1):
+      HID: completely remove apple mightymouse from blacklist
+
+Jarod Wilson (1):
+      HID: ignore all recent SoundGraph iMON devices
+
+Jiri Kosina (6):
+      HID: use debugfs for report dumping descriptor
+      HID: use debugfs for events/reports dumping
+      HID: fix debugfs build with !CONFIG_DEBUG_FS
+      HID: fix memory leak on error path in debug code
+      HID: add force feedback support for Logitech WingMan Formula Force GP
+      HID: support larger reports than 64 bytes in hiddev
+
+Julia Lawall (2):
+      HID: Drop NULL test on list_entry result
+      HID: fix memory leak on error patch in debug code
+
+Peter Huewe (1):
+      HID: adding __init/__exit macros to module init/exit functions
+
+Rafi Rubin (1):
+      HID: ntrig tool separation and pen usages
+
+Robert Schedel (1):
+      HID: Support new variants of Samsung USB IR receiver (0419:0001)
+
+Roel Kluin (1):
+      HID: fix overrun in quirks initialization
+
+Ruben Aos Garralda (1):
+      HID: add rumble support for Thrustmaster Dual Trigger 3-in-1
+
+Sergey Senozhatsky (1):
+      HID: Avoid double spin_lock_init on usbhid->lock
 
