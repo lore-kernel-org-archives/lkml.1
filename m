@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZIMXHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZIMXLt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbZIMXHK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 19:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753334AbZIMXHJ
+	id S1753916AbZIMXLt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 19:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZIMXLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 19:07:09 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50797 "EHLO ogre.sisk.pl"
+	Sun, 13 Sep 2009 19:11:48 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:42742 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753305AbZIMXHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 19:07:08 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: Re: [RFC][PATCH 3/4] PCI / ACPI PM: Platform support for PCI PME wake-up
-Date: Mon, 14 Sep 2009 01:08:08 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-References: <200909132320.05077.rjw@sisk.pl> <200909140053.05779.rjw@sisk.pl> <20090913225518.GA31787@srcf.ucam.org>
-In-Reply-To: <20090913225518.GA31787@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1752168AbZIMXLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 19:11:48 -0400
+Subject: Re: [GIT BISECT] BUG kmalloc-8192: Object already free from
+ kmem_cache_destroy
+From: Eric Paris <eparis@redhat.com>
+To: cl@linux-foundation.org
+Cc: dfeng@redhat.com, penberg@cs.helsinki.fi, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
+References: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 13 Sep 2009 19:11:33 -0400
+Message-Id: <1252883493.16335.8.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909140108.08579.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 September 2009, Matthew Garrett wrote:
-> On Mon, Sep 14, 2009 at 12:53:05AM +0200, Rafael J. Wysocki wrote:
-> > On Monday 14 September 2009, Matthew Garrett wrote:
-> > > On Sun, Sep 13, 2009 at 11:24:03PM +0200, Rafael J. Wysocki wrote:
-> > > > +	} else if (!dev->wakeup.flags.run_wake) {
-> > > > +		acpi_set_gpe_type(dev->wakeup.gpe_device,
-> > > > +					dev->wakeup.gpe_number,
-> > > > +					ACPI_GPE_TYPE_WAKE);
-> > > 
-> > > Is this going to work for cases where we have multiple devices attached 
-> > > to the same GPE? The common one is EHCI, where both EHCI HCDs will be 
-> > > one a single GPE. If we wake one, that'll then disable the GPE for the 
-> > > other. Further wakeup events will then be lost.
-> > 
-> > You're right, I overlooked that.  Some kind of refcounting is needed here.
+On Sun, 2009-09-13 at 14:33 -0400, Eric Paris wrote:
+> 2a38a002fbee06556489091c30b04746222167e4 is first bad commit
+> commit 2a38a002fbee06556489091c30b04746222167e4
+> Author: Xiaotian Feng <dfeng@redhat.com>
+> Date:   Wed Jul 22 17:03:57 2009 +0800
 > 
-> I've sent patches to implement this at the GPE level, which also change 
-> the API for requesting them. I'm waiting on feedback from Bob Moore.
+>     slub: sysfs_slab_remove should free kmem_cache when debug is enabled
+>     
+>     kmem_cache_destroy use sysfs_slab_remove to release the kmem_cache,
+>     but when CONFIG_SLUB_DEBUG is enabled, sysfs_slab_remove just release
+>     related kobject, the whole kmem_cache is missed to release and cause
+>     a memory leak.
+>     
+>     Acked-by: Christoph Lameer <cl@linux-foundation.org>
+>     Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
+>     Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 > 
-> > > > +	if (device->wakeup.flags.valid)
-> > > > +		acpi_install_notify_handler(device->handle, ACPI_SYSTEM_NOTIFY,
-> > > > +						pci_acpi_device_wakeup,
-> > > > +						&dev->dev);
-> > > > +
-> > > 
-> > > I think this will fail for the root bridge if acpiphp has already 
-> > > grabbed it to check for hotplug events.
-> > 
-> > The root bridge is not a struct pci_dev and this is called only for these.
-> 
-> Are you sure?
+> CONFIG_SLUB_DEBUG=y
+> CONFIG_SLUB=y
+> CONFIG_SLUB_DEBUG_ON=y
+> # CONFIG_SLUB_STATS is not set
 
-Yup.  ACPI associates the root bridge handle with the struct device created by
-pci_create_bus() as the bridge of the root bus.
+I also had problems destroying a kmem_cache in a security_initcall()
+function which had a different backtrace (it's what made me create the
+module and bisect.)   So be sure to let me know what you find so I can
+be sure that we fix that place as well   (I believe that was a kref
+problem rather than a double free)
 
-> When I did this I saw conflicts with acpiphp. I may have my terminology
-> confused. I sent another patch that abstract that out.
+-Eric
 
-I'll have a look at acpihp, then.
-
-Thanks,
-Rafael
