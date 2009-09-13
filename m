@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754665AbZIMPDV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZIMPCz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754665AbZIMPDV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 11:03:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754621AbZIMPDT
+	id S1754630AbZIMPCz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 11:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754560AbZIMPCy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 11:03:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:32866 "EHLO hera.kernel.org"
+	Sun, 13 Sep 2009 11:02:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:32835 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754642AbZIMPDN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 11:03:13 -0400
-Date: Sun, 13 Sep 2009 15:02:23 GMT
-From: tip-bot for John Reiser <jreiser@bitwagon.com>
+	id S1754507AbZIMPCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 11:02:53 -0400
+Date: Sun, 13 Sep 2009 15:02:35 GMT
+From: tip-bot for Jiri Olsa <jolsa@redhat.com>
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, jreiser@bitwagon.com, jreiser@bitwagon.com,
-       tglx@linutronix.de
+       rostedt@goodmis.org, tglx@linutronix.de, jolsa@redhat.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, jreiser@bitwagon.com, tglx@linutronix.de,
-       jreiser@bitwagon.com
-In-Reply-To: <4A6DF0B6.7080402@bitwagon.com>
-References: <4A6DF0B6.7080402@bitwagon.com>
+       rostedt@goodmis.org, tglx@linutronix.de, jolsa@redhat.com
+In-Reply-To: <20090729085837.GB4998@jolsa.lab.eng.brq.redhat.com>
+References: <20090729085837.GB4998@jolsa.lab.eng.brq.redhat.com>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:tracing/core] ftrace: __start_mcount_loc should be .init.rodata
-Message-ID: <tip-4b3b4c5e64ce26612646867ee354373620063534@git.kernel.org>
-Git-Commit-ID: 4b3b4c5e64ce26612646867ee354373620063534
+Subject: [tip:tracing/core] tracing/function-graph: x86_64 stack allocation cleanup
+Message-ID: <tip-4818d80942b7c0021d213b7c5f1a14a832820a01@git.kernel.org>
+Git-Commit-ID: 4818d80942b7c0021d213b7c5f1a14a832820a01
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
@@ -32,67 +30,50 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4b3b4c5e64ce26612646867ee354373620063534
-Gitweb:     http://git.kernel.org/tip/4b3b4c5e64ce26612646867ee354373620063534
-Author:     John Reiser <jreiser@bitwagon.com>
-AuthorDate: Mon, 27 Jul 2009 11:23:50 -0700
+Commit-ID:  4818d80942b7c0021d213b7c5f1a14a832820a01
+Gitweb:     http://git.kernel.org/tip/4818d80942b7c0021d213b7c5f1a14a832820a01
+Author:     Jiri Olsa <jolsa@redhat.com>
+AuthorDate: Wed, 29 Jul 2009 10:58:37 +0200
 Committer:  Steven Rostedt <rostedt@goodmis.org>
-CommitDate: Sat, 12 Sep 2009 21:57:29 -0400
+CommitDate: Sat, 12 Sep 2009 22:13:43 -0400
 
-ftrace: __start_mcount_loc should be .init.rodata
+tracing/function-graph: x86_64 stack allocation cleanup
 
-__start_mcount_loc[] is unused after init, yet occupies RAM forever
-as part of .rodata.  152kiB is typical on a 64-bit architecture.  Instead,
-__start_mcount_loc should be in the interval [__init_begin, __init_end)
-so that the space is reclaimed after init.
+Only 24 bytes needs to be reserved on the stack for the function graph
+tracer on x86_64.
 
-__start_mcount_loc[] is generated during the load portion
-of kernel build, and is used only by ftrace_init().  ftrace_init is declared
-'__init' and is in .init.text, which is freed after init.
-__start_mcount_loc is placed into .rodata by a call to MCOUNT_REC inside
-the RO_DATA macro of include/asm-generic/vmlinux.lds.h.  The array *is*
-read-only, but more importantly it is not used after init.  So the call to
-MCOUNT_REC should be moved from RO_DATA to INIT_DATA.
-
-This patch has been tested on x86_64 with CONFIG_DEBUG_PAGEALLOC=y
-which verifies that the address range never is accessed after init.
-
-Signed-off-by: John Reiser <jreiser@BitWagon.com>
-LKML-Reference: <4A6DF0B6.7080402@bitwagon.com>
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+LKML-Reference: <20090729085837.GB4998@jolsa.lab.eng.brq.redhat.com>
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
 
 ---
- include/asm-generic/vmlinux.lds.h |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+ arch/x86/kernel/entry_64.S |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/include/asm-generic/vmlinux.lds.h b/include/asm-generic/vmlinux.lds.h
-index 6ad76bf..98b37cf 100644
---- a/include/asm-generic/vmlinux.lds.h
-+++ b/include/asm-generic/vmlinux.lds.h
-@@ -91,7 +91,8 @@
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index c251be7..d59fe32 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -146,7 +146,7 @@ ENTRY(ftrace_graph_caller)
+ END(ftrace_graph_caller)
+ 
+ GLOBAL(return_to_handler)
+-	subq  $80, %rsp
++	subq  $24, %rsp
+ 
+ 	/* Save the return values */
+ 	movq %rax, (%rsp)
+@@ -155,10 +155,10 @@ GLOBAL(return_to_handler)
+ 
+ 	call ftrace_return_to_handler
+ 
+-	movq %rax, 72(%rsp)
++	movq %rax, 16(%rsp)
+ 	movq 8(%rsp), %rdx
+ 	movq (%rsp), %rax
+-	addq $72, %rsp
++	addq $16, %rsp
+ 	retq
  #endif
  
- #ifdef CONFIG_FTRACE_MCOUNT_RECORD
--#define MCOUNT_REC()	VMLINUX_SYMBOL(__start_mcount_loc) = .; \
-+#define MCOUNT_REC()	. = ALIGN(8);				\
-+			VMLINUX_SYMBOL(__start_mcount_loc) = .; \
- 			*(__mcount_loc)				\
- 			VMLINUX_SYMBOL(__stop_mcount_loc) = .;
- #else
-@@ -331,7 +332,6 @@
- 	/* __*init sections */						\
- 	__init_rodata : AT(ADDR(__init_rodata) - LOAD_OFFSET) {		\
- 		*(.ref.rodata)						\
--		MCOUNT_REC()						\
- 		DEV_KEEP(init.rodata)					\
- 		DEV_KEEP(exit.rodata)					\
- 		CPU_KEEP(init.rodata)					\
-@@ -455,6 +455,7 @@
- 	MEM_DISCARD(init.data)						\
- 	KERNEL_CTORS()							\
- 	*(.init.rodata)							\
-+	MCOUNT_REC()							\
- 	DEV_DISCARD(init.rodata)					\
- 	CPU_DISCARD(init.rodata)					\
- 	MEM_DISCARD(init.rodata)
