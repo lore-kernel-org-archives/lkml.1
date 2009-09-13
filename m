@@ -1,186 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753932AbZIMNZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754074AbZIMNow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753932AbZIMNZs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 09:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbZIMNZp
+	id S1754074AbZIMNow (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 09:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754014AbZIMNor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 09:25:45 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:22203 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753374AbZIMNZo (ORCPT
+	Sun, 13 Sep 2009 09:44:47 -0400
+Received: from idcmail-mo1so.shaw.ca ([24.71.223.10]:43715 "EHLO
+	idcmail-mo1so.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753958AbZIMNoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 09:25:44 -0400
-X-Trace: 258081819/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.102.79/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.102.79
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AqQEAAKQrEpPRWZP/2dsb2JhbACBUtZshBgFgVaJAg
-X-IronPort-AV: E=Sophos;i="4.44,379,1249254000"; 
-   d="scan'208";a="258081819"
-Date: Sun, 13 Sep 2009 14:24:58 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Eric Whitney <eric.whitney@hp.com>,
-       stable@kernel.org
-Subject: Re: [PATCH] mmap:  avoid unnecessary anon_vma lock acquisition in
- vma_adjust()
-In-Reply-To: <1252527046.4102.162.camel@useless.americas.hpqcorp.net>
-Message-ID: <Pine.LNX.4.64.0909131332280.22041@sister.anvils>
-References: <1252527046.4102.162.camel@useless.americas.hpqcorp.net>
+	Sun, 13 Sep 2009 09:44:46 -0400
+X-Cloudmark-SP-Filtered: true
+X-Cloudmark-SP-Result: v=1.0 c=1 a=7aL8QoKEyJsA:10 a=w4iE+TBsmj5y1WloLYF40w==:17
+ a=ULMWahI2Lg760u-EGLQA:9 a=S9yS_lCc-0GTMMX_5_pAARpMZMAA:4
+From: Thomas Fjellstrom <tfjellstrom@shaw.ca>
+Reply-To: tfjellstrom@shaw.ca
+To: "linux-kernel" <linux-kernel@vger.kernel.org>
+Subject: mmc0: Timeout waiting for hardware interrupt.
+Date: Sun, 13 Sep 2009 07:44:47 -0600
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc9; KDE/4.3.1; x86_64; ; )
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909130744.47312.tfjellstrom@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[I've kept stable@kernel.org in the Cc list only to put on record
-that I don't think that this patch is really suitable for -stable]
+I got the following from inserting a plain old 2G SD card into my Lenovo SL500 
+laptop:
 
-On Wed, 9 Sep 2009, Lee Schermerhorn wrote:
-> 
-Thanks for this.  Interesting stuff snipped and repeated below.
+[177156.720126] mmc0: Timeout waiting for hardware interrupt.
+[177156.720129] sdhci: ============== REGISTER DUMP ==============
+[177156.720134] sdhci: Sys addr: 0x1c512d8c | Version:  0x00000400
+[177156.720137] sdhci: Blk size: 0x00007008 | Blk cnt:  0x00000001
+[177156.720141] sdhci: Argument: 0x00000000 | Trn mode: 0x00000013
+[177156.720144] sdhci: Present:  0x01ff0206 | Host ctl: 0x00000001
+[177156.720147] sdhci: Power:    0x0000000f | Blk gap:  0x00000000
+[177156.720150] sdhci: Wake-up:  0x00000000 | Clock:    0x00008007
+[177156.720153] sdhci: Timeout:  0x00000009 | Int stat: 0x00000000
+[177156.720162] sdhci: Int enab: 0x02ff00cb | Sig enab: 0x02ff00cb
+[177156.720165] sdhci: AC12 err: 0x00000000 | Slot int: 0x00000000
+[177156.720168] sdhci: Caps:     0x01e021a1 | Max curr: 0x00000040
+[177156.720170] sdhci: ===========================================
+[177156.723183] mmc0: error -110 whilst initialising SD card
 
-> 
-> A comment in mm/mmap.c:vma_adjust() suggests that we don't really
-> need the anon_vma lock when we're only adjusting the end of a vma,
+Once I removed and re inserted the card it started working, but I thought I'd 
+report it.
 
-I feel a warm smugness from having foreseen the possibility that we
-might want to optimize that away.  I didn't do so, because it needs
-more thought (and more branches) than seemed worthwhile at the time:
-you've found similar difficulty, but now it does seem worthwhile.
-
-> We can detect this condition--no overlap with next vma--by noting
-> a NULL "importer".  The anon_vma pointer will also be NULL in this
-> case, so simply avoid loading vma->anon_vma to avoid the lock.
-> However, we apparently DO need to take the anon_vma lock when
-> we're inserting a vma ['insert' non-NULL] even when we have no
-> overlap [NULL "importer"], so we need to check for 'insert', as well.
-
-Those importer and insert checks are good and relevant, but not
-quite enough.  The anon_vma lock should also be guaranteeing the
-integrity of the relationship between vm_start and vm_pgoff for
-all the vmas attached to the anon_vma, so that rmap.c can rely
-upon vma_address() to work correctly while it holds anon_vma lock.
-
-That's a considerably less important consideration than the integrity
-of the list threading itself.  Anything BUGging on a wrong page->index
-is holding mmap_sem, which would keep vma_adjust off.  So it's just a
-matter of whether rmap.c can be expected to find all instances of a
-page at all times, which nothing absolutely requires (and in checking
-this patch, I notice fs/exec.c's shift_arg_pages() use of vma_adjust()
-a little violatory in that respect).
-
-But it is something the anon_vma lock has protected in the past,
-and it shouldn't affect your sbrk() case at all, so I'd like to
-check we're not changing vm_start too (vm_pgoff should be changing
-with it, but shift_arg_pages() deals with that in a different way,
-keeping vm_pgoff unchanged but shifting the pages).
-
-(Compare with how stack's expand_downwards() has anon_vma_lock()
-when it adjusts vm_start and vm_pgoff - though that's also because
-it has only down_read of mmap_sem, not the down_write we'd usually
-require for such adjustments.)
-
-> 
-> I have tested with and without the 'file || ' test in the patch.
-> This does not seem to matter for stability nor performance.  I
-> left this check/filter in, so we only optimize away the
-> anon_vma lock acquisition when adjusting the end of a non-
-> importing, non-inserting, anon vma.
-
-I dislike that: the "file" test just has no relevance at all
-(beyond that you've no interest in the case when there is a file),
-and two years down the line will make people like me worry for
-hours on end what it's there for.  I've removed it below.
-
-> 
-> If accepted, this patch may benefit the stable tree as well.
-
-We seem to have a different perception of what the stable tree is for!
-But I'm not against any distro picking up this patch if it chooses.
-Here's a version with my signoff:
-
-
-[PATCH] mmap: avoid unnecessary anon_vma lock acquisition in vma_adjust()
-
-From: Lee Schermerhorn <lee.schermerhorn@hp.com>
-
-We noticed very erratic behavior [throughput] with the AIM7 shared
-workload running on recent distro [SLES11] and mainline kernels on
-an 8-socket, 32-core, 256GB x86_64 platform.  On the SLES11 kernel
-[2.6.27.19+] with Barcelona processors, as we increased the load
-[10s of thousands of tasks], the throughput would vary between two
-"plateaus"--one at ~65K jobs per minute and one at ~130K jpm.  The
-simple patch below causes the results to smooth out at the ~130k
-plateau.
-
-But wait, there's more:
-
-We do not see this behavior on smaller platforms--e.g., 4 socket/8
-core.  This could be the result of the larger number of cpus on
-the larger platform--a scalability issue--or it could be the result
-of the larger number of interconnect "hops" between some nodes in
-this platform and how the tasks for a given load end up distributed
-over the nodes' cpus and memories--a stochastic NUMA effect.
-
-The variability in the results are less pronounced [on the same
-platform] with Shanghai processors and with mainline kernels.  With
-31-rc6 on Shanghai processors and 288 file systems on 288 fibre
-attached storage volumes, the curves [jpm vs load] are both quite
-flat with the patched kernel consistently producing ~3.9% better
-throughput [~80K jpm vs ~77K jpm] than the unpatched kernel.
-
-Profiling indicated that the "slow" runs were incurring high[er]
-contention on an anon_vma lock in vma_adjust(), apparently called
-from the sbrk() system call.
-
-The patch:
-
-A comment in mm/mmap.c:vma_adjust() suggests that we don't really
-need the anon_vma lock when we're only adjusting the end of a vma,
-as is the case for brk().  The comment questions whether it's worth
-while to optimize for this case.  Apparently, on the newer, larger
-x86_64 platforms, with interesting NUMA topologies, it is worth
-while--especially considering that the patch [if correct!] is 
-quite simple.
-
-We can detect this condition--no overlap with next vma--by noting
-a NULL "importer".  The anon_vma pointer will also be NULL in this
-case, so simply avoid loading vma->anon_vma to avoid the lock.
-
-However, we DO need to take the anon_vma lock when we're inserting a
-vma ['insert' non-NULL] even when we have no overlap [NULL "importer"],
-so we need to check for 'insert', as well.  And Hugh points out that
-we should also take it when adjusting vm_start (so that rmap.c can
-rely upon vma_address() while it holds the anon_vma lock).
-
-Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Eric Whitney <eric.whitney@hp.com>
----
-
- mm/mmap.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- 2.6.31/mm/mmap.c	2009-09-09 23:13:59.000000000 +0100
-+++ linux/mm/mmap.c	2009-09-13 13:08:40.000000000 +0100
-@@ -570,9 +570,9 @@ again:			remove_next = 1 + (end > next->
- 
- 	/*
- 	 * When changing only vma->vm_end, we don't really need
--	 * anon_vma lock: but is that case worth optimizing out?
-+	 * anon_vma lock.
- 	 */
--	if (vma->anon_vma)
-+	if (vma->anon_vma && (insert || importer || start != vma->vm_start))
- 		anon_vma = vma->anon_vma;
- 	if (anon_vma) {
- 		spin_lock(&anon_vma->lock);
+-- 
+Thomas Fjellstrom
+tfjellstrom@shaw.ca
