@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754484AbZIMOiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754600AbZIMO7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754484AbZIMOiK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 10:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbZIMOiH
+	id S1754600AbZIMO7y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 10:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZIMO7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 10:38:07 -0400
-Received: from moutng.kundenserver.de ([212.227.17.9]:52518 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754372AbZIMOiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 10:38:06 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [RFC][v6][PATCH 0/9] clone_with_pids() syscall
-Date: Sun, 13 Sep 2009 16:36:47 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-9-generic; KDE/4.3.1; x86_64; ; )
-Cc: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Oren Laadan <orenl@cs.columbia.edu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
-       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
-       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>,
-       container@us.ibm.com, sukadev@us.ibm.com
-References: <20090910060627.GA24343@us.ibm.com> <1252688404.7126.40.camel@laptop> <20090912171930.GB29169@us.ibm.com>
-In-Reply-To: <20090912171930.GB29169@us.ibm.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>
- =?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sun, 13 Sep 2009 10:59:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37032 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751130AbZIMO7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 10:59:47 -0400
+Date: Sun, 13 Sep 2009 16:59:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH 0/6] [GIT PULL] tracing: automate output for ftrace
+	formats
+Message-ID: <20090913145931.GA24187@elte.hu>
+References: <20090913034302.134417216@goodmis.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909131636.47407.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+byQMfXFEO8JPuEJ7lnV3aH5kyrlXujUvrNYs
- dRCdQUsEURnhPOnSMWd4YRZ/bRtKmb/vWYu3Xw0uSP2x1QHJUM
- ZyL98/puFPYyrUu9qqtBQ==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090913034302.134417216@goodmis.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 September 2009, Sukadev Bhattiprolu wrote:
-> 
-> Peter Zijlstra [peterz@infradead.org] wrote:
-> | On Fri, 2009-09-11 at 09:47 -0700, Sukadev Bhattiprolu wrote:
-> | > | Also, if you're passing a struct, why not put nr_pids in there, and
-> | > | replace clone_pid_struct with a simple array? That would give us
-> | > | 
-> | > | struct clone_struct {
-> | > |         u64 flags;
-> | > |         u64 child_stack;
-> | > |         u32 child_tid;
-> | > |         u32 parent_tid;
-> 
-> BTW, these two tids are __user pointers that kernel copies data into.
-> They should be u64 to avoid conversions in architecture specific code ?
-> 
 
-No, they are not pointers, the kernel can directly write into the user
-data structure. Indirect pointers would not be helpful here IMHO.
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-	Arnd <><
+> Ingo,
+> 
+> Currently, the output for the format files for the internal ftrace
+> plugin entries is done by hand. This becomes difficult to maintain
+> and error prone. If a change happens to a structure, it is likely
+> that it will not be shown in the format file which binary readers
+> of ftrace require.
+> 
+> This patch series implements the logic that is used by TRACE_EVENT
+> to use macros that create the structures and those same macros also
+> show the output layout in the format files. This guarantees that the
+> structures and the output formats remain in-sync.
+> 
+> Again, this is based off of tip/tracing/core2
+> 
+> Please pull the latest tip/tracing/core3 tree, which can be found at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/core3
+
+Pulled, thanks a lot Steve!
+
+	Ingo
