@@ -1,68 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbZIMPr4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZIMPtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbZIMPr4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 11:47:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754185AbZIMPrw
+	id S1754693AbZIMPtm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 11:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZIMPtk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 11:47:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53025 "EHLO mx2.mail.elte.hu"
+	Sun, 13 Sep 2009 11:49:40 -0400
+Received: from mgw2.diku.dk ([130.225.96.92]:50683 "EHLO mgw2.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753294AbZIMPrv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 11:47:51 -0400
-Date: Sun, 13 Sep 2009 17:47:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
-Subject: Re: Epic regression in throughput since v2.6.23
-Message-ID: <20090913154744.GA27066@elte.hu>
-References: <20090906205952.GA6516@elte.hu> <87hbvdiogq.fsf@depni.sinp.msu.ru> <873a6xdqwq.fsf@depni.sinp.msu.ru> <20090909155223.GA12065@elte.hu> <87my53vo6d.fsf@depni.sinp.msu.ru> <20090910065306.GB3920@elte.hu> <87ljkm9yew.fsf@depni.sinp.msu.ru> <20090911061024.GA27833@elte.hu> <87iqfmx3tr.fsf@depni.sinp.msu.ru>
+	id S1751130AbZIMPtj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 11:49:39 -0400
+Date: Sun, 13 Sep 2009 17:49:40 +0200 (CEST)
+From: Julia Lawall <julia@diku.dk>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
+In-Reply-To: <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
+Message-ID: <Pine.LNX.4.64.0909131749150.25903@ask.diku.dk>
+References: <Pine.LNX.4.64.0909111820370.10552@pc-004.diku.dk>
+ <20090913.232548.253168283.anemo@mba.ocn.ne.jp> <Pine.LNX.4.64.0909131708190.25903@ask.diku.dk>
+ <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87iqfmx3tr.fsf@depni.sinp.msu.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 14 Sep 2009, Atsushi Nemoto wrote:
 
-* Serge Belyshev <belyshev@depni.sinp.msu.ru> wrote:
+> On Sun, 13 Sep 2009 17:14:06 +0200 (CEST), Julia Lawall <julia@diku.dk> wrote:
+> > > This patch add some correctness, but obviously incomplete: there are
+> > > more error pathes without iounmap/kfree/etc. in this function.
+> > 
+> > The only other error path that I see is:
+> > 
+> >        pdev = platform_device_alloc("leds-gpio", basenum);
+> >         if (!pdev)
+> >                 return;
+> > 
+> > But at that point the call gpiochip_add(&iocled->chip) has already 
+> > succeeded.  From looking at this function, I have the impression that it 
+> > makes the iocled structure available from a global array, gpio_desc.  
+> > Since the function containing the above code doesn't return any error 
+> > code, perhaps the caller will not know whether this platform_device_alloc 
+> > error occurred or not.  There would also be at least the problem of 
+> > getting the pointer out of the gpio_desc structure.  I guess this could be 
+> > done with gpiochip_remove?
+> > 
+> > I can certainly make a new patch using the goto style, but let me know 
+> > what to do about the above issue.
+> 
+> Yes, this gpiochip is only used by leds-gpio driver.  So
+> gpiochip_remove() would be the right thing to do when something
+> failed.
+> 
+> Also there is one another error path: platform_device_add() failure at
+> the end of this function.
 
-> Note that the disabling NEW_FAIR_SLEEPERS doesn't fix 3% 
-> regression from v2.6.23, but instead makes "make -j4" runtime 
-> another 2% worse (27.05 -> 27.72).
+OK, I see.  I will submit an improved patch.  Thanks for the explanations.
 
-ok - thanks for the numbers, will have a look.
-
-> ---
->  tools/perf/builtin-stat.c |   18 +++++++++++++++++-
->  1 file changed, 17 insertions(+), 1 deletion(-)
-
-> +	// quick ugly hack: if a "--" appears in the command, treat is as
-> +	// a delimiter and use remaining part as a "cleanup command",
-> +	// not affecting performance counters.
-> +	cleanup = cleanup_argc = 0;
-> +	for (j = 1; j < (argc-1); j ++) {
-> +		if (!strcmp (argv[j], "--")) {
-> +			cleanup = j + 1;
-> +			cleanup_argc = argc - j - 1;
-> +			argv[j] = NULL;
-> +			argc = j;
-> +		}
-> +	}
-
-Nice feature!
-
-How about doing it a bit cleaner, as '--repeat-prepare' and 
-'--repeat-cleanup' options, to allow both pre-repeat and post-repeat 
-cleanup ops to be done outside of the measured period?
-
-	Ingo
+julia
