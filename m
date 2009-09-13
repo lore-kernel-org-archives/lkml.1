@@ -1,77 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbZIMPON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZIMPPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754605AbZIMPON (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 11:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZIMPOI
+	id S1754621AbZIMPPe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 11:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751164AbZIMPP2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 11:14:08 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:32973 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750892AbZIMPOH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 11:14:07 -0400
-Date: Sun, 13 Sep 2009 17:14:06 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
-In-Reply-To: <20090913.232548.253168283.anemo@mba.ocn.ne.jp>
-Message-ID: <Pine.LNX.4.64.0909131708190.25903@ask.diku.dk>
-References: <Pine.LNX.4.64.0909111820370.10552@pc-004.diku.dk>
- <20090913.232548.253168283.anemo@mba.ocn.ne.jp>
+	Sun, 13 Sep 2009 11:15:28 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:55224 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750892AbZIMPP2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 11:15:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=f9z1QkpnI5iDcaqPogx/MWaiat98p/uzCmVyQUbY5uCX4+DsgFfqupP5Krm8nW4kLS
+         gjSH2UI31XMHS+aPCakegraIQ6Kq0kpHzgAhl+Ky89dpbXA87d0tswRdZ90V9fge8/az
+         MY8VCTK7C6n44tPKBZW8EOwLlP3fL8Za8YnnI=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Date: Sun, 13 Sep 2009 11:15:30 -0400
+Message-ID: <f7848160909130815l3e768a30n3b28808bbe5c254b@mail.gmail.com>
+Subject: Trace event testing time - 3s to 41s
+From: Parag Warudkar <parag.lkml@gmail.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Sep 2009, Atsushi Nemoto wrote:
+Somewhere between -rc9 and yesterday's git, my desktop went from using
+3s worth of trace event testing time to 41s !
 
-> On Fri, 11 Sep 2009 18:21:00 +0200 (CEST), Julia Lawall <julia@diku.dk> wrote:
-> > From: Julia Lawall <julia@diku.dk>
-> > 
-> > Error handling code following a kzalloc should free the allocated data.
-> > Error handling code following an ioremap should iounmap the allocated data.
-> > 
-> > The semantic match that finds the first problem is as follows:
-> > (http://www.emn.fr/x-info/coccinelle/)
-> 
-> Thank you for finding this out.
-> 
-> This patch add some correctness, but obviously incomplete: there are
-> more error pathes without iounmap/kfree/etc. in this function.
+It looks like we not only added a whole bunch of tracing points but
+also are doing the tests twice post -rc9 - the addition being testing
+with function tracer.
 
-The only other error path that I see is:
+grep "Testing event" dmesg.31rc9 |wc -l
+100
 
-       pdev = platform_device_alloc("leds-gpio", basenum);
-        if (!pdev)
-                return;
+grep "Testing event" dmesg.31git |wc -l
+1172
 
-But at that point the call gpiochip_add(&iocled->chip) has already 
-succeeded.  From looking at this function, I have the impression that it 
-makes the iocled structure available from a global array, gpio_desc.  
-Since the function containing the above code doesn't return any error 
-code, perhaps the caller will not know whether this platform_device_alloc 
-error occurred or not.  There would also be at least the problem of 
-getting the pointer out of the gpio_desc structure.  I guess this could be 
-done with gpiochip_remove?
+While one could get away with "don't enable that config option then"
+response, for testing kernels daily this sounds like it is going to be
+very annoying as it adds a considerable boot lag.
 
-I can certainly make a new patch using the goto style, but let me know 
-what to do about the above issue.
+So I was thinking could we move this testing to a kthread with idle
+priority or something - may be disabling tracing until those tests are
+finished, if that sort of thing is necessary?
+Or does it need to happen synchronous to booting?
 
-thanks,
-julia
+Thanks
 
-
-> And I like goto-style cleanup, as Mark Brown said in reply for your
-> sound/soc patch.
-> 
-> Could you make a new patch?
-> 
-> ---
-> Atsushi Nemoto
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Parag
