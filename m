@@ -1,88 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752613AbZIMJ73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752664AbZIMKHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752613AbZIMJ73 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 05:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751627AbZIMJ70
+	id S1752664AbZIMKHb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 06:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZIMKHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 05:59:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47440 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbZIMJ70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 05:59:26 -0400
-Date: Sun, 13 Sep 2009 09:59:28 +0000
-From: Willy Tarreau <wtarreau@hera.kernel.org>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.4.37.6
-Message-ID: <20090913095928.GA23158@hera.kernel.org>
-Reply-To: w@1wt.eu
+	Sun, 13 Sep 2009 06:07:25 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:44292 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751627AbZIMKHY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 06:07:24 -0400
+Date: Sun, 13 Sep 2009 15:37:13 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: [BUGFIX] kprobes: prevent re-registration of the same kprobe
+Message-ID: <20090913100713.GB14251@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 13 Sep 2009 09:59:29 +0000 (UTC)
+In-Reply-To: <20090911031253.GD16396@nowhere>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've just released Linux 2.4.37.6.
+On Fri, Sep 11, 2009 at 05:12:54AM +0200, Frederic Weisbecker wrote:
+> On Thu, Sep 10, 2009 at 07:53:30PM -0400, Masami Hiramatsu wrote:
 
-This version focuses on various vulnerabilities causing information
-leaks to user processes. I would personally call them minor since at
-most a few bytes per call or another task's pointer can be can be
-collected. Still, those were fixed in 2.6 so it's better to have 2.4
-at the same level. Most of them are recent, except the proc/pid/maps
-which I missed one year ago and the netlink padding issue which was
-fixed 4 years ago.
+...
 
-Most of them have CVE numbers assigned but I forgot to check them
-while committing. I don't think users are reading them that much
-anyway.
+> Is it possible to have two kprobes having the exact same
+> properties? (pointing to the same address, having the same
+> probe handlers, etc...)
 
-If you don't know whether you need to upgrade, it's simple : if you're
-running something older than 2.4.37.5, you're potentially at risk so
-you should upgrade anyway. If you have untrusted local users, I would
-recommend you to upgrade. Otherwise you can wait for a more sensible
-update.
+Yes, this is possible with two *different* kprobes. However, we have a bug
+with the current code where there is insufficient scaffolding to prevent
+re-registration of the same kprobe. Here is a patch...
 
-The patch and changelog will appear soon at the following locations:
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/patch-2.4.37.6.bz2
-  ftp://ftp.kernel.org/pub/linux/kernel/v2.4/ChangeLog-2.4.37.6
+---
+Prevent re-registration of the same kprobe. Current code allows this,
+albeit with disastrous consequences. Its not a common case, but should
+be flagged nonetheless.
 
-Git repository:
-   git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
-  http://www.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.4.37.y.git
+Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+---
+ kernel/kprobes.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Git repository through the gitweb interface:
-  http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.4.37.y.git
-
-
-Willy
-
---
-Summary of changes from v2.4.37.5 to v2.4.37.6
-============================================
-
-Eric Dumazet (6):
-      tc: Fix unitialized kernel memory leak
-      appletalk: fix atalk_getname() leak
-      econet: Fix econet_getname() leak
-      irda: Fix irda_getname() leak
-      netrom: Fix nr_getname() leak
-      rose: Fix rose_getname() leak
-
-Jake Edge (1):
-      proc: avoid information leaks to non-privileged processes
-
-Linus Torvalds (1):
-      do_sigaltstack: avoid copying 'stack_t' as a structure to user space
-
-Patrick McHardy (3):
-      [NETLINK]: Missing initializations in dumped data
-      [NETLINK]: Clear padding in netlink messages
-      [NETLINK]: Missing padding fields in dumped structures
-
-Willy Tarreau (2):
-      restrict reading from /proc/<pid>/maps to those who share ->mm or can ptrace pid
-      Change VERSION to 2.4.37.6
-
+Index: ptrace-10sep/kernel/kprobes.c
+===================================================================
+--- ptrace-10sep.orig/kernel/kprobes.c
++++ ptrace-10sep/kernel/kprobes.c
+@@ -589,6 +589,9 @@ static int __kprobes register_aggr_kprob
+ 	int ret = 0;
+ 	struct kprobe *ap = old_p;
+ 
++	if (old_p == p)
++		/* Attempt to re-register the same kprobe.. fail */
++		return -EINVAL;
+ 	if (old_p->pre_handler != aggr_pre_handler) {
+ 		/* If old_p is not an aggr_probe, create new aggr_kprobe. */
+ 		ap = kzalloc(sizeof(struct kprobe), GFP_KERNEL);
