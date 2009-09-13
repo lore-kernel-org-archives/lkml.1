@@ -1,247 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbZIMDGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754970AbZIMDMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbZIMDGt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 23:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754988AbZIMDGp
+	id S1754970AbZIMDMy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 23:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754869AbZIMDMw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 23:06:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:34636 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754866AbZIMDGP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 23:06:15 -0400
-Message-Id: <20090913030617.734847079@goodmis.org>
-References: <20090913030543.204871396@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Sat, 12 Sep 2009 23:05:47 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: [PATCH 4/4] tracing/filters: add filter Documentation
-Content-Disposition: inline; filename=0004-tracing-filters-add-filter-Documentation.patch
+	Sat, 12 Sep 2009 23:12:52 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54822 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754846AbZIMDMv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 23:12:51 -0400
+Message-ID: <4AAC632E.3090902@pobox.com>
+Date: Sat, 12 Sep 2009 23:12:46 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: "Jung-Ik (John) Lee" <jilee@google.com>
+CC: Robert Hancock <hancockrwd@gmail.com>, Daniel Walker <dwalker@fifo99.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Grant Grundler <grundler@google.com>,
+       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>
+Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard ATP867X
+ 	controllers
+References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com> 	<1252721641.28368.34.camel@desktop> <8b5805ff0909120359g2faf661br463b19518d935110@mail.gmail.com> 	<4AABD122.2000400@gmail.com> <8b5805ff0909121717w1516c273k2a568779b9c31662@mail.gmail.com> 	<8b5805ff0909121726g2f1a78c1o1ff7289e059eabe5@mail.gmail.com> 	<4AAC4315.6010102@pobox.com> <8b5805ff0909121941y38b7764fv3cc4d0b5c1ba6c89@mail.gmail.com>
+In-Reply-To: <8b5805ff0909121941y38b7764fv3cc4d0b5c1ba6c89@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tom Zanussi <tzanussi@gmail.com>
+On 09/12/2009 10:41 PM, Jung-Ik (John) Lee wrote:
+> On Sat, Sep 12, 2009 at 5:55 PM, Jeff Garzik<jgarzik@pobox.com>  wrote:
+>>
+>>
+>> General comment:
+>>
+>> * since you use iomap to map the region, you should use ioread{8,16,32} /
+>> iowrite{8,16,32} accessors.  Do not use inb/outb/inl/outl/etc.
+> .
+> I used them for runtime hot registers by separately mapping them
+> simply to avoid an extra overhead of ioread/iowrite, over the
+> portability.
+> I know it's not a good idea but in this case for these hot ports can
+> in/out be used?
 
-Documentation for event filters and formats.
+It is _highly_ unlikely that the overhead is even measureable above the 
+noise, I would think.  Do you have data showing that ioread/iowrite 
+impose a noticeable penalty?
 
-v2 changes: fix a few problems noticed by Randy Dunlap.
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
-LKML-Reference: <1252642431.8016.9.camel@tropicana>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- Documentation/trace/events.txt |  184 +++++++++++++++++++++++++++++++++++++++-
- 1 files changed, 183 insertions(+), 1 deletions(-)
+>
+>
+>>
+>> * run through scripts/checkpatch.pl
+>>
+>
+> Weird. I don't see any WS issues you pointed below in my source code
+> or git diff file, except UT = T/4 below.
 
-diff --git a/Documentation/trace/events.txt b/Documentation/trace/events.txt
-index 2bcc8d4..6e5f35e 100644
---- a/Documentation/trace/events.txt
-+++ b/Documentation/trace/events.txt
-@@ -1,7 +1,7 @@
- 			     Event Tracing
- 
- 		Documentation written by Theodore Ts'o
--			Updated by Li Zefan
-+		Updated by Li Zefan and Tom Zanussi
- 
- 1. Introduction
- ===============
-@@ -97,3 +97,185 @@ The format of this boot option is the same as described in section 2.1.
- 
- See The example provided in samples/trace_events
- 
-+4. Event formats
-+================
-+
-+Each trace event has a 'format' file associated with it that contains
-+a description of each field in a logged event.  This information can
-+be used to parse the binary trace stream, and is also the place to
-+find the field names that can be used in event filters (see section 5).
-+
-+It also displays the format string that will be used to print the
-+event in text mode, along with the event name and ID used for
-+profiling.
-+
-+Every event has a set of 'common' fields associated with it; these are
-+the fields prefixed with 'common_'.  The other fields vary between
-+events and correspond to the fields defined in the TRACE_EVENT
-+definition for that event.
-+
-+Each field in the format has the form:
-+
-+     field:field-type field-name; offset:N; size:N;
-+
-+where offset is the offset of the field in the trace record and size
-+is the size of the data item, in bytes.
-+
-+For example, here's the information displayed for the 'sched_wakeup'
-+event:
-+
-+# cat /debug/tracing/events/sched/sched_wakeup/format
-+
-+name: sched_wakeup
-+ID: 60
-+format:
-+	field:unsigned short common_type;	offset:0;	size:2;
-+	field:unsigned char common_flags;	offset:2;	size:1;
-+	field:unsigned char common_preempt_count;	offset:3;	size:1;
-+	field:int common_pid;	offset:4;	size:4;
-+	field:int common_tgid;	offset:8;	size:4;
-+
-+	field:char comm[TASK_COMM_LEN];	offset:12;	size:16;
-+	field:pid_t pid;	offset:28;	size:4;
-+	field:int prio;	offset:32;	size:4;
-+	field:int success;	offset:36;	size:4;
-+	field:int cpu;	offset:40;	size:4;
-+
-+print fmt: "task %s:%d [%d] success=%d [%03d]", REC->comm, REC->pid,
-+	   REC->prio, REC->success, REC->cpu
-+
-+This event contains 10 fields, the first 5 common and the remaining 5
-+event-specific.  All the fields for this event are numeric, except for
-+'comm' which is a string, a distinction important for event filtering.
-+
-+5. Event filtering
-+==================
-+
-+Trace events can be filtered in the kernel by associating boolean
-+'filter expressions' with them.  As soon as an event is logged into
-+the trace buffer, its fields are checked against the filter expression
-+associated with that event type.  An event with field values that
-+'match' the filter will appear in the trace output, and an event whose
-+values don't match will be discarded.  An event with no filter
-+associated with it matches everything, and is the default when no
-+filter has been set for an event.
-+
-+5.1 Expression syntax
-+---------------------
-+
-+A filter expression consists of one or more 'predicates' that can be
-+combined using the logical operators '&&' and '||'.  A predicate is
-+simply a clause that compares the value of a field contained within a
-+logged event with a constant value and returns either 0 or 1 depending
-+on whether the field value matched (1) or didn't match (0):
-+
-+	  field-name relational-operator value
-+
-+Parentheses can be used to provide arbitrary logical groupings and
-+double-quotes can be used to prevent the shell from interpreting
-+operators as shell metacharacters.
-+
-+The field-names available for use in filters can be found in the
-+'format' files for trace events (see section 4).
-+
-+The relational-operators depend on the type of the field being tested:
-+
-+The operators available for numeric fields are:
-+
-+==, !=, <, <=, >, >=
-+
-+And for string fields they are:
-+
-+==, !=
-+
-+Currently, only exact string matches are supported.
-+
-+Currently, the maximum number of predicates in a filter is 16.
-+
-+5.2 Setting filters
-+-------------------
-+
-+A filter for an individual event is set by writing a filter expression
-+to the 'filter' file for the given event.
-+
-+For example:
-+
-+# cd /debug/tracing/events/sched/sched_wakeup
-+# echo "common_preempt_count > 4" > filter
-+
-+A slightly more involved example:
-+
-+# cd /debug/tracing/events/sched/sched_signal_send
-+# echo "((sig >= 10 && sig < 15) || sig == 17) && comm != bash" > filter
-+
-+If there is an error in the expression, you'll get an 'Invalid
-+argument' error when setting it, and the erroneous string along with
-+an error message can be seen by looking at the filter e.g.:
-+
-+# cd /debug/tracing/events/sched/sched_signal_send
-+# echo "((sig >= 10 && sig < 15) || dsig == 17) && comm != bash" > filter
-+-bash: echo: write error: Invalid argument
-+# cat filter
-+((sig >= 10 && sig < 15) || dsig == 17) && comm != bash
-+^
-+parse_error: Field not found
-+
-+Currently the caret ('^') for an error always appears at the beginning of
-+the filter string; the error message should still be useful though
-+even without more accurate position info.
-+
-+5.3 Clearing filters
-+--------------------
-+
-+To clear the filter for an event, write a '0' to the event's filter
-+file.
-+
-+To clear the filters for all events in a subsystem, write a '0' to the
-+subsystem's filter file.
-+
-+5.3 Subsystem filters
-+---------------------
-+
-+For convenience, filters for every event in a subsystem can be set or
-+cleared as a group by writing a filter expression into the filter file
-+at the root of the subsytem.  Note however, that if a filter for any
-+event within the subsystem lacks a field specified in the subsystem
-+filter, or if the filter can't be applied for any other reason, the
-+filter for that event will retain its previous setting.  This can
-+result in an unintended mixture of filters which could lead to
-+confusing (to the user who might think different filters are in
-+effect) trace output.  Only filters that reference just the common
-+fields can be guaranteed to propagate successfully to all events.
-+
-+Here are a few subsystem filter examples that also illustrate the
-+above points:
-+
-+Clear the filters on all events in the sched subsytem:
-+
-+# cd /sys/kernel/debug/tracing/events/sched
-+# echo 0 > filter
-+# cat sched_switch/filter
-+none
-+# cat sched_wakeup/filter
-+none
-+
-+Set a filter using only common fields for all events in the sched
-+subsytem (all events end up with the same filter):
-+
-+# cd /sys/kernel/debug/tracing/events/sched
-+# echo common_pid == 0 > filter
-+# cat sched_switch/filter
-+common_pid == 0
-+# cat sched_wakeup/filter
-+common_pid == 0
-+
-+Attempt to set a filter using a non-common field for all events in the
-+sched subsytem (all events but those that have a prev_pid field retain
-+their old filters):
-+
-+# cd /sys/kernel/debug/tracing/events/sched
-+# echo prev_pid == 0 > filter
-+# cat sched_switch/filter
-+prev_pid == 0
-+# cat sched_wakeup/filter
-+common_pid == 0
--- 
-1.6.3.3
+My apologies; most of those appear to be problems with Thunderbird.  I 
+think it renders <tab> incorrectly.
 
--- 
+
+>>> +static void atp867x_set_dmamode(struct ata_port *ap, struct ata_device
+>>> *adev)
+>>> +{
+>>> +       struct pci_dev *pdev    = to_pci_dev(ap->host->dev);
+>>> +       struct atp867x_priv *dp = ap->private_data;
+>>> +       u8 speed = adev->dma_mode;
+>>> +       u8 b;
+>>> +       u8 mode;
+>>> +
+>>> +
+>>> +       switch (speed) {
+>>> +       case XFER_UDMA_6:
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_6;
+>>> +               break;
+>>> +       case XFER_UDMA_5:
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_5;
+>>> +               break;
+>>> +       case XFER_UDMA_4:
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_4;
+>>> +               break;
+>>> +       case XFER_UDMA_3:
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_3;
+>>> +               break;
+>>> +       case XFER_UDMA_2:
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_2;
+>>> +               break;
+>>> +       case XFER_UDMA_1:
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_1;
+>>> +               break;
+>>> +       case XFER_UDMA_0:
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_0;
+>>> +               break;
+>>> +       default:
+>>> +               printk(KERN_WARNING "ATP867X: Unsupported speed %#x."
+>>> +                       " Default to XFER_UDMA_0.\n", (unsigned)speed);
+>>> +               mode = ATP867X_IO_DMAMODE_UDMA_0;
+>>
+>> a table would be nice, preferred over a switch statement.  You may use
+>> ARRAY_SIZE() macro to generate a constant at compile time for number of
+>> elements in array.
+>
+> OK. I had it in a pure math like mode = speed - XFER_UDMA_0 +1;
+
+That's fine too.
+
+
+
+
+>>> +       /*
+>>> +        * Broken BIOS might not set latency high enough
+>>> +        */
+>>> +       pci_read_config_byte(pdev, PCI_LATENCY_TIMER,&v);
+>>> +       if (v<    0x80) {
+>>> +               v = 0x80;
+>>> +               pci_write_config_byte(pdev, PCI_LATENCY_TIMER, v);
+>>> +               printk(KERN_DEBUG "ATP867X: set latency timer of device
+>>> %s"
+>>> +                       " to %d\n", pci_name(pdev), v);
+>>> +       }
+>>
+>> this seems pointless - pci_set_master() already does this
+>>
+> pci_set_master won't re-set it if BIOS set it to somewhere between 16
+> and 256. This controller wants 0x80.
+> so, if BIOS set to less than 0x80, like 0x20, pci_set_master will keep
+> the value.
+> I could do this via pci fixup or quirks but that seems too much for
+> this simple setting.
+
+Given your explanation, that's fine.
+
+	Jeff
+
+
+
