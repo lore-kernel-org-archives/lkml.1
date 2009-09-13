@@ -1,57 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753358AbZIMFup@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZIMGl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753358AbZIMFup (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 01:50:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752266AbZIMFun
+	id S1753019AbZIMGl6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 02:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZIMGl5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 01:50:43 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:25178 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752127AbZIMFun (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 01:50:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=eV5UdiVTa9FOa+Is1bhPHS+cvviyhEcI3z9f/N07Q8fvptpDQXcXqkeQ76C1fl7T9i
-         jUfU2D2ePfvnVch0Zj2F3MmmRXNHjvU90cDplDzV5yivXQWj1+sfWlaAvolj8ygjGJ7X
-         mwfWhvTZGTNEV7qtW7S47OQ559x4s9J4Kc2oU=
-MIME-Version: 1.0
-In-Reply-To: <8b5805ff0909122155u77a869c5t89a81fbf1a7eb391@mail.gmail.com>
-References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com>
-	 <1252721641.28368.34.camel@desktop>
-	 <8b5805ff0909120359g2faf661br463b19518d935110@mail.gmail.com>
-	 <4AABD122.2000400@gmail.com>
-	 <8b5805ff0909121717w1516c273k2a568779b9c31662@mail.gmail.com>
-	 <8b5805ff0909121726g2f1a78c1o1ff7289e059eabe5@mail.gmail.com>
-	 <4AAC4315.6010102@pobox.com>
-	 <8b5805ff0909121941y38b7764fv3cc4d0b5c1ba6c89@mail.gmail.com>
-	 <4AAC632E.3090902@pobox.com>
-	 <8b5805ff0909122155u77a869c5t89a81fbf1a7eb391@mail.gmail.com>
-Date: Sat, 12 Sep 2009 23:50:45 -0600
-Message-ID: <51f3faa70909122250o59fcd174ifee4277ba25a20fe@mail.gmail.com>
-Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard ATP867X 
-	controllers
-From: Robert Hancock <hancockrwd@gmail.com>
-To: "Jung-Ik (John) Lee" <jilee@google.com>
-Cc: Jeff Garzik <jgarzik@pobox.com>, Daniel Walker <dwalker@fifo99.com>,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Grant Grundler <grundler@google.com>,
-       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 13 Sep 2009 02:41:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:41876 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752563AbZIMGl4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 02:41:56 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/AWRVqWN3ADYrUCLSeDTsrFEKEDS5ihIRzu/MPJk
+	7YzLgmdtVqB2ZB
+Subject: Re: [GIT PULL] sched/core for v2.6.32
+From: Mike Galbraith <efault@gmx.de>
+To: Jesper Juhl <jj@chaosbits.net>
+Cc: Ingo Molnar <mingo@elte.hu>, Tony Luck <tony.luck@intel.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <alpine.LNX.2.00.0909122354260.23341@swampdragon.chaosbits.net>
+References: <20090911192505.GA20006@elte.hu>
+	 <alpine.LNX.2.00.0909120032270.31018@swampdragon.chaosbits.net>
+	 <alpine.LFD.2.01.0909111546050.3654@localhost.localdomain>
+	 <alpine.LNX.2.00.0909120119190.31018@swampdragon.chaosbits.net>
+	 <12c511ca0909111924s42d000dsbf378009d9434ddc@mail.gmail.com>
+	 <20090912054917.GB9420@elte.hu>
+	 <alpine.LNX.2.00.0909122354260.23341@swampdragon.chaosbits.net>
+Content-Type: text/plain
+Date: Sun, 13 Sep 2009 08:41:54 +0200
+Message-Id: <1252824114.16650.130.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.64
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 12, 2009 at 10:55 PM, Jung-Ik (John) Lee <jilee@google.com> wrote:
-> I agree in that it's hard to measure/signify the additional overhead,
-> since those io insts are already too slow.
-> Anyways, the two extra "if"s and one PIO_MASK on every ioread/iowrite
-> are pure overhead on top of in/out insts.
+On Sun, 2009-09-13 at 00:07 +0200, Jesper Juhl wrote:
+> On Sat, 12 Sep 2009, Ingo Molnar wrote:
+> 
 
-I don't think that any platform currently breaks if you use the
-readX/writeX instead of ioreadX/iowriteX on iomapped MMIO addresses
-(and there's certainly enough code in libata that does this), but the
-API definition really expects that you should be using ioread/iowrite
-so it would probably be best not to add any more of these..
+> > It was a statistical property based on performance considerations - 
+> > and now we flipped it around based on latency and for kbuild 
+> > performance/throughput reasons: Serge Belyshev reported a 7% 
+> > increase on a quad due to this change and i measured a 1.5% 
+> > peak-kbuild performance increase.
+> > 
+> Impressive. I wouldn't have expected that much gain by running the parent 
+> first. Actually I personally would have expected child-first to perform 
+> better since (in my experience) it's usually the child that's just forked 
+> that matters the most.
+
+How can waiting for child1 to run a bit before forking off child2 _not_
+hurt?  The parent is the worker bee creator, the queen bee if you will.
+Seems to me that making the queen wait until one egg hatches and ages a
+bit before laying another egg is a very bad plan if the goal is to have
+a hive full of short lived worker bees.
+
+	-Mike
+
