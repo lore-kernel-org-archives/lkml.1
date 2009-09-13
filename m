@@ -1,122 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752520AbZILXIl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753590AbZIMARb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752520AbZILXIl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 19:08:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751393AbZILXIj
+	id S1753590AbZIMARb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 Sep 2009 20:17:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752747AbZIMARa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 19:08:39 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48666 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbZILXIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 19:08:39 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: What's in suspend-2.6.git
-Date: Sun, 13 Sep 2009 01:09:11 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>
+	Sat, 12 Sep 2009 20:17:30 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:25605 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751393AbZIMAR3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 Sep 2009 20:17:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=D6QywyY885Q8m+rJpMcACNTMBCmIQq0LefSSzm84PpydOXHU1blcdXHAXtHIPfpfR
+	RMpvD0VTs6PkBgMXrHCNQ==
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909130109.11291.rjw@sisk.pl>
+In-Reply-To: <4AABD122.2000400@gmail.com>
+References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com> 
+	<1252721641.28368.34.camel@desktop> <8b5805ff0909120359g2faf661br463b19518d935110@mail.gmail.com> 
+	<4AABD122.2000400@gmail.com>
+From: "Jung-Ik (John) Lee" <jilee@google.com>
+Date: Sat, 12 Sep 2009 17:17:08 -0700
+Message-ID: <8b5805ff0909121717w1516c273k2a568779b9c31662@mail.gmail.com>
+Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard ATP867X 
+	controllers
+To: Robert Hancock <hancockrwd@gmail.com>
+Cc: Daniel Walker <dwalker@fifo99.com>, Jeff Garzik <jgarzik@pobox.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Grant Grundler <grundler@google.com>,
+       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, Sep 12, 2009 at 9:49 AM, Robert Hancock <hancockrwd@gmail.com> wrote:
+> On 09/12/2009 04:59 AM, Jung-Ik (John) Lee wrote:
+>
+> (snip)
+>
+> Looks mostly reasonable to me, other than a few issues:
+>
+>> +static void atp867x_set_piomode(struct ata_port *ap, struct ata_device
+>> *adev)
+>> +{
+>> +       struct ata_device *peer = ata_dev_pair(adev);
+>> +       struct atp867x_priv *dp = ap->private_data;
+>> +       u8 speed = adev->pio_mode;
+>> +       struct ata_timing t, p;
+>> +       int T, UT;
+>> +       u8 b;
+>> +
+>> +       T = 1000000000 / 33333;
+>> +       UT = T/4;
+>> +
+>> +       switch (speed) {
+>> +       case XFER_PIO_4:
+>> +       case XFER_PIO_3:
+>> +       case XFER_PIO_2:
+>> +       case XFER_PIO_1:
+>> +       case XFER_PIO_0:
+>> +       case XFER_PIO_SLOW:
+>> +               break;
+>> +       default:
+>> +               printk(KERN_WARNING "ATP867X: Unsupported speed %#x."
+>> +                       " Default to XFER_PIO_0.\n", (unsigned)speed);
+>> +               speed = XFER_PIO_0;
+>> +       }
+>> +
+>> +       ata_timing_compute(adev, speed,&t, T, UT);
+>> +       if (peer&&  peer->pio_mode) {
+>> +               ata_timing_compute(peer, peer->pio_mode,&p, T, UT);
+>> +               ata_timing_merge(&p,&t,&t, ATA_TIMING_8BIT);
+>> +       }
+>> +
+>> +       b = inb(dp->dma_mode);
+>> +       if (adev->devno&  1)
+>> +               b = (b&  ~ATP867X_IO_DMAMODE_SLAVE_MASK);
+>> +       else
+>> +               b = (b&  ~ATP867X_IO_DMAMODE_MSTR_MASK);
+>> +       outb(b, dp->dma_mode);
+>> +
+>> +#ifdef ATP867X_NO_HACK_PIOMODE
+>> +       b = atp867x_get_active_clocks_shifted(t.active) |
+>> +               atp867x_get_recover_clocks_shifted(t.recover);
+>> +#else
+>> +       /*
+>> +        * magic value that works (from doc 6.4, 6.6.9)
+>> +        */
+>> +       b = 0x31;
+>> +#endif
+>
+> What's the purpose of this ifdef?
 
-This is a summary of the changes queued on the #linux-next branch
-of git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git
+The magic value part must go. I'll update the patch.
 
-They are going to be pushed to Linus in the next couple of days, since I know
-Paul is waiting for some of them to appear upstream.
+>
+>> +       if (dp->pci66mhz)
+>> +               b += 0x10;
+>> +
+>> +       if (adev->devno&  1)
+>> +               outb(b, dp->slave_piospd);
+>> +       else
+>> +               outb(b, dp->mstr_piospd);
+>> +
+>> +       /*
+>> +        * use the same value for comand timing as for PIO timimg
+>> +        */
+>> +       outb(b, dp->eightb_piospd);
+>> +}
+>> +
+>> +static int atp867x_cable_detect(struct ata_port *ap)
+>> +{
+>> +       return ATA_CBL_PATA40_SHORT;
+>> +}
+>
+> Doesn't the controller have a way to do proper 80-wire cable detection?
 
-PM developers, please speak up if there's anything obviously wrong or missing.
-
-
-Albin Tonnerre (1):
-      PM: Add convenience macro to make switching to dev_pm_ops less error-prone
-
-Dan Williams (1):
-      at_hdmac: Rework suspend_late()/resume_early()
-
-Dmitry Torokhov (1):
-      Driver Core: Make PM operations a const pointer
-
-Frans Pop (2):
-      floppy: Switch driver to dev_pm_ops
-      hp-wmi: Switch driver to dev_pm_ops
-
-Gerald Schaefer (1):
-      PM / Hibernate / Memory hotplug: Always use for_each_populated_zone()
-
-Magnus Damm (9):
-      Driver Core: Add platform device arch data V3
-      ARM: Rework omap suspend_late()/resume_early()
-      DMA: Rework dw_dmac suspend_late()/resume_early()
-      DMA: Rework txx9dmac suspend_late()/resume_early()
-      I2C: Rework i2c-pxa suspend_late()/resume_early()
-      I2C: Rework i2c-s3c2410 suspend_late()/resume() V2
-      USB: Rework musb suspend()/resume_early()
-      PM: Remove platform device suspend_late()/resume_early() V2
-      PM: Run-time PM platform device bus support
-
-Rafael J. Wysocki (6):
-      PM: Introduce core framework for run-time PM of I/O devices (rev. 17)
-      PM/Hibernate: Rework shrinking of memory
-      PM/Hibernate: Do not release preallocated memory unnecessarily (rev. 2)
-      PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
-      PM / irq: Fix comment describing suspend_device_irqs()
-      PM: Update kerneldoc comments in drivers/base/power/main.c
-
-Thadeu Lima de Souza Cascardo (1):
-      PM: Fix typo in label name s/Platofrm_finish/Platform_finish/
-
-Wu Fengguang (1):
-      PM: Trivial fixes
-
-Xiaotian Feng (1):
-      PM: Reset transition_started at dpm_resume_noirq
-
----------------
-
- Documentation/power/runtime_pm.txt   |  378 +++++++++++++
- arch/arm/include/asm/device.h        |    3 +
- arch/arm/plat-omap/debug-leds.c      |   11 +-
- arch/arm/plat-omap/gpio.c            |   14 +-
- arch/ia64/include/asm/device.h       |    3 +
- arch/microblaze/include/asm/device.h |    3 +
- arch/powerpc/include/asm/device.h    |    3 +
- arch/sparc/include/asm/device.h      |    3 +
- arch/x86/include/asm/device.h        |    3 +
- drivers/base/dd.c                    |   11 +
- drivers/base/platform.c              |   84 ++--
- drivers/base/power/Makefile          |    1 +
- drivers/base/power/main.c            |  199 ++++---
- drivers/base/power/power.h           |   31 +-
- drivers/base/power/runtime.c         | 1011 ++++++++++++++++++++++++++++++++++
- drivers/block/floppy.c               |    9 +-
- drivers/dma/at_hdmac.c               |   19 +-
- drivers/dma/dw_dmac.c                |   15 +-
- drivers/dma/txx9dmac.c               |   15 +-
- drivers/i2c/busses/i2c-pxa.c         |   25 +-
- drivers/i2c/busses/i2c-s3c2410.c     |   25 +-
- drivers/pci/pci-driver.c             |   16 +-
- drivers/platform/x86/hp-wmi.c        |   15 +-
- drivers/usb/musb/musb_core.c         |   18 +-
- include/asm-generic/device.h         |    3 +
- include/linux/device.h               |    9 +-
- include/linux/platform_device.h      |    5 +-
- include/linux/pm.h                   |  115 ++++-
- include/linux/pm_runtime.h           |  114 ++++
- kernel/irq/pm.c                      |    8 +-
- kernel/power/Kconfig                 |   14 +
- kernel/power/hibernate.c             |   21 +-
- kernel/power/main.c                  |   17 +
- kernel/power/power.h                 |    2 +-
- kernel/power/snapshot.c              |  412 +++++++++++----
- 35 files changed, 2310 insertions(+), 325 deletions(-)
+No programmatic way. libata.force should be used for other configurations.
 
 Thanks,
-Rafael
+-John
