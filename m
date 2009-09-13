@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753916AbZIMXLt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754087AbZIMXWK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753916AbZIMXLt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 19:11:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752369AbZIMXLs
+	id S1754087AbZIMXWK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 19:22:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753701AbZIMXWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 19:11:48 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:42742 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752168AbZIMXLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 19:11:48 -0400
-Subject: Re: [GIT BISECT] BUG kmalloc-8192: Object already free from
- kmem_cache_destroy
-From: Eric Paris <eparis@redhat.com>
-To: cl@linux-foundation.org
-Cc: dfeng@redhat.com, penberg@cs.helsinki.fi, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-In-Reply-To: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
-References: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 13 Sep 2009 19:11:33 -0400
-Message-Id: <1252883493.16335.8.camel@dhcp231-106.rdu.redhat.com>
+	Sun, 13 Sep 2009 19:22:09 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:17296 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753305AbZIMXWI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 19:22:08 -0400
+Date: Sun, 13 Sep 2009 16:21:54 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Greg KH <greg@kroah.com>, arve@android.com, swetland@google.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Re: newer version of HTC Dream support
+Message-Id: <20090913162154.ee412cbe.randy.dunlap@oracle.com>
+In-Reply-To: <20090913223806.GB9522@elf.ucw.cz>
+References: <20090901131832.GA1835@ucw.cz>
+	<20090904090303.024e981a.randy.dunlap@oracle.com>
+	<20090911071155.GA1386@ucw.cz>
+	<20090911075847.2fb7210a.randy.dunlap@oracle.com>
+	<20090911161335.GA8137@elf.ucw.cz>
+	<20090911092157.ba202b0a.randy.dunlap@oracle.com>
+	<20090911212751.GA25544@elf.ucw.cz>
+	<20090911153422.7d523a73.randy.dunlap@oracle.com>
+	<20090913083719.GA6645@elf.ucw.cz>
+	<20090913135422.f2d7cb88.randy.dunlap@oracle.com>
+	<20090913223806.GB9522@elf.ucw.cz>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt010.oracle.com [141.146.116.19]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4AAD7E95.0044:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-13 at 14:33 -0400, Eric Paris wrote:
-> 2a38a002fbee06556489091c30b04746222167e4 is first bad commit
-> commit 2a38a002fbee06556489091c30b04746222167e4
-> Author: Xiaotian Feng <dfeng@redhat.com>
-> Date:   Wed Jul 22 17:03:57 2009 +0800
+On Mon, 14 Sep 2009 00:38:07 +0200 Pavel Machek wrote:
+
+
+Hi Pavel,
+Sorry I missed the compile but not link distinction.
+
+
+> Puzzle is almost over. If you disable 
+
+Yes, much closer now.
+
+
+> #obj-y += audio_out.o audio_in.o audio_mp3.o audmgr.o audpp.o
+> #obj-y += snd.o
 > 
->     slub: sysfs_slab_remove should free kmem_cache when debug is enabled
->     
->     kmem_cache_destroy use sysfs_slab_remove to release the kmem_cache,
->     but when CONFIG_SLUB_DEBUG is enabled, sysfs_slab_remove just release
->     related kobject, the whole kmem_cache is missed to release and cause
->     a memory leak.
->     
->     Acked-by: Christoph Lameer <cl@linux-foundation.org>
->     Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
->     Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> CONFIG_SLUB_DEBUG=y
-> CONFIG_SLUB=y
-> CONFIG_SLUB_DEBUG_ON=y
-> # CONFIG_SLUB_STATS is not set
+> from build, the rest should now build ok.
 
-I also had problems destroying a kmem_cache in a security_initcall()
-function which had a different backtrace (it's what made me create the
-module and bisect.)   So be sure to let me know what you find so I can
-be sure that we fix that place as well   (I believe that was a kref
-problem rather than a double free)
+but still not link?
 
--Eric
+drivers/staging/dream/camera/msm_camera.c:1482: undefined reference to `msm_camera_flash_set_led_state'
 
+CONFIG_MSM_CAMERA_FLASH=y
+
+
+
+---
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
