@@ -1,152 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbZIMDrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750941AbZIMEz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbZIMDrI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 Sep 2009 23:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755050AbZIMDrG
+	id S1750941AbZIMEz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 00:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750784AbZIMEzy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 Sep 2009 23:47:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58309 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754992AbZIMDqf (ORCPT
+	Sun, 13 Sep 2009 00:55:54 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:5516 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750737AbZIMEzx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 Sep 2009 23:46:35 -0400
-Message-Id: <20090913034637.740668573@goodmis.org>
-References: <20090913034302.134417216@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Sat, 12 Sep 2009 23:43:08 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Tom Zanussi <tzanussi@gmail.com>
-Subject: [PATCH 6/6] tracing: add filter event logic to special, mmiotrace and boot tracers
-Content-Disposition: inline; filename=0006-tracing-add-filter-event-logic-to-special-mmiotrace-.patch
+	Sun, 13 Sep 2009 00:55:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=K6ctJGWKauTEkEbPt7px4YkdP5sZnumSwvCr8lmYHjzPZ8HO1S/MhoIttT+ioOKfl
+	Y7h7/EItuc3fwAkZNQIFw==
+MIME-Version: 1.0
+In-Reply-To: <4AAC632E.3090902@pobox.com>
+References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com> 
+	<1252721641.28368.34.camel@desktop> <8b5805ff0909120359g2faf661br463b19518d935110@mail.gmail.com> 
+	<4AABD122.2000400@gmail.com> <8b5805ff0909121717w1516c273k2a568779b9c31662@mail.gmail.com> 
+	<8b5805ff0909121726g2f1a78c1o1ff7289e059eabe5@mail.gmail.com> 
+	<4AAC4315.6010102@pobox.com> <8b5805ff0909121941y38b7764fv3cc4d0b5c1ba6c89@mail.gmail.com> 
+	<4AAC632E.3090902@pobox.com>
+From: "Jung-Ik (John) Lee" <jilee@google.com>
+Date: Sat, 12 Sep 2009 21:55:33 -0700
+Message-ID: <8b5805ff0909122155u77a869c5t89a81fbf1a7eb391@mail.gmail.com>
+Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard ATP867X 
+	controllers
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>, Daniel Walker <dwalker@fifo99.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Grant Grundler <grundler@google.com>,
+       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Sat, Sep 12, 2009 at 8:12 PM, Jeff Garzik <jgarzik@pobox.com> wrote:
+> On 09/12/2009 10:41 PM, Jung-Ik (John) Lee wrote:
+>>
+>> On Sat, Sep 12, 2009 at 5:55 PM, Jeff Garzik<jgarzik@pobox.com>  wrote:
+>>>
+>>>
+>>> General comment:
+>>>
+>>> * since you use iomap to map the region, you should use ioread{8,16,32} /
+>>> iowrite{8,16,32} accessors.  Do not use inb/outb/inl/outl/etc.
+>>
+>> .
+>> I used them for runtime hot registers by separately mapping them
+>> simply to avoid an extra overhead of ioread/iowrite, over the
+>> portability.
+>> I know it's not a good idea but in this case for these hot ports can
+>> in/out be used?
+>
+> It is _highly_ unlikely that the overhead is even measureable above the
+> noise, I would think.  Do you have data showing that ioread/iowrite impose a
+> noticeable penalty?
 
-Now that the pluging tracers use macros to create the structures and
-automate the exporting of their formats to the format files, they also
-automatically get a filter file.
+I agree in that it's hard to measure/signify the additional overhead,
+since those io insts are already too slow.
+Anyways, the two extra "if"s and one PIO_MASK on every ioread/iowrite
+are pure overhead on top of in/out insts.
 
-This patch adds the code to implement the filter logic in the trace
-recordings.
+Thanks,
+-John
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/trace.c           |    5 ++++-
- kernel/trace/trace_boot.c      |    8 ++++++--
- kernel/trace/trace_mmiotrace.c |   10 ++++++++--
- 3 files changed, 18 insertions(+), 5 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index ef82a7f..fd52a19 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1206,6 +1206,7 @@ ftrace_trace_special(void *__tr,
- 		     unsigned long arg1, unsigned long arg2, unsigned long arg3,
- 		     int pc)
- {
-+	struct ftrace_event_call *call = &event_special;
- 	struct ring_buffer_event *event;
- 	struct trace_array *tr = __tr;
- 	struct ring_buffer *buffer = tr->buffer;
-@@ -1219,7 +1220,9 @@ ftrace_trace_special(void *__tr,
- 	entry->arg1			= arg1;
- 	entry->arg2			= arg2;
- 	entry->arg3			= arg3;
--	trace_buffer_unlock_commit(buffer, event, 0, pc);
-+
-+	if (!filter_check_discard(call, entry, buffer, event))
-+		trace_buffer_unlock_commit(buffer, event, 0, pc);
- }
- 
- void
-diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
-index 19bfc75..c21d5f3 100644
---- a/kernel/trace/trace_boot.c
-+++ b/kernel/trace/trace_boot.c
-@@ -129,6 +129,7 @@ struct tracer boot_tracer __read_mostly =
- 
- void trace_boot_call(struct boot_trace_call *bt, initcall_t fn)
- {
-+	struct ftrace_event_call *call = &event_boot_call;
- 	struct ring_buffer_event *event;
- 	struct ring_buffer *buffer;
- 	struct trace_boot_call *entry;
-@@ -150,13 +151,15 @@ void trace_boot_call(struct boot_trace_call *bt, initcall_t fn)
- 		goto out;
- 	entry	= ring_buffer_event_data(event);
- 	entry->boot_call = *bt;
--	trace_buffer_unlock_commit(buffer, event, 0, 0);
-+	if (!filter_check_discard(call, entry, buffer, event))
-+		trace_buffer_unlock_commit(buffer, event, 0, 0);
-  out:
- 	preempt_enable();
- }
- 
- void trace_boot_ret(struct boot_trace_ret *bt, initcall_t fn)
- {
-+	struct ftrace_event_call *call = &event_boot_ret;
- 	struct ring_buffer_event *event;
- 	struct ring_buffer *buffer;
- 	struct trace_boot_ret *entry;
-@@ -175,7 +178,8 @@ void trace_boot_ret(struct boot_trace_ret *bt, initcall_t fn)
- 		goto out;
- 	entry	= ring_buffer_event_data(event);
- 	entry->boot_ret = *bt;
--	trace_buffer_unlock_commit(buffer, event, 0, 0);
-+	if (!filter_check_discard(call, entry, buffer, event))
-+		trace_buffer_unlock_commit(buffer, event, 0, 0);
-  out:
- 	preempt_enable();
- }
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index c4c9bbd..0acd834 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-@@ -307,6 +307,7 @@ static void __trace_mmiotrace_rw(struct trace_array *tr,
- 				struct trace_array_cpu *data,
- 				struct mmiotrace_rw *rw)
- {
-+	struct ftrace_event_call *call = &event_mmiotrace_rw;
- 	struct ring_buffer *buffer = tr->buffer;
- 	struct ring_buffer_event *event;
- 	struct trace_mmiotrace_rw *entry;
-@@ -320,7 +321,9 @@ static void __trace_mmiotrace_rw(struct trace_array *tr,
- 	}
- 	entry	= ring_buffer_event_data(event);
- 	entry->rw			= *rw;
--	trace_buffer_unlock_commit(buffer, event, 0, pc);
-+
-+	if (!filter_check_discard(call, entry, buffer, event))
-+		trace_buffer_unlock_commit(buffer, event, 0, pc);
- }
- 
- void mmio_trace_rw(struct mmiotrace_rw *rw)
-@@ -334,6 +337,7 @@ static void __trace_mmiotrace_map(struct trace_array *tr,
- 				struct trace_array_cpu *data,
- 				struct mmiotrace_map *map)
- {
-+	struct ftrace_event_call *call = &event_mmiotrace_map;
- 	struct ring_buffer *buffer = tr->buffer;
- 	struct ring_buffer_event *event;
- 	struct trace_mmiotrace_map *entry;
-@@ -347,7 +351,9 @@ static void __trace_mmiotrace_map(struct trace_array *tr,
- 	}
- 	entry	= ring_buffer_event_data(event);
- 	entry->map			= *map;
--	trace_buffer_unlock_commit(buffer, event, 0, pc);
-+
-+	if (!filter_check_discard(call, entry, buffer, event))
-+		trace_buffer_unlock_commit(buffer, event, 0, pc);
- }
- 
- void mmio_trace_mapping(struct mmiotrace_map *map)
--- 
-1.6.3.3
-
--- 
+>
+>
+>>
+>>
+>>>
+>>> * run through scripts/checkpatch.pl
+>>>
+>>
+>> Weird. I don't see any WS issues you pointed below in my source code
+>> or git diff file, except UT = T/4 below.
+>
+> My apologies; most of those appear to be problems with Thunderbird.  I think
+> it renders <tab> incorrectly.
+>
+>
+>>>> +static void atp867x_set_dmamode(struct ata_port *ap, struct ata_device
+>>>> *adev)
+>>>> +{
+>>>> +       struct pci_dev *pdev    = to_pci_dev(ap->host->dev);
+>>>> +       struct atp867x_priv *dp = ap->private_data;
+>>>> +       u8 speed = adev->dma_mode;
+>>>> +       u8 b;
+>>>> +       u8 mode;
+>>>> +
+>>>> +
+>>>> +       switch (speed) {
+>>>> +       case XFER_UDMA_6:
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_6;
+>>>> +               break;
+>>>> +       case XFER_UDMA_5:
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_5;
+>>>> +               break;
+>>>> +       case XFER_UDMA_4:
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_4;
+>>>> +               break;
+>>>> +       case XFER_UDMA_3:
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_3;
+>>>> +               break;
+>>>> +       case XFER_UDMA_2:
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_2;
+>>>> +               break;
+>>>> +       case XFER_UDMA_1:
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_1;
+>>>> +               break;
+>>>> +       case XFER_UDMA_0:
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_0;
+>>>> +               break;
+>>>> +       default:
+>>>> +               printk(KERN_WARNING "ATP867X: Unsupported speed %#x."
+>>>> +                       " Default to XFER_UDMA_0.\n", (unsigned)speed);
+>>>> +               mode = ATP867X_IO_DMAMODE_UDMA_0;
+>>>
+>>> a table would be nice, preferred over a switch statement.  You may use
+>>> ARRAY_SIZE() macro to generate a constant at compile time for number of
+>>> elements in array.
+>>
+>> OK. I had it in a pure math like mode = speed - XFER_UDMA_0 +1;
+>
+> That's fine too.
+>
+>
+>
+>
+>>>> +       /*
+>>>> +        * Broken BIOS might not set latency high enough
+>>>> +        */
+>>>> +       pci_read_config_byte(pdev, PCI_LATENCY_TIMER,&v);
+>>>> +       if (v<    0x80) {
+>>>> +               v = 0x80;
+>>>> +               pci_write_config_byte(pdev, PCI_LATENCY_TIMER, v);
+>>>> +               printk(KERN_DEBUG "ATP867X: set latency timer of device
+>>>> %s"
+>>>> +                       " to %d\n", pci_name(pdev), v);
+>>>> +       }
+>>>
+>>> this seems pointless - pci_set_master() already does this
+>>>
+>> pci_set_master won't re-set it if BIOS set it to somewhere between 16
+>> and 256. This controller wants 0x80.
+>> so, if BIOS set to less than 0x80, like 0x20, pci_set_master will keep
+>> the value.
+>> I could do this via pci fixup or quirks but that seems too much for
+>> this simple setting.
+>
+> Given your explanation, that's fine.
+>
+>        Jeff
+>
+>
+>
+>
