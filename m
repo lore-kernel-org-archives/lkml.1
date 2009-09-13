@@ -1,71 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753408AbZIMWzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753448AbZIMW4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753408AbZIMWzc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 18:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZIMWza
+	id S1753448AbZIMW4v (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 18:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZIMW4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 18:55:30 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:59659 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753028AbZIMWz3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 18:55:29 -0400
-Date: Sun, 13 Sep 2009 23:55:18 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Linux PCI <linux-pci@vger.kernel.org>, Len Brown <lenb@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Shaohua Li <shaohua.li@intel.com>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: [RFC][PATCH 3/4] PCI / ACPI PM: Platform support for PCI PME
-	wake-up
-Message-ID: <20090913225518.GA31787@srcf.ucam.org>
-References: <200909132320.05077.rjw@sisk.pl> <200909132324.03340.rjw@sisk.pl> <20090913222505.GC31175@srcf.ucam.org> <200909140053.05779.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200909140053.05779.rjw@sisk.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+	Sun, 13 Sep 2009 18:56:50 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:28969 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752056AbZIMW4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 18:56:49 -0400
+Subject: Re: [PATCH 1/3] Creds: creds->security can be NULL is selinux is
+ disabled
+From: Eric Paris <eparis@redhat.com>
+To: James Morris <jmorris@namei.org>
+Cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov, sds@tycho.nsa.gov,
+       mingo@elte.hu, dhowells@redhat.com
+In-Reply-To: <alpine.LRH.2.00.0909140823320.27953@tundra.namei.org>
+References: <20090913025409.6583.58777.stgit@paris.rdu.redhat.com>
+	 <alpine.LRH.2.00.0909140823320.27953@tundra.namei.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 13 Sep 2009 18:55:41 -0400
+Message-Id: <1252882541.16335.1.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 12:53:05AM +0200, Rafael J. Wysocki wrote:
-> On Monday 14 September 2009, Matthew Garrett wrote:
-> > On Sun, Sep 13, 2009 at 11:24:03PM +0200, Rafael J. Wysocki wrote:
-> > > +	} else if (!dev->wakeup.flags.run_wake) {
-> > > +		acpi_set_gpe_type(dev->wakeup.gpe_device,
-> > > +					dev->wakeup.gpe_number,
-> > > +					ACPI_GPE_TYPE_WAKE);
-> > 
-> > Is this going to work for cases where we have multiple devices attached 
-> > to the same GPE? The common one is EHCI, where both EHCI HCDs will be 
-> > one a single GPE. If we wake one, that'll then disable the GPE for the 
-> > other. Further wakeup events will then be lost.
+On Mon, 2009-09-14 at 08:23 +1000, James Morris wrote:
+> On Sat, 12 Sep 2009, Eric Paris wrote:
 > 
-> You're right, I overlooked that.  Some kind of refcounting is needed here.
-
-I've sent patches to implement this at the GPE level, which also change 
-the API for requesting them. I'm waiting on feedback from Bob Moore.
-
-> > > +	if (device->wakeup.flags.valid)
-> > > +		acpi_install_notify_handler(device->handle, ACPI_SYSTEM_NOTIFY,
-> > > +						pci_acpi_device_wakeup,
-> > > +						&dev->dev);
-> > > +
-> > 
-> > I think this will fail for the root bridge if acpiphp has already 
-> > grabbed it to check for hotplug events.
+> > __validate_process_creds should check if selinux is actually enabled before
+> > running tests on the selinux portion of the credentials struct.
 > 
-> The root bridge is not a struct pci_dev and this is called only for these.
+> Have you verified that this fixes the problem?
 
-Are you sure? When I did this I saw conflicts with acpiphp. I may have 
-my terminology confused. I sent another patch that abstract that out.
+Yes, I was able to reproduce the problem using selinux=0 at the command
+line.  This patch fixes the problem.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+-Eric
+
