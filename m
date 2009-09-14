@@ -1,64 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754944AbZINDll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755019AbZINDmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754944AbZINDll (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 23:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbZINDlg
+	id S1755019AbZINDmN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 23:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbZINDmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 23:41:36 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:10346 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754636AbZINDlf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 23:41:35 -0400
-Message-ID: <4AADBB77.5050803@redhat.com>
-Date: Mon, 14 Sep 2009 11:41:43 +0800
-From: Danny Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sun, 13 Sep 2009 23:42:11 -0400
+Received: from mail-yx0-f191.google.com ([209.85.210.191]:34996 "EHLO
+	mail-yx0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753849AbZINDmK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 23:42:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=pICDRlgyZyXnaFHxTWWEat+HqzBcKkQFm3VCj3SKEYoqGeyJG4zNveqLxHLOTUEo4I
+         Hntp/pCJRVu1eJLE28aImeGOxAPoUgnSIcfMYHqYMRlgeodw931N/ckQ9KF8GkKi7BBi
+         imhVIAlIJtXk8XXrUIDnnen04NstR/u7pF4GU=
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: cl@linux-foundation.org, penberg@cs.helsinki.fi, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [GIT BISECT] BUG kmalloc-8192: Object already free from kmem_cache_destroy
-References: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com> <1252883493.16335.8.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1252883493.16335.8.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1243381049-10359-1-git-send-email-vapier@gentoo.org>
+References: <1243381049-10359-1-git-send-email-vapier@gentoo.org>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sun, 13 Sep 2009 23:41:52 -0400
+Message-ID: <8bd0f97a0909132041y3705ff59ja51c7065503ba519@mail.gmail.com>
+Subject: Re: [PATCH] checkpatch: add some common Blackfin checks
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org, Bryan Wu <cooloney@kernel.org>,
+       Andy Whitcroft <apw@shadowen.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/14/2009 07:11 AM, Eric Paris wrote:
-> On Sun, 2009-09-13 at 14:33 -0400, Eric Paris wrote:
->    
->> 2a38a002fbee06556489091c30b04746222167e4 is first bad commit
->> commit 2a38a002fbee06556489091c30b04746222167e4
->> Author: Xiaotian Feng<dfeng@redhat.com>
->> Date:   Wed Jul 22 17:03:57 2009 +0800
->>
->>      slub: sysfs_slab_remove should free kmem_cache when debug is enabled
->>
->>      kmem_cache_destroy use sysfs_slab_remove to release the kmem_cache,
->>      but when CONFIG_SLUB_DEBUG is enabled, sysfs_slab_remove just release
->>      related kobject, the whole kmem_cache is missed to release and cause
->>      a memory leak.
->>
->>      Acked-by: Christoph Lameer<cl@linux-foundation.org>
->>      Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
->>      Signed-off-by: Pekka Enberg<penberg@cs.helsinki.fi>
->>
->> CONFIG_SLUB_DEBUG=y
->> CONFIG_SLUB=y
->> CONFIG_SLUB_DEBUG_ON=y
->> # CONFIG_SLUB_STATS is not set
->>      
-> I also had problems destroying a kmem_cache in a security_initcall()
-> function which had a different backtrace (it's what made me create the
-> module and bisect.)   So be sure to let me know what you find so I can
-> be sure that we fix that place as well   (I believe that was a kref
-> problem rather than a double free)
->
-> -Eric
->
->
->    
-That's my fault... Please drop this patch, I didn't notice the free 
-action in kobject release phase.. Thanks for point it out.
+On Tue, May 26, 2009 at 19:37, Mike Frysinger wrote:
+> Add checks for Blackfin-specific issues that seem to crop up from time to
+> time.  In particular, we have helper macros to break a 32bit address into
+> the hi/lo parts, and we want to make sure people use the csync/ssync
+> variant that includes fun anomaly workarounds.
+
+Andrew: could you pick this up ?
+-mike
