@@ -1,105 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755185AbZINDCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbZINDEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755185AbZINDCr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 23:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755019AbZINDCq
+	id S1755130AbZINDEF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 23:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZINDED
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 23:02:46 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:42586 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754644AbZINDCp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 23:02:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=V67ASTXmVdXbG9oHEFnVJq7uV5NxwVuPoz5T7Z5VVKmiB2yuP+YOgVaYQG3m8G0PTS
-         KWtuEIbmz/H0YQxQXcd1f2SIwOwbYYe0ZFbAoO/G1KsqhGzjaIXo0OKOR0xgM0ZVakSW
-         gTJClYNRzEJtyl6KlxWlQkCDeLgyw7trHY3jI=
-Date: Mon, 14 Sep 2009 05:02:45 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH tracing/kprobes 4/7] tracing/kprobes: Add event
-	profiling support
-Message-ID: <20090914030244.GC14306@nowhere>
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <4AAA7938.7070200@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AAA7938.7070200@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 13 Sep 2009 23:04:03 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:49156 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754644AbZINDEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 23:04:02 -0400
+Date: Mon, 14 Sep 2009 13:03:55 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Russell King <rmk@arm.linux.org.uk>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Mikael Pettersson <mikpe@it.uu.se>, James Morris <jmorris@namei.org>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: linux-next: manual merge of the security-testing tree with the
+ arm tree
+Message-Id: <20090914130355.ff26d669.sfr@canb.auug.org.au>
+In-Reply-To: <20090903154700.2d4538cf.sfr@canb.auug.org.au>
+References: <20090903154700.2d4538cf.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 12:22:16PM -0400, Masami Hiramatsu wrote:
-> Frederic Weisbecker wrote:
->>> +static int probe_profile_enable(struct ftrace_event_call *call)
->>> +{
->>> +	struct trace_probe *tp = (struct trace_probe *)call->data;
->>> +
->>> +	if (atomic_inc_return(&call->profile_count))
->>> +		return 0;
->>> +
->>> +	if (probe_is_return(tp)) {
->>> +		tp->rp.handler = kretprobe_profile_func;
->>> +		return enable_kretprobe(&tp->rp);
->>> +	} else {
->>> +		tp->rp.kp.pre_handler = kprobe_profile_func;
->>> +		return enable_kprobe(&tp->rp.kp);
->>> +	}
->>> +}
->>
->>
->>
->> May be I misunderstood but it seems that concurrent uses of
->> ftrace and perf would really mess up the result, as one would
->> overwrite the handler of the other.
->>
->> Even though it's hard to imagine one using both at the same
->> time on the same probe, but still...
+--Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi Russell,
+
+On Thu, 3 Sep 2009 15:47:00 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
+rote:
 >
-> Oops, it's my misunderstanding. I thought those are exclusively
-> enabled each other.
+> Today's linux-next merge of the security-testing tree got a conflicts in
+> arch/arm/kernel/signal.c between commit
+> 369842658a36bcea28ecb643ba4bdb53919330dd ("ARM: 5677/1: ARM support for
+> TIF_RESTORE_SIGMASK/pselect6/ppoll/epoll_pwait") from the arm tree and
+> commits d0420c83f39f79afb82010c2d2cafd150eef651b ("KEYS: Extend
+> TIF_NOTIFY_RESUME to (almost) all architectures [try #6]") and
+> ee18d64c1f632043a02e6f5ba5e045bb26a5465f ("KEYS: Add a keyctl to install
+> a process's session keyring on its parent [try #6]") from the
+> security-testing tree.
+>=20
+> Just context changes.  I fixed it up (see below) and can carry the fix as
+> necessary.
 
+This is now a conflict between the arm tree and Linus' tree (as the
+security-testing tree has been merged).
 
-It's automatically managed with events because ftrace and
-and perf have their individual tracepoint probes, because
-tracepoints support multiple probes.
+> diff --cc arch/arm/kernel/signal.c
+> index f7194e4,ea4ad3a..0000000
+> --- a/arch/arm/kernel/signal.c
+> +++ b/arch/arm/kernel/signal.c
+> @@@ -694,5 -706,12 +694,12 @@@ asmlinkage voi
+>   do_notify_resume(struct pt_regs *regs, unsigned int thread_flags, int s=
+yscall)
+>   {
+>   	if (thread_flags & _TIF_SIGPENDING)
+>  -		do_signal(&current->blocked, regs, syscall);
+>  +		do_signal(regs, syscall);
+> +=20
+> + 	if (thread_flags & _TIF_NOTIFY_RESUME) {
+> + 		clear_thread_flag(TIF_NOTIFY_RESUME);
+> + 		tracehook_notify_resume(regs);
+> + 		if (current->replacement_session_keyring)
+> + 			key_replace_session_keyring();
+> + 	}
+>   }
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
+--Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z
+Content-Type: application/pgp-signature
 
->> Is it possible to have two kprobes having the exact same
->> properties? (pointing to the same address, having the same
->> probe handlers, etc...)
->>
->> Another solution would be to allow kprobes to have multiple
->> handlers.
->
-> It could be to have multiple kprobes on same point, but I think
-> it's waste of the memory and time in this case.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
 
+iEYEARECAAYFAkqtspsACgkQjjKRsyhoI8wHhwCcDx7LRGRRJIDFOftZoooILpfR
++58An31DQz9jmwkqstQPgaz2bOoqrxoX
+=Qq7L
+-----END PGP SIGNATURE-----
 
-Yeah.
-
-
->
-> I'd like to have a dispatcher function and flags internally :)
-
-
-You mean kprobes that could support multiple probes?
-That would be a nice solution IMHO...
-
+--Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z--
