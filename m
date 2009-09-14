@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752010AbZINFUC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751749AbZINFZ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752010AbZINFUC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 01:20:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751447AbZINFT7
+	id S1751749AbZINFZ1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 01:25:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbZINFZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 01:19:59 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:38645 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751378AbZINFT7 (ORCPT
+	Mon, 14 Sep 2009 01:25:26 -0400
+Received: from mail-iw0-f178.google.com ([209.85.223.178]:39887 "EHLO
+	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZINFZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 01:19:59 -0400
+	Mon, 14 Sep 2009 01:25:26 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type;
-        b=YIqXjyVX5YODF6Ef/9GUcmtvOU6gCutAG+sfy4607mKOm9ymku5CcPf8oX4rSwEyM1
-         6xvPBegaDMFNVw6jVRAa5ZHWIN8caHW92tojhahTiQFHHlcwSkOJ881Q1t8pWKxj4s4M
-         iQfkzSWCZLxuR86gZnsoE6iiCt3YoWJJEx1Kc=
+        h=mime-version:date:message-id:subject:from:to:content-type;
+        b=GSVFs6we+xbxpH/UzBH3OnOEe2iPOUKhLB5/hGSIN8iwqpHVlRSMKd50YKBqCCl7wX
+         DJLrFlY/X7afMhk72Yz2LCNw5OqLKX1ZAUiFMKK1uex9HJzt5XjkBTqyQiwVjUfpysWb
+         bpAC9sijHJG+LpKItsRQIB/oadSivgl/3g68s=
 MIME-Version: 1.0
-Date: Mon, 14 Sep 2009 17:20:02 +1200
-Message-ID: <202cde0e0909132220v6a28ce5che6b216d296aeb33d@mail.gmail.com>
-Subject: [PATCH 3/3] Export of hugetlb_file_setup function. (Take 3)
-From: Alexey Korolev <akorolex@gmail.com>
-To: Mel Gorman <mel@csn.ul.ie>, Eric Munson <linux-mm@mgebm.net>,
-       Alexey Korolev <akorolev@infradead.org>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Date: Mon, 14 Sep 2009 13:25:29 +0800
+Message-ID: <31cb94fa0909132225l6cb98739o59d105ef480d1cd2@mail.gmail.com>
+Subject: PATCH: ARCH in builddeb
+From: Wei Chong Tan <weichong78@gmail.com>
+To: sam@ravnborg.org, max@stro.at, elendil@planet.nl,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch provides drivers with export of hugetlb_file_setup function.
-This patch exports hugetlb_file_setup function, that will be used to
-create a file on the internal vfsmount. Also it adds enum entry just
-to notify that  file is created by device driver. Accounting rules are
-the same as for HUGETLB_ANONHUGE_INODE.
+Hello,
 
-fs/hugetlbfs/inode.c    |    1 +
-include/linux/hugetlb.h |    5 +++++
-2 files changed, 6 insertions(+)
+I was using "make ARCH=i386 deb-pkg" in the kernel on a 64bit machine
+and found out that the .deb package created was _amd64.deb.
+Consequently, I modify the builddeb script to take into account the
+ARCH environment variable.
+
+Thanks,
+Tan Wei Chong.
+
+>From 477c02443f0fb5a8e39d607197720fec21cecc8b Mon Sep 17 00:00:00 2001
+From: Tan, Wei Chong <weichong78@gmail.com>
+Date: Mon, 14 Sep 2009 12:56:55 +0800
+Subject: [PATCH] update builddeb script to allow ARCH customization
+Signed-off-by: Tan, Wei Chong <weichong78@gmail.com>
+
 ---
-Signed-off-by: Alexey Korolev <akorolev@infradead.org>
+ scripts/package/builddeb |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-diff -aurp clean/fs/hugetlbfs/inode.c patched/fs/hugetlbfs/inode.c
---- clean/fs/hugetlbfs/inode.c	2009-09-11 15:33:48.000000000 +1200
-+++ patched/fs/hugetlbfs/inode.c	2009-09-11 15:29:31.000000000 +1200
-@@ -1012,6 +1012,7 @@ out_shm_unlock:
- 	}
- 	return ERR_PTR(error);
+diff --git a/scripts/package/builddeb b/scripts/package/builddeb
+index 8b357b0..cdb017f 100644
+--- a/scripts/package/builddeb
++++ b/scripts/package/builddeb
+@@ -24,7 +24,11 @@ create_package() {
+ 	chmod -R go-w "$pdir"
+
+ 	# Create the package
+-	dpkg-gencontrol -isp -p$pname -P"$pdir"
++	if [ "$ARCH" = "" ] ; then
++		dpkg-gencontrol -isp -p$pname -P"$pdir"
++	else
++		dpkg-gencontrol -DArchitecture=$ARCH -isp -p$pname -P"$pdir"
++	fi
+ 	dpkg --build "$pdir" ..
  }
-+EXPORT_SYMBOL_GPL(hugetlb_file_setup);
 
- static int __init init_hugetlbfs_fs(void)
- {
-diff -aurp clean/include/linux/hugetlb.h patched/include/linux/hugetlb.h
---- clean/include/linux/hugetlb.h	2009-09-11 15:33:48.000000000 +1200
-+++ patched/include/linux/hugetlb.h	2009-09-11 20:09:02.000000000 +1200
-@@ -123,6 +126,11 @@ enum {
- 	 * accounting rules do not apply
- 	 */
- 	HUGETLB_ANONHUGE_INODE  = 2,
-+	/*
-+	 * The file is being created for use of device drivers,shmfs
-+	 * accounting rules do not apply
-+	 */
-+	HUGETLB_DEVBACK_INODE	= 3,
- };
-
- #ifdef CONFIG_HUGETLBFS
+-- 
+1.6.0.4
