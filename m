@@ -1,156 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754958AbZINDSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZINDYP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754958AbZINDSF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 23:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752798AbZINDSE
+	id S1755225AbZINDYP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 23:24:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753658AbZINDYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 23:18:04 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:33494 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbZINDSD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 23:18:03 -0400
-Message-ID: <4AADB5EE.9090902@redhat.com>
-Date: Mon, 14 Sep 2009 11:18:06 +0800
-From: Danny Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sun, 13 Sep 2009 23:24:14 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:33310 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753198AbZINDYN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 23:24:13 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Message-ID: <4AADB753.3030105@jp.fujitsu.com>
+Date: Mon, 14 Sep 2009 12:24:03 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: cl@linux-foundation.org, penberg@cs.helsinki.fi, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [GIT BISECT] BUG kmalloc-8192: Object already free from kmem_cache_destroy
-References: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: multipart/mixed;
- boundary="------------040408020607040807040307"
+To: Alex Chiang <achiang@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 2/2] PCI Hotplug: convert acpi_pci_detect_ejectable()
+ to	take an acpi_handle
+References: <20090910183219.20011.41679.stgit@bob.kio> <20090910183409.20011.76128.stgit@bob.kio>
+In-Reply-To: <20090910183409.20011.76128.stgit@bob.kio>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------040408020607040807040307
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Alex Chiang wrote:
+> acpi_pci_detect_ejectable() goes through effort to convert its
+> struct pci_bus arg to an acpi_handle, but every time we use this
+> interface, we already have the handle available.
+> 
+> So let's just use the handle instead of converting back and forth.
+> 
+> Cc: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> 
+>  drivers/pci/hotplug/acpi_pcihp.c   |   12 ++++++------
+>  drivers/pci/hotplug/acpiphp_glue.c |   33 +++++++++++----------------------
+>  drivers/pci/hotplug/pciehp_acpi.c  |    7 ++++---
+>  include/linux/pci_hotplug.h        |    2 +-
+>  4 files changed, 22 insertions(+), 32 deletions(-)
+> 
+> diff --git a/drivers/pci/hotplug/acpi_pcihp.c b/drivers/pci/hotplug/acpi_pcihp.c
+> index eb15958..ec3c039 100644
+> --- a/drivers/pci/hotplug/acpi_pcihp.c
+> +++ b/drivers/pci/hotplug/acpi_pcihp.c
+> @@ -500,18 +500,18 @@ check_hotplug(acpi_handle handle, u32 lvl, void *context, void **rv)
+>  
+>  /**
+>   * acpi_pci_detect_ejectable - check if the PCI bus has ejectable slots
+> - * @pbus - PCI bus to scan
+> + * @handle - handle of the PCI bus to scan
+>   *
+>   * Returns 1 if the PCI bus has ACPI based ejectable slots, 0 otherwise.
+>   */
+> -int acpi_pci_detect_ejectable(struct pci_bus *pbus)
+> +int acpi_pci_detect_ejectable(acpi_handle handle)
+>  {
+> -	acpi_handle handle;
+>  	int found = 0;
+>  
+> -	if (!(handle = acpi_pci_get_bridge_handle(pbus)))
+> -		return 0;
+> -	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
+> +	if (!handle)
+> +		return found;
+> +
+> +	acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, 1,
+>  			    check_hotplug, (void *)&found, NULL);
+>  	return found;
+>  }
+> diff --git a/drivers/pci/hotplug/acpiphp_glue.c b/drivers/pci/hotplug/acpiphp_glue.c
+> index e72e0ad..680c336 100644
+> --- a/drivers/pci/hotplug/acpiphp_glue.c
+> +++ b/drivers/pci/hotplug/acpiphp_glue.c
+> @@ -62,22 +62,6 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus);
+>  static void acpiphp_set_hpp_values(acpi_handle handle, struct pci_bus *bus);
+>  static void handle_hotplug_event_func(acpi_handle handle, u32 type, void *context);
+>  
+> -static struct pci_bus *pci_bus_from_handle(acpi_handle handle)
+> -{
+> -	struct pci_bus *pbus;
+> -	struct acpi_pci_root *root;
+> -
+> -	root = acpi_pci_find_root(handle);
+> -	if (root)
+> -		pbus = root->bus;
+> -	else {
+> -		struct pci_dev *pdev = acpi_get_pci_dev(handle);
+> -		pbus = pdev->subordinate;
+> -		pci_dev_put(pdev);
+> -	}
+> -	return pbus;
+> -}
+> -
+>  /* callback routine to check for the existence of a pci dock device */
+>  static acpi_status
+>  is_pci_dock_device(acpi_handle handle, u32 lvl, void *context, void **rv)
+> @@ -279,11 +263,7 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+>  /* see if it's worth looking at this bridge */
+>  static int detect_ejectable_slots(acpi_handle handle)
+>  {
+> -	int found;
+> -	struct pci_bus *pbus;
+> -
+> -	pbus = pci_bus_from_handle(handle);
+> -	found = acpi_pci_detect_ejectable(pbus);
+> +	int found = acpi_pci_detect_ejectable(handle);
+>  	if (!found) {
+>  		acpi_walk_namespace(ACPI_TYPE_DEVICE, handle, (u32)1,
+>  				    is_pci_dock_device, (void *)&found, NULL);
+> @@ -1364,7 +1344,16 @@ static void acpiphp_sanitize_bus(struct pci_bus *bus)
+>  /* Program resources in newly inserted bridge */
+>  static int acpiphp_configure_bridge (acpi_handle handle)
+>  {
+> -	struct pci_bus *bus = pci_bus_from_handle(handle);
+> +	struct pci_bus *bus;
+> +
+> +	if (acpi_is_root_bridge(handle)) {
+> +		struct acpi_pci_root *root = acpi_pci_find_root(handle);
+> +		bus = root->bus;
+> +	} else {
+> +		struct pci_dev *pdev = acpi_get_pci_dev(handle);
+> +		bus = pdev->subordinate;
+> +		pci_dev_put(pdev);
+> +	}
+>  
+>  	pci_bus_size_bridges(bus);
+>  	pci_bus_assign_resources(bus);
+> diff --git a/drivers/pci/hotplug/pciehp_acpi.c b/drivers/pci/hotplug/pciehp_acpi.c
+> index 9604801..7163e6a 100644
+> --- a/drivers/pci/hotplug/pciehp_acpi.c
+> +++ b/drivers/pci/hotplug/pciehp_acpi.c
+> @@ -47,7 +47,7 @@ int pciehp_acpi_slot_detection_check(struct pci_dev *dev)
+>  {
+>  	if (slot_detection_mode != PCIEHP_DETECT_ACPI)
+>  		return 0;
+> -	if (acpi_pci_detect_ejectable(dev->subordinate))
+> +	if (acpi_pci_detect_ejectable(DEVICE_ACPI_HANDLE(&dev->dev)))
+>  		return 0;
+>  	return -ENODEV;
+>  }
+> @@ -76,9 +76,9 @@ static int __init dummy_probe(struct pcie_device *dev)
+>  {
+>  	int pos;
+>  	u32 slot_cap;
+> +	acpi_handle handle;
+>  	struct slot *slot, *tmp;
+>  	struct pci_dev *pdev = dev->port;
+> -	struct pci_bus *pbus = pdev->subordinate;
+>  	/* Note: pciehp_detect_mode != PCIEHP_DETECT_ACPI here */
+>  	if (pciehp_get_hp_hw_control_from_firmware(pdev))
+>  		return -ENODEV;
+> @@ -94,7 +94,8 @@ static int __init dummy_probe(struct pcie_device *dev)
+>  			dup_slot_id++;
+>  	}
+>  	list_add_tail(&slot->slot_list, &dummy_slots);
+> -	if (!acpi_slot_detected && acpi_pci_detect_ejectable(pbus))
+> +	handle = DEVICE_ACPI_HANDLE(&pdev->dev);
+> +	if (!acpi_slot_detected && acpi_pci_detect_ejectable(handle))
+>  		acpi_slot_detected = 1;
+>  	return -ENODEV;         /* dummy driver always returns error */
+>  }
+> diff --git a/include/linux/pci_hotplug.h b/include/linux/pci_hotplug.h
+> index 1b00cc3..f0c31ae 100644
+> --- a/include/linux/pci_hotplug.h
+> +++ b/include/linux/pci_hotplug.h
+> @@ -231,7 +231,7 @@ extern acpi_status acpi_get_hp_params_from_firmware(struct pci_bus *bus,
+>  				struct hotplug_params *hpp);
+>  int acpi_get_hp_hw_control_from_firmware(struct pci_dev *dev, u32 flags);
+>  int acpi_pci_check_ejectable(struct pci_bus *pbus, acpi_handle handle);
+> -int acpi_pci_detect_ejectable(struct pci_bus *pbus);
+> +int acpi_pci_detect_ejectable(acpi_handle handle);
+>  #endif
+>  #endif
 
-On 09/14/2009 02:33 AM, Eric Paris wrote:
-> 2a38a002fbee06556489091c30b04746222167e4 is first bad commit
-> commit 2a38a002fbee06556489091c30b04746222167e4
-> Author: Xiaotian Feng<dfeng@redhat.com>
-> Date:   Wed Jul 22 17:03:57 2009 +0800
->
->      slub: sysfs_slab_remove should free kmem_cache when debug is enabled
->
->      kmem_cache_destroy use sysfs_slab_remove to release the kmem_cache,
->      but when CONFIG_SLUB_DEBUG is enabled, sysfs_slab_remove just release
->      related kobject, the whole kmem_cache is missed to release and cause
->      a memory leak.
->
->      Acked-by: Christoph Lameer<cl@linux-foundation.org>
->      Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
->      Signed-off-by: Pekka Enberg<penberg@cs.helsinki.fi>
->
-> CONFIG_SLUB_DEBUG=y
-> CONFIG_SLUB=y
-> CONFIG_SLUB_DEBUG_ON=y
-> # CONFIG_SLUB_STATS is not set
->
-> I created a very simple kernel module which consisted only of:
->
-> static int __init kmem_cache_test_init_module(void)
-> {
-> 	struct kmem_cache *test_cachep;
->
-> 	test_cachep = kmem_cache_create("test_cachep", 32, 0, 0, NULL);
-> 	if (test_cachep)
-> 		kmem_cache_destroy(test_cachep);
->
->          return 0;
-> }
->
-> Before this patch it works just fine.  After this patch I get a bug like
-> this:
->
-> [   59.921431] kmem_cache_test_init_module:
-> [   59.922415] =============================================================================
-> [   59.922418] BUG kmalloc-8192: Object already free
-> [   59.922419] -----------------------------------------------------------------------------
-> [   59.922420]
-> [   59.922453] INFO: Allocated in kmem_cache_create+0x70/0x320 age=1 cpu=3 pid=1781
-> [   59.922458] INFO: Freed in kmem_cache_release+0x23/0x40 age=0 cpu=3 pid=1781
-> [   59.922461] INFO: Slab 0xffffea0000373cc0 objects=3 used=1 fp=0xffff8800087fa048 flags=0x200000000040c3
-> [   59.922463] INFO: Object 0xffff8800087fa048 @offset=8264 fp=0xffff8800087fc090
-> [   59.922463]
-> [   59.922465] Bytes b4 0xffff8800087fa038:  00 00 00 00 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a ........ZZZZZZZZ
-> [   59.922477]   Object 0xffff8800087fa048:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [   59.922487]   Object 0xffff8800087fa058:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [snip]
-> [   59.923261]   Object 0xffff8800087fb028:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [   59.923261]   Object 0xffff8800087fb038:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [   59.923261]  Redzone 0xffff8800087fc048:  bb bb bb bb bb bb bb bb                         »»»»»»»»
-> [   59.923261]  Padding 0xffff8800087fc088:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ
-> [   59.923261] Pid: 1781, comm: insmod Not tainted 2.6.31-rc2 #33
-> [   59.923261] Call Trace:
-> [   59.923261]  [<ffffffff81142e1b>] print_trailer+0xfb/0x160
-> [   59.923261]  [<ffffffff81142ec9>] object_err+0x49/0x70
-> [   59.923261]  [<ffffffff81146166>] __slab_free+0x266/0x3c0
-> [   59.923261]  [<ffffffff811463ac>] kfree+0xec/0x220
-> [   59.923261]  [<ffffffff81146c4e>] ? kmem_cache_destroy+0x20e/0x230
-> [   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
-> [   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
-> [   59.923261]  [<ffffffff81146c4e>] kmem_cache_destroy+0x20e/0x230
-> [   59.923261]  [<ffffffffa02d1000>] ? kmem_cache_test_init_module+0x0/0x67 [cache_test]
-> [   59.923261]  [<ffffffffa02d104f>] kmem_cache_test_init_module+0x4f/0x67 [cache_test]
-> [   59.923261]  [<ffffffff8100a07b>] do_one_initcall+0x4b/0x1a0
-> [   59.923261]  [<ffffffff810b5f08>] sys_init_module+0x108/0x260
-> [   59.923261]  [<ffffffff81014282>] system_call_fastpath+0x16/0x1b
-> [   59.923261] FIX kmalloc-8192: Object at 0xffff8800087fa048 not freed
->
->
-I think I got the real problem, that's introduced from former commit 
-a0e1d1be204612ee83b3afe8aa24c5d27e63d464,  this results kmem_cache 
-always be freed at kmem_cache_create....
-Can following patch fix this issue?
+Reviewd-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Tested-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 
 
-
-
---------------040408020607040807040307
-Content-Type: text/x-patch;
- name="0001-slub-fix-kmem_cache-wrongly-freed-in-kmem_cache_cre.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename*0="0001-slub-fix-kmem_cache-wrongly-freed-in-kmem_cache_cre.pat";
- filename*1="ch"
-
->From f5a04f3db3adaa605e951ae9f46708da63979bda Mon Sep 17 00:00:00 2001
-From: Xiaotian Feng <dfeng@redhat.com>
-Date: Mon, 14 Sep 2009 11:12:27 +0800
-Subject: [PATCH] slub: fix kmem_cache wrongly freed in kmem_cache_create
-
-commit a0e1d1b move sysfs operations outside of slub_lock, but wrongly
-freed kmem_cache in any cases (should only free kmem_cache when open failed).
-
-Signed-off-by: Xiaotian Feng <dfeng@redhat.com>
----
- mm/slub.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/mm/slub.c b/mm/slub.c
-index b627675..40e12d5 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -3337,8 +3337,8 @@ struct kmem_cache *kmem_cache_create(const char *name, size_t size,
- 				goto err;
- 			}
- 			return s;
--		}
--		kfree(s);
-+		} else
-+			kfree(s);
- 	}
- 	up_write(&slub_lock);
- 
--- 
-1.6.2.5
-
-
---------------040408020607040807040307--
