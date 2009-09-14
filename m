@@ -1,17 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933633AbZINXnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933695AbZINXnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933633AbZINXnn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 19:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933642AbZINXnl
+	id S933695AbZINXnp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 19:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933650AbZINXnm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 19:43:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:17971 "EHLO mx1.redhat.com"
+	Mon, 14 Sep 2009 19:43:42 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:19285 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933600AbZINXnk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 19:43:40 -0400
+	id S933633AbZINXnl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 19:43:41 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC PATCH -tip v4 2/9] x86: Introduce generic jump patching without
-	stop_machine
+Subject: [RFC PATCH -tip v4 3/9] kprobes: Introduce generic insn_slot framework
 To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        lkml <linux-kernel@vger.kernel.org>
@@ -27,8 +26,8 @@ Cc: systemtap <systemtap@sources.redhat.com>,
        "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
        Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
        Jason Baron <jbaron@redhat.com>
-Date: Mon, 14 Sep 2009 19:45:08 -0400
-Message-ID: <20090914234508.25174.87106.stgit@dhcp-100-2-132.bos.redhat.com>
+Date: Mon, 14 Sep 2009 19:45:17 -0400
+Message-ID: <20090914234517.25174.63508.stgit@dhcp-100-2-132.bos.redhat.com>
 In-Reply-To: <20090914234448.25174.70702.stgit@dhcp-100-2-132.bos.redhat.com>
 References: <20090914234448.25174.70702.stgit@dhcp-100-2-132.bos.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -39,27 +38,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add text_poke_fixup() which takes a fixup address to where a processor
-jumps if it hits the modifying address while code modifying.
-text_poke_fixup() does following steps for this purpose.
-
- 1. Setup int3 handler for fixup.
- 2. Put a breakpoint (int3) on the first byte of modifying region,
-    and synchronize code on all CPUs.
- 3. Modify other bytes of modifying region, and synchronize code on all CPUs.
- 4. Modify the first byte of modifying region, and synchronize code
-    on all CPUs.
- 5. Clear int3 handler.
-
-Thus, if some other processor execute modifying address when step2 to step4,
-it will be jumped to fixup code.
-
-This still has many limitations for modifying multi-instructions at once.
-However, it is enough for 'a 5 bytes nop replacing with a jump' patching,
-because;
- - Replaced instruction is just one instruction, which is executed atomically.
- - Replacing instruction is a jump, so we can set fixup address where the jump
-   goes to.
+Make insn_slot framework support various size slots.
+Current insn_slot just supports one-size instruction buffer slot. However,
+kprobes jump optimization needs larger size buffers.
 
 Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
@@ -76,193 +57,215 @@ Cc: Andi Kleen <andi@firstfloor.org>
 Cc: Jason Baron <jbaron@redhat.com>
 ---
 
- arch/x86/include/asm/alternative.h |   12 ++++
- arch/x86/include/asm/kprobes.h     |    1 
- arch/x86/kernel/alternative.c      |  120 ++++++++++++++++++++++++++++++++++++
- kernel/kprobes.c                   |    2 -
- 4 files changed, 134 insertions(+), 1 deletions(-)
+ kernel/kprobes.c |  102 +++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 63 insertions(+), 39 deletions(-)
 
-diff --git a/arch/x86/include/asm/alternative.h b/arch/x86/include/asm/alternative.h
-index 1a37bcd..35cfbc0 100644
---- a/arch/x86/include/asm/alternative.h
-+++ b/arch/x86/include/asm/alternative.h
-@@ -167,4 +167,16 @@ extern void add_nops(void *insns, unsigned int len);
- extern void *text_poke(void *addr, const void *opcode, size_t len);
- extern void *text_poke_early(void *addr, const void *opcode, size_t len);
- 
-+/*
-+ * Setup int3 trap and fixup execution for cross-modifying on SMP case.
-+ * If the other cpus execute modifying instruction, it will hit int3
-+ * and go to fixup code. This just provides a minimal safety check.
-+ * Additional checks/restrictions are required for completely safe
-+ * cross-modifying.
-+ */
-+extern void *text_poke_fixup(void *addr, const void *opcode, size_t len,
-+			     void *fixup);
-+extern int text_patch_jump(void *addr, void *dest);
-+extern void sync_core_all(void);
-+
- #endif /* _ASM_X86_ALTERNATIVE_H */
-diff --git a/arch/x86/include/asm/kprobes.h b/arch/x86/include/asm/kprobes.h
-index eaec8ea..febab97 100644
---- a/arch/x86/include/asm/kprobes.h
-+++ b/arch/x86/include/asm/kprobes.h
-@@ -33,6 +33,7 @@ struct kprobe;
- typedef u8 kprobe_opcode_t;
- #define BREAKPOINT_INSTRUCTION	0xcc
- #define RELATIVEJUMP_OPCODE 0xe9
-+#define RELATIVEJUMP_SIZE 5
- #define MAX_INSN_SIZE 16
- #define MAX_STACK_SIZE 64
- #define MIN_STACK_SIZE(ADDR)					       \
-diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-index f576587..e75f0e7 100644
---- a/arch/x86/kernel/alternative.c
-+++ b/arch/x86/kernel/alternative.c
-@@ -3,6 +3,7 @@
- #include <linux/mutex.h>
- #include <linux/list.h>
- #include <linux/kprobes.h>
-+#include <linux/kdebug.h>
- #include <linux/mm.h>
- #include <linux/vmalloc.h>
- #include <linux/memory.h>
-@@ -544,3 +545,122 @@ void *__kprobes text_poke(void *addr, const void *opcode, size_t len)
- 	local_irq_restore(flags);
- 	return addr;
- }
-+
-+/*
-+ * On pentium series, Unsynchronized cross-modifying code
-+ * operations can cause unexpected instruction execution results.
-+ * So after code modified, we should synchronize it on each processor.
-+ */
-+static void __kprobes __local_sync_core(void *info)
-+{
-+	sync_core();
-+}
-+
-+void __kprobes sync_core_all(void)
-+{
-+	on_each_cpu(__local_sync_core, NULL, 1);
-+}
-+
-+/* Safely cross-code modifying with fixup address */
-+static void *patch_fixup_from;
-+static void *patch_fixup_addr;
-+
-+static int __kprobes patch_exceptions_notify(struct notifier_block *self,
-+					      unsigned long val, void *data)
-+{
-+	struct die_args *args = data;
-+	struct pt_regs *regs = args->regs;
-+
-+	if (likely(!patch_fixup_from))
-+		return NOTIFY_DONE;
-+
-+	if (val != DIE_INT3 || !regs || user_mode_vm(regs) ||
-+	    (unsigned long)patch_fixup_from != regs->ip)
-+		return NOTIFY_DONE;
-+
-+	args->regs->ip = (unsigned long)patch_fixup_addr;
-+	return NOTIFY_STOP;
-+}
-+
-+/**
-+ * text_poke_fixup() -- cross-modifying kernel text with fixup address.
-+ * @addr:	Modifying address.
-+ * @opcode:	New instruction.
-+ * @len:	length of modifying bytes.
-+ * @fixup:	Fixup address.
-+ *
-+ * Note: You must backup replaced instructions before calling this,
-+ * if you need to recover it.
-+ * Note: Must be called under text_mutex.
-+ */
-+void *__kprobes text_poke_fixup(void *addr, const void *opcode, size_t len,
-+				void *fixup)
-+{
-+	static const unsigned char int3_insn = BREAKPOINT_INSTRUCTION;
-+	static const int int3_size = sizeof(int3_insn);
-+
-+	/* Replacing 1 byte can be done atomically. */
-+	if (unlikely(len <= 1))
-+		return text_poke(addr, opcode, len);
-+
-+	/* Preparing */
-+	patch_fixup_addr = fixup;
-+	wmb();
-+	patch_fixup_from = (u8 *)addr + int3_size; /* IP address after int3 */
-+
-+	/* Cap by an int3 */
-+	text_poke(addr, &int3_insn, int3_size);
-+	sync_core_all();
-+
-+	/* Replace tail bytes */
-+	text_poke((char *)addr + int3_size, (const char *)opcode + int3_size,
-+		  len - int3_size);
-+	sync_core_all();
-+
-+	/* Replace int3 with head byte */
-+	text_poke(addr, opcode, int3_size);
-+	sync_core_all();
-+
-+	/* Cleanup */
-+	patch_fixup_from = NULL;
-+	wmb();
-+	return addr;
-+}
-+
-+/**
-+ * text_patch_jump() -- cross-modifying kernel text with a relative jump
-+ * @addr:	Address where jump from.
-+ * @dest:	Address where jump to.
-+ *
-+ * Return 0 if succeeded to embed a jump. Otherwise, there is an error.
-+ * Note: You must backup replaced instructions before calling this,
-+ * if you need to recover it.
-+ * Note: Must be called under text_mutex.
-+ */
-+int __kprobes text_patch_jump(void *addr, void *dest)
-+{
-+	unsigned char jmp_code[RELATIVEJUMP_SIZE];
-+	s32 rel = (s32)((long)dest - ((long)addr + RELATIVEJUMP_SIZE));
-+
-+	if (!addr || !dest ||
-+	    (long)rel != ((long)dest - ((long)addr + RELATIVEJUMP_SIZE)))
-+		return -EINVAL;
-+
-+	jmp_code[0] = RELATIVEJUMP_OPCODE;
-+	*(s32 *)(&jmp_code[1]) = rel;
-+
-+	text_poke_fixup(addr, jmp_code, RELATIVEJUMP_SIZE, dest);
-+	return 0;
-+}
-+
-+static struct notifier_block patch_exceptions_nb = {
-+	.notifier_call = patch_exceptions_notify,
-+	.priority = 0x7fffffff /* we need to be notified first */
-+};
-+
-+static int __init patch_init(void)
-+{
-+	return register_die_notifier(&patch_exceptions_nb);
-+}
-+
-+arch_initcall(patch_init);
 diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 00d01b0..f0170b3 100644
+index f0170b3..a74f0e0 100644
 --- a/kernel/kprobes.c
 +++ b/kernel/kprobes.c
-@@ -880,7 +880,7 @@ EXPORT_SYMBOL_GPL(unregister_kprobes);
- 
- static struct notifier_block kprobe_exceptions_nb = {
- 	.notifier_call = kprobe_exceptions_notify,
--	.priority = 0x7fffffff /* we need to be notified first */
-+	.priority = 0x7ffffff0 /* High priority, but not first.  */
+@@ -103,26 +103,42 @@ static struct kprobe_blackpoint kprobe_blacklist[] = {
+  * stepping on the instruction on a vmalloced/kmalloced/data page
+  * is a recipe for disaster
+  */
+-#define INSNS_PER_PAGE	(PAGE_SIZE/(MAX_INSN_SIZE * sizeof(kprobe_opcode_t)))
+-
+ struct kprobe_insn_page {
+ 	struct list_head list;
+ 	kprobe_opcode_t *insns;		/* Page of instruction slots */
+-	char slot_used[INSNS_PER_PAGE];
+ 	int nused;
+ 	int ngarbage;
++	char slot_used[];
  };
  
- unsigned long __weak arch_deref_entry_point(void *entry)
++#define KPROBE_INSN_PAGE_SIZE(slots)			\
++	(offsetof(struct kprobe_insn_page, slot_used) +	\
++	 (sizeof(char) * (slots)))
++
++struct kprobe_insn_cache {
++	struct list_head pages;	/* list of kprobe_insn_page */
++	size_t insn_size;	/* size of instruction slot */
++	int nr_garbage;
++};
++
++static int slots_per_page(struct kprobe_insn_cache *c)
++{
++	return PAGE_SIZE/(c->insn_size * sizeof(kprobe_opcode_t));
++}
++
+ enum kprobe_slot_state {
+ 	SLOT_CLEAN = 0,
+ 	SLOT_DIRTY = 1,
+ 	SLOT_USED = 2,
+ };
+ 
+-static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_pages */
+-static LIST_HEAD(kprobe_insn_pages);
+-static int kprobe_garbage_slots;
+-static int collect_garbage_slots(void);
++static DEFINE_MUTEX(kprobe_insn_mutex);	/* Protects kprobe_insn_slots */
++static struct kprobe_insn_cache kprobe_insn_slots = {
++	.pages = LIST_HEAD_INIT(kprobe_insn_slots.pages),
++	.insn_size = MAX_INSN_SIZE,
++	.nr_garbage = 0,
++};
++static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c);
+ 
+ static int __kprobes check_safety(void)
+ {
+@@ -152,32 +168,33 @@ loop_end:
+  * __get_insn_slot() - Find a slot on an executable page for an instruction.
+  * We allocate an executable page if there's no room on existing ones.
+  */
+-static kprobe_opcode_t __kprobes *__get_insn_slot(void)
++static kprobe_opcode_t __kprobes *__get_insn_slot(struct kprobe_insn_cache *c)
+ {
+ 	struct kprobe_insn_page *kip;
+ 
+  retry:
+-	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+-		if (kip->nused < INSNS_PER_PAGE) {
++	list_for_each_entry(kip, &c->pages, list) {
++		if (kip->nused < slots_per_page(c)) {
+ 			int i;
+-			for (i = 0; i < INSNS_PER_PAGE; i++) {
++			for (i = 0; i < slots_per_page(c); i++) {
+ 				if (kip->slot_used[i] == SLOT_CLEAN) {
+ 					kip->slot_used[i] = SLOT_USED;
+ 					kip->nused++;
+-					return kip->insns + (i * MAX_INSN_SIZE);
++					return kip->insns + (i * c->insn_size);
+ 				}
+ 			}
+-			/* Surprise!  No unused slots.  Fix kip->nused. */
+-			kip->nused = INSNS_PER_PAGE;
++			/* kip->nused is broken. Fix it. */
++			kip->nused = slots_per_page(c);
++			WARN_ON(1);
+ 		}
+ 	}
+ 
+ 	/* If there are any garbage slots, collect it and try again. */
+-	if (kprobe_garbage_slots && collect_garbage_slots() == 0) {
++	if (c->nr_garbage && collect_garbage_slots(c) == 0)
+ 		goto retry;
+-	}
+-	/* All out of space.  Need to allocate a new page. Use slot 0. */
+-	kip = kmalloc(sizeof(struct kprobe_insn_page), GFP_KERNEL);
++
++	/* All out of space.  Need to allocate a new page. */
++	kip = kmalloc(KPROBE_INSN_PAGE_SIZE(slots_per_page(c)), GFP_KERNEL);
+ 	if (!kip)
+ 		return NULL;
+ 
+@@ -192,19 +209,20 @@ static kprobe_opcode_t __kprobes *__get_insn_slot(void)
+ 		return NULL;
+ 	}
+ 	INIT_LIST_HEAD(&kip->list);
+-	list_add(&kip->list, &kprobe_insn_pages);
+-	memset(kip->slot_used, SLOT_CLEAN, INSNS_PER_PAGE);
++	memset(kip->slot_used, SLOT_CLEAN, slots_per_page(c));
+ 	kip->slot_used[0] = SLOT_USED;
+ 	kip->nused = 1;
+ 	kip->ngarbage = 0;
++	list_add(&kip->list, &c->pages);
+ 	return kip->insns;
+ }
+ 
++
+ kprobe_opcode_t __kprobes *get_insn_slot(void)
+ {
+-	kprobe_opcode_t *ret;
++	kprobe_opcode_t *ret = NULL;
+ 	mutex_lock(&kprobe_insn_mutex);
+-	ret = __get_insn_slot();
++	ret = __get_insn_slot(&kprobe_insn_slots);
+ 	mutex_unlock(&kprobe_insn_mutex);
+ 	return ret;
+ }
+@@ -221,7 +239,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+ 		 * so as not to have to set it up again the
+ 		 * next time somebody inserts a probe.
+ 		 */
+-		if (!list_is_singular(&kprobe_insn_pages)) {
++		if (!list_is_singular(&kip->list)) {
+ 			list_del(&kip->list);
+ 			module_free(NULL, kip->insns);
+ 			kfree(kip);
+@@ -231,7 +249,7 @@ static int __kprobes collect_one_slot(struct kprobe_insn_page *kip, int idx)
+ 	return 0;
+ }
+ 
+-static int __kprobes collect_garbage_slots(void)
++static int __kprobes collect_garbage_slots(struct kprobe_insn_cache *c)
+ {
+ 	struct kprobe_insn_page *kip, *next;
+ 
+@@ -239,42 +257,48 @@ static int __kprobes collect_garbage_slots(void)
+ 	if (check_safety())
+ 		return -EAGAIN;
+ 
+-	list_for_each_entry_safe(kip, next, &kprobe_insn_pages, list) {
++	list_for_each_entry_safe(kip, next, &c->pages, list) {
+ 		int i;
+ 		if (kip->ngarbage == 0)
+ 			continue;
+ 		kip->ngarbage = 0;	/* we will collect all garbages */
+-		for (i = 0; i < INSNS_PER_PAGE; i++) {
++		for (i = 0; i < slots_per_page(c); i++) {
+ 			if (kip->slot_used[i] == SLOT_DIRTY &&
+ 			    collect_one_slot(kip, i))
+ 				break;
+ 		}
+ 	}
+-	kprobe_garbage_slots = 0;
++	c->nr_garbage = 0;
+ 	return 0;
+ }
+ 
+-void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
++static void __kprobes __free_insn_slot(struct kprobe_insn_cache *c,
++				       kprobe_opcode_t *slot, int dirty)
+ {
+ 	struct kprobe_insn_page *kip;
+ 
+-	mutex_lock(&kprobe_insn_mutex);
+-	list_for_each_entry(kip, &kprobe_insn_pages, list) {
+-		if (kip->insns <= slot &&
+-		    slot < kip->insns + (INSNS_PER_PAGE * MAX_INSN_SIZE)) {
+-			int i = (slot - kip->insns) / MAX_INSN_SIZE;
++	list_for_each_entry(kip, &c->pages, list) {
++		long idx = ((long)slot - (long)kip->insns) / c->insn_size;
++		if (idx >= 0 && idx < slots_per_page(c)) {
++			WARN_ON(kip->slot_used[idx] != SLOT_USED);
+ 			if (dirty) {
+-				kip->slot_used[i] = SLOT_DIRTY;
++				kip->slot_used[idx] = SLOT_DIRTY;
+ 				kip->ngarbage++;
++				if (++c->nr_garbage > slots_per_page(c))
++					collect_garbage_slots(c);
+ 			} else
+-				collect_one_slot(kip, i);
+-			break;
++				collect_one_slot(kip, idx);
++			return;
+ 		}
+ 	}
++	/* Could not free this slot. */
++	WARN_ON(1);
++}
+ 
+-	if (dirty && ++kprobe_garbage_slots > INSNS_PER_PAGE)
+-		collect_garbage_slots();
+-
++void __kprobes free_insn_slot(kprobe_opcode_t * slot, int dirty)
++{
++	mutex_lock(&kprobe_insn_mutex);
++	__free_insn_slot(&kprobe_insn_slots, slot, dirty);
+ 	mutex_unlock(&kprobe_insn_mutex);
+ }
+ #endif
 
 
 -- 
