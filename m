@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbZINIUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZINIZS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752211AbZINIUX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 04:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbZINIUX
+	id S1755201AbZINIZS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 04:25:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZINIZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 04:20:23 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53682 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755132AbZINIUW (ORCPT
+	Mon, 14 Sep 2009 04:25:15 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:56709 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751246AbZINIZO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 04:20:22 -0400
-Date: Mon, 14 Sep 2009 09:20:05 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       sedji gaouaou <sedji.gaouaou@atmel.com>
-Subject: Re: linux-next: arm tree build failure
-Message-ID: <20090914082005.GB14204@flint.arm.linux.org.uk>
-References: <20090910145944.690c873f.sfr@canb.auug.org.au>
+	Mon, 14 Sep 2009 04:25:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vxoc3eT/l155xuqRORrC10rIaUY2+Qf8MkiKYgEhryJCifPszFO90ZHV508XSy9oAs
+         e047VGase22mJaJ8im3S9lrBrKpv3wej4MNhpeqd7bw7FEvaX3hkmkOvHy4PDrkCf/CE
+         LdrT3W+ZFRSjZUuxlxRwnWILhE55dLHcfSdf0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090910145944.690c873f.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090914044657.GA4252@merkur.ravnborg.org>
+References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-2-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-3-git-send-email-felipe.contreras@gmail.com>
+	 <8bd0f97a0909131412v6ba29823ube9aab20302aaca0@mail.gmail.com>
+	 <94a0d4530909131442h43d0ed1cl9f395f7d38f2c43@mail.gmail.com>
+	 <8bd0f97a0909131458r8574620pa539876da969eb5f@mail.gmail.com>
+	 <94a0d4530909131504h1a9de951k3719000705a86bbc@mail.gmail.com>
+	 <20090914044657.GA4252@merkur.ravnborg.org>
+Date: Mon, 14 Sep 2009 11:25:16 +0300
+Message-ID: <94a0d4530909140125p73589cffy71a141d234508049@mail.gmail.com>
+Subject: Re: [PATCH 2/5] kbuild: fix warning when domainname is not available
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Sep 10, 2009 at 02:59:44PM +1000, Stephen Rothwell wrote:
-> The next-20090907 and later builds (arm at91cap9adk_defconfig) failed
-> like this:
-> 
-> arch/arm/mach-at91/at91cap9_devices.c:821: warning: 'struct atmel_ac97_data' declared inside parameter list
-> arch/arm/mach-at91/at91cap9_devices.c:821: warning: its scope is only this definition or declaration, which is probably not what you want
-> arch/arm/mach-at91/at91cap9_devices.c:821: error: conflicting types for 'at91_add_device_ac97'
-> arch/arm/mach-at91/include/mach/board.h:178: note: previous declaration of 'at91_add_device_ac97' was here
-> arch/arm/mach-at91/board-cap9adk.c:367: error: variable 'cap9adk_ac97_data' has initializer but incomplete type
-> arch/arm/mach-at91/board-cap9adk.c: In function 'cap9adk_board_init':
-> arch/arm/mach-at91/board-cap9adk.c:397: warning: passing argument 1 of 'at91_add_device_ac97' from incompatible pointer type
-> arch/arm/mach-at91/include/mach/board.h:178: note: expected 'struct ac97c_platform_data *' but argument is of type 'struct atmel_ac97_data *'
-> 
-> Caused by commit d656f07a7405e788e1275d0238b67f593615f2bb ("ARM: 5640/1:
-> This patch modifies the support of AC97 on the at91sam9263 ek board").
+On Mon, Sep 14, 2009 at 7:46 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
+> On Mon, Sep 14, 2009 at 01:04:11AM +0300, Felipe Contreras wrote:
+>> On Mon, Sep 14, 2009 at 12:58 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+>> > .
+>> > On Sun, Sep 13, 2009 at 17:42, Felipe Contreras
+>> > <felipe.contreras@gmail.com> wrote:
+>> >> On Mon, Sep 14, 2009 at 12:12 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+>> >>> On Sun, Sep 13, 2009 at 15:38, Felipe Contreras wrote:
+>> >>>> +  if $domain; then
+>> >>>
+>> >>> is this really correct ?  i think you meant to use:
+>> >>> [ -n "$domain" ]
+>> >>
+>> >> What is the difference?
+>> >>
+>> >> $domain unset
+>> >> test -n "" -> false
+>> >> test -> false
+>> >>
+>> >> $domain is a valid string
+>> >> test -n "string" -> true
+>> >> test "string" -> true
+>> >
+>> > except that you didnt invoke `test` anywhere.  you're executing the
+>> > contents of $domain.
+>>
+>> Ahh, I'll update it to:
+>> [ "$domain" ]
+>
+> Please use [ -n "$domain" ].
+> Be explicit about what you do.
+>
+> [Likewise in c we never omit "int" just because we can].
 
-No idea.  I guess the Atmel folk have split one logical change up between
-two trees, and its only been half merged.  I don't see anything in the
-patch description which mentions this though.
+In fact 'int' is implicit of 'signed int', and 'long' is a shorthand
+of 'signed long int' and so on. Also, AFAIK 'if (foo)' is preferred
+over 'if (foo == true)' or 'if (foo != NULL)' and sometimes even 'if
+(foo >= 0)'.
+
+What's the point of going for the explicit form? Make the code less readable?
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Felipe Contreras
