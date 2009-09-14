@@ -1,77 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZINDbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbZINDlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZINDbj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 23:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZINDbi
+	id S1754625AbZINDlf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 23:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZINDld
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 23:31:38 -0400
-Received: from mga06.intel.com ([134.134.136.21]:21836 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753603AbZINDbi (ORCPT
+	Sun, 13 Sep 2009 23:41:33 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:52400 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753849AbZINDlc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 23:31:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,381,1249282800"; 
-   d="scan'208";a="448189138"
-Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
-	performance
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: John Stoffel <john@stoffel.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
-       peterz@infradead.org, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com
-In-Reply-To: <19114.41505.479086.782442@stoffel.org>
-References: <20090911174019.1ed02737@infradead.org>
-	 <19114.41505.479086.782442@stoffel.org>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 11:30:10 +0800
-Message-Id: <1252899010.2606.25.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Sep 2009 23:41:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LM+kpyGi2NrIjqOf9lmC09DSfHRp76a9sJuwnmM04RHK4OHiI2ZP2GBGk/h0ujsCqW
+         dHgyFXOJjPNP19wQ05JarYRDMu/L6MW6h9SkHUh/2UJjaY+QnGCCg++VqUQR01EvdlEH
+         VqeUFUj0pat7qC7GrAixfsJYp06dYymYE1ek0=
+Date: Mon, 14 Sep 2009 05:41:32 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Jan Kiszka <jan.kiszka@web.de>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Prasad <prasad@linux.vnet.ibm.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 3/5] hw-breakpoints: Rewrite the hw-breakpoints layer
+	on top of perf counters
+Message-ID: <20090914034131.GF14306@nowhere>
+References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com> <1252571367-25876-4-git-send-email-fweisbec@gmail.com> <4AAACAA4.2030707@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAACAA4.2030707@web.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-09-11 at 15:16 -0400, John Stoffel wrote:
-> >>>>> "Arjan" == Arjan van de Ven <arjan@infradead.org> writes:
+On Sat, Sep 12, 2009 at 12:09:40AM +0200, Jan Kiszka wrote:
+> Frederic Weisbecker wrote:
+> > This patch rebase the implementation of the breakpoints API on top of
+> > perf counters instances.
+> > 
+> > The core breakpoint API has changed a bit:
+> > 
+> > - register_kernel_hw_breakpoint() now takes a cpu as a parameter. For
+> >   now it doesn't support all cpu wide breakpoints but this may be
+> >   implemented soon.
+> > 
+> > - unregister_kernel_hw_breakpoint() and unregister_user_hw_breakpoint()
+> >   have been unified in a single unregister_hw_breakpoint()
+> > 
+> > Each breakpoints now match a perf counter which now handles the
+> > register scheduling, thread/cpu attachment, etc..
+> > 
+> > The new layering is now made as follows:
+> > 
+> >        ptrace       kgdb      ftrace   perf syscall
+> >           \          |          /         /
+> >            \         |         /         /
 > 
-> Arjan> From: Arjan van de Ven <arjan@linux.intel.com>
-> Arjan> Subject: [PATCH] cpuidle: A new variant of the menu governor
+> kgdb doesn't fit here as it requires nmi-safe services.
 > 
-> Arjan> This patch adds a new idle governor which balances power savings,
-> Arjan> energy efficiency and performance impact.
-> 
-> Arjan> The reason for a reworked governor is that there have been
-> Arjan> serious performance issues reported with the existing code
-> Arjan> on Nehalem server systems.
-> 
-> Arjan> To show this I'm sure Andrew wants to see benchmark results:
-> Arjan> (benchmark is "fio", "no cstates" is using "idle=poll")
-> 
-> Arjan> 		no cstates	current linux	new algorithm
-> Arjan> 1 disk		107 Mb/s	85 Mb/s		105 Mb/s
-> Arjan> 2 disks		215 Mb/s	123 Mb/s	209 Mb/s
-> Arjan> 12 disks	590 Mb/s	320 Mb/s	585 Mb/s
-> 
-> Don't you need another row or three where you show a) how much time
-> each test took,
-We start fio and always ask it running for 15 minutes.
+> I don't think you want to make the whole stack nmi-safe but rather
+> provide a separate interface that allows kgdb to announce to the kernel
+> when it uses some slot. Those slots should simply be excluded from
+> hardware updates. That's roughly the logic we use in KVM for guest
+> debugging: when the host starts to use debug registers for that purpose,
+> the guest's setting will not effect the real hardware anymore.
 
->  and b) how much (or average) power used for the
-> duration of the test?  
-The power consumption with the patch almost is equal to the one
-without the patch. But the fio result is far better with the patch.
 
-> 
-> I'm just curious if the new algorithm (or even the current one!) saves
-> any appreciable power over the 'no cstates' case.  It's not clear what
-> the savings are.  
-> 
-> Also, latency in terms of switching to higher power and then back down
-> would be nice to see.
-> 
-> Cheers,
-> John
+
+I don't quite understand what must be NMI-safe here. Is it when
+we request a breakpoint or when we hit one?
+
+
+ 
+> Still on my wishlist for KVM is a cheap & easy way to obtain the current
+> register content or to refresh it in hardware. It's not yet clear to me
+> where to hook this in the given design. It looks like this information
+> can be scattered over the current thread and some perf counters.
+
+
+With this design approach, the debug registers are not anymore stored
+in the thread structure. They are not stored anymore actually.
+
+Especially because the breakpoint are not anymore assigned to a
+specific address register. This one is decided when the counter
+is enabled. And the counter is often toggled on/off, depending
+if we start/end profiling the desired context. It can be a single task,
+in which case the counter is enabled while the task is sched in, and
+disabled when it is sched out.
+And between two sched atoms, the register used for a breakpoint
+can be different.
+
+The arch informations about the breakpoints (len/type/addr) are stored
+in the counter structure, and the address/control registers contents
+are now dynamically computed.
+
+For your needs, basically the control must be done from perfcounters.
+When you switch from host to guest, the counter must be sched out.
+And in the reverse direction, it must be sched in.
+Then perf will take care of that by itself.
 
