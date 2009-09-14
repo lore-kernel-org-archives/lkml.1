@@ -1,81 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756078AbZINQZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZINQWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756078AbZINQZF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 12:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756043AbZINQZB
+	id S1756068AbZINQWg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 12:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZINQWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 12:25:01 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:56221 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756016AbZINQZA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 12:25:00 -0400
-Date: Mon, 14 Sep 2009 18:24:57 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
-       Marek Vasut <marek.vasut@gmail.com>, Jamie Lokier <jamie@shareable.org>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] arm: remove unused code in delay.S
-Message-ID: <20090914162457.GE3164@pengutronix.de>
-References: <20090913230008.GC30169@n2100.arm.linux.org.uk> <20090914002100.GD30621@shareable.org> <20090914081001.GB14519@n2100.arm.linux.org.uk> <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com> <20090914140059.GC21580@n2100.arm.linux.org.uk> <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com> <20090914144028.GG21580@n2100.arm.linux.org.uk> <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com> <20090914153616.GD3164@pengutronix.de> <94a0d4530909140906v72865664w3976766e57bf2aa3@mail.gmail.com>
+	Mon, 14 Sep 2009 12:22:30 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:48343 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756015AbZINQW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 12:22:29 -0400
+Message-ID: <4AAE6E85.9020002@redhat.com>
+Date: Mon, 14 Sep 2009 12:25:41 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="4Epv4kl9IRBfg3rk"
-Content-Disposition: inline
-In-Reply-To: <94a0d4530909140906v72865664w3976766e57bf2aa3@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+To: ananth@in.ibm.com
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [BUGFIX] kprobes: prevent re-registration of the same kprobe
+ -	take2
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <20090913100713.GB14251@in.ibm.com> <4AADA0BB.4030307@redhat.com> <20090914100459.GA4446@in.ibm.com>
+In-Reply-To: <20090914100459.GA4446@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ananth N Mavinakayanahalli wrote:
+> On Sun, Sep 13, 2009 at 09:47:39PM -0400, Masami Hiramatsu wrote:
+>> Ananth N Mavinakayanahalli wrote:
+>>> On Fri, Sep 11, 2009 at 05:12:54AM +0200, Frederic Weisbecker wrote:
+>>>> On Thu, Sep 10, 2009 at 07:53:30PM -0400, Masami Hiramatsu wrote:
+>
+> ...
+>
+>> Hmm, if we catch the second registration here, it's too late. At
+>> register_kprobe(), we initialized some field of kprobe before calling
+>> register_aggr_kprobe(). Especially kprobe.list is cleared.
+>>
+>> And this can't check the case that 'p' is already registered on
+>> an aggr kprobe.
+>
+> Agreed. I thought of this case after sending out the earlier patch...
+>
+>> Thus, I think some initialization paths should be changed (kp.flag
+>> field is initialized too early, yearh, that's my mistake),
+>> and also, you will need to use get_valid_kprobe() to check the kprobe
+>> has not been registered.
+>
+> __get_valid_kprobe() makes the task easy. We should just prevent
+> re-registration whether or not the earlier probe is disabled.
+>
+> How does this patch look?
+>
+> ---
+> Prevent re-registration of the same kprobe. This situation, though
+> unlikely, needs to be flagged since it can lead to a system crash if its
+> not handled.
+>
+> The core change itself is small, but the helper routine needed to be
+> moved around a bit; hence the diffstat.
+>
+> Signed-off-by: Ananth N Mavinakayanahalli<ananth@in.ibm.com>
+> ---
+>   kernel/kprobes.c |   58 ++++++++++++++++++++++++++++++++++++-------------------
+>   1 file changed, 38 insertions(+), 20 deletions(-)
+>
+> Index: linux-2.6.31/kernel/kprobes.c
+> ===================================================================
+> --- linux-2.6.31.orig/kernel/kprobes.c
+> +++ linux-2.6.31/kernel/kprobes.c
+> @@ -681,6 +681,40 @@ static kprobe_opcode_t __kprobes *kprobe
+>   	return (kprobe_opcode_t *)(((char *)addr) + p->offset);
+>   }
+>
+> +/* Check passed kprobe is valid and return kprobe in kprobe_table. */
+> +static struct kprobe * __kprobes __get_valid_kprobe(struct kprobe *p)
+> +{
+> +	struct kprobe *old_p, *list_p;
+> +
+> +	old_p = get_kprobe(p->addr);
+> +	if (unlikely(!old_p))
+> +		return NULL;
+> +
+> +	if (p != old_p) {
+> +		list_for_each_entry_rcu(list_p,&old_p->list, list)
+> +			if (list_p == p)
+> +			/* kprobe p is a valid probe */
+> +				goto valid;
+> +		return NULL;
+> +	}
+> +valid:
+> +	return old_p;
+> +}
+> +
+> +/* Return error if the kprobe is being re-registered */
+> +static inline int check_kprobe_rereg(struct kprobe *p)
+> +{
+> +	int ret = 0;
+> +	struct kprobe *old_p;
+> +
+> +	mutex_lock(&kprobe_mutex);
+> +	old_p = __get_valid_kprobe(p);
+> +	if (old_p == p)
 
---4Epv4kl9IRBfg3rk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Here, since __get_valid_kprobe(p) will return aggr_kprobe of 'p',
+you just need to check old_p != NULL.
+
+Other parts are OK for me.
+
+Thank you!
 
 
-> The minority that would make use of this code is theoretical, and
-> these users by definition know they need this code, therefore, if the
-> code is not there, they'll notice,
+-- 
+Masami Hiramatsu
 
-I'm not sure everyone knows in advance what is going on. I imagine the case
-where something is inadeqaute, one starts looking at the code and _after_
-reading the #if 0-block, understands the problem and realizes that the bloc=
-k is
-needed in this rare case. So, it's like some kind of documentation. This is=
- why
-I'd still favour the comment; if there is a chance for such a patch, I'd ma=
-ke
-it BTW.
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
 
-> If it turns out nobody complains about removing this code you would
-> have made the linux kernel 16 lines cleaner for free.
+e-mail: mhiramat@redhat.com
 
-I'd think we lose a bit of information. (Yeah, it is in the history, but ha=
-rder
-to find there.)
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---4Epv4kl9IRBfg3rk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkqublkACgkQD27XaX1/VRsRCQCgujuQ5nun7vKY8/+8LC078mDc
-k58Anij6Tq1h0CAdoFVGB+AVOkr8XdMn
-=OsQm
------END PGP SIGNATURE-----
-
---4Epv4kl9IRBfg3rk--
