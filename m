@@ -1,92 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbZINLRY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755339AbZINLWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbZINLRY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 07:17:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754629AbZINLRX
+	id S1755339AbZINLWG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 07:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZINLWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 07:17:23 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41207 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbZINLRW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 07:17:22 -0400
-Date: Mon, 14 Sep 2009 13:17:21 +0200
-From: Jan Kara <jack@suse.cz>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       Artem Bityutskiy <dedekind1@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, david@fromorbit.com, hch@infradead.org,
-       akpm@linux-foundation.org, "Theodore Ts'o" <tytso@mit.edu>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 8/8] vm: Add an tuning knob for vm.max_writeback_mb
-Message-ID: <20090914111721.GA24075@duck.suse.cz>
-References: <4AA633FD.3080006@gmail.com> <1252425983.7746.120.camel@twins> <20090908162936.GA2975@think> <1252428983.7746.140.camel@twins> <20090908172842.GC2975@think> <1252431974.7746.151.camel@twins> <1252432501.7746.156.camel@twins> <1252434746.7035.7.camel@laptop> <20090909142315.GA7949@duck.suse.cz> <1252597750.7205.82.camel@laptop>
+	Mon, 14 Sep 2009 07:22:05 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:40120 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755286AbZINLWE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 07:22:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:date:x-google-sender-auth:message-id:subject
+         :from:to:content-type;
+        b=WAPzMxoFXAnJ2+SRy0iRK7zNuP8AmO5EvDfugQKj4x0547/ZqH+/P71lqveiuImsI8
+         Yx5Pm8t+0GJ4dRwJAW3Bz+utH/QZVbYCApedb+MOUMlaTxNRWSUkgOaMRScZlvxjQRIQ
+         9qKZ2UKEjuG7or+SGbpZq2l1BQsQFqvsBMHwI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252597750.7205.82.camel@laptop>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Date: Mon, 14 Sep 2009 13:22:05 +0200
+X-Google-Sender-Auth: da5168da48205596
+Message-ID: <98bb29450909140422q31b61637q54573ad471bc059a@mail.gmail.com>
+Subject: Patch for Documentation/filesystems/proc.txt
+From: Luis Garces-Erice <lge@ieee.org>
+To: linux-kernel@vger.kernel.org
+Content-Type: multipart/mixed; boundary=001485f1bdb229c967047387e032
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 10-09-09 17:49:10, Peter Zijlstra wrote:
-> On Wed, 2009-09-09 at 16:23 +0200, Jan Kara wrote:
-> >   Well, what I imagined we could do is:
-> > Have a per-bdi variable 'pages_written' - that would reflect the amount of
-> > pages written to the bdi since boot (OK, we'd have to handle overflows but
-> > that's doable).
-> > 
-> > There will be a per-bdi variable 'pages_waited'. When a thread should sleep
-> > in balance_dirty_pages() because we are over limits, it kicks writeback thread
-> > and does:
-> >   to_wait =  max(pages_waited, pages_written) + sync_dirty_pages() (or
-> > whatever number we decide)
-> >   pages_waited = to_wait
-> >   sleep until pages_written reaches to_wait or we drop below dirty limits.
-> > 
-> > That will make sure each thread will sleep until writeback threads have done
-> > their duty for the writing thread.
-> > 
-> > If we make sure sleeping threads are properly ordered on the wait queue,
-> > we could always wakeup just the first one and thus avoid the herding
-> > effect. When we drop below dirty limits, we would just wakeup the whole
-> > waitqueue.
-> > 
-> > Does this sound reasonable?
-> 
-> That seems to go wrong when there's multiple tasks waiting on the same
-> bdi, you'd count each page for 1/n its weight.
-> 
-> Suppose pages_written = 1024, and 4 tasks block and compute their to
-> wait as pages_written + 256 = 1280, then we'd release all 4 of them
-> after 256 pages are written, instead of 4*256, which would be
-> pages_written = 2048.
-  Well, there's some locking needed of course. The intent is to stack
-demands as they come. So in case pages_written = 1024, pages_waited = 1024
-we would do:
-THREAD 1:
+--001485f1bdb229c967047387e032
+Content-Type: text/plain; charset=ISO-8859-1
 
-spin_lock
-to_wait = 1024 + 256
-pages_waited = 1280
-spin_unlock
+Hi
 
-THREAD 2:
+the description in Documentation/filesystems/proc.txt of the
+procs_running entry in /proc/stat is confusing (according to that
+description, it looks as if procs_running could only be a number
+between 0 and the number of CPUs).
 
-spin_lock
-to_wait = 1280 + 256
-pages_waited = 1536
-spin_unlock
+Changed it to a more accurate description in the patch attached.
 
-  So weight of each page will be kept. The fact that second thread
-effectively waits until the first thread has its demand satisfied looks
-strange at the first sight but we don't do better currently and I think
-it's fine - if they were two writer threads, then soon the thread released
-first will queue behind the thread still waiting so long term the behavior
-should be fair.
+Cheers,
 
-								Honza
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Luis
+****
+
+--001485f1bdb229c967047387e032
+Content-Type: application/octet-stream; name=patch
+Content-Disposition: attachment; filename=patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fzl4k90w0
+
+LS0tIGxpbnV4LTIuNi4zMS9Eb2N1bWVudGF0aW9uL2ZpbGVzeXN0ZW1zL3Byb2MudHh0Lm9yaWcJ
+MjAwOS0wOS0xNCAxMjo0OTowNC4wMDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LTIuNi4zMS9Eb2N1
+bWVudGF0aW9uL2ZpbGVzeXN0ZW1zL3Byb2MudHh0CTIwMDktMDktMTQgMTI6NTM6MjUuMDAwMDAw
+MDAwICswMjAwCkBAIC0xMDcxLDggKzEwNzEsOCBAQCBUaGUgInByb2Nlc3NlcyIgbGluZSBnaXZl
+cyB0aGUgbnVtYmVyICBvCiBpbmNsdWRlcyAoYnV0ICBpcyBub3QgbGltaXRlZCAgdG8pIHRob3Nl
+ICBjcmVhdGVkIGJ5ICBjYWxscyB0byB0aGUgIGZvcmsoKSBhbmQKIGNsb25lKCkgc3lzdGVtIGNh
+bGxzLgogCi1UaGUgICJwcm9jc19ydW5uaW5nIiBsaW5lIGdpdmVzIHRoZSAgbnVtYmVyIG9mIHBy
+b2Nlc3NlcyAgY3VycmVudGx5IHJ1bm5pbmcgb24KLUNQVXMuCitUaGUgInByb2NzX3J1bm5pbmci
+IGxpbmUgZ2l2ZXMgdGhlIHRvdGFsIG51bWJlciBvZiB0aHJlYWRzIHRoYXQgYXJlCitydW5uaW5n
+IG9yIHJlYWR5IHRvIHJ1biAoaS5lLiwgdGhlIHRvdGFsIG51bWJlciBvZiBydW5uYWJsZSB0aHJl
+YWRzKS4KIAogVGhlICAgInByb2NzX2Jsb2NrZWQiIGxpbmUgZ2l2ZXMgIHRoZSAgbnVtYmVyIG9m
+ICBwcm9jZXNzZXMgY3VycmVudGx5IGJsb2NrZWQsCiB3YWl0aW5nIGZvciBJL08gdG8gY29tcGxl
+dGUuCg==
+--001485f1bdb229c967047387e032--
