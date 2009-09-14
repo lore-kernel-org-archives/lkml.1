@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbZINPp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZINPrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755844AbZINPp0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbZINPpZ
+	id S1755866AbZINPrr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbZINPrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:45:25 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52906 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755775AbZINPpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:45:24 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/O8b0kuAvOYUM/RESyMnlJTzKcFDOBES/Svl+Hgt
-	HI9KWIHQg+XRpN
-Subject: Re: INGO Why you remove  set_user_nice() from kernel/kthread.c
-From: Mike Galbraith <efault@gmx.de>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: pavel@pavlinux.ru, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <4AAE5D60.2080703@nortel.com>
-References: <200909141742.45487.pavel@pavlinux.ru>
-	 <1252937140.6500.11.camel@marge.simson.net>  <4AAE5D60.2080703@nortel.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 14 Sep 2009 17:45:23 +0200
-Message-Id: <1252943123.12986.70.camel@marge.simson.net>
+	Mon, 14 Sep 2009 11:47:45 -0400
+Received: from outbound-mail-103.bluehost.com ([69.89.22.13]:40140 "HELO
+	outbound-mail-103.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755622AbZINPrp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 11:47:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=Bd/NcQalqP54vu0spy51XdugrV/aLbRazgRwNW8uyBC8DLo3rtfIarZx/BVdkc9EJuHlwAGqSgypqxC/t9EAa2kPfafE2YvGT+WACetFDOfMSnttiCiFdTNMIcIhBIWC;
+Date: Mon, 14 Sep 2009 08:47:35 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/2] PCI Hotplug: internal interface cleanups
+Message-ID: <20090914084735.09bd443d@jbarnes-g45>
+In-Reply-To: <20090910183219.20011.41679.stgit@bob.kio>
+References: <20090910183219.20011.41679.stgit@bob.kio>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.51
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 09:12 -0600, Chris Friesen wrote:
-> On 09/14/2009 08:05 AM, Mike Galbraith wrote:
-> > If you're asking Ingo a question, maybe a CC is in order.
-> > 
-> > On Mon, 2009-09-14 at 17:42 +0400, Pavel Vasilyev wrote:
-> >>
-> >> Next patсh -  
-> >> http://www.kernel.org/diff/diffview.cgi?file=%2Fpub%2Flinux%2Fkernel%2F%2Fv2.6%2Fsnapshots%2Fpatch-2.6.31-git2.bz2;z=548
-> >>
-> >> This patch defines the core processes that are working with nice leve equal to 
-> >> zero , as in the BFS. :)
-> >>
-> >> Why?
-> > 
-> > I did that, not Ingo, and did so because with kthreads that use
-> > diddly-spit CPU (every one I see), it's just a waste of math.  What
-> > kthreads are you seeing using so much CPU that their weight is a factor?
-> > They _should_ be able to preempt and get their work done just fine
-> > without a boost.
+On Thu, 10 Sep 2009 12:33:58 -0600
+Alex Chiang <achiang@hp.com> wrote:
+
+> This is a re-post of an old patch series that wasn't picked up last
+> time due to being too late in the merge window.
 > 
-> Under heavy network load ksoftirqd can use significant amounts of cpu.
+> It removes a bunch of copy/paste code in acpiphp by simplifying some
+> internal interfaces.
+> 
+> Please consider this for .32.
+> 
+> Thanks!
+> 
+> v1 -> v2:
+> 	- incorporated Kenji-san's comments
+> 
+> ---
+> 
+> Alex Chiang (2):
+>       PCI Hotplug: acpiphp: find bridges the easy way
+>       PCI Hotplug: convert acpi_pci_detect_ejectable() to take an
+> acpi_handle
 
-OK, that may justify a weight adjustment, since it is a proxy for many.
-Question is, does it really need it?
+Applied to linux-next, thanks guys.
 
-I certainly have no objection to a heavier weight for any kthread,
-though I think it's a waste of cycles for the general case.
-
-	-Mike
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
