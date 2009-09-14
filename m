@@ -1,47 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbZINGZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752019AbZING1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752409AbZINGZc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 02:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZINGZb
+	id S1752019AbZING1f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 02:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbZING1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 02:25:31 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47168 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750924AbZINGZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 02:25:30 -0400
-Date: Mon, 14 Sep 2009 08:25:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ed Cashin <ecashin@coraid.com>
-Subject: Re: linux-next: block tree build failure
-Message-ID: <20090914062532.GS14984@kernel.dk>
-References: <20090914142729.beae34fd.sfr@canb.auug.org.au>
+	Mon, 14 Sep 2009 02:27:34 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:43727 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750902AbZING1e (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 02:27:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type;
+        b=N9f4ibGLc0MHV+DyVGI65sknRu/gduy0RFhor3rZdddTZSCyL9qfW2Smt8mR21tSWg
+         RLWKZPJpqDbDdLub1eeiYR0a/me5pFmVlnyQCrJI2CRm686D+TuOxGux6QaX+spS3mdZ
+         W0HPdcHDtRX6kdx/ztnxzT/R89Mf29XgoprQk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914142729.beae34fd.sfr@canb.auug.org.au>
+In-Reply-To: <4AADBB77.5050803@redhat.com>
+References: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>
+	 <1252883493.16335.8.camel@dhcp231-106.rdu.redhat.com>
+	 <4AADBB77.5050803@redhat.com>
+Date: Mon, 14 Sep 2009 09:27:36 +0300
+X-Google-Sender-Auth: b40866308a4173db
+Message-ID: <84144f020909132327u701bde60ibc558eb91ca2b391@mail.gmail.com>
+Subject: Re: [GIT BISECT] BUG kmalloc-8192: Object already free from 
+	kmem_cache_destroy
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Danny Feng <dfeng@redhat.com>
+Cc: Eric Paris <eparis@redhat.com>, cl@linux-foundation.org, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14 2009, Stephen Rothwell wrote:
-> Hi Jens,
-> 
-> Today's linux-next build (x86_64 allmodconfig) failed like this:
-> 
-> drivers/block/aoe/aoeblk.c: In function 'aoeblk_make_request':
-> drivers/block/aoe/aoeblk.c:175: error: implicit declaration of function 'bio_barrier'
-> 
-> Caused by commit c1db2f19f1302e894fe9db818e08fb03e4a84df9 ("aoe: end
-> barrier bios with EOPNOTSUPP") interacting with commit
-> 1f98a13f623e0ef666690a18c1250335fc6d7ef1 ("bio: first step in sanitizing
-> the bio->bi_rw flag testing").
-> 
-> I have used the version of the block tree from next-20090910 for today.
+On Mon, Sep 14, 2009 at 6:41 AM, Danny Feng <dfeng@redhat.com> wrote:
+> That's my fault... Please drop this patch, I didn't notice the free action
+> in kobject release phase.. Thanks for point it out.
 
-Fixed.
-
--- 
-Jens Axboe
-
+Dropped, thanks Eric!
