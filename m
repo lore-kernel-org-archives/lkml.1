@@ -1,59 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751286AbZINEq2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751327AbZINEq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751286AbZINEq2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 00:46:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZINEq2
+	id S1751327AbZINEq4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 00:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZINEq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 00:46:28 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60802
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750924AbZINEq1 (ORCPT
+	Mon, 14 Sep 2009 00:46:56 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:59514 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbZINEqz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 00:46:27 -0400
-Date: Sun, 13 Sep 2009 21:46:44 -0700 (PDT)
-Message-Id: <20090913.214644.164044855.davem@davemloft.net>
-To: sfr@canb.auug.org.au
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       paul.moore@hp.com, jmorris@namei.org, mst@redhat.com
-Subject: Re: linux-next: security-testing/net tree build failure
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090914130154.8b6df8f9.sfr@canb.auug.org.au>
-References: <20090903161432.44af630d.sfr@canb.auug.org.au>
-	<20090914130154.8b6df8f9.sfr@canb.auug.org.au>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 00:46:55 -0400
+Date: Mon, 14 Sep 2009 06:46:57 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] kbuild: fix warning when domainname is not
+	available
+Message-ID: <20090914044657.GA4252@merkur.ravnborg.org>
+References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com> <1252870707-4824-2-git-send-email-felipe.contreras@gmail.com> <1252870707-4824-3-git-send-email-felipe.contreras@gmail.com> <8bd0f97a0909131412v6ba29823ube9aab20302aaca0@mail.gmail.com> <94a0d4530909131442h43d0ed1cl9f395f7d38f2c43@mail.gmail.com> <8bd0f97a0909131458r8574620pa539876da969eb5f@mail.gmail.com> <94a0d4530909131504h1a9de951k3719000705a86bbc@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <94a0d4530909131504h1a9de951k3719000705a86bbc@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 14 Sep 2009 13:01:54 +1000
-
-> On Thu, 3 Sep 2009 16:14:32 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->>
->> Today's linux-next build (powerpc ppc64_defconfig) failed like this (this
->> was reverting to the security-testing tree in next-20090902):
->> 
->> drivers/net/tun.c: In function 'tun_set_iff':
->> drivers/net/tun.c:937: error: 'struct tun_struct' has no member named 'sk'
->> 
->> Caused by commit 2b980dbd77d229eb60588802162c9659726b11f4 ("lsm: Add
->> hooks to the TUN driver") interacting with commit
->> 89f56d1e91cfa535ccc6cc60e9e12e02682fd972 ("tun: reuse struct sock
->> fields") from the net tree.
->> 
->> I applied the following merge fix patch (which I can carry as necessary):
+On Mon, Sep 14, 2009 at 01:04:11AM +0300, Felipe Contreras wrote:
+> On Mon, Sep 14, 2009 at 12:58 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> > .
+> > On Sun, Sep 13, 2009 at 17:42, Felipe Contreras
+> > <felipe.contreras@gmail.com> wrote:
+> >> On Mon, Sep 14, 2009 at 12:12 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> >>> On Sun, Sep 13, 2009 at 15:38, Felipe Contreras wrote:
+> >>>> +  if $domain; then
+> >>>
+> >>> is this really correct ?  i think you meant to use:
+> >>> [ -n "$domain" ]
+> >>
+> >> What is the difference?
+> >>
+> >> $domain unset
+> >> test -n "" -> false
+> >> test -> false
+> >>
+> >> $domain is a valid string
+> >> test -n "string" -> true
+> >> test "string" -> true
+> >
+> > except that you didnt invoke `test` anywhere.  you're executing the
+> > contents of $domain.
 > 
-> This patch now needs to be applied to the net tree (as the
-> security-testing tree has been merged by Linus).  I have applied it as a
-> merge fix for today.
+> Ahh, I'll update it to:
+> [ "$domain" ]
 
-Ok, since I already sent a merge request to Linus I'll submit this
-as soon as he does that pull.
+Please use [ -n "$domain" ].
+Be explicit about what you do.
 
-I don't like "slipping" in things to a tree I've already asked
-him to pull from, and in this case especially since I'd have
-to merge his tree in to keep net-next-2.6 itself building.
-:-)
+[Likewise in c we never omit "int" just because we can].
+
+	Sam
