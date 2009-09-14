@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753731AbZINHNJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbZINHOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753731AbZINHNJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 03:13:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751043AbZINHNI
+	id S1754215AbZINHOn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 03:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZINHOm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 03:13:08 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56943 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750815AbZINHNH (ORCPT
+	Mon, 14 Sep 2009 03:14:42 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50006 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbZINHOm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 03:13:07 -0400
-Date: Mon, 14 Sep 2009 00:11:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-Cc: James Morris <jmorris@namei.org>, tpmdd-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, srajiv@linux.vnet.ibm.com,
-       Debora Velarde <debora@linux.vnet.ibm.com>,
-       Marcel Selhorst <m.selhorst@sirrix.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] TPM: Fixup pcrs sysfs file
-Message-Id: <20090914001136.f1fd580a.akpm@linux-foundation.org>
-In-Reply-To: <20090914062520.GB23467@obsidianresearch.com>
-References: <20090902031613.GA11464@obsidianresearch.com>
-	<20090903165219.2f79cdc1.akpm@linux-foundation.org>
-	<20090904012818.GU4973@obsidianresearch.com>
-	<alpine.LRH.2.00.0909141236020.28766@tundra.namei.org>
-	<20090914062520.GB23467@obsidianresearch.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Mon, 14 Sep 2009 03:14:42 -0400
+Subject: Re: [RFC][v6][PATCH 0/9] clone_with_pids() syscall
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       Oren Laadan <orenl@cs.columbia.edu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Pavel Emelyanov <xemul@openvz.org>, Andrew Morton <akpm@osdl.org>,
+       torvalds@linux-foundation.org, mikew@google.com, mingo@elte.hu,
+       hpa@zytor.com, Nathan Lynch <nathanl@austin.ibm.com>,
+       container@us.ibm.com, sukadev@us.ibm.com
+In-Reply-To: <20090912171930.GB29169@us.ibm.com>
+References: <20090910060627.GA24343@us.ibm.com>
+	 <1252668148.7126.13.camel@laptop> <200909111334.45241.arnd@arndb.de>
+	 <20090911164703.GA29169@us.ibm.com> <1252688404.7126.40.camel@laptop>
+	 <20090912171930.GB29169@us.ibm.com>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 09:14:11 +0200
+Message-Id: <1252912451.5699.2.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 00:25:20 -0600 Jason Gunthorpe <jgunthorpe@obsidianresearch.com> wrote:
-
-> On Mon, Sep 14, 2009 at 12:36:39PM +1000, James Morris wrote:
-> > On Thu, 3 Sep 2009, Jason Gunthorpe wrote:
+On Sat, 2009-09-12 at 10:19 -0700, Sukadev Bhattiprolu wrote:
+> Peter Zijlstra [peterz@infradead.org] wrote:
+> | On Fri, 2009-09-11 at 09:47 -0700, Sukadev Bhattiprolu wrote:
+> | > | Also, if you're passing a struct, why not put nr_pids in there, and
+> | > | replace clone_pid_struct with a simple array? That would give us
+> | > | 
+> | > | struct clone_struct {
+> | > |         u64 flags;
+> | > |         u64 child_stack;
+> | > |         u32 child_tid;
+> | > |         u32 parent_tid;
 > 
-> > > > That sounds like a fairly serious bug, and this looks like a 2.6.31
-> > > > patch.
-> > 
-> > Any comments from the maintainers on this patch?
-> 
-> FWIW, I didn't mention in the patch emails, but all the patches I sent
-> fix regressions that have been introduced in the past couple years by
-> clean up patches that never tested the code paths they alter.
-> 
-> What becomes of patches that end up in the mm tree? Do they still
-> route through you for mainline inclusion?
+> BTW, these two tids are __user pointers that kernel copies data into.
+> They should be u64 to avoid conversions in architecture specific code ?
 
-I'll be sending tpm patches to James henceforth.  I presently have
-
-tpm-fixup-pcrs-sysfs-file.patch
-tpm-fixup-pcrs-sysfs-file-update.patch
-tpm-fix-up-pubek-sysfs-file.patch
+Yeah, just take the idea not the details from these posts ;-)
 
