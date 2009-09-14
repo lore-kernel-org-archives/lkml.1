@@ -1,117 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZINPf1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755604AbZINPgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbZINPf1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:35:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbZINPf0
+	id S1755604AbZINPgV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZINPgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:35:26 -0400
-Received: from imp02.mtu.ru ([62.5.255.19]:50084 "EHLO imp02.mtu.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751547AbZINPfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:35:25 -0400
-From: Pavel Vasilyev <pavel@pavlinux.ru>
-Reply-To: pavel@pavlinux.ru
-Organization: Pavlinux Inc.
-To: linux-kernel@vger.kernel.org
-Subject: Re: INGO Why you remove  set_user_nice() from kernel/kthread.c
-Date: Mon, 14 Sep 2009 19:35:24 +0400
-User-Agent: KMail/1.9.10
-References: <200909141742.45487.pavel@pavlinux.ru> <1252937140.6500.11.camel@marge.simson.net> <4AAE5D60.2080703@nortel.com>
-In-Reply-To: <4AAE5D60.2080703@nortel.com>
-X-Face: =?utf-8?q?=2EqZWJ=3F=248Zrl=26r=7C-=3B8=7ESTufc!R0d=5E=3FdE-g/S=5FryU2S=5D=27?=
- =?utf-8?q?=24vQ7EYY=3DBSj=5DJ-Gp=5FVXPpl=27ci/i=0A=09yH=5B=249HGUU=3Af?=@6hyHiQKeEv#S(K4XtVe$?0UO@',
- =?utf-8?q?!=25=5CR=3A7a=3BITA=3B=7Cs=7C=3F=25+T6=7E5=3Aq=2E2i=5DzA=25=0A=09?=
- =?utf-8?q?Mn-t3kOWGQ?=(7@ZOZ/0@+baHY#Fj&e/k'#p}#F<U{[DP[@"XbG&pmU~{oOMsPc4q|4/,
- =?utf-8?q?du8=0A=09?="'s*i`2=h[f!7!`#',39O3
+	Mon, 14 Sep 2009 11:36:19 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:38052 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751569AbZINPgT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 11:36:19 -0400
+Date: Mon, 14 Sep 2009 17:36:16 +0200
+From: Wolfram Sang <w.sang@pengutronix.de>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Marek Vasut <marek.vasut@gmail.com>, Jamie Lokier <jamie@shareable.org>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+Message-ID: <20090914153616.GD3164@pengutronix.de>
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <200909132328.47079.marek.vasut@gmail.com> <20090913230008.GC30169@n2100.arm.linux.org.uk> <20090914002100.GD30621@shareable.org> <20090914081001.GB14519@n2100.arm.linux.org.uk> <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com> <20090914140059.GC21580@n2100.arm.linux.org.uk> <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com> <20090914144028.GG21580@n2100.arm.linux.org.uk> <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="J5MfuwkIyy7RmF4Q"
 Content-Disposition: inline
-Message-Id: <200909141935.25681.pavel@pavlinux.ru>
-X-Spam-Flag: NO
-X-Spam-Yversion: Spamooborona-3.0
+In-Reply-To: <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
+X-SA-Exim-Mail-From: w.sang@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   
-   Compare 
 
-2.6.31-git2 with KTHREAD_NICE_LEVEL = 0
-2.6.31-git2 with KTHREAD_NICE_LEVEL = -5
+--J5MfuwkIyy7RmF4Q
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Diff.
+On Mon, Sep 14, 2009 at 06:14:08PM +0300, Felipe Contreras wrote:
+> On Mon, Sep 14, 2009 at 5:40 PM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+> > On Mon, Sep 14, 2009 at 05:38:32PM +0300, Felipe Contreras wrote:
+> >> On Mon, Sep 14, 2009 at 5:00 PM, Russell King - ARM Linux
+> >> <linux@arm.linux.org.uk> wrote:
+> >> > On Mon, Sep 14, 2009 at 03:58:24PM +0300, Felipe Contreras wrote:
+> >> >> On Mon, Sep 14, 2009 at 11:10 AM, Russell King - ARM Linux
+> >> >> <linux@arm.linux.org.uk> wrote:
+> >> >> > On Mon, Sep 14, 2009 at 01:21:00AM +0100, Jamie Lokier wrote:
+> >> >> >> Russell King - ARM Linux wrote:
+> >> >> >> > On Sun, Sep 13, 2009 at 11:28:47PM +0200, Marek Vasut wrote:
+> >> >> >> > > > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 bhi =A0 =A0 __delay
+> >> >> >> > > > =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 mov =A0 =A0 pc, lr
+> >> >> >> > > > =A0ENDPROC(__udelay)
+> >> >> >> > > >
+> >> >> >> > > Hi
+> >> >> >> > >
+> >> >> >> > > why was this code there in the first place ?
+> >> >> >> >
+> >> >> >> > To make the delay loop more stable and predictable on older CP=
+Us.
+> >> >> >>
+> >> >> >> So why has it been commented out, if it's needed for that?
+> >> >> >
+> >> >> > We moved on and it penalises later CPUs, leading to udelay provid=
+ing
+> >> >> > shorter delays than requested.
+> >> >> >
+> >> >> > So the choice was either stable and predictable on older CPUs but
+> >> >> > buggy on newer CPUs, or correct on all CPUs but gives unnecessari=
+ly
+> >> >> > longer delays on older CPUs.
+> >> >>
+> >> >> Why not add an #ifdef CPU_V4 or whatever?
+> >> >
+> >> > Because then you get it whenever you configure for V4 as the lowest
+> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
+> >> > It's far better to leave it as is and just accept that the old CPUs
+> >> > will have longer than necessary delays. =A0If people really really
+> >> > care (and there's likely to only be a small minority of them now)
+> >> > changing the '0' to a '1' is a very simple change for them to carry
+> >> > in their local tree. =A0Unlike getting the right unrolling etc.
+> >>
+> >> Well, they can also 'git revert' this patch. If somebody really cares
+> >> I think they should shout now and provide a better patch, otherwise
+> >> this one should be merged.
+> >
+> > On the other hand, having the code there as it currently stands is not
+> > harmful in any way, so leaving it there is just as easy.
+>=20
+> It makes the code less understandable. I'm not sure about linux's
+> practices, but an #if 0 generally means somebody is being lazy.
 
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index 5fe7099..eb8751a 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -16,6 +16,8 @@
- #include <linux/mutex.h>
- #include <trace/events/sched.h>
+And what about a comment like "Try including the following code if ..."? I
+think I saw this somewhere else in the kernel and I'd be fine with that. So,
+while I generally agree that "#if 0" looks suspicious, there are a few cases
+for it, though they need documentation IMHO.
 
-+#define KTHREAD_NICE_LEVEL (-5)
-+
- static DEFINE_SPINLOCK(kthread_create_lock);
- static LIST_HEAD(kthread_create_list);
- struct task_struct *kthreadd_task;
-@@ -143,6 +145,7 @@ struct task_struct *kthread_create(int (*threadfn)(void 
-*data),
-                 * The kernel thread should not inherit these properties.
-                 */
-                sched_setscheduler_nocheck(create.result, SCHED_NORMAL, 
-&param);
-+         set_user_nice(create.result, KTHREAD_NICE_LEVEL);
-                set_cpus_allowed_ptr(create.result, cpu_all_mask);
-        }
-        return create.result;
-@@ -218,6 +221,7 @@ int kthreadd(void *unused)
-        /* Setup a clean context for our children to inherit. */
-        set_task_comm(tsk, "kthreadd");
-        ignore_signals(tsk);
-+ set_user_nice(tsk, KTHREAD_NICE_LEVEL);
-        set_cpus_allowed_ptr(tsk, cpu_all_mask);
-        set_mems_allowed(node_possible_map);
- 
+--=20
+Pengutronix e.K.                           | Wolfram Sang                |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
 
+--J5MfuwkIyy7RmF4Q
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-Used benchmarks.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-# cyclictest and signaltest - 
-http://www.osadl.org/Realtime-test-utilities-cyclictest-and-s.rt-test-cyclictest-signaltest.0.html
+iEYEARECAAYFAkquYvAACgkQD27XaX1/VRvjZgCfW6OZb9hQDga/XCEcMIwskXrs
+ebgAoLmtpTZ7t/Sz89D3WoESDCOenff6
+=YPuS
+-----END PGP SIGNATURE-----
 
- ----------
- CYCLE TEST
- ----------
-
--T: 0 ( 5263) P: 0 I:1000 C:  98345 Min:      8 Act:656014 Avg:287390 Max:  
-656450
--T: 1 ( 5264) P: 0 I:1500 C:  65680 Min:      7 Act:481583 Avg:236140 Max:  
-482343
--T: 2 ( 5265) P: 0 I:2000 C:  49358 Min:      7 Act:286071 Avg:111300 Max:  
-287453
--T: 3 ( 5266) P: 0 I:2500 C:  39453 Min:      7 Act:370028 Avg:116111 Max:  
-372481
-+T: 0 ( 6634) P: 0 I:1000 C:  98888 Min:      7 Act:113011 Avg:28733 Max:  
-113817
-+T: 1 ( 6635) P: 0 I:1500 C:  65953 Min:      8 Act:72013 Avg:25026 Max:   
-73110
-+T: 2 ( 6636) P: 0 I:2000 C:  49468 Min:      6 Act:66076 Avg:17455 Max:   
-67486
-+T: 3 ( 6637) P: 0 I:2500 C:  39580 Min:      7 Act:52514 Avg:12882 Max:   
-53256
-
- ----------
- SIGNAL TEST
- ----------
-
--T: 0 ( 5285) P: 0 C: 100000 Min:     13 Act:   23 Avg:   30 Max:    9229
--T: 1 ( 5286) P: 0 C: 100000 Min:     13 Act:   99 Avg:  662 Max:   17282
--T: 2 ( 5287) P: 0 C: 100000 Min:     13 Act:  110 Avg:  662 Max:   17294
--T: 3 ( 5288) P: 0 C: 100000 Min:     13 Act:  119 Avg:  662 Max:   18645
-+T: 0 ( 6698) P: 0 C: 100000 Min:     13 Act:   22 Avg:   24 Max:    7898
-+T: 1 ( 6699) P: 0 C: 100000 Min:     13 Act:  104 Avg:  654 Max:   15728
-+T: 2 ( 6700) P: 0 C: 100000 Min:     13 Act:  114 Avg:  654 Max:   15740
-+T: 3 ( 6701) P: 0 C: 100000 Min:     13 Act:  124 Avg:  654 Max:   16102
-
+--J5MfuwkIyy7RmF4Q--
