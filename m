@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933584AbZINUIs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933803AbZINURZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933584AbZINUIs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:08:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933560AbZINUIq
+	id S933803AbZINURZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933562AbZINUIn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:08:46 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:54067 "EHLO smtp.gentoo.org"
+	Mon, 14 Sep 2009 16:08:43 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:54070 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933216AbZINUIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:08:37 -0400
+	id S933546AbZINUIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 16:08:38 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org,
-       Stefan Pledl <stefan.pledl@mesutronic.de>
-Subject: [PATCH 29/72] Blackfin: fix BF548 UART0 DMA IRQ translation
-Date: Mon, 14 Sep 2009 16:07:33 -0400
-Message-Id: <1252958896-25150-30-git-send-email-vapier@gentoo.org>
+       Barry Song <barry.song@analog.com>
+Subject: [PATCH 30/72] Blackfin: bf538: add bfin_clear_PPI_STATUS() helper
+Date: Mon, 14 Sep 2009 16:07:34 -0400
+Message-Id: <1252958896-25150-31-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
 References: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
@@ -23,43 +23,28 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stefan Pledl <stefan.pledl@mesutronic.de>
+From: Barry Song <barry.song@analog.com>
 
-The initial BF54x port included some defines to keep code simple across
-different processors, but it just ended up causing the UART0 DMA IRQs to
-be set to the UART1 channels.
+Add the bf538 version of bfin_clear_PPI_STATUS() to match all other ports.
 
-Signed-off-by: Stefan Pledl <stefan.pledl@mesutronic.de>
+Signed-off-by: Barry Song <barry.song@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/mach-bf548/dma.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ arch/blackfin/mach-bf538/include/mach/cdefBF538.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/arch/blackfin/mach-bf548/dma.c b/arch/blackfin/mach-bf548/dma.c
-index 5359806..d9239bc 100644
---- a/arch/blackfin/mach-bf548/dma.c
-+++ b/arch/blackfin/mach-bf548/dma.c
-@@ -91,16 +91,16 @@ int channel2irq(unsigned int channel)
- 		ret_irq = IRQ_SPI1;
- 		break;
- 	case CH_UART0_RX:
--		ret_irq = IRQ_UART_RX;
-+		ret_irq = IRQ_UART0_RX;
- 		break;
- 	case CH_UART0_TX:
--		ret_irq = IRQ_UART_TX;
-+		ret_irq = IRQ_UART0_TX;
- 		break;
- 	case CH_UART1_RX:
--		ret_irq = IRQ_UART_RX;
-+		ret_irq = IRQ_UART1_RX;
- 		break;
- 	case CH_UART1_TX:
--		ret_irq = IRQ_UART_TX;
-+		ret_irq = IRQ_UART1_TX;
- 		break;
- 	case CH_EPPI0:
- 		ret_irq = IRQ_EPPI0;
+diff --git a/arch/blackfin/mach-bf538/include/mach/cdefBF538.h b/arch/blackfin/mach-bf538/include/mach/cdefBF538.h
+index 99ca3f4..1de6751 100644
+--- a/arch/blackfin/mach-bf538/include/mach/cdefBF538.h
++++ b/arch/blackfin/mach-bf538/include/mach/cdefBF538.h
+@@ -1310,6 +1310,7 @@
+ #define bfin_write_PPI_CONTROL(val)    bfin_write16(PPI_CONTROL, val)
+ #define bfin_read_PPI_STATUS()         bfin_read16(PPI_STATUS)
+ #define bfin_write_PPI_STATUS(val)     bfin_write16(PPI_STATUS, val)
++#define bfin_clear_PPI_STATUS()        bfin_read_PPI_STATUS()
+ #define bfin_read_PPI_DELAY()          bfin_read16(PPI_DELAY)
+ #define bfin_write_PPI_DELAY(val)      bfin_write16(PPI_DELAY, val)
+ #define bfin_read_PPI_COUNT()          bfin_read16(PPI_COUNT)
 -- 
 1.6.4.2
 
