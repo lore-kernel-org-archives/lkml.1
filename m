@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755164AbZINIQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbZINIUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755164AbZINIQZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 04:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZINIQY
+	id S1752211AbZINIUX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 04:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755136AbZINIUX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 04:16:24 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40636 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752429AbZINIQX (ORCPT
+	Mon, 14 Sep 2009 04:20:23 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:53682 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755132AbZINIUW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 04:16:23 -0400
-Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
- performance
-From: Peter Zijlstra <peterz@infradead.org>
-To: Tejun Heo <tj@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       David Howells <dhowells@redhat.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-In-Reply-To: <4AADF8FE.1060208@kernel.org>
-References: <20090911174019.1ed02737@infradead.org>
-	 <20090914004301.105196cc.akpm@linux-foundation.org>
-	 <4AADF8FE.1060208@kernel.org>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 10:15:28 +0200
-Message-Id: <1252916128.5699.41.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 04:20:22 -0400
+Date: Mon, 14 Sep 2009 09:20:05 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       sedji gaouaou <sedji.gaouaou@atmel.com>
+Subject: Re: linux-next: arm tree build failure
+Message-ID: <20090914082005.GB14204@flint.arm.linux.org.uk>
+References: <20090910145944.690c873f.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090910145944.690c873f.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 17:04 +0900, Tejun Heo wrote:
-> Andrew Morton wrote:
-> > This fails to compile in linux-next:
-> > 
-> > drivers/cpuidle/governors/menu-tng.o:(.discard+0x0): multiple definition of `__pcpu_unique_menu_devices'
-> > drivers/cpuidle/governors/menu.o:(.discard+0x0): first defined here
-> > 
-> > because we have
-> > 
-> > static DEFINE_PER_CPU(struct menu_device, menu_devices);
-> > 
-> > in both menu.c and menu-tng.c.
-> > 
-> > Despite the `static', the percpu changes in
-> > 
-> > commit 7c756e6e19e71f0327760d8955f7077118ebb2b1
-> > Author:     Tejun Heo <tj@kernel.org>
-> > AuthorDate: Wed Jun 24 15:13:50 2009 +0900
-> > Commit:     Tejun Heo <tj@kernel.org>
-> > CommitDate: Wed Jun 24 15:13:50 2009 +0900
-> > 
-> >     percpu: implement optional weak percpu definitions
-> > 
-> > are emitting global symbol derived from `menu_devices' and they clash.
-> > 
-> > I'll rename menu_devices to fix that up, but we have a problem...
+On Thu, Sep 10, 2009 at 02:59:44PM +1000, Stephen Rothwell wrote:
+> The next-20090907 and later builds (arm at91cap9adk_defconfig) failed
+> like this:
 > 
-> Unfortunately, this was the only way we could come up with to get
-> alpha and s390 working with the new percpu allocator.  On other archs,
-> the global definition isn't necessary but config option
-> DEBUG_FORCE_WEAK_PER_CPU enables it so that alpha and s390 don't choke
-> on generic code later.
+> arch/arm/mach-at91/at91cap9_devices.c:821: warning: 'struct atmel_ac97_data' declared inside parameter list
+> arch/arm/mach-at91/at91cap9_devices.c:821: warning: its scope is only this definition or declaration, which is probably not what you want
+> arch/arm/mach-at91/at91cap9_devices.c:821: error: conflicting types for 'at91_add_device_ac97'
+> arch/arm/mach-at91/include/mach/board.h:178: note: previous declaration of 'at91_add_device_ac97' was here
+> arch/arm/mach-at91/board-cap9adk.c:367: error: variable 'cap9adk_ac97_data' has initializer but incomplete type
+> arch/arm/mach-at91/board-cap9adk.c: In function 'cap9adk_board_init':
+> arch/arm/mach-at91/board-cap9adk.c:397: warning: passing argument 1 of 'at91_add_device_ac97' from incompatible pointer type
+> arch/arm/mach-at91/include/mach/board.h:178: note: expected 'struct ac97c_platform_data *' but argument is of type 'struct atmel_ac97_data *'
 > 
-> The core of the problem is that the memory model used by gcc on those
-> two archs assume that static symbols are reachable with small offset
-> but percpu variables, static or not, always end up way away.  Making
-> all percpu variables weak and using global symbols to enforce global
-> uniqueness works around the problem but with the side effect you're
-> seeing.
-> 
-> If someone has any better ideas, I would happy to remove the annoying
-> restriction.
+> Caused by commit d656f07a7405e788e1275d0238b67f593615f2bb ("ARM: 5640/1:
+> This patch modifies the support of AC97 on the at91sam9263 ek board").
 
-That sounds like a variable __attribute__((no-explicit-relocs)) should
-be proposed to the GCC folks or something. Then we can at least have a
-hope of lifting this restriction some time in the future.
+No idea.  I guess the Atmel folk have split one logical change up between
+two trees, and its only been half merged.  I don't see anything in the
+patch description which mentions this though.
 
-(Alternatively we build the full alpha kernel with
---mno-explicit-relocs, but that would be sub-optimal as well)
-
-Not sure if s390 has anything similar..
-
-Alternatively we could file it as a bug, since the symbols are in a
-custom .section, which is a strong indication we're going to play funny
-games anyway.
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
