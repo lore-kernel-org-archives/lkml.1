@@ -1,1415 +1,635 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZINKpI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752956AbZINK1D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752151AbZINKpI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 06:45:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZINKpH
+	id S1752956AbZINK1D (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 06:27:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751584AbZINK1C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 06:45:07 -0400
-Received: from lo.gmane.org ([80.91.229.12]:47298 "EHLO lo.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750891AbZINKpB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 06:45:01 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Arkadiusz =?UTF-8?B?TWnFm2tpZXdpY3o=?= <arekm@maven.pl>
-Subject: Re: PROBLEM: oops
-Followup-To: gmane.linux.kernel
-Date: Mon, 14 Sep 2009 12:21:19 +0200
-Message-ID: <h8l5ev$u2p$1@ger.gmane.org>
-References: <alpine.LNX.2.00.0908251515380.16876@fgnss.gnfx.tqn.cy> <1251209206.7538.1159.camel@twins> <alpine.LNX.2.00.0908251608280.16876@fgnss.gnfx.tqn.cy> <1251209734.7538.1160.camel@twins> <alpine.LNX.2.00.0908251625580.16876@fgnss.gnfx.tqn.cy> <1251211483.7538.1162.camel@twins> <alpine.LNX.2.00.0908251701020.16876@fgnss.gnfx.tqn.cy> <1251212859.7538.1166.camel@twins> <alpine.LNX.2.00.0908252317080.17744@fgnss.gnfx.tqn.cy> <1251265742.7538.1192.camel@twins> <alpine.LNX.2.00.0908261113450.16876@fgnss.gnfx.tqn.cy> <alpine.LNX.2.00.0908270956420.16876@fgnss.gnfx.tqn.cy> <1251364230.18584.52.camel@twins> <alpine.LNX.2.00.0908271121100.16876@fgnss.gnfx.tqn.cy> <1251366017.18584.62.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8Bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: 83.238.65.58
-User-Agent: KNode/4.3.1
+	Mon, 14 Sep 2009 06:27:02 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34399 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751515AbZINK1A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 06:27:00 -0400
+X-Authenticated: #10250065
+X-Provags-ID: V01U2FsdGVkX1+r5vQ6mMirumifGdKOO4cCGTZALJ8hxZ6ASLYvJR
+	0K6NRvQ+44iWCd
+From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+To: linux-fbdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net,
+       Harald Welte <laforge@gnumonks.org>,
+       HaraldWelte <HaraldWelte@viatech.com>,
+       Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+Subject: [PATCH 1/4] viafb: Add support for the VX855 chipset
+Date: Mon, 14 Sep 2009 10:30:03 +0000
+Message-Id: <1252924206-3721-1-git-send-email-FlorianSchandinat@gmx.de>
+X-Mailer: git-send-email 1.6.3.2
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.47
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
+From: Harald Welte <laforge@gnumonks.org>
 
-> I'm not sure what was available in .27
-> 
-> looking at your config, the things you can try are:
-> 
-> CONFIG_SLUB_DEBUG_ON=y
-> CONFIG_DEBUG_PAGEALLOC=y
-> 
-> I'm not seeing kmemcheck.
+[FB] viafb: Add support for the VX855 chipset
 
-I'm fighting the same problem as blues is. The problem, in my case, is 
-visible on intel x86_64 and amd x86_64 machines (so different hardware than 
-his i686).
+This patch adds support for a new VIA integrated graphics chipset, the VX855.
 
-I get oops on 2.6.27.31 and 2.6.27.30 (see below). 2.6.31 with debug options 
-and kmemcheck didn't really work (see last log below).
+Signed-off-by: HaraldWelte <HaraldWelte@viatech.com>
+Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
+---
+ drivers/video/via/chip.h     |    3 +
+ drivers/video/via/hw.c       |  208 ++++++++++++++++++++++++++++--------------
+ drivers/video/via/hw.h       |   14 +++
+ drivers/video/via/share.h    |   98 ++++++++++++++++++++
+ drivers/video/via/viafbdev.c |    3 +-
+ drivers/video/via/viamode.c  |   55 +++++++++++
+ drivers/video/via/viamode.h  |    2 +
+ 7 files changed, 314 insertions(+), 69 deletions(-)
 
-I don't know how to trigger that oops. In my case it takes ~1 week for the 
-oops to happen. These kernels aren't (unfortunately) vanilla. They have 
-vserver patch applied. I'm also using grsecurity patch but I tested without 
-it, too - oops did happen.
-
-I'm unable to test these without vserver patch.
-
-************************************************************************************
-2.6.27.31 on intel machine:
-
-[ 3952.746892] BUG: unable to handle kernel NULL pointer dereference at 
-0000000000000080
-[ 3952.747315] IP: [<ffffffff80227e04>] pick_next_task_fair+0x64/0xf0
-[ 3952.747315] PGD 2865eb067 PUD 2a3d60067 PMD 0 
-[ 3952.747315] Oops: 0000 [1] SMP 
-[ 3952.747315] CPU 5 
-[ 3952.747315] Modules linked in: ipmi_watchdog sch_sfq dm_mod e1000e 
-ipmi_devintf ipmi_si ipmi_msghandler xfs scsi_wait_scan sd_mod crc_t10dif 
-aacraid scsi_mod
-[ 3952.747315] Pid: 14053, comm: exim Not tainted 2.6.27.31-1 #1
-[ 3952.747315] RIP: 0010:[<ffffffff80227e04>]  [<ffffffff80227e04>] 
-pick_next_task_fair+0x64/0xf0
-[ 3952.747315] RSP: 0018:ffff880286511a18  EFLAGS: 00210046
-[ 3952.747315] RAX: 0000000000000000 RBX: ffff88002805fe70 RCX: 
-ffff880314dda260
-[ 3952.747315] RDX: ffff88035e4e3780 RSI: ffff880314dda260 RDI: 
-ffff88002805fe00
-[ 3952.747315] RBP: ffff880286511a58 R08: ffff8800280606e8 R09: 
-0000000000000000
-[ 3952.747315] R10: 0000000000000000 R11: 0000000000000001 R12: 
-0000000000000000
-[ 3952.747315] R13: ffff88035919a950 R14: 0000000000000000 R15: 
-ffff88035919a950
-[ 3952.747315] FS:  0000000000000000(0000) GS:ffff88035e4e3780(0063) 
-knlGS:00000000f7217910
-[ 3952.747315] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-[ 3952.747315] CR2: 0000000000000080 CR3: 0000000286459000 CR4: 
-00000000000006e0
-[ 3952.747315] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[ 3952.747315] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[ 3952.747315] Process exim (pid: 14053, threadinfo ffff880286510000, task 
-ffff880314dda260)
-[ 3952.747315] Stack:  ffff880286511a38 ffff88002805fe00 0000000000000005 
-ffff88002805fe00
-[ 3952.747315]  ffffffff80550b80 ffff88035919a950 ffff8800280606e8 
-ffff88035919a950
-[ 3952.747315]  ffff880286511b38 ffffffff8050d2ee 0000000000000000 
-0000000000001000
-[ 3952.747315] Call Trace:
-[ 3952.747315]  [<ffffffff8050d2ee>] thread_return+0x29d/0x88f
-[ 3952.747315]  [<ffffffff802f7dc1>] ? __block_prepare_write+0x2a1/0x540
-[ 3952.747315]  [<ffffffff802f6442>] ? __set_page_dirty+0x92/0x150
-[ 3952.747315]  [<ffffffff802f65ea>] ? __block_commit_write+0x6a/0xd0
-[ 3952.747315]  [<ffffffff8050dcfa>] schedule_timeout+0x8a/0xd0
-[ 3952.747315]  [<ffffffff802f67d9>] ? block_write_end+0x39/0x90
-[ 3952.747315]  [<ffffffff8050f9e9>] ? _spin_lock_bh+0x9/0x20
-[ 3952.747315]  [<ffffffff80436f53>] ? release_sock+0x13/0xb0
-[ 3952.747315]  [<ffffffff804376d1>] ? sk_wait_data+0xe1/0xf0
-[ 3952.747315]  [<ffffffff8024b220>] ? autoremove_wake_function+0x0/0x30
-[ 3952.747315]  [<ffffffff80479cad>] ? tcp_recvmsg+0x65d/0xd90
-[ 3952.747315]  [<ffffffffa00b6a60>] ? 
-xfs_address_space_operations+0x0/0x1a0 [xfs]
-[ 3952.747315]  [<ffffffff80436332>] ? sock_common_recvmsg+0x32/0x50
-[ 3952.747315]  [<ffffffff80433582>] ? sock_aio_read+0x192/0x200
-[ 3952.747315]  [<ffffffff802cb222>] ? do_sync_read+0xe2/0x120
-[ 3952.747315]  [<ffffffff805120a9>] ? do_page_fault+0x339/0x960
-[ 3952.747315]  [<ffffffff8024dfce>] ? enqueue_hrtimer+0x6e/0xf0
-[ 3952.747315]  [<ffffffff8024b220>] ? autoremove_wake_function+0x0/0x30
-[ 3952.747315]  [<ffffffff80238c38>] ? do_setitimer+0x2f8/0x3a0
-[ 3952.747315]  [<ffffffff802cbf3a>] ? vfs_read+0x16a/0x180
-[ 3952.747315]  [<ffffffff80238df5>] ? alarm_setitimer+0x35/0x70
-[ 3952.747315]  [<ffffffff802cc03e>] ? sys_read+0x4e/0x90
-[ 3952.747315]  [<ffffffff80222776>] ? sysenter_dispatch+0x7/0x27
-[ 3952.747315] 
-[ 3952.747315] 
-[ 3952.747315] Code: 74 24 f0 4c 89 6b 28 45 8b 56 38 45 85 d2 75 68 48 8b 
-43 70 48 8b 80 e0 07 00 00 49 89 46 40 4c 89 73 58 49 8b 46 48 49 89 46 58 
-<49> 8b 9e 80 00 00 00 48 85 db 74 50 4c 8b 63 38 45 31 f6 4d 85 
-[ 3952.747315] RIP  [<ffffffff80227e04>] pick_next_task_fair+0x64/0xf0
-[ 3952.747315]  RSP <ffff880286511a18>
-[ 3952.747315] CR2: 0000000000000080
-[ 3952.747315] ---[ end trace 82f82983f40cc2e1 ]---
-
-2.6.27.31 on amd machine:
-
-[91371.385760] BUG: unable to handle kernel NULL pointer dereference at 
-0000000000000080
-[91371.387743] IP: [<ffffffff80227e04>] pick_next_task_fair+0x64/0xf0
-[91371.387743] PGD 217516067 PUD 217515067 PMD 0 
-[91371.387743] Oops: 0000 [1] SMP 
-[91371.387743] CPU 1 
-[91371.387743] Modules linked in: sg xt_multiport xt_tcpudp 
-nf_conntrack_ipv4 xt_state iptable_filter ip_tables ipt_ULOG x_tables 
-ipmi_watchdog sch_sfq forcedeth ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-ff_memless nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si 
-ipmi_msghandler ehci_hcd usbcore amd74xx ide_core xfs scsi_wait_scan sd_mod 
-crc_t10dif aacraid scsi_mod
-[91371.387743] Pid: 3710, comm: java Not tainted 2.6.27.31-1 #1
-[91371.387743] RIP: 0010:[<ffffffff80227e04>]  [<ffffffff80227e04>] 
-pick_next_task_fair+0x64/0xf0
-[91371.387743] RSP: 0000:ffff88010b043b58  EFLAGS: 00010046
-[91371.387743] RAX: 0000000000000000 RBX: ffff880028029e70 RCX: 
-ffff88010b043c18
-[91371.387743] RDX: 0000000000000011 RSI: ffff88002802a6d0 RDI: 
-ffff880028029e00
-[91371.387743] RBP: ffff88010b043b98 R08: ffff88002802a6e8 R09: 
-0000000000000002
-[91371.387743] R10: 0000000000000000 R11: 0000000000000000 R12: 
-0000000000000000
-[91371.387743] R13: ffff88011e9b0000 R14: 0000000000000000 R15: 
-00000000ffffffff
-[91371.387743] FS:  00007f626e5716f0(0000) GS:ffff88011fc02a80(0063) 
-knlGS:00000000ade06bb0
-[91371.387743] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-[91371.387743] CR2: 0000000000000080 CR3: 00000002174f2000 CR4: 
-00000000000006e0
-[91371.387743] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[91371.387743] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[91371.387743] Process java (pid: 3710, threadinfo ffff88010b042000, task 
-ffff88011e64e720)
-[91371.387743] Stack:  ffff88010b043b78 ffff880028029e00 0000000000000001 
-ffff880028029e00
-[91371.387743]  ffffffff80550b80 ffff88011e9b0000 ffff88002802a6e8 
-00000000ffffffff
-[91371.387743]  ffff88010b043c78 ffffffff8050d2ee 0000000000000096 
-ffffffff80257eb8
-[91371.387743] Call Trace:
-[91371.387743]  [<ffffffff8050d2ee>] thread_return+0x29d/0x88f
-[91371.387743]  [<ffffffff80257eb8>] ? vx_update_load+0x18/0x170
-[91371.387743]  [<ffffffff80257eb8>] ? vx_update_load+0x18/0x170
-[91371.387743]  [<ffffffff80228e05>] ? enqueue_entity+0xd5/0x120
-[91371.387743]  [<ffffffff80263eb5>] futex_wait+0x435/0x4c0
-[91371.387743]  [<ffffffff802275b3>] ? __wake_up+0x43/0x70
-[91371.387743]  [<ffffffff802638ca>] ? get_futex_key+0x5a/0x180
-[91371.387743]  [<ffffffff80394721>] ? __up_read+0x21/0xc0
-[91371.387743]  [<ffffffff8022d3b0>] ? default_wake_function+0x0/0x10
-[91371.387743]  [<ffffffff8026559f>] ? do_futex+0xff/0xaa0
-[91371.387743]  [<ffffffff80227e70>] ? pick_next_task_fair+0xd0/0xf0
-[91371.387743]  [<ffffffff8050d2ee>] ? thread_return+0x29d/0x88f
-[91371.387743]  [<ffffffff8050d09e>] ? thread_return+0x4d/0x88f
-[91371.387743]  [<ffffffff80266238>] ? compat_sys_futex+0xb8/0x160
-[91371.387743]  [<ffffffff80222ba2>] ? ia32_sysret+0x0/0xa
-[91371.387743] 
-[91371.387743] 
-[91371.387743] Code: 74 24 f0 4c 89 6b 28 45 8b 56 38 45 85 d2 75 68 48 8b 
-43 70 48 8b 80 e0 07 00 00 49 89 46 40 4c 89 73 58 49 8b 46 48 49 89 46 58 
-<49> 8b 9e 80 00 00 00 48 85 db 74 50 4c 8b 63 38 45 31 f6 4d 85 
-[91371.387743] RIP  [<ffffffff80227e04>] pick_next_task_fair+0x64/0xf0
-[91371.387743]  RSP <ffff88010b043b58>
-[91371.387743] CR2: 0000000000000080
-[91371.387743] ---[ end trace 70e3e5544a76f116 ]---
-
-2.6.30 on amd machine:
-
-[328109.962383] BUG: unable to handle kernel NULL pointer dereference at 
-0000000000000038
-[328109.964692] IP: [<ffffffff802357eb>] pick_next_task_fair+0x9b/0x120
-[328109.964692] PGD 216478067 PUD 2129cc067 PMD 0 
-[328109.964692] Oops: 0000 [#1] SMP 
-[328109.964692] last sysfs file: /sys/devices/pci0000:00/0000:00:09.0/irq
-[328109.964692] CPU 4 
-[328109.964692] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328109.964692] Pid: 16435, comm: php Not tainted 2.6.30.6_nogrsecurity-0.1 
-#1 H8DMU
-[328109.964692] RIP: 0010:[<ffffffff802357eb>]  [<ffffffff802357eb>] 
-pick_next_task_fair+0x9b/0x120
-[328109.964692] RSP: 0000:ffff8801ee9bd968  EFLAGS: 00210046
-[328109.964692] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 
-ffff8801ee9bda08
-[328109.964692] RDX: 000000000000008d RSI: 0000000000000001 RDI: 
-0000000000000000
-[328109.964692] RBP: ffffc20000061168 R08: ffffc20000061a08 R09: 
-0000000000000000
-[328109.964692] R10: 0000000000000000 R11: 0000000000000000 R12: 
-0000000000000000
-[328109.964692] R13: ffffc20000061100 R14: ffff880169b18a00 R15: 
-ffffc20000061a18
-[328109.964692] FS:  00007f4601b03790(0000) GS:ffffc20000050000(0063) 
-knlGS:00000000f78716c0
-[328109.964692] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-[328109.964692] CR2: 0000000000000038 CR3: 000000012c2c5000 CR4: 
-00000000000006e0
-[328109.964692] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328109.964692] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328109.964692] Process php (pid: 16435, threadinfo ffff8801ee9bc000, task 
-ffff88021e97bcc0)
-[328109.964692] Stack:
-[328109.964692]  0000000000000000 ffffc20000061100 0000000000000000 
-ffffffff80586aa0
-[328109.964692]  ffffc20000061a18 ffffffff8056ed93 0000000000000004 
-ffff8801655230f8
-[328109.964692]  ffff88021f047000 ffffffff8025db8c ffff88021e97bcc0 
-ffff8801ee9bda88
-[328109.964692] Call Trace:
-[328109.964692]  [<ffffffff8056ed93>] ? thread_return+0x26d/0x8ea
-[328109.964692]  [<ffffffff8025db8c>] ? ktime_get_real+0xc/0x40
-[328109.964692]  [<ffffffff8025cb1e>] ? enqueue_hrtimer+0x6e/0x80
-[328109.964692]  [<ffffffff8025d454>] ? __hrtimer_start_range_ns+0x124/0x2b0
-[328109.964692]  [<ffffffff8056f419>] ? schedule+0x9/0x20
-[328109.964692]  [<ffffffff80570755>] ? schedule_hrtimeout_range+0xc5/0x160
-[328109.964692]  [<ffffffff8025cbf0>] ? hrtimer_wakeup+0x0/0x30
-[328109.964692]  [<ffffffff8057073b>] ? schedule_hrtimeout_range+0xab/0x160
-[328109.964692]  [<ffffffff803021ec>] ? poll_schedule_timeout+0x2c/0x50
-[328109.964692]  [<ffffffff8030263b>] ? do_sys_poll+0x37b/0x460
-[328109.964692]  [<ffffffff804dbe0b>] ? tcp_write_xmit+0x1fb/0xa20
-[328109.964692]  [<ffffffff803036c0>] ? __pollwait+0x0/0x120
-[328109.964692]  [<ffffffff803037e0>] ? pollwake+0x0/0x50
-[328109.964692]  [<ffffffff80482946>] ? sock_sendmsg+0x146/0x210
-[328109.964692]  [<ffffffff80259d40>] ? autoremove_wake_function+0x0/0x30
-[328109.964692]  [<ffffffff802af610>] ? find_lock_page+0x30/0x80
-[328109.964692]  [<ffffffff802afd66>] ? filemap_fault+0x156/0x420
-[328109.964692]  [<ffffffff802c5fea>] ? __do_fault+0x42a/0x510
-[328109.964692]  [<ffffffff80483a8d>] ? sys_sendto+0x11d/0x180
-[328109.964692]  [<ffffffff802c82e9>] ? handle_mm_fault+0x1b9/0xb00
-[328109.964692]  [<ffffffff80484457>] ? sys_getsockname+0xd7/0xf0
-[328109.964692]  [<ffffffff8026ea6e>] ? getnstimeofday+0x4e/0xe0
-[328109.964692]  [<ffffffff8025d898>] ? ktime_get_ts+0x28/0x60
-[328109.964692]  [<ffffffff80302194>] ? poll_select_set_timeout+0x74/0xa0
-[328109.964692]  [<ffffffff80302921>] ? sys_poll+0x71/0x110
-[328109.964692]  [<ffffffff80230272>] ? ia32_sysret+0x0/0xa
-[328109.964692] Code: e4 ff ff 85 c0 7e 49 48 8b 7d 60 48 85 ff 74 38 48 89 
-de e8 a8 e4 ff ff 85 c0 7e 44 48 8b 45 60 48 39 c3 74 3f 48 3b 5d 58 74 4d 
-<8b> 73 38 85 f6 74 86 48 89 de 48 89 ef e8 93 f3 ff ff e9 76 ff 
-[328109.964692] RIP  [<ffffffff802357eb>] pick_next_task_fair+0x9b/0x120
-[328109.964692]  RSP <ffff8801ee9bd968>
-[328109.964692] CR2: 0000000000000038
-[328109.964692] ---[ end trace 22ebb73050974e75 ]---
-[328192.410933] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328192.427185] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328192.533849] CPU 2:
-[328192.540518] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328192.647185] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328192.673851] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328192.700518] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328192.717185] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328192.737185] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328192.760518] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328192.780518] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328192.803851] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328192.823851] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328192.847185] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328192.867185] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328192.887185] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328192.910518] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328192.930518] Call Trace:
-[328192.937185]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328192.957185]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328192.977185]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328192.993851]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328193.013851]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328193.033851]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328193.050518]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328257.910925] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328257.927176] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328258.033843] CPU 2:
-[328258.040509] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328258.147176] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328258.173843] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328258.200509] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328258.217176] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328258.237176] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328258.260509] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328258.280509] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328258.300509] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328258.323843] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328258.347176] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328258.367176] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328258.387176] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328258.410509] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328258.430509] Call Trace:
-[328258.437176]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328258.457176]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328258.477176]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328258.493843]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328258.513843]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328258.533843]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328258.550509]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328323.407585] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328323.423836] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328323.530503] CPU 2:
-[328323.537170] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328323.643836] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328323.670503] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328323.697170] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328323.713836] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328323.733836] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328323.757170] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328323.777170] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328323.797170] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328323.820503] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328323.843836] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328323.863836] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328323.883836] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328323.907170] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328323.927170] Call Trace:
-[328323.933836]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328323.953836]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328323.973836]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328323.990503]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328324.010503]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328324.030503]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328324.047170]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328388.907578] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328388.923830] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328389.030496] CPU 2:
-[328389.037163] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328389.143830] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328389.170496] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328389.197163] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328389.213830] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328389.233830] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328389.257163] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328389.277163] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328389.300496] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328389.320496] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328389.343830] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328389.363830] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328389.383830] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328389.407163] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328389.427163] Call Trace:
-[328389.433830]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328389.453830]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328389.473830]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328389.490496]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328389.510496]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328389.530496]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328389.547163]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328454.404238] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328454.420490] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328454.527157] CPU 2:
-[328454.533823] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328454.640490] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328454.667157] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328454.693823] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328454.710490] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328454.730490] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328454.753823] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328454.773823] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328454.797157] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328454.817157] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328454.840490] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328454.860490] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328454.880490] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328454.903823] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328454.923823] Call Trace:
-[328454.930490]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328454.950490]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328454.970490]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328454.987156]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328455.007157]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328455.027157]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328455.043823]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328519.904232] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328519.920483] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328520.027150] CPU 2:
-[328520.033817] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328520.140483] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328520.167150] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328520.193817] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328520.210483] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328520.230483] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328520.253817] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328520.273817] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328520.293817] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328520.317150] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328520.340483] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328520.360483] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328520.380483] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328520.403817] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328520.423817] Call Trace:
-[328520.430483]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328520.450483]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328520.470483]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328520.487150]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328520.507150]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328520.527150]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328520.543817]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328585.400892] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328585.417144] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328585.523810] CPU 2:
-[328585.530477] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328585.637143] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328585.663810] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328585.690477] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328585.707143] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328585.727143] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328585.750477] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328585.770477] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328585.790477] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328585.813811] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328585.837144] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328585.857143] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328585.877143] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328585.900477] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328585.920477] Call Trace:
-[328585.927143]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328585.947143]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328585.967143]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328585.983810]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328586.003810]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328586.023810]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328586.040477]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328650.897552] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328650.913804] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328651.020470] CPU 2:
-[328651.027137] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328651.133804] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328651.160470] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328651.187137] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328651.203803] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328651.223803] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328651.243803] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328651.267137] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328651.287137] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328651.310470] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328651.333804] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328651.353803] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328651.373803] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328651.397137] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328651.417137] Call Trace:
-[328651.423803]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328651.443803]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328651.463803]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328651.480470]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328651.500470]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328651.520470]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328651.537137]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328716.397545] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328716.413797] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328716.520464] CPU 2:
-[328716.527130] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328716.633797] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328716.660464] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328716.687130] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328716.700464] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328716.723797] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328716.743797] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328716.767130] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328716.787130] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328716.810464] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328716.833797] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328716.853797] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328716.873797] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328716.897130] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328716.917130] Call Trace:
-[328716.923797]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328716.943797]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328716.963797]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328716.980463]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328717.000464]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328717.020464]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328717.037130]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328781.894206] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328781.910457] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328782.017124] CPU 2:
-[328782.023791] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328782.130457] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328782.157124] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328782.183790] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328782.200457] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328782.220457] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328782.243790] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328782.263790] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328782.283790] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328782.307124] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328782.330457] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328782.350457] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328782.370457] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328782.393790] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328782.413791] Call Trace:
-[328782.420457]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328782.440457]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328782.460457]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328782.477124]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328782.497124]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328782.517124]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328782.533790]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-
-************************************************************************************
-
-2.6.30 on amd machine:
-
-[328109.962383] BUG: unable to handle kernel NULL pointer dereference at 
-0000000000000038
-[328109.964692] IP: [<ffffffff802357eb>] pick_next_task_fair+0x9b/0x120
-[328109.964692] PGD 216478067 PUD 2129cc067 PMD 0 
-[328109.964692] Oops: 0000 [#1] SMP 
-[328109.964692] last sysfs file: /sys/devices/pci0000:00/0000:00:09.0/irq
-[328109.964692] CPU 4 
-[328109.964692] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328109.964692] Pid: 16435, comm: php Not tainted 2.6.30.6_nogrsecurity-0.1 
-#1 H8DMU
-[328109.964692] RIP: 0010:[<ffffffff802357eb>]  [<ffffffff802357eb>] 
-pick_next_task_fair+0x9b/0x120
-[328109.964692] RSP: 0000:ffff8801ee9bd968  EFLAGS: 00210046
-[328109.964692] RAX: 0000000000000000 RBX: 0000000000000000 RCX: 
-ffff8801ee9bda08
-[328109.964692] RDX: 000000000000008d RSI: 0000000000000001 RDI: 
-0000000000000000
-[328109.964692] RBP: ffffc20000061168 R08: ffffc20000061a08 R09: 
-0000000000000000
-[328109.964692] R10: 0000000000000000 R11: 0000000000000000 R12: 
-0000000000000000
-[328109.964692] R13: ffffc20000061100 R14: ffff880169b18a00 R15: 
-ffffc20000061a18
-[328109.964692] FS:  00007f4601b03790(0000) GS:ffffc20000050000(0063) 
-knlGS:00000000f78716c0
-[328109.964692] CS:  0010 DS: 002b ES: 002b CR0: 000000008005003b
-[328109.964692] CR2: 0000000000000038 CR3: 000000012c2c5000 CR4: 
-00000000000006e0
-[328109.964692] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328109.964692] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328109.964692] Process php (pid: 16435, threadinfo ffff8801ee9bc000, task 
-ffff88021e97bcc0)
-[328109.964692] Stack:
-[328109.964692]  0000000000000000 ffffc20000061100 0000000000000000 
-ffffffff80586aa0
-[328109.964692]  ffffc20000061a18 ffffffff8056ed93 0000000000000004 
-ffff8801655230f8
-[328109.964692]  ffff88021f047000 ffffffff8025db8c ffff88021e97bcc0 
-ffff8801ee9bda88
-[328109.964692] Call Trace:
-[328109.964692]  [<ffffffff8056ed93>] ? thread_return+0x26d/0x8ea
-[328109.964692]  [<ffffffff8025db8c>] ? ktime_get_real+0xc/0x40
-[328109.964692]  [<ffffffff8025cb1e>] ? enqueue_hrtimer+0x6e/0x80
-[328109.964692]  [<ffffffff8025d454>] ? __hrtimer_start_range_ns+0x124/0x2b0
-[328109.964692]  [<ffffffff8056f419>] ? schedule+0x9/0x20
-[328109.964692]  [<ffffffff80570755>] ? schedule_hrtimeout_range+0xc5/0x160
-[328109.964692]  [<ffffffff8025cbf0>] ? hrtimer_wakeup+0x0/0x30
-[328109.964692]  [<ffffffff8057073b>] ? schedule_hrtimeout_range+0xab/0x160
-[328109.964692]  [<ffffffff803021ec>] ? poll_schedule_timeout+0x2c/0x50
-[328109.964692]  [<ffffffff8030263b>] ? do_sys_poll+0x37b/0x460
-[328109.964692]  [<ffffffff804dbe0b>] ? tcp_write_xmit+0x1fb/0xa20
-[328109.964692]  [<ffffffff803036c0>] ? __pollwait+0x0/0x120
-[328109.964692]  [<ffffffff803037e0>] ? pollwake+0x0/0x50
-[328109.964692]  [<ffffffff80482946>] ? sock_sendmsg+0x146/0x210
-[328109.964692]  [<ffffffff80259d40>] ? autoremove_wake_function+0x0/0x30
-[328109.964692]  [<ffffffff802af610>] ? find_lock_page+0x30/0x80
-[328109.964692]  [<ffffffff802afd66>] ? filemap_fault+0x156/0x420
-[328109.964692]  [<ffffffff802c5fea>] ? __do_fault+0x42a/0x510
-[328109.964692]  [<ffffffff80483a8d>] ? sys_sendto+0x11d/0x180
-[328109.964692]  [<ffffffff802c82e9>] ? handle_mm_fault+0x1b9/0xb00
-[328109.964692]  [<ffffffff80484457>] ? sys_getsockname+0xd7/0xf0
-[328109.964692]  [<ffffffff8026ea6e>] ? getnstimeofday+0x4e/0xe0
-[328109.964692]  [<ffffffff8025d898>] ? ktime_get_ts+0x28/0x60
-[328109.964692]  [<ffffffff80302194>] ? poll_select_set_timeout+0x74/0xa0
-[328109.964692]  [<ffffffff80302921>] ? sys_poll+0x71/0x110
-[328109.964692]  [<ffffffff80230272>] ? ia32_sysret+0x0/0xa
-[328109.964692] Code: e4 ff ff 85 c0 7e 49 48 8b 7d 60 48 85 ff 74 38 48 89 
-de e8 a8 e4 ff ff 85 c0 7e 44 48 8b 45 60 48 39 c3 74 3f 48 3b 5d 58 74 4d 
-<8b> 73 38 85 f6 74 86 48 89 de 48 89 ef e8 93 f3 ff ff e9 76 ff 
-[328109.964692] RIP  [<ffffffff802357eb>] pick_next_task_fair+0x9b/0x120
-[328109.964692]  RSP <ffff8801ee9bd968>
-[328109.964692] CR2: 0000000000000038
-[328109.964692] ---[ end trace 22ebb73050974e75 ]---
-[328192.410933] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328192.427185] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328192.533849] CPU 2:
-[328192.540518] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328192.647185] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328192.673851] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328192.700518] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328192.717185] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328192.737185] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328192.760518] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328192.780518] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328192.803851] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328192.823851] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328192.847185] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328192.867185] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328192.887185] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328192.910518] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328192.930518] Call Trace:
-[328192.937185]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328192.957185]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328192.977185]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328192.993851]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328193.013851]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328193.033851]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328193.050518]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328257.910925] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328257.927176] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328258.033843] CPU 2:
-[328258.040509] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328258.147176] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328258.173843] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328258.200509] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328258.217176] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328258.237176] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328258.260509] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328258.280509] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328258.300509] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328258.323843] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328258.347176] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328258.367176] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328258.387176] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328258.410509] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328258.430509] Call Trace:
-[328258.437176]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328258.457176]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328258.477176]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328258.493843]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328258.513843]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328258.533843]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328258.550509]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328323.407585] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328323.423836] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328323.530503] CPU 2:
-[328323.537170] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328323.643836] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328323.670503] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328323.697170] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328323.713836] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328323.733836] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328323.757170] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328323.777170] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328323.797170] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328323.820503] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328323.843836] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328323.863836] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328323.883836] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328323.907170] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328323.927170] Call Trace:
-[328323.933836]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328323.953836]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328323.973836]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328323.990503]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328324.010503]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328324.030503]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328324.047170]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328388.907578] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328388.923830] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328389.030496] CPU 2:
-[328389.037163] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328389.143830] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328389.170496] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328389.197163] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328389.213830] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328389.233830] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328389.257163] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328389.277163] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328389.300496] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328389.320496] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328389.343830] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328389.363830] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328389.383830] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328389.407163] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328389.427163] Call Trace:
-[328389.433830]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328389.453830]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328389.473830]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328389.490496]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328389.510496]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328389.530496]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328389.547163]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328454.404238] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328454.420490] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328454.527157] CPU 2:
-[328454.533823] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328454.640490] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328454.667157] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328454.693823] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328454.710490] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328454.730490] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328454.753823] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328454.773823] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328454.797157] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328454.817157] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328454.840490] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328454.860490] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328454.880490] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328454.903823] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328454.923823] Call Trace:
-[328454.930490]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328454.950490]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328454.970490]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328454.987156]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328455.007157]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328455.027157]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328455.043823]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328519.904232] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328519.920483] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328520.027150] CPU 2:
-[328520.033817] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328520.140483] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328520.167150] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328520.193817] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328520.210483] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328520.230483] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328520.253817] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328520.273817] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328520.293817] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328520.317150] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328520.340483] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328520.360483] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328520.380483] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328520.403817] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328520.423817] Call Trace:
-[328520.430483]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328520.450483]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328520.470483]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328520.487150]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328520.507150]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328520.527150]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328520.543817]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328585.400892] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328585.417144] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328585.523810] CPU 2:
-[328585.530477] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328585.637143] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328585.663810] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328585.690477] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328585.707143] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328585.727143] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328585.750477] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328585.770477] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328585.790477] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328585.813811] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328585.837144] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328585.857143] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328585.877143] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328585.900477] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328585.920477] Call Trace:
-[328585.927143]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328585.947143]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328585.967143]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328585.983810]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328586.003810]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328586.023810]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328586.040477]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328650.897552] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328650.913804] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328651.020470] CPU 2:
-[328651.027137] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328651.133804] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328651.160470] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328651.187137] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328651.203803] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328651.223803] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328651.243803] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328651.267137] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328651.287137] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328651.310470] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328651.333804] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328651.353803] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328651.373803] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328651.397137] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328651.417137] Call Trace:
-[328651.423803]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328651.443803]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328651.463803]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328651.480470]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328651.500470]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328651.520470]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328651.537137]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328716.397545] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328716.413797] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328716.520464] CPU 2:
-[328716.527130] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328716.633797] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328716.660464] RIP: 0010:[<ffffffff8022f142>]  [<ffffffff8022f142>] 
-flush_tlb_others_ipi+0x112/0x120
-[328716.687130] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328716.700464] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328716.723797] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328716.743797] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328716.767130] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328716.787130] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328716.810464] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328716.833797] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328716.853797] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328716.873797] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328716.897130] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328716.917130] Call Trace:
-[328716.923797]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328716.943797]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328716.963797]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328716.980463]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328717.000464]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328717.020464]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328717.037130]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-[328781.894206] BUG: soft lockup - CPU#2 stuck for 61s! [java:4933]
-[328781.910457] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328782.017124] CPU 2:
-[328782.023791] Modules linked in: sg forcedeth ipmi_watchdog sch_sfq 
-ipt_ULOG xt_tcpudp nf_conntrack_ipv4 nf_defrag_ipv4 xt_state xt_multiport 
-iptable_filter ip_tables x_tables ohci_hcd ssb pcmcia pcmcia_core usbhid hid 
-nf_conntrack_ftp nf_conntrack dm_mod ipmi_devintf ipmi_si ipmi_msghandler 
-ehci_hcd usbcore amd74xx ide_core xfs exportfs sd_mod crc_t10dif aacraid 
-scsi_mod [last unloaded: forcedeth]
-[328782.130457] Pid: 4933, comm: java Tainted: G      D    
-2.6.30.6_nogrsecurity-0.1 #1 H8DMU
-[328782.157124] RIP: 0010:[<ffffffff8022f146>]  [<ffffffff8022f146>] 
-flush_tlb_others_ipi+0x116/0x120
-[328782.183790] RSP: 0000:ffff8802100e7d88  EFLAGS: 00000202
-[328782.200457] RAX: 0000000000000080 RBX: 0000000000000080 RCX: 
-0000000000000020
-[328782.220457] RDX: 0000000000000081 RSI: 00000000000000f2 RDI: 
-ffffffff807c2b98
-[328782.243790] RBP: ffffffff8020c98e R08: ffff88021e8e90a8 R09: 
-0000000000000000
-[328782.263790] R10: 3880000000000000 R11: ffff880212870df8 R12: 
-0000000000000000
-[328782.283790] R13: ffffe20003ad1dc8 R14: ffffffff802af4ce R15: 
-000000000000d580
-[328782.307124] FS:  00007f3e462786f0(0000) GS:ffffc20000028000(0063) 
-knlGS:00000000a73a4bb0
-[328782.330457] CS:  0010 DS: 002b ES: 002b CR0: 0000000080050033
-[328782.350457] CR2: 00000000f7f57168 CR3: 0000000210dd3000 CR4: 
-00000000000006e0
-[328782.370457] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[328782.393790] DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 
-0000000000000400
-[328782.413791] Call Trace:
-[328782.420457]  [<ffffffff8022f12f>] ? flush_tlb_others_ipi+0xff/0x120
-[328782.440457]  [<ffffffff8022e6ea>] ? ptep_set_access_flags+0x1a/0x20
-[328782.460457]  [<ffffffff802c6480>] ? do_wp_page+0xd0/0x840
-[328782.477124]  [<ffffffff802ed4a1>] ? 
-__mem_cgroup_commit_charge_swapin+0x1d1/0x250
-[328782.497124]  [<ffffffff802c8790>] ? handle_mm_fault+0x660/0xb00
-[328782.517124]  [<ffffffff80573f9b>] ? do_page_fault+0xfb/0x390
-[328782.533790]  [<ffffffff80571bdf>] ? page_fault+0x1f/0x30
-
-************************************************************************************
-2.6.31 with debug options didn't work at all:
-
-[   23.165601] Trying to unpack rootfs image as initramfs...
-[   23.319343] BUG: unable to handle kernel NULL pointer dereference at 
-(null)
-[   23.320011] IP: [<(null)>] (null)
-[   23.320011] PGD 0 
-[   23.320011] Oops: 0010 [#1] SMP 
-[   23.320011] last sysfs file: 
-[   23.320011] CPU 0 
-[   23.320011] Modules linked in:
-[   23.320011] Pid: 1, comm: swapper Not tainted 2.6.31-0.testcrap.1 #1 
-H8DMU
-[   23.320011] RIP: 0010:[<0000000000000000>]  [<(null)>] (null)
-[   23.320011] RSP: 0018:ffff88021ba13d18  EFLAGS: 00010246
-[   23.320011] RAX: 0000000000008000 RBX: 0000000000000000 RCX: 
-ffffffff00006558
-[   23.320011] RDX: 0000000000006558 RSI: 0000000000004000 RDI: 
-ffff880000e76000
-[   23.320011] RBP: ffff88021ba13d90 R08: 0000000000000000 R09: 
-0000000000000000
-[   23.320011] R10: 0000000000006558 R11: 0000000000000000 R12: 
-ffff88011b116960
-[   23.320011] R13: ffff88021ace0000 R14: ffffffff81644ba2 R15: 
-ffff880000e76000
-[   23.320011] FS:  0000000000000000(0000) GS:ffffc90000000000(0000) 
-knlGS:0000000000000000
-[   23.320011] CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-[   23.320011] CR2: 0000000000000000 CR3: 00000000013e6000 CR4: 
-00000000000006f0
-[   23.320011] DR0: 0000000000000000 DR1: 0000000000000000 DR2: 
-0000000000000000
-[   23.320011] DR3: 0000000000000000 DR6: 00000000ffff4ff0 DR7: 
-0000000000000400
-[   23.320011] Process swapper (pid: 1, threadinfo ffff88021ba12000, task 
-ffff88011ba90000)
-[   23.320011] Stack:
-[   23.320011]  ffffffff81664d01 ffff88021ba13d30 ffffffff00006558 
-0000800000e76000
-[   23.320011] <0> ffffffff816b22d8 0000000000000000 ffff880000e76000 
-ffff880000e76000
-[   23.320011] <0> 00000000811043e4 0000000000089bff 0000000000089bff 
-ffff880000e76000
-[   23.320011] Call Trace:
-[   23.320011]  [<ffffffff81664d01>] ? gunzip+0x30a/0x42b
-[   23.320011]  [<ffffffff81645067>] unpack_to_rootfs+0x22e/0x34b
-[   23.320011]  [<ffffffff81644997>] ? error+0x0/0x17
-[   23.320011]  [<ffffffff8164598e>] populate_rootfs+0x70/0x2eb
-[   23.320011]  [<ffffffff81178000>] ? proc_create_data+0x70/0xc0
-[   23.320011]  [<ffffffff8117c1d8>] ? proc_net_fops_create+0x18/0x20
-[   23.320011]  [<ffffffff813cc419>] ? mutex_unlock+0x9/0x10
-[   23.320011]  [<ffffffff812e0245>] ? register_pernet_subsys+0x35/0x40
-[   23.320011]  [<ffffffff8164591e>] ? populate_rootfs+0x0/0x2eb
-[   23.320011]  [<ffffffff81001047>] do_one_initcall+0x37/0x170
-[   23.320011]  [<ffffffff81643137>] kernel_init+0x162/0x1bd
-[   23.320011]  [<ffffffff81004f5a>] child_rip+0xa/0x20
-[   23.320011]  [<ffffffff81642fd5>] ? kernel_init+0x0/0x1bd
-[   23.320011]  [<ffffffff81004f50>] ? child_rip+0x0/0x20
-[   23.320011] Code:  Bad RIP value.
-[   23.320011] RIP  [<(null)>] (null)
-[   23.320011]  RSP <ffff88021ba13d18>
-[   23.320011] CR2: 0000000000000000
-[   24.037117] ---[ end trace 9865ac5b5ee90b51 ]---
-[   24.051068] Kernel panic - not syncing: Attempted to kill init!
-[   24.068818] Pid: 1, comm: swapper Tainted: G      D    
-2.6.31-0.testcrap.1 #1
-[   24.090305] Call Trace:
-[   24.097647]  [<ffffffff813ca8f4>] panic+0x73/0x125
-[   24.112001]  [<ffffffff8104b0a4>] do_exit+0x744/0x830
-[   24.127136]  [<ffffffff8104b1d5>] do_group_exit+0x45/0xb0
-[   24.143408]  [<ffffffff813cebed>] oops_end+0x9d/0xe0
-[   24.158277]  [<ffffffff810282aa>] no_context+0xea/0x260
-[   24.173926]  [<ffffffff81028596>] __bad_area_nosemaphore+0x176/0x290
-[   24.192961]  [<ffffffff8102dbc5>] ? kmemcheck_read+0x45/0x70
-[   24.209994]  [<ffffffff8102e471>] ? kmemcheck_pte_lookup+0x11/0x60
-[   24.228524]  [<ffffffff8102d821>] ? kmemcheck_show_addr+0x11/0x30
-[   24.246776]  [<ffffffff8102d87b>] ? kmemcheck_show_all+0x3b/0x60
-[   24.264768]  [<ffffffff81644ba2>] ? flush_buffer+0x0/0xa3
-[   24.280991]  [<ffffffff810286be>] bad_area_nosemaphore+0xe/0x10
-[   24.298721]  [<ffffffff813d051b>] do_page_fault+0x31b/0x3c0
-[   24.315411]  [<ffffffff81644ba2>] ? flush_buffer+0x0/0xa3
-[   24.331583]  [<ffffffff813cdfef>] page_fault+0x1f/0x30
-[   24.347079]  [<ffffffff81644ba2>] ? flush_buffer+0x0/0xa3
-[   24.363249]  [<ffffffff81664d01>] ? gunzip+0x30a/0x42b
-[   24.378647]  [<ffffffff81645067>] unpack_to_rootfs+0x22e/0x34b
-[   24.396483]  [<ffffffff81644997>] ? error+0x0/0x17
-[   24.410851]  [<ffffffff8164598e>] populate_rootfs+0x70/0x2eb
-[   24.427802]  [<ffffffff81178000>] ? proc_create_data+0x70/0xc0
-[   24.445273]  [<ffffffff8117c1d8>] ? proc_net_fops_create+0x18/0x20
-[   24.463890]  [<ffffffff813cc419>] ? mutex_unlock+0x9/0x10
-[   24.480060]  [<ffffffff812e0245>] ? register_pernet_subsys+0x35/0x40
-[   24.499090]  [<ffffffff8164591e>] ? populate_rootfs+0x0/0x2eb
-[   24.516304]  [<ffffffff81001047>] do_one_initcall+0x37/0x170
-[   24.533358]  [<ffffffff81643137>] kernel_init+0x162/0x1bd
-[   24.549528]  [<ffffffff81004f5a>] child_rip+0xa/0x20
-[   24.564400]  [<ffffffff81642fd5>] ? kernel_init+0x0/0x1bd
-[   24.580570]  [<ffffffff81004f50>] ? child_rip+0x0/0x20
-[   24.596041] Rebooting in 30 seconds..
-
+diff --git a/drivers/video/via/chip.h b/drivers/video/via/chip.h
+index 7f95967..474f428 100644
+--- a/drivers/video/via/chip.h
++++ b/drivers/video/via/chip.h
+@@ -68,6 +68,9 @@
+ #define     UNICHROME_VX800         11
+ #define     UNICHROME_VX800_DID     0x1122
+ 
++#define     UNICHROME_VX855         12
++#define     UNICHROME_VX855_DID     0x5122
++
+ /**************************************************/
+ /* Definition TMDS Trasmitter Information         */
+ /**************************************************/
+diff --git a/drivers/video/via/hw.c b/drivers/video/via/hw.c
+index 4910561..95faf8b 100644
+--- a/drivers/video/via/hw.c
++++ b/drivers/video/via/hw.c
+@@ -33,106 +33,147 @@ static const struct pci_device_id_info pciidlist[] = {
+ 	{PCI_VIA_VENDOR_ID, UNICHROME_P4M900_DID, UNICHROME_P4M900},
+ 	{PCI_VIA_VENDOR_ID, UNICHROME_CN750_DID, UNICHROME_CN750},
+ 	{PCI_VIA_VENDOR_ID, UNICHROME_VX800_DID, UNICHROME_VX800},
++	{PCI_VIA_VENDOR_ID, UNICHROME_VX855_DID, UNICHROME_VX855},
+ 	{0, 0, 0}
+ };
+ 
+ static struct pll_map pll_value[] = {
+-	{CLK_25_175M, CLE266_PLL_25_175M, K800_PLL_25_175M, CX700_25_175M},
+-	{CLK_29_581M, CLE266_PLL_29_581M, K800_PLL_29_581M, CX700_29_581M},
+-	{CLK_26_880M, CLE266_PLL_26_880M, K800_PLL_26_880M, CX700_26_880M},
+-	{CLK_31_490M, CLE266_PLL_31_490M, K800_PLL_31_490M, CX700_31_490M},
+-	{CLK_31_500M, CLE266_PLL_31_500M, K800_PLL_31_500M, CX700_31_500M},
+-	{CLK_31_728M, CLE266_PLL_31_728M, K800_PLL_31_728M, CX700_31_728M},
+-	{CLK_32_668M, CLE266_PLL_32_668M, K800_PLL_32_668M, CX700_32_668M},
+-	{CLK_36_000M, CLE266_PLL_36_000M, K800_PLL_36_000M, CX700_36_000M},
+-	{CLK_40_000M, CLE266_PLL_40_000M, K800_PLL_40_000M, CX700_40_000M},
+-	{CLK_41_291M, CLE266_PLL_41_291M, K800_PLL_41_291M, CX700_41_291M},
+-	{CLK_43_163M, CLE266_PLL_43_163M, K800_PLL_43_163M, CX700_43_163M},
+-	{CLK_45_250M, CLE266_PLL_45_250M, K800_PLL_45_250M, CX700_45_250M},
+-	{CLK_46_000M, CLE266_PLL_46_000M, K800_PLL_46_000M, CX700_46_000M},
+-	{CLK_46_996M, CLE266_PLL_46_996M, K800_PLL_46_996M, CX700_46_996M},
+-	{CLK_48_000M, CLE266_PLL_48_000M, K800_PLL_48_000M, CX700_48_000M},
+-	{CLK_48_875M, CLE266_PLL_48_875M, K800_PLL_48_875M, CX700_48_875M},
+-	{CLK_49_500M, CLE266_PLL_49_500M, K800_PLL_49_500M, CX700_49_500M},
+-	{CLK_52_406M, CLE266_PLL_52_406M, K800_PLL_52_406M, CX700_52_406M},
+-	{CLK_52_977M, CLE266_PLL_52_977M, K800_PLL_52_977M, CX700_52_977M},
+-	{CLK_56_250M, CLE266_PLL_56_250M, K800_PLL_56_250M, CX700_56_250M},
+-	{CLK_60_466M, CLE266_PLL_60_466M, K800_PLL_60_466M, CX700_60_466M},
+-	{CLK_61_500M, CLE266_PLL_61_500M, K800_PLL_61_500M, CX700_61_500M},
+-	{CLK_65_000M, CLE266_PLL_65_000M, K800_PLL_65_000M, CX700_65_000M},
+-	{CLK_65_178M, CLE266_PLL_65_178M, K800_PLL_65_178M, CX700_65_178M},
+-	{CLK_66_750M, CLE266_PLL_66_750M, K800_PLL_66_750M, CX700_66_750M},
+-	{CLK_68_179M, CLE266_PLL_68_179M, K800_PLL_68_179M, CX700_68_179M},
+-	{CLK_69_924M, CLE266_PLL_69_924M, K800_PLL_69_924M, CX700_69_924M},
+-	{CLK_70_159M, CLE266_PLL_70_159M, K800_PLL_70_159M, CX700_70_159M},
+-	{CLK_72_000M, CLE266_PLL_72_000M, K800_PLL_72_000M, CX700_72_000M},
+-	{CLK_78_750M, CLE266_PLL_78_750M, K800_PLL_78_750M, CX700_78_750M},
+-	{CLK_80_136M, CLE266_PLL_80_136M, K800_PLL_80_136M, CX700_80_136M},
+-	{CLK_83_375M, CLE266_PLL_83_375M, K800_PLL_83_375M, CX700_83_375M},
+-	{CLK_83_950M, CLE266_PLL_83_950M, K800_PLL_83_950M, CX700_83_950M},
+-	{CLK_84_750M, CLE266_PLL_84_750M, K800_PLL_84_750M, CX700_84_750M},
+-	{CLK_85_860M, CLE266_PLL_85_860M, K800_PLL_85_860M, CX700_85_860M},
+-	{CLK_88_750M, CLE266_PLL_88_750M, K800_PLL_88_750M, CX700_88_750M},
+-	{CLK_94_500M, CLE266_PLL_94_500M, K800_PLL_94_500M, CX700_94_500M},
+-	{CLK_97_750M, CLE266_PLL_97_750M, K800_PLL_97_750M, CX700_97_750M},
++	{CLK_25_175M, CLE266_PLL_25_175M, K800_PLL_25_175M,
++	 CX700_25_175M, VX855_25_175M},
++	{CLK_29_581M, CLE266_PLL_29_581M, K800_PLL_29_581M,
++	 CX700_29_581M, VX855_29_581M},
++	{CLK_26_880M, CLE266_PLL_26_880M, K800_PLL_26_880M,
++	 CX700_26_880M, VX855_26_880M},
++	{CLK_31_490M, CLE266_PLL_31_490M, K800_PLL_31_490M,
++	 CX700_31_490M, VX855_31_490M},
++	{CLK_31_500M, CLE266_PLL_31_500M, K800_PLL_31_500M,
++	 CX700_31_500M, VX855_31_500M},
++	{CLK_31_728M, CLE266_PLL_31_728M, K800_PLL_31_728M,
++	 CX700_31_728M, VX855_31_728M},
++	{CLK_32_668M, CLE266_PLL_32_668M, K800_PLL_32_668M,
++	 CX700_32_668M, VX855_32_668M},
++	{CLK_36_000M, CLE266_PLL_36_000M, K800_PLL_36_000M,
++	 CX700_36_000M, VX855_36_000M},
++	{CLK_40_000M, CLE266_PLL_40_000M, K800_PLL_40_000M,
++	 CX700_40_000M, VX855_40_000M},
++	{CLK_41_291M, CLE266_PLL_41_291M, K800_PLL_41_291M,
++	 CX700_41_291M, VX855_41_291M},
++	{CLK_43_163M, CLE266_PLL_43_163M, K800_PLL_43_163M,
++	 CX700_43_163M, VX855_43_163M},
++	{CLK_45_250M, CLE266_PLL_45_250M, K800_PLL_45_250M,
++	 CX700_45_250M, VX855_45_250M},
++	{CLK_46_000M, CLE266_PLL_46_000M, K800_PLL_46_000M,
++	 CX700_46_000M, VX855_46_000M},
++	{CLK_46_996M, CLE266_PLL_46_996M, K800_PLL_46_996M,
++	 CX700_46_996M, VX855_46_996M},
++	{CLK_48_000M, CLE266_PLL_48_000M, K800_PLL_48_000M,
++	 CX700_48_000M, VX855_48_000M},
++	{CLK_48_875M, CLE266_PLL_48_875M, K800_PLL_48_875M,
++	 CX700_48_875M, VX855_48_875M},
++	{CLK_49_500M, CLE266_PLL_49_500M, K800_PLL_49_500M,
++	 CX700_49_500M, VX855_49_500M},
++	{CLK_52_406M, CLE266_PLL_52_406M, K800_PLL_52_406M,
++	 CX700_52_406M, VX855_52_406M},
++	{CLK_52_977M, CLE266_PLL_52_977M, K800_PLL_52_977M,
++	 CX700_52_977M,	VX855_52_977M},
++	{CLK_56_250M, CLE266_PLL_56_250M, K800_PLL_56_250M,
++	 CX700_56_250M, VX855_56_250M},
++	{CLK_60_466M, CLE266_PLL_60_466M, K800_PLL_60_466M,
++	 CX700_60_466M, VX855_60_466M},
++	{CLK_61_500M, CLE266_PLL_61_500M, K800_PLL_61_500M,
++	 CX700_61_500M, VX855_61_500M},
++	{CLK_65_000M, CLE266_PLL_65_000M, K800_PLL_65_000M,
++	 CX700_65_000M, VX855_65_000M},
++	{CLK_65_178M, CLE266_PLL_65_178M, K800_PLL_65_178M,
++	 CX700_65_178M, VX855_65_178M},
++	{CLK_66_750M, CLE266_PLL_66_750M, K800_PLL_66_750M,
++	 CX700_66_750M, VX855_66_750M},
++	{CLK_68_179M, CLE266_PLL_68_179M, K800_PLL_68_179M,
++	 CX700_68_179M, VX855_68_179M},
++	{CLK_69_924M, CLE266_PLL_69_924M, K800_PLL_69_924M,
++	 CX700_69_924M, VX855_69_924M},
++	{CLK_70_159M, CLE266_PLL_70_159M, K800_PLL_70_159M,
++	 CX700_70_159M, VX855_70_159M},
++	{CLK_72_000M, CLE266_PLL_72_000M, K800_PLL_72_000M,
++	 CX700_72_000M, VX855_72_000M},
++	{CLK_78_750M, CLE266_PLL_78_750M, K800_PLL_78_750M,
++	 CX700_78_750M, VX855_78_750M},
++	{CLK_80_136M, CLE266_PLL_80_136M, K800_PLL_80_136M,
++	 CX700_80_136M, VX855_80_136M},
++	{CLK_83_375M, CLE266_PLL_83_375M, K800_PLL_83_375M,
++	 CX700_83_375M, VX855_83_375M},
++	{CLK_83_950M, CLE266_PLL_83_950M, K800_PLL_83_950M,
++	 CX700_83_950M, VX855_83_950M},
++	{CLK_84_750M, CLE266_PLL_84_750M, K800_PLL_84_750M,
++	 CX700_84_750M, VX855_84_750M},
++	{CLK_85_860M, CLE266_PLL_85_860M, K800_PLL_85_860M,
++	 CX700_85_860M, VX855_85_860M},
++	{CLK_88_750M, CLE266_PLL_88_750M, K800_PLL_88_750M,
++	 CX700_88_750M, VX855_88_750M},
++	{CLK_94_500M, CLE266_PLL_94_500M, K800_PLL_94_500M,
++	 CX700_94_500M, VX855_94_500M},
++	{CLK_97_750M, CLE266_PLL_97_750M, K800_PLL_97_750M,
++	 CX700_97_750M, VX855_97_750M},
+ 	{CLK_101_000M, CLE266_PLL_101_000M, K800_PLL_101_000M,
+-	 CX700_101_000M},
++	 CX700_101_000M, VX855_101_000M},
+ 	{CLK_106_500M, CLE266_PLL_106_500M, K800_PLL_106_500M,
+-	 CX700_106_500M},
++	 CX700_106_500M, VX855_106_500M},
+ 	{CLK_108_000M, CLE266_PLL_108_000M, K800_PLL_108_000M,
+-	 CX700_108_000M},
++	 CX700_108_000M, VX855_108_000M},
+ 	{CLK_113_309M, CLE266_PLL_113_309M, K800_PLL_113_309M,
+-	 CX700_113_309M},
++	 CX700_113_309M, VX855_113_309M},
+ 	{CLK_118_840M, CLE266_PLL_118_840M, K800_PLL_118_840M,
+-	 CX700_118_840M},
++	 CX700_118_840M, VX855_118_840M},
+ 	{CLK_119_000M, CLE266_PLL_119_000M, K800_PLL_119_000M,
+-	 CX700_119_000M},
++	 CX700_119_000M, VX855_119_000M},
+ 	{CLK_121_750M, CLE266_PLL_121_750M, K800_PLL_121_750M,
+-	 CX700_121_750M},
++	 CX700_121_750M, 0},
+ 	{CLK_125_104M, CLE266_PLL_125_104M, K800_PLL_125_104M,
+-	 CX700_125_104M},
++	 CX700_125_104M, 0},
+ 	{CLK_133_308M, CLE266_PLL_133_308M, K800_PLL_133_308M,
+-	 CX700_133_308M},
++	 CX700_133_308M, 0},
+ 	{CLK_135_000M, CLE266_PLL_135_000M, K800_PLL_135_000M,
+-	 CX700_135_000M},
++	 CX700_135_000M, VX855_135_000M},
+ 	{CLK_136_700M, CLE266_PLL_136_700M, K800_PLL_136_700M,
+-	 CX700_136_700M},
++	 CX700_136_700M, VX855_136_700M},
+ 	{CLK_138_400M, CLE266_PLL_138_400M, K800_PLL_138_400M,
+-	 CX700_138_400M},
++	 CX700_138_400M, VX855_138_400M},
+ 	{CLK_146_760M, CLE266_PLL_146_760M, K800_PLL_146_760M,
+-	 CX700_146_760M},
++	 CX700_146_760M, VX855_146_760M},
+ 	{CLK_153_920M, CLE266_PLL_153_920M, K800_PLL_153_920M,
+-	 CX700_153_920M},
++	 CX700_153_920M, VX855_153_920M},
+ 	{CLK_156_000M, CLE266_PLL_156_000M, K800_PLL_156_000M,
+-	 CX700_156_000M},
++	 CX700_156_000M, VX855_156_000M},
+ 	{CLK_157_500M, CLE266_PLL_157_500M, K800_PLL_157_500M,
+-	 CX700_157_500M},
++	 CX700_157_500M, VX855_157_500M},
+ 	{CLK_162_000M, CLE266_PLL_162_000M, K800_PLL_162_000M,
+-	 CX700_162_000M},
++	 CX700_162_000M, VX855_162_000M},
+ 	{CLK_187_000M, CLE266_PLL_187_000M, K800_PLL_187_000M,
+-	 CX700_187_000M},
++	 CX700_187_000M, VX855_187_000M},
+ 	{CLK_193_295M, CLE266_PLL_193_295M, K800_PLL_193_295M,
+-	 CX700_193_295M},
++	 CX700_193_295M, VX855_193_295M},
+ 	{CLK_202_500M, CLE266_PLL_202_500M, K800_PLL_202_500M,
+-	 CX700_202_500M},
++	 CX700_202_500M, VX855_202_500M},
+ 	{CLK_204_000M, CLE266_PLL_204_000M, K800_PLL_204_000M,
+-	 CX700_204_000M},
++	 CX700_204_000M, VX855_204_000M},
+ 	{CLK_218_500M, CLE266_PLL_218_500M, K800_PLL_218_500M,
+-	 CX700_218_500M},
++	 CX700_218_500M, VX855_218_500M},
+ 	{CLK_234_000M, CLE266_PLL_234_000M, K800_PLL_234_000M,
+-	 CX700_234_000M},
++	 CX700_234_000M, VX855_234_000M},
+ 	{CLK_267_250M, CLE266_PLL_267_250M, K800_PLL_267_250M,
+-	 CX700_267_250M},
++	 CX700_267_250M, VX855_267_250M},
+ 	{CLK_297_500M, CLE266_PLL_297_500M, K800_PLL_297_500M,
+-	 CX700_297_500M},
+-	{CLK_74_481M, CLE266_PLL_74_481M, K800_PLL_74_481M, CX700_74_481M},
++	 CX700_297_500M, VX855_297_500M},
++	{CLK_74_481M, CLE266_PLL_74_481M, K800_PLL_74_481M,
++	 CX700_74_481M, VX855_74_481M},
+ 	{CLK_172_798M, CLE266_PLL_172_798M, K800_PLL_172_798M,
+-	 CX700_172_798M},
++	 CX700_172_798M, VX855_172_798M},
+ 	{CLK_122_614M, CLE266_PLL_122_614M, K800_PLL_122_614M,
+-	 CX700_122_614M},
+-	{CLK_74_270M, CLE266_PLL_74_270M, K800_PLL_74_270M, CX700_74_270M},
++	 CX700_122_614M, VX855_122_614M},
++	{CLK_74_270M, CLE266_PLL_74_270M, K800_PLL_74_270M,
++	 CX700_74_270M, 0},
+ 	{CLK_148_500M, CLE266_PLL_148_500M, K800_PLL_148_500M,
+-	 CX700_148_500M}
++	 CX700_148_500M, VX855_148_500M}
+ };
+ 
+ static struct fifo_depth_select display_fifo_depth_reg = {
+@@ -1219,6 +1260,15 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
+ 			    VX800_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
+ 		}
+ 
++		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_VX855) {
++			iga1_fifo_max_depth = VX855_IGA1_FIFO_MAX_DEPTH;
++			iga1_fifo_threshold = VX855_IGA1_FIFO_THRESHOLD;
++			iga1_fifo_high_threshold =
++			    VX855_IGA1_FIFO_HIGH_THRESHOLD;
++			iga1_display_queue_expire_num =
++			    VX855_IGA1_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
+ 		/* Set Display FIFO Depath Select */
+ 		reg_value = IGA1_FIFO_DEPTH_SELECT_FORMULA(iga1_fifo_max_depth);
+ 		viafb_load_reg_num =
+@@ -1350,6 +1400,15 @@ void viafb_load_FIFO_reg(int set_iga, int hor_active, int ver_active)
+ 			    VX800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
+ 		}
+ 
++		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_VX855) {
++			iga2_fifo_max_depth = VX855_IGA2_FIFO_MAX_DEPTH;
++			iga2_fifo_threshold = VX855_IGA2_FIFO_THRESHOLD;
++			iga2_fifo_high_threshold =
++			    VX855_IGA2_FIFO_HIGH_THRESHOLD;
++			iga2_display_queue_expire_num =
++			    VX855_IGA2_DISPLAY_QUEUE_EXPIRE_NUM;
++		}
++
+ 		if (viaparinfo->chip_info->gfx_chip_name == UNICHROME_K800) {
+ 			/* Set Display FIFO Depath Select */
+ 			reg_value =
+@@ -1438,6 +1497,8 @@ u32 viafb_get_clk_value(int clk)
+ 			case UNICHROME_P4M900:
+ 			case UNICHROME_VX800:
+ 				return pll_value[i].cx700_pll;
++			case UNICHROME_VX855:
++				return pll_value[i].vx855_pll;
+ 			}
+ 		}
+ 	}
+@@ -1471,6 +1532,7 @@ void viafb_set_vclock(u32 CLK, int set_iga)
+ 		case UNICHROME_P4M890:
+ 		case UNICHROME_P4M900:
+ 		case UNICHROME_VX800:
++		case UNICHROME_VX855:
+ 			viafb_write_reg(SR44, VIASR, CLK / 0x10000);
+ 			DEBUG_MSG(KERN_INFO "\nSR44=%x", CLK / 0x10000);
+ 			viafb_write_reg(SR45, VIASR, (CLK & 0xFFFF) / 0x100);
+@@ -1499,6 +1561,7 @@ void viafb_set_vclock(u32 CLK, int set_iga)
+ 		case UNICHROME_P4M890:
+ 		case UNICHROME_P4M900:
+ 		case UNICHROME_VX800:
++		case UNICHROME_VX855:
+ 			viafb_write_reg(SR4A, VIASR, CLK / 0x10000);
+ 			viafb_write_reg(SR4B, VIASR, (CLK & 0xFFFF) / 0x100);
+ 			viafb_write_reg(SR4C, VIASR, CLK % 0x100);
+@@ -2215,6 +2278,10 @@ int viafb_setmode(int vmode_index, int hor_res, int ver_res, int video_bpp,
+ 	case UNICHROME_VX800:
+ 		viafb_write_regx(CX700_ModeXregs, NUM_TOTAL_CX700_ModeXregs);
+ 		break;
++
++	case UNICHROME_VX855:
++		viafb_write_regx(VX855_ModeXregs, NUM_TOTAL_VX855_ModeXregs);
++		break;
+ 	}
+ 
+ 	device_off();
+@@ -2597,6 +2664,7 @@ static int get_fb_size_from_pci(void)
+ 		case P4M890_FUNCTION3:
+ 		case P4M900_FUNCTION3:
+ 		case VX800_FUNCTION3:
++		case VX855_FUNCTION3:
+ 			/*case CN750_FUNCTION3: */
+ 			outl(configid + 0xA0, (unsigned long)0xCF8);
+ 			FBSize = inl((unsigned long)0xCFC);
+@@ -2660,6 +2728,10 @@ static int get_fb_size_from_pci(void)
+ 			VideoMemSize = (256 << 20);	/*256M */
+ 			break;
+ 
++		case 0x00007000:	/* Only on VX855/875 */
++			VideoMemSize = (512 << 20);	/*512M */
++			break;
++
+ 		default:
+ 			VideoMemSize = (32 << 20);	/*32M */
+ 			break;
+diff --git a/drivers/video/via/hw.h b/drivers/video/via/hw.h
+index 7302b40..4e54b2f 100644
+--- a/drivers/video/via/hw.h
++++ b/drivers/video/via/hw.h
+@@ -324,6 +324,17 @@ is reserved, so it may have problem to set 1600x1200 on IGA2. */
+ /* location: {CR94,0,6} */
+ #define VX800_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     128
+ 
++/* For VT3409 */
++#define VX855_IGA1_FIFO_MAX_DEPTH               400
++#define VX855_IGA1_FIFO_THRESHOLD               320
++#define VX855_IGA1_FIFO_HIGH_THRESHOLD          320
++#define VX855_IGA1_DISPLAY_QUEUE_EXPIRE_NUM     160
++
++#define VX855_IGA2_FIFO_MAX_DEPTH               200
++#define VX855_IGA2_FIFO_THRESHOLD               160
++#define VX855_IGA2_FIFO_HIGH_THRESHOLD          160
++#define VX855_IGA2_DISPLAY_QUEUE_EXPIRE_NUM     320
++
+ #define IGA1_FIFO_DEPTH_SELECT_REG_NUM          1
+ #define IGA1_FIFO_THRESHOLD_REG_NUM             2
+ #define IGA1_FIFO_HIGH_THRESHOLD_REG_NUM        2
+@@ -688,6 +699,7 @@ struct pll_map {
+ 	u32 cle266_pll;
+ 	u32 k800_pll;
+ 	u32 cx700_pll;
++	u32 vx855_pll;
+ };
+ 
+ struct rgbLUT {
+@@ -832,6 +844,8 @@ struct iga2_crtc_timing {
+ #define P4M900_FUNCTION3    0x3364
+ /* VT3353 chipset*/
+ #define VX800_FUNCTION3     0x3353
++/* VT3409 chipset*/
++#define VX855_FUNCTION3     0x3409
+ 
+ #define NUM_TOTAL_PLL_TABLE ARRAY_SIZE(pll_value)
+ 
+diff --git a/drivers/video/via/share.h b/drivers/video/via/share.h
+index 2e1254d..1eacd1c 100644
+--- a/drivers/video/via/share.h
++++ b/drivers/video/via/share.h
+@@ -167,6 +167,10 @@
+ #define SR4B    0x4B
+ #define SR4C    0x4C
+ #define SR52    0x52
++#define SR57	0x57
++#define SR58	0x58
++#define SR59	0x59
++#define SR5D    0x5D
+ #define SR5E    0x5E
+ #define SR65    0x65
+ 
+@@ -966,6 +970,100 @@
+ #define CX700_297_500M    0x00CE0403
+ #define CX700_122_614M    0x00870802
+ 
++/* PLL for VX855 */
++#define VX855_22_000M     0x007B1005
++#define VX855_25_175M     0x008D1005
++#define VX855_26_719M     0x00961005
++#define VX855_26_880M     0x00961005
++#define VX855_27_000M     0x00971005
++#define VX855_29_581M     0x00A51005
++#define VX855_29_829M     0x00641003
++#define VX855_31_490M     0x00B01005
++#define VX855_31_500M     0x00B01005
++#define VX855_31_728M     0x008E1004
++#define VX855_32_668M     0x00921004
++#define VX855_36_000M     0x00A11004
++#define VX855_40_000M     0x00700C05
++#define VX855_41_291M     0x00730C05
++#define VX855_43_163M     0x00790C05
++#define VX855_45_250M     0x007F0C05      /* 45.46MHz */
++#define VX855_46_000M     0x00670C04
++#define VX855_46_996M     0x00690C04
++#define VX855_48_000M     0x00860C05
++#define VX855_48_875M     0x00890C05
++#define VX855_49_500M     0x00530C03
++#define VX855_52_406M     0x00580C03
++#define VX855_52_977M     0x00940C05
++#define VX855_56_250M     0x009D0C05
++#define VX855_60_466M     0x00A90C05
++#define VX855_61_500M     0x00AC0C05
++#define VX855_65_000M     0x006D0C03
++#define VX855_65_178M     0x00B60C05
++#define VX855_66_750M     0x00700C03    /*67.116MHz */
++#define VX855_67_295M     0x00BC0C05
++#define VX855_68_179M     0x00BF0C05
++#define VX855_68_369M     0x00BF0C05
++#define VX855_69_924M     0x00C30C05
++#define VX855_70_159M     0x00C30C05
++#define VX855_72_000M     0x00A10C04
++#define VX855_73_023M     0x00CC0C05
++#define VX855_74_481M     0x00D10C05
++#define VX855_78_750M     0x006E0805
++#define VX855_79_466M     0x006F0805
++#define VX855_80_136M     0x00700805
++#define VX855_81_627M     0x00720805
++#define VX855_83_375M     0x00750805
++#define VX855_83_527M     0x00750805
++#define VX855_83_950M     0x00750805
++#define VX855_84_537M     0x00760805
++#define VX855_84_750M     0x00760805     /* 84.537Mhz */
++#define VX855_85_500M     0x00760805        /* 85.909080 MHz*/
++#define VX855_85_860M     0x00760805
++#define VX855_85_909M     0x00760805
++#define VX855_88_750M     0x007C0805
++#define VX855_89_489M     0x007D0805
++#define VX855_94_500M     0x00840805
++#define VX855_96_648M     0x00870805
++#define VX855_97_750M     0x00890805      
++#define VX855_101_000M    0x008D0805      
++#define VX855_106_500M    0x00950805
++#define VX855_108_000M    0x00970805
++#define VX855_110_125M    0x00990805
++#define VX855_112_000M    0x009D0805
++#define VX855_113_309M    0x009F0805
++#define VX855_115_000M    0x00A10805
++#define VX855_118_840M    0x00A60805
++#define VX855_119_000M    0x00A70805
++#define VX855_121_750M    0x00AA0805       /* 121.704MHz */
++#define VX855_122_614M    0x00AC0805      
++#define VX855_126_266M    0x00B10805
++#define VX855_130_250M    0x00B60805      /* 130.250 */
++#define VX855_135_000M    0x00BD0805
++#define VX855_136_700M    0x00BF0805
++#define VX855_137_750M    0x00C10805
++#define VX855_138_400M    0x00C20805
++#define VX855_144_300M    0x00CA0805
++#define VX855_146_760M    0x00CE0805
++#define VX855_148_500M	  0x00D00805
++#define VX855_153_920M    0x00540402
++#define VX855_156_000M    0x006C0405
++#define VX855_156_867M    0x006E0405
++#define VX855_157_500M    0x006E0405
++#define VX855_162_000M    0x00710405
++#define VX855_172_798M    0x00790405
++#define VX855_187_000M    0x00830405      
++#define VX855_193_295M    0x00870405
++#define VX855_202_500M    0x008E0405
++#define VX855_204_000M    0x008F0405
++#define VX855_218_500M    0x00990405
++#define VX855_229_500M    0x00A10405
++#define VX855_234_000M    0x00A40405
++#define VX855_267_250M    0x00BB0405
++#define VX855_297_500M    0x00D00405
++#define VX855_339_500M    0x00770005
++#define VX855_340_772M    0x00770005
++
++
+ /* Definition CRTC Timing Index */
+ #define H_TOTAL_INDEX               0
+ #define H_ADDR_INDEX                1
+diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
+index 4f7cf69..28616be 100644
+--- a/drivers/video/via/viafbdev.c
++++ b/drivers/video/via/viafbdev.c
+@@ -913,7 +913,8 @@ static int viafb_cursor(struct fb_info *info, struct fb_cursor *cursor)
+ 		fg_color = cursor->image.fg_color;
+ 		bg_color = cursor->image.bg_color;
+ 		if (chip_name == UNICHROME_CX700 ||
+-			chip_name == UNICHROME_VX800) {
++			chip_name == UNICHROME_VX800 ||
++			chip_name == UNICHROME_VX855) {
+ 			fg_color =
+ 				((info->cmap.red[fg_color] & 0xFFC0) << 14) |
+ 				((info->cmap.green[fg_color] & 0xFFC0) << 4) |
+diff --git a/drivers/video/via/viamode.c b/drivers/video/via/viamode.c
+index fbc2013..c1812d1 100644
+--- a/drivers/video/via/viamode.c
++++ b/drivers/video/via/viamode.c
+@@ -316,6 +316,60 @@ struct io_reg CX700_ModeXregs[] = { {VIASR, SR10, 0xFF, 0x01},
+ {VIACR, CR9B, 0xFF, 0x00}
+ };
+ 
++struct io_reg VX855_ModeXregs[] = {
++{VIASR, SR10, 0xFF, 0x01},
++{VIASR, SR15, 0x02, 0x02},
++{VIASR, SR16, 0xBF, 0x08},
++{VIASR, SR17, 0xFF, 0x1F},
++{VIASR, SR18, 0xFF, 0x4E},
++{VIASR, SR1A, 0xFB, 0x08},
++{VIASR, SR1B, 0xFF, 0xF0},
++{VIASR, SR1E, 0x07, 0x01},
++{VIASR, SR2A, 0xF0, 0x00},
++{VIASR, SR58, 0xFF, 0x00},
++{VIASR, SR59, 0xFF, 0x00},
++{VIASR, SR2D, 0xFF, 0xFF},	/* VCK and LCK PLL power on.           */
++{VIACR, CR09, 0xFF, 0x00},	/* Initial CR09=0*/
++{VIACR, CR11, 0x8F, 0x00},	/* IGA1 initial  Vertical end       */
++{VIACR, CR17, 0x7F, 0x00}, 	/* IGA1 CRT Mode control init   */
++{VIACR, CR0A, 0xFF, 0x1E},	/* Cursor Start                        */
++{VIACR, CR0B, 0xFF, 0x00},	/* Cursor End                          */
++{VIACR, CR0E, 0xFF, 0x00},	/* Cursor Location High                */
++{VIACR, CR0F, 0xFF, 0x00},	/* Cursor Localtion Low                */
++{VIACR, CR32, 0xFF, 0x00},
++{VIACR, CR33, 0x7F, 0x00},
++{VIACR, CR35, 0xFF, 0x00},
++{VIACR, CR36, 0x08, 0x00},
++{VIACR, CR69, 0xFF, 0x00},
++{VIACR, CR6A, 0xFD, 0x60},
++{VIACR, CR6B, 0xFF, 0x00},
++{VIACR, CR6C, 0xFF, 0x00},
++{VIACR, CR7A, 0xFF, 0x01},          /* LCD Scaling Parameter 1             */
++{VIACR, CR7B, 0xFF, 0x02},          /* LCD Scaling Parameter 2             */
++{VIACR, CR7C, 0xFF, 0x03},          /* LCD Scaling Parameter 3             */
++{VIACR, CR7D, 0xFF, 0x04},          /* LCD Scaling Parameter 4             */
++{VIACR, CR7E, 0xFF, 0x07},          /* LCD Scaling Parameter 5             */
++{VIACR, CR7F, 0xFF, 0x0A},          /* LCD Scaling Parameter 6             */
++{VIACR, CR80, 0xFF, 0x0D},          /* LCD Scaling Parameter 7             */
++{VIACR, CR81, 0xFF, 0x13},          /* LCD Scaling Parameter 8             */
++{VIACR, CR82, 0xFF, 0x16},          /* LCD Scaling Parameter 9             */
++{VIACR, CR83, 0xFF, 0x19},          /* LCD Scaling Parameter 10            */
++{VIACR, CR84, 0xFF, 0x1C},          /* LCD Scaling Parameter 11            */
++{VIACR, CR85, 0xFF, 0x1D},          /* LCD Scaling Parameter 12            */
++{VIACR, CR86, 0xFF, 0x1E},          /* LCD Scaling Parameter 13            */
++{VIACR, CR87, 0xFF, 0x1F},          /* LCD Scaling Parameter 14            */
++{VIACR, CR88, 0xFF, 0x40},          /* LCD Panel Type                      */
++{VIACR, CR89, 0xFF, 0x00},          /* LCD Timing Control 0                */
++{VIACR, CR8A, 0xFF, 0x88},          /* LCD Timing Control 1                */
++{VIACR, CRD4, 0xFF, 0x81},          /* Second power sequence control       */
++{VIACR, CR91, 0xFF, 0x80},          /* 24/12 bit LVDS Data off             */
++{VIACR, CR96, 0xFF, 0x00},
++{VIACR, CR97, 0xFF, 0x00},
++{VIACR, CR99, 0xFF, 0x00},
++{VIACR, CR9B, 0xFF, 0x00},
++{VIACR, CRD2, 0xFF, 0xFF}           /* TMDS/LVDS control register.         */
++};
++
+ /* Video Mode Table */
+ /* Common Setting for Video Mode */
+ struct io_reg CLE266_ModeXregs[] = { {VIASR, SR1E, 0xF0, 0x00},
+@@ -1017,6 +1071,7 @@ int NUM_TOTAL_CN400_ModeXregs = ARRAY_SIZE(CN400_ModeXregs);
+ int NUM_TOTAL_CN700_ModeXregs = ARRAY_SIZE(CN700_ModeXregs);
+ int NUM_TOTAL_KM400_ModeXregs = ARRAY_SIZE(KM400_ModeXregs);
+ int NUM_TOTAL_CX700_ModeXregs = ARRAY_SIZE(CX700_ModeXregs);
++int NUM_TOTAL_VX855_ModeXregs = ARRAY_SIZE(VX855_ModeXregs);
+ int NUM_TOTAL_CLE266_ModeXregs = ARRAY_SIZE(CLE266_ModeXregs);
+ int NUM_TOTAL_PATCH_MODE = ARRAY_SIZE(res_patch_table);
+ int NUM_TOTAL_MODETABLE = ARRAY_SIZE(CLE266Modes);
+diff --git a/drivers/video/via/viamode.h b/drivers/video/via/viamode.h
+index 504e16a..a9d6554 100644
+--- a/drivers/video/via/viamode.h
++++ b/drivers/video/via/viamode.h
+@@ -56,6 +56,7 @@ extern int NUM_TOTAL_CN400_ModeXregs;
+ extern int NUM_TOTAL_CN700_ModeXregs;
+ extern int NUM_TOTAL_KM400_ModeXregs;
+ extern int NUM_TOTAL_CX700_ModeXregs;
++extern int NUM_TOTAL_VX855_ModeXregs;
+ extern int NUM_TOTAL_CLE266_ModeXregs;
+ extern int NUM_TOTAL_PATCH_MODE;
+ extern int NUM_TOTAL_MODETABLE;
+@@ -75,6 +76,7 @@ extern struct io_reg CN700_ModeXregs[];
+ extern struct io_reg KM400_ModeXregs[];
+ extern struct io_reg CX700_ModeXregs[];
+ extern struct io_reg VX800_ModeXregs[];
++extern struct io_reg VX855_ModeXregs[];
+ extern struct io_reg CLE266_ModeXregs[];
+ extern struct io_reg PM1024x768[];
+ extern struct patch_table res_patch_table[];
 -- 
-Arkadiusz Miśkiewicz        PLD/Linux Team
-arekm / maven.pl            http://ftp.pld-linux.org/
+1.6.3.2
 
