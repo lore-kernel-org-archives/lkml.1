@@ -1,88 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755665AbZINRNF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbZINRR5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755665AbZINRNF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 13:13:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751250AbZINRND
+	id S1755157AbZINRR5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 13:17:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751738AbZINRRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 13:13:03 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:6644 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751063AbZINRNC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 13:13:02 -0400
-Message-ID: <4AAE7A5D.8010503@redhat.com>
-Date: Mon, 14 Sep 2009 13:16:13 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
+	Mon, 14 Sep 2009 13:17:51 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:44072 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750867AbZINRRv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 13:17:51 -0400
+Date: Mon, 14 Sep 2009 22:47:41 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
        Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>
-Subject: Re: [PATCH tracing/kprobes 0/7] tracing/kprobes: kprobe-based event
- tracer update and perf support
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090911013332.GB16396@nowhere> <4AAA74D2.9060203@redhat.com> <20090914025949.GB14306@nowhere>
-In-Reply-To: <20090914025949.GB14306@nowhere>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
+       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [PATCH 3/5] hw-breakpoints: Rewrite the hw-breakpoints layer on
+	top of perf counters
+Message-ID: <20090914171741.GA29531@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com> <1252571367-25876-4-git-send-email-fweisbec@gmail.com> <20090910142540.GA3512@in.ibm.com> <20090910185304.GD6421@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090910185304.GD6421@nowhere>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> On Fri, Sep 11, 2009 at 12:03:30PM -0400, Masami Hiramatsu wrote:
->> Frederic Weisbecker wrote:
->>> May be another step in the todo-list that would be nice: define the format
->>> for a type. Like it's done from ftrace events.
->>
->> Thanks!
->>
->> BTW, I'm not sure what the type means. Each event already has its own
->> event ID and event_call. Could you tell me which part of ftrace I should
->> refer to ?
->>
+On Thu, Sep 10, 2009 at 08:53:06PM +0200, Frederic Weisbecker wrote:
+> On Thu, Sep 10, 2009 at 07:55:40PM +0530, K.Prasad wrote:
+> > On Thu, Sep 10, 2009 at 10:29:25AM +0200, Frederic Weisbecker wrote:
+> > > This patch rebase the implementation of the breakpoints API on top of
+> > > perf counters instances.
+> > > 
+> > > The core breakpoint API has changed a bit:
+> > > 
+> > > - register_kernel_hw_breakpoint() now takes a cpu as a parameter. For
+> > >   now it doesn't support all cpu wide breakpoints but this may be
+> > >   implemented soon.
+> > 
+> > Is there a reason why perf doesn't support counters effective on all
+> > CPUs (and all processes)?
+> > Atleast, it is vital for debugging aspects of hw-breakpoints...say to
+> > answer "Who all did a 'write' on the kernel variable that turned corrupt", etc.
+> > 
+> > The implementation to iteratively register a breakpoint on all CPUs would
+> > (as in trace_ksym.c) result in unclean semantics for the end user, when, a
+> > register_kernel_<> request fails on a given CPU and all previously
+> > registered breakpoints have to be reverted (but the user might have
+> > received a few breakpoint triggers by then as a result of the successful
+> > ones...i.e. register request fails, but still received 'some' output).
+> 
+> 
+> (Please shrink the end of the message if you don't answer in further parts.
+> I'm especially a bad example of what not to do :-)
+> 
+> Yeah it would be very convenient to have that. Is it possible considering
+> the current internal design of perf?
 >
->
-> Actually I meant the format for a field.
-> Say you define filename=arg1, it would be nice to have
->
-> 	print "%s", filename
->
-> in the format file.
 
-Ah, indeed. It is better to support 'type' casting for each argument.
-I think type casting can be done as below syntax.
+It is already done by hw-breakpoints (which can also support cpumask) and
+finding ways to re-use existing breakpoint code post perf integration should
+do the trick.
 
-NAME=ARG:TYPE
-e.g.
-jiffies64=@jiffies64:u64
-message=%ax:str
+There's an unconditional __perf_counter_init() and
+perf_install_in_context() in register_user_hw_breakpoint_cpu() in
+your patch which can rather be done after checks that ensure the
+availability of a debug register on every CPU requested, update some
+book-keeping variables and run on those CPUs (through IPIs?). By virtue
+of being 'pinned' onto the CPU, I presume, they would remain enabled until
+being removed through an explicit 'unregister' request - functionally
+the same as the present register_kernel_hw_breakpoint() in -tip.
 
-> Hmm, now that I think about it, we can't dereference an array...for now :-)
+The other suggestion to enable/disable all breakpoints atomically (to
+implement breakpoints on all CPUs), if possible, would be elegant too.
 
-:-)
-BTW, currently, an entry of the array can be shown, e.g. +10(sa).
-Hmm, for more complex dereference(e.g. accessing a->b[a->c]), it might need
-another dereferencing syntax(e.g. "sa[16][sa[8]]"), or
-just allow to use braces(e.g. "+(+8(sa))(+16(sa))").
+In any case, an iterative registration for all CPUs from the end-user
+doesn't provide the abstraction that exists, and is undesirable. For
+instance, it cannot handle cases where a CPU becomes online post
+breakpoint registration (and such misses are expensive during
+debugging).
 
-Thank you,
+Thanks,
+K.Prasad
 
--- 
-Masami Hiramatsu
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
 
