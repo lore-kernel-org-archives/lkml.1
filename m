@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754678AbZINBwv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbZINBys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754678AbZINBwv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 21:52:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbZINBwu
+	id S1754770AbZINBys (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 21:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZINByr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 21:52:50 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:32799 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbZINBwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 21:52:50 -0400
-Message-ID: <4AADA1F9.9080305@redhat.com>
-Date: Mon, 14 Sep 2009 09:52:57 +0800
-From: Danny Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Sun, 13 Sep 2009 21:54:47 -0400
+Received: from mail-yx0-f191.google.com ([209.85.210.191]:45773 "EHLO
+	mail-yx0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751789AbZINByq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 21:54:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=nW010uy6shrs7qgjXwK/DHzeOJvF0qioKS0VtdBbUPSlZef8uXnMFAPQdfKnSXVCn/
+         BxI+FhRpFalXBnvddtO92twzrtyswHZoyMlwvhsEYv1eSzR835LQg2JM4cD1+1hmAH4K
+         0eMUJRbq6CLIUAOlnoPDUmKfPUEGbvVkF6zOc=
 MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: cl@linux-foundation.org, penberg@cs.helsinki.fi, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [GIT BISECT] BUG kmalloc-8192: Object already free from kmem_cache_destroy
-References: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com> <1252883493.16335.8.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1252883493.16335.8.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090623134319.GC3026@elte.hu>
+References: <20090614012457.GD5986@nowhere> <1244948719-22216-1-git-send-email-vapier@gentoo.org> 
+	<8bd0f97a0906230530j1cc0efc8i85e9234b2fa0417a@mail.gmail.com> 
+	<20090623134319.GC3026@elte.hu>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Sun, 13 Sep 2009 21:54:28 -0400
+Message-ID: <8bd0f97a0909131854l511fbcb8ve8b66a5f3b3d2113@mail.gmail.com>
+Subject: Re: [PATCH v4] ftrace: document basic ftracer/ftracer graph needs
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       akpm <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/14/2009 07:11 AM, Eric Paris wrote:
-> On Sun, 2009-09-13 at 14:33 -0400, Eric Paris wrote:
->> 2a38a002fbee06556489091c30b04746222167e4 is first bad commit
->> commit 2a38a002fbee06556489091c30b04746222167e4
->> Author: Xiaotian Feng<dfeng@redhat.com>
->> Date:   Wed Jul 22 17:03:57 2009 +0800
+On Tue, Jun 23, 2009 at 09:43, Ingo Molnar wrote:
+> * Mike Frysinger wrote:
+>> On Sat, Jun 13, 2009 at 23:05, Mike Frysinger wrote:
+>> > While implementing ftracer and ftracer graph support, I found the exact
+>> > arch implementation details to be a bit lacking (and my x86 foo ain't
+>> > great).  So after pounding out support for the Blackfin arch, start
+>> > documenting the requirements/details.
 >>
->>      slub: sysfs_slab_remove should free kmem_cache when debug is enabled
->>
->>      kmem_cache_destroy use sysfs_slab_remove to release the kmem_cache,
->>      but when CONFIG_SLUB_DEBUG is enabled, sysfs_slab_remove just release
->>      related kobject, the whole kmem_cache is missed to release and cause
->>      a memory leak.
->>
->>      Acked-by: Christoph Lameer<cl@linux-foundation.org>
->>      Signed-off-by: Xiaotian Feng<dfeng@redhat.com>
->>      Signed-off-by: Pekka Enberg<penberg@cs.helsinki.fi>
->>
->> CONFIG_SLUB_DEBUG=y
->> CONFIG_SLUB=y
->> CONFIG_SLUB_DEBUG_ON=y
->> # CONFIG_SLUB_STATS is not set
+>> Steven: were you going to pick this up ?  or should i forward to Andrew ?
 >
-> I also had problems destroying a kmem_cache in a security_initcall()
-> function which had a different backtrace (it's what made me create the
-> module and bisect.)   So be sure to let me know what you find so I can
-> be sure that we fix that place as well   (I believe that was a kref
-> problem rather than a double free)
->
-> -Eric
->
->
-Could you please tell me the tree you're using? I'll debug on it first...
+> The .32 development window for the tracing tree starts in about a
+> week. We'll probably fast-track your documentation bits to mainline
+> - but until then we try to watch for regressions and make sure -rc1
+> is round.
+
+unless i missed something, this wasnt picked up
+-mike
