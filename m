@@ -1,121 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbZINCpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbZINCli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754991AbZINCpn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 22:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbZINCpl
+	id S1754917AbZINCli (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 22:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbZINClf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 22:45:41 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:10601 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754908AbZINCpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 22:45:40 -0400
-Date: Sun, 13 Sep 2009 22:44:01 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH] io-controller: Fix task hanging when there are more
-	than one groups
-Message-ID: <20090914024401.GA14077@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA9A4BE.30005@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 13 Sep 2009 22:41:35 -0400
+Received: from casper.infradead.org ([85.118.1.10]:50130 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753122AbZINClf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 22:41:35 -0400
+Date: Mon, 14 Sep 2009 04:45:10 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
+       peterz@infradead.org, yanmin_zhang@linux.intel.com,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com
+Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
+ performance
+Message-ID: <20090914044510.511d2ac9@infradead.org>
+In-Reply-To: <20090913163007.a1b967c2.akpm@linux-foundation.org>
+References: <20090911174019.1ed02737@infradead.org>
+	<20090913163007.a1b967c2.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 09:15:42AM +0800, Gui Jianfeng wrote:
+On Sun, 13 Sep 2009 16:30:07 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> We can't just fix up the existing code?
 
-[..]
-> Hi Vivek, Jens,
-> 
-> Currently, If there's only the root cgroup and no other child cgroup available, io-controller will
-> optimize to stop expiring the current ioq, and we thought the current ioq belongs to root group. But
-> in some cases, this assumption is not true. Consider the following scenario, if there is a child cgroup
-> located in root cgroup, and task A is running in the child cgroup, and task A issues some IOs. Then we
-> kill task A and remove the child cgroup, at this time, there is only root cgroup available. But the ioq
-> is still under service, and from now on, this ioq won't expire because "only root" optimization.
-> The following patch ensures the ioq do belongs to the root group if there's only root group existing.
-> 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+we could, it'd be just replacing menu.c.
+(since the new one started out with menu.c anyway)
+I don't mind either way, will replace. 
 
-Cool. Good catch Gui. Queued for next posting.
+> > +#define BUCKETS 12
+> > +#define RESOLUTION 1024
+> > +#define DECAY 4
+> > +#define MAX_INTERESTING 50000
+> 
+> Interesting!  Unobvious what it does though.
 
-Thanks
-Vivek
+at least I documented it:
+   * the actual factor is if there is (disk) IO outstanding or not.
+   * (as a special twist, we consider every sleep longer than 50 milliseconds
+   * as perfect; there is no power gains for sleeping longer than this)
 
-> ---
->  block/elevator-fq.c |   13 +++++++------
->  1 files changed, 7 insertions(+), 6 deletions(-)
 > 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index b723c12..3f86552 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -2338,9 +2338,10 @@ void elv_reset_request_ioq(struct request_queue *q, struct request *rq)
->  	}
->  }
->  
-> -static inline int is_only_root_group(void)
-> +static inline int is_only_root_group(struct elv_fq_data *efqd)
->  {
-> -	if (list_empty(&io_root_cgroup.css.cgroup->children))
-> +	if (list_empty(&io_root_cgroup.css.cgroup->children) &&
-> +	    efqd->busy_queues == 1 && efqd->root_group->ioq)
->  		return 1;
->  
->  	return 0;
-> @@ -2383,7 +2384,7 @@ static void io_free_root_group(struct elevator_queue *e)
->  int elv_iog_should_idle(struct io_queue *ioq) { return 0; }
->  EXPORT_SYMBOL(elv_iog_should_idle);
->  
-> -static inline int is_only_root_group(void)
-> +static inline int is_only_root_group(struct elv_fq_data *efqd)
->  {
->  	return 1;
->  }
-> @@ -2547,7 +2548,7 @@ elv_iosched_expire_ioq(struct request_queue *q, int slice_expired, int force)
->  	struct elevator_queue *e = q->elevator;
->  	struct io_queue *ioq = elv_active_ioq(q->elevator);
->  	int ret = 1;
-> -
-> +	
->  	if (e->ops->elevator_expire_ioq_fn) {
->  		ret = e->ops->elevator_expire_ioq_fn(q, ioq->sched_queue,
->  							slice_expired, force);
-> @@ -2969,7 +2970,7 @@ void *elv_select_ioq(struct request_queue *q, int force)
->  	 * single queue ioschedulers (noop, deadline, AS).
->  	 */
->  
-> -	if (is_only_root_group() && elv_iosched_single_ioq(q->elevator))
-> +	if (is_only_root_group(efqd) && elv_iosched_single_ioq(q->elevator))
->  		goto keep_queue;
->  
->  	/* We are waiting for this group to become busy before it expires.*/
-> @@ -3180,7 +3181,7 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
->  		 * unnecessary overhead.
->  		 */
->  
-> -		if (is_only_root_group() &&
-> +		if (is_only_root_group(ioq->efqd) &&
->  			elv_iosched_single_ioq(q->elevator)) {
->  			elv_log_ioq(efqd, ioq, "select: only root group,"
->  					" no expiry");
-> -- 
-> 1.5.4.rc3
+> That's DIV_ROUND_UP().
+
+ok
+
+> > +	new_factor = data->correction_factor[data->bucket]
+> > +			* (DECAY - 1) / DECAY;
+> 
+> This code is available on 32-bit.  I wouldn't be surprised if we see
+> some udivdi2-isn't-there problems with some compiler versions.  We'll
+> see.
+
+at least not on the ones I tried. DECAY is "4" which means it'll be
+shifts anyway (that's not entirely accidental)
+
+> > +
+> > +unsigned long this_cpu_load(void)
+> > +{
+> > +	int this_cpu = smp_processor_id();
+> > +	struct rq *this_rq = cpu_rq(this_cpu);
+> > +	return this_rq->cpu_load[0];
+> > +}
+> 
+> hm, how come we don't get smp_processor_id-in-preemptible warnings. 
+> Are all current callers pinned to a CPU?
+
+the idle loop is pinned by definition, and also runs with irqs off
+
+"all current callers".. this is a new function, with menutng being the
+only caller. I'm fine with requiring all callers to be pinned, it's
+*this* cpu's load after all ;-)
+
+
+
 > 
 > 
-> 
-> 
-> 
+> some spelling fixlets:
+
+never been my strong point (esp when jetlagged); thanks!
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
