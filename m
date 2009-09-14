@@ -1,71 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933482AbZINSwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZINSzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933482AbZINSwk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZINSwh
+	id S1756805AbZINSzp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbZINSzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:52:37 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:53934 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756790AbZINSwg (ORCPT
+	Mon, 14 Sep 2009 14:55:44 -0400
+Received: from ey-out-2122.google.com ([74.125.78.27]:49882 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755044AbZINSzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:52:36 -0400
-Date: Tue, 15 Sep 2009 00:22:28 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
-       Justin Maggard <jmaggard10@gmail.com>,
-       Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: ext4+quota+nfs issue
-Message-ID: <20090914185228.GA5984@skywalker.linux.vnet.ibm.com>
-References: <4AA5E5F3.30309@primeinteractive.net>
- <4AA72C14.1020005@primeinteractive.net>
- <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
- <4AA7C38E.8020306@redhat.com>
- <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
- <4AA7FBD7.9080406@primeinteractive.net>
- <4AAA5FCC.2010707@primeinteractive.net>
- <20090914175056.GE25549@duck.suse.cz>
+	Mon, 14 Sep 2009 14:55:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=MRIAmmmcGkC7MGQMyYvG3F2KkcCno8Iomai8NJrDQQwcB/aC8mcb0rjyZSFN2ChGhs
+         HTtxI+daqf8x+yXCKN8HwDz7ZktT6H5m+zNkrUYlxBPz8Stk++1KaahTlhPegQbCBlIu
+         EnUnQ9JDep2Lw4Izdr8MHSZ7VIdPee2w8PbPM=
+Date: Mon, 14 Sep 2009 20:55:41 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH tracing/kprobes 4/7] tracing/kprobes: Add event
+	profiling support
+Message-ID: <20090914185540.GD6045@nowhere>
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <4AAA7938.7070200@redhat.com> <20090914030244.GC14306@nowhere> <4AAE7540.9090009@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090914175056.GE25549@duck.suse.cz>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <4AAE7540.9090009@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 07:50:56PM +0200, Jan Kara wrote:
->   I've found some time to look into this and I can see a few problems in
-> the code. Firstly, what may cause your problems:
->   vfs_dq_claim_blocks() is called in ext4_mb_mark_diskspace_used(). But
-> as far as I can understand the code, ext4_mb_normalize_request() can
-> increase the amount of space we really allocate and thus we try to
-> allocate more blocks than we have actually reserved in quota. Aneesh, is
-> that right?
-
-ext4_mb_mark_diskspace_used use ac->ac_b_ex.fe_len which is NOT the normalized
-request len. it is min(allocated_len, original_len). So i guess that code
-should be safe
- 
-
->   Secondly, ext4_da_reserve_space() seems to have a bug that it can reserve
-> quota blocks multiple times if ext4_claim_free_blocks() fail and we retry
-> the allocation. We should release the quota reservation before restarting.
-> Actually, when we find out we cannot reserve quota space, we could force
-> some delayed allocated writes to disk (thus possibly release some quota
-> in case we have overestimated the amount of blocks needed). But that's
-> a different issue.
-
-That would imply the file system was full. But the dumpe2fs ouput list
-large number of free blocks. But yes the code should have released the
-quota reservation before trying block reservation again.
+On Mon, Sep 14, 2009 at 12:54:24PM -0400, Masami Hiramatsu wrote:
+>>> I'd like to have a dispatcher function and flags internally :)
+>>
+>>
+>> You mean kprobes that could support multiple probes?
+>> That would be a nice solution IMHO...
+>
+> Yeah, actually kprobes could support multiple probes on the
+> same point. But kprobe structure has many extensions which
+> kprobe-tracer doesn't need, e.g. post_handler/break_handler,
+> opcode, arch sprcific instructions.
+> Kretprobe consumes more memories for storing return points :(.
+>
+> Thus, if we know there are two functions to be called on the
+> same probe point, I think it is better to have a dispatcher.
+> (Especially, in this case, we can call fixed functions, so
+> it's easier way.)
+>
 
 
->   Thirdly, ext4_indirect_calc_metadata_amount() is wrong for sparse files.
-> The worst case is 3 metadata blocks per data block if we make the file
-> sufficiently sparse and there's no easy way around that...
-> 
+Yeah, you could union the post_handler with profile_handler
+or something like that.
 
--aneesh
+It depends if kprobes may need one day to support an undeterminate
+number of probes.
+
+Also, is the post_handler called at the same location than the normal
+probe?
+And is a post handler called even if there is no normal handler?
+
+
+There might be some of such factors that would force you to handle a
+lot of corner cases, things that you wouldn't need to worry about
+if you just had to maintain a simple rcu list of probes to call.
+
