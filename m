@@ -1,53 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZINOvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755654AbZINO4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755459AbZINOvT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 10:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZINOvS
+	id S1755654AbZINO4c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 10:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZINO43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 10:51:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48746 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752148AbZINOvR (ORCPT
+	Mon, 14 Sep 2009 10:56:29 -0400
+Received: from mga01.intel.com ([192.55.52.88]:35420 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753980AbZINO42 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 10:51:17 -0400
-Date: Mon, 14 Sep 2009 07:50:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Anirban Sinha <ASinha@zeugmasystems.com>
-cc: linux-kernel@vger.kernel.org, Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] cleanup legacy console_print function
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501F0FD30@exchange.ZeugmaSystems.local>
-Message-ID: <alpine.LFD.2.01.0909140749300.3654@localhost.localdomain>
-References: <DDFD17CC94A9BD49A82147DDF7D545C501EA9241@exchange.ZeugmaSystems.local> <20090825172640.af8b9f58.randy.dunlap@oracle.com> <DDFD17CC94A9BD49A82147DDF7D545C501EA93B4@exchange.ZeugmaSystems.local> <alpine.LFD.2.01.0908271233580.3218@localhost.localdomain>
-  <DDFD17CC94A9BD49A82147DDF7D545C501F0FD30@exchange.ZeugmaSystems.local>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 14 Sep 2009 10:56:28 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,383,1249282800"; 
+   d="scan'208";a="493262032"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Date: Mon, 14 Sep 2009 15:55:32 +0100
+Subject: RE: [PATCH 19/29] ioat1: trim ioat_dma_desc_sw
+Thread-Topic: [PATCH 19/29] ioat1: trim ioat_dma_desc_sw
+Thread-Index: AcotB+cNVk5nVEy0TKeM+FYItKV3fwIQ1boQ
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B5548181@irsmsx504.ger.corp.intel.com>
+References: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
+ <20090904023206.32667.35974.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20090904023206.32667.35974.stgit@dwillia2-linux.ch.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Williams, Dan J wrote:
+> Save 4 bytes per software descriptor by transmitting tx_cnt in an unused
+> portion of the hardware descriptor.
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
 
-
-On Fri, 11 Sep 2009, Anirban Sinha wrote:
->
-> -           console_print(text); \
-> -           console_print("\n"); \
-> +           printk(KERN_EMERG "%s", text);      \
-> +           printk(KERN_EMERG "\n");            \
-
-Just clean it up to be
-
-	printk(KERN_EMERG "%s\n", text);
-
-instead while at it.
-
->  #define TRACE_CHR(chr) \
->  	{ \
->  	  if(dtlk_trace) \
-> -	    console_print(chr); \
-> +	    printk(KERN_EMERG "%c", chr); \
-
-That can't be right. The translation is to use "%s", not "%c".
-
-		Linus
+Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
