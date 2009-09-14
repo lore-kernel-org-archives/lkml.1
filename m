@@ -1,44 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754567AbZINKqX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755026AbZINK4A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754567AbZINKqX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 06:46:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751847AbZINKqW
+	id S1755026AbZINK4A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 06:56:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752673AbZINKz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 06:46:22 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:48257 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751050AbZINKqV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 06:46:21 -0400
-Date: Mon, 14 Sep 2009 11:46:16 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Corentin Chary <corentincj@iksaif.net>
-Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 3/3] dell-laptop: fix rfkill memory leak on unload
-Message-ID: <20090914104616.GA6170@srcf.ucam.org>
-References: <1252925033-29696-1-git-send-email-corentincj@iksaif.net> <1252925033-29696-2-git-send-email-corentincj@iksaif.net> <1252925033-29696-3-git-send-email-corentincj@iksaif.net> <1252925033-29696-4-git-send-email-corentincj@iksaif.net>
+	Mon, 14 Sep 2009 06:55:58 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:40537 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752318AbZINKz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 06:55:58 -0400
+Date: Mon, 14 Sep 2009 12:56:00 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 7/7] writeback: splice dirty inode entries to default
+	bdi on bdi_destroy()
+Message-ID: <20090914105600.GB14984@kernel.dk>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-8-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1252925033-29696-4-git-send-email-corentincj@iksaif.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+In-Reply-To: <1252920994-11141-8-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 12:43:53PM +0200, Corentin Chary wrote:
-> rfkill_unregister() should always be followed by rfkill_destroy()
+On Mon, Sep 14 2009, Jens Axboe wrote:
+> We cannot safely ensure that the inodes are all gone at this point
+> in time, and we must not destroy this bdi with inodes having off it.
+> So just splice our entries to the default bdi since that one will
+> always persist.
 > 
-> Cc: Matthew Garrett <mjg@redhat.com>
-> Signed-off-by: Corentin Chary <corentincj@iksaif.net>
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  mm/backing-dev.c |   12 +++++++++++-
+>  1 files changed, 11 insertions(+), 1 deletions(-)
+> 
+> diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+> index fd93566..27f82dc 100644
+> --- a/mm/backing-dev.c
+> +++ b/mm/backing-dev.c
+> @@ -668,7 +668,17 @@ void bdi_destroy(struct backing_dev_info *bdi)
+>  {
+>  	int i;
+>  
+> -	WARN_ON(bdi_has_dirty_io(bdi));
+> +	/*
+> +	 * Splice our entries to the default_backing_dev_info, if this
+> +	 * bdi disappears
+> +	 */
+> +	if (bdi_has_dirty_io(bdi)) {
+> +		struct bdi_writeback *dst = &default_backing_dev_info.wb;
+> +
+> +		list_splice(&bdi->wb.b_dirty, &dst->b_dirty);
+> +		list_splice(&bdi->wb.b_io, &dst->b_io);
+> +		list_splice(&bdi->wb.b_more_io, &dst->b_more_io);
+> +	}
 
-Acked-by: Matthew Garrett <mjg@redhat.com>
+This needs locking, of course...
 
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Jens Axboe
+
