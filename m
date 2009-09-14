@@ -1,56 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753001AbZINJgb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754594AbZINJgn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753001AbZINJgb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 05:36:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZINJga
+	id S1754594AbZINJgn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 05:36:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZINJgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 05:36:30 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:38626 "EHLO kernel.dk"
+	Mon, 14 Sep 2009 05:36:31 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:38636 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750874AbZINJg3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 05:36:29 -0400
+	id S1750925AbZINJga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 05:36:30 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: [PATCH 0/7] Post merge per-bdi writeback patches v2
-Date: Mon, 14 Sep 2009 11:36:27 +0200
-Message-Id: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com>
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 1/7] writeback: merely wakeup flusher thread if work allocation fails for WB_SYNC_NONE
+Date: Mon, 14 Sep 2009 11:36:28 +0200
+Message-Id: <1252920994-11141-2-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.4.1.207.g68ea
+In-Reply-To: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Christoph Hellwig <hch@infradead.org>
 
-Since the writeback patches are now (at last!) in mainline, I renamed
-this branch from writeback-postmerge to just plain writeback. The first
-four patches are identical to the ones from friday, and then I added
-three more patches. Two of them are cleanups to better separate the
-WB_SYNC_NONE and WB_SYNC_ALL writeback paths, the latter is a fix for
-when a bdi is destroyed whilst inodes are still attached. I don't see
-a much better way to fix this at the moment, if inodes get requeued
-at sync time, then it would complicate exit quite a lot. So just
-move those entries to the default_backing_dev_info, which can handle
-them at any time.
+Since it's an opportunistic writeback and not a data integrity action,
+don't punt to blocking writeback. Just wakeup the thread and it will
+flush old data.
 
-Patches are also available at:
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ fs/fs-writeback.c |   46 ++++++++++++++--------------------------------
+ 1 files changed, 14 insertions(+), 32 deletions(-)
 
-  git://git.kernel.dk/linux-2.6-block.git writeback
-
- fs/btrfs/disk-io.c          |    1 
- fs/fs-writeback.c           |  181 ++++++++++++++----------------------
- fs/fuse/inode.c             |    2 
- fs/super.c                  |    6 +
- fs/sync.c                   |    9 +
- fs/ubifs/super.c            |    1 
- include/linux/backing-dev.h |    1 
- include/linux/fs.h          |    1 
- mm/backing-dev.c            |   88 +++++++++++++----
- mm/page-writeback.c         |    9 -
- 10 files changed, 161 insertions(+), 138 deletions(-)
-
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index da86ef5..1873fd0 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -75,13 +75,6 @@ static inline void bdi_work_init(struct bdi_work *work,
+ 	work->state = WS_USED;
+ }
+ 
+-static inline void bdi_work_init_on_stack(struct bdi_work *work,
+-					  struct writeback_control *wbc)
+-{
+-	bdi_work_init(work, wbc);
+-	work->state |= WS_ONSTACK;
+-}
+-
+ /**
+  * writeback_in_progress - determine whether there is writeback in progress
+  * @bdi: the device's backing_dev_info structure.
+@@ -207,34 +200,23 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+ 
+ void bdi_start_writeback(struct writeback_control *wbc)
+ {
+-	const bool must_wait = wbc->sync_mode == WB_SYNC_ALL;
+-	struct bdi_work work_stack, *work = NULL;
+-
+-	if (!must_wait)
+-		work = bdi_alloc_work(wbc);
++	/*
++	 * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
++	 * bdi_queue_work() will wake up the thread and flush old data. This
++	 * should ensure some amount of progress in freeing memory.
++	 */
++	if (wbc->sync_mode != WB_SYNC_ALL) {
++		struct bdi_work *w = bdi_alloc_work(wbc);
+ 
+-	if (!work) {
+-		work = &work_stack;
+-		bdi_work_init_on_stack(work, wbc);
+-	}
++		bdi_queue_work(wbc->bdi, w);
++	} else {
++		struct bdi_work work;
+ 
+-	bdi_queue_work(wbc->bdi, work);
++		bdi_work_init(&work, wbc);
++		work.state |= WS_ONSTACK;
+ 
+-	/*
+-	 * If the sync mode is WB_SYNC_ALL, block waiting for the work to
+-	 * complete. If not, we only need to wait for the work to be started,
+-	 * if we allocated it on-stack. We use the same mechanism, if the
+-	 * wait bit is set in the bdi_work struct, then threads will not
+-	 * clear pending until after they are done.
+-	 *
+-	 * Note that work == &work_stack if must_wait is true, so we don't
+-	 * need to do call_rcu() here ever, since the completion path will
+-	 * have done that for us.
+-	 */
+-	if (must_wait || work == &work_stack) {
+-		bdi_wait_on_work_clear(work);
+-		if (work != &work_stack)
+-			call_rcu(&work->rcu_head, bdi_work_free);
++		bdi_queue_work(wbc->bdi, &work);
++		bdi_wait_on_work_clear(&work);
+ 	}
+ }
+ 
 -- 
-Jens Axboe
-
+1.6.4.1.207.g68ea
 
