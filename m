@@ -1,112 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbZINVvU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZINVxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757302AbZINVvU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:51:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZINVvR
+	id S1757254AbZINVxd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752910AbZINVxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:51:17 -0400
-Received: from mail3.caviumnetworks.com ([12.108.191.235]:9298 "EHLO
-	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755780AbZINVvO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:51:14 -0400
-Message-ID: <4AAEBAC2.1050905@caviumnetworks.com>
-Date: Mon, 14 Sep 2009 14:50:58 -0700
-From: David Daney <ddaney@caviumnetworks.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 14 Sep 2009 17:53:33 -0400
+Received: from kroah.org ([198.145.64.141]:48736 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752789AbZINVxc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 17:53:32 -0400
+Date: Mon, 14 Sep 2009 14:51:31 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, arve@android.com,
+       swetland@google.com, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Re: newer version of HTC Dream support
+Message-ID: <20090914215131.GA2897@kroah.com>
+References: <20090904090303.024e981a.randy.dunlap@oracle.com>
+ <20090911071155.GA1386@ucw.cz>
+ <20090911075847.2fb7210a.randy.dunlap@oracle.com>
+ <20090911161335.GA8137@elf.ucw.cz>
+ <20090911092157.ba202b0a.randy.dunlap@oracle.com>
+ <20090911212751.GA25544@elf.ucw.cz>
+ <20090911153422.7d523a73.randy.dunlap@oracle.com>
+ <20090913083719.GA6645@elf.ucw.cz>
+ <20090914212413.GA10043@kroah.com>
+ <20090914214619.GE10398@elf.ucw.cz>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
-       linux-s390@vger.kernel.org, David Howells <dhowells@redhat.com>,
-       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
-       linux-am33-list@redhat.com, Kyle McMartin <kyle@mcmartin.ca>,
-       Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       Richard Henderson <rth@twiddle.net>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Mike Frysinger <vapier@gentoo.org>,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-arch@vger.kernel.org, Roland McGrath <roland@redhat.com>
-Subject: [PATCH 00/11] Add support for GCC's __builtin_unreachable() and use
- it in BUG (v2).
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 Sep 2009 21:50:59.0414 (UTC) FILETIME=[72114F60:01CA3585]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090914214619.GE10398@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When I sent the first version, I had not realized that Roland McGrath
-had only a day or two earlier submitted a very similar patch (although
-one that only fixed up the x86 case).
+On Mon, Sep 14, 2009 at 11:46:19PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > > > Fix compilation of gpio_* input drivers on -next kernel. Adds needed
+> > > > > headers and removes unprotected wakelock/earlysuspend dependencies.
+> > > > >     
+> > > > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > > > 
+> > > > Still doesn't build for me, but if it builds for you, that's great.
+> > > > (could be a tool chain problem on my side)
+> > > 
+> > > No, it does not look like toolchain problem :-(. I had parts disabled
+> > > in Kconfig. This should make it _compile_ (but not link); somehow
+> > > MSM_ADSP is neccessary for camera to link and I can't see how to
+> > > enable it.
+> > > 
+> > > Thanks for the patience.
+> > 
+> > Ugh, what patch should be applied in what order?  Care to resend them
+> > with the proper "x/y" and a valid Subject: line?
+> 
+> All of patches are valid, and they should apply if you just "sort by
+> date". I could dig them from my sent box...
 
-I have been working on this quite a while now, starting with adding
-the required support to GCC, so with an eye towards finishing it up I
-have this new version.
+Please resend them, their subjects need editing, and I want to make sure
+I have them all.
 
- From the announcement of the first version:
+thanks,
 
-Starting with version 4.5, GCC has a new built-in function called
-__builtin_unreachable().  The function tells the compiler that control
-flow will never reach that point.  Currently we trick the compiler by
-putting in for(;;); but this has the disadvantage that extra code is
-emitted for an endless loop.  For an i386 kernel using
-__builtin_unreachable() results in an defaultconfig that is nearly 4000
-bytes smaller.
-
-This patch set adds support to compiler.h creating a
-new macro usable in the kernel called unreachable().  If the compiler
-lacks __builtin_unreachable(), it just expands to for(;;).
-
-The x86 and MIPS patches I actually tested with a GCC-4.5 snapshot.
-Lacking the ability to test the rest of the architectures, I just did
-what seemed right without even trying to compile the kernel.
-
-For version 2:
-
-I fixed a couple of checkpatch issues, and simplified the
-unreachable() macro for the pre-GCC-4.5 case (as suggested by Richard
-Henderson).  Also several Acked-by: were added.
-
-New in this version (as suggested by Ingo Molnar) I added 11/11 which
-uses unreachable() in asm-generic/bug.h for !CONFIG_BUG case.  This
-one may be a little controversial as it will end up making code
-slightly larger when !CONFIG_BUG and you are using a pre-GCC-4.5
-compiler.
-
-I will reply with the 11 patches.
-
-David Daney (11):
-   Add support for GCC-4.5's __builtin_unreachable() to compiler.h (v2)
-   x86: Convert BUG() to use unreachable()
-   MIPS: Convert BUG() to use unreachable()
-   s390: Convert BUG() to use unreachable()
-   mn10300: Convert BUG() to use unreachable()
-   parisc: Convert BUG() to use unreachable()
-   powerpc: Convert BUG() to use unreachable()
-   alpha: Convert BUG() to use unreachable()
-   avr32: Convert BUG() to use unreachable()
-   blackfin: Convert BUG() to use unreachable()
-   Use unreachable() in asm-generic/bug.h for !CONFIG_BUG case.
-
-  arch/alpha/include/asm/bug.h    |    3 ++-
-  arch/avr32/include/asm/bug.h    |    2 +-
-  arch/blackfin/include/asm/bug.h |    2 +-
-  arch/mips/include/asm/bug.h     |    4 +---
-  arch/mn10300/include/asm/bug.h  |    3 ++-
-  arch/parisc/include/asm/bug.h   |    4 ++--
-  arch/powerpc/include/asm/bug.h  |    2 +-
-  arch/s390/include/asm/bug.h     |    2 +-
-  arch/x86/include/asm/bug.h      |    4 ++--
-  include/asm-generic/bug.h       |    4 ++--
-  include/linux/compiler-gcc4.h   |   14 ++++++++++++++
-  include/linux/compiler.h        |    5 +++++
-  12 files changed, 34 insertions(+), 15 deletions(-)
-
+greg k-h
