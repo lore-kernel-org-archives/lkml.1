@@ -1,64 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751327AbZINEq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751248AbZINE4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751327AbZINEq4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 00:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbZINEq4
+	id S1751248AbZINE4a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 00:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbZINE43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 00:46:56 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:59514 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751061AbZINEqz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 00:46:55 -0400
-Date: Mon, 14 Sep 2009 06:46:57 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/5] kbuild: fix warning when domainname is not
-	available
-Message-ID: <20090914044657.GA4252@merkur.ravnborg.org>
-References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com> <1252870707-4824-2-git-send-email-felipe.contreras@gmail.com> <1252870707-4824-3-git-send-email-felipe.contreras@gmail.com> <8bd0f97a0909131412v6ba29823ube9aab20302aaca0@mail.gmail.com> <94a0d4530909131442h43d0ed1cl9f395f7d38f2c43@mail.gmail.com> <8bd0f97a0909131458r8574620pa539876da969eb5f@mail.gmail.com> <94a0d4530909131504h1a9de951k3719000705a86bbc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <94a0d4530909131504h1a9de951k3719000705a86bbc@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 14 Sep 2009 00:56:29 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:37561 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750696AbZINE42 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 00:56:28 -0400
+Date: Mon, 14 Sep 2009 14:56:23 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: David Miller <davem@davemloft.net>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       paul.moore@hp.com, jmorris@namei.org, mst@redhat.com
+Subject: Re: linux-next: security-testing/net tree build failure
+Message-Id: <20090914145623.6cf45f8e.sfr@canb.auug.org.au>
+In-Reply-To: <20090913.214644.164044855.davem@davemloft.net>
+References: <20090903161432.44af630d.sfr@canb.auug.org.au>
+	<20090914130154.8b6df8f9.sfr@canb.auug.org.au>
+	<20090913.214644.164044855.davem@davemloft.net>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__14_Sep_2009_14_56_23_+1000_H7f0ue38xXNCfr1b"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 01:04:11AM +0300, Felipe Contreras wrote:
-> On Mon, Sep 14, 2009 at 12:58 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> > .
-> > On Sun, Sep 13, 2009 at 17:42, Felipe Contreras
-> > <felipe.contreras@gmail.com> wrote:
-> >> On Mon, Sep 14, 2009 at 12:12 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
-> >>> On Sun, Sep 13, 2009 at 15:38, Felipe Contreras wrote:
-> >>>> +  if $domain; then
-> >>>
-> >>> is this really correct ?  i think you meant to use:
-> >>> [ -n "$domain" ]
-> >>
-> >> What is the difference?
-> >>
-> >> $domain unset
-> >> test -n "" -> false
-> >> test -> false
-> >>
-> >> $domain is a valid string
-> >> test -n "string" -> true
-> >> test "string" -> true
-> >
-> > except that you didnt invoke `test` anywhere.  you're executing the
-> > contents of $domain.
-> 
-> Ahh, I'll update it to:
-> [ "$domain" ]
+--Signature=_Mon__14_Sep_2009_14_56_23_+1000_H7f0ue38xXNCfr1b
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Please use [ -n "$domain" ].
-Be explicit about what you do.
+Hi Dave,
 
-[Likewise in c we never omit "int" just because we can].
+On Sun, 13 Sep 2009 21:46:44 -0700 (PDT) David Miller <davem@davemloft.net>=
+ wrote:
+>
+> Ok, since I already sent a merge request to Linus I'll submit this
+> as soon as he does that pull.
+>=20
+> I don't like "slipping" in things to a tree I've already asked
+> him to pull from, and in this case especially since I'd have
+> to merge his tree in to keep net-next-2.6 itself building.
+> :-)
 
-	Sam
+You might like to send him an email pointing out this merge fix, as when
+he merges your tree, it will fail to build tun ... and, if he is told, he
+can put this fix in the merge commit so there is no bisection breakage.
+This is all presuming that commit
+89f56d1e91cfa535ccc6cc60e9e12e02682fd972 ("tun: reuse struct sock
+fields") is in the tree you asked him to pull.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__14_Sep_2009_14_56_23_+1000_H7f0ue38xXNCfr1b
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkqtzPcACgkQjjKRsyhoI8wNiwCghX3tLzr3v3wA7b73RSzvqbTZ
+UQUAoKFKFSH5IogKIbRo7TC67DC98661
+=h+zC
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__14_Sep_2009_14_56_23_+1000_H7f0ue38xXNCfr1b--
