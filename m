@@ -1,201 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751572AbZINJXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZINJXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751572AbZINJXK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 05:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751195AbZINJXJ
+	id S1752809AbZINJXT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 05:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752012AbZINJXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 05:23:09 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:35021 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750947AbZINJXI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 05:23:08 -0400
-Date: Mon, 14 Sep 2009 10:23:14 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [git pull] AGP tree for merging
-Message-ID: <alpine.DEB.2.00.0909141022300.30595@skynet.skynet.ie>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 Sep 2009 05:23:17 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59270 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751847AbZINJXO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 05:23:14 -0400
+Subject: Re: [origin tree SLAB corruption] BUG kmalloc-64: Poison
+ overwritten,   INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175 cpu=1
+ pid=3514
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Eric Paris <eparis@redhat.com>,
+       James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <20090914092042.GV14984@kernel.dk>
+References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com>
+	 <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org>
+	 <20090912072450.GA6767@elte.hu>
+	 <1252808939.13780.30.camel@dhcp231-106.rdu.redhat.com>
+	 <20090914071631.GA24801@elte.hu>
+	 <84144f020909140057j542a3ee8wc996ffc6f8fcbbd1@mail.gmail.com>
+	 <20090914092042.GV14984@kernel.dk>
+Content-Type: text/plain; charset="ISO-8859-1"
+Date: Mon, 14 Sep 2009 12:23:16 +0300
+Message-Id: <1252920196.5934.6.camel@penberg-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-09-14 at 11:20 +0200, Jens Axboe wrote:
+> On Mon, Sep 14 2009, Pekka Enberg wrote:
+> > * Eric Paris <eparis@redhat.com> wrote:
+> > >> On Sat, 2009-09-12 at 09:24 +0200, Ingo Molnar wrote:
+> > >> > James - i did not see a security pull request email from you in my
+> > >> > lkml folder so i created this new thread. -tip testing found the
+> > >> > easy crash below. It reverts cleanly so i went that easy route.
+> > >> >
+> > >> > At a really quick 10-seconds glance the crash happens because we
+> > >> > destroy the slab cache twice, if the sysctl is toggled twice?
+> > >>
+> > >> Something a lot worse than SELinux here.  I added this exact code and
+> > >> got this warning.  Something is wrong in the world of
+> > >> kmem_cache_destroy.....
+> > 
+> > Btw, the kmem_cache_destroy() bug Eric found is not in Linu's tree yet.
+> > 
+> > On Mon, Sep 14, 2009 at 10:16 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> > > -tip testing just triggered another type of SLAB problem (this time
+> > > not apparently related to the security subsystem):
+> > >
+> > > BUG kmalloc-64: Poison overwritten
+> > > -----------------------------------------------------------------------------
+> > >
+> > > INFO: 0xf498f6a0-0xf498f6a7. First byte 0x90 instead of 0x6b
+> > > INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175 cpu=1 pid=3514
+> > > INFO: Freed in bdi_work_free+0x45/0x60 age=9 cpu=1 pid=3509
+> > > INFO: Slab 0xc3257d84 objects=36 used=11 fp=0xf498f690 flags=0x400000c3
+> > > INFO: Object 0xf498f690 @offset=1680 fp=0xf498fe00
+> > >
+> > > Bytes b4 0xf498f680:  ab 0d 00 00 9c 27 ff ff 5a 5a 5a 5a 5a 5a 5a 5a «....'ÿÿZZZZZZZZ
+> > >  Object 0xf498f690:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+> > >  Object 0xf498f6a0:  90 f3 98 f4 60 3c 11 c1 6b 6b 6b 6b 6b 6b 6b 6b .ó.ô`<.Ákkkkkkkk
+> > 
+> > This would be use-after-free in kmalloc-64 cache. Given the trace and
+> > the fact that bdi_work_alloc() got introduce recently, it seems more
+> > likely that fs/fs-writeback.c is to blame here. Jens, does the warning
+> > ring a bell to you?
+> 
+> No bells, the code seems right to me. I'll prod at it a bit more. I
+> haven't seen anything like this during testing.
 
-Hi Linus,
+OK, it's possible that someone else is holding on to the kmalloc-64
+memory block too but that won't show up in the traces.
 
-Please pull the 'agp-next' branch from
-ssh://master.kernel.org/pub/scm/linux/kernel/git/airlied/agp-2.6.git agp-next
+			Pekka
 
-This contains mainly a bunch of patches from dwmw2 to bring AGPs
-use of the PCI DMA up to modern standards for use with IOMMUs.
-
-Dave.
-
- arch/alpha/include/asm/agp.h    |    4 -
- arch/ia64/include/asm/agp.h     |    4 -
- arch/parisc/include/asm/agp.h   |    4 -
- arch/powerpc/include/asm/agp.h  |    4 -
- arch/sparc/include/asm/agp.h    |    4 -
- arch/x86/include/asm/agp.h      |    4 -
- drivers/char/agp/agp.h          |   15 ++--
- drivers/char/agp/ali-agp.c      |    4 +-
- drivers/char/agp/amd-k7-agp.c   |   10 ++-
- drivers/char/agp/amd64-agp.c    |    7 +-
- drivers/char/agp/ati-agp.c      |    7 +-
- drivers/char/agp/backend.c      |   32 ++++++-
- drivers/char/agp/efficeon-agp.c |    4 +-
- drivers/char/agp/generic.c      |   20 +++-
- drivers/char/agp/hp-agp.c       |    8 +-
- drivers/char/agp/i460-agp.c     |   17 +---
- drivers/char/agp/intel-agp.c    |  182 +++++++++++++++++++++++++++++++++-----
- drivers/char/agp/nvidia-agp.c   |    2 +-
- drivers/char/agp/parisc-agp.c   |   12 +--
- drivers/char/agp/sgi-agp.c      |    8 +-
- drivers/char/agp/sworks-agp.c   |   10 ++-
- drivers/char/agp/uninorth-agp.c |    4 +-
- include/linux/agp_backend.h     |    5 +-
- 23 files changed, 254 insertions(+), 117 deletions(-)
-
-commit 121264827656f5f06328b17983c796af17dc5949
-Author: Zhenyu Wang <zhenyuw@linux.intel.com>
-Date:   Mon Sep 14 10:47:06 2009 +0800
-
-    agp/intel: remove restore in resume
-    
-    As early pci resume has already restored config for host
-    bridge and graphics device, don't need to restore it again,
-    This removes an original order hack for graphics device restore.
-    
-    This fixed the resume hang issue found by Alan Stern on 845G,
-    caused by extra config restore on graphics device.
-    
-    Cc: Stable Team <stable@kernel.org>
-    Cc: Alan Stern <stern@rowland.harvard.edu>
-    Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
-    Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 5e8d6b8bf94f1ffcb7e3c31b73284c20f297f191
-Author: David Woodhouse <dwmw2@infradead.org>
-Date:   Thu Aug 6 20:20:43 2009 +1000
-
-    agp: fix uninorth build
-    
-    Signed-off-by: Dave Airlie <airlied@redhat.com>
-
-commit 94aa9b9ab09922cfd3bf52806f3ede9cde1ce300
-Merge: b7f3158 ba3139f
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Aug 5 17:28:35 2009 +1000
-
-    Merge git://git.infradead.org/~dwmw2/iommu-agp into agp-next
-
-commit ba3139f2577eee24479db73b8dfc7d78eaf4c486
-Author: David Woodhouse <David.Woodhouse@intel.com>
-Date:   Wed Aug 5 08:12:40 2009 +0100
-
-    intel-agp: Set dma mask for i915
-    
-    If DMAR is configured in but absent, we really do want to make sure that
-    the dma mask is set appropriately. Otherwise we get mapping failures on
-    highmem. Spotted by Zhenyu Wang.
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit b7f315842830d67081642248a3757c713b6b6684
-Merge: 90bc1a6 6a12235
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Wed Aug 5 10:16:57 2009 +1000
-
-    Merge git://git.infradead.org/~dwmw2/iommu-agp into agp-next
-
-commit 6a12235c7d2d75c7d94b9afcaaecd422ff845ce0
-Author: David Woodhouse <David.Woodhouse@intel.com>
-Date:   Wed Jul 29 10:25:58 2009 +0100
-
-    agp: kill phys_to_gart() and gart_to_phys()
-    
-    There seems to be no reason for these -- they're a 1:1 mapping on all
-    platforms.
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit f692775d7e0a22477143cd884e45c955448ac7d2
-Author: David Woodhouse <David.Woodhouse@intel.com>
-Date:   Wed Jul 29 09:28:45 2009 +0100
-
-    intel-agp: fix sglist allocation to avoid vmalloc()
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit 91b8e3056bf9107b688eb076c9b804171364db71
-Author: David Woodhouse <David.Woodhouse@intel.com>
-Date:   Wed Jul 29 08:49:12 2009 +0100
-
-    intel-agp: Move repeated sglist free into separate function
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit c2980d8c2961113f24863f70d8ad016f55224c81
-Author: David Woodhouse <David.Woodhouse@intel.com>
-Date:   Wed Jul 29 08:39:26 2009 +0100
-
-    agp: Switch agp_{un,}map_page() to take struct page * argument
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit 56ec4c1e72865c6d99f643b6574e6e074c3e8823
-Author: David Woodhouse <David.Woodhouse@intel.com>
-Date:   Mon Jul 27 16:44:32 2009 +0100
-
-    agp: tidy up handling of scratch pages w.r.t. DMA API
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit 176616814d700f19914d8509d9f65dec51a6ebf7
-Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Date:   Mon Jul 27 12:59:57 2009 +0100
-
-    intel_agp: Use PCI DMA API correctly on chipsets new enough to have IOMMU
-    
-    When graphics dma remapping engine is active, we must fill
-    gart table with dma address from dmar engine, as now graphics
-    device access to graphics memory must go through dma remapping
-    table to get real physical address.
-    
-    Add this support to all drivers which use intel_i915_insert_entries()
-    
-    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit ff663cf8705bea101d5f73cf471855c85242575e
-Author: Zhenyu Wang <zhenyu.z.wang@intel.com>
-Date:   Thu Jul 23 17:25:49 2009 +0100
-
-    agp: Add generic support for graphics dma remapping
-    
-    New driver hooks for support graphics memory dma remapping
-    are introduced in this patch. It makes generic code can
-    tell if current device needs dma remapping, then call driver
-    provided interfaces for mapping and unmapping. Change has
-    also been made to handle scratch_page in remapping case.
-    
-    Signed-off-by: Zhenyu Wang <zhenyu.z.wang@intel.com>
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
-
-commit 2a4ceb6d3e6a566cb4a9dc8f974177f031d27cd7
-Author: David Woodhouse <David.Woodhouse@intel.com>
-Date:   Mon Jul 27 10:27:29 2009 +0100
-
-    agp: Switch mask_memory() method to take address argument again, not page
-    
-    In commit 07613ba2 ("agp: switch AGP to use page array instead of
-    unsigned long array") we switched the mask_memory() method to take a
-    'struct page *' instead of an address. This is painful, because in some
-    cases it has to be an IOMMU-mapped virtual bus address (in fact,
-    shouldn't it _always_ be a dma_addr_t returned from pci_map_xxx(), and
-    we just happen to get lucky most of the time?)
-    
-    Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
