@@ -1,101 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZINWN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757411AbZINWQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbZINWN3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 18:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZINWN2
+	id S1757411AbZINWQJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 18:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZINWQI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 18:13:28 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58937 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756200AbZINWN1 (ORCPT
+	Mon, 14 Sep 2009 18:16:08 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:42382 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755118AbZINWQH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 18:13:27 -0400
-Date: Tue, 15 Sep 2009 00:13:29 +0200
-From: Andreas Mohr <andi@lisas.de>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andreas Mohr <andi@lisas.de>,
-       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Luca Risolia <luca.risolia@studio.unibo.it>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: V4L2 drivers: potentially dangerous and inefficient
-	msecs_to_jiffies() calculation
-Message-ID: <20090914221328.GA18867@rhlx01.hs-esslingen.de>
-References: <20090914210741.GA16799@rhlx01.hs-esslingen.de> <4AAEB6F0.4080706@gmail.com> <20090914213933.GA5468@rhlx01.hs-esslingen.de> <4AAEBABA.9060108@gmail.com>
+	Mon, 14 Sep 2009 18:16:07 -0400
+Date: Mon, 14 Sep 2009 15:14:35 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+Message-ID: <20090914221434.GA4507@mail.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+References: <20090911200458.GA15416@mail.oracle.com>
+ <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AAEBABA.9060108@gmail.com>
-X-Priority: none
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt356.oracle.com [141.146.40.156]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090208.4AAEC089.0080:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 11:50:50PM +0200, Jiri Slaby wrote:
-> A potential problem here is rather that it may wait longer due to
-> returning 1 jiffie. It's then timeout * 1000 * 1. On 250HZ system it
-> makes a difference of multiple of 4. Don't think it's a real issue in
-> those drivers at all, but it's worth fixing. Care to post a patch?
+On Mon, Sep 14, 2009 at 02:32:36PM -0700, Linus Torvalds wrote:
+> On Fri, 11 Sep 2009, Joel Becker wrote:
+> >
+> > Linus, et al,
+> > 	Here are the ocfs2 feature changes for 2.6.32.  The big ticket
+> > item is the reflinkat(2) system call and ocfs2's support for it.  The
+> > ocfs2 support accounts for all but a handful of the changes.  The
+> > remaining few patches are fixes.
+> 
+> I _really_ want some kind of ack's for new filesystem system calls like 
+> this. I'm not going to pull a new 'reflink[at]()' system call just based 
+> on a single filesystem.
 
-*sigh*. :) OK, last thing to be done this day.
+	I'll get specific acks.  I sent it via ocfs2.git because others
+recommended I not send it upstream in June but instead wait until
+I had at least one filesystem implementing it.
 
-Generated via precise copy&paste of the change between drivers
-(which is a flashing warning that they likely contain too much c&p anyway),
-plus:
-for file in sn9c102/sn9c102_core.c et61x251/et61x251_core.c zc0301/zc0301_core.c; do diff -upN
-linux-2.6.31/drivers/media/video/"$file" linux-2.6.31.patched/drivers/media/video/"$file" >>
-/tmp/v4l2_drivers.diff; done
+> Yes, there's clearly been _some_ discussion, but (a) I've not seen it 
+> (since it's been on 'fsdevel', which is one of those single-topic mailing 
+> lists that I'm totally uninterested in, since they tend to become clique 
+> groups) and (b) you don't even say whether the thing has been acked by 
+> things like the security angle etc.
 
-Disclaimer: FULLY UNTESTED, make sure to guard your hen house, use as dog food.
+	Fair enough.  Don't worry, the security folks were involved.
+I'll get direct acks.
 
-ChangeLog:
-Correct dangerous and inefficient msecs_to_jiffies() calculation in some V4L2 drivers
+> I also don't understand why it's called 'reflink'. Why not 'copyfile'? We 
+> should not name things by implementation, we should name things by what 
+> they _do_. And I'm not seeing what is so 'reflink' about this that it's 
+> not a 'copyfile'. I also am not entirely clear on why you need the source 
+> name, and not - for example - an 'fd'.
+> 
+> Are we going to add 'freflink[at]()' at some point?
 
-Signed-off-by: Andreas Mohr <andi@lisas.de>
+	It's a link(2) analogue.  symlink(2) has the loosest coupling,
+and reflink(2) the highest.  We're not going to add freflink[at]().
+It's a snap, not a copy.  It can be used to implement a copy, and
+copyfile() in libc can be written with reflinkat(2), but it isn't just a
+copy.
 
---- linux-2.6.31/drivers/media/video/sn9c102/sn9c102_core.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6.31.patched/drivers/media/video/sn9c102/sn9c102_core.c	2009-09-14 23:58:27.000000000 +0200
-@@ -1954,8 +1954,10 @@ sn9c102_read(struct file* filp, char __u
- 				    (!list_empty(&cam->outqueue)) ||
- 				    (cam->state & DEV_DISCONNECTED) ||
- 				    (cam->state & DEV_MISCONFIGURED),
--				    cam->module_param.frame_timeout *
--				    1000 * msecs_to_jiffies(1) );
-+				    msecs_to_jiffies(
-+					cam->module_param.frame_timeout * 1000
-+				    )
-+				  );
- 			if (timeout < 0) {
- 				mutex_unlock(&cam->fileop_mutex);
- 				return timeout;
---- linux-2.6.31/drivers/media/video/et61x251/et61x251_core.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6.31.patched/drivers/media/video/et61x251/et61x251_core.c	2009-09-14 23:58:54.000000000 +0200
-@@ -1379,8 +1379,10 @@ et61x251_read(struct file* filp, char __
- 			    (!list_empty(&cam->outqueue)) ||
- 			    (cam->state & DEV_DISCONNECTED) ||
- 			    (cam->state & DEV_MISCONFIGURED),
--			    cam->module_param.frame_timeout *
--			    1000 * msecs_to_jiffies(1) );
-+			    msecs_to_jiffies(
-+				cam->module_param.frame_timeout * 1000
-+			    )
-+			  );
- 		if (timeout < 0) {
- 			mutex_unlock(&cam->fileop_mutex);
- 			return timeout;
---- linux-2.6.31/drivers/media/video/zc0301/zc0301_core.c	2009-09-10 00:13:59.000000000 +0200
-+++ linux-2.6.31.patched/drivers/media/video/zc0301/zc0301_core.c	2009-09-15 00:00:14.000000000 +0200
-@@ -819,8 +819,10 @@ zc0301_read(struct file* filp, char __us
- 			    (!list_empty(&cam->outqueue)) ||
- 			    (cam->state & DEV_DISCONNECTED) ||
- 			    (cam->state & DEV_MISCONFIGURED),
--			    cam->module_param.frame_timeout *
--			    1000 * msecs_to_jiffies(1) );
-+			    msecs_to_jiffies(
-+				cam->module_param.frame_timeout * 1000
-+			    )
-+			  );
- 		if (timeout < 0) {
- 			mutex_unlock(&cam->fileop_mutex);
- 			return timeout;
+Joel
+
+-- 
+
+"There is shadow under this red rock.
+ (Come in under the shadow of this red rock)
+ And I will show you something different from either
+ Your shadow at morning striding behind you
+ Or your shadow at evening rising to meet you.
+ I will show you fear in a handful of dust."
+
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
