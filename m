@@ -1,188 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933149AbZINS2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbZINSa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933149AbZINS2p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZINS2n
+	id S933266AbZINSa7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933255AbZINSay
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:28:43 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:22933 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933130AbZINS2l convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:28:41 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Mon, 14 Sep 2009 14:30:54 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51782 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933173AbZINSax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:30:53 -0400
+Message-ID: <4AAE8BDE.3090002@linux.vnet.ibm.com>
+Date: Mon, 14 Sep 2009 13:30:54 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: Re: [PATCH] cleanup legacy console_print function
-Date: Mon, 14 Sep 2009 11:28:21 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501F0FF17@exchange.ZeugmaSystems.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Re: [PATCH] cleanup legacy console_print function
-Thread-Index: Aco1aMQxdhFi13Z5ScWJ5alsGZFHxwAAAF6g
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-Cc: "Randy Dunlap" <randy.dunlap@oracle.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] dynamic logical partitioning infrastructure
+References: <4AAABC55.4070207@austin.ibm.com> <4AAABCE3.5090702@austin.ibm.com>
+In-Reply-To: <4AAABCE3.5090702@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here you go!
+Nathan Fontenot wrote:
+> +#include <linux/kernel.h>
+> +#include <linux/kref.h>
+> +#include <linux/notifier.h>
+> +#include <linux/proc_fs.h>
+> +#include <linux/spinlock.h>
+> +
+> +#include <asm/prom.h>
+> +#include <asm/machdep.h>
+> +#include <asm/uaccess.h>
+> +#include <asm/rtas.h>
+> +#include <asm/pSeries_reconfig.h>
+> +
+> +#define CFG_CONN_WORK_SIZE    4096
+> +static char workarea[CFG_CONN_WORK_SIZE];
+> +spinlock_t workarea_lock;
+
+This can be:
+
+static DEFINE_SPINLOCK(workarea_lock);
+
+Then you can get rid of the runtime initializer.
+
+> +
+> +int release_drc(u32 drc_index)
+> +{
+> +    int dr_status, rc;
+> +
+> +    rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
+> +               DR_ENTITY_SENSE, drc_index);
+> +    if (rc || dr_status != DR_ENTITY_PRESENT)
+> +        return -1;
+> +
+> +    rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
+> +    if (rc)
+> +        return -1;
+> +
+> +    rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
+> +    if (rc) {
+> +        rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
+> +        return -1;
+> +    }
+
+Is there a better return value here that might be more descriptive than -1?
 
 
->From e096c1774450f8348a7af3b7e47800710a490212 Mon Sep 17 00:00:00 2001
-From: Anirban Sinha <asinha@zeugmasystems.com>
-Date: Mon, 14 Sep 2009 11:13:37 -0700
-Subject: cleanup console_print()
+> +
+> +    return 0;
+> +}
+> +
+> +static int pseries_dlpar_init(void)
+> +{
+> +    spin_lock_init(&workarea_lock);
+> +
+> +    if (!machine_is(pseries))
+> +        return 0;
 
-console_print() is an old legacy interface mostly unused in the entire
-kernel tree. It's best to clean up its existing use and let developers
-use their own implementation of it as they feel fit.
+What's the point of this if check if you return 0 either way?
+
+> +
+> +    return 0;
+> +}
+> +__initcall(pseries_dlpar_init);
 
 
-Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
----
- arch/ia64/kernel/head.S    |    1 +
- arch/ia64/kernel/head.h    |    1 +
- arch/ia64/kernel/process.c |    7 +++++++
- drivers/char/serial167.c   |    5 ++---
- include/linux/dtlk.h       |   19 -------------------
- include/linux/tty.h        |    4 ----
- kernel/printk.c            |    6 ------
- 7 files changed, 11 insertions(+), 32 deletions(-)
- create mode 100644 arch/ia64/kernel/head.h
+> Index: powerpc/arch/powerpc/platforms/pseries/reconfig.c
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/platforms/pseries/reconfig.c    2009-09-11
+> 12:43:39.000000000 -0500
+> +++ powerpc/arch/powerpc/platforms/pseries/reconfig.c    2009-09-11
+> 12:51:52.000000000 -0500
+> @@ -95,7 +95,7 @@
+>     return parent;
+> }
+> 
+> -static BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
+> +struct blocking_notifier_head pSeries_reconfig_chain =
+> BLOCKING_NOTIFIER_INIT(pSeries_reconfig_chain);
 
-diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
-index 23f846d..e6c5c3d 100644
---- a/arch/ia64/kernel/head.S
-+++ b/arch/ia64/kernel/head.S
-@@ -34,6 +34,7 @@
- #include <asm/mca_asm.h>
- #include <linux/init.h>
- #include <linux/linkage.h>
-+#include "head.h"
- 
- #ifdef CONFIG_HOTPLUG_CPU
- #define SAL_PSR_BITS_TO_SET				\
-diff --git a/arch/ia64/kernel/head.h b/arch/ia64/kernel/head.h
-new file mode 100644
-index 0000000..2e2ac68
---- /dev/null
-+++ b/arch/ia64/kernel/head.h
-@@ -0,0 +1 @@
-+extern void console_print(const char *s);
-diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
-index 89969e9..b34bef7 100644
---- a/arch/ia64/kernel/process.c
-+++ b/arch/ia64/kernel/process.c
-@@ -161,6 +161,13 @@ show_regs (struct pt_regs *regs)
- 		show_stack(NULL, NULL);
- }
- 
-+/* local support for deprecated console_print */
-+void 
-+console_print(const char *s)
-+{
-+	printk(KERN_EMERG "%s", s);
-+}
-+
- void
- do_notify_resume_user(sigset_t *unused, struct sigscratch *scr, long
-in_syscall)
- {
-diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
-index 51e7a46..5942a9d 100644
---- a/drivers/char/serial167.c
-+++ b/drivers/char/serial167.c
-@@ -171,7 +171,6 @@ static int startup(struct cyclades_port *);
- static void cy_throttle(struct tty_struct *);
- static void cy_unthrottle(struct tty_struct *);
- static void config_setup(struct cyclades_port *);
--extern void console_print(const char *);
- #ifdef CYCLOM_SHOW_STATUS
- static void show_status(int);
- #endif
-@@ -245,7 +244,7 @@ void SP(char *data)
- {
- 	unsigned long flags;
- 	local_irq_save(flags);
--	console_print(data);
-+	printk(KERN_EMERG "%s", data);
- 	local_irq_restore(flags);
- }
- 
-@@ -255,7 +254,7 @@ void CP(char data)
- 	unsigned long flags;
- 	local_irq_save(flags);
- 	scrn[0] = data;
--	console_print(scrn);
-+	printk(KERN_EMERG "%c", scrn);
- 	local_irq_restore(flags);
- }				/* CP */
- 
-diff --git a/include/linux/dtlk.h b/include/linux/dtlk.h
-index 2896d90..22a7b9a 100644
---- a/include/linux/dtlk.h
-+++ b/include/linux/dtlk.h
-@@ -1,22 +1,3 @@
--#if 0
--
--#define TRACE_TXT(text) \
--	{ \
--	  if(dtlk_trace) \
--	  { \
--	    console_print(text); \
--	    console_print("\n"); \
--	  } \
--	}
--
--#define TRACE_CHR(chr) \
--	{ \
--	  if(dtlk_trace) \
--	    console_print(chr); \
--	} \
--
--#endif
--
- #define DTLK_MINOR	0
- #define DTLK_IO_EXTENT	0x02
- 
-diff --git a/include/linux/tty.h b/include/linux/tty.h
-index 0d3974f..a916a31 100644
---- a/include/linux/tty.h
-+++ b/include/linux/tty.h
-@@ -519,10 +519,6 @@ extern void serial_console_init(void);
- 
- extern int pcxe_open(struct tty_struct *tty, struct file *filp);
- 
--/* printk.c */
--
--extern void console_print(const char *);
--
- /* vt.c */
- 
- extern int vt_ioctl(struct tty_struct *tty, struct file *file,
-diff --git a/kernel/printk.c b/kernel/printk.c
-index e10d193..602033a 100644
---- a/kernel/printk.c
-+++ b/kernel/printk.c
-@@ -1075,12 +1075,6 @@ void __sched console_conditional_schedule(void)
- }
- EXPORT_SYMBOL(console_conditional_schedule);
- 
--void console_print(const char *s)
--{
--	printk(KERN_EMERG "%s", s);
--}
--EXPORT_SYMBOL(console_print);
--
- void console_unblank(void)
- {
- 	struct console *c;
+Can't this just be?
+
+BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
+
 -- 
-1.6.4
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
+
+
 
