@@ -1,338 +1,275 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933966AbZINXoj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933962AbZINXpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933966AbZINXoj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 19:44:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933953AbZINXoe
+	id S933962AbZINXpp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 19:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbZINXpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 19:44:34 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:5793 "EHLO mx1.redhat.com"
+	Mon, 14 Sep 2009 19:45:41 -0400
+Received: from cmpxchg.org ([85.214.51.133]:54795 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933711AbZINXo3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 19:44:29 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [RFC PATCH -tip v4 9/9] kprobes: Add documents of jump optimization
-To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Jim Keniston <jkenisto@us.ibm.com>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Anders Kaseorg <andersk@ksplice.com>,
-       Tim Abbott <tabbott@ksplice.com>, Andi Kleen <andi@firstfloor.org>,
-       Jason Baron <jbaron@redhat.com>
-Date: Mon, 14 Sep 2009 19:46:08 -0400
-Message-ID: <20090914234608.25174.69533.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20090914234448.25174.70702.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20090914234448.25174.70702.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	id S1757547AbZINXpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 19:45:39 -0400
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: [patch] mm: use-once mapped file pages
+Date: Tue, 15 Sep 2009 01:46:15 +0200
+Message-Id: <1252971975-15218-1-git-send-email-hannes@cmpxchg.org>
+X-Mailer: git-send-email 1.6.4.13.ge6580
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add documentations about kprobe jump optimization to Documentation/kprobes.txt.
+The eviction code directly activates mapped pages (or pages backing a
+mapped file while being unmapped themselves) when they have been
+referenced from a page table or have their PG_referenced bit set from
+read() or the unmap path.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Anders Kaseorg <andersk@ksplice.com>
-Cc: Tim Abbott <tabbott@ksplice.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Jason Baron <jbaron@redhat.com>
+Anonymous pages start out on the active list and have their initial
+reference cleared on deactivation.  But mapped file pages start out
+referenced on the inactive list and are thus garuanteed to be
+activated on first scan.
+
+This has detrimental impact on a common real-world load that maps
+subsequent chunks of a file to calculate its checksum (rtorrent
+hashing).  All the mapped file pages get activated even though they
+are never used again.  Worse, even already unmapped pages get
+activated because the file itself is still mapped by the chunk that is
+currently hashed.
+
+When dropping into reclaim, the VM has a hard time making progress
+with these pages dominating.  And since all mapped pages are treated
+equally (i.e. anon pages as well), a major part of the anon working
+set is swapped out before the hashing completes as well.
+
+Failing reclaim and swapping show up pretty quickly in decreasing
+overall system interactivity, but also in the throughput of the
+hashing process itself.
+
+This patch implements a use-once strategy for mapped file pages.
+
+For this purpose, mapped file pages with page table references are not
+directly activated at the end of the inactive list anymore but marked
+with PG_referenced and sent on another roundtrip on the inactive list.
+If such a page comes in again, another page table reference activates
+it while the lack thereof leads to its eviction.
+
+The deactivation path does not clear this mark so that a subsequent
+page table reference for a page coming from the active list means
+reactivation as well.
+
+By re-using the PG_referenced bit, we trade the following behaviour:
+clean, unmapped pages that are backing a mapped file and have
+PG_referenced set from read() or a page table teardown do no longer
+enjoy the same protection as actually mapped and referenced file pages
+- they are treated just like other unmapped file pages.  That could be
+preserved by opting for a different page flag, but we do not see any
+obvious reasons for this special treatment.
+
+Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+Signed-off-by: Rik van Riel <riel@redhat.com>
 ---
+ mm/rmap.c   |    3 --
+ mm/vmscan.c |  104 +++++++++++++++++++++++++++++++++++++---------------------
+ 2 files changed, 66 insertions(+), 41 deletions(-)
 
- Documentation/kprobes.txt |  192 ++++++++++++++++++++++++++++++++++++++++++---
- 1 files changed, 179 insertions(+), 13 deletions(-)
+The effects for the described load are rather dramatic.  rtorrent
+hashing a file bigger than memory on an unpatched kernel makes the
+system almost unusable while with this patch applied, I don't even
+notice it running.
 
-diff --git a/Documentation/kprobes.txt b/Documentation/kprobes.txt
-index 053037a..e4b0504 100644
---- a/Documentation/kprobes.txt
-+++ b/Documentation/kprobes.txt
-@@ -1,6 +1,7 @@
- Title	: Kernel Probes (Kprobes)
- Authors	: Jim Keniston <jkenisto@us.ibm.com>
- 	: Prasanna S Panchamukhi <prasanna@in.ibm.com>
-+	: Masami Hiramatsu <mhiramat@redhat.com>
- 
- CONTENTS
- 
-@@ -14,6 +15,7 @@ CONTENTS
- 8. Kprobes Example
- 9. Jprobes Example
- 10. Kretprobes Example
-+11. Optimization Example
- Appendix A: The kprobes debugfs interface
- 
- 1. Concepts: Kprobes, Jprobes, Return Probes
-@@ -42,13 +44,13 @@ registration/unregistration of a group of *probes. These functions
- can speed up unregistration process when you have to unregister
- a lot of probes at once.
- 
--The next three subsections explain how the different types of
--probes work.  They explain certain things that you'll need to
--know in order to make the best use of Kprobes -- e.g., the
--difference between a pre_handler and a post_handler, and how
--to use the maxactive and nmissed fields of a kretprobe.  But
--if you're in a hurry to start using Kprobes, you can skip ahead
--to section 2.
-+The next four subsections explain how the different types of
-+probes work and how the optimization works.  They explain certain
-+things that you'll need to know in order to make the best use of
-+Kprobes -- e.g., the difference between a pre_handler and
-+a post_handler, and how to use the maxactive and nmissed fields of
-+a kretprobe.  But if you're in a hurry to start using Kprobes, you
-+can skip ahead to section 2.
- 
- 1.1 How Does a Kprobe Work?
- 
-@@ -161,13 +163,110 @@ In case probed function is entered but there is no kretprobe_instance
- object available, then in addition to incrementing the nmissed count,
- the user entry_handler invocation is also skipped.
- 
-+1.4 How Does the Optimization Work?
-+
-+ If you configured kernel with CONFIG_OPTPROBES=y (currently this option is
-+supported on x86/x86-64, non-preemptive kernel) and
-+"debug.kprobes_optimization" sysctl sets 1, kprobes tries to use a
-+jump instruction instead of breakpoint instruction automatically.
-+
-+1.4.1 Init a Kprobe
-+
-+ Before preparing optimization, Kprobes inserts original(user-defined)
-+kprobe on the specified address. So, even if the kprobe is not
-+possible to be optimized, it just uses a normal kprobe.
-+
-+1.4.2 Safety check
-+
-+ First, Kprobes gets the address of probed function and checks whether the
-+optimized region, which will be replaced by a jump instruction, does NOT
-+straddle the function boundary, because if the optimized region reaches the
-+next function, its caller causes unexpected results.
-+ Next, Kprobes decodes whole body of probed function and checks there is
-+NO indirect jump, NO instruction which will cause exception by checking
-+exception_tables (this will jump to fixup code and fixup code jumps into
-+same function body) and NO near jump which jumps into the optimized region
-+(except the 1st byte of jump), because if some jump instruction jumps
-+into the middle of another instruction, it causes unexpected results too.
-+ Kprobes also measures the length of instructions which will be replaced
-+by a jump instruction, because a jump instruction is longer than 1 byte,
-+it may replaces multiple instructions, and it checks whether those
-+instructions can be executed out-of-line.
-+
-+1.4.3 Preparing detour buffer
-+
-+ Then, Kprobes prepares "detour" buffer, which contains exception emulating
-+code (push/pop registers, call handler), copied instructions(Kprobes copies
-+instructions which will be replaced by a jump, to the detour buffer), and
-+a jump which jumps back to the original execution path.
-+
-+1.4.4 Pre-optimization
-+
-+ After preparing detour buffer, Kprobes checks that the probe is *NOT* in
-+the below cases;
-+ - The probe has either break_handler or post_handler.
-+ - Other probes are probing the instructions which will be replaced by
-+   a jump instruction.
-+ - The probe is disabled.
-+In above cases, Kprobes just doesn't start optimizating the probe.
-+
-+ If the kprobe can be optimized, Kprobes enqueues the kprobe to optimizing
-+list and kicks kprobe-optimizer workqueue to optimize it. To wait other
-+optimized probes, kprobe-optimizer will delay to work.
-+ When the optimized-kprobe is hit before optimization, its handler changes
-+IP(instruction pointer) to copied code and exits. So, the instructions which
-+were copied to detour buffer are executed on the detour buffer.
-+
-+1.4.5 Optimization
-+
-+ Kprobe-optimizer doesn't start instruction-replacing soon, it waits
-+synchronize_sched for safety, because some processors are possible to be
-+interrupted on the instructions which will be replaced by a jump instruction.
-+As you know, synchronize_sched() can ensure that all interruptions which were
-+executed when synchronize_sched() was called are done, only if
-+CONFIG_PREEMPT=n. So, this version supports only the kernel with
-+CONFIG_PREEMPT=n.(*)
-+ After that, kprobe-optimizer replaces the 4 bytes right after int3
-+breakpoint with relative-jump destination, and synchronize caches on all
-+processors. And then, it replaces int3 with relative-jump opcode, and
-+synchronize caches again.
-+
-+ After optimizing the probe, a CPU hits the jump instruction and jumps to
-+the out-of-line buffer directly. Thus the breakpoint exception is skipped.
-+
-+1.4.6 Unoptimization
-+
-+ When unregistering, disabling kprobe or being blocked by other kprobe,
-+an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
-+the kprobe just be dequeued from the optimized list. When the optimization
-+has been done, it replaces a jump with int3 breakpoint and original code.
-+ First it puts int3 at the first byte of the jump, synchronize caches
-+on all processors, replaces the 4 bytes right after int3 with the original
-+code and synchronize caches again.
-+
-+(*)This optimization-safety checking may be replaced with stop-machine method
-+ which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
-+
-+NOTE for geeks:
-+The jump optimization changes the kprobe's pre_handler behavior.
-+Without optimization, pre_handler can change kernel execution path by
-+changing regs->ip and return 1. However, after optimizing the probe,
-+that modification is ignored. Thus, if you'd like to tweak kernel
-+execution path, you need to avoid optimization. In that case, you can
-+choose either,
-+ - Set empty function to post_handler or break_handler.
-+ or
-+ - Config CONFIG_OPTPROBES=n.
-+ or
-+ - Execute 'sysctl -w debug.kprobes_optimization=n'
-+
- 2. Architectures Supported
- 
- Kprobes, jprobes, and return probes are implemented on the following
- architectures:
- 
--- i386
--- x86_64 (AMD-64, EM64T)
-+- i386 (Supports jump optimization)
-+- x86_64 (AMD-64, EM64T) (Supports jump optimization)
- - ppc64
- - ia64 (Does not support probes on instruction slot1.)
- - sparc64 (Return probes not yet implemented.)
-@@ -193,6 +292,10 @@ it useful to "Compile the kernel with debug info" (CONFIG_DEBUG_INFO),
- so you can use "objdump -d -l vmlinux" to see the source-to-object
- code mapping.
- 
-+If you want to reduce probing overhead, set "Kprobes jump optimization
-+support" (CONFIG_OPTPROBES) to "y". You can find this option under
-+"Kprobes" line.
-+
- 4. API Reference
- 
- The Kprobes API includes a "register" function and an "unregister"
-@@ -387,9 +490,12 @@ the probe which has been registered.
- 
- 5. Kprobes Features and Limitations
- 
--Kprobes allows multiple probes at the same address.  Currently,
--however, there cannot be multiple jprobes on the same function at
--the same time.
-+Kprobes allows multiple probes at the same address even if it is optimized.
-+Currently, however, there cannot be multiple jprobes on the same function
-+at the same time. And also, optimized kprobes can not invoke the
-+post_handler and the break_handler. So if you attempt to install the probe
-+which has the the post_handler or the break_handler at the same address of
-+an optimized kprobe, the probe will be unoptimized automatically.
- 
- In general, you can install a probe anywhere in the kernel.
- In particular, you can probe interrupt handlers.  Known exceptions
-@@ -453,6 +559,37 @@ reason, Kprobes doesn't support return probes (or kprobes or jprobes)
- on the x86_64 version of __switch_to(); the registration functions
- return -EINVAL.
- 
-+On x86/x86-64, since the Jump Optimization of Kprobes modifies instructions
-+widely, there are some limitations for optimization. To explain it,
-+we introduce some terminology. Image certain binary line which is
-+constructed by 2 byte instruction, 2byte instruction and 3byte instruction.
-+
-+        IA
-+         |
-+[-2][-1][0][1][2][3][4][5][6][7]
-+        [ins1][ins2][  ins3 ]
-+	[<-     DCR       ->]
-+	   [<- JTPR ->]
-+
-+ins1: 1st Instruction
-+ins2: 2nd Instruction
-+ins3: 3rd Instruction
-+IA:  Insertion Address
-+JTPR: Jump Target Prohibition Region
-+DCR: Detoured Code Region
-+
-+The instructions in DCR are copied to the out-of-line buffer
-+of the djprobe instance, because the bytes in JTPR are replaced by
-+a jump instruction. So, there are several limitations.
-+
-+a) The instructions in DCR must be relocatable.
-+b) The instructions in DCR must not include call instruction.
-+c) JTPR must not be targeted by any jump or call instruction.
-+d) DCR must not straddle the border betweeen functions.
-+
-+Anyway, these limitations are checked by in-kernel instruction decoder,
-+so you don't need to care about that.
-+
- 6. Probe Overhead
- 
- On a typical CPU in use in 2005, a kprobe hit takes 0.5 to 1.0
-@@ -476,6 +613,19 @@ k = 0.49 usec; j = 0.76; r = 0.80; kr = 0.82; jr = 1.07
- ppc64: POWER5 (gr), 1656 MHz (SMT disabled, 1 virtual CPU per physical CPU)
- k = 0.77 usec; j = 1.31; r = 1.26; kr = 1.45; jr = 1.99
- 
-+6.1 Optimized Probe Overhead
-+
-+Typically, an optimized kprobe hit takes 0.07 to 0.1 microseconds to
-+process. Here are sample overhead figures (in usec) for x86-64 architectures.
-+k = unoptimized kprobe, b = boosted(single-step skipped), o = optimized kprobe,
-+r = unoptimized kretprobe, rb = boosted kretprobe, ro = optimized kretprobe.
-+
-+i386: Intel(R) Xeon(R) E5410, 2.33GHz, 4656.90 bogomips
-+k = 0.68 usec; b = 0.27; o = 0.06; r = 0.95; rb = 0.53; ro = 0.30
-+
-+x86-64: Intel(R) Xeon(R) E5410, 2.33GHz, 4656.90 bogomips
-+k = 0.91 usec; b = 0.40; o = 0.06; r = 1.21; rb = 0.71; ro = 0.35
-+
- 7. TODO
- 
- a. SystemTap (http://sourceware.org/systemtap): Provides a simplified
-@@ -523,7 +673,8 @@ is also specified. Following columns show probe status. If the probe is on
- a virtual address that is no longer valid (module init sections, module
- virtual addresses that correspond to modules that've been unloaded),
- such probes are marked with [GONE]. If the probe is temporarily disabled,
--such probes are marked with [DISABLED].
-+such probes are marked with [DISABLED]. If the probe is optimized, it is
-+marked with [OPTIMIZED].
- 
- /sys/kernel/debug/kprobes/enabled: Turn kprobes ON/OFF forcibly.
- 
-@@ -533,3 +684,18 @@ registered probes will be disarmed, till such time a "1" is echoed to this
- file. Note that this knob just disarms and arms all kprobes and doesn't
- change each probe's disabling state. This means that disabled kprobes (marked
- [DISABLED]) will be not enabled if you turn ON all kprobes by this knob.
-+
-+
-+Appendix B: The kprobes sysctl interface
-+
-+/proc/sys/debug/kprobes-optimization: Turn kprobes optimization ON/OFF.
-+
-+When CONFIG_OPTPROBES=y, this sysctl interface appears and it provides a knob
-+to globally and forcibly turn the jump optimization ON or OFF. By default,
-+jump optimization is allowed(ON). By echoing "0" to this file or By setting
-+0 to "debug.kprobes_optimization" via sysctl, all optimized probes will be
-+unoptimized. And new probes registered after that will not be optimized.
-+Note that this knob *Changes* the optimized state. This means that optimized
-+probes (marked [OPTIMIZED]) will be unoptimized ([OPTIMIZED] tag will be
-+removed). And after the knob is turned on, it will be optimized again.
-+
+A test that replicates this situation - sha1 hashing a file in mmap'd
+chunks while measuring latency of forks - shows the following results
+for example:
 
+Hashing a 1.5G file on 900M RAM in chunks of 32M, measuring the
+latency of pipe(), fork(), write("done") to pipe (child), read() from
+pipe (parent) cycles every two seconds:
 
+	old: latency max=1.403658s mean=0.325557s stddev=0.414985
+	hashing 58.655560s thruput=27118344.83b/s
+
+	new: latency max=0.334673s mean=0.059005s stddev=0.083150
+	hashing 25.189077s thruput=62914560.00b/s
+
+While this fixes the problem at hand, it has not yet enjoyed broader
+testing than running on my desktop and my laptop for a few days.  If
+it is going to be accepted, it would be good to have it sit in -mm for
+some time.
+
+diff --git a/mm/rmap.c b/mm/rmap.c
+index 28aafe2..0c88813 100644
+--- a/mm/rmap.c
++++ b/mm/rmap.c
+@@ -508,9 +508,6 @@ int page_referenced(struct page *page,
+ {
+ 	int referenced = 0;
+ 
+-	if (TestClearPageReferenced(page))
+-		referenced++;
+-
+ 	*vm_flags = 0;
+ 	if (page_mapped(page) && page->mapping) {
+ 		if (PageAnon(page))
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 4a7b0d5..c8907a8 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -263,27 +263,6 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+ 	return ret;
+ }
+ 
+-/* Called without lock on whether page is mapped, so answer is unstable */
+-static inline int page_mapping_inuse(struct page *page)
+-{
+-	struct address_space *mapping;
+-
+-	/* Page is in somebody's page tables. */
+-	if (page_mapped(page))
+-		return 1;
+-
+-	/* Be more reluctant to reclaim swapcache than pagecache */
+-	if (PageSwapCache(page))
+-		return 1;
+-
+-	mapping = page_mapping(page);
+-	if (!mapping)
+-		return 0;
+-
+-	/* File is mmap'd by somebody? */
+-	return mapping_mapped(mapping);
+-}
+-
+ static inline int is_page_cache_freeable(struct page *page)
+ {
+ 	/*
+@@ -570,6 +549,64 @@ redo:
+ 	put_page(page);		/* drop ref from isolate */
+ }
+ 
++enum page_reference {
++	PAGEREF_RECLAIM,
++	PAGEREF_KEEP,
++	PAGEREF_ACTIVATE,
++};
++
++static enum page_reference page_check_references(struct scan_control *sc,
++						struct page *page)
++{
++	unsigned long vm_flags;
++	int pte_ref, page_ref;
++
++	pte_ref = page_referenced(page, 1, sc->mem_cgroup, &vm_flags);
++	page_ref = TestClearPageReferenced(page);
++
++	/*
++	 * Lumpy reclaim, ignore references.
++	 */
++	if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
++		return PAGEREF_RECLAIM;
++
++	/*
++	 * If a PG_mlocked page lost the isolation race,
++	 * try_to_unmap() moves it to unevictable list.
++	 */
++	if (vm_flags & VM_LOCKED)
++		return PAGEREF_RECLAIM;
++
++	/*
++	 * All mapped pages start out with page table references.  To
++	 * keep use-once mapped file pages off the active list, use
++	 * PG_referenced to filter them out.
++	 *
++	 * If we see the page for the first time here, send it on
++	 * another roundtrip on the inactive list.
++	 *
++	 * If we see it again with another page table reference,
++	 * activate it.
++	 *
++	 * The deactivation code won't remove the mark, thus a page
++	 * table reference after deactivation reactivates the page
++	 * again.
++	 */
++	if (pte_ref) {
++		if (PageAnon(page))
++			return PAGEREF_ACTIVATE;
++		SetPageReferenced(page);
++		if (page_ref)
++			return PAGEREF_ACTIVATE;
++		return PAGEREF_KEEP;
++	}
++
++	if (page_ref && PageDirty(page))
++		return PAGEREF_KEEP;
++
++	return PAGEREF_RECLAIM;
++}
++
+ /*
+  * shrink_page_list() returns the number of reclaimed pages
+  */
+@@ -581,7 +618,6 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 	struct pagevec freed_pvec;
+ 	int pgactivate = 0;
+ 	unsigned long nr_reclaimed = 0;
+-	unsigned long vm_flags;
+ 
+ 	cond_resched();
+ 
+@@ -590,7 +626,6 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		struct address_space *mapping;
+ 		struct page *page;
+ 		int may_enter_fs;
+-		int referenced;
+ 
+ 		cond_resched();
+ 
+@@ -632,17 +667,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 				goto keep_locked;
+ 		}
+ 
+-		referenced = page_referenced(page, 1,
+-						sc->mem_cgroup, &vm_flags);
+-		/*
+-		 * In active use or really unfreeable?  Activate it.
+-		 * If page which have PG_mlocked lost isoltation race,
+-		 * try_to_unmap moves it to unevictable list
+-		 */
+-		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
+-					referenced && page_mapping_inuse(page)
+-					&& !(vm_flags & VM_LOCKED))
++		switch (page_check_references(sc, page)) {
++		case PAGEREF_KEEP:
++			goto keep_locked;
++		case PAGEREF_ACTIVATE:
+ 			goto activate_locked;
++		case PAGEREF_RECLAIM:
++			; /* try to free the page below */
++		}
+ 
+ 		/*
+ 		 * Anonymous process memory has backing store?
+@@ -676,8 +708,6 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 		}
+ 
+ 		if (PageDirty(page)) {
+-			if (sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced)
+-				goto keep_locked;
+ 			if (!may_enter_fs)
+ 				goto keep_locked;
+ 			if (!sc->may_writepage)
+@@ -1346,9 +1376,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 			continue;
+ 		}
+ 
+-		/* page_referenced clears PageReferenced */
+-		if (page_mapping_inuse(page) &&
+-		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
++		if (page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+ 			nr_rotated++;
+ 			/*
+ 			 * Identify referenced, file-backed active pages and
 -- 
-Masami Hiramatsu
+1.6.4.13.ge6580
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
