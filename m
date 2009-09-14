@@ -1,69 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751749AbZINFZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752011AbZINFaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751749AbZINFZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 01:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750753AbZINFZ0
+	id S1752011AbZINFaM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 01:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751239AbZINFaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 01:25:26 -0400
-Received: from mail-iw0-f178.google.com ([209.85.223.178]:39887 "EHLO
-	mail-iw0-f178.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750696AbZINFZ0 (ORCPT
+	Mon, 14 Sep 2009 01:30:09 -0400
+Received: from mail-yx0-f191.google.com ([209.85.210.191]:38086 "EHLO
+	mail-yx0-f191.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750924AbZINFaI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 01:25:26 -0400
+	Mon, 14 Sep 2009 01:30:08 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type;
-        b=GSVFs6we+xbxpH/UzBH3OnOEe2iPOUKhLB5/hGSIN8iwqpHVlRSMKd50YKBqCCl7wX
-         DJLrFlY/X7afMhk72Yz2LCNw5OqLKX1ZAUiFMKK1uex9HJzt5XjkBTqyQiwVjUfpysWb
-         bpAC9sijHJG+LpKItsRQIB/oadSivgl/3g68s=
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=DLpqZYAUW/ZGGpGCzGUXrmi67yskersm3IpKhN6SvqmRgiT0j6NIR2o+Xasr6hWvys
+         xIi2LhoIzRxoU6koy0oLoDVbluM1+aP1YX3zk3dGQ/vpTHRBh9ZBX6lGwK9eCWx7Yiae
+         maz1WCKkSFQx0KAX5KKi6OXH9tl54saJLyrNo=
 MIME-Version: 1.0
-Date: Mon, 14 Sep 2009 13:25:29 +0800
-Message-ID: <31cb94fa0909132225l6cb98739o59d105ef480d1cd2@mail.gmail.com>
-Subject: PATCH: ARCH in builddeb
-From: Wei Chong Tan <weichong78@gmail.com>
-To: sam@ravnborg.org, max@stro.at, elendil@planet.nl,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Mon, 14 Sep 2009 17:30:12 +1200
+Message-ID: <202cde0e0909132230y52b805a4i8792f2e287b01acb@mail.gmail.com>
+Subject: HugeTLB: Driver example
+From: Alexey Korolev <akorolex@gmail.com>
+To: Mel Gorman <mel@csn.ul.ie>, Eric Munson <linux-mm@mgebm.net>,
+       Alexey Korolev <akorolev@infradead.org>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+There is an example of simple driver which provides huge pages mapping
+for user level applications. The  procedure for mapping of huge pages
+to userspace by the driver is:
 
-I was using "make ARCH=i386 deb-pkg" in the kernel on a 64bit machine
-and found out that the .deb package created was _amd64.deb.
-Consequently, I modify the builddeb script to take into account the
-ARCH environment variable.
+1. Create a hugetlb file on vfs mount of hugetlbfs (h_file)
 
-Thanks,
-Tan Wei Chong.
+2. File operations of /dev/hpage_map do the following:
+In file open we  associate mappings of /dev/xxx with the file on
+hugetlbfs (like it is done in ipc/shm.c)
+       file->f_mapping = h_file->f_mapping;
+In get_unmapped_area we should tell about addressing constraints in
+case of huge pages by calling hugetlbfs procedures. (as in ipc/shm.c)
+       return get_unmapped_area(h_file, addr, len, pgoff, flags);
 
->From 477c02443f0fb5a8e39d607197720fec21cecc8b Mon Sep 17 00:00:00 2001
-From: Tan, Wei Chong <weichong78@gmail.com>
-Date: Mon, 14 Sep 2009 12:56:55 +0800
-Subject: [PATCH] update builddeb script to allow ARCH customization
-Signed-off-by: Tan, Wei Chong <weichong78@gmail.com>
+3 In mmap get huge page in order to DMA or for something else
+(hugetlb_get_user_page call).
+..................
+4 Remove hugetlbfs file
 
 ---
- scripts/package/builddeb |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+#include <linux/module.h>
+#include <linux/mm.h>
+#include <linux/file.h>
+#include <linux/pagemap.h>
+#include <linux/hugetlb.h>
+#include <linux/pagevec.h>
+#include <linux/miscdevice.h>
+#include <asm/io.h>
+#include <asm/ioctl.h>
 
-diff --git a/scripts/package/builddeb b/scripts/package/builddeb
-index 8b357b0..cdb017f 100644
---- a/scripts/package/builddeb
-+++ b/scripts/package/builddeb
-@@ -24,7 +24,11 @@ create_package() {
- 	chmod -R go-w "$pdir"
+#define HFILE_SIZE 16UL*1024*1024
+static struct file	*h_file;
 
- 	# Create the package
--	dpkg-gencontrol -isp -p$pname -P"$pdir"
-+	if [ "$ARCH" = "" ] ; then
-+		dpkg-gencontrol -isp -p$pname -P"$pdir"
-+	else
-+		dpkg-gencontrol -DArchitecture=$ARCH -isp -p$pname -P"$pdir"
-+	fi
- 	dpkg --build "$pdir" ..
- }
+static int hpage_map_mmap(struct file *file, struct vm_area_struct *vma)
+{
+	int ret;
+	struct page *page;
+	struct hstate *h;
+	unsigned long addr = vma->vm_start;
 
--- 
-1.6.0.4
+	if ((ret = h_file->f_op->mmap(h_file, vma)))
+	    return ret;
+
+	h = hstate_file(h_file);
+	
+	while (addr < vma->vm_end) {
+		page = hugetlb_get_user_page(vma, addr);
+		if (IS_ERR(page))
+		        return -EFAULT;
+		addr += huge_page_size(h);
+		/* Add code to configure DMA here */
+	}
+	return 0;
+}
+
+static unsigned long hpage_map_get_unmapped_area(struct file *file,
+	unsigned long addr, unsigned long len, unsigned long pgoff,
+	unsigned long flags)
+{
+	/* Tell about addressing constrains in case of huge pages,
+	 * hugetlbfs knows how to do this */
+	return get_unmapped_area(h_file, addr, len, pgoff, flags);
+}
+static int hpage_map_open(struct inode * inode, struct file * file)
+{
+	/* Associate mappings of /dev/xxx with the file on hugetlbfs
+	 * like it is done in ipc/shm.c */
+	file->f_mapping = h_file->f_mapping;
+	return 0;
+}
+
+/*
+ * The file operations for /dev/hpage_map
+ */
+static const struct file_operations hpage_map_fops = {
+	.owner		= THIS_MODULE,
+	.mmap		= hpage_map_mmap,
+	.open 		= hpage_map_open,
+	.get_unmapped_area	= hpage_map_get_unmapped_area,
+};
+
+static struct miscdevice hpage_map_dev = {
+	MISC_DYNAMIC_MINOR,
+	"hpage_map",
+	&hpage_map_fops
+};
+
+static int __init
+hpage_map_init(void)
+{
+	int ret;
+	struct user_struct *user = NULL;
+
+	/* Create the device in the /sys/class/misc directory. */
+	if ((ret = misc_register(&hpage_map_dev)))
+		return ret;
+
+	/* Create file on hugetlbfs */
+	h_file = hugetlb_file_setup("hpage_map_dev", HFILE_SIZE, 0, &user,
+				HUGETLB_DEVBACK_INODE);
+	if (IS_ERR(h_file)) {
+		misc_deregister(&hpage_map_dev);
+		ret = -ENOENT;
+	}
+	return ret;
+}
+
+module_init(hpage_map_init);
+
+static void __exit
+hpage_map_exit(void)
+{
+	fput(h_file);
+	misc_deregister(&hpage_map_dev);
+}
+
+module_exit(hpage_map_exit);
+
+MODULE_LICENSE("GPL");
+MODULE_AUTHOR("Alexey Korolev");
+MODULE_DESCRIPTION("Example of driver with hugetlb mapping");
+MODULE_VERSION("1.0");
