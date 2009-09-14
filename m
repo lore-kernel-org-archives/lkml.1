@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755831AbZINPoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbZINPpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755831AbZINPoU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZINPoT
+	id S1755859AbZINPpg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbZINPpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:44:19 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:42601 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755381AbZINPoT (ORCPT
+	Mon, 14 Sep 2009 11:45:34 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:47829 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755806AbZINPpd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:44:19 -0400
-Date: Mon, 14 Sep 2009 11:42:15 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Zhu Yi <yi.zhu@intel.com>
-cc: Mel Gorman <mel@csn.ul.ie>, "Chatre, Reinette" <reinette.chatre@intel.com>,
-       Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
+	Mon, 14 Sep 2009 11:45:33 -0400
+Subject: Re: [RFC][PATCH] mm: write_cache_pages be more sequential
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Nick Piggin <npiggin@suse.de>
+Cc: chris.mason@oracle.com, david@fromorbit.com,
        Andrew Morton <akpm@linux-foundation.org>,
-       "Krauss, Assaf" <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>
-Subject: Re: iwlagn: order 2 page allocation failures
-In-Reply-To: <1252897270.5650.169.camel@debian>
-Message-ID: <alpine.DEB.1.10.0909141141200.24447@V090114053VZO-1>
-References: <200909060941.01810.elendil@planet.nl>  <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie>  <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie>  <1252526738.30150.91.camel@rc-desk> <20090910090206.GA22276@csn.ul.ie>
-  <1252617290.30150.321.camel@rc-desk>  <20090911084717.GB32497@csn.ul.ie> <1252897270.5650.169.camel@debian>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AA513AA.3010206@nokia.com>
+References: <4AA513AA.3010206@nokia.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Sep 2009 18:44:47 +0300
+Message-Id: <1252943087.3778.0.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 14 Sep 2009 15:44:52.0673 (UTC) FILETIME=[4CDEA310:01CA3552]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Zhu Yi wrote:
+On Mon, 2009-09-07 at 17:07 +0300, Adrian Hunter wrote:
+> From 6f3bb7c26936c45d810048f59c369e8d5a5623fc Mon Sep 17 00:00:00 2001
+> From: Adrian Hunter <adrian.hunter@nokia.com>
+> Date: Mon, 7 Sep 2009 10:49:11 +0300
+> Subject: [PATCH] mm: write_cache_pages be more sequential
+> 
+> If a file is written to sequentially, then writeback
+> should write the pages sequentially also.  However,
+> that does not always happen.  For example:
+> 
+> 1) user writes pages 0, 1 and 2 but 2 is incomplete
+> 2) write_cache_pages writes pages 0, 1 and 2 and sets
+> writeback_index to 3
+> 3) user finishes writing page 2 and writes pages 3 and 4
+> 4) write_cache_pages writes pages 3 and 4, and then cycles
+> back and writes page 2 again.
+> 
+> So the pages are written out in the order 0, 1, 2, 3 ,4 ,2
+> instead of 0, 1, 2, 2, 3, 4.
+> 
+> This situation was noticed on UBIFS because it writes
+> directly from writepage.  Hence if there is an unexpected
+> power-loss, a file will end up with a hole even though
+> the file was written sequentially by the user.
+> 
+> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
 
-> BTW, does SLAB/SLUB guarantee size of multiple PAGE_SIZE __kmalloc()
-> allocation align on PAGE_SIZE (or 256 bytes) boundary?
+I wonder, who would merge this patch?
 
-Page allocators guarantee page aligned data. Slab allocators do not.
-
-You can create a slab that aligns objects on 256 byte boundary if you
-want.
-
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
 
