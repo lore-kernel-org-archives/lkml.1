@@ -1,126 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933691AbZINUsP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757011AbZINUuX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933691AbZINUsP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:48:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933670AbZINUsM
+	id S1757011AbZINUuX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:50:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZINUuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:48:12 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:46583 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933651AbZINUsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:48:09 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH tracing/kprobes 6/6] tracing/kprobes: Disable kprobe events by
-	default
-To: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>
-Date: Mon, 14 Sep 2009 16:49:37 -0400
-Message-ID: <20090914204937.18779.59422.stgit@dhcp-100-2-132.bos.redhat.com>
-In-Reply-To: <20090914204847.18779.69409.stgit@dhcp-100-2-132.bos.redhat.com>
-References: <20090914204847.18779.69409.stgit@dhcp-100-2-132.bos.redhat.com>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Mon, 14 Sep 2009 16:50:22 -0400
+Received: from n17.bullet.mail.mud.yahoo.com ([68.142.206.144]:25428 "HELO
+	n17.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1756796AbZINUuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 16:50:21 -0400
+X-Yahoo-Newman-Id: 273584.66951.bm@omp416.mail.mud.yahoo.com
+X-YMail-OSG: NwFTNz0VM1nTEu.CMBXSNPzm_BEbsH7BHYl2Oa.TsBf3nzIhzMTxCx1dI75.nTeyntuqUZoLLVrTzf08wLKPIK5ZXOkfXYXtS5uq5b6P1Ifq7TGZQpNADZd6yt0GcmKeb0gCp2RX4azEWID8BLpOIjDJSkJJV5gjTW4nw7beY84b3AryVYpmQ4jiY1lnb7cw_rDp6LpBNLV4ezkwlBs_HlzszgLcnOd1a0CXX9osue0FHE5bFJx4apdVkzh4Whv57HMohMuPgX1bF1vCnHXg9cObDEziwPOG9xn6CwObZmawsfH3vL.p.FGRbzP2eaBxUyvLPA--
+X-Yahoo-Newman-Property: ymail-3
+Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic
+	target engine for Linux v2.6.32
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: Vladislav Bolkhovitin <vst@vlnb.net>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+In-Reply-To: <4AAE907E.1020205@vlnb.net>
+References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
+	 <4AAE907E.1020205@vlnb.net>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 13:49:56 -0700
+Message-Id: <1252961396.2067.316.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Disable newly created kprobe events by default, not to disturb
-another user using ftrace. "Disturb" means when someone using
-ftrace and another user tries to use perf-tools, (in near
-future) if he defines new kprobe event via perf-tools, then new
-events will mess up the frace buffer. I think that's ugly.
+On Mon, 2009-09-14 at 22:50 +0400, Vladislav Bolkhovitin wrote:
+> Nicholas A. Bellinger, on 09/12/2009 05:55 AM wrote:
+> > Greetings all,
+> > 
+> > This is my humble request for review and inclusion of
+> > Target_Core_Mod/ConfigFS v3.2 from lio-core-2.6.git code into mainline
+> > v2.6.32.  With TCM v3.2, the two major SPC-4 SCSI target mode fabric
+> > features that have now been completed: Persistent Reservation APTPL and
+> > implict/explict ALUA are the first all optional SPC4 defined feature
+> > implementation of PR and ALUA in the Linux OSS target theatre using an
+> > upstream user-driven virtual filesystem directory hierarchy structure
+> > based on configfs that can be configured in realtime in combination with
+> > interpreted userspace code.
+> > 
+> > Both of these new features are now being used to provide Persistent Reservations
+> > across target power loss and asymmetric multipath I/O to both Linux and non-Linux
+> > clients.  There is also an optional ALUA transition delay logic that has been
+> > included to futher debug and improve existing upstream client side Linux kernel code
+> > using TCM v3.2. These patches have been diffed against v2.6.31, and tested on x86
+> > 32-bit HVM, x86_64 KVM, and powerpc.
+> > 
+> > There is cleanup work continuing to make the TCM code to use dprintk(),
+> > and some include cleanups, and other minor fixes.  The code has also
+> > been run through checkpatch again since the posting in April, and all
+> > errors have been removed, with the exception of one ConfigFS macro
+> > define triggering a checkpatch false positive.
+> > 
+> > As with the posting of the TCM v3.0 code earlier in April, I have
+> > decided to break up the submissions into the generic target_core_mod
+> > piece (this patch series) and then a seperate one that will be appearing
+> > in the next days for v3.2 of the LIO-Target iSCSI fabric module.
+> > 
+> > More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
+> > 
+> > http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
+> > http://www.linux-iscsi.org/index.php/Persistent_Reservations
+> > http://www.linux-iscsi.org/index.php/ALUA
+> > 
+> > The complete v3.x TCM CLI operations set can be found here:
+> > 
+> > http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
+> > 
+> > Instructions and examples for getting setup:
+> > 
+> > http://linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
+> > http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
+> 
+> Some questions among many I have:
+> 
+> 1. Where and how TCM is better over the existing mainline target 
+> framework STGT to justify such a move as adding a new piece of code 
+> doing the same job?
+> 
+
+I think from reading my original email and the list of patches it is
+quite obvious to the people involved what are the major pieces of
+functionality available in TCM v3.2 that people actually *want* and
+*care* about that is not available in the existing STGT framework.
+
+> 2. On the linux-iscsi.org main page (BTW, the comparison on that page 
+> isn't fully correct about STGT and SCST) you claim that TCM is a generic 
+> target engine. But how can you prove (and test) that if there are no 
+> hardware target drivers for TCM?
 
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-c: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Frank Ch. Eigler <fche@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>
-Cc: K.Prasad <prasad@linux.vnet.ibm.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Tom Zanussi <tzanussi@gmail.com>
----
+I am not sure why you think you need hardware target drivers to prove
+that a target engine is generic..?  Why don't you look at the TCM v3.2
+code (like everyone else is doing) and see for yourself..?
 
- Documentation/trace/kprobetrace.txt |   11 +++++++++--
- kernel/trace/trace_kprobe.c         |    4 ++--
- 2 files changed, 11 insertions(+), 4 deletions(-)
+> 
+> Also patch 7 implements MIBs through procfs. Procfs is for long time 
+> forbidden for adding anything like that, so you can't push it in the 
+> mainline.
 
-diff --git a/Documentation/trace/kprobetrace.txt b/Documentation/trace/kprobetrace.txt
-index 6521681..9b8f7c6 100644
---- a/Documentation/trace/kprobetrace.txt
-+++ b/Documentation/trace/kprobetrace.txt
-@@ -122,8 +122,15 @@ print fmt: "(%lx) dfd=%lx filename=%lx flags=%lx mode=%lx", REC->ip, REC->dfd, R
- 
-   echo > /sys/kernel/debug/tracing/kprobe_events
- 
-- This clears all probe points. and you can see the traced information via
--/sys/kernel/debug/tracing/trace.
-+ This clears all probe points.
-+
-+ Right after definition, each event is disabled by default. For tracing these
-+events, you need to enable it.
-+
-+  echo 1 > /sys/kernel/debug/tracing/events/kprobes/myprobe/enable
-+  echo 1 > /sys/kernel/debug/tracing/events/kprobes/myretprobe/enable
-+
-+ And you can see the traced information via /sys/kernel/debug/tracing/trace.
- 
-   cat /sys/kernel/debug/tracing/trace
- # tracer: nop
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index d8db935..f6821f1 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -383,7 +383,7 @@ static int register_trace_probe(struct trace_probe *tp)
- 		goto end;
- 	}
- 
--	tp->flags = TP_FLAG_TRACE;
-+	tp->rp.kp.flags |= KPROBE_FLAG_DISABLED;
- 	if (probe_is_return(tp))
- 		ret = register_kretprobe(&tp->rp);
- 	else
-@@ -1298,7 +1298,7 @@ static int register_probe_event(struct trace_probe *tp)
- 	call->id = register_ftrace_event(&tp->event);
- 	if (!call->id)
- 		return -ENODEV;
--	call->enabled = 1;
-+	call->enabled = 0;
- 	call->regfunc = probe_event_enable;
- 	call->unregfunc = probe_event_disable;
- 
+There are other subsystems (Linux/Net and SCTP for example) that use
+procfs for read-only MIBs statistics, so TCM actually having an
+implementation of SCSI MIBs available (no other target projects have
+SCSI MIBs btw) under procfs is hardly a show-stopper considering the
+*entire* control path for TCM v3.2 is using upstream configfs code
+anyways.
+
+Best,
+
+--nab
 
 
--- 
-Masami Hiramatsu
+> 
+> Vlad
 
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
 
-e-mail: mhiramat@redhat.com
