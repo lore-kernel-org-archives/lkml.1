@@ -1,37 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755617AbZINOiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbZINOjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755617AbZINOiu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 10:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZINOit
+	id S1755631AbZINOjw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 10:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbZINOjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 10:38:49 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:23271 "EHLO mx1.redhat.com"
+	Mon, 14 Sep 2009 10:39:52 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:44901 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751276AbZINOis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 10:38:48 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1252787226.13780.1.camel@dhcp231-106.rdu.redhat.com>
-References: <1252787226.13780.1.camel@dhcp231-106.rdu.redhat.com> <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com> <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org> <20090912072450.GA6767@elte.hu> <1252748791.2305.89.camel@dhcp231-106.rdu.redhat.com> <20090912104346.GB27935@elte.hu> <20090912135808.GA17416@elte.hu> 
-To: Eric Paris <eparis@redhat.com>
-Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>,
-       James Morris <jmorris@namei.org>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [origin tree boot hang] lockup in key_schedule_gc()
-Date: Mon, 14 Sep 2009 15:38:38 +0100
-Message-ID: <21194.1252939118@redhat.com>
+	id S1755589AbZINOjv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 10:39:51 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-usb@vger.kernel.org, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: [PATCH] USB: serial: ftdi: handle gnICE+ JTAG adaptors
+Date: Mon, 14 Sep 2009 10:39:53 -0400
+Message-Id: <1252939193-29651-1-git-send-email-vapier@gentoo.org>
+X-Mailer: git-send-email 1.6.4.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Paris <eparis@redhat.com> wrote:
+From: Michael Hennerich <michael.hennerich@analog.com>
 
-> Adding dhowells, the keys maintainer, this one certainly isn't obvious
-> to me off hand.
+Detect the UART on interface1 and blacklist interface0 (as that is the
+JTAG port).
 
-I've screwed up the gc mechanism.  I'm working out a patch for it.
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+ drivers/usb/serial/ftdi_sio.c |    2 ++
+ drivers/usb/serial/ftdi_sio.h |    1 +
+ 2 files changed, 3 insertions(+), 0 deletions(-)
 
-David
+diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
+index 8fec5d4..de342f0 100644
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -694,6 +694,8 @@ static struct usb_device_id id_table_combined [] = {
+ 	{ USB_DEVICE(DE_VID, WHT_PID) },
+ 	{ USB_DEVICE(ADI_VID, ADI_GNICE_PID),
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
++	{ USB_DEVICE(ADI_VID, ADI_GNICEPLUS_PID),
++		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
+ 	{ USB_DEVICE(JETI_VID, JETI_SPC1201_PID) },
+ 	{ USB_DEVICE(MARVELL_VID, MARVELL_SHEEVAPLUG_PID),
+ 		.driver_info = (kernel_ulong_t)&ftdi_jtag_quirk },
+diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
+index 8c92b88..eb8ad1f 100644
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -930,6 +930,7 @@
+  */
+ #define ADI_VID 		0x0456
+ #define ADI_GNICE_PID 		0xF000
++#define ADI_GNICEPLUS_PID 	0xF001
+ 
+ /*
+  * JETI SPECTROMETER SPECBOS 1201
+-- 
+1.6.4.2
+
