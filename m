@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbZINU1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933912AbZINU1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933886AbZINU1a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933864AbZINU13
+	id S933912AbZINU1k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933890AbZINU1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:27:29 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34866 "EHLO
-	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933829AbZINU12 (ORCPT
+	Mon, 14 Sep 2009 16:27:37 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40252 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933901AbZINU1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:27:28 -0400
-Date: Mon, 14 Sep 2009 16:27:18 -0400 (EDT)
-From: Tim Abbott <tabbott@ksplice.com>
-X-X-Sender: tabbott@dr-wily.mit.edu
-To: Jesper Nilsson <Jesper.Nilsson@axis.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       dev-etrax <dev-etrax@axis.com>
-Subject: Re: [PATCH] cris: Cleanup linker script using new linker script
- macros.
-In-Reply-To: <20090914085922.GG4592@axis.com>
-Message-ID: <alpine.DEB.1.10.0909141313310.31119@dr-wily.mit.edu>
-References: <1252292793-12674-1-git-send-email-tabbott@ksplice.com> <20090914085922.GG4592@axis.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 14 Sep 2009 16:27:34 -0400
+Date: Mon, 14 Sep 2009 22:27:29 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Chris Ball <cjb@laptop.org>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@lst.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+Message-ID: <20090914202729.GB10398@elf.ucw.cz>
+References: <20090903232317.GA6760@lst.de> <c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com> <m3eiqdqfnm.fsf@pullcord.laptop.org> <200909120036.41725.rjw@sisk.pl> <c4e36d110909140139u786f2165oc5a35dce5b2c0527@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Flag: NO
-X-Spam-Score: 0.00
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c4e36d110909140139u786f2165oc5a35dce5b2c0527@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Jesper Nilsson wrote:
-
-> On Mon, Sep 07, 2009 at 05:06:33AM +0200, Tim Abbott wrote:
-> >  	. = ALIGN (4);
-> >  	___data_start = . ;
-> >  	__Sdata = . ;
-> > -	.data : {			/* Data */
-> > -		DATA_DATA
-> > -	}
-> > +	RW_DATA_SECTION(0, PAGE_SIZE, PAGE_SIZE)
+On Mon 2009-09-14 10:39:44, Zdenek Kabelac wrote:
+> 2009/9/12 Rafael J. Wysocki <rjw@sisk.pl>:
+> > On Saturday 12 September 2009, Chris Ball wrote:
+> >> Hi,
+> >>
+> >>    > Well system could check basic card ids if they match after resume
+> >>
+> >> No.  That (arguably) guarantees that it's the same card, but not that
+> >> it wasn't modified in another machine during the suspend.
+> >
+> > Generally speaking, we'd also need to check superblocks for this to work.
+> >
+> >>    > if some users wants to crash his card by randomly swapping it
+> >>    > during suspend/resume - I'd have no problem with that....
+> >>
+> >> You should have a problem with it.  Taking a card from a suspended
+> >> machine and working on it with a different machine is not a bizarre
+> >> thing to want to do.
+> >
+> > Agreed.
 > 
-> This causes some problems, and I'm not ldscript guru enough to immediately
-> grasp the problem. What I get is this:
 > 
-> ...
->   LD      vmlinux
-> arch/cris/kernel/vmlinux.lds:326 cannot move location counter backwards (from c017e000 to 00000000)
-> make[1]: *** [vmlinux] Error 1
-> make: *** [sub-make] Error 2
+> Well - ok - so let me ask this question - if I'll replace local hard
+> drive during suspend - what will happen - is this prohibited by hw
+> (e.i. to switch SATA cables) ?
 
-Hmm.  I spent a bit looking at it, and I don't have a guess for what the 
-problem is there.
+During _suspend_: yes. You are not expected to open your machine while
+powered up.
 
-> I've dropped that part of the patch, and I'll try to
-> boot test the rest of the patch this week.
+> IMHO filesystem should be able to detect corruption of its data
+> structures - (assuming fs is notified about suspend/resume
+> operation)
 
-Yeah, it's probably fine to just drop it for now, since it has fairly 
-small cleanup impact on cris.
+Patch welcome.
 
-However, just dropping that hunk is not going to work -- you'll need to 
-re-add the .data.init_task hunk below (which had been part of 
-RW_DATA_SECTION).
+> Also there could be one simple quick solution/hack - to require to
+> have at least all remote drives unmounted - so suspend would be
+> refused if it runs mounted card/usb drive -  this would be 100% better
+> than current solution which effectively kills my laptop if I forget to
+> unmount card in mmc reader - especially if dmesg contains message with
+> the reason why my suspend fails.
 
-	-Tim Abbott
+It should not _kill_ your laptop -- that's a bug we want to
+fix. Instead it is designed to behave as if you hot-unplugged your
+card while mounted.
 
-> >  	__edata = . ;			/* End of data section. */
-> >  	_edata = . ;
-> >  
-> > -	. = ALIGN(PAGE_SIZE);	/* init_task and stack, must be aligned. */
-> > -	.data.init_task : { *(.data.init_task) }
-> > -
-> >  	. = ALIGN(PAGE_SIZE);		/* Init code and data. */
-> >  	__init_begin = .;
+									Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
