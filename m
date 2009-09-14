@@ -1,57 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZINVgX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZINVjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932308AbZINVgX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:36:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932310AbZINVgW
+	id S1756996AbZINVjc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZINVjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:36:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33832 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S932275AbZINVgV (ORCPT
+	Mon, 14 Sep 2009 17:39:31 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:40311 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753778AbZINVja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:36:21 -0400
-Date: Mon, 14 Sep 2009 14:36:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: [PATCH] [5/5] kbuild: Set -fconserve-stack option for gcc 4.5
-Message-Id: <20090914143615.9ee47a1a.akpm@linux-foundation.org>
-In-Reply-To: <20090914201811.187B3B1757@basil.firstfloor.org>
-References: <200909141018.915641783@firstfloor.org>
-	<20090914201811.187B3B1757@basil.firstfloor.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 17:39:30 -0400
+Date: Mon, 14 Sep 2009 23:39:33 +0200
+From: Andreas Mohr <andi@lisas.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andreas Mohr <andi@lisas.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Luca Risolia <luca.risolia@studio.unibo.it>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: V4L2 drivers: potentially dangerous and inefficient
+	msecs_to_jiffies() calculation
+Message-ID: <20090914213933.GA5468@rhlx01.hs-esslingen.de>
+References: <20090914210741.GA16799@rhlx01.hs-esslingen.de> <4AAEB6F0.4080706@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAEB6F0.4080706@gmail.com>
+X-Priority: none
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 22:18:11 +0200 (CEST)
-Andi Kleen <andi@firstfloor.org> wrote:
+Hi,
 
+On Mon, Sep 14, 2009 at 11:34:40PM +0200, Jiri Slaby wrote:
+> On 09/14/2009 11:07 PM, Andreas Mohr wrote:
+> > ./drivers/media/video/zc0301/zc0301_core.c
+> > do
+> >                             cam->module_param.frame_timeout *
+> >                             1000 * msecs_to_jiffies(1) );
+> > multiple times each.
+> > What they should do instead is
+> > frame_timeout * msecs_to_jiffies(1000), I'd think.
 > 
-> The upcomming gcc 4.5 has a new -fconserve-stack option 
-> that tells the inliner to take stack frame size in account.
-> Set it if the compiler supports it.
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  Makefile |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> Index: linux-2.6.31-rc3-ak/Makefile
-> ===================================================================
-> --- linux-2.6.31-rc3-ak.orig/Makefile
-> +++ linux-2.6.31-rc3-ak/Makefile
-> @@ -575,6 +575,9 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-s
->  # revert to pre-gcc-4.4 behaviour of .eh_frame
->  KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
->  
-> +# conserve stack if available
-> +KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
+> In fact, msecs_to_jiffies(frame_timeout * 1000) makes much more sense.
 
-Do we have any info about what effects this option has upon the
-generated code?  Text size changes, runtime stack usage changes, etc?
+Heh, right, even a bit better ;)
 
+> > msecs_to_jiffies(1) is quite a bit too boldly assuming
+> > that all of the msecs_to_jiffies(x) implementation branches
+> > always round up.
+> 
+> They do, don't they?
+
+I'd hope so, but a slight risk remains, you never know,
+especially with 4+ or so variants...
+
+Andreas Mohr
