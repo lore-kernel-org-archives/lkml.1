@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZINLGy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755270AbZINLKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755175AbZINLGy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 07:06:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbZINLGv
+	id S1755270AbZINLKU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 07:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZINLKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 07:06:51 -0400
-Received: from senator.holtmann.net ([87.106.208.187]:50834 "EHLO
-	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751490AbZINLGv (ORCPT
+	Mon, 14 Sep 2009 07:10:19 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:33084 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752429AbZINLKR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 07:06:51 -0400
-Subject: Re: [GIT] HID patches for 2.6.32 merge window
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.LNX.2.00.0909141210590.17028@wotan.suse.de>
-References: <alpine.LNX.2.00.0909132014310.17028@wotan.suse.de>
-	 <1252922794.3421.3.camel@localhost.localdomain>
-	 <alpine.LNX.2.00.0909141210590.17028@wotan.suse.de>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 04:06:48 -0700
-Message-Id: <1252926408.3421.7.camel@localhost.localdomain>
+	Mon, 14 Sep 2009 07:10:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=rkINxOTTp5axQCggYjYxAME+0fJJVHaEfuSS8aYw1Ic8mtoAZ8Ncv57lrmo+xI6bjJ
+         tLMlXUaWx5WIxukzWAN94V22hXaYg5DaJ5FsedT+DCMm7dV4VMjTt5NkBDP+fASLmtmk
+         89NkUwr1BKyV6djk5NGWki8niJ+ILOUxy2ZY8=
+Date: Mon, 14 Sep 2009 20:10:02 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 4/7] writeback: use RCU to protect bdi_list
+Message-Id: <20090914201002.0ca94166.minchan.kim@barrios-desktop>
+In-Reply-To: <1252920994-11141-5-git-send-email-jens.axboe@oracle.com>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com>
+	<1252920994-11141-5-git-send-email-jens.axboe@oracle.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+On Mon, 14 Sep 2009 11:36:31 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> > > could you please pull from 'for-linus' branch of
-> > > 
-> > >         git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
-> > > 
-> > > to receive HID patches accumulated for 2.6.32 merge window.
-> > 
-> > I am missing the patch to free the transport drivers from having to
-> > manually disconnect hidinput and hidraw. All the hid->claimed handling
-> > should really be hidden from the transport drivers.
+> Now that bdi_writeback_all() no longer handles integrity writeback,
+> it doesn't have to block anymore. This means that we can switch
+> bdi_list reader side protection to RCU.
 > 
-> Hi Marcel,
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/fs-writeback.c           |    4 +-
+>  include/linux/backing-dev.h |    1 +
+>  mm/backing-dev.c            |   76 +++++++++++++++++++++++++++++++------------
+>  mm/page-writeback.c         |    8 ++--
+>  4 files changed, 62 insertions(+), 27 deletions(-)
 > 
-> right, thanks for spotting this. The patch below has been rotting in my 
-> 'waiting-for-ack' queue for quite some time. I was apparently waiting for 
-> your Ack for the drivers/net/bluetooth part, and forgot about it when it 
-> didn't come.
-> 
-> If you're OK with that, I'll include it in the next pile. Thanks.
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 5d4bd1c..d7592c7 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -849,7 +849,7 @@ static void bdi_writeback_all(struct writeback_control *wbc)
+>  
+>  	WARN_ON(wbc->sync_mode == WB_SYNC_ALL);
+>  
+> -	spin_lock(&bdi_lock);
+> +	rcu_read_lock();
+>  
+>  	list_for_each_entry(bdi, &bdi_list, bdi_list) {
 
-you need to redo it against the net-next-2.6 tree or wait until Linus
-merged that one. Otherwise it will clash with a temporary solution that
-I already pushed some time ago.
+list_for_each_entry_rcu?
 
-Regards
-
-Marcel
-
-
+-- 
+Kind regards,
+Minchan Kim
