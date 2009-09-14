@@ -1,83 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933625AbZINU0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933886AbZINU1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933625AbZINU0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933829AbZINU0G
+	id S933886AbZINU1a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933864AbZINU13
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:26:06 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:60489 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932278AbZINU0D convert rfc822-to-8bit (ORCPT
+	Mon, 14 Sep 2009 16:27:29 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34866 "EHLO
+	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933829AbZINU12 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:26:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=PDgEVS/9vM1DHvgqbFUGEePyBH4wgsh6Zj7rMbiC2+EvUBRx23IB4CadBGszBOs2q0
-         q9VKCp5nG5mx07Ev7bzJ5A2ur0x/ok0B71hsw/Zy6uCGKyR/06Z7D763BSG4ppTl+8T4
-         xgp+WUWfxMyneAZiNb51GI3SKo96tf6vWDS4k=
+	Mon, 14 Sep 2009 16:27:28 -0400
+Date: Mon, 14 Sep 2009 16:27:18 -0400 (EDT)
+From: Tim Abbott <tabbott@ksplice.com>
+X-X-Sender: tabbott@dr-wily.mit.edu
+To: Jesper Nilsson <Jesper.Nilsson@axis.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Mikael Starvik <mikael.starvik@axis.com>,
+       dev-etrax <dev-etrax@axis.com>
+Subject: Re: [PATCH] cris: Cleanup linker script using new linker script
+ macros.
+In-Reply-To: <20090914085922.GG4592@axis.com>
+Message-ID: <alpine.DEB.1.10.0909141313310.31119@dr-wily.mit.edu>
+References: <1252292793-12674-1-git-send-email-tabbott@ksplice.com> <20090914085922.GG4592@axis.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <9b2b86520909140920y293a2a72lc369340a0f823970@mail.gmail.com>
-References: <200909141730.40467.baeckham@gmx.net>
-	 <9b2b86520909140920y293a2a72lc369340a0f823970@mail.gmail.com>
-Date: Mon, 14 Sep 2009 16:26:04 -0400
-X-Google-Sender-Auth: b442ebb4539fc345
-Message-ID: <30353c3d0909141326x6e81b2er77e738bc532ae7ed@mail.gmail.com>
-Subject: Re: parameter for module gspca_sn9c20x
-From: David Ellingsworth <david@identd.dyndns.org>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: baeckham@gmx.net, linux-modules <linux-modules@vger.kernel.org>,
-       linux-media@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Flag: NO
+X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 12:20 PM, Alan Jenkins
-<sourcejedi.lkml@googlemail.com> wrote:
-> [CC linux-media]  The linux-modules list is for the program "modprobe"
-> etc, not the actual kernel drivers.
->
-> On 9/14/09, baeckham@gmx.net <baeckham@gmx.net> wrote:
->> I have a built-in webcam in my laptop: 0c45:624f Microdia PC Camera
->> (SN9C201)
->>
->> Till today I used the driver from [groups.google.de] to make it work.
->> But now I found the driver in the 2.6.31 kernel:
->>
->>        gspca_sn9c20x
->>
->> Unfortunately I have to flip the image vertically so it is displayed right,
->> otherwise it is upside-
->> down.
->>
->> With the google-groups-driver I had to use the parameter vflip=1 to flip the
->> image. But with the
->> kernel module gspca_sn9c20x this is not working:
->>
->> # modprobe gspca_sn9c20x vflip=1
->> FATAL: Error inserting gspca_sn9c20x
->> (/lib/modules/2.6.31/kernel/drivers/media/video/gspca/gspca_sn9c20x.ko):
->> Unknown symbol in module,
->> or unknown parameter (see dmesg)
->>
->> Does anyone know how to flip the image?
+On Mon, 14 Sep 2009, Jesper Nilsson wrote:
 
-You might want to take a look at libv4l. Several cameras, like yours
-are known to have the sensor mounted upside down. Kernel drivers
-typically do not correct for this since it's impossible for the driver
-to know if the sensor is upside down or not on all supported devices.
->From what I recall, libv4l does a couple of checks to determine if the
-sensor is upside down or not and corrects the image if necessary. It
-might also provide additional controls that allow you to flip the
-image even if it's not a sensor that's known to be mounted upside
-down. libv4l is compatible with all v4l2 applications simply by
-pre-loading the library for the application using LDPRELOAD.
+> On Mon, Sep 07, 2009 at 05:06:33AM +0200, Tim Abbott wrote:
+> >  	. = ALIGN (4);
+> >  	___data_start = . ;
+> >  	__Sdata = . ;
+> > -	.data : {			/* Data */
+> > -		DATA_DATA
+> > -	}
+> > +	RW_DATA_SECTION(0, PAGE_SIZE, PAGE_SIZE)
+> 
+> This causes some problems, and I'm not ldscript guru enough to immediately
+> grasp the problem. What I get is this:
+> 
+> ...
+>   LD      vmlinux
+> arch/cris/kernel/vmlinux.lds:326 cannot move location counter backwards (from c017e000 to 00000000)
+> make[1]: *** [vmlinux] Error 1
+> make: *** [sub-make] Error 2
 
-Regards,
+Hmm.  I spent a bit looking at it, and I don't have a guess for what the 
+problem is there.
 
-David Ellingsworth
+> I've dropped that part of the patch, and I'll try to
+> boot test the rest of the patch this week.
+
+Yeah, it's probably fine to just drop it for now, since it has fairly 
+small cleanup impact on cris.
+
+However, just dropping that hunk is not going to work -- you'll need to 
+re-add the .data.init_task hunk below (which had been part of 
+RW_DATA_SECTION).
+
+	-Tim Abbott
+
+> >  	__edata = . ;			/* End of data section. */
+> >  	_edata = . ;
+> >  
+> > -	. = ALIGN(PAGE_SIZE);	/* init_task and stack, must be aligned. */
+> > -	.data.init_task : { *(.data.init_task) }
+> > -
+> >  	. = ALIGN(PAGE_SIZE);		/* Init code and data. */
+> >  	__init_begin = .;
