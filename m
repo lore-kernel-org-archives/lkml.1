@@ -1,257 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754385AbZIMXbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbZINAD0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754385AbZIMXbm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 19:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbZIMXbk
+	id S1754531AbZINAD0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 20:03:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZINADW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 19:31:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41544 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754212AbZIMXbi (ORCPT
+	Sun, 13 Sep 2009 20:03:22 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:33935 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754212AbZINADU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 19:31:38 -0400
-Date: Sun, 13 Sep 2009 16:30:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
-       peterz@infradead.org, yanmin_zhang@linux.intel.com,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com
-Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
- performance
-Message-Id: <20090913163007.a1b967c2.akpm@linux-foundation.org>
-In-Reply-To: <20090911174019.1ed02737@infradead.org>
-References: <20090911174019.1ed02737@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 13 Sep 2009 20:03:20 -0400
+Date: Mon, 14 Sep 2009 01:03:03 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: jamal <hadi@cyberus.ca>
+Cc: Eric Paris <eparis@redhat.com>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org, balbir@in.ibm.com
+Subject: Re: [PATCH 1/8] networking/fanotify: declare fanotify socket numbers
+Message-ID: <20090914000303.GA30621@shareable.org>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com> <20090911.114620.260824240.davem@davemloft.net> <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com> <1252704102.25158.36.camel@dogo.mojatatu.com> <20090911214254.GB19901@shareable.org> <1252709567.25158.61.camel@dogo.mojatatu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252709567.25158.61.camel@dogo.mojatatu.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009 17:40:19 +0200 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: [PATCH] cpuidle: A new variant of the menu governor
+jamal wrote:
+> On Fri, 2009-09-11 at 22:42 +0100, Jamie Lokier wrote:
 > 
-> This patch adds a new idle governor which balances power savings,
-> energy efficiency and performance impact.
+> > One of the uses of fanotify is as a security or auditing mechanism.
+> > That can't tolerate gaps.
+> > 
+> > It's fundemantally different from inotify in one important respect:
+> > inotify apps can recover from losing events by checking what they are
+> > watching.
+> > 
+> > The fanotify application will know that it missed events, but what
+> > happens to the other application which _caused_ those events?  Does it
+> > get to do things it shouldn't, or hide them from the fanotify app, by
+> > simply overloading the system?  Or the opposite, does it get access
+> > denied - spurious file errors when the system is overloaded?
+> > 
+> > There's no way to handle that by dropping events.  A transport
+> > mechanism can be dropped (say skbs), but the event itself has to be
+> > kept, and then retried.
+> > 
+> >
+> > Since you have to keep an event object around until it's handled,
+> > there's no point tying it to an unreliable delivery mechanism which
+> > you'd have to wrap a retry mechanism around.
+> > 
+> > In other words, that part of netlink is a poor match.  It would match
+> > inotify much better.
 > 
-> The reason for a reworked governor is that there have been
-> serious performance issues reported with the existing code
-> on Nehalem server systems.
+> Reliability is something that you should build in. Netlink provides you
+> all the necessary tools. What you are asking for here is essentially 
+> reliable multicasting.
+
+Almost.  It's reliable multicasting plus unicast responses which must
+be waited for.  That changes things.
+
+> You dont have infinite memory, therefore there
+> will be times when you will overload one of the users, and they wont
+> have sufficient buffer space and then you have to retransmit.
+
+If you have enough memory to remember _what_ to retransmit, then you
+have enough memory to buffer a fixed-size message.  It just depends on
+how you do the buffering.  To say netlink drops the message and you
+can retry is just saying that the buffering is happening one step
+earlier, before netlink.  That's what I mean by netlink being a
+pointless complication for this, because you can just as easily write
+code which gets to the message to userspace without going through
+netlink and with no chance of it being dropped.
+
+> Is the current proposed mechanism capable of reliably multicasting
+> without need for retransmit?
+
+Yes.  It uses positive acknowledge and flow control, because these
+match naturally with what fanotify does at the next higher level.
+
+The process generating the multicast (e.g. trying to write a file) is
+blocked until the receiver gets the message, handles it and
+acknowledges with a "yes you can" or "no you can't" response.
+
+That's part of fanotify's design.  The pattern conveniently has no
+issues with using unbounded memory for message, because the sending
+process is blocked.
+
+> > Speaking of skbs, how fast and compact are they for this?
 > 
-> To show this I'm sure Andrew wants to see benchmark results:
-> (benchmark is "fio", "no cstates" is using "idle=poll")
+> They are largish relative to say if you trimmed down to basic necessity.
+> But then you get a lot of the buffer management aspects for free.
+> In this case, the concept of multicasting is built in so for one event
+> to be sent to X users - you only need one skb.
+
+True you only need one skb.  But netlink doesn't handle waiting for
+positive acknowledge responses from every receiver, and combining
+their value, does it?  You can't really take advantage of netlink's
+built in multicast, because to known when it has all the responses,
+the fanotify layer has to track the subscriber list itself anyway.
+
+What I'm saying is perhaps skbs are useful for fanotify, but I don't
+know that netlink's multicasting is useful.  But storing the messages
+in skbs for transmission, and using parts of netlink to manage them,
+and to provide some of the API, that might be useful.
+
+> > Eric's explained that it would be normal for _every_ file operation on
+> > some systems to trigger a fanotify event and possibly wait on the
+> > response, or at least in major directory trees on the filesystem.
+> > Even if it's just for the fanotify app to say "oh I don't care about
+> > that file, carry on".
+> > 
 > 
-> 		no cstates	current linux	new algorithm
-> 1 disk		107 Mb/s	85 Mb/s		105 Mb/s
-> 2 disks		215 Mb/s	123 Mb/s	209 Mb/s
-> 12 disks	590 Mb/s	320 Mb/s	585 Mb/s
+> That doesnt sound very scalable. Should it not be you get nothing unless
+> you register for interest in something?
+
+You do get nothing unless you register interest.  The problem is
+there's no way to register interest on just a subtree, so the fanotify
+approach is let you register for events on the whole filesystem, and
+let the userspace daemon filter paths.  At least it's decisions can be
+cached, although I'm not sure how that works when multiple processes
+want to monitor overlapping parts of the filesystem.
+
+It doesn't sound scalable to me, either, and that's why I don't like
+this part, and described a solution to monitoring subtrees - which
+would also solve the problem for inotify.  (Both use fsnotify under
+the hood, and that's where subtree notification would go).
+
+Eric's mentioned interest in a way to monitor subtrees, but that
+hasn't gone anywhere as far as I know.  He doesn't seem convinced by
+my solution - or even that scalability will be an issue.  I think
+there's a bit of vision lacking here, and I'll admit I'm more
+interested in the inotify uses of fsnotify (being able to detect
+changes) than the fanotify uses (being able to _block_ or _modify_
+changes).  I think both inotify and fanotify ought to benefit from the
+same improvements to file monitoring.
+
+> > File performance is one of those things which really needs to be fast
+> > for a good user experience - and it's not unusual to grep the odd
+> > 10,000 files here or there (just think of what a kernel developer
+> > does), or to replace a few thousand quickly (rpm/dpkg) and things like
+> > that.
+> > 
 > 
-> In various power benchmark measurements, no degredation was found
-> by our measurement&diagnostics team. Obviously a bit more power was
-> used in the "fio" benchmark, due to the much higher performance.
+> So grepping 10000 files would cause 10000 events? I am not sure how the
+> scheme works; filtering of what events get delivered sounds more
+> reasonable if it happens in the kernel.
+
+I believe it would cause 10000 events, yes, even if they are files
+that userspace policy is not interested in.  Eric, is that right?
+
+However I believe after the first grep, subsequent greps' decisions
+would be cached by marking the inodes.  I'm not sure what happens if
+two fanotify monitors both try marking the inodes.
+
+Arguably if a fanotify monitor is running before those files are in
+page cache anyway, then I/O may dominate, and when the files are
+cached, fanotify has already cached it's decisions in the kernel.
+However fanotify is synchronous: each new file access involves a round
+trip to the fanotify userspace and back before it can proceed, so
+there's quite a lot of IPC and scheduling too.  Without testing, it's
+hard to guess how it'll really perform.
+
+> > While skbs and netlink aren't that slow, I suspect they're an order of
+> > magnitude or two slower than, say, epoll or inotify at passing events
+> > around.
 > 
-> The integration plan for this is to first add the new governor,
-> but for one kernel generation, leave the old menu governor in place
-> so that it's possible to separate out behavior from this governor
-> versus other things in diagnostics. If no issues are found,
-> I'll remove the old governor in the kernel cycle after that.
+> not familiar with inotify.
 
-We can't just fix up the existing code?
+inotify is like dnotify, and like a signal or epoll: a message that
+something happened.  You register interest in individual files or
+directories only, and inotify does not (yet) provide a way to monitor
+the whole filesystem or a subtree.
 
-What worries me about the integration plan is that we find that there
-are some machines/workloads where the old code worked better and we
-can't find a way to fix the new code so we end up with two
-implementations for users to choose between.  As happened (and
-continues to happen) with slab.
+fanotify is different: it provides access control, and can _refuse_
+attempts to read file X, or even modify the file before permitting the
+file to be read.
 
-> While it would be a novel idea to describe the new algorithm in this
-> commit message, I cheaped out and described it in comments in the
-> code instead.
-> 
->
-> ...
->
-> +#define BUCKETS 12
-> +#define RESOLUTION 1024
-> +#define DECAY 4
-> +#define MAX_INTERESTING 50000
+> Theres a difference between events which are abbreviated in the form
+> "hey some read happened on fd you are listening on" vs "hey a read
+> of file X for 16 bytes at offset 200 by process Y just occured while
+> at the same time process Z was writting at offset 2000". The later
+> (which netlink will give you) includes a lot more attribute details
+> which could be filtered or can be extended to include a lot
+> more. The former(what epoll will give you) is merely a signal.
 
-Interesting!  Unobvious what it does though.
+Firstly, it's really hard to retain the ordering of userspace events
+like that in a useful way, given the non-determinstic parallelism
+going on with multiple processes doing I/O do the same file :-)
 
->
-> ...
->
-> +static int menu_select(struct cpuidle_device *dev)
-> +{
-> +	struct menu_device *data = &__get_cpu_var(menu_devices);
-> +	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
-> +	int i, multiplier;
-> +
-> +	data->last_state_idx = 0;
-> +	data->exit_us = 0;
-> +
-> +	/* Special case when user has set very strict latency requirement */
-> +	if (unlikely(latency_req == 0))
-> +		return 0;
-> +
-> +	/* determine the expected residency time, round up */
-> +	data->expected_us =
-> +		(u32) (ktime_to_ns(tick_nohz_get_sleep_length())+999) / 1000;
+Second, you can't really pump messages with that much detail into
+netlink and let _it_ filter them to userspace; that would be too much
+processing.  You'd have to have some way of not generating that much
+detail except when it's been requested, and preferably only for files
+you want it for.
 
-That's DIV_ROUND_UP().
+But this part is irrelevant to fanotify, because there's no plan or
+intention to provide that much detail about I/O.
 
-> +
-> +	data->bucket = which_bucket(data->expected_us);
-> +
-> +	multiplier = performance_multiplier();
-> +
-> +	/*
-> +	 * if the correction factor is 0 (eg first time init or cpu hotplug
-> +	 * etc), we actually want to start out with a unity factor.
-> +	 */
-> +	if (data->correction_factor[data->bucket] == 0)
-> +		data->correction_factor[data->bucket] = RESOLUTION * DECAY;
-> +
-> +	/* Make sure to round up for half microseconds */
-> +	data->predicted_us =
-> +		(data->expected_us * data->correction_factor[data->bucket] +
-> +		RESOLUTION * DECAY/2) / RESOLUTION / DECAY;
-> +
-> +	/*
-> +	 * We want to default to C1 (hlt), not to busy polling
-> +	 * unless the timer is happening really really soon.
-> +	 */
-> +	if (data->expected_us > 5)
-> +		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
-> +
-> +
-> +	/* find the deepest idle state that satisfies our constraints */
-> +	for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
-> +		struct cpuidle_state *s = &dev->states[i];
-> +
-> +		if (s->target_residency > data->predicted_us)
-> +			break;
-> +		if (s->exit_latency > latency_req)
-> +			break;
-> +		if (s->exit_latency * multiplier > data->predicted_us)
-> +			break;
-> +		data->exit_us = s->exit_latency;
-> +		data->last_state_idx = i;
-> +	}
-> +
-> +	return data->last_state_idx;
-> +}
-> +
->
-> ...
->
-> +static void menu_reflect(struct cpuidle_device *dev)
-> +{
-> +	struct menu_device *data = &__get_cpu_var(menu_devices);
-> +	int last_idx = data->last_state_idx;
-> +	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
-> +	struct cpuidle_state *target = &dev->states[last_idx];
-> +	unsigned int measured_us;
-> +	u64 new_factor;
-> +
-> +	/*
-> +	 * Ugh, this idle state doesn't support residency measurements, so we
-> +	 * are basically lost in the dark.  As a compromise, assume we slept
-> +	 * for the whole expected time.
-> +	 */
-> +	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID)))
-> +		last_idle_us = data->expected_us;
-> +
-> +
-> +	measured_us = last_idle_us;
-> +
-> +	/*
-> +	 * We correct for the exit latency; we are assuming here that the
-> +	 * exit latency happens after the event that we're interested in.
-> +	 */
-> +	if (measured_us > data->exit_us)
-> +		measured_us -= data->exit_us;
-> +
-> +
-> +	/* update our correction ratio */
-> +
-> +	new_factor = data->correction_factor[data->bucket]
-> +			* (DECAY - 1) / DECAY;
+If you want, feel free to provide a stracenotify subsystem to track
+everything in detail :-)
 
-This code is available on 32-bit.  I wouldn't be surprised if we see
-some udivdi2-isn't-there problems with some compiler versions.  We'll see.
-
-> +	if (data->expected_us > 0 && data->measured_us < MAX_INTERESTING)
-> +		new_factor += RESOLUTION * measured_us / data->expected_us;
-> +	else
-> +		/*
-> +		 * we were idle so long that we count it as a perfect
-> +		 * prediction
-> +		 */
-> +		new_factor += RESOLUTION;
-> +
-> +	/*
-> +	 * We don't want as factor; we always want at least
-> +	 * a tiny bit of estimated time.
-> +	 */
-> +	if (new_factor == 0)
-> +		new_factor = 1;
-> +
-> +	data->correction_factor[data->bucket] = new_factor;
-> +}
-> +
->
-> ...
->
-> +unsigned long nr_iowait_cpu(void)
-> +{
-> +	int this_cpu = smp_processor_id();
-> +	struct rq *this_rq = cpu_rq(this_cpu);
-> +	return atomic_read(&this_rq->nr_iowait);
-> +}
-> +
-> +unsigned long this_cpu_load(void)
-> +{
-> +	int this_cpu = smp_processor_id();
-> +	struct rq *this_rq = cpu_rq(this_cpu);
-> +	return this_rq->cpu_load[0];
-> +}
-
-hm, how come we don't get smp_processor_id-in-preemptible warnings. 
-Are all current callers pinned to a CPU?
-
-
-some spelling fixlets:
-
-
---- a/drivers/cpuidle/governors/menu-tng.c~cpuidle-a-new-variant-of-the-menu-governor-to-boost-io-performance-fix
-+++ a/drivers/cpuidle/governors/menu-tng.c
-@@ -32,7 +32,7 @@
-  *
-  * For the menu-tng governor, there are 3 decision factors for picking a C
-  * state:
-- * 1) Energie break even point
-+ * 1) Energy break even point
-  * 2) Performance impact
-  * 3) Latency tolerance (from pmqos infrastructure)
-  * These these three factors are treated independently.
-@@ -55,12 +55,12 @@
-  * menu-tng uses a running average for this correction factor, however it uses a
-  * set of factors, not just a single factor. This stems from the realization
-  * that the ratio is dependent on the order of magnitude of the expected
-- * duration; if we expect 500 milliseconds of idle time the likelyhood of
-+ * duration; if we expect 500 milliseconds of idle time the likelihood of
-  * getting an interrupt very early is much higher than if we expect 50 micro
-  * seconds of idle time. A second independent factor that has big impact on
-  * the actual factor is if there is (disk) IO outstanding or not.
-  * (as a special twist, we consider every sleep longer than 50 milliseconds
-- * as perfect; there is no power gains for sleeping longer than this)
-+ * as perfect; there are no power gains for sleeping longer than this)
-  *
-  * For these two reasons we keep an array of 12 independent factors, that gets
-  * indexed based on the magnitude of the expected duration as well as the
-_
-
+-- Jamie
