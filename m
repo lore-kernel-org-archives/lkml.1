@@ -1,93 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755130AbZINDEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755178AbZINDFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755130AbZINDEF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 23:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbZINDED
+	id S1755178AbZINDFU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 23:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753603AbZINDFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 23:04:03 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:49156 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754644AbZINDEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 23:04:02 -0400
-Date: Mon, 14 Sep 2009 13:03:55 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Mikael Pettersson <mikpe@it.uu.se>, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: linux-next: manual merge of the security-testing tree with the
- arm tree
-Message-Id: <20090914130355.ff26d669.sfr@canb.auug.org.au>
-In-Reply-To: <20090903154700.2d4538cf.sfr@canb.auug.org.au>
-References: <20090903154700.2d4538cf.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	Sun, 13 Sep 2009 23:05:19 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:60546 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752695AbZINDFR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 23:05:17 -0400
+Subject: Re: [Pv-drivers] [PATCH] SCSI driver for VMware's virtual HBA - V4.
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "pv-drivers@vmware.com" <pv-drivers@vmware.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Chetan.Loke@Emulex.Com" <Chetan.Loke@Emulex.Com>,
+       Brian King <brking@linux.vnet.ibm.com>,
+       Rolf Eike Beer <eike-kernel@sf-tec.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Anthony Liguori <anthony@codemonkey.ws>
+In-Reply-To: <1252626223.3899.64.camel@ank32.eng.vmware.com>
+References: <1252458903.24914.73.camel@ank32.eng.vmware.com>
+	 <4AA8177A.2020606@codemonkey.ws>
+	 <1252533093.24633.40.camel@ank32.eng.vmware.com>
+	 <4AA8284A.3010908@codemonkey.ws>
+	 <1252626223.3899.64.camel@ank32.eng.vmware.com>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Sun, 13 Sep 2009 20:05:21 -0700
+Message-Id: <1252897521.28095.46.camel@ank32.eng.vmware.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z"
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Thu, 2009-09-10 at 16:43 -0700, Alok Kataria wrote:
+> Hi Anthony,
+> 
+> On Wed, 2009-09-09 at 15:12 -0700, Anthony Liguori wrote:
+> > Alok Kataria wrote:
+> > > I see your point, but the ring logic or the ABI that we use to
+> > > communicate between the hypervisor and guest is not shared between our
+> > > storage and network drivers. As a result, I don't see any benefit of
+> > > separating out this ring handling mechanism, on the contrary it might
+> > > just add some overhead of translating between various layers for our
+> > > SCSI driver.
+> > >   
+> > 
+> > But if you separate out the ring logic, it allows the scsi logic to be 
+> > shared by other paravirtual device drivers.  This is significant and 
+> > important from a Linux point of view.
+> > 
+> > There is almost nothing vmware specific about the vast majority of your 
+> > code.  If you split out the scsi logic, then you will receive help 
+> > debugging, adding future features, and improving performance from other 
+> > folks interested in this.  In the long term, it will make your life 
+> > much, much easier by making the driver relevant to a wider audience :-)
+> 
+> >From what you are saying, it seems that for that matter any physical
+> SCSI HBA's driver could be converted to use the virtio interface;
+> doesn't each and every driver have something like a ring/queue & I/O
+> register mechanism to talk to the device ?
+> 
+> Also, why would you add overhead for translation layers between APIs or
+> data structures just for the sake of it ? I guess you would say it helps
+> code re-usability, but I fail to see how much of a benefit that is. The
+> vast majority of the 1500 odd lines of the driver are still very
+> specific and tied to our PCI device and register interface.
+> 
+> I will just like to re-iterate this once again, this driver should be  
+> treated no different than a hardware SCSI HBA driver, albeit a very  
+> simple HBA. We export a PCI device as any other physical HBA, also the
+> driver talks to the device (emulation) through device IO regisers
+> without any hypercalls.
+> 
+> As for the virt_scsi layer, we can evaluate it whenever it is ready for
+> upstream and then take a more informed decision whether we should switch
+> to using it.
+> 
+> > 
+> > > Having said that, I will like to add that yes if in some future
+> > > iteration of our paravirtualized drivers, if we decide to share this
+> > > ring mechanism for our various device drivers this might be an
+> > > interesting proposition. 
+> > >   
+> > 
+> > I am certainly not the block subsystem maintainer, but I'd hate to see 
+> > this merged without any attempt at making the code more reusable.  If 
+> > adding the virtio layering is going to somehow hurt performance, break 
+> > your ABI, or in some way limit you, then that's something to certainly 
+> > discuss and would be valid concerns.  That said, I don't think it's a 
+> > huge change to your current patch and I don't see any obvious problems 
+> > it would cause.
+> > 
+> 
+> I will also like to add that, this is just a driver and is isolated from
+> the rest of the core of the kernel. The driver is not doing anything
+> improper either and is using the SCSI stack the way that any other SCSI
+> driver would use it. 
+> In earlier cases, when there were changes to the core kernel parts (e.g.
+> VMI, hypervisor_init- the tsc freq part) VMware did work with the
+> community to come up with generic interfaces. 
+> 
+> In this case though, I don't think the advantages of using the virtio
+> interfaces are justified as yet. As and when the virt-scsi layer is
+> implemented we can re-evaluate our design and use that layer instead.
+> 
+> Holding inclusion of pvscsi driver until the development of virt-scsi
+> interface is completed doesn't sound right to me. 
+> 
 
-Hi Russell,
+Hi James, 
 
-On Thu, 3 Sep 2009 15:47:00 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Today's linux-next merge of the security-testing tree got a conflicts in
-> arch/arm/kernel/signal.c between commit
-> 369842658a36bcea28ecb643ba4bdb53919330dd ("ARM: 5677/1: ARM support for
-> TIF_RESTORE_SIGMASK/pselect6/ppoll/epoll_pwait") from the arm tree and
-> commits d0420c83f39f79afb82010c2d2cafd150eef651b ("KEYS: Extend
-> TIF_NOTIFY_RESUME to (almost) all architectures [try #6]") and
-> ee18d64c1f632043a02e6f5ba5e045bb26a5465f ("KEYS: Add a keyctl to install
-> a process's session keyring on its parent [try #6]") from the
-> security-testing tree.
->=20
-> Just context changes.  I fixed it up (see below) and can carry the fix as
-> necessary.
+Please let us know your views on how should we proceed on this ? In my
+previous mail, I have tried to state my reservations against going the
+virt-scsi way just as yet. Also please note that we emulate a pure PCI
+device hence I don't see a reason why our driver should be treated any
+different than a driver for a physical HBA. 
 
-This is now a conflict between the arm tree and Linus' tree (as the
-security-testing tree has been merged).
+Thanks,
+Alok
 
-> diff --cc arch/arm/kernel/signal.c
-> index f7194e4,ea4ad3a..0000000
-> --- a/arch/arm/kernel/signal.c
-> +++ b/arch/arm/kernel/signal.c
-> @@@ -694,5 -706,12 +694,12 @@@ asmlinkage voi
->   do_notify_resume(struct pt_regs *regs, unsigned int thread_flags, int s=
-yscall)
->   {
->   	if (thread_flags & _TIF_SIGPENDING)
->  -		do_signal(&current->blocked, regs, syscall);
->  +		do_signal(regs, syscall);
-> +=20
-> + 	if (thread_flags & _TIF_NOTIFY_RESUME) {
-> + 		clear_thread_flag(TIF_NOTIFY_RESUME);
-> + 		tracehook_notify_resume(regs);
-> + 		if (current->replacement_session_keyring)
-> + 			key_replace_session_keyring();
-> + 	}
->   }
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqtspsACgkQjjKRsyhoI8wHhwCcDx7LRGRRJIDFOftZoooILpfR
-+58An31DQz9jmwkqstQPgaz2bOoqrxoX
-=Qq7L
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Sep_2009_13_03_55_+1000_kwZSGr4wddKi6r7Z--
