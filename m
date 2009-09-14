@@ -1,83 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933072AbZINSZf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932835AbZINSUJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933072AbZINSZf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:25:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933059AbZINSZb
+	id S932835AbZINSUJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:20:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932824AbZINSUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:25:31 -0400
-Received: from zm1.veloxia.com ([213.149.227.2]:60826 "HELO zm1.veloxia.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933038AbZINSZ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:25:28 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Sep 2009 14:25:27 EDT
-Message-ID: <4AAE8908.1000104@hvsistemas.es>
-Date: Mon, 14 Sep 2009 20:18:48 +0200
-From: Javier Herrero <jherrero@hvsistemas.es>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 14 Sep 2009 14:20:07 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:39354 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932821AbZINSUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:20:05 -0400
+Message-ID: <4AAE8954.1090709@austin.ibm.com>
+Date: Mon, 14 Sep 2009 13:20:04 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
 MIME-Version: 1.0
-To: Mike Frysinger <vapier.adi@gmail.com>
-CC: Dmitry Torokhov <dmitry.torokhov@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Bryan Wu <cooloney@kernel.org>
-Subject: Re: [PATCH v3] input/keyboard: new OpenCores Keyboard Controller
- 	driver
-References: <1252911864-19233-1-git-send-email-vapier@gentoo.org> 	<1252950003-9451-1-git-send-email-vapier@gentoo.org> <200909141049.50705.dmitry.torokhov@gmail.com> <8bd0f97a0909141102l5fa309f4ua1bedd0f1ac99295@mail.gmail.com>
-In-Reply-To: <8bd0f97a0909141102l5fa309f4ua1bedd0f1ac99295@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] kernel handling of CPU DLPAR
+References: <4AAABC55.4070207@austin.ibm.com> <4AAABDF5.4090604@austin.ibm.com> <20090914064127.GC13139@centrinvest.ru>
+In-Reply-To: <20090914064127.GC13139@centrinvest.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Andrey Panin wrote:
+> On 254, 09 11, 2009 at 04:15:33PM -0500, Nathan Fontenot wrote:
+>> This adds the capability to DLPAR add and remove CPUs from the kernel. The
+>> creates two new files /sys/devices/system/cpu/probe and
+>> /sys/devices/system/cpu/release to handle the DLPAR addition and
+>> removal of
+>> CPUs respectively.
+>>
+>> CPU DLPAR add is accomplished by writing the drc-index of the CPU to the
+>> probe file, and removal is done by writing the device-tree path of the cpu
+>> to the release file.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> 
+>> +static ssize_t cpu_probe_store(struct class *class, const char *buf,
+>> +			       size_t count)
+>> +{
+>> +	struct device_node *dn;
+>> +	u32 drc_index;
+>> +	char *cpu_name;
+>> +	int rc;
+>> +
+>> +	drc_index = simple_strtoull(buf, NULL, 0);
+>> +	if (!drc_index)
+>> +		return -EINVAL;
+>> +
+>> +	rc = acquire_drc(drc_index);
+>> +	if (rc)
+>> +		return rc;
+>> +
+>> +	dn = configure_connector(drc_index);
+>> +	if (!dn) {
+>> +		release_drc(drc_index);
+>> +		return rc;
+>> +	}
+>> +
+>> +	/* fixup dn name */
+>> +	cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
+>> +			   GFP_KERNEL);
+> 
+> Unchecked memory allocation with immediate crash in case of failure.
 
-It has a bit long since last time I touched the driver, so I should also 
-try to refresh my memory about it :). I suppose that you're right in the 
-double allocation issue (I took another keyboard driver as a starting 
-point and probably the double allocation was already there...), so feel 
-free to introduce the change and I will test it as soon as I can.
+Yep, thats a bad thing.  I'll fix this in an updated patch.  thanks.
 
-About the exact scancode - key mapping, the reason is that since the 
-FPGA opencores device already implements a translation table, I found 
-that another translation table sounded a bit redundant.
+-Nathan
 
-Best regards,
-
-Javier
-
-Mike Frysinger escribió:
-> On Mon, Sep 14, 2009 at 13:49, Dmitry Torokhov wrote:
->> On Monday 14 September 2009 10:40:03 am Mike Frysinger wrote:
->>> +struct opencores_kbd {
->>> +     struct input_dev *input;
->>> +     struct resource *addr_res;
->>> +     struct resource *irq_res;
->>> +     unsigned short *keycode;
->>> +};
->> Why do we allocate keycode table separately form the main structure?
->
-> the double alloc looked a little funny, but i didnt dive deep into the
-> details.  but as you point this out, it seems to make sense to me.
-> any problems with that change Javier ?
->
-> i.e. we do:
-> struct ... { ... unsigned short keycode[NUM_KEYS]; }
-> rather than doing two calls to kmalloc
->
->> I think I still have some reservations with the notion that we can just
->> have exact "scancode" - KEY_* mapping and hardware producers will adjust
->> the hardware to follow the deriver but I guess it's OK...
->
-> considering this is a piece of "hardware" implemented in FPGAs, i
-> think it's ok too.  if someone really needs more flexibility, then
-> they're free to extend the driver and submit a patch :).
-> -mike
->
->
-
--- 
-------------------------------------------------------------------------
-Javier Herrero                            EMAIL: jherrero@hvsistemas.com
-HV Sistemas S.L.                          PHONE:         +34 949 336 806
-Los Charcones, 17A                        FAX:           +34 949 336 792
-19170 El Casar - Guadalajara - Spain      WEB: http://www.hvsistemas.com
-
+> 
+>> +	sprintf(cpu_name, "/cpus/%s", dn->full_name);
+>> +	kfree(dn->full_name);
+>> +	dn->full_name = cpu_name;
+>> +
+>> +	rc = add_device_tree_nodes(dn);
+>> +	if (rc)
+>> +		release_drc(drc_index);
+>> +
+>> +	return rc ? rc : count;
+>> +}
+>> +
+>> +static ssize_t cpu_release_store(struct class *class, const char *buf,
+>> +				 size_t count)
+>> +{
+>> +	struct device_node *dn;
+>> +	u32 *drc_index;
+>> +	int rc;
+>> +
+>> +	dn = of_find_node_by_path(buf);
+>> +	if (!dn)
+>> +		return -EINVAL;
+>> +
+>> +	drc_index = (u32 *)of_get_property(dn, "ibm,my-drc-index", NULL);
+>> +	if (!drc_index) {
+>> +		of_node_put(dn);
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	rc = release_drc(*drc_index);
+>> +	if (rc) {
+>> +		of_node_put(dn);
+>> +		return rc;
+>> +	}
+>> +
+>> +	rc = remove_device_tree_nodes(dn);
+>> +	if (rc)
+>> +		acquire_drc(*drc_index);
+>> +
+>> +	of_node_put(dn);
+>> +	return rc? rc : count;
+>> +}
+>> +
+>> static struct class_attribute class_attr_mem_release =
+>> 			__ATTR(release, S_IWUSR, NULL, memory_release_store);
+>> +static struct class_attribute class_attr_cpu_probe =
+>> +			__ATTR(probe, S_IWUSR, NULL, cpu_probe_store);
+>> +static struct class_attribute class_attr_cpu_release =
+>> +			__ATTR(release, S_IWUSR, NULL, cpu_release_store);
+>>
+>> static int pseries_dlpar_init(void)
+>> {
+>> @@ -576,6 +648,18 @@
+>> 		printk(KERN_INFO "DLPAR: Could not create sysfs memory "
+>> 		       "release file\n");
+>>
+>> +	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+>> +			       &class_attr_cpu_probe.attr);
+>> +	if (rc)
+>> +		printk(KERN_INFO "DLPAR: Could not create sysfs cpu "
+>> +		       "probe file\n");
+>> +
+>> +	rc = sysfs_create_file(&cpu_sysdev_class.kset.kobj,
+>> +			       &class_attr_cpu_release.attr);
+>> +	if (rc)
+>> +		printk(KERN_INFO "DLPAR: Could not create sysfs cpu "
+>> +		       "release file\n");
+>> +
+>> 	return 0;
+>> }
+>> __initcall(pseries_dlpar_init);
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
