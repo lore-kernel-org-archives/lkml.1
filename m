@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755137AbZINCrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754965AbZINC7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755137AbZINCrR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 22:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755070AbZINCrP
+	id S1754965AbZINC7F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 22:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbZINC7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 22:47:15 -0400
-Received: from mga07.intel.com ([143.182.124.22]:39018 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754908AbZINCrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 22:47:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,381,1249282800"; 
-   d="scan'208";a="187186416"
-From: Zhenyu Wang <zhenyuw@linux.intel.com>
-To: airlied@gmail.com
-Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
-       Zhenyu Wang <zhenyuw@linux.intel.com>, Stable Team <stable@kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>
-Subject: [PATCH 2/2] drm/i915: remove restore in resume
-Date: Mon, 14 Sep 2009 10:47:07 +0800
-Message-Id: <1252896427-11669-2-git-send-email-zhenyuw@linux.intel.com>
-X-Mailer: git-send-email 1.6.3.3
-In-Reply-To: <1252896427-11669-1-git-send-email-zhenyuw@linux.intel.com>
-References: <1252896427-11669-1-git-send-email-zhenyuw@linux.intel.com>
+	Sun, 13 Sep 2009 22:59:05 -0400
+Received: from tundra.namei.org ([65.99.196.166]:39064 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753849AbZINC7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 22:59:03 -0400
+Date: Mon, 14 Sep 2009 12:58:34 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Eric Paris <eparis@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov,
+       Stephen Smalley <sds@tycho.nsa.gov>, Ingo Molnar <mingo@elte.hu>,
+       David Howells <dhowells@redhat.com>
+Subject: [GIT] fix creds / SELinux regressions
+In-Reply-To: <20090913025409.6583.58777.stgit@paris.rdu.redhat.com>
+Message-ID: <alpine.LRH.2.00.0909141256530.29020@tundra.namei.org>
+References: <20090913025409.6583.58777.stgit@paris.rdu.redhat.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Don't need extra config restore like for intel_agp, which
-might cause resume hang issue found by Alan on 845G.
+Hi Linus, please pull.
 
-Cc: Stable Team <stable@kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
----
- drivers/gpu/drm/i915/i915_drv.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/gpu/drm/i915/i915_drv.c b/drivers/gpu/drm/i915/i915_drv.c
-index dbe568c..e8cf18d 100644
---- a/drivers/gpu/drm/i915/i915_drv.c
-+++ b/drivers/gpu/drm/i915/i915_drv.c
-@@ -97,8 +97,6 @@ static int i915_resume(struct drm_device *dev)
- 	struct drm_i915_private *dev_priv = dev->dev_private;
- 	int ret = 0;
- 
--	pci_set_power_state(dev->pdev, PCI_D0);
--	pci_restore_state(dev->pdev);
- 	if (pci_enable_device(dev->pdev))
- 		return -1;
- 	pci_set_master(dev->pdev);
+The following changes since commit 86d710146fb9975f04c505ec78caa43d227c1018:
+  Linus Torvalds (1):
+        Merge git://git.linux-nfs.org/projects/trondmy/nfs-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6 for-linus
+
+Eric Paris (3):
+      Creds: creds->security can be NULL is selinux is disabled
+      SELinux: seperate avc_cache flushing
+      SELinux: flush the avc before disabling SELinux
+
+ include/linux/cred.h       |   13 ++++++++-----
+ include/linux/selinux.h    |    9 +++++++++
+ security/selinux/avc.c     |   26 +++++++++++++++++++-------
+ security/selinux/exports.c |    6 ++++++
+ 4 files changed, 42 insertions(+), 12 deletions(-)
+
 -- 
-1.6.3.3
-
+James Morris
+<jmorris@namei.org>
