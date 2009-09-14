@@ -1,126 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbZINUd7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbZINUet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757028AbZINUd7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:33:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbZINUd5
+	id S1757072AbZINUet (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbZINUes
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:33:57 -0400
-Received: from www.tglx.de ([62.245.132.106]:53916 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753255AbZINUd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:33:56 -0400
-To: dmitry.torokhov@gmail.com
-Cc: Franz.Sirl-kernel@lauterbach.com
-Cc: linux-kernel@vger.kernel.org
-Cc: linux-input@vger.kernel.org
-Subject: [PATCH] macintosh/hid: keycode-mapping for left click
-From: John Ogness <john.ogness@linutronix.de>
-Date: Mon, 14 Sep 2009 22:33:20 +0200
-Message-ID: <80pr9tz2pb.fsf@merkur.tec.linutronix.de>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Mon, 14 Sep 2009 16:34:48 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:39005 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751380AbZINUer (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 16:34:47 -0400
+Date: Mon, 14 Sep 2009 16:34:48 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: test for "spurious" IRQ ignores possible IRQ_WAKE_THREAD value
+In-Reply-To: <alpine.LFD.2.00.0909141627500.4124@localhost>
+Message-ID: <alpine.LFD.2.00.0909141632390.4329@localhost>
+References: <alpine.LFD.2.00.0909141627500.4124@localhost>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 14 Sep 2009, Robert P. J. Day wrote:
 
-This patch adds support for mapping the left mouse button to a
-keycode. The driver already mapped the middle and right buttons.
+>   never ashamed to embarrass myself in public, i just noticed the
+> following.  from kernel/irq/spurious.c:
+>
+> ...
+> static void
+> __report_bad_irq(unsigned int irq, struct irq_desc *desc,
+>                  irqreturn_t action_ret)
+> {
+>         struct irqaction *action;
+>
+>         if (action_ret != IRQ_HANDLED && action_ret != IRQ_NONE) {
+>                 printk(KERN_ERR "irq event %d: bogus return value %x\n",
+>                                 irq, action_ret);
+>
+>   but from include/linux/irqreturn.h, we see *three* possible return
+> values:
+>
+> enum irqreturn {
+>         IRQ_NONE,
+>         IRQ_HANDLED,
+>         IRQ_WAKE_THREAD,
+> };
+>
+> typedef enum irqreturn irqreturn_t;
+> #define IRQ_RETVAL(x)   ((x) != IRQ_NONE)
+>
+>   is there an inconsistency here?
 
-Since the single mouse-button on my Apple laptop broke, I figured the
-driver might as well support all three buttons. Now I can keep using my
-laptop without problems.
+  i should have pointed out that there is (apparently) only one place
+in the entire tree that uses that third return value:
 
-The patch is against 2.6.31.
+$ grep -rw IRQ_WAKE_THREAD *
+drivers/net/wireless/b43/main.c:	return IRQ_WAKE_THREAD;  <-- there
+include/linux/irqreturn.h: * @IRQ_WAKE_THREAD	handler requests to wake the handler thread
+include/linux/irqreturn.h:	IRQ_WAKE_THREAD,
+Binary file include/linux/.irqreturn.h.swp matches
+include/linux/interrupt.h: * IRQTF_WARNED    - warning "IRQ_WAKE_THREAD w/o thread_fn" has been printed
+kernel/irq/handle.c:	printk(KERN_WARNING "IRQ %d device %s returned IRQ_WAKE_THREAD "
+kernel/irq/handle.c:		case IRQ_WAKE_THREAD:
+kernel/irq/manage.c:	return IRQ_WAKE_THREAD;
+kernel/irq/manage.c: *	IRQ_WAKE_THREAD which will wake up the handler thread and run
+$
 
-John Ogness
+  for what that's worth.
 
-(I do not belong to either linux-input or linux-kernel mailing lists, so
-please reply directly. Thanks.)
+rday
+--
 
+========================================================================
+Robert P. J. Day                               Waterloo, Ontario, CANADA
 
-Signed off by: <john.ogness@linutronix.de>
----
- drivers/macintosh/mac_hid.c |   24 ++++++++++++++++++++----
- include/linux/sysctl.h      |    3 ++-
- kernel/sysctl_check.c       |    1 +
- 3 files changed, 23 insertions(+), 5 deletions(-)
-Index: linux-2.6.31/drivers/macintosh/mac_hid.c
-===================================================================
---- linux-2.6.31.orig/drivers/macintosh/mac_hid.c
-+++ linux-2.6.31/drivers/macintosh/mac_hid.c
-@@ -19,6 +19,7 @@
- static struct input_dev *emumousebtn;
- static int emumousebtn_input_register(void);
- static int mouse_emulate_buttons;
-+static int mouse_button1_keycode;			/* no default */
- static int mouse_button2_keycode = KEY_RIGHTCTRL;	/* right control key */
- static int mouse_button3_keycode = KEY_RIGHTALT;	/* right option key */
- static int mouse_last_keycode;
-@@ -35,6 +36,14 @@ static ctl_table mac_hid_files[] = {
- 		.proc_handler	= &proc_dointvec,
- 	},
- 	{
-+		.ctl_name	= DEV_MAC_HID_MOUSE_BUTTON1_KEYCODE,
-+		.procname	= "mouse_button1_keycode",
-+		.data		= &mouse_button1_keycode,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+	},
-+	{
- 		.ctl_name	= DEV_MAC_HID_MOUSE_BUTTON2_KEYCODE,
- 		.procname	= "mouse_button2_keycode",
- 		.data		= &mouse_button2_keycode,
-@@ -87,12 +96,19 @@ int mac_hid_mouse_emulate_buttons(int ca
- 	case 1:
- 		/* Called from keyboard.c */
- 		if (mouse_emulate_buttons
--		    && (keycode == mouse_button2_keycode
-+		    && ((keycode == mouse_button1_keycode
-+			 && mouse_button1_keycode)
-+			|| keycode == mouse_button2_keycode
- 			|| keycode == mouse_button3_keycode)) {
- 			if (mouse_emulate_buttons == 1) {
--				input_report_key(emumousebtn,
--						 keycode == mouse_button2_keycode ? BTN_MIDDLE : BTN_RIGHT,
--						 down);
-+				unsigned int code;
-+				if (keycode == mouse_button1_keycode)
-+					code = BTN_LEFT;
-+				else if (keycode == mouse_button2_keycode)
-+					code = BTN_MIDDLE;
-+				else
-+					code = BTN_RIGHT;
-+				input_report_key(emumousebtn, code, down);
- 				input_sync(emumousebtn);
- 				return 1;
- 			}
-Index: linux-2.6.31/include/linux/sysctl.h
-===================================================================
---- linux-2.6.31.orig/include/linux/sysctl.h
-+++ linux-2.6.31/include/linux/sysctl.h
-@@ -916,7 +916,8 @@ enum {
- 	DEV_MAC_HID_MOUSE_BUTTON_EMULATION=3,
- 	DEV_MAC_HID_MOUSE_BUTTON2_KEYCODE=4,
- 	DEV_MAC_HID_MOUSE_BUTTON3_KEYCODE=5,
--	DEV_MAC_HID_ADB_MOUSE_SENDS_KEYCODES=6
-+	DEV_MAC_HID_ADB_MOUSE_SENDS_KEYCODES=6,
-+	DEV_MAC_HID_MOUSE_BUTTON1_KEYCODE=7,
- };
- 
- /* /proc/sys/dev/scsi */
-Index: linux-2.6.31/kernel/sysctl_check.c
-===================================================================
---- linux-2.6.31.orig/kernel/sysctl_check.c
-+++ linux-2.6.31/kernel/sysctl_check.c
-@@ -816,6 +816,7 @@ static const struct trans_ctl_table tran
- 	/* DEV_MAC_HID_KEYBOARD_SENDS_LINUX_KEYCODES unused */
- 	/* DEV_MAC_HID_KEYBOARD_LOCK_KEYCODES unused */
- 	{ DEV_MAC_HID_MOUSE_BUTTON_EMULATION,	"mouse_button_emulation" },
-+	{ DEV_MAC_HID_MOUSE_BUTTON1_KEYCODE,	"mouse_button1_keycode" },
- 	{ DEV_MAC_HID_MOUSE_BUTTON2_KEYCODE,	"mouse_button2_keycode" },
- 	{ DEV_MAC_HID_MOUSE_BUTTON3_KEYCODE,	"mouse_button3_keycode" },
- 	/* DEV_MAC_HID_ADB_MOUSE_SENDS_KEYCODES unused */
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Twitter:                                       http://twitter.com/rpjday
+========================================================================
