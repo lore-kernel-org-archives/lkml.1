@@ -1,48 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbZINN6v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755230AbZINN7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbZINN6v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 09:58:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbZINN6t
+	id S1755230AbZINN7K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 09:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755127AbZINN7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 09:58:49 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57548 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754897AbZINN6s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 09:58:48 -0400
-Date: Mon, 14 Sep 2009 09:58:51 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-fsdevel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: bdev->bd_inode_backing_dev_info?
-Message-ID: <20090914135851.GA384@infradead.org>
-References: <20090914094119.GZ14984@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914094119.GZ14984@kernel.dk>
-User-Agent: Mutt/1.5.19 (2009-01-05)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 14 Sep 2009 09:59:08 -0400
+Received: from fifo99.com ([67.223.236.141]:54401 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755116AbZINN7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 09:59:08 -0400
+Subject: Re: [RFC PATCH 0/2] tracing - signal tracer, support multiple pids
+ in set_pid_ftrace
+From: Daniel Walker <dwalker@fifo99.com>
+To: jolsa@redhat.com
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1252923251-6735-1-git-send-email-jolsa@redhat.com>
+References: <1252923251-6735-1-git-send-email-jolsa@redhat.com>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 06:59:55 -0700
+Message-Id: <1252936795.28368.217.camel@desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 11:41:19AM +0200, Jens Axboe wrote:
-> Hi,
-> 
-> This looks a bit odd, what is the purpose of that? It also appears
-> currently to be unused, it's never set to anything but NULL.
+On Mon, 2009-09-14 at 12:14 +0200, jolsa@redhat.com wrote:
+> 1/2 - signal trace
+> 2/2 - multiple pids support for set_pid_ftrace file
 
-It was introduced in:
 
-commit 520808bf20e90fdbdb320264ba7dd5cf9d47dcac
-Author: Andrew Morton <akpm@osdl.org>
-Date:   Fri May 21 00:46:17 2004 -0700
+The whole series several checkpatch errors. Could you fix those before
+you take the RFC off this?
 
-    [PATCH] block device layer: separate backing_dev_info infrastructure
+Daniel
 
-and already never set in that commit.
-
-I'd say nuke it.
