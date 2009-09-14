@@ -1,68 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbZINUtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933160AbZINUrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933679AbZINUtX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933610AbZINUtW
+	id S933160AbZINUrn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbZINUrl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:49:22 -0400
-Received: from 1wt.eu ([62.212.114.60]:48825 "EHLO 1wt.eu"
+	Mon, 14 Sep 2009 16:47:41 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:24781 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933593AbZINUtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:49:21 -0400
-Date: Mon, 14 Sep 2009 22:49:05 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Marcin Letyns <mletyns@gmail.com>
-Cc: Mike Galbraith <efault@gmx.de>, Nikos Chantziaras <realnc@arcor.de>,
-       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: Phoronix CFS vs BFS bencharks
-Message-ID: <20090914204905.GA28315@1wt.eu>
-References: <20090906205952.GA6516@elte.hu> <4AAE10E6.2050403@arcor.de> <1252928133.22740.37.camel@marge.simson.net> <f42384a10909140727k463ff460q3859892dcb79bcc5@mail.gmail.com> <1252942335.12986.58.camel@marge.simson.net> <f42384a10909141214w1b3e7719j1a82363f7cb6fd3e@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <f42384a10909141214w1b3e7719j1a82363f7cb6fd3e@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+	id S1757069AbZINUrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 16:47:37 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH tracing/kprobes 3/6] ftrace: Fix trace_remove_event_call() to
+	lock trace_event_mutex
+To: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Tom Zanussi <tzanussi@gmail.com>
+Date: Mon, 14 Sep 2009 16:49:12 -0400
+Message-ID: <20090914204912.18779.68734.stgit@dhcp-100-2-132.bos.redhat.com>
+In-Reply-To: <20090914204847.18779.69409.stgit@dhcp-100-2-132.bos.redhat.com>
+References: <20090914204847.18779.69409.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 09:14:35PM +0200, Marcin Letyns wrote:
-> 2009/9/14 Mike Galbraith <efault@gmx.de>
-> >
-> > On Mon, 2009-09-14 at 16:27 +0200, Marcin Letyns wrote:
-> > > Hello,
-> > >
-> > > Disabling NEW_FAIR_SLEEPERS makes a lot of difference here in the
-> > > Apache benchmark:
-> > >
-> > > 2.6.30.6-bfs: 7311.05
-> > >
-> > > 2.6.30.6-cfs-fair_sl_disabled: 8249.17
-> > >
-> > > 2.6.30.6-cfs-fair_sl_enabled: 4894.99
-> >
-> > Wow.
-> >
-> > Some loads like wakeup preemption (mysql+oltp), and some hate it.  This
-> > load appears to REALLY hate it (as does volanomark, but that thing is
-> > extremely overloaded).  How many threads does that benchmark run
-> > concurrently?
-> 
-> >From the benchmark description:
-> 
-> This is a test of ab, which is the Apache Benchmark program. This test
-> profile measures how many requests per second a given system can
-> sustain when carrying out 500,000 requests with 100 requests being
-> carried out concurrently.
+Lock not only event_mutex but also trace_event_mutex in
+trace_remove_event_call() for protecting __unregister_ftrace_event().
 
-Be careful not to run ab on the same machine as you run apache, otherwise
-the numerous apache processes can limit ab's throughput. This is the same
-reason as why I educate people so that they don't run a single-process
-proxy in front of a multi-process/multi-thread web server. Apparently
-it's not obvious to everyone.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Andi Kleen <ak@linux.intel.com>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Frank Ch. Eigler <fche@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jason Baron <jbaron@redhat.com>
+Cc: K.Prasad <prasad@linux.vnet.ibm.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+---
 
-Regards,
-Willy
+ kernel/trace/trace_events.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 38e82a5..a3d6bad 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -1055,6 +1055,9 @@ static void remove_subsystem_dir(const char *name)
+ 	}
+ }
+ 
++/*
++ * Must be called under locking both of event_mutex and trace_event_mutex.
++ */
+ static void __trace_remove_event_call(struct ftrace_event_call *call)
+ {
+ 	ftrace_event_enable_disable(call, 0);
+@@ -1071,7 +1074,9 @@ static void __trace_remove_event_call(struct ftrace_event_call *call)
+ void trace_remove_event_call(struct ftrace_event_call *call)
+ {
+ 	mutex_lock(&event_mutex);
++	down_write(&trace_event_mutex);
+ 	__trace_remove_event_call(call);
++	up_write(&trace_event_mutex);
+ 	mutex_unlock(&event_mutex);
+ }
+ 
+
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
