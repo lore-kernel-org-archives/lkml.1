@@ -1,118 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZINSBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933473AbZINSgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756253AbZINSBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbZINSBO
+	id S933473AbZINSgd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933070AbZINSgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:01:14 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:64758 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756238AbZINSBI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:01:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NbKwLbFSMzH7aeeBRxoxve208fPZWNVjxnVOiY2rVd3aztU1QpUvrwSji1h098qvM1
-         Oo5gY4AlJgddDbus00d62xAMSCOZX5aqDnVA3IpDQM01T+XYkJ4w4gCE1fHosNuYsnoK
-         t47daerrYw0L2LpDC5d/A6gzRwfDXfa12PR7M=
-Date: Mon, 14 Sep 2009 20:01:06 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Jan Kiszka <jan.kiszka@web.de>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Prasad <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 3/5] hw-breakpoints: Rewrite the hw-breakpoints layer
-	on top of perf counters
-Message-ID: <20090914180104.GA6045@nowhere>
-References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com> <1252571367-25876-4-git-send-email-fweisbec@gmail.com> <4AAACAA4.2030707@web.de> <20090914034131.GF14306@nowhere> <4AADE19D.7030808@web.de>
+	Mon, 14 Sep 2009 14:36:32 -0400
+Received: from BACHE.ECE.CMU.EDU ([128.2.129.23]:63886 "EHLO bache.ece.cmu.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933034AbZINSgb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:36:31 -0400
+X-Greylist: delayed 1988 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Sep 2009 14:36:31 EDT
+Message-ID: <4AAE84EA.8010109@cmu.edu>
+Date: Mon, 14 Sep 2009 14:01:14 -0400
+From: "Jonathan M. McCune" <jonmccune@cmu.edu>
+User-Agent: Mozilla-Thunderbird 2.0.0.22 (X11/20090706)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AADE19D.7030808@web.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Greg KH <greg@kroah.com>
+CC: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       linux-kernel@vger.kernel.org, jbeulich@novell.com, jmorris@namei.org,
+       tpmdd-devel@lists.sourceforge.net, m.selhorst@sirrix.com,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland Dreier <rdreier@cisco.com>, srajiv@linux.vnet.ibm.com
+Subject: Re: [tpmdd-devel] [PATCH] TPM: Fixup pubek sysfs file
+References: <20090904045231.GW4973@obsidianresearch.com>	<adaab1bnvz3.fsf@cisco.com>	<20090904140325.c592289a.akpm@linux-foundation.org>	<20090904212316.GZ406@obsidianresearch.com> <17754_1252731784_n8C533ou010944_20090911162837.GC17677@kroah.com>
+In-Reply-To: <17754_1252731784_n8C533ou010944_20090911162837.GC17677@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 08:24:29AM +0200, Jan Kiszka wrote:
-> > I don't quite understand what must be NMI-safe here. Is it when
-> > we request a breakpoint or when we hit one?
-> > 
+Hello everybody,
+
+I have decided to chime in as a frequent (and I'm going to claim
+"experienced") user of the linux kernel TPM driver.
+
+To the best of my knowledge there is very little code in the wild that
+depends on the current structure of these sysfs entries.  Probably the
+most used set of libraries and programs -- "TrouSerS" and "TPM Tools"
+(trousers.sourceforge.net) -- interact directly with the TPM via
+/dev/tpm*.  I'm fairly confident that "tboot" (tboot.sourceforge.net) 
+and "jTPM Tools" (trustedjava.sourceforge.net) don't use the sysfs 
+entries either.
+
+Thus, fixing the one-item-per-file issues seems reasonable to me. For 
+example, changing /sys/devices/platform/tpm_tis/pcrs from a single
+multi-entry file to a directory containing files named 0-15 or 0-23 that
+each then contain only the relevant 20-byte value seems quite
+reasonable. (Today's TPMs contain either 16 or 24 PCRs but future ones
+could contain many more.)
+
+I believe the pubek entry has gone broken for so long because once a TPM
+has been "owned" (and "taking ownership" is almost certainly the first
+thing one does when using the TPM for something), accessing the pubek
+needs to be authorized and so the sysfs entry shouldn't return anything
+anyways ("Authorization required."?). But it should definitely be fixed
+or removed.
+
+Likewise "caps" could be made into a directory containing files for the
+relevant data (Manufacturer, TCG version, Firmware version, ...).
+
+What I _disagree_ with is that these values should be moved debugfs.
+They are characteristics of a particular hardware device's current state
+and I believe fit the definition of what belongs in sysfs reasonably
+well.  Their current implementation simply needs help.
+
+The changes I've mentioned are larger and don't seem appropriate for 
+2.6.31, but perhaps a plan to have them implemented for an upcoming 
+version is reasonable?  Is anybody willing to help put together such a 
+patch?  Discuss whether it's reasonable / acceptable to do so?
+
+Thanks,
+-Jon
+
+
+Greg KH wrote:
+> On Fri, Sep 04, 2009 at 03:23:16PM -0600, Jason Gunthorpe wrote:
+>> On Fri, Sep 04, 2009 at 02:03:25PM -0700, Andrew Morton wrote:
+>>> On Thu, 03 Sep 2009 22:02:24 -0700
+>>> Roland Dreier <rdreier@cisco.com> wrote:
+>>>
+>>>>  > Algorithm: 00 00 00 01
+>>>>  > Encscheme: 00 03
+>>>>  > Sigscheme: 00 01
+>>>>  > Parameters: 00 00 08 00 00 00 00 02 00 00 00 00
+>>>>  > Modulus length: 256
+>>>>
+>>>> No argument that this fix is an improvement, but what happened to the
+>>>> "one value per file" rule for sysfs??
+>>> We goofed.  This one snuck through.
+>>>
+>>> It's one of the reasons why I recommend that people cite examples of
+>>> the sysfs/procfs output in changelogs.  These things are part of the
+>>> kernel ABI and once they go in we cannot change them so we have to get
+>>> them right first time.
+>> Several of the sysfs files in the TPM driver are goofed:
+>>
+>> /sys/devices/platform/tpm_tis.0 # cat caps
+>> Manufacturer: 0x57454300
+>> TCG version: 1.2
+>> Firmware version: 2.16
+>>
+>> /sys/devices/platform/tpm_tis.0 # cat pcrs 
+>> PCR-00: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-01: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-02: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-03: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-04: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-05: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-06: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-07: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-08: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-09: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-10: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-11: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-12: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-13: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-14: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-15: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-16: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>> PCR-17: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
+>> PCR-18: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
+>> PCR-19: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
+>> PCR-20: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
+>> PCR-21: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
+>> PCR-22: FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 
+>> PCR-23: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+>>
+>> /sys/devices/platform/tpm_tis.0 # cat pubek
+>> Algorithm: 00 00 00 01
+>> Encscheme: 00 03
+>> Sigscheme: 00 01
+>> Parameters: 00 00 08 00 00 00 00 02 00 00 00 00
+>> Modulus length: 256
+>> Modulus: 
+>> AF 6B 30 9B 0D B3 B4 7D 74 35 68 45 8D CA A5 EF 
+>> A8 8A DD 0F D7 84 8E 8D 1F 40 22 92 09 CF 12 C8 
+>> 9F 6E 55 57 6A 2C A8 0B 5E 45 C7 5E 3D 56 DA 64 
+>> E6 E1 F7 8C DD 41 92 28 2E 06 41 02 3E 11 7D B2 
+>> C5 46 38 E5 8C 60 D2 96 EE 0C D6 3D F8 99 E3 02 
+>> 3A 32 7A 02 C8 31 29 98 28 B9 1B EF 30 A1 A0 45 
+>> A0 C0 05 0E C5 96 95 FD 91 47 0A 35 E0 69 B0 8B 
+>> 49 BD B9 F6 5D 25 21 25 79 1B 20 0D C3 C7 1F 87 
+>> 5E 5F 41 4B DE 32 DF 55 F3 BD 7F CA D8 7D 3A B4 
+>> D5 0A EF CF 8E 72 20 52 15 FA FB C6 C0 2E C2 AB 
+>> C6 07 D0 9D 96 6B 2E 30 F7 54 C4 A5 CD 9B 13 54 
+>> A0 D1 71 66 91 97 06 12 B5 2D B2 33 62 FB 56 62 
+>> 64 A8 AA E9 F2 F4 03 C3 F4 49 2A 09 0D 7D 75 99 
+>> 6C F0 47 1E 7D D5 A5 CA CE EF 45 B2 DA 88 93 B4 
+>> EE EB FB B0 A6 A4 19 C4 B8 0D 04 46 AE BD C5 2E 
+>> 30 84 49 57 25 34 78 E6 ED C4 50 AF 3B F6 86 43 
+>>
+>> At least this has been like this since before the git history, so it
+>> isn't recent..
+>>
+>> Can these be scheduled for removal or some such process? I haven't
+>> seen anything actually using the files, the only one that is really
+>> useful is caps...
+>>
+>> They probably should have been in debugfs, had it existed at the time.
 > 
-> Both. With kgdb, the kernel may be interrupted (almost) everywhere, and
-> then the operator may decide to add/remove hardware breakpoints during
-> this interruption.
-
-
-
-Ok, a breakpoint can trigger in NMI context since the trigger callback
-doesn't take any lock, and doesn't need to. And perf is NMI safe
-in this scope too.
-
-But register a breakpoint while in NMI can't be done in this
-patchset. You can't even do that from common interrupts because
-we are taking mutexes.
-
-So this part will indeed need a bit of a rework, not a large change
-though.
-
-
- 
-> > 
-> >  
-> >> Still on my wishlist for KVM is a cheap & easy way to obtain the current
-> >> register content or to refresh it in hardware. It's not yet clear to me
-> >> where to hook this in the given design. It looks like this information
-> >> can be scattered over the current thread and some perf counters.
-> > 
-> > 
-> > With this design approach, the debug registers are not anymore stored
-> > in the thread structure. They are not stored anymore actually.
-> > 
-> > Especially because the breakpoint are not anymore assigned to a
-> > specific address register. This one is decided when the counter
-> > is enabled. And the counter is often toggled on/off, depending
-> > if we start/end profiling the desired context. It can be a single task,
-> > in which case the counter is enabled while the task is sched in, and
-> > disabled when it is sched out.
-> > And between two sched atoms, the register used for a breakpoint
-> > can be different.
-> > 
-> > The arch informations about the breakpoints (len/type/addr) are stored
-> > in the counter structure, and the address/control registers contents
-> > are now dynamically computed.
-> > 
-> > For your needs, basically the control must be done from perfcounters.
-> > When you switch from host to guest, the counter must be sched out.
-> > And in the reverse direction, it must be sched in.
-> > Then perf will take care of that by itself.
+> Feel free to move them to debugfs, it looks like that is what they are
+> for.
 > 
-> Actually, we wanted to avoid sched-out activity, and so far this is
-> possible. But if both steps are cheap enough, specifically if the
-> sched-out does _not_ touch the hardware and is very cheap if no
-> breakpoints are set, KVM will likely be a happy user.
+> thanks,
 > 
-> Does that API already exist or what additional work is required?
+> greg k-h
 > 
-> Jan
+> ------------------------------------------------------------------------------
+> Let Crystal Reports handle the reporting - Free Crystal Reports 2008 30-Day 
+> trial. Simplify your report design, integration and deployment - and focus on 
+> what you do best, core application coding. Discover what's new with 
+> Crystal Reports now.  http://p.sf.net/sfu/bobj-july
+> _______________________________________________
+> tpmdd-devel mailing list
+> tpmdd-devel@lists.sourceforge.net
+> https://lists.sourceforge.net/lists/listinfo/tpmdd-devel
 > 
-
-
-Well, what you could do is walking through the list of counters of
-the current context, look at breakpoint type counters and disable
-their pmu.
-
-Ok it's not very cheap, I must admit.
-
-
-It would be much less costly to just save the debug registers
-actually, which is not that much costy in itself btw.
 
