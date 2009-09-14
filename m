@@ -1,95 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZINTIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbZINTOk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756839AbZINTIf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 15:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbZINTIc
+	id S933039AbZINTOk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 15:14:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbZINTOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 15:08:32 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:41596 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756803AbZINTIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 15:08:31 -0400
-Subject: fanotify as syscalls
-From: Eric Paris <eparis@redhat.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: Jamie Lokier <jamie@shareable.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org, torvalds@linux-foundation.org
-In-Reply-To: <20090914140720.GA8564@ioremap.net>
-References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
-	 <20090911.114620.260824240.davem@davemloft.net>
-	 <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>
-	 <20090911204602.GA19371@shareable.org>
-	 <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
-	 <20090911212731.GA19901@shareable.org>
-	 <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
-	 <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org>
-	 <20090914140720.GA8564@ioremap.net>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 14 Sep 2009 15:08:15 -0400
-Message-Id: <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 15:14:38 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:49448 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbZINTOh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 15:14:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=DLVgzm6ivGvEj2v+YfKT+LpPc4SUgj1sVMeCOABSMOJq+xSnDmKVuvkpL7GaantGrW
+         EdGWJySKJ2fNaG3718QHG49t/L8UCOsp/DL4U2v3fMrroiIot007C2tZCxizGCmbLeVB
+         /Igh6fpgMtU6BSo2Y7ZtLYeMt6Hj971OXPu8k=
+Message-ID: <4AAE961B.6020509@gmail.com>
+Date: Mon, 14 Sep 2009 15:14:35 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+MIME-Version: 1.0
+To: "Michael S. Tsirkin" <mst@redhat.com>
+CC: "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com>
+In-Reply-To: <20090914164750.GB3745@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig2959D78D936A954B1F0C2FB2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Long ago I implemented fanotify as basically a /dev interface using
-ioctls().  Alan suggested I use a socket protocol and could then make
-use of get/setsockopt() which although still not great is light years
-better than ioctl.  Currently the fanotify interface as I want to push
-it to Linus and as I've been requesting comments on for the last 1.25
-years is just that.  It really makes no use of the networking system
-other than bind() and setsockopt() and everyone tends to agree the
-things I want to do can't reasonably be done using network hooks and a
-'real' socket protocol.  I like this interface, setsockopt() makes it so
-easy to add new functionality as we flush out other users.  fanotify as
-it stands today has a number of groups who will port to it, has a nubmer
-of advantages over inotify, and I have been told privately meets the
-needs of the original group of people who paid me to work on it (two
-very large anti-malware companies who currently unprotect and hack the
-syscall table of their users)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig2959D78D936A954B1F0C2FB2
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Just this week I got another request to look at syscalls.  So I did, I
-haven't prototyped it, but I can do it with syscalls, they would look
-like this:
+Michael S. Tsirkin wrote:
+> On Mon, Sep 14, 2009 at 12:08:55PM -0400, Gregory Haskins wrote:
+>> For Ira's example, the addresses would represent a physical address on=
 
-int fanotify_init(int flags, int f_flags, __u64 mask, unsigned int priority);
+>> the PCI boards, and would follow any kind of relevant rules for
+>> converting a "GPA" to a host accessible address (even if indirectly, v=
+ia
+>> a dma controller).
+>=20
+> I don't think limiting addresses to PCI physical addresses will work
+> well.
 
-int fanotify_add_mark(int fanotify_fd, char *path, __u64 mask, __u64 ignored_mask);
-int fanotify_add_mark_fd(int fanotify_fd, int fd, __u64 mask, __u64 ignored_mask);
-int fanotify_rm_mark(int fanotify_fd, char *path, __u64 mask);
-int fanotify_rm_mark_fd(int fanotify_fd, int fd, __u64 mask);
-	Those above 4 could probably be squashed into 2 syscalls with an extra
-flags field.
+The only "limit" is imposed by the memctx.  If a given context needs to
+meet certain requirements beyond PCI physical addresses, it would
+presumably be designed that way.
 
-int fanotify_clear_marks(int fanotify_fd);
 
-int fanotify_perm_response(int fanotify_fd, __u64 cookie, int response);
+>  From what I rememeber, Ira's x86 can not initiate burst
+> transactions on PCI, and it's the ppc that initiates all DMA.
 
-int fanotify_ignore_sb(int fanotify_fd, long f_type);
-int fanotify_ignore_fsid(int fanotify_fd, fsid_t f_fsid);
-	These 2 are the most questionable, they would honestly only be used for
-things that wanted system wide notification, I can't imagine that being
-many things other than AV vendors.  But they really need a way to
-exclude notification when people open/close/read/write to /proc (which
-is the point of the ignore_sb.)
+The only requirement is that the "guest" "owns" the memory.  IOW: As
+with virtio/vhost, the guest can access the pointers in the ring
+directly but the host must pass through a translation function.
 
-Since I don't have a solution to subtree notification I don't know if it
-will work in this syscall framework.  I know people want subtree
-notification and I'm willing to take a stab at it after the fscking all
-notification is accepted.  That's one of the main reasons I like
-setsockopt over tons of syscalls.  I can add a new one very easily.  I
-also can easily expand arguments by just creating a new sockopt.  No
-userspace headaches.
+Your translation is direct: you use a slots/hva scheme.  My translation
+is abstracted, which means it can support slots/hva (such as in
+alacrityvm) or some other scheme as long as the general model of "guest
+owned" holds true.
 
-Are there demands that I convert to syscalls?  Do I really gain anything
-using 9 new inextensible syscalls over socket(), bind(), and 8
-setsockopt() calls?
+>=20
+>>>  But we can't let the guest specify physical addresses.
+>> Agreed.  Neither your proposal nor mine operate this way afaict.
+>=20
+> But this seems to be what Ira needs.
 
-I'd like to send these patches along, so a ruling from on high would be
-great....
+So what he could do then is implement the memctx to integrate with the
+ppc side dma controller.  E.g. "translation" in his box means a protocol
+from the x86 to the ppc to initiate the dma cycle.  This could be
+exposed as a dma facility in the register file of the ppc boards, for
+instance.
 
--Eric
+To reiterate, as long as the model is such that the ppc boards are
+considered the "owner" (direct access, no translation needed) I believe
+it will work.  If the pointers are expected to be owned by the host,
+then my model doesn't work well either.
 
+Kind Regards,
+-Greg
+
+
+--------------enig2959D78D936A954B1F0C2FB2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqulhsACgkQP5K2CMvXmqHsYACePYzh0H3oY5W3aAc6pFFp4w3u
+tYEAnRNmpU/44+9P++MVTtjbqreGPiiM
+=J8am
+-----END PGP SIGNATURE-----
+
+--------------enig2959D78D936A954B1F0C2FB2--
