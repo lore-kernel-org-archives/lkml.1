@@ -1,59 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755866AbZINPrr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755876AbZINPuR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755866AbZINPrr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:47:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbZINPrp
+	id S1755876AbZINPuR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:50:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755837AbZINPuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:47:45 -0400
-Received: from outbound-mail-103.bluehost.com ([69.89.22.13]:40140 "HELO
-	outbound-mail-103.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755622AbZINPrp (ORCPT
+	Mon, 14 Sep 2009 11:50:15 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:31696 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755827AbZINPuO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:47:45 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=Bd/NcQalqP54vu0spy51XdugrV/aLbRazgRwNW8uyBC8DLo3rtfIarZx/BVdkc9EJuHlwAGqSgypqxC/t9EAa2kPfafE2YvGT+WACetFDOfMSnttiCiFdTNMIcIhBIWC;
-Date: Mon, 14 Sep 2009 08:47:35 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 0/2] PCI Hotplug: internal interface cleanups
-Message-ID: <20090914084735.09bd443d@jbarnes-g45>
-In-Reply-To: <20090910183219.20011.41679.stgit@bob.kio>
-References: <20090910183219.20011.41679.stgit@bob.kio>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Mon, 14 Sep 2009 11:50:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=IE9g4/pzFPkAc34be3Wn5w7jk6h0hgACW5NfOwrCINjbk+RmDDA+UmWAdWjIB6yI3a
+         /gUjjD0G9XLcswwmC3JEk6yLZ/gwSZ/QuspqiPYldTUYy+Zm7IYQawrmhPaxVhY6Z+iM
+         IHyxTfJHlEwdudEwJ0jegyG3SRoPrHiepYRS8=
+MIME-Version: 1.0
+In-Reply-To: <20090914152129.GI21580@n2100.arm.linux.org.uk>
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>
+	 <20090913230008.GC30169@n2100.arm.linux.org.uk>
+	 <20090914002100.GD30621@shareable.org>
+	 <20090914081001.GB14519@n2100.arm.linux.org.uk>
+	 <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com>
+	 <20090914140059.GC21580@n2100.arm.linux.org.uk>
+	 <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com>
+	 <20090914144028.GG21580@n2100.arm.linux.org.uk>
+	 <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
+	 <20090914152129.GI21580@n2100.arm.linux.org.uk>
+Date: Mon, 14 Sep 2009 18:50:15 +0300
+Message-ID: <94a0d4530909140850h3ec1bde2ifc05ff7d340f96fe@mail.gmail.com>
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Jamie Lokier <jamie@shareable.org>, Marek Vasut <marek.vasut@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Sep 2009 12:33:58 -0600
-Alex Chiang <achiang@hp.com> wrote:
+On Mon, Sep 14, 2009 at 6:21 PM, Russell King - ARM Linux
+<linux@arm.linux.org.uk> wrote:
+> On Mon, Sep 14, 2009 at 06:14:08PM +0300, Felipe Contreras wrote:
+>> On Mon, Sep 14, 2009 at 5:40 PM, Russell King - ARM Linux
+>> <linux@arm.linux.org.uk> wrote:
+>> > On Mon, Sep 14, 2009 at 05:38:32PM +0300, Felipe Contreras wrote:
+>> >> On Mon, Sep 14, 2009 at 5:00 PM, Russell King - ARM Linux
+>> >> <linux@arm.linux.org.uk> wrote:
+>> >> > On Mon, Sep 14, 2009 at 03:58:24PM +0300, Felipe Contreras wrote:
+>> >> >> On Mon, Sep 14, 2009 at 11:10 AM, Russell King - ARM Linux
+>> >> >> <linux@arm.linux.org.uk> wrote:
+>> >> >> > On Mon, Sep 14, 2009 at 01:21:00AM +0100, Jamie Lokier wrote:
+>> >> >> >> Russell King - ARM Linux wrote:
+>> >> >> >> > On Sun, Sep 13, 2009 at 11:28:47PM +0200, Marek Vasut wrote:
+>> >> >> >> > > >                 bhi     __delay
+>> >> >> >> > > >                 mov     pc, lr
+>> >> >> >> > > >  ENDPROC(__udelay)
+>> >> >> >> > > >
+>> >> >> >> > > Hi
+>> >> >> >> > >
+>> >> >> >> > > why was this code there in the first place ?
+>> >> >> >> >
+>> >> >> >> > To make the delay loop more stable and predictable on older CPUs.
+>> >> >> >>
+>> >> >> >> So why has it been commented out, if it's needed for that?
+>> >> >> >
+>> >> >> > We moved on and it penalises later CPUs, leading to udelay providing
+>> >> >> > shorter delays than requested.
+>> >> >> >
+>> >> >> > So the choice was either stable and predictable on older CPUs but
+>> >> >> > buggy on newer CPUs, or correct on all CPUs but gives unnecessarily
+>> >> >> > longer delays on older CPUs.
+>> >> >>
+>> >> >> Why not add an #ifdef CPU_V4 or whatever?
+>> >> >
+>> >> > Because then you get it whenever you configure for V4 as the lowest
+>> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
+>> >> > It's far better to leave it as is and just accept that the old CPUs
+>> >> > will have longer than necessary delays.  If people really really
+>> >> > care (and there's likely to only be a small minority of them now)
+>> >> > changing the '0' to a '1' is a very simple change for them to carry
+>> >> > in their local tree.  Unlike getting the right unrolling etc.
+>> >>
+>> >> Well, they can also 'git revert' this patch. If somebody really cares
+>> >> I think they should shout now and provide a better patch, otherwise
+>> >> this one should be merged.
+>> >
+>> > On the other hand, having the code there as it currently stands is not
+>> > harmful in any way, so leaving it there is just as easy.
+>>
+>> It makes the code less understandable. I'm not sure about linux's
+>> practices, but an #if 0 generally means somebody is being lazy.
+>
+> I would agree with you if it was a complicated bit of code, but it
+> isn't.  It is a simple count to zero (or overflow) and terminate
+> loop.  And it's certainly not about me being lazy.
 
-> This is a re-post of an old patch series that wasn't picked up last
-> time due to being too late in the merge window.
-> 
-> It removes a bunch of copy/paste code in acpiphp by simplifying some
-> internal interfaces.
-> 
-> Please consider this for .32.
-> 
-> Thanks!
-> 
-> v1 -> v2:
-> 	- incorporated Kenji-san's comments
-> 
-> ---
-> 
-> Alex Chiang (2):
->       PCI Hotplug: acpiphp: find bridges the easy way
->       PCI Hotplug: convert acpi_pci_detect_ejectable() to take an
-> acpi_handle
+Maybe it's not complicated to you, but not everyone is so literate
+about ARM assembly code (e.g. me). When I first looked at the code I
+didn't even realize there was an #if 0 there, which yes, I grant is a
+problem of my editor, but the issue wouldn't have happened if the code
+wasn't there in the first place.
 
-Applied to linux-next, thanks guys.
+And I'm not saying your are being lazy, if anything it's probably the
+people using this code. They should figure a way to avoid patching the
+code. However, these users are hypothetical at this point.
+
+> Unless there is a strong argument for removing it, the code stays as
+> is.
+>
+> So far, the argument is basically "it's a #if 0, we must get rid of
+> it" which is a religous argument, not a technical one.  The fact is
+> that (as I said above) keeping it there provides the code for when
+> people want to enable it.  That's a technical reason for keeping it.
+>
+> Please can we now move to something more productive instead of this
+> religous argument?
+
+I don't think a good argument has been stated, I'll try to do that on
+Wolfram's reply.
 
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+Felipe Contreras
