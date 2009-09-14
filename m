@@ -1,135 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZINQWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZINQ0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbZINQWg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 12:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbZINQWa
+	id S1756055AbZINQ0Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 12:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbZINQ0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 12:22:30 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:48343 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756015AbZINQW3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 12:22:29 -0400
-Message-ID: <4AAE6E85.9020002@redhat.com>
-Date: Mon, 14 Sep 2009 12:25:41 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	Mon, 14 Sep 2009 12:26:20 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:43639 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755622AbZINQ0T convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 12:26:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :message-id;
+        b=DS2SI71Y82VlHLYzW/GRf0bLwfAcY31sGdSqnLw8UAx+WJ9J9+ah4SrK19Md/AqSDU
+         tWDxF87Rdf9puam2If6ckKX+hR1MGSgV9jycsIqEL/21ZxvC4aPkzO0eqyjO0+RSUmgM
+         qutg9CvkAUJmtA29UYXPfJUfr9ocTu3MDiIZ0=
+From: Marek Vasut <marek.vasut@gmail.com>
+Organization: Hack&Dev
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+Date: Mon, 14 Sep 2009 18:25:55 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.30-1-amd64; KDE/4.3.1; x86_64; ; )
+Cc: "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
+       linux-arm-kernel@lists.infradead.org
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <20090914152129.GI21580@n2100.arm.linux.org.uk> <94a0d4530909140850h3ec1bde2ifc05ff7d340f96fe@mail.gmail.com>
+In-Reply-To: <94a0d4530909140850h3ec1bde2ifc05ff7d340f96fe@mail.gmail.com>
 MIME-Version: 1.0
-To: ananth@in.ibm.com
-CC: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [BUGFIX] kprobes: prevent re-registration of the same kprobe
- -	take2
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <20090913100713.GB14251@in.ibm.com> <4AADA0BB.4030307@redhat.com> <20090914100459.GA4446@in.ibm.com>
-In-Reply-To: <20090914100459.GA4446@in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200909141825.55239.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ananth N Mavinakayanahalli wrote:
-> On Sun, Sep 13, 2009 at 09:47:39PM -0400, Masami Hiramatsu wrote:
->> Ananth N Mavinakayanahalli wrote:
->>> On Fri, Sep 11, 2009 at 05:12:54AM +0200, Frederic Weisbecker wrote:
->>>> On Thu, Sep 10, 2009 at 07:53:30PM -0400, Masami Hiramatsu wrote:
->
-> ...
->
->> Hmm, if we catch the second registration here, it's too late. At
->> register_kprobe(), we initialized some field of kprobe before calling
->> register_aggr_kprobe(). Especially kprobe.list is cleared.
->>
->> And this can't check the case that 'p' is already registered on
->> an aggr kprobe.
->
-> Agreed. I thought of this case after sending out the earlier patch...
->
->> Thus, I think some initialization paths should be changed (kp.flag
->> field is initialized too early, yearh, that's my mistake),
->> and also, you will need to use get_valid_kprobe() to check the kprobe
->> has not been registered.
->
-> __get_valid_kprobe() makes the task easy. We should just prevent
-> re-registration whether or not the earlier probe is disabled.
->
-> How does this patch look?
->
-> ---
-> Prevent re-registration of the same kprobe. This situation, though
-> unlikely, needs to be flagged since it can lead to a system crash if its
-> not handled.
->
-> The core change itself is small, but the helper routine needed to be
-> moved around a bit; hence the diffstat.
->
-> Signed-off-by: Ananth N Mavinakayanahalli<ananth@in.ibm.com>
-> ---
->   kernel/kprobes.c |   58 ++++++++++++++++++++++++++++++++++++-------------------
->   1 file changed, 38 insertions(+), 20 deletions(-)
->
-> Index: linux-2.6.31/kernel/kprobes.c
-> ===================================================================
-> --- linux-2.6.31.orig/kernel/kprobes.c
-> +++ linux-2.6.31/kernel/kprobes.c
-> @@ -681,6 +681,40 @@ static kprobe_opcode_t __kprobes *kprobe
->   	return (kprobe_opcode_t *)(((char *)addr) + p->offset);
->   }
->
-> +/* Check passed kprobe is valid and return kprobe in kprobe_table. */
-> +static struct kprobe * __kprobes __get_valid_kprobe(struct kprobe *p)
-> +{
-> +	struct kprobe *old_p, *list_p;
-> +
-> +	old_p = get_kprobe(p->addr);
-> +	if (unlikely(!old_p))
-> +		return NULL;
-> +
-> +	if (p != old_p) {
-> +		list_for_each_entry_rcu(list_p,&old_p->list, list)
-> +			if (list_p == p)
-> +			/* kprobe p is a valid probe */
-> +				goto valid;
-> +		return NULL;
-> +	}
-> +valid:
-> +	return old_p;
-> +}
-> +
-> +/* Return error if the kprobe is being re-registered */
-> +static inline int check_kprobe_rereg(struct kprobe *p)
-> +{
-> +	int ret = 0;
-> +	struct kprobe *old_p;
-> +
-> +	mutex_lock(&kprobe_mutex);
-> +	old_p = __get_valid_kprobe(p);
-> +	if (old_p == p)
+Dne Po 14. září 2009 17:50:15 Felipe Contreras napsal(a):
+> On Mon, Sep 14, 2009 at 6:21 PM, Russell King - ARM Linux
+> 
+> <linux@arm.linux.org.uk> wrote:
+> > On Mon, Sep 14, 2009 at 06:14:08PM +0300, Felipe Contreras wrote:
+> >> On Mon, Sep 14, 2009 at 5:40 PM, Russell King - ARM Linux
+> >>
+> >> <linux@arm.linux.org.uk> wrote:
+> >> > On Mon, Sep 14, 2009 at 05:38:32PM +0300, Felipe Contreras wrote:
+> >> >> On Mon, Sep 14, 2009 at 5:00 PM, Russell King - ARM Linux
+> >> >>
+> >> >> <linux@arm.linux.org.uk> wrote:
+> >> >> > On Mon, Sep 14, 2009 at 03:58:24PM +0300, Felipe Contreras wrote:
+> >> >> >> On Mon, Sep 14, 2009 at 11:10 AM, Russell King - ARM Linux
+> >> >> >>
+> >> >> >> <linux@arm.linux.org.uk> wrote:
+> >> >> >> > On Mon, Sep 14, 2009 at 01:21:00AM +0100, Jamie Lokier wrote:
+> >> >> >> >> Russell King - ARM Linux wrote:
+> >> >> >> >> > On Sun, Sep 13, 2009 at 11:28:47PM +0200, Marek Vasut wrote:
+> >> >> >> >> > > >                 bhi     __delay
+> >> >> >> >> > > >                 mov     pc, lr
+> >> >> >> >> > > >  ENDPROC(__udelay)
+> >> >> >> >> > >
+> >> >> >> >> > > Hi
+> >> >> >> >> > >
+> >> >> >> >> > > why was this code there in the first place ?
+> >> >> >> >> >
+> >> >> >> >> > To make the delay loop more stable and predictable on older
+> >> >> >> >> > CPUs.
+> >> >> >> >>
+> >> >> >> >> So why has it been commented out, if it's needed for that?
+> >> >> >> >
+> >> >> >> > We moved on and it penalises later CPUs, leading to udelay
+> >> >> >> > providing shorter delays than requested.
+> >> >> >> >
+> >> >> >> > So the choice was either stable and predictable on older CPUs
+> >> >> >> > but buggy on newer CPUs, or correct on all CPUs but gives
+> >> >> >> > unnecessarily longer delays on older CPUs.
+> >> >> >>
+> >> >> >> Why not add an #ifdef CPU_V4 or whatever?
+> >> >> >
+> >> >> > Because then you get it whenever you configure for V4 as the lowest
+> >> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
+> >> >> > It's far better to leave it as is and just accept that the old CPUs
+> >> >> > will have longer than necessary delays.  If people really really
+> >> >> > care (and there's likely to only be a small minority of them now)
+> >> >> > changing the '0' to a '1' is a very simple change for them to carry
+> >> >> > in their local tree.  Unlike getting the right unrolling etc.
+> >> >>
+> >> >> Well, they can also 'git revert' this patch. If somebody really cares
+> >> >> I think they should shout now and provide a better patch, otherwise
+> >> >> this one should be merged.
+> >> >
+> >> > On the other hand, having the code there as it currently stands is not
+> >> > harmful in any way, so leaving it there is just as easy.
+> >>
+> >> It makes the code less understandable. I'm not sure about linux's
+> >> practices, but an #if 0 generally means somebody is being lazy.
+> >
+> > I would agree with you if it was a complicated bit of code, but it
+> > isn't.  It is a simple count to zero (or overflow) and terminate
+> > loop.  And it's certainly not about me being lazy.
 
-Here, since __get_valid_kprobe(p) will return aggr_kprobe of 'p',
-you just need to check old_p != NULL.
+Russell, what about adding a comment somewhere explaining why it's there? That'd 
+be a fine fix I think.
+> 
+> Maybe it's not complicated to you, but not everyone is so literate
+> about ARM assembly code (e.g. me). When I first looked at the code I
+> didn't even realize there was an #if 0 there, which yes, I grant is a
+> problem of my editor, but the issue wouldn't have happened if the code
+> wasn't there in the first place.
 
-Other parts are OK for me.
+This is still religious argument and or your problem -- fix your editor.
+> 
+> And I'm not saying your are being lazy, if anything it's probably the
+> people using this code. They should figure a way to avoid patching the
+> code. However, these users are hypothetical at this point.
 
-Thank you!
-
-
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America), Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+If you could invest your time into investigating how to make this configurable 
+instead of arguing about #if 0, it'd be awesome.
+> 
+> > Unless there is a strong argument for removing it, the code stays as
+> > is.
+> >
+> > So far, the argument is basically "it's a #if 0, we must get rid of
+> > it" which is a religous argument, not a technical one.  The fact is
+> > that (as I said above) keeping it there provides the code for when
+> > people want to enable it.  That's a technical reason for keeping it.
+> >
+> > Please can we now move to something more productive instead of this
+> > religous argument?
+> 
+> I don't think a good argument has been stated, I'll try to do that on
+> Wolfram's reply.
+> 
