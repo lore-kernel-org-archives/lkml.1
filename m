@@ -1,201 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755559AbZINN1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752722AbZINNdI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755559AbZINN1d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 09:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755508AbZINN1d
+	id S1752722AbZINNdI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 09:33:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752090AbZINNdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 09:27:33 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:49268 "EHLO gir.skynet.ie"
+	Mon, 14 Sep 2009 09:33:07 -0400
+Received: from cantor.suse.de ([195.135.220.2]:47251 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751900AbZINN1c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 09:27:32 -0400
-Date: Mon, 14 Sep 2009 14:27:37 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 5/8] mm: follow_hugetlb_page flags
-Message-ID: <20090914132737.GB11778@csn.ul.ie>
-References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils> <Pine.LNX.4.64.0909072235360.15430@sister.anvils> <20090909113143.GG24614@csn.ul.ie> <Pine.LNX.4.64.0909131548001.22865@sister.anvils>
+	id S1751571AbZINNdF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 09:33:05 -0400
+Date: Mon, 14 Sep 2009 15:33:07 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
+	opportunistic writeback
+Message-ID: <20090914133307.GJ24075@duck.suse.cz>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-7-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0909131548001.22865@sister.anvils>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <1252920994-11141-7-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Sep 13, 2009 at 04:35:44PM +0100, Hugh Dickins wrote:
-> On Wed, 9 Sep 2009, Mel Gorman wrote:
-> > On Mon, Sep 07, 2009 at 10:37:14PM +0100, Hugh Dickins wrote:
-> > > 
-> > > (Alternatively, since hugetlb pages aren't swapped out under pressure,
-> > > you could save more dump space by arguing that a page not yet faulted
-> > > into this process cannot be relevant to the dump; but that would be
-> > > more surprising.)
-> > 
-> > It would be more surprising. It's an implementation detail that hugetlb
-> > pages cannot be swapped out and someone reading the dump shouldn't have
-> > to be aware of it. It's better to treat non-faulted pages as if they
-> > were zero-filled.
+On Mon 14-09-09 11:36:33, Jens Axboe wrote:
+> bdi_start_writeback() is currently split into two paths, one for
+> WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
+> for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
+> only WB_SYNC_NONE.
+  What I don't like about this patch is that if somebody sets up
+writeback_control with WB_SYNC_ALL mode set and then submits it to disk via
+bdi_start_writeback() it will just silently convert his writeback to an
+asynchronous one.
+  So I'd maybe leave setting of sync_mode to the caller and just WARN_ON if
+it does not match the purpose of the function...
+
+									Honza
+
 > 
-> Oh sure, I did mean that the non-faulted pages should be zero-filled,
-> just stored (on those filesystems which support them) by holes in the
-> file instead of zero-filled blocks (just as the dump tries to do with
-> other zero pages). It would mess up the alignment with ELF headers
-> to leave them out completely.
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/fs-writeback.c   |   51 ++++++++++++++++++++++++++++++++++-----------------
+>  mm/page-writeback.c |    1 -
+>  2 files changed, 34 insertions(+), 18 deletions(-)
 > 
-
-Oh right, now I get you.
-
-> But it would still be a change in convention which might surprise
-> someone (pages of hugetlb file in the dump appearing as zeroed where
-> the underlying hugetlb file is known to contain non-zero data), and
-> there's already hugetlb dump filters for saving space on those areas.
-> So I'm not anxious to pursue that parenthetical alternative, just
-> admitting that we've got a choice of what to do here.
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 5cd8b3b..64ca471 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -204,24 +204,42 @@ static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+>  	}
+>  }
+>  
+> -void bdi_start_writeback(struct writeback_control *wbc)
+> +/**
+> + * bdi_sync_writeback - start and wait for writeback
+> + * @wbc: writeback parameters
+> + *
+> + * Description:
+> + *   This does WB_SYNC_ALL data integrity writeback and waits for the
+> + *   IO to complete. Callers must hold the sb s_umount semaphore for
+> + *   reading, to avoid having the super disappear before we are done.
+> + */
+> +static void bdi_sync_writeback(struct writeback_control *wbc)
+>  {
+> -	/*
+> -	 * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
+> -	 * bdi_queue_work() will wake up the thread and flush old data. This
+> -	 * should ensure some amount of progress in freeing memory.
+> -	 */
+> -	if (wbc->sync_mode != WB_SYNC_ALL)
+> -		bdi_alloc_queue_work(wbc->bdi, wbc);
+> -	else {
+> -		struct bdi_work work;
+> +	struct bdi_work work;
+>  
+> -		bdi_work_init(&work, wbc);
+> -		work.state |= WS_ONSTACK;
+> +	wbc->sync_mode = WB_SYNC_ALL;
+>  
+> -		bdi_queue_work(wbc->bdi, &work);
+> -		bdi_wait_on_work_clear(&work);
+> -	}
+> +	bdi_work_init(&work, wbc);
+> +	work.state |= WS_ONSTACK;
+> +
+> +	bdi_queue_work(wbc->bdi, &work);
+> +	bdi_wait_on_work_clear(&work);
+> +}
+> +
+> +/**
+> + * bdi_start_writeback - start writeback
+> + * @wbc: writeback parameters
+> + *
+> + * Description:
+> + *   This does WB_SYNC_NONE opportunistic writeback. The IO is only
+> + *   started when this function returns, we make no guarentees on
+> + *   completion. Caller need not hold sb s_umount semaphore.
+> + *
+> + */
+> +void bdi_start_writeback(struct writeback_control *wbc)
+> +{
+> +	wbc->sync_mode = WB_SYNC_NONE;
+> +	bdi_alloc_queue_work(wbc->bdi, wbc);
+>  }
+>  
+>  /*
+> @@ -1119,14 +1137,13 @@ long sync_inodes_sb(struct super_block *sb)
+>  	struct writeback_control wbc = {
+>  		.sb		= sb,
+>  		.bdi		= sb->s_bdi,
+> -		.sync_mode	= WB_SYNC_ALL,
+>  		.range_start	= 0,
+>  		.range_end	= LLONG_MAX,
+>  	};
+>  	long nr_to_write = LONG_MAX; /* doesn't actually matter */
+>  
+>  	wbc.nr_to_write = nr_to_write;
+> -	bdi_start_writeback(&wbc);
+> +	bdi_sync_writeback(&wbc);
+>  	wait_sb_inodes(&wbc);
+>  	return nr_to_write - wbc.nr_to_write;
+>  }
+> diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+> index a5f0f76..f61f0cc 100644
+> --- a/mm/page-writeback.c
+> +++ b/mm/page-writeback.c
+> @@ -585,7 +585,6 @@ static void balance_dirty_pages(struct address_space *mapping)
+>  					  > background_thresh))) {
+>  		struct writeback_control wbc = {
+>  			.bdi		= bdi,
+> -			.sync_mode	= WB_SYNC_NONE,
+>  			.nr_to_write	= nr_writeback,
+>  		};
+>  
+> -- 
+> 1.6.4.1.207.g68ea
 > 
-
-Grand.
-
-> > > @@ -2016,6 +2016,23 @@ static struct page *hugetlbfs_pagecache_
-> > >  	return find_lock_page(mapping, idx);
-> > >  }
-> > >  
-> > > +/* Return whether there is a pagecache page to back given address within VMA */
-> > > +static bool hugetlbfs_backed(struct hstate *h,
-> > > +			struct vm_area_struct *vma, unsigned long address)
-> > > +{
-> > > +	struct address_space *mapping;
-> > > +	pgoff_t idx;
-> > > +	struct page *page;
-> > > +
-> > > +	mapping = vma->vm_file->f_mapping;
-> > > +	idx = vma_hugecache_offset(h, vma, address);
-> > > +
-> > > +	page = find_get_page(mapping, idx);
-> > > +	if (page)
-> > > +		put_page(page);
-> > > +	return page != NULL;
-> > > +}
-> > > +
-> > 
-> > It's a total nit-pick, but this is very similar to
-> > hugetlbfs_pagecache_page(). It would have been nice to have them nearby
-> 
-> Indeed!  That's why I placed it just after hugetlbfs_pagecache_page ;)
-> 
-
-Oops, sorry.
-
-> > and called something like hugetlbfs_pagecache_present()
-> 
-> Can call it that if you prefer, either name suits me.
-> 
-
-I don't feel strongly enough to ask for a new version. If this is not
-the final version that is merged, then a name-change would be nice.
-Otherwise, it's not worth the hassle.
-
-> > or else reuse
-> > the function and have the caller unlock_page but it's probably not worth
-> > addressing.
-> 
-> I did originally want to do it that way, but the caller is holding
-> page_table_lock, so cannot lock_page there.
-> 
-
-Gack, fair point. If there is another version, a comment to that effect
-wouldn't hurt.
-
-> > >  int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
-> > >  			struct page **pages, struct vm_area_struct **vmas,
-> > >  			unsigned long *position, int *length, int i,
-> > > -			int write)
-> > > +			unsigned int flags)
-> > 
-> > Total aside, but in line with gfp_t flags, is there a case for having
-> > foll_t type for FOLL_* ?
-> 
-> Perhaps some case, but it's the wrong side of my boredom threshold!
-> Even get_user_pages is much less widely used than the functions where
-> gfp flags and page order were getting muddled up.  (foll_t itself
-> would not have helped, but maybe such a change would have saved me time
-> debugging the hang in an earlier version of this patch: eventually I saw
-> I was passing VM_FAULT_WRITE instead of FAULT_FLAG_WRITE to hugetlb_fault.)
-> 
-
-I guess it's something to have on the back-boiler. If bugs of that
-nature happen a few times, then the effort would be justified. As you
-say, the gfp flags are much wider used.
-
-> > > +		/*
-> > > +		 * When coredumping, it suits get_dump_page if we just return
-> > > +		 * an error if there's a hole and no huge pagecache to back it.
-> > > +		 */
-> > > +		if (absent &&
-> > > +		    ((flags & FOLL_DUMP) && !hugetlbfs_backed(h, vma, vaddr))) {
-> > > +			remainder = 0;
-> > > +			break;
-> > > +		}
-> > 
-> > Does this break an assumption of get_user_pages() whereby when there are
-> > holes, the corresponding pages are NULL but the following pages are still
-> > checked? I guess the caller is informed ultimately that the read was only
-> > partial but offhand I don't know if that's generally expected or not.
-> 
-> Sorry, I don't understand.  get_user_pages() doesn't return any NULL
-> pages within the count it says was successful - Kamezawa-san had a patch
-> and flag which did so, and we might go that way, but it's not the case
-> at present is it? 
-
-No, it's not but for some reason, I thought it was. On re-examination,
-what you are doing makes sense for the current implementation.
-
-> And follow_hugetlb_page() seems to be setting every
-> pages[i] within the count to something non-NULL.
-> 
-> > 
-> > Or is your comment saying that because the only caller using FOLL_DUMP is
-> > get_dump_page() using an array of one page, it doesn't care and the case is
-> > just not worth dealing with?
-> 
-> Yes, that's more like it, but what case?  Oh, the case where first pages
-> are okay, then we hit a hole.  Right, that case doesn't actually arise
-> with FOLL_DUMP because of its sole user.
-> 
-
-And nothing else other than core dumping will be using FOLL_DUMP so
-there should be no assumptions broken.
-
-> Perhaps my comment confuses because at first I had BUG_ON(remainder != 1)
-> in there, and wrote that comment, and returned -EFAULT; then later moved
-> the "i? i: -EFAULT" business down to the bottom and couldn't see any need
-> to assume remainder 1 any more.  But the comment on "error" rather than
-> "error or short count" remains.  But if I do change that to "error or
-> short count" it'll be a bit odd, because in practice it is always error.
-> 
-> But it does seem that we've confused each other: what to say instead?
-> 
-
-/*
- * When core-dumping, it's suits the get_dump_page() if an error is
- * returned if there is a hole and no huge pagecache to back it.
- * get_dump_page() is concerned with individual pages and by
- * returning the page as an error, the core dump file still gets
- * zeros but a hugepage allocation is avoided.
- */
-
-?
-
-Sorry for the noise, my review wasn't as careful as it should have been.
-
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
