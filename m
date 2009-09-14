@@ -1,82 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755802AbZINRKk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932080AbZINRK7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755802AbZINRKk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 13:10:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbZINRKf
+	id S932080AbZINRK7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 13:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755668AbZINRK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 13:10:35 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:51717 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754852AbZINRKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 13:10:35 -0400
-Date: Mon, 14 Sep 2009 19:10:37 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Eric Paris <eparis@redhat.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, James Morris <jmorris@namei.org>,
-       Thomas Liu <tliu@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [origin tree SLAB corruption] BUG kmalloc-64: Poison
-	overwritten, INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175
-	cpu=1 pid=3514
-Message-ID: <20090914171037.GG14984@kernel.dk>
-References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com> <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org> <20090912072450.GA6767@elte.hu> <1252808939.13780.30.camel@dhcp231-106.rdu.redhat.com> <20090914071631.GA24801@elte.hu> <alpine.LFD.2.01.0909140725470.3654@localhost.localdomain> <20090914162902.GF6773@linux.vnet.ibm.com>
+	Mon, 14 Sep 2009 13:10:56 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:59708 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754263AbZINRKz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 13:10:55 -0400
+X-Sasl-enc: 23RcUolEw696mfsbelZDHOlFJIqRj0j0XpvG9aofUoPj 1252948258
+Date: Mon, 14 Sep 2009 14:10:56 -0300
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
+Cc: Corentin Chary <corentincj@iksaif.net>, linux-acpi@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Julia Lawall <julia@diku.dk>, Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 0/3] rfkill_unregister() should always be followed by
+ rfkill_destroy()
+Message-ID: <20090914171056.GB13452@khazad-dum.debian.net>
+References: <1252925033-29696-1-git-send-email-corentincj@iksaif.net>
+ <20090914132401.GC32253@khazad-dum.debian.net>
+ <4AAE59CB.8030702@tuffmail.co.uk>
+ <20090914170717.GA13452@khazad-dum.debian.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090914162902.GF6773@linux.vnet.ibm.com>
+In-Reply-To: <20090914170717.GA13452@khazad-dum.debian.net>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
+ 1CDB 0FE3
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14 2009, Paul E. McKenney wrote:
-> On Mon, Sep 14, 2009 at 07:40:27AM -0700, Linus Torvalds wrote:
-> > 
-> > 
-> > On Mon, 14 Sep 2009, Ingo Molnar wrote:
-> > > 
-> > > BUG kmalloc-64: Poison overwritten
-> > > -----------------------------------------------------------------------------
-> > > 
-> > > INFO: 0xf498f6a0-0xf498f6a7. First byte 0x90 instead of 0x6b
-> > > INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175 cpu=1 pid=3514
-> > > INFO: Freed in bdi_work_free+0x45/0x60 age=9 cpu=1 pid=3509
-> > > INFO: Slab 0xc3257d84 objects=36 used=11 fp=0xf498f690 flags=0x400000c3
-> > > INFO: Object 0xf498f690 @offset=1680 fp=0xf498fe00
-> > > 
-> > > Bytes b4 0xf498f680:  ab 0d 00 00 9c 27 ff ff 5a 5a 5a 5a 5a 5a 5a 5a ?....'??ZZZZZZZZ
-> > >   Object 0xf498f690:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> > >   Object 0xf498f6a0:  90 f3 98 f4 60 3c 11 c1 6b 6b 6b 6b 6b 6b 6b 6b .?.?`<.?kkkkkkkk
-> > 
-> > That's 8 bytes of 0xf498f398 and 0xc1113c60. Doesn't look like much, but 
-> > they're both valid kernel pointers, and the 0xf498f398 one is actually 
-> > into the same page as the corruption, so it's a pointer to the same slab 
-> > type (or at least same size). Which is a good hint in itself: we're 
-> > looking at a list or something.
-> > 
-> > And it's at offset 16 in the structure. 
-> > 
-> > That's almost certainly a "struct bdi_work", and the use-aftr-free thing 
-> > is the "struct rcu_head rcu_head" part of it. That first thing (pointer to 
-> > the same page) is 'next', and the second thing is a pointer to kernel text 
-> > (and I can pretty much guarantee that 0xc1113c60 is 'bdi_work_free').
-> > 
-> > So this is either a fs/fs-writeback.c bug, or it's a problem with RCU. 
-> > Both of them are new or hugely changed since 2.6.31.
-> 
-> If this run had used CONFIG_TREE_PREEMPT_RCU rather than the
-> CONFIG_TREE_RCU that it actually had used, I would suggest applying the
-> patchset I submitted yesterday (Sept 13).
-> 
-> 	http://thread.gmane.org/gmane.linux.kernel/888803
+On Mon, 14 Sep 2009, Henrique de Moraes Holschuh wrote:
+> I don't know about the fix for dell-laptop since it is a lot larger.
 
-Ingo, did it? I'll dive into this tonight, Linus' analysis and just a
-general feel does point in the direction of the bdi work.
-
-> Will take a look, regardless.
-
-Thanks!
+But looking at it, it seems to meet the -stable criteria as well.  However,
+it looks like you're fixing two bugs there (set pointers to NULL, call
+_destroy()), so it would be better to have two (smaller) patches, maybe?
 
 -- 
-Jens Axboe
-
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
