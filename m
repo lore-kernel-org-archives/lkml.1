@@ -1,62 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZINMBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755407AbZINMLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755399AbZINMBx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 08:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZINMBw
+	id S1755407AbZINMLP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 08:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZINMLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 08:01:52 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:38047 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbZINMBv (ORCPT
+	Mon, 14 Sep 2009 08:11:14 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51040 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbZINMLO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 08:01:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding:message-id;
-        b=b4zrtVvAnfJnLIg87N0eP5LQo51WMIu5qCPUFA2IJTiAYwB02U6X4A2OlCPILVPH2u
-         5IVcDdc5WQC2knOP/lOU0yKFJvttKUhzFPSStDWwpmcKWZx70OvrTWDsy3gBGi4ZTUxC
-         e8wWPDStGT55pTIu/7xr0EGFF1xczcyCIDFJ0=
-From: Corentin Chary <corentincj@iksaif.net>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Subject: Re: [PATCH 3/3] dell-laptop: fix rfkill memory leak on unload
-Date: Mon, 14 Sep 2009 14:01:58 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.31-gentoo; KDE/4.3.1; x86_64; ; )
-Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, Johannes Berg <johannes@sipsolutions.net>
-References: <1252925033-29696-1-git-send-email-corentincj@iksaif.net> <20090914104616.GA6170@srcf.ucam.org> <4AAE22CF.1020609@tuffmail.co.uk>
-In-Reply-To: <4AAE22CF.1020609@tuffmail.co.uk>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 14 Sep 2009 08:11:14 -0400
+Subject: Re: [PATCH 3/3] tracing: Remove some unused macros
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AADF6E6.3080606@cn.fujitsu.com>
+References: <4AADF60B.5070407@cn.fujitsu.com>
+	 <4AADF6E6.3080606@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 14 Sep 2009 08:11:15 -0400
+Message-Id: <1252930275.20020.1.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909141401.58428.corentincj@iksaif.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 September 2009 13:02:39 Alan Jenkins wrote:
-> Matthew Garrett wrote:
-> > On Mon, Sep 14, 2009 at 12:43:53PM +0200, Corentin Chary wrote:
-> >> rfkill_unregister() should always be followed by rfkill_destroy()
-> >>
-> >> Cc: Matthew Garrett <mjg@redhat.com>
-> >> Signed-off-by: Corentin Chary <corentincj@iksaif.net>
-> >
-> > Acked-by: Matthew Garrett <mjg@redhat.com>
+On Mon, 2009-09-14 at 15:55 +0800, Li Zefan wrote:
+> - remove FTRACE_ENTRY_STRUCT_ONLY()
+> - remove TRACE_XXX() macros
 > 
-> I can endorse this as I already submitted something similar :-).
-> <http://patchwork.kernel.org/patch/42699/> (with a disclaimer that it
-> was not tested on dell hardware).
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace_entries.h |    9 ---------
+>  kernel/trace/trace_export.c  |   26 --------------------------
+>  2 files changed, 0 insertions(+), 35 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_entries.h b/kernel/trace/trace_entries.h
+> index 0c10095..a431748 100644
+> --- a/kernel/trace/trace_entries.h
+> +++ b/kernel/trace/trace_entries.h
+> @@ -116,15 +116,6 @@ FTRACE_ENTRY(funcgraph_exit, ftrace_graph_ret_entry,
+>  	__field(	unsigned char,	next_state	)	\
+>  	__field(	unsigned int,	next_cpu	)
+>  
+> -#if 0
+> -FTRACE_ENTRY_STRUCT_ONLY(ctx_switch_entry,
+> -
+> -	F_STRUCT(
+> -		FTRACE_CTX_FIELDS
+> -	)
+> -);
+> -#endif
 
-I haven't seen your patch, sorry :/
+Ug! Where's my paper bag.
 
-It also conflicts with http://patchwork.kernel.org/patch/42705/ (I set 
-wlan_rfkill to NULL to avoid use-after-free).
+Thanks Li! I'll pull them in later today.
 
-Let's drop this patch and merge your series
+-- Steve
 
--- 
-Corentin Chary
-http://xf.iksaif.net
+> -
+>  FTRACE_ENTRY(context_switch, ctx_switch_entry,
+>  
+>  	TRACE_CTX,
+> diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
+> index 26e52df..1c12979 100644
+> --- a/kernel/trace/trace_export.c
+> +++ b/kernel/trace/trace_export.c
+> @@ -209,32 +209,6 @@ ftrace_define_fields_##name(struct ftrace_event_call *event_call)	\
+>  #undef __dynamic_array
+>  #define __dynamic_array(type, item)
+>  
+> -
+> -#undef TRACE_ZERO_CHAR
+> -#define TRACE_ZERO_CHAR(arg)
+> -
+> -#undef TRACE_FIELD
+> -#define TRACE_FIELD(type, item, assign)\
+> -	entry->item = assign;
+> -
+> -#undef TRACE_FIELD
+> -#define TRACE_FIELD(type, item, assign)\
+> -	entry->item = assign;
+> -
+> -#undef TRACE_FIELD_SIGN
+> -#define TRACE_FIELD_SIGN(type, item, assign, is_signed)	\
+> -	TRACE_FIELD(type, item, assign)
+> -
+> -#undef TP_CMD
+> -#define TP_CMD(cmd...)	cmd
+> -
+> -#undef TRACE_ENTRY
+> -#define TRACE_ENTRY	entry
+> -
+> -#undef TRACE_FIELD_SPECIAL
+> -#define TRACE_FIELD_SPECIAL(type_item, item, len, cmd)	\
+> -	cmd;
+> -
+>  #undef FTRACE_ENTRY
+>  #define FTRACE_ENTRY(call, struct_name, type, tstruct, print)		\
+>  static int ftrace_raw_init_event_##call(void);				\
+
