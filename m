@@ -1,61 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZINNLR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbZINNMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbZINNLR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 09:11:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbZINNLQ
+	id S1755490AbZINNMs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 09:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZINNMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 09:11:16 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:37669 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752535AbZINNLO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 09:11:14 -0400
-X-Sasl-enc: dxIQpdLE+I6h0mlZQDcQ/yhXtSI2y+bNDicr7pvVUqx1 1252933877
-Date: Mon, 14 Sep 2009 10:11:14 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Tejun Heo <teheo@suse.de>
-Cc: Chris Webb <chris@arachsys.com>, linux-scsi@vger.kernel.org,
-       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-Message-ID: <20090914131114.GA32253@khazad-dum.debian.net>
-References: <d086b110526f8bac2f562850dfc70b03@localhost>
- <4A970154.2020507@redhat.com>
- <4A9B8583.9050601@kernel.org>
- <4A9BBC4A.6070708@redhat.com>
- <4A9BC023.10903@kernel.org>
- <20090907114442.GG18831@arachsys.com>
- <20090907115927.GU8710@arachsys.com>
- <20090909120218.GB21829@arachsys.com>
- <4AADF3C4.5060004@kernel.org>
- <4AADF471.2020801@suse.de>
+	Mon, 14 Sep 2009 09:12:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47366 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755389AbZINNMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 09:12:44 -0400
+Date: Mon, 14 Sep 2009 15:12:46 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 3/7] writeback: only use bdi_writeback_all() for
+	WB_SYNC_NONE writeout
+Message-ID: <20090914131246.GH24075@duck.suse.cz>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-4-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AADF471.2020801@suse.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1252920994-11141-4-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Tejun Heo wrote:
-> Oooh, another possibility is the above continuous IDENTIFY tries.
-> Doing things like that generally isn't a good idea because vendors
-> don't expect IDENTIFY to be mixed regularly with normal IOs and
+On Mon 14-09-09 11:36:30, Jens Axboe wrote:
+> Data integrity writeback must use bdi_start_writeback() and ensure
+> that wbc->sb and wbc->bdi are set.
+  This patch looks good.
+Acked-by: Jan Kara <jack@suse.cz>
 
-IMHO that means the kernel should be special-casing such commands, then (i.e
-quiesce drive, do command, quiesce driver, start IO again), probably
-rate-limiting it for good effect.
+								Honza
 
-This is the kind of stuff that userspace should NOT have to worry about
-(because it will get it wrong and cause data corruption eventually).
-
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> ---
+>  fs/fs-writeback.c |   69 ++++++++++------------------------------------------
+>  1 files changed, 14 insertions(+), 55 deletions(-)
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index 1873fd0..5d4bd1c 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -187,7 +187,8 @@ static void bdi_wait_on_work_clear(struct bdi_work *work)
+>  		    TASK_UNINTERRUPTIBLE);
+>  }
+>  
+> -static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+> +static void bdi_alloc_queue_work(struct backing_dev_info *bdi,
+> +				 struct writeback_control *wbc)
+>  {
+>  	struct bdi_work *work;
+>  
+> @@ -195,7 +196,7 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+>  	if (work)
+>  		bdi_work_init(work, wbc);
+>  
+> -	return work;
+> +	bdi_queue_work(bdi, work);
+>  }
+>  
+>  void bdi_start_writeback(struct writeback_control *wbc)
+> @@ -205,11 +206,9 @@ void bdi_start_writeback(struct writeback_control *wbc)
+>  	 * bdi_queue_work() will wake up the thread and flush old data. This
+>  	 * should ensure some amount of progress in freeing memory.
+>  	 */
+> -	if (wbc->sync_mode != WB_SYNC_ALL) {
+> -		struct bdi_work *w = bdi_alloc_work(wbc);
+> -
+> -		bdi_queue_work(wbc->bdi, w);
+> -	} else {
+> +	if (wbc->sync_mode != WB_SYNC_ALL)
+> +		bdi_alloc_queue_work(wbc->bdi, wbc);
+> +	else {
+>  		struct bdi_work work;
+>  
+>  		bdi_work_init(&work, wbc);
+> @@ -840,67 +839,26 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+>  }
+>  
+>  /*
+> - * Schedule writeback for all backing devices. Expensive! If this is a data
+> - * integrity operation, writeback will be complete when this returns. If
+> - * we are simply called for WB_SYNC_NONE, then writeback will merely be
+> - * scheduled to run.
+> + * Schedule writeback for all backing devices. Can only be used for
+> + * WB_SYNC_NONE writeback, WB_SYNC_ALL should use bdi_start_writeback()
+> + * and pass in the superblock.
+>   */
+>  static void bdi_writeback_all(struct writeback_control *wbc)
+>  {
+> -	const bool must_wait = wbc->sync_mode == WB_SYNC_ALL;
+>  	struct backing_dev_info *bdi;
+> -	struct bdi_work *work;
+> -	LIST_HEAD(list);
+>  
+> -restart:
+> +	WARN_ON(wbc->sync_mode == WB_SYNC_ALL);
+> +
+>  	spin_lock(&bdi_lock);
+>  
+>  	list_for_each_entry(bdi, &bdi_list, bdi_list) {
+> -		struct bdi_work *work;
+> -
+>  		if (!bdi_has_dirty_io(bdi))
+>  			continue;
+>  
+> -		/*
+> -		 * If work allocation fails, do the writes inline. We drop
+> -		 * the lock and restart the list writeout. This should be OK,
+> -		 * since this happens rarely and because the writeout should
+> -		 * eventually make more free memory available.
+> -		 */
+> -		work = bdi_alloc_work(wbc);
+> -		if (!work) {
+> -			struct writeback_control __wbc;
+> -
+> -			/*
+> -			 * Not a data integrity writeout, just continue
+> -			 */
+> -			if (!must_wait)
+> -				continue;
+> -
+> -			spin_unlock(&bdi_lock);
+> -			__wbc = *wbc;
+> -			__wbc.bdi = bdi;
+> -			writeback_inodes_wbc(&__wbc);
+> -			goto restart;
+> -		}
+> -		if (must_wait)
+> -			list_add_tail(&work->wait_list, &list);
+> -
+> -		bdi_queue_work(bdi, work);
+> +		bdi_alloc_queue_work(bdi, wbc);
+>  	}
+>  
+>  	spin_unlock(&bdi_lock);
+> -
+> -	/*
+> -	 * If this is for WB_SYNC_ALL, wait for pending work to complete
+> -	 * before returning.
+> -	 */
+> -	while (!list_empty(&list)) {
+> -		work = list_entry(list.next, struct bdi_work, wait_list);
+> -		list_del(&work->wait_list);
+> -		bdi_wait_on_work_clear(work);
+> -		call_rcu(&work->rcu_head, bdi_work_free);
+> -	}
+>  }
+>  
+>  /*
+> @@ -1157,6 +1115,7 @@ long sync_inodes_sb(struct super_block *sb)
+>  {
+>  	struct writeback_control wbc = {
+>  		.sb		= sb,
+> +		.bdi		= sb->s_bdi,
+>  		.sync_mode	= WB_SYNC_ALL,
+>  		.range_start	= 0,
+>  		.range_end	= LLONG_MAX,
+> @@ -1164,7 +1123,7 @@ long sync_inodes_sb(struct super_block *sb)
+>  	long nr_to_write = LONG_MAX; /* doesn't actually matter */
+>  
+>  	wbc.nr_to_write = nr_to_write;
+> -	bdi_writeback_all(&wbc);
+> +	bdi_start_writeback(&wbc);
+>  	wait_sb_inodes(&wbc);
+>  	return nr_to_write - wbc.nr_to_write;
+>  }
+> -- 
+> 1.6.4.1.207.g68ea
+> 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
