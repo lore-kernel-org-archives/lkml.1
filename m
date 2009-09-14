@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZINNFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755292AbZINNGL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZINNFX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 09:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZINNFS
+	id S1755292AbZINNGL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 09:06:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753918AbZINNGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 09:05:18 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47009 "EHLO mx2.suse.de"
+	Mon, 14 Sep 2009 09:06:08 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:57507 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751233AbZINNFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 09:05:17 -0400
-Message-ID: <4AAE3F86.8090804@suse.de>
-Date: Mon, 14 Sep 2009 22:05:10 +0900
-From: Tejun Heo <teheo@suse.de>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1751632AbZINNGH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 09:06:07 -0400
+Date: Mon, 14 Sep 2009 14:06:12 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Zhu Yi <yi.zhu@intel.com>
+Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
+       Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "Krauss, Assaf" <assaf.krauss@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Abbas, Mohamed" <mohamed.abbas@intel.com>
+Subject: Re: iwlagn: order 2 page allocation failures
+Message-ID: <20090914130612.GA11778@csn.ul.ie>
+References: <200909060941.01810.elendil@planet.nl> <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie> <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie> <1252526738.30150.91.camel@rc-desk> <20090910090206.GA22276@csn.ul.ie> <1252617290.30150.321.camel@rc-desk> <20090911084717.GB32497@csn.ul.ie> <1252897270.5650.169.camel@debian>
 MIME-Version: 1.0
-To: Mark Lord <liml@rtr.ca>
-Cc: Chris Webb <chris@arachsys.com>, linux-scsi@vger.kernel.org,
-       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca>
-In-Reply-To: <4AAE3B9A.2060306@rtr.ca>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1252897270.5650.169.camel@debian>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Tejun Heo wrote:
-> ..
->> Oooh, another possibility is the above continuous IDENTIFY tries.
->> Doing things like that generally isn't a good idea because vendors
->> don't expect IDENTIFY to be mixed regularly with normal IOs and
->> firmwares aren't tested against that.  Even smart commands sometimes
->> cause problems.  So, finding out the thing which is obsessed with the
->> identity of the drive and stopping it might help.
-> ..
+On Mon, Sep 14, 2009 at 11:01:10AM +0800, Zhu Yi wrote:
+> On Fri, 2009-09-11 at 16:47 +0800, Mel Gorman wrote:
+> > On Thu, Sep 10, 2009 at 02:14:50PM -0700, reinette chatre wrote:
+> > > On Thu, 2009-09-10 at 02:02 -0700, Mel Gorman wrote:
+> > > 
+> > > > 
+> > > > As a total aside, there is still the problem that the driver is depending on
+> > > > order-2 allocations. On systems without swap, the allocation problem could be
+> > > > more severe as there are fewer pages the system can use to regain contiguity.
+> > > 
+> > > I looked more at the implementation and hardware interface but I do not
+> > > see a way around this. We have to provide 8k buffer to device, and we
+> > > have to make sure it is aligned. 
+> > > 
+> > 
+> > That would imply an order-1 allocation instead of an order-2 though so
+> > it would appear than we are being worse than we have to. It would appear
+> > to be because of this +256 bytes that goes onto every buffer.
+> > 
+> > > Do you have any suggestions?
+> > > 
+> > 
+> > Nothing concrete. Finding an alternative to having the socket buffer
+> > 8192+256 to make it an order-1 allocation would be an improvement but I
+> > don't know how that should be tackled. Lacking the hardware, I can't
+> > experiment myself :(
 > 
-> Bullpucky.  That sort of thing, specifically with IDENTIFY,
-> has never been an issue.
+> Essentially, the hardware only requires an order-1 allocation aligned on
+> 256 bytes boundary. But as it is used as an SKB, a trailing struct
+> skb_shared_info is added. This forces us to both increase the order and
+> do alignment ourselves. I believe some improvement could be done here.
+> But it should not be an easy one.
+> 
 
-With SMART it has.  I wouldn't be too surprised if some new firmware
-chokes on repeated IDENTIFY mixed with stream of NCQ commands.  It's
-just not something people (including vendors) do regularly.
+Probably not. I can only assume that moving the location of
+skb_shared_info such that it is sometimes located after the buffer and
+sometimes allocated via a separate kmalloc() would be a significant
+undertaking.
 
-> I wonder if the IDENTIFY is actually coming from libata EH
-> after something else failed ?
+> BTW, does SLAB/SLUB guarantee size of multiple PAGE_SIZE __kmalloc()
+> allocation align on PAGE_SIZE (or 256 bytes) boundary?
+> 
 
-In that case, libata-eh would print "ataP.DD: failed to IDENTIFY
-(blah, err_mask=0x%x\n" instead of the full TF dump.
-
-Thanks.
+Page-aligned.
 
 -- 
-tejun
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
