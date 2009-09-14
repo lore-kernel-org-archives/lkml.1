@@ -1,87 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932066AbZINVgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932308AbZINVgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932066AbZINVgH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755623AbZINVgG
+	id S932308AbZINVgX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932310AbZINVgW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:36:06 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:33439 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752345AbZINVgE (ORCPT
+	Mon, 14 Sep 2009 17:36:22 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33832 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932275AbZINVgV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:36:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=b9ufOdcUq7tr0GdQfM84lShYPBCVBUfStDjf9q/wU3A1A0TnPpqpVcDPJc9J+4KMpO
-         OcA3IhcWzODVtaJCLv27pvQHAozADort+7lp30OZYOpnbn1hYOILCRGEfJ74yyCJ7AtN
-         7HNGgMVOCe2/A0SLO18Mg1SgdaQRRc2n0heDs=
-Date: Mon, 14 Sep 2009 23:36:03 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jan Kiszka <jan.kiszka@siemens.com>, Jiri Slaby <jirislaby@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Avi Kivity <avi@redhat.com>,
-       Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [PATCH 3/5] hw-breakpoints: Rewrite the hw-breakpoints layer
-	on top of perf counters
-Message-ID: <20090914213601.GL6045@nowhere>
-References: <1252571367-25876-1-git-send-email-fweisbec@gmail.com> <1252571367-25876-4-git-send-email-fweisbec@gmail.com> <20090914172835.GB29531@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914172835.GB29531@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 14 Sep 2009 17:36:21 -0400
+Date: Mon, 14 Sep 2009 14:36:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, sam@ravnborg.org
+Subject: Re: [PATCH] [5/5] kbuild: Set -fconserve-stack option for gcc 4.5
+Message-Id: <20090914143615.9ee47a1a.akpm@linux-foundation.org>
+In-Reply-To: <20090914201811.187B3B1757@basil.firstfloor.org>
+References: <200909141018.915641783@firstfloor.org>
+	<20090914201811.187B3B1757@basil.firstfloor.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 10:58:35PM +0530, K.Prasad wrote:
-> On Thu, Sep 10, 2009 at 10:29:25AM +0200, Frederic Weisbecker wrote:
-> > This patch rebase the implementation of the breakpoints API on top of
-> > perf counters instances.
-> > 
-> > The core breakpoint API has changed a bit:
-> > 
-> > - register_kernel_hw_breakpoint() now takes a cpu as a parameter. For
-> >   now it doesn't support all cpu wide breakpoints but this may be
-> >   implemented soon.
-> > 
-> > - unregister_kernel_hw_breakpoint() and unregister_user_hw_breakpoint()
-> >   have been unified in a single unregister_hw_breakpoint()
-> > 
-> > Each breakpoints now match a perf counter which now handles the
-> > register scheduling, thread/cpu attachment, etc..
-> > 
-> [edited]
-> > 
-> > -/*
-> > - * Load the debug registers during startup of a CPU.
-> > - */
-> > -void load_debug_registers(void)
-> 
-> It does not appear that perf handles CPUs that come up new (if else,
-> blame my understanding of find_get_context():-)) and hence post breakpoint
-> integration, the new CPUs wouldn't contain any breakpoint values (meant
-> for all CPUs). As mentioned in my previous mail, this could be
-> non-trivial lapse in debugging scenarios and even for users like
-> ksym_tracer in ftrace. Your patch would want to retain the
-> functionality of load_debug_registers().
-> 
-> Thanks,
-> K.Prasad
-> 
+On Mon, 14 Sep 2009 22:18:11 +0200 (CEST)
+Andi Kleen <andi@firstfloor.org> wrote:
 
+> 
+> The upcomming gcc 4.5 has a new -fconserve-stack option 
+> that tells the inliner to take stack frame size in account.
+> Set it if the compiler supports it.
+> 
+> Signed-off-by: Andi Kleen <ak@linux.intel.com>
+> 
+> ---
+>  Makefile |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: linux-2.6.31-rc3-ak/Makefile
+> ===================================================================
+> --- linux-2.6.31-rc3-ak.orig/Makefile
+> +++ linux-2.6.31-rc3-ak/Makefile
+> @@ -575,6 +575,9 @@ KBUILD_CFLAGS	+= $(call cc-option,-fno-s
+>  # revert to pre-gcc-4.4 behaviour of .eh_frame
+>  KBUILD_CFLAGS	+= $(call cc-option,-fno-dwarf2-cfi-asm)
+>  
+> +# conserve stack if available
+> +KBUILD_CFLAGS   += $(call cc-option,-fconserve-stack)
 
-Ah it seems it can.
-Look at:
-
-static void __perf_counter_exit_cpu(void *info)
-static void perf_counter_exit_cpu(int cpu)
+Do we have any info about what effects this option has upon the
+generated code?  Text size changes, runtime stack usage changes, etc?
 
