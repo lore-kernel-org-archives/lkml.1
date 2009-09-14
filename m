@@ -1,57 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbZINVux@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757302AbZINVvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbZINVux (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:50:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZINVuv
+	id S1757302AbZINVvU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757287AbZINVvR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:50:51 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:31732 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757264AbZINVuu (ORCPT
+	Mon, 14 Sep 2009 17:51:17 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:9298 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755780AbZINVvO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:50:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=stfzD7+cSgl3xEHBr0gG4O5kO1ugM6Q6VgcwmHuWO4dyOtyBgYjQ3FTIRrhJNsJuWo
-         CArXFHv0HOEru8abNePKwi2qANgfBP/LzouJoXqHewTh3Jr4e1+wRUMPfPUk+xgn1jBQ
-         JYrL3XTwE1SUlzafrTFgjWJ6QHDpVoVkmupXA=
-Message-ID: <4AAEBABA.9060108@gmail.com>
-Date: Mon, 14 Sep 2009 23:50:50 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1.1) Gecko/20090715 SUSE/3.0b3-8.6 Thunderbird/3.0b3
+	Mon, 14 Sep 2009 17:51:14 -0400
+Message-ID: <4AAEBAC2.1050905@caviumnetworks.com>
+Date: Mon, 14 Sep 2009 14:50:58 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Andreas Mohr <andi@lisas.de>
-CC: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Luca Risolia <luca.risolia@studio.unibo.it>,
-       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: V4L2 drivers: potentially dangerous and inefficient msecs_to_jiffies()
- calculation
-References: <20090914210741.GA16799@rhlx01.hs-esslingen.de> <4AAEB6F0.4080706@gmail.com> <20090914213933.GA5468@rhlx01.hs-esslingen.de>
-In-Reply-To: <20090914213933.GA5468@rhlx01.hs-esslingen.de>
-X-Enigmail-Version: 0.97a
-Content-Type: text/plain; charset=ISO-8859-1
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org, ralf@linux-mips.org,
+       linux-mips@linux-mips.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>, linux390@de.ibm.com,
+       linux-s390@vger.kernel.org, David Howells <dhowells@redhat.com>,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>,
+       linux-am33-list@redhat.com, Kyle McMartin <kyle@mcmartin.ca>,
+       Helge Deller <deller@gmx.de>, linux-parisc@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Richard Henderson <rth@twiddle.net>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>, linux-alpha@vger.kernel.org,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       Mike Frysinger <vapier@gentoo.org>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-arch@vger.kernel.org, Roland McGrath <roland@redhat.com>
+Subject: [PATCH 00/11] Add support for GCC's __builtin_unreachable() and use
+ it in BUG (v2).
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Sep 2009 21:50:59.0414 (UTC) FILETIME=[72114F60:01CA3585]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/14/2009 11:39 PM, Andreas Mohr wrote:
-> On Mon, Sep 14, 2009 at 11:34:40PM +0200, Jiri Slaby wrote:
->> On 09/14/2009 11:07 PM, Andreas Mohr wrote:
->>> msecs_to_jiffies(1) is quite a bit too boldly assuming
->>> that all of the msecs_to_jiffies(x) implementation branches
->>> always round up.
->>
->> They do, don't they?
-> 
-> I'd hope so, but a slight risk remains, you never know,
-> especially with 4+ or so variants...
+When I sent the first version, I had not realized that Roland McGrath
+had only a day or two earlier submitted a very similar patch (although
+one that only fixed up the x86 case).
 
-A potential problem here is rather that it may wait longer due to
-returning 1 jiffie. It's then timeout * 1000 * 1. On 250HZ system it
-makes a difference of multiple of 4. Don't think it's a real issue in
-those drivers at all, but it's worth fixing. Care to post a patch?
+I have been working on this quite a while now, starting with adding
+the required support to GCC, so with an eye towards finishing it up I
+have this new version.
+
+ From the announcement of the first version:
+
+Starting with version 4.5, GCC has a new built-in function called
+__builtin_unreachable().  The function tells the compiler that control
+flow will never reach that point.  Currently we trick the compiler by
+putting in for(;;); but this has the disadvantage that extra code is
+emitted for an endless loop.  For an i386 kernel using
+__builtin_unreachable() results in an defaultconfig that is nearly 4000
+bytes smaller.
+
+This patch set adds support to compiler.h creating a
+new macro usable in the kernel called unreachable().  If the compiler
+lacks __builtin_unreachable(), it just expands to for(;;).
+
+The x86 and MIPS patches I actually tested with a GCC-4.5 snapshot.
+Lacking the ability to test the rest of the architectures, I just did
+what seemed right without even trying to compile the kernel.
+
+For version 2:
+
+I fixed a couple of checkpatch issues, and simplified the
+unreachable() macro for the pre-GCC-4.5 case (as suggested by Richard
+Henderson).  Also several Acked-by: were added.
+
+New in this version (as suggested by Ingo Molnar) I added 11/11 which
+uses unreachable() in asm-generic/bug.h for !CONFIG_BUG case.  This
+one may be a little controversial as it will end up making code
+slightly larger when !CONFIG_BUG and you are using a pre-GCC-4.5
+compiler.
+
+I will reply with the 11 patches.
+
+David Daney (11):
+   Add support for GCC-4.5's __builtin_unreachable() to compiler.h (v2)
+   x86: Convert BUG() to use unreachable()
+   MIPS: Convert BUG() to use unreachable()
+   s390: Convert BUG() to use unreachable()
+   mn10300: Convert BUG() to use unreachable()
+   parisc: Convert BUG() to use unreachable()
+   powerpc: Convert BUG() to use unreachable()
+   alpha: Convert BUG() to use unreachable()
+   avr32: Convert BUG() to use unreachable()
+   blackfin: Convert BUG() to use unreachable()
+   Use unreachable() in asm-generic/bug.h for !CONFIG_BUG case.
+
+  arch/alpha/include/asm/bug.h    |    3 ++-
+  arch/avr32/include/asm/bug.h    |    2 +-
+  arch/blackfin/include/asm/bug.h |    2 +-
+  arch/mips/include/asm/bug.h     |    4 +---
+  arch/mn10300/include/asm/bug.h  |    3 ++-
+  arch/parisc/include/asm/bug.h   |    4 ++--
+  arch/powerpc/include/asm/bug.h  |    2 +-
+  arch/s390/include/asm/bug.h     |    2 +-
+  arch/x86/include/asm/bug.h      |    4 ++--
+  include/asm-generic/bug.h       |    4 ++--
+  include/linux/compiler-gcc4.h   |   14 ++++++++++++++
+  include/linux/compiler.h        |    5 +++++
+  12 files changed, 34 insertions(+), 15 deletions(-)
+
