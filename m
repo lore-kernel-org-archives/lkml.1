@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932297AbZINSGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932667AbZINSQC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932297AbZINSGu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbZINSGp
+	id S932667AbZINSQC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:16:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932655AbZINSP7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:06:45 -0400
-Received: from smtp2.ultrahosting.com ([74.213.174.253]:46685 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932275AbZINSGo (ORCPT
+	Mon, 14 Sep 2009 14:15:59 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:32920 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932653AbZINSP6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:06:44 -0400
-Date: Mon, 14 Sep 2009 14:04:11 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@V090114053VZO-1
-To: Mel Gorman <mel@csn.ul.ie>
-cc: Zhu Yi <yi.zhu@intel.com>, "Chatre, Reinette" <reinette.chatre@intel.com>,
-       Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Krauss, Assaf" <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>
-Subject: Re: iwlagn: order 2 page allocation failures
-In-Reply-To: <20090914175942.GH11778@csn.ul.ie>
-Message-ID: <alpine.DEB.1.10.0909141403390.5676@V090114053VZO-1>
-References: <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie> <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie> <1252526738.30150.91.camel@rc-desk> <20090910090206.GA22276@csn.ul.ie> <1252617290.30150.321.camel@rc-desk>
- <20090911084717.GB32497@csn.ul.ie> <1252897270.5650.169.camel@debian> <alpine.DEB.1.10.0909141141200.24447@V090114053VZO-1> <20090914175942.GH11778@csn.ul.ie>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 14 Sep 2009 14:15:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=to:subject:from:date:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=aXo9WexK9LG9t1CktL5qFszy1i0LFceP+X2VXup/n9dsT4V4VGQPpqel3dMx7hbvhJ
+         mczvCd9Cri+aDjNNxf9mUhbI+DrftWLIybK9BxTtFm8o4GSgyaxQKEUtvTKjo0Y3zCFG
+         O4rLtfCdlAOb5YsVEl4LJ8WUalbEHoF1RjNEs=
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.31 ehci problem - mouse dead on scroll
+From: Volker Armin Hemmann <volkerarmin@googlemail.com>
+Date: Mon, 14 Sep 2009 20:15:56 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200909142015.56698.volkerarmin@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Mel Gorman wrote:
+Hi,
+found the problem. Was stupid brain fart when doing menuconfig or something 
+like that.
 
-> The allocation of buffers >= PAGE_SIZE even when allocated with
-> kmalloc() are page-aligned though right? It's not an explicit guarantee
-> but is it not always the case?
+I turned off 
+USB selective suspend/resume and wakeup 
 
-Its typically the case but debug options may misalign the object. The
-guarantee for kmalloc caches is to be cacheline aligned.
+and turned on
+Root Hub Transaction Translators 
+ Improved Transaction Translator scheduling
 
+and haven't had any lockup anymore.
+
+Sorry for the noise. Really.
+
+Glück Auf,
+Volker
