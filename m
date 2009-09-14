@@ -1,64 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933470AbZINSnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZINSuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933470AbZINSnk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756131AbZINSni
+	id S1756798AbZINSuZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZINSuX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:43:38 -0400
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:43244 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751063AbZINSnh (ORCPT
+	Mon, 14 Sep 2009 14:50:23 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:57855 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754909AbZINSuW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:43:37 -0400
-Date: Mon, 14 Sep 2009 12:43:36 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
-Cc: "Jonathan M. McCune" <jonmccune@cmu.edu>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, jbeulich@novell.com, jmorris@namei.org,
-       tpmdd-devel@lists.sourceforge.net, m.selhorst@sirrix.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland Dreier <rdreier@cisco.com>
-Subject: Re: [tpmdd-devel] [PATCH] TPM: Fixup pubek sysfs file
-Message-ID: <20090914184336.GC25981@obsidianresearch.com>
-References: <20090904045231.GW4973@obsidianresearch.com> <adaab1bnvz3.fsf@cisco.com> <20090904140325.c592289a.akpm@linux-foundation.org> <20090904212316.GZ406@obsidianresearch.com> <17754_1252731784_n8C533ou010944_20090911162837.GC17677@kroah.com> <4AAE84EA.8010109@cmu.edu> <1252953279.9372.229.camel@blackbox>
+	Mon, 14 Sep 2009 14:50:22 -0400
+Message-ID: <4AAE907E.1020205@vlnb.net>
+Date: Mon, 14 Sep 2009 22:50:38 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252953279.9372.229.camel@blackbox>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Broken-Reverse-DNS: no host name found for IP address 10.0.0.11
+To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Joel Becker <joel.becker@oracle.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>,
+       Christoph Hellwig <hch@lst.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Florian Haas <florian.haas@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic target
+ engine for Linux v2.6.32
+References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
+In-Reply-To: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX19BIrrReAiiuiy8cfkrShKj8/1/cni3hev8/qh
+ BW7AHBf+8a1AxvgDSctF94/UcXkcdrwP4Q6dyQ9yJ65kuvo8LE
+ x3QjzoxpCwefowCI5EKng==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 03:34:39PM -0300, Rajiv Andrade wrote:
+Nicholas A. Bellinger, on 09/12/2009 05:55 AM wrote:
+> Greetings all,
+> 
+> This is my humble request for review and inclusion of
+> Target_Core_Mod/ConfigFS v3.2 from lio-core-2.6.git code into mainline
+> v2.6.32.  With TCM v3.2, the two major SPC-4 SCSI target mode fabric
+> features that have now been completed: Persistent Reservation APTPL and
+> implict/explict ALUA are the first all optional SPC4 defined feature
+> implementation of PR and ALUA in the Linux OSS target theatre using an
+> upstream user-driven virtual filesystem directory hierarchy structure
+> based on configfs that can be configured in realtime in combination with
+> interpreted userspace code.
+> 
+> Both of these new features are now being used to provide Persistent Reservations
+> across target power loss and asymmetric multipath I/O to both Linux and non-Linux
+> clients.  There is also an optional ALUA transition delay logic that has been
+> included to futher debug and improve existing upstream client side Linux kernel code
+> using TCM v3.2. These patches have been diffed against v2.6.31, and tested on x86
+> 32-bit HVM, x86_64 KVM, and powerpc.
+> 
+> There is cleanup work continuing to make the TCM code to use dprintk(),
+> and some include cleanups, and other minor fixes.  The code has also
+> been run through checkpatch again since the posting in April, and all
+> errors have been removed, with the exception of one ConfigFS macro
+> define triggering a checkpatch false positive.
+> 
+> As with the posting of the TCM v3.0 code earlier in April, I have
+> decided to break up the submissions into the generic target_core_mod
+> piece (this patch series) and then a seperate one that will be appearing
+> in the next days for v3.2 of the LIO-Target iSCSI fabric module.
+> 
+> More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
+> 
+> http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
+> http://www.linux-iscsi.org/index.php/Persistent_Reservations
+> http://www.linux-iscsi.org/index.php/ALUA
+> 
+> The complete v3.x TCM CLI operations set can be found here:
+> 
+> http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
+> 
+> Instructions and examples for getting setup:
+> 
+> http://linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
+> http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
 
-> > Thus, fixing the one-item-per-file issues seems reasonable to me. For 
-> > example, changing /sys/devices/platform/tpm_tis/pcrs from a single
-> > multi-entry file to a directory containing files named 0-15 or 0-23 that
-> > each then contain only the relevant 20-byte value seems quite
-> > reasonable. (Today's TPMs contain either 16 or 24 PCRs but future ones
-> > could contain many more.)
+Some questions among many I have:
 
-> The number of PCRs of a particular TPM can be retrieved sending it the
-> TPM_GetCapability command, so it's feasible to build this directory
-> structure dynamically (chip independent).
+1. Where and how TCM is better over the existing mainline target 
+framework STGT to justify such a move as adding a new piece of code 
+doing the same job?
 
-I think as we've seen, keeping the sysfs stuff working has a real
-cost. So that should be balanced with an actual need. Further, talking
-to the TPM and handling all the parsing properly is a huge complex
-pain, it would be better to have this code gone completely.
+2. On the linux-iscsi.org main page (BTW, the comparison on that page 
+isn't fully correct about STGT and SCST) you claim that TCM is a generic 
+target engine. But how can you prove (and test) that if there are no 
+hardware target drivers for TCM?
 
-Can anyone think of a reason why the PCRs should be accessed from
-sysfs? I can't. They are only really useful in connection with other
-complex TPM operations. Userspace can fully access them using the
-relevant TPM calls.
+Also patch 7 implements MIBs through procfs. Procfs is for long time 
+forbidden for adding anything like that, so you can't push it in the 
+mainline.
 
-The pubek should definately go, it is useless in 99% of cases.
-
-The caps file should be split up into 'manufacturer' 'tcg_version'
-(please include the spec rev too!!) and maybe 'firmware_version'. This
-would at least be useful to udev.
-
-Regards,
-Jason
+Vlad
