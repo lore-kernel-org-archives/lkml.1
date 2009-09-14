@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbZINSZF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932998AbZINSXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933036AbZINSZF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:25:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933015AbZINSZC
+	id S932998AbZINSXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932965AbZINSXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:25:02 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48736 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932983AbZINSZA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:25:00 -0400
-Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree 
- build warning)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Christopher Li <sparse@chrisli.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <1252952238.2964.154.camel@localhost.localdomain>
-References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-	 <1249403089.4634.139.camel@localhost.localdomain>
-	 <20090912165300.9d257283.sfr@canb.auug.org.au>
-	 <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam>
-	 <1252941416.2964.143.camel@localhost.localdomain>
-	 <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
-	 <1252952238.2964.154.camel@localhost.localdomain>
+	Mon, 14 Sep 2009 14:23:14 -0400
+Received: from fifo99.com ([67.223.236.141]:52251 "EHLO fifo99.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932997AbZINSXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:23:12 -0400
+Subject: Re: [PATCH 0/5] kernel handling of dynamic logical partitioning
+From: Daniel Walker <dwalker@fifo99.com>
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <4AAE89CE.2030804@austin.ibm.com>
+References: <4AAABC55.4070207@austin.ibm.com>
+	 <1252704198.28368.31.camel@desktop>  <4AAE89CE.2030804@austin.ibm.com>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 14 Sep 2009 20:23:41 +0200
-Message-Id: <1252952621.31964.0.camel@twins>
+Date: Mon, 14 Sep 2009 11:24:00 -0700
+Message-Id: <1252952640.11643.64.camel@desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 14:17 -0400, Steven Rostedt wrote:
-> Frederic, how big can one of those events get. The ring buffer (and
-> TRACE_EVENT) allow up to almost a page size, which is very hefty for the
-> stack. This code needs to either be rewritten or we need to set a limit
-> to the size of a profile entry.
+On Mon, 2009-09-14 at 13:22 -0500, Nathan Fontenot wrote:
+> Daniel Walker wrote:
+> > On Fri, 2009-09-11 at 16:08 -0500, Nathan Fontenot wrote:
+> >>  am cc'ing lkml.
+> >>
+> >> Patches include in this set:
+> >> 1/5 - DLPAR infrastructure for powerpc/pseries platform.
+> >> 2/5 - Move the of_drconf_cell struct to prom.h
+> >> 3/5 - Export the memory sysdev class
+> >> 4/5 - Memory DLPAR handling
+> >> 5/5 - CPU DLPAR handling
+> >>
+> > 
+> > It looks like a couple of your patches have some checkpatch issues..
+> > Could you run these through scripts/checkpatch.pl and clean up any
+> > problems it raises ? Specifically patches 1, 4, and 5 ..
+> > 
+> 
+> thanks for checking this, I obviously forgot.  I'll post updated patches
+> (after running checkpatch on them) with fixes.
 
-Yeah, that needs to get a re-write.. I've complained about this when it
-went in.
+Ok, thanks..
+
+Daniel
+
