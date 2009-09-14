@@ -1,89 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbZINBlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754738AbZINBqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754653AbZINBlK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 21:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZINBlK
+	id S1754738AbZINBqT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 21:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752956AbZINBqS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 21:41:10 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:38570 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751393AbZINBlJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 21:41:09 -0400
-Date: Mon, 14 Sep 2009 10:41:11 +0900 (JST)
-Message-Id: <20090914.104111.226776844.ryov@valinux.co.jp>
-To: dhaval@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, ioband-devel@lists.sourceforge.net,
-       corsetproject@googlegroups.com, kunai@linux-foundation.jp,
-       osonoi@linux-foundation.jp, balbir@in.ibm.com, vgoyal@redhat.com
-Subject: Re: IO controller Mini-Summit 2009
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090911111632.GF4474@linux.vnet.ibm.com>
-References: <20090826.203251.260094379.ryov@valinux.co.jp>
-	<20090911111632.GF4474@linux.vnet.ibm.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sun, 13 Sep 2009 21:46:18 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:57836 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751770AbZINBqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 21:46:17 -0400
+Message-ID: <4AADA0BB.4030307@redhat.com>
+Date: Sun, 13 Sep 2009 21:47:39 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: ananth@in.ibm.com
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>, Andi Kleen <ak@linux.intel.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [BUGFIX] kprobes: prevent re-registration of the same kprobe
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <20090913100713.GB14251@in.ibm.com>
+In-Reply-To: <20090913100713.GB14251@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dhaval, 
-
-Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> On Wed, Aug 26, 2009 at 08:32:51PM +0900, Ryo Tsuruta wrote:
-> > Hi All,
-> > 
-> > As I have notified before, The 1st Linux IO controller Mini-Summit
-> > will be held in Tokyo Japan on Oct 17 -- day before the 9th Linux
-> > kernel summit. So I would like to propose the following topics for 
-> > the mini-summit and discuss about them.
-> > 
-> > - Multiple IO controller development projects
-> >   - There are two activities for the development of IO controller,
-> >     Vivek's io-controller and dm-ioband. Do we have to pick one of
-> >     them to put into the mainline? How to advance the development?
-> > 
-> > - Extensions of struct bio
-> >   - Make a bio point to the io_context of a process which creates the
-> >     I/O request. This allows to pass the IO scheduling class and
-> >     priority information to IO controller even if the IO is submitted
-> >     by another process which does not create the request, such as a
-> >     worker thread.
-> >   - Add a new flag to struct bio to identify the bio as urgent. This
-> >     gives IO controller a chance to handle the bio as high priority.
-> >     This flag should be set if the bio is created for the page-out
-> >     operation.
-> > 
-> > - I/O tracking and charging policy
-> >   - Which process, a page-requesting process or a page-returning
-> >     process, should be charged for the I/O caused by page reclaim?
-> >     We should consider two cases where the IO flushes anonymous pages
-> >     and file mapped pages.
-> > 
-> > I think this is a good opportunity to meet face-to-face to discuss
-> > about IO controller development. I would like to many developers to
-> > join this mini-summit. Please visit the following URL for more
-> > information about the mini-summit.
-> > http://apps.sourceforge.net/trac/ioband/wiki/iosummit
-> > If you would like to join the mini-summit, please e-mail to me or post
-> > on the wiki page, 
-> > (You need an account on SourceForge.net to edit the wiki page.)
-> > 
-> > All comments, questions, suggestions and anything else are appreciated.
-> > 
+Ananth N Mavinakayanahalli wrote:
+> On Fri, Sep 11, 2009 at 05:12:54AM +0200, Frederic Weisbecker wrote:
+>> On Thu, Sep 10, 2009 at 07:53:30PM -0400, Masami Hiramatsu wrote:
 > 
-> Hi Ryo,
+> ...
 > 
-> Would you be having a remote dial-in for folks who cannot attend in
-> person?
+>> Is it possible to have two kprobes having the exact same
+>> properties? (pointing to the same address, having the same
+>> probe handlers, etc...)
+> 
+> Yes, this is possible with two *different* kprobes. However, we have a bug
+> with the current code where there is insufficient scaffolding to prevent
+> re-registration of the same kprobe. Here is a patch...
 
-Yes. I will provide a conference call and let you know the dial number
-if you would join the summit.
+Indeed, that is a bug, or spec. I didn't expect that user register
+same kprobes twice.
 
-Thanks,
-Ryo Tsuruta
+> ---
+> Prevent re-registration of the same kprobe. Current code allows this,
+> albeit with disastrous consequences. Its not a common case, but should
+> be flagged nonetheless.
+> 
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> ---
+>  kernel/kprobes.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> Index: ptrace-10sep/kernel/kprobes.c
+> ===================================================================
+> --- ptrace-10sep.orig/kernel/kprobes.c
+> +++ ptrace-10sep/kernel/kprobes.c
+> @@ -589,6 +589,9 @@ static int __kprobes register_aggr_kprob
+>  	int ret = 0;
+>  	struct kprobe *ap = old_p;
+>  
+> +	if (old_p == p)
+> +		/* Attempt to re-register the same kprobe.. fail */
+> +		return -EINVAL;
+>  	if (old_p->pre_handler != aggr_pre_handler) {
+>  		/* If old_p is not an aggr_probe, create new aggr_kprobe. */
+>  		ap = kzalloc(sizeof(struct kprobe), GFP_KERNEL);
+
+
+Hmm, if we catch the second registration here, it's too late. At
+register_kprobe(), we initialized some field of kprobe before calling
+register_aggr_kprobe(). Especially kprobe.list is cleared.
+
+And this can't check the case that 'p' is already registered on
+an aggr kprobe.
+
+Thus, I think some initialization paths should be changed (kp.flag
+field is initialized too early, yearh, that's my mistake),
+and also, you will need to use get_valid_kprobe() to check the kprobe
+has not been registered.
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
