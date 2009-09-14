@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752168AbZINGfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752189AbZINGjN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752168AbZINGfd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 02:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751115AbZINGfb
+	id S1752189AbZINGjN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 02:39:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751212AbZINGjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 02:35:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34267 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbZINGfb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 02:35:31 -0400
-Subject: Re: linux-next: manual merge of the tip tree with the slab tree
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Nick Piggin <npiggin@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>
-In-Reply-To: <20090914155219.13118819.sfr@canb.auug.org.au>
-References: <20090706144051.06d079a5.sfr@canb.auug.org.au>
-	 <20090914155219.13118819.sfr@canb.auug.org.au>
-Date: Mon, 14 Sep 2009 09:35:33 +0300
-Message-Id: <1252910133.5934.3.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Mon, 14 Sep 2009 02:39:12 -0400
+Received: from centrinvest.ru ([94.25.115.130]:51384 "EHLO centrinvest.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751193AbZINGjL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 02:39:11 -0400
+From: "Andrey Panin" <pazke@centrinvest.ru>
+Date: Mon, 14 Sep 2009 10:39:11 +0400
+To: Nathan Fontenot <nfont@austin.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] kernel handling of memory DLPAR
+Message-ID: <20090914063911.GB13139@centrinvest.ru>
+Mail-Followup-To: Nathan Fontenot <nfont@austin.ibm.com>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <4AAABC55.4070207@austin.ibm.com>
+ <4AAABDBB.7010400@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAABDBB.7010400@austin.ibm.com>
+X-Uname: Linux 2.6.26-1-amd64 x86_64
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Anti-Virus: kav4lms: continue
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 15:52 +1000, Stephen Rothwell wrote:
-> Hi Pekka,
+On 254, 09 11, 2009 at 04:14:35PM -0500, Nathan Fontenot wrote:
+> This adds the capability to DLPAR add and remove memory from the kernel.  The
+> patch extends the powerpc handling of memory_add_physaddr_to_nid(), which is
+> called from the sysfs memory 'probe' file to first ensure that the memory
+> has been added to the system.  This is done by creating a platform specific
+> callout from the routine.  The pseries implementation of this handles the
+> DLPAR work to add the memory to the system and update the device tree.
 > 
-> On Mon, 6 Jul 2009 14:40:51 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> >
-> > Today's linux-next merge of the tip tree got a conflict in
-> > include/linux/rcupdate.h between commit
-> > 249acdd3fd13d1ec579ff9b1c5273cf5515cd352 ("SLQB slab allocator (try 2)")
-> > from the slab tree and commit 03b042bf1dc14a268a3d65d38b4ec2a4261e8477
-> > ("rcu: Add synchronize_sched_expedited() primitive") from the tip tree.
-> > 
-> > Just context changes. I fixed it up (see below) and can carry the fix as
-> > necessary.
+> The patch also creates a pseries only 'release' sys file,
+> /sys/devices/system/memory/release.  This file handles the DLPAR
+> release of
+> memory back to firmware and updating of the device-tree.
 > 
-> This conflict is now between the slab tree and Linus' tree.
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 
-OK, thanks Stephen, I'll fix it up in my tree.
+> +static struct property *clone_property(struct property *old_prop)
+> +{
+> +	struct property *new_prop;
+> +
+> +	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
+> +	if (!new_prop)
+> +		return NULL;
+> +
+> +	new_prop->name = kzalloc(strlen(old_prop->name) + 1, GFP_KERNEL);
+> +	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
 
+Memory leak here. What if one kzalloc() succeeded and another failed ?
+
+> +	if (!new_prop->name || !new_prop->value) {
+> +		free_property(new_prop);
+> +		return NULL;
+> +	}
+> +
+> +	strcpy(new_prop->name, old_prop->name);
+> +	memcpy(new_prop->value, old_prop->value, old_prop->length);
+> +	new_prop->length = old_prop->length;
+> +
+> +	return new_prop;
+> +}
