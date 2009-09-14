@@ -1,45 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756149AbZINQgm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756112AbZINQpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756149AbZINQgm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 12:36:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbZINQgi
+	id S1756112AbZINQpk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 12:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753739AbZINQpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 12:36:38 -0400
-Received: from mail.gmx.net ([213.165.64.20]:45087 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1756028AbZINQgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 12:36:37 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1+m5opfuIemRnwDPSbrdfuL4I7PFDXZyD/uEVOPFK
-	VilBoxP54Z/7aU
-Subject: Re: INGO Why you remove  set_user_nice() from kernel/kthread.c
-From: Mike Galbraith <efault@gmx.de>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: pavel@pavlinux.ru, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Network Development list <netdev@vger.kernel.org>
-In-Reply-To: <4AAE6FD7.5070401@nortel.com>
-References: <200909141742.45487.pavel@pavlinux.ru>
-	 <1252937140.6500.11.camel@marge.simson.net>  <4AAE5D60.2080703@nortel.com>
-	 <1252943123.12986.70.camel@marge.simson.net>  <4AAE6FD7.5070401@nortel.com>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 18:36:20 +0200
-Message-Id: <1252946180.6404.20.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.75
+	Mon, 14 Sep 2009 12:45:36 -0400
+Received: from kroah.org ([198.145.64.141]:40683 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753717AbZINQpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 12:45:34 -0400
+Date: Mon, 14 Sep 2009 09:43:33 -0700
+From: Greg KH <greg@kroah.com>
+To: e9hack <e9hack@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Trouble with USB serial driver (ftdi_sio.c) on 2.6.31
+Message-ID: <20090914164333.GB25381@kroah.com>
+References: <4AAB8F3F.40403@googlemail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAB8F3F.40403@googlemail.com>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 10:31 -0600, Chris Friesen wrote:
+On Sat, Sep 12, 2009 at 02:08:31PM +0200, e9hack wrote:
+> Hi,
+> 
+> I've some trouble with the USB serial driver (ftdi_sio.c for a FT232RL from FTDI). If the 
+> port is opened for the first time, the driver works perfectly. If the port is closed and 
+> open again, it isn't possible to read any data from port. Writing data to the port works. 
+> The FT232RL must be reconnect to get it working again. A reboot without reconnect doesn't 
+> solve this problem. If I look at the debug output, I don't see read requests from 
+> ftdi_sio.c. If reading is possible, I see this read messages:
 
-> I've added netdev to the CC list.  Maybe some of the people there have
-> an opinion on what the default priority should be for ksoftirqd.
+{sigh}  Yes, this driver is a bit messed up in .31, sorry.  We are
+working through it and hope to have a fix in one of the upcoming
+.31-stable releases.
 
-Good idea.
+thanks,
 
-	-Mike
-
+greg k-h
