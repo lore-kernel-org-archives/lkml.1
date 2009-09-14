@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbZINRHY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932071AbZINRJa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755730AbZINRHY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 13:07:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZINRHT
+	id S932071AbZINRJa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 13:09:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755651AbZINRJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 13:07:19 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:41358 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755149AbZINRHR (ORCPT
+	Mon, 14 Sep 2009 13:09:25 -0400
+Received: from mail-vw0-f195.google.com ([209.85.212.195]:41361 "EHLO
+	mail-vw0-f195.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755618AbZINRJY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 13:07:17 -0400
-X-Sasl-enc: tG7Dh31p05/FmyBQmyISHW8TZ94+ky3svLEeEVSalcMD 1252948040
-Date: Mon, 14 Sep 2009 14:07:17 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-Cc: Corentin Chary <corentincj@iksaif.net>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 0/3] rfkill_unregister() should always be followed by
- rfkill_destroy()
-Message-ID: <20090914170717.GA13452@khazad-dum.debian.net>
-References: <1252925033-29696-1-git-send-email-corentincj@iksaif.net>
- <20090914132401.GC32253@khazad-dum.debian.net>
- <4AAE59CB.8030702@tuffmail.co.uk>
+	Mon, 14 Sep 2009 13:09:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=svg36bSwrvQhosQAXE/8qOoa7cUu2gm99Vt9J/JSyesu7xgDNbLIYjY1DUtcxC/+p0
+         uuth85zdr/FqAhEAXWdUjS5Fkd1mS/BdJVFhWfujWYWO4GsZnqsoLmqypO0FnO39x8VL
+         XZBTYyvHrURzsXRU1RLS7elDFOqSlNVmzBUJc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AAE59CB.8030702@tuffmail.co.uk>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <1252941416.2964.143.camel@localhost.localdomain>
+References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
+	 <1249403089.4634.139.camel@localhost.localdomain>
+	 <20090912165300.9d257283.sfr@canb.auug.org.au>
+	 <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam>
+	 <1252941416.2964.143.camel@localhost.localdomain>
+Date: Mon, 14 Sep 2009 10:09:27 -0700
+X-Google-Sender-Auth: 72f7c1e4e3799dc2
+Message-ID: <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
+Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree 
+	build warning)
+From: Christopher Li <sparse@chrisli.org>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org,
+       Josh Triplett <josh@freedesktop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Alan Jenkins wrote:
-> Henrique de Moraes Holschuh wrote:
-> > On Mon, 14 Sep 2009, Corentin Chary wrote:
-> >   
-> >>  drivers/platform/x86/dell-laptop.c   |   36 ++++++++++++++++++++++-----------
-> >>  drivers/platform/x86/hp-wmi.c        |    2 +-
-> >>  drivers/platform/x86/thinkpad_acpi.c |    1 +
-> >>     
-> >
-> > These are also likely needed in 2.6.31, please add appropriate Cc: lines to
-> > stable@kernel.org while adding the Acked-By's.
-> 
-> Do they meet the -stable criteria?
+On Mon, Sep 14, 2009 at 8:16 AM, Steven Rostedt <srostedt@redhat.com> wrote:
+> static void func(int size_me) {
+>        char array[size_me];
+>
+>        memcpy(array, "hello", size);
+> };
+>
+> and sparse failed on it as well. Note, you need to have something call
+> func, or sparse will ignore it.
 
-The ones for thinkpad_acpi and hp-wmi do (fix obvious bug, small and
-obviously correct, impossible to cause regressions).
+Gcc allows variable size. Sparse expects the size of an array is constant.
+For the kernel using variable array size is consider bad. Because the kernel
+has very limited stack size. (8K if I remember correctly). Using dynamic array
+is very easy to overflow the stack without realizing it.
 
-I don't know about the fix for dell-laptop since it is a lot larger.
+It deserves a warning. I agree the warning message can use a better description
+though.
 
->  - It must fix a real bug that bothers people (not a, "This could be a
->    problem..." type thing).
-
-Memory leaks are real bugs, especially these ones that _always_ happen and
-are not even on the error paths, but on the main code path...
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Chris
