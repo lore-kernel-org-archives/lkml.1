@@ -1,62 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZINLrD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755386AbZINLty@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZINLrD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 07:47:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754172AbZINLrC
+	id S1755386AbZINLty (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 07:49:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZINLtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 07:47:02 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:26907 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752796AbZINLrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 07:47:01 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] KEYS: Unlock tasklist when exiting early from
-	keyctl_session_to_parent
-To: torvalds@osdl.org, jmorris@namei.org
-Cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marc Dionne <marc.c.dionne@gmail.com>,
-       David Howells <dhowells@redhat.com>
-Date: Mon, 14 Sep 2009 12:46:23 +0100
-Message-ID: <20090914114623.11688.74885.stgit@warthog.procyon.org.uk>
-User-Agent: StGIT/0.14.3
+	Mon, 14 Sep 2009 07:49:53 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:53469 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbZINLtx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 07:49:53 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <4AADEA82.8000500@np.css.fujitsu.com>
+References: <4AADEA82.8000500@np.css.fujitsu.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 14 Sep 2009 13:49:41 +0200
+Message-ID: <ac3eb2510909140449v6428a2e0jf3d3cc5200973b4c@mail.gmail.com>
+Subject: Re: [GIT BISECT -next] mem.c: could not login on console of fedora 10
+To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+Cc: Jiri Kosina <jkosina@suse.cz>, gregkh <gregkh@suse.de>,
+       LKLM <linux-kernel@vger.kernel.org>,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Marc Dionne <marc.c.dionne@gmail.com>
+2009/9/14 Jin Dongming <jin.dongming@np.css.fujitsu.com>:
+> When I build and boot -next on fedora 10, I can not login anymore.
+> When I input the user name and password, the system does not output
+> any message and requires user to input the user name and password
+> again and again.
+>
+> I find the patch which caused this problem with "GIT BISECT" command.
+> And the patch is
+>    commit 7c4b7daa1878972ed0137c95f23569124bd6e2b1
+>    "mem_class: use minor as index instead of searching the array".
+>
+> Though I don't know the real reason why user could not login, I
+> confirmed the patch I made as following could resolve the problem on
+> fedora 10.
+>
+> Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
+> ---
+>  drivers/char/mem.c |    4 ++--
+>  1 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/drivers/char/mem.c b/drivers/char/mem.c
+> index bed3503..0491cdf 100644
+> --- a/drivers/char/mem.c
+> +++ b/drivers/char/mem.c
+> @@ -878,8 +878,8 @@ static const struct memdev {
+>        [ 4] = { "port", &port_fops, NULL },
+>  #endif
+>        [ 5] = { "zero", &zero_fops, &zero_bdi },
+> -       [ 6] = { "full", &full_fops, NULL },
+> -       [ 7] = { "random", &random_fops, NULL },
+> +       [ 7] = { "full", &full_fops, NULL },
+> +       [ 8] = { "random", &random_fops, NULL },
+>        [ 9] = { "urandom", &urandom_fops, NULL },
+>        [11] = { "kmsg", &kmsg_fops, NULL },
+>  #ifdef CONFIG_CRASH_DUMP
 
-When we exit early from keyctl_session_to_parent because of permissions or
-because the session keyring is the same as the parent, we need to unlock the
-tasklist.
+Yeah, that looks messed up and it seems like the right fix.
+Greg, care to merge that into the patch in your tree?
 
-The missing unlock causes the system to hang completely when using
-keyctl(KEYCTL_SESSION_TO_PARENT) with a keyring shared with the parent.
-
-Signed-off-by: Marc Dionne <marc.c.dionne@gmail.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- security/keys/keyctl.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-
-diff --git a/security/keys/keyctl.c b/security/keys/keyctl.c
-index 74c9685..60983f3 100644
---- a/security/keys/keyctl.c
-+++ b/security/keys/keyctl.c
-@@ -1319,6 +1319,7 @@ long keyctl_session_to_parent(void)
- already_same:
- 	ret = 0;
- not_permitted:
-+	write_unlock_irq(&tasklist_lock);
- 	put_cred(cred);
- 	return ret;
- 
-
+Thanks for the fix and sorry,
+Kay
