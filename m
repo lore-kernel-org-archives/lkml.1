@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZINQQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752425AbZINQUC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756049AbZINQQc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 12:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZINQQ0
+	id S1752425AbZINQUC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 12:20:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753421AbZINQUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 12:16:26 -0400
-Received: from cantor.suse.de ([195.135.220.2]:53162 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751250AbZINQQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 12:16:25 -0400
-Date: Mon, 14 Sep 2009 18:16:27 +0200
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: [PULL REQUEST] O_SYNC cleanup series
-Message-ID: <20090914161627.GC25549@duck.suse.cz>
+	Mon, 14 Sep 2009 12:20:00 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:40043 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751547AbZINQT7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 12:19:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=Em0q5lEYmD56LJjanyVLfqpuGUjwU/Y7d0vuJYfoUkM8AzdUGj9kqCaiN0P5MCK9RR
+         QChCq6TQzj1bG69/ZA4LAZCnssO6wU8Rg+vWybgvB+kmqP/QPxswnYdT14qksm6cE5pw
+         nB5wVJzKggcWvTN/PJ5/vtwrPRlJ1J2p/HxLs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200909141730.40467.baeckham@gmx.net>
+References: <200909141730.40467.baeckham@gmx.net>
+Date: Mon, 14 Sep 2009 17:20:00 +0100
+Message-ID: <9b2b86520909140920y293a2a72lc369340a0f823970@mail.gmail.com>
+Subject: Re: parameter for module gspca_sn9c20x
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: baeckham@gmx.net
+Cc: linux-modules <linux-modules@vger.kernel.org>, linux-media@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello Linus,
+[CC linux-media]  The linux-modules list is for the program "modprobe"
+etc, not the actual kernel drivers.
 
-  could you please pull from
+On 9/14/09, baeckham@gmx.net <baeckham@gmx.net> wrote:
+> I have a built-in webcam in my laptop: 0c45:624f Microdia PC Camera
+> (SN9C201)
+>
+> Till today I used the driver from [groups.google.de] to make it work.
+> But now I found the driver in the 2.6.31 kernel:
+>
+> 	 gspca_sn9c20x
+>
+> Unfortunately I have to flip the image vertically so it is displayed right,
+> otherwise it is upside-
+> down.
+>
+> With the google-groups-driver I had to use the parameter vflip=1 to flip the
+> image. But with the
+> kernel module gspca_sn9c20x this is not working:
+>
+> # modprobe gspca_sn9c20x vflip=1
+> FATAL: Error inserting gspca_sn9c20x
+> (/lib/modules/2.6.31/kernel/drivers/media/video/gspca/gspca_sn9c20x.ko):
+> Unknown symbol in module,
+> or unknown parameter (see dmesg)
+>
+> Does anyone know how to flip the image?
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs-2.6.git osync_cleanup
+All I can say is it doesn't appear to be a module parameter, because
+there aren't any module parameters in the mainline driver :-).
 
-  to get a patch series that cleans up handling of O_SYNC open flag. After
-this patch series, it uses the same code as standard fsync / fdatasync.
-  The patch series contains:
-
-Christoph Hellwig (2):
-      vfs: Rename generic_file_aio_write_nolock
-      fsync: wait for data writeout completion before calling ->fsync
-
-Jan Kara (15):
-      vfs: Introduce filemap_fdatawait_range
-      vfs: Export __generic_file_aio_write() and add some comments
-      vfs: Remove syncing from generic_file_direct_write() and generic_file_buffered_write()
-      pohmelfs: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
-      ocfs2: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
-      vfs: Introduce new helpers for syncing after writing to O_SYNC file or IS_SYNC inode
-      ext2: Update comment about generic_osync_inode
-      ext3: Remove syncing logic from ext3_file_write
-      ext4: Remove syncing logic from ext4_file_write
-      ntfs: Use new syncing helpers and update comments
-      ocfs2: Update syncing after splicing to match generic version
-      xfs: Convert sync_page_range() to simple filemap_write_and_wait_range()
-      pohmelfs: Use new syncing helper
-      fat: Opencode sync_page_range_nolock()
-      vfs: Remove generic_osync_inode() and sync_page_range{_nolock}()
-
-The diffstat is
-
- drivers/char/raw.c               |    2 +-
- drivers/staging/pohmelfs/inode.c |    6 +-
- fs/block_dev.c                   |   29 ++++++-
- fs/ext2/inode.c                  |    2 +-
- fs/ext3/file.c                   |   61 +-------------
- fs/ext4/file.c                   |   53 +-----------
- fs/fat/file.c                    |   22 +++++-
- fs/fat/misc.c                    |    4 +-
- fs/fs-writeback.c                |   54 ------------
- fs/ntfs/file.c                   |   16 +---
- fs/ntfs/mft.c                    |   13 ++--
- fs/ocfs2/file.c                  |   49 ++++-------
- fs/splice.c                      |   22 ++----
- fs/sync.c                        |   56 +++++++++++--
- fs/xfs/linux-2.6/xfs_lrw.c       |    3 +-
- include/linux/fs.h               |   18 +++--
- include/linux/writeback.h        |    4 -
- mm/filemap.c                     |  170 ++++++++++++--------------------------
- 18 files changed, 204 insertions(+), 380 deletions(-)
-
-							Thanks
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Regards
+Alan
