@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbZINUMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933763AbZINULu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933766AbZINUMd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933695AbZINUM3
+	id S933763AbZINULu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933752AbZINULs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:12:29 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:54205 "EHLO smtp.gentoo.org"
+	Mon, 14 Sep 2009 16:11:48 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:54207 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933624AbZINUJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:09:10 -0400
+	id S933676AbZINUJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 16:09:11 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org,
        Harald Krapfenbauer <Harald.Krapfenbauer@bluetechnix.at>
-Subject: [PATCH 69/72] Blackfin: cm-bf537u: split board from cm-bf537e
-Date: Mon, 14 Sep 2009 16:08:13 -0400
-Message-Id: <1252958896-25150-70-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 70/72] Blackfin: update cm board resources
+Date: Mon, 14 Sep 2009 16:08:14 -0400
+Message-Id: <1252958896-25150-71-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
 References: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
@@ -25,1008 +25,224 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Harald Krapfenbauer <Harald.Krapfenbauer@bluetechnix.at>
 
-The cm-bf537u module, while similar to the cm-bf537e, is different enough
-to warrant its own resources.  It has a USB controller but no PHY.
-
 Signed-off-by: Harald Krapfenbauer <Harald.Krapfenbauer@bluetechnix.at>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/Kconfig                       |    7 +-
- arch/blackfin/mach-bf537/boards/Kconfig     |   12 +-
- arch/blackfin/mach-bf537/boards/Makefile    |    3 +-
- arch/blackfin/mach-bf537/boards/cm_bf537.c  |  632 -----------------------
- arch/blackfin/mach-bf537/boards/cm_bf537e.c |  727 +++++++++++++++++++++++++++
- arch/blackfin/mach-bf537/boards/cm_bf537u.c |  633 +++++++++++++++++++++++
- 6 files changed, 1375 insertions(+), 639 deletions(-)
- delete mode 100644 arch/blackfin/mach-bf537/boards/cm_bf537.c
- create mode 100644 arch/blackfin/mach-bf537/boards/cm_bf537e.c
- create mode 100644 arch/blackfin/mach-bf537/boards/cm_bf537u.c
+ arch/blackfin/mach-bf527/boards/cm_bf527.c  |   97 ++++++++++++----------
+ arch/blackfin/mach-bf533/boards/cm_bf533.c  |  114 ++++++++++++++++++++++++++-
+ arch/blackfin/mach-bf537/boards/tcm_bf537.c |   13 ++--
+ arch/blackfin/mach-bf548/boards/cm_bf548.c  |   15 +++-
+ arch/blackfin/mach-bf561/boards/cm_bf561.c  |  113 ++++++++++++++++++++++++++-
+ 5 files changed, 297 insertions(+), 55 deletions(-)
 
-diff --git a/arch/blackfin/Kconfig b/arch/blackfin/Kconfig
-index f20dc77..e7a781d 100644
---- a/arch/blackfin/Kconfig
-+++ b/arch/blackfin/Kconfig
-@@ -342,8 +342,9 @@ config MEM_MT48LC64M4A2FB_7E
- config MEM_MT48LC16M16A2TG_75
- 	bool
- 	depends on (BFIN533_EZKIT || BFIN561_EZKIT \
--		|| BFIN533_BLUETECHNIX_CM || BFIN537_BLUETECHNIX_CM \
--		|| H8606_HVSISTEMAS || BFIN527_BLUETECHNIX_CM)
-+		|| BFIN533_BLUETECHNIX_CM || BFIN537_BLUETECHNIX_CM_E \
-+		|| BFIN537_BLUETECHNIX_CM_U || H8606_HVSISTEMAS \
-+		|| BFIN527_BLUETECHNIX_CM)
- 	default y
+diff --git a/arch/blackfin/mach-bf527/boards/cm_bf527.c b/arch/blackfin/mach-bf527/boards/cm_bf527.c
+index a0f623d..08a3f01 100644
+--- a/arch/blackfin/mach-bf527/boards/cm_bf527.c
++++ b/arch/blackfin/mach-bf527/boards/cm_bf527.c
+@@ -151,46 +151,6 @@ static struct platform_device musb_device = {
+ };
+ #endif
  
- config MEM_MT48LC32M8A2_75
-@@ -459,7 +460,7 @@ config VCO_MULT
- 	default "45" if BFIN533_STAMP
- 	default "20" if (BFIN537_STAMP || BFIN527_EZKIT || BFIN548_EZKIT || BFIN548_BLUETECHNIX_CM || BFIN538_EZKIT)
- 	default "22" if BFIN533_BLUETECHNIX_CM
--	default "20" if (BFIN537_BLUETECHNIX_CM || BFIN527_BLUETECHNIX_CM || BFIN561_BLUETECHNIX_CM)
-+	default "20" if (BFIN537_BLUETECHNIX_CM_E || BFIN537_BLUETECHNIX_CM_U || BFIN527_BLUETECHNIX_CM || BFIN561_BLUETECHNIX_CM)
- 	default "20" if BFIN561_EZKIT
- 	default "16" if (H8606_HVSISTEMAS || BLACKSTAMP || BFIN526_EZBRD || BFIN518F_EZBRD)
- 	help
-diff --git a/arch/blackfin/mach-bf537/boards/Kconfig b/arch/blackfin/mach-bf537/boards/Kconfig
-index 77c59da..44132fd 100644
---- a/arch/blackfin/mach-bf537/boards/Kconfig
-+++ b/arch/blackfin/mach-bf537/boards/Kconfig
-@@ -9,11 +9,17 @@ config BFIN537_STAMP
- 	help
- 	  BF537-STAMP board support.
- 
--config BFIN537_BLUETECHNIX_CM
--	bool "Bluetechnix CM-BF537"
-+config BFIN537_BLUETECHNIX_CM_E
-+	bool "Bluetechnix CM-BF537E"
- 	depends on (BF537)
- 	help
--	  CM-BF537 support for EVAL- and DEV-Board.
-+	  CM-BF537E support for EVAL- and DEV-Board.
-+
-+config BFIN537_BLUETECHNIX_CM_U
-+	bool "Bluetechnix CM-BF537U"
-+	depends on (BF537)
-+	help
-+	  CM-BF537U support for EVAL- and DEV-Board.
- 
- config BFIN537_BLUETECHNIX_TCM
- 	bool "Bluetechnix TCM-BF537"
-diff --git a/arch/blackfin/mach-bf537/boards/Makefile b/arch/blackfin/mach-bf537/boards/Makefile
-index 68b98a7..7e6aa4e 100644
---- a/arch/blackfin/mach-bf537/boards/Makefile
-+++ b/arch/blackfin/mach-bf537/boards/Makefile
-@@ -3,7 +3,8 @@
- #
- 
- obj-$(CONFIG_BFIN537_STAMP)            += stamp.o
--obj-$(CONFIG_BFIN537_BLUETECHNIX_CM)   += cm_bf537.o
-+obj-$(CONFIG_BFIN537_BLUETECHNIX_CM_E) += cm_bf537e.o
-+obj-$(CONFIG_BFIN537_BLUETECHNIX_CM_U) += cm_bf537u.o
- obj-$(CONFIG_BFIN537_BLUETECHNIX_TCM)  += tcm_bf537.o
- obj-$(CONFIG_PNAV10)                   += pnav10.o
- obj-$(CONFIG_CAMSIG_MINOTAUR)          += minotaur.o
-diff --git a/arch/blackfin/mach-bf537/boards/cm_bf537.c b/arch/blackfin/mach-bf537/boards/cm_bf537.c
-deleted file mode 100644
-index 220cfda..0000000
---- a/arch/blackfin/mach-bf537/boards/cm_bf537.c
-+++ /dev/null
-@@ -1,632 +0,0 @@
--/*
-- * File:         arch/blackfin/mach-bf537/boards/cm_bf537.c
-- * Based on:     arch/blackfin/mach-bf533/boards/ezkit.c
-- * Author:       Aidan Williams <aidan@nicta.com.au>
-- *
-- * Created:      2005
-- * Description:  Board description file
-- *
-- * Modified:
-- *               Copyright 2005 National ICT Australia (NICTA)
-- *               Copyright 2004-2006 Analog Devices Inc.
-- *
-- * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License
-- * along with this program; if not, see the file COPYING, or write
-- * to the Free Software Foundation, Inc.,
-- * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-- */
--
--#include <linux/device.h>
--#include <linux/etherdevice.h>
--#include <linux/platform_device.h>
--#include <linux/mtd/mtd.h>
--#include <linux/mtd/partitions.h>
--#include <linux/mtd/physmap.h>
--#include <linux/spi/spi.h>
--#include <linux/spi/flash.h>
--#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
--#include <linux/usb/isp1362.h>
--#endif
--#include <linux/ata_platform.h>
--#include <linux/irq.h>
--#include <asm/dma.h>
--#include <asm/bfin5xx_spi.h>
--#include <asm/portmux.h>
--#include <asm/dpmc.h>
--
--/*
-- * Name the Board for the /proc/cpuinfo
-- */
--const char bfin_board_name[] = "Bluetechnix CM BF537";
--
--#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
--/* all SPI peripherals info goes here */
--
--#if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
--static struct mtd_partition bfin_spi_flash_partitions[] = {
+-#if defined(CONFIG_MTD_PHYSMAP) || defined(CONFIG_MTD_PHYSMAP_MODULE)
+-static struct mtd_partition ezkit_partitions[] = {
 -	{
--		.name = "bootloader(spi)",
--		.size = 0x00020000,
--		.offset = 0,
--		.mask_flags = MTD_CAP_ROM
+-		.name       = "bootloader(nor)",
+-		.size       = 0x40000,
+-		.offset     = 0,
 -	}, {
--		.name = "linux kernel(spi)",
--		.size = 0xe0000,
--		.offset = 0x20000
+-		.name       = "linux kernel(nor)",
+-		.size       = 0x1C0000,
+-		.offset     = MTDPART_OFS_APPEND,
 -	}, {
--		.name = "file system(spi)",
--		.size = 0x700000,
--		.offset = 0x00100000,
+-		.name       = "file system(nor)",
+-		.size       = MTDPART_SIZ_FULL,
+-		.offset     = MTDPART_OFS_APPEND,
 -	}
 -};
 -
--static struct flash_platform_data bfin_spi_flash_data = {
--	.name = "m25p80",
--	.parts = bfin_spi_flash_partitions,
--	.nr_parts = ARRAY_SIZE(bfin_spi_flash_partitions),
--	.type = "m25p64",
+-static struct physmap_flash_data ezkit_flash_data = {
+-	.width      = 2,
+-	.parts      = ezkit_partitions,
+-	.nr_parts   = ARRAY_SIZE(ezkit_partitions),
 -};
 -
--/* SPI flash chip (m25p64) */
--static struct bfin5xx_spi_chip spi_flash_chip_info = {
--	.enable_dma = 0,         /* use dma transfer with this chip*/
--	.bits_per_word = 8,
--};
--#endif
--
--#if defined(CONFIG_BFIN_SPI_ADC) || defined(CONFIG_BFIN_SPI_ADC_MODULE)
--/* SPI ADC chip */
--static struct bfin5xx_spi_chip spi_adc_chip_info = {
--	.enable_dma = 1,         /* use dma transfer with this chip*/
--	.bits_per_word = 16,
--};
--#endif
--
--#if defined(CONFIG_SND_BLACKFIN_AD1836) || defined(CONFIG_SND_BLACKFIN_AD1836_MODULE)
--static struct bfin5xx_spi_chip ad1836_spi_chip_info = {
--	.enable_dma = 0,
--	.bits_per_word = 16,
--};
--#endif
--
--#if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
--static struct bfin5xx_spi_chip  mmc_spi_chip_info = {
--	.enable_dma = 0,
--	.bits_per_word = 8,
--};
--#endif
--
--static struct spi_board_info bfin_spi_board_info[] __initdata = {
--#if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
--	{
--		/* the modalias must be the same as spi device driver name */
--		.modalias = "m25p80", /* Name of spi_driver for this device */
--		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
--		.bus_num = 0, /* Framework bus number */
--		.chip_select = 1, /* Framework chip select. On STAMP537 it is SPISSEL1*/
--		.platform_data = &bfin_spi_flash_data,
--		.controller_data = &spi_flash_chip_info,
--		.mode = SPI_MODE_3,
--	},
--#endif
--
--#if defined(CONFIG_BFIN_SPI_ADC) || defined(CONFIG_BFIN_SPI_ADC_MODULE)
--	{
--		.modalias = "bfin_spi_adc", /* Name of spi_driver for this device */
--		.max_speed_hz = 6250000,     /* max spi clock (SCK) speed in HZ */
--		.bus_num = 0, /* Framework bus number */
--		.chip_select = 1, /* Framework chip select. */
--		.platform_data = NULL, /* No spi_driver specific config */
--		.controller_data = &spi_adc_chip_info,
--	},
--#endif
--
--#if defined(CONFIG_SND_BLACKFIN_AD1836) || defined(CONFIG_SND_BLACKFIN_AD1836_MODULE)
--	{
--		.modalias = "ad1836",
--		.max_speed_hz = 3125000,     /* max spi clock (SCK) speed in HZ */
--		.bus_num = 0,
--		.chip_select = CONFIG_SND_BLACKFIN_SPI_PFBIT,
--		.controller_data = &ad1836_spi_chip_info,
--	},
--#endif
--
--#if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
--	{
--		.modalias = "mmc_spi",
--		.max_speed_hz = 20000000,     /* max spi clock (SCK) speed in HZ */
--		.bus_num = 0,
--		.chip_select = 1,
--		.controller_data = &mmc_spi_chip_info,
--		.mode = SPI_MODE_3,
--	},
--#endif
+-static struct resource ezkit_flash_resource = {
+-	.start = 0x20000000,
+-	.end   = 0x201fffff,
+-	.flags = IORESOURCE_MEM,
 -};
 -
--/* SPI (0) */
--static struct resource bfin_spi0_resource[] = {
--	[0] = {
--		.start = SPI0_REGBASE,
--		.end   = SPI0_REGBASE + 0xFF,
--		.flags = IORESOURCE_MEM,
--		},
--	[1] = {
--		.start = CH_SPI,
--		.end   = CH_SPI,
--		.flags = IORESOURCE_DMA,
--	},
--	[2] = {
--		.start = IRQ_SPI,
--		.end   = IRQ_SPI,
--		.flags = IORESOURCE_IRQ,
--	},
--};
--
--/* SPI controller data */
--static struct bfin5xx_spi_master bfin_spi0_info = {
--	.num_chipselect = 8,
--	.enable_dma = 1,  /* master has the ability to do dma transfer */
--	.pin_req = {P_SPI0_SCK, P_SPI0_MISO, P_SPI0_MOSI, 0},
--};
--
--static struct platform_device bfin_spi0_device = {
--	.name = "bfin-spi",
--	.id = 0, /* Bus number */
--	.num_resources = ARRAY_SIZE(bfin_spi0_resource),
--	.resource = bfin_spi0_resource,
--	.dev = {
--		.platform_data = &bfin_spi0_info, /* Passed to driver */
--	},
--};
--#endif  /* spi master and devices */
--
--#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_DRV_BFIN_MODULE)
--static struct platform_device rtc_device = {
--	.name = "rtc-bfin",
--	.id   = -1,
--};
--#endif
--
--#if defined(CONFIG_FB_HITACHI_TX09) || defined(CONFIG_FB_HITACHI_TX09_MODULE)
--static struct platform_device hitachi_fb_device = {
--	.name = "hitachi-tx09",
--};
--#endif
--
--#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
--#include <linux/smc91x.h>
--
--static struct smc91x_platdata smc91x_info = {
--	.flags = SMC91X_USE_16BIT | SMC91X_NOWAIT,
--	.leda = RPC_LED_100_10,
--	.ledb = RPC_LED_TX_RX,
--};
--
--static struct resource smc91x_resources[] = {
--	{
--		.start = 0x20200300,
--		.end = 0x20200300 + 16,
--		.flags = IORESOURCE_MEM,
--	}, {
--		.start = IRQ_PF14,
--		.end = IRQ_PF14,
--		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
--		},
--};
--
--static struct platform_device smc91x_device = {
--	.name = "smc91x",
--	.id = 0,
--	.num_resources = ARRAY_SIZE(smc91x_resources),
--	.resource = smc91x_resources,
--	.dev	= {
--		.platform_data	= &smc91x_info,
--	},
--};
--#endif
--
--#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
--static struct resource isp1362_hcd_resources[] = {
--	{
--		.start = 0x20308000,
--		.end = 0x20308000,
--		.flags = IORESOURCE_MEM,
--	}, {
--		.start = 0x20308004,
--		.end = 0x20308004,
--		.flags = IORESOURCE_MEM,
--	}, {
--		.start = IRQ_PG15,
--		.end = IRQ_PG15,
--		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
--	},
--};
--
--static struct isp1362_platform_data isp1362_priv = {
--	.sel15Kres = 1,
--	.clknotstop = 0,
--	.oc_enable = 0,
--	.int_act_high = 0,
--	.int_edge_triggered = 0,
--	.remote_wakeup_connected = 0,
--	.no_power_switching = 1,
--	.power_switching_mode = 0,
--};
--
--static struct platform_device isp1362_hcd_device = {
--	.name = "isp1362-hcd",
--	.id = 0,
--	.dev = {
--		.platform_data = &isp1362_priv,
--	},
--	.num_resources = ARRAY_SIZE(isp1362_hcd_resources),
--	.resource = isp1362_hcd_resources,
--};
--#endif
--
--#if defined(CONFIG_USB_NET2272) || defined(CONFIG_USB_NET2272_MODULE)
--static struct resource net2272_bfin_resources[] = {
--	{
--		.start = 0x20200000,
--		.end = 0x20200000 + 0x100,
--		.flags = IORESOURCE_MEM,
--	}, {
--		.start = IRQ_PH14,
--		.end = IRQ_PH14,
--		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
--	},
--};
--
--static struct platform_device net2272_bfin_device = {
--	.name = "net2272",
--	.id = -1,
--	.num_resources = ARRAY_SIZE(net2272_bfin_resources),
--	.resource = net2272_bfin_resources,
--};
--#endif
--
--static struct resource bfin_gpios_resources = {
--	.start = 0,
--	.end   = MAX_BLACKFIN_GPIOS - 1,
--	.flags = IORESOURCE_IRQ,
--};
--
--static struct platform_device bfin_gpios_device = {
--	.name = "simple-gpio",
--	.id = -1,
--	.num_resources = 1,
--	.resource = &bfin_gpios_resources,
--};
--
--#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
--static struct mtd_partition cm_partitions[] = {
--	{
--		.name   = "bootloader(nor)",
--		.size   = 0x40000,
--		.offset = 0,
--	}, {
--		.name   = "linux kernel(nor)",
--		.size   = 0xE0000,
--		.offset = MTDPART_OFS_APPEND,
--	}, {
--		.name   = "file system(nor)",
--		.size   = MTDPART_SIZ_FULL,
--		.offset = MTDPART_OFS_APPEND,
--	}
--};
--
--static struct physmap_flash_data cm_flash_data = {
--	.width    = 2,
--	.parts    = cm_partitions,
--	.nr_parts = ARRAY_SIZE(cm_partitions),
--};
--
--static unsigned cm_flash_gpios[] = { GPIO_PF4 };
--
--static struct resource cm_flash_resource[] = {
--	{
--		.name  = "cfi_probe",
--		.start = 0x20000000,
--		.end   = 0x201fffff,
--		.flags = IORESOURCE_MEM,
--	}, {
--		.start = (unsigned long)cm_flash_gpios,
--		.end   = ARRAY_SIZE(cm_flash_gpios),
--		.flags = IORESOURCE_IRQ,
--	}
--};
--
--static struct platform_device cm_flash_device = {
--	.name          = "gpio-addr-flash",
+-static struct platform_device ezkit_flash_device = {
+-	.name          = "physmap-flash",
 -	.id            = 0,
 -	.dev = {
--		.platform_data = &cm_flash_data,
+-		.platform_data = &ezkit_flash_data,
 -	},
--	.num_resources = ARRAY_SIZE(cm_flash_resource),
--	.resource      = cm_flash_resource,
+-	.num_resources = 1,
+-	.resource      = &ezkit_flash_resource,
 -};
 -#endif
 -
--#if defined(CONFIG_SERIAL_BFIN) || defined(CONFIG_SERIAL_BFIN_MODULE)
--static struct resource bfin_uart_resources[] = {
--	{
--		.start = 0xFFC00400,
--		.end = 0xFFC004FF,
--		.flags = IORESOURCE_MEM,
--	}, {
--		.start = 0xFFC02000,
--		.end = 0xFFC020FF,
--		.flags = IORESOURCE_MEM,
--	},
--};
--
--static struct platform_device bfin_uart_device = {
--	.name = "bfin-uart",
--	.id = 1,
--	.num_resources = ARRAY_SIZE(bfin_uart_resources),
--	.resource = bfin_uart_resources,
--};
--#endif
--
--#if defined(CONFIG_BFIN_SIR) || defined(CONFIG_BFIN_SIR_MODULE)
--#ifdef CONFIG_BFIN_SIR0
--static struct resource bfin_sir0_resources[] = {
--	{
--		.start = 0xFFC00400,
--		.end = 0xFFC004FF,
--		.flags = IORESOURCE_MEM,
--	},
--	{
--		.start = IRQ_UART0_RX,
--		.end = IRQ_UART0_RX+1,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.start = CH_UART0_RX,
--		.end = CH_UART0_RX+1,
--		.flags = IORESOURCE_DMA,
--	},
--};
--static struct platform_device bfin_sir0_device = {
--	.name = "bfin_sir",
--	.id = 0,
--	.num_resources = ARRAY_SIZE(bfin_sir0_resources),
--	.resource = bfin_sir0_resources,
--};
--#endif
--#ifdef CONFIG_BFIN_SIR1
--static struct resource bfin_sir1_resources[] = {
--	{
--		.start = 0xFFC02000,
--		.end = 0xFFC020FF,
--		.flags = IORESOURCE_MEM,
--	},
--	{
--		.start = IRQ_UART1_RX,
--		.end = IRQ_UART1_RX+1,
--		.flags = IORESOURCE_IRQ,
--	},
--	{
--		.start = CH_UART1_RX,
--		.end = CH_UART1_RX+1,
--		.flags = IORESOURCE_DMA,
--	},
--};
--static struct platform_device bfin_sir1_device = {
--	.name = "bfin_sir",
--	.id = 1,
--	.num_resources = ARRAY_SIZE(bfin_sir1_resources),
--	.resource = bfin_sir1_resources,
--};
--#endif
--#endif
--
--#if defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
--static struct resource bfin_twi0_resource[] = {
--	[0] = {
--		.start = TWI0_REGBASE,
--		.end   = TWI0_REGBASE,
--		.flags = IORESOURCE_MEM,
--	},
--	[1] = {
--		.start = IRQ_TWI,
--		.end   = IRQ_TWI,
--		.flags = IORESOURCE_IRQ,
--	},
--};
--
--static struct platform_device i2c_bfin_twi_device = {
--	.name = "i2c-bfin-twi",
--	.id = 0,
--	.num_resources = ARRAY_SIZE(bfin_twi0_resource),
--	.resource = bfin_twi0_resource,
--};
--#endif
--
--#if defined(CONFIG_SERIAL_BFIN_SPORT) || defined(CONFIG_SERIAL_BFIN_SPORT_MODULE)
--static struct platform_device bfin_sport0_uart_device = {
--	.name = "bfin-sport-uart",
--	.id = 0,
--};
--
--static struct platform_device bfin_sport1_uart_device = {
--	.name = "bfin-sport-uart",
--	.id = 1,
--};
--#endif
--
--#if defined(CONFIG_BFIN_MAC) || defined(CONFIG_BFIN_MAC_MODULE)
--static struct platform_device bfin_mii_bus = {
--	.name = "bfin_mii_bus",
--};
--
--static struct platform_device bfin_mac_device = {
--	.name = "bfin_mac",
--	.dev.platform_data = &bfin_mii_bus,
--};
--#endif
--
--#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
--#define PATA_INT	IRQ_PF14
--
--static struct pata_platform_info bfin_pata_platform_data = {
--	.ioport_shift = 2,
--	.irq_type = IRQF_TRIGGER_HIGH | IRQF_DISABLED,
--};
--
--static struct resource bfin_pata_resources[] = {
--	{
--		.start = 0x2030C000,
--		.end = 0x2030C01F,
--		.flags = IORESOURCE_MEM,
--	},
--	{
--		.start = 0x2030D018,
--		.end = 0x2030D01B,
--		.flags = IORESOURCE_MEM,
--	},
--	{
--		.start = PATA_INT,
--		.end = PATA_INT,
--		.flags = IORESOURCE_IRQ,
--	},
--};
--
--static struct platform_device bfin_pata_device = {
--	.name = "pata_platform",
--	.id = -1,
--	.num_resources = ARRAY_SIZE(bfin_pata_resources),
--	.resource = bfin_pata_resources,
--	.dev = {
--		.platform_data = &bfin_pata_platform_data,
--	}
--};
--#endif
--
--static const unsigned int cclk_vlev_datasheet[] =
--{
--	VRPAIR(VLEV_085, 250000000),
--	VRPAIR(VLEV_090, 376000000),
--	VRPAIR(VLEV_095, 426000000),
--	VRPAIR(VLEV_100, 426000000),
--	VRPAIR(VLEV_105, 476000000),
--	VRPAIR(VLEV_110, 476000000),
--	VRPAIR(VLEV_115, 476000000),
--	VRPAIR(VLEV_120, 500000000),
--	VRPAIR(VLEV_125, 533000000),
--	VRPAIR(VLEV_130, 600000000),
--};
--
--static struct bfin_dpmc_platform_data bfin_dmpc_vreg_data = {
--	.tuple_tab = cclk_vlev_datasheet,
--	.tabsize = ARRAY_SIZE(cclk_vlev_datasheet),
--	.vr_settling_time = 25 /* us */,
--};
--
--static struct platform_device bfin_dpmc = {
--	.name = "bfin dpmc",
--	.dev = {
--		.platform_data = &bfin_dmpc_vreg_data,
--	},
--};
--
--static struct platform_device *cm_bf537_devices[] __initdata = {
--
--	&bfin_dpmc,
--
--#if defined(CONFIG_FB_HITACHI_TX09) || defined(CONFIG_FB_HITACHI_TX09_MODULE)
--	&hitachi_fb_device,
--#endif
--
--#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_DRV_BFIN_MODULE)
--	&rtc_device,
--#endif
--
--#if defined(CONFIG_SERIAL_BFIN) || defined(CONFIG_SERIAL_BFIN_MODULE)
--	&bfin_uart_device,
--#endif
--
--#if defined(CONFIG_BFIN_SIR) || defined(CONFIG_BFIN_SIR_MODULE)
--#ifdef CONFIG_BFIN_SIR0
--	&bfin_sir0_device,
--#endif
--#ifdef CONFIG_BFIN_SIR1
--	&bfin_sir1_device,
--#endif
--#endif
--
--#if defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
--	&i2c_bfin_twi_device,
--#endif
--
--#if defined(CONFIG_SERIAL_BFIN_SPORT) || defined(CONFIG_SERIAL_BFIN_SPORT_MODULE)
--	&bfin_sport0_uart_device,
--	&bfin_sport1_uart_device,
--#endif
--
--#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
--	&isp1362_hcd_device,
--#endif
--
--#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
--	&smc91x_device,
--#endif
--
--#if defined(CONFIG_BFIN_MAC) || defined(CONFIG_BFIN_MAC_MODULE)
--	&bfin_mii_bus,
--	&bfin_mac_device,
--#endif
--
--#if defined(CONFIG_USB_NET2272) || defined(CONFIG_USB_NET2272_MODULE)
--	&net2272_bfin_device,
--#endif
--
--#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
--	&bfin_spi0_device,
--#endif
--
--#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
--	&bfin_pata_device,
--#endif
--
--#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
--	&cm_flash_device,
--#endif
--
--	&bfin_gpios_device,
--};
--
--static int __init cm_bf537_init(void)
--{
--	printk(KERN_INFO "%s(): registering device resources\n", __func__);
--	platform_add_devices(cm_bf537_devices, ARRAY_SIZE(cm_bf537_devices));
--#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
--	spi_register_board_info(bfin_spi_board_info, ARRAY_SIZE(bfin_spi_board_info));
--#endif
--
--#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
--	irq_desc[PATA_INT].status |= IRQ_NOAUTOEN;
--#endif
--	return 0;
--}
--
--arch_initcall(cm_bf537_init);
--
--void bfin_get_ether_addr(char *addr)
--{
--	random_ether_addr(addr);
--	printk(KERN_WARNING "%s:%s: Setting Ethernet MAC to a random one\n", __FILE__, __func__);
--}
--EXPORT_SYMBOL(bfin_get_ether_addr);
-diff --git a/arch/blackfin/mach-bf537/boards/cm_bf537e.c b/arch/blackfin/mach-bf537/boards/cm_bf537e.c
-new file mode 100644
-index 0000000..87acb7d
---- /dev/null
-+++ b/arch/blackfin/mach-bf537/boards/cm_bf537e.c
-@@ -0,0 +1,727 @@
-+/*
-+ * File:         arch/blackfin/mach-bf537/boards/cm_bf537.c
-+ * Based on:     arch/blackfin/mach-bf533/boards/ezkit.c
-+ * Author:       Aidan Williams <aidan@nicta.com.au>
-+ *
-+ * Created:      2005
-+ * Description:  Board description file
-+ *
-+ * Modified:
-+ *               Copyright 2005 National ICT Australia (NICTA)
-+ *               Copyright 2004-2006 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/etherdevice.h>
-+#include <linux/platform_device.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/physmap.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/flash.h>
-+#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
-+#include <linux/usb/isp1362.h>
-+#endif
-+#include <linux/ata_platform.h>
-+#include <linux/irq.h>
-+#include <asm/dma.h>
-+#include <asm/bfin5xx_spi.h>
-+#include <asm/portmux.h>
-+#include <asm/dpmc.h>
-+
-+/*
-+ * Name the Board for the /proc/cpuinfo
-+ */
-+const char bfin_board_name[] = "Bluetechnix CM BF537E";
-+
-+#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
-+/* all SPI peripherals info goes here */
-+
-+#if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
-+static struct mtd_partition bfin_spi_flash_partitions[] = {
+ #if defined(CONFIG_MTD_NAND_BF5XX) || defined(CONFIG_MTD_NAND_BF5XX_MODULE)
+ static struct mtd_partition partition_info[] = {
+ 	{
+@@ -662,6 +622,55 @@ static struct platform_device bfin_fb_adv7393_device = {
+ };
+ #endif
+ 
++#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
++static struct mtd_partition cm_partitions[] = {
 +	{
-+		.name = "bootloader(spi)",
-+		.size = 0x00020000,
++		.name   = "bootloader(nor)",
++		.size   = 0x40000,
 +		.offset = 0,
-+		.mask_flags = MTD_CAP_ROM
 +	}, {
-+		.name = "linux kernel(spi)",
-+		.size = 0xe0000,
-+		.offset = 0x20000
++		.name   = "linux kernel(nor)",
++		.size   = 0x100000,
++		.offset = MTDPART_OFS_APPEND,
 +	}, {
-+		.name = "file system(spi)",
-+		.size = 0x700000,
-+		.offset = 0x00100000,
++		.name   = "file system(nor)",
++		.size   = MTDPART_SIZ_FULL,
++		.offset = MTDPART_OFS_APPEND,
 +	}
 +};
 +
-+static struct flash_platform_data bfin_spi_flash_data = {
-+	.name = "m25p80",
-+	.parts = bfin_spi_flash_partitions,
-+	.nr_parts = ARRAY_SIZE(bfin_spi_flash_partitions),
-+	.type = "m25p64",
++static struct physmap_flash_data cm_flash_data = {
++	.width    = 2,
++	.parts    = cm_partitions,
++	.nr_parts = ARRAY_SIZE(cm_partitions),
 +};
 +
-+/* SPI flash chip (m25p64) */
-+static struct bfin5xx_spi_chip spi_flash_chip_info = {
-+	.enable_dma = 0,         /* use dma transfer with this chip*/
-+	.bits_per_word = 8,
-+};
-+#endif
++static unsigned cm_flash_gpios[] = { GPIO_PH9, GPIO_PG11 };
 +
-+#if defined(CONFIG_BFIN_SPI_ADC) || defined(CONFIG_BFIN_SPI_ADC_MODULE)
-+/* SPI ADC chip */
-+static struct bfin5xx_spi_chip spi_adc_chip_info = {
-+	.enable_dma = 1,         /* use dma transfer with this chip*/
-+	.bits_per_word = 16,
-+};
-+#endif
-+
-+#if defined(CONFIG_SND_BLACKFIN_AD1836) || defined(CONFIG_SND_BLACKFIN_AD1836_MODULE)
-+static struct bfin5xx_spi_chip ad1836_spi_chip_info = {
-+	.enable_dma = 0,
-+	.bits_per_word = 16,
-+};
-+#endif
-+
-+#if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
-+static struct bfin5xx_spi_chip  mmc_spi_chip_info = {
-+	.enable_dma = 0,
-+	.bits_per_word = 8,
-+};
-+#endif
-+
-+static struct spi_board_info bfin_spi_board_info[] __initdata = {
-+#if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
++static struct resource cm_flash_resource[] = {
 +	{
-+		/* the modalias must be the same as spi device driver name */
-+		.modalias = "m25p80", /* Name of spi_driver for this device */
-+		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0, /* Framework bus number */
-+		.chip_select = 1, /* Framework chip select. On STAMP537 it is SPISSEL1*/
-+		.platform_data = &bfin_spi_flash_data,
-+		.controller_data = &spi_flash_chip_info,
-+		.mode = SPI_MODE_3,
-+	},
-+#endif
-+
-+#if defined(CONFIG_BFIN_SPI_ADC) || defined(CONFIG_BFIN_SPI_ADC_MODULE)
-+	{
-+		.modalias = "bfin_spi_adc", /* Name of spi_driver for this device */
-+		.max_speed_hz = 6250000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0, /* Framework bus number */
-+		.chip_select = 1, /* Framework chip select. */
-+		.platform_data = NULL, /* No spi_driver specific config */
-+		.controller_data = &spi_adc_chip_info,
-+	},
-+#endif
-+
-+#if defined(CONFIG_SND_BLACKFIN_AD1836) || defined(CONFIG_SND_BLACKFIN_AD1836_MODULE)
-+	{
-+		.modalias = "ad1836",
-+		.max_speed_hz = 3125000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0,
-+		.chip_select = CONFIG_SND_BLACKFIN_SPI_PFBIT,
-+		.controller_data = &ad1836_spi_chip_info,
-+	},
-+#endif
-+
-+#if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
-+	{
-+		.modalias = "mmc_spi",
-+		.max_speed_hz = 20000000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0,
-+		.chip_select = 1,
-+		.controller_data = &mmc_spi_chip_info,
-+		.mode = SPI_MODE_3,
-+	},
-+#endif
-+};
-+
-+/* SPI (0) */
-+static struct resource bfin_spi0_resource[] = {
-+	[0] = {
-+		.start = SPI0_REGBASE,
-+		.end   = SPI0_REGBASE + 0xFF,
++		.name  = "cfi_probe",
++		.start = 0x20000000,
++		.end   = 0x201fffff,
 +		.flags = IORESOURCE_MEM,
-+		},
-+	[1] = {
-+		.start = CH_SPI,
-+		.end   = CH_SPI,
-+		.flags = IORESOURCE_DMA,
-+	},
-+	[2] = {
-+		.start = IRQ_SPI,
-+		.end   = IRQ_SPI,
++	}, {
++		.start = (unsigned long)cm_flash_gpios,
++		.end   = ARRAY_SIZE(cm_flash_gpios),
 +		.flags = IORESOURCE_IRQ,
-+	},
++	}
 +};
 +
-+/* SPI controller data */
-+static struct bfin5xx_spi_master bfin_spi0_info = {
-+	.num_chipselect = 8,
-+	.enable_dma = 1,  /* master has the ability to do dma transfer */
-+	.pin_req = {P_SPI0_SCK, P_SPI0_MISO, P_SPI0_MOSI, 0},
-+};
-+
-+static struct platform_device bfin_spi0_device = {
-+	.name = "bfin-spi",
-+	.id = 0, /* Bus number */
-+	.num_resources = ARRAY_SIZE(bfin_spi0_resource),
-+	.resource = bfin_spi0_resource,
++static struct platform_device cm_flash_device = {
++	.name          = "gpio-addr-flash",
++	.id            = 0,
 +	.dev = {
-+		.platform_data = &bfin_spi0_info, /* Passed to driver */
++		.platform_data = &cm_flash_data,
 +	},
-+};
-+#endif  /* spi master and devices */
-+
-+#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_DRV_BFIN_MODULE)
-+static struct platform_device rtc_device = {
-+	.name = "rtc-bfin",
-+	.id   = -1,
++	.num_resources = ARRAY_SIZE(cm_flash_resource),
++	.resource      = cm_flash_resource,
 +};
 +#endif
 +
-+#if defined(CONFIG_FB_HITACHI_TX09) || defined(CONFIG_FB_HITACHI_TX09_MODULE)
-+static struct platform_device hitachi_fb_device = {
-+	.name = "hitachi-tx09",
-+};
-+#endif
+ #if defined(CONFIG_SERIAL_BFIN) || defined(CONFIG_SERIAL_BFIN_MODULE)
+ static struct resource bfin_uart_resources[] = {
+ #ifdef CONFIG_SERIAL_BFIN_UART0
+@@ -847,7 +856,7 @@ static struct platform_device bfin_dpmc = {
+ 	},
+ };
+ 
+-static struct platform_device *stamp_devices[] __initdata = {
++static struct platform_device *cmbf527_devices[] __initdata = {
+ 
+ 	&bfin_dpmc,
+ 
+@@ -930,8 +939,8 @@ static struct platform_device *stamp_devices[] __initdata = {
+ 	&bfin_device_gpiokeys,
+ #endif
+ 
+-#if defined(CONFIG_MTD_PHYSMAP) || defined(CONFIG_MTD_PHYSMAP_MODULE)
+-	&ezkit_flash_device,
++#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
++	&cm_flash_device,
+ #endif
+ 
+ 	&bfin_gpios_device,
+@@ -942,7 +951,7 @@ static int __init cm_init(void)
+ 	printk(KERN_INFO "%s(): registering device resources\n", __func__);
+ 	i2c_register_board_info(0, bfin_i2c_board_info,
+ 				ARRAY_SIZE(bfin_i2c_board_info));
+-	platform_add_devices(stamp_devices, ARRAY_SIZE(stamp_devices));
++	platform_add_devices(cmbf527_devices, ARRAY_SIZE(cmbf527_devices));
+ 	spi_register_board_info(bfin_spi_board_info, ARRAY_SIZE(bfin_spi_board_info));
+ 	return 0;
+ }
+diff --git a/arch/blackfin/mach-bf533/boards/cm_bf533.c b/arch/blackfin/mach-bf533/boards/cm_bf533.c
+index ef31bc5..7443b26 100644
+--- a/arch/blackfin/mach-bf533/boards/cm_bf533.c
++++ b/arch/blackfin/mach-bf533/boards/cm_bf533.c
+@@ -31,8 +31,10 @@
+ #include <linux/platform_device.h>
+ #include <linux/mtd/mtd.h>
+ #include <linux/mtd/partitions.h>
++#include <linux/mtd/physmap.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/flash.h>
++#include <linux/spi/mmc_spi.h>
+ #if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
+ #include <linux/usb/isp1362.h>
+ #endif
+@@ -141,9 +143,9 @@ static struct spi_board_info bfin_spi_board_info[] __initdata = {
+ #if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
+ 	{
+ 		.modalias = "mmc_spi",
+-		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
++		.max_speed_hz = 20000000,     /* max spi clock (SCK) speed in HZ */
+ 		.bus_num = 0,
+-		.chip_select = 5,
++		.chip_select = 1,
+ 		.controller_data = &mmc_spi_chip_info,
+ 		.mode = SPI_MODE_3,
+ 	},
+@@ -225,6 +227,40 @@ static struct platform_device smc91x_device = {
+ };
+ #endif
+ 
++#if defined(CONFIG_SMSC911X) || defined(CONFIG_SMSC911X_MODULE)
++#include <linux/smsc911x.h>
 +
-+#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
-+#include <linux/smc91x.h>
-+
-+static struct smc91x_platdata smc91x_info = {
-+	.flags = SMC91X_USE_16BIT | SMC91X_NOWAIT,
-+	.leda = RPC_LED_100_10,
-+	.ledb = RPC_LED_TX_RX,
-+};
-+
-+static struct resource smc91x_resources[] = {
++static struct resource smsc911x_resources[] = {
 +	{
-+		.start = 0x20200300,
-+		.end = 0x20200300 + 16,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = IRQ_PF14,
-+		.end = IRQ_PF14,
-+		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
-+		},
-+};
-+
-+static struct platform_device smc91x_device = {
-+	.name = "smc91x",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(smc91x_resources),
-+	.resource = smc91x_resources,
-+	.dev	= {
-+		.platform_data	= &smc91x_info,
-+	},
-+};
-+#endif
-+
-+#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
-+static struct resource isp1362_hcd_resources[] = {
-+	{
++		.name = "smsc911x-memory",
 +		.start = 0x20308000,
-+		.end = 0x20308000,
++		.end = 0x20308000 + 0xFF,
 +		.flags = IORESOURCE_MEM,
 +	}, {
-+		.start = 0x20308004,
-+		.end = 0x20308004,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = IRQ_PG15,
-+		.end = IRQ_PG15,
-+		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
++		.start = IRQ_PF8,
++		.end = IRQ_PF8,
++		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_LOWLEVEL,
 +	},
 +};
 +
-+static struct isp1362_platform_data isp1362_priv = {
-+	.sel15Kres = 1,
-+	.clknotstop = 0,
-+	.oc_enable = 0,
-+	.int_act_high = 0,
-+	.int_edge_triggered = 0,
-+	.remote_wakeup_connected = 0,
-+	.no_power_switching = 1,
-+	.power_switching_mode = 0,
++static struct smsc911x_platform_config smsc911x_config = {
++	.flags = SMSC911X_USE_16BIT,
++	.irq_polarity = SMSC911X_IRQ_POLARITY_ACTIVE_LOW,
++	.irq_type = SMSC911X_IRQ_TYPE_OPEN_DRAIN,
++	.phy_interface = PHY_INTERFACE_MODE_MII,
 +};
 +
-+static struct platform_device isp1362_hcd_device = {
-+	.name = "isp1362-hcd",
++static struct platform_device smsc911x_device = {
++	.name = "smsc911x",
 +	.id = 0,
++	.num_resources = ARRAY_SIZE(smsc911x_resources),
++	.resource = smsc911x_resources,
 +	.dev = {
-+		.platform_data = &isp1362_priv,
++		.platform_data = &smsc911x_config,
 +	},
-+	.num_resources = ARRAY_SIZE(isp1362_hcd_resources),
-+	.resource = isp1362_hcd_resources,
 +};
 +#endif
++
+ static struct resource bfin_gpios_resources = {
+ 	.start = 0,
+ 	.end   = MAX_BLACKFIN_GPIOS - 1,
+@@ -335,6 +371,68 @@ static struct platform_device isp1362_hcd_device = {
+ };
+ #endif
+ 
 +
 +#if defined(CONFIG_USB_NET2272) || defined(CONFIG_USB_NET2272_MODULE)
 +static struct resource net2272_bfin_resources[] = {
@@ -1035,8 +251,8 @@ index 0000000..87acb7d
 +		.end = 0x20300000 + 0x100,
 +		.flags = IORESOURCE_MEM,
 +	}, {
-+		.start = IRQ_PG13,
-+		.end = IRQ_PG13,
++		.start = IRQ_PF6,
++		.end = IRQ_PF6,
 +		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
 +	},
 +};
@@ -1049,728 +265,236 @@ index 0000000..87acb7d
 +};
 +#endif
 +
-+static struct resource bfin_gpios_resources = {
-+	.start = 0,
-+	.end   = MAX_BLACKFIN_GPIOS - 1,
-+	.flags = IORESOURCE_IRQ,
-+};
 +
-+static struct platform_device bfin_gpios_device = {
-+	.name = "simple-gpio",
-+	.id = -1,
-+	.num_resources = 1,
-+	.resource = &bfin_gpios_resources,
-+};
 +
-+#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
-+static struct mtd_partition cm_partitions[] = {
++#if defined(CONFIG_MTD_PHYSMAP) || defined(CONFIG_MTD_PHYSMAP_MODULE)
++static struct mtd_partition para_partitions[] = {
 +	{
-+		.name   = "bootloader(nor)",
-+		.size   = 0x40000,
-+		.offset = 0,
++		.name       = "bootloader(nor)",
++		.size       = 0x40000,
++		.offset     = 0,
 +	}, {
-+		.name   = "linux kernel(nor)",
-+		.size   = 0x100000,
-+		.offset = MTDPART_OFS_APPEND,
-+	}, {
-+		.name   = "file system(nor)",
-+		.size   = MTDPART_SIZ_FULL,
-+		.offset = MTDPART_OFS_APPEND,
-+	}
++		.name       = "linux+rootfs(nor)",
++		.size       = MTDPART_SIZ_FULL,
++		.offset     = MTDPART_OFS_APPEND,
++	},
 +};
 +
-+static struct physmap_flash_data cm_flash_data = {
-+	.width    = 2,
-+	.parts    = cm_partitions,
-+	.nr_parts = ARRAY_SIZE(cm_partitions),
++static struct physmap_flash_data para_flash_data = {
++	.width      = 2,
++	.parts      = para_partitions,
++	.nr_parts   = ARRAY_SIZE(para_partitions),
 +};
 +
-+static unsigned cm_flash_gpios[] = { GPIO_PF4 };
-+
-+static struct resource cm_flash_resource[] = {
-+	{
-+		.name  = "cfi_probe",
-+		.start = 0x20000000,
-+		.end   = 0x201fffff,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = (unsigned long)cm_flash_gpios,
-+		.end   = ARRAY_SIZE(cm_flash_gpios),
-+		.flags = IORESOURCE_IRQ,
-+	}
++static struct resource para_flash_resource = {
++	.start = 0x20000000,
++	.end   = 0x201fffff,
++	.flags = IORESOURCE_MEM,
 +};
 +
-+static struct platform_device cm_flash_device = {
-+	.name          = "gpio-addr-flash",
++static struct platform_device para_flash_device = {
++	.name          = "physmap-flash",
 +	.id            = 0,
 +	.dev = {
-+		.platform_data = &cm_flash_data,
++		.platform_data = &para_flash_data,
 +	},
-+	.num_resources = ARRAY_SIZE(cm_flash_resource),
-+	.resource      = cm_flash_resource,
++	.num_resources = 1,
++	.resource      = &para_flash_resource,
 +};
 +#endif
 +
-+#if defined(CONFIG_SERIAL_BFIN) || defined(CONFIG_SERIAL_BFIN_MODULE)
-+#ifdef CONFIG_SERIAL_BFIN_UART0
-+static struct resource bfin_uart0_resources[] = {
-+	{
-+		.start = 0xFFC00400,
-+		.end = 0xFFC004FF,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = IRQ_UART0_RX,
-+		.end = IRQ_UART0_RX+1,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = IRQ_UART0_ERROR,
-+		.end = IRQ_UART0_ERROR,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = CH_UART0_TX,
-+		.end = CH_UART0_TX,
-+		.flags = IORESOURCE_DMA,
-+	},
-+	{
-+		.start = CH_UART0_RX,
-+		.end = CH_UART0_RX,
-+		.flags = IORESOURCE_DMA,
-+	},
-+#ifdef CONFIG_BFIN_UART0_CTSRTS
-+	{
-+		/*
-+		 * Refer to arch/blackfin/mach-xxx/include/mach/gpio.h for the GPIO map.
-+		 */
-+		.start = -1,
-+		.end = -1,
-+		.flags = IORESOURCE_IO,
-+	},
-+	{
-+		/*
-+		 * Refer to arch/blackfin/mach-xxx/include/mach/gpio.h for the GPIO map.
-+		 */
-+		.start = -1,
-+		.end = -1,
-+		.flags = IORESOURCE_IO,
-+	},
-+#endif
-+};
 +
-+static struct platform_device bfin_uart0_device = {
-+	.name = "bfin-uart",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(bfin_uart0_resources),
-+	.resource = bfin_uart0_resources,
-+};
-+#endif
-+#ifdef CONFIG_SERIAL_BFIN_UART1
-+static struct resource bfin_uart1_resources[] = {
-+	{
-+		.start = 0xFFC02000,
-+		.end = 0xFFC020FF,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = IRQ_UART1_RX,
-+		.end = IRQ_UART1_RX+1,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = IRQ_UART1_ERROR,
-+		.end = IRQ_UART1_ERROR,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = CH_UART1_TX,
-+		.end = CH_UART1_TX,
-+		.flags = IORESOURCE_DMA,
-+	},
-+	{
-+		.start = CH_UART1_RX,
-+		.end = CH_UART1_RX,
-+		.flags = IORESOURCE_DMA,
-+	},
-+#ifdef CONFIG_BFIN_UART1_CTSRTS
-+	{
-+		/*
-+		 * Refer to arch/blackfin/mach-xxx/include/mach/gpio.h for the GPIO map.
-+		 */
-+		.start = -1,
-+		.end = -1,
-+		.flags = IORESOURCE_IO,
-+	},
-+	{
-+		/*
-+		 * Refer to arch/blackfin/mach-xxx/include/mach/gpio.h for the GPIO map.
-+		 */
-+		.start = -1,
-+		.end = -1,
-+		.flags = IORESOURCE_IO,
-+	},
-+#endif
-+};
 +
-+static struct platform_device bfin_uart1_device = {
-+	.name = "bfin-uart",
-+	.id = 1,
-+	.num_resources = ARRAY_SIZE(bfin_uart1_resources),
-+	.resource = bfin_uart1_resources,
-+};
-+#endif
-+#endif
-+
-+#if defined(CONFIG_BFIN_SIR) || defined(CONFIG_BFIN_SIR_MODULE)
-+#ifdef CONFIG_BFIN_SIR0
-+static struct resource bfin_sir0_resources[] = {
-+	{
-+		.start = 0xFFC00400,
-+		.end = 0xFFC004FF,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = IRQ_UART0_RX,
-+		.end = IRQ_UART0_RX+1,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = CH_UART0_RX,
-+		.end = CH_UART0_RX+1,
-+		.flags = IORESOURCE_DMA,
-+	},
-+};
-+static struct platform_device bfin_sir0_device = {
-+	.name = "bfin_sir",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(bfin_sir0_resources),
-+	.resource = bfin_sir0_resources,
-+};
-+#endif
-+#ifdef CONFIG_BFIN_SIR1
-+static struct resource bfin_sir1_resources[] = {
-+	{
-+		.start = 0xFFC02000,
-+		.end = 0xFFC020FF,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = IRQ_UART1_RX,
-+		.end = IRQ_UART1_RX+1,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = CH_UART1_RX,
-+		.end = CH_UART1_RX+1,
-+		.flags = IORESOURCE_DMA,
-+	},
-+};
-+static struct platform_device bfin_sir1_device = {
-+	.name = "bfin_sir",
-+	.id = 1,
-+	.num_resources = ARRAY_SIZE(bfin_sir1_resources),
-+	.resource = bfin_sir1_resources,
-+};
-+#endif
-+#endif
-+
-+#if defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
-+static struct resource bfin_twi0_resource[] = {
-+	[0] = {
-+		.start = TWI0_REGBASE,
-+		.end   = TWI0_REGBASE,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start = IRQ_TWI,
-+		.end   = IRQ_TWI,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device i2c_bfin_twi_device = {
-+	.name = "i2c-bfin-twi",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(bfin_twi0_resource),
-+	.resource = bfin_twi0_resource,
-+};
-+#endif
-+
-+#if defined(CONFIG_SERIAL_BFIN_SPORT) || defined(CONFIG_SERIAL_BFIN_SPORT_MODULE)
-+static struct platform_device bfin_sport0_uart_device = {
-+	.name = "bfin-sport-uart",
-+	.id = 0,
-+};
-+
-+static struct platform_device bfin_sport1_uart_device = {
-+	.name = "bfin-sport-uart",
-+	.id = 1,
-+};
-+#endif
-+
-+#if defined(CONFIG_BFIN_MAC) || defined(CONFIG_BFIN_MAC_MODULE)
-+static struct platform_device bfin_mii_bus = {
-+	.name = "bfin_mii_bus",
-+};
-+
-+static struct platform_device bfin_mac_device = {
-+	.name = "bfin_mac",
-+	.dev.platform_data = &bfin_mii_bus,
-+};
-+#endif
-+
-+#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
-+#define PATA_INT	IRQ_PF14
-+
-+static struct pata_platform_info bfin_pata_platform_data = {
-+	.ioport_shift = 2,
-+	.irq_type = IRQF_TRIGGER_HIGH | IRQF_DISABLED,
-+};
-+
-+static struct resource bfin_pata_resources[] = {
-+	{
-+		.start = 0x2030C000,
-+		.end = 0x2030C01F,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = 0x2030D018,
-+		.end = 0x2030D01B,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = PATA_INT,
-+		.end = PATA_INT,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device bfin_pata_device = {
-+	.name = "pata_platform",
-+	.id = -1,
-+	.num_resources = ARRAY_SIZE(bfin_pata_resources),
-+	.resource = bfin_pata_resources,
-+	.dev = {
-+		.platform_data = &bfin_pata_platform_data,
-+	}
-+};
-+#endif
-+
-+static const unsigned int cclk_vlev_datasheet[] =
-+{
-+	VRPAIR(VLEV_085, 250000000),
-+	VRPAIR(VLEV_090, 376000000),
-+	VRPAIR(VLEV_095, 426000000),
-+	VRPAIR(VLEV_100, 426000000),
-+	VRPAIR(VLEV_105, 476000000),
-+	VRPAIR(VLEV_110, 476000000),
-+	VRPAIR(VLEV_115, 476000000),
-+	VRPAIR(VLEV_120, 500000000),
-+	VRPAIR(VLEV_125, 533000000),
-+	VRPAIR(VLEV_130, 600000000),
-+};
-+
-+static struct bfin_dpmc_platform_data bfin_dmpc_vreg_data = {
-+	.tuple_tab = cclk_vlev_datasheet,
-+	.tabsize = ARRAY_SIZE(cclk_vlev_datasheet),
-+	.vr_settling_time = 25 /* us */,
-+};
-+
-+static struct platform_device bfin_dpmc = {
-+	.name = "bfin dpmc",
-+	.dev = {
-+		.platform_data = &bfin_dmpc_vreg_data,
-+	},
-+};
-+
-+static struct platform_device *cm_bf537e_devices[] __initdata = {
-+
-+	&bfin_dpmc,
-+
-+#if defined(CONFIG_FB_HITACHI_TX09) || defined(CONFIG_FB_HITACHI_TX09_MODULE)
-+	&hitachi_fb_device,
-+#endif
-+
-+#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_DRV_BFIN_MODULE)
-+	&rtc_device,
-+#endif
-+
-+#if defined(CONFIG_SERIAL_BFIN) || defined(CONFIG_SERIAL_BFIN_MODULE)
-+#ifdef CONFIG_SERIAL_BFIN_UART0
-+	&bfin_uart0_device,
-+#endif
-+#ifdef CONFIG_SERIAL_BFIN_UART1
-+	&bfin_uart1_device,
-+#endif
-+#endif
-+
-+#if defined(CONFIG_BFIN_SIR) || defined(CONFIG_BFIN_SIR_MODULE)
-+#ifdef CONFIG_BFIN_SIR0
-+	&bfin_sir0_device,
-+#endif
-+#ifdef CONFIG_BFIN_SIR1
-+	&bfin_sir1_device,
-+#endif
-+#endif
-+
-+#if defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
-+	&i2c_bfin_twi_device,
-+#endif
-+
-+#if defined(CONFIG_SERIAL_BFIN_SPORT) || defined(CONFIG_SERIAL_BFIN_SPORT_MODULE)
-+	&bfin_sport0_uart_device,
-+	&bfin_sport1_uart_device,
-+#endif
-+
-+#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
-+	&isp1362_hcd_device,
-+#endif
-+
-+#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
-+	&smc91x_device,
-+#endif
-+
-+#if defined(CONFIG_BFIN_MAC) || defined(CONFIG_BFIN_MAC_MODULE)
-+	&bfin_mii_bus,
-+	&bfin_mac_device,
+ static const unsigned int cclk_vlev_datasheet[] =
+ {
+ 	VRPAIR(VLEV_085, 250000000),
+@@ -393,10 +491,22 @@ static struct platform_device *cm_bf533_devices[] __initdata = {
+ 	&smc91x_device,
+ #endif
+ 
++#if defined(CONFIG_SMSC911X) || defined(CONFIG_SMSC911X_MODULE)
++	&smsc911x_device,
 +#endif
 +
 +#if defined(CONFIG_USB_NET2272) || defined(CONFIG_USB_NET2272_MODULE)
 +	&net2272_bfin_device,
 +#endif
 +
-+#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
-+	&bfin_spi0_device,
+ #if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
+ 	&bfin_spi0_device,
+ #endif
+ 
++#if defined(CONFIG_MTD_PHYSMAP) || defined(CONFIG_MTD_PHYSMAP_MODULE)
++	&para_flash_device,
 +#endif
 +
-+#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
-+	&bfin_pata_device,
-+#endif
-+
-+#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
-+	&cm_flash_device,
-+#endif
-+
-+	&bfin_gpios_device,
-+};
-+
-+static int __init cm_bf537e_init(void)
-+{
-+	printk(KERN_INFO "%s(): registering device resources\n", __func__);
-+	platform_add_devices(cm_bf537e_devices, ARRAY_SIZE(cm_bf537e_devices));
-+#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
-+	spi_register_board_info(bfin_spi_board_info, ARRAY_SIZE(bfin_spi_board_info));
-+#endif
-+
-+#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
-+	irq_desc[PATA_INT].status |= IRQ_NOAUTOEN;
-+#endif
-+	return 0;
-+}
-+
-+arch_initcall(cm_bf537e_init);
-+
-+void bfin_get_ether_addr(char *addr)
-+{
-+	random_ether_addr(addr);
-+	printk(KERN_WARNING "%s:%s: Setting Ethernet MAC to a random one\n", __FILE__, __func__);
-+}
-+EXPORT_SYMBOL(bfin_get_ether_addr);
-diff --git a/arch/blackfin/mach-bf537/boards/cm_bf537u.c b/arch/blackfin/mach-bf537/boards/cm_bf537u.c
-new file mode 100644
-index 0000000..8219dc3
---- /dev/null
-+++ b/arch/blackfin/mach-bf537/boards/cm_bf537u.c
-@@ -0,0 +1,633 @@
-+/*
-+ * File:         arch/blackfin/mach-bf537/boards/cm_bf537u.c
-+ * Based on:     arch/blackfin/mach-bf533/boards/ezkit.c
-+ * Author:       Aidan Williams <aidan@nicta.com.au>
-+ *
-+ * Created:      2005
-+ * Description:  Board description file
-+ *
-+ * Modified:
-+ *               Copyright 2005 National ICT Australia (NICTA)
-+ *               Copyright 2004-2006 Analog Devices Inc.
-+ *
-+ * Bugs:         Enter bugs at http://blackfin.uclinux.org/
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/device.h>
-+#include <linux/etherdevice.h>
-+#include <linux/platform_device.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/partitions.h>
-+#include <linux/mtd/physmap.h>
-+#include <linux/spi/spi.h>
-+#include <linux/spi/flash.h>
-+#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
-+#include <linux/usb/isp1362.h>
-+#endif
-+#include <linux/ata_platform.h>
-+#include <linux/irq.h>
-+#include <asm/dma.h>
-+#include <asm/bfin5xx_spi.h>
-+#include <asm/portmux.h>
-+#include <asm/dpmc.h>
+ 	&bfin_gpios_device,
+ };
+ 
+diff --git a/arch/blackfin/mach-bf537/boards/tcm_bf537.c b/arch/blackfin/mach-bf537/boards/tcm_bf537.c
+index dc4f161..61353f7 100644
+--- a/arch/blackfin/mach-bf537/boards/tcm_bf537.c
++++ b/arch/blackfin/mach-bf537/boards/tcm_bf537.c
+@@ -45,6 +45,7 @@
+ #include <asm/bfin5xx_spi.h>
+ #include <asm/portmux.h>
+ #include <asm/dpmc.h>
 +#include <linux/spi/mmc_spi.h>
-+
-+/*
-+ * Name the Board for the /proc/cpuinfo
-+ */
-+const char bfin_board_name[] = "Bluetechnix CM BF537U";
-+
-+#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
-+/* all SPI peripherals info goes here */
-+
-+#if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
-+static struct mtd_partition bfin_spi_flash_partitions[] = {
-+	{
-+		.name = "bootloader(spi)",
-+		.size = 0x00020000,
-+		.offset = 0,
-+		.mask_flags = MTD_CAP_ROM
-+	}, {
-+		.name = "linux kernel(spi)",
-+		.size = 0xe0000,
-+		.offset = 0x20000
-+	}, {
-+		.name = "file system(spi)",
-+		.size = 0x700000,
-+		.offset = 0x00100000,
-+	}
-+};
-+
-+static struct flash_platform_data bfin_spi_flash_data = {
-+	.name = "m25p80",
-+	.parts = bfin_spi_flash_partitions,
-+	.nr_parts = ARRAY_SIZE(bfin_spi_flash_partitions),
-+	.type = "m25p64",
-+};
-+
-+/* SPI flash chip (m25p64) */
-+static struct bfin5xx_spi_chip spi_flash_chip_info = {
-+	.enable_dma = 0,         /* use dma transfer with this chip*/
-+	.bits_per_word = 8,
-+};
-+#endif
-+
-+#if defined(CONFIG_BFIN_SPI_ADC) || defined(CONFIG_BFIN_SPI_ADC_MODULE)
-+/* SPI ADC chip */
-+static struct bfin5xx_spi_chip spi_adc_chip_info = {
-+	.enable_dma = 1,         /* use dma transfer with this chip*/
-+	.bits_per_word = 16,
-+};
-+#endif
-+
-+#if defined(CONFIG_SND_BLACKFIN_AD1836) || defined(CONFIG_SND_BLACKFIN_AD1836_MODULE)
-+static struct bfin5xx_spi_chip ad1836_spi_chip_info = {
-+	.enable_dma = 0,
-+	.bits_per_word = 16,
-+};
-+#endif
-+
-+#if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
-+static struct bfin5xx_spi_chip  mmc_spi_chip_info = {
-+	.enable_dma = 0,
-+	.bits_per_word = 8,
-+};
-+#endif
-+
-+static struct spi_board_info bfin_spi_board_info[] __initdata = {
-+#if defined(CONFIG_MTD_M25P80) || defined(CONFIG_MTD_M25P80_MODULE)
-+	{
-+		/* the modalias must be the same as spi device driver name */
-+		.modalias = "m25p80", /* Name of spi_driver for this device */
-+		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0, /* Framework bus number */
-+		.chip_select = 1, /* Framework chip select. On STAMP537 it is SPISSEL1*/
-+		.platform_data = &bfin_spi_flash_data,
-+		.controller_data = &spi_flash_chip_info,
-+		.mode = SPI_MODE_3,
-+	},
-+#endif
-+
-+#if defined(CONFIG_BFIN_SPI_ADC) || defined(CONFIG_BFIN_SPI_ADC_MODULE)
-+	{
-+		.modalias = "bfin_spi_adc", /* Name of spi_driver for this device */
-+		.max_speed_hz = 6250000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0, /* Framework bus number */
-+		.chip_select = 1, /* Framework chip select. */
-+		.platform_data = NULL, /* No spi_driver specific config */
-+		.controller_data = &spi_adc_chip_info,
-+	},
-+#endif
-+
-+#if defined(CONFIG_SND_BLACKFIN_AD1836) || defined(CONFIG_SND_BLACKFIN_AD1836_MODULE)
-+	{
-+		.modalias = "ad1836",
-+		.max_speed_hz = 3125000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0,
-+		.chip_select = CONFIG_SND_BLACKFIN_SPI_PFBIT,
-+		.controller_data = &ad1836_spi_chip_info,
-+	},
-+#endif
-+
-+#if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
-+	{
-+		.modalias = "mmc_spi",
-+		.max_speed_hz = 20000000,     /* max spi clock (SCK) speed in HZ */
-+		.bus_num = 0,
+ 
+ /*
+  * Name the Board for the /proc/cpuinfo
+@@ -148,7 +149,7 @@ static struct spi_board_info bfin_spi_board_info[] __initdata = {
+ 		.modalias = "mmc_spi",
+ 		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
+ 		.bus_num = 0,
+-		.chip_select = 5,
 +		.chip_select = 1,
-+		.controller_data = &mmc_spi_chip_info,
-+		.mode = SPI_MODE_3,
-+	},
-+#endif
+ 		.controller_data = &mmc_spi_chip_info,
+ 		.mode = SPI_MODE_3,
+ 	},
+@@ -279,12 +280,12 @@ static struct platform_device isp1362_hcd_device = {
+ #if defined(CONFIG_USB_NET2272) || defined(CONFIG_USB_NET2272_MODULE)
+ static struct resource net2272_bfin_resources[] = {
+ 	{
+-		.start = 0x20200000,
+-		.end = 0x20200000 + 0x100,
++		.start = 0x20300000,
++		.end = 0x20300000 + 0x100,
+ 		.flags = IORESOURCE_MEM,
+ 	}, {
+-		.start = IRQ_PH14,
+-		.end = IRQ_PH14,
++		.start = IRQ_PG13,
++		.end = IRQ_PG13,
+ 		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
+ 	},
+ };
+@@ -318,7 +319,7 @@ static struct mtd_partition cm_partitions[] = {
+ 		.offset = 0,
+ 	}, {
+ 		.name   = "linux kernel(nor)",
+-		.size   = 0xE0000,
++		.size   = 0x100000,
+ 		.offset = MTDPART_OFS_APPEND,
+ 	}, {
+ 		.name   = "file system(nor)",
+diff --git a/arch/blackfin/mach-bf548/boards/cm_bf548.c b/arch/blackfin/mach-bf548/boards/cm_bf548.c
+index 290b6e9..e565aae 100644
+--- a/arch/blackfin/mach-bf548/boards/cm_bf548.c
++++ b/arch/blackfin/mach-bf548/boards/cm_bf548.c
+@@ -291,6 +291,8 @@ static struct platform_device bfin_sir3_device = {
+ #endif
+ 
+ #if defined(CONFIG_SMSC911X) || defined(CONFIG_SMSC911X_MODULE)
++#include <linux/smsc911x.h>
++
+ static struct resource smsc911x_resources[] = {
+ 	{
+ 		.name = "smsc911x-memory",
+@@ -304,11 +306,22 @@ static struct resource smsc911x_resources[] = {
+ 		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_LOWLEVEL,
+ 	},
+ };
++
++static struct smsc911x_platform_config smsc911x_config = {
++	.flags = SMSC911X_USE_16BIT,
++	.irq_polarity = SMSC911X_IRQ_POLARITY_ACTIVE_LOW,
++	.irq_type = SMSC911X_IRQ_TYPE_OPEN_DRAIN,
++	.phy_interface = PHY_INTERFACE_MODE_MII,
 +};
 +
-+/* SPI (0) */
-+static struct resource bfin_spi0_resource[] = {
-+	[0] = {
-+		.start = SPI0_REGBASE,
-+		.end   = SPI0_REGBASE + 0xFF,
-+		.flags = IORESOURCE_MEM,
-+		},
-+	[1] = {
-+		.start = CH_SPI,
-+		.end   = CH_SPI,
-+		.flags = IORESOURCE_DMA,
-+	},
-+	[2] = {
-+		.start = IRQ_SPI,
-+		.end   = IRQ_SPI,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+/* SPI controller data */
-+static struct bfin5xx_spi_master bfin_spi0_info = {
-+	.num_chipselect = 8,
-+	.enable_dma = 1,  /* master has the ability to do dma transfer */
-+	.pin_req = {P_SPI0_SCK, P_SPI0_MISO, P_SPI0_MOSI, 0},
-+};
-+
-+static struct platform_device bfin_spi0_device = {
-+	.name = "bfin-spi",
-+	.id = 0, /* Bus number */
-+	.num_resources = ARRAY_SIZE(bfin_spi0_resource),
-+	.resource = bfin_spi0_resource,
+ static struct platform_device smsc911x_device = {
+ 	.name = "smsc911x",
+ 	.id = 0,
+ 	.num_resources = ARRAY_SIZE(smsc911x_resources),
+ 	.resource = smsc911x_resources,
 +	.dev = {
-+		.platform_data = &bfin_spi0_info, /* Passed to driver */
++		.platform_data = &smsc911x_config,
 +	},
-+};
-+#endif  /* spi master and devices */
+ };
+ #endif
+ 
+@@ -473,7 +486,7 @@ static struct mtd_partition para_partitions[] = {
+ 		.offset     = 0,
+ 	}, {
+ 		.name       = "linux kernel(nor)",
+-		.size       = 0x400000,
++		.size       = 0x100000,
+ 		.offset     = MTDPART_OFS_APPEND,
+ 	}, {
+ 		.name       = "file system(nor)",
+diff --git a/arch/blackfin/mach-bf561/boards/cm_bf561.c b/arch/blackfin/mach-bf561/boards/cm_bf561.c
+index 5721620..6577ecf 100644
+--- a/arch/blackfin/mach-bf561/boards/cm_bf561.c
++++ b/arch/blackfin/mach-bf561/boards/cm_bf561.c
+@@ -42,6 +42,7 @@
+ #include <asm/bfin5xx_spi.h>
+ #include <asm/portmux.h>
+ #include <asm/dpmc.h>
++#include <linux/mtd/physmap.h>
+ 
+ /*
+  * Name the Board for the /proc/cpuinfo
+@@ -142,9 +143,9 @@ static struct spi_board_info bfin_spi_board_info[] __initdata = {
+ #if defined(CONFIG_MMC_SPI) || defined(CONFIG_MMC_SPI_MODULE)
+ 	{
+ 		.modalias = "mmc_spi",
+-		.max_speed_hz = 25000000,     /* max spi clock (SCK) speed in HZ */
++		.max_speed_hz = 20000000,     /* max spi clock (SCK) speed in HZ */
+ 		.bus_num = 0,
+-		.chip_select = 5,
++		.chip_select = 1,
+ 		.controller_data = &mmc_spi_chip_info,
+ 		.mode = SPI_MODE_3,
+ 	},
+@@ -228,6 +229,62 @@ static struct platform_device smc91x_device = {
+ };
+ #endif
+ 
++#if defined(CONFIG_SMSC911X) || defined(CONFIG_SMSC911X_MODULE)
++#include <linux/smsc911x.h>
 +
-+#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_DRV_BFIN_MODULE)
-+static struct platform_device rtc_device = {
-+	.name = "rtc-bfin",
-+	.id   = -1,
-+};
-+#endif
-+
-+#if defined(CONFIG_FB_HITACHI_TX09) || defined(CONFIG_FB_HITACHI_TX09_MODULE)
-+static struct platform_device hitachi_fb_device = {
-+	.name = "hitachi-tx09",
-+};
-+#endif
-+
-+#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
-+#include <linux/smc91x.h>
-+
-+static struct smc91x_platdata smc91x_info = {
-+	.flags = SMC91X_USE_16BIT | SMC91X_NOWAIT,
-+	.leda = RPC_LED_100_10,
-+	.ledb = RPC_LED_TX_RX,
-+};
-+
-+static struct resource smc91x_resources[] = {
++static struct resource smsc911x_resources[] = {
 +	{
-+		.start = 0x20200300,
-+		.end = 0x20200300 + 16,
++		.name = "smsc911x-memory",
++		.start = 0x24008000,
++		.end = 0x24008000 + 0xFF,
 +		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = IRQ_PF14,
-+		.end = IRQ_PF14,
-+		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
-+		},
-+};
-+
-+static struct platform_device smc91x_device = {
-+	.name = "smc91x",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(smc91x_resources),
-+	.resource = smc91x_resources,
-+	.dev	= {
-+		.platform_data	= &smc91x_info,
 +	},
-+};
-+#endif
-+
-+#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
-+static struct resource isp1362_hcd_resources[] = {
 +	{
-+		.start = 0x20308000,
-+		.end = 0x20308000,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = 0x20308004,
-+		.end = 0x20308004,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = IRQ_PG15,
-+		.end = IRQ_PG15,
-+		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
++		.start = IRQ_PF43,
++		.end = IRQ_PF43,
++		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_LOWLEVEL,
 +	},
 +};
 +
-+static struct isp1362_platform_data isp1362_priv = {
-+	.sel15Kres = 1,
-+	.clknotstop = 0,
-+	.oc_enable = 0,
-+	.int_act_high = 0,
-+	.int_edge_triggered = 0,
-+	.remote_wakeup_connected = 0,
-+	.no_power_switching = 1,
-+	.power_switching_mode = 0,
++static struct smsc911x_platform_config smsc911x_config = {
++	.flags = SMSC911X_USE_16BIT,
++	.irq_polarity = SMSC911X_IRQ_POLARITY_ACTIVE_LOW,
++	.irq_type = SMSC911X_IRQ_TYPE_OPEN_DRAIN,
++	.phy_interface = PHY_INTERFACE_MODE_MII,
 +};
 +
-+static struct platform_device isp1362_hcd_device = {
-+	.name = "isp1362-hcd",
++static struct platform_device smsc911x_device = {
++	.name = "smsc911x",
 +	.id = 0,
++	.num_resources = ARRAY_SIZE(smsc911x_resources),
++	.resource = smsc911x_resources,
 +	.dev = {
-+		.platform_data = &isp1362_priv,
++		.platform_data = &smsc911x_config,
 +	},
-+	.num_resources = ARRAY_SIZE(isp1362_hcd_resources),
-+	.resource = isp1362_hcd_resources,
 +};
 +#endif
 +
 +#if defined(CONFIG_USB_NET2272) || defined(CONFIG_USB_NET2272_MODULE)
 +static struct resource net2272_bfin_resources[] = {
 +	{
-+		.start = 0x20200000,
-+		.end = 0x20200000 + 0x100,
++		.start = 0x24000000,
++		.end = 0x24000000 + 0x100,
 +		.flags = IORESOURCE_MEM,
 +	}, {
-+		.start = IRQ_PH14,
-+		.end = IRQ_PH14,
++		.start = IRQ_PF45,
++		.end = IRQ_PF45,
 +		.flags = IORESOURCE_IRQ | IORESOURCE_IRQ_HIGHLEVEL,
 +	},
 +};
@@ -1783,339 +507,82 @@ index 0000000..8219dc3
 +};
 +#endif
 +
-+static struct resource bfin_gpios_resources = {
-+	.start = 0,
-+	.end   = MAX_BLACKFIN_GPIOS - 1,
-+	.flags = IORESOURCE_IRQ,
-+};
-+
-+static struct platform_device bfin_gpios_device = {
-+	.name = "simple-gpio",
-+	.id = -1,
-+	.num_resources = 1,
-+	.resource = &bfin_gpios_resources,
-+};
-+
-+#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
-+static struct mtd_partition cm_partitions[] = {
+ static struct resource bfin_gpios_resources = {
+ 	.start = 0,
+ 	.end   = MAX_BLACKFIN_GPIOS - 1,
+@@ -363,6 +420,46 @@ static struct platform_device bfin_pata_device = {
+ };
+ #endif
+ 
++#if defined(CONFIG_MTD_PHYSMAP) || defined(CONFIG_MTD_PHYSMAP_MODULE)
++static struct mtd_partition para_partitions[] = {
 +	{
-+		.name   = "bootloader(nor)",
-+		.size   = 0x40000,
-+		.offset = 0,
++		.name       = "bootloader(nor)",
++		.size       = 0x40000,
++		.offset     = 0,
 +	}, {
-+		.name   = "linux kernel(nor)",
-+		.size   = 0x100000,
-+		.offset = MTDPART_OFS_APPEND,
++		.name       = "linux kernel(nor)",
++		.size       = 0x100000,
++		.offset     = MTDPART_OFS_APPEND,
 +	}, {
-+		.name   = "file system(nor)",
-+		.size   = MTDPART_SIZ_FULL,
-+		.offset = MTDPART_OFS_APPEND,
++		.name       = "file system(nor)",
++		.size       = MTDPART_SIZ_FULL,
++		.offset     = MTDPART_OFS_APPEND,
 +	}
 +};
 +
-+static struct physmap_flash_data cm_flash_data = {
-+	.width    = 2,
-+	.parts    = cm_partitions,
-+	.nr_parts = ARRAY_SIZE(cm_partitions),
++static struct physmap_flash_data para_flash_data = {
++	.width      = 2,
++	.parts      = para_partitions,
++	.nr_parts   = ARRAY_SIZE(para_partitions),
 +};
 +
-+static unsigned cm_flash_gpios[] = { GPIO_PH0 };
-+
-+static struct resource cm_flash_resource[] = {
-+	{
-+		.name  = "cfi_probe",
-+		.start = 0x20000000,
-+		.end   = 0x201fffff,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = (unsigned long)cm_flash_gpios,
-+		.end   = ARRAY_SIZE(cm_flash_gpios),
-+		.flags = IORESOURCE_IRQ,
-+	}
++static struct resource para_flash_resource = {
++	.start = 0x20000000,
++	.end   = 0x207fffff,
++	.flags = IORESOURCE_MEM,
 +};
 +
-+static struct platform_device cm_flash_device = {
-+	.name          = "gpio-addr-flash",
++static struct platform_device para_flash_device = {
++	.name          = "physmap-flash",
 +	.id            = 0,
 +	.dev = {
-+		.platform_data = &cm_flash_data,
++		.platform_data = &para_flash_data,
 +	},
-+	.num_resources = ARRAY_SIZE(cm_flash_resource),
-+	.resource      = cm_flash_resource,
++	.num_resources = 1,
++	.resource      = &para_flash_resource,
 +};
 +#endif
 +
-+#if defined(CONFIG_SERIAL_BFIN) || defined(CONFIG_SERIAL_BFIN_MODULE)
-+static struct resource bfin_uart_resources[] = {
-+	{
-+		.start = 0xFFC00400,
-+		.end = 0xFFC004FF,
-+		.flags = IORESOURCE_MEM,
-+	}, {
-+		.start = 0xFFC02000,
-+		.end = 0xFFC020FF,
-+		.flags = IORESOURCE_MEM,
-+	},
-+};
-+
-+static struct platform_device bfin_uart_device = {
-+	.name = "bfin-uart",
-+	.id = 1,
-+	.num_resources = ARRAY_SIZE(bfin_uart_resources),
-+	.resource = bfin_uart_resources,
-+};
-+#endif
-+
-+#if defined(CONFIG_BFIN_SIR) || defined(CONFIG_BFIN_SIR_MODULE)
-+#ifdef CONFIG_BFIN_SIR0
-+static struct resource bfin_sir0_resources[] = {
-+	{
-+		.start = 0xFFC00400,
-+		.end = 0xFFC004FF,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = IRQ_UART0_RX,
-+		.end = IRQ_UART0_RX+1,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = CH_UART0_RX,
-+		.end = CH_UART0_RX+1,
-+		.flags = IORESOURCE_DMA,
-+	},
-+};
-+static struct platform_device bfin_sir0_device = {
-+	.name = "bfin_sir",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(bfin_sir0_resources),
-+	.resource = bfin_sir0_resources,
-+};
-+#endif
-+#ifdef CONFIG_BFIN_SIR1
-+static struct resource bfin_sir1_resources[] = {
-+	{
-+		.start = 0xFFC02000,
-+		.end = 0xFFC020FF,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = IRQ_UART1_RX,
-+		.end = IRQ_UART1_RX+1,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+	{
-+		.start = CH_UART1_RX,
-+		.end = CH_UART1_RX+1,
-+		.flags = IORESOURCE_DMA,
-+	},
-+};
-+static struct platform_device bfin_sir1_device = {
-+	.name = "bfin_sir",
-+	.id = 1,
-+	.num_resources = ARRAY_SIZE(bfin_sir1_resources),
-+	.resource = bfin_sir1_resources,
-+};
-+#endif
-+#endif
-+
-+#if defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
-+static struct resource bfin_twi0_resource[] = {
-+	[0] = {
-+		.start = TWI0_REGBASE,
-+		.end   = TWI0_REGBASE,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	[1] = {
-+		.start = IRQ_TWI,
-+		.end   = IRQ_TWI,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device i2c_bfin_twi_device = {
-+	.name = "i2c-bfin-twi",
-+	.id = 0,
-+	.num_resources = ARRAY_SIZE(bfin_twi0_resource),
-+	.resource = bfin_twi0_resource,
-+};
-+#endif
-+
-+#if defined(CONFIG_SERIAL_BFIN_SPORT) || defined(CONFIG_SERIAL_BFIN_SPORT_MODULE)
-+static struct platform_device bfin_sport0_uart_device = {
-+	.name = "bfin-sport-uart",
-+	.id = 0,
-+};
-+
-+static struct platform_device bfin_sport1_uart_device = {
-+	.name = "bfin-sport-uart",
-+	.id = 1,
-+};
-+#endif
-+
-+#if defined(CONFIG_BFIN_MAC) || defined(CONFIG_BFIN_MAC_MODULE)
-+static struct platform_device bfin_mii_bus = {
-+	.name = "bfin_mii_bus",
-+};
-+
-+static struct platform_device bfin_mac_device = {
-+	.name = "bfin_mac",
-+	.dev.platform_data = &bfin_mii_bus,
-+};
-+#endif
-+
-+#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
-+#define PATA_INT	IRQ_PF14
-+
-+static struct pata_platform_info bfin_pata_platform_data = {
-+	.ioport_shift = 2,
-+	.irq_type = IRQF_TRIGGER_HIGH | IRQF_DISABLED,
-+};
-+
-+static struct resource bfin_pata_resources[] = {
-+	{
-+		.start = 0x2030C000,
-+		.end = 0x2030C01F,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = 0x2030D018,
-+		.end = 0x2030D01B,
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = PATA_INT,
-+		.end = PATA_INT,
-+		.flags = IORESOURCE_IRQ,
-+	},
-+};
-+
-+static struct platform_device bfin_pata_device = {
-+	.name = "pata_platform",
-+	.id = -1,
-+	.num_resources = ARRAY_SIZE(bfin_pata_resources),
-+	.resource = bfin_pata_resources,
-+	.dev = {
-+		.platform_data = &bfin_pata_platform_data,
-+	}
-+};
-+#endif
-+
-+static const unsigned int cclk_vlev_datasheet[] =
-+{
-+	VRPAIR(VLEV_085, 250000000),
-+	VRPAIR(VLEV_090, 376000000),
-+	VRPAIR(VLEV_095, 426000000),
-+	VRPAIR(VLEV_100, 426000000),
-+	VRPAIR(VLEV_105, 476000000),
-+	VRPAIR(VLEV_110, 476000000),
-+	VRPAIR(VLEV_115, 476000000),
-+	VRPAIR(VLEV_120, 500000000),
-+	VRPAIR(VLEV_125, 533000000),
-+	VRPAIR(VLEV_130, 600000000),
-+};
-+
-+static struct bfin_dpmc_platform_data bfin_dmpc_vreg_data = {
-+	.tuple_tab = cclk_vlev_datasheet,
-+	.tabsize = ARRAY_SIZE(cclk_vlev_datasheet),
-+	.vr_settling_time = 25 /* us */,
-+};
-+
-+static struct platform_device bfin_dpmc = {
-+	.name = "bfin dpmc",
-+	.dev = {
-+		.platform_data = &bfin_dmpc_vreg_data,
-+	},
-+};
-+
-+static struct platform_device *cm_bf537u_devices[] __initdata = {
-+
-+	&bfin_dpmc,
-+
-+#if defined(CONFIG_FB_HITACHI_TX09) || defined(CONFIG_FB_HITACHI_TX09_MODULE)
-+	&hitachi_fb_device,
-+#endif
-+
-+#if defined(CONFIG_RTC_DRV_BFIN) || defined(CONFIG_RTC_DRV_BFIN_MODULE)
-+	&rtc_device,
-+#endif
-+
-+#if defined(CONFIG_SERIAL_BFIN) || defined(CONFIG_SERIAL_BFIN_MODULE)
-+	&bfin_uart_device,
-+#endif
-+
-+#if defined(CONFIG_BFIN_SIR) || defined(CONFIG_BFIN_SIR_MODULE)
-+#ifdef CONFIG_BFIN_SIR0
-+	&bfin_sir0_device,
-+#endif
-+#ifdef CONFIG_BFIN_SIR1
-+	&bfin_sir1_device,
-+#endif
-+#endif
-+
-+#if defined(CONFIG_I2C_BLACKFIN_TWI) || defined(CONFIG_I2C_BLACKFIN_TWI_MODULE)
-+	&i2c_bfin_twi_device,
-+#endif
-+
-+#if defined(CONFIG_SERIAL_BFIN_SPORT) || defined(CONFIG_SERIAL_BFIN_SPORT_MODULE)
-+	&bfin_sport0_uart_device,
-+	&bfin_sport1_uart_device,
-+#endif
-+
-+#if defined(CONFIG_USB_ISP1362_HCD) || defined(CONFIG_USB_ISP1362_HCD_MODULE)
-+	&isp1362_hcd_device,
-+#endif
-+
-+#if defined(CONFIG_SMC91X) || defined(CONFIG_SMC91X_MODULE)
-+	&smc91x_device,
-+#endif
-+
-+#if defined(CONFIG_BFIN_MAC) || defined(CONFIG_BFIN_MAC_MODULE)
-+	&bfin_mii_bus,
-+	&bfin_mac_device,
+ static const unsigned int cclk_vlev_datasheet[] =
+ {
+ 	VRPAIR(VLEV_085, 250000000),
+@@ -416,6 +513,14 @@ static struct platform_device *cm_bf561_devices[] __initdata = {
+ 	&smc91x_device,
+ #endif
+ 
++#if defined(CONFIG_SMSC911X) || defined(CONFIG_SMSC911X_MODULE)
++	&smsc911x_device,
 +#endif
 +
 +#if defined(CONFIG_USB_NET2272) || defined(CONFIG_USB_NET2272_MODULE)
 +	&net2272_bfin_device,
 +#endif
 +
-+#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
-+	&bfin_spi0_device,
+ #if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
+ 	&bfin_spi0_device,
+ #endif
+@@ -424,6 +529,10 @@ static struct platform_device *cm_bf561_devices[] __initdata = {
+ 	&bfin_pata_device,
+ #endif
+ 
++#if defined(CONFIG_MTD_PHYSMAP) || defined(CONFIG_MTD_PHYSMAP_MODULE)
++	&para_flash_device,
 +#endif
 +
-+#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
-+	&bfin_pata_device,
-+#endif
-+
-+#if defined(CONFIG_MTD_GPIO_ADDR) || defined(CONFIG_MTD_GPIO_ADDR_MODULE)
-+	&cm_flash_device,
-+#endif
-+
-+	&bfin_gpios_device,
-+};
-+
-+static int __init cm_bf537u_init(void)
-+{
-+	printk(KERN_INFO "%s(): registering device resources\n", __func__);
-+	platform_add_devices(cm_bf537u_devices, ARRAY_SIZE(cm_bf537u_devices));
-+#if defined(CONFIG_SPI_BFIN) || defined(CONFIG_SPI_BFIN_MODULE)
-+	spi_register_board_info(bfin_spi_board_info, ARRAY_SIZE(bfin_spi_board_info));
-+#endif
-+
-+#if defined(CONFIG_PATA_PLATFORM) || defined(CONFIG_PATA_PLATFORM_MODULE)
-+	irq_desc[PATA_INT].status |= IRQ_NOAUTOEN;
-+#endif
-+	return 0;
-+}
-+
-+arch_initcall(cm_bf537u_init);
-+
-+void bfin_get_ether_addr(char *addr)
-+{
-+	random_ether_addr(addr);
-+	printk(KERN_WARNING "%s:%s: Setting Ethernet MAC to a random one\n", __FILE__, __func__);
-+}
-+EXPORT_SYMBOL(bfin_get_ether_addr);
+ 	&bfin_gpios_device,
+ };
+ 
 -- 
 1.6.4.2
 
