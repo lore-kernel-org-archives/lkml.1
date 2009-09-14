@@ -1,94 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZINPVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZINPVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZINPVW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZINPVV
+	id S1755589AbZINPVm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZINPVl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:21:21 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:41060 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753940AbZINPVU (ORCPT
+	Mon, 14 Sep 2009 11:21:41 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48772 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754835AbZINPVk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:21:20 -0400
-Message-ID: <4AAE5F6E.3030008@gmail.com>
-Date: Mon, 14 Sep 2009 17:21:18 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 14 Sep 2009 11:21:40 -0400
+Date: Mon, 14 Sep 2009 16:21:29 +0100
+From: Russell King - ARM Linux <linux@arm.linux.org.uk>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Jamie Lokier <jamie@shareable.org>, Marek Vasut <marek.vasut@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+Message-ID: <20090914152129.GI21580@n2100.arm.linux.org.uk>
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <200909132328.47079.marek.vasut@gmail.com> <20090913230008.GC30169@n2100.arm.linux.org.uk> <20090914002100.GD30621@shareable.org> <20090914081001.GB14519@n2100.arm.linux.org.uk> <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com> <20090914140059.GC21580@n2100.arm.linux.org.uk> <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com> <20090914144028.GG21580@n2100.arm.linux.org.uk> <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
 MIME-Version: 1.0
-To: Stephan von Krawczynski <skraw@ithnet.com>
-CC: linux-kernel@vger.kernel.org, davem@davemloft.net,
-       Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: ipv4 regression in 2.6.31 ?
-References: <20090914150935.cc895a3c.skraw@ithnet.com>	<4AAE4BAF.2010406@gmail.com> <20090914171001.47371b3d.skraw@ithnet.com>
-In-Reply-To: <20090914171001.47371b3d.skraw@ithnet.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Sep 2009 17:21:18 +0200 (CEST)
+In-Reply-To: <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephan von Krawczynski a écrit :
-> On Mon, 14 Sep 2009 15:57:03 +0200
-> Eric Dumazet <eric.dumazet@gmail.com> wrote:
+On Mon, Sep 14, 2009 at 06:14:08PM +0300, Felipe Contreras wrote:
+> On Mon, Sep 14, 2009 at 5:40 PM, Russell King - ARM Linux
+> <linux@arm.linux.org.uk> wrote:
+> > On Mon, Sep 14, 2009 at 05:38:32PM +0300, Felipe Contreras wrote:
+> >> On Mon, Sep 14, 2009 at 5:00 PM, Russell King - ARM Linux
+> >> <linux@arm.linux.org.uk> wrote:
+> >> > On Mon, Sep 14, 2009 at 03:58:24PM +0300, Felipe Contreras wrote:
+> >> >> On Mon, Sep 14, 2009 at 11:10 AM, Russell King - ARM Linux
+> >> >> <linux@arm.linux.org.uk> wrote:
+> >> >> > On Mon, Sep 14, 2009 at 01:21:00AM +0100, Jamie Lokier wrote:
+> >> >> >> Russell King - ARM Linux wrote:
+> >> >> >> > On Sun, Sep 13, 2009 at 11:28:47PM +0200, Marek Vasut wrote:
+> >> >> >> > > >                 bhi     __delay
+> >> >> >> > > >                 mov     pc, lr
+> >> >> >> > > >  ENDPROC(__udelay)
+> >> >> >> > > >
+> >> >> >> > > Hi
+> >> >> >> > >
+> >> >> >> > > why was this code there in the first place ?
+> >> >> >> >
+> >> >> >> > To make the delay loop more stable and predictable on older CPUs.
+> >> >> >>
+> >> >> >> So why has it been commented out, if it's needed for that?
+> >> >> >
+> >> >> > We moved on and it penalises later CPUs, leading to udelay providing
+> >> >> > shorter delays than requested.
+> >> >> >
+> >> >> > So the choice was either stable and predictable on older CPUs but
+> >> >> > buggy on newer CPUs, or correct on all CPUs but gives unnecessarily
+> >> >> > longer delays on older CPUs.
+> >> >>
+> >> >> Why not add an #ifdef CPU_V4 or whatever?
+> >> >
+> >> > Because then you get it whenever you configure for V4 as the lowest
+> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
+> >> > It's far better to leave it as is and just accept that the old CPUs
+> >> > will have longer than necessary delays.  If people really really
+> >> > care (and there's likely to only be a small minority of them now)
+> >> > changing the '0' to a '1' is a very simple change for them to carry
+> >> > in their local tree.  Unlike getting the right unrolling etc.
+> >>
+> >> Well, they can also 'git revert' this patch. If somebody really cares
+> >> I think they should shout now and provide a better patch, otherwise
+> >> this one should be merged.
+> >
+> > On the other hand, having the code there as it currently stands is not
+> > harmful in any way, so leaving it there is just as easy.
 > 
->> Stephan von Krawczynski a écrit :
->>> Hello all,
->>>
->>> today we experienced some sort of regression in 2.6.31 ipv4 implementation, or
->>> at least some incompatibility with former 2.6.30.X kernels.
->>>
->>> We have the following situation:
->>>
->>>                                        ---------- vlan1@eth0 192.168.2.1/24
->>>                                       /
->>> host A 192.168.1.1/24 eth0  -------<router>            host B
->>>                                       \
->>>                                        ---------- eth1 192.168.3.1/24
->>>
->>>
->>> Now, if you route 192.168.1.0/24 via interface vlan1@eth0 on host B and let
->>> host A ping 192.168.2.1 everything works. But if you route 192.168.1.0/24 via
->>> interface eth1 on host B and let host A ping 192.168.2.1 you get no reply.
->>> With tcpdump we see the icmp packets arrive at vlan1@eth0, but no icmp echo
->>> reply being generated neither on vlan1 nor eth1.
->>> Kernels 2.6.30.X and below do not show this behaviour.
->>> Is this intended? Do we need to reconfigure something to restore the old
->>> behaviour?
->>>
->> Asymetric routing ?
->>
->> Check your rp_filter settings
->>
->> grep . `find /proc/sys/net -name rp_filter`
->>
->> rp_filter - INTEGER
->>         0 - No source validation.
->>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
->>             Each incoming packet is tested against the FIB and if the interface
->>             is not the best reverse path the packet check will fail.
->>             By default failed packets are discarded.
->>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
->>             Each incoming packet's source address is also tested against the FIB
->>             and if the source address is not reachable via any interface
->>             the packet check will fail.
->>
->>         Current recommended practice in RFC3704 is to enable strict mode
->>         to prevent IP spoofing from DDos attacks. If using asymmetric routing
->>         or other complicated routing, then loose mode is recommended.
->>
->>         conf/all/rp_filter must also be set to non-zero to do source validation
->>         on the interface
->>
->>         Default value is 0. Note that some distributions enable it
->>         in startup scripts.
-> 
-> Problem is this:
-> Kernel 2.6.30.X and below work flawlessly in this setup, only kernel 2.6.31
-> acts different. Is this an intended change in policy?
-> 
+> It makes the code less understandable. I'm not sure about linux's
+> practices, but an #if 0 generally means somebody is being lazy.
 
-Here, it only depends on rp_filter settings, kernel 2.6.30 or 2.6.31
+I would agree with you if it was a complicated bit of code, but it
+isn't.  It is a simple count to zero (or overflow) and terminate
+loop.  And it's certainly not about me being lazy.
 
-Please give your settings for further investigations, for all hosts involved.
+Unless there is a strong argument for removing it, the code stays as
+is.
 
+So far, the argument is basically "it's a #if 0, we must get rid of
+it" which is a religous argument, not a technical one.  The fact is
+that (as I said above) keeping it there provides the code for when
+people want to enable it.  That's a technical reason for keeping it.
+
+Please can we now move to something more productive instead of this
+religous argument?
