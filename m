@@ -1,101 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbZINCli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755047AbZINCrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754917AbZINCli (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 22:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754603AbZINClf
+	id S1755047AbZINCrN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 22:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754953AbZINCrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 22:41:35 -0400
-Received: from casper.infradead.org ([85.118.1.10]:50130 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753122AbZINClf (ORCPT
+	Sun, 13 Sep 2009 22:47:12 -0400
+Received: from mga07.intel.com ([143.182.124.22]:39018 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754908AbZINCrL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 22:41:35 -0400
-Date: Mon, 14 Sep 2009 04:45:10 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
-       peterz@infradead.org, yanmin_zhang@linux.intel.com,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com
-Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
- performance
-Message-ID: <20090914044510.511d2ac9@infradead.org>
-In-Reply-To: <20090913163007.a1b967c2.akpm@linux-foundation.org>
-References: <20090911174019.1ed02737@infradead.org>
-	<20090913163007.a1b967c2.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 13 Sep 2009 22:47:11 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,381,1249282800"; 
+   d="scan'208";a="187186410"
+From: Zhenyu Wang <zhenyuw@linux.intel.com>
+To: airlied@gmail.com
+Cc: intel-gfx@lists.freedesktop.org, linux-kernel@vger.kernel.org,
+       Zhenyu Wang <zhenyuw@linux.intel.com>, Stable Team <stable@kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>
+Subject: [PATCH 1/2] agp/intel: remove restore in resume
+Date: Mon, 14 Sep 2009 10:47:06 +0800
+Message-Id: <1252896427-11669-1-git-send-email-zhenyuw@linux.intel.com>
+X-Mailer: git-send-email 1.6.3.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 Sep 2009 16:30:07 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> We can't just fix up the existing code?
+As early pci resume has already restored config for host
+bridge and graphics device, don't need to restore it again,
+This removes an original order hack for graphics device restore.
 
-we could, it'd be just replacing menu.c.
-(since the new one started out with menu.c anyway)
-I don't mind either way, will replace. 
+This fixed the resume hang issue found by Alan Stern on 845G,
+caused by extra config restore on graphics device.
 
-> > +#define BUCKETS 12
-> > +#define RESOLUTION 1024
-> > +#define DECAY 4
-> > +#define MAX_INTERESTING 50000
-> 
-> Interesting!  Unobvious what it does though.
+Cc: Stable Team <stable@kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Signed-off-by: Zhenyu Wang <zhenyuw@linux.intel.com>
+---
+ drivers/char/agp/intel-agp.c |    9 ---------
+ 1 files changed, 0 insertions(+), 9 deletions(-)
 
-at least I documented it:
-   * the actual factor is if there is (disk) IO outstanding or not.
-   * (as a special twist, we consider every sleep longer than 50 milliseconds
-   * as perfect; there is no power gains for sleeping longer than this)
-
-> 
-> That's DIV_ROUND_UP().
-
-ok
-
-> > +	new_factor = data->correction_factor[data->bucket]
-> > +			* (DECAY - 1) / DECAY;
-> 
-> This code is available on 32-bit.  I wouldn't be surprised if we see
-> some udivdi2-isn't-there problems with some compiler versions.  We'll
-> see.
-
-at least not on the ones I tried. DECAY is "4" which means it'll be
-shifts anyway (that's not entirely accidental)
-
-> > +
-> > +unsigned long this_cpu_load(void)
-> > +{
-> > +	int this_cpu = smp_processor_id();
-> > +	struct rq *this_rq = cpu_rq(this_cpu);
-> > +	return this_rq->cpu_load[0];
-> > +}
-> 
-> hm, how come we don't get smp_processor_id-in-preemptible warnings. 
-> Are all current callers pinned to a CPU?
-
-the idle loop is pinned by definition, and also runs with irqs off
-
-"all current callers".. this is a new function, with menutng being the
-only caller. I'm fine with requiring all callers to be pinned, it's
-*this* cpu's load after all ;-)
-
-
-
-> 
-> 
-> some spelling fixlets:
-
-never been my strong point (esp when jetlagged); thanks!
-
-
+diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
+index e8dc75f..6a45365 100644
+--- a/drivers/char/agp/intel-agp.c
++++ b/drivers/char/agp/intel-agp.c
+@@ -2335,15 +2335,6 @@ static int agp_intel_resume(struct pci_dev *pdev)
+ 	struct agp_bridge_data *bridge = pci_get_drvdata(pdev);
+ 	int ret_val;
+ 
+-	pci_restore_state(pdev);
+-
+-	/* We should restore our graphics device's config space,
+-	 * as host bridge (00:00) resumes before graphics device (02:00),
+-	 * then our access to its pci space can work right.
+-	 */
+-	if (intel_private.pcidev)
+-		pci_restore_state(intel_private.pcidev);
+-
+ 	if (bridge->driver == &intel_generic_driver)
+ 		intel_configure();
+ 	else if (bridge->driver == &intel_850_driver)
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.6.3.3
+
