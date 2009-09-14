@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbZINPGx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZINPJY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbZINPGx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:06:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZINPGw
+	id S1755650AbZINPJY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:09:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZINPJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:06:52 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:36042 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752113AbZINPGv (ORCPT
+	Mon, 14 Sep 2009 11:09:24 -0400
+Received: from mga09.intel.com ([134.134.136.24]:46038 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750791AbZINPJX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:06:51 -0400
-Date: Tue, 15 Sep 2009 00:06:54 +0900 (JST)
-Message-Id: <20090915.000654.193698133.ryov@valinux.co.jp>
-To: dwalker@fifo99.com
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@redhat.com
-Subject: Re: [PATCH 1/9] I/O bandwidth controller and BIO tracking
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <1252937480.28368.221.camel@desktop>
-References: <20090914.212805.193688121.ryov@valinux.co.jp>
-	<1252937480.28368.221.camel@desktop>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 11:09:23 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,383,1249282800"; 
+   d="scan'208";a="550395090"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
+Date: Mon, 14 Sep 2009 16:08:48 +0100
+Subject: RE: dca: module load should not be an error message
+Thread-Topic: dca: module load should not be an error message
+Thread-Index: Aco0mBFo50r3Ogs0Re2eY1DsyJ6MRQAtM/lg
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B55481A7@irsmsx504.ger.corp.intel.com>
+References: <20090913090737.3141c842@nehalam> <4AAD2C7F.2080904@intel.com>
+In-Reply-To: <4AAD2C7F.2080904@intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Daniel,
+Williams, Dan J wrote:
+> Stephen Hemminger wrote:
+>> The message (if it must exist) should not be an error message.
+>> IMHO such messages are useless.
+>> 
+>> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+>> 
+>> ---
+>> I sent patch for this previously, but it seems to have been ignored.
+>> 
+> 
+> Sorry about that... applied now.  There are a couple other messages in
+> drivers/dma/ioat/dca.c and drivers/dma/ioat/pci.c that can also be
+> de-clawed.  I'll take care of those.
+> 
+> Thanks,
+> Dan
 
-Daniel Walker <dwalker@fifo99.com> wrote:
-> On Mon, 2009-09-14 at 21:28 +0900, Ryo Tsuruta wrote:
-> 
-> > The list of the patches:
-> >   [PATCH 1/9] I/O bandwidth controller and BIO tracking
-> >   [PATCH 2/9] dm-ioband-1.13.0: All-in-one patch
-> >   [PATCH 3/9] blkio-cgroup-v12: The new page_cgroup framework
-> >   [PATCH 4/9] blkio-cgroup-v12: Refactoring io-context initialization
-> >   [PATCH 5/9] blkio-cgroup-v12: The body of blkio-cgroup
-> >   [PATCH 6/9] blkio-cgroup-v12: Page tracking hooks
-> >   [PATCH 7/9] blkio-cgroup-v12: The document of blkio-cgroup
-> >   [PATCH 8/9] blkio-cgroup-v12: Add a cgroup support to dm-ioband
-> >   [PATCH 9/9] blkio-cgroup-v12: The document of a cgroup support for dm-ioband
-> 
-> 
-> Patches 5, 8, and 9 all have checkpatch errors (2 does also but it
-> involves tracing, so Steven may not let you fix them). 
-> 
-> Could you correct those errors before this get included ?
-
-Thank you for checking the patches, I'll fix them by the next post.
+Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
 
 Thanks,
-Ryo Tsuruta
+Maciej
