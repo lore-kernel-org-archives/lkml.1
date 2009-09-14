@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755345AbZINLfS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755315AbZINLff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755345AbZINLfS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 07:35:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZINLfR
+	id S1755315AbZINLff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 07:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755287AbZINLfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 07:35:17 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:34135 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753314AbZINLfQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 07:35:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:from:date:message-id:subject:to:content-type;
-        b=SXo2bOXLFT8+kUHwaQipbST8ZdaOP5RmfEDN9P8H2ST7NZVXMbopJguRCa81j2rMbC
-         T5uTrFtyaP9H8EJ8D/uXLPsBQBTswC2n2swU/tWQXQRsrf4WvHpsWj2+Ndg2XdwzF3qc
-         vzGtzOV3kwSSsh/HK4nWgTev5AEMYJEGII0Uk=
-MIME-Version: 1.0
-From: Salvatore Iovene <salvatore.iovene@googlemail.com>
-Date: Mon, 14 Sep 2009 14:34:56 +0300
-Message-ID: <c64207c00909140434t46d89025yaee72908143f128c@mail.gmail.com>
-Subject: /lib/modules/2.6.31-10/build/drivers/input/hid-ids.h - where is it?
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 Sep 2009 07:35:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55427 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755260AbZINLfd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 07:35:33 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19OO3kIUl1On4KuBhz5tqloPziP7C9+o/+t6ygspN
+	uCHi/dOY5KueTf
+Subject: Re: Phoronix CFS vs BFS bencharks
+From: Mike Galbraith <efault@gmx.de>
+To: Nikos Chantziaras <realnc@arcor.de>
+Cc: Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <4AAE10E6.2050403@arcor.de>
+References: <20090906205952.GA6516@elte.hu>  <4AAE10E6.2050403@arcor.de>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 13:35:33 +0200
+Message-Id: <1252928133.22740.37.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-<preface>
-I know that asking is not good netiquette, but could you please CC me
-if you reply? I'm not subscribed because this is really a one time
-question. Thanks!
-</preface>
+On Mon, 2009-09-14 at 12:46 +0300, Nikos Chantziaras wrote:
+> Phoronix has published some benchmarks, including some "non-synthetic" 
+> real-life applications:
+> 
+>    http://www.phoronix.com/vr.php?view=14179
+> 
+> The benchmarks are:
+> 
+>   * World of Padman
+>   * Timed Apache Compilation
+>   * Timed PHP Compilation
+>   * 7-Zip Compression
+>   * GraphicsMagick
+>   * Apache Benchmark
+>   * Threaded I/O Tester
+>   * PostMark
+> 
+> The test was performed on an Ubuntu 9.10 daily snapshot from 2009-09-10 
+> with the GNOME 2.27.91 desktop, X Server 1.6.3, NVIDIA 190.32 display 
+> driver, GCC 4.4.1, and an EXT4 file-system.
 
-Hi,
-I have upgraded to Ubuntu 9.10 yesterday, and that brought in the
-2.6.31-10 kernel. I always build the linuxwacom drivers myself, and
-they use the file in the subject (not 100% sure about the path,
-though: I recalled it from memory).
-Despite having all the dependencies that allowed me to build
-linuxwacom in the past, now that file is missing.
+Interesting results.
 
-I have searched with apt-file, with no luck. I also have checked that
-the file hasn't been deleted from the repositories, as this is its
-history:
+It'd be nice to see what difference the changes since .31 have made to
+these comparisons.  In particular, child_runs_first was found to have a
+substantial negative impact on parallel compiles, and has been turned
+off.  The reduction of sched_latency has a rather large effect on worst
+case latency for CPU hogs, so will likely affect some results markedly.
 
-http://git.kernel.org/?p=linux/kernel/git/jikos/hid.git;a=history;f=drivers/hid/hid-ids.h;hb=ed42350e02bfcb333024949e9653d06916135cc5
+Hohum, back to the grindstone.
 
-So why don't I have it and what should I do to get it?
+	-Mike
 
-Thank you very much in advance, and, once again, please CC me in your reply.
-Appreciated.
-
--- 
-Salvatore Iovene
-http://www.iovene.com/
-http://www.geekherocomic.com/
