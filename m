@@ -1,63 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751148AbZINE1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751133AbZINEe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751148AbZINE1k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 00:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750849AbZINE1j
+	id S1751133AbZINEe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 00:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZINEez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 00:27:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:35723 "EHLO smtps.tip.net.au"
+	Mon, 14 Sep 2009 00:34:55 -0400
+Received: from mga14.intel.com ([143.182.124.37]:36048 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbZINE1j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 00:27:39 -0400
-Date: Mon, 14 Sep 2009 14:27:29 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ed Cashin <ecashin@coraid.com>
-Subject: linux-next: block tree build failure
-Message-Id: <20090914142729.beae34fd.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__14_Sep_2009_14_27_29_+1000_ggfQ=FqSK8p.8Qu2"
+	id S1750849AbZINEez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 00:34:55 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,381,1249282800"; 
+   d="scan'208";a="187207478"
+Date: Mon, 14 Sep 2009 12:34:44 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "mtosatti@redhat.com" <mtosatti@redhat.com>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+       "avi@qumranet.com" <avi@qumranet.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Mike Smith <scgtrp@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] devmem: handle partial kmem write/read
+Message-ID: <20090914043444.GA18590@localhost>
+References: <20090914032901.GA16189@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090914032901.GA16189@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__14_Sep_2009_14_27_29_+1000_ggfQ=FqSK8p.8Qu2
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Hi Kame,
 
-Hi Jens,
+This patch needs more work. I first intent to fix a bug:
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+                        sz = vwrite(kbuf, (char *)p, sz);
+                        p += sz;
+                }
 
-drivers/block/aoe/aoeblk.c: In function 'aoeblk_make_request':
-drivers/block/aoe/aoeblk.c:175: error: implicit declaration of function 'bi=
-o_barrier'
+So if the returned len is 0, the kbuf/p pointers will mismatch. 
 
-Caused by commit c1db2f19f1302e894fe9db818e08fb03e4a84df9 ("aoe: end
-barrier bios with EOPNOTSUPP") interacting with commit
-1f98a13f623e0ef666690a18c1250335fc6d7ef1 ("bio: first step in sanitizing
-the bio->bi_rw flag testing").
+Then I realize it changed the write behavior. The current vwrite()
+behavior is strange, it returns 0 if _whole range_ is hole, otherwise
+ignores the hole silently. So holes can be treated differently even in
+the original code.
 
-I have used the version of the block tree from next-20090910 for today.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+I'm not really sure about the right behavior. KAME-san, do you have
+any suggestions?
 
---Signature=_Mon__14_Sep_2009_14_27_29_+1000_ggfQ=FqSK8p.8Qu2
-Content-Type: application/pgp-signature
+Thanks,
+Fengguang
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqtxjEACgkQjjKRsyhoI8y8UQCeI50TkSmg2x9Xd91RD/BpPpP9
-HnsAn0X5M3TLPYTalnDyWMAOQk2tDz3m
-=D5EB
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Sep_2009_14_27_29_+1000_ggfQ=FqSK8p.8Qu2--
+On Mon, Sep 14, 2009 at 11:29:01AM +0800, Wu Fengguang wrote:
+> Current vwrite silently ignores vwrite() to vmap holes.
+> Better behavior should be stop the write and return
+> on such holes.
+> 
+> Also return on partial read, which may happen in future
+> (eg. hit hwpoison pages).
+> 
+> CC: Andi Kleen <andi@firstfloor.org>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  drivers/char/mem.c |   30 ++++++++++++++++++------------
+>  1 file changed, 18 insertions(+), 12 deletions(-)
+> 
+> --- linux-mm.orig/drivers/char/mem.c	2009-09-14 10:59:50.000000000 +0800
+> +++ linux-mm/drivers/char/mem.c	2009-09-14 11:06:25.000000000 +0800
+> @@ -444,18 +444,22 @@ static ssize_t read_kmem(struct file *fi
+>  		if (!kbuf)
+>  			return -ENOMEM;
+>  		while (count > 0) {
+> +			unsigned long n;
+> +
+>  			sz = size_inside_page(p, count);
+> -			sz = vread(kbuf, (char *)p, sz);
+> -			if (!sz)
+> +			n = vread(kbuf, (char *)p, sz);
+> +			if (!n)
+>  				break;
+> -			if (copy_to_user(buf, kbuf, sz)) {
+> +			if (copy_to_user(buf, kbuf, n)) {
+>  				free_page((unsigned long)kbuf);
+>  				return -EFAULT;
+>  			}
+> -			count -= sz;
+> -			buf += sz;
+> -			read += sz;
+> -			p += sz;
+> +			count -= n;
+> +			buf += n;
+> +			read += n;
+> +			p += n;
+> +			if (n < sz)
+> +				break;
+>  		}
+>  		free_page((unsigned long)kbuf);
+>  	}
+> @@ -551,11 +555,13 @@ static ssize_t write_kmem(struct file * 
+>  				free_page((unsigned long)kbuf);
+>  				return -EFAULT;
+>  			}
+> -			sz = vwrite(kbuf, (char *)p, sz);
+> -			count -= sz;
+> -			buf += sz;
+> -			virtr += sz;
+> -			p += sz;
+> +			n = vwrite(kbuf, (char *)p, sz);
+> +			count -= n;
+> +			buf += n;
+> +			virtr += n;
+> +			p += n;
+> +			if (n < sz)
+> +				break;
+>  		}
+>  		free_page((unsigned long)kbuf);
+>  	}
