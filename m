@@ -1,77 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZINWgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbZINWfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757482AbZINWgK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 18:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757461AbZINWgI
+	id S1757474AbZINWfT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 18:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbZINWfR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 18:36:08 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:40491 "EHLO smtps.tip.net.au"
+	Mon, 14 Sep 2009 18:35:17 -0400
+Received: from fifo99.com ([67.223.236.141]:52402 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757457AbZINWgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 18:36:07 -0400
-Date: Tue, 15 Sep 2009 08:36:01 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Steven Rostedt <srostedt@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree
- build warning)
-Message-Id: <20090915083601.41bf16e1.sfr@canb.auug.org.au>
-In-Reply-To: <1252936201.2964.59.camel@localhost.localdomain>
-References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-	<1249403089.4634.139.camel@localhost.localdomain>
-	<20090912165300.9d257283.sfr@canb.auug.org.au>
-	<20090912073906.GA3972@elte.hu>
-	<1252936201.2964.59.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+	id S1757458AbZINWfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 18:35:17 -0400
+Subject: Re: [PATCH 00/72] Blackfin updates for 2.6.32
+From: Daniel Walker <dwalker@fifo99.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
+In-Reply-To: <8bd0f97a0909141517i3535bb84j4cbac0cd986d4914@mail.gmail.com>
+References: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
+	 <1252961412.11643.215.camel@desktop>
+	 <8bd0f97a0909141357y60d7807bm99146d757e6f61da@mail.gmail.com>
+	 <1252962263.11643.232.camel@desktop>
+	 <8bd0f97a0909141407i26b39f9bq133a62be381601b5@mail.gmail.com>
+	 <1252963292.11643.259.camel@desktop>
+	 <8bd0f97a0909141517i3535bb84j4cbac0cd986d4914@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 15:36:07 -0700
+Message-Id: <1252967767.11643.286.camel@desktop>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__15_Sep_2009_08_36_01_+1000_icbpFa729/f1lXND"
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__15_Sep_2009_08_36_01_+1000_icbpFa729/f1lXND
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-09-14 at 18:17 -0400, Mike Frysinger wrote:
+> 
+> this code i had rewritten and as fallout, the style changed.  looks
+> fine to me, and no, this particular checpatch "error" is not always
+> worthwhile (like in this case).
 
-Hi Steve,
+Have you read Documentation/CodingStyle ? Can you better explain why
+your don't want to follow that document ? Most people accept that to be
+the style of code in Linux, and that is what checkpatch checks for..
 
-On Mon, 14 Sep 2009 09:50:01 -0400 Steven Rostedt <srostedt@redhat.com> wro=
-te:
->
-> On Sat, 2009-09-12 at 09:39 +0200, Ingo Molnar wrote:
-> > * Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->=20
-> > > Now that this is in Linus' tree, can we have a fix for the waning,=20
-> > > please?
-> >=20
-> > The first warning got fixed 1.5 months ago - the second one at line=20
-> > 797 is still there but harmless - you can ignore it for now, it will=20
-> > be fixed.
->=20
-> The first warning never got fixed. The typecast was placed in the wrong
-> spot (my fault). I sent another patch that fixes both warnings.
+We also have this quote from Documentation/SubmittingPatches
 
-Thanks for that.
+"4) Style check your changes.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Check your patch for basic style violations, details of which can be
+found in Documentation/CodingStyle.  Failure to do so simply wastes
+the reviewers time and will get your patch rejected, probably
+without even being read.
 
---Signature=_Tue__15_Sep_2009_08_36_01_+1000_icbpFa729/f1lXND
-Content-Type: application/pgp-signature
+At a minimum you should check your patches with the patch style
+checker prior to submission (scripts/checkpatch.pl).  You should
+be able to justify all violations that remain in your patch."
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
+If you ultimately don't correct these changes, I'd ask that in the
+future you submit pull requests for the blackfin architecture instead of
+sending individual patches ..
 
-iEYEARECAAYFAkquxVEACgkQjjKRsyhoI8wHFwCaAqaPkFm9aq3oOUc1i0OH52Vy
-29kAn2isI+Mtp/4iVipP4u0JYDu8rThJ
-=gFS3
------END PGP SIGNATURE-----
+Daniel
 
---Signature=_Tue__15_Sep_2009_08_36_01_+1000_icbpFa729/f1lXND--
