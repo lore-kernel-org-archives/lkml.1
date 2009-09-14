@@ -1,97 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZINMPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZINMUT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbZINMPO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 08:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZINMPN
+	id S1755248AbZINMUT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 08:20:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZINMUT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 08:15:13 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:34012 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752497AbZINMPM (ORCPT
+	Mon, 14 Sep 2009 08:20:19 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:56200 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752971AbZINMUS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 08:15:12 -0400
-Date: Mon, 14 Sep 2009 14:15:13 +0200
-From: Wolfram Sang <w.sang@pengutronix.de>
-To: Mark Brown <broonie@opensource.wolfsonmicro.com>
-Cc: linux-kernel@vger.kernel.org, Liam Girdwood <lrg@slimlogic.co.uk>
-Subject: Re: regulator: adding constraints to regulator_desc?
-Message-ID: <20090914121513.GC3164@pengutronix.de>
-References: <20090914104101.GB3164@pengutronix.de> <20090914105714.GA16736@rakim.wolfsonmicro.main>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="p2kqVDKq5asng8Dg"
-Content-Disposition: inline
-In-Reply-To: <20090914105714.GA16736@rakim.wolfsonmicro.main>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:221:70ff:fe71:1890
-X-SA-Exim-Mail-From: w.sang@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Mon, 14 Sep 2009 08:20:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=DHwKh+Viu4z94IxwrOci4VMhe7MMom7LcPchmzEEFhJAFIDRXO/KanWUFrK7vg1HRz
+         LqE/0LdJu86j8BMufgf7niBAt8wdZEKJNsmKK4Wv6knZvczKrKS3TSAowLryCDG4jx1z
+         /iR9N7B/WPNBirmje8yTRyrnILcWSHn8oDLaA=
+From: Yong Zhang <yong.zhang0@gmail.com>
+To: a.p.zijlstra@chello.nl, mingo@elte.hu
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] fix potential NULL derference of doms_cur
+Date: Mon, 14 Sep 2009 20:20:16 +0800
+Message-Id: <1252930816-7672-1-git-send-email-yong.zhang0@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+If CONFIG_CPUMASK_OFFSTACK is enabled but doms_cur alloc failed
+in arch_init_sched_domains(), doms_cur will move back to
+fallback_doms. But this time, fallback_doms has not been
+initialized yet.
 
---p2kqVDKq5asng8Dg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
+---
+ kernel/sched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index e27a536..6dc3e06 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -9329,6 +9329,7 @@ void __init sched_init_smp(void)
+ 	cpumask_var_t non_isolated_cpus;
+ 
+ 	alloc_cpumask_var(&non_isolated_cpus, GFP_KERNEL);
++	alloc_cpumask_var(&fallback_doms, GFP_KERNEL);
+ 
+ #if defined(CONFIG_NUMA)
+ 	sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
+@@ -9360,7 +9361,6 @@ void __init sched_init_smp(void)
+ 	sched_init_granularity();
+ 	free_cpumask_var(non_isolated_cpus);
+ 
+-	alloc_cpumask_var(&fallback_doms, GFP_KERNEL);
+ 	init_sched_rt_class();
+ }
+ #else
+-- 
+1.6.0.4
 
-> The checks at the regulator level should be checking more than can be
-> specified in the constraints - they should also be checking that the
-> regulator can actually deliver the requested voltage.  It is possible
-> that a request could be within the constraints but in between two steps
-> that the regulator can deliver and therefore not supportable.  Drivers
-> that don't do the additional checks should really be doing them.
-
-I thought about the core just doing the basic checks (inbetween min and max=
-),
-so the regulator-drivers could still add more checks if needed. Though...
-
-> These checks could be factored out if we change the API for setting
-> voltage to work in terms of voltage selectors and force the
-> implementation of list_voltage() but it's never seemed worth the hassle
-
-=2E..if that works out and more checks could be done by the core, this woul=
-d be
-great, I think.
-
-> > One thing which also raised my attention was the beginning of
-> > regulator_check_voltage(). It starts with
->=20
-> > 	BUG_ON(*min_uV > *max_uV);
->=20
-> > Is it really necessary to halt the kernel? Wouldn't a big warning and -=
-EINVAL
-> > do like at the end of the function?
->=20
-> That should also be OK, yes.  The risk is that once you start loosing
-> the plot on regulator stuff the system will often die anyway due to
-> power problems but WARN_ON and an error would cover the diagnostics just
-> as well.
-
-Okay. Will try to prepare a patch this evening.
-
-Regards,
-
-   Wolfram
-
---=20
-Pengutronix e.K.                           | Wolfram Sang                |
-Industrial Linux Solutions                 | http://www.pengutronix.de/  |
-
---p2kqVDKq5asng8Dg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkquM9EACgkQD27XaX1/VRu45wCgw/CDDJwz+KzU2G4QNZW4NR2O
-fScAoLVAnL/Ja3tDgNW+dPXIodIRvtYf
-=ol4C
------END PGP SIGNATURE-----
-
---p2kqVDKq5asng8Dg--
