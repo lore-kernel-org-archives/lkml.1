@@ -1,109 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756798AbZINSuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933482AbZINSwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756798AbZINSuZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZINSuX
+	id S933482AbZINSwk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756794AbZINSwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:50:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:57855 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754909AbZINSuW (ORCPT
+	Mon, 14 Sep 2009 14:52:37 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:53934 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756790AbZINSwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:50:22 -0400
-Message-ID: <4AAE907E.1020205@vlnb.net>
-Date: Mon, 14 Sep 2009 22:50:38 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 14 Sep 2009 14:52:36 -0400
+Date: Tue, 15 Sep 2009 00:22:28 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Pavol Cvengros <pavol.cvengros@primeinteractive.net>,
+       Justin Maggard <jmaggard10@gmail.com>,
+       Eric Sandeen <sandeen@redhat.com>, Jiri Kosina <jkosina@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: ext4+quota+nfs issue
+Message-ID: <20090914185228.GA5984@skywalker.linux.vnet.ibm.com>
+References: <4AA5E5F3.30309@primeinteractive.net>
+ <4AA72C14.1020005@primeinteractive.net>
+ <alpine.LRH.2.00.0909091141300.25928@twin.jikos.cz>
+ <4AA7C38E.8020306@redhat.com>
+ <150c16850909091045h1962fd67n77c265c9b99c5f44@mail.gmail.com>
+ <4AA7FBD7.9080406@primeinteractive.net>
+ <4AAA5FCC.2010707@primeinteractive.net>
+ <20090914175056.GE25549@duck.suse.cz>
 MIME-Version: 1.0
-To: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Subject: Re: [RFC PATCH 0/19] A kernel-level configfs enabled generic target
- engine for Linux v2.6.32
-References: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
-In-Reply-To: <1252720508.2067.196.camel@haakon2.linux-iscsi.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19BIrrReAiiuiy8cfkrShKj8/1/cni3hev8/qh
- BW7AHBf+8a1AxvgDSctF94/UcXkcdrwP4Q6dyQ9yJ65kuvo8LE
- x3QjzoxpCwefowCI5EKng==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090914175056.GE25549@duck.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicholas A. Bellinger, on 09/12/2009 05:55 AM wrote:
-> Greetings all,
-> 
-> This is my humble request for review and inclusion of
-> Target_Core_Mod/ConfigFS v3.2 from lio-core-2.6.git code into mainline
-> v2.6.32.  With TCM v3.2, the two major SPC-4 SCSI target mode fabric
-> features that have now been completed: Persistent Reservation APTPL and
-> implict/explict ALUA are the first all optional SPC4 defined feature
-> implementation of PR and ALUA in the Linux OSS target theatre using an
-> upstream user-driven virtual filesystem directory hierarchy structure
-> based on configfs that can be configured in realtime in combination with
-> interpreted userspace code.
-> 
-> Both of these new features are now being used to provide Persistent Reservations
-> across target power loss and asymmetric multipath I/O to both Linux and non-Linux
-> clients.  There is also an optional ALUA transition delay logic that has been
-> included to futher debug and improve existing upstream client side Linux kernel code
-> using TCM v3.2. These patches have been diffed against v2.6.31, and tested on x86
-> 32-bit HVM, x86_64 KVM, and powerpc.
-> 
-> There is cleanup work continuing to make the TCM code to use dprintk(),
-> and some include cleanups, and other minor fixes.  The code has also
-> been run through checkpatch again since the posting in April, and all
-> errors have been removed, with the exception of one ConfigFS macro
-> define triggering a checkpatch false positive.
-> 
-> As with the posting of the TCM v3.0 code earlier in April, I have
-> decided to break up the submissions into the generic target_core_mod
-> piece (this patch series) and then a seperate one that will be appearing
-> in the next days for v3.2 of the LIO-Target iSCSI fabric module.
-> 
-> More Information about Target_Core_Mod/ConfigFS, and PR and ALUA:
-> 
-> http://www.linux-iscsi.org/index.php/Target_Core_Mod/ConfigFS
-> http://www.linux-iscsi.org/index.php/Persistent_Reservations
-> http://www.linux-iscsi.org/index.php/ALUA
-> 
-> The complete v3.x TCM CLI operations set can be found here:
-> 
-> http://www.linux-iscsi.org/index.php/Lio-utils#v3.1_TCM_CLI_operations
-> 
-> Instructions and examples for getting setup:
-> 
-> http://linux-iscsi.org/builds/docs/LIO-3.0-Users_Reference_Manual.pdf
-> http://www.linux-iscsi.org/index.php/Howto#Start_target_core_mod
+On Mon, Sep 14, 2009 at 07:50:56PM +0200, Jan Kara wrote:
+>   I've found some time to look into this and I can see a few problems in
+> the code. Firstly, what may cause your problems:
+>   vfs_dq_claim_blocks() is called in ext4_mb_mark_diskspace_used(). But
+> as far as I can understand the code, ext4_mb_normalize_request() can
+> increase the amount of space we really allocate and thus we try to
+> allocate more blocks than we have actually reserved in quota. Aneesh, is
+> that right?
 
-Some questions among many I have:
+ext4_mb_mark_diskspace_used use ac->ac_b_ex.fe_len which is NOT the normalized
+request len. it is min(allocated_len, original_len). So i guess that code
+should be safe
+ 
 
-1. Where and how TCM is better over the existing mainline target 
-framework STGT to justify such a move as adding a new piece of code 
-doing the same job?
+>   Secondly, ext4_da_reserve_space() seems to have a bug that it can reserve
+> quota blocks multiple times if ext4_claim_free_blocks() fail and we retry
+> the allocation. We should release the quota reservation before restarting.
+> Actually, when we find out we cannot reserve quota space, we could force
+> some delayed allocated writes to disk (thus possibly release some quota
+> in case we have overestimated the amount of blocks needed). But that's
+> a different issue.
 
-2. On the linux-iscsi.org main page (BTW, the comparison on that page 
-isn't fully correct about STGT and SCST) you claim that TCM is a generic 
-target engine. But how can you prove (and test) that if there are no 
-hardware target drivers for TCM?
+That would imply the file system was full. But the dumpe2fs ouput list
+large number of free blocks. But yes the code should have released the
+quota reservation before trying block reservation again.
 
-Also patch 7 implements MIBs through procfs. Procfs is for long time 
-forbidden for adding anything like that, so you can't push it in the 
-mainline.
 
-Vlad
+>   Thirdly, ext4_indirect_calc_metadata_amount() is wrong for sparse files.
+> The worst case is 3 metadata blocks per data block if we make the file
+> sufficiently sparse and there's no easy way around that...
+> 
+
+-aneesh
