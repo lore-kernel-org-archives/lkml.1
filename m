@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755319AbZINJHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755325AbZINJJr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755319AbZINJHf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 05:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755290AbZINJHe
+	id S1755325AbZINJJr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 05:09:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbZINJJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 05:07:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39686 "EHLO mx2.suse.de"
+	Mon, 14 Sep 2009 05:09:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50131 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754677AbZINJHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 05:07:34 -0400
-Date: Mon, 14 Sep 2009 11:07:34 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jkosina@wotan.suse.de
-To: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Cc: gregkh <gregkh@suse.de>, LKLM <linux-kernel@vger.kernel.org>,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: [GIT BISECT -next] mem.c: could not login on console of fedora
- 10
-In-Reply-To: <4AADEA82.8000500@np.css.fujitsu.com>
-Message-ID: <alpine.LNX.2.00.0909141106240.17028@wotan.suse.de>
-References: <4AADEA82.8000500@np.css.fujitsu.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	id S1755203AbZINJJp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 05:09:45 -0400
+Message-ID: <4AAE0841.6000305@kernel.org>
+Date: Mon, 14 Sep 2009 18:09:21 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Peter Zijlstra <peterz@infradead.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       David Howells <dhowells@redhat.com>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
+ performance
+References: <20090911174019.1ed02737@infradead.org>	 <20090914004301.105196cc.akpm@linux-foundation.org>	 <4AADF8FE.1060208@kernel.org> <1252916128.5699.41.camel@laptop>
+In-Reply-To: <1252916128.5699.41.camel@laptop>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Sep 2009 09:09:23 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Jin Dongming wrote:
+Hello,
 
-> When I build and boot -next on fedora 10, I can not login anymore.
-> When I input the user name and password, the system does not output
-> any message and requires user to input the user name and password
-> again and again.
+Peter Zijlstra wrote:
+>> If someone has any better ideas, I would happy to remove the annoying
+>> restriction.
 > 
-> I find the patch which caused this problem with "GIT BISECT" command.
-> And the patch is
->     commit 7c4b7daa1878972ed0137c95f23569124bd6e2b1
->     "mem_class: use minor as index instead of searching the array".
+> That sounds like a variable __attribute__((no-explicit-relocs)) should
+> be proposed to the GCC folks or something. Then we can at least have a
+> hope of lifting this restriction some time in the future.
 > 
-> Though I don't know the real reason why user could not login, I
-> confirmed the patch I made as following could resolve the problem on
-> fedora 10.
+> (Alternatively we build the full alpha kernel with
+> --mno-explicit-relocs, but that would be sub-optimal as well)
 > 
-> Signed-off-by: Jin Dongming <jin.dongming@np.css.fujitsu.com>
-> ---
->  drivers/char/mem.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-> index bed3503..0491cdf 100644
-> --- a/drivers/char/mem.c
-> +++ b/drivers/char/mem.c
-> @@ -878,8 +878,8 @@ static const struct memdev {
->  	[ 4] = { "port", &port_fops, NULL },
->  #endif
->  	[ 5] = { "zero", &zero_fops, &zero_bdi },
-> -	[ 6] = { "full", &full_fops, NULL },
-> -	[ 7] = { "random", &random_fops, NULL },
-> +	[ 7] = { "full", &full_fops, NULL },
-> +	[ 8] = { "random", &random_fops, NULL },
->  	[ 9] = { "urandom", &urandom_fops, NULL },
->  	[11] = { "kmsg", &kmsg_fops, NULL },
->  #ifdef CONFIG_CRASH_DUMP
-> -- 
-> 1.6.2.2
+> Not sure if s390 has anything similar..
 
-I am not entirely sure why I have been CCed on this while the patch author 
-hasn't :) Adding Kay to CC.
+If possible, something like __attribute__((dont-expect-it-to-be-near))
+would be very nice in this case.
+
+> Alternatively we could file it as a bug, since the symbols are in a
+> custom .section, which is a strong indication we're going to play funny
+> games anyway.
+
+This sounds quite appealing but I think it has certain possibility of
+coming back and bite us in the rear.
+
+Hmmm... Offsets for symbols which fit in the first chunk are
+guaranteed to be addressable with the reduced range and thus the weak
+trick is only necessary for modules, so a solution we can implement in
+kernel proper is to reserve address range for module text and data to
+be loaded near the builtin text and data.  Percpu already supports
+reservation in the first chunk (for x86-64 for example) so that part
+is already there.  Ah... only if s390 and alpha are a little easier to
+come by.  :-(
+
+Thanks.
 
 -- 
-Jiri Kosina
-SUSE Labs, Novell Inc.
+tejun
