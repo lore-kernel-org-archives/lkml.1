@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755502AbZINMs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZINMvB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755502AbZINMs2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 08:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbZINMsZ
+	id S1755509AbZINMvB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 08:51:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755456AbZINMvA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 08:48:25 -0400
-Received: from rtr.ca ([76.10.145.34]:49024 "EHLO mail.rtr.ca"
+	Mon, 14 Sep 2009 08:51:00 -0400
+Received: from cantor.suse.de ([195.135.220.2]:44436 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbZINMsY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 08:48:24 -0400
-Message-ID: <4AAE3B9A.2060306@rtr.ca>
-Date: Mon, 14 Sep 2009 08:48:26 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+	id S1755496AbZINMu7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 08:50:59 -0400
+Date: Mon, 14 Sep 2009 14:50:59 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
+X-X-Sender: jikos@twin.jikos.cz
+To: Salvatore Iovene <salvatore.iovene@googlemail.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org
+Subject: Re: /lib/modules/2.6.31-10/build/drivers/input/hid-ids.h - where is
+  it?
+In-Reply-To: <c64207c00909140546v691d17f5sfc94bf425307e037@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0909141448560.25928@twin.jikos.cz>
+References: <c64207c00909140434t46d89025yaee72908143f128c@mail.gmail.com>  <200909141438.11560.elendil@planet.nl> <c64207c00909140546v691d17f5sfc94bf425307e037@mail.gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Tejun Heo <teheo@suse.de>
-Cc: Chris Webb <chris@arachsys.com>, linux-scsi@vger.kernel.org,
-       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
-       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
-Subject: Re: MD/RAID time out writing superblock
-References: <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de>
-In-Reply-To: <4AADF471.2020801@suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-17817450-1252932662=:25928"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-..
-> Oooh, another possibility is the above continuous IDENTIFY tries.
-> Doing things like that generally isn't a good idea because vendors
-> don't expect IDENTIFY to be mixed regularly with normal IOs and
-> firmwares aren't tested against that.  Even smart commands sometimes
-> cause problems.  So, finding out the thing which is obsessed with the
-> identity of the drive and stopping it might help.
-..
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Bullpucky.  That sort of thing, specifically with IDENTIFY,
-has never been an issue.
+---1747641777-17817450-1252932662=:25928
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-I wonder if the IDENTIFY is actually coming from libata EH
-after something else failed ?
+On Mon, 14 Sep 2009, Salvatore Iovene wrote:
+
+> > AFAICT in this case the file was simply moved to:
+> > drivers/hid/hid-ids.h
+> >        ^^^
+> 
+> Actually, that's the place where the file is looked for, despite the
+> mistake in the subject of my email (I said I recalled from memory :))
+> 
+> See line 38 at http://linuxwacom.cvs.sourceforge.net/viewvc/linuxwacom/linuxwacom-dev/src/2.6.31/Makefile.in?revision=1.1&view=markup
+> 
+> So the question remains: why don't I have that file?
+
+Probably this is because you don't have kernel-source package installed 
+(or however is it called in your distro). /lib/modules/<version>/build is 
+supposed to be symlink to the appropriate kernel sources, and apparently, 
+in your case, it's not.
+
+This is distro-specific/installation question though, so it's unlikely 
+you'll get too much support on this mailinglist.
+
+-- 
+Jiri Kosina
+SUSE Labs, Novell Inc.
+
+---1747641777-17817450-1252932662=:25928--
