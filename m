@@ -1,75 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752208AbZINFfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752668AbZINFgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752208AbZINFfk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 01:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751342AbZINFfj
+	id S1752668AbZINFgK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 01:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751524AbZINFgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 01:35:39 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:34931 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750739AbZINFfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 01:35:38 -0400
-Date: Mon, 14 Sep 2009 15:35:32 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>,
-       <linux-parisc@vger.kernel.org>
-Subject: Re: linux-next: manual merge of the security-testing tree with the
- parisc tree
-Message-Id: <20090914153532.2c06eeae.sfr@canb.auug.org.au>
-In-Reply-To: <20090903154636.e70c50da.sfr@canb.auug.org.au>
-References: <20090903154636.e70c50da.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__14_Sep_2009_15_35_32_+1000_A1X+Em1Njn+jEyVK"
+	Mon, 14 Sep 2009 01:36:09 -0400
+Received: from complete.lackof.org ([198.49.126.79]:43720 "EHLO
+	complete.lackof.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751511AbZINFgI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 01:36:08 -0400
+Date: Sun, 13 Sep 2009 23:36:10 -0600
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Mark Hounschell <markh@compro.net>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-pci@vger.kernel.org,
+       Mark Hounschell <dmarkh@cfl.rr.com>, linux-kernel@vger.kernel.org
+Subject: Re: problems doing direct dma from a pci device to pci-e device
+Message-ID: <20090914053610.GA5970@lackof.org>
+References: <4AAA5B1F.3020103@compro.net> <20090911154714.70a94454@lxorguk.ukuu.org.uk> <4AAA6BE7.8040306@compro.net> <4AAAAD30.4040704@compro.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAAAD30.4040704@compro.net>
+X-Home-Page: http://www.parisc-linux.org/
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__14_Sep_2009_15_35_32_+1000_A1X+Em1Njn+jEyVK
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Fri, Sep 11, 2009 at 04:04:00PM -0400, Mark Hounschell wrote:
+> A quick readup on the IOMMU makes me think that if it does use one, that
+> could certainly cause my problem. I'm using bus addresses plugged into
+> page tables that live in the gpiohsd card obtained from virt2bus.
 
-Hi Kyle,
+If you haven't yet, take a look at Documentation/DMA-API.txt and
+DMA-mapping.txt . virt2bus has been deprecated for DMA since 2.4 releases.
 
-On Thu, 3 Sep 2009 15:46:36 +1000 Stephen Rothwell <sfr@canb.auug.org.au> w=
-rote:
->
-> Today's linux-next merge of the security-testing tree got conflicts in
-> arch/parisc/include/asm/thread_info.h, arch/parisc/kernel/entry.S and
-> arch/parisc/kernel/signal.c between commit 9f4259771faf1ffd99888796d925ad=
-ae4c93630b ("parisc: add TIF_NOTIFY_RESUME and use tracehook_notify_resume"=
-) from the parisc tree and
-> commits d0420c83f39f79afb82010c2d2cafd150eef651b ("KEYS: Extend
-> TIF_NOTIFY_RESUME to (almost) all architectures [try #6]") and
-> ee18d64c1f632043a02e6f5ba5e045bb26a5465f ("KEYS: Add a keyctl to install
-> a process's session keyring on its parent [try #6]") from the
-> security-testing tree.
->=20
-> Overlapping changes.  I fixed it up (using the parisc versions and adding
-> the extra change from the latter security-testing patch) and can carry
-> the fixes as necessary.
-
-This conflict is now between the parisc tree and Linus' tree ...
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Mon__14_Sep_2009_15_35_32_+1000_A1X+Em1Njn+jEyVK
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqt1iQACgkQjjKRsyhoI8z4xQCdFQ5cNfECXGyQR9dx8LqwGpdN
-34sAn35mBi0c2Y1SsuCHuPt5oMvtJGew
-=ODSE
------END PGP SIGNATURE-----
-
---Signature=_Mon__14_Sep_2009_15_35_32_+1000_A1X+Em1Njn+jEyVK--
+grant
