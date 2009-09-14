@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757382AbZINV6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756163AbZINV7J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757382AbZINV6j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755566AbZINV6i
+	id S1756163AbZINV7J (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:59:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751831AbZINV7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:58:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50747 "EHLO
+	Mon, 14 Sep 2009 17:59:08 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:50778 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757306AbZINV60 (ORCPT
+	with ESMTP id S1755447AbZINV7E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:58:26 -0400
-Date: Mon, 14 Sep 2009 23:58:14 +0200
+	Mon, 14 Sep 2009 17:59:04 -0400
+Date: Mon, 14 Sep 2009 23:58:55 +0200
 From: Pavel Machek <pavel@ucw.cz>
 To: Greg KH <greg@kroah.com>, arve@android.com, swetland@google.com,
        kernel list <linux-kernel@vger.kernel.org>
-Subject: [patch 2/6] Dream wakelocks and headers
-Message-ID: <20090914215813.GB11667@elf.ucw.cz>
+Subject: [patch 3/6] add pmem driver
+Message-ID: <20090914215855.GC11667@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,5265 +26,45 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Remove wakelock dependency from some files, add neccessary headers.
-    
+
+This adds android pmem driver, one of dependencies of camera driver.
+
 Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-diff --git a/arch/arm/mach-msm/include/mach/msm_iomap.h b/arch/arm/mach-msm/include/mach/msm_iomap.h
-index 2f7b4c8..1b4cb1d 100644
---- a/arch/arm/mach-msm/include/mach/msm_iomap.h
-+++ b/arch/arm/mach-msm/include/mach/msm_iomap.h
-@@ -116,6 +116,6 @@
- 
- #define MSM_AD5_PHYS          0xAC000000
- #define MSM_AD5_SIZE          (SZ_1M*13)
--
-+#define MSM_AD5_BASE          IOMEM(0xE0300000)
- 
- #endif
-diff --git a/arch/arm/mach-msm/include/mach/msm_rpcrouter.h b/arch/arm/mach-msm/include/mach/msm_rpcrouter.h
-new file mode 100644
-index 0000000..9724ece
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/msm_rpcrouter.h
-@@ -0,0 +1,179 @@
-+/** include/asm-arm/arch-msm/msm_rpcrouter.h
-+ *
-+ * Copyright (C) 2007 Google, Inc.
-+ * Copyright (c) 2007-2009 QUALCOMM Incorporated
-+ * Author: San Mehat <san@android.com>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#ifndef __ASM__ARCH_MSM_RPCROUTER_H
-+#define __ASM__ARCH_MSM_RPCROUTER_H
-+
-+#include <linux/types.h>
-+#include <linux/list.h>
-+#include <linux/platform_device.h>
-+
-+#if CONFIG_MSM_AMSS_VERSION >= 6350
-+/* RPC API version structure
-+ * Version bit 31 : 1->hashkey versioning,
-+ *                  0->major-minor (backward compatible) versioning
-+ * hashkey versioning:
-+ *   Version bits 31-0 hashkey
-+ * major-minor (backward compatible) versioning
-+ *   Version bits 30-28 reserved (no match)
-+ *   Version bits 27-16 major (must match)
-+ *   Version bits 15-0  minor (greater or equal)
-+ */
-+#define RPC_VERSION_MODE_MASK  0x80000000
-+#define RPC_VERSION_MAJOR_MASK 0x0fff0000
-+#define RPC_VERSION_MAJOR_OFFSET 16
-+#define RPC_VERSION_MINOR_MASK 0x0000ffff
-+
-+#define MSM_RPC_VERS(major, minor)					\
-+	((uint32_t)((((major) << RPC_VERSION_MAJOR_OFFSET) &		\
-+		RPC_VERSION_MAJOR_MASK) |				\
-+	((minor) & RPC_VERSION_MINOR_MASK)))
-+#define MSM_RPC_GET_MAJOR(vers) (((vers) & RPC_VERSION_MAJOR_MASK) >>	\
-+					RPC_VERSION_MAJOR_OFFSET)
-+#define MSM_RPC_GET_MINOR(vers) ((vers) & RPC_VERSION_MINOR_MASK)
-+#else
-+#define MSM_RPC_VERS(major, minor) (major)
-+#define MSM_RPC_GET_MAJOR(vers) (vers)
-+#define MSM_RPC_GET_MINOR(vers) 0
-+#endif
-+
-+struct msm_rpc_endpoint;
-+
-+struct rpcsvr_platform_device
-+{
-+	struct platform_device base;
-+	uint32_t prog;
-+	uint32_t vers;
-+};
-+
-+#define RPC_DATA_IN	0
-+/*
-+ * Structures for sending / receiving direct RPC requests
-+ * XXX: Any cred/verif lengths > 0 not supported
-+ */
-+
-+struct rpc_request_hdr
-+{
-+	uint32_t xid;
-+	uint32_t type;	/* 0 */
-+	uint32_t rpc_vers; /* 2 */
-+	uint32_t prog;
-+	uint32_t vers;
-+	uint32_t procedure;
-+	uint32_t cred_flavor;
-+	uint32_t cred_length;
-+	uint32_t verf_flavor;
-+	uint32_t verf_length;
-+};
-+
-+typedef struct
-+{
-+	uint32_t low;
-+	uint32_t high;
-+} rpc_reply_progmismatch_data;
-+
-+typedef struct
-+{
-+} rpc_denied_reply_hdr;
-+
-+typedef struct
-+{
-+	uint32_t verf_flavor;
-+	uint32_t verf_length;
-+	uint32_t accept_stat;
-+#define RPC_ACCEPTSTAT_SUCCESS 0
-+#define RPC_ACCEPTSTAT_PROG_UNAVAIL 1
-+#define RPC_ACCEPTSTAT_PROG_MISMATCH 2
-+#define RPC_ACCEPTSTAT_PROC_UNAVAIL 3
-+#define RPC_ACCEPTSTAT_GARBAGE_ARGS 4
-+#define RPC_ACCEPTSTAT_SYSTEM_ERR 5
-+#define RPC_ACCEPTSTAT_PROG_LOCKED 6
-+	/*
-+	 * Following data is dependant on accept_stat
-+	 * If ACCEPTSTAT == PROG_MISMATCH then there is a
-+	 * 'rpc_reply_progmismatch_data' structure following the header.
-+	 * Otherwise the data is procedure specific
-+	 */
-+} rpc_accepted_reply_hdr;
-+
-+struct rpc_reply_hdr
-+{
-+	uint32_t xid;
-+	uint32_t type;
-+	uint32_t reply_stat;
-+#define RPCMSG_REPLYSTAT_ACCEPTED 0
-+#define RPCMSG_REPLYSTAT_DENIED 1
-+	union {
-+		rpc_accepted_reply_hdr acc_hdr;
-+		rpc_denied_reply_hdr dny_hdr;
-+	} data;
-+};
-+
-+/* flags for msm_rpc_connect() */
-+#define MSM_RPC_UNINTERRUPTIBLE 0x0001
-+
-+/* use IS_ERR() to check for failure */
-+struct msm_rpc_endpoint *msm_rpc_open(void);
-+/* Connect with the specified server version */
-+struct msm_rpc_endpoint *msm_rpc_connect(uint32_t prog, uint32_t vers, unsigned flags);
-+uint32_t msm_rpc_get_vers(struct msm_rpc_endpoint *ept);
-+/* check if server version can handle client requested version */
-+int msm_rpc_is_compatible_version(uint32_t server_version,
-+				  uint32_t client_version);
-+
-+int msm_rpc_close(struct msm_rpc_endpoint *ept);
-+int msm_rpc_write(struct msm_rpc_endpoint *ept,
-+		  void *data, int len);
-+int msm_rpc_read(struct msm_rpc_endpoint *ept,
-+		 void **data, unsigned len, long timeout);
-+void msm_rpc_setup_req(struct rpc_request_hdr *hdr,
-+		       uint32_t prog, uint32_t vers, uint32_t proc);
-+int msm_rpc_register_server(struct msm_rpc_endpoint *ept,
-+			    uint32_t prog, uint32_t vers);
-+int msm_rpc_unregister_server(struct msm_rpc_endpoint *ept,
-+			      uint32_t prog, uint32_t vers);
-+
-+/* simple blocking rpc call
-+ *
-+ * request is mandatory and must have a rpc_request_hdr
-+ * at the start.  The header will be filled out for you.
-+ *
-+ * reply provides a buffer for replies of reply_max_size
-+ */
-+int msm_rpc_call_reply(struct msm_rpc_endpoint *ept, uint32_t proc,
-+		       void *request, int request_size,
-+		       void *reply, int reply_max_size,
-+		       long timeout);
-+int msm_rpc_call(struct msm_rpc_endpoint *ept, uint32_t proc,
-+		 void *request, int request_size,
-+		 long timeout);
-+
-+struct msm_rpc_server
-+{
-+	struct list_head list;
-+	uint32_t flags;
-+
-+	uint32_t prog;
-+	uint32_t vers;
-+
-+	int (*rpc_call)(struct msm_rpc_server *server,
-+			struct rpc_request_hdr *req, unsigned len);
-+};
-+
-+int msm_rpc_create_server(struct msm_rpc_server *server);
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/msm_smd.h b/arch/arm/mach-msm/include/mach/msm_smd.h
-new file mode 100644
-index 0000000..bdf7731
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/msm_smd.h
-@@ -0,0 +1,107 @@
-+/* linux/include/asm-arm/arch-msm/msm_smd.h
-+ *
-+ * Copyright (C) 2007 Google, Inc.
-+ * Author: Brian Swetland <swetland@google.com>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#ifndef __ASM_ARCH_MSM_SMD_H
-+#define __ASM_ARCH_MSM_SMD_H
-+
-+typedef struct smd_channel smd_channel_t;
-+
-+/* warning: notify() may be called before open returns */
-+int smd_open(const char *name, smd_channel_t **ch, void *priv,
-+	     void (*notify)(void *priv, unsigned event));
-+
-+#define SMD_EVENT_DATA 1
-+#define SMD_EVENT_OPEN 2
-+#define SMD_EVENT_CLOSE 3
-+
-+int smd_close(smd_channel_t *ch);
-+
-+/* passing a null pointer for data reads and discards */
-+int smd_read(smd_channel_t *ch, void *data, int len);
-+
-+/* Write to stream channels may do a partial write and return
-+** the length actually written.
-+** Write to packet channels will never do a partial write --
-+** it will return the requested length written or an error.
-+*/
-+int smd_write(smd_channel_t *ch, const void *data, int len);
-+
-+int smd_write_avail(smd_channel_t *ch);
-+int smd_read_avail(smd_channel_t *ch);
-+
-+/* Returns the total size of the current packet being read.
-+** Returns 0 if no packets available or a stream channel.
-+*/
-+int smd_cur_packet_size(smd_channel_t *ch);
-+
-+/* used for tty unthrottling and the like -- causes the notify()
-+** callback to be called from the same lock context as is used
-+** when it is called from channel updates
-+*/
-+void smd_kick(smd_channel_t *ch);
-+
-+
-+#if 0
-+/* these are interruptable waits which will block you until the specified
-+** number of bytes are readable or writable.
-+*/
-+int smd_wait_until_readable(smd_channel_t *ch, int bytes);
-+int smd_wait_until_writable(smd_channel_t *ch, int bytes);
-+#endif
-+
-+typedef enum
-+{
-+	SMD_PORT_DS = 0,
-+	SMD_PORT_DIAG,
-+	SMD_PORT_RPC_CALL,
-+	SMD_PORT_RPC_REPLY,
-+	SMD_PORT_BT,
-+	SMD_PORT_CONTROL,
-+	SMD_PORT_MEMCPY_SPARE1,
-+	SMD_PORT_DATA1,
-+	SMD_PORT_DATA2,
-+	SMD_PORT_DATA3,
-+	SMD_PORT_DATA4,
-+	SMD_PORT_DATA5,
-+	SMD_PORT_DATA6,
-+	SMD_PORT_DATA7,
-+	SMD_PORT_DATA8,
-+	SMD_PORT_DATA9,
-+	SMD_PORT_DATA10,
-+	SMD_PORT_DATA11,
-+	SMD_PORT_DATA12,
-+	SMD_PORT_DATA13,
-+	SMD_PORT_DATA14,
-+	SMD_PORT_DATA15,
-+	SMD_PORT_DATA16,
-+	SMD_PORT_DATA17,
-+	SMD_PORT_DATA18,
-+	SMD_PORT_DATA19,
-+	SMD_PORT_DATA20,
-+	SMD_PORT_GPS_NMEA,
-+	SMD_PORT_BRIDGE_1,
-+	SMD_PORT_BRIDGE_2,
-+	SMD_PORT_BRIDGE_3,
-+	SMD_PORT_BRIDGE_4,
-+	SMD_PORT_BRIDGE_5,
-+	SMD_PORT_LOOPBACK,
-+	SMD_PORT_CS_APPS_MODEM,
-+	SMD_PORT_CS_APPS_DSP,
-+	SMD_PORT_CS_MODEM_DSP,
-+	SMD_NUM_PORTS,
-+} smd_port_id_type;
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audplaycmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audplaycmdi.h
-new file mode 100644
-index 0000000..ece4bc7
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audplaycmdi.h
-@@ -0,0 +1,94 @@
-+#ifndef QDSP5AUDPLAYCMDI_H
-+#define QDSP5AUDPLAYCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+       Q D S P 5  A U D I O   P L A Y  T A S K   C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  Command Interface for AUDPLAYTASK on QDSP5
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+
-+  audplay_cmd_dec_data_avail
-+    Send buffer to AUDPLAY task
-+	
-+  
-+Copyright(c) 1992 - 2009 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+ 
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audplaycmdi.h#2 $
-+  
-+===========================================================================*/
-+
-+#define AUDPLAY_CMD_BITSTREAM_DATA_AVAIL		0x0000
-+#define AUDPLAY_CMD_BITSTREAM_DATA_AVAIL_LEN	\
-+	sizeof(audplay_cmd_bitstream_data_avail)
-+
-+/* Type specification of dec_data_avail message sent to AUDPLAYTASK
-+*/
-+typedef struct {
-+	/*command ID*/
-+	unsigned int cmd_id;
-+
-+	/* Decoder ID for which message is being sent */
-+	unsigned int decoder_id;
-+
-+	/* Start address of data in ARM global memory */
-+	unsigned int buf_ptr;
-+
-+	/* Number of 16-bit words of bit-stream data contiguously available at the
-+	 * above-mentioned address. */
-+	unsigned int buf_size;
-+
-+	/* Partition number used by audPlayTask to communicate with DSP's RTOS
-+	 * kernel */
-+	unsigned int partition_number;
-+} __attribute__((packed)) audplay_cmd_bitstream_data_avail;
-+
-+#define AUDPLAY_CMD_HPCM_BUF_CFG 0x0003
-+#define AUDPLAY_CMD_HPCM_BUF_CFG_LEN \
-+	sizeof(struct audplay_cmd_hpcm_buf_cfg)
-+
-+struct audplay_cmd_hpcm_buf_cfg {
-+	unsigned int cmd_id;
-+	unsigned int hostpcm_config;
-+	unsigned int feedback_frequency;
-+	unsigned int byte_swap;
-+	unsigned int max_buffers;
-+	unsigned int partition_number;
-+} __attribute__((packed));
-+
-+#define AUDPLAY_CMD_BUFFER_REFRESH 0x0004
-+#define AUDPLAY_CMD_BUFFER_REFRESH_LEN \
-+	sizeof(struct audplay_cmd_buffer_update)
-+
-+struct audplay_cmd_buffer_refresh {
-+	unsigned int cmd_id;
-+	unsigned int num_buffers;
-+	unsigned int buf_read_count;
-+	unsigned int buf0_address;
-+	unsigned int buf0_length;
-+	unsigned int buf1_address;
-+	unsigned int buf1_length;
-+} __attribute__((packed));
-+#endif /* QDSP5AUDPLAYCMD_H */
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audplaymsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audplaymsg.h
-new file mode 100644
-index 0000000..c63034b
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audplaymsg.h
-@@ -0,0 +1,70 @@
-+#ifndef QDSP5AUDPLAYMSG_H
-+#define QDSP5AUDPLAYMSG_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+       Q D S P 5  A U D I O   P L A Y  T A S K   M S G
-+
-+GENERAL DESCRIPTION
-+  Message sent by AUDPLAY task
-+
-+REFERENCES
-+  None
-+
-+
-+Copyright(c) 1992 - 2009 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audplaymsg.h#3 $
-+
-+===========================================================================*/
-+#define AUDPLAY_MSG_DEC_NEEDS_DATA		0x0001
-+#define AUDPLAY_MSG_DEC_NEEDS_DATA_MSG_LEN	\
-+	sizeof(audplay_msg_dec_needs_data)
-+
-+typedef struct{
-+	/* reserved*/
-+	unsigned int dec_id;
-+
-+	/* The read pointer offset of external memory until which the
-+	 * bitstream has been DMAed in. */
-+	unsigned int adecDataReadPtrOffset;
-+
-+	/* The buffer size of external memory. */
-+	unsigned int adecDataBufSize;
-+
-+	unsigned int bitstream_free_len;
-+	unsigned int bitstream_write_ptr;
-+	unsigned int bitstarem_buf_start;
-+	unsigned int bitstream_buf_len;
-+} __attribute__((packed)) audplay_msg_dec_needs_data;
-+
-+#define AUDPLAY_MSG_BUFFER_UPDATE 0x0004
-+#define AUDPLAY_MSG_BUFFER_UPDATE_LEN \
-+	sizeof(struct audplay_msg_buffer_update)
-+
-+struct audplay_msg_buffer_update {
-+	unsigned int buffer_write_count;
-+	unsigned int num_of_buffer;
-+	unsigned int buf0_address;
-+	unsigned int buf0_length;
-+	unsigned int buf1_address;
-+	unsigned int buf1_length;
-+} __attribute__((packed));
-+#endif /* QDSP5AUDPLAYMSG_H */
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audppcmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audppcmdi.h
-new file mode 100644
-index 0000000..8bee9c6
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audppcmdi.h
-@@ -0,0 +1,914 @@
-+#ifndef QDSP5AUDPPCMDI_H
-+#define QDSP5AUDPPCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    A U D I O   P O S T   P R O C E S S I N G  I N T E R N A L  C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by AUDPP Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audppcmdi.h#2 $
-+
-+===========================================================================*/
-+
-+/*
-+ * ARM to AUDPPTASK Commands
-+ *
-+ * ARM uses three command queues to communicate with AUDPPTASK
-+ * 1)uPAudPPCmd1Queue : Used for more frequent and shorter length commands
-+ * 	Location : MEMA
-+ * 	Buffer Size : 6 words
-+ * 	No of buffers in a queue : 20 for gaming audio and 5 for other images
-+ * 2)uPAudPPCmd2Queue : Used for commands which are not much lengthier
-+ * 	Location : MEMA
-+ * 	Buffer Size : 23
-+ * 	No of buffers in a queue : 2
-+ * 3)uPAudOOCmd3Queue : Used for lengthier and more frequent commands
-+ * 	Location : MEMA
-+ * 	Buffer Size : 145
-+ * 	No of buffers in a queue : 3
-+ */
-+
-+/*
-+ * Commands Related to uPAudPPCmd1Queue
-+ */
-+
-+/*
-+ * Command Structure to enable or disable the active decoders
-+ */
-+
-+#define AUDPP_CMD_CFG_DEC_TYPE 		0x0001
-+#define AUDPP_CMD_CFG_DEC_TYPE_LEN 	sizeof(audpp_cmd_cfg_dec_type)
-+
-+/* Enable the decoder */
-+#define AUDPP_CMD_DEC_TYPE_M           	0x000F
-+
-+#define AUDPP_CMD_ENA_DEC_V         	0x4000
-+#define AUDPP_CMD_DIS_DEC_V        	0x0000
-+#define AUDPP_CMD_DEC_STATE_M          	0x4000
-+
-+#define AUDPP_CMD_UPDATDE_CFG_DEC	0x8000
-+#define AUDPP_CMD_DONT_UPDATE_CFG_DEC	0x0000
-+
-+
-+/* Type specification of cmd_cfg_dec */
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+	unsigned short dec0_cfg;
-+	unsigned short dec1_cfg;
-+	unsigned short dec2_cfg;
-+	unsigned short dec3_cfg;
-+	unsigned short dec4_cfg;
-+} __attribute__((packed)) audpp_cmd_cfg_dec_type;
-+
-+/*
-+ * Command Structure to Pause , Resume and flushes the selected audio decoders
-+ */
-+
-+#define AUDPP_CMD_DEC_CTRL		0x0002
-+#define AUDPP_CMD_DEC_CTRL_LEN		sizeof(audpp_cmd_dec_ctrl)
-+
-+/* Decoder control commands for pause, resume and flush */
-+#define AUDPP_CMD_FLUSH_V         		0x2000
-+
-+#define AUDPP_CMD_PAUSE_V		        0x4000
-+#define AUDPP_CMD_RESUME_V		        0x0000
-+
-+#define AUDPP_CMD_UPDATE_V		        0x8000
-+#define AUDPP_CMD_IGNORE_V		        0x0000
-+
-+
-+/* Type Spec for decoder control command*/
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+	unsigned short dec0_ctrl;
-+	unsigned short dec1_ctrl;
-+	unsigned short dec2_ctrl;
-+	unsigned short dec3_ctrl;
-+	unsigned short dec4_ctrl;
-+} __attribute__((packed)) audpp_cmd_dec_ctrl;
-+
-+/*
-+ * Command Structure to Configure the AVSync FeedBack Mechanism
-+ */
-+
-+#define AUDPP_CMD_AVSYNC	0x0003
-+#define AUDPP_CMD_AVSYNC_LEN	sizeof(audpp_cmd_avsync)
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+	unsigned short object_number;
-+	unsigned short interrupt_interval_lsw;
-+	unsigned short interrupt_interval_msw;
-+} __attribute__((packed)) audpp_cmd_avsync;
-+
-+/*
-+ * Command Structure to enable or disable(sleep) the   AUDPPTASK
-+ */
-+
-+#define AUDPP_CMD_CFG	0x0004
-+#define AUDPP_CMD_CFG_LEN	sizeof(audpp_cmd_cfg)
-+
-+#define AUDPP_CMD_CFG_SLEEP   				0x0000
-+#define AUDPP_CMD_CFG_ENABLE  				0xFFFF
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+	unsigned short cfg;
-+} __attribute__((packed)) audpp_cmd_cfg;
-+
-+/*
-+ * Command Structure to Inject or drop the specified no of samples
-+ */
-+
-+#define AUDPP_CMD_ADJUST_SAMP		0x0005
-+#define AUDPP_CMD_ADJUST_SAMP_LEN	sizeof(audpp_cmd_adjust_samp)
-+
-+#define AUDPP_CMD_SAMP_DROP		-1
-+#define AUDPP_CMD_SAMP_INSERT		0x0001
-+
-+#define AUDPP_CMD_NUM_SAMPLES		0x0001
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+	unsigned short object_no;
-+	signed short sample_insert_or_drop;
-+	unsigned short num_samples;
-+} __attribute__((packed)) audpp_cmd_adjust_samp;
-+
-+/*
-+ * Command Structure to Configure AVSync Feedback Mechanism
-+ */
-+
-+#define AUDPP_CMD_AVSYNC_CMD_2		0x0006
-+#define AUDPP_CMD_AVSYNC_CMD_2_LEN	sizeof(audpp_cmd_avsync_cmd_2)
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+	unsigned short object_number;
-+	unsigned short interrupt_interval_lsw;
-+	unsigned short interrupt_interval_msw;
-+	unsigned short sample_counter_dlsw;
-+	unsigned short sample_counter_dmsw;
-+	unsigned short sample_counter_msw;
-+	unsigned short byte_counter_dlsw;
-+	unsigned short byte_counter_dmsw;
-+	unsigned short byte_counter_msw;
-+} __attribute__((packed)) audpp_cmd_avsync_cmd_2;
-+
-+/*
-+ * Command Structure to Configure AVSync Feedback Mechanism
-+ */
-+
-+#define AUDPP_CMD_AVSYNC_CMD_3		0x0007
-+#define AUDPP_CMD_AVSYNC_CMD_3_LEN	sizeof(audpp_cmd_avsync_cmd_3)
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+	unsigned short object_number;
-+	unsigned short interrupt_interval_lsw;
-+	unsigned short interrupt_interval_msw;
-+	unsigned short sample_counter_dlsw;
-+	unsigned short sample_counter_dmsw;
-+	unsigned short sample_counter_msw;
-+	unsigned short byte_counter_dlsw;
-+	unsigned short byte_counter_dmsw;
-+	unsigned short byte_counter_msw;
-+} __attribute__((packed)) audpp_cmd_avsync_cmd_3;
-+
-+#define AUDPP_CMD_ROUTING_MODE      0x0008
-+#define AUDPP_CMD_ROUTING_MODE_LEN  \
-+sizeof(struct audpp_cmd_routing_mode)
-+
-+struct audpp_cmd_routing_mode {
-+	unsigned short cmd_id;
-+	unsigned short object_number;
-+	unsigned short routing_mode;
-+} __attribute__((packed));
-+
-+/*
-+ * Commands Related to uPAudPPCmd2Queue
-+ */
-+
-+/*
-+ * Command Structure to configure Per decoder Parameters (Common)
-+ */
-+
-+#define AUDPP_CMD_CFG_ADEC_PARAMS 		0x0000
-+#define AUDPP_CMD_CFG_ADEC_PARAMS_COMMON_LEN	\
-+	sizeof(audpp_cmd_cfg_adec_params_common)
-+
-+#define AUDPP_CMD_STATUS_MSG_FLAG_ENA_FCM	0x4000
-+#define AUDPP_CMD_STATUS_MSG_FLAG_DIS_FCM	0x0000
-+
-+#define AUDPP_CMD_STATUS_MSG_FLAG_ENA_DCM	0x8000
-+#define AUDPP_CMD_STATUS_MSG_FLAG_DIS_DCM	0x0000
-+
-+/* Sampling frequency*/
-+#define  AUDPP_CMD_SAMP_RATE_96000 	0x0000
-+#define  AUDPP_CMD_SAMP_RATE_88200 	0x0001
-+#define  AUDPP_CMD_SAMP_RATE_64000 	0x0002
-+#define  AUDPP_CMD_SAMP_RATE_48000 	0x0003
-+#define  AUDPP_CMD_SAMP_RATE_44100 	0x0004
-+#define  AUDPP_CMD_SAMP_RATE_32000 	0x0005
-+#define  AUDPP_CMD_SAMP_RATE_24000 	0x0006
-+#define  AUDPP_CMD_SAMP_RATE_22050 	0x0007
-+#define  AUDPP_CMD_SAMP_RATE_16000 	0x0008
-+#define  AUDPP_CMD_SAMP_RATE_12000 	0x0009
-+#define  AUDPP_CMD_SAMP_RATE_11025 	0x000A
-+#define  AUDPP_CMD_SAMP_RATE_8000  	0x000B
-+
-+
-+/*
-+ * Type specification of cmd_adec_cfg sent to all decoder
-+ */
-+
-+typedef struct {
-+  unsigned short cmd_id;
-+  unsigned short  length;
-+  unsigned short  dec_id;
-+  unsigned short  status_msg_flag;
-+  unsigned short  decoder_frame_counter_msg_period;
-+  unsigned short  input_sampling_frequency;
-+} __attribute__((packed)) audpp_cmd_cfg_adec_params_common;
-+
-+/*
-+ * Command Structure to configure Per decoder Parameters (Wav)
-+ */
-+
-+#define AUDPP_CMD_CFG_ADEC_PARAMS_WAV_LEN	\
-+	sizeof(audpp_cmd_cfg_adec_params_wav)
-+
-+
-+#define AUDPP_CMD_WAV_STEREO_CFG_MONO	0x0001
-+#define AUDPP_CMD_WAV_STEREO_CFG_STEREO	0x0002
-+
-+#define AUDPP_CMD_WAV_PCM_WIDTH_8	0x0000
-+#define AUDPP_CMD_WAV_PCM_WIDTH_16	0x0001
-+#define AUDPP_CMD_WAV_PCM_WIDTH_32	0x0002
-+
-+typedef struct {
-+	audpp_cmd_cfg_adec_params_common		common;
-+	unsigned short					stereo_cfg;
-+	unsigned short					pcm_width;
-+	unsigned short 					sign;
-+} __attribute__((packed)) audpp_cmd_cfg_adec_params_wav;
-+
-+/*
-+ * Command Structure to configure Per decoder Parameters (ADPCM)
-+ */
-+
-+#define AUDPP_CMD_CFG_ADEC_PARAMS_ADPCM_LEN	\
-+	sizeof(audpp_cmd_cfg_adec_params_adpcm)
-+
-+
-+#define	AUDPP_CMD_ADPCM_STEREO_CFG_MONO		0x0001
-+#define AUDPP_CMD_ADPCM_STEREO_CFG_STEREO	0x0002
-+
-+typedef struct {
-+	audpp_cmd_cfg_adec_params_common		common;
-+	unsigned short					stereo_cfg;
-+	unsigned short 					block_size;
-+} __attribute__((packed)) audpp_cmd_cfg_adec_params_adpcm;
-+
-+/*
-+ * Command Structure to configure Per decoder Parameters (MP3)
-+ */
-+
-+#define AUDPP_CMD_CFG_ADEC_PARAMS_MP3_LEN	\
-+	sizeof(audpp_cmd_cfg_adec_params_mp3)
-+
-+typedef struct {
-+   audpp_cmd_cfg_adec_params_common    common;
-+} __attribute__((packed)) audpp_cmd_cfg_adec_params_mp3;
-+
-+
-+/*
-+ * Command Structure to configure Per decoder Parameters (AAC)
-+ */
-+
-+#define AUDPP_CMD_CFG_ADEC_PARAMS_AAC_LEN	\
-+	sizeof(audpp_cmd_cfg_adec_params_aac)
-+
-+
-+#define AUDPP_CMD_AAC_FORMAT_ADTS		-1
-+#define	AUDPP_CMD_AAC_FORMAT_RAW		0x0000
-+#define	AUDPP_CMD_AAC_FORMAT_PSUEDO_RAW		0x0001
-+#define	AUDPP_CMD_AAC_FORMAT_LOAS		0x0002
-+
-+#define AUDPP_CMD_AAC_AUDIO_OBJECT_LC		0x0002
-+#define AUDPP_CMD_AAC_AUDIO_OBJECT_LTP		0x0004
-+#define AUDPP_CMD_AAC_AUDIO_OBJECT_ERLC	0x0011
-+
-+#define AUDPP_CMD_AAC_SBR_ON_FLAG_ON		0x0001
-+#define AUDPP_CMD_AAC_SBR_ON_FLAG_OFF		0x0000
-+
-+#define AUDPP_CMD_AAC_SBR_PS_ON_FLAG_ON		0x0001
-+#define AUDPP_CMD_AAC_SBR_PS_ON_FLAG_OFF	0x0000
-+
-+typedef struct {
-+  audpp_cmd_cfg_adec_params_common	common;
-+  signed short				format;
-+  unsigned short			audio_object;
-+  unsigned short			ep_config;
-+  unsigned short                        aac_section_data_resilience_flag;
-+  unsigned short                        aac_scalefactor_data_resilience_flag;
-+  unsigned short                        aac_spectral_data_resilience_flag;
-+  unsigned short                        sbr_on_flag;
-+  unsigned short                        sbr_ps_on_flag;
-+  unsigned short                        dual_mono_mode;
-+  unsigned short                        channel_configuration;
-+} __attribute__((packed)) audpp_cmd_cfg_adec_params_aac;
-+
-+/*
-+ * Command Structure to configure Per decoder Parameters (V13K)
-+ */
-+
-+#define AUDPP_CMD_CFG_ADEC_PARAMS_V13K_LEN	\
-+	sizeof(struct audpp_cmd_cfg_adec_params_v13k)
-+
-+
-+#define AUDPP_CMD_STEREO_CFG_MONO		0x0001
-+#define AUDPP_CMD_STEREO_CFG_STEREO		0x0002
-+
-+struct audpp_cmd_cfg_adec_params_v13k {
-+   audpp_cmd_cfg_adec_params_common    	common;
-+   unsigned short			stereo_cfg;
-+} __attribute__((packed));
-+
-+#define AUDPP_CMD_CFG_ADEC_PARAMS_EVRC_LEN \
-+	sizeof(struct audpp_cmd_cfg_adec_params_evrc)
-+
-+struct audpp_cmd_cfg_adec_params_evrc {
-+	audpp_cmd_cfg_adec_params_common common;
-+	unsigned short stereo_cfg;
-+} __attribute__ ((packed));
-+
-+/*
-+ * Command Structure to configure the  HOST PCM interface
-+ */
-+
-+#define AUDPP_CMD_PCM_INTF	0x0001
-+#define AUDPP_CMD_PCM_INTF_2	0x0002
-+#define AUDPP_CMD_PCM_INTF_LEN	sizeof(audpp_cmd_pcm_intf)
-+
-+#define AUDPP_CMD_PCM_INTF_MONO_V		        0x0001
-+#define AUDPP_CMD_PCM_INTF_STEREO_V         	0x0002
-+
-+/* These two values differentiate the two types of commands that could be issued
-+ * Interface configuration command and Buffer update command */
-+
-+#define AUDPP_CMD_PCM_INTF_CONFIG_CMD_V	       	0x0000
-+#define AUDPP_CMD_PCM_INTF_BUFFER_CMD_V	        -1
-+
-+#define AUDPP_CMD_PCM_INTF_RX_ENA_M              0x000F
-+#define AUDPP_CMD_PCM_INTF_RX_ENA_ARMTODSP_V     0x0008
-+#define AUDPP_CMD_PCM_INTF_RX_ENA_DSPTOARM_V     0x0004
-+
-+/* These flags control the enabling and disabling of the interface together
-+ *  with host interface bit mask. */
-+
-+#define AUDPP_CMD_PCM_INTF_ENA_V            -1
-+#define AUDPP_CMD_PCM_INTF_DIS_V            0x0000
-+
-+
-+#define  AUDPP_CMD_PCM_INTF_FULL_DUPLEX           0x0
-+#define  AUDPP_CMD_PCM_INTF_HALF_DUPLEX_TODSP     0x1
-+
-+
-+#define  AUDPP_CMD_PCM_INTF_OBJECT_NUM           0x5
-+#define  AUDPP_CMD_PCM_INTF_COMMON_OBJECT_NUM    0x6
-+
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  object_num;
-+	signed short  config;
-+	unsigned short  intf_type;
-+
-+	/* DSP -> ARM Configuration */
-+	unsigned short  read_buf1LSW;
-+	unsigned short  read_buf1MSW;
-+	unsigned short  read_buf1_len;
-+
-+	unsigned short  read_buf2LSW;
-+	unsigned short  read_buf2MSW;
-+	unsigned short  read_buf2_len;
-+	/*   0:HOST_PCM_INTF disable
-+	**  0xFFFF: HOST_PCM_INTF enable
-+	*/
-+	signed short  dsp_to_arm_flag;
-+	unsigned short  partition_number;
-+
-+	/* ARM -> DSP Configuration */
-+	unsigned short  write_buf1LSW;
-+	unsigned short  write_buf1MSW;
-+	unsigned short  write_buf1_len;
-+
-+	unsigned short  write_buf2LSW;
-+	unsigned short  write_buf2MSW;
-+	unsigned short  write_buf2_len;
-+
-+	/*   0:HOST_PCM_INTF disable
-+	**  0xFFFF: HOST_PCM_INTF enable
-+	*/
-+	signed short  arm_to_rx_flag;
-+	unsigned short  weight_decoder_to_rx;
-+	unsigned short  weight_arm_to_rx;
-+
-+	unsigned short  partition_number_arm_to_dsp;
-+	unsigned short  sample_rate;
-+	unsigned short  channel_mode;
-+} __attribute__((packed)) audpp_cmd_pcm_intf;
-+
-+/*
-+ **  BUFFER UPDATE COMMAND
-+ */
-+#define AUDPP_CMD_PCM_INTF_SEND_BUF_PARAMS_LEN	\
-+	sizeof(audpp_cmd_pcm_intf_send_buffer)
-+
-+typedef struct {
-+  unsigned short  cmd_id;
-+  unsigned short  host_pcm_object;
-+  /* set config = 0xFFFF for configuration*/
-+  signed short  config;
-+  unsigned short  intf_type;
-+  unsigned short  dsp_to_arm_buf_id;
-+  unsigned short  arm_to_dsp_buf_id;
-+  unsigned short  arm_to_dsp_buf_len;
-+} __attribute__((packed)) audpp_cmd_pcm_intf_send_buffer;
-+
-+
-+/*
-+ * Commands Related to uPAudPPCmd3Queue
-+ */
-+
-+/*
-+ * Command Structure to configure post processing params (Commmon)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS		0x0000
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_COMMON_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_common)
-+
-+#define AUDPP_CMD_OBJ0_UPDATE		0x8000
-+#define AUDPP_CMD_OBJ0_DONT_UPDATE	0x0000
-+
-+#define AUDPP_CMD_OBJ1_UPDATE		0x8000
-+#define AUDPP_CMD_OBJ1_DONT_UPDATE	0x0000
-+
-+#define AUDPP_CMD_OBJ2_UPDATE		0x8000
-+#define AUDPP_CMD_OBJ2_DONT_UPDATE	0x0000
-+
-+#define AUDPP_CMD_OBJ3_UPDATE		0x8000
-+#define AUDPP_CMD_OBJ3_DONT_UPDATE	0x0000
-+
-+#define AUDPP_CMD_OBJ4_UPDATE		0x8000
-+#define AUDPP_CMD_OBJ4_DONT_UPDATE	0x0000
-+
-+#define AUDPP_CMD_HPCM_UPDATE		0x8000
-+#define AUDPP_CMD_HPCM_DONT_UPDATE	0x0000
-+
-+#define AUDPP_CMD_COMMON_CFG_UPDATE		0x8000
-+#define AUDPP_CMD_COMMON_CFG_DONT_UPDATE	0x0000
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short	obj0_cfg;
-+	unsigned short	obj1_cfg;
-+	unsigned short	obj2_cfg;
-+	unsigned short	obj3_cfg;
-+	unsigned short	obj4_cfg;
-+	unsigned short	host_pcm_obj_cfg;
-+	unsigned short	comman_cfg;
-+	unsigned short  command_type;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_common;
-+
-+/*
-+ * Command Structure to configure post processing params (Volume)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_VOLUME_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_volume)
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	unsigned short					volume;
-+	unsigned short					pan;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_volume;
-+
-+/*
-+ * Command Structure to configure post processing params (PCM Filter) --DOUBT
-+ */
-+
-+typedef struct {
-+	unsigned short			numerator_b0_filter_lsw;
-+	unsigned short			numerator_b0_filter_msw;
-+	unsigned short			numerator_b1_filter_lsw;
-+	unsigned short			numerator_b1_filter_msw;
-+	unsigned short			numerator_b2_filter_lsw;
-+	unsigned short			numerator_b2_filter_msw;
-+} __attribute__((packed)) numerator;
-+
-+typedef struct {
-+	unsigned short			denominator_a0_filter_lsw;
-+	unsigned short			denominator_a0_filter_msw;
-+	unsigned short			denominator_a1_filter_lsw;
-+	unsigned short			denominator_a1_filter_msw;
-+} __attribute__((packed)) denominator;
-+
-+typedef struct {
-+	unsigned short			shift_factor_0;
-+} __attribute__((packed)) shift_factor;
-+
-+typedef struct {
-+	unsigned short			pan_filter_0;
-+} __attribute__((packed)) pan;
-+
-+typedef struct {
-+		numerator		numerator_filter;
-+		denominator		denominator_filter;
-+		shift_factor		shift_factor_filter;
-+		pan			pan_filter;
-+} __attribute__((packed)) filter_1;
-+
-+typedef struct {
-+		numerator		numerator_filter[2];
-+		denominator		denominator_filter[2];
-+		shift_factor		shift_factor_filter[2];
-+		pan			pan_filter[2];
-+} __attribute__((packed)) filter_2;
-+
-+typedef struct {
-+		numerator		numerator_filter[3];
-+		denominator		denominator_filter[3];
-+		shift_factor		shift_factor_filter[3];
-+		pan			pan_filter[3];
-+} __attribute__((packed)) filter_3;
-+
-+typedef struct {
-+		numerator		numerator_filter[4];
-+		denominator		denominator_filter[4];
-+		shift_factor		shift_factor_filter[4];
-+		pan			pan_filter[4];
-+} __attribute__((packed)) filter_4;
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_PCM_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_pcm)
-+
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	unsigned short				active_flag;
-+	unsigned short 				num_bands;
-+	union {
-+		filter_1			filter_1_params;
-+		filter_2			filter_2_params;
-+		filter_3			filter_3_params;
-+		filter_4			filter_4_params;
-+	} __attribute__((packed)) params_filter;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_pcm;
-+
-+
-+/*
-+ * Command Structure to configure post processing parameters (equalizer)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_EQALIZER_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_eqalizer)
-+
-+typedef struct {
-+	unsigned short			numerator_coeff_0_lsw;
-+	unsigned short			numerator_coeff_0_msw;
-+	unsigned short			numerator_coeff_1_lsw;
-+	unsigned short			numerator_coeff_1_msw;
-+	unsigned short			numerator_coeff_2_lsw;
-+	unsigned short			numerator_coeff_2_msw;
-+} __attribute__((packed)) eq_numerator;
-+
-+typedef struct {
-+	unsigned short			denominator_coeff_0_lsw;
-+	unsigned short			denominator_coeff_0_msw;
-+	unsigned short			denominator_coeff_1_lsw;
-+	unsigned short			denominator_coeff_1_msw;
-+} __attribute__((packed)) eq_denominator;
-+
-+typedef struct {
-+	unsigned short			shift_factor;
-+} __attribute__((packed)) eq_shiftfactor;
-+
-+typedef struct {
-+	eq_numerator	numerator;
-+	eq_denominator	denominator;
-+	eq_shiftfactor	shiftfactor;
-+} __attribute__((packed)) eq_coeff_1;
-+
-+typedef struct {
-+	eq_numerator	numerator[2];
-+	eq_denominator	denominator[2];
-+	eq_shiftfactor	shiftfactor[2];
-+} __attribute__((packed)) eq_coeff_2;
-+
-+typedef struct {
-+	eq_numerator	numerator[3];
-+	eq_denominator	denominator[3];
-+	eq_shiftfactor	shiftfactor[3];
-+} __attribute__((packed)) eq_coeff_3;
-+
-+typedef struct {
-+	eq_numerator	numerator[4];
-+	eq_denominator	denominator[4];
-+	eq_shiftfactor	shiftfactor[4];
-+} __attribute__((packed)) eq_coeff_4;
-+
-+typedef struct {
-+	eq_numerator	numerator[5];
-+	eq_denominator	denominator[5];
-+	eq_shiftfactor	shiftfactor[5];
-+} __attribute__((packed)) eq_coeff_5;
-+
-+typedef struct {
-+	eq_numerator	numerator[6];
-+	eq_denominator	denominator[6];
-+	eq_shiftfactor	shiftfactor[6];
-+} __attribute__((packed)) eq_coeff_6;
-+
-+typedef struct {
-+	eq_numerator	numerator[7];
-+	eq_denominator	denominator[7];
-+	eq_shiftfactor	shiftfactor[7];
-+} __attribute__((packed)) eq_coeff_7;
-+
-+typedef struct {
-+	eq_numerator	numerator[8];
-+	eq_denominator	denominator[8];
-+	eq_shiftfactor	shiftfactor[8];
-+} __attribute__((packed)) eq_coeff_8;
-+
-+typedef struct {
-+	eq_numerator	numerator[9];
-+	eq_denominator	denominator[9];
-+	eq_shiftfactor	shiftfactor[9];
-+} __attribute__((packed)) eq_coeff_9;
-+
-+typedef struct {
-+	eq_numerator	numerator[10];
-+	eq_denominator	denominator[10];
-+	eq_shiftfactor	shiftfactor[10];
-+} __attribute__((packed)) eq_coeff_10;
-+
-+typedef struct {
-+	eq_numerator	numerator[11];
-+	eq_denominator	denominator[11];
-+	eq_shiftfactor	shiftfactor[11];
-+} __attribute__((packed)) eq_coeff_11;
-+
-+typedef struct {
-+	eq_numerator	numerator[12];
-+	eq_denominator	denominator[12];
-+	eq_shiftfactor	shiftfactor[12];
-+} __attribute__((packed)) eq_coeff_12;
-+
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	unsigned short				eq_flag;
-+	unsigned short				num_bands;
-+	union {
-+		eq_coeff_1	eq_coeffs_1;
-+		eq_coeff_2	eq_coeffs_2;
-+		eq_coeff_3	eq_coeffs_3;
-+		eq_coeff_4	eq_coeffs_4;
-+		eq_coeff_5	eq_coeffs_5;
-+		eq_coeff_6	eq_coeffs_6;
-+		eq_coeff_7	eq_coeffs_7;
-+		eq_coeff_8	eq_coeffs_8;
-+		eq_coeff_9	eq_coeffs_9;
-+		eq_coeff_10	eq_coeffs_10;
-+		eq_coeff_11	eq_coeffs_11;
-+		eq_coeff_12	eq_coeffs_12;
-+	} __attribute__((packed)) eq_coeff;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_eqalizer;
-+
-+
-+/*
-+ * Command Structure to configure post processing parameters (ADRC)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_ADRC_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_adrc)
-+
-+
-+#define AUDPP_CMD_ADRC_FLAG_DIS		0x0000
-+#define AUDPP_CMD_ADRC_FLAG_ENA		-1
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	signed short				adrc_flag;
-+	unsigned short				compression_th;
-+	unsigned short				compression_slope;
-+	unsigned short				rms_time;
-+	unsigned short				attack_const_lsw;
-+	unsigned short				attack_const_msw;
-+	unsigned short				release_const_lsw;
-+	unsigned short				release_const_msw;
-+	unsigned short				adrc_system_delay;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_adrc;
-+
-+/*
-+ * Command Structure to configure post processing parameters(Spectrum Analizer)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_SPECTRAM_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_spectram)
-+
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	unsigned short				sample_interval;
-+	unsigned short				num_coeff;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_spectram;
-+
-+/*
-+ * Command Structure to configure post processing parameters (QConcert)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_QCONCERT_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_qconcert)
-+
-+
-+#define AUDPP_CMD_QCON_ENA_FLAG_ENA		-1
-+#define AUDPP_CMD_QCON_ENA_FLAG_DIS		0x0000
-+
-+#define AUDPP_CMD_QCON_OP_MODE_HEADPHONE	-1
-+#define AUDPP_CMD_QCON_OP_MODE_SPEAKER_FRONT	0x0000
-+#define AUDPP_CMD_QCON_OP_MODE_SPEAKER_SIDE	0x0001
-+#define AUDPP_CMD_QCON_OP_MODE_SPEAKER_DESKTOP	0x0002
-+
-+#define AUDPP_CMD_QCON_GAIN_UNIT			0x7FFF
-+#define AUDPP_CMD_QCON_GAIN_SIX_DB			0x4027
-+
-+
-+#define AUDPP_CMD_QCON_EXPANSION_MAX		0x7FFF
-+
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	signed short				enable_flag;
-+	signed short				output_mode;
-+	signed short				gain;
-+	signed short				expansion;
-+	signed short				delay;
-+	unsigned short				stages_per_mode;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_qconcert;
-+
-+/*
-+ * Command Structure to configure post processing parameters (Side Chain)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_SIDECHAIN_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_sidechain)
-+
-+
-+#define AUDPP_CMD_SIDECHAIN_ACTIVE_FLAG_DIS	0x0000
-+#define AUDPP_CMD_SIDECHAIN_ACTIVE_FLAG_ENA	-1
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	signed short				active_flag;
-+	unsigned short				num_bands;
-+	union {
-+		filter_1			filter_1_params;
-+		filter_2			filter_2_params;
-+		filter_3			filter_3_params;
-+		filter_4			filter_4_params;
-+	} __attribute__((packed)) params_filter;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_sidechain;
-+
-+
-+/*
-+ * Command Structure to configure post processing parameters (QAFX)
-+ */
-+
-+#define AUDPP_CMD_CFG_OBJECT_PARAMS_QAFX_LEN		\
-+	sizeof(audpp_cmd_cfg_object_params_qafx)
-+
-+#define AUDPP_CMD_QAFX_ENA_DISA		0x0000
-+#define AUDPP_CMD_QAFX_ENA_ENA_CFG	-1
-+#define AUDPP_CMD_QAFX_ENA_DIS_CFG	0x0001
-+
-+#define AUDPP_CMD_QAFX_CMD_TYPE_ENV	0x0100
-+#define AUDPP_CMD_QAFX_CMD_TYPE_OBJ	0x0010
-+#define AUDPP_CMD_QAFX_CMD_TYPE_QUERY	0x1000
-+
-+#define AUDPP_CMD_QAFX_CMDS_ENV_OP_MODE	0x0100
-+#define AUDPP_CMD_QAFX_CMDS_ENV_LIS_POS	0x0101
-+#define AUDPP_CMD_QAFX_CMDS_ENV_LIS_ORI	0x0102
-+#define AUDPP_CMD_QAFX_CMDS_ENV_LIS_VEL	0X0103
-+#define AUDPP_CMD_QAFX_CMDS_ENV_ENV_RES	0x0107
-+
-+#define AUDPP_CMD_QAFX_CMDS_OBJ_SAMP_FREQ	0x0010
-+#define AUDPP_CMD_QAFX_CMDS_OBJ_VOL		0x0011
-+#define AUDPP_CMD_QAFX_CMDS_OBJ_DIST		0x0012
-+#define AUDPP_CMD_QAFX_CMDS_OBJ_POS		0x0013
-+#define AUDPP_CMD_QAFX_CMDS_OBJ_VEL		0x0014
-+
-+
-+typedef struct {
-+	audpp_cmd_cfg_object_params_common 	common;
-+	signed short				enable;
-+	unsigned short				command_type;
-+	unsigned short				num_commands;
-+	unsigned short				commands;
-+} __attribute__((packed)) audpp_cmd_cfg_object_params_qafx;
-+
-+/*
-+ * Command Structure to enable , disable or configure the reverberation effect
-+ * (Common)
-+ */
-+
-+#define AUDPP_CMD_REVERB_CONFIG		0x0001
-+#define	AUDPP_CMD_REVERB_CONFIG_COMMON_LEN	\
-+	sizeof(audpp_cmd_reverb_config_common)
-+
-+#define AUDPP_CMD_ENA_ENA	0xFFFF
-+#define AUDPP_CMD_ENA_DIS	0x0000
-+#define AUDPP_CMD_ENA_CFG	0x0001
-+
-+#define AUDPP_CMD_CMD_TYPE_ENV		0x0104
-+#define AUDPP_CMD_CMD_TYPE_OBJ		0x0015
-+#define AUDPP_CMD_CMD_TYPE_QUERY	0x1000
-+
-+
-+typedef struct {
-+	unsigned short			cmd_id;
-+	unsigned short			enable;
-+	unsigned short			cmd_type;
-+} __attribute__((packed)) audpp_cmd_reverb_config_common;
-+
-+/*
-+ * Command Structure to enable , disable or configure the reverberation effect
-+ * (ENV-0x0104)
-+ */
-+
-+#define	AUDPP_CMD_REVERB_CONFIG_ENV_104_LEN	\
-+	sizeof(audpp_cmd_reverb_config_env_104)
-+
-+typedef struct {
-+	audpp_cmd_reverb_config_common	common;
-+	unsigned short			env_gain;
-+	unsigned short			decay_msw;
-+	unsigned short			decay_lsw;
-+	unsigned short			decay_timeratio_msw;
-+	unsigned short			decay_timeratio_lsw;
-+	unsigned short			delay_time;
-+	unsigned short			reverb_gain;
-+	unsigned short			reverb_delay;
-+} __attribute__((packed)) audpp_cmd_reverb_config_env_104;
-+
-+/*
-+ * Command Structure to enable , disable or configure the reverberation effect
-+ * (ENV-0x0015)
-+ */
-+
-+#define	AUDPP_CMD_REVERB_CONFIG_ENV_15_LEN	\
-+	sizeof(audpp_cmd_reverb_config_env_15)
-+
-+typedef struct {
-+	audpp_cmd_reverb_config_common	common;
-+	unsigned short			object_num;
-+	unsigned short			absolute_gain;
-+} __attribute__((packed)) audpp_cmd_reverb_config_env_15;
-+
-+
-+#endif /* QDSP5AUDPPCMDI_H */
-+
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audppmsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audppmsg.h
-new file mode 100644
-index 0000000..e229df3
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audppmsg.h
-@@ -0,0 +1,318 @@
-+#ifndef QDSP5AUDPPMSG_H
-+#define QDSP5AUDPPMSG_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+       Q D S P 5  A U D I O   P O S T   P R O C E S S I N G   M S G
-+
-+GENERAL DESCRIPTION
-+  Messages sent by AUDPPTASK to ARM
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2009 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+ $Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audppmsg.h#4 $
-+
-+===========================================================================*/
-+
-+/*
-+ * AUDPPTASK uses audPPuPRlist to send messages to the ARM
-+ * Location : MEMA
-+ * Buffer Size : 45
-+ * No of Buffers in a queue : 5 for gaming audio and 1 for other images
-+ */
-+
-+/*
-+ * MSG to Informs the ARM os Success/Failure of bringing up the decoder
-+ */
-+
-+#define AUDPP_MSG_STATUS_MSG		0x0001
-+#define AUDPP_MSG_STATUS_MSG_LEN	\
-+	sizeof(audpp_msg_status_msg)
-+
-+#define AUDPP_MSG_STATUS_SLEEP		0x0000
-+#define AUDPP_MSG__STATUS_INIT		0x0001
-+#define AUDPP_MSG_MSG_STATUS_CFG	0x0002
-+#define AUDPP_MSG_STATUS_PLAY		0x0003
-+
-+#define AUDPP_MSG_REASON_MIPS	0x0000
-+#define AUDPP_MSG_REASON_MEM	0x0001
-+
-+typedef struct{
-+	unsigned short dec_id;
-+	unsigned short status;
-+	unsigned short reason;
-+} __attribute__((packed)) audpp_msg_status_msg;
-+
-+/*
-+ * MSG to communicate the spectrum analyzer output bands to the ARM
-+ */
-+#define AUDPP_MSG_SPA_BANDS		0x0002
-+#define AUDPP_MSG_SPA_BANDS_LEN	\
-+	sizeof(audpp_msg_spa_bands)
-+
-+typedef struct {
-+	unsigned short			current_object;
-+	unsigned short			spa_band_1;
-+	unsigned short			spa_band_2;
-+	unsigned short			spa_band_3;
-+	unsigned short			spa_band_4;
-+	unsigned short			spa_band_5;
-+	unsigned short			spa_band_6;
-+	unsigned short			spa_band_7;
-+	unsigned short			spa_band_8;
-+	unsigned short			spa_band_9;
-+	unsigned short			spa_band_10;
-+	unsigned short			spa_band_11;
-+	unsigned short			spa_band_12;
-+	unsigned short			spa_band_13;
-+	unsigned short			spa_band_14;
-+	unsigned short			spa_band_15;
-+	unsigned short			spa_band_16;
-+	unsigned short			spa_band_17;
-+	unsigned short			spa_band_18;
-+	unsigned short			spa_band_19;
-+	unsigned short			spa_band_20;
-+	unsigned short			spa_band_21;
-+	unsigned short			spa_band_22;
-+	unsigned short			spa_band_23;
-+	unsigned short			spa_band_24;
-+	unsigned short			spa_band_25;
-+	unsigned short			spa_band_26;
-+	unsigned short			spa_band_27;
-+	unsigned short			spa_band_28;
-+	unsigned short			spa_band_29;
-+	unsigned short			spa_band_30;
-+	unsigned short			spa_band_31;
-+	unsigned short			spa_band_32;
-+} __attribute__((packed)) audpp_msg_spa_bands;
-+
-+/*
-+ * MSG to communicate the PCM I/O buffer status to ARM
-+ */
-+#define  AUDPP_MSG_HOST_PCM_INTF_MSG		0x0003
-+#define  AUDPP_MSG_HOST_PCM_INTF_MSG_LEN	\
-+	sizeof(audpp_msg_host_pcm_intf_msg)
-+
-+#define AUDPP_MSG_HOSTPCM_ID_TX_ARM	0x0000
-+#define AUDPP_MSG_HOSTPCM_ID_ARM_TX	0x0001
-+#define AUDPP_MSG_HOSTPCM_ID_RX_ARM	0x0002
-+#define AUDPP_MSG_HOSTPCM_ID_ARM_RX	0x0003
-+
-+#define AUDPP_MSG_SAMP_FREQ_INDX_96000	0x0000
-+#define AUDPP_MSG_SAMP_FREQ_INDX_88200	0x0001
-+#define AUDPP_MSG_SAMP_FREQ_INDX_64000	0x0002
-+#define AUDPP_MSG_SAMP_FREQ_INDX_48000	0x0003
-+#define AUDPP_MSG_SAMP_FREQ_INDX_44100	0x0004
-+#define AUDPP_MSG_SAMP_FREQ_INDX_32000	0x0005
-+#define AUDPP_MSG_SAMP_FREQ_INDX_24000	0x0006
-+#define AUDPP_MSG_SAMP_FREQ_INDX_22050	0x0007
-+#define AUDPP_MSG_SAMP_FREQ_INDX_16000	0x0008
-+#define AUDPP_MSG_SAMP_FREQ_INDX_12000	0x0009
-+#define AUDPP_MSG_SAMP_FREQ_INDX_11025	0x000A
-+#define AUDPP_MSG_SAMP_FREQ_INDX_8000	0x000B
-+
-+#define AUDPP_MSG_CHANNEL_MODE_MONO		0x0001
-+#define AUDPP_MSG_CHANNEL_MODE_STEREO	0x0002
-+
-+typedef struct{
-+	unsigned short obj_num;
-+	unsigned short numbers_of_samples;
-+	unsigned short host_pcm_id;
-+	unsigned short buf_indx;
-+	unsigned short samp_freq_indx;
-+	unsigned short channel_mode;
-+} __attribute__((packed)) audpp_msg_host_pcm_intf_msg;
-+
-+
-+/*
-+ * MSG to communicate 3D position of the source and listener , source volume
-+ * source rolloff, source orientation
-+ */
-+
-+#define AUDPP_MSG_QAFX_POS		0x0004
-+#define AUDPP_MSG_QAFX_POS_LEN		\
-+	sizeof(audpp_msg_qafx_pos)
-+
-+typedef struct {
-+	unsigned short	current_object;
-+	unsigned short	x_pos_lis_msw;
-+	unsigned short	x_pos_lis_lsw;
-+	unsigned short	y_pos_lis_msw;
-+	unsigned short	y_pos_lis_lsw;
-+	unsigned short	z_pos_lis_msw;
-+	unsigned short	z_pos_lis_lsw;
-+	unsigned short	x_fwd_msw;
-+	unsigned short	x_fwd_lsw;
-+	unsigned short	y_fwd_msw;
-+	unsigned short	y_fwd_lsw;
-+	unsigned short	z_fwd_msw;
-+	unsigned short	z_fwd_lsw;
-+	unsigned short 	x_up_msw;
-+	unsigned short	x_up_lsw;
-+	unsigned short 	y_up_msw;
-+	unsigned short	y_up_lsw;
-+	unsigned short 	z_up_msw;
-+	unsigned short	z_up_lsw;
-+	unsigned short 	x_vel_lis_msw;
-+	unsigned short 	x_vel_lis_lsw;
-+	unsigned short 	y_vel_lis_msw;
-+	unsigned short 	y_vel_lis_lsw;
-+	unsigned short 	z_vel_lis_msw;
-+	unsigned short 	z_vel_lis_lsw;
-+	unsigned short	threed_enable_flag;
-+	unsigned short 	volume;
-+	unsigned short	x_pos_source_msw;
-+	unsigned short	x_pos_source_lsw;
-+	unsigned short	y_pos_source_msw;
-+	unsigned short	y_pos_source_lsw;
-+	unsigned short	z_pos_source_msw;
-+	unsigned short	z_pos_source_lsw;
-+	unsigned short	max_dist_0_msw;
-+	unsigned short	max_dist_0_lsw;
-+	unsigned short	min_dist_0_msw;
-+	unsigned short	min_dist_0_lsw;
-+	unsigned short	roll_off_factor;
-+	unsigned short	mute_after_max_flag;
-+	unsigned short	x_vel_source_msw;
-+	unsigned short	x_vel_source_lsw;
-+	unsigned short	y_vel_source_msw;
-+	unsigned short	y_vel_source_lsw;
-+	unsigned short	z_vel_source_msw;
-+	unsigned short	z_vel_source_lsw;
-+} __attribute__((packed)) audpp_msg_qafx_pos;
-+
-+/*
-+ * MSG to provide AVSYNC feedback from DSP to ARM
-+ */
-+
-+#define AUDPP_MSG_AVSYNC_MSG		0x0005
-+#define AUDPP_MSG_AVSYNC_MSG_LEN	\
-+	sizeof(audpp_msg_avsync_msg)
-+
-+typedef struct {
-+	unsigned short	active_flag;
-+	unsigned short	num_samples_counter0_HSW;
-+	unsigned short	num_samples_counter0_MSW;
-+	unsigned short	num_samples_counter0_LSW;
-+	unsigned short	num_bytes_counter0_HSW;
-+	unsigned short	num_bytes_counter0_MSW;
-+	unsigned short	num_bytes_counter0_LSW;
-+	unsigned short	samp_freq_obj_0;
-+	unsigned short	samp_freq_obj_1;
-+	unsigned short	samp_freq_obj_2;
-+	unsigned short	samp_freq_obj_3;
-+	unsigned short	samp_freq_obj_4;
-+	unsigned short	samp_freq_obj_5;
-+	unsigned short	samp_freq_obj_6;
-+	unsigned short	samp_freq_obj_7;
-+	unsigned short	samp_freq_obj_8;
-+	unsigned short	samp_freq_obj_9;
-+	unsigned short	samp_freq_obj_10;
-+	unsigned short	samp_freq_obj_11;
-+	unsigned short	samp_freq_obj_12;
-+	unsigned short	samp_freq_obj_13;
-+	unsigned short	samp_freq_obj_14;
-+	unsigned short	samp_freq_obj_15;
-+	unsigned short	num_samples_counter4_HSW;
-+	unsigned short	num_samples_counter4_MSW;
-+	unsigned short	num_samples_counter4_LSW;
-+	unsigned short	num_bytes_counter4_HSW;
-+	unsigned short	num_bytes_counter4_MSW;
-+	unsigned short	num_bytes_counter4_LSW;
-+} __attribute__((packed)) audpp_msg_avsync_msg;
-+
-+/*
-+ * MSG to provide PCM DMA Missed feedback from the DSP to ARM
-+ */
-+
-+#define  AUDPP_MSG_PCMDMAMISSED	0x0006
-+#define  AUDPP_MSG_PCMDMAMISSED_LEN	\
-+	sizeof(audpp_msg_pcmdmamissed);
-+
-+typedef struct{
-+	/*
-+	** Bit 0	0 = PCM DMA not missed for object 0
-+	**        1 = PCM DMA missed for object0
-+	** Bit 1	0 = PCM DMA not missed for object 1
-+	**        1 = PCM DMA missed for object1
-+	** Bit 2	0 = PCM DMA not missed for object 2
-+	**        1 = PCM DMA missed for object2
-+	** Bit 3	0 = PCM DMA not missed for object 3
-+	**        1 = PCM DMA missed for object3
-+	** Bit 4	0 = PCM DMA not missed for object 4
-+	**        1 = PCM DMA missed for object4
-+	*/
-+	unsigned short pcmdmamissed;
-+} __attribute__((packed)) audpp_msg_pcmdmamissed;
-+
-+/*
-+ * MSG to AUDPP enable or disable feedback form DSP to ARM
-+ */
-+
-+#define AUDPP_MSG_CFG_MSG	0x0007  
-+#define AUDPP_MSG_CFG_MSG_LEN	\
-+    sizeof(audpp_msg_cfg_msg)
-+
-+#define AUDPP_MSG_ENA_ENA	0xFFFF
-+#define AUDPP_MSG_ENA_DIS	0x0000
-+
-+typedef struct{
-+	/*   Enabled  - 0xffff 
-+	**  Disabled - 0
-+	*/
-+	unsigned short enabled;
-+} __attribute__((packed)) audpp_msg_cfg_msg;
-+
-+/*
-+ * MSG to communicate the reverb  per object volume
-+ */
-+
-+#define AUDPP_MSG_QREVERB_VOLUME	0x0008
-+#define AUDPP_MSG_QREVERB_VOLUME_LEN	\
-+	sizeof(audpp_msg_qreverb_volume)
-+
-+
-+typedef struct {
-+	unsigned short	obj_0_gain;
-+	unsigned short	obj_1_gain;
-+	unsigned short	obj_2_gain;
-+	unsigned short	obj_3_gain;
-+	unsigned short	obj_4_gain;
-+	unsigned short	hpcm_obj_volume;
-+} __attribute__((packed)) audpp_msg_qreverb_volume;
-+
-+#define AUDPP_MSG_ROUTING_ACK 0x0009
-+#define AUDPP_MSG_ROUTING_ACK_LEN \
-+  sizeof(struct audpp_msg_routing_ack)
-+
-+struct audpp_msg_routing_ack {
-+	unsigned short dec_id;
-+	unsigned short routing_mode;
-+} __attribute__((packed));
-+
-+#define AUDPP_MSG_FLUSH_ACK 0x000A
-+
-+#endif /* QDSP5AUDPPMSG_H */
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audpreproccmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audpreproccmdi.h
-new file mode 100644
-index 0000000..cd9d590
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audpreproccmdi.h
-@@ -0,0 +1,256 @@
-+#ifndef QDSP5AUDPREPROCCMDI_H
-+#define QDSP5AUDPREPROCCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    A U D I O   P R E   P R O C E S S I N G  I N T E R N A L  C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by AUDPREPROC Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+   
-+$Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audpreproccmdi.h#2 $
-+  
-+===========================================================================*/
-+
-+/*
-+ * AUDIOPREPROC COMMANDS:
-+ * ARM uses uPAudPreProcCmdQueue to communicate with AUDPREPROCTASK
-+ * Location : MEMB
-+ * Buffer size : 51
-+ * Number of buffers in a queue : 3
-+ */
-+
-+/*
-+ * Command to configure the parameters of AGC
-+ */
-+
-+#define	AUDPREPROC_CMD_CFG_AGC_PARAMS	0x0000
-+#define	AUDPREPROC_CMD_CFG_AGC_PARAMS_LEN	\
-+	sizeof(audpreproc_cmd_cfg_agc_params)
-+
-+#define	AUDPREPROC_CMD_TX_AGC_PARAM_MASK_COMP_SLOPE	0x0009
-+#define	AUDPREPROC_CMD_TX_AGC_PARAM_MASK_COMP_TH	0x000A
-+#define	AUDPREPROC_CMD_TX_AGC_PARAM_MASK_EXP_SLOPE	0x000B
-+#define	AUDPREPROC_CMD_TX_AGC_PARAM_MASK_EXP_TH		0x000C
-+#define	AUDPREPROC_CMD_TX_AGC_PARAM_MASK_COMP_AIG_FLAG		0x000D
-+#define	AUDPREPROC_CMD_TX_AGC_PARAM_MASK_COMP_STATIC_GAIN	0x000E
-+#define	AUDPREPROC_CMD_TX_AGC_PARAM_MASK_TX_AGC_ENA_FLAG	0x000F
-+
-+#define	AUDPREPROC_CMD_TX_AGC_ENA_FLAG_ENA	-1
-+#define	AUDPREPROC_CMD_TX_AGC_ENA_FLAG_DIS	0x0000
-+
-+#define	AUDPREPROC_CMD_ADP_GAIN_FLAG_ENA_ADP_GAIN	-1
-+#define	AUDPREPROC_CMD_ADP_GAIN_FLAG_ENA_STATIC_GAIN	0x0000
-+
-+#define	AUDPREPROC_CMD_PARAM_MASK_RMS_TAY	0x0004
-+#define	AUDPREPROC_CMD_PARAM_MASK_RELEASEK	0x0005
-+#define	AUDPREPROC_CMD_PARAM_MASK_DELAY		0x0006
-+#define	AUDPREPROC_CMD_PARAM_MASK_ATTACKK	0x0007
-+#define	AUDPREPROC_CMD_PARAM_MASK_LEAKRATE_SLOW	0x0008
-+#define	AUDPREPROC_CMD_PARAM_MASK_LEAKRATE_FAST	0x0009
-+#define	AUDPREPROC_CMD_PARAM_MASK_AIG_RELEASEK 	0x000A
-+#define	AUDPREPROC_CMD_PARAM_MASK_AIG_MIN	0x000B
-+#define	AUDPREPROC_CMD_PARAM_MASK_AIG_MAX	0x000C
-+#define	AUDPREPROC_CMD_PARAM_MASK_LEAK_UP	0x000D
-+#define	AUDPREPROC_CMD_PARAM_MASK_LEAK_DOWN	0x000E
-+#define	AUDPREPROC_CMD_PARAM_MASK_AIG_ATTACKK	0x000F
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	tx_agc_param_mask;
-+	unsigned short	tx_agc_enable_flag;
-+	unsigned short	static_gain;
-+	signed short	adaptive_gain_flag;
-+	unsigned short	expander_th;
-+	unsigned short	expander_slope;
-+	unsigned short	compressor_th;
-+	unsigned short	compressor_slope;
-+	unsigned short	param_mask;
-+	unsigned short	aig_attackk;
-+	unsigned short	aig_leak_down;
-+	unsigned short	aig_leak_up;
-+	unsigned short	aig_max;
-+	unsigned short	aig_min;
-+	unsigned short	aig_releasek;
-+	unsigned short	aig_leakrate_fast;
-+	unsigned short	aig_leakrate_slow;
-+	unsigned short	attackk_msw;
-+	unsigned short	attackk_lsw;
-+	unsigned short	delay;
-+	unsigned short	releasek_msw;
-+	unsigned short	releasek_lsw;
-+	unsigned short	rms_tav;
-+} __attribute__((packed)) audpreproc_cmd_cfg_agc_params;
-+
-+
-+/*
-+ * Command to configure the params of Advanved AGC
-+ */
-+
-+#define	AUDPREPROC_CMD_CFG_AGC_PARAMS_2		0x0001
-+#define	AUDPREPROC_CMD_CFG_AGC_PARAMS_2_LEN		\
-+	sizeof(audpreproc_cmd_cfg_agc_params_2)
-+
-+#define	AUDPREPROC_CMD_2_TX_AGC_ENA_FLAG_ENA	-1;
-+#define	AUDPREPROC_CMD_2_TX_AGC_ENA_FLAG_DIS	0x0000;
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	agc_param_mask;
-+	signed short	tx_agc_enable_flag;
-+	unsigned short	comp_static_gain;
-+	unsigned short	exp_th;
-+	unsigned short	exp_slope;
-+	unsigned short	comp_th;
-+	unsigned short	comp_slope;
-+	unsigned short	comp_rms_tav;
-+	unsigned short	comp_samp_mask;
-+	unsigned short	comp_attackk_msw;
-+	unsigned short	comp_attackk_lsw;
-+	unsigned short	comp_releasek_msw;
-+	unsigned short	comp_releasek_lsw;
-+	unsigned short	comp_delay;
-+	unsigned short	comp_makeup_gain;
-+} __attribute__((packed)) audpreproc_cmd_cfg_agc_params_2;
-+
-+/*
-+ * Command to configure params for ns
-+ */
-+
-+#define	AUDPREPROC_CMD_CFG_NS_PARAMS		0x0002
-+#define	AUDPREPROC_CMD_CFG_NS_PARAMS_LEN	\
-+	sizeof(audpreproc_cmd_cfg_ns_params)
-+
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NLMS_ENA	0x0001
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NLMS_DIS 	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_DES_ENA	0x0002
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_DES_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NS_ENA	0x0004
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NS_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_CNI_ENA	0x0008
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_CNI_DIS	0x0000
-+
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NLES_ENA	0x0010
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NLES_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_HB_ENA	0x0020
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_HB_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_VA_ENA	0x0040
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_VA_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_PCD_ENA	0x0080
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_PCD_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_FEHI_ENA	0x0100
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_FEHI_DIS 	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NEHI_ENA	0x0200
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NEHI_DIS 	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NLPP_ENA	0x0400
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_NLPP_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_FNE_ENA	0x0800
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_FNE_DIS	0x0000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_PRENLMS_ENA 	0x1000
-+#define	AUDPREPROC_CMD_EC_MODE_NEW_PRENLMS_DIS 	0x0000
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	ec_mode_new;
-+	unsigned short	dens_gamma_n;
-+	unsigned short	dens_nfe_block_size;
-+	unsigned short	dens_limit_ns;
-+	unsigned short	dens_limit_ns_d;
-+	unsigned short	wb_gamma_e;
-+	unsigned short	wb_gamma_n;
-+} __attribute__((packed)) audpreproc_cmd_cfg_ns_params;
-+
-+/*
-+ * Command to configure parameters for IIR tuning filter
-+ */
-+
-+#define	AUDPREPROC_CMD_CFG_IIR_TUNING_FILTER_PARAMS		0x0003
-+#define	AUDPREPROC_CMD_CFG_IIR_TUNING_FILTER_PARAMS_LEN	\
-+	sizeof(audpreproc_cmd_cfg_iir_tuning_filter_params)
-+
-+#define	AUDPREPROC_CMD_IIR_ACTIVE_FLAG_DIS	0x0000
-+#define	AUDPREPROC_CMD_IIR_ACTIVE_FLAG_ENA	0x0001
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	active_flag;
-+	unsigned short	num_bands;
-+	unsigned short	numerator_coeff_b0_filter0_lsw;
-+	unsigned short	numerator_coeff_b0_filter0_msw;
-+	unsigned short	numerator_coeff_b1_filter0_lsw;
-+	unsigned short	numerator_coeff_b1_filter0_msw;
-+	unsigned short	numerator_coeff_b2_filter0_lsw;
-+	unsigned short	numerator_coeff_b2_filter0_msw;
-+	unsigned short	numerator_coeff_b0_filter1_lsw;
-+	unsigned short	numerator_coeff_b0_filter1_msw;
-+	unsigned short	numerator_coeff_b1_filter1_lsw;
-+	unsigned short	numerator_coeff_b1_filter1_msw;
-+	unsigned short	numerator_coeff_b2_filter1_lsw;
-+	unsigned short	numerator_coeff_b2_filter1_msw;
-+	unsigned short	numerator_coeff_b0_filter2_lsw;
-+	unsigned short	numerator_coeff_b0_filter2_msw;
-+	unsigned short	numerator_coeff_b1_filter2_lsw;
-+	unsigned short	numerator_coeff_b1_filter2_msw;
-+	unsigned short	numerator_coeff_b2_filter2_lsw;
-+	unsigned short	numerator_coeff_b2_filter2_msw;
-+	unsigned short	numerator_coeff_b0_filter3_lsw;
-+	unsigned short	numerator_coeff_b0_filter3_msw;
-+	unsigned short	numerator_coeff_b1_filter3_lsw;
-+	unsigned short	numerator_coeff_b1_filter3_msw;
-+	unsigned short	numerator_coeff_b2_filter3_lsw;
-+	unsigned short	numerator_coeff_b2_filter3_msw;
-+	unsigned short 	denominator_coeff_a0_filter0_lsw;
-+	unsigned short 	denominator_coeff_a0_filter0_msw;
-+	unsigned short 	denominator_coeff_a1_filter0_lsw;
-+	unsigned short 	denominator_coeff_a1_filter0_msw; 
-+	unsigned short 	denominator_coeff_a0_filter1_lsw;
-+	unsigned short 	denominator_coeff_a0_filter1_msw;
-+	unsigned short 	denominator_coeff_a1_filter1_lsw;
-+	unsigned short 	denominator_coeff_a1_filter1_msw;
-+  unsigned short 	denominator_coeff_a0_filter2_lsw;
-+	unsigned short 	denominator_coeff_a0_filter2_msw;
-+	unsigned short 	denominator_coeff_a1_filter2_lsw;
-+	unsigned short 	denominator_coeff_a1_filter2_msw;
-+  unsigned short 	denominator_coeff_a0_filter3_lsw;
-+	unsigned short 	denominator_coeff_a0_filter3_msw;
-+	unsigned short 	denominator_coeff_a1_filter3_lsw;
-+	unsigned short 	denominator_coeff_a1_filter3_msw;
-+
-+	unsigned short	shift_factor_filter0;
-+	unsigned short	shift_factor_filter1;
-+	unsigned short	shift_factor_filter2;
-+	unsigned short	shift_factor_filter3;
-+
-+	unsigned short	channel_selected0;
-+	unsigned short	channel_selected1;
-+	unsigned short	channel_selected2;
-+	unsigned short	channel_selected3;
-+} __attribute__((packed))audpreproc_cmd_cfg_iir_tuning_filter_params;
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audpreprocmsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audpreprocmsg.h
-new file mode 100644
-index 0000000..9187f45
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audpreprocmsg.h
-@@ -0,0 +1,85 @@
-+#ifndef QDSP5AUDPREPROCMSG_H
-+#define QDSP5AUDPREPROCMSG_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    A U D I O   P R E   P R O C E S S I N G  M E S S A G E S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of messages
-+  that are rcvd by AUDPREPROC Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+   
-+ $Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audpreprocmsg.h#3 $
-+  
-+===========================================================================*/
-+
-+/*
-+ * ADSPREPROCTASK Messages
-+ * AUDPREPROCTASK uses audPreProcUpRlist to communicate with ARM
-+ * Location	: MEMA
-+ * Message Length  : 2
-+ */
-+
-+/*
-+ * Message to indicate particular feature has been enabled or disabled
-+ */
-+
-+
-+#define	AUDPREPROC_MSG_CMD_CFG_DONE_MSG	0x0000
-+#define	AUDPREPROC_MSG_CMD_CFG_DONE_MSG_LEN	\
-+	sizeof(audpreproc_msg_cmd_cfg_done_msg)
-+
-+#define	AUDPREPROC_MSG_TYPE_AGC			0x0000
-+#define	AUDPREPROC_MSG_TYPE_NOISE_REDUCTION	0x0001
-+#define	AUDPREPROC_MSG_TYPE_IIR_FILTER		0x0002
-+
-+
-+#define	AUDPREPROC_MSG_STATUS_FLAG_ENA		-1
-+#define	AUDPREPROC_MSG_STATUS_FLAG_DIS		0x0000
-+
-+typedef struct {
-+	unsigned short	type;
-+	signed short	status_flag;
-+} __attribute__((packed)) audpreproc_msg_cmd_cfg_done_msg;
-+
-+
-+/*
-+ * Message to indicate particular feature has selected for wrong samp freq
-+ */
-+
-+#define	AUDPREPROC_MSG_ERROR_MSG_ID		0x0001
-+#define	AUDPREPROC_MSG_ERROR_MSG_ID_LEN	\
-+	sizeof(audpreproc_msg_error_msg_id)
-+
-+#define	AUDPREPROC_MSG_ERR_INDEX_NS		0x0000
-+
-+typedef struct {
-+	 unsigned short	err_index;
-+} __attribute__((packed)) audpreproc_msg_error_msg_id;
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audreccmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audreccmdi.h
-new file mode 100644
-index 0000000..e88bd5d
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audreccmdi.h
-@@ -0,0 +1,176 @@
-+#ifndef QDSP5AUDRECCMDI_H
-+#define QDSP5AUDRECCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    A U D I O   R E C O R D  I N T E R N A L  C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by AUDREC Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+ $Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audreccmdi.h#3 $
-+
-+============================================================================*/
-+
-+/*
-+ * AUDRECTASK COMMANDS
-+ * ARM uses 2 queues to communicate with the AUDRECTASK
-+ * 1.uPAudRecCmdQueue
-+ * Location :MEMC
-+ * Buffer Size : 8
-+ * No of Buffers in a queue : 3
-+ * 2.audRecUpBitStreamQueue
-+ * Location : MEMC
-+ * Buffer Size : 4
-+ * No of buffers in a queue : 2
-+ */
-+
-+/*
-+ * Commands on uPAudRecCmdQueue
-+ */
-+
-+/*
-+ * Command to initiate and terminate the audio recording section
-+ */
-+
-+#define AUDREC_CMD_CFG		0x0000
-+#define	AUDREC_CMD_CFG_LEN	sizeof(audrec_cmd_cfg)
-+
-+#define	AUDREC_CMD_TYPE_0_INDEX_WAV	0x0000
-+#define	AUDREC_CMD_TYPE_0_INDEX_AAC	0x0001
-+
-+#define AUDREC_CMD_TYPE_0_ENA		0x4000
-+#define AUDREC_CMD_TYPE_0_DIS		0x0000
-+
-+#define AUDREC_CMD_TYPE_0_NOUPDATE	0x0000
-+#define AUDREC_CMD_TYPE_0_UPDATE	0x8000
-+
-+#define	AUDREC_CMD_TYPE_1_INDEX_SBC	0x0002
-+
-+#define AUDREC_CMD_TYPE_1_ENA		0x4000
-+#define AUDREC_CMD_TYPE_1_DIS		0x0000
-+
-+#define AUDREC_CMD_TYPE_1_NOUPDATE	0x0000
-+#define AUDREC_CMD_TYPE_1_UPDATE	0x8000
-+
-+typedef struct {
-+	unsigned short 	cmd_id;
-+	unsigned short	type_0;
-+	unsigned short	type_1;
-+} __attribute__((packed)) audrec_cmd_cfg;
-+
-+
-+/*
-+ * Command to configure the recording parameters for RecType0(AAC/WAV) encoder
-+ */
-+
-+#define	AUDREC_CMD_AREC0PARAM_CFG	0x0001
-+#define	AUDREC_CMD_AREC0PARAM_CFG_LEN	\
-+	sizeof(audrec_cmd_arec0param_cfg)
-+
-+#define	AUDREC_CMD_SAMP_RATE_INDX_8000		0x000B
-+#define	AUDREC_CMD_SAMP_RATE_INDX_11025		0x000A
-+#define	AUDREC_CMD_SAMP_RATE_INDX_12000		0x0009
-+#define	AUDREC_CMD_SAMP_RATE_INDX_16000		0x0008
-+#define	AUDREC_CMD_SAMP_RATE_INDX_22050		0x0007
-+#define	AUDREC_CMD_SAMP_RATE_INDX_24000		0x0006
-+#define	AUDREC_CMD_SAMP_RATE_INDX_32000		0x0005
-+#define	AUDREC_CMD_SAMP_RATE_INDX_44100		0x0004
-+#define	AUDREC_CMD_SAMP_RATE_INDX_48000		0x0003
-+
-+#define AUDREC_CMD_STEREO_MODE_MONO		0x0000
-+#define AUDREC_CMD_STEREO_MODE_STEREO		0x0001
-+
-+typedef struct {
-+	unsigned short 	cmd_id;
-+	unsigned short	ptr_to_extpkt_buffer_msw;
-+	unsigned short	ptr_to_extpkt_buffer_lsw;
-+	unsigned short	buf_len;
-+	unsigned short	samp_rate_index;
-+	unsigned short	stereo_mode;
-+	unsigned short 	rec_quality;
-+} __attribute__((packed)) audrec_cmd_arec0param_cfg;
-+
-+/*
-+ * Command to configure the recording parameters for RecType1(SBC) encoder
-+ */
-+
-+#define AUDREC_CMD_AREC1PARAM_CFG	0x0002
-+#define AUDREC_CMD_AREC1PARAM_CFG_LEN	\
-+	sizeof(audrec_cmd_arec1param_cfg)
-+
-+#define AUDREC_CMD_PARAM_BUF_BLOCKS_4	0x0000
-+#define AUDREC_CMD_PARAM_BUF_BLOCKS_8	0x0001
-+#define AUDREC_CMD_PARAM_BUF_BLOCKS_12	0x0002
-+#define AUDREC_CMD_PARAM_BUF_BLOCKS_16	0x0003
-+
-+#define AUDREC_CMD_PARAM_BUF_SUB_BANDS_8	0x0010
-+#define AUDREC_CMD_PARAM_BUF_MODE_MONO		0x0000
-+#define AUDREC_CMD_PARAM_BUF_MODE_DUAL		0x0040
-+#define AUDREC_CMD_PARAM_BUF_MODE_STEREO	0x0050
-+#define AUDREC_CMD_PARAM_BUF_MODE_JSTEREO	0x0060
-+#define AUDREC_CMD_PARAM_BUF_LOUDNESS		0x0000
-+#define AUDREC_CMD_PARAM_BUF_SNR		0x0100
-+#define AUDREC_CMD_PARAM_BUF_BASIC_VER		0x0000
-+
-+typedef struct {
-+	unsigned short 	cmd_id;
-+	unsigned short	ptr_to_extpkt_buffer_msw;
-+	unsigned short	ptr_to_extpkt_buffer_lsw;
-+	unsigned short	buf_len;
-+	unsigned short	param_buf;
-+	unsigned short	bit_rate_0;
-+	unsigned short	bit_rate_1;
-+} __attribute__((packed)) audrec_cmd_arec1param_cfg;
-+
-+
-+/*
-+ * Commands on audRecUpBitStreamQueue 
-+ */
-+
-+/*
-+ * Command to indicate the current packet read count
-+ */
-+
-+#define AUDREC_CMD_PACKET_EXT_PTR		0x0000
-+#define AUDREC_CMD_PACKET_EXT_PTR_LEN	\
-+	sizeof(audrec_cmd_packet_ext_ptr)
-+
-+#define AUDREC_CMD_TYPE_0	0x0000
-+#define AUDREC_CMD_TYPE_1	0x0001
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short	type;
-+	unsigned short 	curr_rec_count_msw;
-+	unsigned short 	curr_rec_count_lsw;
-+} __attribute__((packed)) audrec_cmd_packet_ext_ptr;
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audrecmsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audrecmsg.h
-new file mode 100644
-index 0000000..bb6eb50
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5audrecmsg.h
-@@ -0,0 +1,127 @@
-+#ifndef QDSP5AUDRECMSGI_H
-+#define QDSP5AUDRECMSGI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    A U D I O   R E C O R D  M E S S A G E S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of messages
-+  that are sent by AUDREC Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+ $Header: //source/qcom/qct/multimedia2/Audio/drivers/QDSP5Driver/QDSP5Interface/main/latest/qdsp5audrecmsg.h#3 $
-+
-+============================================================================*/
-+
-+/*
-+ * AUDRECTASK MESSAGES
-+ * AUDRECTASK uses audRecUpRlist to communicate with ARM
-+ * Location : MEMC
-+ * Buffer size : 4
-+ * No of buffers in a queue : 2
-+ */
-+
-+/*
-+ * Message to notify that config command is done
-+ */
-+
-+#define AUDREC_MSG_CMD_CFG_DONE_MSG	0x0002
-+#define AUDREC_MSG_CMD_CFG_DONE_MSG_LEN	\
-+	sizeof(audrec_msg_cmd_cfg_done_msg)
-+
-+
-+#define AUDREC_MSG_CFG_DONE_TYPE_0_ENA		0x4000
-+#define AUDREC_MSG_CFG_DONE_TYPE_0_DIS		0x0000
-+
-+#define AUDREC_MSG_CFG_DONE_TYPE_0_NO_UPDATE	0x0000
-+#define AUDREC_MSG_CFG_DONE_TYPE_0_UPDATE	0x8000
-+
-+#define AUDREC_MSG_CFG_DONE_TYPE_1_ENA		0x4000
-+#define AUDREC_MSG_CFG_DONE_TYPE_1_DIS		0x0000
-+
-+#define AUDREC_MSG_CFG_DONE_TYPE_1_NO_UPDATE	0x0000
-+#define AUDREC_MSG_CFG_DONE_TYPE_1_UPDATE	0x8000
-+
-+typedef struct {
-+	unsigned short	type_0;
-+	unsigned short	type_1;
-+} __attribute__((packed))audrec_msg_cmd_cfg_done_msg;
-+
-+
-+/*
-+ * Message to notify arec0/1 cfg done and recording params revd by task
-+ */
-+
-+#define	AUDREC_MSG_CMD_AREC_PARAM_CFG_DONE_MSG		0x0003
-+#define	AUDREC_MSG_CMD_AREC_PARAM_CFG_DONE_MSG_LEN	\
-+	sizeof(audrec_msg_cmd_arec_param_cfg_done_msg)
-+
-+#define	AUDREC_MSG_AREC_PARAM_TYPE_0	0x0000
-+#define	AUDREC_MSG_AREC_PARAM_TYPE_1	0x0001
-+
-+typedef struct {
-+	unsigned short	type;
-+} __attribute__((packed))audrec_msg_cmd_arec_param_cfg_done_msg;
-+
-+
-+/*
-+ * Message to notify no more buffers are available in ext mem to DME
-+ */
-+
-+#define AUDREC_MSG_FATAL_ERR_MSG		0x0004
-+#define AUDREC_MSG_FATAL_ERR_MSG_LEN	\
-+	sizeof(audrec_msg_fatal_err_msg)
-+
-+#define AUDREC_MSG_FATAL_ERR_TYPE_0	0x0000
-+#define AUDREC_MSG_FATAL_ERR_TYPE_1	0x0001
-+
-+typedef struct {
-+	unsigned short	type;
-+} __attribute__((packed))audrec_msg_fatal_err_msg;
-+
-+/*
-+ * Message to notify DME deliverd the encoded pkt to ext pkt buffer
-+ */
-+
-+#define AUDREC_MSG_PACKET_READY_MSG		0x0005
-+#define AUDREC_MSG_PACKET_READY_MSG_LEN	\
-+	sizeof(audrec_msg_packet_ready_msg)
-+
-+#define AUDREC_MSG_PACKET_READY_TYPE_0	0x0000
-+#define AUDREC_MSG_PACKET_READY_TYPE_1	0x0001
-+
-+typedef struct {
-+	unsigned short	type;
-+	unsigned short	pkt_counter_msw;
-+	unsigned short	pkt_counter_lsw;
-+	unsigned short	pkt_read_cnt_msw;
-+	unsigned short	pkt_read_cnt_lsw;
-+} __attribute__((packed))audrec_msg_packet_ready_msg;
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5jpegcmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5jpegcmdi.h
-new file mode 100644
-index 0000000..d8170f0
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5jpegcmdi.h
-@@ -0,0 +1,376 @@
-+#ifndef QDSP5VIDJPEGCMDI_H
-+#define QDSP5VIDJPEGCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    J P E G  I N T E R N A L  C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by JPEG Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5jpegcmdi.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+06/09/08   sv      initial version
-+===========================================================================*/
-+
-+/*
-+ * ARM to JPEG configuration commands are passed through the
-+ * uPJpegCfgCmdQueue
-+ */
-+
-+/*
-+ * Command to configure JPEG Encoder
-+ */
-+
-+#define	JPEG_CMD_ENC_CFG		0x0000
-+#define	JPEG_CMD_ENC_CFG_LEN	sizeof(jpeg_cmd_enc_cfg)
-+
-+#define	JPEG_CMD_ENC_PROCESS_CFG_OP_ROTATION_0		0x0000
-+#define	JPEG_CMD_ENC_PROCESS_CFG_OP_ROTATION_90		0x0100
-+#define	JPEG_CMD_ENC_PROCESS_CFG_OP_ROTATION_180	0x0200
-+#define	JPEG_CMD_ENC_PROCESS_CFG_OP_ROTATION_270	0x0300
-+#define	JPEG_CMD_ENC_PROCESS_CFG_IP_DATA_FORMAT_M	0x0003
-+#define	JPEG_CMD_ENC_PROCESS_CFG_IP_DATA_FORMAT_H2V2	0x0000
-+#define	JPEG_CMD_ENC_PROCESS_CFG_IP_DATA_FORMAT_H2V1	0x0001
-+#define	JPEG_CMD_ENC_PROCESS_CFG_IP_DATA_FORMAT_H1V2	0x0002
-+
-+#define	JPEG_CMD_IP_SIZE_CFG_LUMA_HEIGHT_M		0x0000FFFF
-+#define	JPEG_CMD_IP_SIZE_CFG_LUMA_WIDTH_M		0xFFFF0000
-+#define	JPEG_CMD_ENC_UPSAMP_IP_SIZE_CFG_ENA		0x0001
-+#define	JPEG_CMD_ENC_UPSAMP_IP_SIZE_CFG_DIS		0x0000
-+
-+#define	JPEG_CMD_FRAG_SIZE_LUMA_HEIGHT_M		0xFFFF
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	process_cfg;
-+	unsigned int	ip_size_cfg;
-+	unsigned int	op_size_cfg;
-+	unsigned int	frag_cfg;
-+	unsigned int	frag_cfg_part[16];
-+
-+	unsigned int    part_num;
-+
-+	unsigned int	op_buf_0_cfg_part1;
-+	unsigned int	op_buf_0_cfg_part2;
-+	unsigned int	op_buf_1_cfg_part1;
-+	unsigned int	op_buf_1_cfg_part2;
-+
-+	unsigned int	luma_qunt_table[32];
-+	unsigned int	chroma_qunt_table[32];
-+
-+	unsigned int	upsamp_ip_size_cfg;
-+	unsigned int	upsamp_ip_frame_off;
-+	unsigned int	upsamp_pp_filter_coeff[64];
-+} __attribute__((packed)) jpeg_cmd_enc_cfg;
-+
-+/*
-+ * Command to configure JPEG Decoder
-+ */
-+
-+#define	JPEG_CMD_DEC_CFG		0x0001
-+#define	JPEG_CMD_DEC_CFG_LEN		sizeof(jpeg_cmd_dec_cfg)
-+
-+#define	JPEG_CMD_DEC_OP_DATA_FORMAT_M		0x0001
-+#define JPEG_CMD_DEC_OP_DATA_FORMAT_H2V2	0x0000
-+#define JPEG_CMD_DEC_OP_DATA_FORMAT_H2V1	0x0001
-+
-+#define JPEG_CMD_DEC_OP_DATA_FORMAT_SCALE_FACTOR_8	0x000000
-+#define JPEG_CMD_DEC_OP_DATA_FORMAT_SCALE_FACTOR_4	0x010000
-+#define JPEG_CMD_DEC_OP_DATA_FORMAT_SCALE_FACTOR_2	0x020000
-+#define JPEG_CMD_DEC_OP_DATA_FORMAT_SCALE_FACTOR_1	0x030000
-+
-+#define	JPEG_CMD_DEC_IP_STREAM_BUF_CFG_PART3_NOT_FINAL	0x0000
-+#define	JPEG_CMD_DEC_IP_STREAM_BUF_CFG_PART3_FINAL	0x0001
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	img_dimension_cfg;
-+	unsigned int	op_data_format;
-+	unsigned int	restart_interval;
-+	unsigned int	ip_buf_partition_num;
-+	unsigned int	ip_stream_buf_cfg_part1;
-+	unsigned int	ip_stream_buf_cfg_part2;
-+	unsigned int	ip_stream_buf_cfg_part3;
-+	unsigned int	op_stream_buf_0_cfg_part1;
-+	unsigned int	op_stream_buf_0_cfg_part2;
-+	unsigned int	op_stream_buf_0_cfg_part3;
-+	unsigned int	op_stream_buf_1_cfg_part1;
-+	unsigned int	op_stream_buf_1_cfg_part2;
-+	unsigned int	op_stream_buf_1_cfg_part3;
-+	unsigned int	luma_qunt_table_0_3;
-+	unsigned int	luma_qunt_table_4_7;
-+	unsigned int	luma_qunt_table_8_11;
-+	unsigned int	luma_qunt_table_12_15;
-+	unsigned int	luma_qunt_table_16_19;
-+	unsigned int	luma_qunt_table_20_23;
-+	unsigned int	luma_qunt_table_24_27;
-+	unsigned int	luma_qunt_table_28_31;
-+	unsigned int	luma_qunt_table_32_35;
-+	unsigned int	luma_qunt_table_36_39;
-+	unsigned int	luma_qunt_table_40_43;
-+	unsigned int	luma_qunt_table_44_47;
-+	unsigned int	luma_qunt_table_48_51;
-+	unsigned int	luma_qunt_table_52_55;
-+	unsigned int	luma_qunt_table_56_59;
-+	unsigned int	luma_qunt_table_60_63;
-+	unsigned int	chroma_qunt_table_0_3;
-+	unsigned int	chroma_qunt_table_4_7;
-+	unsigned int	chroma_qunt_table_8_11;
-+	unsigned int	chroma_qunt_table_12_15;
-+	unsigned int	chroma_qunt_table_16_19;
-+	unsigned int	chroma_qunt_table_20_23;
-+	unsigned int	chroma_qunt_table_24_27;
-+	unsigned int	chroma_qunt_table_28_31;
-+	unsigned int	chroma_qunt_table_32_35;
-+	unsigned int	chroma_qunt_table_36_39;
-+	unsigned int	chroma_qunt_table_40_43;
-+	unsigned int	chroma_qunt_table_44_47;
-+	unsigned int	chroma_qunt_table_48_51;
-+	unsigned int	chroma_qunt_table_52_55;
-+	unsigned int	chroma_qunt_table_56_59;
-+	unsigned int	chroma_qunt_table_60_63;
-+	unsigned int	luma_dc_hm_code_cnt_table_0_3;
-+	unsigned int	luma_dc_hm_code_cnt_table_4_7;
-+	unsigned int	luma_dc_hm_code_cnt_table_8_11;
-+	unsigned int	luma_dc_hm_code_cnt_table_12_15;
-+	unsigned int	luma_dc_hm_code_val_table_0_3;
-+	unsigned int	luma_dc_hm_code_val_table_4_7;
-+	unsigned int	luma_dc_hm_code_val_table_8_11;
-+	unsigned int	chroma_dc_hm_code_cnt_table_0_3;
-+	unsigned int	chroma_dc_hm_code_cnt_table_4_7;
-+	unsigned int	chroma_dc_hm_code_cnt_table_8_11;
-+	unsigned int	chroma_dc_hm_code_cnt_table_12_15;
-+	unsigned int	chroma_dc_hm_code_val_table_0_3;
-+	unsigned int	chroma_dc_hm_code_val_table_4_7;
-+	unsigned int	chroma_dc_hm_code_val_table_8_11;
-+	unsigned int	luma_ac_hm_code_cnt_table_0_3;
-+	unsigned int	luma_ac_hm_code_cnt_table_4_7;
-+	unsigned int	luma_ac_hm_code_cnt_table_8_11;
-+	unsigned int	luma_ac_hm_code_cnt_table_12_15;
-+	unsigned int	luma_ac_hm_code_val_table_0_3;
-+	unsigned int	luma_ac_hm_code_val_table_4_7;
-+	unsigned int	luma_ac_hm_code_val_table_8_11;
-+	unsigned int	luma_ac_hm_code_val_table_12_15;
-+	unsigned int	luma_ac_hm_code_val_table_16_19;
-+	unsigned int	luma_ac_hm_code_val_table_20_23;
-+	unsigned int	luma_ac_hm_code_val_table_24_27;
-+	unsigned int	luma_ac_hm_code_val_table_28_31;
-+	unsigned int	luma_ac_hm_code_val_table_32_35;
-+	unsigned int	luma_ac_hm_code_val_table_36_39;
-+	unsigned int	luma_ac_hm_code_val_table_40_43;
-+	unsigned int	luma_ac_hm_code_val_table_44_47;
-+	unsigned int	luma_ac_hm_code_val_table_48_51;
-+	unsigned int	luma_ac_hm_code_val_table_52_55;
-+	unsigned int	luma_ac_hm_code_val_table_56_59;
-+	unsigned int	luma_ac_hm_code_val_table_60_63;
-+	unsigned int	luma_ac_hm_code_val_table_64_67;
-+	unsigned int	luma_ac_hm_code_val_table_68_71;
-+	unsigned int	luma_ac_hm_code_val_table_72_75;
-+	unsigned int	luma_ac_hm_code_val_table_76_79;
-+	unsigned int	luma_ac_hm_code_val_table_80_83;
-+	unsigned int	luma_ac_hm_code_val_table_84_87;
-+	unsigned int	luma_ac_hm_code_val_table_88_91;
-+	unsigned int	luma_ac_hm_code_val_table_92_95;
-+	unsigned int	luma_ac_hm_code_val_table_96_99;
-+	unsigned int	luma_ac_hm_code_val_table_100_103;
-+	unsigned int	luma_ac_hm_code_val_table_104_107;
-+	unsigned int	luma_ac_hm_code_val_table_108_111;
-+	unsigned int	luma_ac_hm_code_val_table_112_115;
-+	unsigned int	luma_ac_hm_code_val_table_116_119;
-+	unsigned int	luma_ac_hm_code_val_table_120_123;
-+	unsigned int	luma_ac_hm_code_val_table_124_127;
-+	unsigned int	luma_ac_hm_code_val_table_128_131;
-+	unsigned int	luma_ac_hm_code_val_table_132_135;
-+	unsigned int	luma_ac_hm_code_val_table_136_139;
-+	unsigned int	luma_ac_hm_code_val_table_140_143;
-+	unsigned int	luma_ac_hm_code_val_table_144_147;
-+	unsigned int	luma_ac_hm_code_val_table_148_151;
-+	unsigned int	luma_ac_hm_code_val_table_152_155;
-+	unsigned int	luma_ac_hm_code_val_table_156_159;
-+	unsigned int	luma_ac_hm_code_val_table_160_161;
-+	unsigned int	chroma_ac_hm_code_cnt_table_0_3;
-+	unsigned int	chroma_ac_hm_code_cnt_table_4_7;
-+	unsigned int	chroma_ac_hm_code_cnt_table_8_11;
-+	unsigned int	chroma_ac_hm_code_cnt_table_12_15;
-+	unsigned int	chroma_ac_hm_code_val_table_0_3;
-+	unsigned int	chroma_ac_hm_code_val_table_4_7;
-+	unsigned int	chroma_ac_hm_code_val_table_8_11;
-+	unsigned int	chroma_ac_hm_code_val_table_12_15;
-+	unsigned int	chroma_ac_hm_code_val_table_16_19;
-+	unsigned int	chroma_ac_hm_code_val_table_20_23;
-+	unsigned int	chroma_ac_hm_code_val_table_24_27;
-+	unsigned int	chroma_ac_hm_code_val_table_28_31;
-+	unsigned int	chroma_ac_hm_code_val_table_32_35;
-+	unsigned int	chroma_ac_hm_code_val_table_36_39;
-+	unsigned int	chroma_ac_hm_code_val_table_40_43;
-+	unsigned int	chroma_ac_hm_code_val_table_44_47;
-+	unsigned int	chroma_ac_hm_code_val_table_48_51;
-+	unsigned int	chroma_ac_hm_code_val_table_52_55;
-+	unsigned int	chroma_ac_hm_code_val_table_56_59;
-+	unsigned int	chroma_ac_hm_code_val_table_60_63;
-+	unsigned int	chroma_ac_hm_code_val_table_64_67;
-+	unsigned int	chroma_ac_hm_code_val_table_68_71;
-+	unsigned int	chroma_ac_hm_code_val_table_72_75;
-+	unsigned int	chroma_ac_hm_code_val_table_76_79;
-+	unsigned int	chroma_ac_hm_code_val_table_80_83;
-+	unsigned int	chroma_ac_hm_code_val_table_84_87;
-+	unsigned int	chroma_ac_hm_code_val_table_88_91;
-+	unsigned int	chroma_ac_hm_code_val_table_92_95;
-+	unsigned int	chroma_ac_hm_code_val_table_96_99;
-+	unsigned int	chroma_ac_hm_code_val_table_100_103;
-+	unsigned int	chroma_ac_hm_code_val_table_104_107;
-+	unsigned int	chroma_ac_hm_code_val_table_108_111;
-+	unsigned int	chroma_ac_hm_code_val_table_112_115;
-+	unsigned int	chroma_ac_hm_code_val_table_116_119;
-+	unsigned int	chroma_ac_hm_code_val_table_120_123;
-+	unsigned int	chroma_ac_hm_code_val_table_124_127;
-+	unsigned int	chroma_ac_hm_code_val_table_128_131;
-+	unsigned int	chroma_ac_hm_code_val_table_132_135;
-+	unsigned int	chroma_ac_hm_code_val_table_136_139;
-+	unsigned int	chroma_ac_hm_code_val_table_140_143;
-+	unsigned int	chroma_ac_hm_code_val_table_144_147;
-+	unsigned int	chroma_ac_hm_code_val_table_148_151;
-+	unsigned int	chroma_ac_hm_code_val_table_152_155;
-+	unsigned int	chroma_ac_hm_code_val_table_156_159;
-+	unsigned int	chroma_ac_hm_code_val_table_160_161;
-+} __attribute__((packed)) jpeg_cmd_dec_cfg;
-+
-+
-+/*
-+ * ARM to JPEG configuration commands are passed through the
-+ * uPJpegActionCmdQueue
-+ */
-+
-+/*
-+ * Command to start the encode process
-+ */
-+
-+#define	JPEG_CMD_ENC_ENCODE		0x0000
-+#define	JPEG_CMD_ENC_ENCODE_LEN		sizeof(jpeg_cmd_enc_encode)
-+
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+} __attribute__((packed)) jpeg_cmd_enc_encode;
-+
-+
-+/*
-+ * Command to transition from current state of encoder to IDLE state
-+ */
-+
-+#define	JPEG_CMD_ENC_IDLE		0x0001
-+#define	JPEG_CMD_ENC_IDLE_LEN		sizeof(jpeg_cmd_enc_idle)
-+
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+} __attribute__((packed)) jpeg_cmd_enc_idle;
-+
-+
-+/*
-+ * Command to inform the encoder that another buffer is ready
-+ */
-+
-+#define	JPEG_CMD_ENC_OP_CONSUMED	0x0002
-+#define	JPEG_CMD_ENC_OP_CONSUMED_LEN	sizeof(jpeg_cmd_enc_op_consumed)
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	op_buf_addr;
-+	unsigned int	op_buf_size;
-+} __attribute__((packed)) jpeg_cmd_enc_op_consumed; 
-+
-+
-+/*
-+ * Command to start the decoding process
-+ */
-+
-+#define	JPEG_CMD_DEC_DECODE		0x0003
-+#define	JPEG_CMD_DEC_DECODE_LEN	sizeof(jpeg_cmd_dec_decode)
-+
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+} __attribute__((packed)) jpeg_cmd_dec_decode;
-+
-+
-+/*
-+ * Command to transition from the current state of decoder to IDLE
-+ */
-+
-+#define	JPEG_CMD_DEC_IDLE	0x0004
-+#define	JPEG_CMD_DEC_IDLE_LEN	sizeof(jpeg_cmd_dec_idle)
-+
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+} __attribute__((packed)) jpeg_cmd_dec_idle;
-+
-+
-+/*
-+ * Command to inform that an op buffer is ready for use
-+ */
-+
-+#define	JPEG_CMD_DEC_OP_CONSUMED	0x0005
-+#define	JPEG_CMD_DEC_OP_CONSUMED_LEN	sizeof(jpeg_cmd_dec_op_consumed)
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	luma_op_buf_addr;
-+	unsigned int	luma_op_buf_size;
-+	unsigned int	chroma_op_buf_addr;
-+} __attribute__((packed)) jpeg_cmd_dec_op_consumed;
-+
-+
-+/*
-+ * Command to pass a new ip buffer to the jpeg decoder
-+ */
-+
-+#define	JPEG_CMD_DEC_IP	0x0006
-+#define	JPEG_CMD_DEC_IP_LEN	sizeof(jpeg_cmd_dec_ip_len)
-+
-+#define	JPEG_CMD_EOI_INDICATOR_NOT_END	0x0000
-+#define	JPEG_CMD_EOI_INDICATOR_END	0x0001
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	ip_buf_addr;
-+	unsigned int	ip_buf_size;
-+	unsigned int	eoi_indicator;
-+} __attribute__((packed)) jpeg_cmd_dec_ip;
-+
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5jpegmsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5jpegmsg.h
-new file mode 100644
-index 0000000..d11aa3f
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5jpegmsg.h
-@@ -0,0 +1,177 @@
-+#ifndef QDSP5VIDJPEGMSGI_H
-+#define QDSP5VIDJPEGMSGI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+   J P E G  I N T E R N A L  M E S S A G E S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of messages
-+  that are sent by JPEG Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5jpegmsg.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+05/10/08   sv      initial version
-+===========================================================================*/
-+
-+/*
-+ * Messages from JPEG task to ARM through jpeguPMsgQueue
-+ */
-+
-+/*
-+ * Message is ACK for CMD_JPEGE_ENCODE cmd
-+ */
-+
-+#define	JPEG_MSG_ENC_ENCODE_ACK	0x0000
-+#define	JPEG_MSG_ENC_ENCODE_ACK_LEN	\
-+	sizeof(jpeg_msg_enc_encode_ack)
-+
-+typedef struct {
-+} __attribute__((packed)) jpeg_msg_enc_encode_ack;
-+
-+
-+/*
-+ * Message informs the up when op buffer is ready for consumption and
-+ * when encoding is complete or errors
-+ */
-+
-+#define	JPEG_MSG_ENC_OP_PRODUCED	0x0001
-+#define	JPEG_MSG_ENC_OP_PRODUCED_LEN	\
-+	sizeof(jpeg_msg_enc_op_produced)
-+
-+#define	JPEG_MSGOP_OP_BUF_STATUS_ENC_DONE_PROGRESS	0x0000
-+#define	JPEG_MSGOP_OP_BUF_STATUS_ENC_DONE_COMPLETE	0x0001
-+#define	JPEG_MSGOP_OP_BUF_STATUS_ENC_ERR		0x10000
-+
-+typedef struct {
-+	unsigned int	op_buf_addr;
-+	unsigned int	op_buf_size;
-+	unsigned int	op_buf_status;
-+} __attribute__((packed)) jpeg_msg_enc_op_produced;
-+
-+
-+/*
-+ * Message to ack CMD_JPEGE_IDLE
-+ */
-+
-+#define	JPEG_MSG_ENC_IDLE_ACK	0x0002
-+#define	JPEG_MSG_ENC_IDLE_ACK_LEN	sizeof(jpeg_msg_enc_idle_ack)
-+
-+
-+typedef struct {
-+} __attribute__ ((packed)) jpeg_msg_enc_idle_ack;
-+
-+
-+/*
-+ * Message to indicate the illegal command
-+ */
-+
-+#define	JPEG_MSG_ENC_ILLEGAL_COMMAND	0x0003
-+#define	JPEG_MSG_ENC_ILLEGAL_COMMAND_LEN	\
-+	sizeof(jpeg_msg_enc_illegal_command)
-+
-+typedef struct {
-+	unsigned int	status;
-+} __attribute__((packed)) jpeg_msg_enc_illegal_command;
-+
-+
-+/*
-+ * Message to ACK CMD_JPEGD_DECODE
-+ */
-+
-+#define	JPEG_MSG_DEC_DECODE_ACK		0x0004
-+#define	JPEG_MSG_DEC_DECODE_ACK_LEN	\
-+	sizeof(jpeg_msg_dec_decode_ack)
-+
-+
-+typedef struct {
-+} __attribute__((packed)) jpeg_msg_dec_decode_ack;
-+
-+
-+/*
-+ * Message to inform up that an op buffer is ready for consumption and when
-+ * decoding is complete or an error occurs
-+ */
-+
-+#define	JPEG_MSG_DEC_OP_PRODUCED		0x0005
-+#define	JPEG_MSG_DEC_OP_PRODUCED_LEN	\
-+	sizeof(jpeg_msg_dec_op_produced)
-+
-+#define	JPEG_MSG_DEC_OP_BUF_STATUS_PROGRESS	0x0000
-+#define	JPEG_MSG_DEC_OP_BUF_STATUS_DONE		0x0001
-+
-+typedef struct {
-+	unsigned int	luma_op_buf_addr;
-+	unsigned int	chroma_op_buf_addr;
-+	unsigned int	num_mcus;
-+	unsigned int	op_buf_status;
-+} __attribute__((packed)) jpeg_msg_dec_op_produced;
-+
-+/*
-+ * Message to ack CMD_JPEGD_IDLE cmd
-+ */
-+
-+#define	JPEG_MSG_DEC_IDLE_ACK	0x0006
-+#define	JPEG_MSG_DEC_IDLE_ACK_LEN	sizeof(jpeg_msg_dec_idle_ack)
-+
-+
-+typedef struct {
-+} __attribute__((packed)) jpeg_msg_dec_idle_ack;
-+
-+
-+/*
-+ * Message to indicate illegal cmd was received
-+ */
-+
-+#define	JPEG_MSG_DEC_ILLEGAL_COMMAND	0x0007
-+#define	JPEG_MSG_DEC_ILLEGAL_COMMAND_LEN	\
-+	sizeof(jpeg_msg_dec_illegal_command)
-+
-+
-+typedef struct {
-+	unsigned int	status;
-+} __attribute__((packed)) jpeg_msg_dec_illegal_command;
-+
-+/*
-+ * Message to request up for the next segment of ip bit stream
-+ */
-+
-+#define	JPEG_MSG_DEC_IP_REQUEST		0x0008
-+#define	JPEG_MSG_DEC_IP_REQUEST_LEN	\
-+	sizeof(jpeg_msg_dec_ip_request)
-+
-+
-+typedef struct {
-+} __attribute__((packed)) jpeg_msg_dec_ip_request;
-+
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5lpmcmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5lpmcmdi.h
-new file mode 100644
-index 0000000..6c76e2c
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5lpmcmdi.h
-@@ -0,0 +1,82 @@
-+#ifndef QDSP5LPMCMDI_H
-+#define QDSP5LPMCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    L P M   I N T E R N A L   C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by LPM Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5lpmcmdi.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+06/12/08   sv      initial version
-+===========================================================================*/
-+
-+
-+/*
-+ * Command to start LPM processing based on the config params
-+ */
-+
-+#define	LPM_CMD_START		0x0000
-+#define	LPM_CMD_START_LEN	sizeof(lpm_cmd_start)
-+
-+#define	LPM_CMD_SPATIAL_FILTER_PART_OPMODE_0	0x00000000
-+#define	LPM_CMD_SPATIAL_FILTER_PART_OPMODE_1	0x00010000
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	ip_data_cfg_part1;
-+	unsigned int	ip_data_cfg_part2;
-+	unsigned int	ip_data_cfg_part3;
-+	unsigned int	ip_data_cfg_part4;
-+	unsigned int	op_data_cfg_part1;
-+	unsigned int	op_data_cfg_part2;
-+	unsigned int	op_data_cfg_part3;
-+	unsigned int	spatial_filter_part[32];
-+} __attribute__((packed)) lpm_cmd_start;
-+
-+
-+
-+/*
-+ * Command to stop LPM processing
-+ */
-+
-+#define	LPM_CMD_IDLE		0x0001
-+#define	LPM_CMD_IDLE_LEN	sizeof(lpm_cmd_idle)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+} __attribute__((packed)) lpm_cmd_idle;
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5lpmmsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5lpmmsg.h
-new file mode 100644
-index 0000000..3d1039d
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5lpmmsg.h
-@@ -0,0 +1,80 @@
-+#ifndef QDSP5LPMMSGI_H
-+#define QDSP5LPMMSGI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    L P M   I N T E R N A L   M E S S A G E S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by LPM Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5lpmmsg.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+06/12/08   sv      initial version
-+===========================================================================*/
-+
-+/*
-+ * Message to acknowledge CMD_LPM_IDLE command
-+ */
-+
-+#define	LPM_MSG_IDLE_ACK	0x0000
-+#define	LPM_MSG_IDLE_ACK_LEN	sizeof(lpm_msg_idle_ack)
-+
-+typedef struct {
-+} __attribute__((packed)) lpm_msg_idle_ack;
-+
-+
-+/*
-+ * Message to acknowledge CMD_LPM_START command
-+ */
-+
-+
-+#define	LPM_MSG_START_ACK	0x0001
-+#define	LPM_MSG_START_ACK_LEN	sizeof(lpm_msg_start_ack)
-+
-+
-+typedef struct {
-+} __attribute__((packed)) lpm_msg_start_ack;
-+
-+
-+/*
-+ * Message to notify the ARM that LPM processing is complete
-+ */
-+
-+#define	LPM_MSG_DONE		0x0002
-+#define	LPM_MSG_DONE_LEN	sizeof(lpm_msg_done)
-+
-+typedef struct {
-+} __attribute__((packed)) lpm_msg_done;
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vdeccmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vdeccmdi.h
-new file mode 100644
-index 0000000..3a32ee9
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vdeccmdi.h
-@@ -0,0 +1,235 @@
-+#ifndef QDSP5VIDDECCMDI_H
-+#define QDSP5VIDDECCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    V I D E O  D E C O D E R  I N T E R N A L  C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by VIDDEC Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5vdeccmdi.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+05/10/08   ac      initial version
-+===========================================================================*/
-+
-+
-+/*
-+ * Command to inform VIDDEC that new subframe packet is ready
-+ */
-+
-+#define	VIDDEC_CMD_SUBFRAME_PKT		0x0000
-+#define	VIDDEC_CMD_SUBFRAME_PKT_LEN \
-+	sizeof(viddec_cmd_subframe_pkt)
-+
-+#define	VIDDEC_CMD_SF_INFO_1_DM_DMA_STATS_EXCHANGE_FLAG_DM		0x0000
-+#define	VIDDEC_CMD_SF_INFO_1_DM_DMA_STATS_EXCHANGE_FLAG_DMA 	0x0001
-+
-+#define	VIDDEC_CMD_SF_INFO_0_SUBFRAME_CONTI		0x0000
-+#define	VIDDEC_CMD_SF_INFO_0_SUBFRAME_FIRST		0x0001
-+#define	VIDDEC_CMD_SF_INFO_0_SUBFRAME_LAST		0x0002
-+#define	VIDDEC_CMD_SF_INFO_0_SUBFRAME_FIRST_AND_LAST 	0x0003
-+
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_MPEG_4		0x0000
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_H_263_P0	0x0001
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_H_264		0x0002
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_H_263_p3	0x0003
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_RV9		0x0004
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_WMV9		0x0005
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_SMCDB		0x0006
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_QFRE		0x0007
-+#define	VIDDEC_CMD_CODEC_SELECTION_WORD_VLD		0x0008
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	packet_seq_number;
-+	unsigned short	codec_instance_id;
-+	unsigned short	subframe_packet_size_high;
-+	unsigned short	subframe_packet_size_low;
-+	unsigned short	subframe_packet_high;
-+	unsigned short	subframe_packet_low;
-+	unsigned short	subframe_packet_partition;
-+	unsigned short	statistics_packet_size_high;
-+	unsigned short	statistics_packet_size_low;
-+	unsigned short	statistics_packet_high;
-+	unsigned short	statistics_packet_low;
-+	unsigned short	statistics_partition;
-+	unsigned short	subframe_info_1;
-+	unsigned short	subframe_info_0;
-+	unsigned short	codec_selection_word;
-+	unsigned short	num_mbs;
-+} __attribute__((packed)) viddec_cmd_subframe_pkt;
-+
-+
-+/*
-+ * Command to inform VIDDEC task that post processing is required for the frame
-+ */
-+
-+#define	VIDDEC_CMD_PP_ENABLE		0x0001
-+#define	VIDDEC_CMD_PP_ENABLE_LEN \
-+	sizeof(viddec_cmd_pp_enable)
-+
-+#define	VIDDEC_CMD_PP_INFO_0_DM_DMA_LS_EXCHANGE_FLAG_DM		0x0000
-+#define	VIDDEC_CMD_PP_INFO_0_DM_DMA_LS_EXCHANGE_FLAG_DMA	0x0001
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	packet_seq_num;
-+	unsigned short	codec_instance_id;
-+	unsigned short	postproc_info_0;
-+	unsigned short	codec_selection_word;
-+	unsigned short	pp_output_addr_high;
-+	unsigned short	pp_output_addr_low;
-+	unsigned short	postproc_info_1;
-+	unsigned short	load_sharing_packet_size_high;
-+	unsigned short	load_sharing_packet_size_low;
-+	unsigned short	load_sharing_packet_high;
-+	unsigned short	load_sharing_packet_low;
-+	unsigned short	load_sharing_partition;
-+	unsigned short	pp_param_0;
-+	unsigned short	pp_param_1;
-+	unsigned short	pp_param_2;
-+	unsigned short	pp_param_3;
-+} __attribute__((packed)) viddec_cmd_pp_enable;
-+
-+
-+/*
-+ * FRAME Header Packet : It is at the start of new frame
-+ */
-+
-+#define	VIDDEC_CMD_FRAME_HEADER_PACKET	0x0002
-+#define	VIDDEC_CMD_FRAME_HEADER_PACKET_LEN	\
-+	sizeof(viddec_cmd_frame_header_packet)
-+
-+#define	VIDDEC_CMD_FRAME_INFO_0_ERROR_SKIP	0x0000
-+#define	VIDDEC_CMD_FRAME_INFO_0_ERROR_BLACK	0x0800
-+
-+typedef struct {
-+	unsigned short	packet_id;
-+	unsigned short	x_dimension;
-+	unsigned short	y_dimension;
-+	unsigned short	line_width;
-+	unsigned short	frame_info_0;
-+	unsigned short	frame_buffer_0_high;
-+	unsigned short	frame_buffer_0_low;
-+	unsigned short	frame_buffer_1_high;
-+	unsigned short	frame_buffer_1_low;
-+	unsigned short	frame_buffer_2_high;
-+	unsigned short	frame_buffer_2_low;
-+	unsigned short	frame_buffer_3_high;
-+	unsigned short	frame_buffer_3_low;
-+	unsigned short	frame_buffer_4_high;
-+	unsigned short	frame_buffer_4_low;
-+	unsigned short	frame_buffer_5_high;
-+	unsigned short	frame_buffer_5_low;
-+	unsigned short	frame_buffer_6_high;
-+	unsigned short	frame_buffer_6_low;
-+	unsigned short	frame_buffer_7_high;
-+	unsigned short	frame_buffer_7_low;
-+	unsigned short	frame_buffer_8_high;
-+	unsigned short	frame_buffer_8_low;
-+	unsigned short	frame_buffer_9_high;
-+	unsigned short	frame_buffer_9_low;
-+	unsigned short	frame_buffer_10_high;
-+	unsigned short	frame_buffer_10_low;
-+	unsigned short	frame_buffer_11_high;
-+	unsigned short	frame_buffer_11_low;
-+	unsigned short	frame_buffer_12_high;
-+	unsigned short	frame_buffer_12_low;
-+	unsigned short	frame_buffer_13_high;
-+	unsigned short	frame_buffer_13_low;
-+	unsigned short	frame_buffer_14_high;
-+	unsigned short	frame_buffer_14_low;
-+	unsigned short	frame_buffer_15_high;
-+	unsigned short	frame_buffer_15_low;
-+	unsigned short	output_frame_buffer_high;
-+	unsigned short	output_frame_buffer_low;
-+	unsigned short	end_of_packet_marker;
-+} __attribute__((packed)) viddec_cmd_frame_header_packet;
-+
-+
-+/*
-+ * SLICE HEADER PACKET
-+ * I-Slice and P-Slice
-+ */
-+
-+#define	VIDDEC_CMD_SLICE_HEADER_PKT_ISLICE		0x0003
-+#define	VIDDEC_CMD_SLICE_HEADER_PKT_ISLICE_LEN	\
-+	sizeof(viddec_cmd_slice_header_pkt_islice)
-+
-+#define	VIDDEC_CMD_ISLICE_INFO_1_MOD_SLICE_TYPE_PSLICE	0x0000
-+#define	VIDDEC_CMD_ISLICE_INFO_1_MOD_SLICE_TYPE_BSLICE	0x0100
-+#define	VIDDEC_CMD_ISLICE_INFO_1_MOD_SLICE_TYPE_ISLICE	0x0200
-+#define	VIDDEC_CMD_ISLICE_INFO_1_MOD_SLICE_TYPE_SPSLICE	0x0300
-+#define	VIDDEC_CMD_ISLICE_INFO_1_MOD_SLICE_TYPE_SISLICE	0x0400
-+#define	VIDDEC_CMD_ISLICE_INFO_1_NOPADDING	0x0000
-+#define	VIDDEC_CMD_ISLICE_INFO_1_PADDING	0x0800
-+
-+#define	VIDDEC_CMD_ISLICE_EOP_MARKER		0x7FFF
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	packet_id;
-+	unsigned short	slice_info_0;
-+	unsigned short	slice_info_1;
-+	unsigned short	slice_info_2;
-+	unsigned short	num_bytes_in_rbsp_high;
-+	unsigned short	num_bytes_in_rbsp_low;
-+	unsigned short	num_bytes_in_rbsp_consumed;
-+	unsigned short	end_of_packet_marker;
-+} __attribute__((packed)) viddec_cmd_slice_header_pkt_islice;
-+
-+
-+#define	VIDDEC_CMD_SLICE_HEADER_PKT_PSLICE		0x0003
-+#define	VIDDEC_CMD_SLICE_HEADER_PKT_PSLICE_LEN	\
-+	sizeof(viddec_cmd_slice_header_pkt_pslice)
-+
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+	unsigned short	packet_id;
-+	unsigned short	slice_info_0;
-+	unsigned short	slice_info_1;
-+	unsigned short	slice_info_2;
-+	unsigned short	slice_info_3;
-+	unsigned short	refidx_l0_map_tab_info_0;
-+	unsigned short	refidx_l0_map_tab_info_1;
-+	unsigned short	refidx_l0_map_tab_info_2;
-+	unsigned short	refidx_l0_map_tab_info_3;
-+	unsigned short	num_bytes_in_rbsp_high;
-+	unsigned short	num_bytes_in_rbsp_low;
-+	unsigned short	num_bytes_in_rbsp_consumed;
-+	unsigned short	end_of_packet_marker;
-+} __attribute__((packed)) viddec_cmd_slice_header_pkt_pslice;
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vdecmsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vdecmsg.h
-new file mode 100644
-index 0000000..c1744c1
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vdecmsg.h
-@@ -0,0 +1,107 @@
-+#ifndef QDSP5VIDDECMSGI_H
-+#define QDSP5VIDDECMSGI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    V I D E O  D E C O D E R   I N T E R N A L  M E S S A G E S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of messages
-+  that are sent by VIDDEC Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5vdecmsg.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+05/10/08   ac      initial version
-+===========================================================================*/
-+
-+/*
-+ * Message to inform ARM which VDEC_SUBFRAME_PKT_CMD processed by VIDDEC TASK
-+ */
-+
-+#define	VIDDEC_MSG_SUBF_DONE	0x0000
-+#define	VIDDEC_MSG_SUBF_DONE_LEN	\
-+	sizeof(viddec_msg_subf_done)
-+
-+typedef struct {
-+	unsigned short	packet_seq_number;
-+	unsigned short	codec_instance_id;
-+} __attribute__((packed)) viddec_msg_subf_done;
-+
-+
-+/*
-+ * Message to inform ARM one frame has been decoded
-+ */
-+
-+#define	VIDDEC_MSG_FRAME_DONE	0x0001
-+#define	VIDDEC_MSG_FRAME_DONE_LEN	\
-+	sizeof(viddec_msg_frame_done)
-+
-+typedef struct {
-+	unsigned short	packet_seq_number;
-+	unsigned short	codec_instance_id;
-+} __attribute__((packed)) viddec_msg_frame_done;
-+
-+
-+/*
-+ * Message to inform ARM that post processing frame has been decoded
-+ */
-+
-+#define	VIDDEC_MSG_PP_ENABLE_CMD_DONE	0x0002
-+#define	VIDDEC_MSG_PP_ENABLE_CMD_DONE_LEN	\
-+	sizeof(viddec_msg_pp_enable_cmd_done)
-+
-+typedef struct {
-+	unsigned short	packet_seq_number;
-+	unsigned short	codec_instance_id;
-+} __attribute__((packed)) viddec_msg_pp_enable_cmd_done;
-+
-+
-+/*
-+ * Message to inform ARM that one post processing frame has been decoded
-+ */
-+
-+
-+#define	VIDDEC_MSG_PP_FRAME_DONE		0x0003
-+#define	VIDDEC_MSG_PP_FRAME_DONE_LEN	\
-+	sizeof(viddec_msg_pp_frame_done)
-+
-+#define	VIDDEC_MSG_DISP_WORTHY_DISP		0x0000
-+#define	VIDDEC_MSG_DISP_WORTHY_DISP_NONE	0xFFFF
-+
-+
-+typedef struct {
-+	unsigned short	packet_seq_number;
-+	unsigned short	codec_instance_id;
-+	unsigned short	display_worthy;
-+} __attribute__((packed)) viddec_msg_pp_frame_done;
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5venccmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5venccmdi.h
-new file mode 100755
-index 0000000..819544d
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5venccmdi.h
-@@ -0,0 +1,212 @@
-+#ifndef QDSP5VIDENCCMDI_H
-+#define QDSP5VIDENCCMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    V I D E O  E N C O D E R  I N T E R N A L  C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by VIDENC Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 2008 by QUALCOMM, Incorporated.
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+			EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+09/25/08   umeshp      initial version
-+===========================================================================*/
-+
-+  #define VIDENC_CMD_CFG           0x0000
-+  #define VIDENC_CMD_ACTIVE        0x0001
-+  #define VIDENC_CMD_IDLE          0x0002
-+  #define VIDENC_CMD_FRAME_START   0x0003
-+  #define VIDENC_CMD_STATUS_QUERY  0x0004
-+  #define VIDENC_CMD_RC_CFG        0x0005
-+  #define VIDENC_CMD_DIS_CFG       0x0006
-+  #define VIDENC_CMD_DIS           0x0007
-+  #define VIDENC_CMD_INTRA_REFRESH 0x0008
-+  #define VIDENC_CMD_DIGITAL_ZOOM  0x0009
-+
-+
-+/*
-+ * Command to pass the frame message information to VIDENC
-+ */
-+
-+
-+#define VIDENC_CMD_FRAME_START_LEN \
-+	sizeof(videnc_cmd_frame_start)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  frame_info;
-+	unsigned short  frame_rho_budget_word_high;
-+	unsigned short  frame_rho_budget_word_low;
-+	unsigned short  input_luma_addr_high;
-+	unsigned short  input_luma_addr_low;
-+	unsigned short  input_chroma_addr_high;
-+	unsigned short  input_chroma_addr_low;
-+	unsigned short  ref_vop_buf_ptr_high;
-+	unsigned short  ref_vop_buf_ptr_low;
-+	unsigned short  enc_pkt_buf_ptr_high;
-+	unsigned short  enc_pkt_buf_ptr_low;
-+	unsigned short  enc_pkt_buf_size_high;
-+	unsigned short  enc_pkt_buf_size_low;
-+	unsigned short  unfilt_recon_vop_buf_ptr_high;
-+	unsigned short  unfilt_recon_vop_buf_ptr_low;
-+	unsigned short  filt_recon_vop_buf_ptr_high;
-+	unsigned short  filt_recon_vop_buf_ptr_low;
-+} __attribute__((packed)) videnc_cmd_frame_start;
-+
-+/*
-+ * Command to pass the frame-level digital stabilization parameters to VIDENC
-+ */
-+
-+
-+#define VIDENC_CMD_DIS_LEN \
-+    sizeof(videnc_cmd_dis)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  vfe_out_prev_luma_addr_high;
-+	unsigned short  vfe_out_prev_luma_addr_low;
-+	unsigned short  stabilization_info;
-+} __attribute__((packed)) videnc_cmd_dis;
-+
-+/*
-+ * Command to pass the codec related parameters to VIDENC
-+ */
-+
-+
-+#define VIDENC_CMD_CFG_LEN \
-+    sizeof(videnc_cmd_cfg)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  cfg_info_0;
-+	unsigned short  cfg_info_1;
-+	unsigned short  four_mv_threshold;
-+	unsigned short  ise_fse_mv_cost_fac;
-+	unsigned short  venc_frame_dim;
-+	unsigned short  venc_DM_partition;
-+} __attribute__((packed)) videnc_cmd_cfg;
-+
-+/*
-+ * Command to start the video encoding
-+ */
-+
-+
-+#define VIDENC_CMD_ACTIVE_LEN \
-+    sizeof(videnc_cmd_active)
-+
-+typedef struct {
-+    unsigned short  cmd_id;
-+} __attribute__((packed)) videnc_cmd_active;
-+
-+/*
-+ * Command to stop the video encoding
-+ */
-+
-+
-+#define VIDENC_CMD_IDLE_LEN \
-+    sizeof(videnc_cmd_idle)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+} __attribute__((packed)) videnc_cmd_idle;
-+
-+/*
-+ * Command to query staus of VIDENC
-+ */
-+
-+
-+#define VIDENC_CMD_STATUS_QUERY_LEN \
-+    sizeof(videnc_cmd_status_query)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+} __attribute__((packed)) videnc_cmd_status_query;
-+
-+/*
-+ * Command to set rate control for a frame
-+ */
-+
-+
-+#define VIDENC_CMD_RC_CFG_LEN \
-+    sizeof(videnc_cmd_rc_cfg)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  max_frame_qp_delta;
-+	unsigned short  max_min_frame_qp;
-+} __attribute__((packed)) videnc_cmd_rc_cfg;
-+
-+/*
-+ * Command to set intra-refreshing
-+ */
-+
-+
-+#define VIDENC_CMD_INTRA_REFRESH_LEN \
-+    sizeof(videnc_cmd_intra_refresh)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  num_mb_refresh;
-+	unsigned short  mb_index[15];
-+} __attribute__((packed)) videnc_cmd_intra_refresh;
-+
-+/*
-+ * Command to pass digital zoom information to the VIDENC
-+ */
-+#define VIDENC_CMD_DIGITAL_ZOOM_LEN \
-+    sizeof(videnc_cmd_digital_zoom)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  digital_zoom_en;
-+	unsigned short  luma_frame_shift_X;
-+	unsigned short  luma_frame_shift_Y;
-+	unsigned short  up_ip_luma_rows;
-+	unsigned short  up_ip_luma_cols;
-+	unsigned short  up_ip_chroma_rows;
-+	unsigned short  up_ip_chroma_cols;
-+	unsigned short  luma_ph_incr_V_low;
-+	unsigned short  luma_ph_incr_V_high;
-+	unsigned short  luma_ph_incr_H_low;
-+	unsigned short  luma_ph_incr_H_high;
-+	unsigned short  chroma_ph_incr_V_low;
-+	unsigned short  chroma_ph_incr_V_high;
-+	unsigned short  chroma_ph_incr_H_low;
-+	unsigned short  chroma_ph_incr_H_high;
-+} __attribute__((packed)) videnc_cmd_digital_zoom;
-+
-+/*
-+ * Command to configure digital stabilization parameters
-+ */
-+
-+#define VIDENC_CMD_DIS_CFG_LEN \
-+    sizeof(videnc_cmd_dis_cfg)
-+
-+typedef struct {
-+	unsigned short  cmd_id;
-+	unsigned short  image_stab_subf_start_row_col;
-+	unsigned short  image_stab_subf_dim;
-+	unsigned short  image_stab_info_0;
-+} __attribute__((packed)) videnc_cmd_dis_cfg;
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vfecmdi.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vfecmdi.h
-new file mode 100644
-index 0000000..f76d4e4
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vfecmdi.h
-@@ -0,0 +1,910 @@
-+#ifndef QDSP5VFECMDI_H
-+#define QDSP5VFECMDI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    V F E   I N T E R N A L   C O M M A N D S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are accepted by VFE Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5vfecmdi.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+06/12/08   sv      initial version
-+===========================================================================*/
-+
-+/******************************************************************************
-+ * Commands through vfeCommandScaleQueue
-+ *****************************************************************************/
-+
-+/*
-+ * Command to program scaler for op1 . max op of scaler is VGA
-+ */
-+
-+
-+#define	VFE_CMD_SCALE_OP1_CFG		0x0000
-+#define	VFE_CMD_SCALE_OP1_CFG_LEN	\
-+	sizeof(vfe_cmd_scale_op1_cfg)
-+
-+#define	VFE_CMD_SCALE_OP1_SEL_IP_SEL_Y_STANDARD	0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_IP_SEL_Y_CASCADED	0x0001
-+#define	VFE_CMD_SCALE_OP1_SEL_H_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_H_Y_SCALER_ENA	0x0002
-+#define	VFE_CMD_SCALE_OP1_SEL_H_PP_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_H_PP_Y_SCALER_ENA	0x0004
-+#define	VFE_CMD_SCALE_OP1_SEL_V_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_V_Y_SCALER_ENA	0x0008
-+#define	VFE_CMD_SCALE_OP1_SEL_V_PP_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_V_PP_Y_SCALER_ENA	0x0010
-+#define	VFE_CMD_SCALE_OP1_SEL_IP_SEL_CBCR_STANDARD	0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_IP_SEL_CBCR_CASCADED	0x0020
-+#define	VFE_CMD_SCALE_OP1_SEL_H_CBCR_SCALER_DIS		0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_H_CBCR_SCALER_ENA		0x0040
-+#define	VFE_CMD_SCALE_OP1_SEL_V_CBCR_SCALER_DIS		0x0000
-+#define	VFE_CMD_SCALE_OP1_SEL_V_CBCR_SCALER_ENA		0x0080
-+
-+#define	VFE_CMD_OP1_PP_Y_SCALER_CFG_PART1_DONT_LOAD_COEFFS	0x80000000
-+#define	VFE_CMD_OP1_PP_Y_SCALER_CFG_PART1_LOAD_COEFFS	0x80000000
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	scale_op1_sel;
-+	unsigned int	y_scaler_cfg_part1;
-+	unsigned int	y_scaler_cfg_part2;
-+	unsigned int	cbcr_scaler_cfg_part1;
-+	unsigned int	cbcr_scaler_cfg_part2;
-+	unsigned int	cbcr_scaler_cfg_part3;
-+	unsigned int	pp_y_scaler_cfg_part1;
-+	unsigned int	pp_y_scaler_cfg_part2;
-+	unsigned int	y_scaler_v_coeff_bank_part1[16];
-+	unsigned int	y_scaler_v_coeff_bank_part2[16];
-+	unsigned int	y_scaler_h_coeff_bank_part1[16];
-+	unsigned int	y_scaler_h_coeff_bank_part2[16];
-+} __attribute__((packed)) vfe_cmd_scale_op1_cfg;
-+
-+
-+/*
-+ * Command to program scaler for op2
-+ */
-+
-+#define	VFE_CMD_SCALE_OP2_CFG		0x0001
-+#define	VFE_CMD_SCALE_OP2_CFG_LEN	\
-+	sizeof(vfe_cmd_scale_op2_cfg)
-+
-+#define	VFE_CMD_SCALE_OP2_SEL_IP_SEL_Y_STANDARD	0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_IP_SEL_Y_CASCADED	0x0001
-+#define	VFE_CMD_SCALE_OP2_SEL_H_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_H_Y_SCALER_ENA	0x0002
-+#define	VFE_CMD_SCALE_OP2_SEL_H_PP_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_H_PP_Y_SCALER_ENA	0x0004
-+#define	VFE_CMD_SCALE_OP2_SEL_V_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_V_Y_SCALER_ENA	0x0008
-+#define	VFE_CMD_SCALE_OP2_SEL_V_PP_Y_SCALER_DIS	0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_V_PP_Y_SCALER_ENA	0x0010
-+#define	VFE_CMD_SCALE_OP2_SEL_IP_SEL_CBCR_STANDARD	0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_IP_SEL_CBCR_CASCADED	0x0020
-+#define	VFE_CMD_SCALE_OP2_SEL_H_CBCR_SCALER_DIS		0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_H_CBCR_SCALER_ENA		0x0040
-+#define	VFE_CMD_SCALE_OP2_SEL_V_CBCR_SCALER_DIS		0x0000
-+#define	VFE_CMD_SCALE_OP2_SEL_V_CBCR_SCALER_ENA		0x0080
-+
-+#define	VFE_CMD_OP2_PP_Y_SCALER_CFG_PART1_DONT_LOAD_COEFFS	0x80000000
-+#define	VFE_CMD_OP2_PP_Y_SCALER_CFG_PART1_LOAD_COEFFS		0x80000000
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	scale_op2_sel;
-+	unsigned int	y_scaler_cfg_part1;
-+	unsigned int	y_scaler_cfg_part2;
-+	unsigned int	cbcr_scaler_cfg_part1;
-+	unsigned int	cbcr_scaler_cfg_part2;
-+	unsigned int	cbcr_scaler_cfg_part3;
-+	unsigned int	pp_y_scaler_cfg_part1;
-+	unsigned int	pp_y_scaler_cfg_part2;
-+	unsigned int	y_scaler_v_coeff_bank_part1[16];
-+	unsigned int	y_scaler_v_coeff_bank_part2[16];
-+	unsigned int	y_scaler_h_coeff_bank_part1[16];
-+	unsigned int	y_scaler_h_coeff_bank_part2[16];
-+} __attribute__((packed)) vfe_cmd_scale_op2_cfg;
-+
-+
-+/******************************************************************************
-+ * Commands through vfeCommandTableQueue
-+ *****************************************************************************/
-+
-+/*
-+ * Command to program the AXI ip paths
-+ */
-+
-+#define	VFE_CMD_AXI_IP_CFG		0x0000
-+#define	VFE_CMD_AXI_IP_CFG_LEN		sizeof(vfe_cmd_axi_ip_cfg)
-+
-+#define	VFE_CMD_IP_SEL_IP_FORMAT_8	0x0000
-+#define	VFE_CMD_IP_SEL_IP_FORMAT_10	0x0001
-+#define	VFE_CMD_IP_SEL_IP_FORMAT_12	0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	ip_sel;
-+	unsigned int	ip_cfg_part1;
-+	unsigned int	ip_cfg_part2;
-+	unsigned int	ip_unpack_cfg_part[6];
-+	unsigned int	ip_buf_addr[8];
-+} __attribute__ ((packed)) vfe_cmd_axi_ip_cfg;
-+
-+
-+/*
-+ * Command to program axi op paths
-+ */
-+
-+#define	VFE_CMD_AXI_OP_CFG	0x0001
-+#define	VFE_CMD_AXI_OP_CFG_LEN	sizeof(vfe_cmd_axi_op_cfg)
-+
-+#define	VFE_CMD_OP_SEL_OP1		0x0000
-+#define	VFE_CMD_OP_SEL_OP2		0x0001
-+#define	VFE_CMD_OP_SEL_OP1_OP2		0x0002
-+#define	VFE_CMD_OP_SEL_CTOA		0x0003
-+#define	VFE_CMD_OP_SEL_CTOA_OP1		0x0004
-+#define	VFE_CMD_OP_SEL_CTOA_OP2		0x0005
-+#define	VFE_CMD_OP_SEL_OP_FORMAT_8	0x0000
-+#define	VFE_CMD_OP_SEL_OP_FORMAT_10	0x0008
-+#define	VFE_CMD_OP_SEL_OP_FORMAT_12	0x0010
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	op_sel;
-+	unsigned int	op1_y_cfg_part1;
-+	unsigned int	op1_y_cfg_part2;
-+	unsigned int	op1_cbcr_cfg_part1;
-+	unsigned int	op1_cbcr_cfg_part2;
-+	unsigned int	op2_y_cfg_part1;
-+	unsigned int	op2_y_cfg_part2;
-+	unsigned int	op2_cbcr_cfg_part1;
-+	unsigned int	op2_cbcr_cfg_part2;
-+	unsigned int	op1_buf1_addr[16];
-+	unsigned int	op2_buf1_addr[16];
-+} __attribute__((packed)) vfe_cmd_axi_op_cfg;
-+
-+
-+
-+
-+/*
-+ * Command to program the roll off correction module
-+ */
-+
-+#define	VFE_CMD_ROLLOFF_CFG	0x0002
-+#define	VFE_CMD_ROLLOFF_CFG_LEN	\
-+	sizeof(vfe_cmd_rolloff_cfg)
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	correction_opt_center_pos;
-+	unsigned int	radius_square_entry[32];
-+	unsigned int	red_table_entry[32];
-+	unsigned int	green_table_entry[32];
-+	unsigned int	blue_table_entry[32];
-+} __attribute__((packed)) vfe_cmd_rolloff_cfg;
-+
-+/*
-+ * Command to program RGB gamma table
-+ */
-+
-+#define	VFE_CMD_RGB_GAMMA_CFG		0x0003
-+#define	VFE_CMD_RGB_GAMMA_CFG_LEN	\
-+	sizeof(vfe_cmd_rgb_gamma_cfg)
-+
-+#define	VFE_CMD_RGB_GAMMA_SEL_LINEAR		0x0000
-+#define	VFE_CMD_RGB_GAMMA_SEL_PW_LINEAR		0x0001
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	rgb_gamma_sel;
-+	unsigned int	rgb_gamma_entry[256];
-+} __attribute__((packed)) vfe_cmd_rgb_gamma_cfg;
-+
-+
-+/*
-+ * Command to program luma gamma table for the noise reduction path
-+ */
-+
-+#define	VFE_CMD_Y_GAMMA_CFG		0x0004
-+#define	VFE_CMD_Y_GAMMA_CFG_LEN		\
-+	sizeof(vfe_cmd_y_gamma_cfg)
-+
-+#define	VFE_CMD_Y_GAMMA_SEL_LINEAR	0x0000
-+#define	VFE_CMD_Y_GAMMA_SEL_PW_LINEAR	0x0001
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	y_gamma_sel;
-+	unsigned int	y_gamma_entry[256];	
-+} __attribute__((packed)) vfe_cmd_y_gamma_cfg;
-+
-+
-+
-+/******************************************************************************
-+ * Commands through vfeCommandQueue
-+ *****************************************************************************/
-+
-+/*
-+ * Command to reset the VFE to a known good state.All previously programmed 
-+ * Params will be lost
-+ */
-+
-+
-+#define	VFE_CMD_RESET		0x0000
-+#define	VFE_CMD_RESET_LEN	sizeof(vfe_cmd_reset)
-+
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+} __attribute__((packed)) vfe_cmd_reset;
-+
-+
-+/*
-+ * Command to start VFE processing based on the config params
-+ */
-+
-+
-+#define	VFE_CMD_START		0x0001
-+#define	VFE_CMD_START_LEN	sizeof(vfe_cmd_start)
-+
-+#define	VFE_CMD_STARTUP_PARAMS_SRC_CAMIF	0x0000
-+#define	VFE_CMD_STARTUP_PARAMS_SRC_AXI		0x0001
-+#define	VFE_CMD_STARTUP_PARAMS_MODE_CONTINUOUS	0x0000
-+#define	VFE_CMD_STARTUP_PARAMS_MODE_SNAPSHOT	0x0002
-+
-+#define	VFE_CMD_IMAGE_PL_BLACK_LVL_CORR_DIS	0x0000
-+#define	VFE_CMD_IMAGE_PL_BLACK_LVL_CORR_ENA	0x0001
-+#define	VFE_CMD_IMAGE_PL_ROLLOFF_CORR_DIS	0x0000
-+#define	VFE_CMD_IMAGE_PL_ROLLOFF_CORR_ENA	0x0002
-+#define	VFE_CMD_IMAGE_PL_WHITE_BAL_DIS		0x0000
-+#define	VFE_CMD_IMAGE_PL_WHITE_BAL_ENA		0x0004
-+#define	VFE_CMD_IMAGE_PL_RGB_GAMMA_DIS		0x0000
-+#define	VFE_CMD_IMAGE_PL_RGB_GAMMA_ENA		0x0008
-+#define	VFE_CMD_IMAGE_PL_LUMA_NOISE_RED_PATH_DIS	0x0000
-+#define	VFE_CMD_IMAGE_PL_LUMA_NOISE_RED_PATH_ENA	0x0010
-+#define	VFE_CMD_IMAGE_PL_ADP_FILTER_DIS		0x0000
-+#define	VFE_CMD_IMAGE_PL_ADP_FILTER_ENA		0x0020
-+#define	VFE_CMD_IMAGE_PL_CHROMA_SAMP_DIS	0x0000
-+#define	VFE_CMD_IMAGE_PL_CHROMA_SAMP_ENA	0x0040
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	startup_params;
-+	unsigned int	image_pipeline;
-+	unsigned int	frame_dimension;
-+} __attribute__((packed)) vfe_cmd_start;
-+
-+
-+/*
-+ * Command to halt all processing
-+ */
-+
-+#define	VFE_CMD_STOP		0x0002
-+#define	VFE_CMD_STOP_LEN	sizeof(vfe_cmd_stop)
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+} __attribute__((packed)) vfe_cmd_stop;
-+
-+
-+/*
-+ * Command to commit the params that have been programmed to take
-+ * effect on the next frame
-+ */
-+
-+#define	VFE_CMD_UPDATE		0x0003
-+#define	VFE_CMD_UPDATE_LEN	sizeof(vfe_cmd_update)
-+
-+
-+typedef struct {
-+	unsigned short	cmd_id;
-+} __attribute__((packed)) vfe_cmd_update;
-+
-+
-+/*
-+ * Command to program CAMIF module
-+ */
-+
-+#define	VFE_CMD_CAMIF_CFG	0x0004
-+#define	VFE_CMD_CAMIF_CFG_LEN	sizeof(vfe_cmd_camif_cfg)
-+
-+#define	VFE_CMD_CFG_VSYNC_SYNC_EDGE_HIGH	0x0000
-+#define	VFE_CMD_CFG_VSYNC_SYNC_EDGE_LOW		0x0002
-+#define	VFE_CMD_CFG_HSYNC_SYNC_EDGE_HIGH	0x0000
-+#define	VFE_CMD_CFG_HSYNC_SYNC_EDGE_LOW		0x0004
-+#define	VFE_CMD_CFG_SYNC_MODE_APS		0x0000
-+#define	VFE_CMD_CFG_SYNC_MODE_EFS		0X0008
-+#define	VFE_CMD_CFG_SYNC_MODE_ELS		0x0010
-+#define	VFE_CMD_CFG_SYNC_MODE_RVD		0x0018
-+#define	VFE_CMD_CFG_VFE_SUBSAMP_EN_DIS		0x0000
-+#define	VFE_CMD_CFG_VFE_SUBSAMP_EN_ENA		0x0020
-+#define	VFE_CMD_CFG_BUS_SUBSAMP_EN_DIS		0x0000
-+#define	VFE_CMD_CFG_BUS_SUBSAMP_EN_ENA		0x0080
-+#define	VFE_CMD_CFG_IRQ_SUBSAMP_EN_DIS		0x0000
-+#define	VFE_CMD_CFG_IRQ_SUBSAMP_EN_ENA		0x0800
-+
-+#define	VFE_CMD_SUBSAMP2_CFG_PIXEL_SKIP_16	0x0000
-+#define	VFE_CMD_SUBSAMP2_CFG_PIXEL_SKIP_12	0x0010
-+
-+#define	VFE_CMD_EPOCH_IRQ_1_DIS			0x0000
-+#define	VFE_CMD_EPOCH_IRQ_1_ENA			0x4000
-+#define	VFE_CMD_EPOCH_IRQ_2_DIS			0x0000
-+#define	VFE_CMD_EPOCH_IRQ_2_ENA			0x8000
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	cfg;
-+	unsigned int	efs_cfg;
-+	unsigned int	frame_cfg;
-+	unsigned int	window_width_cfg;
-+	unsigned int	window_height_cfg;
-+	unsigned int	subsamp1_cfg;
-+	unsigned int	subsamp2_cfg;
-+	unsigned int	epoch_irq;
-+} __attribute__((packed)) vfe_cmd_camif_cfg;
-+
-+
-+
-+/*
-+ * Command to program the black level module
-+ */
-+
-+#define	VFE_CMD_BLACK_LVL_CFG		0x0005
-+#define	VFE_CMD_BLACK_LVL_CFG_LEN	sizeof(vfe_cmd_black_lvl_cfg)
-+
-+#define	VFE_CMD_BL_SEL_MANUAL		0x0000
-+#define	VFE_CMD_BL_SEL_AUTO		0x0001
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	black_lvl_sel;
-+	unsigned int	cfg_part[3];
-+} __attribute__((packed)) vfe_cmd_black_lvl_cfg;
-+
-+
-+/*
-+ * Command to program the active region by cropping the region of interest
-+ */
-+
-+#define	VFE_CMD_ACTIVE_REGION_CFG	0x0006
-+#define	VFE_CMD_ACTIVE_REGION_CFG_LEN	\
-+	sizeof(vfe_cmd_active_region_cfg)
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	cfg_part1;
-+	unsigned int	cfg_part2;
-+} __attribute__((packed)) vfe_cmd_active_region_cfg;
-+
-+
-+
-+/*
-+ * Command to program the defective pixel correction(DPC) ,
-+ * adaptive bayer filter (ABF) and demosaic modules
-+ */
-+
-+#define	VFE_CMD_DEMOSAIC_CFG		0x0007
-+#define	VFE_CMD_DEMOSAIC_CFG_LEN	sizeof(vfe_cmd_demosaic_cfg)
-+
-+#define	VFE_CMD_DEMOSAIC_PART1_ABF_EN_DIS	0x0000
-+#define	VFE_CMD_DEMOSAIC_PART1_ABF_EN_ENA	0x0001
-+#define	VFE_CMD_DEMOSAIC_PART1_DPC_EN_DIS	0x0000
-+#define	VFE_CMD_DEMOSAIC_PART1_DPC_EN_ENA	0x0002
-+#define	VFE_CMD_DEMOSAIC_PART1_FORCE_ABF_OFF	0x0000
-+#define	VFE_CMD_DEMOSAIC_PART1_FORCE_ABF_ON	0x0004
-+#define	VFE_CMD_DEMOSAIC_PART1_SLOPE_SHIFT_1	0x00000000
-+#define	VFE_CMD_DEMOSAIC_PART1_SLOPE_SHIFT_2	0x10000000
-+#define	VFE_CMD_DEMOSAIC_PART1_SLOPE_SHIFT_4	0x20000000
-+#define	VFE_CMD_DEMOSAIC_PART1_SLOPE_SHIFT_8	0x30000000
-+#define	VFE_CMD_DEMOSAIC_PART1_SLOPE_SHIFT_1_2	0x50000000
-+#define	VFE_CMD_DEMOSAIC_PART1_SLOPE_SHIFT_1_4	0x60000000
-+#define	VFE_CMD_DEMOSAIC_PART1_SLOPE_SHIFT_1_8	0x70000000
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	demosaic_part1;
-+	unsigned int	demosaic_part2;
-+	unsigned int	demosaic_part3;
-+	unsigned int	demosaic_part4;
-+	unsigned int	demosaic_part5;
-+} __attribute__((packed)) vfe_cmd_demosaic_cfg;
-+
-+
-+/*
-+ * Command to program the ip format
-+ */
-+
-+#define	VFE_CMD_IP_FORMAT_CFG		0x0008
-+#define	VFE_CMD_IP_FORMAT_CFG_LEN	\
-+	sizeof(vfe_cmd_ip_format_cfg)
-+
-+#define	VFE_CMD_IP_FORMAT_SEL_RGRG	0x0000
-+#define	VFE_CMD_IP_FORMAT_SEL_GRGR	0x0001
-+#define	VFE_CMD_IP_FORMAT_SEL_BGBG	0x0002
-+#define	VFE_CMD_IP_FORMAT_SEL_GBGB	0x0003
-+#define	VFE_CMD_IP_FORMAT_SEL_YCBYCR	0x0004
-+#define	VFE_CMD_IP_FORMAT_SEL_YCRYCB	0x0005
-+#define	VFE_CMD_IP_FORMAT_SEL_CBYCRY	0x0006
-+#define	VFE_CMD_IP_FORMAT_SEL_CRYCBY	0x0007
-+#define	VFE_CMD_IP_FORMAT_SEL_NO_CHROMA	0x0000
-+#define	VFE_CMD_IP_FORMAT_SEL_CHROMA	0x0008
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	ip_format_sel;
-+	unsigned int	balance_gains_part1;
-+	unsigned int	balance_gains_part2;
-+} __attribute__((packed)) vfe_cmd_ip_format_cfg;
-+
-+
-+
-+/*
-+ * Command to program max and min allowed op values
-+ */
-+
-+#define	VFE_CMD_OP_CLAMP_CFG		0x0009
-+#define	VFE_CMD_OP_CLAMP_CFG_LEN	\
-+	sizeof(vfe_cmd_op_clamp_cfg)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	op_clamp_max;
-+	unsigned int	op_clamp_min;
-+} __attribute__((packed)) vfe_cmd_op_clamp_cfg;
-+
-+
-+/*
-+ * Command to program chroma sub sample module
-+ */
-+
-+#define	VFE_CMD_CHROMA_SUBSAMPLE_CFG		0x000A
-+#define	VFE_CMD_CHROMA_SUBSAMPLE_CFG_LEN	\
-+	sizeof(vfe_cmd_chroma_subsample_cfg)
-+
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_H_INTERESTIAL_SAMPS	0x0000
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_H_COSITED_SAMPS	0x0001
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_V_INTERESTIAL_SAMPS	0x0000
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_V_COSITED_SAMPS	0x0002
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_H_SUBSAMP_DIS	0x0000
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_H_SUBSAMP_ENA	0x0004
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_V_SUBSAMP_DIS	0x0000
-+#define	VFE_CMD_CHROMA_SUBSAMP_SEL_V_SUBSAMP_ENA	0x0008
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	chroma_subsamp_sel;
-+} __attribute__((packed)) vfe_cmd_chroma_subsample_cfg;
-+
-+
-+/*
-+ * Command to program the white balance module
-+ */
-+
-+#define	VFE_CMD_WHITE_BALANCE_CFG	0x000B
-+#define	VFE_CMD_WHITE_BALANCE_CFG_LEN	\
-+	sizeof(vfe_cmd_white_balance_cfg)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	white_balance_gains;
-+} __attribute__((packed)) vfe_cmd_white_balance_cfg;
-+
-+
-+/*
-+ * Command to program the color processing module
-+ */
-+
-+#define	VFE_CMD_COLOR_PROCESS_CFG	0x000C
-+#define	VFE_CMD_COLOR_PROCESS_CFG_LEN	\
-+	sizeof(vfe_cmd_color_process_cfg)
-+
-+#define	VFE_CMD_COLOR_CORRE_PART7_Q7_FACTORS	0x0000
-+#define	VFE_CMD_COLOR_CORRE_PART7_Q8_FACTORS	0x0001
-+#define	VFE_CMD_COLOR_CORRE_PART7_Q9_FACTORS	0x0002
-+#define	VFE_CMD_COLOR_CORRE_PART7_Q10_FACTORS	0x0003
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	color_correction_part1;
-+	unsigned int	color_correction_part2;
-+	unsigned int	color_correction_part3;
-+	unsigned int	color_correction_part4;
-+	unsigned int	color_correction_part5;
-+	unsigned int	color_correction_part6;
-+	unsigned int	color_correction_part7;
-+	unsigned int	chroma_enhance_part1;
-+	unsigned int	chroma_enhance_part2;
-+	unsigned int	chroma_enhance_part3;
-+	unsigned int	chroma_enhance_part4;
-+	unsigned int	chroma_enhance_part5;
-+	unsigned int	luma_calc_part1;
-+	unsigned int	luma_calc_part2;
-+} __attribute__((packed)) vfe_cmd_color_process_cfg;
-+
-+
-+/*
-+ * Command to program adaptive filter module
-+ */
-+
-+#define	VFE_CMD_ADP_FILTER_CFG		0x000D
-+#define	VFE_CMD_ADP_FILTER_CFG_LEN	\
-+	sizeof(vfe_cmd_adp_filter_cfg)
-+
-+#define	VFE_CMD_ASF_CFG_PART_SMOOTH_FILTER_DIS		0x0000
-+#define	VFE_CMD_ASF_CFG_PART_SMOOTH_FILTER_ENA		0x0001
-+#define	VFE_CMD_ASF_CFG_PART_NO_SHARP_MODE		0x0000
-+#define	VFE_CMD_ASF_CFG_PART_SINGLE_FILTER		0x0002
-+#define	VFE_CMD_ASF_CFG_PART_DUAL_FILTER		0x0004
-+#define	VFE_CMD_ASF_CFG_PART_SHARP_MODE			0x0007
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	asf_cfg_part[7];
-+} __attribute__((packed)) vfe_cmd_adp_filter_cfg;
-+
-+
-+/*
-+ * Command to program for frame skip pattern for op1 and op2
-+ */
-+
-+#define	VFE_CMD_FRAME_SKIP_CFG		0x000E
-+#define	VFE_CMD_FRAME_SKIP_CFG_LEN	\
-+	sizeof(vfe_cmd_frame_skip_cfg)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	frame_skip_pattern_op1;
-+	unsigned int	frame_skip_pattern_op2;
-+} __attribute__((packed)) vfe_cmd_frame_skip_cfg;
-+
-+
-+/*
-+ * Command to program field-of-view crop for digital zoom
-+ */
-+
-+#define	VFE_CMD_FOV_CROP	0x000F
-+#define	VFE_CMD_FOV_CROP_LEN	sizeof(vfe_cmd_fov_crop)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	fov_crop_part1;
-+	unsigned int	fov_crop_part2;
-+} __attribute__((packed)) vfe_cmd_fov_crop; 
-+
-+
-+
-+/*
-+ * Command to program auto focus(AF) statistics module
-+ */
-+
-+#define	VFE_CMD_STATS_AUTOFOCUS_CFG	0x0010
-+#define	VFE_CMD_STATS_AUTOFOCUS_CFG_LEN	\
-+	sizeof(vfe_cmd_stats_autofocus_cfg)
-+
-+#define	VFE_CMD_AF_STATS_SEL_STATS_DIS	0x0000
-+#define	VFE_CMD_AF_STATS_SEL_STATS_ENA	0x0001
-+#define	VFE_CMD_AF_STATS_SEL_PRI_FIXED	0x0000
-+#define	VFE_CMD_AF_STATS_SEL_PRI_VAR	0x0002
-+#define	VFE_CMD_AF_STATS_CFG_PART_METRIC_SUM	0x00000000
-+#define	VFE_CMD_AF_STATS_CFG_PART_METRIC_MAX	0x00200000
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	af_stats_sel;
-+	unsigned int	af_stats_cfg_part[8];
-+	unsigned int	af_stats_op_buf_hdr;
-+	unsigned int	af_stats_op_buf[3];
-+} __attribute__((packed)) vfe_cmd_stats_autofocus_cfg;
-+
-+
-+/*
-+ * Command to program White balance(wb) and exposure (exp)
-+ * statistics module
-+ */
-+
-+#define	VFE_CMD_STATS_WB_EXP_CFG	0x0011
-+#define	VFE_CMD_STATS_WB_EXP_CFG_LEN	\
-+	sizeof(vfe_cmd_stats_wb_exp_cfg)
-+
-+#define	VFE_CMD_WB_EXP_STATS_SEL_STATS_DIS	0x0000
-+#define	VFE_CMD_WB_EXP_STATS_SEL_STATS_ENA	0x0001
-+#define	VFE_CMD_WB_EXP_STATS_SEL_PRI_FIXED	0x0000
-+#define	VFE_CMD_WB_EXP_STATS_SEL_PRI_VAR	0x0002
-+
-+#define	VFE_CMD_WB_EXP_STATS_CFG_PART1_EXP_REG_8_8	0x0000
-+#define	VFE_CMD_WB_EXP_STATS_CFG_PART1_EXP_REG_16_16	0x0001
-+#define	VFE_CMD_WB_EXP_STATS_CFG_PART1_EXP_SREG_8_8	0x0000
-+#define	VFE_CMD_WB_EXP_STATS_CFG_PART1_EXP_SREG_4_4	0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	wb_exp_stats_sel;
-+	unsigned int	wb_exp_stats_cfg_part1;
-+	unsigned int	wb_exp_stats_cfg_part2;
-+	unsigned int	wb_exp_stats_cfg_part3;
-+	unsigned int	wb_exp_stats_cfg_part4;
-+	unsigned int	wb_exp_stats_op_buf_hdr;
-+	unsigned int	wb_exp_stats_op_buf[3];
-+} __attribute__((packed)) vfe_cmd_stats_wb_exp_cfg;
-+
-+
-+/*
-+ * Command to program histogram(hg) stats module
-+ */
-+
-+#define	VFE_CMD_STATS_HG_CFG		0x0012
-+#define	VFE_CMD_STATS_HG_CFG_LEN	\
-+	sizeof(vfe_cmd_stats_hg_cfg)
-+
-+#define	VFE_CMD_HG_STATS_SEL_PRI_FIXED	0x0000
-+#define	VFE_CMD_HG_STATS_SEL_PRI_VAR	0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	hg_stats_sel;
-+	unsigned int	hg_stats_cfg_part1;
-+	unsigned int	hg_stats_cfg_part2;
-+	unsigned int	hg_stats_op_buf_hdr;
-+	unsigned int	hg_stats_op_buf;
-+} __attribute__((packed)) vfe_cmd_stats_hg_cfg;
-+
-+
-+/*
-+ * Command to acknowledge last MSG_VFE_OP1 message
-+ */
-+
-+#define	VFE_CMD_OP1_ACK		0x0013
-+#define	VFE_CMD_OP1_ACK_LEN	sizeof(vfe_cmd_op1_ack)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	op1_buf_y_addr;
-+	unsigned int	op1_buf_cbcr_addr;
-+} __attribute__((packed)) vfe_cmd_op1_ack;
-+
-+
-+
-+/*
-+ * Command to acknowledge last MSG_VFE_OP2 message
-+ */
-+
-+#define	VFE_CMD_OP2_ACK		0x0014
-+#define	VFE_CMD_OP2_ACK_LEN	sizeof(vfe_cmd_op2_ack)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	op2_buf_y_addr;
-+	unsigned int	op2_buf_cbcr_addr;
-+} __attribute__((packed)) vfe_cmd_op2_ack;
-+
-+
-+
-+/*
-+ * Command to acknowledge MSG_VFE_STATS_AUTOFOCUS msg
-+ */
-+
-+#define	VFE_CMD_STATS_AF_ACK		0x0015
-+#define	VFE_CMD_STATS_AF_ACK_LEN	sizeof(vfe_cmd_stats_af_ack)
-+
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	af_stats_op_buf;
-+} __attribute__((packed)) vfe_cmd_stats_af_ack;
-+
-+
-+/*
-+ * Command to acknowledge MSG_VFE_STATS_WB_EXP msg
-+ */
-+
-+#define	VFE_CMD_STATS_WB_EXP_ACK	0x0016
-+#define	VFE_CMD_STATS_WB_EXP_ACK_LEN	sizeof(vfe_cmd_stats_wb_exp_ack)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	wb_exp_stats_op_buf;
-+} __attribute__((packed)) vfe_cmd_stats_wb_exp_ack;
-+
-+
-+/*
-+ * Command to acknowledge MSG_VFE_EPOCH1 message
-+ */
-+
-+#define	VFE_CMD_EPOCH1_ACK	0x0017
-+#define	VFE_CMD_EPOCH1_ACK_LEN	sizeof(vfe_cmd_epoch1_ack)
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+} __attribute__((packed)) vfe_cmd_epoch1_ack;
-+
-+
-+/*
-+ * Command to acknowledge MSG_VFE_EPOCH2 message
-+ */
-+
-+#define	VFE_CMD_EPOCH2_ACK	0x0018
-+#define	VFE_CMD_EPOCH2_ACK_LEN	sizeof(vfe_cmd_epoch2_ack)
-+
-+typedef struct {
-+	unsigned short cmd_id;
-+} __attribute__((packed)) vfe_cmd_epoch2_ack;
-+
-+
-+
-+/*
-+ * Command to configure, enable or disable synchronous timer1
-+ */
-+
-+#define	VFE_CMD_SYNC_TIMER1_CFG		0x0019
-+#define	VFE_CMD_SYNC_TIMER1_CFG_LEN	\
-+	sizeof(vfe_cmd_sync_timer1_cfg)
-+
-+#define	VFE_CMD_SYNC_T1_CFG_PART1_TIMER_DIS	0x0000
-+#define	VFE_CMD_SYNC_T1_CFG_PART1_TIMER_ENA	0x0001
-+#define	VFE_CMD_SYNC_T1_CFG_PART1_POL_HIGH	0x0000
-+#define	VFE_CMD_SYNC_T1_CFG_PART1_POL_LOW	0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	sync_t1_cfg_part1;
-+	unsigned int	sync_t1_h_sync_countdown;
-+	unsigned int	sync_t1_pclk_countdown;
-+	unsigned int	sync_t1_duration;
-+} __attribute__((packed)) vfe_cmd_sync_timer1_cfg;
-+
-+
-+/*
-+ * Command to configure, enable or disable synchronous timer1
-+ */
-+
-+#define	VFE_CMD_SYNC_TIMER2_CFG		0x001A
-+#define	VFE_CMD_SYNC_TIMER2_CFG_LEN	\
-+	sizeof(vfe_cmd_sync_timer2_cfg)
-+
-+#define	VFE_CMD_SYNC_T2_CFG_PART1_TIMER_DIS	0x0000
-+#define	VFE_CMD_SYNC_T2_CFG_PART1_TIMER_ENA	0x0001
-+#define	VFE_CMD_SYNC_T2_CFG_PART1_POL_HIGH	0x0000
-+#define	VFE_CMD_SYNC_T2_CFG_PART1_POL_LOW	0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	sync_t2_cfg_part1;
-+	unsigned int	sync_t2_h_sync_countdown;
-+	unsigned int	sync_t2_pclk_countdown;
-+	unsigned int	sync_t2_duration;
-+} __attribute__((packed)) vfe_cmd_sync_timer2_cfg;
-+
-+
-+/*
-+ * Command to configure and start asynchronous timer1
-+ */
-+
-+#define	VFE_CMD_ASYNC_TIMER1_START	0x001B
-+#define	VFE_CMD_ASYNC_TIMER1_START_LEN	\
-+	sizeof(vfe_cmd_async_timer1_start)
-+
-+#define	VFE_CMD_ASYNC_T1_POLARITY_A_HIGH	0x0000
-+#define	VFE_CMD_ASYNC_T1_POLARITY_A_LOW		0x0001
-+#define	VFE_CMD_ASYNC_T1_POLARITY_B_HIGH	0x0000
-+#define	VFE_CMD_ASYNC_T1_POLARITY_B_LOW		0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	async_t1a_cfg;
-+	unsigned int	async_t1b_cfg;
-+	unsigned int	async_t1_polarity;
-+} __attribute__((packed)) vfe_cmd_async_timer1_start;
-+
-+
-+/*
-+ * Command to configure and start asynchronous timer2
-+ */
-+
-+#define	VFE_CMD_ASYNC_TIMER2_START	0x001C
-+#define	VFE_CMD_ASYNC_TIMER2_START_LEN	\
-+	sizeof(vfe_cmd_async_timer2_start)
-+
-+#define	VFE_CMD_ASYNC_T2_POLARITY_A_HIGH	0x0000
-+#define	VFE_CMD_ASYNC_T2_POLARITY_A_LOW		0x0001
-+#define	VFE_CMD_ASYNC_T2_POLARITY_B_HIGH	0x0000
-+#define	VFE_CMD_ASYNC_T2_POLARITY_B_LOW		0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	async_t2a_cfg;
-+	unsigned int	async_t2b_cfg;
-+	unsigned int	async_t2_polarity;
-+} __attribute__((packed)) vfe_cmd_async_timer2_start;
-+
-+
-+/*
-+ * Command to program partial configurations of auto focus(af)
-+ */
-+
-+#define	VFE_CMD_STATS_AF_UPDATE		0x001D
-+#define	VFE_CMD_STATS_AF_UPDATE_LEN	\
-+	sizeof(vfe_cmd_stats_af_update)
-+
-+#define	VFE_CMD_AF_UPDATE_PART1_WINDOW_ONE	0x00000000
-+#define	VFE_CMD_AF_UPDATE_PART1_WINDOW_MULTI	0x80000000
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	af_update_part1;
-+	unsigned int	af_update_part2;
-+} __attribute__((packed)) vfe_cmd_stats_af_update;
-+
-+
-+/*
-+ * Command to program partial cfg of wb and exp
-+ */
-+
-+#define	VFE_CMD_STATS_WB_EXP_UPDATE	0x001E
-+#define	VFE_CMD_STATS_WB_EXP_UPDATE_LEN	\
-+	sizeof(vfe_cmd_stats_wb_exp_update)
-+
-+#define	VFE_CMD_WB_EXP_UPDATE_PART1_REGIONS_8_8		0x0000
-+#define	VFE_CMD_WB_EXP_UPDATE_PART1_REGIONS_16_16	0x0001
-+#define	VFE_CMD_WB_EXP_UPDATE_PART1_SREGIONS_8_8	0x0000
-+#define	VFE_CMD_WB_EXP_UPDATE_PART1_SREGIONS_4_4	0x0002
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	wb_exp_update_part1;
-+	unsigned int	wb_exp_update_part2;
-+	unsigned int	wb_exp_update_part3;
-+	unsigned int	wb_exp_update_part4;
-+} __attribute__((packed)) vfe_cmd_stats_wb_exp_update;
-+
-+
-+
-+/*
-+ * Command to re program the CAMIF FRAME CONFIG settings
-+ */
-+
-+#define	VFE_CMD_UPDATE_CAMIF_FRAME_CFG		0x001F
-+#define	VFE_CMD_UPDATE_CAMIF_FRAME_CFG_LEN	\
-+	sizeof(vfe_cmd_update_camif_frame_cfg)
-+
-+typedef struct {
-+	unsigned int	cmd_id;
-+	unsigned int	camif_frame_cfg;
-+} __attribute__((packed)) vfe_cmd_update_camif_frame_cfg;
-+
-+
-+#endif
-diff --git a/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vfemsg.h b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vfemsg.h
-new file mode 100644
-index 0000000..0053cfb
---- /dev/null
-+++ b/arch/arm/mach-msm/include/mach/qdsp5/qdsp5vfemsg.h
-@@ -0,0 +1,290 @@
-+#ifndef QDSP5VFEMSGI_H
-+#define QDSP5VFEMSGI_H
-+
-+/*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*
-+
-+    V F E   I N T E R N A L   M E S S A G E S
-+
-+GENERAL DESCRIPTION
-+  This file contains defintions of format blocks of commands
-+  that are sent by VFE Task
-+
-+REFERENCES
-+  None
-+
-+EXTERNALIZED FUNCTIONS
-+  None
-+
-+Copyright(c) 1992 - 2008 by QUALCOMM, Incorporated.
-+
-+This software is licensed under the terms of the GNU General Public
-+License version 2, as published by the Free Software Foundation, and
-+may be copied, distributed, and modified under those terms.
-+
-+This program is distributed in the hope that it will be useful,
-+but WITHOUT ANY WARRANTY; without even the implied warranty of
-+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+GNU General Public License for more details.
-+
-+*====*====*====*====*====*====*====*====*====*====*====*====*====*====*====*/
-+/*===========================================================================
-+
-+                      EDIT HISTORY FOR FILE
-+
-+This section contains comments describing changes made to this file.
-+Notice that changes are listed in reverse chronological order.
-+
-+$Header: //source/qcom/qct/multimedia2/AdspSvc/7XXX/qdsp5cmd/video/qdsp5vfemsg.h#2 $ $DateTime: 2008/07/30 10:50:23 $ $Author: pavanr $
-+Revision History:
-+
-+when       who     what, where, why
-+--------   ---     ----------------------------------------------------------
-+06/12/08   sv      initial version
-+===========================================================================*/
-+
-+
-+/*
-+ * Message to acknowledge CMD_VFE_REST command
-+ */
-+
-+#define	VFE_MSG_RESET_ACK	0x0000
-+#define	VFE_MSG_RESET_ACK_LEN	sizeof(vfe_msg_reset_ack)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_reset_ack;
-+
-+
-+/*
-+ * Message to acknowledge CMD_VFE_START command
-+ */
-+
-+#define	VFE_MSG_START_ACK	0x0001
-+#define	VFE_MSG_START_ACK_LEN	sizeof(vfe_msg_start_ack)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_start_ack;
-+
-+/*
-+ * Message to acknowledge CMD_VFE_STOP	command
-+ */
-+
-+#define	VFE_MSG_STOP_ACK	0x0002
-+#define	VFE_MSG_STOP_ACK_LEN	sizeof(vfe_msg_stop_ack)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_stop_ack;
-+
-+
-+/*
-+ * Message to acknowledge CMD_VFE_UPDATE command
-+ */
-+
-+#define	VFE_MSG_UPDATE_ACK	0x0003
-+#define	VFE_MSG_UPDATE_ACK_LEN	sizeof(vfe_msg_update_ack)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_update_ack;
-+
-+
-+/*
-+ * Message to notify the ARM that snapshot processing is complete
-+ * and that the VFE is now STATE_VFE_IDLE
-+ */
-+
-+#define	VFE_MSG_SNAPSHOT_DONE		0x0004
-+#define	VFE_MSG_SNAPSHOT_DONE_LEN	\
-+	sizeof(vfe_msg_snapshot_done)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_snapshot_done;
-+
-+
-+
-+/*
-+ * Message to notify ARM that illegal cmd was received and
-+ * system is in the IDLE state
-+ */
-+
-+#define	VFE_MSG_ILLEGAL_CMD	0x0005
-+#define	VFE_MSG_ILLEGAL_CMD_LEN	\
-+	sizeof(vfe_msg_illegal_cmd)
-+
-+typedef struct {
-+	unsigned int	status;
-+} __attribute__((packed)) vfe_msg_illegal_cmd;
-+
-+
-+/*
-+ * Message to notify ARM that op1 buf is full and ready
-+ */
-+
-+#define	VFE_MSG_OP1		0x0006
-+#define	VFE_MSG_OP1_LEN		sizeof(vfe_msg_op1)
-+
-+typedef struct {
-+	unsigned int	op1_buf_y_addr;
-+	unsigned int	op1_buf_cbcr_addr;
-+	unsigned int	black_level_even_col;
-+	unsigned int	black_level_odd_col;
-+	unsigned int	defect_pixels_detected;
-+	unsigned int	asf_max_edge;
-+} __attribute__((packed)) vfe_msg_op1;
-+
-+
-+/*
-+ * Message to notify ARM that op2 buf is full and ready
-+ */
-+
-+#define	VFE_MSG_OP2		0x0007
-+#define	VFE_MSG_OP2_LEN		sizeof(vfe_msg_op2)
-+
-+typedef struct {
-+	unsigned int	op2_buf_y_addr;
-+	unsigned int	op2_buf_cbcr_addr;
-+	unsigned int	black_level_even_col;
-+	unsigned int	black_level_odd_col;
-+	unsigned int	defect_pixels_detected;
-+	unsigned int	asf_max_edge;
-+} __attribute__((packed)) vfe_msg_op2;
-+
-+
-+/*
-+ * Message to notify ARM that autofocus(af) stats are ready
-+ */
-+
-+#define	VFE_MSG_STATS_AF	0x0008
-+#define	VFE_MSG_STATS_AF_LEN	sizeof(vfe_msg_stats_af)
-+
-+typedef struct {
-+	unsigned int	af_stats_op_buffer;
-+} __attribute__((packed)) vfe_msg_stats_af;
-+
-+
-+/*
-+ * Message to notify ARM that white balance(wb) and exposure (exp)
-+ * stats are ready
-+ */
-+
-+#define	VFE_MSG_STATS_WB_EXP		0x0009
-+#define	VFE_MSG_STATS_WB_EXP_LEN	\
-+	sizeof(vfe_msg_stats_wb_exp)
-+
-+typedef struct {
-+	unsigned int	wb_exp_stats_op_buf;
-+} __attribute__((packed)) vfe_msg_stats_wb_exp;
-+
-+
-+/*
-+ * Message to notify the ARM that histogram(hg) stats are ready
-+ */
-+
-+#define	VFE_MSG_STATS_HG	0x000A
-+#define	VFE_MSG_STATS_HG_LEN	sizeof(vfe_msg_stats_hg)
-+
-+typedef struct {
-+	unsigned int	hg_stats_op_buf;
-+} __attribute__((packed)) vfe_msg_stats_hg;
-+
-+
-+/*
-+ * Message to notify the ARM that epoch1 event occurred in the CAMIF
-+ */
-+
-+#define	VFE_MSG_EPOCH1		0x000B
-+#define	VFE_MSG_EPOCH1_LEN	sizeof(vfe_msg_epoch1)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_epoch1;
-+
-+
-+/*
-+ * Message to notify the ARM that epoch2 event occurred in the CAMIF
-+ */
-+
-+#define	VFE_MSG_EPOCH2		0x000C
-+#define	VFE_MSG_EPOCH2_LEN	sizeof(vfe_msg_epoch2)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_epoch2;
-+
-+
-+/*
-+ * Message to notify the ARM that sync timer1 op is completed
-+ */
-+
-+#define	VFE_MSG_SYNC_T1_DONE		0x000D
-+#define	VFE_MSG_SYNC_T1_DONE_LEN	sizeof(vfe_msg_sync_t1_done)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_sync_t1_done;
-+
-+
-+/*
-+ * Message to notify the ARM that sync timer2 op is completed
-+ */
-+
-+#define	VFE_MSG_SYNC_T2_DONE		0x000E
-+#define	VFE_MSG_SYNC_T2_DONE_LEN	sizeof(vfe_msg_sync_t2_done)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_sync_t2_done;
-+
-+
-+/*
-+ * Message to notify the ARM that async t1 operation completed
-+ */
-+
-+#define	VFE_MSG_ASYNC_T1_DONE		0x000F
-+#define	VFE_MSG_ASYNC_T1_DONE_LEN	sizeof(vfe_msg_async_t1_done)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_async_t1_done;
-+
-+
-+
-+/*
-+ * Message to notify the ARM that async t2 operation completed
-+ */
-+
-+#define	VFE_MSG_ASYNC_T2_DONE		0x0010
-+#define	VFE_MSG_ASYNC_T2_DONE_LEN	sizeof(vfe_msg_async_t2_done)
-+
-+typedef struct {
-+} __attribute__((packed)) vfe_msg_async_t2_done;
-+
-+
-+
-+/*
-+ * Message to notify the ARM that an error has occurred
-+ */
-+
-+#define	VFE_MSG_ERROR		0x0011
-+#define	VFE_MSG_ERROR_LEN	sizeof(vfe_msg_error)
-+
-+#define	VFE_MSG_ERR_COND_NO_CAMIF_ERR		0x0000
-+#define	VFE_MSG_ERR_COND_CAMIF_ERR		0x0001
-+#define	VFE_MSG_ERR_COND_OP1_Y_NO_BUS_OF	0x0000
-+#define	VFE_MSG_ERR_COND_OP1_Y_BUS_OF		0x0002
-+#define	VFE_MSG_ERR_COND_OP1_CBCR_NO_BUS_OF	0x0000
-+#define	VFE_MSG_ERR_COND_OP1_CBCR_BUS_OF	0x0004
-+#define	VFE_MSG_ERR_COND_OP2_Y_NO_BUS_OF	0x0000
-+#define	VFE_MSG_ERR_COND_OP2_Y_BUS_OF		0x0008
-+#define	VFE_MSG_ERR_COND_OP2_CBCR_NO_BUS_OF	0x0000
-+#define	VFE_MSG_ERR_COND_OP2_CBCR_BUS_OF	0x0010
-+#define	VFE_MSG_ERR_COND_AF_NO_BUS_OF		0x0000
-+#define	VFE_MSG_ERR_COND_AF_BUS_OF		0x0020
-+#define	VFE_MSG_ERR_COND_WB_EXP_NO_BUS_OF	0x0000
-+#define	VFE_MSG_ERR_COND_WB_EXP_BUS_OF		0x0040
-+#define	VFE_MSG_ERR_COND_NO_AXI_ERR		0x0000
-+#define	VFE_MSG_ERR_COND_AXI_ERR		0x0080
-+
-+#define	VFE_MSG_CAMIF_STS_IDLE			0x0000
-+#define	VFE_MSG_CAMIF_STS_CAPTURE_DATA		0x0001
-+
-+typedef struct {
-+	unsigned int	err_cond;
-+	unsigned int	camif_sts;
-+} __attribute__((packed)) vfe_msg_error;
-+
-+
-+#endif
 diff --git a/drivers/staging/dream/Kconfig b/drivers/staging/dream/Kconfig
-index 52bd187..5770ea6 100644
+index 5770ea6..67783f8 100644
 --- a/drivers/staging/dream/Kconfig
 +++ b/drivers/staging/dream/Kconfig
-@@ -2,11 +2,42 @@ source "drivers/staging/dream/smd/Kconfig"
- 
- source "drivers/staging/dream/camera/Kconfig"
- 
-+config MSM_AMSS_VERSION
-+	int
-+	default 6210 if MSM_AMSS_VERSION_6210
-+	default 6220 if MSM_AMSS_VERSION_6220
-+	default 6225 if MSM_AMSS_VERSION_6225
-+	default 6350 if MSM_AMSS_VERSION_6350
-+
-+choice
-+	prompt "AMSS modem firmware version"
-+
-+	default MSM_AMSS_VERSION_6225
-+
-+	config MSM_AMSS_VERSION_6210
-+		bool "6.2.10"
-+
-+	config MSM_AMSS_VERSION_6220
-+		bool "6.2.20"
-+
-+	config MSM_AMSS_VERSION_6225
-+		bool "6.2.20 + New ADSP"
-+
-+	config MSM_AMSS_VERSION_6350
-+		bool "6.3.50"
-+endchoice
-+
-+config MSM_ADSP
-+	tristate "MSM ADSP driver"
-+	default y
-+	help
-+	  Provides access to registers needed by the userspace aDSP library.
- 
- config INPUT_GPIO
- 	tristate "GPIO driver support"
- 	help
+@@ -39,5 +39,9 @@ config INPUT_GPIO
  	  Say Y here if you want to support gpio based keys, wheels etc...
  
--
--
-+config GENERIC_GPIO
+ config GENERIC_GPIO
+-	bool
 +	bool
 +	default y
-diff --git a/drivers/staging/dream/qdsp5/adsp.c b/drivers/staging/dream/qdsp5/adsp.c
-index d096456..9069535 100644
---- a/drivers/staging/dream/qdsp5/adsp.c
-+++ b/drivers/staging/dream/qdsp5/adsp.c
-@@ -32,16 +32,12 @@
- #include <linux/module.h>
- #include <linux/uaccess.h>
- #include <linux/wait.h>
--#include <linux/wakelock.h>
++
++config ANDROID_PMEM
++	bool "Android pmem allocator"
+ 	default y
+diff --git a/drivers/staging/dream/Makefile b/drivers/staging/dream/Makefile
+index 2b79151..6afbadf 100644
+--- a/drivers/staging/dream/Makefile
++++ b/drivers/staging/dream/Makefile
+@@ -1,4 +1,5 @@
+ obj-$(CONFIG_MSM_ADSP)		+= qdsp5/ smd/
+ obj-$(CONFIG_MSM_CAMERA)	+= camera/
+ obj-$(CONFIG_INPUT_GPIO)	+= gpio_axis.o gpio_event.o gpio_input.o gpio_matrix.o gpio_output.o
++obj-$(CONFIG_ANDROID_PMEM)	+= pmem.o
  
--static struct wake_lock adsp_wake_lock;
- static inline void prevent_suspend(void)
- {
--	wake_lock(&adsp_wake_lock);
- }
- static inline void allow_suspend(void)
- {
--	wake_unlock(&adsp_wake_lock);
- }
- 
- #include <linux/io.h>
-@@ -1046,7 +1042,6 @@ static int msm_adsp_probe(struct platform_device *pdev)
- 
- 	pr_info("adsp: probe\n");
- 
--	wake_lock_init(&adsp_wake_lock, WAKE_LOCK_SUSPEND, "adsp");
- #if CONFIG_MSM_AMSS_VERSION >= 6350
- 	adsp_info.init_info_ptr = kzalloc(
- 		(sizeof(struct adsp_rtos_mp_mtoa_init_info_type)), GFP_KERNEL);
-diff --git a/drivers/staging/dream/smd/smd_qmi.c b/drivers/staging/dream/smd/smd_qmi.c
-index d4e7d88..687db14 100644
---- a/drivers/staging/dream/smd/smd_qmi.c
-+++ b/drivers/staging/dream/smd/smd_qmi.c
-@@ -24,7 +24,6 @@
- #include <linux/wait.h>
- #include <linux/miscdevice.h>
- #include <linux/workqueue.h>
--#include <linux/wakelock.h>
- 
- #include <asm/uaccess.h>
- #include <mach/msm_smd.h>
-@@ -74,7 +73,6 @@ struct qmi_ctxt {
- 
- 	smd_channel_t *ch;
- 	const char *ch_name;
--	struct wake_lock wake_lock;
- 
- 	struct work_struct open_work;
- 	struct work_struct read_work;
-@@ -90,7 +88,6 @@ void qmi_ctxt_init(struct qmi_ctxt *ctxt, unsigned n)
- 	mutex_init(&ctxt->lock);
- 	INIT_WORK(&ctxt->read_work, qmi_read_work);
- 	INIT_WORK(&ctxt->open_work, qmi_open_work);
--	wake_lock_init(&ctxt->wake_lock, WAKE_LOCK_SUSPEND, ctxt->misc.name);
- 	ctxt->ctl_txn_id = 1;
- 	ctxt->wds_txn_id = 1;
- 	ctxt->wds_busy = 1;
-@@ -454,7 +451,6 @@ static void qmi_process_qmux(struct qmi_ctxt *ctxt,
- 		break;
- 	}
- 	mutex_unlock(&ctxt->lock);
--
- 	wake_up(&qmi_wait_queue);
- }
- 
-@@ -509,7 +505,6 @@ static void qmi_notify(void *priv, unsigned event)
- 		int sz;
- 		sz = smd_cur_packet_size(ctxt->ch);
- 		if ((sz > 0) && (sz <= smd_read_avail(ctxt->ch))) {
--			wake_lock_timeout(&ctxt->wake_lock, HZ / 2);
- 			queue_work(qmi_wq, &ctxt->read_work);
- 		}
- 		break;
-diff --git a/drivers/staging/dream/smd/smd_rpcrouter.c b/drivers/staging/dream/smd/smd_rpcrouter.c
-index d4a4a88..5ac2cd4 100644
---- a/drivers/staging/dream/smd/smd_rpcrouter.c
-+++ b/drivers/staging/dream/smd/smd_rpcrouter.c
-@@ -33,7 +33,6 @@
- #include <linux/err.h>
- #include <linux/sched.h>
- #include <linux/poll.h>
--#include <linux/wakelock.h>
- #include <asm/uaccess.h>
- #include <asm/byteorder.h>
- #include <linux/platform_device.h>
-@@ -96,7 +95,6 @@ static DEFINE_SPINLOCK(server_list_lock);
- static DEFINE_SPINLOCK(smd_lock);
- 
- static struct workqueue_struct *rpcrouter_workqueue;
--static struct wake_lock rpcrouter_wake_lock;
- static int rpcrouter_need_len;
- 
- static atomic_t next_xid = ATOMIC_INIT(1);
-@@ -290,7 +288,6 @@ struct msm_rpc_endpoint *msm_rpcrouter_create_local_endpoint(dev_t dev)
- 	init_waitqueue_head(&ept->wait_q);
- 	INIT_LIST_HEAD(&ept->read_q);
- 	spin_lock_init(&ept->read_q_lock);
--	wake_lock_init(&ept->read_q_wake_lock, WAKE_LOCK_SUSPEND, "rpc_read");
- 	INIT_LIST_HEAD(&ept->incomplete);
- 
- 	spin_lock_irqsave(&local_endpoints_lock, flags);
-@@ -313,7 +310,6 @@ int msm_rpcrouter_destroy_local_endpoint(struct msm_rpc_endpoint *ept)
- 	if (rc < 0)
- 		return rc;
- 
--	wake_lock_destroy(&ept->read_q_wake_lock);
- 	list_del(&ept->list);
- 	kfree(ept);
- 	return 0;
-@@ -540,8 +536,6 @@ static void rpcrouter_smdnotify(void *_dev, unsigned event)
- 	if (event != SMD_EVENT_DATA)
- 		return;
- 
--	if (smd_read_avail(smd_channel) >= rpcrouter_need_len)
--		wake_lock(&rpcrouter_wake_lock);
- 	wake_up(&smd_wait);
- }
- 
-@@ -576,7 +570,6 @@ static int rr_read(void *data, int len)
- 				return -EIO;
- 		}
- 		rpcrouter_need_len = len;
--		wake_unlock(&rpcrouter_wake_lock);
- 		spin_unlock_irqrestore(&smd_lock, flags);
- 
- //		printk("rr_read: waiting (%d)\n", len);
-@@ -676,7 +669,6 @@ static void do_read_data(struct work_struct *work)
- 
- packet_complete:
- 	spin_lock_irqsave(&ept->read_q_lock, flags);
--	wake_lock(&ept->read_q_wake_lock);
- 	list_add_tail(&pkt->list, &ept->read_q);
- 	wake_up(&ept->wait_q);
- 	spin_unlock_irqrestore(&ept->read_q_lock, flags);
-@@ -699,7 +691,6 @@ done:
- fail_io:
- fail_data:
- 	printk(KERN_ERR "rpc_router has died\n");
--	wake_unlock(&rpcrouter_wake_lock);
- }
- 
- void msm_rpc_setup_req(struct rpc_request_hdr *hdr, uint32_t prog,
-@@ -1061,8 +1052,6 @@ int __msm_rpc_read(struct msm_rpc_endpoint *ept,
- 		return -ETOOSMALL;
- 	}
- 	list_del(&pkt->list);
--	if (list_empty(&ept->read_q))
--		wake_unlock(&ept->read_q_wake_lock);
- 	spin_unlock_irqrestore(&ept->read_q_lock, flags);
- 
- 	rc = pkt->length;
-@@ -1229,7 +1218,6 @@ static int msm_rpcrouter_probe(struct platform_device *pdev)
- 
- 	init_waitqueue_head(&newserver_wait);
- 	init_waitqueue_head(&smd_wait);
--	wake_lock_init(&rpcrouter_wake_lock, WAKE_LOCK_SUSPEND, "SMD_RPCCALL");
- 
- 	rpcrouter_workqueue = create_singlethread_workqueue("rpcrouter");
- 	if (!rpcrouter_workqueue)
-diff --git a/drivers/staging/dream/smd/smd_rpcrouter.h b/drivers/staging/dream/smd/smd_rpcrouter.h
-index a7416a2..86ab997 100644
---- a/drivers/staging/dream/smd/smd_rpcrouter.h
-+++ b/drivers/staging/dream/smd/smd_rpcrouter.h
-@@ -22,7 +22,6 @@
- #include <linux/list.h>
- #include <linux/cdev.h>
- #include <linux/platform_device.h>
--#include <linux/wakelock.h>
- 
- #include <mach/msm_smd.h>
- #include <mach/msm_rpcrouter.h>
-@@ -144,7 +143,6 @@ struct msm_rpc_endpoint {
- 	/* complete packets waiting to be read */
- 	struct list_head read_q;
- 	spinlock_t read_q_lock;
--	struct wake_lock read_q_wake_lock;
- 	wait_queue_head_t wait_q;
- 	unsigned flags;
- 
-diff --git a/drivers/staging/dream/smd/smd_tty.c b/drivers/staging/dream/smd/smd_tty.c
-index 2edd9d1..f409449 100644
---- a/drivers/staging/dream/smd/smd_tty.c
-+++ b/drivers/staging/dream/smd/smd_tty.c
-@@ -19,7 +19,6 @@
- #include <linux/cdev.h>
- #include <linux/device.h>
- #include <linux/wait.h>
--#include <linux/wakelock.h>
- 
- #include <linux/tty.h>
- #include <linux/tty_driver.h>
-@@ -34,7 +33,6 @@ static DEFINE_MUTEX(smd_tty_lock);
- struct smd_tty_info {
- 	smd_channel_t *ch;
- 	struct tty_struct *tty;
--	struct wake_lock wake_lock;
- 	int open_count;
- };
- 
-@@ -69,7 +67,6 @@ static void smd_tty_notify(void *priv, unsigned event)
- 			printk(KERN_ERR "OOPS - smd_tty_buffer mismatch?!");
- 		}
- 
--		wake_lock_timeout(&info->wake_lock, HZ / 2);
- 		tty_flip_buffer_push(tty);
- 	}
- 
-@@ -95,7 +92,6 @@ static int smd_tty_open(struct tty_struct *tty, struct file *f)
- 	info = smd_tty + n;
- 
- 	mutex_lock(&smd_tty_lock);
--	wake_lock_init(&info->wake_lock, WAKE_LOCK_SUSPEND, name);
- 	tty->driver_data = info;
- 
- 	if (info->open_count++ == 0) {
-@@ -122,7 +118,6 @@ static void smd_tty_close(struct tty_struct *tty, struct file *f)
- 	if (--info->open_count == 0) {
- 		info->tty = 0;
- 		tty->driver_data = 0;
--		wake_lock_destroy(&info->wake_lock);
- 		if (info->ch) {
- 			smd_close(info->ch);
- 			info->ch = 0;
-diff --git a/include/linux/msm_rpcrouter.h b/include/linux/msm_rpcrouter.h
+diff --git a/drivers/staging/dream/pmem.c b/drivers/staging/dream/pmem.c
 new file mode 100644
-index 0000000..62141a0
+index 0000000..def6468
 --- /dev/null
-+++ b/include/linux/msm_rpcrouter.h
-@@ -0,0 +1,47 @@
-+/* include/linux/msm_rpcrouter.h
++++ b/drivers/staging/dream/pmem.c
+@@ -0,0 +1,1335 @@
++/* drivers/android/pmem.c
 + *
-+ * Copyright (c) QUALCOMM Incorporated
 + * Copyright (C) 2007 Google, Inc.
-+ * Author: San Mehat <san@android.com>
-+ *
-+ * This software is licensed under the terms of the GNU General Public
-+ * License version 2, as published by the Free Software Foundation, and
-+ * may be copied, distributed, and modified under those terms.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+#ifndef __LINUX_MSM_RPCROUTER_H
-+#define __LINUX_MSM_RPCROUTER_H
-+
-+#include <linux/types.h>
-+#include <linux/ioctl.h>
-+
-+#define RPC_ROUTER_VERSION_V1 0x00010000
-+
-+struct rpcrouter_ioctl_server_args {
-+	uint32_t prog;
-+	uint32_t vers;
-+};
-+
-+#define RPC_ROUTER_IOCTL_MAGIC (0xC1)
-+
-+#define RPC_ROUTER_IOCTL_GET_VERSION \
-+	_IOR(RPC_ROUTER_IOCTL_MAGIC, 0, unsigned int)
-+
-+#define RPC_ROUTER_IOCTL_GET_MTU \
-+	_IOR(RPC_ROUTER_IOCTL_MAGIC, 1, unsigned int)
-+
-+#define RPC_ROUTER_IOCTL_REGISTER_SERVER \
-+	_IOWR(RPC_ROUTER_IOCTL_MAGIC, 2, unsigned int)
-+
-+#define RPC_ROUTER_IOCTL_UNREGISTER_SERVER \
-+	_IOWR(RPC_ROUTER_IOCTL_MAGIC, 3, unsigned int)
-+
-+#define RPC_ROUTER_IOCTL_GET_MINOR_VERSION \
-+	_IOW(RPC_ROUTER_IOCTL_MAGIC, 4, unsigned int)
-+
-+#endif
-diff --git a/include/linux/wakelock.h b/include/linux/wakelock.h
-new file mode 100755
-index 0000000..a096d24
---- /dev/null
-+++ b/include/linux/wakelock.h
-@@ -0,0 +1,91 @@
-+/* include/linux/wakelock.h
-+ *
-+ * Copyright (C) 2007-2008 Google, Inc.
 + *
 + * This software is licensed under the terms of the GNU General Public
 + * License version 2, as published by the Free Software Foundation, and
@@ -5297,85 +77,1333 @@ index 0000000..a096d24
 + *
 + */
 +
-+#ifndef _LINUX_WAKELOCK_H
-+#define _LINUX_WAKELOCK_H
-+
++#include <linux/miscdevice.h>
++#include <linux/platform_device.h>
++#include <linux/fs.h>
++#include <linux/file.h>
++#include <linux/mm.h>
 +#include <linux/list.h>
-+#include <linux/ktime.h>
++#include <linux/debugfs.h>
++#include <linux/android_pmem.h>
++#include <linux/mempolicy.h>
++#include <linux/sched.h>
++#include <asm/io.h>
++#include <asm/uaccess.h>
++#include <asm/cacheflush.h>
 +
-+/* A wake_lock prevents the system from entering suspend or other low power
-+ * states when active. If the type is set to WAKE_LOCK_SUSPEND, the wake_lock
-+ * prevents a full system suspend. If the type is WAKE_LOCK_IDLE, low power
-+ * states that cause large interrupt latencies or that disable a set of
-+ * interrupts will not entered from idle until the wake_locks are released.
++#define PMEM_MAX_DEVICES 10
++#define PMEM_MAX_ORDER 128
++#define PMEM_MIN_ALLOC PAGE_SIZE
++
++#define PMEM_DEBUG 1
++
++/* indicates that a refernce to this file has been taken via get_pmem_file,
++ * the file should not be released until put_pmem_file is called */
++#define PMEM_FLAGS_BUSY 0x1
++/* indicates that this is a suballocation of a larger master range */
++#define PMEM_FLAGS_CONNECTED 0x1 << 1
++/* indicates this is a master and not a sub allocation and that it is mmaped */
++#define PMEM_FLAGS_MASTERMAP 0x1 << 2
++/* submap and unsubmap flags indicate:
++ * 00: subregion has never been mmaped
++ * 10: subregion has been mmaped, reference to the mm was taken
++ * 11: subretion has ben released, refernece to the mm still held
++ * 01: subretion has been released, reference to the mm has been released
 + */
++#define PMEM_FLAGS_SUBMAP 0x1 << 3
++#define PMEM_FLAGS_UNSUBMAP 0x1 << 4
 +
-+enum {
-+	WAKE_LOCK_SUSPEND, /* Prevent suspend */
-+	WAKE_LOCK_IDLE,    /* Prevent low power idle */
-+	WAKE_LOCK_TYPE_COUNT
++
++struct pmem_data {
++	/* in alloc mode: an index into the bitmap
++	 * in no_alloc mode: the size of the allocation */
++	int index;
++	/* see flags above for descriptions */
++	unsigned int flags;
++	/* protects this data field, if the mm_mmap sem will be held at the
++	 * same time as this sem, the mm sem must be taken first (as this is
++	 * the order for vma_open and vma_close ops */
++	struct rw_semaphore sem;
++	/* info about the mmaping process */
++	struct vm_area_struct *vma;
++	/* task struct of the mapping process */
++	struct task_struct *task;
++	/* process id of teh mapping process */
++	pid_t pid;
++	/* file descriptor of the master */
++	int master_fd;
++	/* file struct of the master */
++	struct file *master_file;
++	/* a list of currently available regions if this is a suballocation */
++	struct list_head region_list;
++	/* a linked list of data so we can access them for debugging */
++	struct list_head list;
++#if PMEM_DEBUG
++	int ref;
++#endif
 +};
 +
-+struct wake_lock {
-+#ifdef CONFIG_HAS_WAKELOCK
-+	struct list_head    link;
-+	int                 flags;
-+	const char         *name;
-+	unsigned long       expires;
-+#ifdef CONFIG_WAKELOCK_STAT
-+	struct {
-+		int             count;
-+		int             expire_count;
-+		int             wakeup_count;
-+		ktime_t         total_time;
-+		ktime_t         prevent_suspend_time;
-+		ktime_t         max_time;
-+		ktime_t         last_time;
-+	} stat;
-+#endif
-+#endif
++struct pmem_bits {
++	unsigned allocated:1;		/* 1 if allocated, 0 if free */
++	unsigned order:7;		/* size of the region in pmem space */
 +};
 +
-+#ifdef CONFIG_HAS_WAKELOCK
++struct pmem_region_node {
++	struct pmem_region region;
++	struct list_head list;
++};
 +
-+void wake_lock_init(struct wake_lock *lock, int type, const char *name);
-+void wake_lock_destroy(struct wake_lock *lock);
-+void wake_lock(struct wake_lock *lock);
-+void wake_lock_timeout(struct wake_lock *lock, long timeout);
-+void wake_unlock(struct wake_lock *lock);
-+
-+/* wake_lock_active returns a non-zero value if the wake_lock is currently
-+ * locked. If the wake_lock has a timeout, it does not check the timeout
-+ * but if the timeout had aready been checked it will return 0.
-+ */
-+int wake_lock_active(struct wake_lock *lock);
-+
-+/* has_wake_lock returns 0 if no wake locks of the specified type are active,
-+ * and non-zero if one or more wake locks are held. Specifically it returns
-+ * -1 if one or more wake locks with no timeout are active or the
-+ * number of jiffies until all active wake locks time out.
-+ */
-+long has_wake_lock(int type);
-+
++#define PMEM_DEBUG_MSGS 0
++#if PMEM_DEBUG_MSGS
++#define DLOG(fmt,args...) \
++	do { printk(KERN_INFO "[%s:%s:%d] "fmt, __FILE__, __func__, __LINE__, \
++		    ##args); } \
++	while (0)
 +#else
-+
-+static inline void wake_lock_init(struct wake_lock *lock, int type,
-+					const char *name) {}
-+static inline void wake_lock_destroy(struct wake_lock *lock) {}
-+static inline void wake_lock(struct wake_lock *lock) {}
-+static inline void wake_lock_timeout(struct wake_lock *lock, long timeout) {}
-+static inline void wake_unlock(struct wake_lock *lock) {}
-+
-+static inline int wake_lock_active(struct wake_lock *lock) { return 0; }
-+static inline long has_wake_lock(int type) { return 0; }
-+
++#define DLOG(x...) do {} while (0)
 +#endif
 +
++struct pmem_info {
++	struct miscdevice dev;
++	/* physical start address of the remaped pmem space */
++	unsigned long base;
++	/* vitual start address of the remaped pmem space */
++	unsigned char __iomem *vbase;
++	/* total size of the pmem space */
++	unsigned long size;
++	/* number of entries in the pmem space */
++	unsigned long num_entries;
++	/* pfn of the garbage page in memory */
++	unsigned long garbage_pfn;
++	/* index of the garbage page in the pmem space */
++	int garbage_index;
++	/* the bitmap for the region indicating which entries are allocated
++	 * and which are free */
++	struct pmem_bits *bitmap;
++	/* indicates the region should not be managed with an allocator */
++	unsigned no_allocator;
++	/* indicates maps of this region should be cached, if a mix of
++	 * cached and uncached is desired, set this and open the device with
++	 * O_SYNC to get an uncached region */
++	unsigned cached;
++	unsigned buffered;
++	/* in no_allocator mode the first mapper gets the whole space and sets
++	 * this flag */
++	unsigned allocated;
++	/* for debugging, creates a list of pmem file structs, the
++	 * data_list_sem should be taken before pmem_data->sem if both are
++	 * needed */
++	struct semaphore data_list_sem;
++	struct list_head data_list;
++	/* pmem_sem protects the bitmap array
++	 * a write lock should be held when modifying entries in bitmap
++	 * a read lock should be held when reading data from bits or
++	 * dereferencing a pointer into bitmap
++	 *
++	 * pmem_data->sem protects the pmem data of a particular file
++	 * Many of the function that require the pmem_data->sem have a non-
++	 * locking version for when the caller is already holding that sem.
++	 *
++	 * IF YOU TAKE BOTH LOCKS TAKE THEM IN THIS ORDER:
++	 * down(pmem_data->sem) => down(bitmap_sem)
++	 */
++	struct rw_semaphore bitmap_sem;
++
++	long (*ioctl)(struct file *, unsigned int, unsigned long);
++	int (*release)(struct inode *, struct file *);
++};
++
++static struct pmem_info pmem[PMEM_MAX_DEVICES];
++static int id_count;
++
++#define PMEM_IS_FREE(id, index) !(pmem[id].bitmap[index].allocated)
++#define PMEM_ORDER(id, index) pmem[id].bitmap[index].order
++#define PMEM_BUDDY_INDEX(id, index) (index ^ (1 << PMEM_ORDER(id, index)))
++#define PMEM_NEXT_INDEX(id, index) (index + (1 << PMEM_ORDER(id, index)))
++#define PMEM_OFFSET(index) (index * PMEM_MIN_ALLOC)
++#define PMEM_START_ADDR(id, index) (PMEM_OFFSET(index) + pmem[id].base)
++#define PMEM_LEN(id, index) ((1 << PMEM_ORDER(id, index)) * PMEM_MIN_ALLOC)
++#define PMEM_END_ADDR(id, index) (PMEM_START_ADDR(id, index) + \
++	PMEM_LEN(id, index))
++#define PMEM_START_VADDR(id, index) (PMEM_OFFSET(id, index) + pmem[id].vbase)
++#define PMEM_END_VADDR(id, index) (PMEM_START_VADDR(id, index) + \
++	PMEM_LEN(id, index))
++#define PMEM_REVOKED(data) (data->flags & PMEM_FLAGS_REVOKED)
++#define PMEM_IS_PAGE_ALIGNED(addr) (!((addr) & (~PAGE_MASK)))
++#define PMEM_IS_SUBMAP(data) ((data->flags & PMEM_FLAGS_SUBMAP) && \
++	(!(data->flags & PMEM_FLAGS_UNSUBMAP)))
++
++static int pmem_release(struct inode *, struct file *);
++static int pmem_mmap(struct file *, struct vm_area_struct *);
++static int pmem_open(struct inode *, struct file *);
++static long pmem_ioctl(struct file *, unsigned int, unsigned long);
++
++struct file_operations pmem_fops = {
++	.release = pmem_release,
++	.mmap = pmem_mmap,
++	.open = pmem_open,
++	.unlocked_ioctl = pmem_ioctl,
++};
++
++static int get_id(struct file *file)
++{
++	return MINOR(file->f_dentry->d_inode->i_rdev);
++}
++
++static int is_pmem_file(struct file *file)
++{
++	int id;
++
++	if (unlikely(!file || !file->f_dentry || !file->f_dentry->d_inode))
++		return 0;
++	id = get_id(file);
++	if (unlikely(id >= PMEM_MAX_DEVICES))
++		return 0;
++	if (unlikely(file->f_dentry->d_inode->i_rdev !=
++	     MKDEV(MISC_MAJOR, pmem[id].dev.minor)))
++		return 0;
++	return 1;
++}
++
++static int has_allocation(struct file *file)
++{
++	struct pmem_data *data;
++	/* check is_pmem_file first if not accessed via pmem_file_ops */
++
++	if (unlikely(!file->private_data))
++		return 0;
++	data = (struct pmem_data *)file->private_data;
++	if (unlikely(data->index < 0))
++		return 0;
++	return 1;
++}
++
++static int is_master_owner(struct file *file)
++{
++	struct file *master_file;
++	struct pmem_data *data;
++	int put_needed, ret = 0;
++
++	if (!is_pmem_file(file) || !has_allocation(file))
++		return 0;
++	data = (struct pmem_data *)file->private_data;
++	if (PMEM_FLAGS_MASTERMAP & data->flags)
++		return 1;
++	master_file = fget_light(data->master_fd, &put_needed);
++	if (master_file && data->master_file == master_file)
++		ret = 1;
++	fput_light(master_file, put_needed);
++	return ret;
++}
++
++static int pmem_free(int id, int index)
++{
++	/* caller should hold the write lock on pmem_sem! */
++	int buddy, curr = index;
++	DLOG("index %d\n", index);
++
++	if (pmem[id].no_allocator) {
++		pmem[id].allocated = 0;
++		return 0;
++	}
++	/* clean up the bitmap, merging any buddies */
++	pmem[id].bitmap[curr].allocated = 0;
++	/* find a slots buddy Buddy# = Slot# ^ (1 << order)
++	 * if the buddy is also free merge them
++	 * repeat until the buddy is not free or end of the bitmap is reached
++	 */
++	do {
++		buddy = PMEM_BUDDY_INDEX(id, curr);
++		if (PMEM_IS_FREE(id, buddy) &&
++				PMEM_ORDER(id, buddy) == PMEM_ORDER(id, curr)) {
++			PMEM_ORDER(id, buddy)++;
++			PMEM_ORDER(id, curr)++;
++			curr = min(buddy, curr);
++		} else {
++			break;
++		}
++	} while (curr < pmem[id].num_entries);
++
++	return 0;
++}
++
++static void pmem_revoke(struct file *file, struct pmem_data *data);
++
++static int pmem_release(struct inode *inode, struct file *file)
++{
++	struct pmem_data *data = (struct pmem_data *)file->private_data;
++	struct pmem_region_node *region_node;
++	struct list_head *elt, *elt2;
++	int id = get_id(file), ret = 0;
++
++
++	down(&pmem[id].data_list_sem);
++	/* if this file is a master, revoke all the memory in the connected
++	 *  files */
++	if (PMEM_FLAGS_MASTERMAP & data->flags) {
++		struct pmem_data *sub_data;
++		list_for_each(elt, &pmem[id].data_list) {
++			sub_data = list_entry(elt, struct pmem_data, list);
++			down_read(&sub_data->sem);
++			if (PMEM_IS_SUBMAP(sub_data) &&
++			    file == sub_data->master_file) {
++				up_read(&sub_data->sem);
++				pmem_revoke(file, sub_data);
++			}  else
++				up_read(&sub_data->sem);
++		}
++	}
++	list_del(&data->list);
++	up(&pmem[id].data_list_sem);
++
++
++	down_write(&data->sem);
++
++	/* if its not a conencted file and it has an allocation, free it */
++	if (!(PMEM_FLAGS_CONNECTED & data->flags) && has_allocation(file)) {
++		down_write(&pmem[id].bitmap_sem);
++		ret = pmem_free(id, data->index);
++		up_write(&pmem[id].bitmap_sem);
++	}
++
++	/* if this file is a submap (mapped, connected file), downref the
++	 * task struct */
++	if (PMEM_FLAGS_SUBMAP & data->flags)
++		if (data->task) {
++			put_task_struct(data->task);
++			data->task = NULL;
++		}
++
++	file->private_data = NULL;
++
++	list_for_each_safe(elt, elt2, &data->region_list) {
++		region_node = list_entry(elt, struct pmem_region_node, list);
++		list_del(elt);
++		kfree(region_node);
++	}
++	BUG_ON(!list_empty(&data->region_list));
++
++	up_write(&data->sem);
++	kfree(data);
++	if (pmem[id].release)
++		ret = pmem[id].release(inode, file);
++
++	return ret;
++}
++
++static int pmem_open(struct inode *inode, struct file *file)
++{
++	struct pmem_data *data;
++	int id = get_id(file);
++	int ret = 0;
++
++	DLOG("current %u file %p(%d)\n", current->pid, file, file_count(file));
++	/* setup file->private_data to indicate its unmapped */
++	/*  you can only open a pmem device one time */
++	if (file->private_data != NULL)
++		return -1;
++	data = kmalloc(sizeof(struct pmem_data), GFP_KERNEL);
++	if (!data) {
++		printk("pmem: unable to allocate memory for pmem metadata.");
++		return -1;
++	}
++	data->flags = 0;
++	data->index = -1;
++	data->task = NULL;
++	data->vma = NULL;
++	data->pid = 0;
++	data->master_file = NULL;
++#if PMEM_DEBUG
++	data->ref = 0;
++#endif
++	INIT_LIST_HEAD(&data->region_list);
++	init_rwsem(&data->sem);
++
++	file->private_data = data;
++	INIT_LIST_HEAD(&data->list);
++
++	down(&pmem[id].data_list_sem);
++	list_add(&data->list, &pmem[id].data_list);
++	up(&pmem[id].data_list_sem);
++	return ret;
++}
++
++static unsigned long pmem_order(unsigned long len)
++{
++	int i;
++
++	len = (len + PMEM_MIN_ALLOC - 1)/PMEM_MIN_ALLOC;
++	len--;
++	for (i = 0; i < sizeof(len)*8; i++)
++		if (len >> i == 0)
++			break;
++	return i;
++}
++
++static int pmem_allocate(int id, unsigned long len)
++{
++	/* caller should hold the write lock on pmem_sem! */
++	/* return the corresponding pdata[] entry */
++	int curr = 0;
++	int end = pmem[id].num_entries;
++	int best_fit = -1;
++	unsigned long order = pmem_order(len);
++
++	if (pmem[id].no_allocator) {
++		DLOG("no allocator");
++		if ((len > pmem[id].size) || pmem[id].allocated)
++			return -1;
++		pmem[id].allocated = 1;
++		return len;
++	}
++
++	if (order > PMEM_MAX_ORDER)
++		return -1;
++	DLOG("order %lx\n", order);
++
++	/* look through the bitmap:
++	 * 	if you find a free slot of the correct order use it
++	 * 	otherwise, use the best fit (smallest with size > order) slot
++	 */
++	while (curr < end) {
++		if (PMEM_IS_FREE(id, curr)) {
++			if (PMEM_ORDER(id, curr) == (unsigned char)order) {
++				/* set the not free bit and clear others */
++				best_fit = curr;
++				break;
++			}
++			if (PMEM_ORDER(id, curr) > (unsigned char)order &&
++			    (best_fit < 0 ||
++			     PMEM_ORDER(id, curr) < PMEM_ORDER(id, best_fit)))
++				best_fit = curr;
++		}
++		curr = PMEM_NEXT_INDEX(id, curr);
++	}
++
++	/* if best_fit < 0, there are no suitable slots,
++	 * return an error
++	 */
++	if (best_fit < 0) {
++		printk("pmem: no space left to allocate!\n");
++		return -1;
++	}
++
++	/* now partition the best fit:
++	 * 	split the slot into 2 buddies of order - 1
++	 * 	repeat until the slot is of the correct order
++	 */
++	while (PMEM_ORDER(id, best_fit) > (unsigned char)order) {
++		int buddy;
++		PMEM_ORDER(id, best_fit) -= 1;
++		buddy = PMEM_BUDDY_INDEX(id, best_fit);
++		PMEM_ORDER(id, buddy) = PMEM_ORDER(id, best_fit);
++	}
++	pmem[id].bitmap[best_fit].allocated = 1;
++	return best_fit;
++}
++
++static pgprot_t phys_mem_access_prot(struct file *file, pgprot_t vma_prot)
++{
++	int id = get_id(file);
++#ifdef pgprot_noncached
++	if (pmem[id].cached == 0 || file->f_flags & O_SYNC)
++		return pgprot_noncached(vma_prot);
++#endif
++#ifdef pgprot_ext_buffered
++	else if (pmem[id].buffered)
++		return pgprot_ext_buffered(vma_prot);
++#endif
++	return vma_prot;
++}
++
++static unsigned long pmem_start_addr(int id, struct pmem_data *data)
++{
++	if (pmem[id].no_allocator)
++		return PMEM_START_ADDR(id, 0);
++	else
++		return PMEM_START_ADDR(id, data->index);
++
++}
++
++static void *pmem_start_vaddr(int id, struct pmem_data *data)
++{
++	return pmem_start_addr(id, data) - pmem[id].base + pmem[id].vbase;
++}
++
++static unsigned long pmem_len(int id, struct pmem_data *data)
++{
++	if (pmem[id].no_allocator)
++		return data->index;
++	else
++		return PMEM_LEN(id, data->index);
++}
++
++static int pmem_map_garbage(int id, struct vm_area_struct *vma,
++			    struct pmem_data *data, unsigned long offset,
++			    unsigned long len)
++{
++	int i, garbage_pages = len >> PAGE_SHIFT;
++
++	vma->vm_flags |= VM_IO | VM_RESERVED | VM_PFNMAP | VM_SHARED | VM_WRITE;
++	for (i = 0; i < garbage_pages; i++) {
++		if (vm_insert_pfn(vma, vma->vm_start + offset + (i * PAGE_SIZE),
++		    pmem[id].garbage_pfn))
++			return -EAGAIN;
++	}
++	return 0;
++}
++
++static int pmem_unmap_pfn_range(int id, struct vm_area_struct *vma,
++				struct pmem_data *data, unsigned long offset,
++				unsigned long len)
++{
++	int garbage_pages;
++	DLOG("unmap offset %lx len %lx\n", offset, len);
++
++	BUG_ON(!PMEM_IS_PAGE_ALIGNED(len));
++
++	garbage_pages = len >> PAGE_SHIFT;
++	zap_page_range(vma, vma->vm_start + offset, len, NULL);
++	pmem_map_garbage(id, vma, data, offset, len);
++	return 0;
++}
++
++static int pmem_map_pfn_range(int id, struct vm_area_struct *vma,
++			      struct pmem_data *data, unsigned long offset,
++			      unsigned long len)
++{
++	DLOG("map offset %lx len %lx\n", offset, len);
++	BUG_ON(!PMEM_IS_PAGE_ALIGNED(vma->vm_start));
++	BUG_ON(!PMEM_IS_PAGE_ALIGNED(vma->vm_end));
++	BUG_ON(!PMEM_IS_PAGE_ALIGNED(len));
++	BUG_ON(!PMEM_IS_PAGE_ALIGNED(offset));
++
++	if (io_remap_pfn_range(vma, vma->vm_start + offset,
++		(pmem_start_addr(id, data) + offset) >> PAGE_SHIFT,
++		len, vma->vm_page_prot)) {
++		return -EAGAIN;
++	}
++	return 0;
++}
++
++static int pmem_remap_pfn_range(int id, struct vm_area_struct *vma,
++			      struct pmem_data *data, unsigned long offset,
++			      unsigned long len)
++{
++	/* hold the mm semp for the vma you are modifying when you call this */
++	BUG_ON(!vma);
++	zap_page_range(vma, vma->vm_start + offset, len, NULL);
++	return pmem_map_pfn_range(id, vma, data, offset, len);
++}
++
++static void pmem_vma_open(struct vm_area_struct *vma)
++{
++	struct file *file = vma->vm_file;
++	struct pmem_data *data = file->private_data;
++	int id = get_id(file);
++	/* this should never be called as we don't support copying pmem
++	 * ranges via fork */
++	BUG_ON(!has_allocation(file));
++	down_write(&data->sem);
++	/* remap the garbage pages, forkers don't get access to the data */
++	pmem_unmap_pfn_range(id, vma, data, 0, vma->vm_start - vma->vm_end);
++	up_write(&data->sem);
++}
++
++static void pmem_vma_close(struct vm_area_struct *vma)
++{
++	struct file *file = vma->vm_file;
++	struct pmem_data *data = file->private_data;
++
++	DLOG("current %u ppid %u file %p count %d\n", current->pid,
++	     current->parent->pid, file, file_count(file));
++	if (unlikely(!is_pmem_file(file) || !has_allocation(file))) {
++		printk(KERN_WARNING "pmem: something is very wrong, you are "
++		       "closing a vm backing an allocation that doesn't "
++		       "exist!\n");
++		return;
++	}
++	down_write(&data->sem);
++	if (data->vma == vma) {
++		data->vma = NULL;
++		if ((data->flags & PMEM_FLAGS_CONNECTED) &&
++		    (data->flags & PMEM_FLAGS_SUBMAP))
++			data->flags |= PMEM_FLAGS_UNSUBMAP;
++	}
++	/* the kernel is going to free this vma now anyway */
++	up_write(&data->sem);
++}
++
++static struct vm_operations_struct vm_ops = {
++	.open = pmem_vma_open,
++	.close = pmem_vma_close,
++};
++
++static int pmem_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	struct pmem_data *data;
++	int index;
++	unsigned long vma_size =  vma->vm_end - vma->vm_start;
++	int ret = 0, id = get_id(file);
++
++	if (vma->vm_pgoff || !PMEM_IS_PAGE_ALIGNED(vma_size)) {
++#if PMEM_DEBUG
++		printk(KERN_ERR "pmem: mmaps must be at offset zero, aligned"
++				" and a multiple of pages_size.\n");
++#endif
++		return -EINVAL;
++	}
++
++	data = (struct pmem_data *)file->private_data;
++	down_write(&data->sem);
++	/* check this file isn't already mmaped, for submaps check this file
++	 * has never been mmaped */
++	if ((data->flags & PMEM_FLAGS_MASTERMAP) ||
++	    (data->flags & PMEM_FLAGS_SUBMAP) ||
++	    (data->flags & PMEM_FLAGS_UNSUBMAP)) {
++#if PMEM_DEBUG
++		printk(KERN_ERR "pmem: you can only mmap a pmem file once, "
++		       "this file is already mmaped. %x\n", data->flags);
++#endif
++		ret = -EINVAL;
++		goto error;
++	}
++	/* if file->private_data == unalloced, alloc*/
++	if (data && data->index == -1) {
++		down_write(&pmem[id].bitmap_sem);
++		index = pmem_allocate(id, vma->vm_end - vma->vm_start);
++		up_write(&pmem[id].bitmap_sem);
++		data->index = index;
++	}
++	/* either no space was available or an error occured */
++	if (!has_allocation(file)) {
++		ret = -EINVAL;
++		printk("pmem: could not find allocation for map.\n");
++		goto error;
++	}
++
++	if (pmem_len(id, data) < vma_size) {
++#if PMEM_DEBUG
++		printk(KERN_WARNING "pmem: mmap size [%lu] does not match"
++		       "size of backing region [%lu].\n", vma_size,
++		       pmem_len(id, data));
++#endif
++		ret = -EINVAL;
++		goto error;
++	}
++
++	vma->vm_pgoff = pmem_start_addr(id, data) >> PAGE_SHIFT;
++	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_page_prot);
++
++	if (data->flags & PMEM_FLAGS_CONNECTED) {
++		struct pmem_region_node *region_node;
++		struct list_head *elt;
++		if (pmem_map_garbage(id, vma, data, 0, vma_size)) {
++			printk("pmem: mmap failed in kernel!\n");
++			ret = -EAGAIN;
++			goto error;
++		}
++		list_for_each(elt, &data->region_list) {
++			region_node = list_entry(elt, struct pmem_region_node,
++						 list);
++			DLOG("remapping file: %p %lx %lx\n", file,
++				region_node->region.offset,
++				region_node->region.len);
++			if (pmem_remap_pfn_range(id, vma, data,
++						 region_node->region.offset,
++						 region_node->region.len)) {
++				ret = -EAGAIN;
++				goto error;
++			}
++		}
++		data->flags |= PMEM_FLAGS_SUBMAP;
++		get_task_struct(current->group_leader);
++		data->task = current->group_leader;
++		data->vma = vma;
++#if PMEM_DEBUG
++		data->pid = current->pid;
++#endif
++		DLOG("submmapped file %p vma %p pid %u\n", file, vma,
++		     current->pid);
++	} else {
++		if (pmem_map_pfn_range(id, vma, data, 0, vma_size)) {
++			printk(KERN_INFO "pmem: mmap failed in kernel!\n");
++			ret = -EAGAIN;
++			goto error;
++		}
++		data->flags |= PMEM_FLAGS_MASTERMAP;
++		data->pid = current->pid;
++	}
++	vma->vm_ops = &vm_ops;
++error:
++	up_write(&data->sem);
++	return ret;
++}
++
++/* the following are the api for accessing pmem regions by other drivers
++ * from inside the kernel */
++int get_pmem_user_addr(struct file *file, unsigned long *start,
++		   unsigned long *len)
++{
++	struct pmem_data *data;
++	if (!is_pmem_file(file) || !has_allocation(file)) {
++#if PMEM_DEBUG
++		printk(KERN_INFO "pmem: requested pmem data from invalid"
++				  "file.\n");
++#endif
++		return -1;
++	}
++	data = (struct pmem_data *)file->private_data;
++	down_read(&data->sem);
++	if (data->vma) {
++		*start = data->vma->vm_start;
++		*len = data->vma->vm_end - data->vma->vm_start;
++	} else {
++		*start = 0;
++		*len = 0;
++	}
++	up_read(&data->sem);
++	return 0;
++}
++
++int get_pmem_addr(struct file *file, unsigned long *start,
++		  unsigned long *vstart, unsigned long *len)
++{
++	struct pmem_data *data;
++	int id;
++
++	if (!is_pmem_file(file) || !has_allocation(file)) {
++		return -1;
++	}
++
++	data = (struct pmem_data *)file->private_data;
++	if (data->index == -1) {
++#if PMEM_DEBUG
++		printk(KERN_INFO "pmem: requested pmem data from file with no "
++		       "allocation.\n");
++		return -1;
++#endif
++	}
++	id = get_id(file);
++
++	down_read(&data->sem);
++	*start = pmem_start_addr(id, data);
++	*len = pmem_len(id, data);
++	*vstart = (unsigned long)pmem_start_vaddr(id, data);
++	up_read(&data->sem);
++#if PMEM_DEBUG
++	down_write(&data->sem);
++	data->ref++;
++	up_write(&data->sem);
++#endif
++	return 0;
++}
++
++int get_pmem_file(int fd, unsigned long *start, unsigned long *vstart,
++		  unsigned long *len, struct file **filp)
++{
++	struct file *file;
++
++	file = fget(fd);
++	if (unlikely(file == NULL)) {
++		printk(KERN_INFO "pmem: requested data from file descriptor "
++		       "that doesn't exist.");
++		return -1;
++	}
++
++	if (get_pmem_addr(file, start, vstart, len))
++		goto end;
++
++	if (filp)
++		*filp = file;
++	return 0;
++end:
++	fput(file);
++	return -1;
++}
++
++void put_pmem_file(struct file *file)
++{
++	struct pmem_data *data;
++	int id;
++
++	if (!is_pmem_file(file))
++		return;
++	id = get_id(file);
++	data = (struct pmem_data *)file->private_data;
++#if PMEM_DEBUG
++	down_write(&data->sem);
++	if (data->ref == 0) {
++		printk("pmem: pmem_put > pmem_get %s (pid %d)\n",
++		       pmem[id].dev.name, data->pid);
++		BUG();
++	}
++	data->ref--;
++	up_write(&data->sem);
++#endif
++	fput(file);
++}
++
++void flush_pmem_file(struct file *file, unsigned long offset, unsigned long len)
++{
++	struct pmem_data *data;
++	int id;
++	void *vaddr;
++	struct pmem_region_node *region_node;
++	struct list_head *elt;
++	void *flush_start, *flush_end;
++
++	if (!is_pmem_file(file) || !has_allocation(file)) {
++		return;
++	}
++
++	id = get_id(file);
++	data = (struct pmem_data *)file->private_data;
++	if (!pmem[id].cached)
++		return;
++
++	down_read(&data->sem);
++	vaddr = pmem_start_vaddr(id, data);
++	/* if this isn't a submmapped file, flush the whole thing */
++	if (unlikely(!(data->flags & PMEM_FLAGS_CONNECTED))) {
++		dmac_flush_range(vaddr, vaddr + pmem_len(id, data));
++		goto end;
++	}
++	/* otherwise, flush the region of the file we are drawing */
++	list_for_each(elt, &data->region_list) {
++		region_node = list_entry(elt, struct pmem_region_node, list);
++		if ((offset >= region_node->region.offset) &&
++		    ((offset + len) <= (region_node->region.offset +
++			region_node->region.len))) {
++			flush_start = vaddr + region_node->region.offset;
++			flush_end = flush_start + region_node->region.len;
++			dmac_flush_range(flush_start, flush_end);
++			break;
++		}
++	}
++end:
++	up_read(&data->sem);
++}
++
++static int pmem_connect(unsigned long connect, struct file *file)
++{
++	struct pmem_data *data = (struct pmem_data *)file->private_data;
++	struct pmem_data *src_data;
++	struct file *src_file;
++	int ret = 0, put_needed;
++
++	down_write(&data->sem);
++	/* retrieve the src file and check it is a pmem file with an alloc */
++	src_file = fget_light(connect, &put_needed);
++	DLOG("connect %p to %p\n", file, src_file);
++	if (!src_file) {
++		printk("pmem: src file not found!\n");
++		ret = -EINVAL;
++		goto err_no_file;
++	}
++	if (unlikely(!is_pmem_file(src_file) || !has_allocation(src_file))) {
++		printk(KERN_INFO "pmem: src file is not a pmem file or has no "
++		       "alloc!\n");
++		ret = -EINVAL;
++		goto err_bad_file;
++	}
++	src_data = (struct pmem_data *)src_file->private_data;
++
++	if (has_allocation(file) && (data->index != src_data->index)) {
++		printk("pmem: file is already mapped but doesn't match this"
++		       " src_file!\n");
++		ret = -EINVAL;
++		goto err_bad_file;
++	}
++	data->index = src_data->index;
++	data->flags |= PMEM_FLAGS_CONNECTED;
++	data->master_fd = connect;
++	data->master_file = src_file;
++
++err_bad_file:
++	fput_light(src_file, put_needed);
++err_no_file:
++	up_write(&data->sem);
++	return ret;
++}
++
++static void pmem_unlock_data_and_mm(struct pmem_data *data,
++				    struct mm_struct *mm)
++{
++	up_write(&data->sem);
++	if (mm != NULL) {
++		up_write(&mm->mmap_sem);
++		mmput(mm);
++	}
++}
++
++static int pmem_lock_data_and_mm(struct file *file, struct pmem_data *data,
++				 struct mm_struct **locked_mm)
++{
++	int ret = 0;
++	struct mm_struct *mm = NULL;
++	*locked_mm = NULL;
++lock_mm:
++	down_read(&data->sem);
++	if (PMEM_IS_SUBMAP(data)) {
++		mm = get_task_mm(data->task);
++		if (!mm) {
++#if PMEM_DEBUG
++			printk("pmem: can't remap task is gone!\n");
++#endif
++			up_read(&data->sem);
++			return -1;
++		}
++	}
++	up_read(&data->sem);
++
++	if (mm)
++		down_write(&mm->mmap_sem);
++
++	down_write(&data->sem);
++	/* check that the file didn't get mmaped before we could take the
++	 * data sem, this should be safe b/c you can only submap each file
++	 * once */
++	if (PMEM_IS_SUBMAP(data) && !mm) {
++		pmem_unlock_data_and_mm(data, mm);
++		up_write(&data->sem);
++		goto lock_mm;
++	}
++	/* now check that vma.mm is still there, it could have been
++	 * deleted by vma_close before we could get the data->sem */
++	if ((data->flags & PMEM_FLAGS_UNSUBMAP) && (mm != NULL)) {
++		/* might as well release this */
++		if (data->flags & PMEM_FLAGS_SUBMAP) {
++			put_task_struct(data->task);
++			data->task = NULL;
++			/* lower the submap flag to show the mm is gone */
++			data->flags &= ~(PMEM_FLAGS_SUBMAP);
++		}
++		pmem_unlock_data_and_mm(data, mm);
++		return -1;
++	}
++	*locked_mm = mm;
++	return ret;
++}
++
++int pmem_remap(struct pmem_region *region, struct file *file,
++		      unsigned operation)
++{
++	int ret;
++	struct pmem_region_node *region_node;
++	struct mm_struct *mm = NULL;
++	struct list_head *elt, *elt2;
++	int id = get_id(file);
++	struct pmem_data *data = (struct pmem_data *)file->private_data;
++
++	/* pmem region must be aligned on a page boundry */
++	if (unlikely(!PMEM_IS_PAGE_ALIGNED(region->offset) ||
++		 !PMEM_IS_PAGE_ALIGNED(region->len))) {
++#if PMEM_DEBUG
++		printk("pmem: request for unaligned pmem suballocation "
++		       "%lx %lx\n", region->offset, region->len);
++#endif
++		return -EINVAL;
++	}
++
++	/* if userspace requests a region of len 0, there's nothing to do */
++	if (region->len == 0)
++		return 0;
++
++	/* lock the mm and data */
++	ret = pmem_lock_data_and_mm(file, data, &mm);
++	if (ret)
++		return 0;
++
++	/* only the owner of the master file can remap the client fds
++	 * that back in it */
++	if (!is_master_owner(file)) {
++#if PMEM_DEBUG
++		printk("pmem: remap requested from non-master process\n");
++#endif
++		ret = -EINVAL;
++		goto err;
++	}
++
++	/* check that the requested range is within the src allocation */
++	if (unlikely((region->offset > pmem_len(id, data)) ||
++		     (region->len > pmem_len(id, data)) ||
++		     (region->offset + region->len > pmem_len(id, data)))) {
++#if PMEM_DEBUG
++		printk(KERN_INFO "pmem: suballoc doesn't fit in src_file!\n");
++#endif
++		ret = -EINVAL;
++		goto err;
++	}
++
++	if (operation == PMEM_MAP) {
++		region_node = kmalloc(sizeof(struct pmem_region_node),
++			      GFP_KERNEL);
++		if (!region_node) {
++			ret = -ENOMEM;
++#if PMEM_DEBUG
++			printk(KERN_INFO "No space to allocate metadata!");
++#endif
++			goto err;
++		}
++		region_node->region = *region;
++		list_add(&region_node->list, &data->region_list);
++	} else if (operation == PMEM_UNMAP) {
++		int found = 0;
++		list_for_each_safe(elt, elt2, &data->region_list) {
++			region_node = list_entry(elt, struct pmem_region_node,
++				      list);
++			if (region->len == 0 ||
++			    (region_node->region.offset == region->offset &&
++			    region_node->region.len == region->len)) {
++				list_del(elt);
++				kfree(region_node);
++				found = 1;
++			}
++		}
++		if (!found) {
++#if PMEM_DEBUG
++			printk("pmem: Unmap region does not map any mapped "
++				"region!");
++#endif
++			ret = -EINVAL;
++			goto err;
++		}
++	}
++
++	if (data->vma && PMEM_IS_SUBMAP(data)) {
++		if (operation == PMEM_MAP)
++			ret = pmem_remap_pfn_range(id, data->vma, data,
++						   region->offset, region->len);
++		else if (operation == PMEM_UNMAP)
++			ret = pmem_unmap_pfn_range(id, data->vma, data,
++						   region->offset, region->len);
++	}
++
++err:
++	pmem_unlock_data_and_mm(data, mm);
++	return ret;
++}
++
++static void pmem_revoke(struct file *file, struct pmem_data *data)
++{
++	struct pmem_region_node *region_node;
++	struct list_head *elt, *elt2;
++	struct mm_struct *mm = NULL;
++	int id = get_id(file);
++	int ret = 0;
++
++	data->master_file = NULL;
++	ret = pmem_lock_data_and_mm(file, data, &mm);
++	/* if lock_data_and_mm fails either the task that mapped the fd, or
++	 * the vma that mapped it have already gone away, nothing more
++	 * needs to be done */
++	if (ret)
++		return;
++	/* unmap everything */
++	/* delete the regions and region list nothing is mapped any more */
++	if (data->vma)
++		list_for_each_safe(elt, elt2, &data->region_list) {
++			region_node = list_entry(elt, struct pmem_region_node,
++						 list);
++			pmem_unmap_pfn_range(id, data->vma, data,
++					     region_node->region.offset,
++					     region_node->region.len);
++			list_del(elt);
++			kfree(region_node);
++	}
++	/* delete the master file */
++	pmem_unlock_data_and_mm(data, mm);
++}
++
++static void pmem_get_size(struct pmem_region *region, struct file *file)
++{
++	struct pmem_data *data = (struct pmem_data *)file->private_data;
++	int id = get_id(file);
++
++	if (!has_allocation(file)) {
++		region->offset = 0;
++		region->len = 0;
++		return;
++	} else {
++		region->offset = pmem_start_addr(id, data);
++		region->len = pmem_len(id, data);
++	}
++	DLOG("offset %lx len %lx\n", region->offset, region->len);
++}
++
++
++static long pmem_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++{
++	struct pmem_data *data;
++	int id = get_id(file);
++
++	switch (cmd) {
++	case PMEM_GET_PHYS:
++		{
++			struct pmem_region region;
++			DLOG("get_phys\n");
++			if (!has_allocation(file)) {
++				region.offset = 0;
++				region.len = 0;
++			} else {
++				data = (struct pmem_data *)file->private_data;
++				region.offset = pmem_start_addr(id, data);
++				region.len = pmem_len(id, data);
++			}
++			printk(KERN_INFO "pmem: request for physical address of pmem region "
++					"from process %d.\n", current->pid);
++			if (copy_to_user((void __user *)arg, &region,
++						sizeof(struct pmem_region)))
++				return -EFAULT;
++			break;
++		}
++	case PMEM_MAP:
++		{
++			struct pmem_region region;
++			if (copy_from_user(&region, (void __user *)arg,
++						sizeof(struct pmem_region)))
++				return -EFAULT;
++			data = (struct pmem_data *)file->private_data;
++			return pmem_remap(&region, file, PMEM_MAP);
++		}
++		break;
++	case PMEM_UNMAP:
++		{
++			struct pmem_region region;
++			if (copy_from_user(&region, (void __user *)arg,
++						sizeof(struct pmem_region)))
++				return -EFAULT;
++			data = (struct pmem_data *)file->private_data;
++			return pmem_remap(&region, file, PMEM_UNMAP);
++			break;
++		}
++	case PMEM_GET_SIZE:
++		{
++			struct pmem_region region;
++			DLOG("get_size\n");
++			pmem_get_size(&region, file);
++			if (copy_to_user((void __user *)arg, &region,
++						sizeof(struct pmem_region)))
++				return -EFAULT;
++			break;
++		}
++	case PMEM_GET_TOTAL_SIZE:
++		{
++			struct pmem_region region;
++			DLOG("get total size\n");
++			region.offset = 0;
++			get_id(file);
++			region.len = pmem[id].size;
++			if (copy_to_user((void __user *)arg, &region,
++						sizeof(struct pmem_region)))
++				return -EFAULT;
++			break;
++		}
++	case PMEM_ALLOCATE:
++		{
++			if (has_allocation(file))
++				return -EINVAL;
++			data = (struct pmem_data *)file->private_data;
++			data->index = pmem_allocate(id, arg);
++			break;
++		}
++	case PMEM_CONNECT:
++		DLOG("connect\n");
++		return pmem_connect(arg, file);
++		break;
++	default:
++		if (pmem[id].ioctl)
++			return pmem[id].ioctl(file, cmd, arg);
++		return -EINVAL;
++	}
++	return 0;
++}
++
++#if PMEM_DEBUG
++static ssize_t debug_open(struct inode *inode, struct file *file)
++{
++	file->private_data = inode->i_private;
++	return 0;
++}
++
++static ssize_t debug_read(struct file *file, char __user *buf, size_t count,
++			  loff_t *ppos)
++{
++	struct list_head *elt, *elt2;
++	struct pmem_data *data;
++	struct pmem_region_node *region_node;
++	int id = (int)file->private_data;
++	const int debug_bufmax = 4096;
++	static char buffer[4096];
++	int n = 0;
++
++	DLOG("debug open\n");
++	n = scnprintf(buffer, debug_bufmax,
++		      "pid #: mapped regions (offset, len) (offset,len)...\n");
++
++	down(&pmem[id].data_list_sem);
++	list_for_each(elt, &pmem[id].data_list) {
++		data = list_entry(elt, struct pmem_data, list);
++		down_read(&data->sem);
++		n += scnprintf(buffer + n, debug_bufmax - n, "pid %u:",
++				data->pid);
++		list_for_each(elt2, &data->region_list) {
++			region_node = list_entry(elt2, struct pmem_region_node,
++				      list);
++			n += scnprintf(buffer + n, debug_bufmax - n,
++					"(%lx,%lx) ",
++					region_node->region.offset,
++					region_node->region.len);
++		}
++		n += scnprintf(buffer + n, debug_bufmax - n, "\n");
++		up_read(&data->sem);
++	}
++	up(&pmem[id].data_list_sem);
++
++	n++;
++	buffer[n] = 0;
++	return simple_read_from_buffer(buf, count, ppos, buffer, n);
++}
++
++static struct file_operations debug_fops = {
++	.read = debug_read,
++	.open = debug_open,
++};
 +#endif
 +
-
++#if 0
++static struct miscdevice pmem_dev = {
++	.name = "pmem",
++	.fops = &pmem_fops,
++};
++#endif
++
++int pmem_setup(struct android_pmem_platform_data *pdata,
++	       long (*ioctl)(struct file *, unsigned int, unsigned long),
++	       int (*release)(struct inode *, struct file *))
++{
++	int err = 0;
++	int i, index = 0;
++	int id = id_count;
++	id_count++;
++
++	pmem[id].no_allocator = pdata->no_allocator;
++	pmem[id].cached = pdata->cached;
++	pmem[id].buffered = pdata->buffered;
++	pmem[id].base = pdata->start;
++	pmem[id].size = pdata->size;
++	pmem[id].ioctl = ioctl;
++	pmem[id].release = release;
++	init_rwsem(&pmem[id].bitmap_sem);
++	init_MUTEX(&pmem[id].data_list_sem);
++	INIT_LIST_HEAD(&pmem[id].data_list);
++	pmem[id].dev.name = pdata->name;
++	pmem[id].dev.minor = id;
++	pmem[id].dev.fops = &pmem_fops;
++	printk(KERN_INFO "%s: %d init\n", pdata->name, pdata->cached);
++
++	err = misc_register(&pmem[id].dev);
++	if (err) {
++		printk(KERN_ALERT "Unable to register pmem driver!\n");
++		goto err_cant_register_device;
++	}
++	pmem[id].num_entries = pmem[id].size / PMEM_MIN_ALLOC;
++
++	pmem[id].bitmap = kmalloc(pmem[id].num_entries *
++				  sizeof(struct pmem_bits), GFP_KERNEL);
++	if (!pmem[id].bitmap)
++		goto err_no_mem_for_metadata;
++
++	memset(pmem[id].bitmap, 0, sizeof(struct pmem_bits) *
++					  pmem[id].num_entries);
++
++	for (i = sizeof(pmem[id].num_entries) * 8 - 1; i >= 0; i--) {
++		if ((pmem[id].num_entries) &  1<<i) {
++			PMEM_ORDER(id, index) = i;
++			index = PMEM_NEXT_INDEX(id, index);
++		}
++	}
++
++	if (pmem[id].cached)
++		pmem[id].vbase = ioremap_cached(pmem[id].base,
++						pmem[id].size);
++#ifdef ioremap_ext_buffered
++	else if (pmem[id].buffered)
++		pmem[id].vbase = ioremap_ext_buffered(pmem[id].base,
++						      pmem[id].size);
++#endif
++	else
++		pmem[id].vbase = ioremap(pmem[id].base, pmem[id].size);
++
++	if (pmem[id].vbase == 0)
++		goto error_cant_remap;
++
++	pmem[id].garbage_pfn = page_to_pfn(alloc_page(GFP_KERNEL));
++	if (pmem[id].no_allocator)
++		pmem[id].allocated = 0;
++
++#if PMEM_DEBUG
++	debugfs_create_file(pdata->name, S_IFREG | S_IRUGO, NULL, (void *)id,
++			    &debug_fops);
++#endif
++	return 0;
++error_cant_remap:
++	kfree(pmem[id].bitmap);
++err_no_mem_for_metadata:
++	misc_deregister(&pmem[id].dev);
++err_cant_register_device:
++	return -1;
++}
++
++static int pmem_probe(struct platform_device *pdev)
++{
++	struct android_pmem_platform_data *pdata;
++
++	if (!pdev || !pdev->dev.platform_data) {
++		printk(KERN_ALERT "Unable to probe pmem!\n");
++		return -1;
++	}
++	pdata = pdev->dev.platform_data;
++	return pmem_setup(pdata, NULL, NULL);
++}
++
++
++static int pmem_remove(struct platform_device *pdev)
++{
++	int id = pdev->id;
++	__free_page(pfn_to_page(pmem[id].garbage_pfn));
++	misc_deregister(&pmem[id].dev);
++	return 0;
++}
++
++static struct platform_driver pmem_driver = {
++	.probe = pmem_probe,
++	.remove = pmem_remove,
++	.driver = { .name = "android_pmem" }
++};
++
++
++static int __init pmem_init(void)
++{
++	return platform_driver_register(&pmem_driver);
++}
++
++static void __exit pmem_exit(void)
++{
++	platform_driver_unregister(&pmem_driver);
++}
++
++module_init(pmem_init);
++module_exit(pmem_exit);
++
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
 
+----- End forwarded message -----
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
