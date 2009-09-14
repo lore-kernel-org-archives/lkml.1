@@ -1,95 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZINPVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZINP1v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbZINPVm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbZINPVl
+	id S1755425AbZINP1v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:27:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754496AbZINP1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:21:41 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:48772 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754835AbZINPVk (ORCPT
+	Mon, 14 Sep 2009 11:27:49 -0400
+Received: from smtp.nokia.com ([192.100.122.230]:47943 "EHLO
+	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751066AbZINP1t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:21:40 -0400
-Date: Mon, 14 Sep 2009 16:21:29 +0100
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Felipe Contreras <felipe.contreras@gmail.com>
-Cc: Jamie Lokier <jamie@shareable.org>, Marek Vasut <marek.vasut@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
-Subject: Re: [PATCH] arm: remove unused code in delay.S
-Message-ID: <20090914152129.GI21580@n2100.arm.linux.org.uk>
-References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <200909132328.47079.marek.vasut@gmail.com> <20090913230008.GC30169@n2100.arm.linux.org.uk> <20090914002100.GD30621@shareable.org> <20090914081001.GB14519@n2100.arm.linux.org.uk> <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com> <20090914140059.GC21580@n2100.arm.linux.org.uk> <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com> <20090914144028.GG21580@n2100.arm.linux.org.uk> <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+	Mon, 14 Sep 2009 11:27:49 -0400
+Subject: Re: [PATCH v3 00/18] periodic write-back timer optimization
+From: Artem Bityutskiy <dedekind1@gmail.com>
+Reply-To: dedekind1@gmail.com
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4A69D71B.4090006@gmail.com>
+References: <20090709084822.12122.79749.sendpatchset@localhost.localdomain>
+	 <4A5D7564.9020304@gmail.com>  <4A69D71B.4090006@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Sep 2009 18:27:15 +0300
+Message-Id: <1252942035.5060.105.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 14 Sep 2009 15:27:38.0146 (UTC) FILETIME=[E43E5820:01CA354F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 06:14:08PM +0300, Felipe Contreras wrote:
-> On Mon, Sep 14, 2009 at 5:40 PM, Russell King - ARM Linux
-> <linux@arm.linux.org.uk> wrote:
-> > On Mon, Sep 14, 2009 at 05:38:32PM +0300, Felipe Contreras wrote:
-> >> On Mon, Sep 14, 2009 at 5:00 PM, Russell King - ARM Linux
-> >> <linux@arm.linux.org.uk> wrote:
-> >> > On Mon, Sep 14, 2009 at 03:58:24PM +0300, Felipe Contreras wrote:
-> >> >> On Mon, Sep 14, 2009 at 11:10 AM, Russell King - ARM Linux
-> >> >> <linux@arm.linux.org.uk> wrote:
-> >> >> > On Mon, Sep 14, 2009 at 01:21:00AM +0100, Jamie Lokier wrote:
-> >> >> >> Russell King - ARM Linux wrote:
-> >> >> >> > On Sun, Sep 13, 2009 at 11:28:47PM +0200, Marek Vasut wrote:
-> >> >> >> > > > † † † † † † † † bhi † † __delay
-> >> >> >> > > > † † † † † † † † mov † † pc, lr
-> >> >> >> > > > †ENDPROC(__udelay)
-> >> >> >> > > >
-> >> >> >> > > Hi
-> >> >> >> > >
-> >> >> >> > > why was this code there in the first place ?
-> >> >> >> >
-> >> >> >> > To make the delay loop more stable and predictable on older CPUs.
-> >> >> >>
-> >> >> >> So why has it been commented out, if it's needed for that?
-> >> >> >
-> >> >> > We moved on and it penalises later CPUs, leading to udelay providing
-> >> >> > shorter delays than requested.
-> >> >> >
-> >> >> > So the choice was either stable and predictable on older CPUs but
-> >> >> > buggy on newer CPUs, or correct on all CPUs but gives unnecessarily
-> >> >> > longer delays on older CPUs.
-> >> >>
-> >> >> Why not add an #ifdef CPU_V4 or whatever?
-> >> >
-> >> > Because then you get it whenever you configure for V4 as the lowest
-> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
-> >> > It's far better to leave it as is and just accept that the old CPUs
-> >> > will have longer than necessary delays. †If people really really
-> >> > care (and there's likely to only be a small minority of them now)
-> >> > changing the '0' to a '1' is a very simple change for them to carry
-> >> > in their local tree. †Unlike getting the right unrolling etc.
-> >>
-> >> Well, they can also 'git revert' this patch. If somebody really cares
-> >> I think they should shout now and provide a better patch, otherwise
-> >> this one should be merged.
+On Fri, 2009-07-24 at 18:45 +0300, Artem Bityutskiy wrote:
+> On 07/15/2009 09:21 AM, Artem Bityutskiy wrote:
+> > Artem Bityutskiy wrote:
 > >
-> > On the other hand, having the code there as it currently stands is not
-> > harmful in any way, so leaving it there is just as easy.
+> >> this is the third or fourth attempt. Al, would you please take a look
+> >> at this? Would it be possible to get your ack and then merge this
+> >> via Jens' tree?
+> >
+> > Ping.
 > 
-> It makes the code less understandable. I'm not sure about linux's
-> practices, but an #if 0 generally means somebody is being lazy.
+> Ping2.
+> 
+Ping3.
 
-I would agree with you if it was a complicated bit of code, but it
-isn't.  It is a simple count to zero (or overflow) and terminate
-loop.  And it's certainly not about me being lazy.
+-- 
+Best Regards,
+Artem Bityutskiy (–ê—Ä—Ç—ë–º –ë–∏—Ç—é—Ü–∫–∏–π)
 
-Unless there is a strong argument for removing it, the code stays as
-is.
-
-So far, the argument is basically "it's a #if 0, we must get rid of
-it" which is a religous argument, not a technical one.  The fact is
-that (as I said above) keeping it there provides the code for when
-people want to enable it.  That's a technical reason for keeping it.
-
-Please can we now move to something more productive instead of this
-religous argument?
