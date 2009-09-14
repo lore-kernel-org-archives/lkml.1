@@ -1,374 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755478AbZINMcC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbZINMe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755478AbZINMcC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 08:32:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755469AbZINMcB
+	id S1755473AbZINMe0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 08:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbZINMeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 08:32:01 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:39158 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755455AbZINMcA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 08:32:00 -0400
-Date: Mon, 14 Sep 2009 21:32:03 +0900 (JST)
-Message-Id: <20090914.213203.59660671.ryov@valinux.co.jp>
-To: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       containers@lists.linux-foundation.org,
-       virtualization@lists.linux-foundation.org,
-       xen-devel@lists.xensource.com, agk@redhat.com
-Subject: [PATCH 9/9] blkio-cgroup-v12: The document of a cgroup support for
- dm-ioband
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090914.213143.39162487.ryov@valinux.co.jp>
-References: <20090914.213047.112618086.ryov@valinux.co.jp>
-	<20090914.213118.183028978.ryov@valinux.co.jp>
-	<20090914.213143.39162487.ryov@valinux.co.jp>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 08:34:25 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46007 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751547AbZINMeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 08:34:24 -0400
+Date: Mon, 14 Sep 2009 14:34:25 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
+       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 1/7] writeback: merely wakeup flusher thread if work
+	allocation fails for WB_SYNC_NONE
+Message-ID: <20090914123425.GF24075@duck.suse.cz>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-2-git-send-email-jens.axboe@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1252920994-11141-2-git-send-email-jens.axboe@oracle.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The document of a cgroup support for dm-ioband.
+On Mon 14-09-09 11:36:28, Jens Axboe wrote:
+> From: Christoph Hellwig <hch@infradead.org>
+> 
+> Since it's an opportunistic writeback and not a data integrity action,
+> don't punt to blocking writeback. Just wakeup the thread and it will
+> flush old data.
+> 
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+  Looks good. Acked-by: Jan Kara <jack@suse.cz>
+ BTW, don't we miss Christoph's Signed-off-by?
 
-Signed-off-by: Hirokazu Takahashi <taka@valinux.co.jp>
-Signed-off-by: Ryo Tsuruta <ryov@valinux.co.jp>
+								Honza
 
----
- Documentation/cgroups/blkio.txt |  314 +++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 313 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.31/Documentation/cgroups/blkio.txt
-===================================================================
---- linux-2.6.31.orig/Documentation/cgroups/blkio.txt
-+++ linux-2.6.31/Documentation/cgroups/blkio.txt
-@@ -11,6 +11,9 @@ I/O with a little enhancement.
- 
- 2. Setting up blkio-cgroup
- 
-+Note: If dm-ioband is to be used with blkio-cgroup, then the dm-ioband
-+patch needs to be applied first.
-+
- The following kernel config options are required.
- 
- CONFIG_CGROUPS=y
-@@ -43,7 +46,316 @@ determined by retrieving the ID number f
- the page cgroup is associated with the page which is involved in the
- I/O.
- 
--4. Contact
-+If the dm-ioband support patch was applied then the blkio.devices and
-+blkio.settings files will also be present.
-+
-+4. Using dm-ioband and blkio-cgroup
-+
-+This section describes how to set up dm-ioband and blkio-cgroup in
-+order to control bandwidth on a per cgroup per logical volume basis.
-+The example used in this section assumes that there are two LVM volume
-+groups on individual hard disks and two logical volumes on each volume
-+group.
-+
-+                         Table. LVM configurations
-+
-+     --------------------------------------------------------------
-+    |   LVM volume group   |  vg0 on /dev/sda  |  vg1 on /dev/sdb  |
-+    |----------------------+-------------------+-------------------|
-+    |  LVM logical volume  |   lv0   |   lv1   |   lv0   |   lv1   |
-+     --------------------------------------------------------------
-+
-+4.1. Creating a dm-ioband logical device
-+
-+A dm-ioband logical device needs to be created and stacked on the
-+device that is to bandwidth controlled. In this example the dm-ioband
-+logical devices are stacked on each of the existing LVM logical
-+volumes. By using the LVM facilities there is no need to unmount any
-+logical volumes, even in the case of a volume being used as the root
-+device. The following script is an example of how to stack and remove
-+dm-ioband devices.
-+
-+==================== cut here (ioband.sh) ====================
-+#!/bin/sh
-+#
-+# NOTE: You must run "ioband.sh stop" to restore the device-mapper
-+# settings before changing logical volume settings, such as activate,
-+# rename, resize and so on. These constraints would be eliminated by
-+# enhancing LVM tools to support dm-ioband.
-+
-+logvols="vg0-lv0 vg0-lv1 vg1-lv0 vg1-lv1"
-+
-+start()
-+{
-+	for lv in $logvols; do
-+		volgrp=${lv%%-*}
-+		orig=${lv}-orig
-+
-+		# clone an existing logical volume.
-+		/sbin/dmsetup table $lv | /sbin/dmsetup create $orig
-+
-+		# stack a dm-ioband device on the clone.
-+		size=$(/sbin/blockdev --getsize /dev/mapper/$orig)
-+		cat<<-EOM | /sbin/dmsetup load ${lv}
-+	0 $size ioband /dev/mapper/${orig} ${volgrp} 0 0 cgroup weight 0 :100
-+		EOM
-+
-+		# activate the new setting.
-+		/sbin/dmsetup resume $lv
-+	done
-+}
-+
-+stop()
-+{
-+	for lv in $logvols; do
-+		orig=${lv}-orig
-+
-+		# restore the original setting.
-+		/sbin/dmsetup table $orig | /sbin/dmsetup load $lv
-+
-+		# activate the new setting.
-+		/sbin/dmsetup resume $lv
-+
-+		# remove the clone.
-+		/sbin/dmsetup remove $orig
-+	done
-+}
-+
-+case "$1" in
-+	start)
-+		start
-+        ;;
-+	stop)
-+		stop
-+        ;;
-+esac
-+exit 0
-+==================== cut here (ioband.sh) ====================
-+
-+The following diagram shows how dm-ioband devices are stacked on and
-+removed from the logical volumes.
-+
-+           Figure. stacking and removing dm-ioband devices
-+
-+                     run "ioband.sh start"
-+                              ===>
-+
-+     -----------------------        -----------------------
-+    |    lv0    |    lv1    |      |    lv0    |    lv1    |
-+    |(dm-linear)|(dm-linear)|      |(dm-ioband)|(dm-ioband)|
-+    |-----------------------|      |-----------+-----------|
-+    |         vg0           |      | lv0-orig  | lv1-orig  |
-+     -----------------------       |(dm-linear)|(dm-linear)|
-+                                   |-----------------------|
-+                                   |          vg0          |
-+                                    -----------------------
-+                              <===
-+                      run "ioband.sh stop"
-+
-+After creating the dm-ioband devices, the settings can be observed by
-+reading the blkio.devices file.
-+
-+# cat /cgroup/blkio.devices
-+vg0 policy=weight io_throttle=4 io_limit=192 token=768 carryover=2
-+  vg0-lv0
-+  vg0-lv1
-+vg1 policy=weight io_throttle=4 io_limit=192 token=768 carryover=2
-+  vg1-lv0
-+  vg1-lv1
-+
-+The first field in the first line is the symbolic name for an ioband
-+device group, and the subsequent fields are settings for the ioband
-+device group. The settings can be changed by writing to the
-+blkio.devices, for example:
-+
-+# echo vg1 policy range-bw > /cgroup/blkio.devices
-+
-+Please refer to Document/device-mapper/ioband.txt which describes the
-+details of the ioband device group settings.
-+
-+The second and the third indented lines "vg0-lv0" and "vg0-lv1" are
-+the names of the dm-ioband devices that belong to the ioband device
-+group. Typically, dm-ioband devices that reside on the same hard disk
-+should belong to the same ioband device group in order to share the
-+bandwidth of the hard disk.
-+
-+dm-ioband is not restricted to working with LVM, it may work in
-+conjunction with any type of block device. Please refer to
-+Documentation/device-mapper/ioband.txt for more details.
-+
-+4.2 Setting up dm-ioband through the blkio-cgroup interface
-+
-+The following table shows the given settings for this example. The
-+bandwidth will be assigned on a per cgroup per logical volume basis.
-+
-+                   Table. Settings for each cgroup
-+
-+     --------------------------------------------------------------
-+    |   LVM volume group   |  vg0 on /dev/sda  |  vg1 on /dev/sdb  |
-+    |----------------------+-------------------+-------------------|
-+    |  LVM logical volume  |   lv0   |   lv1   |   lv0   |   lv1   |
-+    |----------------------+-------------------+-------------------|
-+    |   bandwidth control  |     relative      |     absolute      |
-+    |        policy        |      weight       |  bandwidth limit  |
-+    |----------------------+-------------------+-------------------|
-+    |         unit         |     weight [%]    | throughput [KB/s] |
-+    |----------------------+-------------------+-------------------|
-+    | settings for cgroup1 |    30   |    50   |   400   |   900   |
-+    |----------------------+---------+---------+---------+---------|
-+    | settings for cgroup2 |    60   |    20   |   200   |   600   |
-+    |----------------------+---------+---------+---------+---------|
-+    |    for root cgroup   |    70   |    30   |   100   |   300   |
-+     --------------------------------------------------------------
-+
-+The set-up is described step-by-step below.
-+
-+1) Create new cgroups using the mkdir command
-+
-+# mkdir /cgroup/1
-+# mkdir /cgroup/2
-+
-+2) Set bandwidth control policy on each ioband device group
-+
-+The set-up of bandwidth control policy is done by writing to
-+blkio.devices file.
-+
-+# echo vg0 policy weight > /cgroup/blkio.devices
-+# echo vg1 policy range-bw > /cgroup/blkio.devices
-+
-+3) Set up the root cgroup
-+
-+The root cgroup represents the default blkio-cgroup. If an I/O is
-+performed by a process in a cgroup and the cgroup is not set up by
-+blkio-cgroup, the I/O is charged to the root cgroup.
-+
-+The set-up of the root cgroup is done by writing to blkio.settings
-+file in the cgroup's root directory. The following commands write
-+the settings of each logical volume to that file.
-+
-+# echo vg0-lv0 70 > /cgroup/bklio.settings
-+# echo vg0-lv1 30 > /cgroup/bklio.settings
-+# echo vg1-lv0 100:100 > /cgroup/blkio.settings
-+# echo vg1-lv1 300:300 > /cgroup/blkio.settings
-+
-+The settings can be verified by reading the blkio.settings file. The
-+first field is the symbolic name for an ioband device group, and the
-+second field is an ioband device name. The following example shows
-+that vg0-lv0 and vg0-lv1 belong to the same ioband device group and
-+share the bandwidth of sda according to their weights.
-+
-+# cat /cgroup/blkio.settings
-+sda vg0-lv0 weight=70%
-+sda vg0-lv1 weight=30%
-+sdb vg1-lv0 range-bw=100:100
-+sdb vg1-lv1 range-bw=300:300
-+
-+4) Set up cgroup1 and cgroup2
-+
-+New cgroups are set up in the same manner as the root cgroup.
-+
-+Settings for cgroup1
-+# echo vg0-lv0 30 > /cgroup/1/blkio.settings
-+# echo vg0-lv1 50 > /cgroup/1/bklio.settings
-+# echo vg1-lv0 400:400 > /cgroup/1/blkio.settings
-+# echo vg1-lv1 900:900 > /cgroup/1/bklio.settings
-+
-+Settings for cgroup2
-+# echo vg0-lv0 60 > /cgroup/2/blkio.settings
-+# echo vg0-lv1 20 > /cgroup/2/bklio.settings
-+# echo vg1-lv0 200:200 > /cgroup/2/blkio.settings
-+# echo vg1-lv1 600:600 > /cgroup/2/bklio.settings
-+
-+Again, the settings can be verified by reading the appropriate
-+blkio.settings file.
-+
-+# cat /cgroup/1/blkio.settings
-+vg0-lv0 weight=30%
-+vg0-lv1 weight=50%
-+vg1-lv0 range-bw=400:400
-+vg1-lv1 range-bw=900:900
-+
-+If only the logical volume name is specified, the entry for the
-+logical volume is removed.
-+
-+# echo vg0-lv1 > /cgroup/1/vlkio.setting
-+# cat /cgroup/1/blkio.settings
-+vg0-lv0 weight=30%
-+vg0-lv1 weight=50%
-+vg1-lv0 range-bw=400:400
-+
-+4.3 How bandwidth is distributed in the weight policy.
-+
-+The weight policy assigns bandwidth proportional to the weight of each
-+cgroup in a hierarchical manner. The bandwidth assigned to a parent
-+cgroup is distributed among the parent and its children according to
-+their weight. For example, if there are two child cgroups under the
-+parent cgroup, cgroup1 is assigned 60% of the parent bandwidth, and
-+cgroup2 is assigned 30%, then 10% (100% - 60% + 30%) remains for the
-+parent cgroup.
-+
-+        Figure. bandwidth distribution among a parent and children
-+
-+                    (100% - 30% - 60% = 10%)
-+                            parent
-+                           /      \
-+                       cgroup1    cgroup2
-+                        (30%)      (60%)
-+
-+The followings show how the bandwidth is calculated ans assigned to
-+each cgroup in the given settings which are shown above.
-+
-+           Figure. hierarchical settings by the weight policy
-+
-+                (70%)  ---  /dev/sda ---  (30%) 
-+
-+               vg0/lv0                   vg0/lv1
-+
-+                (10%)                     (30%)
-+             root(parent)              root(parent)
-+              /      \                  /      \
-+          cgroup1    cgroup2        cgroup1    cgroup2
-+           (30%)      (60%)          (50%)      (20%)
-+
-+
-+             Table. actual bandwidth assigned to each cgroup
-+
-+        ------------------------------------------------------------
-+       |          |         | weight     | actual bandwidth         |
-+       | shared   | logical | for a root | assigned to each cgroup  |
-+       | device   | volume  | group      | against /dev/sda         |
-+       |----------+---------+------------+--------------------------|
-+       |          |         |            | parent   70% * 10% =  7% |
-+       |          | vg0/lv0 |     70%    | cgroup1  70% * 30% = 21% |
-+       |          |         |            | cgroup2  70% * 60% = 42% |	
-+       | /dev/sda |---------+------------+--------------------------|
-+       |          |         |            | parent   30% * 30% =  9% |
-+       |          | vg1/lv1 |     30%    | cgroup1  30% * 50% = 15% |
-+       |          |         |            | cgruop2  30% * 20% =  6% |
-+        ------------------------------------------------------------
-+
-+4.4 Getting IO statistics per cgroup.
-+
-+The blkio.stats file provides IO statistics per dm-ioband per cgroup.
-+This file consists of 12 fields separated by whitespace. The format is
-+almost the same as /proc/diskstats and /sys/block/dev/stat files, but
-+some fields are reserved for future use and they always return 0.
-+
-+Field #   Name            units         description
-+-------   ----            -----         -----------
-+1         device name                   name of dm-ioband device
-+2         read I/Os       requests      number of read I/Os processed
-+3                                       *reserved*
-+4         read sectors    sectors       number of sectors read
-+5                                       *reserved*
-+6         write I/Os      requests      number of write I/Os processed
-+7                                       *reserved*
-+8         write sectors   sectors       number of sectors written
-+9                                       *reserved*
-+10        in_flight       requests      number of I/Os currently in flight
-+11                                      *reserved*
-+12                                      *reserved*
-+
-+5. Contact
- 
- Linux Block I/O Bandwidth Control Project
- http://sourceforge.net/projects/ioband/
+> ---
+>  fs/fs-writeback.c |   46 ++++++++++++++--------------------------------
+>  1 files changed, 14 insertions(+), 32 deletions(-)
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index da86ef5..1873fd0 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -75,13 +75,6 @@ static inline void bdi_work_init(struct bdi_work *work,
+>  	work->state = WS_USED;
+>  }
+>  
+> -static inline void bdi_work_init_on_stack(struct bdi_work *work,
+> -					  struct writeback_control *wbc)
+> -{
+> -	bdi_work_init(work, wbc);
+> -	work->state |= WS_ONSTACK;
+> -}
+> -
+>  /**
+>   * writeback_in_progress - determine whether there is writeback in progress
+>   * @bdi: the device's backing_dev_info structure.
+> @@ -207,34 +200,23 @@ static struct bdi_work *bdi_alloc_work(struct writeback_control *wbc)
+>  
+>  void bdi_start_writeback(struct writeback_control *wbc)
+>  {
+> -	const bool must_wait = wbc->sync_mode == WB_SYNC_ALL;
+> -	struct bdi_work work_stack, *work = NULL;
+> -
+> -	if (!must_wait)
+> -		work = bdi_alloc_work(wbc);
+> +	/*
+> +	 * WB_SYNC_NONE is opportunistic writeback. If this allocation fails,
+> +	 * bdi_queue_work() will wake up the thread and flush old data. This
+> +	 * should ensure some amount of progress in freeing memory.
+> +	 */
+> +	if (wbc->sync_mode != WB_SYNC_ALL) {
+> +		struct bdi_work *w = bdi_alloc_work(wbc);
+>  
+> -	if (!work) {
+> -		work = &work_stack;
+> -		bdi_work_init_on_stack(work, wbc);
+> -	}
+> +		bdi_queue_work(wbc->bdi, w);
+> +	} else {
+> +		struct bdi_work work;
+>  
+> -	bdi_queue_work(wbc->bdi, work);
+> +		bdi_work_init(&work, wbc);
+> +		work.state |= WS_ONSTACK;
+>  
+> -	/*
+> -	 * If the sync mode is WB_SYNC_ALL, block waiting for the work to
+> -	 * complete. If not, we only need to wait for the work to be started,
+> -	 * if we allocated it on-stack. We use the same mechanism, if the
+> -	 * wait bit is set in the bdi_work struct, then threads will not
+> -	 * clear pending until after they are done.
+> -	 *
+> -	 * Note that work == &work_stack if must_wait is true, so we don't
+> -	 * need to do call_rcu() here ever, since the completion path will
+> -	 * have done that for us.
+> -	 */
+> -	if (must_wait || work == &work_stack) {
+> -		bdi_wait_on_work_clear(work);
+> -		if (work != &work_stack)
+> -			call_rcu(&work->rcu_head, bdi_work_free);
+> +		bdi_queue_work(wbc->bdi, &work);
+> +		bdi_wait_on_work_clear(&work);
+>  	}
+>  }
+>  
+> -- 
+> 1.6.4.1.207.g68ea
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
