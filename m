@@ -1,47 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZINXk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933594AbZINXnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbZINXk0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 19:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757493AbZINXkY
+	id S933594AbZINXnV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 19:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933509AbZINXnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 19:40:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51667 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753655AbZINXkY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 19:40:24 -0400
-Date: Mon, 14 Sep 2009 16:39:46 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: David Daney <ddaney@caviumnetworks.com>
-cc: Brian Gerst <brgerst@gmail.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH 11/11] Use unreachable() in asm-generic/bug.h for 
- !CONFIG_BUG case.
-In-Reply-To: <4AAED18E.7030903@caviumnetworks.com>
-Message-ID: <alpine.LFD.2.01.0909141637250.4950@localhost.localdomain>
-References: <4AAEBAC2.1050905@caviumnetworks.com>  <1252965340-31735-11-git-send-email-ddaney@caviumnetworks.com> <73c1f2160909141612i32f46361q7430cecf0b68d07b@mail.gmail.com> <4AAED18E.7030903@caviumnetworks.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 14 Sep 2009 19:43:20 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:13667 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932853AbZINXnT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 19:43:19 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [RFC PATCH -tip v4 0/9] kprobes: Kprobes jump optimization support
+To: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Anders Kaseorg <andersk@ksplice.com>, Tim Abbott <tabbott@ksplice.com>,
+       Andi Kleen <andi@firstfloor.org>, Jason Baron <jbaron@redhat.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Date: Mon, 14 Sep 2009 19:44:48 -0400
+Message-ID: <20090914234448.25174.70702.stgit@dhcp-100-2-132.bos.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+
+Here are the patchset of the kprobes jump optimization v4
+(a.k.a. Djprobe). This version includes some bugfixes and
+generic kernel patching interface which allow you to replace
+just single instruction without stop_machine(and this is
+enough for Jason's tracepoint jump patching).
+
+These patches can be applied on random-tracing tree.
+
+Changes from v3:
+ - Change RELATIVEJUMP_INSTRUCTION macro to RELATIVEJUMP_OPCODE.
+ - Don't clear current_kprobe when reentering probe is boosted.
+ - Don't clear current_kprobe when reenter probe goes to optimized path.
+ - Update code against for x86 insn decoder updating.
+ - Use generic jump patching API.
+
+And kprobe stress test didn't found any regressions,
+under kvm/x86.
+
+Jump Optimized Kprobes
+======================
+o Concept
+ Kprobes uses the int3 breakpoint instruction on x86 for instrumenting
+probes into running kernel. Jump optimization allows kprobes to replace
+breakpoint with a jump instruction for reducing probing overhead drastically.
+
+o Performance
+ An optimized kprobe 5 times faster than a kprobe.
+
+ Optimizing probes gains its performance. Usually, a kprobe hit takes
+0.5 to 1.0 microseconds to process. On the other hand, a jump optimized
+probe hit takes less than 0.1 microseconds (actual number depends on the
+processor). Here is a sample overheads.
+
+Intel(R) Xeon(R) CPU E5410  @ 2.33GHz (without debugging options)
+
+                     x86-32  x86-64
+kprobe:              0.68us  0.91us
+kprobe+booster:	     0.27us  0.40us
+kprobe+optimized:    0.06us  0.06us
+
+kretprobe :          0.95us  1.21us
+kretprobe+booster:   0.53us  0.71us
+kretprobe+optimized: 0.30us  0.35us
+
+(booster skips single-stepping)
+
+ Note that jump optimization also consumes more memory, but not so much.
+It just uses ~200 bytes, so, even if you use ~10,000 probes, it just 
+consumes a few MB.
 
 
-On Mon, 14 Sep 2009, David Daney wrote:
-> 
-> The existing code just falls through to whatever happens to follow the BUG().
+o Usage
+ Set CONFIG_OPTPROBES=y when building a kernel, then all *probes will be
+optimized if possible.
 
-Brian was talking BUG_ON().
+ Kprobes decodes probed function and checks whether the target instructions
+can be optimized(replaced with a jump) safely. If it can't be, Kprobes just
+doesn't optimize it.
 
-And the existing !CONFIG_BUG BUG_ON() is actually set up so that gcc will 
-just optimize it away entirely (yet give the same compile-time warnings as 
-the "real" BUG_ON() does).
 
-Changing it to "if (cond) unreachable()" is likely to generate _more_ 
-code, which is against the whole point of wanting to disable CONFIG_BUG.
+o Optimization
+  Before preparing optimization, Kprobes inserts original(user-defined)
+ kprobe on the specified address. So, even if the kprobe is not
+ possible to be optimized, it just uses a normal kprobe.
 
-			Linus
+ - Safety check
+  First, Kprobes gets the address of probed function and checks whether the
+ optimized region, which will be replaced by a jump instruction, does NOT
+ straddle the function boundary, because if the optimized region reaches the
+ next function, its caller causes unexpected results.
+  Next, Kprobes decodes whole body of probed function and checks there is
+ NO indirect jump, NO instruction which will cause exception by checking
+ exception_tables (this will jump to fixup code and fixup code jumps into
+ same function body) and NO near jump which jumps into the optimized region
+ (except the 1st byte of jump), because if some jump instruction jumps
+ into the middle of another instruction, it causes unexpected results too.
+  Kprobes also measures the length of instructions which will be replaced
+ by a jump instruction, because a jump instruction is longer than 1 byte,
+ it may replaces multiple instructions, and it checks whether those
+ instructions can be executed out-of-line.
+
+ - Preparing detour code
+  Then, Kprobes prepares "detour" buffer, which contains exception emulating
+ code (push/pop registers, call handler), copied instructions(Kprobes copies
+ instructions which will be replaced by a jump, to the detour buffer), and
+ a jump which jumps back to the original execution path.
+
+ - Pre-optimization
+  After preparing detour code, Kprobes enqueues the kprobe to optimizing list
+ and kicks kprobe-optimizer workqueue to optimize it. To wait other optimized
+ probes, kprobe-optimizer will delay to work.
+  When the optimized-kprobe is hit before optimization, its handler
+ changes IP(instruction pointer) to copied code and exits. So, the
+ instructions which were copied to detour buffer are executed on the detour
+ buffer.
+
+ - Optimization
+  Kprobe-optimizer doesn't start instruction-replacing soon, it waits
+ synchronize_sched for safety, because some processors are possible to be
+ interrupted on the instructions which will be replaced by a jump instruction.
+ As you know, synchronize_sched() can ensure that all interruptions which were
+ executed when synchronize_sched() was called are done, only if
+ CONFIG_PREEMPT=n. So, this version supports only the kernel with
+ CONFIG_PREEMPT=n.(*)
+  After that, kprobe-optimizer replaces the 4 bytes right after int3 breakpoint
+ with relative-jump destination, and synchronize caches on all processors. Next,
+ it replaces int3 with relative-jump opcode, and synchronize caches again.
+
+ - Unoptimization
+  When unregistering, disabling kprobe or being blocked by other kprobe,
+ an optimized-kprobe will be unoptimized. Before kprobe-optimizer runs,
+ the kprobe just be dequeued from the optimized list. When the optimization
+ has been done, it replaces a jump with int3 breakpoint and original code.
+  First it puts int3 at the first byte of the jump, synchronize caches
+ on all processors, and replaces the 4 bytes right after int3 with the
+ original code.
+
+(*)This optimization-safety checking may be replaced with stop-machine method
+ which ksplice is done for supporting CONFIG_PREEMPT=y kernel.
+
+
+Thank you,
+
+---
+
+Masami Hiramatsu (9):
+      kprobes: Add documents of jump optimization
+      kprobes/x86: Support kprobes jump optimization on x86
+      kprobes/x86: Cleanup save/restore registers
+      kprobes/x86: Boost probes when reentering
+      kprobes: Jump optimization sysctl interface
+      kprobes: Introduce kprobes jump optimization
+      kprobes: Introduce generic insn_slot framework
+      x86: Introduce generic jump patching without stop_machine
+      kprobes/x86: Cleanup RELATIVEJUMP_INSTRUCTION to RELATIVEJUMP_OPCODE
+
+
+ Documentation/kprobes.txt          |  192 +++++++++++-
+ arch/Kconfig                       |   13 +
+ arch/x86/Kconfig                   |    1 
+ arch/x86/include/asm/alternative.h |   12 +
+ arch/x86/include/asm/kprobes.h     |   31 ++
+ arch/x86/kernel/alternative.c      |  120 ++++++++
+ arch/x86/kernel/kprobes.c          |  571 +++++++++++++++++++++++++++++-------
+ include/linux/kprobes.h            |   45 +++
+ kernel/kprobes.c                   |  573 +++++++++++++++++++++++++++++++-----
+ kernel/sysctl.c                    |   13 +
+ 10 files changed, 1366 insertions(+), 205 deletions(-)
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
