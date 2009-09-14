@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZINNYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZINNY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZINNYE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 09:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbZINNYC
+	id S1755564AbZINNY7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 09:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755550AbZINNY6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 09:24:02 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39328 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751900AbZINNYA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 09:24:00 -0400
-X-Sasl-enc: 20kGEFa+gnmfGEJ+ftSVDQA2EO4ANbVLKt7Q+k/9eNuy 1252934643
-Date: Mon, 14 Sep 2009 10:24:01 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Corentin Chary <corentincj@iksaif.net>
-Cc: linux-acpi@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>,
-       Alan Jenkins <alan-jenkins@tuffmail.co.uk>,
-       Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 0/3] rfkill_unregister() should always be followed by
- rfkill_destroy()
-Message-ID: <20090914132401.GC32253@khazad-dum.debian.net>
-References: <1252925033-29696-1-git-send-email-corentincj@iksaif.net>
+	Mon, 14 Sep 2009 09:24:58 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47952 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755549AbZINNYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 09:24:54 -0400
+Message-ID: <4AAE4422.4040801@suse.de>
+Date: Mon, 14 Sep 2009 22:24:50 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252925033-29696-1-git-send-email-corentincj@iksaif.net>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F
- 1CDB 0FE3
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: Chris Webb <chris@arachsys.com>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <20090914131114.GA32253@khazad-dum.debian.net>
+In-Reply-To: <20090914131114.GA32253@khazad-dum.debian.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Corentin Chary wrote:
->  drivers/platform/x86/dell-laptop.c   |   36 ++++++++++++++++++++++-----------
->  drivers/platform/x86/hp-wmi.c        |    2 +-
->  drivers/platform/x86/thinkpad_acpi.c |    1 +
+Henrique de Moraes Holschuh wrote:
+> On Mon, 14 Sep 2009, Tejun Heo wrote:
+>> Oooh, another possibility is the above continuous IDENTIFY tries.
+>> Doing things like that generally isn't a good idea because vendors
+>> don't expect IDENTIFY to be mixed regularly with normal IOs and
+> 
+> IMHO that means the kernel should be special-casing such commands, then (i.e
+> quiesce drive, do command, quiesce driver, start IO again), probably
+> rate-limiting it for good effect.
+> 
+> This is the kind of stuff that userspace should NOT have to worry about
+> (because it will get it wrong and cause data corruption eventually).
 
-These are also likely needed in 2.6.31, please add appropriate Cc: lines to
-stable@kernel.org while adding the Acked-By's.
+If this indeed is the case (As Mark pointed out, there hasn't been any
+precedence involving IDENTIFY but it's also the first time I see
+IDENTIFY timeouts which are issued from userland), this is the kind
+that userspace shouldn't do to begin with.
+
+There was another similar problem.  Some acpi package in ubuntu issues
+APM adjustment commands whenever power related stuff changes.  The
+firmware on the drive which shipped on Samsung NC10 for some reason
+locks up after being hit with enough of those commands.  It's just not
+safe to assume these kind of stuff would reliably work.  If you're
+ready to do some research and experiments, it's fine.  If you're doing
+OEM customization with specific hardware and QA, sure, why not (this
+is basically what windows OEMs do too).  But, doing things which
+aren't _usually_ used that way repeatedly _by default_ is asking for
+trouble.  There's a reason why these operations are root only.  :-)
+
+Thanks.
 
 -- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+tejun
