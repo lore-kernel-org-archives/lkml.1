@@ -1,120 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756879AbZINT2m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZINTgB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756879AbZINT2m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 15:28:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756866AbZINT2l
+	id S1756872AbZINTgB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 15:36:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZINTf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 15:28:41 -0400
-Received: from mail-qy0-f181.google.com ([209.85.221.181]:47939 "EHLO
-	mail-qy0-f181.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756811AbZINT2k (ORCPT
+	Mon, 14 Sep 2009 15:35:59 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:1330 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751043AbZINTf6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 15:28:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=UHFJWtPeGReshzEW4Uqt0f39Pz1AAYhtNOgA2nDaSqXCyycIj/aXb7jDPqPOwpv/ST
-         gFHPc2OVVKgIzm07tsXW6YRDzsKZmyuBKDFfPQAoFuB3PsEisjX9pW8c30cSTtSvDGBo
-         IdJL9nUcuygeTEptyzrRPpcgTYqS1hZcrZghY=
-Message-ID: <4AAE9967.9060406@gmail.com>
-Date: Mon, 14 Sep 2009 15:28:39 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
-MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914165320.GA3851@redhat.com>
-In-Reply-To: <20090914165320.GA3851@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigA42345AD71EBB21A4FC6AED0"
+	Mon, 14 Sep 2009 15:35:58 -0400
+Subject: Re: [PATCH] mmap:  avoid unnecessary anon_vma lock acquisition in
+ vma_adjust()
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Nick Piggin <npiggin@suse.de>, Eric Whitney <eric.whitney@hp.com>,
+       stable@kernel.org
+In-Reply-To: <Pine.LNX.4.64.0909131332280.22041@sister.anvils>
+References: <1252527046.4102.162.camel@useless.americas.hpqcorp.net>
+	 <Pine.LNX.4.64.0909131332280.22041@sister.anvils>
+Content-Type: text/plain
+Organization: HP/LKTT
+Date: Mon, 14 Sep 2009 15:35:57 -0400
+Message-Id: <1252956957.17132.201.camel@useless.americas.hpqcorp.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigA42345AD71EBB21A4FC6AED0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Sun, 2009-09-13 at 14:24 +0100, Hugh Dickins wrote:
+> [I've kept stable@kernel.org in the Cc list only to put on record
+> that I don't think that this patch is really suitable for -stable]
+> 
+> On Wed, 9 Sep 2009, Lee Schermerhorn wrote:
+> > 
+> Thanks for this.  Interesting stuff snipped and repeated below.
 
-Michael S. Tsirkin wrote:
-> On Mon, Sep 14, 2009 at 12:08:55PM -0400, Gregory Haskins wrote:
->> Michael S. Tsirkin wrote:
->>> On Fri, Sep 11, 2009 at 12:00:21PM -0400, Gregory Haskins wrote:
->>>> FWIW: VBUS handles this situation via the "memctx" abstraction.  IOW=
-,
->>>> the memory is not assumed to be a userspace address.  Rather, it is =
-a
->>>> memctx-specific address, which can be userspace, or any other type
->>>> (including hardware, dma-engine, etc).  As long as the memctx knows =
-how
->>>> to translate it, it will work.
->>> How would permissions be handled?
->> Same as anything else, really.  Read on for details.
->>
->>> it's easy to allow an app to pass in virtual addresses in its own add=
-ress space.
->> Agreed, and this is what I do.
->>
->> The guest always passes its own physical addresses (using things like
->> __pa() in linux).  This address passed is memctx specific, but general=
-ly
->> would fall into the category of "virtual-addresses" from the hosts
->> perspective.
->>
->> For a KVM/AlacrityVM guest example, the addresses are GPAs, accessed
->> internally to the context via a gfn_to_hva conversion (you can see thi=
-s
->> occuring in the citation links I sent)
->>
->> For Ira's example, the addresses would represent a physical address on=
+Hugh:
 
->> the PCI boards, and would follow any kind of relevant rules for
->> converting a "GPA" to a host accessible address (even if indirectly, v=
-ia
->> a dma controller).
->=20
-> So vbus can let an application
+Thank you for reviewing and correcting the patch.
 
-"application" means KVM guest, or ppc board, right?
+Andrew: 
 
-> access either its own virtual memory or a physical memory on a PCI devi=
-ce.
-
-To reiterate from the last reply: the model is the "guest" owns the
-memory.  The host is granted access to that memory by means of a memctx
-object, which must be admitted to the host kernel and accessed according
- to standard access-policy mechanisms.  Generally the "application" or
-guest would never be accessing anything other than its own memory.
-
-> My question is, is any application
-> that's allowed to do the former also granted rights to do the later?
-
-If I understand your question, no.  Can you elaborate?
-
-Kind Regards,
--Greg
+Shall I resend?  Or, can you grab Hugh's patch from his message?
 
 
---------------enigA42345AD71EBB21A4FC6AED0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Lee
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
 
-iEYEARECAAYFAkqumWcACgkQP5K2CMvXmqFy7ACgi8TyUR3Jecgzz5GkKkFbPghh
-68MAnjdJj8I2gXA9aTDBmumt62C11d3G
-=yoUM
------END PGP SIGNATURE-----
+> 
+> > 
+> > A comment in mm/mmap.c:vma_adjust() suggests that we don't really
+> > need the anon_vma lock when we're only adjusting the end of a vma,
+> 
+> I feel a warm smugness from having foreseen the possibility that we
+> might want to optimize that away.  I didn't do so, because it needs
+> more thought (and more branches) than seemed worthwhile at the time:
+> you've found similar difficulty, but now it does seem worthwhile.
+> 
+> > We can detect this condition--no overlap with next vma--by noting
+> > a NULL "importer".  The anon_vma pointer will also be NULL in this
+> > case, so simply avoid loading vma->anon_vma to avoid the lock.
+> > However, we apparently DO need to take the anon_vma lock when
+> > we're inserting a vma ['insert' non-NULL] even when we have no
+> > overlap [NULL "importer"], so we need to check for 'insert', as well.
+> 
+> Those importer and insert checks are good and relevant, but not
+> quite enough.  The anon_vma lock should also be guaranteeing the
+> integrity of the relationship between vm_start and vm_pgoff for
+> all the vmas attached to the anon_vma, so that rmap.c can rely
+> upon vma_address() to work correctly while it holds anon_vma lock.
+> 
+> That's a considerably less important consideration than the integrity
+> of the list threading itself.  Anything BUGging on a wrong page->index
+> is holding mmap_sem, which would keep vma_adjust off.  So it's just a
+> matter of whether rmap.c can be expected to find all instances of a
+> page at all times, which nothing absolutely requires (and in checking
+> this patch, I notice fs/exec.c's shift_arg_pages() use of vma_adjust()
+> a little violatory in that respect).
+> 
+> But it is something the anon_vma lock has protected in the past,
+> and it shouldn't affect your sbrk() case at all, so I'd like to
+> check we're not changing vm_start too (vm_pgoff should be changing
+> with it, but shift_arg_pages() deals with that in a different way,
+> keeping vm_pgoff unchanged but shifting the pages).
+> 
+> (Compare with how stack's expand_downwards() has anon_vma_lock()
+> when it adjusts vm_start and vm_pgoff - though that's also because
+> it has only down_read of mmap_sem, not the down_write we'd usually
+> require for such adjustments.)
+> 
+> > 
+> > I have tested with and without the 'file || ' test in the patch.
+> > This does not seem to matter for stability nor performance.  I
+> > left this check/filter in, so we only optimize away the
+> > anon_vma lock acquisition when adjusting the end of a non-
+> > importing, non-inserting, anon vma.
+> 
+> I dislike that: the "file" test just has no relevance at all
+> (beyond that you've no interest in the case when there is a file),
+> and two years down the line will make people like me worry for
+> hours on end what it's there for.  I've removed it below.
+> 
+> > 
+> > If accepted, this patch may benefit the stable tree as well.
+> 
+> We seem to have a different perception of what the stable tree is for!
+> But I'm not against any distro picking up this patch if it chooses.
+> Here's a version with my signoff:
+> 
+> 
+> [PATCH] mmap: avoid unnecessary anon_vma lock acquisition in vma_adjust()
+> 
+> From: Lee Schermerhorn <lee.schermerhorn@hp.com>
+> 
+> We noticed very erratic behavior [throughput] with the AIM7 shared
+> workload running on recent distro [SLES11] and mainline kernels on
+> an 8-socket, 32-core, 256GB x86_64 platform.  On the SLES11 kernel
+> [2.6.27.19+] with Barcelona processors, as we increased the load
+> [10s of thousands of tasks], the throughput would vary between two
+> "plateaus"--one at ~65K jobs per minute and one at ~130K jpm.  The
+> simple patch below causes the results to smooth out at the ~130k
+> plateau.
+> 
+> But wait, there's more:
+> 
+> We do not see this behavior on smaller platforms--e.g., 4 socket/8
+> core.  This could be the result of the larger number of cpus on
+> the larger platform--a scalability issue--or it could be the result
+> of the larger number of interconnect "hops" between some nodes in
+> this platform and how the tasks for a given load end up distributed
+> over the nodes' cpus and memories--a stochastic NUMA effect.
+> 
+> The variability in the results are less pronounced [on the same
+> platform] with Shanghai processors and with mainline kernels.  With
+> 31-rc6 on Shanghai processors and 288 file systems on 288 fibre
+> attached storage volumes, the curves [jpm vs load] are both quite
+> flat with the patched kernel consistently producing ~3.9% better
+> throughput [~80K jpm vs ~77K jpm] than the unpatched kernel.
+> 
+> Profiling indicated that the "slow" runs were incurring high[er]
+> contention on an anon_vma lock in vma_adjust(), apparently called
+> from the sbrk() system call.
+> 
+> The patch:
+> 
+> A comment in mm/mmap.c:vma_adjust() suggests that we don't really
+> need the anon_vma lock when we're only adjusting the end of a vma,
+> as is the case for brk().  The comment questions whether it's worth
+> while to optimize for this case.  Apparently, on the newer, larger
+> x86_64 platforms, with interesting NUMA topologies, it is worth
+> while--especially considering that the patch [if correct!] is 
+> quite simple.
+> 
+> We can detect this condition--no overlap with next vma--by noting
+> a NULL "importer".  The anon_vma pointer will also be NULL in this
+> case, so simply avoid loading vma->anon_vma to avoid the lock.
+> 
+> However, we DO need to take the anon_vma lock when we're inserting a
+> vma ['insert' non-NULL] even when we have no overlap [NULL "importer"],
+> so we need to check for 'insert', as well.  And Hugh points out that
+> we should also take it when adjusting vm_start (so that rmap.c can
+> rely upon vma_address() while it holds the anon_vma lock).
+> 
+> Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
+> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Eric Whitney <eric.whitney@hp.com>
+> ---
+> 
+>  mm/mmap.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> --- 2.6.31/mm/mmap.c	2009-09-09 23:13:59.000000000 +0100
+> +++ linux/mm/mmap.c	2009-09-13 13:08:40.000000000 +0100
+> @@ -570,9 +570,9 @@ again:			remove_next = 1 + (end > next->
+>  
+>  	/*
+>  	 * When changing only vma->vm_end, we don't really need
+> -	 * anon_vma lock: but is that case worth optimizing out?
+> +	 * anon_vma lock.
+>  	 */
+> -	if (vma->anon_vma)
+> +	if (vma->anon_vma && (insert || importer || start != vma->vm_start))
+>  		anon_vma = vma->anon_vma;
+>  	if (anon_vma) {
+>  		spin_lock(&anon_vma->lock);
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
---------------enigA42345AD71EBB21A4FC6AED0--
