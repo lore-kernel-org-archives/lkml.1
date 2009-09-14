@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754957AbZINO5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZINO7n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754957AbZINO5U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 10:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZINO5T
+	id S1755673AbZINO7n (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 10:59:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZINO7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 10:57:19 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:54023 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbZINO5S (ORCPT
+	Mon, 14 Sep 2009 10:59:42 -0400
+Received: from mga11.intel.com ([192.55.52.93]:59759 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750791AbZINO7l convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 10:57:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=f6yj8Wun6PfYTa88+Z6qXhPuthGgBm+DULgZhIkxDZWNHozxIc1DQvUi41CVbetGHl
-         M7MmNIiZl7E53QtoJ1xO/qtD4FAuGQQt6O+b3AX/Dk75tSR0YEZ5fA1tQes7wEvkmGHM
-         5jH0ttdjsLS0QRZQGiLFzS3+O/WXgc4XkMMLg=
-Message-ID: <4AAE59CB.8030702@tuffmail.co.uk>
-Date: Mon, 14 Sep 2009 15:57:15 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 14 Sep 2009 10:59:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,383,1249282800"; 
+   d="scan'208";a="726735916"
+From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+To: "Williams, Dan J" <dan.j.williams@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+       "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Date: Mon, 14 Sep 2009 15:59:38 +0100
+Subject: RE: [PATCH 20/29] ioat: switch watchdog and reset handler from
+ workqueue	to timer
+Thread-Topic: [PATCH 20/29] ioat: switch watchdog and reset handler from
+ workqueue	to timer
+Thread-Index: AcotB+poJD/Wv9uzQ5GD9hdXeTJtfgIQ4+Jg
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B554818E@irsmsx504.ger.corp.intel.com>
+References: <20090904022733.32667.77626.stgit@dwillia2-linux.ch.intel.com>
+ <20090904023211.32667.37259.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20090904023211.32667.37259.stgit@dwillia2-linux.ch.intel.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-CC: Corentin Chary <corentincj@iksaif.net>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 0/3] rfkill_unregister() should always be followed by
- rfkill_destroy()
-References: <1252925033-29696-1-git-send-email-corentincj@iksaif.net> <20090914132401.GC32253@khazad-dum.debian.net>
-In-Reply-To: <20090914132401.GC32253@khazad-dum.debian.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Henrique de Moraes Holschuh wrote:
-> On Mon, 14 Sep 2009, Corentin Chary wrote:
->   
->>  drivers/platform/x86/dell-laptop.c   |   36 ++++++++++++++++++++++-----------
->>  drivers/platform/x86/hp-wmi.c        |    2 +-
->>  drivers/platform/x86/thinkpad_acpi.c |    1 +
->>     
->
-> These are also likely needed in 2.6.31, please add appropriate Cc: lines to
-> stable@kernel.org while adding the Acked-By's.
->
->   
+Williams, Dan J wrote:
+> In order to support dynamic resizing of the descriptor ring or polling
+> for a descriptor in the presence of a hung channel the reset handler
+> needs to make progress while in a non-preemptible context.  The current
+> workqueue implementation precludes polling channel reset completion
+> under spin_lock().
+> 
+> This conversion also allows us to return to opportunistic cleanup in the
+> ioat2 case as the timer implementation guarantees at least one cleanup
+> after every descriptor is submitted.  This means the worst case
+> completion latency becomes the timer frequency (for exceptional
+> circumstances), but with the benefit of avoiding busy waiting when the
+> lock is contended.
+> 
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> ---
 
-Do they meet the -stable criteria?
+[...]
+> --- a/drivers/dma/ioat/dma_v2.c
+> +++ b/drivers/dma/ioat/dma_v2.c
+> @@ -49,7 +49,7 @@ static void __ioat2_issue_pending(struct ioat2_dma_chan *ioat)
+>  	void * __iomem reg_base = ioat->base.reg_base;
+> 
+>  	ioat->pending = 0;
+> -	ioat->dmacount += ioat2_ring_pending(ioat);
+> +	ioat->dmacount += ioat2_ring_pending(ioat);;
+double semicolon
 
-...
- - It must fix a real bug that bothers people (not a, "This could be a
-   problem..." type thing).
- - It must fix a problem that causes a build error (but not for things
-   marked CONFIG_BROKEN), an oops, a hang, data corruption, a real
-   security issue, or some "oh, that's not good" issue.  In short, something
-   critical.
-... (Documentation/stable_kernel_rules.txt)
-
-Regards
-Alan
+Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
