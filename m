@@ -1,275 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933962AbZINXpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbZINXy5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933962AbZINXpp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 19:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757546AbZINXpl
+	id S1757558AbZINXy5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 19:54:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757549AbZINXy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 19:45:41 -0400
-Received: from cmpxchg.org ([85.214.51.133]:54795 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757547AbZINXpj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 19:45:39 -0400
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: <linux-mm@kvack.org>, <linux-kernel@vger.kernel.org>,
-       Rik van Riel <riel@redhat.com>
-Subject: [patch] mm: use-once mapped file pages
-Date: Tue, 15 Sep 2009 01:46:15 +0200
-Message-Id: <1252971975-15218-1-git-send-email-hannes@cmpxchg.org>
-X-Mailer: git-send-email 1.6.4.13.ge6580
+	Mon, 14 Sep 2009 19:54:56 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:61417 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757536AbZINXyz convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 19:54:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Pz4xa3MjfSIKdnkiWtInodCUANrauJ8glcQ/6cfTq3uhV4SSWcJIXcNnXYssIRqYSv
+         De+5tOT8oVRcGFx7J5QcjcWtpA1+Fq6ptPitrBcx/PnWKjRxIgLthKm3RLwHe/Wu2hvW
+         ewkwtM5NLzyje7ZCf3RwHtajag8yE0y+z8sFw=
+MIME-Version: 1.0
+In-Reply-To: <4AAED18E.7030903@caviumnetworks.com>
+References: <4AAEBAC2.1050905@caviumnetworks.com>
+	 <1252965340-31735-11-git-send-email-ddaney@caviumnetworks.com>
+	 <73c1f2160909141612i32f46361q7430cecf0b68d07b@mail.gmail.com>
+	 <4AAED18E.7030903@caviumnetworks.com>
+Date: Mon, 14 Sep 2009 19:54:57 -0400
+Message-ID: <73c1f2160909141654w51df78n4f2319cfd2f9362e@mail.gmail.com>
+Subject: Re: [PATCH 11/11] Use unreachable() in asm-generic/bug.h for 
+	!CONFIG_BUG case.
+From: Brian Gerst <brgerst@gmail.com>
+To: David Daney <ddaney@caviumnetworks.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The eviction code directly activates mapped pages (or pages backing a
-mapped file while being unmapped themselves) when they have been
-referenced from a page table or have their PG_referenced bit set from
-read() or the unmap path.
+On Mon, Sep 14, 2009 at 7:28 PM, David Daney <ddaney@caviumnetworks.com> wrote:
+> Brian Gerst wrote:
+>>
+>> On Mon, Sep 14, 2009 at 5:55 PM, David Daney <ddaney@caviumnetworks.com>
+>> wrote:
+>>>
+>>> The subject says it all (most).  The only drawback here is that for a
+>>> pre-GCC-5.4 compiler, instead of expanding to nothing we now expand
+>>> BUG() to an endless loop.  Before the patch when configured with
+>>> !CONFIG_BUG() you might get some warnings, but the code would be
+>>> small.  After the patch there are no warnings, but there is an endless
+>>> loop at each BUG() site.
+>>>
+>>> Of course for the GCC-4.5 case we get the best of both worlds.
+>>>
+>>> Signed-off-by: David Daney <ddaney@caviumnetworks.com>
+>>> Suggested-by: Ingo Molnar <mingo@elte.hu>
+>>> CC: Ingo Molnar <mingo@elte.hu>
+>>> ---
+>>>  include/asm-generic/bug.h |    4 ++--
+>>>  1 files changed, 2 insertions(+), 2 deletions(-)
+>>>
+>>> diff --git a/include/asm-generic/bug.h b/include/asm-generic/bug.h
+>>> index 4b67559..e952242 100644
+>>> --- a/include/asm-generic/bug.h
+>>> +++ b/include/asm-generic/bug.h
+>>> @@ -89,11 +89,11 @@ extern void warn_slowpath_null(const char *file,
+>>> const int line);
+>>>
+>>>  #else /* !CONFIG_BUG */
+>>>  #ifndef HAVE_ARCH_BUG
+>>> -#define BUG() do {} while(0)
+>>> +#define BUG() unreachable()
+>>>  #endif
+>>>
+>>>  #ifndef HAVE_ARCH_BUG_ON
+>>> -#define BUG_ON(condition) do { if (condition) ; } while(0)
+>>> +#define BUG_ON(condition) do { if (condition) unreachable(); } while (0)
+>>>  #endif
+>>>
+>>>  #ifndef HAVE_ARCH_WARN_ON
+>>> --
+>>
+>> This seems wrong to me.  Wouldn't you always want to do the endless
+>> loop?  In the absence of an arch-specific method to jump to an
+>> exception handler, it isn't really unreachable.  On gcc 4.5 this would
+>> essentially become a no-op.
+>>
+>
+> Several points:
+>
+> * When you hit a BUG() you are screwed.
+>
+> * When you configure with !CONFIG_BUG you are asserting that you don't want
+> to try to trap on BUG();.
+>
+> The existing code just falls through to whatever happens to follow the
+> BUG().  This is not what the programmer intended, but the person that chose
+> !CONFIG_BUG decided that they would like undefined behavior in order to save
+> a few bytes of code.
+>
+> With the patch one of two things will happen:
+>
+> pre-GCC-4.5) We will now enter an endless loop and not fall through. This
+> makes the code slightly larger than pre patch.
+>
+> post-GCC-4.5) We do something totally undefined.  It will not necessarily
+> fall through to the code after the BUG()  It could really end up doing
+> almost anything.  On the plus side, we save a couple of bytes of code and
+> eliminate some compiler warnings.
+>
+> If you don't like it, don't configure with !CONFIG_BUG.  But the patch
+> doesn't really change the fact that hitting a BUG() with !CONFIG_BUG leads
+> to undefined behavior.  It only makes the case where you don't hit BUG()
+> nicer.
+>
+> David Daney
+>
 
-Anonymous pages start out on the active list and have their initial
-reference cleared on deactivation.  But mapped file pages start out
-referenced on the inactive list and are thus garuanteed to be
-activated on first scan.
+Let me rephrase this.  The original BUG() is simply a no-op, not an
+infinite loop.  GCC will optimize it away (and possibly other dead
+code around it).  Adding unreachable() makes the code do potentially
+unpredictable things.  It's not necessary.  The same goes for BUG_ON.
+In that case the test does get optimized away too, but is still needed
+to silence warnings about unused variables, etc.
 
-This has detrimental impact on a common real-world load that maps
-subsequent chunks of a file to calculate its checksum (rtorrent
-hashing).  All the mapped file pages get activated even though they
-are never used again.  Worse, even already unmapped pages get
-activated because the file itself is still mapped by the chunk that is
-currently hashed.
-
-When dropping into reclaim, the VM has a hard time making progress
-with these pages dominating.  And since all mapped pages are treated
-equally (i.e. anon pages as well), a major part of the anon working
-set is swapped out before the hashing completes as well.
-
-Failing reclaim and swapping show up pretty quickly in decreasing
-overall system interactivity, but also in the throughput of the
-hashing process itself.
-
-This patch implements a use-once strategy for mapped file pages.
-
-For this purpose, mapped file pages with page table references are not
-directly activated at the end of the inactive list anymore but marked
-with PG_referenced and sent on another roundtrip on the inactive list.
-If such a page comes in again, another page table reference activates
-it while the lack thereof leads to its eviction.
-
-The deactivation path does not clear this mark so that a subsequent
-page table reference for a page coming from the active list means
-reactivation as well.
-
-By re-using the PG_referenced bit, we trade the following behaviour:
-clean, unmapped pages that are backing a mapped file and have
-PG_referenced set from read() or a page table teardown do no longer
-enjoy the same protection as actually mapped and referenced file pages
-- they are treated just like other unmapped file pages.  That could be
-preserved by opting for a different page flag, but we do not see any
-obvious reasons for this special treatment.
-
-Signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
-Signed-off-by: Rik van Riel <riel@redhat.com>
----
- mm/rmap.c   |    3 --
- mm/vmscan.c |  104 +++++++++++++++++++++++++++++++++++++---------------------
- 2 files changed, 66 insertions(+), 41 deletions(-)
-
-The effects for the described load are rather dramatic.  rtorrent
-hashing a file bigger than memory on an unpatched kernel makes the
-system almost unusable while with this patch applied, I don't even
-notice it running.
-
-A test that replicates this situation - sha1 hashing a file in mmap'd
-chunks while measuring latency of forks - shows the following results
-for example:
-
-Hashing a 1.5G file on 900M RAM in chunks of 32M, measuring the
-latency of pipe(), fork(), write("done") to pipe (child), read() from
-pipe (parent) cycles every two seconds:
-
-	old: latency max=1.403658s mean=0.325557s stddev=0.414985
-	hashing 58.655560s thruput=27118344.83b/s
-
-	new: latency max=0.334673s mean=0.059005s stddev=0.083150
-	hashing 25.189077s thruput=62914560.00b/s
-
-While this fixes the problem at hand, it has not yet enjoyed broader
-testing than running on my desktop and my laptop for a few days.  If
-it is going to be accepted, it would be good to have it sit in -mm for
-some time.
-
-diff --git a/mm/rmap.c b/mm/rmap.c
-index 28aafe2..0c88813 100644
---- a/mm/rmap.c
-+++ b/mm/rmap.c
-@@ -508,9 +508,6 @@ int page_referenced(struct page *page,
- {
- 	int referenced = 0;
- 
--	if (TestClearPageReferenced(page))
--		referenced++;
--
- 	*vm_flags = 0;
- 	if (page_mapped(page) && page->mapping) {
- 		if (PageAnon(page))
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 4a7b0d5..c8907a8 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -263,27 +263,6 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
- 	return ret;
- }
- 
--/* Called without lock on whether page is mapped, so answer is unstable */
--static inline int page_mapping_inuse(struct page *page)
--{
--	struct address_space *mapping;
--
--	/* Page is in somebody's page tables. */
--	if (page_mapped(page))
--		return 1;
--
--	/* Be more reluctant to reclaim swapcache than pagecache */
--	if (PageSwapCache(page))
--		return 1;
--
--	mapping = page_mapping(page);
--	if (!mapping)
--		return 0;
--
--	/* File is mmap'd by somebody? */
--	return mapping_mapped(mapping);
--}
--
- static inline int is_page_cache_freeable(struct page *page)
- {
- 	/*
-@@ -570,6 +549,64 @@ redo:
- 	put_page(page);		/* drop ref from isolate */
- }
- 
-+enum page_reference {
-+	PAGEREF_RECLAIM,
-+	PAGEREF_KEEP,
-+	PAGEREF_ACTIVATE,
-+};
-+
-+static enum page_reference page_check_references(struct scan_control *sc,
-+						struct page *page)
-+{
-+	unsigned long vm_flags;
-+	int pte_ref, page_ref;
-+
-+	pte_ref = page_referenced(page, 1, sc->mem_cgroup, &vm_flags);
-+	page_ref = TestClearPageReferenced(page);
-+
-+	/*
-+	 * Lumpy reclaim, ignore references.
-+	 */
-+	if (sc->order > PAGE_ALLOC_COSTLY_ORDER)
-+		return PAGEREF_RECLAIM;
-+
-+	/*
-+	 * If a PG_mlocked page lost the isolation race,
-+	 * try_to_unmap() moves it to unevictable list.
-+	 */
-+	if (vm_flags & VM_LOCKED)
-+		return PAGEREF_RECLAIM;
-+
-+	/*
-+	 * All mapped pages start out with page table references.  To
-+	 * keep use-once mapped file pages off the active list, use
-+	 * PG_referenced to filter them out.
-+	 *
-+	 * If we see the page for the first time here, send it on
-+	 * another roundtrip on the inactive list.
-+	 *
-+	 * If we see it again with another page table reference,
-+	 * activate it.
-+	 *
-+	 * The deactivation code won't remove the mark, thus a page
-+	 * table reference after deactivation reactivates the page
-+	 * again.
-+	 */
-+	if (pte_ref) {
-+		if (PageAnon(page))
-+			return PAGEREF_ACTIVATE;
-+		SetPageReferenced(page);
-+		if (page_ref)
-+			return PAGEREF_ACTIVATE;
-+		return PAGEREF_KEEP;
-+	}
-+
-+	if (page_ref && PageDirty(page))
-+		return PAGEREF_KEEP;
-+
-+	return PAGEREF_RECLAIM;
-+}
-+
- /*
-  * shrink_page_list() returns the number of reclaimed pages
-  */
-@@ -581,7 +618,6 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 	struct pagevec freed_pvec;
- 	int pgactivate = 0;
- 	unsigned long nr_reclaimed = 0;
--	unsigned long vm_flags;
- 
- 	cond_resched();
- 
-@@ -590,7 +626,6 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		struct address_space *mapping;
- 		struct page *page;
- 		int may_enter_fs;
--		int referenced;
- 
- 		cond_resched();
- 
-@@ -632,17 +667,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 				goto keep_locked;
- 		}
- 
--		referenced = page_referenced(page, 1,
--						sc->mem_cgroup, &vm_flags);
--		/*
--		 * In active use or really unfreeable?  Activate it.
--		 * If page which have PG_mlocked lost isoltation race,
--		 * try_to_unmap moves it to unevictable list
--		 */
--		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
--					referenced && page_mapping_inuse(page)
--					&& !(vm_flags & VM_LOCKED))
-+		switch (page_check_references(sc, page)) {
-+		case PAGEREF_KEEP:
-+			goto keep_locked;
-+		case PAGEREF_ACTIVATE:
- 			goto activate_locked;
-+		case PAGEREF_RECLAIM:
-+			; /* try to free the page below */
-+		}
- 
- 		/*
- 		 * Anonymous process memory has backing store?
-@@ -676,8 +708,6 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 		}
- 
- 		if (PageDirty(page)) {
--			if (sc->order <= PAGE_ALLOC_COSTLY_ORDER && referenced)
--				goto keep_locked;
- 			if (!may_enter_fs)
- 				goto keep_locked;
- 			if (!sc->may_writepage)
-@@ -1346,9 +1376,7 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
- 			continue;
- 		}
- 
--		/* page_referenced clears PageReferenced */
--		if (page_mapping_inuse(page) &&
--		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
-+		if (page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
- 			nr_rotated++;
- 			/*
- 			 * Identify referenced, file-backed active pages and
--- 
-1.6.4.13.ge6580
-
+--
+Brian Gerst
