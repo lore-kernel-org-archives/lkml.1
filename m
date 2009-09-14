@@ -1,79 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbZINVUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZINVnA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757127AbZINVUq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755798AbZINVUo
+	id S1755848AbZINVnA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:43:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754253AbZINVm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:20:44 -0400
-Received: from fifo99.com ([67.223.236.141]:59618 "EHLO fifo99.com"
+	Mon, 14 Sep 2009 17:42:59 -0400
+Received: from kroah.org ([198.145.64.141]:51340 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755348AbZINVUn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:20:43 -0400
-Subject: Re: [PATCH 00/72] Blackfin updates for 2.6.32
-From: Daniel Walker <dwalker@fifo99.com>
-To: Mike Frysinger <vapier.adi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-In-Reply-To: <8bd0f97a0909141407i26b39f9bq133a62be381601b5@mail.gmail.com>
-References: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
-	 <1252961412.11643.215.camel@desktop>
-	 <8bd0f97a0909141357y60d7807bm99146d757e6f61da@mail.gmail.com>
-	 <1252962263.11643.232.camel@desktop>
-	 <8bd0f97a0909141407i26b39f9bq133a62be381601b5@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 14:21:32 -0700
-Message-Id: <1252963292.11643.259.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1753980AbZINVm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 17:42:59 -0400
+Date: Mon, 14 Sep 2009 14:24:13 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, arve@android.com,
+       swetland@google.com, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Re: newer version of HTC Dream support
+Message-ID: <20090914212413.GA10043@kroah.com>
+References: <20090824092204.GB25591@elf.ucw.cz>
+ <20090901131832.GA1835@ucw.cz>
+ <20090904090303.024e981a.randy.dunlap@oracle.com>
+ <20090911071155.GA1386@ucw.cz>
+ <20090911075847.2fb7210a.randy.dunlap@oracle.com>
+ <20090911161335.GA8137@elf.ucw.cz>
+ <20090911092157.ba202b0a.randy.dunlap@oracle.com>
+ <20090911212751.GA25544@elf.ucw.cz>
+ <20090911153422.7d523a73.randy.dunlap@oracle.com>
+ <20090913083719.GA6645@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090913083719.GA6645@elf.ucw.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 17:07 -0400, Mike Frysinger wrote:
-> On Mon, Sep 14, 2009 at 17:04, Daniel Walker wrote:
-> > On Mon, 2009-09-14 at 16:57 -0400, Mike Frysinger wrote:
-> >> On Mon, Sep 14, 2009 at 16:50, Daniel Walker wrote:
-> >> > On Mon, 2009-09-14 at 16:07 -0400, Mike Frysinger wrote:
-> >> >> Minor highlights:
-> >> >>  - shadow console to help with really early kernel output
-> >> >>  - proper decoding of double fault handling
-> >> >>
-> >> >> Otherwise, we've got the normal bug fixes, IPIPE updates, and clean ups.
-> >> >>
-> >> >
-> >> > Patches 15, 16, 20, 21, and 61 all have checkpatch errors some with
-> >> > several errors..  Could you clean those up those errors before sending
-> >> > this up stream?
-> >>
-> >> i already checked/reviewed the output in the series
-> >
-> > The remaining problems can be fixed .. Why did you leave those errors ?
+On Sun, Sep 13, 2009 at 10:37:19AM +0200, Pavel Machek wrote:
+> Hi!
 > 
-> i'm not going to sweat 80 col warnings when the line is 81 cols with
-> tabs of 8 spaces
+> > > Fix compilation of gpio_* input drivers on -next kernel. Adds needed
+> > > headers and removes unprotected wakelock/earlysuspend dependencies.
+> > >     
+> > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > 
+> > Still doesn't build for me, but if it builds for you, that's great.
+> > (could be a tool chain problem on my side)
+> 
+> No, it does not look like toolchain problem :-(. I had parts disabled
+> in Kconfig. This should make it _compile_ (but not link); somehow
+> MSM_ADSP is neccessary for camera to link and I can't see how to
+> enable it.
+> 
+> Thanks for the patience.
 
-The line length ones I'm not worried about, those are just warnings..
+Ugh, what patch should be applied in what order?  Care to resend them
+with the proper "x/y" and a valid Subject: line?
 
-> as for the other errors, you probably didnt read the code.  you saw
-> "error" and assumed checkpatch was correct.  it isnt always as it isnt
-> a C parser.
+thanks,
 
-Checkpatch is finding real issues with your patches.. You have
-indentations issues in several of the patches. Your removing good
-formatting and replacing it improper formatting. For instance,
-
-ERROR: code indent should use tabs where possible
-#115: FILE: arch/blackfin/kernel/module.c:102:
-+^I^I           (!strcmp(".bss", shname) &&$
-
-The line your removing had the proper formatting, but this new line has
-improper formatting.. You have several of these issues, you must think
-they aren't important but checkpatch has the WARNING and ERROR
-classification for a reason .. The errors are actual style violation
-that really need to be either cleaned up or explained..
-
-They can be trivially fixed, it's just a matter of adding the proper
-indentation ..
-
-Daniel
-
+greg k-h
