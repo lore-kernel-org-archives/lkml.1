@@ -1,117 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933266AbZINSa7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933349AbZINSct@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933266AbZINSa7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:30:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933255AbZINSay
+	id S933349AbZINSct (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:32:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933342AbZINSco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:30:54 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:51782 "EHLO e4.ny.us.ibm.com"
+	Mon, 14 Sep 2009 14:32:44 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:5655 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933173AbZINSax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:30:53 -0400
-Message-ID: <4AAE8BDE.3090002@linux.vnet.ibm.com>
-Date: Mon, 14 Sep 2009 13:30:54 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
-MIME-Version: 1.0
-To: Nathan Fontenot <nfont@austin.ibm.com>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] dynamic logical partitioning infrastructure
-References: <4AAABC55.4070207@austin.ibm.com> <4AAABCE3.5090702@austin.ibm.com>
-In-Reply-To: <4AAABCE3.5090702@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S933338AbZINScm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:32:42 -0400
+Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree 
+ build warning)
+From: Steven Rostedt <srostedt@redhat.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christopher Li <sparse@chrisli.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <1252952621.31964.0.camel@twins>
+References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
+	 <1249403089.4634.139.camel@localhost.localdomain>
+	 <20090912165300.9d257283.sfr@canb.auug.org.au>
+	 <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam>
+	 <1252941416.2964.143.camel@localhost.localdomain>
+	 <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
+	 <1252952238.2964.154.camel@localhost.localdomain>
+	 <1252952621.31964.0.camel@twins>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Mon, 14 Sep 2009 14:31:16 -0400
+Message-Id: <1252953076.2964.156.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nathan Fontenot wrote:
-> +#include <linux/kernel.h>
-> +#include <linux/kref.h>
-> +#include <linux/notifier.h>
-> +#include <linux/proc_fs.h>
-> +#include <linux/spinlock.h>
-> +
-> +#include <asm/prom.h>
-> +#include <asm/machdep.h>
-> +#include <asm/uaccess.h>
-> +#include <asm/rtas.h>
-> +#include <asm/pSeries_reconfig.h>
-> +
-> +#define CFG_CONN_WORK_SIZE    4096
-> +static char workarea[CFG_CONN_WORK_SIZE];
-> +spinlock_t workarea_lock;
-
-This can be:
-
-static DEFINE_SPINLOCK(workarea_lock);
-
-Then you can get rid of the runtime initializer.
-
-> +
-> +int release_drc(u32 drc_index)
-> +{
-> +    int dr_status, rc;
-> +
-> +    rc = rtas_call(rtas_token("get-sensor-state"), 2, 2, &dr_status,
-> +               DR_ENTITY_SENSE, drc_index);
-> +    if (rc || dr_status != DR_ENTITY_PRESENT)
-> +        return -1;
-> +
-> +    rc = rtas_set_indicator(ISOLATION_STATE, drc_index, ISOLATE);
-> +    if (rc)
-> +        return -1;
-> +
-> +    rc = rtas_set_indicator(ALLOCATION_STATE, drc_index, ALLOC_UNUSABLE);
-> +    if (rc) {
-> +        rtas_set_indicator(ISOLATION_STATE, drc_index, UNISOLATE);
-> +        return -1;
-> +    }
-
-Is there a better return value here that might be more descriptive than -1?
-
-
-> +
-> +    return 0;
-> +}
-> +
-> +static int pseries_dlpar_init(void)
-> +{
-> +    spin_lock_init(&workarea_lock);
-> +
-> +    if (!machine_is(pseries))
-> +        return 0;
-
-What's the point of this if check if you return 0 either way?
-
-> +
-> +    return 0;
-> +}
-> +__initcall(pseries_dlpar_init);
-
-
-> Index: powerpc/arch/powerpc/platforms/pseries/reconfig.c
-> ===================================================================
-> --- powerpc.orig/arch/powerpc/platforms/pseries/reconfig.c    2009-09-11
-> 12:43:39.000000000 -0500
-> +++ powerpc/arch/powerpc/platforms/pseries/reconfig.c    2009-09-11
-> 12:51:52.000000000 -0500
-> @@ -95,7 +95,7 @@
->     return parent;
-> }
+On Mon, 2009-09-14 at 20:23 +0200, Peter Zijlstra wrote:
+> On Mon, 2009-09-14 at 14:17 -0400, Steven Rostedt wrote:
+> > Frederic, how big can one of those events get. The ring buffer (and
+> > TRACE_EVENT) allow up to almost a page size, which is very hefty for the
+> > stack. This code needs to either be rewritten or we need to set a limit
+> > to the size of a profile entry.
 > 
-> -static BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
-> +struct blocking_notifier_head pSeries_reconfig_chain =
-> BLOCKING_NOTIFIER_INIT(pSeries_reconfig_chain);
+> Yeah, that needs to get a re-write.. I've complained about this when it
+> went in.
 
-Can't this just be?
+One answer is to create a per cpu buffer that is big enough to hold the
+data needed. Then you can disable interrupts an use it without worry.
 
-BLOCKING_NOTIFIER_HEAD(pSeries_reconfig_chain);
+If you need to also handle NMIs, then create a per_cpu NMI buffer too,
+and use that if "in_nmi()" is true.
 
--- 
-Brian King
-Linux on Power Virtualization
-IBM Linux Technology Center
-
+-- Steve
 
 
