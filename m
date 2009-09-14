@@ -1,138 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754893AbZINCim@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754991AbZINCpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754893AbZINCim (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 22:38:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751789AbZINCik
+	id S1754991AbZINCpn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 22:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754942AbZINCpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 22:38:40 -0400
-Received: from tundra.namei.org ([65.99.196.166]:58281 "EHLO tundra.namei.org"
+	Sun, 13 Sep 2009 22:45:41 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:10601 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbZINCij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 22:38:39 -0400
-Date: Mon, 14 Sep 2009 12:36:39 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       srajiv@linux.vnet.ibm.com, Debora Velarde <debora@linux.vnet.ibm.com>,
-       Marcel Selhorst <m.selhorst@sirrix.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] TPM: Fixup pcrs sysfs file
-In-Reply-To: <20090904012818.GU4973@obsidianresearch.com>
-Message-ID: <alpine.LRH.2.00.0909141236020.28766@tundra.namei.org>
-References: <20090902031613.GA11464@obsidianresearch.com> <20090903165219.2f79cdc1.akpm@linux-foundation.org> <20090904012818.GU4973@obsidianresearch.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S1754908AbZINCpk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 22:45:40 -0400
+Date: Sun, 13 Sep 2009 22:44:01 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, dm-devel@redhat.com,
+       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
+       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
+       peterz@infradead.org, jmarchan@redhat.com,
+       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
+Subject: Re: [PATCH] io-controller: Fix task hanging when there are more
+	than one groups
+Message-ID: <20090914024401.GA14077@redhat.com>
+References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AA9A4BE.30005@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 Sep 2009, Jason Gunthorpe wrote:
+On Fri, Sep 11, 2009 at 09:15:42AM +0800, Gui Jianfeng wrote:
 
-> > 
-> > That sounds like a fairly serious bug, and this looks like a 2.6.31
-> > patch.
+[..]
+> Hi Vivek, Jens,
+> 
+> Currently, If there's only the root cgroup and no other child cgroup available, io-controller will
+> optimize to stop expiring the current ioq, and we thought the current ioq belongs to root group. But
+> in some cases, this assumption is not true. Consider the following scenario, if there is a child cgroup
+> located in root cgroup, and task A is running in the child cgroup, and task A issues some IOs. Then we
+> kill task A and remove the child cgroup, at this time, there is only root cgroup available. But the ioq
+> is still under service, and from now on, this ioq won't expire because "only root" optimization.
+> The following patch ensures the ioq do belongs to the root group if there's only root group existing.
+> 
+> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 
-Any comments from the maintainers on this patch?
+Cool. Good catch Gui. Queued for next posting.
 
+Thanks
+Vivek
 
-> To be fair, I'm not sure the pcrs sysfile provides anything terribly
-> usefull.. None of the sysfs files in this driver seem to follow the
-> standard one-value-one-file convention either. But, if it is going to
-> be included it may as well work properly...
-> 
-> > Jan's build_bug_on-fix-it-and-a-couple-of-bogus-uses-of-it.patch (in
-> > -mm) simply removes the bogus BUILD_BUG_ON(). I think we might as well
-> > do that within the context of your patch.
-> 
-> > So I end up with the below, which I propose for 2.6.31:
-> 
-> OK. That is fair. The tpm_cmd_params union contains a tpm_pcrread_out
-> which should 'by design' ensure there is enough space.
-> 
-> Jan's removal of the 2nd BUILD_BUG_ON is also good.
-> 
-> But I notice tpm_pcr_extend also has a mis-use of the transmit_cmd
-> idiom. This one functions ok because the in/out RPC message size
-> happen to be the same. But lets fix it too?
-> 
-> Thanks,
-> Jason
-> 
-> >From 25da64a0927088c766745763728c6bcd973d0f4e Mon Sep 17 00:00:00 2001
-> From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-> Date: Tue, 1 Sep 2009 21:08:55 -0600
-> Subject: [PATCH] TPM: Fixup pcrs sysfs file
-> 
-> I'm testing the tpm_tis low level driver with a winbond WPCT200:
-> $ cat caps
-> Manufacturer: 0x57454300
-> TCG version: 1.2
-> Firmware version: 2.16
-> 
-> and noted that tpm_pcr_read for the pcrs sysfile file does not function.
-> tpm_tis_recv returned with an error because the expected reply size was
-> set to 14 (the request size) and the chip returned 30 bytes.
-> 
-> The TCG spec says the reply size for READ_PCR is supposed to be 30 bytes.
-> 
-> The length input to transmit_cmd is the size of the reply, not of the
-> request.
-> 
-> With this change my chip reports all 23 pcrs.
-> 
-> Also fix tpm_pcr_extend to match the idiom of the rest of the code to
-> prevent future confusion.
-> 
-> Finally, the BUILD_BUG_ON() is just wrong - it's testing a value which
-> isn't a compile-time constant. Simply remove that assertion, the
-> buffer is large enough by design.
-> 
-> Signed-off-by: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
 > ---
->  drivers/char/tpm/tpm.c |    8 +++-----
->  1 files changed, 3 insertions(+), 5 deletions(-)
+>  block/elevator-fq.c |   13 +++++++------
+>  1 files changed, 7 insertions(+), 6 deletions(-)
 > 
-> diff --git a/drivers/char/tpm/tpm.c b/drivers/char/tpm/tpm.c
-> index a6b52d6..5d5b324 100644
-> --- a/drivers/char/tpm/tpm.c
-> +++ b/drivers/char/tpm/tpm.c
-> @@ -696,8 +696,7 @@ int __tpm_pcr_read(struct tpm_chip *chip, int pcr_idx, u8 *res_buf)
+> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
+> index b723c12..3f86552 100644
+> --- a/block/elevator-fq.c
+> +++ b/block/elevator-fq.c
+> @@ -2338,9 +2338,10 @@ void elv_reset_request_ioq(struct request_queue *q, struct request *rq)
+>  	}
+>  }
 >  
->  	cmd.header.in = pcrread_header;
->  	cmd.params.pcrread_in.pcr_idx = cpu_to_be32(pcr_idx);
-> -	BUILD_BUG_ON(cmd.header.in.length > READ_PCR_RESULT_SIZE);
-> -	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
-> +	rc = transmit_cmd(chip, &cmd, READ_PCR_RESULT_SIZE,
->  			  "attempting to read a pcr value");
+> -static inline int is_only_root_group(void)
+> +static inline int is_only_root_group(struct elv_fq_data *efqd)
+>  {
+> -	if (list_empty(&io_root_cgroup.css.cgroup->children))
+> +	if (list_empty(&io_root_cgroup.css.cgroup->children) &&
+> +	    efqd->busy_queues == 1 && efqd->root_group->ioq)
+>  		return 1;
 >  
->  	if (rc == 0)
-> @@ -742,7 +741,7 @@ EXPORT_SYMBOL_GPL(tpm_pcr_read);
->   * the module usage count.
->   */
->  #define TPM_ORD_PCR_EXTEND cpu_to_be32(20)
-> -#define EXTEND_PCR_SIZE 34
-> +#define EXTEND_PCR_RESULT_SIZE 34
->  static struct tpm_input_header pcrextend_header = {
->  	.tag = TPM_TAG_RQU_COMMAND,
->  	.length = cpu_to_be32(34),
-> @@ -760,10 +759,9 @@ int tpm_pcr_extend(u32 chip_num, int pcr_idx, const u8 *hash)
->  		return -ENODEV;
+>  	return 0;
+> @@ -2383,7 +2384,7 @@ static void io_free_root_group(struct elevator_queue *e)
+>  int elv_iog_should_idle(struct io_queue *ioq) { return 0; }
+>  EXPORT_SYMBOL(elv_iog_should_idle);
 >  
->  	cmd.header.in = pcrextend_header;
-> -	BUILD_BUG_ON(be32_to_cpu(cmd.header.in.length) > EXTEND_PCR_SIZE);
->  	cmd.params.pcrextend_in.pcr_idx = cpu_to_be32(pcr_idx);
->  	memcpy(cmd.params.pcrextend_in.hash, hash, TPM_DIGEST_SIZE);
-> -	rc = transmit_cmd(chip, &cmd, cmd.header.in.length,
-> +	rc = transmit_cmd(chip, &cmd, EXTEND_PCR_RESULT_SIZE,
->  			  "attempting extend a PCR value");
+> -static inline int is_only_root_group(void)
+> +static inline int is_only_root_group(struct elv_fq_data *efqd)
+>  {
+>  	return 1;
+>  }
+> @@ -2547,7 +2548,7 @@ elv_iosched_expire_ioq(struct request_queue *q, int slice_expired, int force)
+>  	struct elevator_queue *e = q->elevator;
+>  	struct io_queue *ioq = elv_active_ioq(q->elevator);
+>  	int ret = 1;
+> -
+> +	
+>  	if (e->ops->elevator_expire_ioq_fn) {
+>  		ret = e->ops->elevator_expire_ioq_fn(q, ioq->sched_queue,
+>  							slice_expired, force);
+> @@ -2969,7 +2970,7 @@ void *elv_select_ioq(struct request_queue *q, int force)
+>  	 * single queue ioschedulers (noop, deadline, AS).
+>  	 */
 >  
->  	module_put(chip->dev->driver->owner);
+> -	if (is_only_root_group() && elv_iosched_single_ioq(q->elevator))
+> +	if (is_only_root_group(efqd) && elv_iosched_single_ioq(q->elevator))
+>  		goto keep_queue;
+>  
+>  	/* We are waiting for this group to become busy before it expires.*/
+> @@ -3180,7 +3181,7 @@ void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
+>  		 * unnecessary overhead.
+>  		 */
+>  
+> -		if (is_only_root_group() &&
+> +		if (is_only_root_group(ioq->efqd) &&
+>  			elv_iosched_single_ioq(q->elevator)) {
+>  			elv_log_ioq(efqd, ioq, "select: only root group,"
+>  					" no expiry");
 > -- 
-> 1.5.4.2
+> 1.5.4.rc3
 > 
-
--- 
-James Morris
-<jmorris@namei.org>
+> 
+> 
+> 
+> 
