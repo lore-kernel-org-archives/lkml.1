@@ -1,65 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933090AbZINSZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933149AbZINS2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933090AbZINSZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933076AbZINSZf
+	id S933149AbZINS2p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756770AbZINS2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:25:35 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:42909 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933061AbZINSZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:25:31 -0400
-Subject: Re: [PATCH 2/7] Assign bdi in super_block
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Jan Kara <jack@suse.cz>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       hch@infradead.org, tytso@mit.edu, akpm@linux-foundation.org
-In-Reply-To: <20090914130228.GG24075@duck.suse.cz>
-References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com>
-	 <1252920994-11141-3-git-send-email-jens.axboe@oracle.com>
-	 <20090914130228.GG24075@duck.suse.cz>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 14:25:24 -0400
-Message-Id: <1252952724.6866.62.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Ratelimit-Test: rcpts/h 8 msgs/h 1 sum rcpts/h 12 sum msgs/h 1 total rcpts 1418 max rcpts/h 27 ratelimit 0
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 3662865E1533526A21363F903360CE404917960E
-X-UiO-SPAM-Test: remote_host: 68.40.207.222 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 246 max/h 6 blacklist 0 greylist 0 ratelimit 0
+	Mon, 14 Sep 2009 14:28:43 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:22933 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933130AbZINS2l convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:28:41 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: Re: [PATCH] cleanup legacy console_print function
+Date: Mon, 14 Sep 2009 11:28:21 -0700
+Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501F0FF17@exchange.ZeugmaSystems.local>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Re: [PATCH] cleanup legacy console_print function
+Thread-Index: Aco1aMQxdhFi13Z5ScWJ5alsGZFHxwAAAF6g
+From: "Anirban Sinha" <ASinha@zeugmasystems.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 15:02 +0200, Jan Kara wrote:
-> On Mon 14-09-09 11:36:29, Jens Axboe wrote:
-> > We do this automatically in get_sb_bdev() from the set_bdev_super()
-> > callback. Filesystems that have their own private backing_dev_info
-> > must assign that in ->fill_super().
-> > 
-> > Note that ->s_bdi assignment is required for proper writeback!
-> > 
-> > Acked-by: Christoph Hellwig <hch@infradead.org>
-> > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
->   Hmm, looking at this again, I'm not sure this will work for NFS. It seems
-> to set mapping->backing_dev_info to its private backing dev info for
-> regular files while it leaves it intact for other inodes (e.g.
-> directories). I'm not sure why it does so but it seems its inodes end up on
-> two different BDI lists and thus they wouldn't be synced properly. Trond,
-> do I read the code properly?
->   Also we definitely need to set *some* bdi in nfs_get_sb as otherwise sync
-> won't work for it.
+Here you go!
 
-There hasn't really been a need for a bdi in NFS other than for the
-regular file read and writeback code. The main reason for making it
-private was to ensure that we could set a per-superblock readahead limit
-that was a decent multiple of the server's preferred read block size.
 
-Is there any reason why we couldn't set sb->s_bdi to point to that
-private bdi?
+>From e096c1774450f8348a7af3b7e47800710a490212 Mon Sep 17 00:00:00 2001
+From: Anirban Sinha <asinha@zeugmasystems.com>
+Date: Mon, 14 Sep 2009 11:13:37 -0700
+Subject: cleanup console_print()
 
-Cheers
-  Trond
+console_print() is an old legacy interface mostly unused in the entire
+kernel tree. It's best to clean up its existing use and let developers
+use their own implementation of it as they feel fit.
+
+
+Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
+---
+ arch/ia64/kernel/head.S    |    1 +
+ arch/ia64/kernel/head.h    |    1 +
+ arch/ia64/kernel/process.c |    7 +++++++
+ drivers/char/serial167.c   |    5 ++---
+ include/linux/dtlk.h       |   19 -------------------
+ include/linux/tty.h        |    4 ----
+ kernel/printk.c            |    6 ------
+ 7 files changed, 11 insertions(+), 32 deletions(-)
+ create mode 100644 arch/ia64/kernel/head.h
+
+diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
+index 23f846d..e6c5c3d 100644
+--- a/arch/ia64/kernel/head.S
++++ b/arch/ia64/kernel/head.S
+@@ -34,6 +34,7 @@
+ #include <asm/mca_asm.h>
+ #include <linux/init.h>
+ #include <linux/linkage.h>
++#include "head.h"
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+ #define SAL_PSR_BITS_TO_SET				\
+diff --git a/arch/ia64/kernel/head.h b/arch/ia64/kernel/head.h
+new file mode 100644
+index 0000000..2e2ac68
+--- /dev/null
++++ b/arch/ia64/kernel/head.h
+@@ -0,0 +1 @@
++extern void console_print(const char *s);
+diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
+index 89969e9..b34bef7 100644
+--- a/arch/ia64/kernel/process.c
++++ b/arch/ia64/kernel/process.c
+@@ -161,6 +161,13 @@ show_regs (struct pt_regs *regs)
+ 		show_stack(NULL, NULL);
+ }
+ 
++/* local support for deprecated console_print */
++void 
++console_print(const char *s)
++{
++	printk(KERN_EMERG "%s", s);
++}
++
+ void
+ do_notify_resume_user(sigset_t *unused, struct sigscratch *scr, long
+in_syscall)
+ {
+diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
+index 51e7a46..5942a9d 100644
+--- a/drivers/char/serial167.c
++++ b/drivers/char/serial167.c
+@@ -171,7 +171,6 @@ static int startup(struct cyclades_port *);
+ static void cy_throttle(struct tty_struct *);
+ static void cy_unthrottle(struct tty_struct *);
+ static void config_setup(struct cyclades_port *);
+-extern void console_print(const char *);
+ #ifdef CYCLOM_SHOW_STATUS
+ static void show_status(int);
+ #endif
+@@ -245,7 +244,7 @@ void SP(char *data)
+ {
+ 	unsigned long flags;
+ 	local_irq_save(flags);
+-	console_print(data);
++	printk(KERN_EMERG "%s", data);
+ 	local_irq_restore(flags);
+ }
+ 
+@@ -255,7 +254,7 @@ void CP(char data)
+ 	unsigned long flags;
+ 	local_irq_save(flags);
+ 	scrn[0] = data;
+-	console_print(scrn);
++	printk(KERN_EMERG "%c", scrn);
+ 	local_irq_restore(flags);
+ }				/* CP */
+ 
+diff --git a/include/linux/dtlk.h b/include/linux/dtlk.h
+index 2896d90..22a7b9a 100644
+--- a/include/linux/dtlk.h
++++ b/include/linux/dtlk.h
+@@ -1,22 +1,3 @@
+-#if 0
+-
+-#define TRACE_TXT(text) \
+-	{ \
+-	  if(dtlk_trace) \
+-	  { \
+-	    console_print(text); \
+-	    console_print("\n"); \
+-	  } \
+-	}
+-
+-#define TRACE_CHR(chr) \
+-	{ \
+-	  if(dtlk_trace) \
+-	    console_print(chr); \
+-	} \
+-
+-#endif
+-
+ #define DTLK_MINOR	0
+ #define DTLK_IO_EXTENT	0x02
+ 
+diff --git a/include/linux/tty.h b/include/linux/tty.h
+index 0d3974f..a916a31 100644
+--- a/include/linux/tty.h
++++ b/include/linux/tty.h
+@@ -519,10 +519,6 @@ extern void serial_console_init(void);
+ 
+ extern int pcxe_open(struct tty_struct *tty, struct file *filp);
+ 
+-/* printk.c */
+-
+-extern void console_print(const char *);
+-
+ /* vt.c */
+ 
+ extern int vt_ioctl(struct tty_struct *tty, struct file *file,
+diff --git a/kernel/printk.c b/kernel/printk.c
+index e10d193..602033a 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -1075,12 +1075,6 @@ void __sched console_conditional_schedule(void)
+ }
+ EXPORT_SYMBOL(console_conditional_schedule);
+ 
+-void console_print(const char *s)
+-{
+-	printk(KERN_EMERG "%s", s);
+-}
+-EXPORT_SYMBOL(console_print);
+-
+ void console_unblank(void)
+ {
+ 	struct console *c;
+-- 
+1.6.4
 
