@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZINJoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755203AbZINJqM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbZINJoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 05:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751548AbZINJoS
+	id S1755203AbZINJqM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 05:46:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752024AbZINJqM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 05:44:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46931 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751246AbZINJoR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 05:44:17 -0400
-Message-ID: <4AAE105E.1080005@kernel.org>
-Date: Mon, 14 Sep 2009 18:43:58 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Mon, 14 Sep 2009 05:46:12 -0400
+Received: from mail-in-16.arcor-online.net ([151.189.21.56]:42409 "EHLO
+	mail-in-16.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753179AbZINJqL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 05:46:11 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-16.arcor-online.net 2C7BA257450
+Message-ID: <4AAE10E6.2050403@arcor.de>
+Date: Mon, 14 Sep 2009 12:46:14 +0300
+From: Nikos Chantziaras <realnc@arcor.de>
+Organization: Lucas Barks
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090826 Thunderbird/3.0b3
 MIME-Version: 1.0
-To: Frans Pop <elendil@planet.nl>
-CC: Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: bisect results of MSI-X related panic (help!)
-References: <1252699744.3877.15.camel@jbrandeb-hc.jf.intel.com> <200909120623.49764.elendil@planet.nl> <4AAE0F7B.5050203@kernel.org>
-In-Reply-To: <4AAE0F7B.5050203@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Ingo Molnar <mingo@elte.hu>
+CC: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>
+Subject: Phoronix CFS vs BFS bencharks
+References: <20090906205952.GA6516@elte.hu>
+In-Reply-To: <20090906205952.GA6516@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Sep 2009 09:44:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Frans Pop wrote:
->> Jesse Brandeburg wrote:
->>> I've bisected, here is my bisect log, problem is that the commit
->>> identified is a merge commit, and *I don't know what to revert to test*.
->>> It appears the parent of the merge:
->>> 6e15cf04860074ad032e88c306bea656bbdd0f22 is marked good, but looks to be
->>> in a possibly related area to the panic.
->> That merge does contain quite a few merge fixups, so it's quite possible 
->> one of them is the cause of the failure.
->> Maybe the simplest way to verify that is to compile both parents of the 
->> merge to doublecheck that they work OK. Then, if a compile of the merge 
->> itself is bad, the problem really is in the merge commit itself.
->>
->> That commit is the "percpu" merge, so I've added Tejun (author of most of 
->> that branch) and Ingo (merger) in CC.
-> 
-> Sorry, the oops doesn't ring a bell, well, not yet at least.  It would
-> be great if the bisection can be narrowed down more.
+Phoronix has published some benchmarks, including some "non-synthetic" 
+real-life applications:
 
-Also, building w/ debug option on, capturing more oops traces and
-pasting gdb output of l *<oops address> might shed some more light.
+   http://www.phoronix.com/vr.php?view=14179
 
-Thanks.
+The benchmarks are:
 
--- 
-tejun
+  * World of Padman
+  * Timed Apache Compilation
+  * Timed PHP Compilation
+  * 7-Zip Compression
+  * GraphicsMagick
+  * Apache Benchmark
+  * Threaded I/O Tester
+  * PostMark
+
+The test was performed on an Ubuntu 9.10 daily snapshot from 2009-09-10 
+with the GNOME 2.27.91 desktop, X Server 1.6.3, NVIDIA 190.32 display 
+driver, GCC 4.4.1, and an EXT4 file-system.
