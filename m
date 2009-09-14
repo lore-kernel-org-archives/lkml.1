@@ -1,93 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754569AbZINHon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754673AbZINHoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754569AbZINHon (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 03:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752996AbZINHom
+	id S1754673AbZINHoz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 03:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754589AbZINHow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 03:44:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49872 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751246AbZINHol (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 03:44:41 -0400
-Date: Mon, 14 Sep 2009 00:43:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
-       peterz@infradead.org, yanmin_zhang@linux.intel.com,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       David Howells <dhowells@redhat.com>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
- performance
-Message-Id: <20090914004301.105196cc.akpm@linux-foundation.org>
-In-Reply-To: <20090911174019.1ed02737@infradead.org>
-References: <20090911174019.1ed02737@infradead.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Sep 2009 03:44:52 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35358 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752996AbZINHov (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 03:44:51 -0400
+Message-ID: <4AADF471.2020801@suse.de>
+Date: Mon, 14 Sep 2009 16:44:49 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Chris Webb <chris@arachsys.com>
+Cc: linux-scsi@vger.kernel.org, Ric Wheeler <rwheeler@redhat.com>,
+       Andrei Tanas <andrei@tanas.ca>, NeilBrown <neilb@suse.de>,
+       linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org>
+In-Reply-To: <4AADF3C4.5060004@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 Sep 2009 17:40:19 +0200 Arjan van de Ven <arjan@infradead.org> wrote:
-
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Subject: [PATCH] cpuidle: A new variant of the menu governor
+Tejun Heo wrote:
+>> I wonder what's different about these two timeouts such that one causes an I/O
+>> error and the other just causes a retry after reset? Presumably if the latter
+>> was also just a retry, everything would be (closer to being) fine.
 > 
-> This patch adds a new idle governor which balances power savings,
-> energy efficiency and performance impact.
-> 
-> The reason for a reworked governor is that there have been
-> serious performance issues reported with the existing code
-> on Nehalem server systems.
-> 
-> To show this I'm sure Andrew wants to see benchmark results:
-> (benchmark is "fio", "no cstates" is using "idle=poll")
-> 
-> 		no cstates	current linux	new algorithm
-> 1 disk		107 Mb/s	85 Mb/s		105 Mb/s
-> 2 disks		215 Mb/s	123 Mb/s	209 Mb/s
-> 12 disks	590 Mb/s	320 Mb/s	585 Mb/s
-> 
-> In various power benchmark measurements, no degredation was found
-> by our measurement&diagnostics team. Obviously a bit more power was
-> used in the "fio" benchmark, due to the much higher performance.
-> 
-> The integration plan for this is to first add the new governor,
-> but for one kernel generation, leave the old menu governor in place
-> so that it's possible to separate out behavior from this governor
-> versus other things in diagnostics. If no issues are found,
-> I'll remove the old governor in the kernel cycle after that.
-> 
-> While it would be a novel idea to describe the new algorithm in this
-> commit message, I cheaped out and described it in comments in the
-> code instead.
+> Because this error is actually seen by the md layer and FLUSH in
+> general can't be retried cleanly.  On retrial, the drive goes on and
+> retry the sectors after the point of failure.  I'm not sure whether
+> FLUSH is actually failing here or it's a communication glitch.  At any
+> rate, if FLUSH is failing or timing out, the only right thing to do is
+> to kick it out of the array as keeping after retrying may lead to
+> silent data corruption.  Seriously, it's most likely a hardware
+> malfunction although I can't tell where the problem is with the given
+> data.  Get the hardware fixed.
 
-This fails to compile in linux-next:
+Oooh, another possibility is the above continuous IDENTIFY tries.
+Doing things like that generally isn't a good idea because vendors
+don't expect IDENTIFY to be mixed regularly with normal IOs and
+firmwares aren't tested against that.  Even smart commands sometimes
+cause problems.  So, finding out the thing which is obsessed with the
+identity of the drive and stopping it might help.
 
-drivers/cpuidle/governors/menu-tng.o:(.discard+0x0): multiple definition of `__pcpu_unique_menu_devices'
-drivers/cpuidle/governors/menu.o:(.discard+0x0): first defined here
+Thanks.
 
-because we have
-
-static DEFINE_PER_CPU(struct menu_device, menu_devices);
-
-in both menu.c and menu-tng.c.
-
-Despite the `static', the percpu changes in
-
-commit 7c756e6e19e71f0327760d8955f7077118ebb2b1
-Author:     Tejun Heo <tj@kernel.org>
-AuthorDate: Wed Jun 24 15:13:50 2009 +0900
-Commit:     Tejun Heo <tj@kernel.org>
-CommitDate: Wed Jun 24 15:13:50 2009 +0900
-
-    percpu: implement optional weak percpu definitions
-
-are emitting global symbol derived from `menu_devices' and they clash.
-
-
-I'll rename menu_devices to fix that up, but we have a problem...
+-- 
+tejun
