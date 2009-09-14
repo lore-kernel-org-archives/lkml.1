@@ -1,65 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933487AbZINSgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933489AbZINSiP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933487AbZINSgy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933476AbZINSgw
+	id S933489AbZINSiP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933147AbZINSiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:36:52 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55533 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933475AbZINSgv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:36:51 -0400
-Date: Mon, 14 Sep 2009 20:36:54 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Jan Kara <jack@suse.cz>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com,
-       hch@infradead.org, tytso@mit.edu, akpm@linux-foundation.org
-Subject: Re: [PATCH 2/7] Assign bdi in super_block
-Message-ID: <20090914183654.GJ14984@kernel.dk>
-References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-3-git-send-email-jens.axboe@oracle.com> <20090914130228.GG24075@duck.suse.cz> <1252952724.6866.62.camel@heimdal.trondhjem.org>
+	Mon, 14 Sep 2009 14:38:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:4959 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932989AbZINSiM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:38:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=eb4HfcItUJlOXyxjNEV31EZwI1tZ1LTyDeaXi9sJtz4p2MZjyi7fn9yrd4ji9zMQS9
+         1CPxkh6QQaxVlvDkhvKtqwA6zo/92qZwJQ7eYVFX1PCrHhqr6HcE1ki3GComJ6Q/LJXo
+         XtysOnWYj8qXSdpMO5e0z2+9xrwCWWE2d2IMo=
+Date: Mon, 14 Sep 2009 20:38:10 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Christopher Li <sparse@chrisli.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org,
+       Josh Triplett <josh@freedesktop.org>
+Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree
+	build warning)
+Message-ID: <20090914183808.GB6045@nowhere>
+References: <20090804161640.70817ee6.sfr@canb.auug.org.au> <1249403089.4634.139.camel@localhost.localdomain> <20090912165300.9d257283.sfr@canb.auug.org.au> <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam> <1252941416.2964.143.camel@localhost.localdomain> <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com> <1252952238.2964.154.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1252952724.6866.62.camel@heimdal.trondhjem.org>
+In-Reply-To: <1252952238.2964.154.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14 2009, Trond Myklebust wrote:
-> On Mon, 2009-09-14 at 15:02 +0200, Jan Kara wrote:
-> > On Mon 14-09-09 11:36:29, Jens Axboe wrote:
-> > > We do this automatically in get_sb_bdev() from the set_bdev_super()
-> > > callback. Filesystems that have their own private backing_dev_info
-> > > must assign that in ->fill_super().
-> > > 
-> > > Note that ->s_bdi assignment is required for proper writeback!
-> > > 
-> > > Acked-by: Christoph Hellwig <hch@infradead.org>
-> > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> >   Hmm, looking at this again, I'm not sure this will work for NFS. It seems
-> > to set mapping->backing_dev_info to its private backing dev info for
-> > regular files while it leaves it intact for other inodes (e.g.
-> > directories). I'm not sure why it does so but it seems its inodes end up on
-> > two different BDI lists and thus they wouldn't be synced properly. Trond,
-> > do I read the code properly?
-> >   Also we definitely need to set *some* bdi in nfs_get_sb as otherwise sync
-> > won't work for it.
+On Mon, Sep 14, 2009 at 02:17:18PM -0400, Steven Rostedt wrote:
+> On Mon, 2009-09-14 at 10:09 -0700, Christopher Li wrote:
+> > On Mon, Sep 14, 2009 at 8:16 AM, Steven Rostedt <srostedt@redhat.com> wrote:
+> > > static void func(int size_me) {
+> > >        char array[size_me];
+> > >
+> > >        memcpy(array, "hello", size);
+> > > };
+> > >
+> > > and sparse failed on it as well. Note, you need to have something call
+> > > func, or sparse will ignore it.
+> > 
+> > Gcc allows variable size. Sparse expects the size of an array is constant.
+> > For the kernel using variable array size is consider bad. Because the kernel
+> > has very limited stack size. (8K if I remember correctly). Using dynamic array
+> > is very easy to overflow the stack without realizing it.
+> > 
+> > It deserves a warning. I agree the warning message can use a better description
+> > though.
 > 
-> There hasn't really been a need for a bdi in NFS other than for the
-> regular file read and writeback code. The main reason for making it
-> private was to ensure that we could set a per-superblock readahead limit
-> that was a decent multiple of the server's preferred read block size.
+> Good point!
 > 
-> Is there any reason why we couldn't set sb->s_bdi to point to that
-> private bdi?
+> I've added Frederic to the Cc list, since he wrote the code.
+> 
+> Frederic, how big can one of those events get. The ring buffer (and
+> TRACE_EVENT) allow up to almost a page size, which is very hefty for the
+> stack. This code needs to either be rewritten or we need to set a limit
+> to the size of a profile entry.
+> 
+> We could add:
+> 
+> 	if (__entry_size > 256)
+> 		return;
+> 
+> Thoughts?
+> 
 
-No, that should work fine. NFS already works fine with the bdi flusher
-threads, so you should just point it at that bdi.
 
-If you could take a look at the parent patch and give some input (or an
-addition for NFS, even better), then I would much appreciate it.
+Well it can be big, especially once we play with array fields or
+__string().
 
--- 
-Jens Axboe
+I can manage the __string() that said, by only copying their
+pointer and later delay the copy.
+
+Well actually I would like to rewrite all that entirely to avoid
+any stack allocation, especially for arrays and string.
+
+Lemme think about a CPP magic way to directly interact with perf
+buffer. I think it's possible.
 
