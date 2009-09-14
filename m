@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933579AbZINUSL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933535AbZINUVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933579AbZINUSL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933543AbZINUIi
+	id S933535AbZINUVP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933553AbZINUVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:08:38 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:54035 "EHLO smtp.gentoo.org"
+	Mon, 14 Sep 2009 16:21:13 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:54040 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933498AbZINUI3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:08:29 -0400
+	id S933500AbZINUIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 16:08:30 -0400
 From: Mike Frysinger <vapier@gentoo.org>
 To: linux-kernel@vger.kernel.org
 Cc: uclinux-dist-devel@blackfin.uclinux.org
-Subject: [PATCH 20/72] Blackfin: cleanup module section checking
-Date: Mon, 14 Sep 2009 16:07:24 -0400
-Message-Id: <1252958896-25150-21-git-send-email-vapier@gentoo.org>
+Subject: [PATCH 21/72] Blackfin: fix module reloc handling for all memory regions
+Date: Mon, 14 Sep 2009 16:07:25 -0400
+Message-Id: <1252958896-25150-22-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.4.2
 In-Reply-To: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
 References: <1252958896-25150-1-git-send-email-vapier@gentoo.org>
@@ -22,217 +22,136 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current module section handling code has a lot of verbose statements
-copied and pasted throughout which makes it pretty hard to digest at a
-glance.  By unifying all of these up front, it is a lot easier to quickly
-get an idea of what is actually going on.
+The current module relocation code has spotty handling wrt different
+memory regions (like L1 instruction).  Rather than try to fix each
+little spot, use the new common memory functions to greatly simplify
+everything and make sure it is always correct.
 
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
- arch/blackfin/kernel/module.c |  111 ++++++++++++++++++++++-------------------
- 1 files changed, 60 insertions(+), 51 deletions(-)
+ arch/blackfin/kernel/module.c |   62 ++++++++++++++++++++++------------------
+ 1 files changed, 34 insertions(+), 28 deletions(-)
 
 diff --git a/arch/blackfin/kernel/module.c b/arch/blackfin/kernel/module.c
-index 50d7fbf..2ad805e 100644
+index 2ad805e..67fc7a5 100644
 --- a/arch/blackfin/kernel/module.c
 +++ b/arch/blackfin/kernel/module.c
-@@ -53,7 +53,7 @@ void module_free(struct module *mod, void *module_region)
+@@ -37,6 +37,7 @@
+ #include <linux/kernel.h>
+ #include <asm/dma.h>
+ #include <asm/cacheflush.h>
++#include <asm/uaccess.h>
  
- /* Transfer the section to the L1 memory */
- int
--module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
-+module_frob_arch_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
- 			  char *secstrings, struct module *mod)
+ void *module_alloc(unsigned long size)
  {
- 	/*
-@@ -64,12 +64,18 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 	 * NOTE: this breaks the semantic of mod->arch structure.
- 	 */
- 	Elf_Shdr *s, *sechdrs_end = sechdrs + hdr->e_shnum;
--	void *dest = NULL;
-+	void *dest;
+@@ -199,26 +200,23 @@ apply_relocate(Elf_Shdr * sechdrs, const char *strtab,
+ /*            gas does not generate it.                                  */
+ /*************************************************************************/
+ int
+-apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
++apply_relocate_add(Elf_Shdr *sechdrs, const char *strtab,
+ 		   unsigned int symindex, unsigned int relsec,
+ 		   struct module *mod)
+ {
+ 	unsigned int i;
+-	unsigned short tmp;
+ 	Elf32_Rela *rel = (void *)sechdrs[relsec].sh_addr;
+ 	Elf32_Sym *sym;
+-	uint32_t *location32;
+-	uint16_t *location16;
+-	uint32_t value;
++	unsigned long location, value, size;
  
- 	for (s = sechdrs; s < sechdrs_end; ++s) {
--		if ((strcmp(".l1.text", secstrings + s->sh_name) == 0) ||
--		    ((strcmp(".text", secstrings + s->sh_name) == 0) &&
--		     (hdr->e_flags & EF_BFIN_CODE_IN_L1) && (s->sh_size > 0))) {
-+		const char *shname = secstrings + s->sh_name;
+ 	pr_debug("applying relocate section %u to %u\n", mod->name,
+ 		relsec, sechdrs[relsec].sh_info);
 +
-+		if (s->sh_size == 0)
-+			continue;
+ 	for (i = 0; i < sechdrs[relsec].sh_size / sizeof(*rel); i++) {
+ 		/* This is where to make the change */
+-		location16 =
+-		    (uint16_t *) (sechdrs[sechdrs[relsec].sh_info].sh_addr +
+-				  rel[i].r_offset);
+-		location32 = (uint32_t *) location16;
++		location = sechdrs[sechdrs[relsec].sh_info].sh_addr +
++		           rel[i].r_offset;
 +
-+		if (!strcmp(".l1.text", shname) ||
-+		    (!strcmp(".text", shname) &&
-+		     (hdr->e_flags & EF_BFIN_CODE_IN_L1))) {
-+
- 			dest = l1_inst_sram_alloc(s->sh_size);
- 			mod->arch.text_l1 = dest;
- 			if (dest == NULL) {
-@@ -78,12 +84,11 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 				return -1;
- 			}
- 			dma_memcpy(dest, (void *)s->sh_addr, s->sh_size);
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
--		if ((strcmp(".l1.data", secstrings + s->sh_name) == 0) ||
--		    ((strcmp(".data", secstrings + s->sh_name) == 0) &&
--		     (hdr->e_flags & EF_BFIN_DATA_IN_L1) && (s->sh_size > 0))) {
-+
-+		} else if (!strcmp(".l1.data", shname) ||
-+		           (!strcmp(".data", shname) &&
-+		            (hdr->e_flags & EF_BFIN_DATA_IN_L1))) {
-+
- 			dest = l1_data_sram_alloc(s->sh_size);
- 			mod->arch.data_a_l1 = dest;
- 			if (dest == NULL) {
-@@ -92,12 +97,11 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 				return -1;
- 			}
- 			memcpy(dest, (void *)s->sh_addr, s->sh_size);
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
--		if (strcmp(".l1.bss", secstrings + s->sh_name) == 0 ||
--		    ((strcmp(".bss", secstrings + s->sh_name) == 0) &&
--		     (hdr->e_flags & EF_BFIN_DATA_IN_L1) && (s->sh_size > 0))) {
-+
-+		} else if (!strcmp(".l1.bss", shname) ||
-+		           (!strcmp(".bss", shname) &&
-+		            (hdr->e_flags & EF_BFIN_DATA_IN_L1))) {
-+
- 			dest = l1_data_sram_zalloc(s->sh_size);
- 			mod->arch.bss_a_l1 = dest;
- 			if (dest == NULL) {
-@@ -105,10 +109,9 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 					mod->name);
- 				return -1;
- 			}
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
--		if (strcmp(".l1.data.B", secstrings + s->sh_name) == 0) {
-+
-+		} else if (!strcmp(".l1.data.B", shname)) {
-+
- 			dest = l1_data_B_sram_alloc(s->sh_size);
- 			mod->arch.data_b_l1 = dest;
- 			if (dest == NULL) {
-@@ -117,10 +120,9 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 				return -1;
- 			}
- 			memcpy(dest, (void *)s->sh_addr, s->sh_size);
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
--		if (strcmp(".l1.bss.B", secstrings + s->sh_name) == 0) {
-+
-+		} else if (!strcmp(".l1.bss.B", shname)) {
-+
- 			dest = l1_data_B_sram_alloc(s->sh_size);
- 			mod->arch.bss_b_l1 = dest;
- 			if (dest == NULL) {
-@@ -129,12 +131,11 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 				return -1;
- 			}
- 			memset(dest, 0, s->sh_size);
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
--		if ((strcmp(".l2.text", secstrings + s->sh_name) == 0) ||
--		    ((strcmp(".text", secstrings + s->sh_name) == 0) &&
--		     (hdr->e_flags & EF_BFIN_CODE_IN_L2) && (s->sh_size > 0))) {
-+
-+		} else if (!strcmp(".l2.text", shname) ||
-+		           (!strcmp(".text", shname) &&
-+		            (hdr->e_flags & EF_BFIN_CODE_IN_L2))) {
-+
- 			dest = l2_sram_alloc(s->sh_size);
- 			mod->arch.text_l2 = dest;
- 			if (dest == NULL) {
-@@ -143,12 +144,11 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 				return -1;
- 			}
- 			memcpy(dest, (void *)s->sh_addr, s->sh_size);
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
--		if ((strcmp(".l2.data", secstrings + s->sh_name) == 0) ||
--		    ((strcmp(".data", secstrings + s->sh_name) == 0) &&
--		     (hdr->e_flags & EF_BFIN_DATA_IN_L2) && (s->sh_size > 0))) {
-+
-+		} else if (!strcmp(".l2.data", shname) ||
-+		           (!strcmp(".data", shname) &&
-+		            (hdr->e_flags & EF_BFIN_DATA_IN_L2))) {
-+
- 			dest = l2_sram_alloc(s->sh_size);
- 			mod->arch.data_l2 = dest;
- 			if (dest == NULL) {
-@@ -157,12 +157,11 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 				return -1;
- 			}
- 			memcpy(dest, (void *)s->sh_addr, s->sh_size);
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
--		if (strcmp(".l2.bss", secstrings + s->sh_name) == 0 ||
--		    ((strcmp(".bss", secstrings + s->sh_name) == 0) &&
--		     (hdr->e_flags & EF_BFIN_DATA_IN_L2) && (s->sh_size > 0))) {
-+
-+		} else if (!strcmp(".l2.bss", shname) ||
-+		           (!strcmp(".bss", shname) &&
-+		            (hdr->e_flags & EF_BFIN_DATA_IN_L2))) {
-+
- 			dest = l2_sram_zalloc(s->sh_size);
- 			mod->arch.bss_l2 = dest;
- 			if (dest == NULL) {
-@@ -170,10 +169,14 @@ module_frob_arch_sections(Elf_Ehdr * hdr, Elf_Shdr * sechdrs,
- 					mod->name);
- 				return -1;
- 			}
--			s->sh_flags &= ~SHF_ALLOC;
--			s->sh_addr = (unsigned long)dest;
--		}
-+
-+		} else
-+			continue;
-+
-+		s->sh_flags &= ~SHF_ALLOC;
-+		s->sh_addr = (unsigned long)dest;
- 	}
-+
- 	return 0;
- }
+ 		/* This is the symbol it is referring to. Note that all
+ 		   undefined symbols have been resolved. */
+ 		sym = (Elf32_Sym *) sechdrs[symindex].sh_addr
+@@ -227,39 +225,28 @@ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+ 		value += rel[i].r_addend;
  
-@@ -295,22 +298,28 @@ module_finalize(const Elf_Ehdr * hdr,
- 	for (i = 1; i < hdr->e_shnum; i++) {
- 		const char *strtab = (char *)sechdrs[strindex].sh_addr;
- 		unsigned int info = sechdrs[i].sh_info;
-+		const char *shname = secstrings + sechdrs[i].sh_name;
- 
- 		/* Not a valid relocation section? */
- 		if (info >= hdr->e_shnum)
- 			continue;
- 
--		if ((sechdrs[i].sh_type == SHT_RELA) &&
--		    ((strcmp(".rela.l2.text", secstrings + sechdrs[i].sh_name) == 0) ||
--		    (strcmp(".rela.l1.text", secstrings + sechdrs[i].sh_name) == 0) ||
--		    ((strcmp(".rela.text", secstrings + sechdrs[i].sh_name) == 0) &&
--			(hdr->e_flags & (EF_BFIN_CODE_IN_L1|EF_BFIN_CODE_IN_L2))))) {
-+		/* Only support RELA relocation types */
-+		if (sechdrs[i].sh_type != SHT_RELA)
-+			continue;
-+
-+		if (!strcmp(".rela.l2.text", shname) ||
-+		    !strcmp(".rela.l1.text", shname) ||
-+		    (!strcmp(".rela.text", shname) &&
-+			 (hdr->e_flags & (EF_BFIN_CODE_IN_L1 | EF_BFIN_CODE_IN_L2)))) {
-+
- 			err = apply_relocate_add((Elf_Shdr *) sechdrs, strtab,
- 					   symindex, i, mod);
- 			if (err < 0)
- 				return -ENOEXEC;
+ #ifdef CONFIG_SMP
+-		if ((unsigned long)location16 >= COREB_L1_DATA_A_START) {
++		if (location >= COREB_L1_DATA_A_START) {
+ 			pr_err("cannot relocate in L1: %u (SMP kernel)",
+ 				mod->name, ELF32_R_TYPE(rel[i].r_info));
+ 			return -ENOEXEC;
  		}
+ #endif
+ 
+-		pr_debug("location is %lx, value is %x type is %d\n",
+-			mod->name, (unsigned long)location32, value,
+-			ELF32_R_TYPE(rel[i].r_info));
++		pr_debug("location is %lx, value is %lx type is %d\n",
++			mod->name, location, value, ELF32_R_TYPE(rel[i].r_info));
+ 
+ 		switch (ELF32_R_TYPE(rel[i].r_info)) {
+ 
+-		case R_BFIN_LUIMM16:
+-			tmp = (value & 0xffff);
+-			if ((unsigned long)location16 >= L1_CODE_START) {
+-				dma_memcpy(location16, &tmp, 2);
+-			} else
+-				*location16 = tmp;
+-			break;
+ 		case R_BFIN_HUIMM16:
+-			tmp = ((value >> 16) & 0xffff);
+-			if ((unsigned long)location16 >= L1_CODE_START) {
+-				dma_memcpy(location16, &tmp, 2);
+-			} else
+-				*location16 = tmp;
+-			break;
++			value >>= 16;
++		case R_BFIN_LUIMM16:
+ 		case R_BFIN_RIMM16:
+-			*location16 = (value & 0xffff);
++			size = 2;
+ 			break;
+ 		case R_BFIN_BYTE4_DATA:
+-			*location32 = value;
++			size = 4;
+ 			break;
++
+ 		case R_BFIN_PCREL24:
+ 		case R_BFIN_PCREL24_JUMP_L:
+ 		case R_BFIN_PCREL12_JUMP:
+@@ -268,12 +255,31 @@ apply_relocate_add(Elf_Shdr * sechdrs, const char *strtab,
+ 			pr_err("unsupported relocation: %u (no -mlong-calls?)\n",
+ 				mod->name, ELF32_R_TYPE(rel[i].r_info));
+ 			return -ENOEXEC;
++
+ 		default:
+ 			pr_err("unknown relocation: %u\n", mod->name,
+ 				ELF32_R_TYPE(rel[i].r_info));
+ 			return -ENOEXEC;
+ 		}
++
++		switch (bfin_mem_access_type(location, size)) {
++		case BFIN_MEM_ACCESS_CORE:
++		case BFIN_MEM_ACCESS_CORE_ONLY:
++			memcpy((void *)location, &value, size);
++			break;
++		case BFIN_MEM_ACCESS_DMA:
++			dma_memcpy((void *)location, &value, size);
++			break;
++		case BFIN_MEM_ACCESS_ITEST:
++			isram_memcpy((void *)location, &value, size);
++			break;
++		default:
++			pr_err("invalid relocation for %#lx\n",
++				mod->name, location);
++			return -ENOEXEC;
++		}
  	}
 +
  	return 0;
