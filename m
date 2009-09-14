@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbZINWTc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757438AbZINWWA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbZINWTc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 18:19:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbZINWTb
+	id S1757438AbZINWWA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 18:22:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbZINWWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 18:19:31 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:39196 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756794AbZINWTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 18:19:30 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: [PATCH] Input: ad7879: add support for AD7889
-Date: Mon, 14 Sep 2009 18:19:32 -0400
-Message-Id: <1252966772-27645-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.4.2
+	Mon, 14 Sep 2009 18:22:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:53880 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755581AbZINWV7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 18:21:59 -0400
+Date: Tue, 15 Sep 2009 00:21:55 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Greg KH <greg@kroah.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, arve@android.com,
+       swetland@google.com, kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Re: newer version of HTC Dream support
+Message-ID: <20090914222155.GJ10398@elf.ucw.cz>
+References: <20090911161335.GA8137@elf.ucw.cz> <20090911092157.ba202b0a.randy.dunlap@oracle.com> <20090911212751.GA25544@elf.ucw.cz> <20090911153422.7d523a73.randy.dunlap@oracle.com> <20090913083719.GA6645@elf.ucw.cz> <20090914212413.GA10043@kroah.com> <20090914214619.GE10398@elf.ucw.cz> <20090914215131.GA2897@kroah.com> <20090914215443.GF10398@elf.ucw.cz> <20090914220443.GA20138@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090914220443.GA20138@kroah.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Mon 2009-09-14 15:04:43, Greg KH wrote:
+> On Mon, Sep 14, 2009 at 11:54:43PM +0200, Pavel Machek wrote:
+> > On Mon 2009-09-14 14:51:31, Greg KH wrote:
+> > > On Mon, Sep 14, 2009 at 11:46:19PM +0200, Pavel Machek wrote:
+> > > > Hi!
+> > > > 
+> > > > > > > > Fix compilation of gpio_* input drivers on -next kernel. Adds needed
+> > > > > > > > headers and removes unprotected wakelock/earlysuspend dependencies.
+> > > > > > > >     
+> > > > > > > > Signed-off-by: Pavel Machek <pavel@ucw.cz>
+> > > > > > > 
+> > > > > > > Still doesn't build for me, but if it builds for you, that's great.
+> > > > > > > (could be a tool chain problem on my side)
+> > > > > > 
+> > > > > > No, it does not look like toolchain problem :-(. I had parts disabled
+> > > > > > in Kconfig. This should make it _compile_ (but not link); somehow
+> > > > > > MSM_ADSP is neccessary for camera to link and I can't see how to
+> > > > > > enable it.
+> > > > > > 
+> > > > > > Thanks for the patience.
+> > > > > 
+> > > > > Ugh, what patch should be applied in what order?  Care to resend them
+> > > > > with the proper "x/y" and a valid Subject: line?
+> > > > 
+> > > > All of patches are valid, and they should apply if you just "sort by
+> > > > date". I could dig them from my sent box...
+> > > 
+> > > Please resend them, their subjects need editing, and I want to make sure
+> > > I have them all.
+> > 
+> > You already applied the first one, right?
+> 
+> What is the "first" one?  Did you get an email saying I had applied it?
+> 
+> I have over 600 patches in the staging tree, it's hard to remember
+> specific ones...
 
-The AD7889 is a new part but 100% software compatible with the AD7879, so
-add it to the id_table and help text.
-
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/input/touchscreen/Kconfig  |    6 +++---
- drivers/input/touchscreen/ad7879.c |    6 ++++--
- 2 files changed, 7 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/input/touchscreen/Kconfig b/drivers/input/touchscreen/Kconfig
-index 72e2712..be5e9f6 100644
---- a/drivers/input/touchscreen/Kconfig
-+++ b/drivers/input/touchscreen/Kconfig
-@@ -48,8 +48,8 @@ config TOUCHSCREEN_AD7879_I2C
- 	select TOUCHSCREEN_AD7879
- 	help
- 	  Say Y here if you have a touchscreen interface using the
--	  AD7879-1 controller, and your board-specific initialization
--	  code includes that in its table of I2C devices.
-+	  AD7879-1/AD7889-1 controller, and your board-specific
-+	  initialization code includes that in its table of I2C devices.
- 
- 	  If unsure, say N (but it's safe to say "Y").
- 
-@@ -62,7 +62,7 @@ config TOUCHSCREEN_AD7879_SPI
- 	select TOUCHSCREEN_AD7879
- 	help
- 	  Say Y here if you have a touchscreen interface using the
--	  AD7879 controller, and your board-specific initialization
-+	  AD7879/AD7889 controller, and your board-specific initialization
- 	  code includes that in its table of SPI devices.
- 
- 	  If unsure, say N (but it's safe to say "Y").
-diff --git a/drivers/input/touchscreen/ad7879.c b/drivers/input/touchscreen/ad7879.c
-index 5d8a703..8064641 100644
---- a/drivers/input/touchscreen/ad7879.c
-+++ b/drivers/input/touchscreen/ad7879.c
-@@ -1,7 +1,8 @@
- /*
-- * Copyright (C) 2008 Michael Hennerich, Analog Devices Inc.
-+ * Copyright (C) 2008-2009 Michael Hennerich, Analog Devices Inc.
-  *
-- * Description:	AD7879 based touchscreen, and GPIO driver (I2C/SPI Interface)
-+ * Description:	AD7879/AD7889 based touchscreen, and GPIO driver
-+ *		(I2C/SPI Interface)
-  *
-  * Bugs:        Enter bugs at http://blackfin.uclinux.org/
-  *
-@@ -747,6 +748,7 @@ static int __devexit ad7879_remove(struct i2c_client *client)
- 
- static const struct i2c_device_id ad7879_id[] = {
- 	{ "ad7879", 0 },
-+	{ "ad7889", 0 },
- 	{ }
- };
- MODULE_DEVICE_TABLE(i2c, ad7879_id);
+(See the mails I sent in the meantime. [patch for ignoring] is the one
+I think you applied.)
+									Pavel
 -- 
-1.6.4.2
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
