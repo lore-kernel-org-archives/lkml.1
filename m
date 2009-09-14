@@ -1,83 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756805AbZINSzp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZINTIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756805AbZINSzp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:55:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756793AbZINSzo
+	id S1756839AbZINTIf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 15:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756817AbZINTIc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:55:44 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:49882 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755044AbZINSzn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:55:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=MRIAmmmcGkC7MGQMyYvG3F2KkcCno8Iomai8NJrDQQwcB/aC8mcb0rjyZSFN2ChGhs
-         HTtxI+daqf8x+yXCKN8HwDz7ZktT6H5m+zNkrUYlxBPz8Stk++1KaahTlhPegQbCBlIu
-         EnUnQ9JDep2Lw4Izdr8MHSZ7VIdPee2w8PbPM=
-Date: Mon, 14 Sep 2009 20:55:41 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH tracing/kprobes 4/7] tracing/kprobes: Add event
-	profiling support
-Message-ID: <20090914185540.GD6045@nowhere>
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <4AAA7938.7070200@redhat.com> <20090914030244.GC14306@nowhere> <4AAE7540.9090009@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AAE7540.9090009@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 14 Sep 2009 15:08:32 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:41596 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756803AbZINTIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 15:08:31 -0400
+Subject: fanotify as syscalls
+From: Eric Paris <eparis@redhat.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: Jamie Lokier <jamie@shareable.org>, David Miller <davem@davemloft.net>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
+       hch@infradead.org, torvalds@linux-foundation.org
+In-Reply-To: <20090914140720.GA8564@ioremap.net>
+References: <20090911052558.32359.18075.stgit@paris.rdu.redhat.com>
+	 <20090911.114620.260824240.davem@davemloft.net>
+	 <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>
+	 <20090911204602.GA19371@shareable.org>
+	 <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>
+	 <20090911212731.GA19901@shareable.org>
+	 <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>
+	 <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org>
+	 <20090914140720.GA8564@ioremap.net>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 14 Sep 2009 15:08:15 -0400
+Message-Id: <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 12:54:24PM -0400, Masami Hiramatsu wrote:
->>> I'd like to have a dispatcher function and flags internally :)
->>
->>
->> You mean kprobes that could support multiple probes?
->> That would be a nice solution IMHO...
->
-> Yeah, actually kprobes could support multiple probes on the
-> same point. But kprobe structure has many extensions which
-> kprobe-tracer doesn't need, e.g. post_handler/break_handler,
-> opcode, arch sprcific instructions.
-> Kretprobe consumes more memories for storing return points :(.
->
-> Thus, if we know there are two functions to be called on the
-> same probe point, I think it is better to have a dispatcher.
-> (Especially, in this case, we can call fixed functions, so
-> it's easier way.)
->
+Long ago I implemented fanotify as basically a /dev interface using
+ioctls().  Alan suggested I use a socket protocol and could then make
+use of get/setsockopt() which although still not great is light years
+better than ioctl.  Currently the fanotify interface as I want to push
+it to Linus and as I've been requesting comments on for the last 1.25
+years is just that.  It really makes no use of the networking system
+other than bind() and setsockopt() and everyone tends to agree the
+things I want to do can't reasonably be done using network hooks and a
+'real' socket protocol.  I like this interface, setsockopt() makes it so
+easy to add new functionality as we flush out other users.  fanotify as
+it stands today has a number of groups who will port to it, has a nubmer
+of advantages over inotify, and I have been told privately meets the
+needs of the original group of people who paid me to work on it (two
+very large anti-malware companies who currently unprotect and hack the
+syscall table of their users)
 
+Just this week I got another request to look at syscalls.  So I did, I
+haven't prototyped it, but I can do it with syscalls, they would look
+like this:
 
-Yeah, you could union the post_handler with profile_handler
-or something like that.
+int fanotify_init(int flags, int f_flags, __u64 mask, unsigned int priority);
 
-It depends if kprobes may need one day to support an undeterminate
-number of probes.
+int fanotify_add_mark(int fanotify_fd, char *path, __u64 mask, __u64 ignored_mask);
+int fanotify_add_mark_fd(int fanotify_fd, int fd, __u64 mask, __u64 ignored_mask);
+int fanotify_rm_mark(int fanotify_fd, char *path, __u64 mask);
+int fanotify_rm_mark_fd(int fanotify_fd, int fd, __u64 mask);
+	Those above 4 could probably be squashed into 2 syscalls with an extra
+flags field.
 
-Also, is the post_handler called at the same location than the normal
-probe?
-And is a post handler called even if there is no normal handler?
+int fanotify_clear_marks(int fanotify_fd);
 
+int fanotify_perm_response(int fanotify_fd, __u64 cookie, int response);
 
-There might be some of such factors that would force you to handle a
-lot of corner cases, things that you wouldn't need to worry about
-if you just had to maintain a simple rcu list of probes to call.
+int fanotify_ignore_sb(int fanotify_fd, long f_type);
+int fanotify_ignore_fsid(int fanotify_fd, fsid_t f_fsid);
+	These 2 are the most questionable, they would honestly only be used for
+things that wanted system wide notification, I can't imagine that being
+many things other than AV vendors.  But they really need a way to
+exclude notification when people open/close/read/write to /proc (which
+is the point of the ignore_sb.)
+
+Since I don't have a solution to subtree notification I don't know if it
+will work in this syscall framework.  I know people want subtree
+notification and I'm willing to take a stab at it after the fscking all
+notification is accepted.  That's one of the main reasons I like
+setsockopt over tons of syscalls.  I can add a new one very easily.  I
+also can easily expand arguments by just creating a new sockopt.  No
+userspace headaches.
+
+Are there demands that I convert to syscalls?  Do I really gain anything
+using 9 new inextensible syscalls over socket(), bind(), and 8
+setsockopt() calls?
+
+I'd like to send these patches along, so a ruling from on high would be
+great....
+
+-Eric
 
