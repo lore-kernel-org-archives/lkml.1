@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757149AbZINU5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756998AbZINU7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757149AbZINU5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754198AbZINU5o
+	id S1756998AbZINU7u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZINU7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:57:44 -0400
-Received: from mail-yw0-f174.google.com ([209.85.211.174]:47701 "EHLO
-	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754191AbZINU5n convert rfc822-to-8bit (ORCPT
+	Mon, 14 Sep 2009 16:59:49 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:58253 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752882AbZINU7t convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:57:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=yGDNABuC6tq4hIbJtNt6ACqyRObC6hGhcZQmuHNS6MLxQwFaOMSoq5sGNfe67yXm0g
-         P65JtN9sIlvsmeSqbWtlOmvK44JT8kjQpBZGUkJeADjHikrXXnFAI9rRp30QAelsNiyC
-         pvqhrNUZORo16DuE7epHXXbAHETEY8Zzkh0vk=
+	Mon, 14 Sep 2009 16:59:49 -0400
+Date: Mon, 14 Sep 2009 22:59:50 +0200
+Message-Id: <912126502@web.de>
 MIME-Version: 1.0
-In-Reply-To: <1252961412.11643.215.camel@desktop>
-References: <1252958896-25150-1-git-send-email-vapier@gentoo.org> 
-	<1252961412.11643.215.camel@desktop>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Mon, 14 Sep 2009 16:57:27 -0400
-Message-ID: <8bd0f97a0909141357y60d7807bm99146d757e6f61da@mail.gmail.com>
-Subject: Re: [PATCH 00/72] Blackfin updates for 2.6.32
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org
-Content-Type: text/plain; charset=UTF-8
+From: devzero@web.de
+To: Hannes Reinecke <hare@suse.de>
+Cc: linux-kernel@vger.kernel.org, "Randy.Dunlap" <rdunlap@xenotime.net>
+Subject: Re: [PATCH] Disable partition scan
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX18ludoRz7YhvwXdj5SqlS8iwTFpa38YObV5Snm/Pvf/gnEqa
+ rxzsYWY37qBhLLVzaPMc8D0R4Dkc0jELraCGqMuF3gYcWiUOY0=
+Content-Type: text/plain; charset=iso-8859-15
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 16:50, Daniel Walker wrote:
-> On Mon, 2009-09-14 at 16:07 -0400, Mike Frysinger wrote:
->> Minor highlights:
->> Â - shadow console to help with really early kernel output
->> Â - proper decoding of double fault handling
->>
->> Otherwise, we've got the normal bug fixes, IPIPE updates, and clean ups.
->>
->
-> Patches 15, 16, 20, 21, and 61 all have checkpatch errors some with
-> several errors.. Â Could you clean those up those errors before sending
-> this up stream?
+> But more importantly the commandline will be a killer. You would have to specify the device
+> to be excluded prior to driver probing. Which means you'd have to know how the driver would
+> enumerate the device and how the device to be excluded would be named.
+> But exactly this isn't guaranteed, so it'll be virtually impossible to do so.
 
-i already checked/reviewed the output in the series
--mike
+ok, you`re right
+
+>PS.: One wonders what'll happen to the patch. Maybe it'll linger forever in bugzilla as no-one
+>feels it important enough to have a look at it, let alone merge ...
+>So, if there are any users out there, please speak up to have it merged!
+
+you did that patch for a reason (customer request?) and we have another request for it in bugzilla.
+i think it`s useful.
+
+maybe adding the new param to kernel-params.txt and adding some more people cc below the 
+signed-off will raise chances for acceptance.
+
+
+> devzero@web.de wrote:
+> > Hello, 
+> > 
+> > iirc i had a setup a while ago where i also found disabling partition scanning would be nice to have.
+> > 
+> > actually, we have a bugzilla entry for this - have a look at:
+> > 
+> > http://bugzilla.kernel.org/show_bug.cgi?id=8588
+> > 
+> > anyway, wouldn`t it be better to disable that on a per device basis or at least be able to exclude 
+> > the boot/system devices from being skipped? 
+> > 
+> Hmm. Not sure about this.
+> For once, you'd have to have a tool like kpartx anyway to generate the partition mappings for the
+> not-excluded devices. Hence it's not a big deal to use this tool _always_, ie for all devices.
+> 
+> But more importantly the commandline will be a killer. You would have to specify the device
+> to be excluded prior to driver probing. Which means you'd have to know how the driver would
+> enumerate the device and how the device to be excluded would be named.
+> But exactly this isn't guaranteed, so it'll be virtually impossible to do so.
+> 
+> Cheers,
+> 
+> Hannes
+> PS.: One wonders what'll happen to the patch. Maybe it'll linger forever in bugzilla as no-one
+> feels it important enough to have a look at it, let alone merge ...
+> So, if there are any users out there, please speak up to have it merged!
+> -- 
+> Dr. Hannes Reinecke		      zSeries & Storage
+> hare@suse.de			      +49 911 74053 688
+> SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+> GF: Markus Rex, HRB 16746 (AG Nürnberg)
+> 
+
+
+________________________________________________________________
+Neu: WEB.DE Doppel-FLAT mit Internet-Flatrate + Telefon-Flatrate
+für nur 19,99 Euro/mtl.!* http://produkte.web.de/go/02/
+
