@@ -1,199 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756872AbZINTgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756876AbZINTeH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756872AbZINTgB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 15:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755044AbZINTf7
+	id S1756876AbZINTeH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 15:34:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756856AbZINTeG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 15:35:59 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:1330 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbZINTf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 15:35:58 -0400
-Subject: Re: [PATCH] mmap:  avoid unnecessary anon_vma lock acquisition in
- vma_adjust()
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Hugh Dickins <hugh.dickins@tiscali.co.uk>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>, Eric Whitney <eric.whitney@hp.com>,
-       stable@kernel.org
-In-Reply-To: <Pine.LNX.4.64.0909131332280.22041@sister.anvils>
-References: <1252527046.4102.162.camel@useless.americas.hpqcorp.net>
-	 <Pine.LNX.4.64.0909131332280.22041@sister.anvils>
-Content-Type: text/plain
-Organization: HP/LKTT
-Date: Mon, 14 Sep 2009 15:35:57 -0400
-Message-Id: <1252956957.17132.201.camel@useless.americas.hpqcorp.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 14 Sep 2009 15:34:06 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:21278 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756855AbZINTeF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 15:34:05 -0400
+Message-ID: <4AAE9B41.3020905@redhat.com>
+Date: Mon, 14 Sep 2009 15:36:33 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>,
+       Jim Keniston <jkenisto@us.ibm.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: Re: [PATCH tracing/kprobes 4/7] tracing/kprobes: Add event	profiling
+ support
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <4AAA7938.7070200@redhat.com> <20090914030244.GC14306@nowhere> <4AAE7540.9090009@redhat.com> <20090914185540.GD6045@nowhere>
+In-Reply-To: <20090914185540.GD6045@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-13 at 14:24 +0100, Hugh Dickins wrote:
-> [I've kept stable@kernel.org in the Cc list only to put on record
-> that I don't think that this patch is really suitable for -stable]
-> 
-> On Wed, 9 Sep 2009, Lee Schermerhorn wrote:
-> > 
-> Thanks for this.  Interesting stuff snipped and repeated below.
+Frederic Weisbecker wrote:
+> On Mon, Sep 14, 2009 at 12:54:24PM -0400, Masami Hiramatsu wrote:
+>>>> I'd like to have a dispatcher function and flags internally :)
+>>>
+>>>
+>>> You mean kprobes that could support multiple probes?
+>>> That would be a nice solution IMHO...
+>>
+>> Yeah, actually kprobes could support multiple probes on the
+>> same point. But kprobe structure has many extensions which
+>> kprobe-tracer doesn't need, e.g. post_handler/break_handler,
+>> opcode, arch sprcific instructions.
+>> Kretprobe consumes more memories for storing return points :(.
+>>
+>> Thus, if we know there are two functions to be called on the
+>> same probe point, I think it is better to have a dispatcher.
+>> (Especially, in this case, we can call fixed functions, so
+>> it's easier way.)
+>
+>
+> Yeah, you could union the post_handler with profile_handler
+> or something like that.
 
-Hugh:
+No, you can't do that, because kprobes calls post_handler if
+it is not NULL.
 
-Thank you for reviewing and correcting the patch.
+>
+> It depends if kprobes may need one day to support an undeterminate
+> number of probes.
 
-Andrew: 
+Kprobes itself is supporting those multiple kprobes on the same
+address. I meant that we don't need to have multiple kprobes on
+the same "kprobe-tracer's event". Even if introducing a dispatcher,
+kprobe-tracer can support multiple trace-event at the same location.
 
-Shall I resend?  Or, can you grab Hugh's patch from his message?
+> Also, is the post_handler called at the same location than the normal
+> probe?
+
+No, post_handler is called after single-stepping.
+
+> And is a post handler called even if there is no normal handler?
+
+Yes, it is.
+
+Hmm, I assume I have told about kprobes infrastructure, and have you
+told about kprobe-tracer?:)
+
+> There might be some of such factors that would force you to handle a
+> lot of corner cases, things that you wouldn't need to worry about
+> if you just had to maintain a simple rcu list of probes to call.
 
 
-Lee
+Anyway, I never see who are using post_handler:). I'm not sure why
+it is needed...
 
+-- 
+Masami Hiramatsu
 
-> 
-> > 
-> > A comment in mm/mmap.c:vma_adjust() suggests that we don't really
-> > need the anon_vma lock when we're only adjusting the end of a vma,
-> 
-> I feel a warm smugness from having foreseen the possibility that we
-> might want to optimize that away.  I didn't do so, because it needs
-> more thought (and more branches) than seemed worthwhile at the time:
-> you've found similar difficulty, but now it does seem worthwhile.
-> 
-> > We can detect this condition--no overlap with next vma--by noting
-> > a NULL "importer".  The anon_vma pointer will also be NULL in this
-> > case, so simply avoid loading vma->anon_vma to avoid the lock.
-> > However, we apparently DO need to take the anon_vma lock when
-> > we're inserting a vma ['insert' non-NULL] even when we have no
-> > overlap [NULL "importer"], so we need to check for 'insert', as well.
-> 
-> Those importer and insert checks are good and relevant, but not
-> quite enough.  The anon_vma lock should also be guaranteeing the
-> integrity of the relationship between vm_start and vm_pgoff for
-> all the vmas attached to the anon_vma, so that rmap.c can rely
-> upon vma_address() to work correctly while it holds anon_vma lock.
-> 
-> That's a considerably less important consideration than the integrity
-> of the list threading itself.  Anything BUGging on a wrong page->index
-> is holding mmap_sem, which would keep vma_adjust off.  So it's just a
-> matter of whether rmap.c can be expected to find all instances of a
-> page at all times, which nothing absolutely requires (and in checking
-> this patch, I notice fs/exec.c's shift_arg_pages() use of vma_adjust()
-> a little violatory in that respect).
-> 
-> But it is something the anon_vma lock has protected in the past,
-> and it shouldn't affect your sbrk() case at all, so I'd like to
-> check we're not changing vm_start too (vm_pgoff should be changing
-> with it, but shift_arg_pages() deals with that in a different way,
-> keeping vm_pgoff unchanged but shifting the pages).
-> 
-> (Compare with how stack's expand_downwards() has anon_vma_lock()
-> when it adjusts vm_start and vm_pgoff - though that's also because
-> it has only down_read of mmap_sem, not the down_write we'd usually
-> require for such adjustments.)
-> 
-> > 
-> > I have tested with and without the 'file || ' test in the patch.
-> > This does not seem to matter for stability nor performance.  I
-> > left this check/filter in, so we only optimize away the
-> > anon_vma lock acquisition when adjusting the end of a non-
-> > importing, non-inserting, anon vma.
-> 
-> I dislike that: the "file" test just has no relevance at all
-> (beyond that you've no interest in the case when there is a file),
-> and two years down the line will make people like me worry for
-> hours on end what it's there for.  I've removed it below.
-> 
-> > 
-> > If accepted, this patch may benefit the stable tree as well.
-> 
-> We seem to have a different perception of what the stable tree is for!
-> But I'm not against any distro picking up this patch if it chooses.
-> Here's a version with my signoff:
-> 
-> 
-> [PATCH] mmap: avoid unnecessary anon_vma lock acquisition in vma_adjust()
-> 
-> From: Lee Schermerhorn <lee.schermerhorn@hp.com>
-> 
-> We noticed very erratic behavior [throughput] with the AIM7 shared
-> workload running on recent distro [SLES11] and mainline kernels on
-> an 8-socket, 32-core, 256GB x86_64 platform.  On the SLES11 kernel
-> [2.6.27.19+] with Barcelona processors, as we increased the load
-> [10s of thousands of tasks], the throughput would vary between two
-> "plateaus"--one at ~65K jobs per minute and one at ~130K jpm.  The
-> simple patch below causes the results to smooth out at the ~130k
-> plateau.
-> 
-> But wait, there's more:
-> 
-> We do not see this behavior on smaller platforms--e.g., 4 socket/8
-> core.  This could be the result of the larger number of cpus on
-> the larger platform--a scalability issue--or it could be the result
-> of the larger number of interconnect "hops" between some nodes in
-> this platform and how the tasks for a given load end up distributed
-> over the nodes' cpus and memories--a stochastic NUMA effect.
-> 
-> The variability in the results are less pronounced [on the same
-> platform] with Shanghai processors and with mainline kernels.  With
-> 31-rc6 on Shanghai processors and 288 file systems on 288 fibre
-> attached storage volumes, the curves [jpm vs load] are both quite
-> flat with the patched kernel consistently producing ~3.9% better
-> throughput [~80K jpm vs ~77K jpm] than the unpatched kernel.
-> 
-> Profiling indicated that the "slow" runs were incurring high[er]
-> contention on an anon_vma lock in vma_adjust(), apparently called
-> from the sbrk() system call.
-> 
-> The patch:
-> 
-> A comment in mm/mmap.c:vma_adjust() suggests that we don't really
-> need the anon_vma lock when we're only adjusting the end of a vma,
-> as is the case for brk().  The comment questions whether it's worth
-> while to optimize for this case.  Apparently, on the newer, larger
-> x86_64 platforms, with interesting NUMA topologies, it is worth
-> while--especially considering that the patch [if correct!] is 
-> quite simple.
-> 
-> We can detect this condition--no overlap with next vma--by noting
-> a NULL "importer".  The anon_vma pointer will also be NULL in this
-> case, so simply avoid loading vma->anon_vma to avoid the lock.
-> 
-> However, we DO need to take the anon_vma lock when we're inserting a
-> vma ['insert' non-NULL] even when we have no overlap [NULL "importer"],
-> so we need to check for 'insert', as well.  And Hugh points out that
-> we should also take it when adjusting vm_start (so that rmap.c can
-> rely upon vma_address() while it holds the anon_vma lock).
-> 
-> Signed-off-by: Lee Schermerhorn <lee.schermerhorn@hp.com>
-> Signed-off-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Eric Whitney <eric.whitney@hp.com>
-> ---
-> 
->  mm/mmap.c |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> --- 2.6.31/mm/mmap.c	2009-09-09 23:13:59.000000000 +0100
-> +++ linux/mm/mmap.c	2009-09-13 13:08:40.000000000 +0100
-> @@ -570,9 +570,9 @@ again:			remove_next = 1 + (end > next->
->  
->  	/*
->  	 * When changing only vma->vm_end, we don't really need
-> -	 * anon_vma lock: but is that case worth optimizing out?
-> +	 * anon_vma lock.
->  	 */
-> -	if (vma->anon_vma)
-> +	if (vma->anon_vma && (insert || importer || start != vma->vm_start))
->  		anon_vma = vma->anon_vma;
->  	if (anon_vma) {
->  		spin_lock(&anon_vma->lock);
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Software Engineer
+Hitachi Computer Products (America), Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
