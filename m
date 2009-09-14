@@ -1,88 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757436AbZINW2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757455AbZINWaC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757436AbZINW2w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 18:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755116AbZINW2v
+	id S1757455AbZINWaC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 18:30:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757424AbZINWaB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 18:28:51 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:25645 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752710AbZINW2u (ORCPT
+	Mon, 14 Sep 2009 18:30:01 -0400
+Received: from an-out-0708.google.com ([209.85.132.250]:7904 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757373AbZINWaA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 18:28:50 -0400
+	Mon, 14 Sep 2009 18:30:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=xxZu/130cVkDvD4/xX7eS5ZEIDtzeCZ091wDRC6rELwb4I7Tb/R0LOt1JYeYT3kCY4
-         h1iCHrQgNh02/gOphtPlZ2bAIinLCY5sIHi6dRUzlKc/zO+5XFLMuVZn0DfDllF+o526
-         VxIetaROE0C71uXnTA0iSL0ppNvbn7wGlhwLs=
-Date: Tue, 15 Sep 2009 00:28:51 +0200
-From: Johan Hovold <jhovold@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: e9hack <e9hack@googlemail.com>, linux-kernel@vger.kernel.org
-Subject: Re: Trouble with USB serial driver (ftdi_sio.c) on 2.6.31
-Message-ID: <20090914222851.GA14235@localhost>
-References: <4AAB8F3F.40403@googlemail.com>
- <20090914164333.GB25381@kroah.com>
+        h=mime-version:from:date:message-id:subject:to:content-type;
+        b=sWEdeD+Nxl3BkOGIemF/QKYMDiWpHzHL3ceT9yNur+XzIraG7JArpQG6niNskXrJ3b
+         /G1/NRIyDdO/XIn6eLIkdlJeIWYDuX8mVNE9uaoSSEg6+DCUoMQdD0d8YcPB3AQ5zdqv
+         KuxsuC34Ig2Z5ORfVSAGl67cWNHvfm/OWkPDU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914164333.GB25381@kroah.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+From: Jason Garrett-Glaser <darkshikari@gmail.com>
+Date: Mon, 14 Sep 2009 15:29:42 -0700
+Message-ID: <28f2fcbc0909141529n4ee32d6t47ca8bdaf02dad@mail.gmail.com>
+Subject: More BFS benchmarks and scheduler issues
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 09:43:33AM -0700, Greg KH wrote:
-> On Sat, Sep 12, 2009 at 02:08:31PM +0200, e9hack wrote:
-> > I've some trouble with the USB serial driver (ftdi_sio.c for a FT232RL from FTDI). If the 
-> > port is opened for the first time, the driver works perfectly. If the port is closed and 
-> > open again, it isn't possible to read any data from port. Writing data to the port works. 
-> > The FT232RL must be reconnect to get it working again. A reboot without reconnect doesn't 
-> > solve this problem. 
+As an x264 developer, I have no position on the whole debate over
+BFS/CFS (nor am I a kernel hacker), but a friend of mine recently ran
+this set of tests with BFS vs CFS that still doesn't make any sense to
+me and suggests some sort of serious suboptimality in the existing
+scheduler:
 
-I have a similar problem with the same chip after upgrading to 2.6.31,
-although the first read after reconnecting the device (usually) works.
+>>>>>>>>>>>>>>>>>>
 
-> {sigh}  Yes, this driver is a bit messed up in .31, sorry.  We are
-> working through it and hope to have a fix in one of the upcoming
-> .31-stable releases.
+Background information necessary to replicate test:
 
-I've spent some time tracking down the problem and I might have some
-information that could be useful:
+Input file: http://media.xiph.org/video/derf/y4m/soccer_4cif.y4m
+x264 source: git://git.videolan.org/x264.git
+revision of x264 used: e553a4c
+CPU: Core 2 Quad Q9300 (2.5GHz)
+Kernel/distro/platform: 2.6.31 patched with the gentoo patchset, Gentoo, x86_64.
+BFS patch: Latest available (BFS 220).
+Methodology: Each test was run 3 times. The median of the three was
+then selected.
 
-The commit introducing the regression is
-335f8514f200e63d689113d29cb7253a5c282967, which changes the way DTR/RTS
-are handled on open; they used to be set prior to setting up the read
-urb, now they're set after (in dtr_rts()). Depending on when the first
-read callback is made, the driver may stop reading from the device.
+./x264/x264 --preset ultrafast --no-scenecut --sync-lookahead 0 --qp
+20 samples/soccer_4cif.y4m -o /dev/null --threads X
+    BFS                 CFS
+1: 124.79 fps       131.69 fps
+2: 252.14 fps       192.14 fps
+3: 376.55 fps       223.24 fps
+4: 447.69 fps       242.54 fps
+5: 447.98 fps       252.43 fps
+6: 447.87 fps       253.56 fps
+7: 444.79 fps       250.37 fps
+8: 441.08 fps       251.95 fps
 
-The problem became more apparent with
-557aaa7ffab639d0190b935a041b16ae44606342 which lowered the device
-latency timeout to 1ms, but since setting the timeout does not take
-effect until the port is closed and re-opened the driver mostly works
-the first time after reconnecting the device.
 
-My test setup opens the port and writes some bytes to a FT232RL with
-rx and tx connected, and then reads the looped back data. This usually
-works the first time after connecting, whereas reads never return any
-data after reopening the port.
+./x264/x264 -B 2000 samples/soccer_4cif.y4m -o /dev/null --threads X
+    BFS                 CFS
+1: 19.72 fps        19.97 fps
+2: 39.03 fps        29.75 fps
+3: 60.85 fps        39.83 fps
+4: 68.60 fps        42.04 fps
+5: 70.61 fps        43.78 fps
+6: 71.35 fps        46.43 fps
+7: 70.80 fps        48.02 fps
+8: 70.68 fps        46.95 fps
 
-When it fails, the first read_bulk callback is made before dtr_rts
-returns and port.count is incremented. In particular, the read callback
-does not process the data as port.count is 0 at the time and the driver
-stops reading from the device. Should the callback be made somewhat
-later (as with the default 16ms latency timeout), port.count is non-zero
-and all is fine.
 
-Disabling dtr_rts() and calling set_mctrl before setting up the read
-urb (as it used to be done) fixes the problem and could be used as a
-temporary work-around. But I guess the read callback must be made able
-to handle a port count of zero?
+./x264/x264 --preset veryslow --crf 20 samples/soccer_4cif.y4m -o
+/dev/null --threads X
+    BFS                 CFS
+1: 1.89 fps         1.89 fps
+2: 3.24 fps         2.78 fps
+3: 4.18 fps         3.47 fps
+4: 5.76 fps         4.61 fps
+5: 6.07 fps         4.67 fps
+6: 6.29 fps         4.90 fps
+7: 6.52 fps         5.08 fps
+8: 6.65 fps         5.27 fps
 
-Let me know if I can help out with implementing or testing any fixes.
+I noticed when running single threaded, BFS seemed to be jumping the
+process between CPUs. So bonding the process to a single CPU I got
+the below numbers.
 
-Regards,
-Johan Hovold
+taskset -c 0 $x264_cmd --threads 1
+ultrafast:  130.76 fps
+defaults:   20.01 fps
+veryslow:   1.90 fps
 
+<<<<<<<<<<<<<<<<<<
+
+What is particularly troubling about these results is that this is not
+a situation that should seriously challenge the scheduler (like a
+thousand-thread HTTP server).  In ultrafast mode, the threading model
+is phenomenally simple: each thread, if it gets too far ahead of the
+previous thread, is blocked.  That's it. (full gory details at
+http://akuvian.org/src/x264/sliceless_threads.txt)
+
+In the other modes, the only complication is that there is one more
+thread (lookahead) in front of all the main threads and all the main
+threads are set to a lower priority via nice() in order to avoid
+blocking on the lookahead thread.
+
+Though I'm not a scheduler hacker, these enormous differences in an
+application which is entirely CPU-bound and uses very few threads
+strikes me as seriously wrong.
+
+Jason Garrett-Glaser
