@@ -1,57 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755245AbZIND3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZINDbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755245AbZIND3g (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 Sep 2009 23:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754551AbZIND3f
+	id S1754551AbZINDbj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 Sep 2009 23:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZINDbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 Sep 2009 23:29:35 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:51215 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754574AbZIND3f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 Sep 2009 23:29:35 -0400
-Message-ID: <4AADB887.103@redhat.com>
-Date: Mon, 14 Sep 2009 11:29:11 +0800
-From: Danny Feng <dfeng@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
-MIME-Version: 1.0
-To: Eric Paris <eparis@redhat.com>
-CC: cl@linux-foundation.org, penberg@cs.helsinki.fi, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [GIT BISECT] BUG kmalloc-8192: Object already free from kmem_cache_destroy
-References: <1252866835.13780.37.camel@dhcp231-106.rdu.redhat.com>	 <4AADB5EE.9090902@redhat.com> <1252898739.5793.4.camel@dhcp231-106.rdu.redhat.com>
-In-Reply-To: <1252898739.5793.4.camel@dhcp231-106.rdu.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 13 Sep 2009 23:31:38 -0400
+Received: from mga06.intel.com ([134.134.136.21]:21836 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753603AbZINDbi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 Sep 2009 23:31:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,381,1249282800"; 
+   d="scan'208";a="448189138"
+Subject: Re: PATCH] cpuidle: A new variant of the menu governor to boost IO
+	performance
+From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
+To: John Stoffel <john@stoffel.org>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       lenb@kernel.org, mingo@elte.hu, akpm@linux-foundation.org,
+       peterz@infradead.org, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com
+In-Reply-To: <19114.41505.479086.782442@stoffel.org>
+References: <20090911174019.1ed02737@infradead.org>
+	 <19114.41505.479086.782442@stoffel.org>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 11:30:10 +0800
+Message-Id: <1252899010.2606.25.camel@ymzhang>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/14/2009 11:25 AM, Eric Paris wrote:
-> On Mon, 2009-09-14 at 11:18 +0800, Danny Feng wrote:
->> diff --git a/mm/slub.c b/mm/slub.c
->> index b627675..40e12d5 100644
->> --- a/mm/slub.c
->> +++ b/mm/slub.c
->> @@ -3337,8 +3337,8 @@ struct kmem_cache *kmem_cache_create(const char
->> *name, size_t size,
->>                                  goto err;
->>                          }
->>                          return s;
->> -               }
->> -               kfree(s);
->> +               } else
->> +                       kfree(s);
->>          }
->>          up_write(&slub_lock);
->>
->
-> Doesn't the return inside the conditional take care of this?  I'll give
-> it a try in the morning, but I don't see how this can solve the
-> problem....
->
-> -Eric
->
->
-err, you're right... let me try to find why. It's strange, if SLUB_DEBUG 
-is not set, sysfs_slab_remove is just to free kmem_cache s. So I think 
-if SLUB_DEBUG is not set, we also have the same issue....
+On Fri, 2009-09-11 at 15:16 -0400, John Stoffel wrote:
+> >>>>> "Arjan" == Arjan van de Ven <arjan@infradead.org> writes:
+> 
+> Arjan> From: Arjan van de Ven <arjan@linux.intel.com>
+> Arjan> Subject: [PATCH] cpuidle: A new variant of the menu governor
+> 
+> Arjan> This patch adds a new idle governor which balances power savings,
+> Arjan> energy efficiency and performance impact.
+> 
+> Arjan> The reason for a reworked governor is that there have been
+> Arjan> serious performance issues reported with the existing code
+> Arjan> on Nehalem server systems.
+> 
+> Arjan> To show this I'm sure Andrew wants to see benchmark results:
+> Arjan> (benchmark is "fio", "no cstates" is using "idle=poll")
+> 
+> Arjan> 		no cstates	current linux	new algorithm
+> Arjan> 1 disk		107 Mb/s	85 Mb/s		105 Mb/s
+> Arjan> 2 disks		215 Mb/s	123 Mb/s	209 Mb/s
+> Arjan> 12 disks	590 Mb/s	320 Mb/s	585 Mb/s
+> 
+> Don't you need another row or three where you show a) how much time
+> each test took,
+We start fio and always ask it running for 15 minutes.
+
+>  and b) how much (or average) power used for the
+> duration of the test?  
+The power consumption with the patch almost is equal to the one
+without the patch. But the fio result is far better with the patch.
+
+> 
+> I'm just curious if the new algorithm (or even the current one!) saves
+> any appreciable power over the 'no cstates' case.  It's not clear what
+> the savings are.  
+> 
+> Also, latency in terms of switching to higher power and then back down
+> would be nice to see.
+> 
+> Cheers,
+> John
+
