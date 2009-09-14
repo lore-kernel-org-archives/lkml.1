@@ -1,249 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755335AbZINRkH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbZINRnu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755335AbZINRkH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 13:40:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbZINRkD
+	id S1755359AbZINRnu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 13:43:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZINRnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 13:40:03 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:57711 "EHLO smtp.gentoo.org"
+	Mon, 14 Sep 2009 13:43:47 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:40284 "EHLO smtp.gentoo.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750749AbZINRkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 13:40:01 -0400
+	id S1752535AbZINRnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 13:43:47 -0400
 From: Mike Frysinger <vapier@gentoo.org>
-To: linux-input@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Javier Herrero <jherrero@hvsistemas.es>,
-       Bryan Wu <cooloney@kernel.org>
-Subject: [PATCH v3] input/keyboard: new OpenCores Keyboard Controller driver
-Date: Mon, 14 Sep 2009 13:40:03 -0400
-Message-Id: <1252950003-9451-1-git-send-email-vapier@gentoo.org>
+To: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
+Cc: linux-kernel@vger.kernel.org,
+       Michael Hennerich <michael.hennerich@analog.com>
+Subject: [PATCH v2] [Bluetooth] redo checks in IRQ handler for shared IRQ support
+Date: Mon, 14 Sep 2009 13:43:49 -0400
+Message-Id: <1252950229-9629-1-git-send-email-vapier@gentoo.org>
 X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1252911864-19233-1-git-send-email-vapier@gentoo.org>
-References: <1252911864-19233-1-git-send-email-vapier@gentoo.org>
+In-Reply-To: <1252905504-26666-1-git-send-email-vapier@gentoo.org>
+References: <1252905504-26666-1-git-send-email-vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Javier Herrero <jherrero@hvsistemas.es>
+Commit ac019360fe3 changed the irq handler logic to BUG_ON rather than
+returning IRQ_NONE when the incoming argument is invalid.  While this
+works in most cases, it doesn't work when the IRQ is shared with other
+devices (or when DEBUG_SHIRQ is enabled).
 
-Driver for the keyboard hardware documented here:
-	http://www.opencores.org/project,keyboardcontroller
+So revert the previous change and replace the warning message with a
+comment explaining that we want this behavior.
 
-Signed-off-by: Javier Herrero <jherrero@hvsistemas.es>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
+Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
 Signed-off-by: Mike Frysinger <vapier@gentoo.org>
 ---
-v3
-	- use KBUILD_MODNAME pointed out by Joe Perches
+v2
+	- tweak commit log to not use git-revert
 
- drivers/input/keyboard/Kconfig         |    9 ++
- drivers/input/keyboard/Makefile        |    1 +
- drivers/input/keyboard/opencores-kbd.c |  165 ++++++++++++++++++++++++++++++++
- 3 files changed, 175 insertions(+), 0 deletions(-)
- create mode 100644 drivers/input/keyboard/opencores-kbd.c
+ drivers/bluetooth/bluecard_cs.c |    4 +++-
+ drivers/bluetooth/bt3c_cs.c     |    4 +++-
+ drivers/bluetooth/btuart_cs.c   |    4 +++-
+ drivers/bluetooth/dtl1_cs.c     |    4 +++-
+ 4 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/input/keyboard/Kconfig b/drivers/input/keyboard/Kconfig
-index a6b989a..f0f4852 100644
---- a/drivers/input/keyboard/Kconfig
-+++ b/drivers/input/keyboard/Kconfig
-@@ -310,6 +310,15 @@ config KEYBOARD_SUNKBD
- 	  To compile this driver as a module, choose M here: the
- 	  module will be called sunkbd.
+diff --git a/drivers/bluetooth/bluecard_cs.c b/drivers/bluetooth/bluecard_cs.c
+index b0e569b..a3a8f4d 100644
+--- a/drivers/bluetooth/bluecard_cs.c
++++ b/drivers/bluetooth/bluecard_cs.c
+@@ -503,7 +503,9 @@ static irqreturn_t bluecard_interrupt(int irq, void *dev_inst)
+ 	unsigned int iobase;
+ 	unsigned char reg;
  
-+config KEYBOARD_OPENCORES
-+	tristate "OpenCores Keyboard Controller"
-+	help
-+	  Say Y here if you want to use the OpenCores Keyboard Controller
-+	  http://www.opencores.org/project,keyboardcontroller
-+
-+	  To compile this driver as a module, choose M here; the
-+	  module will be called opencores-kbd.
-+
- config KEYBOARD_SH_KEYSC
- 	tristate "SuperH KEYSC keypad support"
- 	depends on SUPERH
-diff --git a/drivers/input/keyboard/Makefile b/drivers/input/keyboard/Makefile
-index b5b5eae..d333bc6 100644
---- a/drivers/input/keyboard/Makefile
-+++ b/drivers/input/keyboard/Makefile
-@@ -23,6 +23,7 @@ obj-$(CONFIG_KEYBOARD_MAPLE)		+= maple_keyb.o
- obj-$(CONFIG_KEYBOARD_MATRIX)		+= matrix_keypad.o
- obj-$(CONFIG_KEYBOARD_NEWTON)		+= newtonkbd.o
- obj-$(CONFIG_KEYBOARD_OMAP)		+= omap-keypad.o
-+obj-$(CONFIG_KEYBOARD_OPENCORES)	+= opencores-kbd.o
- obj-$(CONFIG_KEYBOARD_PXA27x)		+= pxa27x_keypad.o
- obj-$(CONFIG_KEYBOARD_PXA930_ROTARY)	+= pxa930_rotary.o
- obj-$(CONFIG_KEYBOARD_SH_KEYSC)		+= sh_keysc.o
-diff --git a/drivers/input/keyboard/opencores-kbd.c b/drivers/input/keyboard/opencores-kbd.c
-new file mode 100644
-index 0000000..be74ebb
---- /dev/null
-+++ b/drivers/input/keyboard/opencores-kbd.c
-@@ -0,0 +1,165 @@
-+/*
-+ * OpenCores Keyboard Controller Driver
-+ * http://www.opencores.org/project,keyboardcontroller
-+ *
-+ * Copyright 2007-2009 HV Sistemas S.L.
-+ *
-+ * Licensed under the GPL-2 or later.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/input.h>
-+#include <linux/interrupt.h>
-+#include <linux/io.h>
-+#include <linux/ioport.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+
-+#define NUM_KEYS 128
-+
-+struct opencores_kbd {
-+	struct input_dev *input;
-+	struct resource *addr_res;
-+	struct resource *irq_res;
-+	unsigned short *keycode;
-+};
-+
-+static irqreturn_t opencores_kbd_isr(int irq, void *dev_id)
-+{
-+	unsigned char c;
-+	struct platform_device *pdev = dev_id;
-+	struct opencores_kbd *opencores_kbd = platform_get_drvdata(pdev);
-+	struct input_dev *input = opencores_kbd->input;
-+
-+	c = readb((void *)opencores_kbd->addr_res->start);
-+	input_report_key(input, c & 0x7f, c & 0x80 ? 0 : 1);
-+	input_sync(input);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static int __devinit opencores_kbd_probe(struct platform_device *pdev)
-+{
-+	struct input_dev *input;
-+	struct opencores_kbd *opencores_kbd;
-+	struct resource *addr_res, *irq_res;
-+	int i, error;
-+
-+	addr_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	irq_res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
-+	if (addr_res == NULL || irq_res == NULL) {
-+		pr_err("missing board resources\n");
-+		return -ENOENT;
-+	}
-+
-+	opencores_kbd = kzalloc(sizeof(*opencores_kbd), GFP_KERNEL);
-+	if (!opencores_kbd)
-+		return -ENOMEM;
-+
-+	opencores_kbd->keycode = kmalloc(NUM_KEYS * sizeof(unsigned short), GFP_KERNEL);
-+	if (!opencores_kbd->keycode) {
-+		error = -ENOMEM;
-+		goto err_mem;
-+	}
-+	opencores_kbd->addr_res = addr_res;
-+	opencores_kbd->irq_res = irq_res;
-+	platform_set_drvdata(pdev, opencores_kbd);
-+
-+	input = input_allocate_device();
-+	if (!input) {
-+		error = -ENOMEM;
-+		goto err_in_alloc;
-+	}
-+
-+	opencores_kbd->input = input;
-+
-+	input->name = pdev->name;
-+	input->phys = "opencores-kbd/input0";
-+	input->dev.parent = &pdev->dev;
-+
-+	input_set_drvdata(input, opencores_kbd);
-+
-+	input->id.bustype = BUS_HOST;
-+	input->id.vendor = 0x0001;
-+	input->id.product = 0x0001;
-+	input->id.version = 0x0100;
-+
-+	input->keycodesize = sizeof(*opencores_kbd->keycode);
-+	input->keycodemax = NUM_KEYS;
-+	input->keycode = opencores_kbd->keycode;
-+
-+	__set_bit(EV_KEY, input->evbit);
-+
-+	for (i = 0; i < input->keycodemax; i++) {
-+		opencores_kbd->keycode[i] = i;
-+		__set_bit(opencores_kbd->keycode[i] & KEY_MAX, input->keybit);
-+	}
-+	__clear_bit(KEY_RESERVED, input->keybit);
-+
-+	error = input_register_device(input);
-+	if (error) {
-+		pr_err("unable to register input device\n");
-+		goto err_in_reg;
-+	}
-+
-+	error = request_irq(irq_res->start, &opencores_kbd_isr, IRQF_TRIGGER_RISING, pdev->name, pdev);
-+	if (error) {
-+		pr_err("unable to claim irq %d\n", irq_res->start);
-+		goto err_irq;
-+	}
-+
-+	return 0;
-+
-+ err_irq:
-+	input_unregister_device(input);
-+ err_in_reg:
-+	input_free_device(input);
-+ err_in_alloc:
-+	kfree(opencores_kbd->keycode);
-+ err_mem:
-+	kfree(opencores_kbd);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return error;
-+}
-+
-+static int __devexit opencores_kbd_remove(struct platform_device *pdev)
-+{
-+	struct opencores_kbd *opencores_kbd = platform_get_drvdata(pdev);
-+
-+	free_irq(opencores_kbd->irq_res->start, pdev);
-+
-+	input_unregister_device(opencores_kbd->input);
-+
-+	kfree(opencores_kbd->keycode);
-+	kfree(opencores_kbd);
-+	platform_set_drvdata(pdev, NULL);
-+
-+	return 0;
-+}
-+
-+static struct platform_driver opencores_kbd_device_driver = {
-+	.probe    = opencores_kbd_probe,
-+	.remove   = __devexit_p(opencores_kbd_remove),
-+	.driver   = {
-+		.name = KBUILD_MODNAME,
-+	},
-+};
-+
-+static int __init opencores_kbd_init(void)
-+{
-+	return platform_driver_register(&opencores_kbd_device_driver);
-+}
-+module_init(opencores_kbd_init);
-+
-+static void __exit opencores_kbd_exit(void)
-+{
-+	platform_driver_unregister(&opencores_kbd_device_driver);
-+}
-+module_exit(opencores_kbd_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Javier Herrero <jherrero@hvsistemas.es>");
-+MODULE_DESCRIPTION("Keyboard driver for OpenCores Keyboard Controller");
+-	BUG_ON(!info->hdev);
++	if (!info || !info->hdev)
++		/* our irq handler is shared */
++		return IRQ_NONE;
+ 
+ 	if (!test_bit(CARD_READY, &(info->hw_state)))
+ 		return IRQ_HANDLED;
+diff --git a/drivers/bluetooth/bt3c_cs.c b/drivers/bluetooth/bt3c_cs.c
+index d58e22b..9a7578e 100644
+--- a/drivers/bluetooth/bt3c_cs.c
++++ b/drivers/bluetooth/bt3c_cs.c
+@@ -345,7 +345,9 @@ static irqreturn_t bt3c_interrupt(int irq, void *dev_inst)
+ 	int iir;
+ 	irqreturn_t r = IRQ_NONE;
+ 
+-	BUG_ON(!info->hdev);
++	if (!info || !info->hdev)
++		/* our irq handler is shared */
++		return IRQ_NONE;
+ 
+ 	iobase = info->p_dev->io.BasePort1;
+ 
+diff --git a/drivers/bluetooth/btuart_cs.c b/drivers/bluetooth/btuart_cs.c
+index efd689a..cd9cb6c 100644
+--- a/drivers/bluetooth/btuart_cs.c
++++ b/drivers/bluetooth/btuart_cs.c
+@@ -295,7 +295,9 @@ static irqreturn_t btuart_interrupt(int irq, void *dev_inst)
+ 	int iir, lsr;
+ 	irqreturn_t r = IRQ_NONE;
+ 
+-	BUG_ON(!info->hdev);
++	if (!info || !info->hdev)
++		/* our irq handler is shared */
++		return IRQ_NONE;
+ 
+ 	iobase = info->p_dev->io.BasePort1;
+ 
+diff --git a/drivers/bluetooth/dtl1_cs.c b/drivers/bluetooth/dtl1_cs.c
+index 2cc7b32..588678a 100644
+--- a/drivers/bluetooth/dtl1_cs.c
++++ b/drivers/bluetooth/dtl1_cs.c
+@@ -299,7 +299,9 @@ static irqreturn_t dtl1_interrupt(int irq, void *dev_inst)
+ 	int iir, lsr;
+ 	irqreturn_t r = IRQ_NONE;
+ 
+-	BUG_ON(!info->hdev);
++	if (!info || !info->hdev)
++		/* our irq handler is shared */
++		return IRQ_NONE;
+ 
+ 	iobase = info->p_dev->io.BasePort1;
+ 
 -- 
 1.6.4.2
 
