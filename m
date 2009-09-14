@@ -1,78 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932775AbZINSSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932749AbZINSSh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932775AbZINSSv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932765AbZINSSp
+	id S932749AbZINSSh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:18:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932736AbZINSSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:18:45 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:56980 "EHLO mx1.redhat.com"
+	Mon, 14 Sep 2009 14:18:33 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:55940 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932755AbZINSSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:18:41 -0400
-Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree 
- build warning)
-From: Steven Rostedt <srostedt@redhat.com>
-To: Christopher Li <sparse@chrisli.org>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-sparse@vger.kernel.org,
-       Josh Triplett <josh@freedesktop.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
-References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-	 <1249403089.4634.139.camel@localhost.localdomain>
-	 <20090912165300.9d257283.sfr@canb.auug.org.au>
-	 <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam>
-	 <1252941416.2964.143.camel@localhost.localdomain>
-	 <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Mon, 14 Sep 2009 14:17:18 -0400
-Message-Id: <1252952238.2964.154.camel@localhost.localdomain>
-Mime-Version: 1.0
+	id S932733AbZINSSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:18:32 -0400
+Message-ID: <4AAE88F7.3010707@austin.ibm.com>
+Date: Mon, 14 Sep 2009 13:18:31 -0500
+From: Nathan Fontenot <nfont@austin.ibm.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Nathan Fontenot <nfont@austin.ibm.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 4/5] kernel handling of memory DLPAR
+References: <4AAABC55.4070207@austin.ibm.com> <4AAABDBB.7010400@austin.ibm.com> <20090914063911.GB13139@centrinvest.ru>
+In-Reply-To: <20090914063911.GB13139@centrinvest.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 10:09 -0700, Christopher Li wrote:
-> On Mon, Sep 14, 2009 at 8:16 AM, Steven Rostedt <srostedt@redhat.com> wrote:
-> > static void func(int size_me) {
-> >        char array[size_me];
-> >
-> >        memcpy(array, "hello", size);
-> > };
-> >
-> > and sparse failed on it as well. Note, you need to have something call
-> > func, or sparse will ignore it.
+Andrey Panin wrote:
+> On 254, 09 11, 2009 at 04:14:35PM -0500, Nathan Fontenot wrote:
+>> This adds the capability to DLPAR add and remove memory from the kernel.  The
+>> patch extends the powerpc handling of memory_add_physaddr_to_nid(), which is
+>> called from the sysfs memory 'probe' file to first ensure that the memory
+>> has been added to the system.  This is done by creating a platform specific
+>> callout from the routine.  The pseries implementation of this handles the
+>> DLPAR work to add the memory to the system and update the device tree.
+>>
+>> The patch also creates a pseries only 'release' sys file,
+>> /sys/devices/system/memory/release.  This file handles the DLPAR
+>> release of
+>> memory back to firmware and updating of the device-tree.
+>>
+>> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
 > 
-> Gcc allows variable size. Sparse expects the size of an array is constant.
-> For the kernel using variable array size is consider bad. Because the kernel
-> has very limited stack size. (8K if I remember correctly). Using dynamic array
-> is very easy to overflow the stack without realizing it.
+>> +static struct property *clone_property(struct property *old_prop)
+>> +{
+>> +	struct property *new_prop;
+>> +
+>> +	new_prop = kzalloc((sizeof *new_prop), GFP_KERNEL);
+>> +	if (!new_prop)
+>> +		return NULL;
+>> +
+>> +	new_prop->name = kzalloc(strlen(old_prop->name) + 1, GFP_KERNEL);
+>> +	new_prop->value = kzalloc(old_prop->length + 1, GFP_KERNEL);
 > 
-> It deserves a warning. I agree the warning message can use a better description
-> though.
+> Memory leak here. What if one kzalloc() succeeded and another failed ?
+> 
 
-Good point!
+This should be fine.  The free_property routine will free the name or value
+fields if they are allocated.
 
-I've added Frederic to the Cc list, since he wrote the code.
+-Nathan
 
-Frederic, how big can one of those events get. The ring buffer (and
-TRACE_EVENT) allow up to almost a page size, which is very hefty for the
-stack. This code needs to either be rewritten or we need to set a limit
-to the size of a profile entry.
-
-We could add:
-
-	if (__entry_size > 256)
-		return;
-
-Thoughts?
-
--- Steve
-
-
-
+>> +	if (!new_prop->name || !new_prop->value) {
+>> +		free_property(new_prop);
+>> +		return NULL;
+>> +	}
+>> +
+>> +	strcpy(new_prop->name, old_prop->name);
+>> +	memcpy(new_prop->value, old_prop->value, old_prop->length);
+>> +	new_prop->length = old_prop->length;
+>> +
+>> +	return new_prop;
+>> +}
