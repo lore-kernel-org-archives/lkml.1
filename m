@@ -1,126 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751133AbZINEe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751200AbZINEjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751133AbZINEe6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 00:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750891AbZINEez
+	id S1751200AbZINEjs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 00:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750920AbZINEjr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 00:34:55 -0400
-Received: from mga14.intel.com ([143.182.124.37]:36048 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750849AbZINEez (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 00:34:55 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,381,1249282800"; 
-   d="scan'208";a="187207478"
-Date: Mon, 14 Sep 2009 12:34:44 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "mtosatti@redhat.com" <mtosatti@redhat.com>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>,
-       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
-       "avi@qumranet.com" <avi@qumranet.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Mike Smith <scgtrp@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] devmem: handle partial kmem write/read
-Message-ID: <20090914043444.GA18590@localhost>
-References: <20090914032901.GA16189@localhost>
+	Mon, 14 Sep 2009 00:39:47 -0400
+Received: from mail-px0-f189.google.com ([209.85.216.189]:45263 "EHLO
+	mail-px0-f189.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbZINEjr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 00:39:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wgcG0WOOFaQ33J7feLgeVj2nymRhDw5K8MjMJI9KPyLqg5VrmM65IyA04jy18qJQ76
+         bqvRBsoJtg8Iqj+e1pZrrQspocokZMlU/jtK7kQIM0kC/gwDPFmNwQy6FC5+oyiHaHhl
+         Qsd9/kjVt1QGDZMKreseHd+922VbrNjTc2NXQ=
+Date: Sun, 13 Sep 2009 21:39:46 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Arjan Opmeer <arjan@opmeer.net>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: How to handle laptop with Elantech touchpad that chokes on
+	current driver configuration values?
+Message-ID: <20090914043946.GC11854@core.coreip.homeip.net>
+References: <20090911132530.GA2708@adopmeer.homeip.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090914032901.GA16189@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090911132530.GA2708@adopmeer.homeip.net>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kame,
+Hi Arjan,
 
-This patch needs more work. I first intent to fix a bug:
-
-                        sz = vwrite(kbuf, (char *)p, sz);
-                        p += sz;
-                }
-
-So if the returned len is 0, the kbuf/p pointers will mismatch. 
-
-Then I realize it changed the write behavior. The current vwrite()
-behavior is strange, it returns 0 if _whole range_ is hole, otherwise
-ignores the hole silently. So holes can be treated differently even in
-the original code.
-
-I'm not really sure about the right behavior. KAME-san, do you have
-any suggestions?
-
-Thanks,
-Fengguang
-
-On Mon, Sep 14, 2009 at 11:29:01AM +0800, Wu Fengguang wrote:
-> Current vwrite silently ignores vwrite() to vmap holes.
-> Better behavior should be stop the write and return
-> on such holes.
+On Fri, Sep 11, 2009 at 03:25:30PM +0200, Arjan Opmeer wrote:
 > 
-> Also return on partial read, which may happen in future
-> (eg. hit hwpoison pages).
+> Recently I debugged a problem for a user where the Elantech touchpad of his
+> laptop chokes on the configuration values that the current kernel driver is
+> using. After sending a conflicting value the PS/2 controller freezes and
+> doesn't accept any subsequent bytes.
 > 
-> CC: Andi Kleen <andi@firstfloor.org>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  drivers/char/mem.c |   30 ++++++++++++++++++------------
->  1 file changed, 18 insertions(+), 12 deletions(-)
+> The current configuration values for hardware version 2 (EeePC style) come
+> from the touchpad driver in the original Xandros Linux distribution for the
+> EeePC. And until now I haven't heard of problems with them. They look like
+> this:
 > 
-> --- linux-mm.orig/drivers/char/mem.c	2009-09-14 10:59:50.000000000 +0800
-> +++ linux-mm/drivers/char/mem.c	2009-09-14 11:06:25.000000000 +0800
-> @@ -444,18 +444,22 @@ static ssize_t read_kmem(struct file *fi
->  		if (!kbuf)
->  			return -ENOMEM;
->  		while (count > 0) {
-> +			unsigned long n;
-> +
->  			sz = size_inside_page(p, count);
-> -			sz = vread(kbuf, (char *)p, sz);
-> -			if (!sz)
-> +			n = vread(kbuf, (char *)p, sz);
-> +			if (!n)
->  				break;
-> -			if (copy_to_user(buf, kbuf, sz)) {
-> +			if (copy_to_user(buf, kbuf, n)) {
->  				free_page((unsigned long)kbuf);
->  				return -EFAULT;
->  			}
-> -			count -= sz;
-> -			buf += sz;
-> -			read += sz;
-> -			p += sz;
-> +			count -= n;
-> +			buf += n;
-> +			read += n;
-> +			p += n;
-> +			if (n < sz)
-> +				break;
->  		}
->  		free_page((unsigned long)kbuf);
->  	}
-> @@ -551,11 +555,13 @@ static ssize_t write_kmem(struct file * 
->  				free_page((unsigned long)kbuf);
->  				return -EFAULT;
->  			}
-> -			sz = vwrite(kbuf, (char *)p, sz);
-> -			count -= sz;
-> -			buf += sz;
-> -			virtr += sz;
-> -			p += sz;
-> +			n = vwrite(kbuf, (char *)p, sz);
-> +			count -= n;
-> +			buf += n;
-> +			virtr += n;
-> +			p += n;
-> +			if (n < sz)
-> +				break;
->  		}
->  		free_page((unsigned long)kbuf);
->  	}
+>    etd->reg_10 = 0x54;
+>    etd->reg_11 = 0x88;
+>    etd->reg_21 = 0x60;
+> 
+> Some time ago I received the updated touchpad driver that is used in the
+> Dell mini Ubuntu distribution. Here the values are changed to be the same as
+> most of the Windows driver are using. Notice the difference in register 0x11
+> and how they dropped configuring register 0x21:
+> 
+>    etd->reg_10 = 0x54;
+>    etd->reg_11 = 0x8a;
+> 
+> However for the laptop of the user mentioned above the values of his Windows
+> driver are like this:
+> 
+>    etd->reg_10 = 0x64;
+>    etd->reg_11 = 0x8a;
+> 
+> Notice the different values for registers 0x10 and 0x11 in comparison with
+> the current kernel driver. Also the registers _must_ be configured like
+> this. Using the current kernel driver values for either one of the registers
+> makes the touchpad freeze up.
+> 
+> Remember that there isn't any publicly available documentation for the
+> hardware, so these configuration values are "black magic numbers" and the
+> only source of them is snooping what Windows drivers do or the source of
+> drivers in dedicated Linux distributions that happen to come my way.
+> 
+> In all cases this is about touchpads with a firmware version reply of 0x02,
+> 0x00, 0x30. So even though the touchpad in this users laptops seems to be
+> the same as in the EeePC it really requires different values to be
+> configured.
+> 
+> My question now is what is a prudent way to go forward?
+> 
+> Is it OK that add a DMI check to the kernel driver that matches this users
+> laptop and dynamically adjust the configuration values?
+> 
+
+I think adding some DMI rules to prevent the device lockup should be OK.
+
+> And how about the common case? Do we keep the values in the driver as they
+> are, or do we update them to the revised numbers as learned from the Ubuntu
+> driver?
+> 
+
+I'd keep them as is at least for now, until we understand what exactly
+the change.
+
+-- 
+Dmitry
