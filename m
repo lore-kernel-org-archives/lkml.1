@@ -1,84 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755201AbZINIZS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755255AbZINJOc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755201AbZINIZS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 04:25:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZINIZP
+	id S1755255AbZINJOc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 05:14:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755132AbZINJOb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 04:25:15 -0400
-Received: from mail-fx0-f217.google.com ([209.85.220.217]:56709 "EHLO
-	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbZINIZO convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 04:25:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vxoc3eT/l155xuqRORrC10rIaUY2+Qf8MkiKYgEhryJCifPszFO90ZHV508XSy9oAs
-         e047VGase22mJaJ8im3S9lrBrKpv3wej4MNhpeqd7bw7FEvaX3hkmkOvHy4PDrkCf/CE
-         LdrT3W+ZFRSjZUuxlxRwnWILhE55dLHcfSdf0=
+	Mon, 14 Sep 2009 05:14:31 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:44372 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750870AbZINJOa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 05:14:30 -0400
+X-Greylist: delayed 2837 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Sep 2009 05:14:30 EDT
+From: Ferenc Wagner <wferi@niif.hu>
+Subject: [PATCH] Make safe some helpers building on container_of
+To: linux-kernel@vger.kernel.org
+Cc: wferi@niif.hu
+Date: Mon, 14 Sep 2009 10:27:00 +0200
+Message-ID: <20090914082700.8550.94087.stgit@szonett.ki.iif.hu>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-In-Reply-To: <20090914044657.GA4252@merkur.ravnborg.org>
-References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com>
-	 <1252870707-4824-2-git-send-email-felipe.contreras@gmail.com>
-	 <1252870707-4824-3-git-send-email-felipe.contreras@gmail.com>
-	 <8bd0f97a0909131412v6ba29823ube9aab20302aaca0@mail.gmail.com>
-	 <94a0d4530909131442h43d0ed1cl9f395f7d38f2c43@mail.gmail.com>
-	 <8bd0f97a0909131458r8574620pa539876da969eb5f@mail.gmail.com>
-	 <94a0d4530909131504h1a9de951k3719000705a86bbc@mail.gmail.com>
-	 <20090914044657.GA4252@merkur.ravnborg.org>
-Date: Mon, 14 Sep 2009 11:25:16 +0300
-Message-ID: <94a0d4530909140125p73589cffy71a141d234508049@mail.gmail.com>
-Subject: Re: [PATCH 2/5] kbuild: fix warning when domainname is not available
-From: Felipe Contreras <felipe.contreras@gmail.com>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Mike Frysinger <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 7:46 AM, Sam Ravnborg <sam@ravnborg.org> wrote:
-> On Mon, Sep 14, 2009 at 01:04:11AM +0300, Felipe Contreras wrote:
->> On Mon, Sep 14, 2009 at 12:58 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
->> > .
->> > On Sun, Sep 13, 2009 at 17:42, Felipe Contreras
->> > <felipe.contreras@gmail.com> wrote:
->> >> On Mon, Sep 14, 2009 at 12:12 AM, Mike Frysinger <vapier.adi@gmail.com> wrote:
->> >>> On Sun, Sep 13, 2009 at 15:38, Felipe Contreras wrote:
->> >>>> +  if $domain; then
->> >>>
->> >>> is this really correct ?  i think you meant to use:
->> >>> [ -n "$domain" ]
->> >>
->> >> What is the difference?
->> >>
->> >> $domain unset
->> >> test -n "" -> false
->> >> test -> false
->> >>
->> >> $domain is a valid string
->> >> test -n "string" -> true
->> >> test "string" -> true
->> >
->> > except that you didnt invoke `test` anywhere.  you're executing the
->> > contents of $domain.
->>
->> Ahh, I'll update it to:
->> [ "$domain" ]
->
-> Please use [ -n "$domain" ].
-> Be explicit about what you do.
->
-> [Likewise in c we never omit "int" just because we can].
+For example, drivers/base/core.c contains
 
-In fact 'int' is implicit of 'signed int', and 'long' is a shorthand
-of 'signed long int' and so on. Also, AFAIK 'if (foo)' is preferred
-over 'if (foo == true)' or 'if (foo != NULL)' and sometimes even 'if
-(foo >= 0)'.
+#define to_root_device(dev) container_of(dev, struct root_device, dev)
 
-What's the point of going for the explicit form? Make the code less readable?
+which works fine as long as the 'to_root_device' macro is always
+applied to a variable called 'dev', as it is the case in the current
+kernel sources.  However, it breaks as soon as it gets applied to a
+variable of any other name, as the name of the variable is also
+substituted into the third argument of the 'container_of' macro, which
+really should stay 'dev' in the above case.
 
--- 
-Felipe Contreras
+This patch renames the real macro arguments in all 5 such constructs
+found by git-grep -E '#define.*container_of *\( *([^ ,]+) *,.*, *\1 *\)',
+which may have missed some similar dangerous constructs, of course.
+So these changes probably cross all possible boundaries of responsibility,
+and I do not know how to best handle it, suggestions welcome.
+
+Btw. this dangerous idom is also popularised by the excellent Linux Device
+Drivers book (3rd edition, chapter 14, bottom of page 383).
+
+Signed-off-by: Ferenc Wagner <wferi@niif.hu>
+---
+
+ arch/x86/kernel/hpet.c       |    2 +-
+ drivers/base/core.c          |    2 +-
+ drivers/mtd/nand/fsl_upm.c   |    2 +-
+ include/linux/i2o.h          |    2 +-
+ include/linux/mtd/sh_flctl.h |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/arch/x86/kernel/hpet.c b/arch/x86/kernel/hpet.c
+index dedc2bd..48f70ad 100644
+--- a/arch/x86/kernel/hpet.c
++++ b/arch/x86/kernel/hpet.c
+@@ -27,7 +27,7 @@
+ #define HPET_DEV_FSB_CAP		0x1000
+ #define HPET_DEV_PERI_CAP		0x2000
+ 
+-#define EVT_TO_HPET_DEV(evt) container_of(evt, struct hpet_dev, evt)
++#define EVT_TO_HPET_DEV(evtdev) container_of(evtdev, struct hpet_dev, evt)
+ 
+ /*
+  * HPET address is set in acpi/boot.c, when an ACPI entry exists
+diff --git a/drivers/base/core.c b/drivers/base/core.c
+index 7ecb193..68374f3 100644
+--- a/drivers/base/core.c
++++ b/drivers/base/core.c
+@@ -1285,7 +1285,7 @@ struct root_device
+ 	struct module *owner;
+ };
+ 
+-#define to_root_device(dev) container_of(dev, struct root_device, dev)
++#define to_root_device(d) container_of(d, struct root_device, dev)
+ 
+ static void root_device_release(struct device *dev)
+ {
+diff --git a/drivers/mtd/nand/fsl_upm.c b/drivers/mtd/nand/fsl_upm.c
+index d120cd8..623d0b4 100644
+--- a/drivers/mtd/nand/fsl_upm.c
++++ b/drivers/mtd/nand/fsl_upm.c
+@@ -48,7 +48,7 @@ struct fsl_upm_nand {
+ 	uint32_t wait_flags;
+ };
+ 
+-#define to_fsl_upm_nand(mtd) container_of(mtd, struct fsl_upm_nand, mtd)
++#define to_fsl_upm_nand(mtdinfo) container_of(mtdinfo, struct fsl_upm_nand, mtd)
+ 
+ static int fun_chip_ready(struct mtd_info *mtd)
+ {
+diff --git a/include/linux/i2o.h b/include/linux/i2o.h
+index 4c4e57d..b588b8f 100644
+--- a/include/linux/i2o.h
++++ b/include/linux/i2o.h
+@@ -782,7 +782,7 @@ extern int i2o_exec_lct_get(struct i2o_controller *);
+ #define to_i2o_driver(drv) container_of(drv,struct i2o_driver, driver)
+ #define to_i2o_device(dev) container_of(dev, struct i2o_device, device)
+ #define to_i2o_controller(dev) container_of(dev, struct i2o_controller, device)
+-#define kobj_to_i2o_device(kobj) to_i2o_device(container_of(kobj, struct device, kobj))
++#define kobj_to_i2o_device(kobject) to_i2o_device(container_of(kobject, struct device, kobj))
+ 
+ /**
+  *	i2o_out_to_virt - Turn an I2O message to a virtual address
+diff --git a/include/linux/mtd/sh_flctl.h b/include/linux/mtd/sh_flctl.h
+index e77c1ce..254f5c3 100644
+--- a/include/linux/mtd/sh_flctl.h
++++ b/include/linux/mtd/sh_flctl.h
+@@ -91,7 +91,7 @@
+ #define INIT_FL4ECCRESULT_VAL	0x03FF03FF
+ #define LOOP_TIMEOUT_MAX	0x00010000
+ 
+-#define mtd_to_flctl(mtd)	container_of(mtd, struct sh_flctl, mtd)
++#define mtd_to_flctl(mtdinfo)	container_of(mtdinfo, struct sh_flctl, mtd)
+ 
+ struct sh_flctl {
+ 	struct mtd_info		mtd;
+
