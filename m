@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754691AbZINK1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753374AbZINKfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754691AbZINK1U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 06:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbZINK1S
+	id S1753374AbZINKfs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 06:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZINKfp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 06:27:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35945 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753992AbZINK1H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 06:27:07 -0400
-X-Authenticated: #10250065
-X-Provags-ID: V01U2FsdGVkX1+ZOhkeQK6Zvh1lXrkSGmS1dDabplPk27CfoWu/bZ
-	aHBLauQUcpXa3Q
-From: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-To: linux-fbdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       JosephChan@via.com.tw, ScottFang@viatech.com.cn, corbet@lwn.net,
-       Harald Welte <laforge@gnumonks.org>,
-       Harald Welte <HaraldWelte@viatech.com>,
-       Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
-Subject: [PATCH 4/4] viafb: pass reference to pci device when calling framebuffer_alloc()
-Date: Mon, 14 Sep 2009 10:30:06 +0000
-Message-Id: <1252924206-3721-4-git-send-email-FlorianSchandinat@gmx.de>
-X-Mailer: git-send-email 1.6.3.2
-In-Reply-To: <1252924206-3721-3-git-send-email-FlorianSchandinat@gmx.de>
-References: <1252924206-3721-1-git-send-email-FlorianSchandinat@gmx.de>
- <1252924206-3721-2-git-send-email-FlorianSchandinat@gmx.de>
- <1252924206-3721-3-git-send-email-FlorianSchandinat@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+	Mon, 14 Sep 2009 06:35:45 -0400
+Received: from cluster-d.mailcontrol.com ([85.115.60.190]:53725 "EHLO
+	cluster-d.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbZINKfo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 06:35:44 -0400
+Message-ID: <4AAE1C48.6030802@csr.com>
+Date: Mon, 14 Sep 2009 11:34:48 +0100
+From: David Vrabel <david.vrabel@csr.com>
+User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
+MIME-Version: 1.0
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+CC: Roman Zippel <zippel@linux-m68k.org>,
+       linux-usb <linux-usb@vger.kernel.org>,
+       linux-kbuild <linux-kbuild@vger.kernel.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: UWB Kconfig: cannot set UWB to N in gconfig
+References: <1252577154.2340.12.camel@castor>
+In-Reply-To: <1252577154.2340.12.camel@castor>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Sep 2009 10:34:48.0821 (UTC) FILETIME=[FC1C1A50:01CA3526]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Harald Welte <laforge@gnumonks.org>
+Richard Kennedy wrote:
+> I sometimes use 'make gconfig' and I noticed that I cannot disable the
+> UWB option -- it just won't let me set it to N.
+> 
+> AFAICT this is because the CONFIG USB_WUSB selects UWB which forces it
+> on.
+> applying this patch fixes the issue but I'm not sure if this is the
+> right way to go about it.
+> 
+> any thoughts?
+> 
+> regards
+> Richard
+> 
+> This is against 2.6.31
+> 
+> 
+> diff --git a/drivers/usb/wusbcore/Kconfig b/drivers/usb/wusbcore/Kconfig
+> index eb09a0a..cc97041 100644
+> --- a/drivers/usb/wusbcore/Kconfig
+> +++ b/drivers/usb/wusbcore/Kconfig
+> @@ -5,7 +5,7 @@ config USB_WUSB
+>  	tristate "Enable Wireless USB extensions (EXPERIMENTAL)"
+>  	depends on EXPERIMENTAL
+>  	depends on USB
+> -        select UWB
+> +        depends on UWB
 
-viafb: pass reference to pci device when calling framebuffer_alloc()
+NAK.  It's not sufficiently obvious to a user that Wireless USB support
+requires UWB.
 
-Signed-off-by: Harald Welte <HaraldWelte@viatech.com>
-Signed-off-by: Florian Tobias Schandinat <FlorianSchandinat@gmx.de>
----
- drivers/video/via/viafbdev.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+This is really an issue with the configuration application.  Consider
+improving them to allow switching off select'ed options and popping up a
+dialog that says "switching off UWB will also switch off WUSB" etc.
 
-diff --git a/drivers/video/via/viafbdev.c b/drivers/video/via/viafbdev.c
-index 463d92a..48e663b 100644
---- a/drivers/video/via/viafbdev.c
-+++ b/drivers/video/via/viafbdev.c
-@@ -1816,7 +1816,8 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	 * variables
- 	*/
- 	viafbinfo = framebuffer_alloc(viafb_par_length +
--		ALIGN(sizeof(struct viafb_shared), BITS_PER_LONG/8), NULL);
-+		ALIGN(sizeof(struct viafb_shared), BITS_PER_LONG/8),
-+		&pdev->dev);
- 	if (!viafbinfo) {
- 		printk(KERN_ERR"Could not allocate memory for viafb_info.\n");
- 		return -ENODEV;
-@@ -1941,7 +1942,7 @@ static int __devinit via_pci_probe(struct pci_dev *pdev,
- 	default_var.vsync_len = 4;
- 
- 	if (viafb_dual_fb) {
--		viafbinfo1 = framebuffer_alloc(viafb_par_length, NULL);
-+		viafbinfo1 = framebuffer_alloc(viafb_par_length, &pdev->dev);
- 		if (!viafbinfo1) {
- 			printk(KERN_ERR
- 			"allocate the second framebuffer struct error\n");
+David
 -- 
-1.6.3.2
+David Vrabel, Senior Software Engineer, Drivers
+CSR, Churchill House, Cambridge Business Park,  Tel: +44 (0)1223 692562
+Cowley Road, Cambridge, CB4 0WZ                 http://www.csr.com/
 
+
+Member of the CSR plc group of companies. CSR plc registered in England and Wales, registered number 4187346, registered office Churchill House, Cambridge Business Park, Cowley Road, Cambridge, CB4 0WZ, United Kingdom
