@@ -1,49 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932945AbZINSWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbZINSZF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932945AbZINSWT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932930AbZINSWP
+	id S933036AbZINSZF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:25:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933015AbZINSZC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:22:15 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:51643 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932931AbZINSWO (ORCPT
+	Mon, 14 Sep 2009 14:25:02 -0400
+Received: from casper.infradead.org ([85.118.1.10]:48736 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932983AbZINSZA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:22:14 -0400
-Message-ID: <4AAE89CE.2030804@austin.ibm.com>
-Date: Mon, 14 Sep 2009 13:22:06 -0500
-From: Nathan Fontenot <nfont@austin.ibm.com>
-User-Agent: Thunderbird 2.0.0.23 (X11/20090817)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@fifo99.com>
-CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/5] kernel handling of dynamic logical partitioning
-References: <4AAABC55.4070207@austin.ibm.com> <1252704198.28368.31.camel@desktop>
-In-Reply-To: <1252704198.28368.31.camel@desktop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 Sep 2009 14:25:00 -0400
+Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree 
+ build warning)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Christopher Li <sparse@chrisli.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <1252952238.2964.154.camel@localhost.localdomain>
+References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
+	 <1249403089.4634.139.camel@localhost.localdomain>
+	 <20090912165300.9d257283.sfr@canb.auug.org.au>
+	 <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam>
+	 <1252941416.2964.143.camel@localhost.localdomain>
+	 <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
+	 <1252952238.2964.154.camel@localhost.localdomain>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Mon, 14 Sep 2009 20:23:41 +0200
+Message-Id: <1252952621.31964.0.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> On Fri, 2009-09-11 at 16:08 -0500, Nathan Fontenot wrote:
->>  am cc'ing lkml.
->>
->> Patches include in this set:
->> 1/5 - DLPAR infrastructure for powerpc/pseries platform.
->> 2/5 - Move the of_drconf_cell struct to prom.h
->> 3/5 - Export the memory sysdev class
->> 4/5 - Memory DLPAR handling
->> 5/5 - CPU DLPAR handling
->>
-> 
-> It looks like a couple of your patches have some checkpatch issues..
-> Could you run these through scripts/checkpatch.pl and clean up any
-> problems it raises ? Specifically patches 1, 4, and 5 ..
-> 
+On Mon, 2009-09-14 at 14:17 -0400, Steven Rostedt wrote:
+> Frederic, how big can one of those events get. The ring buffer (and
+> TRACE_EVENT) allow up to almost a page size, which is very hefty for the
+> stack. This code needs to either be rewritten or we need to set a limit
+> to the size of a profile entry.
 
-thanks for checking this, I obviously forgot.  I'll post updated patches
-(after running checkpatch on them) with fixes.
-
--Nathan
+Yeah, that needs to get a re-write.. I've complained about this when it
+went in.
