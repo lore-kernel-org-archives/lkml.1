@@ -1,50 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753241AbZINGZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752409AbZINGZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753241AbZINGZm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 02:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZINGZk
+	id S1752409AbZINGZc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 02:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZINGZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 02:25:40 -0400
-Received: from 139-142-54-143.atc.vaillant.ca ([139.142.54.143]:60675 "EHLO
-	quartz.edm.orcorp.ca" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751524AbZINGZk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 02:25:40 -0400
-Date: Mon, 14 Sep 2009 00:25:20 -0600
-From: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
-To: James Morris <jmorris@namei.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       srajiv@linux.vnet.ibm.com, Debora Velarde <debora@linux.vnet.ibm.com>,
-       Marcel Selhorst <m.selhorst@sirrix.com>,
-       Jan Beulich <jbeulich@novell.com>
-Subject: Re: [PATCH] TPM: Fixup pcrs sysfs file
-Message-ID: <20090914062520.GB23467@obsidianresearch.com>
-References: <20090902031613.GA11464@obsidianresearch.com> <20090903165219.2f79cdc1.akpm@linux-foundation.org> <20090904012818.GU4973@obsidianresearch.com> <alpine.LRH.2.00.0909141236020.28766@tundra.namei.org>
+	Mon, 14 Sep 2009 02:25:31 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47168 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750924AbZINGZa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 02:25:30 -0400
+Date: Mon, 14 Sep 2009 08:25:33 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Ed Cashin <ecashin@coraid.com>
+Subject: Re: linux-next: block tree build failure
+Message-ID: <20090914062532.GS14984@kernel.dk>
+References: <20090914142729.beae34fd.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0909141236020.28766@tundra.namei.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090914142729.beae34fd.sfr@canb.auug.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 12:36:39PM +1000, James Morris wrote:
-> On Thu, 3 Sep 2009, Jason Gunthorpe wrote:
-
-> > > That sounds like a fairly serious bug, and this looks like a 2.6.31
-> > > patch.
+On Mon, Sep 14 2009, Stephen Rothwell wrote:
+> Hi Jens,
 > 
-> Any comments from the maintainers on this patch?
+> Today's linux-next build (x86_64 allmodconfig) failed like this:
+> 
+> drivers/block/aoe/aoeblk.c: In function 'aoeblk_make_request':
+> drivers/block/aoe/aoeblk.c:175: error: implicit declaration of function 'bio_barrier'
+> 
+> Caused by commit c1db2f19f1302e894fe9db818e08fb03e4a84df9 ("aoe: end
+> barrier bios with EOPNOTSUPP") interacting with commit
+> 1f98a13f623e0ef666690a18c1250335fc6d7ef1 ("bio: first step in sanitizing
+> the bio->bi_rw flag testing").
+> 
+> I have used the version of the block tree from next-20090910 for today.
 
-FWIW, I didn't mention in the patch emails, but all the patches I sent
-fix regressions that have been introduced in the past couple years by
-clean up patches that never tested the code paths they alter.
+Fixed.
 
-What becomes of patches that end up in the mm tree? Do they still
-route through you for mainline inclusion?
+-- 
+Jens Axboe
 
-Thanks for looking at this.
-
-Jason
