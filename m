@@ -1,244 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756949AbZINUAH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756937AbZINT6i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756949AbZINUAH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:00:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756903AbZINUAG
+	id S1756937AbZINT6i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 15:58:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756124AbZINT6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:00:06 -0400
-Received: from n61.bullet.mail.sp1.yahoo.com ([98.136.44.37]:26857 "HELO
-	n61.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756824AbZINUAE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:00:04 -0400
-X-Yahoo-Newman-Id: 428689.66628.bm@omp411.mail.mud.yahoo.com
-X-YMail-OSG: A.LWJ2MVM1nHxiO1QMcJghwWM4kDO8r.7V_DyXFTeJQIZAM0FfcT5E0AAncToy1RO_nvPf5J_M_FNbDR95fNh96Lo15JfGYD6uSTk09MiLrWblZwOqdrzU52uGqKFA3grrkt.GHj9Gfd5WWB6h9Tatf.LPwsvM0yyTKK0K_osTS5tMDuFCulwltXCuep3oL1Ir6nJWKoDoLtgxp.zaoBHRYfw2pn_Cj8EbvJ.A--
-X-Yahoo-Newman-Property: ymail-3
-Subject: Re: [RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Joel Becker <joel.becker@oracle.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>,
-       Christoph Hellwig <hch@lst.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Florian Haas <florian.haas@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-In-Reply-To: <4AACC085.3000805@panasas.com>
-References: <1252720726.2067.234.camel@haakon2.linux-iscsi.org>
-	 <4AACC085.3000805@panasas.com>
-Content-Type: text/plain
-Date: Mon, 14 Sep 2009 12:57:40 -0700
-Message-Id: <1252958260.2067.274.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Mon, 14 Sep 2009 15:58:35 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54867 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755353AbZINT6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 15:58:34 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] PM updates for 2.6.32
+Date: Mon, 14 Sep 2009 21:59:19 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Magnus Damm <magnus.damm@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909142159.19474.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-09-13 at 12:51 +0300, Boaz Harrosh wrote:
-> On 09/12/2009 04:58 AM, Nicholas A. Bellinger wrote:
-> > [RFC PATCH 19/19] Target_Core_Mod Makefile/Kconfig and div64.c
-> > 
-> > This patch adds the remaining misc Makefile and Kconfig changes
-> > 
-> > It also has wrappers for unsigned long division in div64c, that will be converted to
-> > include/asm-generic/div64.h
-> > 
-> > Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
-> > diff --git a/drivers/target/div64.c b/drivers/target/div64.c
-> > new file mode 100644
-> > index 0000000..6d59864
-> > --- /dev/null
-> > +++ b/drivers/target/div64.c
-> > @@ -0,0 +1,16 @@
-> > +#include <asm/types.h>
-> > +#include <asm/div64.h>
-> > +
-> > +#if BITS_PER_LONG == 32
-> > +
-> > +u64 __udivdi3(u64 a, u64 b)
-> > +{
-> > +  do_div(a, b);
-> > +  return a;
-> > +}
-> > +
-> > +u64 __umoddi3(u64 a, u64 b)
-> > +{
-> > +  return do_div(a, b);
-> > +}
-> > +#endif
-> > diff --git a/drivers/target/Makefile b/drivers/target/Makefile
-> 
-> I like Kbuild better then Makefile. And so does the Kernel documentation.
-> It says new code should use Kbuild
-> 
-> > new file mode 100644
-> > index 0000000..3e413b0
-> > --- /dev/null
-> > +++ b/drivers/target/Makefile
-> > @@ -0,0 +1,96 @@
-> > +CWD=$(shell pwd)
-> > +
-> > +PYX_ISCSI_VENDOR ?="Linux-iSCSI.org"
-> > +
-> > +# Transport Plugins and Devices.
-> > + #
-> > +LINUX_PARALLEL_SCSI ?= 1
-> > +LINUX_STGT ?= 1
-> > +LINUX_SCSI_MEDIA_ROM ?= 1
-> > +LINUX_PARALLEL_ATA ?= 0
-> > +LINUX_IBLOCK ?= 1
-> > +LINUX_RAMDISK ?= 1
-> > +LINUX_FILEIO ?= 1
-> > +
-> > +LINUX_VPD_PAGE_CHECK?=1
-> > +LIO_TARGET_CONFIGFS?=1
-> > +
-> > +MODVER ?= 1
-> > +USEGDB ?= 1
-> > +DEBUG_DEV ?= 0
-> > +SNMP_FEATURE ?= 1
-> > +
-> 
-> Now when in-Kernel don't you need to use Kconfig for all this "configuration".
-> 
-> What's with the re-invent the wheel, here.
+Hi Linus,
 
+Please pull power management updates for 2.6.32 from:
 
-Ok, I will move all of these config items into Kbuild
+git://git.kernel.org/pub/scm/linux/kernel/git/rafael/suspend-2.6.git for-linus
 
-> 
-> > +obj-$(CONFIG_TARGET_CORE)		+=	target_core_mod.o
-> > +target_core_mod-objs			:=	target_core_configfs.o \
-> > +						target_core_device.o \
-> > +						target_core_hba.o \
-> > +						target_core_plugin.o \
-> > +						target_core_pr.o \
-> > +						target_core_alua.o \
-> > +						target_core_scdb.o \
-> > +						target_core_seobj.o \
-> > +						target_core_tmr.o \
-> > +						target_core_tpg.o \
-> > +						target_core_transport.o \
-> > +						target_core_ua.o \
-> > +						div64.o
-> > +
-> > +ifeq ($(LINUX_IBLOCK), 1)
-> > +target_core_mod-objs			+=	target_core_iblock.o
-> > +EXTRA_CFLAGS				+=	-DPYX_IBLOCK
-> > +endif
-> > +ifeq ($(LINUX_PARALLEL_SCSI), 1)
-> > +target_core_mod-objs			+=	target_core_pscsi.o
-> > +EXTRA_CFLAGS				+=	-DPARALLEL_SCSI
-> > +endif
-> > +ifeq ($(LINUX_STGT), 1)
-> > +target_core_mod-objs			+=	target_core_stgt.o
-> > +EXTRA_CFLAGS				+=	-DSTGT_PLUGIN
-> > +endif
-> > +ifeq ($(LINUX_RAMDISK), 1)
-> > +target_core_mod-objs			+=	target_core_rd.o
-> > +EXTRA_CFLAGS				+=	-DPYX_RAMDISK
-> > +endif
-> > +ifeq ($(LINUX_FILEIO), 1)
-> > +target_core_mod-objs			+=	target_core_file.o
-> > +EXTRA_CFLAGS				+=	-DPYX_FILEIO
-> > +endif
-> > +ifeq ($(SNMP_FEATURE), 1)
-> > +target_core_mod-objs			+=	target_core_mib.o
-> > +EXTRA_CFLAGS				+=	-DSNMP_SUPPORT
-> > +endif
-> > +ifeq ($(LINUX_VPD_PAGE_CHECK), 1)
-> > +EXTRA_CFLAGS += -DLINUX_VPD_PAGE_CHECK
-> > +endif
-> > +ifeq ($(LINUX_SCSI_MEDIA_ROM), 1)
-> > +EXTRA_CFLAGS += -DLINUX_SCSI_MEDIA_ROM
-> > +endif
-> > +ifeq ($(DEBUG_DEV), 1)
-> > +EXTRA_CFLAGS += -DDEBUG_DEV
-> > +endif
-> > +
-> 
-> You see what I mean. Try with Kconfig variables all this disappears.
+They include:
 
-Understood.
+* The run-time PM framework, most basic bits to extend in future.
+  It's functional, so subsystems can start using it right now,
+  documentation is included (the upcoming sh-2.6 update contains some
+  code depending on this already).
 
-> 
-> > +
-> > +EXTRA_CFLAGS+=-I$(CWD)/drivers/target/ -I$(CWD)/drivers/scsi/
-> > +EXTRA_CFLAGS+=-D_TARGET -DLINUX -DLINUX_KERNEL_26 -DLINUX_SCSI_HOST_LOCK -DLINUX_USE_SIGHAND
-> 
-> ?? are you sure
-> 
-> > +EXTRA_CFLAGS+=-DLINUX_SCATTERLIST_HAS_PAGE -DPYX_ISCSI_VENDOR='"Linux-iSCSI.org"'
-> 
-> And these are for ??
-> 
+* Platform bus type support for run-time PM from Magnus Damm.
 
-Ok, these are some legacy items that I missed, and can be safely
-removed..
+* Removal of the platform bus type's suspend_late()/resume_early()
+  callbacks and converting the drivers that used them to struct
+  dev_pm_ops.
 
-> <Makefile>
-> > +
-> > +all:
-> > +	$(MAKE) -C $(KERNEL_DIR) SUBDIRS=$(CWD) modules CWD=$(CWD) ARCH=$(ARCH) KBUILD_VERBOSE=0
-> > +
-> > +install ins:
-> > +	rm -f /lib/modules/`uname -r`/kernel/drivers/scsi/iscsi_target_mod.ko
-> > +	rm -f /lib/modules/`uname -r`/kernel/drivers/iscsi/iscsi_target_mod.ko
-> > +	mkdir -p /lib/modules/`uname -r`/kernel/drivers/iscsi
-> > +	cp -f iscsi_target_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
-> > +	cp -f target_core_mod.ko /lib/modules/`uname -r`/kernel/drivers/iscsi
-> > +	depmod -ae
-> > +
-> > +
-> > +
-> > +clean:
-> > +	rm -f $(foreach prog,$(target_core_mod-objs) $(obj-m),$(CWD)/$(prog)) $(CWD)/target_core_mod.mod.o
-> > +	rm -f target_core_mod.ko target_core_mod.mod.c
-> > +	rm -f .*.cmd ../common/.*.cmd .make_autoconfig *~
-> > +	rm -fr .tmp_versions
-> > +
-> </Makefile>
-> 
-> OK this should go in a Makefile and kept out-of-tree
+* Rework of the hibernation freeing of memory (we're now almost
+  ready to drop shrink_all_memory() altogether).
 
-Ok, Got it
+* A few bug fixes
 
-> 
-> > +
-> > diff --git a/drivers/target/Kconfig b/drivers/target/Kconfig
-> > new file mode 100644
-> > index 0000000..04564f1
-> > --- /dev/null
-> > +++ b/drivers/target/Kconfig
-> > @@ -0,0 +1,7 @@
-> > +config TARGET_CORE
-> > +        tristate "Generic Target Core Engine and ConfigFS Infrastructure"
-> > +	select CONFIGFS_FS
-> > +	select SCSI_TGT
-> > +        default m
-> > +        ---help---
-> > +        Say Y here to enable the Storage Engine, Subsystem Plugins, and ConfigFS enabled control path for the Generic Target Engine.
-> > 
-> > 
-> 
-> Lots of more configs missing here
-> 
+ Documentation/power/runtime_pm.txt   |  378 +++++++++++++
+ arch/arm/include/asm/device.h        |    3 +
+ arch/arm/plat-omap/debug-leds.c      |   11 +-
+ arch/arm/plat-omap/gpio.c            |   14 +-
+ arch/ia64/include/asm/device.h       |    3 +
+ arch/microblaze/include/asm/device.h |    3 +
+ arch/powerpc/include/asm/device.h    |    3 +
+ arch/sparc/include/asm/device.h      |    3 +
+ arch/x86/include/asm/device.h        |    3 +
+ drivers/base/dd.c                    |   11 +
+ drivers/base/platform.c              |   84 ++--
+ drivers/base/power/Makefile          |    1 +
+ drivers/base/power/main.c            |  199 ++++---
+ drivers/base/power/power.h           |   31 +-
+ drivers/base/power/runtime.c         | 1011 ++++++++++++++++++++++++++++++++++
+ drivers/block/floppy.c               |    9 +-
+ drivers/dma/at_hdmac.c               |   19 +-
+ drivers/dma/dw_dmac.c                |   15 +-
+ drivers/dma/txx9dmac.c               |   15 +-
+ drivers/i2c/busses/i2c-pxa.c         |   25 +-
+ drivers/i2c/busses/i2c-s3c2410.c     |   25 +-
+ drivers/pci/pci-driver.c             |   16 +-
+ drivers/platform/x86/hp-wmi.c        |   15 +-
+ drivers/usb/musb/musb_core.c         |   18 +-
+ include/asm-generic/device.h         |    3 +
+ include/linux/device.h               |    9 +-
+ include/linux/platform_device.h      |    5 +-
+ include/linux/pm.h                   |  115 ++++-
+ include/linux/pm_runtime.h           |  114 ++++
+ kernel/power/Kconfig                 |   14 +
+ kernel/power/hibernate.c             |   21 +-
+ kernel/power/main.c                  |   17 +
+ kernel/power/power.h                 |    2 +-
+ kernel/power/snapshot.c              |  412 +++++++++++----
+ 34 files changed, 2306 insertions(+), 321 deletions(-)
 
-Thanks for your comments Boaz!
+---------------
 
---nab
+Albin Tonnerre (1):
+      PM: Add convenience macro to make switching to dev_pm_ops less error-prone
 
-> Cheers
-> Boaz
+Dan Williams (1):
+      at_hdmac: Rework suspend_late()/resume_early()
 
+Dmitry Torokhov (1):
+      Driver Core: Make PM operations a const pointer
+
+Frans Pop (2):
+      floppy: Switch driver to dev_pm_ops
+      hp-wmi: Switch driver to dev_pm_ops
+
+Gerald Schaefer (1):
+      PM / Hibernate / Memory hotplug: Always use for_each_populated_zone()
+
+Magnus Damm (9):
+      Driver Core: Add platform device arch data V3
+      ARM: Rework omap suspend_late()/resume_early()
+      DMA: Rework dw_dmac suspend_late()/resume_early()
+      DMA: Rework txx9dmac suspend_late()/resume_early()
+      I2C: Rework i2c-pxa suspend_late()/resume_early()
+      I2C: Rework i2c-s3c2410 suspend_late()/resume() V2
+      USB: Rework musb suspend()/resume_early()
+      PM: Remove platform device suspend_late()/resume_early() V2
+      PM: Run-time PM platform device bus support
+
+Rafael J. Wysocki (5):
+      PM: Introduce core framework for run-time PM of I/O devices (rev. 17)
+      PM/Hibernate: Rework shrinking of memory
+      PM/Hibernate: Do not release preallocated memory unnecessarily (rev. 2)
+      PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
+      PM: Update kerneldoc comments in drivers/base/power/main.c
+
+Thadeu Lima de Souza Cascardo (1):
+      PM: Fix typo in label name s/Platofrm_finish/Platform_finish/
+
+Wu Fengguang (1):
+      PM: Trivial fixes
+
+Xiaotian Feng (1):
+      PM: Reset transition_started at dpm_resume_noirq
 
