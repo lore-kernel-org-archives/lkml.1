@@ -1,76 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756516AbZINSDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932297AbZINSGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756516AbZINSDq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 14:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbZINSDl
+	id S932297AbZINSGu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 14:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932280AbZINSGp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 14:03:41 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:55005 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756503AbZINSDk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 14:03:40 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: netdev@vger.kernel.org, "David S. Miller" <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: [PATCH] netdev: smc91x: drop Blackfin cruft
-Date: Mon, 14 Sep 2009 14:03:42 -0400
-Message-Id: <1252951422-11543-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.4.2
+	Mon, 14 Sep 2009 14:06:45 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:46685 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932275AbZINSGo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 14:06:44 -0400
+Date: Mon, 14 Sep 2009 14:04:11 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Zhu Yi <yi.zhu@intel.com>, "Chatre, Reinette" <reinette.chatre@intel.com>,
+       Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "ipw3945-devel@lists.sourceforge.net" 
+	<ipw3945-devel@lists.sourceforge.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Krauss, Assaf" <assaf.krauss@intel.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "Abbas, Mohamed" <mohamed.abbas@intel.com>
+Subject: Re: iwlagn: order 2 page allocation failures
+In-Reply-To: <20090914175942.GH11778@csn.ul.ie>
+Message-ID: <alpine.DEB.1.10.0909141403390.5676@V090114053VZO-1>
+References: <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie> <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie> <1252526738.30150.91.camel@rc-desk> <20090910090206.GA22276@csn.ul.ie> <1252617290.30150.321.camel@rc-desk>
+ <20090911084717.GB32497@csn.ul.ie> <1252897270.5650.169.camel@debian> <alpine.DEB.1.10.0909141141200.24447@V090114053VZO-1> <20090914175942.GH11778@csn.ul.ie>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
+On Mon, 14 Sep 2009, Mel Gorman wrote:
 
-Now that all Blackfin boards are using the board resources, we don't need
-to keep the arch/board specific crap in the driver header.
+> The allocation of buffers >= PAGE_SIZE even when allocated with
+> kmalloc() are page-aligned though right? It's not an explicit guarantee
+> but is it not always the case?
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
- drivers/net/smc91x.h |   28 ----------------------------
- 1 files changed, 0 insertions(+), 28 deletions(-)
-
-diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
-index 57a159f..9c8c6ed 100644
---- a/drivers/net/smc91x.h
-+++ b/drivers/net/smc91x.h
-@@ -83,34 +83,6 @@ static inline void SMC_outw(u16 val, void __iomem *ioaddr, int reg)
- 	}
- }
- 
--#elif defined(CONFIG_BLACKFIN)
--
--#define SMC_IRQ_FLAGS		IRQF_TRIGGER_HIGH
--#define RPC_LSA_DEFAULT		RPC_LED_100_10
--#define RPC_LSB_DEFAULT		RPC_LED_TX_RX
--
--#define SMC_CAN_USE_8BIT	0
--#define SMC_CAN_USE_16BIT	1
--# if defined(CONFIG_BF561)
--#define SMC_CAN_USE_32BIT	1
--# else
--#define SMC_CAN_USE_32BIT	0
--# endif
--#define SMC_IO_SHIFT		0
--#define SMC_NOWAIT      	1
--#define SMC_USE_BFIN_DMA	0
--
--#define SMC_inw(a, r)		readw((a) + (r))
--#define SMC_outw(v, a, r)	writew(v, (a) + (r))
--#define SMC_insw(a, r, p, l)	readsw((a) + (r), p, l)
--#define SMC_outsw(a, r, p, l)	writesw((a) + (r), p, l)
--# if SMC_CAN_USE_32BIT
--#define SMC_inl(a, r)		readl((a) + (r))
--#define SMC_outl(v, a, r)	writel(v, (a) + (r))
--#define SMC_insl(a, r, p, l)	readsl((a) + (r), p, l)
--#define SMC_outsl(a, r, p, l)	writesl((a) + (r), p, l)
--# endif
--
- #elif defined(CONFIG_REDWOOD_5) || defined(CONFIG_REDWOOD_6)
- 
- /* We can only do 16-bit reads and writes in the static memory space. */
--- 
-1.6.4.2
+Its typically the case but debug options may misalign the object. The
+guarantee for kmalloc caches is to be cacheline aligned.
 
