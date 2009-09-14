@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755244AbZINLDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755175AbZINLGy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755244AbZINLDR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 07:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754504AbZINLDQ
+	id S1755175AbZINLGy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 07:06:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751569AbZINLGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 07:03:16 -0400
-Received: from mail-ew0-f206.google.com ([209.85.219.206]:64386 "EHLO
-	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750749AbZINLDP (ORCPT
+	Mon, 14 Sep 2009 07:06:51 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:50834 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751490AbZINLGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 07:03:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=ORDApbq5jJaX/+YBycNJRoSVhujxP5t84JlVIzZf3jyQHemJnqaAN47XLR3lhcuKh/
-         Q6gHFwvdyshEyNBE6yEXFq/E1Bfflgvm2TqOOeU+vUgn5/eFsKhzcqJKHHUdC2SHvqVO
-         HtvJ6wYoEOnVavtpWHfV7x1xvgdP38fWtsVug=
-Message-ID: <4AAE22CF.1020609@tuffmail.co.uk>
-Date: Mon, 14 Sep 2009 12:02:39 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: Corentin Chary <corentincj@iksaif.net>, linux-acpi@vger.kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Julia Lawall <julia@diku.dk>, Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 3/3] dell-laptop: fix rfkill memory leak on unload
-References: <1252925033-29696-1-git-send-email-corentincj@iksaif.net> <1252925033-29696-2-git-send-email-corentincj@iksaif.net> <1252925033-29696-3-git-send-email-corentincj@iksaif.net> <1252925033-29696-4-git-send-email-corentincj@iksaif.net> <20090914104616.GA6170@srcf.ucam.org>
-In-Reply-To: <20090914104616.GA6170@srcf.ucam.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 Sep 2009 07:06:51 -0400
+Subject: Re: [GIT] HID patches for 2.6.32 merge window
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LNX.2.00.0909141210590.17028@wotan.suse.de>
+References: <alpine.LNX.2.00.0909132014310.17028@wotan.suse.de>
+	 <1252922794.3421.3.camel@localhost.localdomain>
+	 <alpine.LNX.2.00.0909141210590.17028@wotan.suse.de>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 04:06:48 -0700
+Message-Id: <1252926408.3421.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett wrote:
-> On Mon, Sep 14, 2009 at 12:43:53PM +0200, Corentin Chary wrote:
->   
->> rfkill_unregister() should always be followed by rfkill_destroy()
->>
->> Cc: Matthew Garrett <mjg@redhat.com>
->> Signed-off-by: Corentin Chary <corentincj@iksaif.net>
->>     
->
-> Acked-by: Matthew Garrett <mjg@redhat.com>
->
->   
+Hi Jiri,
 
-I can endorse this as I already submitted something similar :-). 
-<http://patchwork.kernel.org/patch/42699/> (with a disclaimer that it
-was not tested on dell hardware).
+> > > could you please pull from 'for-linus' branch of
+> > > 
+> > >         git://git.kernel.org/pub/scm/linux/kernel/git/jikos/hid.git for-linus
+> > > 
+> > > to receive HID patches accumulated for 2.6.32 merge window.
+> > 
+> > I am missing the patch to free the transport drivers from having to
+> > manually disconnect hidinput and hidraw. All the hid->claimed handling
+> > should really be hidden from the transport drivers.
+> 
+> Hi Marcel,
+> 
+> right, thanks for spotting this. The patch below has been rotting in my 
+> 'waiting-for-ack' queue for quite some time. I was apparently waiting for 
+> your Ack for the drivers/net/bluetooth part, and forgot about it when it 
+> didn't come.
+> 
+> If you're OK with that, I'll include it in the next pile. Thanks.
+
+you need to redo it against the net-next-2.6 tree or wait until Linus
+merged that one. Otherwise it will clash with a temporary solution that
+I already pushed some time ago.
+
+Regards
+
+Marcel
+
+
