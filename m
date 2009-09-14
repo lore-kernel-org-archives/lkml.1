@@ -1,147 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933057AbZINUEh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757020AbZINUFP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933057AbZINUEh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:04:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757016AbZINUEh
+	id S1757020AbZINUFP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:05:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756977AbZINUFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:04:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39744 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757006AbZINUEf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:04:35 -0400
-Date: Mon, 14 Sep 2009 20:04:16 GMT
-From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       schwidefsky@de.ibm.com, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       schwidefsky@de.ibm.com, tglx@linutronix.de
-In-Reply-To: <new-submission>
-References: <new-submission>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] clocksource: Delay clocksource down rating to late boot
-Message-ID: <tip-54a6bc0b071c50150bc6d1da16c2cd9a963e288c@git.kernel.org>
-Git-Commit-ID: 54a6bc0b071c50150bc6d1da16c2cd9a963e288c
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 14 Sep 2009 20:04:17 +0000 (UTC)
+	Mon, 14 Sep 2009 16:05:13 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:51671 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756945AbZINUFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 16:05:11 -0400
+Date: Mon, 14 Sep 2009 22:05:10 +0200
+From: Pierre Ossman <pierre-list@ossman.eu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Christoph Hellwig <hch@lst.de>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-mmc@vger.kernel.org, viro@zeniv.linux.org.uk
+Subject: Re: Regression in suspend to ram in 2.6.31-rc kernels
+Message-ID: <20090914220510.5558d215@mjolnir.ossman.eu>
+In-Reply-To: <20090911215117.GA11441@elf.ucw.cz>
+References: <c4e36d110909040213t4d4258b4w3e2d4725e0b2a161@mail.gmail.com>
+	<87iqfx5mss.fsf@devron.myhome.or.jp>
+	<20090907125130.GA1595@ucw.cz>
+	<87ljko5k3v.fsf@devron.myhome.or.jp>
+	<20090910192354.GD23356@elf.ucw.cz>
+	<87bplim1ce.fsf@devron.myhome.or.jp>
+	<20090911200922.GF8137@elf.ucw.cz>
+	<c4e36d110909111414n716a06b1mdd0cd741230595b5@mail.gmail.com>
+	<20090911213204.GC25544@elf.ucw.cz>
+	<c4e36d110909111445nb6592cfue01543f5d04c2cda@mail.gmail.com>
+	<20090911215117.GA11441@elf.ucw.cz>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-32671-1252958714-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  54a6bc0b071c50150bc6d1da16c2cd9a963e288c
-Gitweb:     http://git.kernel.org/tip/54a6bc0b071c50150bc6d1da16c2cd9a963e288c
-Author:     Thomas Gleixner <tglx@linutronix.de>
-AuthorDate: Mon, 14 Sep 2009 19:49:02 +0200
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Mon, 14 Sep 2009 21:59:32 +0200
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-clocksource: Delay clocksource down rating to late boot
+--=_freyr.ossman.eu-32671-1252958714-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The down rating of clock sources in the early boot process via the
-clock source watchdog mechanism can happen way before the per cpu
-event queues are initialized. This leads to a boot crash on x86 when
-the TSC is marked unstable in the SMP bring up.
+On Fri, 11 Sep 2009 23:51:17 +0200
+Pavel Machek <pavel@ucw.cz> wrote:
 
-The selection of a clock source for time keeping happens in the late
-boot process so we can safely delay the list manipulation until
-clocksource_done_booting() is called.
+> On Fri 2009-09-11 23:45:01, Zdenek Kabelac wrote:
+> >=20
+> > Well system could check basic card ids if they match after resume - if
+> > some users wants to crash his card by randomly swapping it during
+> > suspend/resume - I'd have no problem with that....
+>=20
+> Well, I do have small problem with that :-).
+>=20
+> Anyway, patch for rechecking IDs would probably be accepted, but
+> that's not how it works now.
+> 								Pavel
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <new-submission>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+It _does_ check the card id when you have UNSAFE_RESUME selected. It
+doesn't just hook up whatever card you happen to have in the slot with
+your old block device. I may have a lot of opponents when it comes
+to my suspend design choices, but I'm not completely crazy. ;)
 
+Rgds
+--=20
+     -- Pierre Ossman
 
----
- kernel/time/clocksource.c |   28 ++++++++++++++++++----------
- 1 files changed, 18 insertions(+), 10 deletions(-)
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
 
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 2c2e5ba..0911334 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -121,6 +121,7 @@ static struct clocksource *curr_clocksource;
- static LIST_HEAD(clocksource_list);
- static DEFINE_MUTEX(clocksource_mutex);
- static char override_name[32];
-+static int finished_booting;
- 
- #ifdef CONFIG_CLOCKSOURCE_WATCHDOG
- static void clocksource_watchdog_work(struct work_struct *work);
-@@ -155,7 +156,8 @@ static void __clocksource_unstable(struct clocksource *cs)
- {
- 	cs->flags &= ~(CLOCK_SOURCE_VALID_FOR_HRES | CLOCK_SOURCE_WATCHDOG);
- 	cs->flags |= CLOCK_SOURCE_UNSTABLE;
--	schedule_work(&watchdog_work);
-+	if (finished_booting)
-+		schedule_work(&watchdog_work);
- }
- 
- static void clocksource_unstable(struct clocksource *cs, int64_t delta)
-@@ -207,7 +209,8 @@ static void clocksource_watchdog(unsigned long data)
- 
- 		/* Clocksource already marked unstable? */
- 		if (cs->flags & CLOCK_SOURCE_UNSTABLE) {
--			schedule_work(&watchdog_work);
-+			if (finished_booting)
-+				schedule_work(&watchdog_work);
- 			continue;
- 		}
- 
-@@ -380,6 +383,7 @@ static void clocksource_enqueue_watchdog(struct clocksource *cs)
- 
- static inline void clocksource_dequeue_watchdog(struct clocksource *cs) { }
- static inline void clocksource_resume_watchdog(void) { }
-+static inline int clocksource_watchdog_kthread(void *data) { return 0; }
- 
- #endif /* CONFIG_CLOCKSOURCE_WATCHDOG */
- 
-@@ -415,8 +419,6 @@ void clocksource_touch_watchdog(void)
- 
- #ifdef CONFIG_GENERIC_TIME
- 
--static int finished_booting;
--
- /**
-  * clocksource_select - Select the best clocksource available
-  *
-@@ -461,6 +463,12 @@ static void clocksource_select(void)
- 	}
- }
- 
-+#else /* CONFIG_GENERIC_TIME */
-+
-+static inline void clocksource_select(void) { }
-+
-+#endif
-+
- /*
-  * clocksource_done_booting - Called near the end of core bootup
-  *
-@@ -471,6 +479,12 @@ static void clocksource_select(void)
- static int __init clocksource_done_booting(void)
- {
- 	finished_booting = 1;
-+
-+	/*
-+	 * Run the watchdog first to eliminate unstable clock sources
-+	 */
-+	clocksource_watchdog_kthread(NULL);
-+
- 	mutex_lock(&clocksource_mutex);
- 	clocksource_select();
- 	mutex_unlock(&clocksource_mutex);
-@@ -478,12 +492,6 @@ static int __init clocksource_done_booting(void)
- }
- fs_initcall(clocksource_done_booting);
- 
--#else /* CONFIG_GENERIC_TIME */
--
--static inline void clocksource_select(void) { }
--
--#endif
--
- /*
-  * Enqueue the clocksource sorted by rating
-  */
+--=_freyr.ossman.eu-32671-1252958714-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.12 (GNU/Linux)
+
+iEYEARECAAYFAkquofgACgkQ7b8eESbyJLhs2QCdEpWDZZjgtrh0MIFNQo4b0p/p
+/jwAoPAMComgt/y4lahtlwM5D6l792vp
+=adci
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-32671-1252958714-0001-2--
