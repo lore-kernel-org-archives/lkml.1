@@ -1,75 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933774AbZINUwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933814AbZINUwz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933774AbZINUwd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 16:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933548AbZINUwc
+	id S933814AbZINUwz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 16:52:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933548AbZINUwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 16:52:32 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:43236 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933511AbZINUwb (ORCPT
+	Mon, 14 Sep 2009 16:52:53 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:15602 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933698AbZINUww (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 16:52:31 -0400
-Date: Mon, 14 Sep 2009 13:51:44 -0700
-Message-Id: <200909142051.n8EKpiOM017912@terminus.zytor.com>
-From: "H. Peter Anvin" <hpa@zytor.com>
-Subject: [GIT PULL] x86/txt for v2.6.32
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Joseph Cihula <joseph.cihula@intel.com>,
-       Shane Wang <shane.wang@intel.com>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.2.2 (terminus.zytor.com [127.0.0.1]); Mon, 14 Sep 2009 13:51:55 -0700 (PDT)
+	Mon, 14 Sep 2009 16:52:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=G+DRzRdn6lwElIaTijV3Crwr+HCqyDXe3hzuTGP+1bwwsuTEuS68l7YYAUbWcPX50p
+         VrhUJvTQzMFZT3d5qTSRsVfgMc1kljM5G5qW3FTTOBh4YvqLwH3UmWYEBnkKz9DBCfOy
+         Fm+DrzQ+xf39n1wUrkXA5maZnu5etNozj+4Go=
+Date: Mon, 14 Sep 2009 22:52:51 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Christoph Hellwig <hch@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Jason Baron <jbaron@redhat.com>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       systemtap <systemtap@sources.redhat.com>,
+       DLE <dle-develop@lists.sourceforge.net>
+Subject: Re: [PATCH tracing/kprobes 0/7] tracing/kprobes: kprobe-based
+	event tracer update and perf support
+Message-ID: <20090914205250.GG6045@nowhere>
+References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090911013332.GB16396@nowhere> <4AAA74D2.9060203@redhat.com> <20090914025949.GB14306@nowhere> <4AAE7A5D.8010503@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAE7A5D.8010503@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 326ba5010a5429a5a528b268b36a5900d4ab0eba:
-  Linus Torvalds (1):
-        Linux 2.6.31-rc8
+On Mon, Sep 14, 2009 at 01:16:13PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+>> On Fri, Sep 11, 2009 at 12:03:30PM -0400, Masami Hiramatsu wrote:
+>>> Frederic Weisbecker wrote:
+>>>> May be another step in the todo-list that would be nice: define the format
+>>>> for a type. Like it's done from ftrace events.
+>>>
+>>> Thanks!
+>>>
+>>> BTW, I'm not sure what the type means. Each event already has its own
+>>> event ID and event_call. Could you tell me which part of ftrace I should
+>>> refer to ?
+>>>
+>>
+>>
+>> Actually I meant the format for a field.
+>> Say you define filename=arg1, it would be nice to have
+>>
+>> 	print "%s", filename
+>>
+>> in the format file.
+>
+> Ah, indeed. It is better to support 'type' casting for each argument.
+> I think type casting can be done as below syntax.
+>
+> NAME=ARG:TYPE
+> e.g.
+> jiffies64=@jiffies64:u64
+> message=%ax:str
+>
 
-are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-txt-for-linus
+Yeah looks good!
 
-Arnaldo Carvalho de Melo (1):
-      x86, intel_txt: Fix typos in Kconfig help
 
-H. Peter Anvin (3):
-      x86, intel_txt: tboot.c needs <asm/fixmap.h>
-      x86, intel_txt: Factor out the code for S3 setup
-      x86, intel_txt: Handle ACPI_SLEEP without X86_TRAMPOLINE
 
-Ingo Molnar (1):
-      Merge commit 'v2.6.31-rc8' into x86/txt
+>> Hmm, now that I think about it, we can't dereference an array...for now :-)
+>
+> :-)
+> BTW, currently, an entry of the array can be shown, e.g. +10(sa).
+> Hmm, for more complex dereference(e.g. accessing a->b[a->c]), it might need
+> another dereferencing syntax(e.g. "sa[16][sa[8]]"), or
+> just allow to use braces(e.g. "+(+8(sa))(+16(sa))").
 
-Joseph Cihula (4):
-      x86, intel_txt: Intel TXT boot support
-      x86, intel_txt: Intel TXT reboot/halt shutdown support
-      x86, intel_txt: Intel TXT Sx shutdown support
-      intel_txt: Force IOMMU on for Intel TXT launch
 
-Shane Wang (1):
-      x86, intel_txt: clean up the impact on generic code, unbreak non-x86
+Well, that may be too much complexity.
+I guess if we want multi level dereference, say you want a->b->c
+it should be sufficient to probe the point where b->c gets it's
+value (if any).
 
- Documentation/intel_txt.txt      |  210 ++++++++++++++++++
- Documentation/x86/zero-page.txt  |    1 +
- arch/x86/Kconfig                 |    4 +
- arch/x86/include/asm/bootparam.h |    3 +-
- arch/x86/include/asm/fixmap.h    |    3 +
- arch/x86/kernel/Makefile         |    1 +
- arch/x86/kernel/reboot.c         |    7 +
- arch/x86/kernel/setup.c          |    3 +
- arch/x86/kernel/smpboot.c        |    2 +
- arch/x86/kernel/tboot.c          |  447 ++++++++++++++++++++++++++++++++++++++
- drivers/acpi/acpica/hwsleep.c    |    3 +
- drivers/pci/dmar.c               |    7 +
- drivers/pci/intel-iommu.c        |   17 ++-
- include/linux/tboot.h            |  162 ++++++++++++++
- kernel/cpu.c                     |    1 +
- security/Kconfig                 |   30 +++
- 16 files changed, 898 insertions(+), 3 deletions(-)
- create mode 100644 Documentation/intel_txt.txt
- create mode 100644 arch/x86/kernel/tboot.c
- create mode 100644 include/linux/tboot.h
+But it would be nice to fetch a range: sa[begin:end]
+Or at least just giving the length of the range.
+
