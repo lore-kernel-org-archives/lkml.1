@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755859AbZINPpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755844AbZINPp0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755859AbZINPpg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbZINPpe
+	id S1755844AbZINPp0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:45:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755810AbZINPpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:45:34 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:47829 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755806AbZINPpd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:45:33 -0400
-Subject: Re: [RFC][PATCH] mm: write_cache_pages be more sequential
-From: Artem Bityutskiy <dedekind1@gmail.com>
-Reply-To: dedekind1@gmail.com
-To: Nick Piggin <npiggin@suse.de>
-Cc: chris.mason@oracle.com, david@fromorbit.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Bityutskiy Artem (Nokia-M/Helsinki)" <Artem.Bityutskiy@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <4AA513AA.3010206@nokia.com>
-References: <4AA513AA.3010206@nokia.com>
+	Mon, 14 Sep 2009 11:45:25 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52906 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755775AbZINPpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 11:45:24 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/O8b0kuAvOYUM/RESyMnlJTzKcFDOBES/Svl+Hgt
+	HI9KWIHQg+XRpN
+Subject: Re: INGO Why you remove  set_user_nice() from kernel/kthread.c
+From: Mike Galbraith <efault@gmx.de>
+To: Chris Friesen <cfriesen@nortel.com>
+Cc: pavel@pavlinux.ru, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <4AAE5D60.2080703@nortel.com>
+References: <200909141742.45487.pavel@pavlinux.ru>
+	 <1252937140.6500.11.camel@marge.simson.net>  <4AAE5D60.2080703@nortel.com>
 Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 14 Sep 2009 18:44:47 +0300
-Message-Id: <1252943087.3778.0.camel@localhost>
+Date: Mon, 14 Sep 2009 17:45:23 +0200
+Message-Id: <1252943123.12986.70.camel@marge.simson.net>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 (2.26.3-1.fc11) 
+X-Mailer: Evolution 2.24.1.1 
 Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 14 Sep 2009 15:44:52.0673 (UTC) FILETIME=[4CDEA310:01CA3552]
-X-Nokia-AV: Clean
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.51
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-07 at 17:07 +0300, Adrian Hunter wrote:
-> From 6f3bb7c26936c45d810048f59c369e8d5a5623fc Mon Sep 17 00:00:00 2001
-> From: Adrian Hunter <adrian.hunter@nokia.com>
-> Date: Mon, 7 Sep 2009 10:49:11 +0300
-> Subject: [PATCH] mm: write_cache_pages be more sequential
+On Mon, 2009-09-14 at 09:12 -0600, Chris Friesen wrote:
+> On 09/14/2009 08:05 AM, Mike Galbraith wrote:
+> > If you're asking Ingo a question, maybe a CC is in order.
+> > 
+> > On Mon, 2009-09-14 at 17:42 +0400, Pavel Vasilyev wrote:
+> >>
+> >> Next patсh -  
+> >> http://www.kernel.org/diff/diffview.cgi?file=%2Fpub%2Flinux%2Fkernel%2F%2Fv2.6%2Fsnapshots%2Fpatch-2.6.31-git2.bz2;z=548
+> >>
+> >> This patch defines the core processes that are working with nice leve equal to 
+> >> zero , as in the BFS. :)
+> >>
+> >> Why?
+> > 
+> > I did that, not Ingo, and did so because with kthreads that use
+> > diddly-spit CPU (every one I see), it's just a waste of math.  What
+> > kthreads are you seeing using so much CPU that their weight is a factor?
+> > They _should_ be able to preempt and get their work done just fine
+> > without a boost.
 > 
-> If a file is written to sequentially, then writeback
-> should write the pages sequentially also.  However,
-> that does not always happen.  For example:
-> 
-> 1) user writes pages 0, 1 and 2 but 2 is incomplete
-> 2) write_cache_pages writes pages 0, 1 and 2 and sets
-> writeback_index to 3
-> 3) user finishes writing page 2 and writes pages 3 and 4
-> 4) write_cache_pages writes pages 3 and 4, and then cycles
-> back and writes page 2 again.
-> 
-> So the pages are written out in the order 0, 1, 2, 3 ,4 ,2
-> instead of 0, 1, 2, 2, 3, 4.
-> 
-> This situation was noticed on UBIFS because it writes
-> directly from writepage.  Hence if there is an unexpected
-> power-loss, a file will end up with a hole even though
-> the file was written sequentially by the user.
-> 
-> Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
+> Under heavy network load ksoftirqd can use significant amounts of cpu.
 
-I wonder, who would merge this patch?
+OK, that may justify a weight adjustment, since it is a proxy for many.
+Question is, does it really need it?
 
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+I certainly have no objection to a heavier weight for any kthread,
+though I think it's a waste of cycles for the general case.
+
+	-Mike
 
