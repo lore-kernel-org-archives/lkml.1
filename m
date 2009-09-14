@@ -1,134 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZINQKb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756049AbZINQQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZINQKb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 12:10:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZINQKZ
+	id S1756049AbZINQQc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 12:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZINQQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 12:10:25 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:39473 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751078AbZINQKY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 12:10:24 -0400
-Message-ID: <4AAE6AED.1070609@gmail.com>
-Date: Mon, 14 Sep 2009 18:10:21 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
+	Mon, 14 Sep 2009 12:16:26 -0400
+Received: from cantor.suse.de ([195.135.220.2]:53162 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751250AbZINQQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 12:16:25 -0400
+Date: Mon, 14 Sep 2009 18:16:27 +0200
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: [PULL REQUEST] O_SYNC cleanup series
+Message-ID: <20090914161627.GC25549@duck.suse.cz>
 MIME-Version: 1.0
-To: Stephan von Krawczynski <skraw@ithnet.com>
-CC: Stephen Hemminger <shemminger@vyatta.com>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: ipv4 regression in 2.6.31 ?
-References: <20090914150935.cc895a3c.skraw@ithnet.com>	<4AAE4BAF.2010406@gmail.com> <20090914175505.a3f132ee.skraw@ithnet.com>
-In-Reply-To: <20090914175505.a3f132ee.skraw@ithnet.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Sep 2009 18:10:22 +0200 (CEST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephan von Krawczynski a écrit :
-> On Mon, 14 Sep 2009 15:57:03 +0200
-> Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> 
->> Stephan von Krawczynski a écrit :
->>> Hello all,
->>>
->>> today we experienced some sort of regression in 2.6.31 ipv4 implementation, or
->>> at least some incompatibility with former 2.6.30.X kernels.
->>>
->>> We have the following situation:
->>>
->>>                                        ---------- vlan1@eth0 192.168.2.1/24
->>>                                       /
->>> host A 192.168.1.1/24 eth0  -------<router>            host B
->>>                                       \
->>>                                        ---------- eth1 192.168.3.1/24
->>>
->>>
->>> Now, if you route 192.168.1.0/24 via interface vlan1@eth0 on host B and let
->>> host A ping 192.168.2.1 everything works. But if you route 192.168.1.0/24 via
->>> interface eth1 on host B and let host A ping 192.168.2.1 you get no reply.
->>> With tcpdump we see the icmp packets arrive at vlan1@eth0, but no icmp echo
->>> reply being generated neither on vlan1 nor eth1.
->>> Kernels 2.6.30.X and below do not show this behaviour.
->>> Is this intended? Do we need to reconfigure something to restore the old
->>> behaviour?
->>>
->> Asymetric routing ?
->>
->> Check your rp_filter settings
->>
->> grep . `find /proc/sys/net -name rp_filter`
->>
->> rp_filter - INTEGER
->>         0 - No source validation.
->>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
->>             Each incoming packet is tested against the FIB and if the interface
->>             is not the best reverse path the packet check will fail.
->>             By default failed packets are discarded.
->>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
->>             Each incoming packet's source address is also tested against the FIB
->>             and if the source address is not reachable via any interface
->>             the packet check will fail.
->>
->>         Current recommended practice in RFC3704 is to enable strict mode
->>         to prevent IP spoofing from DDos attacks. If using asymmetric routing
->>         or other complicated routing, then loose mode is recommended.
->>
->>         conf/all/rp_filter must also be set to non-zero to do source validation
->>         on the interface
->>
->>         Default value is 0. Note that some distributions enable it
->>         in startup scripts.
-> 
-> Ok, here you can see 2.6.31 values from the discussed box:
-> (remember, no ping reply in this setup)
-> 
-> /proc/sys/net/ipv4/conf/all/rp_filter:1
-> /proc/sys/net/ipv4/conf/default/rp_filter:0
-> /proc/sys/net/ipv4/conf/lo/rp_filter:0
-> /proc/sys/net/ipv4/conf/eth2/rp_filter:0
-> /proc/sys/net/ipv4/conf/eth0/rp_filter:0
-> /proc/sys/net/ipv4/conf/eth1/rp_filter:0
-> /proc/sys/net/ipv4/conf/vlan1/rp_filter:0
-> 
-> 
-> And these are from the same box with 2.6.30.5:
-> (ping reply works)
-> 
-> /proc/sys/net/ipv4/conf/all/rp_filter:1
-> /proc/sys/net/ipv4/conf/default/rp_filter:0
-> /proc/sys/net/ipv4/conf/lo/rp_filter:0
-> /proc/sys/net/ipv4/conf/eth2/rp_filter:0
-> /proc/sys/net/ipv4/conf/eth0/rp_filter:0
-> /proc/sys/net/ipv4/conf/eth1/rp_filter:0
-> /proc/sys/net/ipv4/conf/vlan1/rp_filter:0
-> 
-> As you can see they're all the same. Does this mean that rp_filter never
-> really worked as intended before 2.6.31 ? Or does it mean that rp_filter=0
-> (eth1 and vlan1) gets overriden by all/rp_filter=1 in 2.6.31 and not before?
->
+  Hello Linus,
 
-Yes, previous kernels ignored /proc/sys/net/ipv4/conf/all/rp_filter value, it was a bug.
+  could you please pull from
 
-commit 27fed4175acf81ddd91d9a4ee2fd298981f60295
-Author: Stephen Hemminger <shemminger@vyatta.com>
-Date:   Mon Jul 27 18:39:45 2009 -0700
+git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-fs-2.6.git osync_cleanup
 
-    ip: fix logic of reverse path filter sysctl
+  to get a patch series that cleans up handling of O_SYNC open flag. After
+this patch series, it uses the same code as standard fsync / fdatasync.
+  The patch series contains:
 
-    Even though reverse path filter was changed from simple boolean to
-    trinary control, the loose mode only works if both all and device are
-    configured because of this logic error.
+Christoph Hellwig (2):
+      vfs: Rename generic_file_aio_write_nolock
+      fsync: wait for data writeout completion before calling ->fsync
 
-    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+Jan Kara (15):
+      vfs: Introduce filemap_fdatawait_range
+      vfs: Export __generic_file_aio_write() and add some comments
+      vfs: Remove syncing from generic_file_direct_write() and generic_file_buffered_write()
+      pohmelfs: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
+      ocfs2: Use __generic_file_aio_write instead of generic_file_aio_write_nolock
+      vfs: Introduce new helpers for syncing after writing to O_SYNC file or IS_SYNC inode
+      ext2: Update comment about generic_osync_inode
+      ext3: Remove syncing logic from ext3_file_write
+      ext4: Remove syncing logic from ext4_file_write
+      ntfs: Use new syncing helpers and update comments
+      ocfs2: Update syncing after splicing to match generic version
+      xfs: Convert sync_page_range() to simple filemap_write_and_wait_range()
+      pohmelfs: Use new syncing helper
+      fat: Opencode sync_page_range_nolock()
+      vfs: Remove generic_osync_inode() and sync_page_range{_nolock}()
 
+The diffstat is
 
-In your case, you *need*
-echo 0 >/proc/sys/net/ipv4/conf/all/rp_filter
-or
-echo 2 >/proc/sys/net/ipv4/conf/all/rp_filter
+ drivers/char/raw.c               |    2 +-
+ drivers/staging/pohmelfs/inode.c |    6 +-
+ fs/block_dev.c                   |   29 ++++++-
+ fs/ext2/inode.c                  |    2 +-
+ fs/ext3/file.c                   |   61 +-------------
+ fs/ext4/file.c                   |   53 +-----------
+ fs/fat/file.c                    |   22 +++++-
+ fs/fat/misc.c                    |    4 +-
+ fs/fs-writeback.c                |   54 ------------
+ fs/ntfs/file.c                   |   16 +---
+ fs/ntfs/mft.c                    |   13 ++--
+ fs/ocfs2/file.c                  |   49 ++++-------
+ fs/splice.c                      |   22 ++----
+ fs/sync.c                        |   56 +++++++++++--
+ fs/xfs/linux-2.6/xfs_lrw.c       |    3 +-
+ include/linux/fs.h               |   18 +++--
+ include/linux/writeback.h        |    4 -
+ mm/filemap.c                     |  170 ++++++++++++--------------------------
+ 18 files changed, 204 insertions(+), 380 deletions(-)
 
+							Thanks
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
