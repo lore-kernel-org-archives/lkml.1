@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZINPJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZINPO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755650AbZINPJY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751638AbZINPJY
+	id S1755818AbZINPO3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754661AbZINPO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:09:24 -0400
-Received: from mga09.intel.com ([134.134.136.24]:46038 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750791AbZINPJX convert rfc822-to-8bit (ORCPT
+	Mon, 14 Sep 2009 11:14:28 -0400
+Received: from mail-a02.ithnet.com ([217.64.83.97]:48166 "HELO ithnet.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1752425AbZINPO1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:09:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,383,1249282800"; 
-   d="scan'208";a="550395090"
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>,
-       Stephen Hemminger <shemminger@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-Date: Mon, 14 Sep 2009 16:08:48 +0100
-Subject: RE: dca: module load should not be an error message
-Thread-Topic: dca: module load should not be an error message
-Thread-Index: Aco0mBFo50r3Ogs0Re2eY1DsyJ6MRQAtM/lg
-Message-ID: <129600E5E5FB004392DDC3FB599660D7B55481A7@irsmsx504.ger.corp.intel.com>
-References: <20090913090737.3141c842@nehalam> <4AAD2C7F.2080904@intel.com>
-In-Reply-To: <4AAD2C7F.2080904@intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 14 Sep 2009 11:14:27 -0400
+X-Sender-Authentication: net64
+Date: Mon, 14 Sep 2009 17:10:01 +0200
+From: Stephan von Krawczynski <skraw@ithnet.com>
+To: Eric Dumazet <eric.dumazet@gmail.com>
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: ipv4 regression in 2.6.31 ?
+Message-Id: <20090914171001.47371b3d.skraw@ithnet.com>
+In-Reply-To: <4AAE4BAF.2010406@gmail.com>
+References: <20090914150935.cc895a3c.skraw@ithnet.com>
+	<4AAE4BAF.2010406@gmail.com>
+Organization: ith Kommunikationstechnik GmbH
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.9; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
-MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Williams, Dan J wrote:
-> Stephen Hemminger wrote:
->> The message (if it must exist) should not be an error message.
->> IMHO such messages are useless.
->> 
->> Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
->> 
->> ---
->> I sent patch for this previously, but it seems to have been ignored.
->> 
-> 
-> Sorry about that... applied now.  There are a couple other messages in
-> drivers/dma/ioat/dca.c and drivers/dma/ioat/pci.c that can also be
-> de-clawed.  I'll take care of those.
-> 
-> Thanks,
-> Dan
+On Mon, 14 Sep 2009 15:57:03 +0200
+Eric Dumazet <eric.dumazet@gmail.com> wrote:
 
-Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
+> Stephan von Krawczynski a écrit :
+> > Hello all,
+> > 
+> > today we experienced some sort of regression in 2.6.31 ipv4 implementation, or
+> > at least some incompatibility with former 2.6.30.X kernels.
+> > 
+> > We have the following situation:
+> > 
+> >                                        ---------- vlan1@eth0 192.168.2.1/24
+> >                                       /
+> > host A 192.168.1.1/24 eth0  -------<router>            host B
+> >                                       \
+> >                                        ---------- eth1 192.168.3.1/24
+> > 
+> > 
+> > Now, if you route 192.168.1.0/24 via interface vlan1@eth0 on host B and let
+> > host A ping 192.168.2.1 everything works. But if you route 192.168.1.0/24 via
+> > interface eth1 on host B and let host A ping 192.168.2.1 you get no reply.
+> > With tcpdump we see the icmp packets arrive at vlan1@eth0, but no icmp echo
+> > reply being generated neither on vlan1 nor eth1.
+> > Kernels 2.6.30.X and below do not show this behaviour.
+> > Is this intended? Do we need to reconfigure something to restore the old
+> > behaviour?
+> > 
+> 
+> Asymetric routing ?
+> 
+> Check your rp_filter settings
+> 
+> grep . `find /proc/sys/net -name rp_filter`
+> 
+> rp_filter - INTEGER
+>         0 - No source validation.
+>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
+>             Each incoming packet is tested against the FIB and if the interface
+>             is not the best reverse path the packet check will fail.
+>             By default failed packets are discarded.
+>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
+>             Each incoming packet's source address is also tested against the FIB
+>             and if the source address is not reachable via any interface
+>             the packet check will fail.
+> 
+>         Current recommended practice in RFC3704 is to enable strict mode
+>         to prevent IP spoofing from DDos attacks. If using asymmetric routing
+>         or other complicated routing, then loose mode is recommended.
+> 
+>         conf/all/rp_filter must also be set to non-zero to do source validation
+>         on the interface
+> 
+>         Default value is 0. Note that some distributions enable it
+>         in startup scripts.
 
-Thanks,
-Maciej
+Problem is this:
+Kernel 2.6.30.X and below work flawlessly in this setup, only kernel 2.6.31
+acts different. Is this an intended change in policy?
+
+-- 
+Regards,
+Stephan
