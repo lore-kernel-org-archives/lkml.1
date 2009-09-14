@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZINVrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757277AbZINVrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZINVrM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755376AbZINVrL
+	id S1757277AbZINVrX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757121AbZINVrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:47:11 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:45070 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755129AbZINVrK (ORCPT
+	Mon, 14 Sep 2009 17:47:21 -0400
+Received: from mail8.sea5.speakeasy.net ([69.17.117.10]:44837 "EHLO
+	mail8.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756977AbZINVrU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:47:10 -0400
-Date: Mon, 14 Sep 2009 23:47:11 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] [1/5] kbuild: Fix ld-option Makefile macro to really
-	work
-Message-ID: <20090914214711.GB7990@merkur.ravnborg.org>
-References: <200909141018.915641783@firstfloor.org> <20090914201806.EE6A0B1757@basil.firstfloor.org>
+	Mon, 14 Sep 2009 17:47:20 -0400
+Date: Mon, 14 Sep 2009 14:47:22 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Andreas Mohr <andi@lisas.de>
+cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Luca Risolia <luca.risolia@studio.unibo.it>,
+       linux-media@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: V4L2 drivers: potentially dangerous and inefficient	msecs_to_jiffies()
+ calculation
+In-Reply-To: <20090914210741.GA16799@rhlx01.hs-esslingen.de>
+Message-ID: <Pine.LNX.4.58.0909141443090.17485@shell2.speakeasy.net>
+References: <20090914210741.GA16799@rhlx01.hs-esslingen.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914201806.EE6A0B1757@basil.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 10:18:06PM +0200, Andi Kleen wrote:
-> 
-> Needed for the next patch
-> 
-> Signed-off-by: Andi Kleen <ak@linux.intel.com>
-> 
-> ---
->  scripts/Kbuild.include |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.31-rc1-ak/scripts/Kbuild.include
-> ===================================================================
-> --- linux-2.6.31-rc1-ak.orig/scripts/Kbuild.include
-> +++ linux-2.6.31-rc1-ak/scripts/Kbuild.include
-> @@ -83,11 +83,12 @@ TMPOUT := $(if $(KBUILD_EXTMOD),$(firstw
->  # is automatically cleaned up.
->  try-run = $(shell set -e;		\
->  	TMP="$(TMPOUT).$$$$.tmp";	\
-> +	TMPO="$(TMPOUT).$$$$.o";	\
->  	if ($(1)) >/dev/null 2>&1;	\
->  	then echo "$(2)";		\
->  	else echo "$(3)";		\
->  	fi;				\
-> -	rm -f "$$TMP")
-> +	rm -f "$$TMP" "$$TMPO")
->  
->  # as-option
->  # Usage: cflags-y += $(call as-option,-Wa$(comma)-isa=foo,)
-> @@ -133,7 +134,7 @@ cc-ifversion = $(shell [ $(call cc-versi
->  # ld-option
->  # Usage: ldflags += $(call ld-option, -Wl$(comma)--hash-style=both)
->  ld-option = $(call try-run,\
-> -	$(CC) $(1) -nostdlib -xc /dev/null -o "$$TMP",$(1),$(2))
-> +	$(CC) /dev/null -c -o "$$TMPO" ; $(LD) $(1) "$$TMPO" -o "$$TMP",$(1),$(2))
->  
->  ######
+On Mon, 14 Sep 2009, Andreas Mohr wrote:
+>                             cam->module_param.frame_timeout *
+>                             1000 * msecs_to_jiffies(1) );
+> multiple times each.
+> What they should do instead is
+> frame_timeout * msecs_to_jiffies(1000), I'd think.
+> msecs_to_jiffies(1) is quite a bit too boldly assuming
+> that all of the msecs_to_jiffies(x) implementation branches
+> always round up.
 
-So now we pass the option direct to the linker rather than via gcc -wl.
-I assume this breaks the other 8 uses of ld-option in the kernel?
+It might also wait far longer than desired.  On a 100 Hz kernel a jiffie is
+10 ms.  1000 * msecs_to_jiffies(1) will wait 10 seconds instead of 1.
 
-Or does ld understand the -wl,... syntax?
-
-	Sam
+But, I believe there is an issue with msecs_to_jiffies(x) overflowing for
+very high values of x.  I'm not sure where that point is though.
