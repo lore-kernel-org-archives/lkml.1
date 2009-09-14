@@ -1,66 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755686AbZINPhV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZINPke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755686AbZINPhV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752263AbZINPhV
+	id S1755704AbZINPke (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZINPkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:37:21 -0400
-Received: from mtagate6.de.ibm.com ([195.212.17.166]:40544 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755061AbZINPhU (ORCPT
+	Mon, 14 Sep 2009 11:40:33 -0400
+Received: from mail3.caviumnetworks.com ([12.108.191.235]:16998 "EHLO
+	mail3.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbZINPkc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:37:20 -0400
-Date: Mon, 14 Sep 2009 17:37:20 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jens Axboe <jens.axboe@oracle.com>, John Stultz <johnstul@us.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: [crash, bisected] Re: clocksource: Resolve cpu hotplug dead
- lock with TSC unstable
-Message-ID: <20090914173720.5774c01f@skybase>
-In-Reply-To: <20090914151958.GA17791@elte.hu>
-References: <20090909122006.GA18599@kernel.dk>
-	<1252565738.7205.29.camel@laptop>
-	<20090910065856.GL18599@kernel.dk>
-	<20090910073317.GP18599@kernel.dk>
-	<20090910074902.GA10634@elte.hu>
-	<20090910075357.GT18599@kernel.dk>
-	<20090910100214.GB21314@elte.hu>
-	<20090910180049.GA10579@elte.hu>
-	<20090911073747.GA8209@elte.hu>
-	<20090911153305.3fe9a361@skybase>
-	<20090914151958.GA17791@elte.hu>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Sep 2009 11:40:32 -0400
+Message-ID: <4AAE63E7.90909@caviumnetworks.com>
+Date: Mon, 14 Sep 2009 08:40:23 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+CC: Michael Buesch <mb@bu3sch.de>, linuxppc-dev@lists.ozlabs.org,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-mips@linux-mips.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+       linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-s390@vger.kernel.org,
+       linux-am33-list@redhat.com, Helge Deller <deller@gmx.de>,
+       x86@kernel.org, Ingo Molnar <mingo@redhat.com>,
+       Mike Frysinger <vapier@gentoo.org>,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Richard Henderson <rth@twiddle.net>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ralf@linux-mips.org, Kyle McMartin <kyle@mcmartin.ca>,
+       linux-alpha@vger.kernel.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+       Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
+Subject: Re: [PATCH 01/10] Add support for GCC-4.5's __builtin_unreachable()
+ 	to compiler.h
+References: <4AA991C1.1050800@caviumnetworks.com>	 <1252627011-2933-1-git-send-email-ddaney@caviumnetworks.com>	 <200909111633.00665.mb@bu3sch.de>	 <4AAA73A4.9010601@caviumnetworks.com> <10f740e80909120022m72ad5ea7t692fba93cd3114e9@mail.gmail.com>
+In-Reply-To: <10f740e80909120022m72ad5ea7t692fba93cd3114e9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 Sep 2009 15:40:24.0988 (UTC) FILETIME=[AD5125C0:01CA3551]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 17:19:58 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
-
-> Now another box crashes during bootup. Reverting these two:
+Geert Uytterhoeven wrote:
+> On Fri, Sep 11, 2009 at 17:58, David Daney<ddaney@caviumnetworks.com> wrote:
+>> Michael Buesch wrote:
+>>> On Friday 11 September 2009 01:56:42 David Daney wrote:
+>>>> +/* Unreachable code */
+>>>> +#ifndef unreachable
+>>>> +# define unreachable() do { for (;;) ; } while (0)
+>>>> +#endif
+>>> # define unreachable() do { } while (1)
+>>>
+>>> ? :)
+>> Clearly I was not thinking clearly when I wrote that part.  RTH noted the
+>> same thing.  I will fix it.
 > 
->  f79e025: clocksource: Resolve cpu hotplug dead lock with TSC unstable, fix crash
->  7285dd7: clocksource: Resolve cpu hotplug dead lock with TSC unstable
+> However, people are so used to seeing the `do { } while (0)' idiom,
+> that they might miss
+> there's a `1' here, not a `0'.
 > 
-> allows me to boot it.
+> So perhaps it's better to use plain `for (;;)' for infinite loops?
 > 
-> plain 32-bit defconfig.
 
-I've seen the bug report. init_workqueues comes after smp_init.
-The idea I'm currently playing with is a simple check in the tsc
-code if the tsc clocksource is already registered or not.
-When smp_init is called the tsc is not yet registered, we could
-just set the rating to zero.
+I don't think so.  The only valid token that can follow 'do { } while 
+(1)' is ';', any statement may follow 'for (;;)', so there is a greater 
+possibility to silently screw things up with the for(;;) form.
 
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
+David Daney
 
