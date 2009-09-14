@@ -1,112 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbZINTOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933265AbZINTVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933039AbZINTOk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 15:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755630AbZINTOi
+	id S933265AbZINTVI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 15:21:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754908AbZINTVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 15:14:38 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:49448 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbZINTOh (ORCPT
+	Mon, 14 Sep 2009 15:21:07 -0400
+Received: from mail-yx0-f171.google.com ([209.85.210.171]:33619 "EHLO
+	mail-yx0-f171.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754891AbZINTVG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 15:14:37 -0400
+	Mon, 14 Sep 2009 15:21:06 -0400
+X-Greylist: delayed 393 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 Sep 2009 15:21:06 EDT
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=DLVgzm6ivGvEj2v+YfKT+LpPc4SUgj1sVMeCOABSMOJq+xSnDmKVuvkpL7GaantGrW
-         EdGWJySKJ2fNaG3718QHG49t/L8UCOsp/DL4U2v3fMrroiIot007C2tZCxizGCmbLeVB
-         /Igh6fpgMtU6BSo2Y7ZtLYeMt6Hj971OXPu8k=
-Message-ID: <4AAE961B.6020509@gmail.com>
-Date: Mon, 14 Sep 2009 15:14:35 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Pl1IOC4a91J09sZKD7v0l/YfFveJDgws9DerndJ/h06OWUaTDNjbFJ6UX2QRYH1KXC
+         8spBrUlzhuTwVwRhgeTPmBn1yacn5ork9gRsNtSgigLAoNVOa0bw3H3sShZ42/IoOoty
+         et8OPldBi48QupVwDgG7ihamOCU3BQuhFhqPs=
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com>
-In-Reply-To: <20090914164750.GB3745@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2959D78D936A954B1F0C2FB2"
+In-Reply-To: <1252942335.12986.58.camel@marge.simson.net>
+References: <20090906205952.GA6516@elte.hu> <4AAE10E6.2050403@arcor.de>
+	 <1252928133.22740.37.camel@marge.simson.net>
+	 <f42384a10909140727k463ff460q3859892dcb79bcc5@mail.gmail.com>
+	 <1252942335.12986.58.camel@marge.simson.net>
+Date: Mon, 14 Sep 2009 21:14:35 +0200
+Message-ID: <f42384a10909141214w1b3e7719j1a82363f7cb6fd3e@mail.gmail.com>
+Subject: Re: Phoronix CFS vs BFS bencharks
+From: Marcin Letyns <mletyns@gmail.com>
+To: Mike Galbraith <efault@gmx.de>
+Cc: Nikos Chantziaras <realnc@arcor.de>, Ingo Molnar <mingo@elte.hu>,
+       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2959D78D936A954B1F0C2FB2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+2009/9/14 Mike Galbraith <efault@gmx.de>
+>
+> On Mon, 2009-09-14 at 16:27 +0200, Marcin Letyns wrote:
+> > Hello,
+> >
+> > Disabling NEW_FAIR_SLEEPERS makes a lot of difference here in the
+> > Apache benchmark:
+> >
+> > 2.6.30.6-bfs: 7311.05
+> >
+> > 2.6.30.6-cfs-fair_sl_disabled: 8249.17
+> >
+> > 2.6.30.6-cfs-fair_sl_enabled: 4894.99
+>
+> Wow.
+>
+> Some loads like wakeup preemption (mysql+oltp), and some hate it.  This
+> load appears to REALLY hate it (as does volanomark, but that thing is
+> extremely overloaded).  How many threads does that benchmark run
+> concurrently?
 
-Michael S. Tsirkin wrote:
-> On Mon, Sep 14, 2009 at 12:08:55PM -0400, Gregory Haskins wrote:
->> For Ira's example, the addresses would represent a physical address on=
+>From the benchmark description:
 
->> the PCI boards, and would follow any kind of relevant rules for
->> converting a "GPA" to a host accessible address (even if indirectly, v=
-ia
->> a dma controller).
->=20
-> I don't think limiting addresses to PCI physical addresses will work
-> well.
-
-The only "limit" is imposed by the memctx.  If a given context needs to
-meet certain requirements beyond PCI physical addresses, it would
-presumably be designed that way.
-
-
->  From what I rememeber, Ira's x86 can not initiate burst
-> transactions on PCI, and it's the ppc that initiates all DMA.
-
-The only requirement is that the "guest" "owns" the memory.  IOW: As
-with virtio/vhost, the guest can access the pointers in the ring
-directly but the host must pass through a translation function.
-
-Your translation is direct: you use a slots/hva scheme.  My translation
-is abstracted, which means it can support slots/hva (such as in
-alacrityvm) or some other scheme as long as the general model of "guest
-owned" holds true.
-
->=20
->>>  But we can't let the guest specify physical addresses.
->> Agreed.  Neither your proposal nor mine operate this way afaict.
->=20
-> But this seems to be what Ira needs.
-
-So what he could do then is implement the memctx to integrate with the
-ppc side dma controller.  E.g. "translation" in his box means a protocol
-from the x86 to the ppc to initiate the dma cycle.  This could be
-exposed as a dma facility in the register file of the ppc boards, for
-instance.
-
-To reiterate, as long as the model is such that the ppc boards are
-considered the "owner" (direct access, no translation needed) I believe
-it will work.  If the pointers are expected to be owned by the host,
-then my model doesn't work well either.
-
-Kind Regards,
--Greg
-
-
---------------enig2959D78D936A954B1F0C2FB2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqulhsACgkQP5K2CMvXmqHsYACePYzh0H3oY5W3aAc6pFFp4w3u
-tYEAnRNmpU/44+9P++MVTtjbqreGPiiM
-=J8am
------END PGP SIGNATURE-----
-
---------------enig2959D78D936A954B1F0C2FB2--
+This is a test of ab, which is the Apache Benchmark program. This test
+profile measures how many requests per second a given system can
+sustain when carrying out 500,000 requests with 100 requests being
+carried out concurrently.
