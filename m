@@ -1,105 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753790AbZINHKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbZINHLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753790AbZINHKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 03:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753217AbZINHKu
+	id S1754053AbZINHLl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 03:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753223AbZINHLk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 03:10:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57788 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750915AbZINHKt (ORCPT
+	Mon, 14 Sep 2009 03:11:40 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39969 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753217AbZINHLk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 03:10:49 -0400
-Date: Mon, 14 Sep 2009 00:10:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Suresh Jayaram <sureshjayaram@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: mmotm 2009-09-09-22-56 uploaded
-Message-Id: <20090914001039.8c4d467a.akpm@linux-foundation.org>
-In-Reply-To: <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com>
-References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org>
-	<38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 03:11:40 -0400
+Date: Mon, 14 Sep 2009 09:11:36 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Greg KH <greg@kroah.com>, arve@android.com, swetland@google.com,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] Re: newer version of HTC Dream support
+Message-ID: <20090914071136.GB7146@elf.ucw.cz>
+References: <20090911071155.GA1386@ucw.cz> <20090911075847.2fb7210a.randy.dunlap@oracle.com> <20090911161335.GA8137@elf.ucw.cz> <20090911092157.ba202b0a.randy.dunlap@oracle.com> <20090911212751.GA25544@elf.ucw.cz> <20090911153422.7d523a73.randy.dunlap@oracle.com> <20090913083719.GA6645@elf.ucw.cz> <20090913135422.f2d7cb88.randy.dunlap@oracle.com> <20090913223806.GB9522@elf.ucw.cz> <20090913162154.ee412cbe.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090913162154.ee412cbe.randy.dunlap@oracle.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 11:32:59 +0530 Suresh Jayaram <sureshjayaram@gmail.com> wrote:
+Hi!
 
-> Hi Andrew,
+> > #obj-y += audio_out.o audio_in.o audio_mp3.o audmgr.o audpp.o
+> > #obj-y += snd.o
+> > 
+> > from build, the rest should now build ok.
 > 
-> On Thu, Sep 10, 2009 at 11:31 AM, <akpm@linux-foundation.org> wrote:
-> >
-> > The mm-of-the-moment snapshot 2009-09-09-22-56 has been uploaded to
-> >
-> > __ http://userweb.kernel.org/~akpm/mmotm/
-> >
-> > and will soon be available at
-> >
-> > __ git://git.zen-sources.org/zen/mmotm.git
-> >
+> but still not link?
 > 
-> The current mmotm doesn't boot my T60p. It hangs (hardlock) very early
-> during the boot after Uncompressing the kernel image. The last message
-> I see on the screen is
+> drivers/staging/dream/camera/msm_camera.c:1482: undefined reference to `msm_camera_flash_set_led_state'
 > 
-> "Probing EDD (edd=off to disable)...
-> 
-> Trying with edd=off didn't help. Other commandline options that didn't
-> help include (acpi=off, noapic,nolapic,pci=no). It appears that it
-> hardlocks during hardware detection.
+> CONFIG_MSM_CAMERA_FLASH=y
 
-hm, that's before we even get into the kernel.  The next thing we do is
-set_video() and there are some small video-related changes in
-linux-next down in arch/x86/boot/.
+It should link with the patch below...
+
+---
+
+HTC Dream hardware has no camera flash, and current arm/mach-msm does
+not have flash support. Disable flash support for now.
+
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+
+diff --git a/drivers/staging/dream/camera/Kconfig b/drivers/staging/dream/camera/Kconfig
+index 0a3e903..bfb6d24 100644
+--- a/drivers/staging/dream/camera/Kconfig
++++ b/drivers/staging/dream/camera/Kconfig
+@@ -15,7 +15,7 @@ config MSM_CAMERA_DEBUG
+ 
+ config MSM_CAMERA_FLASH
+ 	bool "Qualcomm MSM camera flash support"
+-	depends on MSM_CAMERA
++	depends on MSM_CAMERA && BROKEN
+ 	---help---
+ 	  Enable support for LED flash for msm camera
+ 
 
 
-> Attached is my kernel config:
-> 
-> lspci output:
-> 
-> ---cut here---
-> 00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS, 943/940GML
-> and 945GT Express Memory Controller Hub (rev 03)
-> 00:01.0 PCI bridge: Intel Corporation Mobile 945GM/PM/GMS, 943/940GML
-> and 945GT Express PCI Express Root Port (rev 03)
-> 00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
-> Definition Audio Controller (rev 02)
-> 00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-> Port 1 (rev 02)
-> 00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-> Port 2 (rev 02)
-> 00:1c.2 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-> Port 3 (rev 02)
-> 00:1c.3 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-> Port 4 (rev 02)
-> 00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-> UHCI Controller #1 (rev 02)
-> 00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-> UHCI Controller #2 (rev 02)
-> 00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-> UHCI Controller #3 (rev 02)
-> 00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-> UHCI Controller #4 (rev 02)
-> 00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2
-> EHCI Controller (rev 02)
-> 00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
-> 00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface
-> Bridge (rev 02)
-> 00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE
-> Controller (rev 02)
-> 00:1f.2 SATA controller: Intel Corporation 82801GBM/GHM (ICH7 Family)
-> SATA AHCI Controller (rev 02)
-> 00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
-> 01:00.0 VGA compatible controller: ATI Technologies Inc M56GL
-> [Mobility FireGL V5250]
-> 02:00.0 Ethernet controller: Intel Corporation 82573L Gigabit Ethernet
-> Controller
-> 03:00.0 Network controller: Intel Corporation PRO/Wireless 3945ABG
-> [Golan] Network Connection (rev 02)
-> 15:00.0 CardBus bridge: Texas Instruments PCI1510 PC card Cardbus Controller
-
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
