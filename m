@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZINVr5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757297AbZINVuP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757273AbZINVr5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 17:47:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755603AbZINVry
+	id S1757297AbZINVuP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 17:50:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757264AbZINVuO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 17:47:54 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51733 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755129AbZINVry (ORCPT
+	Mon, 14 Sep 2009 17:50:14 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:65402 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757260AbZINVuM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 17:47:54 -0400
-Date: Mon, 14 Sep 2009 14:47:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: andi@firstfloor.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [0/5] kbuild: A couple of Kbuild fixes/improvements
-Message-Id: <20090914144739.cd6ebf82.akpm@linux-foundation.org>
-In-Reply-To: <20090914214347.GA7990@merkur.ravnborg.org>
-References: <200909141018.915641783@firstfloor.org>
-	<20090914214347.GA7990@merkur.ravnborg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 17:50:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=q7SvCqf0ZPcbWeVsS10TEaIKMrxQ0r9jOW5+RbgooV2KyViAzESKg4Vi+HaNmFQc6T
+         roNyOwmmIqj8hy9Idbe5EZ21PDyu+8ApUybLqHaikCpSfMlYPUL16QpEIXPx0w2t+55o
+         yDDNXhy08ge5n+qCvYezoNFMIZdiRkwR0ErAY=
+Date: Mon, 14 Sep 2009 23:50:13 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Reiserfs <reiserfs-devel@vger.kernel.org>
+Subject: Re: [PATCH 0/4] kill-the-bkl/reiserfs: fix some lock dependency
+	inversions
+Message-ID: <20090914215011.GM6045@nowhere>
+References: <1251167570-5233-1-git-send-email-fweisbec@gmail.com> <20090826201330.GA18761@orion> <20090914203749.GF6045@nowhere> <a4423d670909141433g18659aay6e177b1302e5b4a0@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670909141433g18659aay6e177b1302e5b4a0@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 23:43:47 +0200
-Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Mon, Sep 14, 2009 at 10:18:05PM +0200, Andi Kleen wrote:
-> > 
-> > I sent those some time ago, but nobody seems to have merged them. Sam?
+On Tue, Sep 15, 2009 at 01:33:42AM +0400, Alexander Beregalov wrote:
+> > Hi Alexander,
+> >
+> > It should be fixed now, still in the following tree:
 > 
-> Then I should have them queued somewhere...
-> Last months has been busy (again) so not much time for Linux stuff.
-> Will find time to prepare some of my pending stuff for merge -
-> hopefully before the weekend.
+> Hi!
+> Another one, similar:
+> It is v2.6.31-3123-g99bc470 plus your 805031859(kill-the-bkl/reiserfs:
+> panic in case of lock imbalance), UP.
 > 
-> Thanks for the resend - let's see if andrew or I merge them first.
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.31-03149-gdcc030a #1
+> -------------------------------------------------------
+> udevadm/716 is trying to acquire lock:
+>  (&mm->mmap_sem){++++++}, at: [<c107249a>] might_fault+0x4a/0xa0
+
+
+
+I hate this mm->mmap_sem....
+
+
+
 > 
+> but task is already holding lock:
+>  (sysfs_mutex){+.+.+.}, at: [<c10cb9aa>] sysfs_readdir+0x5a/0x200
+> 
+> which lock already depends on the new lock.
 
-Well, I'd prefer not to merge kbuild stuff as long as you're showing
-signs of life.
 
-I'll now hose these:
 
-gitignore-usr-initramfs_datacpiobz2-and-usr-initramfs_datacpiolzma.patch
-kernel-hacking-move-strip_asm_syms-from-general.patch
-kbuild-add-static-to-prototypes.patch
-ctags-usability-fix.patch
-checkincludespl-close-file-as-soon-as-were-done-with-it.patch
-checkincludespl-provide-usage-helper.patch
-checkincludespl-add-option-to-remove-duplicates-in-place.patch
-markup_oops-use-modinfo-to-avoid-confusion-with-underscored-module-names.patch
-kbuild-generate-modulesbuiltin.patch
-kbuild-rebuild-fix-for-makefilemodbuiltin.patch
-kconfig-cross_compile-option.patch
-kbuild-fix-cc1-options-check-to-ensure-we-do-not-use-fpic-when-compiling.patch
-gconfig-disable-typeahead-find-search-in-treeviews.patch
-kbuild-fix-ld-option-makefile-macro-to-really-work.patch
-kbuild-check-if-linker-supports-the-x-option.patch
-kbuild-echo-the-record_mcount-command.patch
-kbuild-fail-build-if-recordmcountpl-fails.patch
-kbuild-set-fconserve-stack-option-for-gcc-45.patch
+This is really weird. This is two externals locks from reiserfs.
+I guess I created this dependency somewhere, but how...
 
-at you :)
+Anyway, someone reported a similar bug with this tree some months ago,
+I've even met it once but could never be able to reproduce it anymore.
+
+I'll try to find out. Thanks!
+
