@@ -1,156 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZINNCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZINNFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754892AbZINNCa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 09:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754413AbZINNC3
+	id S1754831AbZINNFX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 09:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751632AbZINNFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 09:02:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:46947 "EHLO mx2.suse.de"
+	Mon, 14 Sep 2009 09:05:18 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47009 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754253AbZINNC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 09:02:27 -0400
-Date: Mon, 14 Sep 2009 15:02:28 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 2/7] Assign bdi in super_block
-Message-ID: <20090914130228.GG24075@duck.suse.cz>
-References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-3-git-send-email-jens.axboe@oracle.com>
+	id S1751233AbZINNFR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 09:05:17 -0400
+Message-ID: <4AAE3F86.8090804@suse.de>
+Date: Mon, 14 Sep 2009 22:05:10 +0900
+From: Tejun Heo <teheo@suse.de>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252920994-11141-3-git-send-email-jens.axboe@oracle.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Mark Lord <liml@rtr.ca>
+Cc: Chris Webb <chris@arachsys.com>, linux-scsi@vger.kernel.org,
+       Ric Wheeler <rwheeler@redhat.com>, Andrei Tanas <andrei@tanas.ca>,
+       NeilBrown <neilb@suse.de>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Mark Lord <mlord@pobox.com>
+Subject: Re: MD/RAID time out writing superblock
+References: <92cb16daad8278b0aa98125b9e1d057a@localhost> <4A95573A.6090404@redhat.com> <1571f45804875514762f60c0097171e6@localhost> <d086b110526f8bac2f562850dfc70b03@localhost> <4A970154.2020507@redhat.com> <4A9B8583.9050601@kernel.org> <4A9BBC4A.6070708@redhat.com> <4A9BC023.10903@kernel.org> <20090907114442.GG18831@arachsys.com> <20090907115927.GU8710@arachsys.com> <20090909120218.GB21829@arachsys.com> <4AADF3C4.5060004@kernel.org> <4AADF471.2020801@suse.de> <4AAE3B9A.2060306@rtr.ca>
+In-Reply-To: <4AAE3B9A.2060306@rtr.ca>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 14-09-09 11:36:29, Jens Axboe wrote:
-> We do this automatically in get_sb_bdev() from the set_bdev_super()
-> callback. Filesystems that have their own private backing_dev_info
-> must assign that in ->fill_super().
+Mark Lord wrote:
+> Tejun Heo wrote:
+> ..
+>> Oooh, another possibility is the above continuous IDENTIFY tries.
+>> Doing things like that generally isn't a good idea because vendors
+>> don't expect IDENTIFY to be mixed regularly with normal IOs and
+>> firmwares aren't tested against that.  Even smart commands sometimes
+>> cause problems.  So, finding out the thing which is obsessed with the
+>> identity of the drive and stopping it might help.
+> ..
 > 
-> Note that ->s_bdi assignment is required for proper writeback!
-> 
-> Acked-by: Christoph Hellwig <hch@infradead.org>
-> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-  Hmm, looking at this again, I'm not sure this will work for NFS. It seems
-to set mapping->backing_dev_info to its private backing dev info for
-regular files while it leaves it intact for other inodes (e.g.
-directories). I'm not sure why it does so but it seems its inodes end up on
-two different BDI lists and thus they wouldn't be synced properly. Trond,
-do I read the code properly?
-  Also we definitely need to set *some* bdi in nfs_get_sb as otherwise sync
-won't work for it.
+> Bullpucky.  That sort of thing, specifically with IDENTIFY,
+> has never been an issue.
 
-									Honza
-> ---
->  fs/btrfs/disk-io.c |    1 +
->  fs/fuse/inode.c    |    2 ++
->  fs/super.c         |    6 ++++++
->  fs/sync.c          |    9 ++++++++-
->  fs/ubifs/super.c   |    1 +
->  include/linux/fs.h |    1 +
->  6 files changed, 19 insertions(+), 1 deletions(-)
-> 
-> diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-> index 15831d5..8b81927 100644
-> --- a/fs/btrfs/disk-io.c
-> +++ b/fs/btrfs/disk-io.c
-> @@ -1600,6 +1600,7 @@ struct btrfs_root *open_ctree(struct super_block *sb,
->  
->  	sb->s_blocksize = 4096;
->  	sb->s_blocksize_bits = blksize_bits(4096);
-> +	sb->s_bdi = &fs_info->bdi;
->  
->  	/*
->  	 * we set the i_size on the btree inode to the max possible int.
-> diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-> index 4567db6..e5dbecd 100644
-> --- a/fs/fuse/inode.c
-> +++ b/fs/fuse/inode.c
-> @@ -894,6 +894,8 @@ static int fuse_fill_super(struct super_block *sb, void *data, int silent)
->  	if (err)
->  		goto err_put_conn;
->  
-> +	sb->s_bdi = &fc->bdi;
-> +
->  	/* Handle umasking inside the fuse code */
->  	if (sb->s_flags & MS_POSIXACL)
->  		fc->dont_mask = 1;
-> diff --git a/fs/super.c b/fs/super.c
-> index 9cda337..b03fea8 100644
-> --- a/fs/super.c
-> +++ b/fs/super.c
-> @@ -707,6 +707,12 @@ static int set_bdev_super(struct super_block *s, void *data)
->  {
->  	s->s_bdev = data;
->  	s->s_dev = s->s_bdev->bd_dev;
-> +
-> +	/*
-> +	 * We set the bdi here to the queue backing, file systems can
-> +	 * overwrite this in ->fill_super()
-> +	 */
-> +	s->s_bdi = &bdev_get_queue(s->s_bdev)->backing_dev_info;
->  	return 0;
->  }
->  
-> diff --git a/fs/sync.c b/fs/sync.c
-> index 103cc7f..8582c34 100644
-> --- a/fs/sync.c
-> +++ b/fs/sync.c
-> @@ -27,6 +27,13 @@
->   */
->  static int __sync_filesystem(struct super_block *sb, int wait)
->  {
-> +	/*
-> +	 * This should be safe, as we require bdi backing to actually
-> +	 * write out data in the first place
-> +	 */
-> +	if (!sb->s_bdi)
-> +		return 0;
-> +
->  	/* Avoid doing twice syncing and cache pruning for quota sync */
->  	if (!wait) {
->  		writeout_quota_sb(sb, -1);
-> @@ -101,7 +108,7 @@ restart:
->  		spin_unlock(&sb_lock);
->  
->  		down_read(&sb->s_umount);
-> -		if (!(sb->s_flags & MS_RDONLY) && sb->s_root)
-> +		if (!(sb->s_flags & MS_RDONLY) && sb->s_root && sb->s_bdi)
->  			__sync_filesystem(sb, wait);
->  		up_read(&sb->s_umount);
->  
-> diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-> index 51763aa..c4af069 100644
-> --- a/fs/ubifs/super.c
-> +++ b/fs/ubifs/super.c
-> @@ -1980,6 +1980,7 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
->  	if (err)
->  		goto out_bdi;
->  
-> +	sb->s_bdi = &c->bdi;
->  	sb->s_fs_info = c;
->  	sb->s_magic = UBIFS_SUPER_MAGIC;
->  	sb->s_blocksize = UBIFS_BLOCK_SIZE;
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index a79f483..f998adc 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -1343,6 +1343,7 @@ struct super_block {
->  	int			s_nr_dentry_unused;	/* # of dentry on lru */
->  
->  	struct block_device	*s_bdev;
-> +	struct backing_dev_info *s_bdi;
->  	struct mtd_info		*s_mtd;
->  	struct list_head	s_instances;
->  	struct quota_info	s_dquot;	/* Diskquota specific options */
-> -- 
-> 1.6.4.1.207.g68ea
-> 
+With SMART it has.  I wouldn't be too surprised if some new firmware
+chokes on repeated IDENTIFY mixed with stream of NCQ commands.  It's
+just not something people (including vendors) do regularly.
+
+> I wonder if the IDENTIFY is actually coming from libata EH
+> after something else failed ?
+
+In that case, libata-eh would print "ataP.DD: failed to IDENTIFY
+(blah, err_mask=0x%x\n" instead of the full TF dump.
+
+Thanks.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+tejun
