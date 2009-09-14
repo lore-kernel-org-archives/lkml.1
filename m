@@ -1,93 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754792AbZINH5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754869AbZINIDR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754792AbZINH5a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 03:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752308AbZINH53
+	id S1754869AbZINIDR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 04:03:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750749AbZINIDQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 03:57:29 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:2852 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbZINH53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 03:57:29 -0400
-Subject: Re: GFS2: Pre-pull patch posting
-From: Steven Whitehouse <swhiteho@redhat.com>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: linux-kernel@vger.kernel.org, cluster-devel@redhat.com
-In-Reply-To: <1252593990.30578.180.camel@desktop>
-References: <1252582087-10007-1-git-send-email-swhiteho@redhat.com>
-	 <1252593990.30578.180.camel@desktop>
-Content-Type: text/plain
-Organization: Red Hat (UK) Ltd (Registered in England and Wales, No.
- 3798903) Registered office: Red Hat UK Ltd, Amberley Place, 107-111 Peascod
- Street, Windsor, Berkshire, SL4 ITE
-Date: Mon, 14 Sep 2009 08:57:28 +0100
-Message-Id: <1252915048.6052.249.camel@localhost.localdomain>
-Mime-Version: 1.0
+	Mon, 14 Sep 2009 04:03:16 -0400
+Received: from cdptpa-omtalb.mail.rr.com ([75.180.132.123]:58765 "EHLO
+	cdptpa-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750696AbZINIDP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 04:03:15 -0400
+Message-ID: <4AADF8C5.2000205@cfl.rr.com>
+Date: Mon, 14 Sep 2009 04:03:17 -0400
+From: Mark Hounschell <dmarkh@cfl.rr.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Grant Grundler <grundler@parisc-linux.org>
+CC: Mark Hounschell <markh@compro.net>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: problems doing direct dma from a pci device to pci-e device
+References: <4AAA5B1F.3020103@compro.net> <20090911154714.70a94454@lxorguk.ukuu.org.uk> <4AAA6BE7.8040306@compro.net> <4AAAAD30.4040704@compro.net> <20090914053610.GA5970@lackof.org>
+In-Reply-To: <20090914053610.GA5970@lackof.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Grant Grundler wrote:
+> On Fri, Sep 11, 2009 at 04:04:00PM -0400, Mark Hounschell wrote:
+>> A quick readup on the IOMMU makes me think that if it does use one, that
+>> could certainly cause my problem. I'm using bus addresses plugged into
+>> page tables that live in the gpiohsd card obtained from virt2bus.
+> 
+> If you haven't yet, take a look at Documentation/DMA-API.txt and
+> DMA-mapping.txt . virt2bus has been deprecated for DMA since 2.4 releases.
+> 
+> grant
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-On Thu, 2009-09-10 at 07:46 -0700, Daniel Walker wrote:
-> On Thu, 2009-09-10 at 12:27 +0100, Steven Whitehouse wrote:
-> > As merge time is approaching, here is the current content of the
-> > GFS2 -nmw git tree. I'm not expecting to take any more patches
-> > now for the current merge window unless any last minute bugs
-> > are discovered.
-> > 
-> > There is not a huge amount new this time. Some extra context for
-> > uevent messages, better error handling during block allocation,
-> > and a clean up of extended attribute support. There is still more
-> > to do on the extended attribute side of things, but this is a good
-> > start I think.
-> > 
-> > There are a few bug fixes as well. Once these patches are merged
-> > I'm intending to start off the next -nmw tree with a patch to
-> > remove some of the (now unused) sysfs files as per the message
-> > on cluster-devel a few weeks back.
-> 
-> This patch set has a couple of checkpatch issues..
-> 
-> Patch 3,
-> 
-> ERROR: code indent should use tabs where possible
-> #83: FILE: fs/gfs2/rgrp.c:1466:
-> +^I        (unsigned long long)rgd->rd_addr);$
-> 
-> 
-Now fixed in the latest -nmw tree.
+It still gives me a bus address just fine. Actually when the gpiohsd is dmaing
+into another card I don't use it. I misspoke. The VMIC cards library API gives
+me its memory's bus address.
 
-> Patch 11,
-> 
-> ERROR: trailing whitespace
-> #741: FILE: fs/gfs2/eattr.c:565:
-> +^Iif (size) $
-> 
-> and patch 12,
-> 
-> ERROR: trailing whitespace
-> #2349: FILE: fs/gfs2/xattr.c:565:
-> +^Iif (size) $
-> 
-This is the same line of code. There is no need to report it twice.
-
-> ERROR: space required after that ',' (ctx:VxV)
-> #2833: FILE: fs/gfs2/xattr.c:1049:
-> +       return ea_remove_unstuffed(ip, el->el_bh, el->el_ea, el->el_prev,0);
-> 
-> ERROR: code indent should use tabs where possible
-> #3370: FILE: fs/gfs2/xattr.h:22:
-> +                                  (sizeof(__be64) * (ea)->ea_num_ptrs)), 8)$
-> 
-> Could you correct these prior to you pull request?
-> 
-> Daniel
-> 
-The above two are both part of the context rather than something I've
-added. I've fixed them anyway though,
-
-Steve.
-
-
+Mark
