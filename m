@@ -1,151 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753000AbZINPUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZINPVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753000AbZINPUM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 11:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751276AbZINPUL
+	id S1755416AbZINPVW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 11:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZINPVV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 11:20:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40114 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750854AbZINPUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 11:20:10 -0400
-Date: Mon, 14 Sep 2009 17:19:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, John Stultz <johnstul@us.ibm.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Galbraith <efault@gmx.de>,
-       Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org
-Subject: Re: [crash, bisected] Re: clocksource: Resolve cpu hotplug dead
-	lock with TSC unstable
-Message-ID: <20090914151958.GA17791@elte.hu>
-References: <20090909122006.GA18599@kernel.dk> <1252565738.7205.29.camel@laptop> <20090910065856.GL18599@kernel.dk> <20090910073317.GP18599@kernel.dk> <20090910074902.GA10634@elte.hu> <20090910075357.GT18599@kernel.dk> <20090910100214.GB21314@elte.hu> <20090910180049.GA10579@elte.hu> <20090911073747.GA8209@elte.hu> <20090911153305.3fe9a361@skybase>
+	Mon, 14 Sep 2009 11:21:21 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:41060 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753940AbZINPVU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 11:21:20 -0400
+Message-ID: <4AAE5F6E.3030008@gmail.com>
+Date: Mon, 14 Sep 2009 17:21:18 +0200
+From: Eric Dumazet <eric.dumazet@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911153305.3fe9a361@skybase>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Stephan von Krawczynski <skraw@ithnet.com>
+CC: linux-kernel@vger.kernel.org, davem@davemloft.net,
+       Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: ipv4 regression in 2.6.31 ?
+References: <20090914150935.cc895a3c.skraw@ithnet.com>	<4AAE4BAF.2010406@gmail.com> <20090914171001.47371b3d.skraw@ithnet.com>
+In-Reply-To: <20090914171001.47371b3d.skraw@ithnet.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 14 Sep 2009 17:21:18 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Martin Schwidefsky <schwidefsky@de.ibm.com> wrote:
-
-> On Fri, 11 Sep 2009 09:37:47 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
+Stephan von Krawczynski a écrit :
+> On Mon, 14 Sep 2009 15:57:03 +0200
+> Eric Dumazet <eric.dumazet@gmail.com> wrote:
 > 
-> > 
-> > * Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > 
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > 
-> > > > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > > 
-> > > > > I went to try -tip btw, but it crashes on boot. Here's the 
-> > > > > backtrace, typed manually, it's crashing in 
-> > > > > queue_work_on+0x28/0x60.
-> > > > > 
-> > > > > Call Trace:
-> > > > >         queue_work
-> > > > >         schedule_work
-> > > > >         clocksource_mark_unstable
-> > > > >         mark_tsc_unstable
-> > > > >         check_tsc_sync_source
-> > > > >         native_cpu_up
-> > > > >         relay_hotcpu_callback
-> > > > >         do_forK_idle
-> > > > >         _cpu_up
-> > > > >         cpu_up
-> > > > >         kernel_init
-> > > > >         kernel_thread_helper
-> > > > 
-> > > > hm, that looks like an old bug i fixed days ago via:
-> > > > 
-> > > >   00a3273: Revert "x86: Make tsc=reliable override boot time stability checks"
-> > > > 
-> > > > Have you tested tip:master - do you still know which sha1?
-> > > 
-> > > Ok, i reproduced it on a testbox and bisected it, the crash is 
-> > > caused by:
-> > > 
-> > >  7285dd7fd375763bfb8ab1ac9cf3f1206f503c16 is first bad commit
-> > >  commit 7285dd7fd375763bfb8ab1ac9cf3f1206f503c16
-> > >  Author: Thomas Gleixner <tglx@linutronix.de>
-> > >  Date:   Fri Aug 28 20:25:24 2009 +0200
-> > > 
-> > >     clocksource: Resolve cpu hotplug dead lock with TSC unstable
-> > >     
-> > >     Martin Schwidefsky analyzed it:
-> > > 
-> > > I've reverted it in tip/master for now.
-> > 
-> > and that uncovers the circular locking bug that this commit was 
-> > supposed to fix ...
-> > 
-> > Martin?
+>> Stephan von Krawczynski a écrit :
+>>> Hello all,
+>>>
+>>> today we experienced some sort of regression in 2.6.31 ipv4 implementation, or
+>>> at least some incompatibility with former 2.6.30.X kernels.
+>>>
+>>> We have the following situation:
+>>>
+>>>                                        ---------- vlan1@eth0 192.168.2.1/24
+>>>                                       /
+>>> host A 192.168.1.1/24 eth0  -------<router>            host B
+>>>                                       \
+>>>                                        ---------- eth1 192.168.3.1/24
+>>>
+>>>
+>>> Now, if you route 192.168.1.0/24 via interface vlan1@eth0 on host B and let
+>>> host A ping 192.168.2.1 everything works. But if you route 192.168.1.0/24 via
+>>> interface eth1 on host B and let host A ping 192.168.2.1 you get no reply.
+>>> With tcpdump we see the icmp packets arrive at vlan1@eth0, but no icmp echo
+>>> reply being generated neither on vlan1 nor eth1.
+>>> Kernels 2.6.30.X and below do not show this behaviour.
+>>> Is this intended? Do we need to reconfigure something to restore the old
+>>> behaviour?
+>>>
+>> Asymetric routing ?
+>>
+>> Check your rp_filter settings
+>>
+>> grep . `find /proc/sys/net -name rp_filter`
+>>
+>> rp_filter - INTEGER
+>>         0 - No source validation.
+>>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
+>>             Each incoming packet is tested against the FIB and if the interface
+>>             is not the best reverse path the packet check will fail.
+>>             By default failed packets are discarded.
+>>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
+>>             Each incoming packet's source address is also tested against the FIB
+>>             and if the source address is not reachable via any interface
+>>             the packet check will fail.
+>>
+>>         Current recommended practice in RFC3704 is to enable strict mode
+>>         to prevent IP spoofing from DDos attacks. If using asymmetric routing
+>>         or other complicated routing, then loose mode is recommended.
+>>
+>>         conf/all/rp_filter must also be set to non-zero to do source validation
+>>         on the interface
+>>
+>>         Default value is 0. Note that some distributions enable it
+>>         in startup scripts.
 > 
-> This patch should fix the obvious problem that the watchdog_work
-> structure is not yet initialized if the clocksource watchdog is not
-> running yet.
-> --
-> Subject: [PATCH] clocksource: statically initialize watchdog workqueue
+> Problem is this:
+> Kernel 2.6.30.X and below work flawlessly in this setup, only kernel 2.6.31
+> acts different. Is this an intended change in policy?
 > 
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> The watchdog timer is started after the watchdog clocksource and at least
-> one watched clocksource have been registered. The clocksource work element
-> watchdog_work is initialized just before the clocksource timer is started.
-> This is too late for the clocksource_mark_unstable call from native_cpu_up.
-> To fix this use a static initializer for watchdog_work.
-> 
-> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> ---
->  kernel/time/clocksource.c |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/kernel/time/clocksource.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/time/clocksource.c
-> +++ linux-2.6/kernel/time/clocksource.c
-> @@ -123,10 +123,12 @@ static DEFINE_MUTEX(clocksource_mutex);
->  static char override_name[32];
->  
->  #ifdef CONFIG_CLOCKSOURCE_WATCHDOG
-> +static void clocksource_watchdog_work(struct work_struct *work);
-> +
->  static LIST_HEAD(watchdog_list);
->  static struct clocksource *watchdog;
->  static struct timer_list watchdog_timer;
-> -static struct work_struct watchdog_work;
-> +static DECLARE_WORK(watchdog_work, clocksource_watchdog_work);
->  static DEFINE_SPINLOCK(watchdog_lock);
->  static cycle_t watchdog_last;
->  static int watchdog_running;
-> @@ -230,7 +232,6 @@ static inline void clocksource_start_wat
->  {
->  	if (watchdog_running || !watchdog || list_empty(&watchdog_list))
->  		return;
-> -	INIT_WORK(&watchdog_work, clocksource_watchdog_work);
->  	init_timer(&watchdog_timer);
->  	watchdog_timer.function = clocksource_watchdog;
->  	watchdog_last = watchdog->read(watchdog);
 
-Now another box crashes during bootup. Reverting these two:
+Here, it only depends on rp_filter settings, kernel 2.6.30 or 2.6.31
 
- f79e025: clocksource: Resolve cpu hotplug dead lock with TSC unstable, fix crash
- 7285dd7: clocksource: Resolve cpu hotplug dead lock with TSC unstable
+Please give your settings for further investigations, for all hosts involved.
 
-allows me to boot it.
-
-plain 32-bit defconfig.
-
-	Ingo
