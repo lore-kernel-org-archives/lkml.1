@@ -1,108 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbZINRnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZINRqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755359AbZINRnu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 13:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbZINRnr
+	id S1755364AbZINRqA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 13:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZINRpy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 13:43:47 -0400
-Received: from smtp.gentoo.org ([140.211.166.183]:40284 "EHLO smtp.gentoo.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752535AbZINRnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 13:43:47 -0400
-From: Mike Frysinger <vapier@gentoo.org>
-To: linux-bluetooth@vger.kernel.org, Marcel Holtmann <marcel@holtmann.org>
-Cc: linux-kernel@vger.kernel.org,
-       Michael Hennerich <michael.hennerich@analog.com>
-Subject: [PATCH v2] [Bluetooth] redo checks in IRQ handler for shared IRQ support
-Date: Mon, 14 Sep 2009 13:43:49 -0400
-Message-Id: <1252950229-9629-1-git-send-email-vapier@gentoo.org>
-X-Mailer: git-send-email 1.6.4.2
-In-Reply-To: <1252905504-26666-1-git-send-email-vapier@gentoo.org>
-References: <1252905504-26666-1-git-send-email-vapier@gentoo.org>
+	Mon, 14 Sep 2009 13:45:54 -0400
+Received: from e24smtp05.br.ibm.com ([32.104.18.26]:46890 "EHLO
+	e24smtp05.br.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751061AbZINRpy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 13:45:54 -0400
+Subject: Re: [PATCH] TPM: Fixup pcrs sysfs file
+From: Rajiv Andrade <srajiv@linux.vnet.ibm.com>
+To: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>
+Cc: James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       tpmdd-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Debora Velarde <debora@linux.vnet.ibm.com>,
+       Marcel Selhorst <m.selhorst@sirrix.com>,
+       Jan Beulich <jbeulich@novell.com>
+In-Reply-To: <20090914062520.GB23467@obsidianresearch.com>
+References: <20090902031613.GA11464@obsidianresearch.com>
+	 <20090903165219.2f79cdc1.akpm@linux-foundation.org>
+	 <20090904012818.GU4973@obsidianresearch.com>
+	 <alpine.LRH.2.00.0909141236020.28766@tundra.namei.org>
+	 <20090914062520.GB23467@obsidianresearch.com>
+Content-Type: text/plain
+Date: Mon, 14 Sep 2009 14:45:28 -0300
+Message-Id: <1252950328.9372.154.camel@blackbox>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.2 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit ac019360fe3 changed the irq handler logic to BUG_ON rather than
-returning IRQ_NONE when the incoming argument is invalid.  While this
-works in most cases, it doesn't work when the IRQ is shared with other
-devices (or when DEBUG_SHIRQ is enabled).
+On Mon, 2009-09-14 at 00:25 -0600, Jason Gunthorpe wrote:
+> On Mon, Sep 14, 2009 at 12:36:39PM +1000, James Morris wrote:
+> > On Thu, 3 Sep 2009, Jason Gunthorpe wrote:
+> 
+> > > > That sounds like a fairly serious bug, and this looks like a 2.6.31
+> > > > patch.
+> > 
+> > Any comments from the maintainers on this patch?
+> 
 
-So revert the previous change and replace the warning message with a
-comment explaining that we want this behavior.
+Sorry for the delay, just reviewed the patches and Jason is right,
+Jason's and Andrew's final work (last patch) is great.
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Mike Frysinger <vapier@gentoo.org>
----
-v2
-	- tweak commit log to not use git-revert
+> FWIW, I didn't mention in the patch emails, but all the patches I sent
+> fix regressions that have been introduced in the past couple years by
+> clean up patches that never tested the code paths they alter.
+> 
 
- drivers/bluetooth/bluecard_cs.c |    4 +++-
- drivers/bluetooth/bt3c_cs.c     |    4 +++-
- drivers/bluetooth/btuart_cs.c   |    4 +++-
- drivers/bluetooth/dtl1_cs.c     |    4 +++-
- 4 files changed, 12 insertions(+), 4 deletions(-)
+Hold on, I tested these functions before when submitting them and they
+worked fine, and, I couldn't figure it out why yet (only guesses), they
+still work for me here, probably due the mishandling of the be32
+formatted value when calling transmit_cmd().
 
-diff --git a/drivers/bluetooth/bluecard_cs.c b/drivers/bluetooth/bluecard_cs.c
-index b0e569b..a3a8f4d 100644
---- a/drivers/bluetooth/bluecard_cs.c
-+++ b/drivers/bluetooth/bluecard_cs.c
-@@ -503,7 +503,9 @@ static irqreturn_t bluecard_interrupt(int irq, void *dev_inst)
- 	unsigned int iobase;
- 	unsigned char reg;
- 
--	BUG_ON(!info->hdev);
-+	if (!info || !info->hdev)
-+		/* our irq handler is shared */
-+		return IRQ_NONE;
- 
- 	if (!test_bit(CARD_READY, &(info->hw_state)))
- 		return IRQ_HANDLED;
-diff --git a/drivers/bluetooth/bt3c_cs.c b/drivers/bluetooth/bt3c_cs.c
-index d58e22b..9a7578e 100644
---- a/drivers/bluetooth/bt3c_cs.c
-+++ b/drivers/bluetooth/bt3c_cs.c
-@@ -345,7 +345,9 @@ static irqreturn_t bt3c_interrupt(int irq, void *dev_inst)
- 	int iir;
- 	irqreturn_t r = IRQ_NONE;
- 
--	BUG_ON(!info->hdev);
-+	if (!info || !info->hdev)
-+		/* our irq handler is shared */
-+		return IRQ_NONE;
- 
- 	iobase = info->p_dev->io.BasePort1;
- 
-diff --git a/drivers/bluetooth/btuart_cs.c b/drivers/bluetooth/btuart_cs.c
-index efd689a..cd9cb6c 100644
---- a/drivers/bluetooth/btuart_cs.c
-+++ b/drivers/bluetooth/btuart_cs.c
-@@ -295,7 +295,9 @@ static irqreturn_t btuart_interrupt(int irq, void *dev_inst)
- 	int iir, lsr;
- 	irqreturn_t r = IRQ_NONE;
- 
--	BUG_ON(!info->hdev);
-+	if (!info || !info->hdev)
-+		/* our irq handler is shared */
-+		return IRQ_NONE;
- 
- 	iobase = info->p_dev->io.BasePort1;
- 
-diff --git a/drivers/bluetooth/dtl1_cs.c b/drivers/bluetooth/dtl1_cs.c
-index 2cc7b32..588678a 100644
---- a/drivers/bluetooth/dtl1_cs.c
-+++ b/drivers/bluetooth/dtl1_cs.c
-@@ -299,7 +299,9 @@ static irqreturn_t dtl1_interrupt(int irq, void *dev_inst)
- 	int iir, lsr;
- 	irqreturn_t r = IRQ_NONE;
- 
--	BUG_ON(!info->hdev);
-+	if (!info || !info->hdev)
-+		/* our irq handler is shared */
-+		return IRQ_NONE;
- 
- 	iobase = info->p_dev->io.BasePort1;
- 
--- 
-1.6.4.2
+
+Thanks,
+Rajiv
 
