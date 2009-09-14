@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755248AbZINMUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755413AbZINMUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755248AbZINMUT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 08:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753314AbZINMUT
+	id S1755413AbZINMUd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 08:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755305AbZINMUb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 08:20:19 -0400
-Received: from mail-yw0-f174.google.com ([209.85.211.174]:56200 "EHLO
-	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752971AbZINMUS (ORCPT
+	Mon, 14 Sep 2009 08:20:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57268 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755284AbZINMUa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 08:20:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=DHwKh+Viu4z94IxwrOci4VMhe7MMom7LcPchmzEEFhJAFIDRXO/KanWUFrK7vg1HRz
-         LqE/0LdJu86j8BMufgf7niBAt8wdZEKJNsmKK4Wv6knZvczKrKS3TSAowLryCDG4jx1z
-         /iR9N7B/WPNBirmje8yTRyrnILcWSHn8oDLaA=
-From: Yong Zhang <yong.zhang0@gmail.com>
-To: a.p.zijlstra@chello.nl, mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix potential NULL derference of doms_cur
-Date: Mon, 14 Sep 2009 20:20:16 +0800
-Message-Id: <1252930816-7672-1-git-send-email-yong.zhang0@gmail.com>
-X-Mailer: git-send-email 1.6.0.4
+	Mon, 14 Sep 2009 08:20:30 -0400
+Subject: Re: [RFC PATCH 0/2] tracing - signal tracer, support multiple pids
+ in set_pid_ftrace
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: jolsa@redhat.com
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org
+In-Reply-To: <1252923251-6735-1-git-send-email-jolsa@redhat.com>
+References: <1252923251-6735-1-git-send-email-jolsa@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Mon, 14 Sep 2009 08:20:33 -0400
+Message-Id: <1252930833.20020.5.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If CONFIG_CPUMASK_OFFSTACK is enabled but doms_cur alloc failed
-in arch_init_sched_domains(), doms_cur will move back to
-fallback_doms. But this time, fallback_doms has not been
-initialized yet.
+On Mon, 2009-09-14 at 12:14 +0200, jolsa@redhat.com wrote:
+> I was debugging some ptrace applications and got to the idea of 
+> tracing signals - signal tracer. There's probably possibility to 
+> trace more info than just signal delivery info (like ignored 
+> signals deliveries, queue status...).
+> 
+> While doing this I realized it might be worth to have ability to trace 
+> more independent processes via set_pid_ftrace file.
+> 
+> Althought I'm sending this as RFC, attached patches work for me. 
+> I'm open to any suggestions/comments/ideas.
+> 
+> 1/2 - signal trace
 
-Signed-off-by: Yong Zhang <yong.zhang0@gmail.com>
----
- kernel/sched.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Don't make it a plugin. Just put the trace points into the signal
+handler, and then you enable them via the event tracer.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index e27a536..6dc3e06 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9329,6 +9329,7 @@ void __init sched_init_smp(void)
- 	cpumask_var_t non_isolated_cpus;
- 
- 	alloc_cpumask_var(&non_isolated_cpus, GFP_KERNEL);
-+	alloc_cpumask_var(&fallback_doms, GFP_KERNEL);
- 
- #if defined(CONFIG_NUMA)
- 	sched_group_nodes_bycpu = kzalloc(nr_cpu_ids * sizeof(void **),
-@@ -9360,7 +9361,6 @@ void __init sched_init_smp(void)
- 	sched_init_granularity();
- 	free_cpumask_var(non_isolated_cpus);
- 
--	alloc_cpumask_var(&fallback_doms, GFP_KERNEL);
- 	init_sched_rt_class();
- }
- #else
--- 
-1.6.0.4
+> 2/2 - multiple pids support for set_pid_ftrace file
+
+I took a quick look at this patch and I so far like it. But this will
+not help you with events, but filtering will. That is:
+
+ # echo "common_pid == 1234" > /debug/tracing/events/signals/signal/format
+
+You can do multiple pids with "common_pid == 1234 || common_pid == 1235"
+
+-- Steve
+
 
