@@ -1,98 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753040AbZIOLTD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbZIOLTg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753040AbZIOLTD (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 07:19:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752891AbZIOLS5
+	id S1753060AbZIOLTg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 07:19:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZIOLTc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 07:18:57 -0400
-Received: from mga11.intel.com ([192.55.52.93]:7013 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752880AbZIOLS5 convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 07:19:32 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:50429 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752764AbZIOLTb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 07:18:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
-   d="scan'208";a="493584722"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: "mingo@elte.hu" <mingo@elte.hu>, "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Tue, 15 Sep 2009 12:18:23 +0100
-Subject: RE: [patch, resend] x86, perf_counter, bts: optimize BTS overflow
- handling
-Thread-Topic: [patch, resend] x86, perf_counter, bts: optimize BTS overflow
- handling
-Thread-Index: Aco19Wx/EZ1pJNMYR3Oa6lH8UQ3UUgAABVoQ
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77EC47B0E9E@irsmsx504.ger.corp.intel.com>
-References: <20090915130023.A16204@sedona.ch.intel.com>
- <1253013145.5506.50.camel@laptop>
-In-Reply-To: <1253013145.5506.50.camel@laptop>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Tue, 15 Sep 2009 07:19:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=VXTAxxI9yxhblebnsN5qTCuvIQpGVH/bES44RYNWCxKUfrhgWr9ya2viUUH4u13A+5
+         FonOEW4o0ltP2087nYT0rrWzdlHiG+o9GTRVlPc0rgfVs2R5ckqdZRPzwpZKRx4LtCQL
+         PFuVgzBHYJPJPNA9YPihvxJREMA57H+u4rkec=
 MIME-Version: 1.0
+In-Reply-To: <20090915062050.GB10232@core.coreip.homeip.net>
+References: <1252966719-27557-1-git-send-email-vapier@gentoo.org> 
+	<20090915062050.GB10232@core.coreip.homeip.net>
+From: Mike Frysinger <vapier.adi@gmail.com>
+Date: Tue, 15 Sep 2009 07:19:14 -0400
+Message-ID: <8bd0f97a0909150419p1048bfe9j243fa30a0581b198@mail.gmail.com>
+Subject: Re: [PATCH] input/keyboard: add ADP5588 QWERTY I2C Keyboard Input 
+	device driver
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Peter Zijlstra [mailto:a.p.zijlstra@chello.nl]
->Sent: Tuesday, September 15, 2009 1:12 PM
-
-
->> Restructure perf_counter sampling into sample creation and sample
->> output.
->> Prepare a single reference sample for BTS sampling and update the from
->> and to address fields when draining the BTS buffer.
->> Drain the entire BTS buffer between a single perf_output_begin() /
->> perf_output_end() pair.
+On Tue, Sep 15, 2009 at 02:20, Dmitry Torokhov wrote:
+> On Mon, Sep 14, 2009 at 06:18:39PM -0400, Mike Frysinger wrote:
+>> +static int __devexit adp5588_remove(struct i2c_client *client)
+>> +{
+>> +     struct adp5588_kpad *kpad = dev_get_drvdata(&client->dev);
+>> +
+>> +     adp5588_write(client, CFG, 0);
+>> +     free_irq(client->irq, kpad);
 >
->Generally looks very nice, one thing though, why did you take regs out
->of perf_sample_data, now you get to pass around one extra param..
+> cancel_work_sync() is missing. Could you try the updated version below?
 
+i dont think i have any adp5588 hardware.  Robin: do we have any in
+Norwood ?  otherwise, it'll have to wait for Michael to get back to
+double check.
 
-That is to make perf_sample_data describe the sample directly.
+> BTW, maybe you shoudl convert to threaded IRQs here?
 
-The regs are used to create the sample; they're not needed once
-the sample has been created.
-
-
->> CC: Peter Zijlstra <a.p.zijlstra@chello.nl>
->> Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
->> ---
->>  arch/x86/kernel/cpu/perf_counter.c |   60 	37 +	23 -	0 !
->>  include/linux/perf_counter.h       |   68 	64 +	4 -	0 !
->>  kernel/perf_counter.c              |  306 	161 +	145 -	0 !
->>  3 files changed, 262 insertions(+), 172 deletions(-)
->
->What is that diffstat thing? I always get things like:
->
-> kernel/sched.c |    4 ++--
-> 1 files changed, 2 insertions(+), 2 deletions(-)
->
-
-I'm using QUILT_DIFFSTAT_OPTS="-f0".
-
-regards,
-markus.
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+yes, after your suggestion for the previous driver, we've been looking
+at all our input drivers to convert to threaded IRQs.  do we need to
+convert all of them before acceptance, or can we merge now and post an
+updated patch after ?
+-mike
