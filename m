@@ -1,82 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755104AbZIOSZ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbZIOS0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755104AbZIOSZ3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 14:25:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbZIOSZZ
+	id S1754460AbZIOS0Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 14:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZIOS0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 14:25:25 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:23937 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750911AbZIOSZY convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 14:26:08 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:44402 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754802AbZIOS0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 14:25:24 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 15 Sep 2009 14:26:06 -0400
+Date: Tue, 15 Sep 2009 11:26:09 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Greg KH <greg@kroah.com>
+Cc: James Bottomley <James.Bottomley@suse.de>,
+       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Giridhar Malavali <giridhar.malavali@qlogic.com>,
+       Ravi Anand <ravi.anand@qlogic.com>,
+       Lalit Chandivade <lalit.chandivade@qlogic.com>
+Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
+ CONFIG_MOUDLES=n.
+Message-ID: <20090915182608.GH46353@plap4-2.local>
+References: <20090912000742.GB12098@plap4-2.local>
+ <20090912001752.GC12098@plap4-2.local>
+ <20090912003808.GD12098@plap4-2.local>
+ <20090912005446.GA11691@kroah.com>
+ <20090912025623.GA14824@plap4-2.local>
+ <20090912043333.GA12349@kroah.com>
+ <1252765807.4238.74.camel@mulgrave.site>
+ <20090915153312.GB22774@kroah.com>
+ <1253029631.29947.156.camel@mulgrave.site>
+ <20090915165708.GA18817@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] cleanup legacy console_print function
-Date: Tue, 15 Sep 2009 11:25:00 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501F10104@exchange.ZeugmaSystems.local>
-In-Reply-To: <57C9024A16AD2D4C97DC78E552063EA3E05DBC6E@orsmsx505.amr.corp.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] cleanup legacy console_print function
-Thread-Index: Aco2LoGlxTtn2kTfTw6+AaWuvqT5ZgAABkswAAA3iUAAAIM1EA==
-References: <DDFD17CC94A9BD49A82147DDF7D545C501F0FF17@exchange.ZeugmaSystems.local> <200909151127.10697.bjorn.helgaas@hp.com> <DDFD17CC94A9BD49A82147DDF7D545C501F100E4@exchange.ZeugmaSystems.local> <12c511ca0909151100ne3841b7l7af5bffb977d6d9b@mail.gmail.com> <DDFD17CC94A9BD49A82147DDF7D545C501F100EB@exchange.ZeugmaSystems.local> <57C9024A16AD2D4C97DC78E552063EA3E05DBC6E@orsmsx505.amr.corp.intel.com>
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, <linux-ia64@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915165708.GA18817@kroah.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 15 Sep 2009 18:25:36.0196 (UTC) FILETIME=[EB453840:01CA3631]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On ia64 (and I think most other assemblers) it is not
->necessary to provide any kind of "extern" declaration
->before using external symbols.
+On Tue, 15 Sep 2009, Greg KH wrote:
 
+> On Tue, Sep 15, 2009 at 10:47:11AM -0500, James Bottomley wrote:
+> > On Tue, 2009-09-15 at 08:33 -0700, Greg KH wrote:
+> > > On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
+> > > > On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
+> > > > > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
+> > > > > > On Fri, 11 Sep 2009, Greg KH wrote:
+> > > > > > 
+> > > > > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
+> > > > > > > > Randy Dunlap noted:
+> > > > > > > > 
+> > > > > > > >   when CONFIG_MODULES=n:
+> > > > > > > > 
+> > > > > > > > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+> > > > > > > > 
+> > > > > > > >   in
+> > > > > > > > 
+> > > > > > > > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> > > > > > > > 		KOBJ_CHANGE, envp);
+> > > > > > > > 
+> > > > > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
+> > > > > > > 
+> > > > > > > Um, why?  What are you trying to do here?  kobject change should not be
+> > > > > > > for a device, or a "normal" kobject.
+> > > > > > > 
+> > > > > > > What do you expect userspace to do with this?  Where have you documented
+> > > > > > > it?
+> > > > > > 
+> > > > > > The purpose was described here:
+> > > > > > 
+> > > > > > 	http://article.gmane.org/gmane.linux.scsi/54155
+> > > > > > 
+> > > > > > Basically we'd like to instruct user-space to retrieve a blob of data
+> > > > > > automatically.
+> > > > > 
+> > > > > Hm, like a firmware object perhaps?
+> > > > > 
+> > > > > > Original implementation used the kboject hanging off
+> > > > > > the module which does not exist when CONFIG_MODULES=n.  It was
+> > > > > > suggested that perhaps an alternative would be to use 'struct device'
+> > > > > > kobj.  Any tips on how to trigger such a driver-specific event,
+> > > > > > perhaps a dedicated kobject exported by the driver itself???
+> > > > > 
+> > > > > Why not use the firmware interface for it, that is what it is designed
+> > > > > for, and you will not have to craft any new udev rules.
+> > > > 
+> > > > The data is going the wrong way to use the current firmware interface,
+> > > > which is designed to load data from userspace into the kernel.  For this
+> > > > interface, we want the data to go the other way (i.e. the kernel has a
+> > > > blob of dump data it would like userspace to save if it can).
+> > > 
+> > > Ick.
+> > 
+> > It's a natural debugging event ... the user can simply program the
+> > system to discard the dump.
+> > 
+> > > > I'd be amenable to updating the firmware interface to do this, but it
+> > > > looks like adding a completely new codepath, which it's not clear even
+> > > > belongs there.
+> > > 
+> > > Well, I don't think it deserves a kobject change event, as that means
+> > > something a bit different to userspace today, right?
+> > 
+> > Well, the documentation (in include/linux/kobject.h) does say that
+> > KOBJ_CHANGED is the dumping ground for events that don't match anything
+> > else, which this one seems to qualify as.  What else do you suggest?
+> 
+> Ok, I can't think of anything else at the moment, sorry.
+> 
+> This is using a binary sysfs file, right?
 
-Ok, here goes:
+Yes, the userspace tool retrieves the dump from a binary sysfs node:
 
-From: Anirban Sinha <asinha@zeugmasystems.com>
-Date: Tue, 15 Sep 2009 11:19:29 -0700
-Subject: Fix ia64 build breakage. 
+	/sys/class/scsi_host/hostX/device/fw_dump
 
-On ia64 it is not necessary to provide any kind of "extern" declaration
-before using external symbols.
-
-
-Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
----
- arch/ia64/kernel/head.S    |    1 -
- arch/ia64/kernel/head.h    |    1 -
- arch/ia64/kernel/process.c |    2 +-
- 3 files changed, 1 insertions(+), 3 deletions(-)
- delete mode 100644 arch/ia64/kernel/head.h
-
-diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
-index e6c5c3d..23f846d 100644
---- a/arch/ia64/kernel/head.S
-+++ b/arch/ia64/kernel/head.S
-@@ -34,7 +34,6 @@
- #include <asm/mca_asm.h>
- #include <linux/init.h>
- #include <linux/linkage.h>
--#include "head.h"
-
- #ifdef CONFIG_HOTPLUG_CPU
- #define SAL_PSR_BITS_TO_SET                            \
-diff --git a/arch/ia64/kernel/head.h b/arch/ia64/kernel/head.h
-deleted file mode 100644
-index 2e2ac68..0000000
---- a/arch/ia64/kernel/head.h
-+++ /dev/null
-@@ -1 +0,0 @@
--extern void console_print(const char *s);
---
-1.6.4
-
+-- AV
