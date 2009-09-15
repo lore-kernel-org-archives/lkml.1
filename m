@@ -1,229 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758026AbZIOCZO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZIOCdr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758026AbZIOCZO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 22:25:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758004AbZIOCZI
+	id S1758051AbZIOCdr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 22:33:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934140AbZIOCdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 22:25:08 -0400
-Received: from mga14.intel.com ([143.182.124.37]:63720 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757441AbZIOCZB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 22:25:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,386,1249282800"; 
-   d="scan'208";a="187622999"
-Message-Id: <20090915022328.587059822@intel.com>
-References: <20090915021851.168285585@intel.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 15 Sep 2009 10:18:54 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-CC: Christoph Lameter <clameter@sgi.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: Tejun Heo <tj@kernel.org>
-CC: Nick Piggin <npiggin@suse.de>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] HWPOISON: prevent /dev/kmem users from accessing hwpoison pages
-Content-Disposition: inline; filename=kmem-dev-kmem.patch
+	Mon, 14 Sep 2009 22:33:42 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40256 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933013AbZIOCdk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 22:33:40 -0400
+X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
+Date: Tue, 15 Sep 2009 11:31:13 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "mtosatti@redhat.com" <mtosatti@redhat.com>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+       "avi@qumranet.com" <avi@qumranet.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Mike Smith <scgtrp@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] devmem: handle partial kmem write/read
+Message-Id: <20090915113113.126f90f0.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090915020208.GA15159@localhost>
+References: <20090914032901.GA16189@localhost>
+	<20090914043444.GA18590@localhost>
+	<20090915092448.d511df31.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090915020208.GA15159@localhost>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When /dev/kmem read()/write() encounters hwpoison page, stop it
-and return the amount of work done till now.
+On Tue, 15 Sep 2009 10:02:08 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-CC: Greg KH <greg@kroah.com>
-CC: Andi Kleen <andi@firstfloor.org>
-CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |   18 +++++++++++----
- mm/vmalloc.c       |   51 +++++++++++++++++++++++++++----------------
- 2 files changed, 47 insertions(+), 22 deletions(-)
+> On Tue, Sep 15, 2009 at 08:24:48AM +0800, KAMEZAWA Hiroyuki wrote:
+> > On Mon, 14 Sep 2009 12:34:44 +0800
+> > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > 
+> > > Hi Kame,
+> > > 
+> > > This patch needs more work. I first intent to fix a bug:
+> > > 
+> > >                         sz = vwrite(kbuf, (char *)p, sz);
+> > >                         p += sz;
+> > >                 }
+> > > 
+> > > So if the returned len is 0, the kbuf/p pointers will mismatch. 
+> > > 
+> > > Then I realize it changed the write behavior. The current vwrite()
+> > > behavior is strange, it returns 0 if _whole range_ is hole, otherwise
+> > > ignores the hole silently. So holes can be treated differently even in
+> > > the original code.
+> > > 
+> > Ah, ok...
+> > 
+> > > I'm not really sure about the right behavior. KAME-san, do you have
+> > > any suggestions?
+> > > 
+> > maybe following make sense.
+> > =
+> > written = vwrite(kbuf, (char *p), sz);
+> > if (!written) // whole vmem was a hole
+> > 	written = sz;
+> 
+> Since the 0 return value won't be used at all, it would be simpler to
+> tell vwrite() return the untouched buflen/sz, like this. It will ignore
+> _all_ the holes silently. Need to update comments too.
+> 
 
---- linux-mm.orig/drivers/char/mem.c	2009-09-15 10:14:20.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2009-09-15 10:14:25.000000000 +0800
-@@ -429,6 +429,9 @@ static ssize_t read_kmem(struct file *fi
- 			 */
- 			kbuf = xlate_dev_kmem_ptr((char *)p);
- 
-+			if (unlikely(virt_addr_valid(kbuf) &&
-+				     PageHWPoison(virt_to_page(kbuf))))
-+				return -EIO;
- 			if (copy_to_user(buf, kbuf, sz))
- 				return -EFAULT;
- 			buf += sz;
-@@ -474,6 +477,7 @@ do_write_kmem(unsigned long p, const cha
- {
- 	ssize_t written, sz;
- 	unsigned long copied;
-+	int err = 0;
- 
- 	written = 0;
- #ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-@@ -500,13 +504,19 @@ do_write_kmem(unsigned long p, const cha
- 		 */
- 		ptr = xlate_dev_kmem_ptr((char *)p);
- 
-+		if (unlikely(virt_addr_valid(ptr) &&
-+			     PageHWPoison(virt_to_page(ptr)))) {
-+			err = -EIO;
-+			break;
-+		}
-+
- 		copied = copy_from_user(ptr, buf, sz);
- 		if (copied) {
- 			written += sz - copied;
--			if (written)
--				break;
--			return -EFAULT;
-+			err = -EFAULT;
-+			break;
- 		}
-+
- 		buf += sz;
- 		p += sz;
- 		count -= sz;
-@@ -514,7 +524,7 @@ do_write_kmem(unsigned long p, const cha
- 	}
- 
- 	*ppos += written;
--	return written;
-+	return written ? written : err;
- }
- 
- 
---- linux-mm.orig/mm/vmalloc.c	2009-09-15 10:14:18.000000000 +0800
-+++ linux-mm/mm/vmalloc.c	2009-09-15 10:17:20.000000000 +0800
-@@ -1661,6 +1661,8 @@ static int aligned_vread(char *buf, char
- 		if (length > count)
- 			length = count;
- 		p = vmalloc_to_page(addr);
-+		if (unlikely(p && PageHWPoison(p)))
-+			break;
- 		/*
- 		 * To do safe access to this _mapped_ area, we need
- 		 * lock. But adding lock here means that we need to add
-@@ -1700,6 +1702,8 @@ static int aligned_vwrite(char *buf, cha
- 		if (length > count)
- 			length = count;
- 		p = vmalloc_to_page(addr);
-+		if (unlikely(p && PageHWPoison(p)))
-+			break;
- 		/*
- 		 * To do safe access to this _mapped_ area, we need
- 		 * lock. But adding lock here means that we need to add
-@@ -1731,8 +1735,10 @@ static int aligned_vwrite(char *buf, cha
-  *	@count:		number of bytes to be read.
-  *
-  *	Returns # of bytes which addr and buf should be increased.
-- *	(same number to @count). Returns 0 if [addr...addr+count) doesn't
-- *	includes any intersect with alive vmalloc area.
-+ *	(same number to @count if no hwpoison pages encountered).
-+ *
-+ *	Returns 0 if [addr...addr+count) doesn't includes any intersect with
-+ *	alive vmalloc area.
-  *
-  *	This function checks that addr is a valid vmalloc'ed area, and
-  *	copy data from that area to a given buffer. If the given memory range
-@@ -1740,8 +1746,6 @@ static int aligned_vwrite(char *buf, cha
-  *	proper area of @buf. If there are memory holes, they'll be zero-filled.
-  *	IOREMAP area is treated as memory hole and no copy is done.
-  *
-- *	If [addr...addr+count) doesn't includes any intersects with alive
-- *	vm_struct area, returns 0.
-  *	@buf should be kernel's buffer. Because	this function uses KM_USER0,
-  *	the caller should guarantee KM_USER0 is not used.
-  *
-@@ -1757,7 +1761,8 @@ long vread(char *buf, char *addr, unsign
- 	struct vm_struct *tmp;
- 	char *vaddr, *buf_start = buf;
- 	unsigned long buflen = count;
--	unsigned long n;
-+	unsigned long ret = 0;
-+	unsigned long n = 0;
- 
- 	/* Don't allow overflow */
- 	if ((unsigned long) addr + count < count)
-@@ -1780,12 +1785,16 @@ long vread(char *buf, char *addr, unsign
- 		if (n > count)
- 			n = count;
- 		if (!(tmp->flags & VM_IOREMAP))
--			aligned_vread(buf, addr, n);
--		else /* IOREMAP area is treated as memory hole */
-+			ret = aligned_vread(buf, addr, n);
-+		else { /* IOREMAP area is treated as memory hole */
- 			memset(buf, 0, n);
--		buf += n;
--		addr += n;
--		count -= n;
-+			ret = n;
-+		}
-+		buf += ret;
-+		addr += ret;
-+		count -= ret;
-+		if (ret < n)
-+			break;
- 	}
- finished:
- 	read_unlock(&vmlist_lock);
-@@ -1796,7 +1805,7 @@ finished:
- 	if (buf != buf_start + buflen)
- 		memset(buf, 0, buflen - (buf - buf_start));
- 
--	return buflen;
-+	return ret == n ? buflen : buflen - count;
- }
- 
- /**
-@@ -1806,7 +1815,7 @@ finished:
-  *	@count:		number of bytes to be read.
-  *
-  *	Returns # of bytes which addr and buf should be increased.
-- *	(same number to @count).
-+ *	(same number to @count if no hwpoison pages encountered).
-  *
-  *	This function checks that addr is a valid vmalloc'ed area, and
-  *	copy data from a buffer to the given addr. If specified range of
-@@ -1829,7 +1838,9 @@ long vwrite(char *buf, char *addr, unsig
- {
- 	struct vm_struct *tmp;
- 	char *vaddr;
--	unsigned long n, buflen;
-+	unsigned long buflen;
-+	unsigned long ret = 0;
-+	unsigned long n = 0;
- 
- 	/* Don't allow overflow */
- 	if ((unsigned long) addr + count < count)
-@@ -1852,14 +1863,18 @@ long vwrite(char *buf, char *addr, unsig
- 		if (n > count)
- 			n = count;
- 		if (!(tmp->flags & VM_IOREMAP))
--			aligned_vwrite(buf, addr, n);
--		buf += n;
--		addr += n;
--		count -= n;
-+			ret = aligned_vwrite(buf, addr, n);
-+		else
-+			ret = n;
-+		buf += ret;
-+		addr += ret;
-+		count -= ret;
-+		if (ret < n)
-+			break;
- 	}
- finished:
- 	read_unlock(&vmlist_lock);
--	return buflen;
-+	return ret == n ? buflen : buflen - count;
- }
- 
- /**
+Hmm. IIUC the original kmem code returns immediately if vread/vwrite returns 0.
+But it seems this depends on wrong assumption that vmap area is continuous,
+at the first look.
 
--- 
+In man(4) mem,kmem
+==
+       Byte  addresses  in  mem  are interpreted as physical memory addresses.
+       References to nonexistent locations cause errors to be returned.
+	.....
+       The file kmem is the same as mem, except that the kernel virtual memory
+       rather than physical memory is accessed.
+
+==
+
+Then, we have to return error for accesses to "nonexistent locations".
+
+memory-hole in vmap area is ....."nonexistent" ? 
+I think it's nonexistent if there are no overlaps between requested [pos, pos+len)
+and registerred vmalloc area.
+
+But, hmm, there are no way for users to know "existing vmalloc area".
+Then, my above idea may be wrong.
+
+Then, I'd like to modify as following,
+
+  - If is_vmalloc_or_module_addr(requested address) is false, return -EFAULT.
+  - If is_vmalloc_or_module_addr(requested address) is true, return no error.
+    Even if specified range doesn't include no exsiting vmalloc area.
+
+How do you think ?
+
+Thanks,
+-Kame
+p.s. I wonder current /dev/kmem cannot read text area of kernel if it's not
+directly mapped.
+
+
+
+> --- linux-mm.orig/mm/vmalloc.c  2009-09-15 09:40:08.000000000 +0800                                                                  
+> +++ linux-mm/mm/vmalloc.c       2009-09-15 09:43:33.000000000 +0800                                                                  
+> @@ -1834,7 +1834,6 @@ long vwrite(char *buf, char *addr, unsig                                                                       
+>         struct vm_struct *tmp;                                                                                                       
+>         char *vaddr;                                                                                                                 
+>         unsigned long n, buflen;                                                                                                     
+> -       int copied = 0;                                                                                                              
+>                                                                                                                                      
+>         /* Don't allow overflow */                                                                                                   
+>         if ((unsigned long) addr + count < count)                                                                                    
+> @@ -1858,7 +1857,6 @@ long vwrite(char *buf, char *addr, unsig                                                                       
+>                         n = count;                                                                                                   
+>                 if (!(tmp->flags & VM_IOREMAP)) {                                                                                    
+>                         aligned_vwrite(buf, addr, n);                                                                                
+> -                       copied++;                                                                                                    
+>                 }                                                                                                                    
+>                 buf += n;                                                                                                            
+>                 addr += n;                                                                                                           
+> @@ -1866,8 +1864,6 @@ long vwrite(char *buf, char *addr, unsig                                                                       
+>         }                                                                                                                            
+>  finished:                                                                                                                           
+>         read_unlock(&vmlist_lock);                                                                                                   
+> -       if (!copied)                                                                                                                 
+> -               return 0;                                                                                                            
+>         return buflen;                                                                                                               
+>  }                                                                                                                                   
+> 
+> > ==
+> > needs fix.
+> > 
+> > Anyway, I wonder kmem is broken. It's should be totally rewritten.
+> > 
+> > For example, this doesn't check anything.
+> > ==
+> >         if (p < (unsigned long) high_memory) {
+> > 
+> > ==
+> > 
+> > But....are there users ?
+> > If necessary, I'll write some...
+> 
+> I'm trying to stop possible mem/kmem users to access hwpoison pages.. 
+> I'm not the user, but rather a tester ;)
+> 
+> Thanks,
+> Fengguang
+> 
+> > Thanks,
+> > -Kame
+> > 
+> > 
+> > > Thanks,
+> > > Fengguang
+> > > 
+> > > On Mon, Sep 14, 2009 at 11:29:01AM +0800, Wu Fengguang wrote:
+> > > > Current vwrite silently ignores vwrite() to vmap holes.
+> > > > Better behavior should be stop the write and return
+> > > > on such holes.
+> > > > 
+> > > > Also return on partial read, which may happen in future
+> > > > (eg. hit hwpoison pages).
+> > > > 
+> > > > CC: Andi Kleen <andi@firstfloor.org>
+> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > > ---
+> > > >  drivers/char/mem.c |   30 ++++++++++++++++++------------
+> > > >  1 file changed, 18 insertions(+), 12 deletions(-)
+> > > > 
+> > > > --- linux-mm.orig/drivers/char/mem.c	2009-09-14 10:59:50.000000000 +0800
+> > > > +++ linux-mm/drivers/char/mem.c	2009-09-14 11:06:25.000000000 +0800
+> > > > @@ -444,18 +444,22 @@ static ssize_t read_kmem(struct file *fi
+> > > >  		if (!kbuf)
+> > > >  			return -ENOMEM;
+> > > >  		while (count > 0) {
+> > > > +			unsigned long n;
+> > > > +
+> > > >  			sz = size_inside_page(p, count);
+> > > > -			sz = vread(kbuf, (char *)p, sz);
+> > > > -			if (!sz)
+> > > > +			n = vread(kbuf, (char *)p, sz);
+> > > > +			if (!n)
+> > > >  				break;
+> > > > -			if (copy_to_user(buf, kbuf, sz)) {
+> > > > +			if (copy_to_user(buf, kbuf, n)) {
+> > > >  				free_page((unsigned long)kbuf);
+> > > >  				return -EFAULT;
+> > > >  			}
+> > > > -			count -= sz;
+> > > > -			buf += sz;
+> > > > -			read += sz;
+> > > > -			p += sz;
+> > > > +			count -= n;
+> > > > +			buf += n;
+> > > > +			read += n;
+> > > > +			p += n;
+> > > > +			if (n < sz)
+> > > > +				break;
+> > > >  		}
+> > > >  		free_page((unsigned long)kbuf);
+> > > >  	}
+> > > > @@ -551,11 +555,13 @@ static ssize_t write_kmem(struct file * 
+> > > >  				free_page((unsigned long)kbuf);
+> > > >  				return -EFAULT;
+> > > >  			}
+> > > > -			sz = vwrite(kbuf, (char *)p, sz);
+> > > > -			count -= sz;
+> > > > -			buf += sz;
+> > > > -			virtr += sz;
+> > > > -			p += sz;
+> > > > +			n = vwrite(kbuf, (char *)p, sz);
+> > > > +			count -= n;
+> > > > +			buf += n;
+> > > > +			virtr += n;
+> > > > +			p += n;
+> > > > +			if (n < sz)
+> > > > +				break;
+> > > >  		}
+> > > >  		free_page((unsigned long)kbuf);
+> > > >  	}
+> > > --
+> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > the body of a message to majordomo@vger.kernel.org
+> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > Please read the FAQ at  http://www.tux.org/lkml/
+> > > 
+> 
 
