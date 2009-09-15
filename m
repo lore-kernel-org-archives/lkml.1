@@ -1,223 +1,196 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757118AbZIOUIa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756509AbZIOUMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757118AbZIOUIa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 16:08:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbZIOUI0
+	id S1756509AbZIOUMm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 16:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZIOUMi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 16:08:26 -0400
-Received: from mail-qy0-f192.google.com ([209.85.221.192]:36756 "EHLO
-	mail-qy0-f192.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753572AbZIOUIZ (ORCPT
+	Tue, 15 Sep 2009 16:12:38 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:48848 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750857AbZIOUMh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 16:08:25 -0400
+	Tue, 15 Sep 2009 16:12:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=O88Od2JJpAdv1uPJj9tF9kKMQ6W2EAahXI/xECH6RiPaBYx/qmgYGTqeM+lgAvIvYv
-         2O3ERbjO0xuwcSJeA6ywUQiWI6HSvzeRjoEvMlFOzzFc/YY3kU0E00+3XxejZuipY6sb
-         g7OhIEd18/0iBQUB3PP0gAsTppdrWYZlXJr3U=
-Message-ID: <4AAFF437.7060100@gmail.com>
-Date: Tue, 15 Sep 2009 16:08:23 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+        h=to:subject:content-disposition:from:date:mime-version:content-type
+         :content-transfer-encoding:message-id;
+        b=iGK8cGFo6O3eCaBluarPZT9QoK0W/27zmFIyeHHCIfifoOj1mLPo/X/P/SObpUIkMM
+         j35Ledp6s4gnqvcChF4LgY7WN9K/TV38WDwjsBUpJS5erXq+q5HTPA8G7JBDmcVbVO9o
+         mGQfnzgRINhojpEO9RstSCUZp2mQ3y9qSRmKs=
+To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
+Subject: [RFC] cfq: adapt slice to number of processes doing I/O (v2.1)
+Content-Disposition: inline
+From: Corrado Zoccolo <czoccolo@gmail.com>
+Date: Tue, 15 Sep 2009 22:12:53 +0200
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com>
-In-Reply-To: <4AAFACB5.9050808@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig07558A0474366E63F11D21AB"
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909152212.53883.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig07558A0474366E63F11D21AB
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+When the number of processes performing I/O concurrently increases,
+a fixed time slice per process will cause large latencies.
 
-Avi Kivity wrote:
-> On 09/15/2009 04:50 PM, Gregory Haskins wrote:
->>> Why?  vhost will call get_user_pages() or copy_*_user() which ought t=
-o
->>> do the right thing.
->>>     =20
->> I was speaking generally, not specifically to Ira's architecture.  Wha=
-t
->> I mean is that vbus was designed to work without assuming that the
->> memory is pageable.  There are environments in which the host is not
->> capable of mapping hvas/*page, but the memctx->copy_to/copy_from
->> paradigm could still work (think rdma, for instance).
->>   =20
->=20
-> Sure, vbus is more flexible here.
->=20
->>>> As an aside: a bigger issue is that, iiuc, Ira wants more than a sin=
-gle
->>>> ethernet channel in his design (multiple ethernets, consoles, etc). =
- A
->>>> vhost solution in this environment is incomplete.
->>>>
->>>>       =20
->>> Why?  Instantiate as many vhost-nets as needed.
->>>     =20
->> a) what about non-ethernets?
->>   =20
->=20
-> There's virtio-console, virtio-blk etc.  None of these have kernel-mode=
+This (v2.1) patch will scale the time slice assigned to each process,
+according to a target latency (tunable from sysfs, default 300ms).
 
-> servers, but these could be implemented if/when needed.
+In order to keep fairness among processes, we adopt two devices, w.r.t. v1.
 
-IIUC, Ira already needs at least ethernet and console capability.
+* The number of active processes is computed using a special form of
+running average, that quickly follows sudden increases (to keep latency low),
+and decrease slowly (to have fairness in spite of rapid decreases of this 
+value).
 
->=20
->> b) what do you suppose this protocol to aggregate the connections woul=
-d
->> look like? (hint: this is what a vbus-connector does).
->>   =20
->=20
-> You mean multilink?  You expose the device as a multiqueue.
+* The idle time is computed using remaining slice as a maximum.
 
-No, what I mean is how do you surface multiple ethernet and consoles to
-the guests?  For Ira's case, I think he needs at minimum at least one of
-each, and he mentioned possibly having two unique ethernets at one point.=
+To safeguard sequential bandwidth, we impose a minimum time slice
+(computed using 2*cfq_slice_idle as base, adjusted according to priority
+and async-ness).
 
+Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
 
-His slave boards surface themselves as PCI devices to the x86
-host.  So how do you use that to make multiple vhost-based devices (say
-two virtio-nets, and a virtio-console) communicate across the transport?
+---
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 0e3814b..ca90d42 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -27,6 +27,8 @@ static const int cfq_slice_sync = HZ / 10;
+ static int cfq_slice_async = HZ / 25;
+ static const int cfq_slice_async_rq = 2;
+ static int cfq_slice_idle = HZ / 125;
++static int cfq_target_latency = HZ * 3/10; /* 300 ms */
++static int cfq_hist_divisor = 4;
+ 
+ /*
+  * offset from end of service tree
+@@ -134,6 +136,9 @@ struct cfq_data {
+ 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
+ 
+ 	unsigned int busy_queues;
++	unsigned int busy_queues_avg;
++	unsigned int busy_rt_queues;
++	unsigned int busy_rt_queues_avg;
+ 
+ 	int rq_in_driver[2];
+ 	int sync_flight;
+@@ -173,6 +178,8 @@ struct cfq_data {
+ 	unsigned int cfq_slice[2];
+ 	unsigned int cfq_slice_async_rq;
+ 	unsigned int cfq_slice_idle;
++	unsigned int cfq_target_latency;
++	unsigned int cfq_hist_divisor;
+ 
+ 	struct list_head cic_list;
+ 
+@@ -301,10 +308,40 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
+ }
+ 
++static inline unsigned
++cfq_get_interested_queues(struct cfq_data *cfqd, bool rt) {
++	unsigned min_q, max_q;
++	unsigned mult = cfqd->cfq_hist_divisor - 1;
++	unsigned round = cfqd->cfq_hist_divisor / 2;
++	if (rt) {
++		min_q = min(cfqd->busy_rt_queues_avg, cfqd->busy_rt_queues);
++		max_q = max(cfqd->busy_rt_queues_avg, cfqd->busy_rt_queues);
++		cfqd->busy_rt_queues_avg = (mult * max_q + min_q + round) /
++			cfqd->cfq_hist_divisor;
++		return cfqd->busy_rt_queues_avg;
++	} else {
++		min_q = min(cfqd->busy_queues_avg, cfqd->busy_queues);
++		max_q = max(cfqd->busy_queues_avg, cfqd->busy_queues);
++		cfqd->busy_queues_avg = (mult * max_q + min_q + round) /
++			cfqd->cfq_hist_divisor;
++		return cfqd->busy_queues_avg;
++	}
++}
++
+ static inline void
+ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
+-	cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
++	unsigned process_thr = cfqd->cfq_target_latency / cfqd->cfq_slice[1];
++	unsigned iq = cfq_get_interested_queues(cfqd, cfq_class_rt(cfqq));
++	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
++
++	if (iq > process_thr) {
++		unsigned low_slice = 2 * slice * cfqd->cfq_slice_idle
++			/ cfqd->cfq_slice[1];
++		slice = max(slice * process_thr / iq, min(slice, low_slice));
++	}
++
++	cfqq->slice_end = jiffies + slice;
+ 	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
+ }
+ 
+@@ -646,6 +683,8 @@ static void cfq_add_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	BUG_ON(cfq_cfqq_on_rr(cfqq));
+ 	cfq_mark_cfqq_on_rr(cfqq);
+ 	cfqd->busy_queues++;
++	if (cfq_class_rt(cfqq))
++		cfqd->busy_rt_queues++;
+ 
+ 	cfq_resort_rr_list(cfqd, cfqq);
+ }
+@@ -669,6 +708,8 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 
+ 	BUG_ON(!cfqd->busy_queues);
+ 	cfqd->busy_queues--;
++	if (cfq_class_rt(cfqq))
++		cfqd->busy_rt_queues--;
+ }
+ 
+ /*
+@@ -1092,7 +1133,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+ 	 * fair distribution of slice time for a process doing back-to-back
+ 	 * seeks. so allow a little bit of time for him to submit a new rq
+ 	 */
+-	sl = cfqd->cfq_slice_idle;
++	sl = min_t(unsigned, cfqd->cfq_slice_idle, cfqq->slice_end - jiffies);
+ 	if (sample_valid(cic->seek_samples) && CIC_SEEKY(cic))
+ 		sl = min(sl, msecs_to_jiffies(CFQ_MIN_TT));
+ 
+@@ -2480,6 +2521,8 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	cfqd->cfq_slice[1] = cfq_slice_sync;
+ 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+ 	cfqd->cfq_slice_idle = cfq_slice_idle;
++	cfqd->cfq_target_latency = cfq_target_latency;
++	cfqd->cfq_hist_divisor = cfq_hist_divisor;
+ 	cfqd->hw_tag = 1;
+ 
+ 	return cfqd;
+@@ -2549,6 +2592,8 @@ SHOW_FUNCTION(cfq_slice_idle_show, cfqd->cfq_slice_idle, 1);
+ SHOW_FUNCTION(cfq_slice_sync_show, cfqd->cfq_slice[1], 1);
+ SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
+ SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
++SHOW_FUNCTION(cfq_target_latency_show, cfqd->cfq_target_latency, 1);
++SHOW_FUNCTION(cfq_hist_divisor_show, cfqd->cfq_hist_divisor, 0);
+ #undef SHOW_FUNCTION
+ 
+ #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+@@ -2580,6 +2625,10 @@ STORE_FUNCTION(cfq_slice_sync_store, &cfqd->cfq_slice[1], 1, UINT_MAX, 1);
+ STORE_FUNCTION(cfq_slice_async_store, &cfqd->cfq_slice[0], 1, UINT_MAX, 1);
+ STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
+ 		UINT_MAX, 0);
++
++STORE_FUNCTION(cfq_target_latency_store, &cfqd->cfq_target_latency, 1, 1000, 1);
++STORE_FUNCTION(cfq_hist_divisor_store, &cfqd->cfq_hist_divisor, 1, 100, 0);
++
+ #undef STORE_FUNCTION
+ 
+ #define CFQ_ATTR(name) \
+@@ -2595,6 +2644,8 @@ static struct elv_fs_entry cfq_attrs[] = {
+ 	CFQ_ATTR(slice_async),
+ 	CFQ_ATTR(slice_async_rq),
+ 	CFQ_ATTR(slice_idle),
++	CFQ_ATTR(target_latency),
++	CFQ_ATTR(hist_divisor),
+ 	__ATTR_NULL
+ };
+ 
 
-There are multiple ways to do this, but what I am saying is that
-whatever is conceived will start to look eerily like a vbus-connector,
-since this is one of its primary purposes ;)
-
-
->=20
->> c) how do you manage the configuration, especially on a per-board basi=
-s?
->>   =20
->=20
-> pci (for kvm/x86).
-
-Ok, for kvm understood (and I would also add "qemu" to that mix).  But
-we are talking about vhost's application in a non-kvm environment here,
-right?.
-
-So if the vhost-X devices are in the "guest", and the x86 board is just
-a slave...How do you tell each ppc board how many devices and what
-config (e.g. MACs, etc) to instantiate?  Do you assume that they should
-all be symmetric and based on positional (e.g. slot) data?  What if you
-want asymmetric configurations (if not here, perhaps in a different
-environment)?
-
->=20
->> Actually I have patches queued to allow vbus to be managed via ioctls =
-as
->> well, per your feedback (and it solves the permissions/lifetime
->> critisims in alacrityvm-v0.1).
->>   =20
->=20
-> That will make qemu integration easier.
->=20
->>>   The only difference is the implementation.  vhost-net
->>> leaves much more to userspace, that's the main difference.
->>>     =20
->> Also,
->>
->> *) vhost is virtio-net specific, whereas vbus is a more generic device=
-
->> model where thing like virtio-net or venet ride on top.
->>   =20
->=20
-> I think vhost-net is separated into vhost and vhost-net.
-
-Thats good.
-
->=20
->> *) vhost is only designed to work with environments that look very
->> similar to a KVM guest (slot/hva translatable).  vbus can bridge vario=
-us
->> environments by abstracting the key components (such as memory access)=
-=2E
->>   =20
->=20
-> Yes.  virtio is really virtualization oriented.
-
-I would say that its vhost in particular that is virtualization
-oriented.  virtio, as a concept, generally should work in physical
-systems, if perhaps with some minor modifications.  The biggest "limit"
-is having "virt" in its name ;)
-
->=20
->> *) vhost requires an active userspace management daemon, whereas vbus
->> can be driven by transient components, like scripts (ala udev)
->>   =20
->=20
-> vhost by design leaves configuration and handshaking to userspace.  I
-> see it as an advantage.
-
-The misconception here is that vbus by design _doesn't define_ where
-configuration/handshaking happens.  It is primarily implemented by a
-modular component called a "vbus-connector", and _I_ see this
-flexibility as an advantage.  vhost on the other hand depends on a
-active userspace component and a slots/hva memory design, which is more
-limiting in where it can be used and forces you to split the logic.
-However, I think we both more or less agree on this point already.
-
-For the record, vbus itself is simply a resource container for
-virtual-devices, which provides abstractions for the various points of
-interest to generalizing PV (memory, signals, etc) and the proper
-isolation and protection guarantees.  What you do with it is defined by
-the modular virtual-devices (e.g. virtion-net, venet, sched, hrt, scsi,
-rdma, etc) and vbus-connectors (vbus-kvm, etc) you plug into it.
-
-As an example, you could emulate the vhost design in vbus by writing a
-"vbus-vhost" connector.  This connector would be very thin and terminate
-locally in QEMU.  It would provide a ioctl-based verb namespace similar
-to the existing vhost verbs we have today.  QEMU would then similarly
-reflect the vbus-based virtio device as a PCI device to the guest, so
-that virtio-pci works unmodified.
-
-You would then have most of the advantages of the work I have done for
-commoditizing/abstracting the key points for in-kernel PV, like the
-memctx.  In addition, much of the work could be reused in multiple
-environments since any vbus-compliant device model that is plugged into
-the framework would work with any connector that is plugged in (e.g.
-vbus-kvm (alacrityvm), vbus-vhost (KVM), and "vbus-ira").
-
-The only tradeoff is in features offered by the connector (e.g.
-vbus-vhost has the advantage that existing PV guests can continue to
-work unmodified, vbus-kvm has the advantage that it supports new
-features like generic shared memory, non-virtio based devices,
-priortizable interrupts, no dependencies on PCI for non PCI guests, etc).=
-
-
-Kind Regards,
--Greg
-
-
---------------enig07558A0474366E63F11D21AB
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqv9DcACgkQP5K2CMvXmqEAUQCgi3OZrI/ESQUs6T/RGe0cbq3E
-U2sAn1XqqK7iHyH0N9TIo7CTpXZiXP4t
-=yBBN
------END PGP SIGNATURE-----
-
---------------enig07558A0474366E63F11D21AB--
