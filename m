@@ -1,114 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757994AbZIORWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZIORX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757994AbZIORWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 13:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757630AbZIORWQ
+	id S1758109AbZIORX7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 13:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757788AbZIORXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 13:22:16 -0400
-Received: from an-out-0708.google.com ([209.85.132.241]:16332 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757522AbZIORWO convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 13:23:55 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:54468 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757600AbZIORXy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 13:22:14 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090915165708.GA18817@kroah.com>
-References: <1252708951.13282.151.camel@mulgrave.site> <20090912001752.GC12098@plap4-2.local> 
-	<20090912003808.GD12098@plap4-2.local> <20090912005446.GA11691@kroah.com> 
-	<20090912025623.GA14824@plap4-2.local> <20090912043333.GA12349@kroah.com> 
-	<1252765807.4238.74.camel@mulgrave.site> <20090915153312.GB22774@kroah.com> 
-	<1253029631.29947.156.camel@mulgrave.site> <20090915165708.GA18817@kroah.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Tue, 15 Sep 2009 19:22:03 +0200
-Message-ID: <ac3eb2510909151022s5a0704c2xd4be73d5c63ab0f1@mail.gmail.com>
-Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when 
-	CONFIG_MOUDLES=n.
-To: Greg KH <greg@kroah.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>,
-       Ravi Anand <ravi.anand@qlogic.com>,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 15 Sep 2009 13:23:54 -0400
+From: "Karicheri, Muralidharan" <m-karicheri2@ti.com>
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
+Date: Tue, 15 Sep 2009 12:23:36 -0500
+Subject: RE: [GIT PATCHES for 2.6.32] V4L/DVB updates
+Thread-Topic: [GIT PATCHES for 2.6.32] V4L/DVB updates
+Thread-Index: Aco2CGyj+hvG8svUQZauDSMYVAMIQQAH6UwA
+Message-ID: <A69FA2915331DC488A831521EAE36FE40155156847@dlee06.ent.ti.com>
+References: <20090914233239.5dd6f5c8@pedra.chehab.org>
+	<A69FA2915331DC488A831521EAE36FE40155156602@dlee06.ent.ti.com>
+ <20090915102714.5c76b944@pedra.chehab.org>
+In-Reply-To: <20090915102714.5c76b944@pedra.chehab.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 18:57, Greg KH <greg@kroah.com> wrote:
-> On Tue, Sep 15, 2009 at 10:47:11AM -0500, James Bottomley wrote:
->> On Tue, 2009-09-15 at 08:33 -0700, Greg KH wrote:
->> > On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
->> > > On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
->> > > > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
->> > > > > On Fri, 11 Sep 2009, Greg KH wrote:
->> > > > >
->> > > > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
->> > > > > > > Randy Dunlap noted:
->> > > > > > >
->> > > > > > >   when CONFIG_MODULES=n:
->> > > > > > >
->> > > > > > >   drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
->> > > > > > >
->> > > > > > >   in
->> > > > > > >
->> > > > > > >   kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
->> > > > > > >           KOBJ_CHANGE, envp);
->> > > > > > >
->> > > > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
->> > > > > >
->> > > > > > Um, why?  What are you trying to do here?  kobject change should not be
->> > > > > > for a device, or a "normal" kobject.
->> > > > > >
->> > > > > > What do you expect userspace to do with this?  Where have you documented
->> > > > > > it?
->> > > > >
->> > > > > The purpose was described here:
->> > > > >
->> > > > >       http://article.gmane.org/gmane.linux.scsi/54155
->> > > > >
->> > > > > Basically we'd like to instruct user-space to retrieve a blob of data
->> > > > > automatically.
->> > > >
->> > > > Hm, like a firmware object perhaps?
->> > > >
->> > > > > Original implementation used the kboject hanging off
->> > > > > the module which does not exist when CONFIG_MODULES=n.  It was
->> > > > > suggested that perhaps an alternative would be to use 'struct device'
->> > > > > kobj.  Any tips on how to trigger such a driver-specific event,
->> > > > > perhaps a dedicated kobject exported by the driver itself???
->> > > >
->> > > > Why not use the firmware interface for it, that is what it is designed
->> > > > for, and you will not have to craft any new udev rules.
->> > >
->> > > The data is going the wrong way to use the current firmware interface,
->> > > which is designed to load data from userspace into the kernel.  For this
->> > > interface, we want the data to go the other way (i.e. the kernel has a
->> > > blob of dump data it would like userspace to save if it can).
->> >
->> > Ick.
->>
->> It's a natural debugging event ... the user can simply program the
->> system to discard the dump.
->>
->> > > I'd be amenable to updating the firmware interface to do this, but it
->> > > looks like adding a completely new codepath, which it's not clear even
->> > > belongs there.
->> >
->> > Well, I don't think it deserves a kobject change event, as that means
->> > something a bit different to userspace today, right?
->>
->> Well, the documentation (in include/linux/kobject.h) does say that
->> KOBJ_CHANGED is the dumping ground for events that don't match anything
->> else, which this one seems to qualify as.  What else do you suggest?
+Mauro,
+
+Let me add Kevin to this list who is merging the arch part.
+
+Kevin,
+
+Which branch should I refer to find out what are all the architecture
+part you have merged for upstream submission?
+
+I remember you had merged the following patches for vpif capture.
+Which branch is that? 
+
+Murali Karicheri
+Software Design Engineer
+Texas Instruments Inc.
+Germantown, MD 20874
+new phone: 301-407-9583
+Old Phone : 301-515-3736 (will be deprecated)
+email: m-karicheri2@ti.com
+
+>-----Original Message-----
+>From: Mauro Carvalho Chehab [mailto:mchehab@redhat.com]
+>Sent: Tuesday, September 15, 2009 9:27 AM
+>To: Karicheri, Muralidharan
+>Cc: Linus Torvalds; Andrew Morton; linux-kernel@vger.kernel.org; linux-
+>media@vger.kernel.org
+>Subject: Re: [GIT PATCHES for 2.6.32] V4L/DVB updates
 >
-> Ok, I can't think of anything else at the moment, sorry.
+>Em Tue, 15 Sep 2009 08:13:20 -0500
+>"Karicheri, Muralidharan" <m-karicheri2@ti.com> escreveu:
+>
+>> Mauro,
+>>
+>> Why have you not included the vpif and vpfe drivers under davinci
+>> in this drop? Or is it being included in another pull request?
+>
+>They'll be on another pull request. Are those arch dependent patches
+>already
+>merged?
+>
+>--
+>
+>Cheers,
+>Mauro
 
-Wouldn't kernel/kmod.c :: call_usermodehelper_pipe() somehow fit for
-that interface?
-
-Kay
