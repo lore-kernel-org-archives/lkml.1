@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751925AbZIOJRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751926AbZIOJWM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751925AbZIOJRh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZIOJRd
+	id S1751926AbZIOJWM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:22:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZIOJWJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:17:33 -0400
-Received: from mga03.intel.com ([143.182.124.21]:23131 "EHLO mga03.intel.com"
+	Tue, 15 Sep 2009 05:22:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46580 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750882AbZIOJRc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:17:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
-   d="scan'208";a="187734615"
-Date: Tue, 15 Sep 2009 17:17:00 +0800
-From: Feng Tang <feng.tang@intel.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH] hrtimers: Remove the "timer_stats_active" check when
- setting the start info
-Message-ID: <20090915171700.5669bb59@feng-desktop>
-In-Reply-To: <alpine.LFD.2.00.0909151056160.8957@localhost.localdomain>
-References: <20090903163253.1d846628@feng-desktop>
-	<alpine.LFD.2.00.0909151056160.8957@localhost.localdomain>
-Organization: intel
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i486-pc-linux-gnu)
+	id S1750785AbZIOJWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:22:08 -0400
+Date: Tue, 15 Sep 2009 09:21:38 GMT
+From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, xiaoguangrong@cn.fujitsu.com,
+       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, peterz@infradead.org,
+       xiaoguangrong@cn.fujitsu.com, stable@kernel.org, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4AAF37D4.5010706@cn.fujitsu.com>
+References: <4AAF37D4.5010706@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perfcounters/urgent] perf_counter: Fix buffer overflow in perf_copy_attr()
+Message-ID: <tip-b3e62e35058fc744ac794611f4e79bcd1c5a4b83@git.kernel.org>
+Git-Commit-ID: b3e62e35058fc744ac794611f4e79bcd1c5a4b83
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:21:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 17:00:09 +0800
-Thomas Gleixner <tglx@linutronix.de> wrote:
+Commit-ID:  b3e62e35058fc744ac794611f4e79bcd1c5a4b83
+Gitweb:     http://git.kernel.org/tip/b3e62e35058fc744ac794611f4e79bcd1c5a4b83
+Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+AuthorDate: Tue, 15 Sep 2009 14:44:36 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 15 Sep 2009 09:53:31 +0200
 
-> > 
-> > Recent hrtimer code will set the start info to a hrtimer only when
-> > that flag is set, then the start info of all hrtimers will always
-> > be uninitialised before a "echo 1 > /proc/timer_stats", thus
-> > the /proc/timer_lists will have something like:
-> > 
-> > active timers:
-> >  #0: <c27d46b0>, tick_sched_timer, S:01, <(null)>, /-1
-> >  # expires at 91062000000-91062000000 nsecs [in 156071 to 156071
-> > nsecs] #1: <efb81b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
-> >  # expires at 91062300331-91062350331 nsecs [in 456402 to 506402
-> > nsecs] #2: <efac9b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
-> >  # expires at 91068699811-91068749811 nsecs [in 6855882 to 6905882
-> > nsecs] #3: <efacdb6c>, hrtimer_wakeup, S:01, <(null)>, /-1
-> >  # expires at 91068755511-91068805511 nsecs [in 6911582 to 6961582
-> > nsecs] #4: <efa95b6c>, hrtimer_wakeup, S:01, <(null)>, /-1
-> >  # expires at 91068806066-91068856066 nsecs [in 6962137 to 7012137
-> > nsecs] .....
-> > 
-> > This patch will fix it.
-> 
-> Well, at the same time it forces the memcpy when !timer_stats_active.
-> We generally want to avoid such overhead when debug facilities are
-> disabled.
+perf_counter: Fix buffer overflow in perf_copy_attr()
 
-I understand the performance point, that's why I add a check line trying
-to avoid unnecessary copy (yes, the check itself will bring some overload):
+If we pass a big size data over perf_counter_open() syscall,
+the kernel will copy this data to a small buffer, it will
+cause kernel crash.
+
+This bug makes the kernel unsafe and non-root local user can
+trigger it.
+
+Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Acked-by: Paul Mackerras <paulus@samba.org>
+Cc: <stable@kernel.org>
+LKML-Reference: <4AAF37D4.5010706@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/perf_counter.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index d7cbc57..a67a1dc 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -4171,6 +4171,7 @@ static int perf_copy_attr(struct perf_counter_attr __user *uattr,
+ 			if (val)
+ 				goto err_size;
+ 		}
++		size = sizeof(*attr);
+ 	}
  
- void __timer_stats_hrtimer_set_start_info(struct hrtimer *timer, void *addr)
- {
--       if (timer->start_site)
-+       if (timer->start_site == addr && timer->start_pid == current->pid)
-                return;
-
-Also there is one corner case, that a hrtimer get initialized and queued in
-before setting timer_stats_active to 1, but get run after that. Then its
-start_site will be NULL which will prevent it from being accounted. 
-
-Thanks,
-Feng
-
-
+ 	ret = copy_from_user(attr, uattr, size);
