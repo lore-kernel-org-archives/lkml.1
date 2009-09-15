@@ -1,79 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZIOGEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbZIOGHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754348AbZIOGEm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 02:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751359AbZIOGEg
+	id S1756587AbZIOGHp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 02:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZIOGHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 02:04:36 -0400
-Received: from mail-yw0-f174.google.com ([209.85.211.174]:54975 "EHLO
-	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751331AbZIOGEf convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 02:04:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=E0iA6rR8wPAtJmx9gw3Mn4ssRIr2vqBZ+n/ceo+YEBGwXGbx7TlSYa3vygVSueQwGk
-         FxbBdnEIlmSOjtGMzQTza9ufhDa50hZaB5rhf47SICYPjQmTlrF+JjvrAuo15Li/EiiK
-         GyD/yHNDLl4sWepCk8TFekuXk+raJsHGrajGs=
-MIME-Version: 1.0
-In-Reply-To: <1252850453.23599.13.camel@mulgrave.site>
-References: <20090913040104.ab1d0b69.const@mimas.ru> <1252850453.23599.13.camel@mulgrave.site>
-From: Julian Calaby <julian.calaby@gmail.com>
-Date: Tue, 15 Sep 2009 15:57:39 +1000
-Message-ID: <646765f40909142257t560b314dt74d4158a497f0460@mail.gmail.com>
-Subject: Re: [PATCH] hwmon: Driver for SCSI/ATA temperature sensors
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Constantin Baranov <const@mimas.ru>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 15 Sep 2009 02:07:42 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:53893 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752380AbZIOGHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 02:07:41 -0400
+Date: Tue, 15 Sep 2009 16:07:39 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Philipp Reisner <philipp.reisner@linbit.com>, <drbd-dev@linbit.com>
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: linux-next: drbd tree build failure
+Message-Id: <20090915160739.86e85ab3.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 00:00, James Bottomley <James.Bottomley@suse.de> wrote:
-> On Sun, 2009-09-13 at 04:01 +0500, Constantin Baranov wrote:
->> The scsitemp module attaches a device to each SCSI device
->> and registers it in hwmon. Currently the only method of
->> reading temperature is ATA SMART. Adding support of the
->> pure SCSI methods is provided.
->
-> The code, as you wrote it looks fine.
->
-> The basic problem are the effects.  Right at the moment it tries to send
-> an ATA_16 encapsulated SMART command to every SCSI device in the system.
-> We simply can't allow this.  A huge number of SCSI presenting USB
-> devices are known to lock up when they see either ATA_X encapsulation or
-> SMART commands.  It's not really even safe to send ATA_X to SCSI
-> devices.  The modern ones should all error out fine, but the older ones
-> are likely to be less tolerant.
->
-> Finally, this:
->
->> +               if (attr[2] == 194) {
->> +                       *temp = attr[7] * 1000;
->> +                       err = 0;
->> +                       break;
->
-> Smart attribute 194 is highly vendor specific ... for instance my new
-> SATA drive doesn't implement it (it does implement 190 instead).
->
-> So really, given the complexity of just obtaining the data and the
-> problem of matching which data to obtain to which device you have, why
-> not just use smartctl from userspace for monitoring?  you could even
-> just plug into smartd, it seems to have most of the necessary heuristics
-> built in already.
+Hi Philipp,
 
-There's even a util called hddtemp which handles all this and has a
-database of smart attributes to use for most drives.
+Today's linux-next build (x86_64 allmodconfig) failed like this:
 
-Thanks,
+drivers/block/drbd/drbd_req.c: In function '_drbd_start_io_acct':
+drivers/block/drbd/drbd_req.c:45: error: lvalue required as increment operand
+drivers/block/drbd/drbd_req.c: In function '_drbd_end_io_acct':
+drivers/block/drbd/drbd_req.c:58: error: lvalue required as decrement operand
+
+Caused by commit 954749162c98ca45c42cbc00c9ed6d5d6c0b8bb7 ("DRBD:
+request") from the drbd tree interacting with commit
+a9327cac440be4d8333bba975cbbf76045096275 ("Seperate read and write
+statistics of in_flight requests") from the block tree.
+
+I have applied the following merge fix for today, but there may be a
+better fix.
+
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 15 Sep 2009 16:03:50 +1000
+Subject: [PATCH] drbd: fix for in_flight change in block tree
+
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ drivers/block/drbd/drbd_req.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/block/drbd/drbd_req.c b/drivers/block/drbd/drbd_req.c
+index cbdc257..0656cf1 100644
+--- a/drivers/block/drbd/drbd_req.c
++++ b/drivers/block/drbd/drbd_req.c
+@@ -42,7 +42,7 @@ static void _drbd_start_io_acct(struct drbd_conf *mdev, struct drbd_request *req
+ 	part_stat_inc(cpu, &mdev->vdisk->part0, ios[rw]);
+ 	part_stat_add(cpu, &mdev->vdisk->part0, sectors[rw], bio_sectors(bio));
+ 	part_stat_unlock();
+-	mdev->vdisk->part0.in_flight++;
++	mdev->vdisk->part0.in_flight[rw]++;
+ }
+ 
+ /* Update disk stats when completing request upwards */
+@@ -55,7 +55,7 @@ static void _drbd_end_io_acct(struct drbd_conf *mdev, struct drbd_request *req)
+ 	part_stat_add(cpu, &mdev->vdisk->part0, ticks[rw], duration);
+ 	part_round_stats(cpu, &mdev->vdisk->part0);
+ 	part_stat_unlock();
+-	mdev->vdisk->part0.in_flight--;
++	mdev->vdisk->part0.in_flight[rw]--;
+ }
+ 
+ static void _req_is_done(struct drbd_conf *mdev, struct drbd_request *req, const int rw)
+-- 
+1.6.3.3
+
 
 -- 
-
-Julian Calaby
-
-Email: julian.calaby@gmail.com
-.Plan: http://sites.google.com/site/juliancalaby/
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
