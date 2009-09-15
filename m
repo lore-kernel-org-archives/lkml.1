@@ -1,124 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbZIOJl1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbZIOJoC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751641AbZIOJl1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:41:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZIOJlV
+	id S1752227AbZIOJoC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:44:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZIOJn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:41:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57306 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbZIOJlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:41:20 -0400
-Message-ID: <4AAF60F7.6040107@cn.fujitsu.com>
-Date: Tue, 15 Sep 2009 17:40:07 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+	Tue, 15 Sep 2009 05:43:59 -0400
+Received: from perceval.irobotique.be ([92.243.18.41]:41985 "EHLO
+	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750948AbZIOJn6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:43:58 -0400
+From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+To: Julia Lawall <julia@diku.dk>
+Subject: Re: [PATCH 2/8] drivers/media/video/uvc: introduce missing kfree
+Date: Tue, 15 Sep 2009 11:44:57 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.30.3; KDE/4.3.1; x86_64; ; )
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+References: <Pine.LNX.4.64.0909111821010.10552@pc-004.diku.dk> <200909132239.21806.laurent.pinchart@ideasonboard.com> <Pine.LNX.4.64.0909132254430.31000@ask.diku.dk>
+In-Reply-To: <Pine.LNX.4.64.0909132254430.31000@ask.diku.dk>
 MIME-Version: 1.0
-To: jolsa@redhat.com
-CC: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing - support multiple pids in set_pid_ftrace file
-References: <1253005169-32709-1-git-send-email-jolsa@redhat.com>
-In-Reply-To: <1253005169-32709-1-git-send-email-jolsa@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909151144.57816.laurent.pinchart@ideasonboard.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jolsa@redhat.com wrote:
-> Adding the possibility to set more than 1 pid in the set_pid_ftrace file,
-> thus allowing to trace more than 1 independent processes.
+Hi Julia,
+
+On Sunday 13 September 2009 22:55:30 Julia Lawall wrote:
+> From: Julia Lawall <julia@diku.dk>
 > 
-> Usage:
+> Move the kzalloc and associated test after the stream/query test, to avoid
+> the need to free the allocated if the stream/query test fails.
 > 
-> sh-4.0# echo 284 > ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> 284
-> sh-4.0# echo 1 >> ./set_ftrace_pid 
-> sh-4.0# echo 0 >> ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> swapper tasks
-> 1
-> 284
-> sh-4.0# echo 4 > ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> 4
-> sh-4.0# echo > ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> no pid
-> sh-4.0# 
+> The semantic match that finds the problem is as follows:
+> (http://www.emn.fr/x-info/coccinelle/)
 > 
+> // <smpl>
+> @r exists@
+> local idexpression x;
+> statement S;
+> expression E;
+> identifier f,f1,l;
+> position p1,p2;
+> expression *ptr != NULL;
+> @@
 > 
-> wbr,
-> jirka
+> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
+> ...
+> if (x == NULL) S
+> <... when != x
+>      when != if (...) { <+...x...+> }
+> (
+> x->f1 = E
 > 
-> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+>  (x->f1 == NULL || ...)
+> 
+>  f(...,x->f1,...)
+> )
+> ...>
+> (
+>  return \(0\|<+...x...+>\|ptr\);
+> 
+>  return@p2 ...;
+> )
+> 
+> @script:python@
+> p1 << r.p1;
+> p2 << r.p2;
+> @@
+> 
+> print "* file: %s kmalloc %s return %s" %
+>  (p1[0].file,p1[0].line,p2[0].line) // </smpl>
+> 
+> Signed-off-by: Julia Lawall <julia@diku.dk>
 > ---
->  kernel/trace/ftrace.c |  226 +++++++++++++++++++++++++++++++++++--------------
->  kernel/trace/trace.h  |    4 +-
->  2 files changed, 164 insertions(+), 66 deletions(-)
->  
-...
-> +static void ftrace_pid_reset(void)
-> +{
-> +	struct ftrace_pid *fpid, *safe;
-> +
-> +	mutex_lock(&ftrace_lock);
-> +	list_for_each_entry_safe(fpid, safe, &ftrace_pids, list) {
-> +		struct pid *pid = fpid->pid;
-> +
-> +		clear_ftrace_pid_task(&pid);
+>  drivers/media/video/uvc/uvc_video.c |    7 ++++---
+>  1 files changed, 4 insertions(+), 3 deletions(-)
+> 
+> diff --git a/drivers/media/video/uvc/uvc_video.c
+>  b/drivers/media/video/uvc/uvc_video.c index 5b757f3..f960e8e 100644
+> --- a/drivers/media/video/uvc/uvc_video.c
+> +++ b/drivers/media/video/uvc/uvc_video.c
+> @@ -124,13 +124,14 @@ static int uvc_get_video_ctrl(struct uvc_streaming
+>  *stream, int ret;
+> 
+>  	size = stream->dev->uvc_version >= 0x0110 ? 34 : 26;
+> +	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) &&
+> +			query == UVC_GET_DEF)
 
-Now we can change clear_ftrace_pid_task() to take struct pid *
-instead of struct pid**.
+This fits in the 80 columns limit, no need to split the statement on multiple 
+lines.
 
+> +		return -EIO;
 > +
-> +		if (pid != ftrace_swapper_pid)
-> +			put_pid(pid);
-> +
+>  	data = kmalloc(size, GFP_KERNEL);
+>  	if (data == NULL)
+>  		return -ENOMEM;
+> 
+> -	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) && query == UVC_GET_DEF)
+> -		return -EIO;
+> -
+>  	ret = __uvc_query_ctrl(stream->dev, query, 0, stream->intfnum,
+>  		probe ? UVC_VS_PROBE_CONTROL : UVC_VS_COMMIT_CONTROL, data,
+>  		size, UVC_CTRL_STREAMING_TIMEOUT);
 
-clear_ftrace_pid_task() already called put_pid().
+Other than that,
 
-> +		list_del(&fpid->list);
-> +		kfree(fpid);
-> +	}
-> +
-> +	ftrace_update_pid_func();
-> +	ftrace_startup_enable(0);
-> +
-> +	mutex_unlock(&ftrace_lock);
-> +}
-> +
-...
->  static ssize_t
->  ftrace_pid_write(struct file *filp, const char __user *ubuf,
->  		   size_t cnt, loff_t *ppos)
->  {
-> -	struct pid *pid;
->  	char buf[64];
->  	long val;
->  	int ret;
-> @@ -2897,57 +3016,36 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
->  
->  	buf[cnt] = 0;
->  
-> +	/*
-> +	 * Allow the "echo > set_ftrace_pid" to clean
-> +	 * the pids quietly.
-> +	 */
-> +	if (!*ppos && *buf == '\n' && cnt == 1)
-> +		return 1;
-> +
+Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
 
-How about:
-	strstrip(buf);
-	if (strlen(buf) == 0)
-		return 1;
-
-So "echo -n '' > set_ftrace_pid" works too.
-
->  	ret = strict_strtol(buf, 10, &val);
->  	if (ret < 0)
->  		return ret;
->  
-
+-- 
+Laurent Pinchart
