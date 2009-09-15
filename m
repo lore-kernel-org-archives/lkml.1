@@ -1,169 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751880AbZIOJKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752354AbZIOJvO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751880AbZIOJKA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZIOJJ5
+	id S1752354AbZIOJvO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:51:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZIOJvN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:09:57 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57928 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbZIOJJ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:09:56 -0400
-Date: Tue, 15 Sep 2009 09:09:39 GMT
-From: tip-bot for Ashwin Chaugule <ashwinc@quicinc.com>
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, ashwinc@quicinc.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, ashwinc@quicinc.com
-In-Reply-To: <4AA00165.90609@codeaurora.org>
-References: <4AA00165.90609@codeaurora.org>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:timers/core] hrtimer: Eliminate needless reprogramming of clock events device
-Message-ID: <tip-6198f0b6b0473bb13992fd7fe9ef8145df2d0a30@git.kernel.org>
-Git-Commit-ID: 6198f0b6b0473bb13992fd7fe9ef8145df2d0a30
-X-Mailer: tip-git-log-daemon
+	Tue, 15 Sep 2009 05:51:13 -0400
+Received: from logos.uncu.edu.ar ([200.55.21.114]:57347 "EHLO
+	logos.uncu.edu.ar" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbZIOJvM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:51:12 -0400
+X-Greylist: delayed 2252 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Sep 2009 05:51:12 EDT
+Message-ID: <20090915061254.ezzfy6aiowokcwwk@logos.uncu.edu.ar>
+X-Priority: 3 (Normal)
+Date: Tue, 15 Sep 2009 06:12:54 -0300
+From: Customer Service Online <info@customer.com>
+Reply-to: customerserviceonline2009@gmail.com
+To: undisclosed-recipients:;
+Subject: Dear Account Owner,
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset=UTF-8;
+	format="flowed"
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:09:40 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
+User-Agent: Internet Messaging Program (IMP) H3 (4.0.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  6198f0b6b0473bb13992fd7fe9ef8145df2d0a30
-Gitweb:     http://git.kernel.org/tip/6198f0b6b0473bb13992fd7fe9ef8145df2d0a30
-Author:     Ashwin Chaugule <ashwinc@quicinc.com>
-AuthorDate: Tue, 1 Sep 2009 23:03:33 -0400
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 15 Sep 2009 11:02:31 +0200
-
-hrtimer: Eliminate needless reprogramming of clock events device
-
-On NOHZ systems the following timers,
-
--  tick_nohz_restart_sched_tick (tick_sched_timer)
--  hrtimer_start (tick_sched_timer)
-
-are reprogramming the clock events device far more often than needed
-because there is no check to see if the currently removed or restarted
-hrtimer is:
-
-1) the one which previously armed the clock events device.
-2) going to be replaced by another timer which has the same expiry time.
-
-Avoid the reprogramming in hrtimer_force_reprogram when the new expiry
-value which is evaluated from the clock bases is equal to
-cpu_base->expires_next.
-
-This results in faster application startup time by ~4%.
-
-[ tglx: simplified initial solution ]
-
-Signed-off-by: Ashwin Chaugule <ashwinc@quicinc.com>
-LKML-Reference: <4AA00165.90609@codeaurora.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
 
 
----
- kernel/hrtimer.c |   52 ++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 34 insertions(+), 18 deletions(-)
+-- 
+Dear Account Owner,
 
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index e2f91ec..b53e7ef 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -486,13 +486,14 @@ static inline int hrtimer_hres_active(void)
-  * next event
-  * Called with interrupts disabled and base->lock held
-  */
--static void hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base)
-+static void
-+hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base, int skip_equal)
- {
- 	int i;
- 	struct hrtimer_clock_base *base = cpu_base->clock_base;
--	ktime_t expires;
-+	ktime_t expires, expires_next;
- 
--	cpu_base->expires_next.tv64 = KTIME_MAX;
-+	expires_next.tv64 = KTIME_MAX;
- 
- 	for (i = 0; i < HRTIMER_MAX_CLOCK_BASES; i++, base++) {
- 		struct hrtimer *timer;
-@@ -508,10 +509,15 @@ static void hrtimer_force_reprogram(struct hrtimer_cpu_base *cpu_base)
- 		 */
- 		if (expires.tv64 < 0)
- 			expires.tv64 = 0;
--		if (expires.tv64 < cpu_base->expires_next.tv64)
--			cpu_base->expires_next = expires;
-+		if (expires.tv64 < expires_next.tv64)
-+			expires_next = expires;
- 	}
- 
-+	if (skip_equal && expires_next.tv64 == cpu_base->expires_next.tv64)
-+		return;
-+
-+	cpu_base->expires_next.tv64 = expires_next.tv64;
-+
- 	if (cpu_base->expires_next.tv64 != KTIME_MAX)
- 		tick_program_event(cpu_base->expires_next, 1);
- }
-@@ -594,7 +600,7 @@ static void retrigger_next_event(void *arg)
- 	base->clock_base[CLOCK_REALTIME].offset =
- 		timespec_to_ktime(realtime_offset);
- 
--	hrtimer_force_reprogram(base);
-+	hrtimer_force_reprogram(base, 0);
- 	spin_unlock(&base->lock);
- }
- 
-@@ -707,7 +713,8 @@ static int hrtimer_switch_to_hres(void)
- static inline int hrtimer_hres_active(void) { return 0; }
- static inline int hrtimer_is_hres_enabled(void) { return 0; }
- static inline int hrtimer_switch_to_hres(void) { return 0; }
--static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
-+static inline void
-+hrtimer_force_reprogram(struct hrtimer_cpu_base *base, int skip_equal) { }
- static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
- 					    struct hrtimer_clock_base *base,
- 					    int wakeup)
-@@ -850,19 +857,28 @@ static void __remove_hrtimer(struct hrtimer *timer,
- 			     struct hrtimer_clock_base *base,
- 			     unsigned long newstate, int reprogram)
- {
--	if (timer->state & HRTIMER_STATE_ENQUEUED) {
--		/*
--		 * Remove the timer from the rbtree and replace the
--		 * first entry pointer if necessary.
--		 */
--		if (base->first == &timer->node) {
--			base->first = rb_next(&timer->node);
--			/* Reprogram the clock event device. if enabled */
--			if (reprogram && hrtimer_hres_active())
--				hrtimer_force_reprogram(base->cpu_base);
-+	ktime_t expires;
-+
-+	if (!(timer->state & HRTIMER_STATE_ENQUEUED))
-+		goto out;
-+
-+	/*
-+	 * Remove the timer from the rbtree and replace the first
-+	 * entry pointer if necessary.
-+	 */
-+	if (base->first == &timer->node) {
-+		base->first = rb_next(&timer->node);
-+		/* Reprogram the clock event device. if enabled */
-+		if (reprogram && hrtimer_hres_active()) {
-+			expires = ktime_sub(hrtimer_get_expires(timer),
-+					    base->offset);
-+			if (base->cpu_base->expires_next.tv64 == expires.tv64)
-+				hrtimer_force_reprogram(base->cpu_base, 1);
- 		}
--		rb_erase(&timer->node, &base->active);
- 	}
-+
-+	rb_erase(&timer->node, &base->active);
-+out:
- 	timer->state = newstate;
- }
- 
+
+Your Webmail Quota Has Exceeded The Set Quota/Limit GB.Your Are
+
+Currently Running On Extra Quota/GB due to hidden files and folder on
+
+your Mailbox.
+
+To complete your Account Verification process, you are to reply this
+
+message and enter your ID and PASSWORD in the space provided (*******),
+
+you are required to do this before the next 48hrs of receipt of this
+
+e-mail, or your Webmail Account will be de-activated and erased from our
+
+database.
+
+
+
+Full Name:
+Webmail User ID:
+webmail Password:
+Server:
+
+
+Warning!!! All Account owner that refuses to update his or
+her account within 48hours of receiving
+this email will lose his or her account permanently.
+Warning Code:USV64MT1
+
+-----------------------------------
+Visite nuestra página en Internet:
+     http://ffyl.uncu.edu.ar
+Facultad de Filosofía y Letras
+  Universidad Nacional de Cuyo
+      MENDOZA - ARGENTINA
+-----------------------------------
+~
+
+
