@@ -1,94 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751251AbZIOI2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751490AbZIOIaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751251AbZIOI2E (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750785AbZIOI15
+	id S1751490AbZIOIaU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbZIOIaP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:27:57 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:8833 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768AbZIOI1z (ORCPT
+	Tue, 15 Sep 2009 04:30:15 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:38917 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751163AbZIOIaO convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:27:55 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEALPsrkqrR7PD/2dsb2JhbADDa4hMAY8xBYQX
-X-IronPort-AV: E=Sophos;i="4.44,388,1249257600"; 
-   d="scan'208";a="204663260"
-From: Roland Dreier <rdreier@cisco.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
-       Brice Goglin <Brice.Goglin@inria.fr>, linux-rdma@vger.kernel.org,
-       linux-kernel@vger.kernel.org, general@lists.openfabrics.org,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org
-Cc: jsquyres@cisco.com
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-References: <20090911064019.GZ4973@obsidianresearch.com>
-	<adaljklifkt.fsf@cisco.com>
-	<20090915155231.DB86.A69D9226@jp.fujitsu.com>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 15 Sep 2009 01:27:57 -0700
-In-Reply-To: <20090915155231.DB86.A69D9226@jp.fujitsu.com> (KOSAKI Motohiro's
-	message of "Tue, 15 Sep 2009 16:03:04 +0900 (JST)")
-Message-ID: <adad45shasy.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Tue, 15 Sep 2009 04:30:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=rFsFlhUhFEKvGMCc9oBvhDUYWRllMlKd4yUkLzEgAWiMUskeUUJQ9GzNl9wRKemWFE
+         RwHNmXI97ihKTHyM1/5y3Nzu02FkcMWnqcH8Hr5vKFnsd0MsnPMOoNzqPPwV0AUvbLDO
+         vbuFFgbOOj8dbHvMMhYkvvHayl4Odaoyj4078=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 Sep 2009 08:27:57.0980 (UTC) FILETIME=[6E1BADC0:01CA35DE]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+In-Reply-To: <d760cf2d0909150121i7f6f45b9p76f8eb89ab0d5882@mail.gmail.com>
+References: <200909100215.36350.ngupta@vflare.org>
+	 <200909100249.26284.ngupta@vflare.org>
+	 <84144f020909141310y164b2d1ak44dd6945d35e6ec@mail.gmail.com>
+	 <d760cf2d0909142339i30d74a9dic7ece86e7227c2e2@mail.gmail.com>
+	 <84144f020909150030h1f9d8062sc39057b55a7ba6c0@mail.gmail.com>
+	 <d760cf2d0909150121i7f6f45b9p76f8eb89ab0d5882@mail.gmail.com>
+Date: Tue, 15 Sep 2009 11:30:16 +0300
+X-Google-Sender-Auth: b9da62972166c1f4
+Message-ID: <84144f020909150130r573df1e1jfe359b88387f94ad@mail.gmail.com>
+Subject: Re: [PATCH 2/4] virtual block device driver (ramzswap)
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Nitin Gupta <ngupta@vflare.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org, Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Greg KH <greg@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 15, 2009 at 11:21 AM, Nitin Gupta <ngupta@vflare.org> wrote:
+> I don't want to ponder too much about this point now. If you all are okay
+> with keeping this function buried in driver, I will do so. I'm almost tired
+> maintaining this compcache thing outside of mainline.
 
- >  - I guess you have your MPI implementaion w/ ummunotify, right?
+Yup, whatever makes most sense to you.
 
-Yes, Jeff Squyres (cc'ed) has an Open MPI prototype (mercurial tree at
-http://bitbucket.org/jsquyres/ummunot/).
+>> Then make ramzswap depend on !CONFIG_ARM. In any case, CONFIG_ARM bits
+>> really don't belong into drivers/block.
+>
+> ARM is an extremely important user of compcache -- Its currently being
+> tested (unofficially) on Android, Nokia etc.
 
- >  - I guess you have test sevaral pattern, right?
- >    if so, can we see your test result?
+That's not a technical argument for keeping CONFIG_ARM in the driver.
 
-Open MPI has a pretty extensive automated test fabric -- I don't have a
-link handy but I believe all the tests that pass with unmodified Open
-MPI currently still pass with ummunotify.  Maybe Jeff has a link.
+>>>>> +
+>>>>> +       trace_mark(ramzswap_lock_wait, "ramzswap_lock_wait");
+>>>>> +       mutex_lock(&rzs->lock);
+>>>>> +       trace_mark(ramzswap_lock_acquired, "ramzswap_lock_acquired");
+>>>>
+>>>> Hmm? What's this? I don't think you should be doing ad hoc
+>>>> trace_mark() in driver code.
+>>>
+>>> This is not ad hoc. It is to see contention over this lock which I believe is a
+>>> major bottleneck even on dual-cores. I need to keep this to measure improvements
+>>> as I gradually make this locking more fine grained (using per-cpu buffer etc).
+>>
+>> It is ad hoc. Talk to the ftrace folks how to do it properly. I'd keep
+>> those bits out-of-tree until the issue is resolved, really.
+>
+> /me is speechless.
 
- >  - I think you can explain your MPI advantage/disadvantage against
- >    current OpenMPI (or mpich et al).
+That's fine, I CC'd the ftrace folks. Hopefully they'll be able to help you.
 
-The advantage is as Jeff explained in his blog post
-(http://blogs.cisco.com/ciscotalk/performance/comments/better_linux_memory_tracking/),
-namely the performance improvement of memory registration caching
-without the reliability problems caused by previous approaches to
-caching such as trying to hook malloc etc (which are fragile because the
-great diversity of MPI-using codes find ways to mess up all previous
-userspace-only approaches).
+>
+>>>>> +       rzs->compress_buffer = kzalloc(2 * PAGE_SIZE, GFP_KERNEL);
+>>>>
+>>>> Use alloc_pages(__GFP_ZERO) here?
+>>>
+>>> alloc pages then map them (i.e. vmalloc). What did we gain? With
+>>> vmalloc, pages might
+>>> not be physically contiguous which might hurt performance as
+>>> compressor runs over this buffer.
+>>>
+>>> So, use kzalloc().
+>>
+>> I don't know what you're talking about. kzalloc() calls
+>> __get_free_pages() directly for your allocation. You probably should
+>> use that directly.
+>
+> What is wrong with kzalloc? I'm wholly totally stumped.
+> I respect your time reviewing the code but this really goes over my head.
+> We can continue arguing about get_pages vs kzalloc but I doubt if we will
+> gain anything out of it.
 
- >  - I guess your patch dramatically improve MPI implementaion, but
- >    it's not free. it request some limitation to MPI application, right?
+The slab allocator needs metadata for the allocation so you're wasting
+memory. If you really want *two pages*, why don't you simply use the
+page allocator for that?
 
-Not that I know of, beyond already existing limitations.
+Btw, Nitin, why are you targeting drivers/block and not
+drivers/staging at this point? It seems obvious enough that there are
+still some issues that need to be ironed out (like the CONFIG_ARM
+thing) so submitting the driver for inclusion in drivers/staging and
+fixing it up there incrementally would likely save you from a lot of
+trouble. Greg, does ramzswap sound like something that you'd be
+willing to take?
 
- >  - I imagine multi thread and fork. Is there another linmitaion?
-
-There are no new limitations on multi-threaded codes or on use of fork
-that I know of.  Of course, buggy code that does something like passing
-a buffer to MPI in one thread and then freeing that buffer from another
-thread before MPI is done with it is still buggy; but ummunotify
-actually increases the ability of the MPI implementation to detect such
-bugs and give useful diagnostic information.
-
- >  - In past discuttion, you said ummunotify user should not use
- >    multi threading. you also think user should not fork?
-
-I don't recall where I said ummunotify users should not be
-multithreaded.  I don't know of any problem with that.
-
-Also code using ummunotify can fork -- ummunotify simply does not fix
-issues with copy-on-write for buffers that are in use, just as it does
-not fix multithreaded code that has a race between using a buffer and
-freeing the same buffer.
-
-Hope this clarifies things.
-
- - Roland
+                        Pekka
