@@ -1,71 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755191AbZIOU1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756518AbZIOU0t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755191AbZIOU1i (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 16:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZIOU1h
+	id S1756518AbZIOU0t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 16:26:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZIOU0o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 16:27:37 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:48391 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751691AbZIOU1h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 16:27:37 -0400
-Date: Tue, 15 Sep 2009 13:24:45 -0700
-From: Greg KH <gregkh@suse.de>
-To: Daniel Walker <dwalker@fifo99.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 06/20] mem_class: use minor as index instead of
- searching  the array
-Message-ID: <20090915202445.GC3411@suse.de>
-References: <20090915181247.GA32167@kroah.com>
- <1253041976-1111-6-git-send-email-gregkh@suse.de>
- <1253043763.11643.358.camel@desktop>
- <ac3eb2510909151246r59decb10pfb68fd5c0cb9a63a@mail.gmail.com>
- <1253045229.11643.398.camel@desktop>
+	Tue, 15 Sep 2009 16:26:44 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:43997 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751389AbZIOU0n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 16:26:43 -0400
+X-Trace: 259120221/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.84.74/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.84.74
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlgFAHOVr0pPRVRK/2dsb2JhbACBU956hBcF
+X-IronPort-AV: E=Sophos;i="4.44,391,1249254000"; 
+   d="scan'208";a="259120221"
+Date: Tue, 15 Sep 2009 21:26:01 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: Mel Gorman <mel@csn.ul.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 5/8] mm: follow_hugetlb_page flags
+In-Reply-To: <20090914132737.GB11778@csn.ul.ie>
+Message-ID: <Pine.LNX.4.64.0909152117060.22199@sister.anvils>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
+ <Pine.LNX.4.64.0909072235360.15430@sister.anvils> <20090909113143.GG24614@csn.ul.ie>
+ <Pine.LNX.4.64.0909131548001.22865@sister.anvils> <20090914132737.GB11778@csn.ul.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253045229.11643.398.camel@desktop>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 01:07:09PM -0700, Daniel Walker wrote:
-> On Tue, 2009-09-15 at 21:46 +0200, Kay Sievers wrote:
-> > On Tue, Sep 15, 2009 at 21:42, Daniel Walker <dwalker@fifo99.com> wrote:
-> > > On Tue, 2009-09-15 at 12:12 -0700, Greg Kroah-Hartman wrote:
-> > >> +static const struct memdev {
-> > >> +       const char *name;
-> > >> +       const struct file_operations *fops;
-> > >> +       struct backing_dev_info *dev_info;
-> > >> +} devlist[] = {
-> > >> +       [ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
-> > >
-> > > This patch has several checkpatch errors wrt. the spacing used in the
-> > > array index..
-> > >
-> > > Kay, can you send a follow up patch to correct them?
-> > 
-> > I think they are fine, and properly aligned to be best readable.
+On Mon, 14 Sep 2009, Mel Gorman wrote:
+> On Sun, Sep 13, 2009 at 04:35:44PM +0100, Hugh Dickins wrote:
+> > On Wed, 9 Sep 2009, Mel Gorman wrote:
 > 
-> We already have a coding style in Linux which doesn't allow this type of
-> alignment .. If we allowed everyone to pick their own coding style we
-> would have a pretty ugly looking kernel.. That's why the checkpatch tool
-> was create to test for style conformance.. If you feel strongly about
-> this alignment you could change checkpatch not to warn on this , but I
-> don't think it's likely a change like that would be accepted..
+> > > and called something like hugetlbfs_pagecache_present()
+> > 
+> > Can call it that if you prefer, either name suits me.
+> 
+> I don't feel strongly enough to ask for a new version. If this is not
+> the final version that is merged, then a name-change would be nice.
+> Otherwise, it's not worth the hassle.
 
-I explicitly ignored the checkpatch warnings here, as Kay is right, it
-does look better and is more sane with the way he wrote it.
+You've raised several points, so worth a patch on top to keep you sweet!
 
-Remember, checkpatch.pl is a _guide_ not a
-hard-and-fast-rule-or-else-puppies-will-get-hurt type of a thing.
+> > > or else reuse
+> > > the function and have the caller unlock_page but it's probably not worth
+> > > addressing.
+> > 
+> > I did originally want to do it that way, but the caller is holding
+> > page_table_lock, so cannot lock_page there.
+> 
+> Gack, fair point. If there is another version, a comment to that effect
+> wouldn't hurt.
 
-The whole reason for having a consistant coding style is so your brain
-gets used to patterns and you can see the context of the code instead.
-It's a proven thing.  Arguing that removing that space makes it easier
-to understand and maintain over time is illogical.
+Righto, done.
 
-thanks,
+> And nothing else other than core dumping will be using FOLL_DUMP so
+> there should be no assumptions broken.
 
-greg k-h
+You have no idea of the depths of depravity to which I might sink:
+see patch 1/4 in the coming group, you might be inclined to protest.
+
+> > But it does seem that we've confused each other: what to say instead?
+> 
+> /*
+>  * When core-dumping, it's suits the get_dump_page() if an error is
+>  * returned if there is a hole and no huge pagecache to back it.
+>  * get_dump_page() is concerned with individual pages and by
+>  * returning the page as an error, the core dump file still gets
+>  * zeros but a hugepage allocation is avoided.
+>  */
+
+I've added a sentence to that comment, not quite what you've
+suggested above, but something I hope makes it clearer.
+
+Hugh
