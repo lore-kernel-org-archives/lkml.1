@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751751AbZIOJE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbZIOJIt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751751AbZIOJE0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751278AbZIOJEV
+	id S1751649AbZIOJIt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:08:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZIOJIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:04:21 -0400
-Received: from mga03.intel.com ([143.182.124.21]:45958 "EHLO mga03.intel.com"
+	Tue, 15 Sep 2009 05:08:47 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47701 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbZIOJEU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:04:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
-   d="scan'208";a="187729908"
-Date: Tue, 15 Sep 2009 17:03:54 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Tejun Heo <tj@kernel.org>, Nick Piggin <npiggin@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] devmem: handle partial kmem write/read
-Message-ID: <20090915090354.GA8292@localhost>
-References: <20090915021851.168285585@intel.com> <20090915022328.460943370@intel.com> <20090915113811.6b44877c.kamezawa.hiroyu@jp.fujitsu.com> <20090915090130.GA4970@localhost>
+	id S1751117AbZIOJIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:08:46 -0400
+Date: Tue, 15 Sep 2009 11:08:47 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, tytso@mit.edu, akpm@linux-foundation.org,
+       trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
+	opportunistic writeback
+Message-ID: <20090915090847.GA12169@duck.suse.cz>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-7-git-send-email-jens.axboe@oracle.com> <20090914133307.GJ24075@duck.suse.cz> <20090914134207.GA14830@infradead.org> <20090914192803.GL14984@kernel.dk> <20090914194242.GM14984@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090915090130.GA4970@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090914194242.GM14984@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 05:01:30PM +0800, Wu Fengguang wrote:
-> On Tue, Sep 15, 2009 at 10:38:11AM +0800, KAMEZAWA Hiroyuki wrote:
-> > On Tue, 15 Sep 2009 10:18:53 +0800
-> > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > Return early on partial read/write, which may happen in future.
-> > > (eg. hit hwpoison pages)
+On Mon 14-09-09 21:42:43, Jens Axboe wrote:
+> On Mon, Sep 14 2009, Jens Axboe wrote:
+> > On Mon, Sep 14 2009, Christoph Hellwig wrote:
+> > > On Mon, Sep 14, 2009 at 03:33:07PM +0200, Jan Kara wrote:
+> > > > On Mon 14-09-09 11:36:33, Jens Axboe wrote:
+> > > > > bdi_start_writeback() is currently split into two paths, one for
+> > > > > WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
+> > > > > for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
+> > > > > only WB_SYNC_NONE.
+> > > >   What I don't like about this patch is that if somebody sets up
+> > > > writeback_control with WB_SYNC_ALL mode set and then submits it to disk via
+> > > > bdi_start_writeback() it will just silently convert his writeback to an
+> > > > asynchronous one.
+> > > >   So I'd maybe leave setting of sync_mode to the caller and just WARN_ON if
+> > > > it does not match the purpose of the function...
 > > > 
-> > Hmm, please modify vread() as you did in vwrite() and
+> > > Or initialize the wb entirely inside these functions.  For the sync case
+> > > we really only need a superblock as argument, and for writeback it's
+> > > bdi + nr_pages.  And also make sure they consistenly return void as
+> > > no one cares about the return value.
 > > 
-> > ==
-> >                kbuf = (char *)__get_free_page(GFP_KERNEL);
-> >                 if (!kbuf)
-> >                         return -ENOMEM;
-> > ==
-> > Add __GFP_ZERO to kbuf allocation, and just ignore vread()'s return value.
-> > Then, this will be much simpler.
+> > Yes, I thought about doing that and like that better than the warning.
+> > Just pass in the needed args and allocate+fill the wbc on stack. I'll
+> > make that change.
 > 
-> Thanks, here is the updated patch, which
-> - updates vread/vwrite prototype to return 0 (or error code in future).
-> - do zero fill in the callers
-> Comment updates are ignored for now.
+> That works out much better, imho:
+> 
+> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=270c12655d7d11e234d335a8ab0540c02c034b66
+  Yeah, the code looks better. BTW, how about converting also
+bdi_writeback_all() to get superblock and nr_pages as an argument?
+Currently it seems to be the only place "above" flusher thread which uses
+wbc and it's just constructed in the callers of bdi_writeback_all() and
+then disassembled inside the function...
 
-This patch also makes it trivial to add your
-is_vmalloc_or_module_addr() fixes, like this :)
-
----
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- drivers/char/mem.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
---- linux-mm.orig/drivers/char/mem.c	2009-09-15 16:58:06.000000000 +0800
-+++ linux-mm/drivers/char/mem.c	2009-09-15 16:58:12.000000000 +0800
-@@ -446,6 +446,10 @@ static ssize_t read_kmem(struct file *fi
- 			return -ENOMEM;
- 		while (count > 0) {
- 			sz = size_inside_page(p, count);
-+			if (!is_vmalloc_or_module_addr((void*)p)) {
-+				ret = -EFAULT;
-+				break;
-+			}
- 			ret = vread(kbuf, (char *)p, sz);
- 			if (ret)
- 				break;
-@@ -546,6 +550,10 @@ static ssize_t write_kmem(struct file * 
- 			unsigned long sz = size_inside_page(p, count);
- 			unsigned long n;
- 
-+			if (!is_vmalloc_or_module_addr((void*)p)) {
-+				ret = -EFAULT;
-+				break;
-+			}
- 			n = copy_from_user(kbuf, buf, sz);
- 			if (n) {
- 				if (wrote + virtr)
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
