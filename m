@@ -1,109 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZIOPfV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZIOPvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZIOPfV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:35:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZIOPfT
+	id S1754790AbZIOPvI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 11:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZIOPvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:35:19 -0400
-Received: from kroah.org ([198.145.64.141]:38415 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754758AbZIOPfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:35:17 -0400
-Date: Tue, 15 Sep 2009 08:33:12 -0700
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>,
-       Ravi Anand <ravi.anand@qlogic.com>,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>
-Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
- CONFIG_MOUDLES=n.
-Message-ID: <20090915153312.GB22774@kroah.com>
-References: <20090908182541.GB44157@plap4-2.local>
- <20090911175341.GH710@plap4-2.local>
- <1252708951.13282.151.camel@mulgrave.site>
- <20090912000742.GB12098@plap4-2.local>
- <20090912001752.GC12098@plap4-2.local>
- <20090912003808.GD12098@plap4-2.local>
- <20090912005446.GA11691@kroah.com>
- <20090912025623.GA14824@plap4-2.local>
- <20090912043333.GA12349@kroah.com>
- <1252765807.4238.74.camel@mulgrave.site>
+	Tue, 15 Sep 2009 11:51:03 -0400
+Received: from smtp2.caviumnetworks.com ([209.113.159.134]:15968 "EHLO
+	smtp2.caviumnetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZIOPvB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 11:51:01 -0400
+X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Sep 2009 11:51:01 EDT
+Message-ID: <4AAFB458.3080406@caviumnetworks.com>
+Date: Tue, 15 Sep 2009 08:35:52 -0700
+From: David Daney <ddaney@caviumnetworks.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252765807.4238.74.camel@mulgrave.site>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Brian Gerst <brgerst@gmail.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 11/11] Use unreachable() in asm-generic/bug.h for  !CONFIG_BUG
+ case.
+References: <4AAEBAC2.1050905@caviumnetworks.com>  <1252965340-31735-11-git-send-email-ddaney@caviumnetworks.com> <73c1f2160909141612i32f46361q7430cecf0b68d07b@mail.gmail.com> <4AAED18E.7030903@caviumnetworks.com> <alpine.LFD.2.01.0909141637250.4950@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.01.0909141637250.4950@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 Sep 2009 15:35:54.0932 (UTC) FILETIME=[36C39F40:01CA361A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
-> On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
-> > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
-> > > On Fri, 11 Sep 2009, Greg KH wrote:
-> > > 
-> > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
-> > > > > Randy Dunlap noted:
-> > > > > 
-> > > > >   when CONFIG_MODULES=n:
-> > > > > 
-> > > > > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> > > > > 
-> > > > >   in
-> > > > > 
-> > > > > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> > > > > 		KOBJ_CHANGE, envp);
-> > > > > 
-> > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
-> > > > 
-> > > > Um, why?  What are you trying to do here?  kobject change should not be
-> > > > for a device, or a "normal" kobject.
-> > > > 
-> > > > What do you expect userspace to do with this?  Where have you documented
-> > > > it?
-> > > 
-> > > The purpose was described here:
-> > > 
-> > > 	http://article.gmane.org/gmane.linux.scsi/54155
-> > > 
-> > > Basically we'd like to instruct user-space to retrieve a blob of data
-> > > automatically.
-> > 
-> > Hm, like a firmware object perhaps?
-> > 
-> > > Original implementation used the kboject hanging off
-> > > the module which does not exist when CONFIG_MODULES=n.  It was
-> > > suggested that perhaps an alternative would be to use 'struct device'
-> > > kobj.  Any tips on how to trigger such a driver-specific event,
-> > > perhaps a dedicated kobject exported by the driver itself???
-> > 
-> > Why not use the firmware interface for it, that is what it is designed
-> > for, and you will not have to craft any new udev rules.
+Linus Torvalds wrote:
 > 
-> The data is going the wrong way to use the current firmware interface,
-> which is designed to load data from userspace into the kernel.  For this
-> interface, we want the data to go the other way (i.e. the kernel has a
-> blob of dump data it would like userspace to save if it can).
+> On Mon, 14 Sep 2009, David Daney wrote:
+>> The existing code just falls through to whatever happens to follow the BUG().
+> 
+> Brian was talking BUG_ON().
+> 
+> And the existing !CONFIG_BUG BUG_ON() is actually set up so that gcc will 
+> just optimize it away entirely (yet give the same compile-time warnings as 
+> the "real" BUG_ON() does).
+> 
+> Changing it to "if (cond) unreachable()" is likely to generate _more_ 
+> code, which is against the whole point of wanting to disable CONFIG_BUG.
+> 
 
-Ick.
+Yes, you are correct.  I said the same thing in the log message for the 
+patch.
 
-> I'd be amenable to updating the firmware interface to do this, but it
-> looks like adding a completely new codepath, which it's not clear even
-> belongs there.
+Really it may be too early for this patch to be appropriate for your 
+tree.  GCC-4.5 will probably not be released for several more months, 
+and it will be several years before a GCC with __builtin_unreachable() 
+is being used by the majority of people compiling kernels.
 
-Well, I don't think it deserves a kobject change event, as that means
-something a bit different to userspace today, right?
+Ingo had suggested the approach of this patch as a way of eliminating 
+many warnings when using !CONFIG_BUG.  I think it clearly makes sense 
+for compilers that support __builtin_unreachable(), but clearly it is 
+not an unquestionable win if we end up generating larger code.
 
-Either way, I see no documentation being added to the Documentation/ABI/
-directory describing what is happening here, that needs to be added at
-the least.
+With this particular patch, I don't really care if you merge it or not. 
+  Perhaps I shouldn't have made it part of the set.
 
-thanks,
+The rest of the set I think would make sense for 2.6.32 or 2.6.33.
 
-greg k-h
+David Daney
