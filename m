@@ -1,128 +1,374 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751397AbZIOI7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751432AbZIOI7t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751397AbZIOI7V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751094AbZIOI7O
+	id S1751432AbZIOI7t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:59:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZIOI7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:59:14 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:34813 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750905AbZIOI7M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:59:12 -0400
-Message-ID: <4AAF5757.30500@gmail.com>
-Date: Tue, 15 Sep 2009 10:59:03 +0200
-From: Eric Dumazet <eric.dumazet@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Windows/20090812)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Vegard Nossum <vegard.nossum@gmail.com>, linux-kernel@vger.kernel.org,
-       Linux Netdev List <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized memory
- (bf438284)
-References: <20090915080953.GA24958@elte.hu>
-In-Reply-To: <20090915080953.GA24958@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Tue, 15 Sep 2009 10:59:04 +0200 (CEST)
+	Tue, 15 Sep 2009 04:59:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:47012 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750909AbZIOI7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 04:59:44 -0400
+From: jolsa@redhat.com
+To: mingo@elte.hu, rostedt@goodmis.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] tracing - support multiple pids in set_pid_ftrace file
+Date: Tue, 15 Sep 2009 10:59:29 +0200
+Message-Id: <1253005169-32709-1-git-send-email-jolsa@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar a écrit :
-> FYI, we still have this one on latest mainline:
-> 
-> [    2.159614] NET: Registered protocol family 16
-> [    2.163109] initcall netlink_proto_init+0x0/0x1b0 returned 0 after 5859 usecs
-> [    2.164008] WARNING: kmemcheck: Caught 32-bit read from uninitialized memory (bf438284)
-> [    2.165006] 0100000002000000000000000000000000000000ad4eaddeffffffffffffffff
-> [    2.172006]  i i i i i i u u i i i i i i i i i i i i i i i i i i i i i i i i
-> [    2.179005]          ^
-> [    2.180005] 
-> [    2.181008] Pid: 1, comm: swapper Not tainted (2.6.31-tip-02389-gc9f313c-dirty #151) 
-> [    2.182006] EIP: 0060:[<815a8101>] EFLAGS: 00010282 CPU: 0
-> [    2.183009] EIP is at sock_init_data+0xe1/0x210
-> [    2.184006] EAX: 0001b000 EBX: bf855938 ECX: 8233b614 EDX: 819ac7bf
-> [    2.185006] ESI: bf855800 EDI: bf438280 EBP: bf867f10 ESP: 81b3afcc
-> [    2.186006]  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> [    2.187006] CR0: 8005003b CR2: bf83bdf0 CR3: 01b2c000 CR4: 000006d0
-> [    2.188006] DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> [    2.189006] DR6: ffff4ff0 DR7: 00000400
-> [    2.190005]  [<815d82b5>] __netlink_create+0x35/0xa0
-> [    2.192005]  [<815dabaa>] netlink_kernel_create+0x5a/0x150
-> [    2.194004]  [<815bc8ee>] rtnetlink_net_init+0x1e/0x40
-> [    2.196005]  [<815af381>] register_pernet_operations+0x11/0x30
-> [    2.198004]  [<815af4be>] register_pernet_subsys+0x1e/0x30
-> [    2.200004]  [<81adb49c>] rtnetlink_init+0x4c/0x100
-> [    2.202004]  [<81adbfe5>] netlink_proto_init+0x105/0x1b0
-> [    2.204004]  [<81001127>] do_one_initcall+0x27/0x190
-> [    2.206004]  [<81a9f567>] do_initcalls+0x27/0x40
-> [    2.208004]  [<81a9f5a6>] do_basic_setup+0x26/0x30
-> [    2.210004]  [<81a9f907>] kernel_init+0x57/0xa0
-> [    2.212004]  [<81004867>] kernel_thread_helper+0x7/0x30
-> [    2.214004]  [<ffffffff>] 0xffffffff
-> [    2.216021] calling  bdi_class_init+0x0/0x30 @ 1
-> [    2.217015] device class 'bdi': registering
-> [    2.218702] initcall bdi_class_init+0x0/0x30 returned 0 after 976 usecs
-> [    2.219041] calling  kobject_uevent_init+0x0/0x50 @ 1
-> 
-> config attached.
-> 
-> 	Ingo
-> 
+Adding the possibility to set more than 1 pid in the set_pid_ftrace file,
+thus allowing to trace more than 1 independent processes.
 
-I thought this was already discussed and fixed somehow ?
+Usage:
 
-Either we add kmemcheck annotations, or we switch sock->type from short
-to int to avoid the hole, and possibly to speedup things...
+sh-4.0# echo 284 > ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+284
+sh-4.0# echo 1 >> ./set_ftrace_pid 
+sh-4.0# echo 0 >> ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+swapper tasks
+1
+284
+sh-4.0# echo 4 > ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+4
+sh-4.0# echo > ./set_ftrace_pid 
+sh-4.0# cat ./set_ftrace_pid 
+no pid
+sh-4.0# 
 
-[PATCH] net: kmemcheck annotation in struct socket
 
-struct socket has a 16 bit hole that triggers kmemcheck warnings.
+wbr,
+jirka
 
-As suggested by Ingo, use kmemcheck annotations
-
-Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
+Signed-off-by: Jiri Olsa <jolsa@redhat.com>
 ---
- include/linux/net.h |    5 +++++
- net/socket.c        |    1 +
- 2 files changed, 6 insertions(+)
+ kernel/trace/ftrace.c |  226 +++++++++++++++++++++++++++++++++++--------------
+ kernel/trace/trace.h  |    4 +-
+ 2 files changed, 164 insertions(+), 66 deletions(-)
 
-diff --git a/include/linux/net.h b/include/linux/net.h
-index 4fc2ffd..9040a10 100644
---- a/include/linux/net.h
-+++ b/include/linux/net.h
-@@ -57,6 +57,7 @@ typedef enum {
- #include <linux/random.h>
- #include <linux/wait.h>
- #include <linux/fcntl.h>	/* For O_CLOEXEC and O_NONBLOCK */
-+#include <linux/kmemcheck.h>
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 8b23d56..8e36f1c 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -60,6 +60,13 @@ static int last_ftrace_enabled;
+ /* Quick disabling of function tracer. */
+ int function_trace_stop;
  
- struct poll_table_struct;
- struct pipe_inode_info;
-@@ -127,7 +128,11 @@ enum sock_shutdown_cmd {
-  */
- struct socket {
- 	socket_state		state;
++/* List for set_ftrace_pid's pids */
++LIST_HEAD(ftrace_pids);
++struct ftrace_pid {
++	struct list_head list;
++	struct pid *pid;
++};
 +
-+	kmemcheck_bitfield_begin(type);
- 	short			type;
-+	kmemcheck_bitfield_end(type);
+ /*
+  * ftrace_disabled is set when an anomaly is discovered.
+  * ftrace_disabled is much stronger than ftrace_enabled.
+@@ -155,7 +162,7 @@ static int __register_ftrace_function(struct ftrace_ops *ops)
+ 		else
+ 			func = ftrace_list_func;
+ 
+-		if (ftrace_pid_trace) {
++		if (!list_empty(&ftrace_pids)) {
+ 			set_ftrace_pid_function(func);
+ 			func = ftrace_pid_func;
+ 		}
+@@ -203,7 +210,7 @@ static int __unregister_ftrace_function(struct ftrace_ops *ops)
+ 		if (ftrace_list->next == &ftrace_list_end) {
+ 			ftrace_func_t func = ftrace_list->func;
+ 
+-			if (ftrace_pid_trace) {
++			if (!list_empty(&ftrace_pids)) {
+ 				set_ftrace_pid_function(func);
+ 				func = ftrace_pid_func;
+ 			}
+@@ -227,7 +234,7 @@ static void ftrace_update_pid_func(void)
+ 
+ 	func = ftrace_trace_function;
+ 
+-	if (ftrace_pid_trace) {
++	if (!list_empty(&ftrace_pids)) {
+ 		set_ftrace_pid_function(func);
+ 		func = ftrace_pid_func;
+ 	} else {
+@@ -818,7 +825,6 @@ static __init void ftrace_profile_debugfs(struct dentry *d_tracer)
+ #endif /* CONFIG_FUNCTION_PROFILER */
+ 
+ /* set when tracing only a pid */
+-struct pid *ftrace_pid_trace;
+ static struct pid * const ftrace_swapper_pid = &init_struct_pid;
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+@@ -2795,23 +2801,6 @@ static inline void ftrace_startup_enable(int command) { }
+ # define ftrace_shutdown_sysctl()	do { } while (0)
+ #endif /* CONFIG_DYNAMIC_FTRACE */
+ 
+-static ssize_t
+-ftrace_pid_read(struct file *file, char __user *ubuf,
+-		       size_t cnt, loff_t *ppos)
+-{
+-	char buf[64];
+-	int r;
+-
+-	if (ftrace_pid_trace == ftrace_swapper_pid)
+-		r = sprintf(buf, "swapper tasks\n");
+-	else if (ftrace_pid_trace)
+-		r = sprintf(buf, "%u\n", pid_vnr(ftrace_pid_trace));
+-	else
+-		r = sprintf(buf, "no pid\n");
+-
+-	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+-}
+-
+ static void clear_ftrace_swapper(void)
+ {
+ 	struct task_struct *p;
+@@ -2880,11 +2869,141 @@ static void set_ftrace_pid_task(struct pid *pid)
+ 		set_ftrace_pid(pid);
+ }
+ 
++static int ftrace_pid_add(int p)
++{
++	struct pid *pid;
++	struct ftrace_pid *fpid;
++	int ret = -EINVAL;
 +
- 	unsigned long		flags;
- 	/*
- 	 * Please keep fasync_list & wait fields in the same cache line
-diff --git a/net/socket.c b/net/socket.c
-index 6d47165..2a022c0 100644
---- a/net/socket.c
-+++ b/net/socket.c
-@@ -489,6 +489,7 @@ static struct socket *sock_alloc(void)
++	mutex_lock(&ftrace_lock);
++
++	if (!p)
++		pid = ftrace_swapper_pid;
++	else
++		pid = find_get_pid(p);
++
++	if (!pid)
++		goto out;
++
++	list_for_each_entry(fpid, &ftrace_pids, list)
++		if (fpid->pid == pid)
++			goto out_put;
++
++	ret = -ENOMEM;
++
++	fpid = kmalloc(sizeof(*fpid), GFP_KERNEL);
++	if (!fpid)
++		goto out_put;
++
++	list_add(&fpid->list, &ftrace_pids);
++	fpid->pid = pid;
++
++	set_ftrace_pid_task(pid);
++
++	ftrace_update_pid_func();
++	ftrace_startup_enable(0);
++
++	mutex_unlock(&ftrace_lock);
++	return 0;
++
++out_put:
++	if (pid != ftrace_swapper_pid)
++		put_pid(pid);
++
++out:
++	mutex_unlock(&ftrace_lock);
++	return ret;
++}
++
++static void ftrace_pid_reset(void)
++{
++	struct ftrace_pid *fpid, *safe;
++
++	mutex_lock(&ftrace_lock);
++	list_for_each_entry_safe(fpid, safe, &ftrace_pids, list) {
++		struct pid *pid = fpid->pid;
++
++		clear_ftrace_pid_task(&pid);
++
++		if (pid != ftrace_swapper_pid)
++			put_pid(pid);
++
++		list_del(&fpid->list);
++		kfree(fpid);
++	}
++
++	ftrace_update_pid_func();
++	ftrace_startup_enable(0);
++
++	mutex_unlock(&ftrace_lock);
++}
++
++static void *fpid_start(struct seq_file *m, loff_t *pos)
++{
++	mutex_lock(&ftrace_lock);
++
++	if (list_empty(&ftrace_pids) && (!*pos))
++		return (void *) 1;
++
++	return seq_list_start(&ftrace_pids, *pos);
++}
++
++static void *fpid_next(struct seq_file *m, void *v, loff_t *pos)
++{
++	if (v == (void *)1)
++		return NULL;
++
++	return seq_list_next(v, &ftrace_pids, pos);
++}
++
++static void fpid_stop(struct seq_file *m, void *p)
++{
++	mutex_unlock(&ftrace_lock);
++}
++
++static int fpid_show(struct seq_file *m, void *v)
++{
++	const struct ftrace_pid *fpid = list_entry(v, struct ftrace_pid, list);
++
++	if (v == (void *)1) {
++		seq_printf(m, "no pid\n");
++		return 0;
++	}
++
++	if (fpid->pid == ftrace_swapper_pid)
++		seq_printf(m, "swapper tasks\n");
++	else
++		seq_printf(m, "%u\n", pid_vnr(fpid->pid));
++
++	return 0;
++}
++
++static const struct seq_operations ftrace_pid_sops = {
++	.start = fpid_start,
++	.next = fpid_next,
++	.stop = fpid_stop,
++	.show = fpid_show,
++};
++
++static int
++ftrace_pid_open(struct inode *inode, struct file *file)
++{
++	int ret = 0;
++
++	if ((file->f_mode & FMODE_WRITE) &&
++	    (file->f_flags & O_TRUNC))
++		ftrace_pid_reset();
++
++	if (file->f_mode & FMODE_READ)
++		ret = seq_open(file, &ftrace_pid_sops);
++
++	return ret;
++}
++
+ static ssize_t
+ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
+ {
+-	struct pid *pid;
+ 	char buf[64];
+ 	long val;
+ 	int ret;
+@@ -2897,57 +3016,36 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
  
- 	sock = SOCKET_I(inode);
+ 	buf[cnt] = 0;
  
-+	kmemcheck_annotate_bitfield(sock, type);
- 	inode->i_mode = S_IFSOCK | S_IRWXUGO;
- 	inode->i_uid = current_fsuid();
- 	inode->i_gid = current_fsgid();
++	/*
++	 * Allow the "echo > set_ftrace_pid" to clean
++	 * the pids quietly.
++	 */
++	if (!*ppos && *buf == '\n' && cnt == 1)
++		return 1;
++
+ 	ret = strict_strtol(buf, 10, &val);
+ 	if (ret < 0)
+ 		return ret;
+ 
+-	mutex_lock(&ftrace_lock);
+-	if (val < 0) {
+-		/* disable pid tracing */
+-		if (!ftrace_pid_trace)
+-			goto out;
+-
+-		clear_ftrace_pid_task(&ftrace_pid_trace);
+-
+-	} else {
+-		/* swapper task is special */
+-		if (!val) {
+-			pid = ftrace_swapper_pid;
+-			if (pid == ftrace_pid_trace)
+-				goto out;
+-		} else {
+-			pid = find_get_pid(val);
+-
+-			if (pid == ftrace_pid_trace) {
+-				put_pid(pid);
+-				goto out;
+-			}
+-		}
+-
+-		if (ftrace_pid_trace)
+-			clear_ftrace_pid_task(&ftrace_pid_trace);
+-
+-		if (!pid)
+-			goto out;
+-
+-		ftrace_pid_trace = pid;
+-
+-		set_ftrace_pid_task(ftrace_pid_trace);
+-	}
+-
+-	/* update the function call */
+-	ftrace_update_pid_func();
+-	ftrace_startup_enable(0);
++	ret = ftrace_pid_add(val);
+ 
+- out:
+-	mutex_unlock(&ftrace_lock);
++	return ret ? ret : cnt;
++}
+ 
+-	return cnt;
++static int
++ftrace_pid_release(struct inode *inode, struct file *file)
++{
++	if (file->f_mode & FMODE_READ)
++		seq_release(inode, file);
++	return 0;
+ }
+ 
+ static const struct file_operations ftrace_pid_fops = {
+-	.read = ftrace_pid_read,
+-	.write = ftrace_pid_write,
++	.open		= ftrace_pid_open,
++	.write		= ftrace_pid_write,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= ftrace_pid_release,
+ };
+ 
+ static __init int ftrace_init_debugfs(void)
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index e747162..3ec0b1c 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -521,12 +521,12 @@ print_graph_function(struct trace_iterator *iter)
+ }
+ #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
+ 
+-extern struct pid *ftrace_pid_trace;
++extern struct list_head ftrace_pids;
+ 
+ #ifdef CONFIG_FUNCTION_TRACER
+ static inline int ftrace_trace_task(struct task_struct *task)
+ {
+-	if (!ftrace_pid_trace)
++	if (list_empty(&ftrace_pids))
+ 		return 1;
+ 
+ 	return test_tsk_trace_trace(task);
+-- 
+1.6.2.5
+
