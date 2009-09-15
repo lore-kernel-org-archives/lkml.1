@@ -1,133 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753145AbZIOM0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752933AbZIOMXM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753145AbZIOM0c (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 08:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZIOM01
+	id S1752933AbZIOMXM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 08:23:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZIOMXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 08:26:27 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:37170 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751718AbZIOM01 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 08:26:27 -0400
-Date: Tue, 15 Sep 2009 13:26:32 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Alexey Korolev <akorolex@gmail.com>
-Cc: Eric Munson <linux-mm@mgebm.net>, Alexey Korolev <akorolev@infradead.org>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] Helper which returns the huge page at a given
-	address (Take 3)
-Message-ID: <20090915122632.GC31840@csn.ul.ie>
-References: <202cde0e0909132218k70c31a5u922636914e603ad4@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <202cde0e0909132218k70c31a5u922636914e603ad4@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Tue, 15 Sep 2009 08:23:11 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:3375 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750763AbZIOMXK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 08:23:10 -0400
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+From: Steve Chen <schen@mvista.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Felipe Contreras <felipe.contreras@gmail.com>,
+       Jamie Lokier <jamie@shareable.org>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+       Marek Vasut <marek.vasut@gmail.com>
+In-Reply-To: <20090915103739.GA19519@elf.ucw.cz>
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>
+	 <200909132328.47079.marek.vasut@gmail.com>
+	 <20090913230008.GC30169@n2100.arm.linux.org.uk>
+	 <20090914002100.GD30621@shareable.org>
+	 <20090914081001.GB14519@n2100.arm.linux.org.uk>
+	 <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com>
+	 <20090914140059.GC21580@n2100.arm.linux.org.uk>
+	 <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com>
+	 <20090914144028.GG21580@n2100.arm.linux.org.uk>
+	 <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
+	 <20090915103739.GA19519@elf.ucw.cz>
+Content-Type: text/plain
+Date: Tue, 15 Sep 2009 07:29:21 -0500
+Message-Id: <1253017761.3273.117.camel@linux-1lbu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 05:18:53PM +1200, Alexey Korolev wrote:
-> This patch provides helper function which returns the huge page at a
-> given address for population before the page has been faulted.
-> It is possible to call hugetlb_get_user_page function in file mmap
-> procedure to get pages before they have been requested by user level.
+On Tue, 2009-09-15 at 12:37 +0200, Pavel Machek wrote:
+> > >> > Because then you get it whenever you configure for V4 as the lowest
+> > >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
+> > >> > It's far better to leave it as is and just accept that the old CPUs
+> > >> > will have longer than necessary delays.  If people really really
+> > >> > care (and there's likely to only be a small minority of them now)
+> > >> > changing the '0' to a '1' is a very simple change for them to carry
+> > >> > in their local tree.  Unlike getting the right unrolling etc.
+> > >>
+> > >> Well, they can also 'git revert' this patch. If somebody really cares
+> > >> I think they should shout now and provide a better patch, otherwise
+> > >> this one should be merged.
+> > >
+> > > On the other hand, having the code there as it currently stands is not
+> > > harmful in any way, so leaving it there is just as easy.
+> > 
+> > It makes the code less understandable. I'm not sure about linux's
+> > practices, but an #if 0 generally means somebody is being lazy.
 > 
+> Not in this case, as you was explained to you. You may want to add
+> explaining comment above #if 0....
+> 								Pavel
 
-Worth spelling out that this is similar in principal to get_user_pages()
-but not as painful to use in this specific context.
+Perhaps we can document with something like..
 
-> include/linux/hugetlb.h |    3 +++
-> mm/hugetlb.c            |   23 +++++++++++++++++++++++
-> 2 files changed, 26 insertions(+)
-> 
-> ---
-> Signed-off-by: Alexey Korolev <akorolev@infradead.org>
-
-Patch formatting nit.
-
-diffstat goes below the --- and signed-off-bys go above it.
-
-> 
-> diff -aurp clean/include/linux/hugetlb.h patched/include/linux/hugetlb.h
-> --- clean/include/linux/hugetlb.h	2009-09-11 15:33:48.000000000 +1200
-> +++ patched/include/linux/hugetlb.h	2009-09-11 20:09:02.000000000 +1200
-> @@ -39,6 +39,8 @@ int hugetlb_reserve_pages(struct inode *
->  						struct vm_area_struct *vma,
->  						int acctflags);
->  void hugetlb_unreserve_pages(struct inode *inode, long offset, long freed);
-> +struct page *hugetlb_get_user_page(struct vm_area_struct *vma,
-> +						unsigned long address);
-> 
->  extern unsigned long hugepages_treat_as_movable;
->  extern const unsigned long hugetlb_zero, hugetlb_infinity;
-> @@ -100,6 +102,7 @@ static inline void hugetlb_report_meminf
->  #define is_hugepage_only_range(mm, addr, len)	0
->  #define hugetlb_free_pgd_range(tlb, addr, end, floor, ceiling) ({BUG(); 0; })
->  #define hugetlb_fault(mm, vma, addr, flags)	({ BUG(); 0; })
-> +#define hugetlb_get_user_page(vma, address)	ERR_PTR(-EINVAL)
-> 
->  #define hugetlb_change_protection(vma, address, end, newprot)
-> 
-> diff -aurp clean/mm/hugetlb.c patched/mm/hugetlb.c
-> --- clean/mm/hugetlb.c	2009-09-06 11:38:12.000000000 +1200
-> +++ patched/mm/hugetlb.c	2009-09-11 08:34:00.000000000 +1200
-> @@ -2187,6 +2187,29 @@ static int huge_zeropage_ok(pte_t *ptep,
->  		return huge_pte_none(huge_ptep_get(ptep));
->  }
-> 
-> +/*
-> + * hugetlb_get_user_page returns the page at a given address for population
-> + * before the page has been faulted.
-> + */
-> +struct page *hugetlb_get_user_page(struct vm_area_struct *vma,
-> +				    unsigned long address)
-> +{
-
-Your leader and comments say that the function can be used before the pages
-have been faulted. It would presumably require that this function be called
-from within a mmap() handler.
-
-What is happening because you call follow_hugetlb_page() is that the pages
-get faulted as part of your mmap() operation. This might make the overall
-operation more expensive than you expected. I don't know if what you really
-intended was to allocate the huge page, insert it into the page cache and
-have it faulted later if the process actually references the page.
-
-Similarly the leader and comments imply that you expect this to be
-called as part of the mmap() operation. However, nothing would appear to
-prevent the driver calling this function once the page is already
-faulted. Is this intentional?
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index aef63c8..ca8d535 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -813,6 +813,14 @@ config ARM_ERRATA_460075
+ 	  ACTLR register. Note that setting specific bits in the ACTLR
+register
+ 	  may not be available in non-secure mode.
+ 
++config OLD_CPU_DELAY
++	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
++	bool "Accurate delays for older CPU"
++	def_bool n
++	help
++	  Enable if observing longer than expected delays and need more
++	  accurate delays on older CPUs.
++
+ endmenu
+ 
+ source "arch/arm/common/Kconfig"
+diff --git a/arch/arm/lib/delay.S b/arch/arm/lib/delay.S
+index 8d6a876..8b3fa63 100644
+--- a/arch/arm/lib/delay.S
++++ b/arch/arm/lib/delay.S
+@@ -42,7 +42,7 @@ ENTRY(__const_udelay)				@ 0 <= r0 <= 0x7fffff06
+ @ Delay routine
+ ENTRY(__delay)
+ 		subs	r0, r0, #1
+-#if 0
++#if CONFIG_OLD_CPU_DELAY
+ 		movls	pc, lr
+ 		subs	r0, r0, #1
+ 		movls	pc, lr
 
 
-> +	int ret;
-> +	int cnt = 1;
-> +	struct page *pg;
-> +	struct hstate *h = hstate_vma(vma);
-> +
-> +	address = address & huge_page_mask(h);
-> +	ret = follow_hugetlb_page(vma->vm_mm, vma, &pg,
-> +				NULL, &address, &cnt, 0, 0);
-> +	if (ret < 0)
-> +		return ERR_PTR(ret);
-> +	put_page(pg);
-> +
-> +	return pg;
-> +}
-
-I think the caller should be responsible for calling put_page().  Otherwise
-there is an outside chance that the page would disappear from you unexpectedly
-depending on exactly how the driver was implemented. It would also
-behave slightly more like get_user_pages().
-
-> +EXPORT_SYMBOL_GPL(hugetlb_get_user_page);
-> +
->  int follow_hugetlb_page(struct mm_struct *mm, struct vm_area_struct *vma,
->  			struct page **pages, struct vm_area_struct **vmas,
->  			unsigned long *position, int *length, int i,
-> 
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
