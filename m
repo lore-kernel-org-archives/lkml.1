@@ -1,49 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbZIOOxM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757696AbZIOApY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754564AbZIOOxM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:53:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZIOOxJ
+	id S1757696AbZIOApY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 20:45:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757683AbZIOApV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:53:09 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:57512 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754439AbZIOOxI (ORCPT
+	Mon, 14 Sep 2009 20:45:21 -0400
+Received: from outbound-mail-313.bluehost.com ([67.222.54.6]:41018 "HELO
+	outbound-mail-313.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757685AbZIOApU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:53:08 -0400
-Date: Tue, 15 Sep 2009 01:38:05 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: "Jung-Ik (John) Lee" <jilee@google.com>,
-       Robert Hancock <hancockrwd@gmail.com>,
-       Daniel Walker <dwalker@fifo99.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Grant Grundler <grundler@google.com>,
-       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>,
-       Tejun Heo <tj@kernel.org>, Alan Cox <alan@linux.intel.com>
-Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard ATP867X
-  controllers
-Message-ID: <20090915013805.7f2fa251@lxorguk.ukuu.org.uk>
-In-Reply-To: <4AAC3EEA.1080605@pobox.com>
-References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com>
-	<1252721641.28368.34.camel@desktop>
-	<8b5805ff0909120359g2faf661br463b19518d935110@mail.gmail.com>
-	<4AABD122.2000400@gmail.com>
-	<8b5805ff0909121717w1516c273k2a568779b9c31662@mail.gmail.com>
-	<4AAC3EEA.1080605@pobox.com>
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Mon, 14 Sep 2009 20:45:20 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=OtCenQCDV2+BsGOdGUhHcT+BR2wHNAxSZvkZ9Irk36Au66XiTQsCnxulasbEPBrEECuEHV6bgHi+qmml1jK9A0WWN0q+JLJXKdmO3gCSZ5zPhLBNDQwD3Q1Xww/fjWCp;
+Date: Mon, 14 Sep 2009 17:45:20 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>
+Subject: Re: [PATCH] x86/PCI: initialize PCI bus node numbers early
+Message-ID: <20090914174520.7c2b37f5@jbarnes-g45>
+In-Reply-To: <4A9D5206.5010603@kernel.org>
+References: <20090710104419.0032be7b@jbarnes-g45>
+	<20090901135358.GA31282@elte.hu>
+	<4A9D5206.5010603@kernel.org>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.17.5; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Ideally you would use ATA_CBL_PATA_UNK / ata_cable_unknown, but it seems 
-> that ATA_CBL_PATA_UNK has grown rather useless in the current kernel.
+On Tue, 01 Sep 2009 09:55:34 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
+
+> Ingo Molnar wrote:
+> > * Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> > 
+> >> The current mp_bus_to_node array is initialized only by AMD
+> >> specific code, since AMD platforms have registers that can be used
+> >> for determining mode numbers.  On new Intel platforms it's
+> >> necessary to initialize this array as well though, otherwise all
+> >> PCI node numbers will be 0, when in fact they should be -1
+> >> (indicating that I/O isn't tied to any particular node).
+> >>
+> >> So move the mp_bus_to_node code into the common PCI code, and
+> >> initialize it early with a default value of -1.  This may be
+> >> overridden later by arch code (e.g. the AMD code).
+> >>
+> >> With this change, PCI consistent memory and other node specific
+> >> allocations (e.g. skbuff allocs) should occur on the "current"
+> >> node. If, for performance reasons, applications want to be bound
+> >> to specific nodes, they should open their devices only after being
+> >> pinned to the CPU where they'll run, for maximum locality.
+> >>
+> >> Any thoughts here Yinghai or Jesse?
+> >>
+> >>
+> >>  include/asm/pci.h |    2 +
+> >>  kernel/setup.c    |    2 +
+> >>  pci/amd_bus.c     |   61
+> >> +----------------------------------------- pci/common.c      |
+> >> 77 ++++++++++++++++++++++++++++++++++++++++++++++++++++++ 4 files
+> >> changed, 83 insertions(+), 59 deletions(-)
+> > 
+> > FYI, this commit:
+> > 
+> >   acccaba: x86/PCI: initialize PCI bus node numbers early
+> > 
+> > caused a boot crash in -tip testing:
+> > 
 > 
-> We should probably (a) update libata-core/libata-sff to do something 
-> intelligent with ATA_CBL_PATA_UNK,
+> looks like the patch change default 0 in 32bit to -1 ...
 
-It does - it says "Use drive side detect the controller hasn't got a
-clue".
+Ingo or Yinghai, did you get a chance to try the patch I sent?  Maybe
+you've already integrated it...
 
-Alan
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
