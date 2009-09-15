@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754693AbZIOPMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZIOPTH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754693AbZIOPMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbZIOPMf
+	id S1754721AbZIOPTH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 11:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754688AbZIOPTF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:12:35 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:37486 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754624AbZIOPMe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:12:34 -0400
-Date: Wed, 16 Sep 2009 00:12:37 +0900 (JST)
-Message-Id: <20090916.001237.226784704.ryov@valinux.co.jp>
-To: dhaval@linux.vnet.ibm.com
-Cc: vgoyal@redhat.com, riel@redhat.com, linux-kernel@vger.kernel.org,
-       dm-devel@redhat.com, jens.axboe@oracle.com, agk@redhat.com,
-       akpm@linux-foundation.org, nauman@google.com,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       balbir@linux.vnet.ibm.com
-Subject: Re: Regarding dm-ioband tests
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090911095347.GD4474@linux.vnet.ibm.com>
-References: <20090909105122.GF8828@linux.vnet.ibm.com>
-	<20090910.165849.104059407.ryov@valinux.co.jp>
-	<20090911095347.GD4474@linux.vnet.ibm.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 11:19:05 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:58200
+	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754686AbZIOPTE convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 11:19:04 -0400
+X-SpamScore: 3
+X-BigFish: VPS3(zzzz1202hzzz32i6bh203h43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KQ0QH3-02-9P0-02
+X-M-MSG: 
+Date: Tue, 15 Sep 2009 17:17:27 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86, mce: Fix compile warning in case of CONFIG_SMP=n
+Message-ID: <20090915151727.GB21670@alberich.amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 15 Sep 2009 15:17:28.0204 (UTC) FILETIME=[A31A54C0:01CA3617]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dhaval,
 
-Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > > > I know that cgroup is a very well defined functionality, that is why
-> > > > dm-ioband also supports throttling per cgroup. But how are we supposed
-> > > > to do throttling on the system which doesn't support cgroup?
-> > > > As I wrote in another mail to Vivek, I would like to make use of
-> > > > dm-ioband on RHEL 5.x. 
-> > > 
-> > > Hi Ryo,
-> > > 
-> > > I am not sure that upstream should really be worrying about RHEL 5.x.
-> > > cgroups is a relatively mature solution and is available in most (if not
-> > > all) community distros today. We really should not be looking at another
-> > > grouping solution if the sole reason is that then dm-ioband can be used
-> > > on RHEL 5.x. The correct solution would be to maintain a separate patch
-> > > for RHEL 5.x then and not to burden the upstream kernel.
-> > 
-> > RHEL 5.x is not the sole reason for that.
-> > 
-> 
-> Could you please enumerate the other reasons for pushing in another
-> grouping mechanism then? (Why can we not resolve them via cgroups?)
+Fix following compile warning:
 
-I'm sorry for late reply.
+  arch/x86/kernel/cpu/mcheck/mce_amd.c: In function ‘threshold_create_bank’:
+  arch/x86/kernel/cpu/mcheck/mce_amd.c:492: warning: unused variable ‘c’
 
-I'm not only pushing in the grouping mechanism by using the dmsetup
-command. Please understand that dm-ioband also provides cgroup
-interface and can be configured in the same manner like other cgroup
-subsystems.
-Why it is so bad to have multiple ways to configure? I think that it
-rather gains in flexibility of configurations.
+which shows up when kernel is compiled with CONFIG_SMP=n.
 
-Thanks,
-Ryo Tsuruta
+Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce_amd.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_amd.c b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+index 1fecba4..9e96043 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_amd.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_amd.c
+@@ -489,8 +489,9 @@ static __cpuinit int threshold_create_bank(unsigned int cpu, unsigned int bank)
+ 	int i, err = 0;
+ 	struct threshold_bank *b = NULL;
+ 	char name[32];
++#ifdef CONFIG_SMP
+ 	struct cpuinfo_x86 *c = &cpu_data(cpu);
+-
++#endif
+ 
+ 	sprintf(name, "threshold_bank%i", bank);
+ 
+-- 
+1.6.2.5
+
+
+
