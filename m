@@ -1,82 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755210AbZIOHdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758197AbZIOHkY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755210AbZIOHdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 03:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932106AbZIOHd1
+	id S1758197AbZIOHkY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 03:40:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZIOHkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 03:33:27 -0400
-Received: from krynn.se.axis.com ([193.13.178.10]:59095 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758186AbZIOHd0 (ORCPT
+	Tue, 15 Sep 2009 03:40:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35935 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751238AbZIOHkU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 03:33:26 -0400
-Date: Tue, 15 Sep 2009 09:33:13 +0200
-From: Jesper Nilsson <Jesper.Nilsson@axis.com>
-To: Tim Abbott <tabbott@ksplice.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       dev-etrax <dev-etrax@axis.com>
-Subject: Re: [PATCH] cris: Cleanup linker script using new linker script
-	macros.
-Message-ID: <20090915073313.GO4592@axis.com>
-References: <1252292793-12674-1-git-send-email-tabbott@ksplice.com> <20090914085922.GG4592@axis.com> <alpine.DEB.1.10.0909141313310.31119@dr-wily.mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0909141313310.31119@dr-wily.mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 15 Sep 2009 03:40:20 -0400
+Subject: Re: [PATCH] perf_counter: fix buffer overflow in perf_copy_attr()
+From: Peter Zijlstra <peterz@infradead.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4AAF37D4.5010706@cn.fujitsu.com>
+References: <4AAF37D4.5010706@cn.fujitsu.com>
+Content-Type: text/plain
+Date: Tue, 15 Sep 2009 09:40:14 +0200
+Message-Id: <1253000414.5506.11.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 10:27:18PM +0200, Tim Abbott wrote:
-> On Mon, 14 Sep 2009, Jesper Nilsson wrote:
-> > On Mon, Sep 07, 2009 at 05:06:33AM +0200, Tim Abbott wrote:
-> > >  	. = ALIGN (4);
-> > >  	___data_start = . ;
-> > >  	__Sdata = . ;
-> > > -	.data : {			/* Data */
-> > > -		DATA_DATA
-> > > -	}
-> > > +	RW_DATA_SECTION(0, PAGE_SIZE, PAGE_SIZE)
-> > 
-> > This causes some problems, and I'm not ldscript guru enough to immediately
-> > grasp the problem. What I get is this:
-> > 
-> > ...
-> >   LD      vmlinux
-> > arch/cris/kernel/vmlinux.lds:326 cannot move location counter backwards (from c017e000 to 00000000)
-> > make[1]: *** [vmlinux] Error 1
-> > make: *** [sub-make] Error 2
+On Tue, 2009-09-15 at 14:44 +0800, Xiao Guangrong wrote:
+> If we pass a big size data over perf_counter_open syscall, the kernel
+> will copy this data to a small buffer, It will cause kernel crash.
 > 
-> Hmm.  I spent a bit looking at it, and I don't have a guess for what the 
-> problem is there.
-> 
-> > I've dropped that part of the patch, and I'll try to
-> > boot test the rest of the patch this week.
-> 
-> Yeah, it's probably fine to just drop it for now, since it has fairly 
-> small cleanup impact on cris.
-> 
-> However, just dropping that hunk is not going to work -- you'll need to 
-> re-add the .data.init_task hunk below (which had been part of 
-> RW_DATA_SECTION).
+> This bug make kernel unsafe and no-root user can trigger it.
 
-Yes, sorry, I did that, but didn't mention it.
-Or rather, I added: INIT_TASK_DATA_SECTION(PAGE_SIZE) instead.
+Ah, indeed. Thanks!
 
-> 	-Tim Abbott
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  kernel/perf_counter.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
 > 
-> > >  	__edata = . ;			/* End of data section. */
-> > >  	_edata = . ;
-> > >  
-> > > -	. = ALIGN(PAGE_SIZE);	/* init_task and stack, must be aligned. */
-> > > -	.data.init_task : { *(.data.init_task) }
-> > > -
-> > >  	. = ALIGN(PAGE_SIZE);		/* Init code and data. */
-> > >  	__init_begin = .;
+> diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+> index 667ab25..75c46c0 100644
+> --- a/kernel/perf_counter.c
+> +++ b/kernel/perf_counter.c
+> @@ -4216,6 +4216,7 @@ static int perf_copy_attr(struct perf_counter_attr __user *uattr,
+>  			if (val)
+>  				goto err_size;
+>  		}
+> +		size = sizeof(*attr);
+>  	}
+>  
+>  	ret = copy_from_user(attr, uattr, size);
 
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
