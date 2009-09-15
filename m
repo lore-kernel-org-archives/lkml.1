@@ -1,161 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752240AbZIOFO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZIOFWG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752240AbZIOFO6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 01:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZIOFOx
+	id S1752507AbZIOFWG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 01:22:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZIOFWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 01:14:53 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:51242 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbZIOFOw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 01:14:52 -0400
-Date: Tue, 15 Sep 2009 10:43:07 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>,
-       DLE <dle-develop@lists.sourceforge.net>,
-       Jim Keniston <jkenisto@us.ibm.com>, Andi Kleen <ak@linux.intel.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jason Baron <jbaron@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [BUGFIX] kprobes: prevent re-registration of the same kprobe -
-	take2
-Message-ID: <20090915051307.GB26458@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <20090910235258.22412.29317.stgit@dhcp-100-2-132.bos.redhat.com> <20090910235329.22412.94731.stgit@dhcp-100-2-132.bos.redhat.com> <20090911031253.GD16396@nowhere> <20090913100713.GB14251@in.ibm.com> <4AADA0BB.4030307@redhat.com> <20090914100459.GA4446@in.ibm.com> <4AAE6E85.9020002@redhat.com>
+	Tue, 15 Sep 2009 01:22:00 -0400
+Received: from mga03.intel.com ([143.182.124.21]:35950 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752044AbZIOFV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 01:21:59 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
+   d="scan'208";a="187667803"
+Date: Tue, 15 Sep 2009 13:21:51 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Tejun Heo <tj@kernel.org>, Nick Piggin <npiggin@suse.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] vmalloc: ignore vmalloc area holes in vwrite()
+Message-ID: <20090915052151.GA30012@localhost>
+References: <20090915021851.168285585@intel.com> <20090915022328.328708489@intel.com> <20090915113425.d0bb3a2a.kamezawa.hiroyu@jp.fujitsu.com> <20090915031507.GA24963@localhost> <20090915121829.d78be0b8.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4AAE6E85.9020002@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <20090915121829.d78be0b8.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 12:25:41PM -0400, Masami Hiramatsu wrote:
-> Ananth N Mavinakayanahalli wrote:
->> On Sun, Sep 13, 2009 at 09:47:39PM -0400, Masami Hiramatsu wrote:
->>> Ananth N Mavinakayanahalli wrote:
->>>> On Fri, Sep 11, 2009 at 05:12:54AM +0200, Frederic Weisbecker wrote:
->>>>> On Thu, Sep 10, 2009 at 07:53:30PM -0400, Masami Hiramatsu wrote:
+On Tue, Sep 15, 2009 at 11:18:29AM +0800, KAMEZAWA Hiroyuki wrote:
+> On Tue, 15 Sep 2009 11:15:07 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > Hi Kame,
+> > 
+> > I'll go out for a while. If you are going to do your improvements to
+> > vmalloc.c, please feel free to do so. I can rebase the hwpoison bits
+> > after yours.
+> > 
+> > I could do the kmem part(in a modified patch 2/3) and let it return
+> > any error code vread/vwrite reports.  Ideally the kmem read/write
+> > could do
+> > 
+> >         if (zero bytes successfully read/written)
+> >                 return error_code;
+> >         else
+> >                 return bytes_so_far;
+> > 
+> > Do you agree?
+> > 
+> Okay. I'll write patches for vread/vwrite. And make them just return bool.
 
-...
+bool may not be sufficient? For obviously you need to return -EFAULT
+for invalid address and I need to return -EIO for hwpoison pages.
+(I assume you put is_vmalloc_or_module_addr() immediately before the
+vmalloc_to_page() calls in vmalloc.c, which seems a more natural place
+than in mem.c.)
 
->> +static inline int check_kprobe_rereg(struct kprobe *p)
->> +{
->> +	int ret = 0;
->> +	struct kprobe *old_p;
->> +
->> +	mutex_lock(&kprobe_mutex);
->> +	old_p = __get_valid_kprobe(p);
->> +	if (old_p == p)
->
-> Here, since __get_valid_kprobe(p) will return aggr_kprobe of 'p',
-> you just need to check old_p != NULL.
+Thanks,
+Fengguang
 
-Right!
-
----
-Prevent re-registration of the same kprobe. This situation, though
-unlikely, needs to be flagged since it can lead to a system crash if its
-not handled.
-
-The core change itself is small, but the helper routine needed to be
-moved around a bit; hence the diffstat.
-
-Signed-off-by: Ananth N Mavinakayanahalli<ananth@in.ibm.com>
----
- kernel/kprobes.c |   58 ++++++++++++++++++++++++++++++++++++-------------------
- 1 file changed, 38 insertions(+), 20 deletions(-)
-
-Index: linux-2.6.31/kernel/kprobes.c
-===================================================================
---- linux-2.6.31.orig/kernel/kprobes.c
-+++ linux-2.6.31/kernel/kprobes.c
-@@ -681,6 +681,40 @@ static kprobe_opcode_t __kprobes *kprobe
- 	return (kprobe_opcode_t *)(((char *)addr) + p->offset);
- }
- 
-+/* Check passed kprobe is valid and return kprobe in kprobe_table. */
-+static struct kprobe * __kprobes __get_valid_kprobe(struct kprobe *p)
-+{
-+	struct kprobe *old_p, *list_p;
-+
-+	old_p = get_kprobe(p->addr);
-+	if (unlikely(!old_p))
-+		return NULL;
-+
-+	if (p != old_p) {
-+		list_for_each_entry_rcu(list_p, &old_p->list, list)
-+			if (list_p == p)
-+			/* kprobe p is a valid probe */
-+				goto valid;
-+		return NULL;
-+	}
-+valid:
-+	return old_p;
-+}
-+
-+/* Return error if the kprobe is being re-registered */
-+static inline int check_kprobe_rereg(struct kprobe *p)
-+{
-+	int ret = 0;
-+	struct kprobe *old_p;
-+
-+	mutex_lock(&kprobe_mutex);
-+	old_p = __get_valid_kprobe(p);
-+	if (old_p)
-+		ret = -EINVAL;
-+	mutex_unlock(&kprobe_mutex);
-+	return ret;
-+}
-+
- int __kprobes register_kprobe(struct kprobe *p)
- {
- 	int ret = 0;
-@@ -693,6 +727,10 @@ int __kprobes register_kprobe(struct kpr
- 		return -EINVAL;
- 	p->addr = addr;
- 
-+	ret = check_kprobe_rereg(p);
-+	if (ret)
-+		return ret;
-+
- 	preempt_disable();
- 	if (!kernel_text_address((unsigned long) p->addr) ||
- 	    in_kprobes_functions((unsigned long) p->addr)) {
-@@ -762,26 +800,6 @@ out:
- }
- EXPORT_SYMBOL_GPL(register_kprobe);
- 
--/* Check passed kprobe is valid and return kprobe in kprobe_table. */
--static struct kprobe * __kprobes __get_valid_kprobe(struct kprobe *p)
--{
--	struct kprobe *old_p, *list_p;
--
--	old_p = get_kprobe(p->addr);
--	if (unlikely(!old_p))
--		return NULL;
--
--	if (p != old_p) {
--		list_for_each_entry_rcu(list_p, &old_p->list, list)
--			if (list_p == p)
--			/* kprobe p is a valid probe */
--				goto valid;
--		return NULL;
--	}
--valid:
--	return old_p;
--}
--
- /*
-  * Unregister a kprobe without a scheduler synchronization.
-  */
+>  true .....requested area includes valid memory range and worth to be copied.
+>  false.....no valid range found.
+> 
+> Thanks,
+> -Kame
+> 
+> 
+> 
+> 
+> > Thanks,
+> > Fengguang
+> > 
+> > On Tue, Sep 15, 2009 at 10:34:25AM +0800, KAMEZAWA Hiroyuki wrote:
+> > > On Tue, 15 Sep 2009 10:18:52 +0800
+> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > 
+> > > > Siliently ignore all vmalloc area holes in vwrite(),
+> > > > and report success to the caller even if nothing is written.
+> > > > 
+> > > > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > 
+> > > Why don't you modify vread() at the same time ?
+> > > Because /proc/kcore ignores return value of vread(), I think you can
+> > > modify it without no side-effect.
+> > > 
+> > > Regards,
+> > > -Kame
+> > > 
+> > > > ---
+> > > >  mm/vmalloc.c |   13 ++-----------
+> > > >  1 file changed, 2 insertions(+), 11 deletions(-)
+> > > > 
+> > > > --- linux-mm.orig/mm/vmalloc.c	2009-09-15 10:08:33.000000000 +0800
+> > > > +++ linux-mm/mm/vmalloc.c	2009-09-15 10:14:18.000000000 +0800
+> > > > @@ -1805,10 +1805,8 @@ finished:
+> > > >   *	@addr:		vm address.
+> > > >   *	@count:		number of bytes to be read.
+> > > >   *
+> > > > - *	Returns # of bytes which addr and buf should be incresed.
+> > > > + *	Returns # of bytes which addr and buf should be increased.
+> > > >   *	(same number to @count).
+> > > > - *	If [addr...addr+count) doesn't includes any intersect with valid
+> > > > - *	vmalloc area, returns 0.
+> > > >   *
+> > > >   *	This function checks that addr is a valid vmalloc'ed area, and
+> > > >   *	copy data from a buffer to the given addr. If specified range of
+> > > > @@ -1816,8 +1814,6 @@ finished:
+> > > >   *	proper area of @buf. If there are memory holes, no copy to hole.
+> > > >   *	IOREMAP area is treated as memory hole and no copy is done.
+> > > >   *
+> > > > - *	If [addr...addr+count) doesn't includes any intersects with alive
+> > > > - *	vm_struct area, returns 0.
+> > > >   *	@buf should be kernel's buffer. Because	this function uses KM_USER0,
+> > > >   *	the caller should guarantee KM_USER0 is not used.
+> > > >   *
+> > > > @@ -1834,7 +1830,6 @@ long vwrite(char *buf, char *addr, unsig
+> > > >  	struct vm_struct *tmp;
+> > > >  	char *vaddr;
+> > > >  	unsigned long n, buflen;
+> > > > -	int copied = 0;
+> > > >  
+> > > >  	/* Don't allow overflow */
+> > > >  	if ((unsigned long) addr + count < count)
+> > > > @@ -1856,18 +1851,14 @@ long vwrite(char *buf, char *addr, unsig
+> > > >  		n = vaddr + tmp->size - PAGE_SIZE - addr;
+> > > >  		if (n > count)
+> > > >  			n = count;
+> > > > -		if (!(tmp->flags & VM_IOREMAP)) {
+> > > > +		if (!(tmp->flags & VM_IOREMAP))
+> > > >  			aligned_vwrite(buf, addr, n);
+> > > > -			copied++;
+> > > > -		}
+> > > >  		buf += n;
+> > > >  		addr += n;
+> > > >  		count -= n;
+> > > >  	}
+> > > >  finished:
+> > > >  	read_unlock(&vmlist_lock);
+> > > > -	if (!copied)
+> > > > -		return 0;
+> > > >  	return buflen;
+> > > >  }
+> > > >  
+> > > > 
+> > > > -- 
+> > > > 
+> > > > 
+> > 
