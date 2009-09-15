@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758502AbZIOTqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbZIOTlz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758502AbZIOTqE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZIOTp4
+	id S1758376AbZIOTlz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 15:41:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758000AbZIOTlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:45:56 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:63457 "EHLO dan.rpsys.net"
+	Tue, 15 Sep 2009 15:41:50 -0400
+Received: from fifo99.com ([67.223.236.141]:45077 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753472AbZIOTp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:45:56 -0400
-Subject: Re: [PATCH 1/3] backlight: Provide two stage registration
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20090915192730.GA8152@srcf.ucam.org>
-References: <1253031583-11286-1-git-send-email-mjg@redhat.com>
-	 <1253042322.30165.52.camel@dax.rpnet.com>
-	 <20090915192730.GA8152@srcf.ucam.org>
+	id S1755274AbZIOTlt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 15:41:49 -0400
+Subject: Re: [PATCH 06/20] mem_class: use minor as index instead of
+ searching the array
+From: Daniel Walker <dwalker@fifo99.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>
+In-Reply-To: <1253041976-1111-6-git-send-email-gregkh@suse.de>
+References: <20090915181247.GA32167@kroah.com>
+	 <1253041976-1111-6-git-send-email-gregkh@suse.de>
 Content-Type: text/plain
-Date: Tue, 15 Sep 2009 20:42:15 +0100
-Message-Id: <1253043735.30165.59.camel@dax.rpnet.com>
+Date: Tue, 15 Sep 2009 12:42:43 -0700
+Message-Id: <1253043763.11643.358.camel@desktop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 20:27 +0100, Matthew Garrett wrote:
-> On Tue, Sep 15, 2009 at 08:18:42PM +0100, Richard Purdie wrote:
-> 
-> > Could we not pass an optional pointer to a properties structure to
-> > create the backlight with instead or find a better way to solve this?
-> 
-> That'd work, but it'd involve significant refactoring of all the 
-> drivers - we really need to be setting max_brightness before 
-> device_register() is called. I suspect it'd be an even larger delta 
-> against mainline.
+On Tue, 2009-09-15 at 12:12 -0700, Greg Kroah-Hartman wrote:
+> +static const struct memdev {
+> +       const char *name;
+> +       const struct file_operations *fops;
+> +       struct backing_dev_info *dev_info;
+> +} devlist[] = {
+> +       [ 1] = { "mem", &mem_fops, &directly_mappable_cdev_bdi },
 
-But the delta would result in more readable code rather than all that
-error checking/handling. Can we see how ugly that diff turns out to be?
+This patch has several checkpatch errors wrt. the spacing used in the
+array index..
 
-Cheers,
+Kay, can you send a follow up patch to correct them?
 
-Richard
-
--- 
-Richard Purdie
-Intel Open Source Technology Centre
+Daniel
 
