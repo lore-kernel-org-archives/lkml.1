@@ -1,41 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754831AbZIOPcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZIOPfV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754831AbZIOPcf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754709AbZIOPcd
+	id S1754836AbZIOPfV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 11:35:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754784AbZIOPfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:32:33 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:50544 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754738AbZIOPcd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:32:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=d4XyNHLyHnQLeGUZVi9H6xwXayVWDUVcqsH05yW5QOxNFsY6vwW4hAzcyQqfMY9nLu
-         S729VoPIu/+4wLasYOhOOiVJKx2Yd4XXla7bCdPq59wewmheHYkAngvIUwRU6Taz15pS
-         GsxtOhJ40/t+/KRrm6zELuCEzCfz5gw9x1RjA=
-Date: Tue, 15 Sep 2009 17:32:24 +0200
-From: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-To: Karol Lewandowski <karol.k.lewandowski@gmail.com>
-Cc: e1000-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [BUG 2.6.30+] e100 sometimes causes oops during resume
-Message-ID: <20090915153224.GB26806@bizet.domek.prywatny>
-References: <20090915120538.GA26806@bizet.domek.prywatny>
+	Tue, 15 Sep 2009 11:35:19 -0400
+Received: from kroah.org ([198.145.64.141]:38415 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754758AbZIOPfR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 11:35:17 -0400
+Date: Tue, 15 Sep 2009 08:33:12 -0700
+From: Greg KH <greg@kroah.com>
+To: James Bottomley <James.Bottomley@suse.de>
+Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
+       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Giridhar Malavali <giridhar.malavali@qlogic.com>,
+       Ravi Anand <ravi.anand@qlogic.com>,
+       Lalit Chandivade <lalit.chandivade@qlogic.com>
+Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
+ CONFIG_MOUDLES=n.
+Message-ID: <20090915153312.GB22774@kroah.com>
+References: <20090908182541.GB44157@plap4-2.local>
+ <20090911175341.GH710@plap4-2.local>
+ <1252708951.13282.151.camel@mulgrave.site>
+ <20090912000742.GB12098@plap4-2.local>
+ <20090912001752.GC12098@plap4-2.local>
+ <20090912003808.GD12098@plap4-2.local>
+ <20090912005446.GA11691@kroah.com>
+ <20090912025623.GA14824@plap4-2.local>
+ <20090912043333.GA12349@kroah.com>
+ <1252765807.4238.74.camel@mulgrave.site>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090915120538.GA26806@bizet.domek.prywatny>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1252765807.4238.74.camel@mulgrave.site>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 02:05:38PM +0200, Karol Lewandowski wrote:
-> This is on 2.6.31-rc9 (with unrelated patch reverted), 2.6.31-rc8
-> shown similiar behaviour. Neither 2.6.31 nor Linus' HEAD seems to
-> address this issue.
+On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
+> On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
+> > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
+> > > On Fri, 11 Sep 2009, Greg KH wrote:
+> > > 
+> > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
+> > > > > Randy Dunlap noted:
+> > > > > 
+> > > > >   when CONFIG_MODULES=n:
+> > > > > 
+> > > > > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+> > > > > 
+> > > > >   in
+> > > > > 
+> > > > > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> > > > > 		KOBJ_CHANGE, envp);
+> > > > > 
+> > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
+> > > > 
+> > > > Um, why?  What are you trying to do here?  kobject change should not be
+> > > > for a device, or a "normal" kobject.
+> > > > 
+> > > > What do you expect userspace to do with this?  Where have you documented
+> > > > it?
+> > > 
+> > > The purpose was described here:
+> > > 
+> > > 	http://article.gmane.org/gmane.linux.scsi/54155
+> > > 
+> > > Basically we'd like to instruct user-space to retrieve a blob of data
+> > > automatically.
+> > 
+> > Hm, like a firmware object perhaps?
+> > 
+> > > Original implementation used the kboject hanging off
+> > > the module which does not exist when CONFIG_MODULES=n.  It was
+> > > suggested that perhaps an alternative would be to use 'struct device'
+> > > kobj.  Any tips on how to trigger such a driver-specific event,
+> > > perhaps a dedicated kobject exported by the driver itself???
+> > 
+> > Why not use the firmware interface for it, that is what it is designed
+> > for, and you will not have to craft any new udev rules.
+> 
+> The data is going the wrong way to use the current firmware interface,
+> which is designed to load data from userspace into the kernel.  For this
+> interface, we want the data to go the other way (i.e. the kernel has a
+> blob of dump data it would like userspace to save if it can).
 
-I shall add that on 2.6.30 (and earlier) this issue didn't happen.
+Ick.
+
+> I'd be amenable to updating the firmware interface to do this, but it
+> looks like adding a completely new codepath, which it's not clear even
+> belongs there.
+
+Well, I don't think it deserves a kobject change event, as that means
+something a bit different to userspace today, right?
+
+Either way, I see no documentation being added to the Documentation/ABI/
+directory describing what is happening here, that needs to be added at
+the least.
+
+thanks,
+
+greg k-h
