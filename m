@@ -1,168 +1,777 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758705AbZIOVuA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbZIOVto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758705AbZIOVuA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 17:50:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756510AbZIOVt5
+	id S1758649AbZIOVto (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 17:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZIOVtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 17:49:57 -0400
-Received: from caffeine.csclub.uwaterloo.ca ([129.97.134.17]:33533 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751687AbZIOVt4 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 17:49:56 -0400
-Date: Tue, 15 Sep 2009 17:49:59 -0400
-To: linux-kernel@vger.kernel.org
-Cc: Len Sorensen <lsorense@csclub.uwaterloo.ca>,
-       Greg Ungerer <gerg@uclinux.org>, uclinux-dev@uclinux.org
-Subject: free_initrd_mem() corrups mm state on m68knommu.
-Message-ID: <20090915214959.GB23702@csclub.uwaterloo.ca>
+	Tue, 15 Sep 2009 17:49:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32833 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751382AbZIOVth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 17:49:37 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH 3/3] ACPI: Remove old GPE API and transition code entirely to new one
+Date: Tue, 15 Sep 2009 23:50:37 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rjw; KDE/4.3.1; x86_64; ; )
+Cc: robert.moore@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090902181014.GA10917@srcf.ucam.org> <1251915173-10144-2-git-send-email-mjg@redhat.com> <1251915173-10144-3-git-send-email-mjg@redhat.com>
+In-Reply-To: <1251915173-10144-3-git-send-email-mjg@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200909152350.37948.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been trying to solve a problem I keep seeing on m68knommu (on a
-coldfire 5271).
+On Wednesday 02 September 2009, Matthew Garrett wrote:
+> Remove the old GPE type handling entirely, which gets rid of various
+> quirks like the implicit disabling with GPE type setting and some entirely
+> dead code that set flags that were never used by anything else in the
+> kernel. Also fix up some comments that erroneously claimed that the code
+> they were commenting was actually enabling GPEs.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
+> ---
+>  drivers/acpi/acpica/acevents.h |    6 +-
+>  drivers/acpi/acpica/evgpe.c    |  150 ++++--------------------------------
+>  drivers/acpi/acpica/evgpeblk.c |  164 +---------------------------------------
+>  drivers/acpi/acpica/evxface.c  |   14 ----
+>  drivers/acpi/acpica/evxfevnt.c |   48 +-----------
+>  drivers/acpi/button.c          |    5 -
+>  drivers/acpi/ec.c              |    2 -
+>  drivers/acpi/wakeup.c          |   55 ++-----------
+>  include/acpi/actypes.h         |   32 ++------
+>  9 files changed, 41 insertions(+), 435 deletions(-)
+> 
+> diff --git a/drivers/acpi/acpica/acevents.h b/drivers/acpi/acpica/acevents.h
+> index 0bba148..197aa4f 100644
+> --- a/drivers/acpi/acpica/acevents.h
+> +++ b/drivers/acpi/acpica/acevents.h
+> @@ -76,8 +76,7 @@ acpi_ev_queue_notify_request(struct acpi_namespace_node *node,
+>   * evgpe - GPE handling and dispatch
+>   */
+>  acpi_status
+> -acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
+> -				u8 type);
+> +acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info);
+>  
+>  acpi_status
+>  acpi_ev_enable_gpe(struct acpi_gpe_event_info *gpe_event_info,
+> @@ -122,9 +121,6 @@ acpi_ev_gpe_dispatch(struct acpi_gpe_event_info *gpe_event_info,
+>  u32 acpi_ev_gpe_detect(struct acpi_gpe_xrupt_info *gpe_xrupt_list);
+>  
+>  acpi_status
+> -acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type);
+> -
+> -acpi_status
+>  acpi_ev_check_for_wake_only_gpe(struct acpi_gpe_event_info *gpe_event_info);
+>  
+>  acpi_status acpi_ev_gpe_initialize(void);
+> diff --git a/drivers/acpi/acpica/evgpe.c b/drivers/acpi/acpica/evgpe.c
+> index b9d8ee6..97c0e0f 100644
+> --- a/drivers/acpi/acpica/evgpe.c
+> +++ b/drivers/acpi/acpica/evgpe.c
+> @@ -54,54 +54,9 @@ static void ACPI_SYSTEM_XFACE acpi_ev_asynch_execute_gpe_method(void *context);
+>  
+>  /*******************************************************************************
+>   *
+> - * FUNCTION:    acpi_ev_set_gpe_type
+> - *
+> - * PARAMETERS:  gpe_event_info          - GPE to set
+> - *              Type                    - New type
+> - *
+> - * RETURN:      Status
+> - *
+> - * DESCRIPTION: Sets the new type for the GPE (wake, run, or wake/run)
+> - *
+> - ******************************************************************************/
+> -
+> -acpi_status
+> -acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type)
+> -{
+> -	acpi_status status;
+> -
+> -	ACPI_FUNCTION_TRACE(ev_set_gpe_type);
+> -
+> -	/* Validate type and update register enable masks */
+> -
+> -	switch (type) {
+> -	case ACPI_GPE_TYPE_WAKE:
+> -	case ACPI_GPE_TYPE_RUNTIME:
+> -	case ACPI_GPE_TYPE_WAKE_RUN:
+> -		break;
+> -
+> -	default:
+> -		return_ACPI_STATUS(AE_BAD_PARAMETER);
+> -	}
+> -
+> -	/* Disable the GPE if currently enabled */
+> -
+> -	status = acpi_ev_disable_gpe(gpe_event_info);
+> -
+> -	/* Clear the type bits and insert the new Type */
+> -
+> -	gpe_event_info->flags &= ~ACPI_GPE_TYPE_MASK;
+> -	gpe_event_info->flags |= type;
+> -	return_ACPI_STATUS(status);
+> -}
+> -
+> -/*******************************************************************************
+> - *
+>   * FUNCTION:    acpi_ev_update_gpe_enable_masks
+>   *
+>   * PARAMETERS:  gpe_event_info          - GPE to update
+> - *              Type                    - What to do: ACPI_GPE_DISABLE or
+> - *                                        ACPI_GPE_ENABLE
+>   *
+>   * RETURN:      Status
+>   *
+> @@ -110,8 +65,7 @@ acpi_ev_set_gpe_type(struct acpi_gpe_event_info *gpe_event_info, u8 type)
+>   ******************************************************************************/
+>  
+>  acpi_status
+> -acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
+> -				u8 type)
+> +acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info)
+>  {
+>  	struct acpi_gpe_register_info *gpe_register_info;
+>  	u8 register_bit;
+> @@ -127,37 +81,13 @@ acpi_ev_update_gpe_enable_masks(struct acpi_gpe_event_info *gpe_event_info,
+>  	    (1 <<
+>  	     (gpe_event_info->gpe_number - gpe_register_info->base_gpe_number));
+>  
+> -	/* 1) Disable case. Simply clear all enable bits */
+> -
+> -	if (type == ACPI_GPE_DISABLE) {
+> -		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
+> -			       register_bit);
+> -		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
+> -		return_ACPI_STATUS(AE_OK);
+> -	}
+> -
+> -	/* 2) Enable case. Set/Clear the appropriate enable bits */
+> -
+> -	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
+> -	case ACPI_GPE_TYPE_WAKE:
+> -		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
+> -		ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
+> -		break;
+> -
+> -	case ACPI_GPE_TYPE_RUNTIME:
+> -		ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake,
+> -			       register_bit);
+> -		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
+> -		break;
+> -
+> -	case ACPI_GPE_TYPE_WAKE_RUN:
+> -		ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
+> -		ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
+> -		break;
+> +	ACPI_CLEAR_BIT(gpe_register_info->enable_for_wake, register_bit);
+> +	ACPI_CLEAR_BIT(gpe_register_info->enable_for_run, register_bit);
+>  
+> -	default:
+> -		return_ACPI_STATUS(AE_BAD_PARAMETER);
+> -	}
+> +	if (gpe_event_info->runtime_count)
+> +                ACPI_SET_BIT(gpe_register_info->enable_for_run, register_bit);
+> +	if (gpe_event_info->wakeup_count)
+> +                ACPI_SET_BIT(gpe_register_info->enable_for_wake, register_bit);
+>  
+>  	return_ACPI_STATUS(AE_OK);
+>  }
+> @@ -186,47 +116,22 @@ acpi_ev_enable_gpe(struct acpi_gpe_event_info *gpe_event_info,
+>  
+>  	/* Make sure HW enable masks are updated */
+>  
+> -	status =
+> -	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_ENABLE);
+> +	status = acpi_ev_update_gpe_enable_masks(gpe_event_info);
+>  	if (ACPI_FAILURE(status)) {
+>  		return_ACPI_STATUS(status);
+>  	}
+>  
+>  	/* Mark wake-enabled or HW enable, or both */
+>  
+> -	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
+> -	case ACPI_GPE_TYPE_WAKE:
+> -
+> -		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+> -		break;
+> -
+> -	case ACPI_GPE_TYPE_WAKE_RUN:
+> -
+> -		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+> -
+> -		/*lint -fallthrough */
+> -
+> -	case ACPI_GPE_TYPE_RUNTIME:
+> -
+> -		ACPI_SET_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
+> -
+> -		if (write_to_hardware) {
+> -
+> -			/* Clear the GPE (of stale events), then enable it */
+> -
+> -			status = acpi_hw_clear_gpe(gpe_event_info);
+> -			if (ACPI_FAILURE(status)) {
+> -				return_ACPI_STATUS(status);
+> -			}
+> -
+> -			/* Enable the requested runtime GPE */
+> -
+> -			status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
+> +	if (gpe_event_info->runtime_count && write_to_hardware) {
+> +		/* Clear the GPE (of stale events), then enable it */
+> +		status = acpi_hw_clear_gpe(gpe_event_info);
+> +		if (ACPI_FAILURE(status)) {
+> +			return_ACPI_STATUS(status);
+>  		}
+> -		break;
+>  
+> -	default:
+> -		return_ACPI_STATUS(AE_BAD_PARAMETER);
+> +		/* Enable the requested runtime GPE */
+> +		status = acpi_hw_write_gpe_enable_reg(gpe_event_info);
+>  	}
+>  
+>  	return_ACPI_STATUS(AE_OK);
+> @@ -253,34 +158,11 @@ acpi_status acpi_ev_disable_gpe(struct acpi_gpe_event_info *gpe_event_info)
+>  	/* Make sure HW enable masks are updated */
+>  
+>  	status =
+> -	    acpi_ev_update_gpe_enable_masks(gpe_event_info, ACPI_GPE_DISABLE);
+> +	    acpi_ev_update_gpe_enable_masks(gpe_event_info);
+>  	if (ACPI_FAILURE(status)) {
+>  		return_ACPI_STATUS(status);
+>  	}
+>  
+> -	/* Clear the appropriate enabled flags for this GPE */
+> -
+> -	switch (gpe_event_info->flags & ACPI_GPE_TYPE_MASK) {
+> -	case ACPI_GPE_TYPE_WAKE:
+> -		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+> -		break;
+> -
+> -	case ACPI_GPE_TYPE_WAKE_RUN:
+> -		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_WAKE_ENABLED);
+> -
+> -		/* fallthrough */
+> -
+> -	case ACPI_GPE_TYPE_RUNTIME:
+> -
+> -		/* Disable the requested runtime GPE */
+> -
+> -		ACPI_CLEAR_BIT(gpe_event_info->flags, ACPI_GPE_RUN_ENABLED);
+> -		break;
+> -
+> -	default:
+> -		break;
+> -	}
+> -
+>  	/*
+>  	 * Even if we don't know the GPE type, make sure that we always
+>  	 * disable it. low_disable_gpe will just clear the enable bit for this
+> diff --git a/drivers/acpi/acpica/evgpeblk.c b/drivers/acpi/acpica/evgpeblk.c
+> index 7b34636..51cc875 100644
+> --- a/drivers/acpi/acpica/evgpeblk.c
+> +++ b/drivers/acpi/acpica/evgpeblk.c
+> @@ -54,10 +54,6 @@ static acpi_status
+>  acpi_ev_save_method_info(acpi_handle obj_handle,
+>  			 u32 level, void *obj_desc, void **return_value);
+>  
+> -static acpi_status
+> -acpi_ev_match_prw_and_gpe(acpi_handle obj_handle,
+> -			  u32 level, void *info, void **return_value);
+> -
+>  static struct acpi_gpe_xrupt_info *acpi_ev_get_gpe_xrupt_block(u32
+>  							       interrupt_number);
+>  
+> @@ -325,14 +321,12 @@ acpi_ev_save_method_info(acpi_handle obj_handle,
+>  
+>  	/*
+>  	 * Now we can add this information to the gpe_event_info block for use
+> -	 * during dispatch of this GPE. Default type is RUNTIME, although this may
+> -	 * change when the _PRW methods are executed later.
+> +	 * during dispatch of this GPE.
+>  	 */
+>  	gpe_event_info =
+>  	    &gpe_block->event_info[gpe_number - gpe_block->block_base_number];
+>  
+> -	gpe_event_info->flags = (u8)
+> -	    (type | ACPI_GPE_DISPATCH_METHOD | ACPI_GPE_TYPE_RUNTIME);
+> +	gpe_event_info->flags = (u8) (type | ACPI_GPE_DISPATCH_METHOD);
+>  
+>  	gpe_event_info->dispatch.method_node =
+>  	    (struct acpi_namespace_node *)obj_handle;
+> @@ -349,134 +343,6 @@ acpi_ev_save_method_info(acpi_handle obj_handle,
+>  
+>  /*******************************************************************************
+>   *
+> - * FUNCTION:    acpi_ev_match_prw_and_gpe
+> - *
+> - * PARAMETERS:  Callback from walk_namespace
+> - *
+> - * RETURN:      Status. NOTE: We ignore errors so that the _PRW walk is
+> - *              not aborted on a single _PRW failure.
+> - *
+> - * DESCRIPTION: Called from acpi_walk_namespace. Expects each object to be a
+> - *              Device. Run the _PRW method. If present, extract the GPE
+> - *              number and mark the GPE as a WAKE GPE.
+> - *
+> - ******************************************************************************/
+> -
+> -static acpi_status
+> -acpi_ev_match_prw_and_gpe(acpi_handle obj_handle,
+> -			  u32 level, void *info, void **return_value)
+> -{
+> -	struct acpi_gpe_walk_info *gpe_info = (void *)info;
+> -	struct acpi_namespace_node *gpe_device;
+> -	struct acpi_gpe_block_info *gpe_block;
+> -	struct acpi_namespace_node *target_gpe_device;
+> -	struct acpi_gpe_event_info *gpe_event_info;
+> -	union acpi_operand_object *pkg_desc;
+> -	union acpi_operand_object *obj_desc;
+> -	u32 gpe_number;
+> -	acpi_status status;
+> -
+> -	ACPI_FUNCTION_TRACE(ev_match_prw_and_gpe);
+> -
+> -	/* Check for a _PRW method under this device */
+> -
+> -	status = acpi_ut_evaluate_object(obj_handle, METHOD_NAME__PRW,
+> -					 ACPI_BTYPE_PACKAGE, &pkg_desc);
+> -	if (ACPI_FAILURE(status)) {
+> -
+> -		/* Ignore all errors from _PRW, we don't want to abort the subsystem */
+> -
+> -		return_ACPI_STATUS(AE_OK);
+> -	}
+> -
+> -	/* The returned _PRW package must have at least two elements */
+> -
+> -	if (pkg_desc->package.count < 2) {
+> -		goto cleanup;
+> -	}
+> -
+> -	/* Extract pointers from the input context */
+> -
+> -	gpe_device = gpe_info->gpe_device;
+> -	gpe_block = gpe_info->gpe_block;
+> -
+> -	/*
+> -	 * The _PRW object must return a package, we are only interested in the
+> -	 * first element
+> -	 */
+> -	obj_desc = pkg_desc->package.elements[0];
+> -
+> -	if (obj_desc->common.type == ACPI_TYPE_INTEGER) {
+> -
+> -		/* Use FADT-defined GPE device (from definition of _PRW) */
+> -
+> -		target_gpe_device = acpi_gbl_fadt_gpe_device;
+> -
+> -		/* Integer is the GPE number in the FADT described GPE blocks */
+> -
+> -		gpe_number = (u32) obj_desc->integer.value;
+> -	} else if (obj_desc->common.type == ACPI_TYPE_PACKAGE) {
+> -
+> -		/* Package contains a GPE reference and GPE number within a GPE block */
+> -
+> -		if ((obj_desc->package.count < 2) ||
+> -		    ((obj_desc->package.elements[0])->common.type !=
+> -		     ACPI_TYPE_LOCAL_REFERENCE) ||
+> -		    ((obj_desc->package.elements[1])->common.type !=
+> -		     ACPI_TYPE_INTEGER)) {
+> -			goto cleanup;
+> -		}
+> -
+> -		/* Get GPE block reference and decode */
+> -
+> -		target_gpe_device =
+> -		    obj_desc->package.elements[0]->reference.node;
+> -		gpe_number = (u32) obj_desc->package.elements[1]->integer.value;
+> -	} else {
+> -		/* Unknown type, just ignore it */
+> -
+> -		goto cleanup;
+> -	}
+> -
+> -	/*
+> -	 * Is this GPE within this block?
+> -	 *
+> -	 * TRUE if and only if these conditions are true:
+> -	 *     1) The GPE devices match.
+> -	 *     2) The GPE index(number) is within the range of the Gpe Block
+> -	 *          associated with the GPE device.
+> -	 */
+> -	if ((gpe_device == target_gpe_device) &&
+> -	    (gpe_number >= gpe_block->block_base_number) &&
+> -	    (gpe_number < gpe_block->block_base_number +
+> -	     (gpe_block->register_count * 8))) {
+> -		gpe_event_info = &gpe_block->event_info[gpe_number -
+> -							gpe_block->
+> -							block_base_number];
+> -
+> -		/* Mark GPE for WAKE-ONLY but WAKE_DISABLED */
+> -
+> -		gpe_event_info->flags &=
+> -		    ~(ACPI_GPE_WAKE_ENABLED | ACPI_GPE_RUN_ENABLED);
+> -
+> -		status =
+> -		    acpi_ev_set_gpe_type(gpe_event_info, ACPI_GPE_TYPE_WAKE);
+> -		if (ACPI_FAILURE(status)) {
+> -			goto cleanup;
+> -		}
+> -
+> -		status =
+> -		    acpi_ev_update_gpe_enable_masks(gpe_event_info,
+> -						    ACPI_GPE_DISABLE);
+> -	}
+> -
+> -      cleanup:
+> -	acpi_ut_remove_reference(pkg_desc);
+> -	return_ACPI_STATUS(AE_OK);
+> -}
+> -
+> -/*******************************************************************************
+> - *
+>   * FUNCTION:    acpi_ev_get_gpe_xrupt_block
+>   *
+>   * PARAMETERS:  interrupt_number     - Interrupt for a GPE block
+> @@ -991,7 +857,6 @@ acpi_ev_initialize_gpe_block(struct acpi_namespace_node *gpe_device,
+>  {
+>  	acpi_status status;
+>  	struct acpi_gpe_event_info *gpe_event_info;
+> -	struct acpi_gpe_walk_info gpe_info;
+>  	u32 wake_gpe_count;
+>  	u32 gpe_enabled_count;
+>  	u32 i;
+> @@ -1006,27 +871,6 @@ acpi_ev_initialize_gpe_block(struct acpi_namespace_node *gpe_device,
+>  	}
+>  
+>  	/*
+> -	 * Runtime option: Should wake GPEs be enabled at runtime?  The default
+> -	 * is no, they should only be enabled just as the machine goes to sleep.
+> -	 */
+> -	if (acpi_gbl_leave_wake_gpes_disabled) {
+> -		/*
+> -		 * Differentiate runtime vs wake GPEs, via the _PRW control methods.
+> -		 * Each GPE that has one or more _PRWs that reference it is by
+> -		 * definition a wake GPE and will not be enabled while the machine
+> -		 * is running.
+> -		 */
+> -		gpe_info.gpe_block = gpe_block;
+> -		gpe_info.gpe_device = gpe_device;
+> -
+> -		status =
+> -		    acpi_ns_walk_namespace(ACPI_TYPE_DEVICE, ACPI_ROOT_OBJECT,
+> -					   ACPI_UINT32_MAX, ACPI_NS_WALK_UNLOCK,
+> -					   acpi_ev_match_prw_and_gpe, &gpe_info,
+> -					   NULL);
+> -	}
+> -
+> -	/*
+>  	 * Enable all GPEs in this block that have these attributes:
+>  	 * 1) are "runtime" or "run/wake" GPEs, and
+>  	 * 2) have a corresponding _Lxx or _Exx method
+> @@ -1048,11 +892,11 @@ acpi_ev_initialize_gpe_block(struct acpi_namespace_node *gpe_device,
+>  
+>  			if (((gpe_event_info->flags & ACPI_GPE_DISPATCH_MASK) ==
+>  			     ACPI_GPE_DISPATCH_METHOD) &&
+> -			    (gpe_event_info->flags & ACPI_GPE_TYPE_RUNTIME)) {
+> +			    gpe_event_info->runtime_count) {
+>  				gpe_enabled_count++;
+>  			}
+>  
+> -			if (gpe_event_info->flags & ACPI_GPE_TYPE_WAKE) {
+> +			if (gpe_event_info->wakeup_count) {
+>  				wake_gpe_count++;
+>  			}
+>  		}
+> diff --git a/drivers/acpi/acpica/evxface.c b/drivers/acpi/acpica/evxface.c
+> index 10b8543..90cdeae 100644
+> --- a/drivers/acpi/acpica/evxface.c
+> +++ b/drivers/acpi/acpica/evxface.c
+> @@ -617,13 +617,6 @@ acpi_install_gpe_handler(acpi_handle gpe_device,
+>  	handler->context = context;
+>  	handler->method_node = gpe_event_info->dispatch.method_node;
+>  
+> -	/* Disable the GPE before installing the handler */
+> -
+> -	status = acpi_ev_disable_gpe(gpe_event_info);
+> -	if (ACPI_FAILURE(status)) {
+> -		goto unlock_and_exit;
+> -	}
+> -
+>  	/* Install the handler */
+>  
+>  	flags = acpi_os_acquire_lock(acpi_gbl_gpe_lock);
+> @@ -707,13 +700,6 @@ acpi_remove_gpe_handler(acpi_handle gpe_device,
+>  		goto unlock_and_exit;
+>  	}
+>  
+> -	/* Disable the GPE before removing the handler */
+> -
+> -	status = acpi_ev_disable_gpe(gpe_event_info);
+> -	if (ACPI_FAILURE(status)) {
+> -		goto unlock_and_exit;
+> -	}
+> -
+>  	/* Make sure all deferred tasks are completed */
+>  
+>  	(void)acpi_ut_release_mutex(ACPI_MTX_EVENTS);
+> diff --git a/drivers/acpi/acpica/evxfevnt.c b/drivers/acpi/acpica/evxfevnt.c
+> index 2a98818..4fb451d 100644
+> --- a/drivers/acpi/acpica/evxfevnt.c
+> +++ b/drivers/acpi/acpica/evxfevnt.c
+> @@ -311,8 +311,7 @@ acpi_status acpi_get_wakeup_gpe(acpi_handle gpe_device, u32 gpe_number)
+>  	}
+>  
+>  	if (++gpe_event_info->wakeup_count == 1)
+> -		acpi_ev_update_gpe_enable_masks(gpe_event_info,
+> -						ACPI_GPE_ENABLE);
+> +		acpi_ev_update_gpe_enable_masks(gpe_event_info);
+>  
+>  unlock_and_exit:
+>  	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
+> @@ -351,8 +350,7 @@ acpi_status acpi_put_wakeup_gpe(acpi_handle gpe_device, u32 gpe_number)
+>  	}
+>  
+>  	if (--gpe_event_info->wakeup_count == 0)
+> -		acpi_ev_update_gpe_enable_masks(gpe_event_info,
+> -			ACPI_GPE_DISABLE);
+> +		acpi_ev_update_gpe_enable_masks(gpe_event_info);
+>  
+>  unlock_and_exit:
+>  	acpi_os_release_lock(acpi_gbl_gpe_lock, flags);
+> @@ -362,48 +360,6 @@ ACPI_EXPORT_SYMBOL(acpi_put_wakeup_gpe)
+>  
+>  /*******************************************************************************
+>   *
+> - * FUNCTION:    acpi_set_gpe_type
+> - *
+> - * PARAMETERS:  gpe_device      - Parent GPE Device
+> - *              gpe_number      - GPE level within the GPE block
+> - *              Type            - New GPE type
+> - *
+> - * RETURN:      Status
+> - *
+> - * DESCRIPTION: Set the type of an individual GPE
+> - *
+> - ******************************************************************************/
+> -acpi_status acpi_set_gpe_type(acpi_handle gpe_device, u32 gpe_number, u8 type)
+> -{
+> -	acpi_status status = AE_OK;
+> -	struct acpi_gpe_event_info *gpe_event_info;
+> -
+> -	ACPI_FUNCTION_TRACE(acpi_set_gpe_type);
+> -
+> -	/* Ensure that we have a valid GPE number */
+> -
+> -	gpe_event_info = acpi_ev_get_gpe_event_info(gpe_device, gpe_number);
+> -	if (!gpe_event_info) {
+> -		status = AE_BAD_PARAMETER;
+> -		goto unlock_and_exit;
+> -	}
+> -
+> -	if ((gpe_event_info->flags & ACPI_GPE_TYPE_MASK) == type) {
+> -		return_ACPI_STATUS(AE_OK);
+> -	}
+> -
+> -	/* Set the new type (will disable GPE if currently enabled) */
+> -
+> -	status = acpi_ev_set_gpe_type(gpe_event_info, type);
+> -
+> -      unlock_and_exit:
+> -	return_ACPI_STATUS(status);
+> -}
+> -
+> -ACPI_EXPORT_SYMBOL(acpi_set_gpe_type)
+> -
+> -/*******************************************************************************
+> - *
+>   * FUNCTION:    acpi_enable_gpe
+>   *
+>   * PARAMETERS:  gpe_device      - Parent GPE Device
+> diff --git a/drivers/acpi/button.c b/drivers/acpi/button.c
+> index 4dd67b1..1a50241 100644
+> --- a/drivers/acpi/button.c
+> +++ b/drivers/acpi/button.c
+> @@ -372,11 +372,6 @@ static int acpi_button_add(struct acpi_device *device)
+>  
+>  	if (device->wakeup.flags.valid) {
+>  		/* Button's GPE is run-wake GPE */
+> -		acpi_set_gpe_type(device->wakeup.gpe_device,
+> -				  device->wakeup.gpe_number,
+> -				  ACPI_GPE_TYPE_WAKE_RUN);
+> -		acpi_enable_gpe(device->wakeup.gpe_device,
+> -				device->wakeup.gpe_number);
+>  		acpi_get_wakeup_gpe(device->wakeup.gpe_device,
+>  				    device->wakeup.gpe_number);
+>  		device->wakeup.state.enabled = 1;
+> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+> index 56f6ba9..a28373d 100644
+> --- a/drivers/acpi/ec.c
+> +++ b/drivers/acpi/ec.c
+> @@ -899,8 +899,6 @@ static int ec_install_handlers(struct acpi_ec *ec)
+>  				  &acpi_ec_gpe_handler, ec);
+>  	if (ACPI_FAILURE(status))
+>  		return -ENODEV;
+> -	acpi_set_gpe_type(NULL, ec->gpe, ACPI_GPE_TYPE_RUNTIME);
+> -	acpi_enable_gpe(NULL, ec->gpe);
+>  	acpi_get_runtime_gpe(NULL, ec->gpe);
+>  	status = acpi_install_address_space_handler(ec->handle,
+>  						    ACPI_ADR_SPACE_EC,
+> diff --git a/drivers/acpi/wakeup.c b/drivers/acpi/wakeup.c
+> index 98023ef..ebe7250 100644
+> --- a/drivers/acpi/wakeup.c
+> +++ b/drivers/acpi/wakeup.c
+> @@ -62,25 +62,12 @@ void acpi_enable_wakeup_device(u8 sleep_state)
+>  		struct acpi_device *dev =
+>  			container_of(node, struct acpi_device, wakeup_list);
+>  
+> -		if (!dev->wakeup.flags.valid)
+> +		if (!dev->wakeup.flags.valid ||
+> +		    !dev->wakeup.flags.prepared ||
+> +		    !dev->wakeup.state.enabled ||
+> +		    (sleep_state > (u32) dev->wakeup.sleep_state))
+>  			continue;
 
-I get:
-[42949397.330000] BUG: failure at mm/page_alloc.c:426/page_is_buddy()!
-[42949397.330000] Kernel panic - not syncing: BUG!
+That'll need to be updated after the PCI wake-up rework.
 
-The page_count is checked and should be 0, but is in fact 1 in this case.
+> -		/* If users want to disable run-wake GPE,
+> -		 * we only disable it for wake and leave it for runtime
+> -		 */
+> -		if ((!dev->wakeup.state.enabled && !dev->wakeup.flags.prepared)
+> -		    || sleep_state > (u32) dev->wakeup.sleep_state) {
+> -			if (dev->wakeup.flags.run_wake) {
+> -				/* set_gpe_type will disable GPE, leave it like that */
+> -				acpi_set_gpe_type(dev->wakeup.gpe_device,
+> -						  dev->wakeup.gpe_number,
+> -						  ACPI_GPE_TYPE_RUNTIME);
+> -			}
+> -			continue;
+> -		}
+> -		if (!dev->wakeup.flags.run_wake)
+> -			acpi_enable_gpe(dev->wakeup.gpe_device,
+> -					dev->wakeup.gpe_number);
+>  		acpi_get_wakeup_gpe(dev->wakeup.gpe_device,
+>  				    dev->wakeup.gpe_number);
+>  	}
+> @@ -99,32 +86,13 @@ void acpi_disable_wakeup_device(u8 sleep_state)
+>  		struct acpi_device *dev =
+>  			container_of(node, struct acpi_device, wakeup_list);
+>  
+> -		if (!dev->wakeup.flags.valid)
+> -			continue;
+> -
+> -		if ((!dev->wakeup.state.enabled && !dev->wakeup.flags.prepared)
+> -		    || sleep_state > (u32) dev->wakeup.sleep_state) {
+> -			if (dev->wakeup.flags.run_wake) {
+> -				acpi_set_gpe_type(dev->wakeup.gpe_device,
+> -						  dev->wakeup.gpe_number,
+> -						  ACPI_GPE_TYPE_WAKE_RUN);
+> -				/* Re-enable it, since set_gpe_type will disable it */
+> -				acpi_enable_gpe(dev->wakeup.gpe_device,
+> -						dev->wakeup.gpe_number);
+> -			}
+> -			continue;
+> -		}
+> +		if (dev->wakeup.state.enabled &&
+> +		    dev->wakeup.flags.prepared &&
+> +		    sleep_state <= (u32) dev->wakeup.sleep_state)
+> +			acpi_put_wakeup_gpe(dev->wakeup.gpe_device,
+> +					    dev->wakeup.gpe_number);
 
-I am booting with an initramfs and using that as root.
+Ditto.
 
-If I pass 'retain_initrd' then there is no problem (but I loose about
-1MB of the 8MB of ram which isn't great).  If I use nfsroot, then
-there also is no issue.  It seems that the memory that is returned by
-free_initrd_mem on m68knommu is somehow not correctly initialized and
-breaks the system as soon is it is used.
+>  		acpi_disable_wakeup_device_power(dev);
+> -		/* Never disable run-wake GPE */
+> -		if (!dev->wakeup.flags.run_wake) {
+> -			acpi_disable_gpe(dev->wakeup.gpe_device,
+> -					 dev->wakeup.gpe_number);
+> -			acpi_clear_gpe(dev->wakeup.gpe_device,
+> -				       dev->wakeup.gpe_number, ACPI_NOT_ISR);
+> -		}
+> -		acpi_put_wakeup_gpe(dev->wakeup.gpe_device,
+> -				    dev->wakeup.gpe_number);
+>  	}
+>  }
+>  
+> @@ -140,11 +108,6 @@ int __init acpi_wakeup_device_init(void)
+>  		/* In case user doesn't load button driver */
+>  		if (!dev->wakeup.flags.run_wake || dev->wakeup.state.enabled)
+>  			continue;
+> -		acpi_set_gpe_type(dev->wakeup.gpe_device,
+> -				  dev->wakeup.gpe_number,
+> -				  ACPI_GPE_TYPE_WAKE_RUN);
+> -		acpi_enable_gpe(dev->wakeup.gpe_device,
+> -				dev->wakeup.gpe_number);
+>  		acpi_get_wakeup_gpe(dev->wakeup.gpe_device,
+>  				    dev->wakeup.gpe_number);
+>  		dev->wakeup.state.enabled = 1;
+> diff --git a/include/acpi/actypes.h b/include/acpi/actypes.h
+> index 37ba576..0c6f8d8 100644
+> --- a/include/acpi/actypes.h
+> +++ b/include/acpi/actypes.h
+> @@ -668,41 +668,27 @@ typedef u32 acpi_event_status;
+>  
+>  /*
+>   * GPE info flags - Per GPE
+> - * +-+-+-+---+---+-+
+> - * |7|6|5|4:3|2:1|0|
+> - * +-+-+-+---+---+-+
+> - *  | | |  |   |  |
+> - *  | | |  |   |  +--- Interrupt type: Edge or Level Triggered
+> - *  | | |  |   +--- Type: Wake-only, Runtime-only, or wake/runtime
+> + * +-+-+-+---+-+-+-+
+> + * |7|6|5|4:3|2|1|0|
+> + * +-+-+-+---+-+-+-+
+> + *  | | |  |  | | |
+> + *  | | |  |  | | +--- Interrupt type: Edge or Level Triggered
+> + *  | | |  |  | +--- Unused
+> + *  | | |  |  +--- Unused
+>   *  | | |  +--- Type of dispatch -- to method, handler, or none
+> - *  | | +--- Enabled for runtime?
+> - *  | +--- Enabled for wake?
+> + *  | | +--- Unused
+> + *  | +--- Unused
+>   *  +--- Unused
+>   */
+>  #define ACPI_GPE_XRUPT_TYPE_MASK        (u8) 0x01
+>  #define ACPI_GPE_LEVEL_TRIGGERED        (u8) 0x01
+>  #define ACPI_GPE_EDGE_TRIGGERED         (u8) 0x00
+>  
+> -#define ACPI_GPE_TYPE_MASK              (u8) 0x06
+> -#define ACPI_GPE_TYPE_WAKE_RUN          (u8) 0x06
+> -#define ACPI_GPE_TYPE_WAKE              (u8) 0x02
+> -#define ACPI_GPE_TYPE_RUNTIME           (u8) 0x04	/* Default */
+> -
+>  #define ACPI_GPE_DISPATCH_MASK          (u8) 0x18
+>  #define ACPI_GPE_DISPATCH_HANDLER       (u8) 0x08
+>  #define ACPI_GPE_DISPATCH_METHOD        (u8) 0x10
+>  #define ACPI_GPE_DISPATCH_NOT_USED      (u8) 0x00	/* Default */
+>  
+> -#define ACPI_GPE_RUN_ENABLE_MASK        (u8) 0x20
+> -#define ACPI_GPE_RUN_ENABLED            (u8) 0x20
+> -#define ACPI_GPE_RUN_DISABLED           (u8) 0x00	/* Default */
+> -
+> -#define ACPI_GPE_WAKE_ENABLE_MASK       (u8) 0x40
+> -#define ACPI_GPE_WAKE_ENABLED           (u8) 0x40
+> -#define ACPI_GPE_WAKE_DISABLED          (u8) 0x00	/* Default */
+> -
+> -#define ACPI_GPE_ENABLE_MASK            (u8) 0x60	/* Both run/wake */
+> -
+>  /*
+>   * Flags for GPE and Lock interfaces
+>   */
 
-I don't know if the bootloader isn't reserving memory for the initrd
-correctly, or if it isn't freed properly or what the issue is.  All I
-can tell so far is that not freeing the initrd memory back to the system
-makes the problem go away (instead of failing in the first 15 seconds,
-I have run for days without issue when not freeing).
+Apart from the comments above, looks really good.
 
-Of course none of the existing m68knommu targets seem to actually use
-an initrd, so I have no doubt that it hasn't had much testing lately.
-
-I have tried with a git tree checked out last friday, and it has the
-same behaviour.
-
-Here is the boot messages with some extra debuging thrown in:
-
-## Booting kernel from Legacy Image at 00200000 ...                       
-   Image Name:   uImage                                                   
-   Created:      2009-09-15  21:24:56 UTC                                 
-   Image Type:   M68K Linux Multi-File Image (uncompressed)               
-   Data Size:    2938380 Bytes =  2.8 MB                                  
-   Load Address: 00020000                                                 
-   Entry Point:  00020000                                                 
-   Contents:                                                              
-      Image 0: 1728512 Bytes =  1.6 MB                                    
-      Image 1: 1209856 Bytes =  1.2 MB                                    
-   Verifying Checksum ... OK                                              
-## Loading init Ramdisk from multi component Legacy Image at 00200000 ... 
-   Loading Multi-File Image ... OK                                        
-OK                                                                        
-   Loading Ramdisk to 0065b000, end 00782600 ... OK                       
-[    0.000000] Linux version 2.6.29.1 (root@rceng02) (gcc version 4.3.3 (GCC) ) #19 Tue Sep 15 17:26:03 EDT 2009
-[    0.000000] initrd at 0x65b000:0x782600                                                                      
-[    0.000000]                                                                                                  
-[    0.000000]                                                                                                  
-[    0.000000] uClinux/COLDFIRE(m5270/5271)                                                                     
-[    0.000000] COLDFIRE port done by Greg Ungerer, gerg@snapgear.com                                            
-[    0.000000] Flat model support (C) 1998,1999 Kenneth Albanowski, D. Jeff Dionne                              
-[    0.000000] free_bootmem(1d7000, 629000)reserve_bootmem(1d7000, 100, BOOTMEM_DEFAULT)<7>On node 0 totalpages: 2048
-[    0.000000] Built 1 zonelists in Zone order, mobility grouping off.  Total pages: 2032                            
-[    0.000000] Kernel command line: rdinit=/sbin/init ip=169.254.72.5:169.254.72.4::255.255.255.0:::off ubootver=2009.06RR8 rdinit=/usr/share/bist/init system mtdparts=physmap-flash.0:256k(uboot),8064k(p01),8064k(p02),-(free)
-[    0.000000] PID hash table entries: 32 (order: 5, 128 bytes)                                                                                                                                                                  
-[42949372.960000] Dentry cache hash table entries: 1024 (order: 0, 4096 bytes)                                                                                                                                                   
-[42949372.960000] Inode-cache hash table entries: 1024 (order: 0, 4096 bytes)                                                                                                                                                    
-[42949372.960000] Memory available: 6220k/8192k RAM, (1535k kernel code, 218k data)                                                                                                                                              
-[42949372.960000] Calibrating delay loop... 98.71 BogoMIPS (lpj=493568)                                                                                                                                                          
-[42949373.160000] Mount-cache hash table entries: 512                                                                                                                                                                            
-[42949373.290000] net_namespace: 296 bytes                                                                                                                                                                                       
-[42949373.290000] NET: Registered protocol family 16                                                                                                                                                                             
-[42949373.320000] bio: create slab <bio-0> at 0                                                                                                                                                                                  
-[42949373.340000] NET: Registered protocol family 2                                                                                                                                                                              
-[42949373.340000] IP route cache hash table entries: 1024 (order: 0, 4096 bytes)                                                                                                                                                 
-[42949373.350000] TCP established hash table entries: 512 (order: 0, 4096 bytes)                                                                                                                                                 
-[42949373.350000] TCP bind hash table entries: 512 (order: -1, 2048 bytes)                                                                                                                                                       
-[42949373.350000] TCP: Hash tables configured (established 512 bind 512)                                                                                                                                                         
-[42949373.350000] TCP reno registered                                                                                                                                                                                            
-[42949373.350000] NET: Registered protocol family 1                                                                                                                                                                              
-[42949373.360000] checking if image is initramfs... it is
-[42949373.820000] Freed initrd memory: <5>65b000 <5>65c000 <5>65d000 <5>65e000 <5>65f000 <5>660000 <5>661000 <5>662000 <5>663000 <5>664000 <5>665000 <5>666000 <5>667000 <5>668000 <5>669000 <5>66a000 <5>66b000 <5>66c000 <5>66d000 <5>66e000 <5>66f000 <5>670000 <5>671000 <5>672000 <5>673000 <5>674000 <5>675000 <5>676000 <5>677000 <5>678000 <5>679000 <5>67a000 <5>67b000 <5>67c000 <5>67d000 <5>67e000 <5>67f000 <5>680000 <5>681000 <5>682000 <5>683000 <5>684000 <5>685000 <5>686000 <5>687000 <5>688000 <5>689000 <5>68a000 <5>68b000 <5>68c000 <5>68d000 <5>68e000 <5>68f000 <5>690000 <5>691000 <5>692000 <5>693000 <5>694000 <5>695000 <5>696000 <5>697000 <5>698000 <5>699000 <5>69a000 <5>69b000 <5>69c000 <5>69d000 <5>69e000 <5>69f000 <5>6a0000 <5>6a1000 <5>6a2000 <5>6a3000 <5>6a4000 <5>6a5000 <5>6a6000 <5>6a7000 <5>6a8000 <5>6a9000 <5>6aa000 <5>6ab000 <5>6ac000 <5>6ad000 <5>6ae000 <5>6af000 <5>6b0000 <5>6b1000 <5>6b2000 <5>6b3000 <5>6b4000 <5>6b5000 <5>6b6000 <5>6b7000 <5>6b8000 <5>6b9000 <5>6ba000 <5>6bb000 <5>6bc000 <5>6bd000 <5>6be000 <5>6bf000 <5>6c0000 <5>6c1000 <5>6c2000 <5>6c3000 <5>6c4000 <5>6c5000 <5>6c6000 <5>6c7000 <5>6c8000 <5>6c9000 <5>6ca000 <5>6cb000 <5>6cc000 <5>6cd000 <5>6ce000 <5>6cf000 <5>6d0000 <5>6d1000 <5>6d2000 <5>6d3000 <5>6d4000 <5>6d5000 <5>6d6000 <5>6d7000 <5>6d8000 <5>6d9000 <5>6da000 <5>6db000 <5>6dc000 <5>6dd000 <5>6de000 <5>6df000 <5>6e0000 <5>6e1000 <5>6e2000 <5>6e3000 <5>6e4000 <5>6e5000 <5>6e6000 <5>6e7000 <5>6e8000 <5>6e9000 <5>6ea000 <5>6eb000 <5>6ec000 <5>6ed000 <5>6ee000 <5>6ef000 <5>6f0000 <5>6f1000 <5>6f2000 <5>6f3000 <5>6f4000 <5>6f5000 <5>6f6000 <5>6f7000 <5>6f8000 <5>6f9000 <5>6fa000 <5>6fb000 <5>6fc000 <5>6fd000 <5>6fe000 <5>6ff000 <5>700000 <5>701000 <5>702000 <5>703000 <5>704000 <5>705000 <5>706000 <5>707000 <5>708000 <5>709000 <5>70a000 <5>70b000 <5>70c000 <5>70d000 <5>70e000 <5>70f000 <5>710000 <5>711000 <5>712000 <5>713000 <5>714000 <5>715000 <5>716000 <5>717000 <5>718000 <5>719000 <5>71a000 <5>71b000 <5>71c000 <5>71d000 <5>71e000 <5>71f000 <5>720000 <5>721000 <5>722000 !
- <5>723000 <5>724000 <5>725000 <5>726000 <5>727000 <5>728000 <5>729000 <5>72a000 <5>72b000 <5>72c000 <5>72d000 <5>72e000 <5>72f000 <5>730000 <5>731000 <5>732000 <5>733000 <5>734000 <5>735000 <5>736000 <5>737000 <5>738000 <5>739000 <5>73a000 <5>73b000 <5>73c000 <5>73d000 <5>73e000 <5>73f000 <5>740000 <5>741000 <5>742000 <5>743000 <5>744000 <5>745000 <5>746000 <5>747000 <5>748000 <5>749000 <5>74a000 <5>74b000 <5>74c000 <5>74d000 <5>74e000 <5>74f000 <5>750000 <5>751000 <5>752000 <5>753000 <5>754000 <5>755000 <5>756000 <5>757000 <5>758000 <5>759000 <5>75a000 <5>75b000 <5>75c000 <5>75d000 <5>75e000 <5>75f000 <5>760000 <5>761000 <5>762000 <5>763000 <5>764000 <5>765000 <5>766000 <5>767000 <5>768000 <5>769000 <5>76a000 <5>76b000 <5>76c000 <5>76d000 <5>76e000 <5>76f000 <5>770000 <5>771000 <5>772000 <5>773000 <5>774000 <5>775000 <5>776000 <5>777000 <5>778000 <5>779000 <5>77a000 <5>77b000 <5>77c000 <5>77d000 <5>77e000 <5>77f000 <5>780000 <5>781000 <5>782000 <5>
-[42949373.850000] Freeing initrd memory: 1180k freed
-[42949373.870000] io scheduler noop registered (default)
-[42949373.870000] ColdFire internal UART serial driver
-[42949373.880000] ttyS0 at MMIO 0x40000280 (irq = 79) is a ColdFire UART
-[42949373.880000] console [ttyS0] enabled
-[42949373.930000] brd: module loaded
-[42949373.960000] loop: module loaded
-[42949373.970000] FEC ENET Version 0.2
-[42949373.980000] fec: PHY @ 0x1, ID 0x00221613 -- KS8721BL
-[42949373.990000] eth0 (): not using net_device_ops yet
-[42949374.010000] eth0: ethernet 00:00:00:00:05:01
-[42949374.020000] fec: setting up smi chardev
-[42949374.030000] physmap platform flash device: 01000000 at ff000000
-[42949374.040000] physmap-flash.0: Found 1 x16 devices at 0x0 in 16-bit bank
-[42949374.050000]  Amd/Fujitsu Extended Query Table at 0x0040
-[42949374.060000] physmap-flash.0: CFI does not contain boot bank location. Assuming top.
-[42949374.070000] number of CFI chips: 1
-[42949374.070000] cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-[42949374.080000] 4 cmdlinepart partitions found on MTD device physmap-flash.0
-[42949374.090000] Creating 4 MTD partitions on "physmap-flash.0":
-[42949374.100000] 0x000000000000-0x000000040000 : "uboot"
-[42949374.110000] 0x000000040000-0x000000820000 : "p01"
-[42949374.130000] 0x000000820000-0x000001000000 : "p02"
-[42949374.140000] 0x000001000000-0x000001000000 : "free"
-[42949374.150000] mtd: partition "free" is out of reach -- disabled
-[42949374.160000] i2c /dev entries driver
-[42949374.250000] lm75 0-0048: hwmon0: sensor 'lm75'
-[42949374.340000] lm75 0-0049: hwmon1: sensor 'lm75'
-[42949374.390000] i2c-adapter i2c-0: ltc4215 forced at address 0x4c
-[42949374.410000] max6369_wdt: Watchdog Driver
-[42949374.420000] TCP cubic registered
-[42949374.420000] NET: Registered protocol family 17
-[42949374.440000] RPC: Registered udp transport module.
-[42949374.450000] RPC: Registered tcp transport module.
-[42949374.970000] eth0: config: auto-negotiation off, 100FDX, 100HDX, 10FDX, 10HDX.
-[42949376.000000] IP-Config: Complete:
-[42949376.010000]      device=eth0, addr=169.254.72.5, mask=255.255.255.0, gw=255.255.255.255,
-[42949376.030000]      host=169.254.72.5, domain=, nis-domain=(none),
-[42949376.040000]      bootserver=169.254.72.4, rootserver=169.254.72.4, rootpath=
-[42949376.060000] Freeing unused kernel memory: 76k freed (0x1b2000 - 0x1c4000)
-[42949376.760000] max6369_wdt: timer margin 60 seconds
-[42949376.770000] max6369_wdt: keep-alive handler deactivated
-
-COLUMNS=271;LINES=66;export COLUMNS LINES;
-type "help" for a list of bist commands..
-
-
-Starting bist
-00:00:04.204   ledthread: setting up fpled gpio with "echo 50 > /sys/class/gpio/export"
-00:00:04.325   ledthread: setting up fpled gpio with "echo 52 > /sys/class/gpio/export"
-00:00:07.682   eval_tests: found sh script eepromtest
-00:00:07.684   platform m68kuclinux_target1 id 0x23212f62 parms "12-86-0005-[0-9][0-9][0-9] 12-86-001[0123]-[0-9][0-9][0-9]", flags "SYSTEM SELF"
-00:00:08.297   eval_tests: found sh script lm75test
-00:00:08.300   platform m68kuclinux_target1 id 0x23212f62 parms "0-0048/temp1_input 0-0049/temp1_input", flags "SYSTEM SELF"
-00:00:18.252   Installing tests
-00:00:18.336   Starting pass 1 at Tue Nov 30 00:00:18 UTC 1999
-00:00:18.423   About to run "BISTCOUNT=1  ./lm75test 0-0048/temp1_input 0-0049/temp1_input"
-00:00:18.431   About to run "BISTCOUNT=1  ./eepromtest 12-86-0005-[0-9][0-9][0-9] 12-86-001[0123]-[0-9][0-9][0-9]"
-00:00:18.879   lm75test 0-0048/temp1_input 0-0049/temp1_input: PASS
-[42949397.330000] page_count(buddy)=1
-[42949397.330000] BUG: failure at mm/page_alloc.c:426/page_is_buddy()!
-[42949397.330000] Kernel panic - not syncing: BUG!
-
--- 
-Len Sorensen
+Thanks,
+Rafael
