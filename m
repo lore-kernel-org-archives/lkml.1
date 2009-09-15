@@ -1,118 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbZIOQ7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZIORC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755789AbZIOQ7o (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 12:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbZIOQ7k
+	id S1756196AbZIORC1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 13:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZIORCW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 12:59:40 -0400
-Received: from kroah.org ([198.145.64.141]:44125 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755691AbZIOQ7j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 12:59:39 -0400
-Date: Tue, 15 Sep 2009 09:57:08 -0700
-From: Greg KH <greg@kroah.com>
-To: James Bottomley <James.Bottomley@suse.de>
-Cc: Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>,
-       Ravi Anand <ravi.anand@qlogic.com>,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>
-Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
- CONFIG_MOUDLES=n.
-Message-ID: <20090915165708.GA18817@kroah.com>
-References: <1252708951.13282.151.camel@mulgrave.site>
- <20090912000742.GB12098@plap4-2.local>
- <20090912001752.GC12098@plap4-2.local>
- <20090912003808.GD12098@plap4-2.local>
- <20090912005446.GA11691@kroah.com>
- <20090912025623.GA14824@plap4-2.local>
- <20090912043333.GA12349@kroah.com>
- <1252765807.4238.74.camel@mulgrave.site>
- <20090915153312.GB22774@kroah.com>
- <1253029631.29947.156.camel@mulgrave.site>
+	Tue, 15 Sep 2009 13:02:22 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:52333 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756143AbZIORCV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 13:02:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:mime-version:content-type
+         :content-transfer-encoding:content-disposition:message-id;
+        b=HAWHKeI4M4TiTKutBhnpDP87b8Ck/G6ZJ3GW+VVgR7TUmMl9l9hbHGKKz6SxphRHbt
+         deX2n/cAdl+FV0O7JTjO4x52+wdSXZJVATo6Xhg+QfiKRXGFc+GqSHZzgWHw1FTpsXKZ
+         wfjkx2gFsWOQLbaD0DZjI2Oj/6Y+Ig8/rtPoE=
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: "Linux-Kernel" <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>
+Subject: [RFC] cfq: adapt slice to number of processes doing I/O (v2)
+Date: Tue, 15 Sep 2009 19:02:26 +0200
+User-Agent: KMail/1.11.4 (Linux/2.6.31cz; KDE/4.2.4; i686; ; )
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1253029631.29947.156.camel@mulgrave.site>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+Message-Id: <200909151902.26609.czoccolo@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 10:47:11AM -0500, James Bottomley wrote:
-> On Tue, 2009-09-15 at 08:33 -0700, Greg KH wrote:
-> > On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
-> > > On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
-> > > > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
-> > > > > On Fri, 11 Sep 2009, Greg KH wrote:
-> > > > > 
-> > > > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
-> > > > > > > Randy Dunlap noted:
-> > > > > > > 
-> > > > > > >   when CONFIG_MODULES=n:
-> > > > > > > 
-> > > > > > > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> > > > > > > 
-> > > > > > >   in
-> > > > > > > 
-> > > > > > > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> > > > > > > 		KOBJ_CHANGE, envp);
-> > > > > > > 
-> > > > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
-> > > > > > 
-> > > > > > Um, why?  What are you trying to do here?  kobject change should not be
-> > > > > > for a device, or a "normal" kobject.
-> > > > > > 
-> > > > > > What do you expect userspace to do with this?  Where have you documented
-> > > > > > it?
-> > > > > 
-> > > > > The purpose was described here:
-> > > > > 
-> > > > > 	http://article.gmane.org/gmane.linux.scsi/54155
-> > > > > 
-> > > > > Basically we'd like to instruct user-space to retrieve a blob of data
-> > > > > automatically.
-> > > > 
-> > > > Hm, like a firmware object perhaps?
-> > > > 
-> > > > > Original implementation used the kboject hanging off
-> > > > > the module which does not exist when CONFIG_MODULES=n.  It was
-> > > > > suggested that perhaps an alternative would be to use 'struct device'
-> > > > > kobj.  Any tips on how to trigger such a driver-specific event,
-> > > > > perhaps a dedicated kobject exported by the driver itself???
-> > > > 
-> > > > Why not use the firmware interface for it, that is what it is designed
-> > > > for, and you will not have to craft any new udev rules.
-> > > 
-> > > The data is going the wrong way to use the current firmware interface,
-> > > which is designed to load data from userspace into the kernel.  For this
-> > > interface, we want the data to go the other way (i.e. the kernel has a
-> > > blob of dump data it would like userspace to save if it can).
-> > 
-> > Ick.
-> 
-> It's a natural debugging event ... the user can simply program the
-> system to discard the dump.
-> 
-> > > I'd be amenable to updating the firmware interface to do this, but it
-> > > looks like adding a completely new codepath, which it's not clear even
-> > > belongs there.
-> > 
-> > Well, I don't think it deserves a kobject change event, as that means
-> > something a bit different to userspace today, right?
-> 
-> Well, the documentation (in include/linux/kobject.h) does say that
-> KOBJ_CHANGED is the dumping ground for events that don't match anything
-> else, which this one seems to qualify as.  What else do you suggest?
+[This applies on top of  git://git.kernel.dk/linux-2.6-block.git for-2.6.32]
 
-Ok, I can't think of anything else at the moment, sorry.
+When the number of processes performing I/O concurrently increases,
+a fixed time slice per process will cause large latencies.
 
-This is using a binary sysfs file, right?
+This (v2) patch will scale the time slice assigned to each process,
+according to a target latency (tunable from sysfs, default 300ms).
 
-thanks,
+In order to keep fairness among processes, we adopt two devices, w.r.t. v1.
 
-greg k-h
+* The number of active processes is computed using a special form of
+running average, that quickly follows sudden increases (to keep latency low),
+and decrease slowly (to have fairness in spite of rapid decreases of this value).
+
+* The idle time is computed using remaining slice as a maximum.
+
+To safeguard sequential bandwidth, we impose a minimum time slice
+(computed using 2*cfq_slice_idle as base, adjusted according to priority
+and async-ness).
+
+Signed-off-by: Corrado Zoccolo <czoccolo@gmail.com>
+
+---
+diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
+index 0e3814b..e1a1e4d 100644
+--- a/block/cfq-iosched.c
++++ b/block/cfq-iosched.c
+@@ -27,6 +27,8 @@ static const int cfq_slice_sync = HZ / 10;
+ static int cfq_slice_async = HZ / 25;
+ static const int cfq_slice_async_rq = 2;
+ static int cfq_slice_idle = HZ / 125;
++static int cfq_preferred_latency = HZ * 3/10; /* 300 ms */
++static int cfq_queue_hist_divisor = 4;
+ 
+ /*
+  * offset from end of service tree
+@@ -134,6 +136,9 @@ struct cfq_data {
+ 	struct rb_root prio_trees[CFQ_PRIO_LISTS];
+ 
+ 	unsigned int busy_queues;
++	unsigned int busy_queues_avg;
++	unsigned int busy_rt_queues;
++	unsigned int busy_rt_queues_avg;
+ 
+ 	int rq_in_driver[2];
+ 	int sync_flight;
+@@ -173,6 +178,8 @@ struct cfq_data {
+ 	unsigned int cfq_slice[2];
+ 	unsigned int cfq_slice_async_rq;
+ 	unsigned int cfq_slice_idle;
++	unsigned int cfq_preferred_latency;
++	unsigned int cfq_queue_hist_divisor;
+ 
+ 	struct list_head cic_list;
+ 
+@@ -301,10 +308,37 @@ cfq_prio_to_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	return cfq_prio_slice(cfqd, cfq_cfqq_sync(cfqq), cfqq->ioprio);
+ }
+ 
++static inline unsigned
++cfq_get_interested_queues(struct cfq_data *cfqd, bool rt) {
++	unsigned min_q, max_q;
++	unsigned mult = cfqd->cfq_queue_hist_divisor - 1;
++	unsigned round = cfqd->cfq_queue_hist_divisor / 2;
++	if (rt) {
++		min_q = min(cfqd->busy_rt_queues_avg, cfqd->busy_rt_queues);
++		max_q = max(cfqd->busy_rt_queues_avg, cfqd->busy_rt_queues);
++		cfqd->busy_rt_queues_avg = (mult * max_q + min_q + round) / cfqd->cfq_queue_hist_divisor;
++		return cfqd->busy_rt_queues_avg;
++	} else {
++		min_q = min(cfqd->busy_queues_avg, cfqd->busy_queues);
++		max_q = max(cfqd->busy_queues_avg, cfqd->busy_queues);
++		cfqd->busy_queues_avg = (mult * max_q + min_q + round) / cfqd->cfq_queue_hist_divisor;
++		return cfqd->busy_queues_avg;
++	}
++}
++
+ static inline void
+ cfq_set_prio_slice(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ {
+-	cfqq->slice_end = cfq_prio_to_slice(cfqd, cfqq) + jiffies;
++	unsigned process_threshold = cfqd->cfq_preferred_latency / cfqd->cfq_slice[1];
++	unsigned interested_queues = cfq_get_interested_queues(cfqd, cfq_class_rt(cfqq));
++	unsigned slice = cfq_prio_to_slice(cfqd, cfqq);
++
++	if (interested_queues > process_threshold) {
++		unsigned low_slice = min(slice, 2 * slice * cfqd->cfq_slice_idle / cfqd->cfq_slice[1]);
++		slice = max(slice * process_threshold / interested_queues, low_slice);
++	}
++
++	cfqq->slice_end = jiffies + slice;
+ 	cfq_log_cfqq(cfqd, cfqq, "set_slice=%lu", cfqq->slice_end - jiffies);
+ }
+ 
+@@ -646,6 +680,8 @@ static void cfq_add_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 	BUG_ON(cfq_cfqq_on_rr(cfqq));
+ 	cfq_mark_cfqq_on_rr(cfqq);
+ 	cfqd->busy_queues++;
++	if (cfq_class_rt(cfqq))
++		cfqd->busy_rt_queues++;
+ 
+ 	cfq_resort_rr_list(cfqd, cfqq);
+ }
+@@ -669,6 +705,8 @@ static void cfq_del_cfqq_rr(struct cfq_data *cfqd, struct cfq_queue *cfqq)
+ 
+ 	BUG_ON(!cfqd->busy_queues);
+ 	cfqd->busy_queues--;
++	if (cfq_class_rt(cfqq))
++		cfqd->busy_rt_queues--;
+ }
+ 
+ /*
+@@ -1092,7 +1130,7 @@ static void cfq_arm_slice_timer(struct cfq_data *cfqd)
+ 	 * fair distribution of slice time for a process doing back-to-back
+ 	 * seeks. so allow a little bit of time for him to submit a new rq
+ 	 */
+-	sl = cfqd->cfq_slice_idle;
++	sl = min(cfqd->cfq_slice_idle, (unsigned)(cfqq->slice_end - jiffies));
+ 	if (sample_valid(cic->seek_samples) && CIC_SEEKY(cic))
+ 		sl = min(sl, msecs_to_jiffies(CFQ_MIN_TT));
+ 
+@@ -2480,6 +2518,8 @@ static void *cfq_init_queue(struct request_queue *q)
+ 	cfqd->cfq_slice[1] = cfq_slice_sync;
+ 	cfqd->cfq_slice_async_rq = cfq_slice_async_rq;
+ 	cfqd->cfq_slice_idle = cfq_slice_idle;
++	cfqd->cfq_preferred_latency = cfq_preferred_latency;
++	cfqd->cfq_queue_hist_divisor = cfq_queue_hist_divisor;
+ 	cfqd->hw_tag = 1;
+ 
+ 	return cfqd;
+@@ -2549,6 +2589,8 @@ SHOW_FUNCTION(cfq_slice_idle_show, cfqd->cfq_slice_idle, 1);
+ SHOW_FUNCTION(cfq_slice_sync_show, cfqd->cfq_slice[1], 1);
+ SHOW_FUNCTION(cfq_slice_async_show, cfqd->cfq_slice[0], 1);
+ SHOW_FUNCTION(cfq_slice_async_rq_show, cfqd->cfq_slice_async_rq, 0);
++SHOW_FUNCTION(cfq_preferred_latency_show, cfqd->cfq_preferred_latency, 1);
++SHOW_FUNCTION(cfq_queue_hist_divisor_show, cfqd->cfq_queue_hist_divisor, 0);
+ #undef SHOW_FUNCTION
+ 
+ #define STORE_FUNCTION(__FUNC, __PTR, MIN, MAX, __CONV)			\
+@@ -2580,6 +2622,10 @@ STORE_FUNCTION(cfq_slice_sync_store, &cfqd->cfq_slice[1], 1, UINT_MAX, 1);
+ STORE_FUNCTION(cfq_slice_async_store, &cfqd->cfq_slice[0], 1, UINT_MAX, 1);
+ STORE_FUNCTION(cfq_slice_async_rq_store, &cfqd->cfq_slice_async_rq, 1,
+ 		UINT_MAX, 0);
++
++STORE_FUNCTION(cfq_preferred_latency_store, &cfqd->cfq_preferred_latency, 1, 1000, 1);
++STORE_FUNCTION(cfq_queue_hist_divisor_store, &cfqd->cfq_queue_hist_divisor, 1, 100, 0);
++
+ #undef STORE_FUNCTION
+ 
+ #define CFQ_ATTR(name) \
+@@ -2595,6 +2641,8 @@ static struct elv_fs_entry cfq_attrs[] = {
+ 	CFQ_ATTR(slice_async),
+ 	CFQ_ATTR(slice_async_rq),
+ 	CFQ_ATTR(slice_idle),
++	CFQ_ATTR(preferred_latency),
++	CFQ_ATTR(queue_hist_divisor),
+ 	__ATTR_NULL
+ };
+ 
+
