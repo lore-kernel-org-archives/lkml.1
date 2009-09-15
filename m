@@ -1,605 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758085AbZIOUtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758544AbZIOUjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758085AbZIOUtS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 16:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755648AbZIOUtM
+	id S1758544AbZIOUjt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 16:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZIOUjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 16:49:12 -0400
-Received: from www.sr71.net ([198.145.64.142]:50410 "EHLO blackbird.sr71.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753608AbZIOUtL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 16:49:11 -0400
-X-Greylist: delayed 617 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Sep 2009 16:49:11 EDT
-Subject: [RFC][PATCH] LED driver for Intel NAS SS4200 series
-From: Dave Hansen <dave@sr71.net>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 13:38:55 -0700
-Message-Id: <1253047135.10449.11657.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 16:39:44 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:23623 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754210AbZIOUjn convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 16:39:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:organization:to:subject:date:user-agent:cc:references
+         :in-reply-to:mime-version:content-type:content-transfer-encoding
+         :message-id;
+        b=nv+Du9N5s9KzocSAXHXCucdioFkKgDeE7o0jne9TSKLWM8rl/ZcrMwkuLnGoJ0gMuW
+         r9LwY9Gm7grNaUYEHSBG8SKAchuMsO5CLO8WSlKSHMlXUVWAkIdct1mCNndU8prVmnG/
+         4IIPts+N74aw7jXDKvVW/E2mqFlzxfc+e5hW4=
+From: Marek Vasut <marek.vasut@gmail.com>
+Organization: Hack&Dev
+To: Steve Chen <schen@mvista.com>
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+Date: Tue, 15 Sep 2009 22:39:19 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.30-1-amd64; KDE/4.3.1; x86_64; ; )
+Cc: Felipe Contreras <felipe.contreras@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Jamie Lokier <jamie@shareable.org>,
+       "Russell King - ARM Linux" <linux@arm.linux.org.uk>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com> <94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com> <1253043875.3273.131.camel@linux-1lbu>
+In-Reply-To: <1253043875.3273.131.camel@linux-1lbu>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200909152239.19543.marek.vasut@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code is based on a driver that came in the "Open-source
-and GPL components" download here:
-    
-http://downloadcenter.intel.com/SearchResult.aspx?lang=eng&ProductFamily=Server+Products&ProductLine=Intel%C2%AE+Storage+Systems&ProductProduct=Intel%C2%AE+Entry+Storage+System+SS4200-E&OSVersion=OS+Independent
-    
-It was in a file called nasgpio.c inside of a second zip file
-called SS4200-E_Linux_SIO_Driver-v1.4.zip.
+Dne Út 15. září 2009 21:44:35 Steve Chen napsal(a):
+> Felipe,
+> 
+> Here is the updated patch.  If you don't mind add your signed-off, I can
+> submit the patch.
 
-That code used an ioctl() call to operate the LEDs.  It also
-created a new top-level /proc file just to let userspace locate
-which dynamic major number had been allocated to the device.
-I decided that the interface probably wasn't mergeable in that
-form. :)
-    
-I ripped out all of the hardware monitor support from nasgpio.c
-as well as the smbus code that controls the LED brightness.  I
-then converted the code to use the existing LED interfaces
-rather than the ioctl().  I don't have any need for brightness
-control, and its code is *completely* separate from the on/off
-controls implemented here.  If anyone else wants it, I'd be
-happy to look into adding it, but I don't care enough for now.
-
-Except for the probe routines, I rewrote most of it.  I also
-Note that I don't have any hardware documentation except for
-the original driver.  
-
-Thanks go to Arjan for his help in getting the original source
-for this released and for chasing down some licensing issues.
-
-Signed-off-by: Dave Hansen <dave@sr71.net>
-
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 7c8e712..ae6ed6e 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -229,6 +229,15 @@ config LEDS_BD2802
- 	  This option enables support for BD2802GU RGB LED driver chips
- 	  accessed via the I2C bus.
- 
-+config LEDS_INTEL_SS4200
-+	tristate "LED driver for Intel NAS SS4200 series"
-+	depends on LEDS_CLASS && PCI
-+	help
-+	  This option enables support for the Intel SS4200 series of
-+	  Network Attached Storage servers.  You may control the hard
-+	  drive or power LEDs on the front panel.  Using this driver
-+	  can stop the front LED from blinking after startup.
-+
- comment "LED Triggers"
- 
- config LEDS_TRIGGERS
-diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
-index e8cdcf7..6af2f99 100644
---- a/drivers/leds/Makefile
-+++ b/drivers/leds/Makefile
-@@ -28,6 +28,7 @@ obj-$(CONFIG_LEDS_PCA955X)		+= leds-pca955x.o
- obj-$(CONFIG_LEDS_DA903X)		+= leds-da903x.o
- obj-$(CONFIG_LEDS_WM8350)		+= leds-wm8350.o
- obj-$(CONFIG_LEDS_PWM)			+= leds-pwm.o
-+obj-$(CONFIG_LEDS_INTEL_SS4200)		+= leds-ss4200.o
- 
- # LED SPI Drivers
- obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
-diff --git a/drivers/leds/leds-ss4200.c b/drivers/leds/leds-ss4200.c
-new file mode 100644
-index 0000000..95d7796
---- /dev/null
-+++ b/drivers/leds/leds-ss4200.c
-@@ -0,0 +1,506 @@
-+/*********************************************************
-+ *
-+/*
-+ * SS4200-E Hardware API
-+ * Copyright (c) 2009, Intel Corporation.
-+ * Copyright IBM Corporation, 2009
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms and conditions of the GNU General Public License,
-+ * version 2, as published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope it will be useful, but WITHOUT
-+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-+ * more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along with
-+ * this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
-+ *
-+ * Author: Dave Hansen <dave@sr71.net>
-+ */
-+
-+#include <linux/init.h>
-+#include <linux/ioport.h>
-+#include <linux/kernel.h>
-+#include <linux/leds.h>
-+#include <linux/module.h>
-+#include <linux/pci.h>
-+#include <linux/types.h>
-+#include <linux/uaccess.h>
-+
-+MODULE_AUTHOR("Rodney Girod <rgirod@confocus.com>, Dave Hansen <dave@sr71.net>");
-+MODULE_DESCRIPTION("Intel NAS/Home Server ICH7 GPIO Driver");
-+MODULE_LICENSE("GPL");
-+
-+#define DRIVER_NAME (THIS_MODULE->name)
-+
-+/*
-+ * ICH7 LPC/GPIO PCI Config register offsets
-+ */
-+#define PMBASE		0x040
-+#define GPIO_BASE	0x048
-+#define GPIO_CTRL	0x04c
-+#define GPIO_EN		0x010
-+
-+/*
-+ * The ICH7 GPIO register block is 64 bytes in size.
-+ */
-+#define ICH7_GPIO_SIZE	64
-+
-+/*
-+ * Define register offsets within the ICH7 register block.
-+ */
-+#define GPIO_USE_SEL	0x000
-+#define GP_IO_SEL	0x004
-+#define GP_LVL		0x00c
-+#define GPO_BLINK	0x018
-+#define GPI_INV		0x030
-+#define GPIO_USE_SEL2	0x034
-+#define GP_IO_SEL2	0x038
-+#define GP_LVL2		0x03c
-+
-+/*
-+ * PCI ID of the Intel ICH7 LPC Device within which the GPIO block lives.
-+ */
-+static struct pci_device_id ich7_lpc_pci_id[] =
-+{
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_0) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_1) },
-+	{ PCI_DEVICE(PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_INTEL_ICH7_30) },
-+	{ } /* NULL entry */
-+};
-+
-+MODULE_DEVICE_TABLE(pci, ich7_lpc_pci_id);
-+
-+/*
-+ * Base I/O address assigned to the Power Management register block
-+ */
-+static u32 g_pm_io_base;
-+
-+/*
-+ * Base I/O address assigned to the ICH7 GPIO register block
-+ */
-+static u32 nas_gpio_io_base;
-+
-+/*
-+ * When we successfully register a region, we are returned a resource.
-+ * We use these to identify which regions we need to release on our way
-+ * back out.
-+ */
-+static struct resource *gp_gpio_resource;
-+
-+struct nasgpio_led {
-+	char *name;
-+	u32 gpio_bit;
-+	struct led_classdev led_cdev;
-+};
-+
-+/*
-+ * gpio_bit(s) are the ICH7 GPIO bit assignments
-+ */
-+static struct nasgpio_led nasgpio_leds[] = {
-+	{ .name = "hdd1:blue:sata",	.gpio_bit = 0 },
-+	{ .name = "hdd1:amber:sata",	.gpio_bit = 1 },
-+	{ .name = "hdd2:blue:sata",	.gpio_bit = 2 },
-+	{ .name = "hdd2:amber:sata",	.gpio_bit = 3 },
-+	{ .name = "hdd3:blue:sata",	.gpio_bit = 4 },
-+	{ .name = "hdd3:amber:sata",	.gpio_bit = 5 },
-+	{ .name = "hdd4:blue:sata",	.gpio_bit = 6 },
-+	{ .name = "hdd4:amber:sata",	.gpio_bit = 7 },
-+	{ .name = "power:blue:power",	.gpio_bit = 27},
-+	{ .name = "power:amber:power",  .gpio_bit = 28},
-+};
-+
-+#define NAS_RECOVERY	0x00000400	/* GPIO10 */
-+
-+static struct nasgpio_led *
-+led_classdev_to_nasgpio_led(struct led_classdev *led_cdev)
-+{
-+	return container_of(led_cdev, struct nasgpio_led, led_cdev);
-+}
-+
-+static struct nasgpio_led *get_led_named(char *name)
-+{
-+	int i;
-+	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++) {
-+		if (strcmp(nasgpio_leds[i].name, name))
-+			continue;
-+		return &nasgpio_leds[i];
-+	}
-+	return NULL;
-+}
-+
-+/*
-+ * This protects access to the gpio ports.
-+ */
-+static DEFINE_SPINLOCK(nasgpio_gpio_lock);
-+
-+/*
-+ * There are two gpio ports, one for blinking and the other
-+ * for power.  @port tells us if we're doing blinking or
-+ * power control.
-+ *
-+ * Caller must hold nasgpio_gpio_lock
-+ */
-+void nasgpio_led_set_attr(struct led_classdev *led_cdev, u32 port, u32 value)
-+{
-+	struct nasgpio_led *led = led_classdev_to_nasgpio_led(led_cdev);
-+	u32 gpio_out;
-+
-+	gpio_out = inl(nas_gpio_io_base + port);
-+	if (value)
-+		gpio_out |= (1<<led->gpio_bit);
-+	else
-+		gpio_out &= ~(1<<led->gpio_bit);
-+
-+	outl(gpio_out, nas_gpio_io_base + port);
-+}
-+
-+u32 nasgpio_led_get_attr(struct led_classdev *led_cdev, u32 port)
-+{
-+	struct nasgpio_led *led = led_classdev_to_nasgpio_led(led_cdev);
-+	u32 gpio_in;
-+
-+	spin_lock(&nasgpio_gpio_lock);
-+	gpio_in = inl(nas_gpio_io_base + port);
-+	spin_unlock(&nasgpio_gpio_lock);
-+	if (gpio_in & (1<<led->gpio_bit))
-+		return 1;
-+	return 0;
-+}
-+
-+/*
-+ * There is actual brightness control in the hardware,
-+ * but it is via smbus commands and not implemented
-+ * in this driver.
-+ */
-+static void nasgpio_led_set_brightness(struct led_classdev *led_cdev,
-+				       enum led_brightness brightness)
-+{
-+	u32 setting = 0;
-+	if (brightness >= LED_HALF)
-+		setting = 1;
-+	/*
-+	 * Hold the lock across both operations.  This ensures
-+	 * consistency so that both the "turn off blinking"
-+	 * and "turn light off" operations complete as a set.
-+	 */
-+	spin_lock(&nasgpio_gpio_lock);
-+	/*
-+	 * LED class documentation asks that past blink state
-+	 * be disabled when brightness is turned to zero.
-+	 */
-+	if (brightness == 0)
-+		nasgpio_led_set_attr(led_cdev, GPO_BLINK, 0);
-+	nasgpio_led_set_attr(led_cdev, GP_LVL, setting);
-+	spin_unlock(&nasgpio_gpio_lock);
-+}
-+
-+static int nasgpio_led_set_blink(struct led_classdev *led_cdev,
-+				 unsigned long *delay_on,
-+				 unsigned long *delay_off)
-+{
-+	u32 setting = 1;
-+	if (!(*delay_on == 0 && *delay_off == 0) &&
-+	    !(*delay_on == 500 && *delay_off == 500))
-+		return -EINVAL;
-+	/*
-+	 * These are very approximate.
-+	 */
-+	*delay_on = 500;
-+	*delay_off = 500;
-+
-+	spin_lock(&nasgpio_gpio_lock);
-+	nasgpio_led_set_attr(led_cdev, GPO_BLINK, setting);
-+	spin_unlock(&nasgpio_gpio_lock);
-+
-+	return 0;
-+}
-+
-+
-+/*
-+ * Initialize the ICH7 GPIO registers for NAS usage.  The BIOS should have
-+ * already taken care of this, but we will do so in a non destructive manner
-+ * so that we have what we need whether the BIOS did it or not.
-+ */
-+static int ich7_gpio_init(struct device *dev)
-+{
-+	int i;
-+	u32 config_data = 0;
-+	u32 all_nas_led = 0;
-+
-+	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++)
-+		all_nas_led |= (1<<nasgpio_leds[i].gpio_bit);
-+
-+	spin_lock(&nasgpio_gpio_lock);
-+	/*
-+	 * We need to enable all of the GPIO lines used by the NAS box,
-+	 * so we will read the current Use Selection and add our usage
-+	 * to it.  This should be benign with regard to the original
-+	 * BIOS configuration.
-+	 */
-+	config_data = inl(nas_gpio_io_base + GPIO_USE_SEL);
-+	dev_printk(KERN_DEBUG, dev, "Data read from GPIO_USE_SEL = 0x%08x\n",
-+					config_data);
-+	config_data |= all_nas_led + NAS_RECOVERY;
-+	outl(config_data, nas_gpio_io_base + GPIO_USE_SEL);
-+	config_data = inl(nas_gpio_io_base + GPIO_USE_SEL);
-+	dev_printk(KERN_DEBUG, dev, "GPIO_USE_SEL = 0x%08x\n\n",
-+					config_data);
-+
-+	/*
-+	 * The LED GPIO outputs need to be configured for output, so we
-+	 * will ensure that all LED lines are cleared for output and the
-+	 * RECOVERY line ready for input.  This too should be benign with
-+	 * regard to BIOS configuration.
-+	 */
-+	config_data = inl(nas_gpio_io_base + GP_IO_SEL);
-+	dev_printk(KERN_DEBUG, dev, "Data read from GP_IO_SEL = 0x%08x\n",
-+					config_data);
-+	config_data &= ~all_nas_led;
-+	config_data |= NAS_RECOVERY;
-+	outl(config_data, nas_gpio_io_base + GP_IO_SEL);
-+	config_data = inl(nas_gpio_io_base + GP_IO_SEL);
-+	dev_printk(KERN_DEBUG, dev, "GP_IO_SEL = 0x%08x\n\n",
-+					config_data);
-+
-+	/*
-+	 * In our final system, the BIOS will initialize the state of all
-+	 * of the LEDs.  For now, we turn them all off (or Low).
-+	 */
-+	config_data = inl(nas_gpio_io_base + GP_LVL);
-+	dev_printk(KERN_DEBUG, dev, "Data read from GP_LVL = 0x%08x\n",
-+				   config_data);
-+	/*
-+	 * In our final system, the BIOS will initialize the blink state of all
-+	 * of the LEDs.  For now, we turn blink off for all of them.
-+	 */
-+	config_data = inl(nas_gpio_io_base + GPO_BLINK);
-+	dev_printk(KERN_DEBUG, dev, "Data read from GPO_BLINK = 0x%08x\n",
-+					config_data);
-+
-+	/*
-+	 * At this moment, I am unsure if anything needs to happen with GPI_INV
-+	 */
-+	config_data = inl(nas_gpio_io_base + GPI_INV);
-+	dev_printk(KERN_DEBUG, dev, "Data read from GPI_INV = 0x%08x\n",
-+					config_data);
-+
-+	spin_unlock(&nasgpio_gpio_lock);
-+	return 0;
-+}
-+
-+static void ich7_lpc_cleanup(struct device *dev)
-+{
-+	/*
-+	 * If we were given exclusive use of the GPIO
-+	 * I/O Address range, we must return it.
-+	 */
-+	if (gp_gpio_resource) {
-+		dev_printk(KERN_DEBUG, dev, "Releasing GPIO I/O addresses\n");
-+		release_region(nas_gpio_io_base, ICH7_GPIO_SIZE);
-+		gp_gpio_resource = NULL;
-+	}
-+}
-+
-+/*
-+ * The OS has determined that the LPC of the Intel ICH7 Southbridge is present
-+ * so we can retrive the required operational information and prepare the GPIO.
-+ */
-+static struct pci_dev *nas_gpio_pci_dev;
-+static int ich7_lpc_probe(struct pci_dev *dev, const struct pci_device_id *id)
-+{
-+	int status = 0;
-+	u32 gc = 0;
-+
-+	pci_enable_device(dev);
-+
-+	nas_gpio_pci_dev = dev;
-+	status = pci_read_config_dword(dev, PMBASE, &g_pm_io_base);
-+	if (status)
-+		goto out;
-+	g_pm_io_base &= 0x00000ff80;
-+
-+	status = pci_read_config_dword(dev, GPIO_CTRL, &gc);
-+	if (!(GPIO_EN & gc)) {
-+		status = -EEXIST;
-+		dev_printk(KERN_INFO, &dev->dev,
-+			   "ERROR: The LPC GPIO Block has not been enabled.\n");
-+		goto out;
-+	}
-+
-+	status = pci_read_config_dword(dev, GPIO_BASE, &nas_gpio_io_base);
-+	if (0 > status) {
-+		dev_printk(KERN_INFO, &dev->dev, "Unable to read GPIOBASE.\n");
-+		goto out;
-+	}
-+	dev_printk(KERN_DEBUG, &dev->dev,
-+		   "GPIOBASE = 0x%08x\n", nas_gpio_io_base);
-+	nas_gpio_io_base &= 0x00000ffc0;
-+
-+	/*
-+	 * Insure that we have exclusive access to the GPIO I/O address range.
-+	 */
-+	gp_gpio_resource = request_region(nas_gpio_io_base,
-+					  ICH7_GPIO_SIZE, DRIVER_NAME);
-+	if (NULL == gp_gpio_resource) {
-+		dev_printk(KERN_INFO, &dev->dev,
-+			   "ERROR Unable to register GPIO I/O addresses.\n");
-+		status = -1;
-+		goto out;
-+	}
-+
-+	/*
-+	 * Initialize the GPIO for NAS/Home Server Use
-+	 */
-+	ich7_gpio_init(&dev->dev);
-+
-+out:
-+	if (status)
-+		ich7_lpc_cleanup(&dev->dev);
-+	return status;
-+}
-+
-+static void ich7_lpc_remove(struct pci_dev *dev)
-+{
-+	ich7_lpc_cleanup(&dev->dev);
-+}
-+
-+/*
-+ * pci_driver structure passed to the PCI modules
-+ */
-+static struct pci_driver nas_gpio_pci_driver = {
-+	.name = DRIVER_NAME,
-+	.id_table = ich7_lpc_pci_id,
-+	.probe = ich7_lpc_probe,
-+	.remove = ich7_lpc_remove,
-+};
-+
-+static struct led_classdev *get_classdev_for_led_nr(int nr)
-+{
-+	struct nasgpio_led *nas_led = &nasgpio_leds[nr];
-+	struct led_classdev *led = &nas_led->led_cdev;
-+	return led;
-+}
-+
-+
-+void set_power_light_amber_noblink(void)
-+{
-+	struct nasgpio_led *amber = get_led_named("power:amber:power");
-+	struct nasgpio_led *blue = get_led_named("power:blue:power");
-+
-+	if (!amber || !blue)
-+		return;
-+	/*
-+	 * LED_OFF implies disabling future blinking
-+	 */
-+	printk(KERN_DEBUG "setting blue off and amber on\n");
-+
-+	nasgpio_led_set_brightness(&blue->led_cdev, LED_OFF);
-+	nasgpio_led_set_brightness(&amber->led_cdev, LED_FULL);
-+}
-+
-+static ssize_t nas_led_blink_show(struct device *dev,
-+				  struct device_attribute *attr, char *buf)
-+{
-+	struct led_classdev *led = dev_get_drvdata(dev);
-+	int blinking = 0;
-+	if (nasgpio_led_get_attr(led, GPO_BLINK))
-+		blinking = 1;
-+	return sprintf(buf, "%u\n", blinking);
-+}
-+
-+static ssize_t nas_led_blink_store(struct device *dev,
-+				   struct device_attribute *attr,
-+				   const char *buf, size_t size)
-+{
-+	int ret;
-+	struct led_classdev *led = dev_get_drvdata(dev);
-+	unsigned long blink_state;
-+
-+	ret = strict_strtoul(buf, 10, &blink_state);
-+	if (ret)
-+		return ret;
-+
-+	spin_lock(&nasgpio_gpio_lock);
-+	nasgpio_led_set_attr(led, GPO_BLINK, blink_state);
-+	spin_unlock(&nasgpio_gpio_lock);
-+
-+	return size;
-+}
-+
-+static DEVICE_ATTR(blink, 0644, nas_led_blink_show, nas_led_blink_store);
-+
-+int register_nasgpio_led(int led_nr)
-+{
-+	int ret;
-+	struct nasgpio_led *nas_led = &nasgpio_leds[led_nr];
-+	struct led_classdev *led = get_classdev_for_led_nr(led_nr);
-+
-+	led->name = nas_led->name;
-+	led->brightness = LED_OFF;
-+	if (nasgpio_led_get_attr(led, GP_LVL))
-+		led->brightness = LED_FULL;
-+	led->brightness_set = nasgpio_led_set_brightness;
-+	led->blink_set = nasgpio_led_set_blink;
-+	ret = led_classdev_register(&nas_gpio_pci_dev->dev, led);
-+	if (ret)
-+		return ret;
-+	ret = device_create_file(led->dev, &dev_attr_blink);
-+	if (ret)
-+		led_classdev_unregister(led);
-+	return ret;
-+}
-+
-+void unregister_nasgpio_led(int led_nr)
-+{
-+	struct led_classdev *led = get_classdev_for_led_nr(led_nr);
-+	device_remove_file(led->dev, &dev_attr_blink);
-+}
-+/*
-+ * module load/initialization
-+ */
-+static int __init nas_gpio_init(void)
-+{
-+	int i;
-+	int ret = 0;
-+
-+	printk(KERN_INFO "registering %s driver\n", DRIVER_NAME);
-+	ret = pci_register_driver(&nas_gpio_pci_driver);
-+	if (ret)
-+		return ret;
-+	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++) {
-+		ret = register_nasgpio_led(i);
-+		if (ret)
-+			goto out_err;
-+	}
-+	/*
-+	 * When the system powers on, the BIOS leaves the power
-+	 * light blue and blinking.  This will turn it solid
-+	 * amber once the driver is loaded.
-+	 */
-+	set_power_light_amber_noblink();
-+	return 0;
-+out_err:
-+	for (; i >= 0; i--)
-+		unregister_nasgpio_led(i);
-+	pci_unregister_driver(&nas_gpio_pci_driver);
-+	return ret;
-+}
-+
-+/*
-+ * module unload
-+ */
-+static void __exit nas_gpio_exit(void)
-+{
-+	int i;
-+	printk(KERN_INFO "Unregistering %s driver\n", DRIVER_NAME);
-+	for (i = 0; i < ARRAY_SIZE(nasgpio_leds); i++)
-+		unregister_nasgpio_led(i);
-+	pci_unregister_driver(&nas_gpio_pci_driver);
-+}
-+
-+module_init(nas_gpio_init);
-+module_exit(nas_gpio_exit);
-
--- Dave
-
+Do you guys really have so much free time on your hands to argue about this? 
+btw. here's my nitpick then -- 'accurate delays' is really bad way to call it 
+;-)
+> 
+> Regards,
+> 
+> Steve
+> 
+> Document #if 0 code block in delay.S and make it selectable for compile.
+> 
+> Signed-off-by: Steve Chen <schen@mvista.com>
+> 
+> ---
+> 
+>  arch/arm/Kconfig     |    8 ++++++++
+>  arch/arm/lib/delay.S |    2 +-
+>  2 files changed, 9 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+> index aef63c8..ca8d535 100644
+> --- a/arch/arm/Kconfig
+> +++ b/arch/arm/Kconfig
+> @@ -813,6 +813,14 @@ config ARM_ERRATA_460075
+>  	  ACTLR register. Note that setting specific bits in the ACTLR
+> register
+>  	  may not be available in non-secure mode.
+> 
+> +config OLD_CPU_DELAY
+> +	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
+> +	bool "Accurate delays"
+> +	def_bool n
+> +	help
+> +	  Enable if observing longer than expected delays and need more
+> +	  accuracy.  This only applies to older CPUs.
+> +
+>  endmenu
+> 
+>  source "arch/arm/common/Kconfig"
+> diff --git a/arch/arm/lib/delay.S b/arch/arm/lib/delay.S
+> index 8d6a876..67e679b 100644
+> --- a/arch/arm/lib/delay.S
+> +++ b/arch/arm/lib/delay.S
+> @@ -42,7 +42,7 @@ ENTRY(__const_udelay)				@ 0 <= r0 <= 0x7fffff06
+>  @ Delay routine
+>  ENTRY(__delay)
+>  		subs	r0, r0, #1
+> -#if 0
+> +#ifdef CONFIG_OLD_CPU_DELAY
+>  		movls	pc, lr
+>  		subs	r0, r0, #1
+>  		movls	pc, lr
+> 
