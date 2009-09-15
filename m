@@ -1,678 +1,455 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758077AbZIODjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZIODja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758077AbZIODjQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 23:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757314AbZIODjK
+	id S1758086AbZIODja (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 23:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934353AbZIODj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 23:39:10 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:50653 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754379AbZIODjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 23:39:08 -0400
-Date: Mon, 14 Sep 2009 23:37:39 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, dm-devel@redhat.com,
-       nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, righi.andrea@gmail.com,
-       m-ikeda@ds.jp.nec.com, agk@redhat.com, akpm@linux-foundation.org,
-       peterz@infradead.org, jmarchan@redhat.com,
-       torvalds@linux-foundation.org, mingo@elte.hu, riel@redhat.com
-Subject: Re: [PATCH] io-controller: Fix task hanging when there are more
-	than one groups
-Message-ID: <20090915033739.GA4054@redhat.com>
-References: <1251495072-7780-1-git-send-email-vgoyal@redhat.com> <4AA4B905.8010801@cn.fujitsu.com> <20090908191941.GF15974@redhat.com> <4AA75B71.5060109@cn.fujitsu.com> <20090909150537.GD8256@redhat.com> <4AA9A4BE.30005@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AA9A4BE.30005@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Mon, 14 Sep 2009 23:39:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38759 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758054AbZIODj1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 23:39:27 -0400
+Date: Tue, 15 Sep 2009 05:42:59 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, lenb@kernel.org, mingo@elte.hu,
+       yanmin_zhang@linux.intel.com, jens.axboe@oracle.com,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: [PATCH v2] cpuidle: Fix the menu governor to boost IO performance
+Message-ID: <20090915054259.5282e5ba@infradead.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 09:15:42AM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> > On Wed, Sep 09, 2009 at 03:38:25PM +0800, Gui Jianfeng wrote:
-> >> Vivek Goyal wrote:
-> >>> On Mon, Sep 07, 2009 at 03:40:53PM +0800, Gui Jianfeng wrote:
-> >>>> Hi Vivek,
-> >>>>
-> >>>> I happened to encount a bug when i test IO Controller V9.
-> >>>> When there are three tasks to run concurrently in three group,
-> >>>> that is, one is parent group, and other two tasks are running 
-> >>>> in two different child groups respectively to read or write 
-> >>>> files in some disk, say disk "hdb", The task may hang up, and 
-> >>>> other tasks which access into "hdb" will also hang up.
-> >>>>
-> >>>> The bug only happens when using AS io scheduler.
-> >>>> The following scirpt can reproduce this bug in my box.
-> >>>>
-> >>> Hi Gui,
-> >>>
-> >>> I tried reproducing this on my system and can't reproduce it. All the
-> >>> three processes get killed and system does not hang.
-> >>>
-> >>> Can you please dig deeper a bit into it. 
-> >>>
-> >>> - If whole system hangs or it is just IO to disk seems to be hung.
-> >>     Only when the task is trying do IO to disk it will hang up.
-> >>
-> >>> - Does io scheduler switch on the device work
-> >>     yes, io scheduler can be switched, and the hung task will be resumed.
-> >>
-> >>> - If the system is not hung, can you capture the blktrace on the device.
-> >>>   Trace might give some idea, what's happening.
-> >> I run a "find" task to do some io on that disk, it seems that task hangs 
-> >> when it is issuing getdents() syscall.
-> >> kernel generates the following message:
-> >>
-> >> INFO: task find:3260 blocked for more than 120 seconds.
-> >> "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
-> >> find          D a1e95787  1912  3260   2897 0x00000004
-> >>  f6af2db8 00000096 f660075c a1e95787 00000032 f6600270 f6600508 c2037820
-> >>  00000000 c09e0820 f655f0c0 f6af2d8c fffebbf1 00000000 c0447323 f7152a1c
-> >>  0006a144 f7152a1c 0006a144 f6af2e04 f6af2db0 c04438df c2037820 c2037820
-> >> Call Trace:
-> >>  [<c0447323>] ? getnstimeofday+0x57/0xe0
-> >>  [<c04438df>] ? ktime_get_ts+0x4a/0x4e
-> >>  [<c068ab68>] io_schedule+0x47/0x79
-> >>  [<c04c12ee>] sync_buffer+0x36/0x3a
-> >>  [<c068ae14>] __wait_on_bit+0x36/0x5d
-> >>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
-> >>  [<c068ae93>] out_of_line_wait_on_bit+0x58/0x60
-> >>  [<c04c12b8>] ? sync_buffer+0x0/0x3a
-> >>  [<c0440fa4>] ? wake_bit_function+0x0/0x43
-> >>  [<c04c1249>] __wait_on_buffer+0x19/0x1c
-> >>  [<f81e4186>] ext3_bread+0x5e/0x79 [ext3]
-> >>  [<f81e77a8>] htree_dirblock_to_tree+0x1f/0x120 [ext3]
-> >>  [<f81e7923>] ext3_htree_fill_tree+0x7a/0x1bb [ext3]
-> >>  [<c04a01f9>] ? kmem_cache_alloc+0x86/0xf3
-> >>  [<c044c428>] ? trace_hardirqs_on_caller+0x107/0x12f
-> >>  [<c044c45b>] ? trace_hardirqs_on+0xb/0xd
-> >>  [<f81e09e4>] ? ext3_readdir+0x9e/0x692 [ext3]
-> >>  [<f81e0b34>] ext3_readdir+0x1ee/0x692 [ext3]
-> >>  [<c04b1100>] ? filldir64+0x0/0xcd
-> >>  [<c068b86a>] ? mutex_lock_killable_nested+0x2b1/0x2c5
-> >>  [<c068b874>] ? mutex_lock_killable_nested+0x2bb/0x2c5
-> >>  [<c04b12db>] ? vfs_readdir+0x46/0x94
-> >>  [<c04b12fd>] vfs_readdir+0x68/0x94
-> >>  [<c04b1100>] ? filldir64+0x0/0xcd
-> >>  [<c04b1387>] sys_getdents64+0x5e/0x9f
-> >>  [<c04028b4>] sysenter_do_call+0x12/0x32
-> >> 1 lock held by find/3260:
-> >>  #0:  (&sb->s_type->i_mutex_key#7){+.+.+.}, at: [<c04b12db>] vfs_readdir+0x46/0x94
-> >>
-> >> ext3 calls wait_on_buffer() to wait buffer, and schedule the task out in TASK_UNINTERRUPTIBLE
-> >> state, and I found this task will be resumed after a quite long period(more than 10 mins).
-> > 
-> > Thanks Gui. As Jens said, it does look like a case of missing queue
-> > restart somewhere and now we are stuck, no requests are being dispatched
-> > to the disk and queue is already unplugged.
-> > 
-> > Can you please also try capturing the trace of events at io scheduler
-> > (blktrace) to see how did we get into that situation.
-> > 
-> > Are you using ide drivers and not libata? As jens said, I will try to make
-> > use of ide drivers and see if I can reproduce it.
-> > 
-> 
-> Hi Vivek, Jens,
-> 
-> Currently, If there's only the root cgroup and no other child cgroup available, io-controller will
-> optimize to stop expiring the current ioq, and we thought the current ioq belongs to root group. But
-> in some cases, this assumption is not true. Consider the following scenario, if there is a child cgroup
-> located in root cgroup, and task A is running in the child cgroup, and task A issues some IOs. Then we
-> kill task A and remove the child cgroup, at this time, there is only root cgroup available. But the ioq
-> is still under service, and from now on, this ioq won't expire because "only root" optimization.
-> The following patch ensures the ioq do belongs to the root group if there's only root group existing.
-> 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Reworked patch based on Andrew's review feedback and spelling fixes.
+Rather than adding a new governor temporarily, this just puts the fixes
+into the existing menu governor.
 
-Hi Gui,
+Andrew: this replaces cpuidle-a-new-variant-of-the-menu-governor-to-boost-io-performance.patch
 
-I have modified your patch a bit to improve readability. Looking at the
-issue closely I realized that this optimization of not expiring the 
-queue can lead to other issues like high vdisktime in certain scenarios.
-While fixing that also noticed the issue of high rate of as queue
-expiration in certain cases which could have been avoided. 
 
-Here is a patch which should fix all that. I am still testing this patch
-to make sure that something is not obiviously broken. Will merge it if
-there are no issues.
+I don't have a power meter in my hotel room so I've only been able to verify
+that the patch functions as before with the timechart tool.
+(no major changes were done though, only review feedback)
 
-Thanks
-Vivek
 
-o Fixed the issue of not expiring the queue for single ioq schedulers. Reported
-  and fixed by Gui.
+From: Arjan van de Ven <arjan@linux.intel.com>
+Subject: cpuidle: Fix the menu governor to boost IO performance
 
-o If an AS queue is not expired for a long time and suddenly somebody
-  decides to create a group and launch a job there, in that case old AS
-  queue will be expired with a very high value of slice used and will get
-  a very high disk time. Fix it by marking the queue as "charge_one_slice"
-  and charge the queue only for a single time slice and not for whole
-  of the duration when queue was running.
+Fix the menu idle governor which balances power savings, energy efficiency
+and performance impact.
 
-o There are cases where in case of AS, excessive queue expiration will take
-  place by elevator fair queuing layer because of few reasons.
-	- AS does not anticipate on a queue if there are no competing requests.
-	  So if only a single reader is present in a group, anticipation does
-	  not get turn on.
+The reason for a reworked governor is that there have been serious
+performance issues reported with the existing code on Nehalem server
+systems.
 
-	- elevator layer does not know that As is anticipating hence initiates
-	  expiry requests in select_ioq() thinking queue is empty.
+To show this I'm sure Andrew wants to see benchmark results:
+(benchmark is "fio", "no cstates" is using "idle=poll")
 
-	- elevaotr layer tries to aggressively expire last empty queue. This
-	  can lead to lof of queue expiry
+		no cstates	current linux	new algorithm
+1 disk		107 Mb/s	85 Mb/s		105 Mb/s
+2 disks		215 Mb/s	123 Mb/s	209 Mb/s
+12 disks	590 Mb/s	320 Mb/s	585 Mb/s
 
-o This patch now starts ANITC_WAIT_NEXT anticipation if last request in the
-  queue completed and associated io context is eligible to anticipate. Also
-  AS lets elevatory layer know that it is anticipating (elv_ioq_wait_request())
-  . This solves above mentioned issues.
- 
-o Moved some of the code in separate functions to improve readability.
+In various power benchmark measurements, no degredation was found by our
+measurement&diagnostics team.  Obviously a small percentage more power 
+was used in the "fio" benchmark, due to the much higher performance.
 
-Signed-off-by: Vivek Goyal <vgoyal@redhat.com>
+While it would be a novel idea to describe the new algorithm in this
+commit message, I cheaped out and described it in comments in the code
+instead.
+
+[changes since first post: spelling fixes from akpm, review feedback,
+folded menu-tng into menu.c]
+
+Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Yanmin Zhang <yanmin_zhang@linux.intel.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
- block/as-iosched.c  |   93 +++++++++++++++++++++++++++++---
- block/elevator-fq.c |  150 +++++++++++++++++++++++++++++++++++++++++-----------
- block/elevator-fq.h |    3 +
- 3 files changed, 210 insertions(+), 36 deletions(-)
+ drivers/cpuidle/governors/menu.c |  251 ++++++++++++++++++++++++++++++++------
+ include/linux/sched.h            |    4 +
+ kernel/sched.c                   |   15 +++
+ 3 files changed, 231 insertions(+), 39 deletions(-)
 
-Index: linux18/block/elevator-fq.c
-===================================================================
---- linux18.orig/block/elevator-fq.c	2009-09-14 15:45:58.000000000 -0400
-+++ linux18/block/elevator-fq.c	2009-09-14 23:09:08.000000000 -0400
-@@ -472,19 +472,18 @@ static inline void debug_entity_vdisktim
- 					unsigned long served, u64 delta) {}
- #endif /* DEBUG_ELV_FAIR_QUEUING */
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index f1df59f..9f3d775 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -2,8 +2,12 @@
+  * menu.c - the menu idle governor
+  *
+  * Copyright (C) 2006-2007 Adam Belay <abelay@novell.com>
++ * Copyright (C) 2009 Intel Corporation
++ * Author:
++ *        Arjan van de Ven <arjan@linux.intel.com>
+  *
+- * This code is licenced under the GPL.
++ * This code is licenced under the GPL version 2 as described
++ * in the COPYING file that acompanies the Linux Kernel.
+  */
  
--static void
--entity_served(struct io_entity *entity, unsigned long served,
--				unsigned long nr_sectors)
-+static void entity_served(struct io_entity *entity, unsigned long real_served,
-+		unsigned long virtual_served, unsigned long nr_sectors)
- {
- 	for_each_entity(entity) {
- 		u64 delta;
+ #include <linux/kernel.h>
+@@ -13,20 +17,153 @@
+ #include <linux/ktime.h>
+ #include <linux/hrtimer.h>
+ #include <linux/tick.h>
++#include <linux/sched.h>
  
--		delta = elv_delta_fair(served, entity);
-+		delta = elv_delta_fair(virtual_served, entity);
- 		entity->vdisktime += delta;
- 		update_min_vdisktime(entity->st);
--		entity->total_time += served;
-+		entity->total_time += real_served;
- 		entity->total_sectors += nr_sectors;
--		debug_entity_vdisktime(entity, served, delta);
-+		debug_entity_vdisktime(entity, virtual_served, delta);
- 	}
- }
- 
-@@ -928,7 +927,24 @@ EXPORT_SYMBOL(elv_put_ioq);
- 
- static void elv_ioq_served(struct io_queue *ioq, unsigned long served)
- {
--	entity_served(&ioq->entity, served, ioq->nr_sectors);
+-#define BREAK_FUZZ	4	/* 4 us */
+-#define PRED_HISTORY_PCT	50
++#define BUCKETS 12
++#define RESOLUTION 1024
++#define DECAY 4
++#define MAX_INTERESTING 50000
 +
-+	unsigned long virtual_served = served, allocated_slice;
-+
-+	/*
-+	 * For single ioq schedulers we don't expire the queue if there are
-+	 * no other competing groups. It might happen that once a queue has
-+	 * not been expired for a long time, suddenly a new group is created
-+	 * and IO comes in that new group. In that case, we don't want to
-+	 * charge the old queue for whole of the period it was not expired.
-+	 */
-+	if (elv_ioq_charge_one_slice(ioq)) {
-+		allocated_slice = elv_prio_to_slice(ioq->efqd, ioq);
-+		if (served > allocated_slice)
-+			virtual_served = allocated_slice;
-+		elv_clear_ioq_charge_one_slice(ioq);
-+	}
-+
-+	entity_served(&ioq->entity, served, virtual_served, ioq->nr_sectors);
- 	elv_log_ioq(ioq->efqd, ioq, "ioq served: QSt=%lu QSs=%lu qued=%lu",
- 			served, ioq->nr_sectors, ioq->nr_queued);
- 	print_ioq_service_stats(ioq);
-@@ -2543,6 +2559,22 @@ alloc_sched_q:
- 		elv_init_ioq_io_group(ioq, iog);
- 		elv_init_ioq_sched_queue(e, ioq, sched_q);
- 
-+		/*
-+		 * For AS, also mark the group queue idle_window. This will
-+		 * make sure that select_ioq() will not try to expire an
-+		 * AS queue if there are dispatched request from the queue but
-+		 * queue is empty. This gives a chance to asq to anticipate
-+		 * after request completion, otherwise select_ioq() will
-+		 * mark it must_expire and soon asq will be expired.
-+		 *
-+		 *  Not doing it for noop and deadline yet as they don't have
-+		 *  any anticpation logic and this will slow down queue
-+		 *  switching in a NCQ supporting hardware.
-+		 */
-+		if (!strcmp(e->elevator_type->elevator_name, "anticipatory")) {
-+			elv_mark_ioq_idle_window(ioq);
-+		}
-+
- 		elv_io_group_set_ioq(iog, ioq);
- 		elv_mark_ioq_sync(ioq);
- 		elv_get_iog(iog);
-@@ -2664,6 +2696,12 @@ static inline int is_only_root_group(voi
- 
- #endif /* CONFIG_GROUP_IOSCHED */
- 
-+static inline int ioq_is_idling(struct io_queue *ioq)
-+{
-+	return (elv_ioq_wait_request(ioq) ||
-+			timer_pending(&ioq->efqd->idle_slice_timer));
-+}
-+
- /*
-  * Should be called after ioq prio and class has been initialized as prio
-  * class data will be used to determine which service tree in the group
-@@ -2835,7 +2873,6 @@ elv_iosched_expire_ioq(struct request_qu
- 		if (!ret)
- 			elv_mark_ioq_must_expire(ioq);
- 	}
--
- 	return ret;
- }
- 
-@@ -3078,6 +3115,7 @@ void elv_ioq_request_add(struct request_
- 		 */
- 		if (group_wait_req || elv_ioq_wait_request(ioq)) {
- 			del_timer(&efqd->idle_slice_timer);
-+			elv_clear_ioq_wait_request(ioq);
- 			if (blk_rq_bytes(rq) > PAGE_CACHE_SIZE ||
- 			    efqd->busy_queues > 1 || !blk_queue_plugged(q))
- 				__blk_run_queue(q);
-@@ -3121,6 +3159,7 @@ static void elv_idle_slice_timer(unsigne
- 	if (ioq) {
- 		struct io_group *iog = ioq_to_io_group(ioq);
- 
-+		elv_clear_ioq_wait_request(ioq);
- 		elv_clear_iog_wait_request(iog);
- 
- 		if (elv_iog_wait_busy(iog)) {
-@@ -3222,6 +3261,28 @@ static inline struct io_queue *elv_close
- 	return new_ioq;
- }
- 
 +/*
-+ * One can do some optimizations for single ioq scheduler, when one does
-+ * not have to expire the queue after every time slice is used. This avoids
-+ * some unnecessary overhead, especially in AS where we wait for requests to
-+ * finish from last queue before new queue is scheduled in.
-+ */
-+static inline int single_ioq_no_timed_expiry(struct request_queue *q)
-+{
-+	struct elv_fq_data *efqd = q->elevator->efqd;
-+
-+	if (!elv_iosched_single_ioq(q->elevator))
-+		return 0;
-+
-+	if (!is_only_root_group())
-+		return 0;
-+
-+	if (efqd->busy_queues == 1)
-+		return 1;
-+
-+	return 0;
-+}
-+
- /* Common layer function to select the next queue to dispatch from */
- void *elv_select_ioq(struct request_queue *q, int force)
- {
-@@ -3229,7 +3290,7 @@ void *elv_select_ioq(struct request_queu
- 	struct io_queue *new_ioq = NULL, *ioq = elv_active_ioq(q->elevator);
- 	struct io_group *iog;
-  	struct elevator_type *e = q->elevator->elevator_type;
-- 	int slice_expired = 1;
-+ 	int slice_expired = 0;
- 
- 	if (!elv_nr_busy_ioq(q->elevator))
- 		return NULL;
-@@ -3255,16 +3316,20 @@ void *elv_select_ioq(struct request_queu
- 	}
- 
- 	/* This queue has been marked for expiry. Try to expire it */
--	if (elv_ioq_must_expire(ioq))
-+	if (elv_ioq_must_expire(ioq)) {
-+		elv_log_ioq(efqd, ioq, "select: ioq must_expire. expire");
- 		goto expire;
-+	}
- 
- 	/*
- 	 * If there is only root group present, don't expire the queue for
- 	 * single queue ioschedulers (noop, deadline, AS).
- 	 */
- 
--	if (is_only_root_group() && elv_iosched_single_ioq(q->elevator))
-+	if (single_ioq_no_timed_expiry(q)) {
-+		elv_mark_ioq_charge_one_slice(ioq);
- 		goto keep_queue;
-+	}
- 
- 	/* We are waiting for this group to become busy before it expires.*/
- 	if (elv_iog_wait_busy(iog)) {
-@@ -3301,6 +3366,7 @@ void *elv_select_ioq(struct request_queu
- 		 * from queue and is not proportional to group's weight, it
- 		 * harms the fairness of the group.
- 		 */
-+		slice_expired = 1;
- 		if (elv_iog_should_idle(ioq) && !elv_iog_wait_busy_done(iog)) {
- 			ioq = NULL;
- 			goto keep_queue;
-@@ -3332,7 +3398,7 @@ void *elv_select_ioq(struct request_queu
- 	 * conditions to happen (or time out) before selecting a new queue.
- 	 */
- 
--	if (timer_pending(&efqd->idle_slice_timer) ||
-+	if (ioq_is_idling(ioq) ||
- 	    (elv_ioq_nr_dispatched(ioq) && elv_ioq_idle_window(ioq))) {
- 		ioq = NULL;
- 		goto keep_queue;
-@@ -3344,7 +3410,6 @@ void *elv_select_ioq(struct request_queu
- 		goto keep_queue;
- 	}
- 
--	slice_expired = 0;
- expire:
-  	if (efqd->fairness && !force && ioq && ioq->dispatched
-  	    && strcmp(e->elevator_name, "anticipatory")) {
-@@ -3439,6 +3504,43 @@ void elv_deactivate_rq_fair(struct reque
- 						efqd->rq_in_driver);
- }
- 
-+/*
-+ * if this is only queue and it has completed all its requests and has nothing
-+ * to dispatch, expire it. We don't want to keep it around idle otherwise later
-+ * when it is expired, all this idle time will be added to queue's disk time
-+ * used and queue might not get a chance to run for a long time.
-+ */
-+static inline void
-+check_expire_last_empty_queue(struct request_queue *q, struct io_queue *ioq)
-+{
-+	struct elv_fq_data *efqd = q->elevator->efqd;
-+
-+	if (efqd->busy_queues != 1)
-+		return;
-+
-+	if (ioq->dispatched || ioq->nr_queued)
-+		return;
-+
-+	/*
-+	 * Anticipation is on. Don't expire queue. Either a new request will
-+	 * come or it is up to io scheduler to expire the queue once idle
-+	 * timer fires
-+	 */
-+
-+	if(ioq_is_idling(ioq))
-+		return;
-+
-+	/*
-+	 * If IO scheduler denies expiration here, it is up to io scheduler
-+	 * to expire the queue when possible. Otherwise all the idle time
-+	 * will be charged to the queue when queue finally expires.
-+	 */
-+	if (elv_iosched_expire_ioq(q, 0, 0)) {
-+		elv_log_ioq(efqd, ioq, "expire last empty queue");
-+		elv_slice_expired(q);
-+	}
-+}
-+
- /* A request got completed from io_queue. Do the accounting. */
- void elv_ioq_completed_request(struct request_queue *q, struct request *rq)
- {
-@@ -3470,16 +3572,16 @@ void elv_ioq_completed_request(struct re
- 			elv_set_prio_slice(q->elevator->efqd, ioq);
- 			elv_clear_ioq_slice_new(ioq);
- 		}
-+
- 		/*
- 		 * If there is only root group present, don't expire the queue
- 		 * for single queue ioschedulers (noop, deadline, AS). It is
- 		 * unnecessary overhead.
- 		 */
- 
--		if (is_only_root_group() &&
--			elv_iosched_single_ioq(q->elevator)) {
--			elv_log_ioq(efqd, ioq, "select: only root group,"
--					" no expiry");
-+		if (single_ioq_no_timed_expiry(q)) {
-+			elv_mark_ioq_charge_one_slice(ioq);
-+			elv_log_ioq(efqd, ioq, "single ioq no timed expiry");
- 			goto done;
- 		}
- 
-@@ -3519,7 +3621,7 @@ void elv_ioq_completed_request(struct re
- 		 * decide to idle on queue, idle on group.
- 		 */
- 		if (elv_iog_should_idle(ioq) && !elv_ioq_nr_dispatched(ioq)
--		    && !timer_pending(&efqd->idle_slice_timer)) {
-+		    && !ioq_is_idling(ioq)) {
- 			/*
- 			 * If queue has used up its slice, wait for the
- 			 * one extra group_idle period to let the group
-@@ -3532,17 +3634,7 @@ void elv_ioq_completed_request(struct re
- 				elv_iog_arm_slice_timer(q, iog, 0);
- 		}
- 
--		/*
--		 * if this is only queue and it has completed all its requests
--		 * and has nothing to dispatch, expire it. We don't want to
--		 * keep it around idle otherwise later when it is expired, all
--		 * this idle time will be added to queue's disk time used.
--		 */
--		if (efqd->busy_queues == 1 && !ioq->dispatched &&
--		   !ioq->nr_queued && !timer_pending(&efqd->idle_slice_timer)) {
--			if (elv_iosched_expire_ioq(q, 0, 0))
--				elv_slice_expired(q);
--		}
-+		check_expire_last_empty_queue(q, ioq);
- 	}
- done:
- 	if (!efqd->rq_in_driver)
-Index: linux18/block/as-iosched.c
-===================================================================
---- linux18.orig/block/as-iosched.c	2009-09-14 15:45:58.000000000 -0400
-+++ linux18/block/as-iosched.c	2009-09-14 23:13:08.000000000 -0400
-@@ -187,6 +187,24 @@ static void as_antic_stop(struct as_data
- static inline int as_batch_expired(struct as_data *ad, struct as_queue *asq);
- 
- #ifdef CONFIG_IOSCHED_AS_HIER
-+static int as_can_anticipate(struct as_data *ad, struct request *rq);
-+static void as_antic_waitnext(struct as_data *ad);
-+
-+static inline void as_mark_active_asq_wait_request(struct as_data *ad)
-+{
-+	struct as_queue *asq = elv_active_sched_queue(ad->q->elevator);
-+
-+	elv_mark_ioq_wait_request(asq->ioq);
-+}
-+
-+static inline void as_clear_active_asq_wait_request(struct as_data *ad)
-+{
-+	struct as_queue *asq = elv_active_sched_queue(ad->q->elevator);
-+
-+	if (asq)
-+		elv_clear_ioq_wait_request(asq->ioq);
-+}
-+
- static void as_save_batch_context(struct as_data *ad, struct as_queue *asq)
- {
- 	/* Save batch data dir */
-@@ -279,6 +297,29 @@ static void as_active_ioq_set(struct req
- }
- 
- /*
-+ * AS does not anticipate on a context if there is no other request pending.
-+ * So if only a single sequential reader was running, AS will not turn on
-+ * anticipation. This function turns on anticipation if an io context has
-+ * think time with-in limits and there are no other requests to dispatch.
++ * Concepts and ideas behind the menu governor
 + *
-+ * With group scheduling, a queue is expired if is empty, does not have a
-+ * request dispatched and we are not idling. In case of this single reader
-+ * we will see a queue expiration after every request completion. Hence turn
-+ * on the anticipation if an io context should ancipate and there are no
-+ * other requests queued in the queue.
++ * For the menu governor, there are 3 decision factors for picking a C
++ * state:
++ * 1) Energy break even point
++ * 2) Performance impact
++ * 3) Latency tolerance (from pmqos infrastructure)
++ * These these three factors are treated independently.
++ *
++ * Energy break even point
++ * -----------------------
++ * C state entry and exit have an energy cost, and a certain amount of time in
++ * the  C state is required to actually break even on this cost. CPUIDLE
++ * provides us this duration in the "target_residency" field. So all that we
++ * need is a good prediction of how long we'll be idle. Like the traditional
++ * menu governor, we start with the actual known "next timer event" time.
++ *
++ * Since there are other source of wakeups (interrupts for example) than
++ * the next timer event, this estimation is rather optimistic. To get a
++ * more realistic estimate, a correction factor is applied to the estimate,
++ * that is based on historic behavior. For example, if in the past the actual
++ * duration always was 50% of the next timer tick, the correction factor will
++ * be 0.5.
++ *
++ * menu uses a running average for this correction factor, however it uses a
++ * set of factors, not just a single factor. This stems from the realization
++ * that the ratio is dependent on the order of magnitude of the expected
++ * duration; if we expect 500 milliseconds of idle time the likelihood of
++ * getting an interrupt very early is much higher than if we expect 50 micro
++ * seconds of idle time. A second independent factor that has big impact on
++ * the actual factor is if there is (disk) IO outstanding or not.
++ * (as a special twist, we consider every sleep longer than 50 milliseconds
++ * as perfect; there are no power gains for sleeping longer than this)
++ *
++ * For these two reasons we keep an array of 12 independent factors, that gets
++ * indexed based on the magnitude of the expected duration as well as the
++ * "is IO outstanding" property.
++ *
++ * Limiting Performance Impact
++ * ---------------------------
++ * C states, especially those with large exit latencies, can have a real
++ * noticable impact on workloads, which is not acceptable for most sysadmins,
++ * and in addition, less performance has a power price of its own.
++ *
++ * As a general rule of thumb, menu assumes that the following heuristic
++ * holds:
++ *     The busier the system, the less impact of C states is acceptable
++ *
++ * This rule-of-thumb is implemented using a performance-multiplier:
++ * If the exit latency times the performance multiplier is longer than
++ * the predicted duration, the C state is not considered a candidate
++ * for selection due to a too high performance impact. So the higher
++ * this multiplier is, the longer we need to be idle to pick a deep C
++ * state, and thus the less likely a busy CPU will hit such a deep
++ * C state.
++ *
++ * Two factors are used in determing this multiplier:
++ * a value of 10 is added for each point of "per cpu load average" we have.
++ * a value of 5 points is added for each process that is waiting for
++ * IO on this CPU.
++ * (these values are experimentally determined)
++ *
++ * The load average factor gives a longer term (few seconds) input to the
++ * decision, while the iowait value gives a cpu local instantanious input.
++ * The iowait factor may look low, but realize that this is also already
++ * represented in the system load average.
++ *
 + */
-+static inline void
-+as_hier_check_start_waitnext(struct request_queue *q, struct as_queue *asq)
-+{
-+	struct as_data *ad = q->elevator->elevator_data;
-+
-+	if (!ad->nr_dispatched && !asq->nr_queued[1] && !asq->nr_queued[0] &&
-+	    as_can_anticipate(ad, NULL)) {
-+		as_antic_waitnext(ad);
-+	}
-+}
-+
-+/*
-  * This is a notification from common layer that it wishes to expire this
-  * io queue. AS decides whether queue can be expired, if yes, it also
-  * saves the batch context.
-@@ -325,13 +366,18 @@ static int as_expire_ioq(struct request_
- 		goto keep_queue;
  
- 	/*
--	 * If AS anticipation is ON, wait for it to finish.
-+	 * If AS anticipation is ON, wait for it to finish if queue slice
-+	 * has not expired.
- 	 */
- 	BUG_ON(status == ANTIC_WAIT_REQ);
+ struct menu_device {
+ 	int		last_state_idx;
  
--	if (status == ANTIC_WAIT_NEXT)
--		goto keep_queue;
--
-+	if (status == ANTIC_WAIT_NEXT) {
-+		if (!slice_expired)
-+			goto keep_queue;
-+		/* Slice expired. Stop anticipating. */
-+		as_antic_stop(ad);
-+		ad->antic_status = ANTIC_OFF;
-+	}
- 	/* We are good to expire the queue. Save batch context */
- 	as_save_batch_context(ad, asq);
- 	ad->switch_queue = 0;
-@@ -342,6 +388,33 @@ keep_queue:
- 	ad->switch_queue = 1;
- 	return 0;
- }
-+
-+static inline void as_check_expire_active_as_queue(struct request_queue *q)
-+{
-+	struct as_data *ad = q->elevator->elevator_data;
-+	struct as_queue *asq = elv_active_sched_queue(q->elevator);
-+
-+	/*
-+	 * We anticpated on the queue and timer fired. If queue is empty,
-+	 * expire the queue. This will make sure an idle queue does not
-+	 * remain active for a very long time as later all the idle time
-+	 * can be added to the queue disk usage.
-+	 */
-+	if (asq) {
-+		if (!ad->nr_dispatched && !asq->nr_queued[1] &&
-+		    !asq->nr_queued[0]) {
-+			ad->switch_queue = 0;
-+			elv_ioq_slice_expired(q, asq->ioq);
-+		}
-+	}
-+}
-+
-+#else /* CONFIG_IOSCHED_AS_HIER */
-+static inline void as_mark_active_asq_wait_request(struct as_data *ad) {}
-+static inline void as_clear_active_asq_wait_request(struct as_data *ad) {}
-+static inline void
-+as_hier_check_start_waitnext(struct request_queue *q, struct as_queue *asq) {}
-+static inline void as_check_expire_active_as_queue(struct request_queue *q) {}
- #endif
- 
- /*
-@@ -622,6 +695,7 @@ static void as_antic_waitnext(struct as_
- 	mod_timer(&ad->antic_timer, timeout);
- 
- 	ad->antic_status = ANTIC_WAIT_NEXT;
-+	as_mark_active_asq_wait_request(ad);
- 	as_log(ad, "antic_waitnext set");
- }
- 
-@@ -656,6 +730,7 @@ static void as_antic_stop(struct as_data
- 	if (status == ANTIC_WAIT_REQ || status == ANTIC_WAIT_NEXT) {
- 		if (status == ANTIC_WAIT_NEXT)
- 			del_timer(&ad->antic_timer);
-+		as_clear_active_asq_wait_request(ad);
- 		ad->antic_status = ANTIC_FINISHED;
- 		/* see as_work_handler */
- 		kblockd_schedule_work(ad->q, &ad->antic_work);
-@@ -672,7 +747,7 @@ static void as_antic_timeout(unsigned lo
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
--	as_log(ad, "as_antic_timeout");
-+	as_log(ad, "as_antic_timeout. antic_status=%d", ad->antic_status);
- 	if (ad->antic_status == ANTIC_WAIT_REQ
- 			|| ad->antic_status == ANTIC_WAIT_NEXT) {
- 		struct as_io_context *aic;
-@@ -680,6 +755,9 @@ static void as_antic_timeout(unsigned lo
- 		aic = ad->io_context->aic;
- 
- 		ad->antic_status = ANTIC_FINISHED;
-+
-+		as_clear_active_asq_wait_request(ad);
-+		as_check_expire_active_as_queue(q);
- 		kblockd_schedule_work(q, &ad->antic_work);
- 
- 		if (aic->ttime_samples == 0) {
-@@ -690,6 +768,7 @@ static void as_antic_timeout(unsigned lo
- 			/* process not "saved" by a cooperating request */
- 			ad->exit_no_coop = (7*ad->exit_no_coop + 256)/8;
- 		}
-+
- 		spin_unlock(&ad->io_context->lock);
- 	}
- 	spin_unlock_irqrestore(q->queue_lock, flags);
-@@ -1122,7 +1201,8 @@ static void as_completed_request(struct 
- 			 * the next one
- 			 */
- 			as_antic_waitnext(ad);
--		}
-+		} else
-+			as_hier_check_start_waitnext(q, asq);
- 	}
- 
- 	as_put_io_context(rq);
-@@ -1471,7 +1551,6 @@ static void as_add_request(struct reques
- 	data_dir = rq_is_sync(rq);
- 
- 	rq->elevator_private = as_get_io_context(q->node);
--
- 	asq->nr_queued[data_dir]++;
- 	as_log_asq(ad, asq, "add a %c request read_q=%d write_q=%d",
- 			data_dir ? 'R' : 'W', asq->nr_queued[1],
-Index: linux18/block/elevator-fq.h
-===================================================================
---- linux18.orig/block/elevator-fq.h	2009-09-14 15:45:58.000000000 -0400
-+++ linux18/block/elevator-fq.h	2009-09-14 15:50:04.000000000 -0400
-@@ -264,6 +264,8 @@ enum elv_queue_state_flags {
- 	ELV_QUEUE_FLAG_slice_new,	  /* no requests dispatched in slice */
- 	ELV_QUEUE_FLAG_sync,              /* synchronous queue */
- 	ELV_QUEUE_FLAG_must_expire,       /* expire queue even slice is left */
-+	ELV_QUEUE_FLAG_charge_one_slice,  /* Charge the queue for only one
-+					   * time slice length */
+ 	unsigned int	expected_us;
+-	unsigned int	predicted_us;
+-	unsigned int    current_predicted_us;
+-	unsigned int	last_measured_us;
+-	unsigned int	elapsed_us;
++	u64		predicted_us;
++	unsigned int	measured_us;
++	unsigned int	exit_us;
++	unsigned int	bucket;
++	u64		correction_factor[BUCKETS];
  };
  
- #define ELV_IO_QUEUE_FLAG_FNS(name)					\
-@@ -287,6 +289,7 @@ ELV_IO_QUEUE_FLAG_FNS(idle_window)
- ELV_IO_QUEUE_FLAG_FNS(slice_new)
- ELV_IO_QUEUE_FLAG_FNS(sync)
- ELV_IO_QUEUE_FLAG_FNS(must_expire)
-+ELV_IO_QUEUE_FLAG_FNS(charge_one_slice)
++
++#define LOAD_INT(x) ((x) >> FSHIFT)
++#define LOAD_FRAC(x) LOAD_INT(((x) & (FIXED_1-1)) * 100)
++
++static int get_loadavg(void)
++{
++	unsigned long this = this_cpu_load();
++
++
++	return LOAD_INT(this) * 10 + LOAD_FRAC(this) / 10;
++}
++
++static inline int which_bucket(unsigned int duration)
++{
++	int bucket = 0;
++
++	/*
++	 * We keep two groups of stats; one with no
++	 * IO pending, one without.
++	 * This allows us to calculate
++	 * E(duration)|iowait
++	 */
++	if (nr_iowait_cpu())
++		bucket = BUCKETS/2;
++
++	if (duration < 10)
++		return bucket;
++	if (duration < 100)
++		return bucket + 1;
++	if (duration < 1000)
++		return bucket + 2;
++	if (duration < 10000)
++		return bucket + 3;
++	if (duration < 100000)
++		return bucket + 4;
++	return bucket + 5;
++}
++
++/*
++ * Return a multiplier for the exit latency that is intended
++ * to take performance requirements into account.
++ * The more performance critical we estimate the system
++ * to be, the higher this multiplier, and thus the higher
++ * the barrier to go to an expensive C state.
++ */
++static inline int performance_multiplier(void)
++{
++	int mult = 1;
++
++	/* for higher loadavg, we are more reluctant */
++
++	mult += 2 * get_loadavg();
++
++	/* for IO wait tasks (per cpu!) we add 5x each */
++	mult += 10 * nr_iowait_cpu();
++
++	return mult;
++}
++
+ static DEFINE_PER_CPU(struct menu_device, menu_devices);
  
- #ifdef CONFIG_GROUP_IOSCHED
+ /**
+@@ -38,37 +175,59 @@ static int menu_select(struct cpuidle_device *dev)
+ 	struct menu_device *data = &__get_cpu_var(menu_devices);
+ 	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
+ 	int i;
++	int multiplier;
++
++	data->last_state_idx = 0;
++	data->exit_us = 0;
  
+ 	/* Special case when user has set very strict latency requirement */
+-	if (unlikely(latency_req == 0)) {
+-		data->last_state_idx = 0;
++	if (unlikely(latency_req == 0))
+ 		return 0;
+-	}
+ 
+-	/* determine the expected residency time */
++	/* determine the expected residency time, round up */
+ 	data->expected_us =
+-		(u32) ktime_to_ns(tick_nohz_get_sleep_length()) / 1000;
++	    DIV_ROUND_UP((u32)ktime_to_ns(tick_nohz_get_sleep_length()), 1000);
++
++
++	data->bucket = which_bucket(data->expected_us);
++
++	multiplier = performance_multiplier();
++
++	/*
++	 * if the correction factor is 0 (eg first time init or cpu hotplug
++	 * etc), we actually want to start out with a unity factor.
++	 */
++	if (data->correction_factor[data->bucket] == 0)
++		data->correction_factor[data->bucket] = RESOLUTION * DECAY;
++
++	/* Make sure to round up for half microseconds */
++	data->predicted_us = DIV_ROUND_CLOSEST(
++		data->expected_us * data->correction_factor[data->bucket],
++		RESOLUTION * DECAY);
++
++	/*
++	 * We want to default to C1 (hlt), not to busy polling
++	 * unless the timer is happening really really soon.
++	 */
++	if (data->expected_us > 5)
++		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
+ 
+-	/* Recalculate predicted_us based on prediction_history_pct */
+-	data->predicted_us *= PRED_HISTORY_PCT;
+-	data->predicted_us += (100 - PRED_HISTORY_PCT) *
+-				data->current_predicted_us;
+-	data->predicted_us /= 100;
+ 
+ 	/* find the deepest idle state that satisfies our constraints */
+-	for (i = CPUIDLE_DRIVER_STATE_START + 1; i < dev->state_count; i++) {
++	for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
+ 		struct cpuidle_state *s = &dev->states[i];
+ 
+-		if (s->target_residency > data->expected_us)
+-			break;
+ 		if (s->target_residency > data->predicted_us)
+ 			break;
+ 		if (s->exit_latency > latency_req)
+ 			break;
++		if (s->exit_latency * multiplier > data->predicted_us)
++			break;
++		data->exit_us = s->exit_latency;
++		data->last_state_idx = i;
+ 	}
+ 
+-	data->last_state_idx = i - 1;
+-	return i - 1;
++	return data->last_state_idx;
+ }
+ 
+ /**
+@@ -85,35 +244,49 @@ static void menu_reflect(struct cpuidle_device *dev)
+ 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
+ 	struct cpuidle_state *target = &dev->states[last_idx];
+ 	unsigned int measured_us;
++	u64 new_factor;
+ 
+ 	/*
+ 	 * Ugh, this idle state doesn't support residency measurements, so we
+ 	 * are basically lost in the dark.  As a compromise, assume we slept
+-	 * for one full standard timer tick.  However, be aware that this
+-	 * could potentially result in a suboptimal state transition.
++	 * for the whole expected time.
+ 	 */
+ 	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID)))
+-		last_idle_us = USEC_PER_SEC / HZ;
++		last_idle_us = data->expected_us;
++
++
++	measured_us = last_idle_us;
+ 
+ 	/*
+-	 * measured_us and elapsed_us are the cumulative idle time, since the
+-	 * last time we were woken out of idle by an interrupt.
++	 * We correct for the exit latency; we are assuming here that the
++	 * exit latency happens after the event that we're interested in.
+ 	 */
+-	if (data->elapsed_us <= data->elapsed_us + last_idle_us)
+-		measured_us = data->elapsed_us + last_idle_us;
++	if (measured_us > data->exit_us)
++		measured_us -= data->exit_us;
++
++
++	/* update our correction ratio */
++
++	new_factor = data->correction_factor[data->bucket]
++			* (DECAY - 1) / DECAY;
++
++	if (data->expected_us > 0 && data->measured_us < MAX_INTERESTING)
++		new_factor += RESOLUTION * measured_us / data->expected_us;
+ 	else
+-		measured_us = -1;
++		/*
++		 * we were idle so long that we count it as a perfect
++		 * prediction
++		 */
++		new_factor += RESOLUTION;
+ 
+-	/* Predict time until next break event */
+-	data->current_predicted_us = max(measured_us, data->last_measured_us);
++	/*
++	 * We don't want 0 as factor; we always want at least
++	 * a tiny bit of estimated time.
++	 */
++	if (new_factor == 0)
++		new_factor = 1;
+ 
+-	if (last_idle_us + BREAK_FUZZ <
+-	    data->expected_us - target->exit_latency) {
+-		data->last_measured_us = measured_us;
+-		data->elapsed_us = 0;
+-	} else {
+-		data->elapsed_us = measured_us;
+-	}
++	data->correction_factor[data->bucket] = new_factor;
+ }
+ 
+ /**
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index c0d9944..6b29155 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -140,6 +140,10 @@ extern int nr_processes(void);
+ extern unsigned long nr_running(void);
+ extern unsigned long nr_uninterruptible(void);
+ extern unsigned long nr_iowait(void);
++extern unsigned long nr_iowait_cpu(void);
++extern unsigned long this_cpu_load(void);
++
++
+ extern void calc_global_load(void);
+ extern u64 cpu_nr_migrations(int cpu);
+ 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c512a02..1e2f1d0 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3064,6 +3064,21 @@ unsigned long nr_iowait(void)
+ 	return sum;
+ }
+ 
++unsigned long nr_iowait_cpu(void)
++{
++	int this_cpu = smp_processor_id();
++	struct rq *this_rq = cpu_rq(this_cpu);
++	return atomic_read(&this_rq->nr_iowait);
++}
++
++unsigned long this_cpu_load(void)
++{
++	int this_cpu = smp_processor_id();
++	struct rq *this_rq = cpu_rq(this_cpu);
++	return this_rq->cpu_load[0];
++}
++
++
+ /* Variables and functions for calc_load */
+ static atomic_long_t calc_load_tasks;
+ static unsigned long calc_load_update;
+-- 
+1.6.0.6
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
