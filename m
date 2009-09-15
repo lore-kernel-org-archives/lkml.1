@@ -1,126 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753583AbZIOP4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753537AbZIOP7E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753583AbZIOP4V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752704AbZIOP4O
+	id S1753537AbZIOP7E (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 11:59:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754844AbZIOP67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:56:14 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:34899 "EHLO mgw1.diku.dk"
+	Tue, 15 Sep 2009 11:58:59 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35277 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbZIOP4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:56:13 -0400
-Date: Tue, 15 Sep 2009 17:56:14 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
-In-Reply-To: <20090916.004525.74746264.anemo@mba.ocn.ne.jp>
-Message-ID: <Pine.LNX.4.64.0909151755280.8549@pc-004.diku.dk>
-References: <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
- <Pine.LNX.4.64.0909132113520.31000@ask.diku.dk> <Pine.LNX.4.64.0909150701170.11392@ask.diku.dk>
- <20090916.004525.74746264.anemo@mba.ocn.ne.jp>
+	id S1753765AbZIOP66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 11:58:58 -0400
+Message-ID: <4AAFB98F.80201@redhat.com>
+Date: Tue, 15 Sep 2009 11:58:07 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: balbir@linux.vnet.ibm.com
+CC: Ryo Tsuruta <ryov@valinux.co.jp>, dhaval@linux.vnet.ibm.com,
+       vgoyal@redhat.com, linux-kernel@vger.kernel.org, dm-devel@redhat.com,
+       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
+       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com
+Subject: Re: Regarding dm-ioband tests
+References: <20090909105122.GF8828@linux.vnet.ibm.com> <20090910.165849.104059407.ryov@valinux.co.jp> <20090911095347.GD4474@linux.vnet.ibm.com> <20090916.001237.226784704.ryov@valinux.co.jp> <20090915151952.GH4846@balbir.in.ibm.com>
+In-Reply-To: <20090915151952.GH4846@balbir.in.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Balbir Singh wrote:
+> * Ryo Tsuruta <ryov@valinux.co.jp> [2009-09-16 00:12:37]:
 
-Error handling code following a kzalloc should free the allocated data.
-Error handling code following an ioremap should iounmap the allocated data.
+>> Why it is so bad to have multiple ways to configure? I think that it
+>> rather gains in flexibility of configurations.
+>>
+> 
+> The main issue I see is user confusion and distro issues. If a distro
+> compiles cgroups and dmsetup provides both methods, what method
+> do we recommend to end users? Also should system management tool
+> support two configuration mechanisms for the same functionality?
 
-The semantic match that finds the first problem is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+It gets worse.
 
-// <smpl>
-@r exists@
-local idexpression x;
-statement S;
-expression E;
-identifier f,f1,l;
-position p1,p2;
-expression *ptr != NULL;
-@@
+If the distro sets up things via cgroups and the admin tries
+to use dmsetup - how does the configuration propagate between
+the two mechanisms?
 
-x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-...
-if (x == NULL) S
-<... when != x
-     when != if (...) { <+...x...+> }
-(
-x->f1 = E
-|
- (x->f1 == NULL || ...)
-|
- f(...,x->f1,...)
-)
-...>
-(
- return \(0\|<+...x...+>\|ptr\);
-|
- return@p2 ...;
-)
+The sysadmin would expect that any changes made via dmsetup
+will become visible via the config tools (that use cgroups),
+too.
 
-@script:python@
-p1 << r.p1;
-p2 << r.p2;
-@@
+This will quickly increase the code requirements to ridiculous
+proportions - or leave sysadmins confused and annoyed.
 
-print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-// </smpl>
+Neither is a good option, IMHO.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
----
- arch/mips/txx9/generic/setup.c      |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
-
-diff --git a/arch/mips/txx9/generic/setup.c b/arch/mips/txx9/generic/setup.c
-index a205e2b..dfe4720 100644
---- a/arch/mips/txx9/generic/setup.c
-+++ b/arch/mips/txx9/generic/setup.c
-@@ -782,7 +782,7 @@ void __init txx9_iocled_init(unsigned long baseaddr,
- 		return;
- 	iocled->mmioaddr = ioremap(baseaddr, 1);
- 	if (!iocled->mmioaddr)
--		return;
-+		goto out_free;
- 	iocled->chip.get = txx9_iocled_get;
- 	iocled->chip.set = txx9_iocled_set;
- 	iocled->chip.direction_input = txx9_iocled_dir_in;
-@@ -791,13 +791,13 @@ void __init txx9_iocled_init(unsigned long baseaddr,
- 	iocled->chip.base = basenum;
- 	iocled->chip.ngpio = num;
- 	if (gpiochip_add(&iocled->chip))
--		return;
-+		goto out_unmap;
- 	if (basenum < 0)
- 		basenum = iocled->chip.base;
- 
- 	pdev = platform_device_alloc("leds-gpio", basenum);
- 	if (!pdev)
--		return;
-+		goto out_gpio;
- 	iocled->pdata.num_leds = num;
- 	iocled->pdata.leds = iocled->leds;
- 	for (i = 0; i < num; i++) {
-@@ -812,7 +812,17 @@ void __init txx9_iocled_init(unsigned long baseaddr,
- 	}
- 	pdev->dev.platform_data = &iocled->pdata;
- 	if (platform_device_add(pdev))
--		platform_device_put(pdev);
-+		goto out_pdev;
-+	return;
-+out_pdev:
-+	platform_device_put(pdev);
-+out_gpio:
-+	if (gpiochip_remove(&iocled->chip))
-+		return;
-+out_unmap:
-+	iounmap(iocled->mmioaddr);
-+out_free:
-+	kfree(iocled);
- }
- #else /* CONFIG_LEDS_GPIO */
- void __init txx9_iocled_init(unsigned long baseaddr,
+-- 
+All rights reversed.
