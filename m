@@ -1,150 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbZIOIjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750903AbZIOIxE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbZIOIjB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZIOIjA
+	id S1750903AbZIOIxE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:53:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZIOIxB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:39:00 -0400
-Received: from eddie.linux-mips.org ([78.24.191.182]:52789 "EHLO
-	eddie.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbZIOIi7 (ORCPT
+	Tue, 15 Sep 2009 04:53:01 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52934
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750738AbZIOIxA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:38:59 -0400
-Date: Tue, 15 Sep 2009 10:39:04 +0200
-From: Ralf Baechle <ralf@linux-mips.org>
-To: David Daney <ddaney@caviumnetworks.com>
-Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org
-Subject: [PATCH] MIPS: Make more use of unreachable()
-Message-ID: <20090915083904.GA13796@linux-mips.org>
-References: <4AAEBAC2.1050905@caviumnetworks.com> <1252965340-31735-3-git-send-email-ddaney@caviumnetworks.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252965340-31735-3-git-send-email-ddaney@caviumnetworks.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 15 Sep 2009 04:53:00 -0400
+Date: Tue, 15 Sep 2009 01:53:17 -0700 (PDT)
+Message-Id: <20090915.015317.23043536.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [GIT]: IDE
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Further uses of unreachable().
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+1) Minor IDE cleanups and enhancement to debug logging to make
+   problems easier to diagnose.  From Borislav Petkov
 
- arch/mips/fw/arc/memory.c     |    5 +++--
- arch/mips/kernel/signal.c     |    5 +++--
- arch/mips/kernel/signal32.c   |    5 +++--
- arch/mips/kernel/signal_n32.c |    3 ++-
- 4 files changed, 11 insertions(+), 7 deletions(-)
+2) Various bug fixes from Bartlomiej Zolnierkiewicz including
+   a fix for races with user invoked SET XFER commands.
 
-diff --git a/arch/mips/fw/arc/memory.c b/arch/mips/fw/arc/memory.c
-index 8b8eea2..d248f64 100644
---- a/arch/mips/fw/arc/memory.c
-+++ b/arch/mips/fw/arc/memory.c
-@@ -11,6 +11,7 @@
-  * because on some machines like SGI IP27 the ARC memory configuration data
-  * completly bogus and alternate easier to use mechanisms are available.
-  */
-+#include <linux/compiler.h>
- #include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/types.h>
-@@ -80,7 +81,7 @@ static inline int memtype_classify_arcs(union linux_memtypes type)
- 	default:
- 		BUG();
- 	}
--	while(1);				/* Nuke warning.  */
-+	unreachable();				/* Nuke warning.  */
- }
- 
- static inline int memtype_classify_arc(union linux_memtypes type)
-@@ -100,7 +101,7 @@ static inline int memtype_classify_arc(union linux_memtypes type)
- 	default:
- 		BUG();
- 	}
--	while(1);				/* Nuke warning.  */
-+	unreachable();				/* Nuke warning.  */
- }
- 
- static int __init prom_memtype_classify(union linux_memtypes type)
-diff --git a/arch/mips/kernel/signal.c b/arch/mips/kernel/signal.c
-index 6254041..eefd278 100644
---- a/arch/mips/kernel/signal.c
-+++ b/arch/mips/kernel/signal.c
-@@ -8,6 +8,7 @@
-  * Copyright (C) 1999, 2000 Silicon Graphics, Inc.
-  */
- #include <linux/cache.h>
-+#include <linux/compiler.h>
- #include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/personality.h>
-@@ -422,7 +423,7 @@ asmlinkage void sys_sigreturn(nabi_no_regargs struct pt_regs regs)
- 		"j\tsyscall_exit"
- 		:/* no outputs */
- 		:"r" (&regs));
--	/* Unreached */
-+	unreachable();
- 
- badframe:
- 	force_sig(SIGSEGV, current);
-@@ -468,7 +469,7 @@ asmlinkage void sys_rt_sigreturn(nabi_no_regargs struct pt_regs regs)
- 		"j\tsyscall_exit"
- 		:/* no outputs */
- 		:"r" (&regs));
--	/* Unreached */
-+	unreachable();
- 
- badframe:
- 	force_sig(SIGSEGV, current);
-diff --git a/arch/mips/kernel/signal32.c b/arch/mips/kernel/signal32.c
-index 2e74075..d41e267 100644
---- a/arch/mips/kernel/signal32.c
-+++ b/arch/mips/kernel/signal32.c
-@@ -9,6 +9,7 @@
-  */
- #include <linux/cache.h>
- #include <linux/compat.h>
-+#include <linux/compiler.h>
- #include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/smp.h>
-@@ -526,7 +527,7 @@ asmlinkage void sys32_sigreturn(nabi_no_regargs struct pt_regs regs)
- 		"j\tsyscall_exit"
- 		:/* no outputs */
- 		:"r" (&regs));
--	/* Unreached */
-+	unreachable();
- 
- badframe:
- 	force_sig(SIGSEGV, current);
-@@ -583,7 +584,7 @@ asmlinkage void sys32_rt_sigreturn(nabi_no_regargs struct pt_regs regs)
- 		"j\tsyscall_exit"
- 		:/* no outputs */
- 		:"r" (&regs));
--	/* Unreached */
-+	unreachable();
- 
- badframe:
- 	force_sig(SIGSEGV, current);
-diff --git a/arch/mips/kernel/signal_n32.c b/arch/mips/kernel/signal_n32.c
-index bb277e8..24ebaa5 100644
---- a/arch/mips/kernel/signal_n32.c
-+++ b/arch/mips/kernel/signal_n32.c
-@@ -16,6 +16,7 @@
-  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-  */
- #include <linux/cache.h>
-+#include <linux/compiler.h>
- #include <linux/sched.h>
- #include <linux/mm.h>
- #include <linux/smp.h>
-@@ -167,7 +168,7 @@ asmlinkage void sysn32_rt_sigreturn(nabi_no_regargs struct pt_regs regs)
- 		"j\tsyscall_exit"
- 		:/* no outputs */
- 		:"r" (&regs));
--	/* Unreached */
-+	unreachable();
- 
- badframe:
- 	force_sig(SIGSEGV, current);
+3) ->proc_fops conversion from Alexey Dobriyan.
+
+4) Add quirk fixup for a Fujitsu disk, from Wu Zhangjin.
+
+Please pull, thanks a lot!
+
+The following changes since commit 90bc1a658a53f8832ee799685703977a450e5af9:
+  Linus Torvalds (1):
+        Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-next-2.6.git master
+
+Alexey Dobriyan (1):
+      ide: convert to ->proc_fops
+
+Bartlomiej Zolnierkiewicz (2):
+      ide: allow ide_dev_read_id() to be called from the IRQ context
+      ide: fix races in handling of user-space SET XFER commands
+
+Borislav Petkov (2):
+      ide-tape: convert to ide_debug_log macro
+      ide-tape: fix handling of postponed rqs
+
+David S. Miller (1):
+      ide: Fix annoying warning in ide_pio_bytes().
+
+Jaswinder Singh Rajput (1):
+      ide: ide-taskfile.c fix style problems
+
+Jean Delvare (1):
+      IDE: Save a call to PageHighMem()
+
+Julia Lawall (1):
+      drivers/ide/ide-cd.c: Use DIV_ROUND_CLOSEST
+
+Kevin Hilman (1):
+      IDE: palm_bk3710: convert clock usage after clkdev conversion
+
+Mark de Wever (1):
+      ide-tape: fix debug call
+
+Sergey Matyukevich (1):
+      at91_ide: remove headers specific for at91sam9263
+
+Wu Zhangjin (1):
+      ide: fixup for fujitsu disk
+
+ drivers/ide/at91_ide.c        |    2 -
+ drivers/ide/ide-cd.c          |   32 +++--
+ drivers/ide/ide-disk_proc.c   |  129 ++++++++++------
+ drivers/ide/ide-floppy_proc.c |   30 +++-
+ drivers/ide/ide-ioctls.c      |    8 +-
+ drivers/ide/ide-iops.c        |   17 +--
+ drivers/ide/ide-probe.c       |   31 +++--
+ drivers/ide/ide-proc.c        |  340 ++++++++++++++++++++++++++---------------
+ drivers/ide/ide-tape.c        |  160 ++++++++++----------
+ drivers/ide/ide-taskfile.c    |  126 ++++++++--------
+ drivers/ide/palm_bk3710.c     |    2 +-
+ include/linux/ide.h           |   30 +---
+ 12 files changed, 522 insertions(+), 385 deletions(-)
