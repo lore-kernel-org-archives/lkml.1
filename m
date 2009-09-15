@@ -1,131 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbZIOV57@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752311AbZIOWCn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758718AbZIOV57 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 17:57:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbZIOV5x
+	id S1752311AbZIOWCn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 18:02:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZIOWCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 17:57:53 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:56881 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751327AbZIOV5v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 17:57:51 -0400
-Date: Tue, 15 Sep 2009 14:57:53 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Greg KH <greg@kroah.com>, James Bottomley <James.Bottomley@suse.de>,
-       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>,
-       Ravi Anand <ravi.anand@qlogic.com>,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>
-Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
- CONFIG_MOUDLES=n.
-Message-ID: <20090915215753.GA50294@plap4-2.local>
-References: <20090912001752.GC12098@plap4-2.local>
- <20090912003808.GD12098@plap4-2.local>
- <20090912005446.GA11691@kroah.com>
- <20090912025623.GA14824@plap4-2.local>
- <20090912043333.GA12349@kroah.com>
- <1252765807.4238.74.camel@mulgrave.site>
- <20090915153312.GB22774@kroah.com>
- <1253029631.29947.156.camel@mulgrave.site>
- <20090915165708.GA18817@kroah.com>
- <ac3eb2510909151022s5a0704c2xd4be73d5c63ab0f1@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ac3eb2510909151022s5a0704c2xd4be73d5c63ab0f1@mail.gmail.com>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 15 Sep 2009 21:57:22.0011 (UTC) FILETIME=[8086BAB0:01CA364F]
+	Tue, 15 Sep 2009 18:02:39 -0400
+Received: from dan.rpsys.net ([93.97.175.187]:52948 "EHLO dan.rpsys.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751371AbZIOWCi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 18:02:38 -0400
+Subject: Re: [RFC][PATCH] LED driver for Intel NAS SS4200 series
+From: Richard Purdie <rpurdie@rpsys.net>
+To: Dave Hansen <dave@sr71.net>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>
+In-Reply-To: <1253051528.10449.11884.camel@nimitz>
+References: <1253047135.10449.11657.camel@nimitz>
+	 <1253050704.30165.64.camel@dax.rpnet.com>
+	 <1253051528.10449.11884.camel@nimitz>
+Content-Type: text/plain
+Date: Tue, 15 Sep 2009 22:59:04 +0100
+Message-Id: <1253051944.30165.68.camel@dax.rpnet.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009, Kay Sievers wrote:
-> On Tue, Sep 15, 2009 at 18:57, Greg KH <greg@kroah.com> wrote:
-> > On Tue, Sep 15, 2009 at 10:47:11AM -0500, James Bottomley wrote:
-> >> On Tue, 2009-09-15 at 08:33 -0700, Greg KH wrote:
-> >> > On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
-> >> > > On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
-> >> > > > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
-> >> > > > > On Fri, 11 Sep 2009, Greg KH wrote:
-> >> > > > >
-> >> > > > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
-> >> > > > > > > Randy Dunlap noted:
-> >> > > > > > >
-> >> > > > > > >   when CONFIG_MODULES=n:
-> >> > > > > > >
-> >> > > > > > >   drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> >> > > > > > >
-> >> > > > > > >   in
-> >> > > > > > >
-> >> > > > > > >   kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> >> > > > > > >           KOBJ_CHANGE, envp);
-> >> > > > > > >
-> >> > > > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
-> >> > > > > >
-> >> > > > > > Um, why?  What are you trying to do here?  kobject change should not be
-> >> > > > > > for a device, or a "normal" kobject.
-> >> > > > > >
-> >> > > > > > What do you expect userspace to do with this?  Where have you documented
-> >> > > > > > it?
-> >> > > > >
-> >> > > > > The purpose was described here:
-> >> > > > >
-> >> > > > >       http://article.gmane.org/gmane.linux.scsi/54155
-> >> > > > >
-> >> > > > > Basically we'd like to instruct user-space to retrieve a blob of data
-> >> > > > > automatically.
-> >> > > >
-> >> > > > Hm, like a firmware object perhaps?
-> >> > > >
-> >> > > > > Original implementation used the kboject hanging off
-> >> > > > > the module which does not exist when CONFIG_MODULES=n.  It was
-> >> > > > > suggested that perhaps an alternative would be to use 'struct device'
-> >> > > > > kobj.  Any tips on how to trigger such a driver-specific event,
-> >> > > > > perhaps a dedicated kobject exported by the driver itself???
-> >> > > >
-> >> > > > Why not use the firmware interface for it, that is what it is designed
-> >> > > > for, and you will not have to craft any new udev rules.
-> >> > >
-> >> > > The data is going the wrong way to use the current firmware interface,
-> >> > > which is designed to load data from userspace into the kernel.  For this
-> >> > > interface, we want the data to go the other way (i.e. the kernel has a
-> >> > > blob of dump data it would like userspace to save if it can).
-> >> >
-> >> > Ick.
-> >>
-> >> It's a natural debugging event ... the user can simply program the
-> >> system to discard the dump.
-> >>
-> >> > > I'd be amenable to updating the firmware interface to do this, but it
-> >> > > looks like adding a completely new codepath, which it's not clear even
-> >> > > belongs there.
-> >> >
-> >> > Well, I don't think it deserves a kobject change event, as that means
-> >> > something a bit different to userspace today, right?
-> >>
-> >> Well, the documentation (in include/linux/kobject.h) does say that
-> >> KOBJ_CHANGED is the dumping ground for events that don't match anything
-> >> else, which this one seems to qualify as.  What else do you suggest?
-> >
-> > Ok, I can't think of anything else at the moment, sorry.
+On Tue, 2009-09-15 at 14:52 -0700, Dave Hansen wrote:
+> On Tue, 2009-09-15 at 22:38 +0100, Richard Purdie wrote:
+> > At a quick review this looks good. One question: These LEDs appear to be
+> > attached to generic GPIOs on a southbridge that is probably in other
+> > devices? If so, how do we know they're connected to LEDs? Do we need to
+> > add some further check of what kind of device we're running on?
 > 
-> Wouldn't kernel/kmod.c :: call_usermodehelper_pipe() somehow fit for
-> that interface?
+> Good question.  I assumed that the PCI ids were a sufficient enough
+> check.  But, you're right, those PCI ids look like they're for all ICH7
+> boards.
+> 
+> Any suggestions on what kinds of checks we might add?  This thing acts
+> like a pretty generic normal PC.  Do any of the other LED drivers have a
+> similar problem?
 
-The only current consumer of call_usermodehelper_pipe() is
-fs/exec.c::do_coredump() and it appears to manipulate the blob of data
-via file-level operations.  Would this be a 'notification'
-alternative?  Or, are you suggesting the whole process be redone (both
-notification and blob-transfer)?  Uevent notifications with a udev
-user-space front-end appears to be a much more simplified and flexible
-mechanism.
+Yes. In this case can we check for a set of DMI IDs? The clevo mail
+driver has an example of that...
 
--- av
+Cheers,
+
+Richard
+
+-- 
+Richard Purdie
+Intel Open Source Technology Centre
+
