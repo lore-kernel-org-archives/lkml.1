@@ -1,126 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751038AbZIOEI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751076AbZIOELj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751038AbZIOEI6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 00:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZIOEIw
+	id S1751076AbZIOELj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 00:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750913AbZIOELd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 00:08:52 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:43527 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750891AbZIOEIv (ORCPT
+	Tue, 15 Sep 2009 00:11:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:34822 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750891AbZIOELd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 00:08:51 -0400
-Date: Mon, 14 Sep 2009 21:06:01 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-Message-ID: <20090915040601.GE4507@mail.oracle.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Mark Fasheh <mfasheh@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	ocfs2-devel@oss.oracle.com
-References: <20090911200458.GA15416@mail.oracle.com>
- <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain>
- <20090914221434.GA4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain>
- <20090915000417.GC4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
- <20090915005417.GD4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.4AAF1348.0087:SCFMA4539814,ss=1,fgs=0
+	Tue, 15 Sep 2009 00:11:33 -0400
+Date: Tue, 15 Sep 2009 06:15:12 +0200
+From: Arjan van de Ven <arjan@infradead.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
+       yanmin_zhang@linux.intel.com, jens.axboe@oracle.com,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO
+ performance
+Message-ID: <20090915061512.0209d956@infradead.org>
+In-Reply-To: <20090914205408.578f7f60.akpm@linux-foundation.org>
+References: <20090915054259.5282e5ba@infradead.org>
+	<20090914205408.578f7f60.akpm@linux-foundation.org>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 07:01:06PM -0700, Linus Torvalds wrote:
-> On Mon, 14 Sep 2009, Joel Becker wrote:
-> >
-> > 	In the reflink discussion before, I proposed that a separate
-> > copyfile() syscall could be written that uses the same ->reflink() inode
-> > operation but allows degradation in the storage handling.
+On Mon, 14 Sep 2009 20:54:08 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Tue, 15 Sep 2009 05:42:59 +0200 Arjan van de Ven
+> <arjan@infradead.org> wrote:
 > 
-> .. exactly how?
+> > Rather than adding a new governor temporarily, this just puts the
+> > fixes into the existing menu governor.
 > 
-> If you're talking about falling back to manually just copying the data, 
-> then nobody is interested in that. User space can do that better with a 
-> simple read-write loop or with splice, or whatever. There's no reaason 
-> what-so-ever to do that.
-
-	I'm talking about any facility for copying that isn't just a
-userspace loop.  Like your discussion of network filesystems.
-
-> But the thing is, network filesystems may be able to do server-side 
-> copies, and the point being that they can do so _without_ transferring the 
-> data to the client (and back). And if we do 'copyfile' (under whatever 
-> name) for one filesystem, then I think we should strive to make sure that 
-> it's useful for other filesystems too.
-
-	Hence I brought this to the filesystem summit and then fsdevel
-rather than just implementing it in ocfs2.  I know NFS folks were in the
-room in April, and they said the call definition was workable.  Can't
-remember if CIFS folks were there, but I think so.
-
-> [ Btw, it's quite possible that CIFS/NFS people would want more than a 
->   single entrypoint. I think they might want partial copies and status 
->   updates etc, which would likely mean that a single ->copyfile() thing 
->   isn't sufficient.
+> Oh, surprised.  I wasn't actually expecting that to happen.
 > 
->   Maybe it's not worth it, and the complexity of something like that gets 
->   to be too annoying. But I don't get the feeling that you've even _tried_ 
->   to see if this can be generalized to something that would be much more 
->   widely useful ]
+> <actually reads his email>
+> 
+> > I don't mind either way, will replace. 
+> 
+> OK.  I'm not particularly strongly opinionated either way.
+> 
+> The timing is awkward.  We could let it sit in Len's tree and
+> linux-next for a couple of months or we could say what-the-hell and
+> merge it.
 
-	I brought it up in a forum with everyone there precisely so that
-I wouldn't miss their concerns via myopia.  reflink() is a generic
-application of the specific "let's snapshot inodes" idea.  It doesn't do
-"atomic copy of data into duplicate storage", nor does it do "send byte
-ranges".  The goal was something straightforward, not a kitchen sink.
+If the performance impact wasn't this huge I'd say "let it sit".
+As it is now, with a nearly 2x performance delta, I'd not be very happy
+to expose linux users to this regression-like performance drop for
+another 3 months. 
 
-> Now, I can see that you might want to say "fail rather than use double 
-> the diskspace for data". But why not just do that as a flag? You already 
-> have flags for 'copy extended attributes or not'. Why not have a flag that 
-> says 'copy only if you can do it without any extra space'?
+(especially given all the scheduler performance attention there is right
+now; picking the wrong C state has clearly very high impact in similar
+areas)
 
-	We could.  Like I said, I really wanted something simple and
-clean.  I tried hard to avoid that other flag, but I had to give up due
-to (correct) concerns from the security folks.
-	I'm looking at both the ease of calling the call and how we
-define userspace programs to use it.  reflink(1), the program, is
-essentially a synonym for 'ln -r' right now.  That's pretty nice to use
-from a script.  Other ideas have been 'cp --reflink' or 'cp --clone',
-but every proposal for a cp argument has felt awful and clunky.
-	If I were doing a straight copyfile(), ignoring the reflink
-symantics, I'd want something that could be done by cp(1) at all times
-(rc = copyfile(); if ENOSYS do_normal_copy()).  I mean, if we do it
-right, why not take advantage at all times.  Using reflink here violates
-peoples expectations, because a reflink, with its shared data extents,
-can ENOSPC when you do CoW.  Whereas a copyfile() that expects to
-duplicate the storage can fit within defualt cp.
+> 
+> If the latter, your original merge plan sound better ;) But we should
+> arrange for the new code to default to "on" for test coverage
+> reasons. perhaps the original patch did that already?
 
-Joel
+the original patch defaulted to the new code yes.
+
+redoing the split is not hard again.. just need to do a "cp" and put
+the makefile glue back. I do like how the current patch shows exactly
+which few things in the algorithm are changed..
+(although it says 230 lines added, a lot of that are comments, the rest
+isn't very big at all)
+
+
 
 -- 
-
-"Heav'n hath no rage like love to hatred turn'd, nor Hell a fury,
- like a woman scorn'd."
-        - William Congreve
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
