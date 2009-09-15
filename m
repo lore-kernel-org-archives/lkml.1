@@ -1,455 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZIODja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbZIODog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758086AbZIODja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 23:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934353AbZIODj2
+	id S1758083AbZIODog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 23:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbZIODob
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 23:39:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38759 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758054AbZIODj1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 23:39:27 -0400
-Date: Tue, 15 Sep 2009 05:42:59 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>, lenb@kernel.org, mingo@elte.hu,
-       yanmin_zhang@linux.intel.com, jens.axboe@oracle.com,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: [PATCH v2] cpuidle: Fix the menu governor to boost IO performance
-Message-ID: <20090915054259.5282e5ba@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
+	Mon, 14 Sep 2009 23:44:31 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56426 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1757314AbZIODob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 23:44:31 -0400
+Message-ID: <4AAF0D54.2040506@cn.fujitsu.com>
+Date: Tue, 15 Sep 2009 11:43:16 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       peterz@infradead.org
+Subject: Re: [PATCH 5/8] trace: Convert the power tracer into an event tracer
+References: <20090912130306.5d0086ea@infradead.org> <20090912130542.6d314860@infradead.org>
+In-Reply-To: <20090912130542.6d314860@infradead.org>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reworked patch based on Andrew's review feedback and spelling fixes.
-Rather than adding a new governor temporarily, this just puts the fixes
-into the existing menu governor.
+Arjan van de Ven wrote:
+>>From f591a0f126263733d606838a5d113b9807b12c84 Mon Sep 17 00:00:00 2001
+> From: Arjan van de Ven <arjan@linux.intel.com>
+> Date: Sat, 12 Sep 2009 07:53:03 +0200
+> Subject: [PATCH] trace: Convert the power tracer into an event tracer
+> 
+> This patch converts the existing power tracer into an event tracer,
+> so that power events (C states and frequency changes) can be tracked
+> via "perf".
+> 
+> This also removes the perl script that was used to demo the tracer;
+> its functionality is being replaced entirely with timechart.
+> 
 
-Andrew: this replaces cpuidle-a-new-variant-of-the-menu-governor-to-boost-io-performance.patch
+And Documentation/power.txt needs update, or just remove it?
 
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
 
-I don't have a power meter in my hotel room so I've only been able to verify
-that the patch functions as before with the timechart tool.
-(no major changes were done though, only review feedback)
+...
 
+> diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
+> new file mode 100644
+> index 0000000..cb4fc51
+> --- /dev/null
+> +++ b/kernel/trace/power-traces.c
 
-From: Arjan van de Ven <arjan@linux.intel.com>
-Subject: cpuidle: Fix the menu governor to boost IO performance
+This file is not necessarily needed.
 
-Fix the menu idle governor which balances power savings, energy efficiency
-and performance impact.
+You can just add definition of CREATE_TRACE_POINTS in process.c.
 
-The reason for a reworked governor is that there have been serious
-performance issues reported with the existing code on Nehalem server
-systems.
+> @@ -0,0 +1,18 @@
+> +/*
+> + * Power trace points
+> + *
+> + * Copyright (C) 2009 Arjan van de Ven <arjan@linux.intel.com>
+> + */
+> +
+> +#include <linux/string.h>
+> +#include <linux/types.h>
+> +#include <linux/workqueue.h>
+> +#include <linux/sched.h>
+> +#include <linux/module.h>
+> +#include <linux/slab.h>
+> +
+> +#define CREATE_TRACE_POINTS
+> +#include <trace/events/power.h>
+> +
+> +EXPORT_TRACEPOINT_SYMBOL_GPL(power_start);
+> +
 
-To show this I'm sure Andrew wants to see benchmark results:
-(benchmark is "fio", "no cstates" is using "idle=poll")
+I think it's power_frequency that needs to be exported?
 
-		no cstates	current linux	new algorithm
-1 disk		107 Mb/s	85 Mb/s		105 Mb/s
-2 disks		215 Mb/s	123 Mb/s	209 Mb/s
-12 disks	590 Mb/s	320 Mb/s	585 Mb/s
-
-In various power benchmark measurements, no degredation was found by our
-measurement&diagnostics team.  Obviously a small percentage more power 
-was used in the "fio" benchmark, due to the much higher performance.
-
-While it would be a novel idea to describe the new algorithm in this
-commit message, I cheaped out and described it in comments in the code
-instead.
-
-[changes since first post: spelling fixes from akpm, review feedback,
-folded menu-tng into menu.c]
-
-Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Len Brown <lenb@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Yanmin Zhang <yanmin_zhang@linux.intel.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
- drivers/cpuidle/governors/menu.c |  251 ++++++++++++++++++++++++++++++++------
- include/linux/sched.h            |    4 +
- kernel/sched.c                   |   15 +++
- 3 files changed, 231 insertions(+), 39 deletions(-)
-
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index f1df59f..9f3d775 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -2,8 +2,12 @@
-  * menu.c - the menu idle governor
-  *
-  * Copyright (C) 2006-2007 Adam Belay <abelay@novell.com>
-+ * Copyright (C) 2009 Intel Corporation
-+ * Author:
-+ *        Arjan van de Ven <arjan@linux.intel.com>
-  *
-- * This code is licenced under the GPL.
-+ * This code is licenced under the GPL version 2 as described
-+ * in the COPYING file that acompanies the Linux Kernel.
-  */
- 
- #include <linux/kernel.h>
-@@ -13,20 +17,153 @@
- #include <linux/ktime.h>
- #include <linux/hrtimer.h>
- #include <linux/tick.h>
-+#include <linux/sched.h>
- 
--#define BREAK_FUZZ	4	/* 4 us */
--#define PRED_HISTORY_PCT	50
-+#define BUCKETS 12
-+#define RESOLUTION 1024
-+#define DECAY 4
-+#define MAX_INTERESTING 50000
-+
-+/*
-+ * Concepts and ideas behind the menu governor
-+ *
-+ * For the menu governor, there are 3 decision factors for picking a C
-+ * state:
-+ * 1) Energy break even point
-+ * 2) Performance impact
-+ * 3) Latency tolerance (from pmqos infrastructure)
-+ * These these three factors are treated independently.
-+ *
-+ * Energy break even point
-+ * -----------------------
-+ * C state entry and exit have an energy cost, and a certain amount of time in
-+ * the  C state is required to actually break even on this cost. CPUIDLE
-+ * provides us this duration in the "target_residency" field. So all that we
-+ * need is a good prediction of how long we'll be idle. Like the traditional
-+ * menu governor, we start with the actual known "next timer event" time.
-+ *
-+ * Since there are other source of wakeups (interrupts for example) than
-+ * the next timer event, this estimation is rather optimistic. To get a
-+ * more realistic estimate, a correction factor is applied to the estimate,
-+ * that is based on historic behavior. For example, if in the past the actual
-+ * duration always was 50% of the next timer tick, the correction factor will
-+ * be 0.5.
-+ *
-+ * menu uses a running average for this correction factor, however it uses a
-+ * set of factors, not just a single factor. This stems from the realization
-+ * that the ratio is dependent on the order of magnitude of the expected
-+ * duration; if we expect 500 milliseconds of idle time the likelihood of
-+ * getting an interrupt very early is much higher than if we expect 50 micro
-+ * seconds of idle time. A second independent factor that has big impact on
-+ * the actual factor is if there is (disk) IO outstanding or not.
-+ * (as a special twist, we consider every sleep longer than 50 milliseconds
-+ * as perfect; there are no power gains for sleeping longer than this)
-+ *
-+ * For these two reasons we keep an array of 12 independent factors, that gets
-+ * indexed based on the magnitude of the expected duration as well as the
-+ * "is IO outstanding" property.
-+ *
-+ * Limiting Performance Impact
-+ * ---------------------------
-+ * C states, especially those with large exit latencies, can have a real
-+ * noticable impact on workloads, which is not acceptable for most sysadmins,
-+ * and in addition, less performance has a power price of its own.
-+ *
-+ * As a general rule of thumb, menu assumes that the following heuristic
-+ * holds:
-+ *     The busier the system, the less impact of C states is acceptable
-+ *
-+ * This rule-of-thumb is implemented using a performance-multiplier:
-+ * If the exit latency times the performance multiplier is longer than
-+ * the predicted duration, the C state is not considered a candidate
-+ * for selection due to a too high performance impact. So the higher
-+ * this multiplier is, the longer we need to be idle to pick a deep C
-+ * state, and thus the less likely a busy CPU will hit such a deep
-+ * C state.
-+ *
-+ * Two factors are used in determing this multiplier:
-+ * a value of 10 is added for each point of "per cpu load average" we have.
-+ * a value of 5 points is added for each process that is waiting for
-+ * IO on this CPU.
-+ * (these values are experimentally determined)
-+ *
-+ * The load average factor gives a longer term (few seconds) input to the
-+ * decision, while the iowait value gives a cpu local instantanious input.
-+ * The iowait factor may look low, but realize that this is also already
-+ * represented in the system load average.
-+ *
-+ */
- 
- struct menu_device {
- 	int		last_state_idx;
- 
- 	unsigned int	expected_us;
--	unsigned int	predicted_us;
--	unsigned int    current_predicted_us;
--	unsigned int	last_measured_us;
--	unsigned int	elapsed_us;
-+	u64		predicted_us;
-+	unsigned int	measured_us;
-+	unsigned int	exit_us;
-+	unsigned int	bucket;
-+	u64		correction_factor[BUCKETS];
- };
- 
-+
-+#define LOAD_INT(x) ((x) >> FSHIFT)
-+#define LOAD_FRAC(x) LOAD_INT(((x) & (FIXED_1-1)) * 100)
-+
-+static int get_loadavg(void)
-+{
-+	unsigned long this = this_cpu_load();
-+
-+
-+	return LOAD_INT(this) * 10 + LOAD_FRAC(this) / 10;
-+}
-+
-+static inline int which_bucket(unsigned int duration)
-+{
-+	int bucket = 0;
-+
-+	/*
-+	 * We keep two groups of stats; one with no
-+	 * IO pending, one without.
-+	 * This allows us to calculate
-+	 * E(duration)|iowait
-+	 */
-+	if (nr_iowait_cpu())
-+		bucket = BUCKETS/2;
-+
-+	if (duration < 10)
-+		return bucket;
-+	if (duration < 100)
-+		return bucket + 1;
-+	if (duration < 1000)
-+		return bucket + 2;
-+	if (duration < 10000)
-+		return bucket + 3;
-+	if (duration < 100000)
-+		return bucket + 4;
-+	return bucket + 5;
-+}
-+
-+/*
-+ * Return a multiplier for the exit latency that is intended
-+ * to take performance requirements into account.
-+ * The more performance critical we estimate the system
-+ * to be, the higher this multiplier, and thus the higher
-+ * the barrier to go to an expensive C state.
-+ */
-+static inline int performance_multiplier(void)
-+{
-+	int mult = 1;
-+
-+	/* for higher loadavg, we are more reluctant */
-+
-+	mult += 2 * get_loadavg();
-+
-+	/* for IO wait tasks (per cpu!) we add 5x each */
-+	mult += 10 * nr_iowait_cpu();
-+
-+	return mult;
-+}
-+
- static DEFINE_PER_CPU(struct menu_device, menu_devices);
- 
- /**
-@@ -38,37 +175,59 @@ static int menu_select(struct cpuidle_device *dev)
- 	struct menu_device *data = &__get_cpu_var(menu_devices);
- 	int latency_req = pm_qos_requirement(PM_QOS_CPU_DMA_LATENCY);
- 	int i;
-+	int multiplier;
-+
-+	data->last_state_idx = 0;
-+	data->exit_us = 0;
- 
- 	/* Special case when user has set very strict latency requirement */
--	if (unlikely(latency_req == 0)) {
--		data->last_state_idx = 0;
-+	if (unlikely(latency_req == 0))
- 		return 0;
--	}
- 
--	/* determine the expected residency time */
-+	/* determine the expected residency time, round up */
- 	data->expected_us =
--		(u32) ktime_to_ns(tick_nohz_get_sleep_length()) / 1000;
-+	    DIV_ROUND_UP((u32)ktime_to_ns(tick_nohz_get_sleep_length()), 1000);
-+
-+
-+	data->bucket = which_bucket(data->expected_us);
-+
-+	multiplier = performance_multiplier();
-+
-+	/*
-+	 * if the correction factor is 0 (eg first time init or cpu hotplug
-+	 * etc), we actually want to start out with a unity factor.
-+	 */
-+	if (data->correction_factor[data->bucket] == 0)
-+		data->correction_factor[data->bucket] = RESOLUTION * DECAY;
-+
-+	/* Make sure to round up for half microseconds */
-+	data->predicted_us = DIV_ROUND_CLOSEST(
-+		data->expected_us * data->correction_factor[data->bucket],
-+		RESOLUTION * DECAY);
-+
-+	/*
-+	 * We want to default to C1 (hlt), not to busy polling
-+	 * unless the timer is happening really really soon.
-+	 */
-+	if (data->expected_us > 5)
-+		data->last_state_idx = CPUIDLE_DRIVER_STATE_START;
- 
--	/* Recalculate predicted_us based on prediction_history_pct */
--	data->predicted_us *= PRED_HISTORY_PCT;
--	data->predicted_us += (100 - PRED_HISTORY_PCT) *
--				data->current_predicted_us;
--	data->predicted_us /= 100;
- 
- 	/* find the deepest idle state that satisfies our constraints */
--	for (i = CPUIDLE_DRIVER_STATE_START + 1; i < dev->state_count; i++) {
-+	for (i = CPUIDLE_DRIVER_STATE_START; i < dev->state_count; i++) {
- 		struct cpuidle_state *s = &dev->states[i];
- 
--		if (s->target_residency > data->expected_us)
--			break;
- 		if (s->target_residency > data->predicted_us)
- 			break;
- 		if (s->exit_latency > latency_req)
- 			break;
-+		if (s->exit_latency * multiplier > data->predicted_us)
-+			break;
-+		data->exit_us = s->exit_latency;
-+		data->last_state_idx = i;
- 	}
- 
--	data->last_state_idx = i - 1;
--	return i - 1;
-+	return data->last_state_idx;
- }
- 
- /**
-@@ -85,35 +244,49 @@ static void menu_reflect(struct cpuidle_device *dev)
- 	unsigned int last_idle_us = cpuidle_get_last_residency(dev);
- 	struct cpuidle_state *target = &dev->states[last_idx];
- 	unsigned int measured_us;
-+	u64 new_factor;
- 
- 	/*
- 	 * Ugh, this idle state doesn't support residency measurements, so we
- 	 * are basically lost in the dark.  As a compromise, assume we slept
--	 * for one full standard timer tick.  However, be aware that this
--	 * could potentially result in a suboptimal state transition.
-+	 * for the whole expected time.
- 	 */
- 	if (unlikely(!(target->flags & CPUIDLE_FLAG_TIME_VALID)))
--		last_idle_us = USEC_PER_SEC / HZ;
-+		last_idle_us = data->expected_us;
-+
-+
-+	measured_us = last_idle_us;
- 
- 	/*
--	 * measured_us and elapsed_us are the cumulative idle time, since the
--	 * last time we were woken out of idle by an interrupt.
-+	 * We correct for the exit latency; we are assuming here that the
-+	 * exit latency happens after the event that we're interested in.
- 	 */
--	if (data->elapsed_us <= data->elapsed_us + last_idle_us)
--		measured_us = data->elapsed_us + last_idle_us;
-+	if (measured_us > data->exit_us)
-+		measured_us -= data->exit_us;
-+
-+
-+	/* update our correction ratio */
-+
-+	new_factor = data->correction_factor[data->bucket]
-+			* (DECAY - 1) / DECAY;
-+
-+	if (data->expected_us > 0 && data->measured_us < MAX_INTERESTING)
-+		new_factor += RESOLUTION * measured_us / data->expected_us;
- 	else
--		measured_us = -1;
-+		/*
-+		 * we were idle so long that we count it as a perfect
-+		 * prediction
-+		 */
-+		new_factor += RESOLUTION;
- 
--	/* Predict time until next break event */
--	data->current_predicted_us = max(measured_us, data->last_measured_us);
-+	/*
-+	 * We don't want 0 as factor; we always want at least
-+	 * a tiny bit of estimated time.
-+	 */
-+	if (new_factor == 0)
-+		new_factor = 1;
- 
--	if (last_idle_us + BREAK_FUZZ <
--	    data->expected_us - target->exit_latency) {
--		data->last_measured_us = measured_us;
--		data->elapsed_us = 0;
--	} else {
--		data->elapsed_us = measured_us;
--	}
-+	data->correction_factor[data->bucket] = new_factor;
- }
- 
- /**
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index c0d9944..6b29155 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -140,6 +140,10 @@ extern int nr_processes(void);
- extern unsigned long nr_running(void);
- extern unsigned long nr_uninterruptible(void);
- extern unsigned long nr_iowait(void);
-+extern unsigned long nr_iowait_cpu(void);
-+extern unsigned long this_cpu_load(void);
-+
-+
- extern void calc_global_load(void);
- extern u64 cpu_nr_migrations(int cpu);
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index c512a02..1e2f1d0 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -3064,6 +3064,21 @@ unsigned long nr_iowait(void)
- 	return sum;
- }
- 
-+unsigned long nr_iowait_cpu(void)
-+{
-+	int this_cpu = smp_processor_id();
-+	struct rq *this_rq = cpu_rq(this_cpu);
-+	return atomic_read(&this_rq->nr_iowait);
-+}
-+
-+unsigned long this_cpu_load(void)
-+{
-+	int this_cpu = smp_processor_id();
-+	struct rq *this_rq = cpu_rq(this_cpu);
-+	return this_rq->cpu_load[0];
-+}
-+
-+
- /* Variables and functions for calc_load */
- static atomic_long_t calc_load_tasks;
- static unsigned long calc_load_update;
--- 
-1.6.0.6
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
