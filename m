@@ -1,48 +1,664 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751305AbZIOE2Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751333AbZIOEdC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751305AbZIOE2Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 00:28:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbZIOE2T
+	id S1751333AbZIOEdC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 00:33:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZIOEc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 00:28:19 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:16794 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751254AbZIOE2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 00:28:18 -0400
-Message-Id: <200909150428.n8F4SIGt023997@int-mx08.intmail.prod.int.phx2.redhat.com>
-Date: Tue, 15 Sep 2009 00:28:17 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: binfmt_misc takes precedence over binfmt_script in 2.6.30
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 00:32:56 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:9347 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751272AbZIOEcz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 00:32:55 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:from:date:message-id:
+	subject:to:cc:content-type:x-system-of-record;
+	b=GWLuCVM5GJHNdd2/kNHQrBbIyU9M3teK9JBHlw3zw9N5f40VtAO9yzDAoNnz/7YXn
+	cYb45ir4LkFvTnEEbyu3g==
+MIME-Version: 1.0
+In-Reply-To: <51f3faa70909122250o59fcd174ifee4277ba25a20fe@mail.gmail.com>
+References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com> 
+	<8b5805ff0909120359g2faf661br463b19518d935110@mail.gmail.com> 
+	<4AABD122.2000400@gmail.com> <8b5805ff0909121717w1516c273k2a568779b9c31662@mail.gmail.com> 
+	<8b5805ff0909121726g2f1a78c1o1ff7289e059eabe5@mail.gmail.com> 
+	<4AAC4315.6010102@pobox.com> <8b5805ff0909121941y38b7764fv3cc4d0b5c1ba6c89@mail.gmail.com> 
+	<4AAC632E.3090902@pobox.com> <8b5805ff0909122155u77a869c5t89a81fbf1a7eb391@mail.gmail.com> 
+	<51f3faa70909122250o59fcd174ifee4277ba25a20fe@mail.gmail.com>
+From: "Jung-Ik (John) Lee" <jilee@google.com>
+Date: Mon, 14 Sep 2009 21:32:33 -0700
+Message-ID: <8b5805ff0909142132g59fbba8dwebc0b21484d7e157@mail.gmail.com>
+Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard ATP867X 
+	controllers
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: Robert Hancock <hancockrwd@gmail.com>, Daniel Walker <dwalker@fifo99.com>,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Grant Grundler <grundler@google.com>,
+       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steps to Reproduce:
+From: John(Jung-Ik) Lee <jilee@google.com>
 
-mount -t binfmt_misc none /proc/sys/fs/binfmt_misc
-echo ':xyzzy:E::xyzzy::/usr/bin/stat:' > /proc/sys/fs/binfmt_misc/register
-echo '#!/bin/cat' > /tmp/test.xyzzy
-chmod +x /tmp/test.xyzzy
-/tmp/test.xyzzy
+This is a new pata driver for ARTOP 867X 64bit 4-channel UDMA133 ATA ctrls.
+Based on the Atp867 data sheet rev 1.2, Acard, and in part on early ide codes
+from Eric Uhrhane <ericu@google.com>.
 
-Actual results:
-The test prints the output of /usr/bin/stat /tmp/test.xyzzy
+Signed-off-by: John(Jung-Ik) Lee <jilee@google.com>
+Reviewed-by:  Grant Grundler <grundler@google.com>
+Reviewed-by:  Gwendal Gringo <gwendal@google.com>
+---
 
-Expected results:
-The test prints "#!/bin/cat".
+ rev 01: Cleared some checkpatch.pl complaints. Thanks to Daniel.
+ rev 02: Removed hard-coded value for active/recovery. Thanks to Robert.
+         Use atp867x_cable_detect() until ata_cable_40short()
+ rev 03: changes per Jeff's comment: Thansk to Jeff.
+	 ioread/iowrite, enum, speed-to-mode calc, single mapping, etc.
 
-This appears to have changed in the upstream git commit 74641f5 "alpha:
-binfmt_aout fix". The commit message for that commit says "Fixed by changing
-the registration order of the default binfmt handlers using list_add_tail() and
-introducing insert_binfmt() function which places new handler on the top of the
-binfmt list.  This might be generally useful for installing arch-specific
-frontends for default handlers or just for overriding them."
+ drivers/ata/Kconfig        |    9 +
+ drivers/ata/Makefile       |    1 +
+ drivers/ata/pata_atp867x.c |  548 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h    |    2 +
+ 4 files changed, 560 insertions(+), 0 deletions(-)
 
-It's not clear that the new behavior is worse or better, but it's a
-regression and should at the very least be documented.  
+diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+index b17c57f..2e1e678 100644
+--- a/drivers/ata/Kconfig
++++ b/drivers/ata/Kconfig
+@@ -244,6 +244,15 @@ config PATA_ARTOP
+
+ 	  If unsure, say N.
+
++config PATA_ATP867X
++	tristate "ARTOP/Acard ATP867X PATA support"
++	depends on PCI
++	help
++	  This option enables support for ARTOP/Acard ATP867X PATA
++	  controllers.
++
++	  If unsure, say N.
++
+ config PATA_AT32
+ 	tristate "Atmel AVR32 PATA support (Experimental)"
+ 	depends on AVR32 && PLATFORM_AT32AP && EXPERIMENTAL
+diff --git a/drivers/ata/Makefile b/drivers/ata/Makefile
+index 38906f9..3372007 100644
+--- a/drivers/ata/Makefile
++++ b/drivers/ata/Makefile
+@@ -22,6 +22,7 @@ obj-$(CONFIG_SATA_FSL)		+= sata_fsl.o
+ obj-$(CONFIG_PATA_ALI)		+= pata_ali.o
+ obj-$(CONFIG_PATA_AMD)		+= pata_amd.o
+ obj-$(CONFIG_PATA_ARTOP)	+= pata_artop.o
++obj-$(CONFIG_PATA_ATP867X)	+= pata_atp867x.o
+ obj-$(CONFIG_PATA_AT32)		+= pata_at32.o
+ obj-$(CONFIG_PATA_ATIIXP)	+= pata_atiixp.o
+ obj-$(CONFIG_PATA_CMD640_PCI)	+= pata_cmd640.o
+diff --git a/drivers/ata/pata_atp867x.c b/drivers/ata/pata_atp867x.c
+new file mode 100644
+index 0000000..7990de9
+--- /dev/null
++++ b/drivers/ata/pata_atp867x.c
+@@ -0,0 +1,548 @@
++/*
++ * pata_atp867x.c - ARTOP 867X 64bit 4-channel UDMA133 ATA controller driver
++ *
++ *	(C) 2009 Google Inc. John(Jung-Ik) Lee <jilee@google.com>
++ *
++ * Per Atp867 data sheet rev 1.2, Acard.
++ * Based in part on early ide code from
++ *	2003-2004 by Eric Uhrhane, Google, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
++ *
++ *
++ * TODO:
++ *   1. RAID features [comparison, XOR, striping, mirroring, etc.]
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/blkdev.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <scsi/scsi_host.h>
++#include <linux/libata.h>
++
++#define	DRV_NAME	"pata_atp867x"
++#define	DRV_VERSION	"0.7.5"
++
++/*
++ * IO Registers
++ * Note that all runtime hot priv ports are cached in ap private_data
++ */
++
++enum {
++	ATP867X_IO_CHANNEL_OFFSET	= 0x10,
++
++	/*
++	 * IO Register Bitfields
++	 */
++
++	ATP867X_IO_PIOSPD_ACTIVE_SHIFT	= 4,
++	ATP867X_IO_PIOSPD_RECOVER_SHIFT	= 0,
++
++	ATP867X_IO_DMAMODE_MSTR_SHIFT	= 0,
++	ATP867X_IO_DMAMODE_MSTR_MASK	= 0x07,
++	ATP867X_IO_DMAMODE_SLAVE_SHIFT	= 4,
++	ATP867X_IO_DMAMODE_SLAVE_MASK	= 0x70,
++
++	ATP867X_IO_DMAMODE_UDMA_6	= 0x07,
++	ATP867X_IO_DMAMODE_UDMA_5	= 0x06,
++	ATP867X_IO_DMAMODE_UDMA_4	= 0x05,
++	ATP867X_IO_DMAMODE_UDMA_3	= 0x04,
++	ATP867X_IO_DMAMODE_UDMA_2	= 0x03,
++	ATP867X_IO_DMAMODE_UDMA_1	= 0x02,
++	ATP867X_IO_DMAMODE_UDMA_0	= 0x01,
++	ATP867X_IO_DMAMODE_DISABLE	= 0x00,
++
++	ATP867X_IO_SYS_INFO_66MHZ	= 0x04,
++	ATP867X_IO_SYS_INFO_SLOW_UDMA5	= 0x02,
++	ATP867X_IO_SYS_MASK_RESERVED	= (~0xf1),
++
++	ATP867X_IO_PORTSPD_VAL		= 0x1143,
++	ATP867X_PREREAD_VAL		= 0x0200,
++
++	ATP867X_NUM_PORTS		= 4,
++	ATP867X_BAR_IOBASE		= 0,
++	ATP867X_BAR_ROMBASE		= 6,
++};
++
++#define ATP867X_IOBASE(ap)		((ap)->host->iomap[0])
++#define ATP867X_SYS_INFO(ap)		(0x3F + ATP867X_IOBASE(ap))
++
++#define ATP867X_IO_PORTBASE(ap, port)	(0x00 + ATP867X_IOBASE(ap) + \
++					(port) * ATP867X_IO_CHANNEL_OFFSET)
++#define ATP867X_IO_DMABASE(ap, port)	(0x40 + \
++					ATP867X_IO_PORTBASE((ap), (port)))
++
++#define ATP867X_IO_STATUS(ap, port)	(0x07 + \
++					ATP867X_IO_PORTBASE((ap), (port)))
++#define ATP867X_IO_ALTSTATUS(ap, port)	(0x0E + \
++					ATP867X_IO_PORTBASE((ap), (port)))
++
++/*
++ * hot priv ports
++ */
++#define ATP867X_IO_MSTRPIOSPD(ap, port)	(0x08 + \
++					ATP867X_IO_DMABASE((ap), (port)))
++#define ATP867X_IO_SLAVPIOSPD(ap, port)	(0x09 + \
++					ATP867X_IO_DMABASE((ap), (port)))
++#define ATP867X_IO_8BPIOSPD(ap, port)	(0x0A + \
++					ATP867X_IO_DMABASE((ap), (port)))
++#define ATP867X_IO_DMAMODE(ap, port)	(0x0B + \
++					ATP867X_IO_DMABASE((ap), (port)))
++
++#define ATP867X_IO_PORTSPD(ap, port)	(0x4A + \
++					ATP867X_IO_PORTBASE((ap), (port)))
++#define ATP867X_IO_PREREAD(ap, port)	(0x4C + \
++					ATP867X_IO_PORTBASE((ap), (port)))
++
++struct atp867x_priv {
++	void __iomem *dma_mode;
++	void __iomem *mstr_piospd;
++	void __iomem *slave_piospd;
++	void __iomem *eightb_piospd;
++	int		pci66mhz;
++};
++
++static inline u8 atp867x_speed_to_mode(u8 speed)
++{
++	return speed - XFER_UDMA_0 + 1;
++}
++
++static void atp867x_set_dmamode(struct ata_port *ap, struct ata_device *adev)
++{
++	struct pci_dev *pdev	= to_pci_dev(ap->host->dev);
++	struct atp867x_priv *dp = ap->private_data;
++	u8 speed = adev->dma_mode;
++	u8 b;
++	u8 mode;
++
++	mode = atp867x_speed_to_mode(speed);
++
++	/*
++	 * Doc 6.6.9: decrease the udma mode value by 1 for safer UDMA speed
++	 * on 66MHz bus
++	 *   rev-A: UDMA_1~4 (5, 6 no change)
++	 *   rev-B: all UDMA modes
++	 *   UDMA_0 stays not to disable UDMA
++	 */
++	if (dp->pci66mhz && mode > ATP867X_IO_DMAMODE_UDMA_0  &&
++	   (pdev->device == PCI_DEVICE_ID_ARTOP_ATP867B ||
++	    mode < ATP867X_IO_DMAMODE_UDMA_5))
++		mode--;
++
++	b = ioread8(dp->dma_mode);
++	if (adev->devno & 1) {
++		b = (b & ~ATP867X_IO_DMAMODE_SLAVE_MASK) |
++			(mode << ATP867X_IO_DMAMODE_SLAVE_SHIFT);
++	} else {
++		b = (b & ~ATP867X_IO_DMAMODE_MSTR_MASK) |
++			(mode << ATP867X_IO_DMAMODE_MSTR_SHIFT);
++	}
++	iowrite8(b, dp->dma_mode);
++}
++
++static int atp867x_get_active_clocks_shifted(unsigned int clk)
++{
++	unsigned char clocks = clk;
++
++	switch (clocks) {
++	case 0:
++		clocks = 1;
++		break;
++	case 1 ... 7:
++		break;
++	case 8 ... 12:
++		clocks = 7;
++		break;
++	default:
++		printk(KERN_WARNING "ATP867X: active %dclk is invalid. "
++			"Using default 8clk.\n", clk);
++		clocks = 0;	/* 8 clk */
++		break;
++	}
++	return clocks << ATP867X_IO_PIOSPD_ACTIVE_SHIFT;
++}
++
++static int atp867x_get_recover_clocks_shifted(unsigned int clk)
++{
++	unsigned char clocks = clk;
++
++	switch (clocks) {
++	case 0:
++		clocks = 1;
++		break;
++	case 1 ... 11:
++		break;
++	case 12:
++		clocks = 0;
++		break;
++	case 13: case 14:
++		--clocks;
++		break;
++	case 15:
++		break;
++	default:
++		printk(KERN_WARNING "ATP867X: recover %dclk is invalid. "
++			"Using default 15clk.\n", clk);
++		clocks = 0;	/* 12 clk */
++		break;
++	}
++	return clocks << ATP867X_IO_PIOSPD_RECOVER_SHIFT;
++}
++
++static void atp867x_set_piomode(struct ata_port *ap, struct ata_device *adev)
++{
++	struct ata_device *peer = ata_dev_pair(adev);
++	struct atp867x_priv *dp = ap->private_data;
++	u8 speed = adev->pio_mode;
++	struct ata_timing t, p;
++	int T, UT;
++	u8 b;
++
++	T = 1000000000 / 33333;
++	UT = T / 4;
++
++	ata_timing_compute(adev, speed, &t, T, UT);
++	if (peer && peer->pio_mode) {
++		ata_timing_compute(peer, peer->pio_mode, &p, T, UT);
++		ata_timing_merge(&p, &t, &t, ATA_TIMING_8BIT);
++	}
++
++	b = ioread8(dp->dma_mode);
++	if (adev->devno & 1)
++		b = (b & ~ATP867X_IO_DMAMODE_SLAVE_MASK);
++	else
++		b = (b & ~ATP867X_IO_DMAMODE_MSTR_MASK);
++	iowrite8(b, dp->dma_mode);
++
++	b = atp867x_get_active_clocks_shifted(t.active) |
++		atp867x_get_recover_clocks_shifted(t.recover);
++	if (dp->pci66mhz)
++		b += 0x10;
++
++	if (adev->devno & 1)
++		iowrite8(b, dp->slave_piospd);
++	else
++		iowrite8(b, dp->mstr_piospd);
++
++	/*
++	 * use the same value for comand timing as for PIO timimg
++	 */
++	iowrite8(b, dp->eightb_piospd);
++}
++
++static int atp867x_cable_detect(struct ata_port *ap)
++{
++	return ATA_CBL_PATA40_SHORT;
++}
++
++static struct scsi_host_template atp867x_sht = {
++	ATA_BMDMA_SHT(DRV_NAME),
++};
++
++static struct ata_port_operations atp867x_ops = {
++	.inherits		= &ata_bmdma_port_ops,
++	.cable_detect		= atp867x_cable_detect,
++	.set_piomode		= atp867x_set_piomode,
++	.set_dmamode		= atp867x_set_dmamode,
++};
++
++
++#ifdef	ATP867X_DEBUG
++static void atp867x_check_res(struct pci_dev *pdev)
++{
++	int i;
++	unsigned long start, len;
++
++	/* Check the PCI resources for this channel are enabled */
++	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++		start = pci_resource_start(pdev, i);
++		len   = pci_resource_len(pdev, i);
++		printk(KERN_DEBUG "ATP867X: resource start:len=%lx:%lx\n",
++			start, len);
++	}
++}
++
++static void atp867x_check_ports(struct ata_port *ap, int port)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++	struct atp867x_priv *dp = ap->private_data;
++
++	printk(KERN_DEBUG "ATP867X: port[%d] addresses\n"
++		"  cmd_addr	=0x%llx, 0x%llx\n"
++		"  ctl_addr	=0x%llx, 0x%llx\n"
++		"  bmdma_addr	=0x%llx, 0x%llx\n"
++		"  data_addr	=0x%llx\n"
++		"  error_addr	=0x%llx\n"
++		"  feature_addr	=0x%llx\n"
++		"  nsect_addr	=0x%llx\n"
++		"  lbal_addr	=0x%llx\n"
++		"  lbam_addr	=0x%llx\n"
++		"  lbah_addr	=0x%llx\n"
++		"  device_addr	=0x%llx\n"
++		"  status_addr	=0x%llx\n"
++		"  command_addr	=0x%llx\n"
++		"  dp->dma_mode	=0x%llx\n"
++		"  dp->mstr_piospd	=0x%llx\n"
++		"  dp->slave_piospd	=0x%llx\n"
++		"  dp->eightb_piospd	=0x%llx\n"
++		"  dp->pci66mhz		=0x%lx\n",
++		port,
++		(unsigned long long)ioaddr->cmd_addr,
++		(unsigned long long)ATP867X_IO_PORTBASE(ap, port),
++		(unsigned long long)ioaddr->ctl_addr,
++		(unsigned long long)ATP867X_IO_ALTSTATUS(ap, port),
++		(unsigned long long)ioaddr->bmdma_addr,
++		(unsigned long long)ATP867X_IO_DMABASE(ap, port),
++		(unsigned long long)ioaddr->data_addr,
++		(unsigned long long)ioaddr->error_addr,
++		(unsigned long long)ioaddr->feature_addr,
++		(unsigned long long)ioaddr->nsect_addr,
++		(unsigned long long)ioaddr->lbal_addr,
++		(unsigned long long)ioaddr->lbam_addr,
++		(unsigned long long)ioaddr->lbah_addr,
++		(unsigned long long)ioaddr->device_addr,
++		(unsigned long long)ioaddr->status_addr,
++		(unsigned long long)ioaddr->command_addr,
++		(unsigned long long)dp->dma_mode,
++		(unsigned long long)dp->mstr_piospd,
++		(unsigned long long)dp->slave_piospd,
++		(unsigned long long)dp->eightb_piospd,
++		(unsigned long)dp->pci66mhz);
++}
++#endif
++
++static int atp867x_set_priv(struct ata_port *ap)
++{
++	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
++	struct atp867x_priv *dp;
++	int port = ap->port_no;
++
++	dp = ap->private_data =
++		devm_kzalloc(&pdev->dev, sizeof(*dp), GFP_KERNEL);
++	if (dp == NULL)
++		return -ENOMEM;
++
++	dp->dma_mode	 = ATP867X_IO_DMAMODE(ap, port);
++	dp->mstr_piospd	 = ATP867X_IO_MSTRPIOSPD(ap, port);
++	dp->slave_piospd = ATP867X_IO_SLAVPIOSPD(ap, port);
++	dp->eightb_piospd = ATP867X_IO_8BPIOSPD(ap, port);
++
++	dp->pci66mhz =
++		ioread8(ATP867X_SYS_INFO(ap)) & ATP867X_IO_SYS_INFO_66MHZ;
++
++	return 0;
++}
++
++static void atp867x_fixup(struct ata_host *host)
++{
++	struct pci_dev *pdev = to_pci_dev(host->dev);
++	struct ata_port *ap = host->ports[0];
++	int i;
++	u8 v;
++
++	/*
++	 * Broken BIOS might not set latency high enough
++	 */
++	pci_read_config_byte(pdev, PCI_LATENCY_TIMER, &v);
++	if (v < 0x80) {
++		v = 0x80;
++		pci_write_config_byte(pdev, PCI_LATENCY_TIMER, v);
++		printk(KERN_DEBUG "ATP867X: set latency timer of device %s"
++			" to %d\n", pci_name(pdev), v);
++	}
++
++	/*
++	 * init 8bit io ports speed(0aaarrrr) to 43h and
++	 * init udma modes of master/slave to 0/0(11h)
++	 */
++	for (i = 0; i < ATP867X_NUM_PORTS; i++)
++		iowrite16(ATP867X_IO_PORTSPD_VAL, ATP867X_IO_PORTSPD(ap, i));
++
++	/*
++	 * init PreREAD counts
++	 */
++	for (i = 0; i < ATP867X_NUM_PORTS; i++)
++		iowrite16(ATP867X_PREREAD_VAL, ATP867X_IO_PREREAD(ap, i));
++
++	v = ioread8(ATP867X_IOBASE(ap) + 0x28);
++	v &= 0xcf;	/* Enable INTA#: bit4=0 means enable */
++	v |= 0xc0;	/* Enable PCI burst, MRM & not immediate interrupts */
++	iowrite8(v, ATP867X_IOBASE(ap) + 0x28);
++
++	/*
++	 * Turn off the over clocked udma5 mode, only for Rev-B
++	 */
++	v = ioread8(ATP867X_SYS_INFO(ap));
++	v &= ATP867X_IO_SYS_MASK_RESERVED;
++	if (pdev->device == PCI_DEVICE_ID_ARTOP_ATP867B)
++		v |= ATP867X_IO_SYS_INFO_SLOW_UDMA5;
++	iowrite8(v, ATP867X_SYS_INFO(ap));
++}
++
++static int atp867x_ata_pci_sff_init_host(struct ata_host *host)
++{
++	struct device *gdev = host->dev;
++	struct pci_dev *pdev = to_pci_dev(gdev);
++	unsigned int mask = 0;
++	int i, rc;
++
++	/*
++	 * do not map rombase
++	 */
++	rc = pcim_iomap_regions(pdev, 1 << ATP867X_BAR_IOBASE, DRV_NAME);
++	if (rc == -EBUSY)
++		pcim_pin_device(pdev);
++	if (rc)
++		return rc;
++	host->iomap = pcim_iomap_table(pdev);
++
++#ifdef	ATP867X_DEBUG
++	atp867x_check_res(pdev);
++
++	for (i = 0; i < PCI_ROM_RESOURCE; i++)
++		printk(KERN_DEBUG "ATP867X: iomap[%d]=0x%llx\n", i,
++			(unsigned long long)(host->iomap[i]));
++#endif
++
++	/*
++	 * request, iomap BARs and init port addresses accordingly
++	 */
++	for (i = 0; i < host->n_ports; i++) {
++		struct ata_port *ap = host->ports[i];
++		struct ata_ioports *ioaddr = &ap->ioaddr;
++
++		ioaddr->cmd_addr = ATP867X_IO_PORTBASE(ap, i);
++		ioaddr->ctl_addr = ioaddr->altstatus_addr
++				 = ATP867X_IO_ALTSTATUS(ap, i);
++		ioaddr->bmdma_addr = ATP867X_IO_DMABASE(ap, i);
++
++		ata_sff_std_ports(ioaddr);
++		rc = atp867x_set_priv(ap);
++		if (rc)
++			return rc;
++
++#ifdef	ATP867X_DEBUG
++		atp867x_check_ports(ap, i);
++#endif
++		ata_port_desc(ap, "cmd 0x%lx ctl 0x%lx",
++			(unsigned long)ioaddr->cmd_addr,
++			(unsigned long)ioaddr->ctl_addr);
++		ata_port_desc(ap, "bmdma 0x%lx",
++			(unsigned long)ioaddr->bmdma_addr);
++
++		mask |= 1 << i;
++	}
++
++	if (!mask) {
++		dev_printk(KERN_ERR, gdev, "no available native port\n");
++		return -ENODEV;
++	}
++
++	atp867x_fixup(host);
++
++	rc = pci_set_dma_mask(pdev, ATA_DMA_MASK);
++	if (rc)
++		return rc;
++
++	rc = pci_set_consistent_dma_mask(pdev, ATA_DMA_MASK);
++	return rc;
++}
++
++static int atp867x_init_one(struct pci_dev *pdev,
++	const struct pci_device_id *id)
++{
++	static int printed_version;
++	static const struct ata_port_info info_867x = {
++		.flags		= ATA_FLAG_SLAVE_POSS,
++		.pio_mask	= ATA_PIO4,
++		.mwdma_mask	= ATA_MWDMA2,
++		.udma_mask 	= ATA_UDMA6,
++		.port_ops	= &atp867x_ops,
++	};
++
++	struct ata_host *host;
++	const struct ata_port_info *ppi[] = { &info_867x, NULL };
++	int rc;
++
++	if (!printed_version++)
++		dev_printk(KERN_INFO, &pdev->dev, "version " DRV_VERSION "\n");
++
++	rc = pcim_enable_device(pdev);
++	if (rc)
++		return rc;
++
++	printk(KERN_INFO "ATP867X: ATP867 ATA UDMA133 controller (rev %02X)",
++		pdev->device);
++
++	host = ata_host_alloc_pinfo(&pdev->dev, ppi, ATP867X_NUM_PORTS);
++	if (!host) {
++		dev_printk(KERN_ERR, &pdev->dev,
++			"failed to allocate ATA host\n");
++		rc = -ENOMEM;
++		goto err_out;
++	}
++
++	rc = atp867x_ata_pci_sff_init_host(host);
++	if (rc) {
++		dev_printk(KERN_ERR, &pdev->dev, "failed to init host\n");
++		goto err_out;
++	}
++
++	pci_set_master(pdev);
++
++	rc = ata_host_activate(host, pdev->irq, ata_sff_interrupt,
++				IRQF_SHARED, &atp867x_sht);
++	if (rc)
++		dev_printk(KERN_ERR, &pdev->dev, "failed to activate host\n");
++
++err_out:
++	return rc;
++}
++
++static struct pci_device_id atp867x_pci_tbl[] = {
++	{ PCI_VDEVICE(ARTOP, PCI_DEVICE_ID_ARTOP_ATP867A),	0 },
++	{ PCI_VDEVICE(ARTOP, PCI_DEVICE_ID_ARTOP_ATP867B),	0 },
++	{ },
++};
++
++static struct pci_driver atp867x_driver = {
++	.name 		= DRV_NAME,
++	.id_table 	= atp867x_pci_tbl,
++	.probe 		= atp867x_init_one,
++	.remove		= ata_pci_remove_one,
++};
++
++static int __init atp867x_init(void)
++{
++	return pci_register_driver(&atp867x_driver);
++}
++
++static void __exit atp867x_exit(void)
++{
++	pci_unregister_driver(&atp867x_driver);
++}
++
++MODULE_AUTHOR("John(Jung-Ik) Lee, Google Inc.");
++MODULE_DESCRIPTION("low level driver for Artop/Acard 867x ATA controller");
++MODULE_LICENSE("GPL");
++MODULE_DEVICE_TABLE(pci, atp867x_pci_tbl);
++MODULE_VERSION(DRV_VERSION);
++
++module_init(atp867x_init);
++module_exit(atp867x_exit);
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index 73b46b6..1de1fab 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -1521,6 +1521,8 @@
+ #define PCI_DEVICE_ID_ARTOP_ATP860R	0x0007
+ #define PCI_DEVICE_ID_ARTOP_ATP865	0x0008
+ #define PCI_DEVICE_ID_ARTOP_ATP865R	0x0009
++#define PCI_DEVICE_ID_ARTOP_ATP867A	0x000A
++#define PCI_DEVICE_ID_ARTOP_ATP867B	0x000B
+ #define PCI_DEVICE_ID_ARTOP_AEC7610	0x8002
+ #define PCI_DEVICE_ID_ARTOP_AEC7612UW	0x8010
+ #define PCI_DEVICE_ID_ARTOP_AEC7612U	0x8020
