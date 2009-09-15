@@ -1,185 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758676AbZIOVl2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753972AbZIOVr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758676AbZIOVl2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 17:41:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751213AbZIOVlY
+	id S1753972AbZIOVr3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 17:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZIOVr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 17:41:24 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:45032 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZIOVlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 17:41:24 -0400
-Date: Tue, 15 Sep 2009 17:40:32 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       dhaval@linux.vnet.ibm.com, jens.axboe@oracle.com, agk@redhat.com,
-       akpm@linux-foundation.org, nauman@google.com,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com
-Subject: dm-ioband fairness in terms of sectors seems to be killing disk
-	(Was: Re: Regarding dm-ioband tests)
-Message-ID: <20090915214032.GB3711@redhat.com>
-References: <20090901165011.GB3753@redhat.com> <20090901174724.GC3753@redhat.com> <20090903131146.GA12041@redhat.com> <20090904.101222.226781140.ryov@valinux.co.jp>
+	Tue, 15 Sep 2009 17:47:27 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:44754 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbZIOVr0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 17:47:26 -0400
+Date: Tue, 15 Sep 2009 14:45:30 -0700
+From: Joel Becker <Joel.Becker@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+Message-ID: <20090915214530.GA11060@mail.oracle.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Mark Fasheh <mfasheh@suse.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	ocfs2-devel@oss.oracle.com
+References: <20090911200458.GA15416@mail.oracle.com>
+ <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain>
+ <20090914221434.GA4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain>
+ <20090915000417.GC4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
+ <20090915005417.GD4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
+ <20090915040601.GE4507@mail.oracle.com>
+ <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090904.101222.226781140.ryov@valinux.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
+X-Burt-Line: Trees are cool.
+X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
+ come to perfection.
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: acsmt357.oracle.com [141.146.40.157]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.4AB00B61.0028:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 04, 2009 at 10:12:22AM +0900, Ryo Tsuruta wrote:
-> Hi Vivek,
+On Tue, Sep 15, 2009 at 09:30:54AM -0700, Linus Torvalds wrote:
+> HOW?
 > 
-> Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Tue, Sep 01, 2009 at 01:47:24PM -0400, Vivek Goyal wrote:
-> > > On Tue, Sep 01, 2009 at 12:50:11PM -0400, Vivek Goyal wrote:
-> > > > Hi Ryo,
-> > > > 
-> > > > I decided to play a bit more with dm-ioband and started doing some
-> > > > testing. I am doing a simple two dd threads doing reads and don't seem
-> > > > to be gettting the fairness. So thought will ask you what's the issue
-> > > > here. Is there an issue with my testing procedure.
-> > > > 
-> > > > I got one 40G SATA drive (no hardware queuing). I have created two
-> > > > partitions on that disk /dev/sdd1 and /dev/sdd2 and created two ioband
-> > > > devices ioband1 and ioband2 on partitions sdd1 and sdd2 respectively. The
-> > > > weights of ioband1 and ioband2 devices are 200 and 100 respectively. 
-> > > > 
-> > > > I am assuming that this setup will create two default groups and IO
-> > > > going to partition sdd1 should get double the BW of partition sdd2.
-> > > > 
-> > > > But it looks like I am not gettting that behavior. Following is the output
-> > > > of "dmsetup table" command. This snapshot has been taken every 2 seconds
-> > > > while IO was going on. Column 9 seems to be containing how many sectors
-> > > > of IO has been done on a particular io band device and group. Looking at
-> > > > the snapshot, it does not look like that ioband1 default group got double
-> > > > the BW of ioband2 default group.  
-> > > > 
-> > > > Am I doing something wrong here?
-> > > > 
-> > > 
-> > 
-> > Hi Ryo,
-> > 
-> > Did you get a chance to look into it? Am I doing something wrong or it is
-> > an issue with dm-ioband.
+> We need to have a per-filesystem interface to that. 
+
+	No argument here.
+
+> But don't you see how _idiotic_ it is to then also having a '->reflink()' 
+> function that does _conceptually_ the exact same thing, except it does it 
+> by incrementing a usage count instead?
 > 
-> Sorry, I missed it. I'll look into it and report back to you.
+> Do you see why I'm so unhappy to add a ->reflink() function? 
 
-Hi Ryo,
+	I got it the first time.  You see reflink() as a copyfile(), and
+distinguishing the inode operations doesn't make sense to you.   Quite
+frankly, it doesn't to me either.  There is the user<->kernel interface
+of the system call, and there is the filesystem interface of the inode
+operation.  One inode op that can support multiple variations of
+user<->kernel is find with me!
+	Let's step back a second.  I'm not married to the name
+'reflink'.  I'm not opposed to a copyfile() syscall.  I think I have a
+clearer idea of what I see.  More below.
 
-I am running a sequential reader in one group and few random reader and
-writers in second group. Both groups are of same weight. I ran fio scripts
-for 60 seconds and then looked at the output. In this case looks like we just
-kill the throughput of sequential reader and disk (because random
-readers/writers take over).
+> Would that be a 'reflink()' or not? I have no way of knowing, because you 
+> have decided on reflink on a purely ocfs2-specific implementation basis. 
+> But I do know that such a filesystem would be perfectly happy to have a 
+> 'copyfile' function.
 
-I ran the test "with-dm-ioband", "without-dm-ioband" and "with ioscheduler
-based io controller".
+	That's not fair.  I deliberately defined it as something outside
+of the ocfs2 implementation.  Apparently I didn't do a good enough job.
 
-First I am pasting the results and in the end I will paste my test
-scripts. I have cut fio output heavily so that we does not get lost in
-lots of output.
+> This is why I want the VFS pointers to be about _semantics_, not about 
+> some random implementation detail.
 
-with-dm-ioband
-==============
+	Again, no argument here.  The syscall interface better be
+reasonably obvious to the userspace programmer.  The VFS pointer better
+be an efficient and clean way to implement the syscall interface.
+	I'm seeing three things here:
 
-ioband1
--------
-randread: (groupid=0, jobs=4): err= 0: pid=3610
-  read : io=18,432KiB, bw=314KiB/s, iops=76, runt= 60076msec
-    clat (usec): min=140, max=744K, avg=50866.75, stdev=61266.88
+1. A CoW snapshot of an inode.  This is reflink.  It expressly defines
+   metadata as copyable, but data must be shared in a CoW fashion (to
+   answer your question about indirect blocks).  You either get a
+   snapshot or nothing.  Call it snapfile() if you like.  Don't care.
 
-randwrite: (groupid=1, jobs=2): err= 0: pid=3614
-  write: io=920KiB, bw=15KiB/s, iops=3, runt= 60098msec
-    clat (usec): min=203, max=14,171K, avg=522937.86, stdev=960929.44
+2. An efficient copy.  This is what you're talking about with CIFS COPY,
+   etc.  You want to be guaranteed it does NOT do CoW, because it would
+   be great for a naive cp(1) to use it without the ENOSPC surprise of
+   CoW.  You'd like the kernel call to fail if you're just going to get
+   read-write-loops, because userspace can implement that better.  Maybe
+   we have it such that only network filesystems implement this action,
+   all the others return -ENOTSUPP, and then glibc handles the
+   read-write-loop.  This allows everyone to call copyfile() and get
+   what they expected.
 
-ioband2
--------
-seqread0: (groupid=0, jobs=1): err= 0: pid=3609
-  read : io=37,904KiB, bw=636KiB/s, iops=155, runt= 61026msec
-    clat (usec): min=92, max=9,969K, avg=6437.89, stdev=168573.23
+3. A space-saving copy.  This is doing CoW linkup of the data storage if
+   possible, like a snapshot but without the atomicity guarantee.  It
+   has the ENOSPC surprise, but someone using it should know that.
+ 
+	I think it would be great for Linux to provide all three.  I
+chose to only attack (1) because I could define it well.  I left (2) and
+(3), what I see as copyfile(), for later work.  And I fully expected
+that the VFS operation could change later - it's an internal thing,
+after all.  I want to get a good user<->kernel interface, because that's
+the one that is set in stone.  What I didn't want was to create another
+kitchen-sink call, or another POSIXy thing that has a million special
+cases that trip folks up.
+	I'm glad you've taken an interest, because you're pretty damned
+good at architecture.  If we can expand to cover copyfile sanely too,
+win-win.  To me, the user<->kernel interface really is two system calls:
+reflink/snapfile for (1) and copyfile for (2) & (3).  The kernel VFS
+interface I would think you could do in one inode operation.  If you
+want to name it ->copyfile, that's fine.
+	Perhaps ->copyfile takes the following flags:
 
-without dm-ioband (vanilla cfq, no grouping)
-============================================
-seqread0: (groupid=0, jobs=1): err= 0: pid=3969
-  read : io=321MiB, bw=5,598KiB/s, iops=1,366, runt= 60104msec
-    clat (usec): min=91, max=763K, avg=729.61, stdev=17402.63
+#define ALLOW_COW_SHARED	0x0001
+#define REQUIRE_COW_SHARED	0x0002
+#define REQUIRE_BASIC_ATTRS	0x0004
+#define REQUIRE_FULL_ATTRS	0x0008
+#define REQUIRE_ATOMIC		0x0010
+#define SNAPSHOT		(REQUIRE_COW_SHARED |
+				 REQUIRE_BASIC_ATTRS |
+				 REQUIRE_ATOMIC)
+#define SNAPSHOT_PRESERVE	(SNAPSHOT | REQUIRE_FULL_ATTRS)
 
-randread: (groupid=0, jobs=4): err= 0: pid=3970
-  read : io=15,112KiB, bw=257KiB/s, iops=62, runt= 60039msec
-    clat (usec): min=124, max=1,066K, avg=63721.26, stdev=78215.17
+Thus, sys_reflink/sys_snapfile(oldpath, newpath, 0) becomes:
 
-randwrite: (groupid=1, jobs=2): err= 0: pid=3974
-  write: io=680KiB, bw=11KiB/s, iops=2, runt= 60073msec
-    clat (usec): min=199, max=24,646K, avg=706719.51, stdev=1774887.55
+  ->copyfile(oldpath, newpath, SNAPSHOT)
 
-With ioscheduer based io controller patches
-===========================================
-cgroup 1 (weight 100)
----------------------
-randread: (groupid=0, jobs=4): err= 0: pid=2995
-  read : io=9,484KiB, bw=161KiB/s, iops=39, runt= 60107msec
-    clat (msec): min=1, max=2,167, avg=95.47, stdev=131.60
+and sys_reflink/sys_snapfile(oldpath, newpath, ATTR_PRESERVE) becomes:
 
-randwrite: (groupid=1, jobs=2): err= 0: pid=2999
-  write: io=2,692KiB, bw=45KiB/s, iops=11, runt= 60131msec
-    clat (usec): min=199, max=30,043K, avg=178710.05, stdev=1281485.75
+  ->copyfile(oldpath, newpath, SNAPSHOT_PRESERVE)
 
-cgroup 2 (weight 100)
---------------------
-seqread0: (groupid=0, jobs=1): err= 0: pid=2993
-  read : io=547mib, bw=9,556kib/s, iops=2,333, runt= 60043msec
-    clat (usec): min=92, max=224k, avg=426.74, stdev=5734.12
+while sys_copyfile(oldpath, newpath, 0) is:
 
-Note the BW of sequential reader in three cases
-(636 KB/s, 5,598KiB/s, 9,556KiB/s). dm-ioband tries to provide fairness in
-terms of number of sectors and it completely kills the disk throughput.
+  ->copyfile(oldpath, newpath, 0)
 
-with io scheduler based io controller, we see increased throughput for
-seqential reader as compared to CFQ, because now random readers are
-running in a separate group and hence reader gets isolation from random
-readers.
+and sys_copyfile(oldpath, newpath, ALLOW_COW) is:
 
-Here are my fio jobs
---------------------
-First fio job file
------------------
-[global]
-runtime=60
+  ->copyfile(oldpath, newpath, ALLOW_COW_SHARED)
 
-[randread]
-rw=randread
-size=2G
-iodepth=20
-directory=/mnt/sdd1/fio/
-direct=1
-numjobs=4
-group_reporting
+	What do you think?  Other ideas?
 
-[randwrite]
-rw=randwrite
-size=1G
-iodepth=20
-directory=/mnt/sdd1/fio/
-group_reporting
-direct=1
-numjobs=2
+Joel
+-- 
 
-Second fio job file
--------------------
-[global]
-runtime=60
-rw=read
-size=4G
-directory=/mnt/sdd2/fio/
-direct=1
+"The lawgiver, of all beings, most owes the law allegiance.  He of all
+ men should behave as though the law compelled him.  But it is the
+ universal weakness of mankind that what we are given to administer we
+ presently imagine we own."
+        - H.G. Wells
 
-[seqread0]
-numjobs=1
-group_reporting
-
-Thanks
-Vivek
+Joel Becker
+Principal Software Developer
+Oracle
+E-mail: joel.becker@oracle.com
+Phone: (650) 506-8127
