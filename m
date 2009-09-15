@@ -1,155 +1,628 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752507AbZIOFWG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZIOFmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752507AbZIOFWG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 01:22:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751649AbZIOFWA
+	id S1754717AbZIOFmx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 01:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753732AbZIOFmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 01:22:00 -0400
-Received: from mga03.intel.com ([143.182.124.21]:35950 "EHLO mga03.intel.com"
+	Tue, 15 Sep 2009 01:42:47 -0400
+Received: from mga09.intel.com ([134.134.136.24]:28812 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752044AbZIOFV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 01:21:59 -0400
+	id S1753163AbZIOFmp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 01:42:45 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
-   d="scan'208";a="187667803"
-Date: Tue, 15 Sep 2009 13:21:51 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Tejun Heo <tj@kernel.org>, Nick Piggin <npiggin@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/3] vmalloc: ignore vmalloc area holes in vwrite()
-Message-ID: <20090915052151.GA30012@localhost>
-References: <20090915021851.168285585@intel.com> <20090915022328.328708489@intel.com> <20090915113425.d0bb3a2a.kamezawa.hiroyu@jp.fujitsu.com> <20090915031507.GA24963@localhost> <20090915121829.d78be0b8.kamezawa.hiroyu@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915121829.d78be0b8.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+   d="scan'208";a="550626211"
+Subject: [PATCH -v3] crypto: Add PCLMULQDQ accelerated GHASH implementation
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 15 Sep 2009 13:42:47 +0800
+Message-Id: <1252993367.15717.340.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 11:18:29AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Tue, 15 Sep 2009 11:15:07 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Hi Kame,
-> > 
-> > I'll go out for a while. If you are going to do your improvements to
-> > vmalloc.c, please feel free to do so. I can rebase the hwpoison bits
-> > after yours.
-> > 
-> > I could do the kmem part(in a modified patch 2/3) and let it return
-> > any error code vread/vwrite reports.  Ideally the kmem read/write
-> > could do
-> > 
-> >         if (zero bytes successfully read/written)
-> >                 return error_code;
-> >         else
-> >                 return bytes_so_far;
-> > 
-> > Do you agree?
-> > 
-> Okay. I'll write patches for vread/vwrite. And make them just return bool.
+Hi, Herbert,
 
-bool may not be sufficient? For obviously you need to return -EFAULT
-for invalid address and I need to return -EIO for hwpoison pages.
-(I assume you put is_vmalloc_or_module_addr() immediately before the
-vmalloc_to_page() calls in vmalloc.c, which seems a more natural place
-than in mem.c.)
+The dependency to irq_fpu_usable has been merged by linus' tree.
 
-Thanks,
-Fengguang
+Best Regards,
+Huang Ying
+-------------------------------------------------------------------------->
+PCLMULQDQ is used to accelerate the most time-consuming part of GHASH,
+carry-less multiplication. More information about PCLMULQDQ can be
+found at:
 
->  true .....requested area includes valid memory range and worth to be copied.
->  false.....no valid range found.
-> 
-> Thanks,
-> -Kame
-> 
-> 
-> 
-> 
-> > Thanks,
-> > Fengguang
-> > 
-> > On Tue, Sep 15, 2009 at 10:34:25AM +0800, KAMEZAWA Hiroyuki wrote:
-> > > On Tue, 15 Sep 2009 10:18:52 +0800
-> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > > 
-> > > > Siliently ignore all vmalloc area holes in vwrite(),
-> > > > and report success to the caller even if nothing is written.
-> > > > 
-> > > > CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > 
-> > > Why don't you modify vread() at the same time ?
-> > > Because /proc/kcore ignores return value of vread(), I think you can
-> > > modify it without no side-effect.
-> > > 
-> > > Regards,
-> > > -Kame
-> > > 
-> > > > ---
-> > > >  mm/vmalloc.c |   13 ++-----------
-> > > >  1 file changed, 2 insertions(+), 11 deletions(-)
-> > > > 
-> > > > --- linux-mm.orig/mm/vmalloc.c	2009-09-15 10:08:33.000000000 +0800
-> > > > +++ linux-mm/mm/vmalloc.c	2009-09-15 10:14:18.000000000 +0800
-> > > > @@ -1805,10 +1805,8 @@ finished:
-> > > >   *	@addr:		vm address.
-> > > >   *	@count:		number of bytes to be read.
-> > > >   *
-> > > > - *	Returns # of bytes which addr and buf should be incresed.
-> > > > + *	Returns # of bytes which addr and buf should be increased.
-> > > >   *	(same number to @count).
-> > > > - *	If [addr...addr+count) doesn't includes any intersect with valid
-> > > > - *	vmalloc area, returns 0.
-> > > >   *
-> > > >   *	This function checks that addr is a valid vmalloc'ed area, and
-> > > >   *	copy data from a buffer to the given addr. If specified range of
-> > > > @@ -1816,8 +1814,6 @@ finished:
-> > > >   *	proper area of @buf. If there are memory holes, no copy to hole.
-> > > >   *	IOREMAP area is treated as memory hole and no copy is done.
-> > > >   *
-> > > > - *	If [addr...addr+count) doesn't includes any intersects with alive
-> > > > - *	vm_struct area, returns 0.
-> > > >   *	@buf should be kernel's buffer. Because	this function uses KM_USER0,
-> > > >   *	the caller should guarantee KM_USER0 is not used.
-> > > >   *
-> > > > @@ -1834,7 +1830,6 @@ long vwrite(char *buf, char *addr, unsig
-> > > >  	struct vm_struct *tmp;
-> > > >  	char *vaddr;
-> > > >  	unsigned long n, buflen;
-> > > > -	int copied = 0;
-> > > >  
-> > > >  	/* Don't allow overflow */
-> > > >  	if ((unsigned long) addr + count < count)
-> > > > @@ -1856,18 +1851,14 @@ long vwrite(char *buf, char *addr, unsig
-> > > >  		n = vaddr + tmp->size - PAGE_SIZE - addr;
-> > > >  		if (n > count)
-> > > >  			n = count;
-> > > > -		if (!(tmp->flags & VM_IOREMAP)) {
-> > > > +		if (!(tmp->flags & VM_IOREMAP))
-> > > >  			aligned_vwrite(buf, addr, n);
-> > > > -			copied++;
-> > > > -		}
-> > > >  		buf += n;
-> > > >  		addr += n;
-> > > >  		count -= n;
-> > > >  	}
-> > > >  finished:
-> > > >  	read_unlock(&vmlist_lock);
-> > > > -	if (!copied)
-> > > > -		return 0;
-> > > >  	return buflen;
-> > > >  }
-> > > >  
-> > > > 
-> > > > -- 
-> > > > 
-> > > > 
-> > 
+http://software.intel.com/en-us/articles/carry-less-multiplication-and-its-usage-for-computing-the-gcm-mode/
+
+Because PCLMULQDQ changes XMM state, its usage must be enclosed with
+kernel_fpu_begin/end, which can be used only in process context, the
+acceleration is implemented as crypto_ahash. That is, request in soft
+IRQ context will be defered to the cryptd kernel thread.
+
+v3:
+ - Revise GHASH implementation, performance increase about 2x.
+
+Signed-off-by: Huang Ying <ying.huang@intel.com>
+---
+ arch/x86/crypto/Makefile                   |    3 
+ arch/x86/crypto/ghash-clmulni-intel_asm.S  |  157 +++++++++++++
+ arch/x86/crypto/ghash-clmulni-intel_glue.c |  331 +++++++++++++++++++++++++++++
+ arch/x86/include/asm/cpufeature.h          |    1 
+ crypto/Kconfig                             |    8 
+ crypto/cryptd.c                            |    7 
+ include/crypto/cryptd.h                    |    1 
+ 7 files changed, 508 insertions(+)
+ create mode 100644 arch/x86/crypto/ghash-clmulni-intel_asm.S
+ create mode 100644 arch/x86/crypto/ghash-clmulni-intel_glue.c
+
+--- a/arch/x86/crypto/Makefile
++++ b/arch/x86/crypto/Makefile
+@@ -12,6 +12,7 @@ obj-$(CONFIG_CRYPTO_AES_X86_64) += aes-x
+ obj-$(CONFIG_CRYPTO_TWOFISH_X86_64) += twofish-x86_64.o
+ obj-$(CONFIG_CRYPTO_SALSA20_X86_64) += salsa20-x86_64.o
+ obj-$(CONFIG_CRYPTO_AES_NI_INTEL) += aesni-intel.o
++obj-$(CONFIG_CRYPTO_GHASH_CLMUL_NI_INTEL) += ghash-clmulni-intel.o
+ 
+ obj-$(CONFIG_CRYPTO_CRC32C_INTEL) += crc32c-intel.o
+ 
+@@ -24,3 +25,5 @@ twofish-x86_64-y := twofish-x86_64-asm_6
+ salsa20-x86_64-y := salsa20-x86_64-asm_64.o salsa20_glue.o
+ 
+ aesni-intel-y := aesni-intel_asm.o aesni-intel_glue.o
++
++ghash-clmulni-intel-y := ghash-clmulni-intel_asm.o ghash-clmulni-intel_glue.o
+--- /dev/null
++++ b/arch/x86/crypto/ghash-clmulni-intel_asm.S
+@@ -0,0 +1,157 @@
++/*
++ * Accelerated GHASH implementation with Intel PCLMULQDQ-NI
++ * instructions. This file contains accelerated part of ghash
++ * implementation. More information about PCLMULQDQ can be found at:
++ *
++ * http://software.intel.com/en-us/articles/carry-less-multiplication-and-its-usage-for-computing-the-gcm-mode/
++ *
++ * Copyright (c) 2009 Intel Corp.
++ *   Author: Huang Ying <ying.huang@intel.com>
++ *	     Vinodh Gopal
++ *	     Erdinc Ozturk
++ *	     Deniz Karakoyunlu
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <linux/linkage.h>
++
++.align 16
++.Lbswap_mask:
++	.octa 0x000102030405060708090a0b0c0d0e0f
++.Lpoly:
++	.octa 0xc2000000000000000000000000000001
++.Ltwo_one:
++	.octa 0x00000001000000000000000000000001
++
++#define DATA	%xmm0
++#define SHASH	%xmm1
++#define T1	%xmm2
++#define T2	%xmm3
++#define T3	%xmm4
++#define BSWAP	%xmm5
++#define IN1	%xmm6
++
++.text
++
++/*
++ * __clmul_gf128mul_ble:	internal ABI
++ * input:
++ *	DATA:			operand1
++ *	SHASH:			operand2, hash_key << 1 mod poly
++ * output:
++ *	DATA:			operand1 * operand2 mod poly
++ * changed:
++ *	T1
++ *	T2
++ *	T3
++ */
++__clmul_gf128mul_ble:
++	movaps DATA, T1
++	pshufd $0b01001110, DATA, T2
++	pshufd $0b01001110, SHASH, T3
++	pxor DATA, T2
++	pxor SHASH, T3
++
++	# pclmulqdq $0x00, SHASH, DATA	# DATA = a0 * b0
++	.byte 0x66, 0x0f, 0x3a, 0x44, 0xc1, 0x00
++	# pclmulqdq $0x11, SHASH, T1	# T1 = a1 * b1
++	.byte 0x66, 0x0f, 0x3a, 0x44, 0xd1, 0x11
++	# pclmulqdq $0x00, T3, T2	# T2 = (a1 + a0) * (b1 + b0)
++	.byte 0x66, 0x0f, 0x3a, 0x44, 0xdc, 0x00
++	pxor DATA, T2
++	pxor T1, T2			# T2 = a0 * b1 + a1 * b0
++
++	movaps T2, T3
++	pslldq $8, T3
++	psrldq $8, T2
++	pxor T3, DATA
++	pxor T2, T1			# <T1:DATA> is result of
++					# carry-less multiplication
++
++	# first phase of the reduction
++	movaps DATA, T3
++	psllq $1, T3
++	pxor DATA, T3
++	psllq $5, T3
++	pxor DATA, T3
++	psllq $57, T3
++	movaps T3, T2
++	pslldq $8, T2
++	psrldq $8, T3
++	pxor T2, DATA
++	pxor T3, T1
++
++	# second phase of the reduction
++	movaps DATA, T2
++	psrlq $5, T2
++	pxor DATA, T2
++	psrlq $1, T2
++	pxor DATA, T2
++	psrlq $1, T2
++	pxor T2, T1
++	pxor T1, DATA
++	ret
++
++/* void clmul_ghash_mul(char *dst, const be128 *shash) */
++ENTRY(clmul_ghash_mul)
++	movups (%rdi), DATA
++	movups (%rsi), SHASH
++	movaps .Lbswap_mask, BSWAP
++	pshufb BSWAP, DATA
++	call __clmul_gf128mul_ble
++	pshufb BSWAP, DATA
++	movups DATA, (%rdi)
++	ret
++
++/*
++ * void clmul_ghash_update(char *dst, const char *src, unsigned int srclen,
++ *			   const be128 *shash);
++ */
++ENTRY(clmul_ghash_update)
++	cmp $16, %rdx
++	jb .Lupdate_just_ret	# check length
++	movaps .Lbswap_mask, BSWAP
++	movups (%rdi), DATA
++	movups (%rcx), SHASH
++	pshufb BSWAP, DATA
++.align 4
++.Lupdate_loop:
++	movups (%rsi), IN1
++	pshufb BSWAP, IN1
++	pxor IN1, DATA
++	call __clmul_gf128mul_ble
++	sub $16, %rdx
++	add $16, %rsi
++	cmp $16, %rdx
++	jge .Lupdate_loop
++	pshufb BSWAP, DATA
++	movups DATA, (%rdi)
++.Lupdate_just_ret:
++	ret
++
++/*
++ * void clmul_ghash_setkey(be128 *shash, const u8 *key);
++ *
++ * Calculate hash_key << 1 mod poly
++ */
++ENTRY(clmul_ghash_setkey)
++	movaps .Lbswap_mask, BSWAP
++	movups (%rsi), %xmm0
++	pshufb BSWAP, %xmm0
++	movaps %xmm0, %xmm1
++	psllq $1, %xmm0
++	psrlq $63, %xmm1
++	movaps %xmm1, %xmm2
++	pslldq $8, %xmm1
++	psrldq $8, %xmm2
++	por %xmm1, %xmm0
++	# reduction
++	pshufd $0b00100100, %xmm2, %xmm1
++	pcmpeqd .Ltwo_one, %xmm1
++	pand .Lpoly, %xmm1
++	pxor %xmm1, %xmm0
++	movups %xmm0, (%rdi)
++	ret
+--- /dev/null
++++ b/arch/x86/crypto/ghash-clmulni-intel_glue.c
+@@ -0,0 +1,331 @@
++/*
++ * Accelerated GHASH implementation with Intel PCLMULQDQ-NI
++ * instructions. This file contains glue code.
++ *
++ * Copyright (c) 2009 Intel Corp.
++ *   Author: Huang Ying <ying.huang@intel.com>
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/kernel.h>
++#include <linux/crypto.h>
++#include <crypto/algapi.h>
++#include <crypto/cryptd.h>
++#include <crypto/gf128mul.h>
++#include <crypto/internal/hash.h>
++#include <asm/i387.h>
++
++#define GHASH_BLOCK_SIZE	16
++#define GHASH_DIGEST_SIZE	16
++
++void clmul_ghash_mul(char *dst, const be128 *shash);
++
++void clmul_ghash_update(char *dst, const char *src, unsigned int srclen,
++			const be128 *shash);
++
++void clmul_ghash_setkey(be128 *shash, const u8 *key);
++
++struct ghash_async_ctx
++{
++	struct cryptd_ahash *cryptd_tfm;
++};
++
++struct ghash_ctx {
++	be128 shash;
++};
++
++struct ghash_desc_ctx {
++	u8 buffer[GHASH_BLOCK_SIZE];
++	u32 bytes;
++};
++
++static int ghash_init(struct shash_desc *desc)
++{
++	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
++
++	memset(dctx, 0, sizeof(*dctx));
++
++	return 0;
++}
++
++static int ghash_setkey(struct crypto_shash *tfm,
++			const u8 *key, unsigned int keylen)
++{
++	struct ghash_ctx *ctx = crypto_shash_ctx(tfm);
++
++	if (keylen != GHASH_BLOCK_SIZE) {
++		crypto_shash_set_flags(tfm, CRYPTO_TFM_RES_BAD_KEY_LEN);
++		return -EINVAL;
++	}
++
++	clmul_ghash_setkey(&ctx->shash, key);
++
++	return 0;
++}
++
++static int ghash_update(struct shash_desc *desc,
++			 const u8 *src, unsigned int srclen)
++{
++	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
++	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
++	u8 *dst = dctx->buffer;
++
++	kernel_fpu_begin();
++	if (dctx->bytes) {
++		int n = min(srclen, dctx->bytes);
++		u8 *pos = dst + (GHASH_BLOCK_SIZE - dctx->bytes);
++
++		dctx->bytes -= n;
++		srclen -= n;
++
++		while (n--)
++			*pos++ ^= *src++;
++
++		if (!dctx->bytes)
++			clmul_ghash_mul(dst, &ctx->shash);
++	}
++
++	clmul_ghash_update(dst, src, srclen, &ctx->shash);
++	kernel_fpu_end();
++
++	if (srclen & 0xf) {
++		src += srclen - (srclen & 0xf);
++		srclen &= 0xf;
++		dctx->bytes = GHASH_BLOCK_SIZE - srclen;
++		while (srclen--)
++			*dst++ ^= *src++;
++	}
++
++	return 0;
++}
++
++static void ghash_flush(struct ghash_ctx *ctx, struct ghash_desc_ctx *dctx)
++{
++	u8 *dst = dctx->buffer;
++
++	if (dctx->bytes) {
++		u8 *tmp = dst + (GHASH_BLOCK_SIZE - dctx->bytes);
++
++		while (dctx->bytes--)
++			*tmp++ ^= 0;
++
++		kernel_fpu_begin();
++		clmul_ghash_mul(dst, &ctx->shash);
++		kernel_fpu_end();
++	}
++
++	dctx->bytes = 0;
++}
++
++static int ghash_final(struct shash_desc *desc, u8 *dst)
++{
++	struct ghash_desc_ctx *dctx = shash_desc_ctx(desc);
++	struct ghash_ctx *ctx = crypto_shash_ctx(desc->tfm);
++	u8 *buf = dctx->buffer;
++
++	ghash_flush(ctx, dctx);
++	memcpy(dst, buf, GHASH_BLOCK_SIZE);
++
++	return 0;
++}
++
++static struct shash_alg ghash_alg = {
++	.digestsize	= GHASH_DIGEST_SIZE,
++	.init		= ghash_init,
++	.update		= ghash_update,
++	.final		= ghash_final,
++	.setkey		= ghash_setkey,
++	.descsize	= sizeof(struct ghash_desc_ctx),
++	.base		= {
++		.cra_name		= "__ghash",
++		.cra_driver_name	= "__ghash-pclmulqdqni",
++		.cra_priority		= 0,
++		.cra_flags		= CRYPTO_ALG_TYPE_SHASH,
++		.cra_blocksize		= GHASH_BLOCK_SIZE,
++		.cra_ctxsize		= sizeof(struct ghash_ctx),
++		.cra_module		= THIS_MODULE,
++		.cra_list		= LIST_HEAD_INIT(ghash_alg.base.cra_list),
++	},
++};
++
++static int ghash_async_init(struct ahash_request *req)
++{
++	struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
++	struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
++	struct ahash_request *cryptd_req = ahash_request_ctx(req);
++	struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
++
++	if (irq_fpu_usable()) {
++		memcpy(cryptd_req, req, sizeof(*req));
++		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
++		return crypto_ahash_init(cryptd_req);
++	} else {
++		struct shash_desc *desc = cryptd_shash_desc(cryptd_req);
++		struct crypto_shash *child = cryptd_ahash_child(cryptd_tfm);
++
++		desc->tfm = child;
++		desc->flags = req->base.flags;
++		return crypto_shash_init(desc);
++	}
++}
++
++static int ghash_async_update(struct ahash_request *req)
++{
++	struct ahash_request *cryptd_req = ahash_request_ctx(req);
++
++	if (irq_fpu_usable()) {
++		struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
++		struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
++		struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
++
++		memcpy(cryptd_req, req, sizeof(*req));
++		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
++		return crypto_ahash_update(cryptd_req);
++	} else {
++		struct shash_desc *desc = cryptd_shash_desc(cryptd_req);
++		return shash_ahash_update(req, desc);
++	}
++}
++
++static int ghash_async_final(struct ahash_request *req)
++{
++	struct ahash_request *cryptd_req = ahash_request_ctx(req);
++
++	if (irq_fpu_usable()) {
++		struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
++		struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
++		struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
++
++		memcpy(cryptd_req, req, sizeof(*req));
++		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
++		return crypto_ahash_final(cryptd_req);
++	} else {
++		struct shash_desc *desc = cryptd_shash_desc(cryptd_req);
++		return crypto_shash_final(desc, req->result);
++	}
++}
++
++static int ghash_async_digest(struct ahash_request *req)
++{
++	struct crypto_ahash *tfm = crypto_ahash_reqtfm(req);
++	struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
++	struct ahash_request *cryptd_req = ahash_request_ctx(req);
++	struct cryptd_ahash *cryptd_tfm = ctx->cryptd_tfm;
++
++	if (irq_fpu_usable()) {
++		memcpy(cryptd_req, req, sizeof(*req));
++		ahash_request_set_tfm(cryptd_req, &cryptd_tfm->base);
++		return crypto_ahash_digest(cryptd_req);
++	} else {
++		struct shash_desc *desc = cryptd_shash_desc(cryptd_req);
++		struct crypto_shash *child = cryptd_ahash_child(cryptd_tfm);
++
++		desc->tfm = child;
++		desc->flags = req->base.flags;
++		return shash_ahash_digest(req, desc);
++	}
++}
++
++static int ghash_async_setkey(struct crypto_ahash *tfm, const u8 *key,
++			      unsigned int keylen)
++{
++	struct ghash_async_ctx *ctx = crypto_ahash_ctx(tfm);
++	struct crypto_ahash *child = &ctx->cryptd_tfm->base;
++	int err;
++
++	crypto_ahash_clear_flags(child, CRYPTO_TFM_REQ_MASK);
++	crypto_ahash_set_flags(child, crypto_ahash_get_flags(tfm)
++			       & CRYPTO_TFM_REQ_MASK);
++	err = crypto_ahash_setkey(child, key, keylen);
++	crypto_ahash_set_flags(tfm, crypto_ahash_get_flags(child)
++			       & CRYPTO_TFM_RES_MASK);
++
++	return 0;
++}
++
++static int ghash_async_init_tfm(struct crypto_tfm *tfm)
++{
++	struct cryptd_ahash *cryptd_tfm;
++	struct ghash_async_ctx *ctx = crypto_tfm_ctx(tfm);
++
++	cryptd_tfm = cryptd_alloc_ahash("__ghash-pclmulqdqni", 0, 0);
++	if (IS_ERR(cryptd_tfm))
++		return PTR_ERR(cryptd_tfm);
++	ctx->cryptd_tfm = cryptd_tfm;
++	crypto_ahash_set_reqsize(__crypto_ahash_cast(tfm),
++				 sizeof(struct ahash_request) +
++				 crypto_ahash_reqsize(&cryptd_tfm->base));
++
++	return 0;
++}
++
++static void ghash_async_exit_tfm(struct crypto_tfm *tfm)
++{
++	struct ghash_async_ctx *ctx = crypto_tfm_ctx(tfm);
++
++	cryptd_free_ahash(ctx->cryptd_tfm);
++}
++
++static struct ahash_alg ghash_async_alg = {
++	.init		= ghash_async_init,
++	.update		= ghash_async_update,
++	.final		= ghash_async_final,
++	.setkey		= ghash_async_setkey,
++	.digest		= ghash_async_digest,
++	.halg = {
++		.digestsize	= GHASH_DIGEST_SIZE,
++		.base = {
++			.cra_name		= "ghash",
++			.cra_driver_name	= "ghash-clmulni",
++			.cra_priority		= 400,
++			.cra_flags		= CRYPTO_ALG_TYPE_AHASH | CRYPTO_ALG_ASYNC,
++			.cra_blocksize		= GHASH_BLOCK_SIZE,
++			.cra_type		= &crypto_ahash_type,
++			.cra_module		= THIS_MODULE,
++			.cra_list		= LIST_HEAD_INIT(ghash_async_alg.halg.base.cra_list),
++			.cra_init		= ghash_async_init_tfm,
++			.cra_exit		= ghash_async_exit_tfm,
++		},
++	},
++};
++
++static int __init ghash_pclmulqdqni_mod_init(void)
++{
++	int err;
++
++	if (!cpu_has_pclmulqdq) {
++		printk(KERN_INFO "Intel PCLMULQDQ-NI instructions are not"
++		       " detected.\n");
++		return -ENODEV;
++	}
++
++	if ((err = crypto_register_shash(&ghash_alg)))
++		goto err_out;
++	if ((err = crypto_register_ahash(&ghash_async_alg)))
++		goto err_shash;
++
++	return 0;
++
++err_shash:
++	crypto_unregister_shash(&ghash_alg);
++err_out:
++	return err;
++}
++
++static void __exit ghash_pclmulqdqni_mod_exit(void)
++{
++	crypto_unregister_ahash(&ghash_async_alg);
++	crypto_unregister_shash(&ghash_alg);
++}
++
++module_init(ghash_pclmulqdqni_mod_init);
++module_exit(ghash_pclmulqdqni_mod_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("GHASH Message Digest Algorithm, acclerated by PCLMULQDQ-NI");
++MODULE_ALIAS("ghash");
+--- a/arch/x86/include/asm/cpufeature.h
++++ b/arch/x86/include/asm/cpufeature.h
+@@ -247,6 +247,7 @@ extern const char * const x86_power_flag
+ #define cpu_has_x2apic		boot_cpu_has(X86_FEATURE_X2APIC)
+ #define cpu_has_xsave		boot_cpu_has(X86_FEATURE_XSAVE)
+ #define cpu_has_hypervisor	boot_cpu_has(X86_FEATURE_HYPERVISOR)
++#define cpu_has_pclmulqdq	boot_cpu_has(X86_FEATURE_PCLMULQDQ)
+ 
+ #if defined(CONFIG_X86_INVLPG) || defined(CONFIG_X86_64)
+ # define cpu_has_invlpg		1
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -440,6 +440,14 @@ config CRYPTO_WP512
+ 	  See also:
+ 	  <http://planeta.terra.com.br/informatica/paulobarreto/WhirlpoolPage.html>
+ 
++config CRYPTO_GHASH_CLMUL_NI_INTEL
++	tristate "GHASH digest algorithm (CLMUL-NI accelerated)"
++	select CRYPTO_SHASH
++	select CRYPTO_CRYPTD
++	help
++	  GHASH is message digest algorithm for GCM (Galois/Counter Mode).
++	  The implementation is accelerated by CLMUL-NI of Intel.
++
+ comment "Ciphers"
+ 
+ config CRYPTO_AES
+--- a/crypto/cryptd.c
++++ b/crypto/cryptd.c
+@@ -711,6 +711,13 @@ struct crypto_shash *cryptd_ahash_child(
+ }
+ EXPORT_SYMBOL_GPL(cryptd_ahash_child);
+ 
++struct shash_desc *cryptd_shash_desc(struct ahash_request *req)
++{
++	struct cryptd_hash_request_ctx *rctx = ahash_request_ctx(req);
++	return &rctx->desc;
++}
++EXPORT_SYMBOL_GPL(cryptd_shash_desc);
++
+ void cryptd_free_ahash(struct cryptd_ahash *tfm)
+ {
+ 	crypto_free_ahash(&tfm->base);
+--- a/include/crypto/cryptd.h
++++ b/include/crypto/cryptd.h
+@@ -39,6 +39,7 @@ static inline struct cryptd_ahash *__cry
+ struct cryptd_ahash *cryptd_alloc_ahash(const char *alg_name,
+ 					u32 type, u32 mask);
+ struct crypto_shash *cryptd_ahash_child(struct cryptd_ahash *tfm);
++struct shash_desc *cryptd_shash_desc(struct ahash_request *req);
+ void cryptd_free_ahash(struct cryptd_ahash *tfm);
+ 
+ #endif
+
+
