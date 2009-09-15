@@ -1,39 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751833AbZIOFDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752150AbZIOFHj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751833AbZIOFDq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 01:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751635AbZIOFDm
+	id S1752150AbZIOFHj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 01:07:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751925AbZIOFHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 01:03:42 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:53907 "EHLO mgw1.diku.dk"
+	Tue, 15 Sep 2009 01:07:35 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:2602 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbZIOFDl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 01:03:41 -0400
-Date: Tue, 15 Sep 2009 07:03:42 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
-In-Reply-To: <Pine.LNX.4.64.0909132113520.31000@ask.diku.dk>
-Message-ID: <Pine.LNX.4.64.0909150701170.11392@ask.diku.dk>
-References: <Pine.LNX.4.64.0909111820370.10552@pc-004.diku.dk>
- <20090913.232548.253168283.anemo@mba.ocn.ne.jp> <Pine.LNX.4.64.0909131708190.25903@ask.diku.dk>
- <20090914.003321.160496287.anemo@mba.ocn.ne.jp> <Pine.LNX.4.64.0909132113520.31000@ask.diku.dk>
+	id S1751892AbZIOFHf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 01:07:35 -0400
+Message-ID: <4AAF2037.1030300@redhat.com>
+Date: Tue, 15 Sep 2009 01:03:51 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Arjan van de Ven <arjan@infradead.org>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
+       jens.axboe@oracle.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO performance
+References: <20090915054259.5282e5ba@infradead.org>
+In-Reply-To: <20090915054259.5282e5ba@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +out_pdev:
-> +	platform_device_put(pdev);
-> +out_gpio:
-> +	gpio_remove(&iocled->chip);
+Arjan van de Ven wrote:
 
-I just noticed that the prototype of gpio_remove has __must_check
-I don't think there is anything to check here; since the thing is not 
-fully initialized here, it is unlikely to be busy.  Should there be (void) 
-in front of it?
+> 		no cstates	current linux	new algorithm
+> 1 disk		107 Mb/s	85 Mb/s		105 Mb/s
+> 2 disks		215 Mb/s	123 Mb/s	209 Mb/s
+> 12 disks	590 Mb/s	320 Mb/s	585 Mb/s
 
-julia
+That is huge!  Should this go into -stable too?
+
+> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+> Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Cc: Len Brown <lenb@kernel.org>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Yanmin Zhang <yanmin_zhang@linux.intel.com>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+
+Acked-by: Rik van Riel <riel@redhat.com>
+
+-- 
+All rights reversed.
