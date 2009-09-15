@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752111AbZIOJcI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752073AbZIOJbp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752111AbZIOJcI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:32:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZIOJcD
+	id S1752073AbZIOJbp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:31:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZIOJbk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:32:03 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49227 "EHLO hera.kernel.org"
+	Tue, 15 Sep 2009 05:31:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49220 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752010AbZIOJbl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:31:41 -0400
-Date: Tue, 15 Sep 2009 09:30:53 GMT
+	id S1750993AbZIOJbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:31:38 -0400
+Date: Tue, 15 Sep 2009 09:31:07 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
        hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
@@ -21,33 +21,143 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf sched: Import schedbench.c
-Message-ID: <tip-ec156764d424dd67283c2cd5e9f6f1b8388364ac@git.kernel.org>
-Git-Commit-ID: ec156764d424dd67283c2cd5e9f6f1b8388364ac
+Subject: [tip:perfcounters/core] perf sched: Implement the scheduling workload replay engine
+Message-ID: <tip-fbf9482911825f965829567aea8acff3bbc5279c@git.kernel.org>
+Git-Commit-ID: fbf9482911825f965829567aea8acff3bbc5279c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:30:55 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:31:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ec156764d424dd67283c2cd5e9f6f1b8388364ac
-Gitweb:     http://git.kernel.org/tip/ec156764d424dd67283c2cd5e9f6f1b8388364ac
+Commit-ID:  fbf9482911825f965829567aea8acff3bbc5279c
+Gitweb:     http://git.kernel.org/tip/fbf9482911825f965829567aea8acff3bbc5279c
 Author:     Ingo Molnar <mingo@elte.hu>
 AuthorDate: Fri, 11 Sep 2009 12:12:54 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 13 Sep 2009 10:22:37 +0200
+CommitDate: Sun, 13 Sep 2009 10:22:38 +0200
 
-perf sched: Import schedbench.c
+perf sched: Implement the scheduling workload replay engine
 
-Import the schedbench.c tool that i wrote some time ago to
-simulate scheduler behavior but never finished. It's a good
-basis for perf sched nevertheless.
+Integrate the schedbench.c bits with the raw trace events
+that we get from the perf machinery, and activate the
+workload replayer/simulator.
 
-Most of its guts are not hooked up to the perf event loop
-yet - that will be done in the patches to come.
+Example of a captured 'make -j' workload:
+
+$ perf sched
+
+  run measurement overhead: 90 nsecs
+  sleep measurement overhead: 2724743 nsecs
+  the run test took 1000081 nsecs
+  the sleep test took 2981111 nsecs
+  version = 0.5
+  ...
+  nr_run_events:        70
+  nr_sleep_events:      66
+  nr_wakeup_events:     9
+  target-less wakeups:  71
+  multi-target wakeups: 47
+  run events optimized: 139
+  task      0 (                perf:      6607), nr_events: 2
+  task      1 (                perf:      6608), nr_events: 6
+  task      2 (                    :         0), nr_events: 1
+  task      3 (                make:      6609), nr_events: 5
+  task      4 (                  sh:      6610), nr_events: 4
+  task      5 (                make:      6611), nr_events: 6
+  task      6 (                  sh:      6612), nr_events: 4
+  task      7 (                make:      6613), nr_events: 5
+  task      8 (        migration/11:        25), nr_events: 1
+  task      9 (        migration/13:        29), nr_events: 1
+  task     10 (        migration/15:        33), nr_events: 1
+  task     11 (         migration/9:        21), nr_events: 1
+  task     12 (                  sh:      6614), nr_events: 4
+  task     13 (                make:      6615), nr_events: 5
+  task     14 (                  sh:      6616), nr_events: 4
+  task     15 (                make:      6617), nr_events: 7
+  task     16 (         migration/3:         9), nr_events: 1
+  task     17 (         migration/5:        13), nr_events: 1
+  task     18 (         migration/7:        17), nr_events: 1
+  task     19 (         migration/1:         5), nr_events: 1
+  task     20 (                  sh:      6618), nr_events: 4
+  task     21 (                make:      6619), nr_events: 5
+  task     22 (                  sh:      6620), nr_events: 4
+  task     23 (                make:      6621), nr_events: 10
+  task     24 (                  sh:      6623), nr_events: 3
+  task     25 (                 gcc:      6624), nr_events: 4
+  task     26 (                 gcc:      6625), nr_events: 4
+  task     27 (                 gcc:      6626), nr_events: 5
+  task     28 (            collect2:      6627), nr_events: 5
+  task     29 (                  sh:      6622), nr_events: 1
+  task     30 (                make:      6628), nr_events: 7
+  task     31 (                  sh:      6630), nr_events: 4
+  task     32 (                 gcc:      6631), nr_events: 4
+  task     33 (                  sh:      6629), nr_events: 1
+  task     34 (                 gcc:      6632), nr_events: 4
+  task     35 (                 gcc:      6633), nr_events: 4
+  task     36 (            collect2:      6634), nr_events: 4
+  task     37 (                make:      6635), nr_events: 8
+  task     38 (                  sh:      6637), nr_events: 4
+  task     39 (                  sh:      6636), nr_events: 1
+  task     40 (                 gcc:      6638), nr_events: 4
+  task     41 (                 gcc:      6639), nr_events: 4
+  task     42 (                 gcc:      6640), nr_events: 4
+  task     43 (            collect2:      6641), nr_events: 4
+  task     44 (                make:      6642), nr_events: 6
+  task     45 (                  sh:      6643), nr_events: 5
+  task     46 (                  sh:      6644), nr_events: 3
+  task     47 (                  sh:      6645), nr_events: 4
+  task     48 (                make:      6646), nr_events: 6
+  task     49 (                  sh:      6647), nr_events: 3
+  task     50 (                make:      6648), nr_events: 5
+  task     51 (                  sh:      6649), nr_events: 5
+  task     52 (                  sh:      6650), nr_events: 6
+  task     53 (                make:      6651), nr_events: 4
+  task     54 (                make:      6652), nr_events: 5
+  task     55 (                make:      6653), nr_events: 4
+  task     56 (                make:      6654), nr_events: 4
+  task     57 (                make:      6655), nr_events: 5
+  task     58 (                  sh:      6656), nr_events: 4
+  task     59 (                 gcc:      6657), nr_events: 9
+  task     60 (         ksoftirqd/3:        10), nr_events: 1
+  task     61 (                 gcc:      6658), nr_events: 4
+  task     62 (                make:      6659), nr_events: 5
+  task     63 (                  sh:      6660), nr_events: 3
+  task     64 (                 gcc:      6661), nr_events: 5
+  task     65 (            collect2:      6662), nr_events: 4
+  ------------------------------------------------------------
+  #1  : 256.745, ravg: 256.74, cpu: 0.00 / 0.00
+  #2  : 439.372, ravg: 275.01, cpu: 0.00 / 0.00
+  #3  : 411.971, ravg: 288.70, cpu: 0.00 / 0.00
+  #4  : 385.500, ravg: 298.38, cpu: 0.00 / 0.00
+  #5  : 366.526, ravg: 305.20, cpu: 0.00 / 0.00
+  #6  : 381.281, ravg: 312.81, cpu: 0.00 / 0.00
+  #7  : 410.756, ravg: 322.60, cpu: 0.00 / 0.00
+  #8  : 368.009, ravg: 327.14, cpu: 0.00 / 0.00
+  #9  : 408.098, ravg: 335.24, cpu: 0.00 / 0.00
+  #10 : 368.582, ravg: 338.57, cpu: 0.00 / 0.00
+
+I.e. we successfully analyzed the trace, replayed it
+via real threads and measured the replayed workload's
+scheduling properties.
+
+This is how it looked like in 'top' output:
+
+   PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND
+  7164 mingo     20   0 1434m 8080  888 R 57.0  0.1   0:02.04 :perf
+  7165 mingo     20   0 1434m 8080  888 R 41.8  0.1   0:01.52 :perf
+  7228 mingo     20   0 1434m 8080  888 R 39.8  0.1   0:01.44 :gcc
+  7225 mingo     20   0 1434m 8080  888 R 33.8  0.1   0:01.26 :gcc
+  7202 mingo     20   0 1434m 8080  888 R 31.2  0.1   0:01.16 :sh
+  7222 mingo     20   0 1434m 8080  888 R 25.2  0.1   0:00.96 :sh
+  7211 mingo     20   0 1434m 8080  888 R 21.9  0.1   0:00.82 :sh
+  7213 mingo     20   0 1434m 8080  888 D 19.2  0.1   0:00.74 :sh
+  7194 mingo     20   0 1434m 8080  888 D 18.6  0.1   0:00.72 :make
+
+There's still various kinks in it - more patches to come.
 
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -59,962 +169,238 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-sched.c          |  842 +++++++++++++++++++++++++++++++++-
- tools/perf/util/trace-event-parse.c |   16 +-
- tools/perf/util/trace-event.h       |    2 +
- 3 files changed, 827 insertions(+), 33 deletions(-)
+ tools/perf/builtin-sched.c |  152 ++++++++++++++++++++++++++++++++++++++-----
+ 1 files changed, 134 insertions(+), 18 deletions(-)
 
 diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 60228d9..c66e6a3 100644
+index c66e6a3..6ec4f51 100644
 --- a/tools/perf/builtin-sched.c
 +++ b/tools/perf/builtin-sched.c
-@@ -12,22 +12,770 @@
- #include "util/debug.h"
+@@ -57,7 +57,7 @@ static u64			sample_type;
  
- #include "util/trace-event.h"
-+#include <sys/types.h>
+ #define BUG_ON(x)	assert(!(x))
  
--static char		const *input_name = "perf.data";
--static int		input;
--static unsigned long	page_size;
--static unsigned long	mmap_window = 32;
-+static char			const *input_name = "perf.data";
-+static int			input;
-+static unsigned long		page_size;
-+static unsigned long		mmap_window = 32;
+-#define DEBUG		1
++#define DEBUG		0
  
--static unsigned long	total = 0;
--static unsigned long	total_comm = 0;
-+static unsigned long		total_comm = 0;
+ typedef unsigned long long nsec_t;
  
--static struct rb_root	threads;
--static struct thread	*last_match;
-+static struct rb_root		threads;
-+static struct thread		*last_match;
+@@ -238,15 +238,14 @@ static struct sched_event *last_event(struct task_desc *task)
+ }
  
--static struct perf_header *header;
--static u64		sample_type;
-+static struct perf_header	*header;
-+static u64			sample_type;
+ static void
+-add_sched_event_run(struct task_desc *task, nsec_t timestamp,
+-		    unsigned long duration)
++add_sched_event_run(struct task_desc *task, nsec_t timestamp, u64 duration)
+ {
+ 	struct sched_event *event, *curr_event = last_event(task);
  
- 
-+/*
-+ * Scheduler benchmarks
-+ */
-+#include <sys/resource.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <sys/time.h>
-+#include <sys/prctl.h>
-+
-+#include <linux/unistd.h>
-+
-+#include <semaphore.h>
-+#include <pthread.h>
-+#include <signal.h>
-+#include <values.h>
-+#include <string.h>
-+#include <unistd.h>
-+#include <stdlib.h>
-+#include <assert.h>
-+#include <fcntl.h>
-+#include <time.h>
-+#include <math.h>
-+
-+#include <stdio.h>
-+
-+#define PR_SET_NAME	15               /* Set process name */
-+
-+#define BUG_ON(x)	assert(!(x))
-+
-+#define DEBUG		1
-+
-+typedef unsigned long long nsec_t;
-+
-+#define printk(x...)		do { printf(x); fflush(stdout); } while (0)
-+
-+nsec_t prev_printk;
-+
-+#define __dprintk(x,y...) do {						 \
-+	nsec_t __now = get_nsecs(), __delta = __now - prev_printk;	 \
-+									 \
-+	prev_printk = __now;						 \
-+									 \
-+	printf("%.3f [%Ld] [%.3f]: " x, (double)__now/1e6, __now, (double)__delta/1e6, y);\
-+} while (0)
-+
-+#if !DEBUG
-+# define dprintk(x...)	do { } while (0)
-+#else
-+# define dprintk(x...)	__dprintk(x)
-+#endif
-+
-+#define __DP()		__dprintk("parent: line %d\n", __LINE__)
-+#define DP()		dprintk("parent: line %d\n", __LINE__)
-+#define D()		dprintk("task %ld: line %d\n", this_task->nr, __LINE__)
-+
-+
-+static nsec_t run_measurement_overhead;
-+static nsec_t sleep_measurement_overhead;
-+
-+static nsec_t get_nsecs(void)
-+{
-+	struct timespec ts;
-+
-+	clock_gettime(CLOCK_MONOTONIC, &ts);
-+
-+	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
-+}
-+
-+static void burn_nsecs(nsec_t nsecs)
-+{
-+	nsec_t T0 = get_nsecs(), T1;
-+
-+	do {
-+		T1 = get_nsecs();
-+	} while (T1 + run_measurement_overhead < T0 + nsecs);
-+}
-+
-+static void sleep_nsecs(nsec_t nsecs)
-+{
-+	struct timespec ts;
-+
-+	ts.tv_nsec = nsecs % 999999999;
-+	ts.tv_sec = nsecs / 999999999;
-+
-+	nanosleep(&ts, NULL);
-+}
-+
-+static void calibrate_run_measurement_overhead(void)
-+{
-+	nsec_t T0, T1, delta, min_delta = 1000000000ULL;
-+	int i;
-+
-+	for (i = 0; i < 10; i++) {
-+		T0 = get_nsecs();
-+		burn_nsecs(0);
-+		T1 = get_nsecs();
-+		delta = T1-T0;
-+		min_delta = min(min_delta, delta);
-+	}
-+	run_measurement_overhead = min_delta;
-+
-+	printk("run measurement overhead: %Ld nsecs\n", min_delta);
-+}
-+
-+static void calibrate_sleep_measurement_overhead(void)
-+{
-+	nsec_t T0, T1, delta, min_delta = 1000000000ULL;
-+	int i;
-+
-+	for (i = 0; i < 10; i++) {
-+		T0 = get_nsecs();
-+		sleep_nsecs(10000);
-+		T1 = get_nsecs();
-+		delta = T1-T0;
-+		min_delta = min(min_delta, delta);
-+	}
-+	min_delta -= 10000;
-+	sleep_measurement_overhead = min_delta;
-+
-+	printk("sleep measurement overhead: %Ld nsecs\n", min_delta);
-+}
-+
-+#define COMM_LEN	20
-+#define SYM_LEN		129
-+
-+#define MAX_PID		65536
-+
-+static unsigned long nr_tasks;
-+
-+struct sched_event;
-+
-+struct task_desc {
-+	unsigned long		nr;
-+	unsigned long		pid;
-+	char			comm[COMM_LEN];
-+
-+	unsigned long		nr_events;
-+	unsigned long		curr_event;
-+	struct sched_event	**events;
-+
-+	pthread_t		thread;
-+	sem_t			sleep_sem;
-+
-+	sem_t			ready_for_work;
-+	sem_t			work_done_sem;
-+
-+	nsec_t			cpu_usage;
-+};
-+
-+enum sched_event_type {
-+	SCHED_EVENT_RUN,
-+	SCHED_EVENT_SLEEP,
-+	SCHED_EVENT_WAKEUP,
-+};
-+
-+struct sched_event {
-+	enum sched_event_type	type;
-+	nsec_t			timestamp;
-+	nsec_t			duration;
-+	unsigned long		nr;
-+	int			specific_wait;
-+	sem_t			*wait_sem;
-+	struct task_desc	*wakee;
-+};
-+
-+static struct task_desc		*pid_to_task[MAX_PID];
-+
-+static struct task_desc		**tasks;
-+
-+static pthread_mutex_t		start_work_mutex = PTHREAD_MUTEX_INITIALIZER;
-+static nsec_t			start_time;
-+
-+static pthread_mutex_t		work_done_wait_mutex = PTHREAD_MUTEX_INITIALIZER;
-+
-+static unsigned long		nr_run_events;
-+static unsigned long		nr_sleep_events;
-+static unsigned long		nr_wakeup_events;
-+
-+static unsigned long		nr_sleep_corrections;
-+static unsigned long		nr_run_events_optimized;
-+
-+static struct sched_event *
-+get_new_event(struct task_desc *task, nsec_t timestamp)
-+{
-+	struct sched_event *event = calloc(1, sizeof(*event));
-+	unsigned long idx = task->nr_events;
-+	size_t size;
-+
-+	event->timestamp = timestamp;
-+	event->nr = idx;
-+
-+	task->nr_events++;
-+	size = sizeof(struct sched_event *) * task->nr_events;
-+	task->events = realloc(task->events, size);
-+	BUG_ON(!task->events);
-+
-+	task->events[idx] = event;
-+
-+	return event;
-+}
-+
-+static struct sched_event *last_event(struct task_desc *task)
-+{
-+	if (!task->nr_events)
-+		return NULL;
-+
-+	return task->events[task->nr_events - 1];
-+}
-+
-+static void
-+add_sched_event_run(struct task_desc *task, nsec_t timestamp,
-+		    unsigned long duration)
-+{
-+	struct sched_event *event, *curr_event = last_event(task);
-+
-+	/*
-+ 	 * optimize an existing RUN event by merging this one
-+ 	 * to it:
-+ 	 */
-+	if (curr_event && curr_event->type == SCHED_EVENT_RUN) {
-+		nr_run_events_optimized++;
-+		curr_event->duration += duration;
-+		return;
-+	}
-+
-+	event = get_new_event(task, timestamp);
-+
-+	event->type = SCHED_EVENT_RUN;
-+	event->duration = duration;
-+
-+	nr_run_events++;
-+}
-+
-+static unsigned long targetless_wakeups;
-+static unsigned long multitarget_wakeups;
-+
-+static void
-+add_sched_event_wakeup(struct task_desc *task, nsec_t timestamp,
-+		       struct task_desc *wakee)
-+{
-+	struct sched_event *event, *wakee_event;
-+
-+	event = get_new_event(task, timestamp);
-+	event->type = SCHED_EVENT_WAKEUP;
-+	event->wakee = wakee;
-+
-+	wakee_event = last_event(wakee);
-+	if (!wakee_event || wakee_event->type != SCHED_EVENT_SLEEP) {
-+		targetless_wakeups++;
-+		return;
-+	}
-+	if (wakee_event->wait_sem) {
-+		multitarget_wakeups++;
-+		return;
-+	}
-+
-+	wakee_event->wait_sem = calloc(1, sizeof(*wakee_event->wait_sem));
-+	sem_init(wakee_event->wait_sem, 0, 0);
-+	wakee_event->specific_wait = 1;
-+	event->wait_sem = wakee_event->wait_sem;
-+
-+	nr_wakeup_events++;
-+}
-+
-+static void
-+add_sched_event_sleep(struct task_desc *task, nsec_t timestamp,
-+		      unsigned long uninterruptible __used)
-+{
-+	struct sched_event *event = get_new_event(task, timestamp);
-+
-+	event->type = SCHED_EVENT_SLEEP;
-+
-+	nr_sleep_events++;
-+}
-+
-+static struct task_desc *register_pid(unsigned long pid, const char *comm)
-+{
-+	struct task_desc *task;
-+
-+	BUG_ON(pid >= MAX_PID);
-+
-+	task = pid_to_task[pid];
-+
-+	if (task)
-+		return task;
-+
-+	task = calloc(1, sizeof(*task));
-+	task->pid = pid;
-+	task->nr = nr_tasks;
-+	strcpy(task->comm, comm);
-+	/*
-+	 * every task starts in sleeping state - this gets ignored
-+	 * if there's no wakeup pointing to this sleep state:
+ 	/*
+- 	 * optimize an existing RUN event by merging this one
+- 	 * to it:
+- 	 */
++	 * optimize an existing RUN event by merging this one
++	 * to it:
 +	 */
-+	add_sched_event_sleep(task, 0, 0);
+ 	if (curr_event && curr_event->type == SCHED_EVENT_RUN) {
+ 		nr_run_events_optimized++;
+ 		curr_event->duration += duration;
+@@ -376,7 +375,7 @@ void parse_line(char *line)
+ 	dprintk("parsed: %s - %ld %Ld: %s - <%s %ld> (%ld %ld)\n",
+ 		comm,
+ 		pid,
+-		timestamp, 
++		timestamp,
+ 		func_str,
+ 		comm2,
+ 		pid2,
+@@ -429,7 +428,7 @@ static void add_cross_task_wakeups(void)
+ }
+ 
+ static void
+-process_sched_event(struct task_desc *this_task, struct sched_event *event)
++process_sched_event(struct task_desc *this_task __used, struct sched_event *event)
+ {
+ 	int ret = 0;
+ 	nsec_t now;
+@@ -744,9 +743,9 @@ static void run_one_test(void)
+ 
+ #if 0
+ 	/*
+- 	 * rusage statistics done by the parent, these are less
+- 	 * accurate than the sum_exec_runtime based statistics:
+- 	 */
++	 * rusage statistics done by the parent, these are less
++	 * accurate than the sum_exec_runtime based statistics:
++	 */
+ 	printk(" [%0.2f / %0.2f]",
+ 		(double)parent_cpu_usage/1e6,
+ 		(double)runavg_parent_cpu_usage/1e6);
+@@ -798,16 +797,128 @@ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
+ 	return 0;
+ }
+ 
+-static void process_sched_wakeup_event(struct event *event,
++struct trace_wakeup_event {
++	u32 size;
 +
-+	pid_to_task[pid] = task;
-+	nr_tasks++;
-+	tasks = realloc(tasks, nr_tasks*sizeof(struct task_task *));
-+	BUG_ON(!tasks);
-+	tasks[task->nr] = task;
++	u16 common_type;
++	u8 common_flags;
++	u8 common_preempt_count;
++	u32 common_pid;
++	u32 common_tgid;
 +
-+	printk("registered task #%ld, PID %ld (%s)\n", nr_tasks, pid, comm);
++	char comm[16];
++	u32 pid;
 +
-+	return task;
-+}
-+
-+
-+static int first_trace_line = 1;
-+
-+static nsec_t first_timestamp;
-+static nsec_t prev_timestamp;
-+
-+void parse_line(char *line);
-+
-+void parse_line(char *line)
-+{
-+	unsigned long param1 = 0, param2 = 0;
-+	char comm[COMM_LEN], comm2[COMM_LEN];
-+	unsigned long pid, pid2, timestamp0;
-+	struct task_desc *task, *task2;
-+	char func_str[SYM_LEN];
-+	nsec_t timestamp;
-+	int ret;
-+
-+	//"   <idle> 0     0D.s3    0us+: try_to_wake_up <events/0 9> (1 0)"
-+	ret = sscanf(line, "%20s %5ld %*s %ldus%*c:"
-+			   " %128s <%20s %ld> (%ld %ld)\n",
-+		comm, &pid, &timestamp0,
-+		func_str, comm2, &pid2, &param1, &param2);
-+	dprintk("ret: %d\n", ret);
-+	if (ret != 8)
-+		return;
-+
-+	timestamp = timestamp0 * 1000LL;
-+
-+	if (first_trace_line) {
-+		first_trace_line = 0;
-+		first_timestamp = timestamp;
-+	}
-+
-+	timestamp -= first_timestamp;
-+	BUG_ON(timestamp < prev_timestamp);
-+	prev_timestamp = timestamp;
-+
-+	dprintk("parsed: %s - %ld %Ld: %s - <%s %ld> (%ld %ld)\n",
-+		comm,
-+		pid,
-+		timestamp, 
-+		func_str,
-+		comm2,
-+		pid2,
-+		param1,
-+		param2);
-+
-+	task = register_pid(pid, comm);
-+	task2 = register_pid(pid2, comm2);
-+
-+	if (!strcmp(func_str, "update_curr")) {
-+		dprintk("%Ld: task %ld runs for %ld nsecs\n",
-+			timestamp, task->nr, param1);
-+		add_sched_event_run(task, timestamp, param1);
-+	} else if (!strcmp(func_str, "try_to_wake_up")) {
-+		dprintk("%Ld: task %ld wakes up task %ld\n",
-+			timestamp, task->nr, task2->nr);
-+		add_sched_event_wakeup(task, timestamp, task2);
-+	} else if (!strcmp(func_str, "deactivate_task")) {
-+		dprintk("%Ld: task %ld goes to sleep (uninterruptible: %ld)\n",
-+			timestamp, task->nr, param1);
-+		add_sched_event_sleep(task, timestamp, param1);
-+	}
-+}
-+
-+static void print_task_traces(void)
-+{
-+	struct task_desc *task;
-+	unsigned long i;
-+
-+	for (i = 0; i < nr_tasks; i++) {
-+		task = tasks[i];
-+		printk("task %6ld (%20s:%10ld), nr_events: %ld\n",
-+			task->nr, task->comm, task->pid, task->nr_events);
-+	}
-+}
-+
-+static void add_cross_task_wakeups(void)
-+{
-+	struct task_desc *task1, *task2;
-+	unsigned long i, j;
-+
-+	for (i = 0; i < nr_tasks; i++) {
-+		task1 = tasks[i];
-+		j = i + 1;
-+		if (j == nr_tasks)
-+			j = 0;
-+		task2 = tasks[j];
-+		add_sched_event_wakeup(task1, 0, task2);
-+	}
-+}
++	u32 prio;
++	u32 success;
++	u32 cpu;
++};
 +
 +static void
-+process_sched_event(struct task_desc *this_task, struct sched_event *event)
-+{
-+	int ret = 0;
-+	nsec_t now;
-+	long long delta;
++process_sched_wakeup_event(struct trace_wakeup_event *wakeup_event, struct event *event,
+ 		  int cpu __used, u64 timestamp __used, struct thread *thread __used)
+ {
++	struct task_desc *waker, *wakee;
 +
-+	now = get_nsecs();
-+	delta = start_time + event->timestamp - now;
+ 	printf("sched_wakeup event %p\n", event);
 +
-+	dprintk("task %ld, event #%ld, %Ld, delta: %.3f (%Ld)\n",
-+		this_task->nr, event->nr, event->timestamp,
-+		(double)delta/1e6, delta);
++	printf(" ... pid %d woke up %s/%d\n",
++		wakeup_event->common_pid,
++		wakeup_event->comm,
++		wakeup_event->pid);
 +
-+	if (0 && delta > 0) {
-+		dprintk("%.3f: task %ld FIX %.3f\n",
-+			(double)event->timestamp/1e6,
-+			this_task->nr,
-+			(double)delta/1e6);
-+		sleep_nsecs(start_time + event->timestamp - now);
-+		nr_sleep_corrections++;
-+	}
++	waker = register_pid(wakeup_event->common_pid, "<unknown>");
++	wakee = register_pid(wakeup_event->pid, wakeup_event->comm);
 +
-+	switch (event->type) {
-+		case SCHED_EVENT_RUN:
-+			dprintk("%.3f: task %ld RUN for %.3f\n",
-+				(double)event->timestamp/1e6,
-+				this_task->nr,
-+				(double)event->duration/1e6);
-+			burn_nsecs(event->duration);
-+			break;
-+		case SCHED_EVENT_SLEEP:
-+			dprintk("%.3f: task %ld %s SLEEP\n",
-+				(double)event->timestamp/1e6,
-+				this_task->nr, event->wait_sem ? "" : "SKIP");
-+			if (event->wait_sem)
-+				ret = sem_wait(event->wait_sem);
-+			BUG_ON(ret);
-+			break;
-+		case SCHED_EVENT_WAKEUP:
-+			dprintk("%.3f: task %ld WAKEUP => task %ld\n",
-+				(double)event->timestamp/1e6,
-+				this_task->nr,
-+				event->wakee->nr);
-+			if (event->wait_sem)
-+				ret = sem_post(event->wait_sem);
-+			BUG_ON(ret);
-+			break;
-+		default:
-+			BUG_ON(1);
-+	}
-+}
++	add_sched_event_wakeup(waker, timestamp, wakee);
+ }
+ 
+-static void process_sched_switch_event(struct event *event,
++struct trace_switch_event {
++	u32 size;
 +
-+static nsec_t get_cpu_usage_nsec_parent(void)
-+{
-+	struct rusage ru;
-+	nsec_t sum;
-+	int err;
++	u16 common_type;
++	u8 common_flags;
++	u8 common_preempt_count;
++	u32 common_pid;
++	u32 common_tgid;
 +
-+	err = getrusage(RUSAGE_SELF, &ru);
-+	BUG_ON(err);
++	char prev_comm[16];
++	u32 prev_pid;
++	u32 prev_prio;
++	u64 prev_state;
++	char next_comm[16];
++	u32 next_pid;
++	u32 next_prio;
++};
 +
-+	sum =  ru.ru_utime.tv_sec*1e9 + ru.ru_utime.tv_usec*1e3;
-+	sum += ru.ru_stime.tv_sec*1e9 + ru.ru_stime.tv_usec*1e3;
++#define MAX_CPUS 4096
 +
-+	return sum;
-+}
++unsigned long cpu_last_switched[MAX_CPUS];
 +
-+static nsec_t get_cpu_usage_nsec_self(void)
-+{
-+	char filename [] = "/proc/1234567890/sched";
-+	unsigned long msecs, nsecs;
-+	char *line = NULL;
-+	nsec_t total = 0;
-+	size_t len = 0;
-+	ssize_t chars;
-+	FILE *file;
-+	int ret;
++static void
++process_sched_switch_event(struct trace_switch_event *switch_event, struct event *event,
+ 		  int cpu __used, u64 timestamp __used, struct thread *thread __used)
+ {
++	struct task_desc *prev, *next;
++	u64 timestamp0;
++	s64 delta;
 +
-+	sprintf(filename, "/proc/%d/sched", getpid());
-+	file = fopen(filename, "r");
-+	BUG_ON(!file);
+ 	printf("sched_switch event %p\n", event);
++	if (cpu >= MAX_CPUS || cpu < 0)
++		return;
 +
-+	while ((chars = getline(&line, &len, file)) != -1) {
-+		dprintk("got line with length %zu :\n", chars);
-+		dprintk("%s", line);
-+		ret = sscanf(line, "se.sum_exec_runtime : %ld.%06ld\n",
-+			&msecs, &nsecs);
-+		if (ret == 2) {
-+			total = msecs*1e6 + nsecs;
-+			dprintk("total: (%ld.%06ld) %Ld\n",
-+				msecs, nsecs, total);
-+			break;
-+		}
-+	}
-+	if (line)
-+		free(line);
-+	fclose(file);
-+
-+	return total;
-+}
-+
-+static void *thread_func(void *ctx)
-+{
-+	struct task_desc *this_task = ctx;
-+	nsec_t cpu_usage_0, cpu_usage_1;
-+	unsigned long i, ret;
-+	char comm2[22];
-+
-+	dprintk("task %ld started up.\n", this_task->nr);
-+	sprintf(comm2, ":%s", this_task->comm);
-+	prctl(PR_SET_NAME, comm2);
-+
-+again:
-+	ret = sem_post(&this_task->ready_for_work);
-+	BUG_ON(ret);
-+	D();
-+	ret = pthread_mutex_lock(&start_work_mutex);
-+	BUG_ON(ret);
-+	ret = pthread_mutex_unlock(&start_work_mutex);
-+	BUG_ON(ret);
-+	D();
-+
-+	cpu_usage_0 = get_cpu_usage_nsec_self();
-+
-+	for (i = 0; i < this_task->nr_events; i++) {
-+		this_task->curr_event = i;
-+		process_sched_event(this_task, this_task->events[i]);
-+	}
-+
-+	cpu_usage_1 = get_cpu_usage_nsec_self();
-+	this_task->cpu_usage = cpu_usage_1 - cpu_usage_0;
-+
-+	dprintk("task %ld cpu usage: %0.3f msecs\n",
-+		this_task->nr, (double)this_task->cpu_usage / 1e6);
-+
-+	D();
-+	ret = sem_post(&this_task->work_done_sem);
-+	BUG_ON(ret);
-+	D();
-+
-+	ret = pthread_mutex_lock(&work_done_wait_mutex);
-+	BUG_ON(ret);
-+	ret = pthread_mutex_unlock(&work_done_wait_mutex);
-+	BUG_ON(ret);
-+	D();
-+
-+	goto again;
-+}
-+
-+static void create_tasks(void)
-+{
-+	struct task_desc *task;
-+	pthread_attr_t attr;
-+	unsigned long i;
-+	int err;
-+
-+	err = pthread_attr_init(&attr);
-+	BUG_ON(err);
-+	err = pthread_attr_setstacksize(&attr, (size_t)(16*1024));
-+	BUG_ON(err);
-+	err = pthread_mutex_lock(&start_work_mutex);
-+	BUG_ON(err);
-+	err = pthread_mutex_lock(&work_done_wait_mutex);
-+	BUG_ON(err);
-+	for (i = 0; i < nr_tasks; i++) {
-+		task = tasks[i];
-+		sem_init(&task->sleep_sem, 0, 0);
-+		sem_init(&task->ready_for_work, 0, 0);
-+		sem_init(&task->work_done_sem, 0, 0);
-+		task->curr_event = 0;
-+		err = pthread_create(&task->thread, &attr, thread_func, task);
-+		BUG_ON(err);
-+	}
-+}
-+
-+static nsec_t cpu_usage;
-+static nsec_t runavg_cpu_usage;
-+static nsec_t parent_cpu_usage;
-+static nsec_t runavg_parent_cpu_usage;
-+
-+static void wait_for_tasks(void)
-+{
-+	nsec_t cpu_usage_0, cpu_usage_1;
-+	struct task_desc *task;
-+	unsigned long i, ret;
-+
-+	DP();
-+	start_time = get_nsecs();
-+	DP();
-+	cpu_usage = 0;
-+	pthread_mutex_unlock(&work_done_wait_mutex);
-+
-+	for (i = 0; i < nr_tasks; i++) {
-+		task = tasks[i];
-+		ret = sem_wait(&task->ready_for_work);
-+		BUG_ON(ret);
-+		sem_init(&task->ready_for_work, 0, 0);
-+	}
-+	ret = pthread_mutex_lock(&work_done_wait_mutex);
-+	BUG_ON(ret);
-+
-+	cpu_usage_0 = get_cpu_usage_nsec_parent();
-+
-+	pthread_mutex_unlock(&start_work_mutex);
-+
-+#if 0
-+	for (i = 0; i < nr_tasks; i++) {
-+		unsigned long missed;
-+
-+		task = tasks[i];
-+		while (task->curr_event + 1 < task->nr_events) {
-+			dprintk("parent waiting for %ld (%ld != %ld)\n",
-+				i, task->curr_event, task->nr_events);
-+			sleep_nsecs(100000000);
-+		}
-+		missed = task->nr_events - 1 - task->curr_event;
-+		if (missed)
-+			printk("task %ld missed events: %ld\n", i, missed);
-+		ret = sem_post(&task->sleep_sem);
-+		BUG_ON(ret);
-+	}
-+#endif
-+	DP();
-+	for (i = 0; i < nr_tasks; i++) {
-+		task = tasks[i];
-+		ret = sem_wait(&task->work_done_sem);
-+		BUG_ON(ret);
-+		sem_init(&task->work_done_sem, 0, 0);
-+		cpu_usage += task->cpu_usage;
-+		task->cpu_usage = 0;
-+	}
-+
-+	cpu_usage_1 = get_cpu_usage_nsec_parent();
-+	if (!runavg_cpu_usage)
-+		runavg_cpu_usage = cpu_usage;
-+	runavg_cpu_usage = (runavg_cpu_usage*9 + cpu_usage)/10;
-+
-+	parent_cpu_usage = cpu_usage_1 - cpu_usage_0;
-+	if (!runavg_parent_cpu_usage)
-+		runavg_parent_cpu_usage = parent_cpu_usage;
-+	runavg_parent_cpu_usage = (runavg_parent_cpu_usage*9 +
-+				   parent_cpu_usage)/10;
-+
-+	ret = pthread_mutex_lock(&start_work_mutex);
-+	BUG_ON(ret);
-+
-+	for (i = 0; i < nr_tasks; i++) {
-+		task = tasks[i];
-+		sem_init(&task->sleep_sem, 0, 0);
-+		task->curr_event = 0;
-+	}
-+}
-+
-+static int __cmd_sched(void);
-+
-+static void parse_trace(void)
-+{
-+	__cmd_sched();
-+
-+	printk("nr_run_events:        %ld\n", nr_run_events);
-+	printk("nr_sleep_events:      %ld\n", nr_sleep_events);
-+	printk("nr_wakeup_events:     %ld\n", nr_wakeup_events);
-+
-+	if (targetless_wakeups)
-+		printk("target-less wakeups:  %ld\n", targetless_wakeups);
-+	if (multitarget_wakeups)
-+		printk("multi-target wakeups: %ld\n", multitarget_wakeups);
-+	if (nr_run_events_optimized)
-+		printk("run events optimized: %ld\n",
-+			nr_run_events_optimized);
-+}
-+
-+static unsigned long nr_runs;
-+static nsec_t sum_runtime;
-+static nsec_t sum_fluct;
-+static nsec_t run_avg;
-+
-+static void run_one_test(void)
-+{
-+	nsec_t T0, T1, delta, avg_delta, fluct, std_dev;
-+
-+	T0 = get_nsecs();
-+	wait_for_tasks();
-+	T1 = get_nsecs();
-+
-+	delta = T1 - T0;
-+	sum_runtime += delta;
-+	nr_runs++;
-+
-+	avg_delta = sum_runtime / nr_runs;
-+	if (delta < avg_delta)
-+		fluct = avg_delta - delta;
++	timestamp0 = cpu_last_switched[cpu];
++	if (timestamp0)
++		delta = timestamp - timestamp0;
 +	else
-+		fluct = delta - avg_delta;
-+	sum_fluct += fluct;
-+	std_dev = sum_fluct / nr_runs / sqrt(nr_runs);
-+	if (!run_avg)
-+		run_avg = delta;
-+	run_avg = (run_avg*9 + delta)/10;
++		delta = 0;
 +
-+	printk("#%-3ld: %0.3f, ",
-+		nr_runs, (double)delta/1000000.0);
++	if (delta < 0)
++		die("hm, delta: %Ld < 0 ?\n", delta);
 +
-+#if 0
-+	printk("%0.2f +- %0.2f, ",
-+		(double)avg_delta/1e6, (double)std_dev/1e6);
-+#endif
-+	printk("ravg: %0.2f, ",
-+		(double)run_avg/1e6);
++	printf(" ... switch from %s/%d to %s/%d [ran %Ld nsecs]\n",
++		switch_event->prev_comm, switch_event->prev_pid,
++		switch_event->next_comm, switch_event->next_pid,
++		delta);
 +
-+	printk("cpu: %0.2f / %0.2f",
-+		(double)cpu_usage/1e6, (double)runavg_cpu_usage/1e6);
++	prev = register_pid(switch_event->prev_pid, switch_event->prev_comm);
++	next = register_pid(switch_event->next_pid, switch_event->next_comm);
 +
-+#if 0
-+	/*
-+ 	 * rusage statistics done by the parent, these are less
-+ 	 * accurate than the sum_exec_runtime based statistics:
-+ 	 */
-+	printk(" [%0.2f / %0.2f]",
-+		(double)parent_cpu_usage/1e6,
-+		(double)runavg_parent_cpu_usage/1e6);
-+#endif
++	cpu_last_switched[cpu] = timestamp;
 +
-+	printk("\n");
-+
-+	if (nr_sleep_corrections)
-+		printk(" (%ld sleep corrections)\n", nr_sleep_corrections);
-+	nr_sleep_corrections = 0;
++	add_sched_event_run(prev, timestamp, delta);
 +}
 +
-+static void test_calibrations(void)
-+{
-+	nsec_t T0, T1;
++struct trace_fork_event {
++	u32 size;
 +
-+	T0 = get_nsecs();
-+	burn_nsecs(1e6);
-+	T1 = get_nsecs();
++	u16 common_type;
++	u8 common_flags;
++	u8 common_preempt_count;
++	u32 common_pid;
++	u32 common_tgid;
 +
-+	printk("the run test took %Ld nsecs\n", T1-T0);
-+
-+	T0 = get_nsecs();
-+	sleep_nsecs(1e6);
-+	T1 = get_nsecs();
-+
-+	printk("the sleep test took %Ld nsecs\n", T1-T0);
-+}
-+
- static int
- process_comm_event(event_t *event, unsigned long offset, unsigned long head)
- {
-@@ -50,6 +798,46 @@ process_comm_event(event_t *event, unsigned long offset, unsigned long head)
- 	return 0;
- }
- 
-+static void process_sched_wakeup_event(struct event *event,
-+		  int cpu __used, u64 timestamp __used, struct thread *thread __used)
-+{
-+	printf("sched_wakeup event %p\n", event);
-+}
-+
-+static void process_sched_switch_event(struct event *event,
-+		  int cpu __used, u64 timestamp __used, struct thread *thread __used)
-+{
-+	printf("sched_switch event %p\n", event);
-+}
++	char parent_comm[16];
++	u32 parent_pid;
++	char child_comm[16];
++	u32 child_pid;
++};
 +
 +static void
-+process_raw_event(event_t *raw_event, void *more_data,
-+		  int cpu, u64 timestamp, struct thread *thread)
++process_sched_fork_event(struct trace_fork_event *fork_event, struct event *event,
++		  int cpu __used, u64 timestamp __used, struct thread *thread __used)
 +{
-+	struct {
-+		u32 size;
-+		char data[0];
-+	} *raw = more_data;
-+	struct event *event;
-+	int type;
-+
-+	type = trace_parse_common_type(raw->data);
-+	event = trace_find_event(type);
-+
-+	/*
-+	 * FIXME: better resolve from pid from the struct trace_entry
-+	 * field, although it should be the same than this perf
-+	 * event pid
-+	 */
-+	printf("id %d, type: %d, event: %s\n",
-+		raw_event->header.type, type, event->name);
-+
-+	if (!strcmp(event->name, "sched_switch"))
-+		process_sched_switch_event(event, cpu, timestamp, thread);
-+	if (!strcmp(event->name, "sched_wakeup"))
-+		process_sched_wakeup_event(event, cpu, timestamp, thread);
++	printf("sched_fork event %p\n", event);
++	printf("... parent: %s/%d\n", fork_event->parent_comm, fork_event->parent_pid);
++	printf("...  child: %s/%d\n", fork_event->child_comm, fork_event->child_pid);
++	register_pid(fork_event->parent_pid, fork_event->parent_comm);
++	register_pid(fork_event->child_pid, fork_event->child_comm);
 +}
 +
- static int
- process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- {
-@@ -122,20 +910,8 @@ process_sample_event(event_t *event, unsigned long offset, unsigned long head)
- 		dump_printf(" ...... dso: [hypervisor]\n");
- 	}
- 
--	if (sample_type & PERF_SAMPLE_RAW) {
--		struct {
--			u32 size;
--			char data[0];
--		} *raw = more_data;
--
--		/*
--		 * FIXME: better resolve from pid from the struct trace_entry
--		 * field, although it should be the same than this perf
--		 * event pid
--		 */
--		print_event(cpu, raw->data, raw->size, timestamp, thread->comm);
--	}
--	total += period;
-+	if (sample_type & PERF_SAMPLE_RAW)
-+		process_raw_event(event, more_data, cpu, timestamp, thread);
- 
- 	return 0;
++static void process_sched_exit_event(struct event *event,
++		  int cpu __used, u64 timestamp __used, struct thread *thread __used)
++{
++	printf("sched_exit event %p\n", event);
  }
-@@ -277,6 +1053,8 @@ static const struct option options[] = {
+ 
+ static void
+@@ -833,9 +944,15 @@ process_raw_event(event_t *raw_event, void *more_data,
+ 		raw_event->header.type, type, event->name);
+ 
+ 	if (!strcmp(event->name, "sched_switch"))
+-		process_sched_switch_event(event, cpu, timestamp, thread);
++		process_sched_switch_event(more_data, event, cpu, timestamp, thread);
+ 	if (!strcmp(event->name, "sched_wakeup"))
+-		process_sched_wakeup_event(event, cpu, timestamp, thread);
++		process_sched_wakeup_event(more_data, event, cpu, timestamp, thread);
++	if (!strcmp(event->name, "sched_wakeup_new"))
++		process_sched_wakeup_event(more_data, event, cpu, timestamp, thread);
++	if (!strcmp(event->name, "sched_process_fork"))
++		process_sched_fork_event(more_data, event, cpu, timestamp, thread);
++	if (!strcmp(event->name, "sched_process_exit"))
++		process_sched_exit_event(event, cpu, timestamp, thread);
+ }
+ 
+ static int
+@@ -1053,7 +1170,7 @@ static const struct option options[] = {
  
  int cmd_sched(int argc, const char **argv, const char *prefix __used)
  {
-+	long nr_iterations = LONG_MAX, i;
-+
+-	long nr_iterations = LONG_MAX, i;
++	long nr_iterations = 10, i;
+ 
  	symbol__init();
  	page_size = getpagesize();
+@@ -1068,8 +1185,7 @@ int cmd_sched(int argc, const char **argv, const char *prefix __used)
+ 			usage_with_options(annotate_usage, options);
+ 	}
  
-@@ -293,5 +1071,19 @@ int cmd_sched(int argc, const char **argv, const char *prefix __used)
+-
+-	setup_pager();
++//	setup_pager();
  
- 	setup_pager();
- 
--	return __cmd_sched();
-+	calibrate_run_measurement_overhead();
-+	calibrate_sleep_measurement_overhead();
-+
-+	test_calibrations();
-+
-+	parse_trace();
-+	print_task_traces();
-+	add_cross_task_wakeups();
-+
-+	create_tasks();
-+	printk("------------------------------------------------------------\n");
-+	for (i = 0; i < nr_iterations; i++)
-+		run_one_test();
-+
-+	return 0;
- }
-diff --git a/tools/perf/util/trace-event-parse.c b/tools/perf/util/trace-event-parse.c
-index 629e602..16cf2d5 100644
---- a/tools/perf/util/trace-event-parse.c
-+++ b/tools/perf/util/trace-event-parse.c
-@@ -1799,7 +1799,7 @@ static int get_common_info(const char *type, int *offset, int *size)
- 	return 0;
- }
- 
--static int parse_common_type(void *data)
-+int trace_parse_common_type(void *data)
- {
- 	static int type_offset;
- 	static int type_size;
-@@ -1832,7 +1832,7 @@ static int parse_common_pid(void *data)
- 	return read_size(data + pid_offset, pid_size);
- }
- 
--static struct event *find_event(int id)
-+struct event *trace_find_event(int id)
- {
- 	struct event *event;
- 
-@@ -2420,8 +2420,8 @@ get_return_for_leaf(int cpu, int cur_pid, unsigned long long cur_func,
- 	int type;
- 	int pid;
- 
--	type = parse_common_type(next->data);
--	event = find_event(type);
-+	type = trace_parse_common_type(next->data);
-+	event = trace_find_event(type);
- 	if (!event)
- 		return NULL;
- 
-@@ -2502,8 +2502,8 @@ print_graph_entry_leaf(struct event *event, void *data, struct record *ret_rec)
- 	int type;
- 	int i;
- 
--	type = parse_common_type(ret_rec->data);
--	ret_event = find_event(type);
-+	type = trace_parse_common_type(ret_rec->data);
-+	ret_event = trace_find_event(type);
- 
- 	field = find_field(ret_event, "rettime");
- 	if (!field)
-@@ -2696,9 +2696,9 @@ void print_event(int cpu, void *data, int size, unsigned long long nsecs,
- 	nsecs -= secs * NSECS_PER_SEC;
- 	usecs = nsecs / NSECS_PER_USEC;
- 
--	type = parse_common_type(data);
-+	type = trace_parse_common_type(data);
- 
--	event = find_event(type);
-+	event = trace_find_event(type);
- 	if (!event)
- 		die("ug! no event found for type %d", type);
- 
-diff --git a/tools/perf/util/trace-event.h b/tools/perf/util/trace-event.h
-index 420294a..bc81612 100644
---- a/tools/perf/util/trace-event.h
-+++ b/tools/perf/util/trace-event.h
-@@ -234,6 +234,8 @@ extern int header_page_data_offset;
- extern int header_page_data_size;
- 
- int parse_header_page(char *buf, unsigned long size);
-+int trace_parse_common_type(void *data);
-+struct event *trace_find_event(int id);
- 
- void read_tracing_data(struct perf_counter_attr *pattrs, int nb_counters);
- 
+ 	calibrate_run_measurement_overhead();
+ 	calibrate_sleep_measurement_overhead();
