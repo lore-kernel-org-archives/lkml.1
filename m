@@ -1,125 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758407AbZIOTHq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754850AbZIOSeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758407AbZIOTHq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:07:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758392AbZIOTHl
+	id S1754850AbZIOSeS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 14:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbZIOSeN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:07:41 -0400
-Received: from kroah.org ([198.145.64.141]:35824 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758357AbZIOTH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:07:26 -0400
-Date: Tue, 15 Sep 2009 11:29:03 -0700
-From: Greg KH <greg@kroah.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Andrew Vasquez <andrew.vasquez@qlogic.com>,
-       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>,
-       Ravi Anand <ravi.anand@qlogic.com>,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>
-Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
- CONFIG_MOUDLES=n.
-Message-ID: <20090915182903.GA32540@kroah.com>
-References: <20090912001752.GC12098@plap4-2.local>
- <20090912003808.GD12098@plap4-2.local>
- <20090912005446.GA11691@kroah.com>
- <20090912025623.GA14824@plap4-2.local>
- <20090912043333.GA12349@kroah.com>
- <1252765807.4238.74.camel@mulgrave.site>
- <20090915153312.GB22774@kroah.com>
- <1253029631.29947.156.camel@mulgrave.site>
- <20090915165708.GA18817@kroah.com>
- <ac3eb2510909151022s5a0704c2xd4be73d5c63ab0f1@mail.gmail.com>
+	Tue, 15 Sep 2009 14:34:13 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:39047 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754300AbZIOSeM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 14:34:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=VrBh7N3B1JiamStPccNq/xqpVJxkZTwEQg+TXSMA5/QCMNA81uEgNyR7CAQ+PMCz7b
+         qW8cYTF4iCKK1C9mEG0RYiAuYV1x3erx9DaOex862UNcPINmPvKJsexT+tq9NRJb6BIB
+         PHyksaVg9QqlVz4EUAh1Lf6G2drl+J6odE6wc=
+Date: Tue, 15 Sep 2009 11:34:06 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Trilok Soni <soni.trilok@gmail.com>
+Cc: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>,
+       Linux USB <linux-usb@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-input@vger.kernel.org
+Subject: Re: Using EV_MSC or extending KEY_*
+Message-ID: <20090915183406.GA5696@core.coreip.homeip.net>
+References: <aac07123ee2b14a0ac25d1652dbe0780.squirrel@intranet.cs.nmsu.edu> <5d5443650909151011k4b21a6d0n28ac6142c3d7161d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ac3eb2510909151022s5a0704c2xd4be73d5c63ab0f1@mail.gmail.com>
-User-Agent: Mutt/1.5.20 (2009-06-14)
+In-Reply-To: <5d5443650909151011k4b21a6d0n28ac6142c3d7161d@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 07:22:03PM +0200, Kay Sievers wrote:
-> On Tue, Sep 15, 2009 at 18:57, Greg KH <greg@kroah.com> wrote:
-> > On Tue, Sep 15, 2009 at 10:47:11AM -0500, James Bottomley wrote:
-> >> On Tue, 2009-09-15 at 08:33 -0700, Greg KH wrote:
-> >> > On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
-> >> > > On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
-> >> > > > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
-> >> > > > > On Fri, 11 Sep 2009, Greg KH wrote:
-> >> > > > >
-> >> > > > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
-> >> > > > > > > Randy Dunlap noted:
-> >> > > > > > >
-> >> > > > > > >   when CONFIG_MODULES=n:
-> >> > > > > > >
-> >> > > > > > >   drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> >> > > > > > >
-> >> > > > > > >   in
-> >> > > > > > >
-> >> > > > > > >   kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> >> > > > > > >           KOBJ_CHANGE, envp);
-> >> > > > > > >
-> >> > > > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
-> >> > > > > >
-> >> > > > > > Um, why?  What are you trying to do here?  kobject change should not be
-> >> > > > > > for a device, or a "normal" kobject.
-> >> > > > > >
-> >> > > > > > What do you expect userspace to do with this?  Where have you documented
-> >> > > > > > it?
-> >> > > > >
-> >> > > > > The purpose was described here:
-> >> > > > >
-> >> > > > >       http://article.gmane.org/gmane.linux.scsi/54155
-> >> > > > >
-> >> > > > > Basically we'd like to instruct user-space to retrieve a blob of data
-> >> > > > > automatically.
-> >> > > >
-> >> > > > Hm, like a firmware object perhaps?
-> >> > > >
-> >> > > > > Original implementation used the kboject hanging off
-> >> > > > > the module which does not exist when CONFIG_MODULES=n.  It was
-> >> > > > > suggested that perhaps an alternative would be to use 'struct device'
-> >> > > > > kobj.  Any tips on how to trigger such a driver-specific event,
-> >> > > > > perhaps a dedicated kobject exported by the driver itself???
-> >> > > >
-> >> > > > Why not use the firmware interface for it, that is what it is designed
-> >> > > > for, and you will not have to craft any new udev rules.
-> >> > >
-> >> > > The data is going the wrong way to use the current firmware interface,
-> >> > > which is designed to load data from userspace into the kernel.  For this
-> >> > > interface, we want the data to go the other way (i.e. the kernel has a
-> >> > > blob of dump data it would like userspace to save if it can).
-> >> >
-> >> > Ick.
-> >>
-> >> It's a natural debugging event ... the user can simply program the
-> >> system to discard the dump.
-> >>
-> >> > > I'd be amenable to updating the firmware interface to do this, but it
-> >> > > looks like adding a completely new codepath, which it's not clear even
-> >> > > belongs there.
-> >> >
-> >> > Well, I don't think it deserves a kobject change event, as that means
-> >> > something a bit different to userspace today, right?
-> >>
-> >> Well, the documentation (in include/linux/kobject.h) does say that
-> >> KOBJ_CHANGED is the dumping ground for events that don't match anything
-> >> else, which this one seems to qualify as.  What else do you suggest?
-> >
-> > Ok, I can't think of anything else at the moment, sorry.
+On Tue, Sep 15, 2009 at 10:41:30PM +0530, Trilok Soni wrote:
+> Adding linux-input.
 > 
-> Wouldn't kernel/kmod.c :: call_usermodehelper_pipe() somehow fit for
-> that interface?
+> On Tue, Sep 15, 2009 at 9:49 PM, Rick L. Vinyard, Jr.
+> <rvinyard@cs.nmsu.edu> wrote:
+> > On the Logitech G13 there are a set of 10 special keys at the top of the
+> > device.
+> >
+> > I've written the driver so that it maintains a map from the general keys
+> > (G1-G22) to Linux' input subsystem keys.
+> >
+> > The map can be changed on the fly, allowing multiple keymaps to be loaded.
+> >
+> > As a side note I haven't provided for this functionality (multiple
+> > keymaps) in the driver since this can be maintained from userspace, but it
+> > does need to know about the currently loaded keymap so that when the raw
+> > HID events are parsed the appropriate EV_KEY events can be input.
+> >
+> > I could set it up so that the special keys also map to a KEY_* code.
+> > However, I'd prefer to set things up so that any G1-G22 key can be mapped
+> > to any input subsystem KEY_* code and not reserve a set of 10 from the
+> > current KEY_* codes for the 10 special keys.
+> >
+> > One way I was thinking of approaching this was to generate EV_MSC type
+> > events (with a MSC_RAW code) using the value to indicate the state
+> > (pressed/released) and special key.
 
-Ah, yeah, good idea.  Anyone tried that?
+Doesn't HID already generate EV_MSC/MSC_SCAN for exactly this purpose
+so userspace knows what keys can be remapped? You may initially map all
+keys you don't know the usage to KEY_UNKNOWN.
 
-thanks,
+> >
+> > Another way to approach this would be to extend the KEY_* #defines with a
+> > special set of 10 codes for the 10 special keys.
+> >
 
-greg k-h
+No, please don't do this.
+
+-- 
+Dmitry
