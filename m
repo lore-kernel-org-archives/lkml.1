@@ -1,241 +1,473 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934322AbZIOCr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934144AbZIOCsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934322AbZIOCr6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 22:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758036AbZIOCrz
+	id S934144AbZIOCsU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 22:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934329AbZIOCsL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 22:47:55 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41022 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758034AbZIOCry (ORCPT
+	Mon, 14 Sep 2009 22:48:11 -0400
+Received: from mail153.messagelabs.com ([216.82.253.51]:8746 "EHLO
+	mail153.messagelabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933035AbZIOCsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 22:47:54 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 15 Sep 2009 11:45:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Greg KH <greg@kroah.com>, Andi Kleen <andi@firstfloor.org>,
-       Christoph Lameter <clameter@sgi.com>, Ingo Molnar <mingo@elte.hu>,
-       Tejun Heo <tj@kernel.org>, Nick Piggin <npiggin@suse.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] HWPOISON: prevent /dev/kmem users from accessing
- hwpoison pages
-Message-Id: <20090915114546.3663f4a3.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090915022328.587059822@intel.com>
-References: <20090915021851.168285585@intel.com>
-	<20090915022328.587059822@intel.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 Sep 2009 22:48:09 -0400
+X-VirusChecked: Checked
+X-Env-Sender: yuan-bo.ye@motorola.com
+X-Msg-Ref: server-2.tower-153.messagelabs.com!1252982891!18334278!1
+X-StarScan-Version: 6.1.3; banners=-,-,-
+X-Originating-IP: [136.182.1.14]
+Subject: [PATCH] Check write to slab memory which freed already using
+ mudflap v3
+From: Janboe Ye <yuan-bo.ye@motorola.com>
+To: vegard.nossum@gmail.com, graydon@redhat.com, fche@redhat.com,
+       mingo@elte.hu, cl@linux-foundation.org, penberg@cs.helsinki.fi
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel <linux-kernel@vger.kernel.org>, janboe.ye@gmail.com
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Date: Tue, 15 Sep 2009 10:48:01 +0800
+Message-Id: <1252982881.3445.7.camel@debian-nb>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+X-CFilter-Loop: Reflected
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 10:18:54 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+slab debug detects the corruption when it allocates and frees the slab. But if someone write to slab memory when it already freed, slab debug could only report its last free point when slab allocates the same block.
 
-> When /dev/kmem read()/write() encounters hwpoison page, stop it
-> and return the amount of work done till now.
-> 
+This information is not enough for debugging when system has complex memory usage. gcc mudflap could insert some check point when a memory is writing and it is helpful to check if the address is writing freed.
 
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Because most codes of kernel are drivers, it is most possible that drivers have such problem. So I use mudflap to compile all drivers.
 
-> CC: Greg KH <greg@kroah.com>
-> CC: Andi Kleen <andi@firstfloor.org>
-> CC: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  drivers/char/mem.c |   18 +++++++++++----
->  mm/vmalloc.c       |   51 +++++++++++++++++++++++++++----------------
->  2 files changed, 47 insertions(+), 22 deletions(-)
-> 
-> --- linux-mm.orig/drivers/char/mem.c	2009-09-15 10:14:20.000000000 +0800
-> +++ linux-mm/drivers/char/mem.c	2009-09-15 10:14:25.000000000 +0800
-> @@ -429,6 +429,9 @@ static ssize_t read_kmem(struct file *fi
->  			 */
->  			kbuf = xlate_dev_kmem_ptr((char *)p);
->  
-> +			if (unlikely(virt_addr_valid(kbuf) &&
-> +				     PageHWPoison(virt_to_page(kbuf))))
-> +				return -EIO;
->  			if (copy_to_user(buf, kbuf, sz))
->  				return -EFAULT;
->  			buf += sz;
-> @@ -474,6 +477,7 @@ do_write_kmem(unsigned long p, const cha
->  {
->  	ssize_t written, sz;
->  	unsigned long copied;
-> +	int err = 0;
->  
->  	written = 0;
->  #ifdef __ARCH_HAS_NO_PAGE_ZERO_MAPPED
-> @@ -500,13 +504,19 @@ do_write_kmem(unsigned long p, const cha
->  		 */
->  		ptr = xlate_dev_kmem_ptr((char *)p);
->  
-> +		if (unlikely(virt_addr_valid(ptr) &&
+kmemcheck is also helpful to check same issue, and it triggers trap every reading and writing, and it need to analysis the instruct which trigger the trap to get the memory address.
+This heavy depends on the cpu capability. arm has no single-step like x86, so kmemcheck is too heavy to run on real arm system. mudflap way is lighter than kmemcheck for this purpose.
 
+As stack allocation is useless for checking slab, kernel mudflap does not implement alloc which is required by gcc mudflap when codes use variable array. So variable array, such as array[i] which i could not determined by compiler, is not supported.
 
-> +			     PageHWPoison(virt_to_page(ptr)))) {
-> +			err = -EIO;
-> +			break;
-> +		}
-> +
->  		copied = copy_from_user(ptr, buf, sz);
->  		if (copied) {
->  			written += sz - copied;
-> -			if (written)
-> -				break;
-> -			return -EFAULT;
-> +			err = -EFAULT;
-> +			break;
->  		}
-> +
->  		buf += sz;
->  		p += sz;
->  		count -= sz;
-> @@ -514,7 +524,7 @@ do_write_kmem(unsigned long p, const cha
->  	}
->  
->  	*ppos += written;
-> -	return written;
-> +	return written ? written : err;
->  }
->  
->  
-> --- linux-mm.orig/mm/vmalloc.c	2009-09-15 10:14:18.000000000 +0800
-> +++ linux-mm/mm/vmalloc.c	2009-09-15 10:17:20.000000000 +0800
-> @@ -1661,6 +1661,8 @@ static int aligned_vread(char *buf, char
->  		if (length > count)
->  			length = count;
->  		p = vmalloc_to_page(addr);
-> +		if (unlikely(p && PageHWPoison(p)))
-> +			break;
->  		/*
->  		 * To do safe access to this _mapped_ area, we need
->  		 * lock. But adding lock here means that we need to add
-> @@ -1700,6 +1702,8 @@ static int aligned_vwrite(char *buf, cha
->  		if (length > count)
->  			length = count;
->  		p = vmalloc_to_page(addr);
-> +		if (unlikely(p && PageHWPoison(p)))
-> +			break;
->  		/*
->  		 * To do safe access to this _mapped_ area, we need
->  		 * lock. But adding lock here means that we need to add
-> @@ -1731,8 +1735,10 @@ static int aligned_vwrite(char *buf, cha
->   *	@count:		number of bytes to be read.
->   *
->   *	Returns # of bytes which addr and buf should be increased.
-> - *	(same number to @count). Returns 0 if [addr...addr+count) doesn't
-> - *	includes any intersect with alive vmalloc area.
-> + *	(same number to @count if no hwpoison pages encountered).
-> + *
-> + *	Returns 0 if [addr...addr+count) doesn't includes any intersect with
-> + *	alive vmalloc area.
->   *
->   *	This function checks that addr is a valid vmalloc'ed area, and
->   *	copy data from that area to a given buffer. If the given memory range
-> @@ -1740,8 +1746,6 @@ static int aligned_vwrite(char *buf, cha
->   *	proper area of @buf. If there are memory holes, they'll be zero-filled.
->   *	IOREMAP area is treated as memory hole and no copy is done.
->   *
-> - *	If [addr...addr+count) doesn't includes any intersects with alive
-> - *	vm_struct area, returns 0.
->   *	@buf should be kernel's buffer. Because	this function uses KM_USER0,
->   *	the caller should guarantee KM_USER0 is not used.
->   *
-> @@ -1757,7 +1761,8 @@ long vread(char *buf, char *addr, unsign
->  	struct vm_struct *tmp;
->  	char *vaddr, *buf_start = buf;
->  	unsigned long buflen = count;
-> -	unsigned long n;
-> +	unsigned long ret = 0;
-> +	unsigned long n = 0;
->  
->  	/* Don't allow overflow */
->  	if ((unsigned long) addr + count < count)
-> @@ -1780,12 +1785,16 @@ long vread(char *buf, char *addr, unsign
->  		if (n > count)
->  			n = count;
->  		if (!(tmp->flags & VM_IOREMAP))
-> -			aligned_vread(buf, addr, n);
-> -		else /* IOREMAP area is treated as memory hole */
-> +			ret = aligned_vread(buf, addr, n);
-> +		else { /* IOREMAP area is treated as memory hole */
->  			memset(buf, 0, n);
-> -		buf += n;
-> -		addr += n;
-> -		count -= n;
-> +			ret = n;
-> +		}
-> +		buf += ret;
-> +		addr += ret;
-> +		count -= ret;
-> +		if (ret < n)
-> +			break;
->  	}
->  finished:
->  	read_unlock(&vmlist_lock);
-> @@ -1796,7 +1805,7 @@ finished:
->  	if (buf != buf_start + buflen)
->  		memset(buf, 0, buflen - (buf - buf_start));
->  
-> -	return buflen;
-> +	return ret == n ? buflen : buflen - count;
->  }
->  
->  /**
-> @@ -1806,7 +1815,7 @@ finished:
->   *	@count:		number of bytes to be read.
->   *
->   *	Returns # of bytes which addr and buf should be increased.
-> - *	(same number to @count).
-> + *	(same number to @count if no hwpoison pages encountered).
->   *
->   *	This function checks that addr is a valid vmalloc'ed area, and
->   *	copy data from a buffer to the given addr. If specified range of
-> @@ -1829,7 +1838,9 @@ long vwrite(char *buf, char *addr, unsig
->  {
->  	struct vm_struct *tmp;
->  	char *vaddr;
-> -	unsigned long n, buflen;
-> +	unsigned long buflen;
-> +	unsigned long ret = 0;
-> +	unsigned long n = 0;
->  
->  	/* Don't allow overflow */
->  	if ((unsigned long) addr + count < count)
-> @@ -1852,14 +1863,18 @@ long vwrite(char *buf, char *addr, unsig
->  		if (n > count)
->  			n = count;
->  		if (!(tmp->flags & VM_IOREMAP))
-> -			aligned_vwrite(buf, addr, n);
-> -		buf += n;
-> -		addr += n;
-> -		count -= n;
-> +			ret = aligned_vwrite(buf, addr, n);
-> +		else
-> +			ret = n;
-> +		buf += ret;
-> +		addr += ret;
-> +		count -= ret;
-> +		if (ret < n)
-> +			break;
->  	}
->  finished:
->  	read_unlock(&vmlist_lock);
-> -	return buflen;
-> +	return ret == n ? buflen : buflen - count;
->  }
->  
->  /**
-> 
-> -- 
-> 
-> 
+Note: gcc 4.1.2 generates a wrong code in kbd_init of drivers/char/keyboard.c when use mudflap flag. Version 4.2 and 4.3 are ok.
+
+mudflap link: http://gcc.gnu.org/wiki/Mudflap_Pointer_Debugging
+
+Thanks a lot for comments
+
+Changeslong:
+V3: make codes more arch independence according to Pekka Enberg comments
+V2: add slub support according to Pekka Enberg comments
+V1: add mudflap core and slab support
+
+Signed-off-by: janboe <yuan-bo.ye@motorola.com>
+
+ arch/arm/include/asm/elf.h        |    1 +
+ arch/arm/include/asm/mf-runtime.h |    6 ++
+ arch/arm/kernel/Makefile          |    2 +-
+ arch/arm/kernel/module.c          |    1 +
+ arch/arm/kernel/mudflap.c         |   24 ++++++++
+ drivers/Makefile                  |    4 +-
+ include/linux/slab_def.h          |    4 ++
+ include/linux/slub_def.h          |    4 ++
+ include/mf-runtime.h              |   45 ++++++++++++++++
+ kernel/Makefile                   |    2 +-
+ kernel/mudflap.c                  |  105 +++++++++++++++++++++++++++++++++++++
+ lib/Kconfig.debug                 |    7 +++
+ mm/slab.c                         |   40 ++++++++++++++
+ mm/slub.c                         |   28 ++++++++++
+ 14 files changed, 270 insertions(+), 3 deletions(-)
+
+diff --git a/arch/arm/include/asm/elf.h b/arch/arm/include/asm/elf.h
+index c207504..30cb4b7 100644
+--- a/arch/arm/include/asm/elf.h
++++ b/arch/arm/include/asm/elf.h
+@@ -50,6 +50,7 @@ typedef struct user_fp elf_fpregset_t;
+ #define R_ARM_ABS32		2
+ #define R_ARM_CALL		28
+ #define R_ARM_JUMP24		29
++#define R_ARM_TARGET1		38
+ #define R_ARM_V4BX		40
+ #define R_ARM_PREL31		42
+ #define R_ARM_MOVW_ABS_NC	43
+diff --git a/arch/arm/include/asm/mf-runtime.h b/arch/arm/include/asm/mf-runtime.h
+new file mode 100644
+index 0000000..c1ba871
+--- /dev/null
++++ b/arch/arm/include/asm/mf-runtime.h
+@@ -0,0 +1,6 @@
++#ifndef _LINUX_ARM_MF_RUNTIME
++#define _LINUX_ARM_MF_RUNTIME
++#ifdef _MUDFLAP
++#pragma redefine_extname __memzero kmudflap_memzero
++#endif /* _MUDFLAP */
++#endif
+diff --git a/arch/arm/kernel/Makefile b/arch/arm/kernel/Makefile
+index ff89d0b..30d2c00 100644
+--- a/arch/arm/kernel/Makefile
++++ b/arch/arm/kernel/Makefile
+@@ -13,7 +13,7 @@ endif
+ obj-y		:= compat.o elf.o entry-armv.o entry-common.o irq.o \
+ 		   process.o ptrace.o setup.o signal.o \
+ 		   sys_arm.o stacktrace.o time.o traps.o
+-
++obj-$(CONFIG_MUDFLAP)		+= mudflap.o
+ obj-$(CONFIG_ISA_DMA_API)	+= dma.o
+ obj-$(CONFIG_ARCH_ACORN)	+= ecard.o 
+ obj-$(CONFIG_FIQ)		+= fiq.o
+diff --git a/arch/arm/kernel/module.c b/arch/arm/kernel/module.c
+index bac03c8..8cfe5f5 100644
+--- a/arch/arm/kernel/module.c
++++ b/arch/arm/kernel/module.c
+@@ -128,6 +128,7 @@ apply_relocate(Elf32_Shdr *sechdrs, const char *strtab, unsigned int symindex,
+ 			break;
+ 
+ 		case R_ARM_ABS32:
++		case R_ARM_TARGET1:
+ 			*(u32 *)loc += sym->st_value;
+ 			break;
+ 
+diff --git a/arch/arm/kernel/mudflap.c b/arch/arm/kernel/mudflap.c
+new file mode 100644
+index 0000000..d8f5594
+--- /dev/null
++++ b/arch/arm/kernel/mudflap.c
+@@ -0,0 +1,24 @@
++/*
++ * kernel/mudflap.c
++ *
++ * Copyright (C) 2009 Motorola Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ */
++#include<mf-runtime.h>
++#include<asm/string.h>
++#include<linux/module.h>
++
++void kmudflap_memzero(void *ptr, __kernel_size_t n)
++{
++	__mf_check(ptr, n, __MF_CHECK_WRITE, "memzero dest");
++	return __memzero(ptr, n);
++}
++EXPORT_SYMBOL(kmudflap_memzero);
+diff --git a/drivers/Makefile b/drivers/Makefile
+index bc4205d..d5e5063 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -4,7 +4,9 @@
+ # 15 Sep 2000, Christoph Hellwig <hch@infradead.org>
+ # Rewritten to use lists instead of if-statements.
+ #
+-
++ifdef CONFIG_MUDFLAP
++subdir-ccflags-y += -fmudflap -fmudflapir
++endif
+ obj-y				+= gpio/
+ obj-$(CONFIG_PCI)		+= pci/
+ obj-$(CONFIG_PARISC)		+= parisc/
+diff --git a/include/linux/slab_def.h b/include/linux/slab_def.h
+index 850d057..34be697 100644
+--- a/include/linux/slab_def.h
++++ b/include/linux/slab_def.h
+@@ -220,4 +220,8 @@ found:
+ 
+ #endif	/* CONFIG_NUMA */
+ 
++#ifdef CONFIG_MUDFLAP
++void slab_check_write(void *ptr, unsigned int sz, const char *location);
++#endif
++
+ #endif	/* _LINUX_SLAB_DEF_H */
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+index 4dcbc2c..e31443a 100644
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -304,4 +304,8 @@ static __always_inline void *kmalloc_node(size_t size, gfp_t flags, int node)
+ 
+ void __init kmem_cache_init_late(void);
+ 
++#ifdef CONFIG_MUDFLAP
++void slab_check_write(void *ptr, unsigned int sz, const char *location);
++#endif
++
+ #endif /* _LINUX_SLUB_DEF_H */
+diff --git a/include/mf-runtime.h b/include/mf-runtime.h
+new file mode 100644
+index 0000000..b69708a
+--- /dev/null
++++ b/include/mf-runtime.h
+@@ -0,0 +1,45 @@
++#ifndef _LINUX_MF_RUNTIME
++#define _LINUX_MF_RUNTIME
++/*
++ * Copyright (C) 2009 Motorola Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ */
++
++#include<linux/kernel.h>
++#include<asm/mf-runtime.h>
++
++/* Codes to describe the type of access to check */
++#define __MF_CHECK_READ 0
++#define __MF_CHECK_WRITE 1
++
++typedef void *__mf_ptr_t;
++typedef unsigned int __mf_uintptr_t;
++struct __mf_cache { __mf_uintptr_t low; __mf_uintptr_t high; };
++
++void __mf_check(void *ptr, unsigned int sz, int type, const char *location);
++void __mf_register(void *ptr, size_t sz, int type, const char *name);
++void __mf_init(void);
++void __mf_unregister(void *ptr, size_t sz, int type);
++
++#ifdef _MUDFLAP
++#pragma redefine_extname memcpy kmudflap_memcpy
++#pragma redefine_extname memset kmudflap_memset
++#pragma redefine_extname strcpy kmudflap_strcpy
++#pragma redefine_extname strncpy kmudflap_strncpy
++#endif /* _MUDFLAP */
++
++#endif
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 2093a69..c4c2402 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -22,7 +22,7 @@ CFLAGS_REMOVE_rtmutex-debug.o = -pg
+ CFLAGS_REMOVE_cgroup-debug.o = -pg
+ CFLAGS_REMOVE_sched_clock.o = -pg
+ endif
+-
++obj-$(CONFIG_MUDFLAP) += mudflap.o
+ obj-$(CONFIG_FREEZER) += freezer.o
+ obj-$(CONFIG_PROFILING) += profile.o
+ obj-$(CONFIG_SYSCTL_SYSCALL_CHECK) += sysctl_check.o
+diff --git a/kernel/mudflap.c b/kernel/mudflap.c
+new file mode 100644
+index 0000000..29e82cb
+--- /dev/null
++++ b/kernel/mudflap.c
+@@ -0,0 +1,105 @@
++/*
++ * kernel/mudflap.c
++ *
++ * Copyright (C) 2009 Motorola Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ */
++
++#include<linux/kernel.h>
++#include<linux/slab.h>
++#include<linux/module.h>
++#include<linux/mm.h>
++#include<mf-runtime.h>
++
++#define LOOKUP_CACHE_MASK_DFL 1023
++#define LOOKUP_CACHE_SIZE_MAX 65536 /* Allows max CACHE_MASK 0xFFFF */
++#define LOOKUP_CACHE_SHIFT_DFL 2
++
++struct __mf_cache __mf_lookup_cache[LOOKUP_CACHE_SIZE_MAX];
++EXPORT_SYMBOL(__mf_lookup_cache);
++
++uintptr_t __mf_lc_mask = LOOKUP_CACHE_MASK_DFL;
++EXPORT_SYMBOL(__mf_lc_mask);
++
++unsigned char __mf_lc_shift = LOOKUP_CACHE_SHIFT_DFL;
++EXPORT_SYMBOL(__mf_lc_shift);
++
++static inline int verify_ptr(unsigned long ptr)
++{
++	if (ptr < PAGE_OFFSET ||
++		(ptr > (unsigned long)high_memory && high_memory != 0))
++		return -EFAULT;
++
++	return 0;
++}
++
++void __mf_check(void *ptr, unsigned int sz, int type, const char *location)
++{
++	if (verify_ptr((unsigned long)ptr))
++		return;
++	if (type) /* write */
++		slab_check_write(ptr, sz, location);
++}
++EXPORT_SYMBOL(__mf_check);
++
++void *kmudflap_memset(void *s, int c, size_t count)
++{
++	__mf_check(s, count, __MF_CHECK_WRITE, "memset dest");
++	return memset(s, c, count);
++}
++EXPORT_SYMBOL(kmudflap_memset);
++
++void *kmudflap_memcpy(void *dest, const void *src, size_t count)
++{
++	__mf_check(dest, count, __MF_CHECK_WRITE, "memcpy dest");
++	return memcpy(dest, src, count);
++}
++EXPORT_SYMBOL(kmudflap_memcpy);
++
++char *kmudflap_strcpy(char *dest, const char *src)
++{
++	size_t n = strlen(src);
++	 __mf_check(dest, n, __MF_CHECK_WRITE, "strcpy dest");
++	return strcpy(dest, src);
++}
++EXPORT_SYMBOL(kmudflap_strcpy);
++
++void *kmudflap_strncpy(char *dest, const char *src, size_t count)
++{
++	size_t len = strnlen(src, count);
++	 __mf_check(dest, len, __MF_CHECK_WRITE, "strncpy dest");
++	return strncpy(dest, src, count);
++}
++EXPORT_SYMBOL(kmudflap_strncpy);
++
++void
++__mf_register(void *ptr, size_t sz, int type, const char *name)
++{
++}
++EXPORT_SYMBOL(__mf_register);
++
++void
++__mf_unregister(void *ptr, size_t sz, int type)
++{
++}
++EXPORT_SYMBOL(__mf_unregister);
++
++void __mf_init(void)
++{
++}
++EXPORT_SYMBOL(__mf_init);
++
++int
++__mf_set_options(const char *optstr)
++{
++	return 0;
++}
++EXPORT_SYMBOL(__mf_set_options);
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 12327b2..5e1f7ff 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -35,6 +35,13 @@ config FRAME_WARN
+ 	  Setting this too low will cause a lot of warnings.
+ 	  Setting it to 0 disables the warning.
+ 	  Requires gcc 4.4
++config MUDFLAP
++	bool "Enable mudflap to check slab write after free"
++	depends on DEBUG_SLAB_LEAK || SLUB_DEBUG_ON
++	help
++	  This uses mudflap which introduced by gcc4 to check slab corruption
++	  which is caused by writing after free.
++	  This is smaller and faster than kmemcheck.
+ 
+ config MAGIC_SYSRQ
+ 	bool "Magic SysRq key"
+diff --git a/mm/slab.c b/mm/slab.c
+index 7b5d4de..cb91a9d 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -4503,3 +4503,43 @@ size_t ksize(const void *objp)
+ 	return obj_size(virt_to_cache(objp));
+ }
+ EXPORT_SYMBOL(ksize);
++
++#ifdef CONFIG_MUDFLAP
++void slab_check_write(void *ptr, unsigned int sz, const char *location)
++{
++	struct page *page;
++	struct kmem_cache *cache;
++	struct slab *slab;
++	char *realobj;
++	void *obj;
++	unsigned long objnr, size;
++
++	page = virt_to_head_page(ptr);
++	if (!PageSlab(page))
++		return;
++
++	cache = page_get_cache(page);
++	slab = page_get_slab(page);
++	objnr = (unsigned)(ptr - slab->s_mem) / cache->buffer_size;
++	obj = index_to_obj(cache, slab, objnr);
++	realobj = obj + obj_offset(cache);
++	size = obj_size(cache);
++
++	if (slab_bufctl(slab)[objnr] != BUFCTL_FREE)
++		return;
++
++	printk(KERN_ERR "ptr: %p, sz: %d, location: %s\n",
++			ptr, sz, location);
++	printk(KERN_ERR "write to freed object, size %ld\n",
++			size);
++	if (cache->flags & SLAB_STORE_USER) {
++		printk(KERN_ERR "Last user: [<%p>]",
++				*dbg_userword(cache, obj));
++		print_symbol("(%s)",
++				(unsigned long)*dbg_userword(cache, obj));
++		printk("\n");
++	}
++
++	dump_stack();
++}
++#endif
+diff --git a/mm/slub.c b/mm/slub.c
+index a9201d8..4f13514 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -4729,3 +4729,31 @@ static int __init slab_proc_init(void)
+ }
+ module_init(slab_proc_init);
+ #endif /* CONFIG_SLABINFO */
++
++#ifdef CONFIG_MUDFLAP
++void slab_check_write(void *ptr, unsigned int sz, const char *location)
++{
++	struct page *page;
++	struct kmem_cache *s;
++	void *obj, *start;
++	unsigned long objnr;
++
++	page = virt_to_head_page(ptr);
++	if (!PageSlab(page))
++		return;
++
++	s = page->slab;
++	start = page_address(page);
++	objnr = (unsigned long)(ptr - start) / s->size;
++	obj = start + s->size * objnr;
++	if (!on_freelist(s, page, obj))
++		return;
++
++	printk(KERN_ERR "ptr: %p, sz: %d, location: %s\n",
++			ptr, sz, location);
++	printk(KERN_ERR "write to freed object, size %d\n",
++			s->size);
++	print_tracking(s, obj);
++	dump_stack();
++}
++#endif
 
