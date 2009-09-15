@@ -1,71 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758155AbZIOHRW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758161AbZIOHSQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758155AbZIOHRW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 03:17:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758116AbZIOHRS
+	id S1758161AbZIOHSQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 03:18:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbZIOHSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 03:17:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42227 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755209AbZIOHRR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 03:17:17 -0400
-Subject: Re: Warning from ring buffer code (Was: Re: linux-next: tip tree
- build warning)
-From: Peter Zijlstra <peterz@infradead.org>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <srostedt@redhat.com>, Christopher Li <sparse@chrisli.org>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-sparse@vger.kernel.org, Josh Triplett <josh@freedesktop.org>
-In-Reply-To: <20090914184123.GC6045@nowhere>
-References: <20090804161640.70817ee6.sfr@canb.auug.org.au>
-	 <1249403089.4634.139.camel@localhost.localdomain>
-	 <20090912165300.9d257283.sfr@canb.auug.org.au>
-	 <20090912073906.GA3972@elte.hu> <1252753957.12217.10.camel@ht.satnam>
-	 <1252941416.2964.143.camel@localhost.localdomain>
-	 <70318cbf0909141009v46581785m4c70edf31fcb79fa@mail.gmail.com>
-	 <1252952238.2964.154.camel@localhost.localdomain>
-	 <1252952621.31964.0.camel@twins>
-	 <1252953076.2964.156.camel@localhost.localdomain>
-	 <20090914184123.GC6045@nowhere>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 09:16:34 +0200
-Message-Id: <1252998994.5506.0.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 03:18:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49497 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758116AbZIOHSK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 03:18:10 -0400
+Date: Tue, 15 Sep 2009 07:17:31 GMT
+From: "tip-bot for Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Valdis.Kletnieks@vt.edu,
+       paulmck@linux.vnet.ibm.com, hpa@zytor.com, mingo@redhat.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       Valdis.Kletnieks@vt.edu, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <12528585112362-git-send-email->
+References: <12528585112362-git-send-email->
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:core/urgent] rcu: Kconfig help needs to say that TREE_PREEMPT_RCU scales down
+Message-ID: <tip-da054e04e4d7c8d340ddc8dc45d4f7cad7672b96@git.kernel.org>
+Git-Commit-ID: da054e04e4d7c8d340ddc8dc45d4f7cad7672b96
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 07:17:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 20:41 +0200, Frederic Weisbecker wrote:
-> On Mon, Sep 14, 2009 at 02:31:16PM -0400, Steven Rostedt wrote:
-> > On Mon, 2009-09-14 at 20:23 +0200, Peter Zijlstra wrote:
-> > > On Mon, 2009-09-14 at 14:17 -0400, Steven Rostedt wrote:
-> > > > Frederic, how big can one of those events get. The ring buffer (and
-> > > > TRACE_EVENT) allow up to almost a page size, which is very hefty for the
-> > > > stack. This code needs to either be rewritten or we need to set a limit
-> > > > to the size of a profile entry.
-> > > 
-> > > Yeah, that needs to get a re-write.. I've complained about this when it
-> > > went in.
-> > 
-> > One answer is to create a per cpu buffer that is big enough to hold the
-> > data needed. Then you can disable interrupts an use it without worry.
-> > 
-> > If you need to also handle NMIs, then create a per_cpu NMI buffer too,
-> > and use that if "in_nmi()" is true.
-> > 
-> > -- Steve
-> 
-> 
-> Looks like a nice idea.
-> 
-> Peter, does that sound acceptable to you to disable interrupts during a
-> profiled tracepoint event?
+Commit-ID:  da054e04e4d7c8d340ddc8dc45d4f7cad7672b96
+Gitweb:     http://git.kernel.org/tip/da054e04e4d7c8d340ddc8dc45d4f7cad7672b96
+Author:     Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+AuthorDate: Sun, 13 Sep 2009 09:15:08 -0700
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 15 Sep 2009 08:43:58 +0200
 
-It does anyway, a little further down the line, so sure.
+rcu: Kconfig help needs to say that TREE_PREEMPT_RCU scales down
 
+To quote Valdis:
+
+    This leaves somebody who has a laptop wondering which
+    choice is best for a system with only one or two cores that
+    has CONFIG_PREEMPT defined. One choice says it scales down
+    nicely, the other explicitly has a 'depends on PREEMPT'
+    attached to it...
+
+So add "scales down nicely" to TREE_PREEMPT_RCU to match that of
+TREE_RCU.
+
+Suggested-by: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: laijs@cn.fujitsu.com
+Cc: dipankar@in.ibm.com
+Cc: akpm@linux-foundation.org
+Cc: mathieu.desnoyers@polymtl.ca
+Cc: josh@joshtriplett.org
+Cc: dvhltc@us.ibm.com
+Cc: niv@us.ibm.com
+Cc: peterz@infradead.org
+Cc: rostedt@goodmis.org
+LKML-Reference: <12528585112362-git-send-email->
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ init/Kconfig |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index 8e8b76d..4c2c936 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -331,7 +331,8 @@ config TREE_PREEMPT_RCU
+ 	  This option selects the RCU implementation that is
+ 	  designed for very large SMP systems with hundreds or
+ 	  thousands of CPUs, but for which real-time response
+-	  is also required.
++	  is also required.  It also scales down nicely to
++	  smaller systems.
+ 
+ endchoice
+ 
