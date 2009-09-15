@@ -1,59 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZIOOoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754520AbZIOOpP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbZIOOoR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZIOOoN
+	id S1754520AbZIOOpP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:45:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754445AbZIOOpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:44:13 -0400
-Received: from fifo99.com ([67.223.236.141]:41036 "EHLO fifo99.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754238AbZIOOoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:44:12 -0400
-Subject: Re: [PATCH v3 1/3] pSeries: cede latency specifier helper function.
-From: Daniel Walker <dwalker@fifo99.com>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Joel Schopp <jschopp@austin.ibm.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
-       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-In-Reply-To: <20090915120701.20523.94109.stgit@sofia.in.ibm.com>
-References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
-	 <20090915120701.20523.94109.stgit@sofia.in.ibm.com>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 07:45:05 -0700
-Message-Id: <1253025905.11643.335.camel@desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Tue, 15 Sep 2009 10:45:13 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:51094 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754238AbZIOOpM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 10:45:12 -0400
+To: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: [GIT PULL] DRBD for 2.6.32
+Content-Disposition: inline
+From: Philipp Reisner <philipp.reisner@linbit.com>
+Organization: LINBIT
+Cc: Andrew Morton <akpm@linux-foundation.org>, drbd-dev@lists.linbit.com,
+       Lars Ellenberg <lars.ellenberg@linbit.com>,
+       Philipp Reisner <philipp.reisner@linbit.com>
+X-OTRS-FollowUp-SenderType: agent
+Date: Tue, 15 Sep 2009 16:45:13 +0200
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200909151645.14256.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 17:37 +0530, Gautham R Shenoy wrote:
->         // Used to pass parms from the OS to PLIC for SetAsrAndRfid
->         u64     saved_gpr3;             // Saved GPR3                   x20-x27
->         u64     saved_gpr4;             // Saved GPR4                   x28-x2F
-> -       u64     saved_gpr5;             // Saved GPR5                   x30-x37
-> +       union {
-> +               u64     saved_gpr5;     // Saved GPR5                   x30-x37
-> +               struct {
-> +                       u8      cede_latency_hint;  //                  x30
-> +                       u8      reserved[7];        //                  x31-x36
-> +               } fields;
-> +       } gpr5_dword;
-> +
->  
->         u8      dtl_enable_mask;        // Dispatch Trace Log mask      x38-x38
->         u8      donate_dedicated_cpu;   // Donate dedicated CPU cycles  x39-x39
+Hi Linus,
 
-Could you drop the C99 style comments (use /* */ instead)? If you run
-checkpatch on this it will error on these lines..
+Please pull
+git://git.drbd.org/linux-2.6-drbd.git drbd
 
-Daniel
+DRBD is a shared-nothing, replicated block device. It is designed to
+serve as a building block for high availability clusters and
+in this context, is a "drop-in" replacement for shared storage.
 
+It has been discussed and reviewed on the list since March,
+and Andrew has asked us to send a pull request for 2.6.32-rc1.
+
+Stephen added us to linux-next in July, and our most recent 
+build failure against Jens' 2.6.32-rc1 updates was ironed out this 
+morning. So it should be in fairly good shape.
+
+ Documentation/blockdev/drbd/DRBD-8.3-data-packets.svg          |  588 +
+ Documentation/blockdev/drbd/DRBD-data-packets.svg              |  459 +
+ Documentation/blockdev/drbd/README.txt                         |   16
+ Documentation/blockdev/drbd/conn-states-8.dot                  |   18
+ Documentation/blockdev/drbd/disk-states-8.dot                  |   16
+ Documentation/blockdev/drbd/drbd-connection-state-overview.dot |   85
+ Documentation/blockdev/drbd/node-states-8.dot                  |   14
+ MAINTAINERS                                                    |   13
+ drivers/block/Kconfig                                          |    2
+ drivers/block/Makefile                                         |    1
+ drivers/block/drbd/Kconfig                                     |   82
+ drivers/block/drbd/Makefile                                    |    8
+ drivers/block/drbd/drbd_actlog.c                               | 1484 +++
+ drivers/block/drbd/drbd_bitmap.c                               | 1327 ++
+ drivers/block/drbd/drbd_int.h                                  | 2258 +++++
+ drivers/block/drbd/drbd_main.c                                 | 3735 ++++++++
+ drivers/block/drbd/drbd_nl.c                                   | 2365 +++++
+ drivers/block/drbd/drbd_proc.c                                 |  266
+ drivers/block/drbd/drbd_receiver.c                             | 4456 ++++++++++
+ drivers/block/drbd/drbd_req.c                                  | 1132 ++
+ drivers/block/drbd/drbd_req.h                                  |  327
+ drivers/block/drbd/drbd_strings.c                              |  113
+ drivers/block/drbd/drbd_tracing.c                              |  753 +
+ drivers/block/drbd/drbd_tracing.h                              |   87
+ drivers/block/drbd/drbd_vli.h                                  |  351
+ drivers/block/drbd/drbd_worker.c                               | 1529 +++
+ drivers/block/drbd/drbd_wrappers.h                             |   91
+ include/linux/drbd.h                                           |  349
+ include/linux/drbd_limits.h                                    |  137
+ include/linux/drbd_nl.h                                        |  137
+ include/linux/drbd_tag_magic.h                                 |   83
+ include/linux/lru_cache.h                                      |  294
+ lib/Kconfig                                                    |    3
+ lib/Makefile                                                   |    2
+ lib/lru_cache.c                                                |  560 +
+ 35 files changed, 23141 insertions(+)
+
+-phil
