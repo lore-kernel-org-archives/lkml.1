@@ -1,44 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757662AbZIOAiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754564AbZIOOxM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757662AbZIOAiM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 20:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757633AbZIOAiL
+	id S1754564AbZIOOxM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:53:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZIOOxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 20:38:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49791 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754717AbZIOAiK (ORCPT
+	Tue, 15 Sep 2009 10:53:09 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:57512 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754439AbZIOOxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 20:38:10 -0400
-Date: Mon, 14 Sep 2009 17:37:21 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: James Morris <jmorris@namei.org>
-cc: Eric Paris <eparis@redhat.com>, David Howells <dhowells@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-security-module@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [GIT] security / creds fixes
-In-Reply-To: <alpine.LRH.2.00.0909151008440.11936@tundra.namei.org>
-Message-ID: <alpine.LFD.2.01.0909141736520.4950@localhost.localdomain>
-References: <20090914162613.9016.79225.stgit@warthog.procyon.org.uk> <alpine.LRH.2.00.0909151008440.11936@tundra.namei.org>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-7
-Content-Transfer-Encoding: 8BIT
+	Tue, 15 Sep 2009 10:53:08 -0400
+Date: Tue, 15 Sep 2009 01:38:05 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: "Jung-Ik (John) Lee" <jilee@google.com>,
+       Robert Hancock <hancockrwd@gmail.com>,
+       Daniel Walker <dwalker@fifo99.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Grant Grundler <grundler@google.com>,
+       Gwendal Grignou <gwendal@google.com>, Eric Uhrhane <ericu@google.com>,
+       Tejun Heo <tj@kernel.org>, Alan Cox <alan@linux.intel.com>
+Subject: Re: [PATCH] libata: Add pata_atp867x driver for Artop/Acard ATP867X
+  controllers
+Message-ID: <20090915013805.7f2fa251@lxorguk.ukuu.org.uk>
+In-Reply-To: <4AAC3EEA.1080605@pobox.com>
+References: <8b5805ff0909111906j68c20c3yf7226f2798a67d80@mail.gmail.com>
+	<1252721641.28368.34.camel@desktop>
+	<8b5805ff0909120359g2faf661br463b19518d935110@mail.gmail.com>
+	<4AABD122.2000400@gmail.com>
+	<8b5805ff0909121717w1516c273k2a568779b9c31662@mail.gmail.com>
+	<4AAC3EEA.1080605@pobox.com>
+X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 15 Sep 2009, James Morris wrote:
+> Ideally you would use ATA_CBL_PATA_UNK / ata_cable_unknown, but it seems 
+> that ATA_CBL_PATA_UNK has grown rather useless in the current kernel.
 > 
-> Please pull this if you haven't pulled the other one already.
+> We should probably (a) update libata-core/libata-sff to do something 
+> intelligent with ATA_CBL_PATA_UNK,
 
-No. This is entirely broken. I get about a million
+It does - it says "Use drive side detect the controller hasn't got a
+clue".
 
-	include/linux/selinux.h:92: warning: ¡selinux_is_enabled¢ defined but not used
-
-warnings. Very annoying.
-
-		Linus
+Alan
