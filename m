@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZIOOD1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754225AbZIOOIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZIOOD1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:03:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZIOODX
+	id S1754225AbZIOOIf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbZIOOIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:03:23 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:57981 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754061AbZIOODW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:03:22 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: drbd tree build failure
-Date: Tue, 15 Sep 2009 16:03:23 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Jens Axboe <jens.axboe@oracle.com>, drbd-dev@lists.linbit.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Nikanth Karthikesan <knikanth@suse.de>
-References: <20090915160739.86e85ab3.sfr@canb.auug.org.au> <20090915062306.GP14984@kernel.dk> <20090915165309.f07381ec.sfr@canb.auug.org.au>
-In-Reply-To: <20090915165309.f07381ec.sfr@canb.auug.org.au>
-X-OTRS-FollowUp-SenderType: agent
+	Tue, 15 Sep 2009 10:08:34 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:35552 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753592AbZIOOId (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 10:08:33 -0400
+Message-ID: <4AAF9FD8.1010008@redhat.com>
+Date: Tue, 15 Sep 2009 16:08:24 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Lightning/1.0pre Thunderbird/3.0b3
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Amit Shah <amit.shah@redhat.com>, Alan Cox <alan@linux.intel.com>,
+       rusty@rustcorp.com.au, virtualization@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, greg@kroah.com
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for generic
+ guest and host communication
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <1252678386-17404-2-git-send-email-amit.shah@redhat.com> <20090911170010.34c80f2d@linux.intel.com> <20090915123752.GB5247@amit-x200.redhat.com> <4AAF8F26.8030503@codemonkey.ws>
+In-Reply-To: <4AAF8F26.8030503@codemonkey.ws>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909151603.24843.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 September 2009 08:53:09 Stephen Rothwell wrote:
-> Hi Jens,
+On 09/15/09 14:57, Anthony Liguori wrote:
+> That's probably not what we want. I imagine what we want is:
 >
-> On Tue, 15 Sep 2009 08:23:06 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
-> > Fix looks correct.
+> /dev/ttyV0
+> /dev/ttyV1
+> /dev/ttyVN
+
+Yes.
+
+> And then we want:
 >
-> Thanks for the confirmation.  So hopefully one of these trees will be
-> merged by Linus soon an this can be fixed up in the other.
+> /sys/class/virtio-console/ttyV0/name -> "org.qemu.clipboard"
 
-Thanks everybody.
+Yes.
 
-I have applied Stephens' patch to the DRBD tree.
+> Userspace can detect when new virtio-consoles appear via udev events.
+> When it sees a new ttyVN, it can then look in sysfs to discover it's name.
 
--phil
+No.  udev can create symlinks for you, so apps don't have to dig into 
+sysfs.  You'll need a rule along the lines (untested):
+
+    SUBSYSTEM=="virtio", \
+    DRIVERS="virtio-console", \
+    SYMLINK+="vcon/$attr{name}"
+
+then udev will create a /dev/vcon/org.qemu.clipboard symlink pointing to 
+dev/ttyV0.  Apps can just open /dev/vcon/$name then.
+
+cheers,
+   Gerd
 
