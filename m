@@ -1,46 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753469AbZIOMhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753401AbZIOMgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753469AbZIOMhP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 08:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZIOMhN
+	id S1753401AbZIOMgk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 08:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZIOMgf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 08:37:13 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:54266 "EHLO mx1.redhat.com"
+	Tue, 15 Sep 2009 08:36:35 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:32871 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753318AbZIOMhL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 08:37:11 -0400
-Message-ID: <4AAF8A03.5020806@redhat.com>
-Date: Tue, 15 Sep 2009 15:35:15 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1.1) Gecko/20090814 Fedora/3.0-2.6.b3.fc11 Thunderbird/3.0b3
+	id S1753051AbZIOMge (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 08:36:34 -0400
+Date: Tue, 15 Sep 2009 14:36:17 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing - support multiple pids in set_pid_ftrace file
+Message-ID: <20090915123617.GA26284@jolsa.lab.eng.brq.redhat.com>
+References: <1253005169-32709-1-git-send-email-jolsa@redhat.com> <4AAF60F7.6040107@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com>
-In-Reply-To: <4AAE961B.6020509@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAF60F7.6040107@cn.fujitsu.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/14/2009 10:14 PM, Gregory Haskins wrote:
-> To reiterate, as long as the model is such that the ppc boards are
-> considered the "owner" (direct access, no translation needed) I believe
-> it will work.  If the pointers are expected to be owned by the host,
-> then my model doesn't work well either.
->    
+On Tue, Sep 15, 2009 at 05:40:07PM +0800, Li Zefan wrote:
+> jolsa@redhat.com wrote:
+SNIP
 
-In this case the x86 is the owner and the ppc boards use translated 
-access.  Just switch drivers and device and it falls into place.
+> > +	list_for_each_entry_safe(fpid, safe, &ftrace_pids, list) {
+> > +		struct pid *pid = fpid->pid;
+> > +
+> > +		clear_ftrace_pid_task(&pid);
+> 
+> Now we can change clear_ftrace_pid_task() to take struct pid *
+> instead of struct pid**.
+> 
+changed
 
--- 
-error compiling committee.c: too many arguments to function
+> > +
+> > +		if (pid != ftrace_swapper_pid)
+> > +			put_pid(pid);
+> > +
+> 
+> clear_ftrace_pid_task() already called put_pid().
+> 
+oops, you're right.. missed that
 
+> > +		list_del(&fpid->list);
+> > +		kfree(fpid);
+> > +	}
+> > +
+> > +	ftrace_update_pid_func();
+> > +	ftrace_startup_enable(0);
+> > +
+> > +	mutex_unlock(&ftrace_lock);
+> > +}
+> > +
+> ...
+> >  static ssize_t
+> >  ftrace_pid_write(struct file *filp, const char __user *ubuf,
+> >  		   size_t cnt, loff_t *ppos)
+> >  {
+> > -	struct pid *pid;
+> >  	char buf[64];
+> >  	long val;
+> >  	int ret;
+> > @@ -2897,57 +3016,36 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+> >  
+> >  	buf[cnt] = 0;
+> >  
+> > +	/*
+> > +	 * Allow the "echo > set_ftrace_pid" to clean
+> > +	 * the pids quietly.
+> > +	 */
+> > +	if (!*ppos && *buf == '\n' && cnt == 1)
+> > +		return 1;
+> > +
+> 
+> How about:
+> 	strstrip(buf);
+> 	if (strlen(buf) == 0)
+> 		return 1;
+> 
+thats better, changed
+
+> So "echo -n '' > set_ftrace_pid" works too.
+> 
+> >  	ret = strict_strtol(buf, 10, &val);
+> >  	if (ret < 0)
+> >  		return ret;
+> >  
+> 
+
+I'll send out v2 shortly, thanks
+jirka
