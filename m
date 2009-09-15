@@ -1,65 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754531AbZIOOqf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754545AbZIOOtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754531AbZIOOqf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:46:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbZIOOqb
+	id S1754545AbZIOOtB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754495AbZIOOs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:46:31 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48454 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753821AbZIOOqa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:46:30 -0400
-Subject: Re: [PATCHv2] tracing - support multiple pids in set_pid_ftrace
- file
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: jolsa@redhat.com
-Cc: mingo@elte.hu, lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <1253019893-30131-1-git-send-email-jolsa@redhat.com>
-References: <1253019893-30131-1-git-send-email-jolsa@redhat.com>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 15 Sep 2009 10:46:33 -0400
-Message-Id: <1253025993.20020.111.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
+	Tue, 15 Sep 2009 10:48:56 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:53108 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754491AbZIOOsz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 10:48:55 -0400
+Message-ID: <4AAFA952.3050204@linux.vnet.ibm.com>
+Date: Tue, 15 Sep 2009 09:48:50 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+MIME-Version: 1.0
+To: Nathan Fontenot <nfont@austin.ibm.com>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/5] kernel handling of CPU DLPAR
+References: <4AAABC55.4070207@austin.ibm.com> <4AAABDF5.4090604@austin.ibm.com>
+In-Reply-To: <4AAABDF5.4090604@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 15:04 +0200, jolsa@redhat.com wrote:
-> Adding the possibility to set more than 1 pid in the set_pid_ftrace file,
-> thus allowing to trace more than 1 independent processes.
-> 
-> Usage:
-> 
-> sh-4.0# echo 284 > ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> 284
-> sh-4.0# echo 1 >> ./set_ftrace_pid 
-> sh-4.0# echo 0 >> ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> swapper tasks
-> 1
-> 284
-> sh-4.0# echo 4 > ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> 4
-> sh-4.0# echo > ./set_ftrace_pid 
-> sh-4.0# cat ./set_ftrace_pid 
-> no pid
-> sh-4.0# 
-> 
+Nathan Fontenot wrote:
+> +static ssize_t cpu_probe_store(struct class *class, const char *buf,
+> +                   size_t count)
+> +{
+> +    struct device_node *dn;
+> +    u32 drc_index;
+> +    char *cpu_name;
+> +    int rc;
+> +
+> +    drc_index = simple_strtoull(buf, NULL, 0);
 
-A quick look at the patch looks fine to me.
+Can just use simple_strtoul here instead.
 
-Li, I know you reviewed the previous version. Do you have time to look
-at this one again? If so, could you, and add a "Reviewed-by" line.
+> +    if (!drc_index)
+> +        return -EINVAL;
+> +
+> +    rc = acquire_drc(drc_index);
+> +    if (rc)
+> +        return rc;
+> +
+> +    dn = configure_connector(drc_index);
+> +    if (!dn) {
+> +        release_drc(drc_index);
+> +        return rc;
+> +    }
+> +
+> +    /* fixup dn name */
+> +    cpu_name = kzalloc(strlen(dn->full_name) + strlen("/cpus/") + 1,
+> +               GFP_KERNEL);
+> +    sprintf(cpu_name, "/cpus/%s", dn->full_name);
+> +    kfree(dn->full_name);
+> +    dn->full_name = cpu_name;
+> +
+> +    rc = add_device_tree_nodes(dn);
+> +    if (rc)
+> +        release_drc(drc_index);
+> +
+> +    return rc ? rc : count;
+> +}
+> +
 
-Thanks,
 
--- Steve
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
 
 
