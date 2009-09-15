@@ -1,84 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbZIORLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757570AbZIORR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbZIORLb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 13:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757500AbZIORL2
+	id S1757570AbZIORR6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 13:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755163AbZIORR4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 13:11:28 -0400
-Received: from mail-qy0-f172.google.com ([209.85.221.172]:44973 "EHLO
-	mail-qy0-f172.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754300AbZIORL1 convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 13:17:56 -0400
+Received: from mail-bw0-f219.google.com ([209.85.218.219]:45319 "EHLO
+	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754428AbZIORRz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 13:11:27 -0400
+	Tue, 15 Sep 2009 13:17:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ewEi5H8zh2gF+hKRCz+jc/EhqDh+FF058CE8RQ99w+RVbj5ES1p8W5ANk3HJ6dGgRo
-         yWfJkMtdQ5NS5Ccjs0bI4Y2xjcvlym+Mbjqxl0RFQKXksh5KOLTjte94G9hY5A9FDO1m
-         l9BNHW+uoChExR4SHJ7n4nk9SMK2wWuYPqS58=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=BXrEkNtgVeZV7toERESI50A9UZWiHVdfRzQUMPjuDLtP58Pxn6Nxb5x6oC+il7Rzy6
+         bToMytoTk+nkuuP3/+hjd4JExhwrbChd3Wqilx9skL2XBY0qtbsFsVWmzXLFFlo/vA9g
+         K1sqpAtfxA8afzZAmbBQIErnOTfnCNmu9Vbgk=
+Date: Tue, 15 Sep 2009 10:17:47 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Robin Getz <rgetz@blackfin.uclinux.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, uclinux-dist-devel@blackfin.uclinux.org,
+       Michael Hennerich <michael.hennerich@analog.com>,
+       Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH] input/keyboard: add ADP5588 QWERTY I2C Keyboard Input
+	device driver
+Message-ID: <20090915171747.GC29241@core.coreip.homeip.net>
+References: <1252966719-27557-1-git-send-email-vapier@gentoo.org> <20090915062050.GB10232@core.coreip.homeip.net> <8bd0f97a0909150419p1048bfe9j243fa30a0581b198@mail.gmail.com> <20090915162655.GB29241@core.coreip.homeip.net> <8bd0f97a0909150946t65c445ddo6741c2a472c1738c@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <aac07123ee2b14a0ac25d1652dbe0780.squirrel@intranet.cs.nmsu.edu>
-References: <aac07123ee2b14a0ac25d1652dbe0780.squirrel@intranet.cs.nmsu.edu>
-Date: Tue, 15 Sep 2009 22:41:30 +0530
-Message-ID: <5d5443650909151011k4b21a6d0n28ac6142c3d7161d@mail.gmail.com>
-Subject: Re: Using EV_MSC or extending KEY_*
-From: Trilok Soni <soni.trilok@gmail.com>
-To: "Rick L. Vinyard, Jr." <rvinyard@cs.nmsu.edu>
-Cc: Linux USB <linux-usb@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0909150946t65c445ddo6741c2a472c1738c@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adding linux-input.
+On Tue, Sep 15, 2009 at 12:46:14PM -0400, Mike Frysinger wrote:
+> On Tue, Sep 15, 2009 at 12:26, Dmitry Torokhov wrote:
+> > On Tue, Sep 15, 2009 at 07:19:14AM -0400, Mike Frysinger wrote:
+> >> On Tue, Sep 15, 2009 at 02:20, Dmitry Torokhov wrote:
+> >> > On Mon, Sep 14, 2009 at 06:18:39PM -0400, Mike Frysinger wrote:
+> >> >> +static int __devexit adp5588_remove(struct i2c_client *client)
+> >> >> +{
+> >> >> +     struct adp5588_kpad *kpad = dev_get_drvdata(&client->dev);
+> >> >> +
+> >> >> +     adp5588_write(client, CFG, 0);
+> >> >> +     free_irq(client->irq, kpad);
+> >> >
+> >> > cancel_work_sync() is missing. Could you try the updated version below?
+> >>
+> >> i dont think i have any adp5588 hardware.  Robin: do we have any in
+> >> Norwood ?  otherwise, it'll have to wait for Michael to get back to
+> >> double check.
+> >>
+> >> > BTW, maybe you shoudl convert to threaded IRQs here?
+> >>
+> >> yes, after your suggestion for the previous driver, we've been looking
+> >> at all our input drivers to convert to threaded IRQs.  do we need to
+> >> convert all of them before acceptance, or can we merge now and post an
+> >> updated patch after ?
+> >
+> > It really depends on the driver. If there is a race between IRQ and the
+> > WQ in the driver I will request you to fix it one way or another before
+> > accepting the driver (and quite often using threaded IRQ gets rid of the
+> > race). In the cases like this particular driver though I am not even
+> > convinced that we need threaded IRQ. The driver is not expected to
+> > generate lots of events rapidly so using keventd as it does now is
+> > probably the best solution.
+> 
+> i dont think there is a race here as we only use the IRQ to schedule
+> the WQ; we dont read/pass info between the two.
+> 
 
-On Tue, Sep 15, 2009 at 9:49 PM, Rick L. Vinyard, Jr.
-<rvinyard@cs.nmsu.edu> wrote:
-> On the Logitech G13 there are a set of 10 special keys at the top of the
-> device.
->
-> I've written the driver so that it maintains a map from the general keys
-> (G1-G22) to Linux' input subsystem keys.
->
-> The map can be changed on the fly, allowing multiple keymaps to be loaded.
->
-> As a side note I haven't provided for this functionality (multiple
-> keymaps) in the driver since this can be maintained from userspace, but it
-> does need to know about the currently loaded keymap so that when the raw
-> HID events are parsed the appropriate EV_KEY events can be input.
->
-> I could set it up so that the special keys also map to a KEY_* code.
-> However, I'd prefer to set things up so that any G1-G22 key can be mapped
-> to any input subsystem KEY_* code and not reserve a set of 10 from the
-> current KEY_* codes for the 10 special keys.
->
-> One way I was thinking of approaching this was to generate EV_MSC type
-> events (with a MSC_RAW code) using the value to indicate the state
-> (pressed/released) and special key.
->
-> Another way to approach this would be to extend the KEY_* #defines with a
-> special set of 10 codes for the 10 special keys.
->
-> Any suggestions on the better approach?
->
-> Thanks,
->
-> Rick
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Right, that's what I was trying to say - there is no race in
+thisparticular driver.
 
+> at any rate, i noticed that this driver isnt the final one.  i spent
+> some time cleaning it up a bit more (style, messages, dev_pm_ops), so
+> i'll merge your changes and mine and post another one.
 
+OK, great.
 
 -- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+Dmitry
