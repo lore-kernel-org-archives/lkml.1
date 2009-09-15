@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752175AbZIOJdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752211AbZIOJda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752175AbZIOJdU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752011AbZIOJdM
+	id S1752211AbZIOJda (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZIOJd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:33:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49340 "EHLO hera.kernel.org"
+	Tue, 15 Sep 2009 05:33:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49356 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752035AbZIOJdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:33:11 -0400
-Date: Tue, 15 Sep 2009 09:32:37 GMT
+	id S1752077AbZIOJdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:33:25 -0400
+Date: Tue, 15 Sep 2009 09:32:50 GMT
 From: tip-bot for Ingo Molnar <mingo@elte.hu>
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
        hpa@zytor.com, mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
@@ -21,53 +21,31 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
 In-Reply-To: <new-submission>
 References: <new-submission>
 To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/core] perf sched: Display time in milliseconds, reorganize output
-Message-ID: <tip-d9340c1db3f52460a8335eeb127a2728c5bba6ce@git.kernel.org>
-Git-Commit-ID: d9340c1db3f52460a8335eeb127a2728c5bba6ce
+Subject: [tip:perfcounters/core] perf sched: Add runtime stats
+Message-ID: <tip-ea92ed5a8f4e6c638efe7de2efe8a875d580ad3f@git.kernel.org>
+Git-Commit-ID: ea92ed5a8f4e6c638efe7de2efe8a875d580ad3f
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:32:38 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:32:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  d9340c1db3f52460a8335eeb127a2728c5bba6ce
-Gitweb:     http://git.kernel.org/tip/d9340c1db3f52460a8335eeb127a2728c5bba6ce
+Commit-ID:  ea92ed5a8f4e6c638efe7de2efe8a875d580ad3f
+Gitweb:     http://git.kernel.org/tip/ea92ed5a8f4e6c638efe7de2efe8a875d580ad3f
 Author:     Ingo Molnar <mingo@elte.hu>
 AuthorDate: Sat, 12 Sep 2009 10:08:34 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 13 Sep 2009 10:22:44 +0200
+CommitDate: Sun, 13 Sep 2009 10:22:45 +0200
 
-perf sched: Display time in milliseconds, reorganize output
+perf sched: Add runtime stats
 
-After:
+Extend the latency tracking structure with scheduling atom
+runtime info - and sum it up during per task display.
 
------------------------------------------------------------------------------------
- Task              |  runtime ms | switches | average delay ms | maximum delay ms |
------------------------------------------------------------------------------------
- migration/0       |    0.000 ms |        1 | avg:    0.047 ms | max:    0.047 ms |
- ksoftirqd/0       |    0.000 ms |        1 | avg:    0.039 ms | max:    0.039 ms |
- migration/1       |    0.000 ms |        3 | avg:    0.013 ms | max:    0.016 ms |
- migration/3       |    0.000 ms |        2 | avg:    0.003 ms | max:    0.004 ms |
- migration/4       |    0.000 ms |        1 | avg:    0.022 ms | max:    0.022 ms |
- distccd           |    0.000 ms |        1 | avg:    0.004 ms | max:    0.004 ms |
- distccd           |    0.000 ms |        1 | avg:    0.014 ms | max:    0.014 ms |
- distccd           |    0.000 ms |        2 | avg:    0.000 ms | max:    0.000 ms |
- distccd           |    0.000 ms |        2 | avg:    0.012 ms | max:    0.019 ms |
- distccd           |    0.000 ms |        1 | avg:    0.002 ms | max:    0.002 ms |
- as                |    0.000 ms |        2 | avg:    0.019 ms | max:    0.019 ms |
- as                |    0.000 ms |        3 | avg:    0.015 ms | max:    0.017 ms |
- as                |    0.000 ms |        1 | avg:    0.009 ms | max:    0.009 ms |
- perf              |    0.000 ms |        1 | avg:    0.001 ms | max:    0.001 ms |
- gcc               |    0.000 ms |        1 | avg:    0.021 ms | max:    0.021 ms |
- run-mozilla.sh    |    0.000 ms |        2 | avg:    0.010 ms | max:    0.017 ms |
- mozilla-plugin-   |    0.000 ms |        1 | avg:    0.006 ms | max:    0.006 ms |
- gcc               |    0.000 ms |        2 | avg:    0.013 ms | max:    0.013 ms |
------------------------------------------------------------------------------------
-
-(The runtime ms column is not filled in yet.)
+(Also clean up a few details.)
 
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Mike Galbraith <efault@gmx.de>
@@ -79,83 +57,162 @@ Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- tools/perf/builtin-sched.c         |   17 +++++++++--------
- tools/perf/util/trace-event-read.c |    6 ++++--
- 2 files changed, 13 insertions(+), 10 deletions(-)
+ tools/perf/builtin-sched.c |   58 ++++++++++++++++++++++++++++---------------
+ 1 files changed, 38 insertions(+), 20 deletions(-)
 
 diff --git a/tools/perf/builtin-sched.c b/tools/perf/builtin-sched.c
-index 84699cf..a084c28 100644
+index a084c28..c382f53 100644
 --- a/tools/perf/builtin-sched.c
 +++ b/tools/perf/builtin-sched.c
-@@ -1096,14 +1096,15 @@ static void output_lat_thread(struct thread_latency *lat)
- 	if (!count)
- 		return;
+@@ -243,8 +243,8 @@ add_sched_event_run(struct task_desc *task, nsec_t timestamp, u64 duration)
+ 	nr_run_events++;
+ }
  
--	ret = printf("%s", lat->thread->comm);
-+	ret = printf(" %s ", lat->thread->comm);
+-static unsigned long targetless_wakeups;
+-static unsigned long multitarget_wakeups;
++static unsigned long		targetless_wakeups;
++static unsigned long		multitarget_wakeups;
  
--	for (i = 0; i < 25 - ret; i++)
-+	for (i = 0; i < 19 - ret; i++)
- 		printf(" ");
+ static void
+ add_sched_event_wakeup(struct task_desc *task, nsec_t timestamp,
+@@ -485,10 +485,10 @@ static void create_tasks(void)
+ 	}
+ }
  
+-static nsec_t cpu_usage;
+-static nsec_t runavg_cpu_usage;
+-static nsec_t parent_cpu_usage;
+-static nsec_t runavg_parent_cpu_usage;
++static nsec_t			cpu_usage;
++static nsec_t			runavg_cpu_usage;
++static nsec_t			parent_cpu_usage;
++static nsec_t			runavg_parent_cpu_usage;
+ 
+ static void wait_for_tasks(void)
+ {
+@@ -858,9 +858,9 @@ replay_fork_event(struct trace_fork_event *fork_event,
+ }
+ 
+ static struct trace_sched_handler replay_ops  = {
+-	.wakeup_event = replay_wakeup_event,
+-	.switch_event = replay_switch_event,
+-	.fork_event = replay_fork_event,
++	.wakeup_event		= replay_wakeup_event,
++	.switch_event		= replay_switch_event,
++	.fork_event		= replay_fork_event,
+ };
+ 
+ #define TASK_STATE_TO_CHAR_STR "RSDTtZX"
+@@ -877,6 +877,7 @@ struct lat_snapshot {
+ 	enum thread_state	state;
+ 	u64			wake_up_time;
+ 	u64			sched_in_time;
++	u64			runtime;
+ };
+ 
+ struct thread_latency {
+@@ -951,6 +952,7 @@ latency_fork_event(struct trace_fork_event *fork_event __used,
+ 	/* should insert the newcomer */
+ }
+ 
++__used
+ static char sched_out_state(struct trace_switch_event *switch_event)
+ {
+ 	const char *str = TASK_STATE_TO_CHAR_STR;
+@@ -960,17 +962,15 @@ static char sched_out_state(struct trace_switch_event *switch_event)
+ 
+ static void
+ lat_sched_out(struct thread_latency *lat,
+-	     struct trace_switch_event *switch_event)
++	     struct trace_switch_event *switch_event __used, u64 delta)
+ {
+ 	struct lat_snapshot *snapshot;
+ 
+-	if (sched_out_state(switch_event) == 'R')
+-		return;
+-
+ 	snapshot = calloc(sizeof(*snapshot), 1);
+ 	if (!snapshot)
+ 		die("Non memory");
+ 
++	snapshot->runtime = delta;
+ 	list_add_tail(&snapshot->list, &lat->snapshot_list);
+ }
+ 
+@@ -997,16 +997,31 @@ lat_sched_in(struct thread_latency *lat, u64 timestamp)
+ 	snapshot->sched_in_time = timestamp;
+ }
+ 
+-
+ static void
+ latency_switch_event(struct trace_switch_event *switch_event,
+ 		     struct event *event __used,
+-		     int cpu __used,
++		     int cpu,
+ 		     u64 timestamp,
+ 		     struct thread *thread __used)
+ {
+ 	struct thread_latency *out_lat, *in_lat;
+ 	struct thread *sched_out, *sched_in;
++	u64 timestamp0;
++	s64 delta;
++
++	if (cpu >= MAX_CPUS || cpu < 0)
++		return;
++
++	timestamp0 = cpu_last_switched[cpu];
++	cpu_last_switched[cpu] = timestamp;
++	if (timestamp0)
++		delta = timestamp - timestamp0;
++	else
++		delta = 0;
++
++	if (delta < 0)
++		die("hm, delta: %Ld < 0 ?\n", delta);
++
+ 
+ 	sched_out = threads__findnew(switch_event->prev_pid, &threads, &last_match);
+ 	sched_in = threads__findnew(switch_event->next_pid, &threads, &last_match);
+@@ -1028,7 +1043,7 @@ latency_switch_event(struct trace_switch_event *switch_event,
+ 	}
+ 
+ 	lat_sched_in(in_lat, timestamp);
+-	lat_sched_out(out_lat, switch_event);
++	lat_sched_out(out_lat, switch_event, delta);
+ }
+ 
+ static void
+@@ -1067,9 +1082,9 @@ latency_wakeup_event(struct trace_wakeup_event *wakeup_event,
+ }
+ 
+ static struct trace_sched_handler lat_ops  = {
+-	.wakeup_event = latency_wakeup_event,
+-	.switch_event = latency_switch_event,
+-	.fork_event = latency_fork_event,
++	.wakeup_event		= latency_wakeup_event,
++	.switch_event		= latency_switch_event,
++	.fork_event		= latency_fork_event,
+ };
+ 
+ static void output_lat_thread(struct thread_latency *lat)
+@@ -1080,8 +1095,11 @@ static void output_lat_thread(struct thread_latency *lat)
+ 	int ret;
+ 	u64 max = 0, avg;
+ 	u64 total = 0, delta;
++	u64 total_runtime = 0;
+ 
+ 	list_for_each_entry(shot, &lat->snapshot_list, list) {
++		total_runtime += shot->runtime;
++
+ 		if (shot->state != THREAD_SCHED_IN)
+ 			continue;
+ 
+@@ -1104,7 +1122,7 @@ static void output_lat_thread(struct thread_latency *lat)
  	avg = total / count;
  
--	printf("%5d        %10llu       %10llu      %10llu\n", count, total, avg, max);
-+	printf("|%9.3f ms |%9d | avg:%9.3f ms | max:%9.3f ms |\n",
-+		0.0, count, (double)avg/1e9, (double)max/1e9);
+ 	printf("|%9.3f ms |%9d | avg:%9.3f ms | max:%9.3f ms |\n",
+-		0.0, count, (double)avg/1e9, (double)max/1e9);
++		(double)total_runtime/1e9, count, (double)avg/1e9, (double)max/1e9);
  }
  
  static void __cmd_lat(void)
-@@ -1113,11 +1114,9 @@ static void __cmd_lat(void)
- 	setup_pager();
- 	read_events();
- 
--	printf(" Tasks");
--	printf("                     count");
--	printf("          total");
--	printf("              avg");
--	printf("            max\n\n");
-+	printf("-----------------------------------------------------------------------------------\n");
-+	printf(" Task              |  runtime ms | switches | average delay ms | maximum delay ms |\n");
-+	printf("-----------------------------------------------------------------------------------\n");
- 
- 	next = rb_first(&lat_snapshot_root);
- 
-@@ -1128,6 +1127,8 @@ static void __cmd_lat(void)
- 		output_lat_thread(lat);
- 		next = rb_next(next);
- 	}
-+
-+	printf("-----------------------------------------------------------------------------------\n");
- }
- 
- static struct trace_sched_handler *trace_handler;
-diff --git a/tools/perf/util/trace-event-read.c b/tools/perf/util/trace-event-read.c
-index a1217a1..1b5c847 100644
---- a/tools/perf/util/trace-event-read.c
-+++ b/tools/perf/util/trace-event-read.c
-@@ -458,12 +458,13 @@ struct record *trace_read_data(int cpu)
- 	return data;
- }
- 
--void trace_report (void)
-+void trace_report(void)
- {
- 	const char *input_file = "trace.info";
- 	char buf[BUFSIZ];
- 	char test[] = { 23, 8, 68 };
- 	char *version;
-+	int show_version = 0;
- 	int show_funcs = 0;
- 	int show_printk = 0;
- 
-@@ -480,7 +481,8 @@ void trace_report (void)
- 		die("not a trace file (missing tracing)");
- 
- 	version = read_string();
--	printf("version = %s\n", version);
-+	if (show_version)
-+		printf("version = %s\n", version);
- 	free(version);
- 
- 	read_or_die(buf, 1);
