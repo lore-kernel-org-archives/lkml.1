@@ -1,132 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758286AbZIOSsM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758319AbZIOSvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758286AbZIOSsM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 14:48:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbZIOSsL
+	id S1758319AbZIOSvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 14:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753035AbZIOSvM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 14:48:11 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:40988 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758047AbZIOSsK (ORCPT
+	Tue, 15 Sep 2009 14:51:12 -0400
+Received: from mail-ew0-f206.google.com ([209.85.219.206]:44661 "EHLO
+	mail-ew0-f206.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZIOSvL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 14:48:10 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 15 Sep 2009 11:48:09 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: adi hodos <thefatredguy@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Suggested addition to epoll interface -
- epoll_post_notification()
-In-Reply-To: <2517f1930909150559p505b583fpf3501a1c7dad6634@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0909151143070.20414@makko.or.mcafeemobile.com>
-References: <2517f1930909150559p505b583fpf3501a1c7dad6634@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 15 Sep 2009 14:51:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iWP13MNaBSZLY8qh11e1dWa1p0zbvxSb9fwYpQ71wWK1zWzG96HDqRIhXW1AOtq+pe
+         i5R3SrKqQddQys1vckv6EUH+iArQ4CLEnOfgvhBk1eoTw/fyBVUXekmigBIqlbdf3zR5
+         dlHU8ILBHDrZlDieDSr4aveV7KAvwFGiedER4=
+Date: Tue, 15 Sep 2009 22:51:12 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [crash] kernel BUG at net/core/pktgen.c:3503!
+Message-ID: <20090915185112.GA17587@lenovo>
+References: <20090911.202543.52533792.davem@davemloft.net> <20090915183647.GA11628@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915183647.GA11628@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009, adi hodos wrote:
+[Ingo Molnar - Tue, Sep 15, 2009 at 08:36:47PM +0200]
+| 
+| not sure which merge caused this, but i got this boot crash with latest 
+| -git:
+| 
+| calling  flow_cache_init+0x0/0x1b9 @ 1
+| initcall flow_cache_init+0x0/0x1b9 returned 0 after 64 usecs
+| calling  pg_init+0x0/0x37c @ 1
+| pktgen 2.72: Packet Generator for packet performance testing.
+| ------------[ cut here ]------------
+| kernel BUG at net/core/pktgen.c:3503!
+| invalid opcode: 0000 [#1] PREEMPT SMP DEBUG_PAGEALLOC
+| last sysfs file: 
+| 
 
-> Hello everyone. Thank you for your time in reading this.
-> I have been playing with epoll lately and I would like to make a suggestion
-> regarding the epoll interface.
-> It would be nice to have a function to wake up a thread/process that is blocked
-> on an epoll_wait() call and sent it some
-> user defined data in the form of a struct epoll_event parameter ( something
-> similar with PostQueuedCompletionStatus() from Windows ).
-> My suggestion is for a function like this : int epoll_post_notification( int
-> epoll_descriptor , struct epoll_event* event );
-> It could be of much help in scenarios like these :
-> 
-> int e_accept;
-> int e_clients;
-> 
-> typedef enum {
->  keycode_client_connection ,
->  keycode_signal ,
->  keycode_socketio ,
->  keycode_fileio ,
->  keycode_event ,
->  keycode_timer
->  ....
-> } event_key_type;
-> 
-> struct event_key {
->   event_key_type keycode;
-> };
-> 
-> struct eventfd_wrapper {
->  struct eventkey ek;
->  int fd_event;
-> };
-> 
-> struct signalfd_wrapper {
->  struct eventkey ek;
->  int fd_signal;
-> };
-> 
-> struct client {
->  struct event_key ek;
->  int sock;
->  ....
-> };
-> 
-> struct user_posted_event {
->  struct event_key ek;
->  union {
->   void*    ptr_data;
->   int      i_data;
->   uint32_t u32;
->   uint32_t u64;
->  } u;
-> };
-> 
-> 
-> // thread A - waits for client connections using an epoll interface
-> for ( ; ; ) {
->  epoll_wait( e_accept , ... );
-> 
->  int s = accept();
->  struct client* new_client = allocate_newclient();
->  new_client->sock = s;
->  struct user_posted_event* ue = allocate_newuserevent();
->  ue->ek.keycode = keycode_client_connection;
->  ue->u.ptr_data = new_client;
-> 
->  struct epoll_event e;
->  e.data.ptr = ue;
->  epoll_post_notification( e_clients , &e );
-> }
-> 
-> // thread b - serves clients
-> for( ; ; ) {
->  struct epoll_event[..] e;
->  epoll_wait( e_clients , e , ... );
-> 
->  struct event_key* key = ( struct event_key* )( e.data.ptr );
->  if( key->keycode == keycode_client_connection ) {
->    // handle new client connection
->  } else if( key->keycode == keycode_signal ) {
->    // handle signal
->  } else if( .... ) {
->   ...
->  }
-> 
-> Again , thank you for your time in reviewing this.
+Hi Ingo,
 
-Just use a pipe(2) to send data from A to B.
-The read-side of the pipe will be in thread B epoll set, thread A would 
-prepare and write(2) a "message" (binary struct really), and thread B 
-would be wake up and read(2) the message.
-no need to add anything.
-Do you really have a dedicated thread for accepts though?
+just curious, will the following patch fix the problem?
+I've been fixing problem with familiar symthoms on
+system with custome virtual cpu implementation so
+it may not help in mainline but anyway :)
 
+	-- Cyrill
+---
+ net/core/pktgen.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-- Davide
-
-
+Index: linux-2.6.git/net/core/pktgen.c
+=====================================================================
+--- linux-2.6.git.orig/net/core/pktgen.c
++++ linux-2.6.git/net/core/pktgen.c
+@@ -3511,7 +3511,7 @@ static int pktgen_thread_worker(void *ar
+ 	struct pktgen_dev *pkt_dev = NULL;
+ 	int cpu = t->cpu;
+ 
+-	BUG_ON(smp_processor_id() != cpu);
++	BUG_ON(task_cpu(current) != cpu);
+ 
+ 	init_waitqueue_head(&t->queue);
+ 	complete(&t->start_done);
