@@ -1,107 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752798AbZIOKr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752824AbZIOKta@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752798AbZIOKr7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 06:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752295AbZIOKry
+	id S1752824AbZIOKta (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 06:49:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZIOKt0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 06:47:54 -0400
-Received: from mail.gmx.net ([213.165.64.20]:36383 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752031AbZIOKrx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 06:47:53 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19hohY7AQphZhqwp2JmpgpPLFkdNqKicphnfaTJoB
-	SB55grL9nayAnU
-Subject: Re: More BFS benchmarks and scheduler issues
-From: Mike Galbraith <efault@gmx.de>
-To: Jason Garrett-Glaser <darkshikari@gmail.com>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <28f2fcbc0909141529n4ee32d6t47ca8bdaf02dad@mail.gmail.com>
-References: <28f2fcbc0909141529n4ee32d6t47ca8bdaf02dad@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 12:47:47 +0200
-Message-Id: <1253011667.9128.16.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.47
+	Tue, 15 Sep 2009 06:49:26 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42002 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752450AbZIOKtZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 06:49:25 -0400
+Date: Tue, 15 Sep 2009 12:49:20 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Felipe Contreras <felipe.contreras@gmail.com>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Jamie Lokier <jamie@shareable.org>, Marek Vasut <marek.vasut@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+Message-ID: <20090915104919.GE19989@elf.ucw.cz>
+References: <20090913230008.GC30169@n2100.arm.linux.org.uk> <20090914002100.GD30621@shareable.org> <20090914081001.GB14519@n2100.arm.linux.org.uk> <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com> <20090914140059.GC21580@n2100.arm.linux.org.uk> <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com> <20090914144028.GG21580@n2100.arm.linux.org.uk> <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com> <20090915103739.GA19519@elf.ucw.cz> <94a0d4530909150347h642772bvc8175109393e905f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <94a0d4530909150347h642772bvc8175109393e905f@mail.gmail.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 15:29 -0700, Jason Garrett-Glaser wrote:
-> As an x264 developer, I have no position on the whole debate over
-> BFS/CFS (nor am I a kernel hacker), but a friend of mine recently ran
-> this set of tests with BFS vs CFS that still doesn't make any sense to
-> me and suggests some sort of serious suboptimality in the existing
-> scheduler:
-
-Yup, I confirmed your friend's results.
-
-> >>>>>>>>>>>>>>>>>>
+On Tue 2009-09-15 13:47:01, Felipe Contreras wrote:
+> On Tue, Sep 15, 2009 at 1:37 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> >
+> >> >> > Because then you get it whenever you configure for V4 as the lowest
+> >> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
+> >> >> > It's far better to leave it as is and just accept that the old CPUs
+> >> >> > will have longer than necessary delays.  If people really really
+> >> >> > care (and there's likely to only be a small minority of them now)
+> >> >> > changing the '0' to a '1' is a very simple change for them to carry
+> >> >> > in their local tree.  Unlike getting the right unrolling etc.
+> >> >>
+> >> >> Well, they can also 'git revert' this patch. If somebody really cares
+> >> >> I think they should shout now and provide a better patch, otherwise
+> >> >> this one should be merged.
+> >> >
+> >> > On the other hand, having the code there as it currently stands is not
+> >> > harmful in any way, so leaving it there is just as easy.
+> >>
+> >> It makes the code less understandable. I'm not sure about linux's
+> >> practices, but an #if 0 generally means somebody is being lazy.
+> >
+> > Not in this case, as you was explained to you. You may want to add
+> > explaining comment above #if 0....
 > 
-> Background information necessary to replicate test:
-> 
-> Input file: http://media.xiph.org/video/derf/y4m/soccer_4cif.y4m
-> x264 source: git://git.videolan.org/x264.git
-> revision of x264 used: e553a4c
-> CPU: Core 2 Quad Q9300 (2.5GHz)
-> Kernel/distro/platform: 2.6.31 patched with the gentoo patchset, Gentoo, x86_64.
-> BFS patch: Latest available (BFS 220).
-> Methodology: Each test was run 3 times. The median of the three was
-> then selected.
-> 
-> ./x264/x264 --preset ultrafast --no-scenecut --sync-lookahead 0 --qp
-> 20 samples/soccer_4cif.y4m -o /dev/null --threads X
->     BFS                 CFS
-> 1: 124.79 fps       131.69 fps
-> 2: 252.14 fps       192.14 fps
-> 3: 376.55 fps       223.24 fps
-> 4: 447.69 fps       242.54 fps
-> 5: 447.98 fps       252.43 fps
-> 6: 447.87 fps       253.56 fps
-> 7: 444.79 fps       250.37 fps
-> 8: 441.08 fps       251.95 fps
+> Yes, but I've no idea in which situations somebody might want to
+> enable that code. Old chips? Which old chips?
 
-After a bit of testing, it turns out that NEXT_BUDDY and LB_BIAS
-features are _both_ doing injury to this load.  We've been looking at
-NEXT_BUDDY, but LB_BIAS is a new target.
-
-Thanks a bunch for the nice repeatable testcase!
-
-	-Mike
-
-x264 --preset ultrafast --no-scenecut --sync-lookahead 0 --qp 20 -o /dev/null --threads $THREADS soccer_4cif.y4m
-
-2.6.32-tip-smp
-4  encoded 600 frames, 280.07 fps, 22096.60 kb/s
-   encoded 600 frames, 280.67 fps, 22096.60 kb/s
-   encoded 600 frames, 274.80 fps, 22096.60 kb/s
-
-8  encoded 600 frames, 269.57 fps, 22096.60 kb/s
-   encoded 600 frames, 282.96 fps, 22096.60 kb/s
-   encoded 600 frames, 279.66 fps, 22096.60 kb/s
-
-2.6.31-bfs221-smp
-4  encoded 600 frames, 408.38 fps, 22096.60 kb/s
-   encoded 600 frames, 409.17 fps, 22096.60 kb/s
-   encoded 600 frames, 407.50 fps, 22096.60 kb/s
-
-8  encoded 600 frames, 409.82 fps, 22096.60 kb/s
-   encoded 600 frames, 413.00 fps, 22096.60 kb/s
-   encoded 600 frames, 411.10 fps, 22096.60 kb/s
-
-test test test...
-
-2.6.32-tip-smp NO_NEXT_BUDDY NO_LB_BIAS
-4  encoded 600 frames, 418.07 fps, 22096.60 kb/s
-   encoded 600 frames, 418.72 fps, 22096.60 kb/s
-   encoded 600 frames, 419.10 fps, 22096.60 kb/s
-
-8  encoded 600 frames, 425.75 fps, 22096.60 kb/s
-   encoded 600 frames, 425.45 fps, 22096.60 kb/s
-   encoded 600 frames, 422.49 fps, 22096.60 kb/s
-
-
+If you udelay() produces too long delays, as was explained in the thread. 
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
