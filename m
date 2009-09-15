@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZIOGxS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZIOG4G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758127AbZIOGxS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 02:53:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbZIOGxO
+	id S1758126AbZIOG4G (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 02:56:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbZIOG4C
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 02:53:14 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:52147 "EHLO smtps.tip.net.au"
+	Tue, 15 Sep 2009 02:56:02 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:37547 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758109AbZIOGxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 02:53:13 -0400
-Date: Tue, 15 Sep 2009 16:53:09 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Philipp Reisner <philipp.reisner@linbit.com>, drbd-dev@linbit.com,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Nikanth Karthikesan <knikanth@suse.de>
-Subject: Re: linux-next: drbd tree build failure
-Message-Id: <20090915165309.f07381ec.sfr@canb.auug.org.au>
-In-Reply-To: <20090915062306.GP14984@kernel.dk>
-References: <20090915160739.86e85ab3.sfr@canb.auug.org.au>
-	<20090915062306.GP14984@kernel.dk>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V"
+	id S1751794AbZIOG4B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 02:56:01 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <19119.14970.129589.518079@cargo.ozlabs.ibm.com>
+Date: Tue, 15 Sep 2009 16:55:54 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] perf_counter: fix buffer overflow in perf_copy_attr()
+In-Reply-To: <4AAF37D4.5010706@cn.fujitsu.com>
+References: <4AAF37D4.5010706@cn.fujitsu.com>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Xiao Guangrong writes:
 
-Hi Jens,
+> If we pass a big size data over perf_counter_open syscall, the kernel
+> will copy this data to a small buffer, It will cause kernel crash.
+> 
+> This bug make kernel unsafe and no-root user can trigger it.
+> 
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> ---
+>  kernel/perf_counter.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+> index 667ab25..75c46c0 100644
+> --- a/kernel/perf_counter.c
+> +++ b/kernel/perf_counter.c
+> @@ -4216,6 +4216,7 @@ static int perf_copy_attr(struct perf_counter_attr __user *uattr,
+>  			if (val)
+>  				goto err_size;
+>  		}
+> +		size = sizeof(*attr);
 
-On Tue, 15 Sep 2009 08:23:06 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
->
-> Fix looks correct.
+Looks right to me.
 
-Thanks for the confirmation.  So hopefully one of these trees will be
-merged by Linus soon an this can be fixed up in the other.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.10 (GNU/Linux)
-
-iEYEARECAAYFAkqvOdUACgkQjjKRsyhoI8ypQwCghZr31qeK003FazBbXcWbQvU9
-YrgAnAxRBQJR+IkKOnuXqoR30eNbE3da
-=S44f
------END PGP SIGNATURE-----
-
---Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V--
+Acked-by: Paul Mackerras <paulus@samba.org>
