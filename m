@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751649AbZIOJIt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751862AbZIOJI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751649AbZIOJIt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:08:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZIOJIr
+	id S1751862AbZIOJI4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZIOJIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:08:47 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:47701 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751117AbZIOJIq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:08:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40220
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751205AbZIOJIq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 15 Sep 2009 05:08:46 -0400
-Date: Tue, 15 Sep 2009 11:08:47 +0200
-From: Jan Kara <jack@suse.cz>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       chris.mason@oracle.com, tytso@mit.edu, akpm@linux-foundation.org,
-       trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
-	opportunistic writeback
-Message-ID: <20090915090847.GA12169@duck.suse.cz>
-References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-7-git-send-email-jens.axboe@oracle.com> <20090914133307.GJ24075@duck.suse.cz> <20090914134207.GA14830@infradead.org> <20090914192803.GL14984@kernel.dk> <20090914194242.GM14984@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914194242.GM14984@kernel.dk>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Date: Tue, 15 Sep 2009 02:09:03 -0700 (PDT)
+Message-Id: <20090915.020903.93643290.davem@davemloft.net>
+To: yi.zhu@intel.com
+Cc: mel@csn.ul.ie, reinette.chatre@intel.com, elendil@planet.nl,
+       Larry.Finger@lwfinger.net, linville@tuxdriver.com,
+       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       assaf.krauss@intel.com, johannes@sipsolutions.net,
+       mohamed.abbas@intel.com, netdev@vger.kernel.org
+Subject: Re: alloc skb based on a given data buffer
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1253005050.7549.58.camel@debian>
+References: <1253003420.7549.51.camel@debian>
+	<20090915.013321.07006714.davem@davemloft.net>
+	<1253005050.7549.58.camel@debian>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon 14-09-09 21:42:43, Jens Axboe wrote:
-> On Mon, Sep 14 2009, Jens Axboe wrote:
-> > On Mon, Sep 14 2009, Christoph Hellwig wrote:
-> > > On Mon, Sep 14, 2009 at 03:33:07PM +0200, Jan Kara wrote:
-> > > > On Mon 14-09-09 11:36:33, Jens Axboe wrote:
-> > > > > bdi_start_writeback() is currently split into two paths, one for
-> > > > > WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
-> > > > > for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
-> > > > > only WB_SYNC_NONE.
-> > > >   What I don't like about this patch is that if somebody sets up
-> > > > writeback_control with WB_SYNC_ALL mode set and then submits it to disk via
-> > > > bdi_start_writeback() it will just silently convert his writeback to an
-> > > > asynchronous one.
-> > > >   So I'd maybe leave setting of sync_mode to the caller and just WARN_ON if
-> > > > it does not match the purpose of the function...
-> > > 
-> > > Or initialize the wb entirely inside these functions.  For the sync case
-> > > we really only need a superblock as argument, and for writeback it's
-> > > bdi + nr_pages.  And also make sure they consistenly return void as
-> > > no one cares about the return value.
-> > 
-> > Yes, I thought about doing that and like that better than the warning.
-> > Just pass in the needed args and allocate+fill the wbc on stack. I'll
-> > make that change.
-> 
-> That works out much better, imho:
-> 
-> http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=270c12655d7d11e234d335a8ab0540c02c034b66
-  Yeah, the code looks better. BTW, how about converting also
-bdi_writeback_all() to get superblock and nr_pages as an argument?
-Currently it seems to be the only place "above" flusher thread which uses
-wbc and it's just constructed in the callers of bdi_writeback_all() and
-then disassembled inside the function...
+From: Zhu Yi <yi.zhu@intel.com>
+Date: Tue, 15 Sep 2009 16:57:29 +0800
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+> Thanks. So we can put the 8K buffer into 2 skb_shinfo()->frags[] slots
+> and set nr_frags to 2, right? Is this supported allover the network code
+> already? At a first glance, I didn't find any frags handling in mac80211
+> stack.
+
+You have to pre-pull the link level protocol headers into the
+linear area, but that's it.
+
+Again, see niu.c for details, it does:
+
+static void niu_rx_skb_append(struct sk_buff *skb, struct page *page,
+			      u32 offset, u32 size)
+{
+	int i = skb_shinfo(skb)->nr_frags;
+	skb_frag_t *frag = &skb_shinfo(skb)->frags[i];
+
+	frag->page = page;
+	frag->page_offset = offset;
+	frag->size = size;
+
+	skb->len += size;
+	skb->data_len += size;
+	skb->truesize += size;
+
+	skb_shinfo(skb)->nr_frags = i + 1;
+}
+
+to add pages to SKBs and then at the end it goes:
+
+	skb_reserve(skb, NET_IP_ALIGN);
+	__pskb_pull_tail(skb, min(len, NIU_RXPULL_MAX));
+
+Right before giving the SKB to the networking stack.  NIU_RXPULL_MAX
+should be a value that will be large enough to cover the largest
+possible link level header.
