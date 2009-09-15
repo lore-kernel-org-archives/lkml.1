@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZIOO60@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754625AbZIOO6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754580AbZIOO60 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:58:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754548AbZIOO6W
+	id S1754625AbZIOO6p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbZIOO6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:58:22 -0400
-Received: from sj-iport-2.cisco.com ([171.71.176.71]:58521 "EHLO
-	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754495AbZIOO6V (ORCPT
+	Tue, 15 Sep 2009 10:58:39 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:50145 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754590AbZIOO6i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:58:21 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEABtIr0qrR7PE/2dsb2JhbADHCohMAY93BYQX
-X-IronPort-AV: E=Sophos;i="4.44,390,1249257600"; 
-   d="scan'208";a="204813764"
-From: Roland Dreier <rdreier@cisco.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-rdma@vger.kernel.org, linux-kernel@vger.kernel.org,
-       general@lists.openfabrics.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
-References: <aday6omhz9d.fsf@cisco.com> <20090915113434.GF1328@ucw.cz>
-X-Message-Flag: Warning: May contain useful information
-Date: Tue, 15 Sep 2009 07:57:56 -0700
-In-Reply-To: <20090915113434.GF1328@ucw.cz> (Pavel Machek's message of "Tue,
-	15 Sep 2009 13:34:34 +0200")
-Message-ID: <ada7hw0gsqz.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Tue, 15 Sep 2009 10:58:38 -0400
+Date: Tue, 15 Sep 2009 20:28:34 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Joel Schopp <jschopp@austin.ibm.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Arun R Bharadwaj <arun@linux.vnet.ibm.com>,
+       linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH v3 0/3] cpu: pseries: Cpu offline states framework
+Message-ID: <20090915145834.GG4846@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090915120629.20523.79019.stgit@sofia.in.ibm.com>
+ <1253016701.5506.73.camel@laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 15 Sep 2009 14:57:57.0275 (UTC) FILETIME=[E92CBEB0:01CA3614]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1253016701.5506.73.camel@laptop>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-09-15 14:11:41]:
 
- > I don't remember seeing discussion of this on lkml. Yes it  is in
- > -next...
+> On Tue, 2009-09-15 at 17:36 +0530, Gautham R Shenoy wrote:
+> > This patchset contains the offline state driver implemented for
+> > pSeries. For pSeries, we define three available_hotplug_states. They are:
+> > 
+> >         online: The processor is online.
+> > 
+> >         offline: This is the the default behaviour when the cpu is offlined
+> >         even in the absense of this driver. The CPU would call make an
+> >         rtas_stop_self() call and hand over the CPU back to the resource pool,
+> >         thereby effectively deallocating that vCPU from the LPAR.
+> >         NOTE: This would result in a configuration change to the LPAR
+> >         which is visible to the outside world.
+> > 
+> >         inactive: This cedes the vCPU to the hypervisor with a cede latency
+> >         specifier value 2.
+> >         NOTE: This option does not result in a configuration change
+> >         and the vCPU would be still entitled to the LPAR to which it earlier
+> >         belong to.
+> > 
+> > Any feedback on the patchset will be immensely valuable.
+> 
+> I still think its a layering violation... its the hypervisor manager
+> that should be bothered in what state an off-lined cpu is in. 
+>
 
-eg http://lkml.org/lkml/2009/7/31/197 and followups, or search for v2
-and earlier patches.
+>From a design standpoint where we stand today is
 
- > Basically it allows app to 'trace itself'? ...with interesting mmap()
- > interface, exporting int to userspace, hoping it behaves atomically...? 
+1. A cede indicates that the CPU is no longer needed and can be
+reassigned (remember we do dedicated CPU partitions in power)
+2. What this patch is trying to do is to say "We don't need the
+CPU, but please don't reassign, put it to sleep"
 
-Yes, it allows app to trace what the kernel does to memory mappings.  I
-don't believe there's any real issue to atomicity of mmap'ed memory,
-since userspace really just tests whether read value is == to old read
-value or not.
+We work the same way with the hypervisor, that applications work with
+the OS today, by providing madvise and other hints.
 
- - R.
+-- 
+	Balbir
