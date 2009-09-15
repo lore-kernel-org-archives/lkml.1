@@ -1,135 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbZIOIWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758240AbZIOIWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbZIOIWS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758184AbZIOIWP
+	id S1758240AbZIOIWl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbZIOIWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:22:15 -0400
-Received: from mga03.intel.com ([143.182.124.21]:21682 "EHLO mga03.intel.com"
+	Tue, 15 Sep 2009 04:22:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43085 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758185AbZIOIWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:22:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
-   d="scan'208";a="187717767"
-Date: Tue, 15 Sep 2009 16:22:00 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>, Tejun Heo <tj@kernel.org>,
-       Nick Piggin <npiggin@suse.de>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] /proc/kmem cleanups and hwpoison bits
-Message-ID: <20090915082200.GA2588@localhost>
-References: <20090915021851.168285585@intel.com> <20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1758213AbZIOIWf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 04:22:35 -0400
+Date: Tue, 15 Sep 2009 08:22:02 GMT
+From: tip-bot for Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de,
+       carsten.emde@osadl.org
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, schwidefsky@de.ibm.com, tglx@linutronix.de,
+       carsten.emde@osadl.org
+In-Reply-To: <new-submission>
+References: <new-submission>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:timers/core] time: Prevent 32 bit overflow with set_normalized_timespec()
+Message-ID: <tip-12e09337fe238981cb0c87543306e23775d1a143@git.kernel.org>
+Git-Commit-ID: 12e09337fe238981cb0c87543306e23775d1a143
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090915120939.bcc571e1.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 08:22:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 11:09:39AM +0800, KAMEZAWA Hiroyuki wrote:
-> On Tue, 15 Sep 2009 10:18:51 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Hi Kame,
-> > 
-> > Here are 3 more kmem patches in my queue. Comments are welcome.
-> > If you feel good about them, I can send all recent kmem cleanup
-> > patches for you.
-> > 
-> 
-> This is my quick hack. But I don't want to be an obstacle for you.
-> So, I'll wait for your updates.
+Commit-ID:  12e09337fe238981cb0c87543306e23775d1a143
+Gitweb:     http://git.kernel.org/tip/12e09337fe238981cb0c87543306e23775d1a143
+Author:     Thomas Gleixner <tglx@linutronix.de>
+AuthorDate: Mon, 14 Sep 2009 23:37:40 +0200
+Committer:  Thomas Gleixner <tglx@linutronix.de>
+CommitDate: Tue, 15 Sep 2009 10:17:30 +0200
 
-Thanks. This is also a bug fix: vmalloc_to_page() will otherwise BUG()
-on !is_vmalloc_or_module_addr() pages.
+time: Prevent 32 bit overflow with set_normalized_timespec()
 
-> ==
-> Now, /dev/kmem's read/write vmalloc area doesn't do
-> range-check. Because vread/vwrite traverse vmalloc area list
-> under system-wide spinlock, it's better to avoid unnecessary
-> to do unnecessary calls to vread/vwrite.
+set_normalized_timespec() nsec argument is of type long. The recent
+timekeeping changes of ktime_get_ts() feed 
 
-is_vmalloc_or_module_addr() could be put to either read_kmem()
-or aligned_vread(), and I'm fine with both.
+	ts->tv_nsec + tomono.tv_nsec + nsecs
 
-It looks like vread can be shared by kmem and kcore :)
+to set_normalized_timespec(). On 32 bit machines that sum can be
+larger than (1 << 31) and therefor result in a negative value which
+screws up the result completely.
 
-> And, vread/vwrite returns 0 if we accessed memory holes.
-> We can avoid copy-to-user in read side, we just ignore at write.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
->  drivers/char/mem.c |   27 +++++++++++++++++++--------
->  1 file changed, 19 insertions(+), 8 deletions(-)
-> 
-> Index: linux-2.6.31/drivers/char/mem.c
-> ===================================================================
-> --- linux-2.6.31.orig/drivers/char/mem.c
-> +++ linux-2.6.31/drivers/char/mem.c
-> @@ -437,17 +437,19 @@ static ssize_t read_kmem(struct file *fi
->  	}
->  
->  	if (count > 0) {
-> -		kbuf = (char *)__get_free_page(GFP_KERNEL);
-> +		kbuf = (char *)__get_free_page(GFP_KERNEL | __GFP_ZERO);
->  		if (!kbuf)
->  			return -ENOMEM;
->  		while (count > 0) {
->  			sz = size_inside_page(p, count);
-> -			sz = vread(kbuf, (char *)p, sz);
-> -			if (!sz)
-> -				break;
-> -			if (copy_to_user(buf, kbuf, sz)) {
-> -				free_page((unsigned long)kbuf);
-> -				return -EFAULT;
-> +			if (is_vmalloc_or_module_addr((void*)p)) {
-> +				/* returns Non-zero if a page is found */
-> +				if (vread(kbuf, (char *)p, sz))
-> +					if (copy_to_user(buf, kbuf, sz)) {
-> +						free_page((unsigned long)kbuf);
-> +						return -EFAULT;
-> +					}
-> +				}
->  			}
->  			count -= sz;
->  			buf += sz;
-> @@ -541,6 +543,11 @@ static ssize_t write_kmem(struct file * 
->  			unsigned long sz = size_inside_page(p, count);
->  			unsigned long n;
->  
-> +			if (is_vmalloc_or_module_addr((void*)p)) {
+Make the nsec argument of set_normalized_timespec() s64 to fix the
+problem at hand. This also prevents similar problems for future users
+of set_normalized_timespec().
 
-!is_vmalloc_or_module_addr() ?
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Tested-by: Carsten Emde <carsten.emde@osadl.org>
+LKML-Reference: <new-submission>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: John Stultz <johnstul@us.ibm.com>
 
-> +				free_page((unsignedl long)kbuf);
-> +				retrun -EFAULT;
-> +			}
-> +
->  			n = copy_from_user(kbuf, buf, sz);
->  			if (n) {
->  				if (wrote + virtr)
-> @@ -548,7 +555,11 @@ static ssize_t write_kmem(struct file * 
->  				free_page((unsigned long)kbuf);
->  				return -EFAULT;
->  			}
-> -			sz = vwrite(kbuf, (char *)p, sz);
-> +			/*
-> +			 * returns non-zero if copied successfully....
-> +			 * But we don't care it. just make a progress.
-> +			 */
-> +			vwrite(kbuf, (char *)p, sz);
 
-vwrite could return error code which should not be ignored.
 
-Thanks,
-Fengguang
+---
+ include/linux/time.h |    2 +-
+ kernel/time.c        |    9 ++++++++-
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
->  			count -= sz;
->  			buf += sz;
->  			virtr += sz;
-> 
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 256232f..56787c0 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -75,7 +75,7 @@ extern unsigned long mktime(const unsigned int year, const unsigned int mon,
+ 			    const unsigned int day, const unsigned int hour,
+ 			    const unsigned int min, const unsigned int sec);
+ 
+-extern void set_normalized_timespec(struct timespec *ts, time_t sec, long nsec);
++extern void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec);
+ extern struct timespec timespec_add_safe(const struct timespec lhs,
+ 					 const struct timespec rhs);
+ 
+diff --git a/kernel/time.c b/kernel/time.c
+index 2951194..2e2e469 100644
+--- a/kernel/time.c
++++ b/kernel/time.c
+@@ -370,13 +370,20 @@ EXPORT_SYMBOL(mktime);
+  *	0 <= tv_nsec < NSEC_PER_SEC
+  * For negative values only the tv_sec field is negative !
+  */
+-void set_normalized_timespec(struct timespec *ts, time_t sec, long nsec)
++void set_normalized_timespec(struct timespec *ts, time_t sec, s64 nsec)
+ {
+ 	while (nsec >= NSEC_PER_SEC) {
++		/*
++		 * The following asm() prevents the compiler from
++		 * optimising this loop into a modulo operation. See
++		 * also __iter_div_u64_rem() in include/linux/time.h
++		 */
++		asm("" : "+rm"(nsec));
+ 		nsec -= NSEC_PER_SEC;
+ 		++sec;
+ 	}
+ 	while (nsec < 0) {
++		asm("" : "+rm"(nsec));
+ 		nsec += NSEC_PER_SEC;
+ 		--sec;
+ 	}
