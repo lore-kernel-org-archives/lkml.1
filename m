@@ -1,254 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbZIOHYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbZIOHYg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758205AbZIOHYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 03:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758194AbZIOHYk
+	id S1758192AbZIOHYg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 03:24:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbZIOHYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 03:24:40 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55440 "EHLO hera.kernel.org"
+	Tue, 15 Sep 2009 03:24:31 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:34963 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758179AbZIOHYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 03:24:38 -0400
-Message-ID: <4AAF411C.2040501@kernel.org>
-Date: Tue, 15 Sep 2009 16:24:12 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	id S1758178AbZIOHYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 03:24:30 -0400
+Date: Tue, 15 Sep 2009 09:24:33 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Eric Paris <eparis@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [origin tree SLAB corruption #2] BUG kmalloc-64: Poison
+	overwritten, INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175
+	cpu=1 pid=3514
+Message-ID: <20090915072433.GS14984@kernel.dk>
+References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com> <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org> <20090912072450.GA6767@elte.hu> <1252808939.13780.30.camel@dhcp231-106.rdu.redhat.com> <20090914071631.GA24801@elte.hu> <alpine.LFD.2.01.0909140725470.3654@localhost.localdomain> <20090914162902.GF6773@linux.vnet.ibm.com> <20090914171037.GG14984@kernel.dk> <20090915065707.GA3435@elte.hu> <20090915071158.GA31392@elte.hu>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-CC: Nick Piggin <npiggin@suse.de>, Rusty Russell <rusty@rustcorp.com.au>
-Subject: [GIT PULL] percpu for v2.6.32
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 07:24:15 +0000 (UTC)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090915071158.GA31392@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Linus.
+On Tue, Sep 15 2009, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Hard to tell whether it's BDI, RCU or something else - sadly this is 
+> > the only incident i've managed to log so far. (We'd be all much 
+> > happier if boxes crashed left and right! ;)
+> > 
+> > -tip's been carrying the RCU changes for a long(er) time which would 
+> > reduce the chance of this being RCU related. [ It's still possible 
+> > though: if it's a bug with a probability of hitting this box on these 
+> > workloads with a chance of 1:20,000 or worse. ]
+> > 
+> > Plus it triggered shortly after i updated -tip to latest -git which 
+> > had the BDI bits - which would indicate the BDI stuff - or just about 
+> > anything else in -git for that matter - or something older in -tip. 
+> > Every day without having hit this crash once more broadens the range 
+> > of plausible possibilities.
+> > 
+> > In any case, i'll refrain from trying to fit a line on a single point 
+> > of measurement ;-)
+> 
+> Ha! I should have checked all logs of today before writing that, not 
+> just that box's logs.
+> 
+> Another testbox triggered the SLAB corruption yesternight:
+> 
+> [   13.598011] Freeing unused kernel memory: 2820k freed
+> [   13.602011] Write protecting the kernel read-only data: 13528k
+> [   13.649011] Not activating Mandatory Access Control now since /sbin/tomoyo-init doesn't exist.
+> [   14.391012] =============================================================================
+> [   14.391012] BUG kmalloc-96: Poison overwritten
+> [   14.391012] -----------------------------------------------------------------------------
+> [   14.391012] 
+> [   14.391012] INFO: 0xffff88003da4a950-0xffff88003da4a988. First byte 0x0 instead of 0x6b
+> [   14.391012] INFO: Allocated in bdi_alloc_work+0x20/0x83 age=6 cpu=0 pid=3191
+> [   14.391012] INFO: Freed in bdi_work_free+0x1b/0x2f age=4 cpu=0 pid=3193
+> [   14.391012] INFO: Slab 0xffffea000190ae10 objects=24 used=13 fp=0xffff88003da4a930 flags=0x200000000000c3
+> [   14.391012] INFO: Object 0xffff88003da4a930 @offset=2352 fp=0xffff88003da4a888
+> [   14.391012] 
+> [   14.391012] Bytes b4 0xffff88003da4a920:  52 a4 fb ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a R¤ûÿ....ZZZZZZZZ
+> [   14.391012]   Object 0xffff88003da4a930:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+> [   14.391012]   Object 0xffff88003da4a940:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+> [   14.391012]   Object 0xffff88003da4a950:  00 0c 47 3d 00 88 ff ff be 22 11 81 ff ff ff ff ..G=..ÿÿ¾"..ÿÿÿÿ
+> [   14.391012]   Object 0xffff88003da4a960:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+> [   14.391012]   Object 0xffff88003da4a970:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
+> [   14.391012]   Object 0xffff88003da4a980:  6b 6b 6b 6b 6b 6b 6b 6b 6a 6b 6b 6b 6b 6b 6b a5 kkkkkkkkjkkkkkk¥
+> [   14.391012]  Redzone 0xffff88003da4a990:  bb bb bb bb bb bb bb bb                         »»»»»»»»        
+> [   14.391012]  Padding 0xffff88003da4a9d0:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
+> [   14.391012] Pid: 3193, comm: mount Not tainted 2.6.31-tip-02377-g78907f0-dirty #88876
+> [   14.391012] Call Trace:
+> [   14.391012]  [<ffffffff810e6bef>] print_trailer+0x140/0x149
+> [   14.391012]  [<ffffffff810e70db>] check_bytes_and_report+0xb7/0xf7
+> [   14.391012]  [<ffffffff810e71ec>] check_object+0xd1/0x1b4
+> [   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+> [   14.391012]  [<ffffffff810e7bee>] alloc_debug_processing+0x7b/0xf7
+> [   14.391012]  [<ffffffff810e9842>] __slab_alloc+0x23e/0x282
+> [   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+> [   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
+> [   14.391012]  [<ffffffff810e9a8f>] kmem_cache_alloc+0xa1/0x13f
+> [   14.391012]  [<ffffffff81112078>] bdi_alloc_work+0x20/0x83
+> [   14.391012]  [<ffffffff81112ae2>] bdi_writeback_all+0x66/0x133
+> [   14.391012]  [<ffffffff810788b8>] ? mark_held_locks+0x4d/0x6b
+> [   14.391012]  [<ffffffff81872268>] ? __mutex_unlock_slowpath+0x12d/0x163
+> [   14.391012]  [<ffffffff81078b45>] ? trace_hardirqs_on_caller+0x11c/0x140
+> [   14.391012]  [<ffffffff815c35e5>] ? usbfs_fill_super+0x0/0xa8
+> [   14.391012]  [<ffffffff81112c87>] writeback_inodes_sb+0x75/0x83
+> [   14.391012]  [<ffffffff8111652d>] __sync_filesystem+0x30/0x6b
+> [   14.391012]  [<ffffffff81116705>] sync_filesystem+0x3a/0x51
+> [   14.391012]  [<ffffffff810f4b23>] do_remount_sb+0x5b/0x11f
+> [   14.391012]  [<ffffffff810f59a3>] get_sb_single+0x92/0xad
+> [   14.391012]  [<ffffffff815c2f01>] usb_get_sb+0x1b/0x1d
+> [   14.391012]  [<ffffffff810f5786>] vfs_kern_mount+0x9e/0x122
+> [   14.391012]  [<ffffffff810f5871>] do_kern_mount+0x4c/0xec
+> [   14.391012]  [<ffffffff8110dd15>] do_mount+0x1e9/0x236
+> [   14.391012]  [<ffffffff8110dde6>] sys_mount+0x84/0xc6
+> [   14.391012]  [<ffffffff8187333a>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [   14.391012]  [<ffffffff8100b642>] system_call_fastpath+0x16/0x1b
+> [   14.391012] FIX kmalloc-96: Restoring 0xffff88003da4a950-0xffff88003da4a988=0x6b
+> [   14.391012] 
+> [   14.391012] FIX kmalloc-96: Marking all objects used
+> [   20.597016] usb usb2: uevent
+> [   20.606016] usb 2-0:1.0: uevent
+> [   20.615016] usb usb3: uevent
+> [   20.622016] usb 3-0:1.0: uevent
+> [   20.631016] usb usb4: uevent
+> 
+> Different hardware, different config, but still in bdi_alloc_work().
+> 
+> - Which excludes cosmic rays and freak hardware from the list of 
+>   possibilities.
+> 
+> - I'd also say RCU is out too as this incident was 500 iterations after 
+>   the BDI merge - preceded by a streak of 3000+ successful iterations on 
+>   that same box with all of -tip (including the RCU changes).
+> 
+> - Random memory corruption is probably out as well - the chance of 
+>   hitting a BDI data structure twice accidentally is low.
+> 
+> - It's also two completely different versions of distros - the 
+>   user-space of the two testboxes affected is 2 years apart or so.
+> 
+> - It's a single CPU box - SMP races are out as well.
+> 
+> This points towards this being a BDI bug with about ~80% confidence 
+> statistically - or [with a lower probability] a SLAB bug. (both failing 
+> configs had CONFIG_SLUB=y. But SLUB is the best in detecting corrupted 
+> data structures so that alone does not tell much.)
 
-Please consider pulling from
+Hmmm, at least this reproduces more consistently. Can I talk you into
+trying to pull in:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/tj/percpu.git for-linus
+  git://git.kernel.dk/linux-2.6-block.git writeback
 
-to receive percpu changes.  Pulling will cause the following conflict
-at kernel/sched.c::298.
+and see if it reproduces there? That path has been cleaned up
+considerably there.
 
-  <<<<<<< HEAD
-  static DEFINE_PER_CPU_SHARED_ALIGNED(struct cfs_rq, init_cfs_rq);
-  =======
-  static DEFINE_PER_CPU(struct cfs_rq, init_tg_cfs_rq) ____cacheline_aligned_in_smp;
-  >>>>>>> 2ca7d674d7ab2220707b2ada0b690c0e7c95e7ac
-  #endif /* CONFIG_FAIR_GROUP_SCHED */
+-- 
+Jens Axboe
 
-Which can be resolved as
-
-  static DEFINE_PER_CPU_SHARED_ALIGNED(struct cfs_rq, init_tg_cfs_rq);
-
-There have been a lot of changes.  Major changes are,
-
-* Percpu allocator now does sparse congruent allocation in vmalloc
-  area, which allows archs to allocate the first percpu units for each
-  cpu in whatever way they want.  percpu allocator will allocate
-  further chunks while maintaining their relative offsets.  This
-  allows archs to simply alloc bootmem for each cpu and then feed the
-  addresses to the percpu allocator.  So, the first percpu chunk (the
-  static percpu variables and a bit of reserved space for dynamic
-  ones) can share the usual linear address mapping.
-
-  This makes arch implementations very simple and archs no longer have
-  to trade off between allocating in NUMA-friendly way and added TLB
-  pressure.  The removal of aliases also allows removing pageattr
-  special case handling on x86.
-
-* With embedded allocator extended to handle sparse embedding, lpage
-  remapping allocator is no longer necessary and removed.  Internal
-  implementation has been made more flexible in the process and arch
-  specific code has been made generic.  If we ever need large pages
-  for dynamic percpu allocations, it should be pretty easy to
-  implement now.
-
-* All arches except for ia64 have been converted to use the new
-  allocator.
-
-* This merge will bring the annoying limitation where all percpu
-  symbols including the static ones need to be unique.  This was
-  necessary to convert alpha and s390 to the new allocator.  The
-  problem was that those archs assume static symbols to be addressable
-  with reduced addressing range.  The assumption can be met for the
-  kernel image but module texts and their percpu data end up very far
-  breaking the assumption.  Using __weak attribute for percpu symbols
-  forces the compiler to generate GOT based long addressing and thus
-  works around the problem but with the said annoying restriction.
-
-  Only alpha and s390 require it but CONFIG_DEBUG_FORCE_WEAK_PER_CPU
-  enables the restriction for all so that we can avoid introducing
-  duplicate symbols.
-
-  This restriction can be lifted in one of the following two ways.
-
-  1. Teaching gcc that those symbols aren't going to be located near
-     text.  Most likely a new variable attribute.
-
-  2. Reserving memory area near builtin text so that module text and
-     data can be loaded near builtin text.  Percpu allocator already
-     supports reserved area for module percpu variables in the first
-     chunk, so half of the problem is already solved.
-
-  #2 is much more likely and probably the right thing to do.  The only
-  problem is that alpha and s390 are very difficult to come by.
-  Fortunately, the uniqueness restriction is more of annoyance than
-  pain.  For the time being, I think it should be okay but if anyone
-  is interested in lifting this restriction, I'll be more than happy
-  to help.
-
-Thanks.
----
-Fenghua Yu (1):
-      ia64: Fix setup_per_cpu_areas() compilation error
-
-Jesper Nilsson (1):
-      CRIS: Change DEFINE_PER_CPU of current_pgd to be non volatile.
-
-Michal Simek (1):
-      microblaze: include EXIT_TEXT to _stext
-
-Tejun Heo (46):
-      percpu: use dynamic percpu allocator as the default percpu allocator
-      linker script: throw away .discard section
-      percpu: cleanup percpu array definitions
-      percpu: use DEFINE_PER_CPU_SHARED_ALIGNED()
-      percpu: clean up percpu variable definitions
-      percpu: implement optional weak percpu definitions
-      alpha: kill unnecessary __used attribute in PER_CPU_ATTRIBUTES
-      alpha: switch to dynamic percpu allocator
-      s390: switch to dynamic percpu allocator
-      sparc64: fix build breakage introduced by percpu-convert-most patchset
-      percpu: use __weak only in the definition of weak percpu variables
-      Merge branch 'master' into for-next
-      x86: make pcpu_chunk_addr_search() matching stricter
-      percpu: drop @unit_size from embed first chunk allocator
-      x86,percpu: generalize 4k first chunk allocator
-      percpu: make 4k first chunk allocator map memory
-      x86,percpu: generalize lpage first chunk allocator
-      percpu: simplify pcpu_setup_first_chunk()
-      percpu: reorder a few functions in mm/percpu.c
-      percpu: drop pcpu_chunk->page[]
-      percpu: allow non-linear / sparse cpu -> unit mapping
-      percpu: teach large page allocator about NUMA
-      linker script: unify usage of discard definition
-      percpu: add dummy pcpu_lpage_remapped() for !CONFIG_SMP
-      Merge branch 'percpu-for-linus' into percpu-for-next
-      percpu: fix pcpu_reclaim() locking
-      percpu: improve boot messages
-      percpu: rename 4k first chunk allocator to page
-      percpu: build first chunk allocators selectively
-      percpu: generalize first chunk allocator selection
-      percpu: drop @static_size from first chunk allocators
-      percpu: make @dyn_size mandatory for pcpu_setup_first_chunk()
-      percpu: add @align to pcpu_fc_alloc_fn_t
-      percpu: move pcpu_lpage_build_unit_map() and pcpul_lpage_dump_cfg() upward
-      percpu: introduce pcpu_alloc_info and pcpu_group_info
-      percpu: add pcpu_unit_offsets[]
-      percpu: add chunk->base_addr
-      vmalloc: separate out insert_vmalloc_vm()
-      vmalloc: implement pcpu_get_vm_areas()
-      percpu: use group information to allocate vmap areas sparsely
-      percpu: update embedding first chunk allocator to handle sparse units
-      x86,percpu: use embedding for 64bit NUMA and page for 32bit NUMA
-      percpu: kill lpage first chunk allocator
-      sparc64: use embedding percpu first chunk allocator
-      powerpc64: convert to dynamic percpu allocator
-      Merge branch 'for-next' into for-linus
-
- Documentation/kernel-parameters.txt    |   11 +-
- Makefile                               |    2 +-
- arch/alpha/include/asm/percpu.h        |  100 +--
- arch/alpha/include/asm/tlbflush.h      |    1 +
- arch/alpha/kernel/vmlinux.lds.S        |    9 +-
- arch/arm/kernel/vmlinux.lds.S          |    1 +
- arch/avr32/kernel/vmlinux.lds.S        |    9 +-
- arch/blackfin/kernel/vmlinux.lds.S     |    5 +-
- arch/blackfin/mm/sram-alloc.c          |    6 +-
- arch/cris/include/asm/mmu_context.h    |    3 +-
- arch/cris/kernel/vmlinux.lds.S         |    9 +-
- arch/cris/mm/fault.c                   |    2 +-
- arch/frv/kernel/vmlinux.lds.S          |    2 +
- arch/h8300/kernel/vmlinux.lds.S        |    5 +-
- arch/ia64/Kconfig                      |    3 +
- arch/ia64/kernel/setup.c               |    6 +
- arch/ia64/kernel/smp.c                 |    3 +-
- arch/ia64/kernel/vmlinux.lds.S         |   16 +-
- arch/ia64/sn/kernel/setup.c            |    2 +-
- arch/m32r/kernel/vmlinux.lds.S         |   10 +-
- arch/m68k/kernel/vmlinux-std.lds       |   10 +-
- arch/m68k/kernel/vmlinux-sun3.lds      |    9 +-
- arch/m68knommu/kernel/vmlinux.lds.S    |    7 +-
- arch/microblaze/kernel/vmlinux.lds.S   |    6 +-
- arch/mips/kernel/vmlinux.lds.S         |   21 +-
- arch/mn10300/kernel/vmlinux.lds.S      |    8 +-
- arch/parisc/kernel/vmlinux.lds.S       |    8 +-
- arch/powerpc/Kconfig                   |    3 +
- arch/powerpc/kernel/setup_64.c         |   61 +-
- arch/powerpc/kernel/vmlinux.lds.S      |    9 +-
- arch/powerpc/mm/stab.c                 |    2 +-
- arch/powerpc/platforms/ps3/smp.c       |    2 +-
- arch/s390/include/asm/percpu.h         |   32 +-
- arch/s390/kernel/vmlinux.lds.S         |    9 +-
- arch/sh/kernel/vmlinux.lds.S           |   10 +-
- arch/sparc/Kconfig                     |    2 +-
- arch/sparc/kernel/smp_64.c             |  132 +---
- arch/sparc/kernel/vmlinux.lds.S        |    8 +-
- arch/um/include/asm/common.lds.S       |    5 -
- arch/um/kernel/dyn.lds.S               |    2 +
- arch/um/kernel/uml.lds.S               |    2 +
- arch/x86/Kconfig                       |    5 +-
- arch/x86/include/asm/percpu.h          |    9 -
- arch/x86/kernel/cpu/cpu_debug.c        |    4 +-
- arch/x86/kernel/cpu/mcheck/mce.c       |    8 +-
- arch/x86/kernel/cpu/mcheck/mce_amd.c   |    2 +-
- arch/x86/kernel/cpu/perf_counter.c     |   14 +-
- arch/x86/kernel/setup_percpu.c         |  364 +-------
- arch/x86/kernel/vmlinux.lds.S          |   11 +-
- arch/x86/mm/pageattr.c                 |   21 +-
- arch/xtensa/kernel/vmlinux.lds.S       |   13 +-
- block/as-iosched.c                     |   10 +-
- block/cfq-iosched.c                    |   10 +-
- drivers/cpufreq/cpufreq_conservative.c |   12 +-
- drivers/cpufreq/cpufreq_ondemand.c     |   15 +-
- drivers/xen/events.c                   |   13 +-
- include/asm-generic/vmlinux.lds.h      |   24 +-
- include/linux/percpu-defs.h            |   66 ++-
- include/linux/percpu.h                 |   88 ++-
- include/linux/vmalloc.h                |    6 +
- init/main.c                            |   24 -
- kernel/module.c                        |    6 +-
- kernel/perf_counter.c                  |    6 +-
- kernel/sched.c                         |    4 +-
- kernel/trace/trace_events.c            |    6 +-
- lib/Kconfig.debug                      |   15 +
- mm/Makefile                            |    2 +-
- mm/allocpercpu.c                       |   28 +
- mm/kmemleak-test.c                     |    6 +-
- mm/page-writeback.c                    |    5 +-
- mm/percpu.c                            | 1420 ++++++++++++++++++++++++--------
- mm/quicklist.c                         |    2 +-
- mm/slub.c                              |    4 +-
- mm/vmalloc.c                           |  338 +++++++-
- net/ipv4/syncookies.c                  |    5 +-
- net/ipv6/syncookies.c                  |    5 +-
- net/rds/ib_stats.c                     |    2 +-
- net/rds/iw_stats.c                     |    2 +-
- net/rds/page.c                         |    2 +-
- scripts/module-common.lds              |    8 +
- 80 files changed, 1910 insertions(+), 1228 deletions(-)
- create mode 100644 scripts/module-common.lds
-
---
-tejun
