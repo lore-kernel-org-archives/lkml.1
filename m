@@ -1,110 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZIOW7b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbZIOXK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbZIOW7b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 18:59:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752771AbZIOW7Z
+	id S1758738AbZIOXK4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 19:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753059AbZIOXKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 18:59:25 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:60956 "EHLO mail.vyatta.com"
+	Tue, 15 Sep 2009 19:10:55 -0400
+Received: from kroah.org ([198.145.64.141]:43471 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751163AbZIOW7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 18:59:24 -0400
-Date: Tue, 15 Sep 2009 15:57:19 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Jarek Poplawski <jarkao2@gmail.com>, David Miller <davem@davemloft.net>
-Cc: Stephan von Krawczynski <skraw@ithnet.com>,
-       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
-       davem@davemloft.net, Linux Netdev List <netdev@vger.kernel.org>
-Subject: Re: ipv4 regression in 2.6.31 ?
-Message-ID: <20090915155719.22bae41e@nehalam>
-In-Reply-To: <20090915081354.GA10037@ff.dom.local>
-References: <20090914093128.4d709ff6@nehalam>
-	<20090915081354.GA10037@ff.dom.local>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752220AbZIOXKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 19:10:54 -0400
+Date: Tue, 15 Sep 2009 16:01:40 -0700
+From: Greg KH <greg@kroah.com>
+To: Ozan =?utf-8?B?w4dhxJ9sYXlhbg==?= <ozan@pardus.org.tr>
+Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       stable-review@kernel.org
+Subject: Re: [patch 00/74] 2.6.30.5-stable review
+Message-ID: <20090915230140.GA24848@kroah.com>
+References: <20090813195705.GA22393@kroah.com>
+ <4A850395.4050204@pardus.org.tr>
+ <20090814161523.GA11228@suse.de>
+ <4A85984A.3050808@pardus.org.tr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A85984A.3050808@pardus.org.tr>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 08:13:55 +0000
-Jarek Poplawski <jarkao2@gmail.com> wrote:
-
-> On 14-09-2009 18:31, Stephen Hemminger wrote:
-> > On Mon, 14 Sep 2009 17:55:05 +0200
-> > Stephan von Krawczynski <skraw@ithnet.com> wrote:
-> > 
-> >> On Mon, 14 Sep 2009 15:57:03 +0200
-> >> Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> >>
-> >>> Stephan von Krawczynski a A~(c)crit :
-> >>>> Hello all,
-> ...
-> >>> rp_filter - INTEGER
-> >>>         0 - No source validation.
-> >>>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
-> >>>             Each incoming packet is tested against the FIB and if the interface
-> >>>             is not the best reverse path the packet check will fail.
-> >>>             By default failed packets are discarded.
-> >>>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
-> >>>             Each incoming packet's source address is also tested against the FIB
-> >>>             and if the source address is not reachable via any interface
-> >>>             the packet check will fail.
-> ...
-> > RP filter did not work correctly in 2.6.30. The code added to to the loose
-> > mode caused a bug; the rp_filter value was being computed as:
-> >   rp_filter = interface_value & all_value;
-> > So in order to get reverse path filter both would have to be set.
-> > 
-> > In 2.6.31 this was change to:
-> >    rp_filter = max(interface_value, all_value);
-> > 
-> > This was the intended behaviour, if user asks all interfaces to have rp
-> > filtering turned on, then set /proc/sys/net/ipv4/conf/all/rp_filter = 1
-> > or to turn on just one interface, set it for just that interface.
+On Fri, Aug 14, 2009 at 08:00:58PM +0300, Ozan Çağlayan wrote:
+> Greg KH wrote:
+> >> I wonder if it's possible to cherry-pick new device additions to
+> >> usb-serial modem drivers (HSDPA stuff) for further releases?
+> >>     
+> >
+> > Sure, send me the git commit ids that you want added please.
+> >   
 > 
-> Alas this max() formula handles also cases where both values are set
-> and it doesn't look very natural/"user friendly" to me. Especially
-> with something like this: all_value = 2; interface_value = 1
-> Why would anybody care to bother with interface_value in such a case?
-> 
-> "All" suggests "default" in this context, so I'd rather expect
-> something like:
->     rp_filter = interface_value ? : all_value;
-> which gives "the inteded behaviour" too, plus more...
-> 
-> We'd only need to add e.g.:
->  0 - Default ("all") validation. (No source validation if "all" is 0).
->  3 - No source validation on this interface.
+> Sure, here they are:
 
-More values == more confusion.
-I chose the maxconf() method to make rp_filter consistent with other
-multi valued variables (arp_announce and arp_ignore).
+Ugh, with .31 out, all of these are just not worth adding to the tree
+anymore, I'd like to only make one more .30 release, so if we can not
+include these, it makes my life a lot easier.
 
---------
-Subject: [PATCH] Document rp_filter behaviour
+thanks,
 
-Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
-
-
---- a/Documentation/networking/ip-sysctl.txt	2009-09-15 15:54:25.844934373 -0700
-+++ b/Documentation/networking/ip-sysctl.txt	2009-09-15 15:55:40.709205883 -0700
-@@ -744,6 +744,8 @@ rp_filter - INTEGER
- 	Default value is 0. Note that some distributions enable it
- 	in startup scripts.
- 
-+	The max value from conf/{all,interface}/rp_filter is used.
-+
- arp_filter - BOOLEAN
- 	1 - Allows you to have multiple network interfaces on the same
- 	subnet, and have the ARPs for each interface be answered
-
-
-
-
-
-
-
--- 
+greg k-h
