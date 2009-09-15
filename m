@@ -1,162 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757518AbZIOA1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757643AbZIOAbd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757518AbZIOA1A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 20:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755394AbZIOA06
+	id S1757643AbZIOAbd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 20:31:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbZIOAbc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 20:26:58 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:41734 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755391AbZIOA05 (ORCPT
+	Mon, 14 Sep 2009 20:31:32 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34600 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757630AbZIOAbb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 20:26:57 -0400
-X-SecurityPolicyCheck-FJ: OK by FujitsuOutboundMailChecker v1.3.1
-Date: Tue, 15 Sep 2009 09:24:48 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "mtosatti@redhat.com" <mtosatti@redhat.com>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>,
-       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
-       "avi@qumranet.com" <avi@qumranet.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       WANG Cong <xiyou.wangcong@gmail.com>, Mike Smith <scgtrp@gmail.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] devmem: handle partial kmem write/read
-Message-Id: <20090915092448.d511df31.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090914043444.GA18590@localhost>
-References: <20090914032901.GA16189@localhost>
-	<20090914043444.GA18590@localhost>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 Sep 2009 20:31:31 -0400
+Date: Mon, 14 Sep 2009 17:31:27 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Joel Becker <Joel.Becker@oracle.com>
+cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
+In-Reply-To: <20090915000417.GC4507@mail.oracle.com>
+Message-ID: <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
+References: <20090911200458.GA15416@mail.oracle.com> <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain> <20090914221434.GA4507@mail.oracle.com> <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain> <20090915000417.GC4507@mail.oracle.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009 12:34:44 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> Hi Kame,
+
+On Mon, 14 Sep 2009, Joel Becker wrote:
 > 
-> This patch needs more work. I first intent to fix a bug:
-> 
->                         sz = vwrite(kbuf, (char *)p, sz);
->                         p += sz;
->                 }
-> 
-> So if the returned len is 0, the kbuf/p pointers will mismatch. 
-> 
-> Then I realize it changed the write behavior. The current vwrite()
-> behavior is strange, it returns 0 if _whole range_ is hole, otherwise
-> ignores the hole silently. So holes can be treated differently even in
-> the original code.
-> 
-Ah, ok...
+> 	It's creating a new entry in the name space based on an old one.
 
-> I'm not really sure about the right behavior. KAME-san, do you have
-> any suggestions?
-> 
-maybe following make sense.
-=
-written = vwrite(kbuf, (char *p), sz);
-if (!written) // whole vmem was a hole
-	written = sz;
-==
-needs fix.
+That's just a cumbersome way of saying "copyfile".
 
-Anyway, I wonder kmem is broken. It's should be totally rewritten.
+Here's a challenge for you: go outside, take the first five people you 
+meet at random, and ask them what a 'copyfile()' system call would do.
 
-For example, this doesn't check anything.
-==
-        if (p < (unsigned long) high_memory) {
+Then, do the same thing with 'reflink()'.
 
-==
+Feel free to stack the deck, so that the people you ask about 'reflink()' 
+actually know computers.
 
-But....are there users ?
-If necessary, I'll write some...
+Then report back which group guessed better what the system call does.
 
-Thanks,
--Kame
+> 	reflink doesn't merely guarantee atomicity, it guarantees the
+> shared data extents.
 
+Why?
 
-> Thanks,
-> Fengguang
-> 
-> On Mon, Sep 14, 2009 at 11:29:01AM +0800, Wu Fengguang wrote:
-> > Current vwrite silently ignores vwrite() to vmap holes.
-> > Better behavior should be stop the write and return
-> > on such holes.
-> > 
-> > Also return on partial read, which may happen in future
-> > (eg. hit hwpoison pages).
-> > 
-> > CC: Andi Kleen <andi@firstfloor.org>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  drivers/char/mem.c |   30 ++++++++++++++++++------------
-> >  1 file changed, 18 insertions(+), 12 deletions(-)
-> > 
-> > --- linux-mm.orig/drivers/char/mem.c	2009-09-14 10:59:50.000000000 +0800
-> > +++ linux-mm/drivers/char/mem.c	2009-09-14 11:06:25.000000000 +0800
-> > @@ -444,18 +444,22 @@ static ssize_t read_kmem(struct file *fi
-> >  		if (!kbuf)
-> >  			return -ENOMEM;
-> >  		while (count > 0) {
-> > +			unsigned long n;
-> > +
-> >  			sz = size_inside_page(p, count);
-> > -			sz = vread(kbuf, (char *)p, sz);
-> > -			if (!sz)
-> > +			n = vread(kbuf, (char *)p, sz);
-> > +			if (!n)
-> >  				break;
-> > -			if (copy_to_user(buf, kbuf, sz)) {
-> > +			if (copy_to_user(buf, kbuf, n)) {
-> >  				free_page((unsigned long)kbuf);
-> >  				return -EFAULT;
-> >  			}
-> > -			count -= sz;
-> > -			buf += sz;
-> > -			read += sz;
-> > -			p += sz;
-> > +			count -= n;
-> > +			buf += n;
-> > +			read += n;
-> > +			p += n;
-> > +			if (n < sz)
-> > +				break;
-> >  		}
-> >  		free_page((unsigned long)kbuf);
-> >  	}
-> > @@ -551,11 +555,13 @@ static ssize_t write_kmem(struct file * 
-> >  				free_page((unsigned long)kbuf);
-> >  				return -EFAULT;
-> >  			}
-> > -			sz = vwrite(kbuf, (char *)p, sz);
-> > -			count -= sz;
-> > -			buf += sz;
-> > -			virtr += sz;
-> > -			p += sz;
-> > +			n = vwrite(kbuf, (char *)p, sz);
-> > +			count -= n;
-> > +			buf += n;
-> > +			virtr += n;
-> > +			p += n;
-> > +			if (n < sz)
-> > +				break;
-> >  		}
-> >  		free_page((unsigned long)kbuf);
-> >  	}
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+That just limits its usefulness. What's the reason for that sophistry, 
+except to try to argue for a name that makes no sense?
 
+> 	Well, obviously I started from the fact that we don't have
+> flink().  But it doesn't really fit anyway.  reflink is a namespace
+> operation - give me a new item in the namespace that shares the data
+> extents of the old item.
+
+That's not a namespace op, EXCEPT FOR THE NEW NAME.
+
+The data you share from has no namespace component to it, except as a 
+lookup. But a 'fd' is equally descriptive of the shared data.
+
+		Linus
