@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZIOOip@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754512AbZIOOlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbZIOOip (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:38:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZIOOil
+	id S1754512AbZIOOlW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbZIOOlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:38:41 -0400
-Received: from bamako.nerim.net ([62.4.17.28]:59389 "EHLO bamako.nerim.net"
+	Tue, 15 Sep 2009 10:41:19 -0400
+Received: from fifo99.com ([67.223.236.141]:48065 "EHLO fifo99.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754181AbZIOOik convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:38:40 -0400
-Date: Tue, 15 Sep 2009 16:38:37 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Borislav Petkov <borislav.petkov@amd.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>, x86 <x86@kernel.org>,
-       Doug Thompson <norsk5@yahoo.com>, linux-kernel@vger.kernel.org
-Subject: Re: [origin tree build failure] Re: [GIT PULL] AMD64 EDAC updates,
- p1
-Message-ID: <20090915163837.35701344@hyperion.delvare>
-In-Reply-To: <20090915110940.GA8134@elte.hu>
-References: <20090914171905.GD13615@aftab>
-	<20090915110940.GA8134@elte.hu>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
+	id S1754443AbZIOOlS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 10:41:18 -0400
+Subject: Re: [PATCH -v3] crypto: Add PCLMULQDQ accelerated GHASH
+ implementation
+From: Daniel Walker <dwalker@fifo99.com>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <1252993367.15717.340.camel@yhuang-dev.sh.intel.com>
+References: <1252993367.15717.340.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain
+Date: Tue, 15 Sep 2009 07:42:11 -0700
+Message-Id: <1253025731.11643.333.camel@desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 13:09:40 +0200, Ingo Molnar wrote:
-> -tip testing found this build failure with the attached config:
+On Tue, 2009-09-15 at 13:42 +0800, Huang Ying wrote:
+> Hi, Herbert,
 > 
-> drivers/edac/edac_mce_amd.c: In function ‘decode_mce’:
-> drivers/edac/edac_mce_amd.c:408: error: ‘per_cpu__cpu_llc_id’ undeclared (first use in this function)
-> drivers/edac/edac_mce_amd.c:408: error: (Each undeclared identifier is reported only once
-> drivers/edac/edac_mce_amd.c:408: error: for each function it appears in.)
+> The dependency to irq_fpu_usable has been merged by linus' tree.
 > 
-> I did the patchlet below but this needs a cleaner fix eventually. A 
-> proper node abstraction needs to be factored out and provided as a 
-> facility regardless of config settings.
+> Best Regards,
+> Huang Ying
+> -------------------------------------------------------------------------->
+> PCLMULQDQ is used to accelerate the most time-consuming part of GHASH,
+> carry-less multiplication. More information about PCLMULQDQ can be
+> found at:
 > 
-> 	Ingo
+> http://software.intel.com/en-us/articles/carry-less-multiplication-and-its-usage-for-computing-the-gcm-mode/
 > 
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  drivers/edac/edac_mce_amd.c |    5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
+> Because PCLMULQDQ changes XMM state, its usage must be enclosed with
+> kernel_fpu_begin/end, which can be used only in process context, the
+> acceleration is implemented as crypto_ahash. That is, request in soft
+> IRQ context will be defered to the cryptd kernel thread.
 > 
-> Index: linux2/drivers/edac/edac_mce_amd.c
-> ===================================================================
-> --- linux2.orig/drivers/edac/edac_mce_amd.c
-> +++ linux2/drivers/edac/edac_mce_amd.c
-> @@ -405,8 +405,11 @@ void decode_mce(struct mce *m)
->  		regs.nbsh  = (u32)(m->status >> 32);
->  		regs.nbeal = (u32) m->addr;
->  		regs.nbeah = (u32)(m->addr >> 32);
-> +#ifdef CONFIG_X86_HT
->  		node       = per_cpu(cpu_llc_id, m->extcpu);
-> -
-> +#else
-> +		node	   = 0;
-> +#endif
->  		amd_decode_nb_mce(node, &regs, 1);
->  		break;
->  
+> v3:
+>  - Revise GHASH implementation, performance increase about 2x.
 
-FWIW, this patch doesn't fix the problem for me. Amerigo Wang's does:
-http://lkml.org/lkml/2009/9/15/64
 
--- 
-Jean Delvare
+You have three style issues in this patch, for instance you shouldn't
+set values inside if() statements .. If you run checkpatch on this it
+will tell you all the style problems. Could you run this through
+checkpatch and fix any errors it's find ?
+
+Daniel
+
