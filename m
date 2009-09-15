@@ -1,104 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZIOObp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZIOO3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbZIOObp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:31:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754177AbZIOObo
+	id S1754259AbZIOO3I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753988AbZIOO3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:31:44 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:31925 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754032AbZIOObn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:31:43 -0400
-Date: Tue, 15 Sep 2009 17:28:21 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>, "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-Message-ID: <20090915142821.GA24488@redhat.com>
-References: <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4AAF9BAF.3030109@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 15 Sep 2009 10:29:05 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:60841 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753817AbZIOO3D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 10:29:03 -0400
+Subject: Re: [PATCH 2/2] tracing: Export ftrace API for kernel modules
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, paulus@samba.org,
+       systemtap@sources.redhat.com
+In-Reply-To: <4AAF9E30.5030705@redhat.com>
+References: <4AAF6728.6010807@bk.jp.nec.com>
+	 <1253022224.20020.102.camel@gandalf.stny.rr.com>
+	 <4AAF9E30.5030705@redhat.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 15 Sep 2009 10:29:04 -0400
+Message-Id: <1253024944.20020.109.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 09:50:39AM -0400, Gregory Haskins wrote:
-> Avi Kivity wrote:
-> > On 09/15/2009 04:03 PM, Gregory Haskins wrote:
-> >>
-> >>> In this case the x86 is the owner and the ppc boards use translated
-> >>> access.  Just switch drivers and device and it falls into place.
-> >>>
-> >>>      
-> >> You could switch vbus roles as well, I suppose.
+On Tue, 2009-09-15 at 10:01 -0400, Masami Hiramatsu wrote:
+> Steven Rostedt wrote:
+
+> > Now I know of two ways to fix this.
 > > 
-> > Right, there's not real difference in this regard.
+> > 1) The simple way. Up the module ref count so once it registers a
+> > function it can never be disabled. Of course there's the "force module
+> > unload" but people should not do that anyway.
 > > 
-> >> Another potential
-> >> option is that he can stop mapping host memory on the guest so that it
-> >> follows the more traditional model.  As a bus-master device, the ppc
-> >> boards should have access to any host memory at least in the GFP_DMA
-> >> range, which would include all relevant pointers here.
-> >>
-> >> I digress:  I was primarily addressing the concern that Ira would need
-> >> to manage the "host" side of the link using hvas mapped from userspace
-> >> (even if host side is the ppc boards).  vbus abstracts that access so as
-> >> to allow something other than userspace/hva mappings.  OTOH, having each
-> >> ppc board run a userspace app to do the mapping on its behalf and feed
-> >> it to vhost is probably not a huge deal either.  Where vhost might
-> >> really fall apart is when any assumptions about pageable memory occur,
-> >> if any.
-> >>    
-> > 
-> > Why?  vhost will call get_user_pages() or copy_*_user() which ought to
-> > do the right thing.
+> > 2) Create a second hook handler for modules. That is the function caller
+> > for modules will go to a wrapper first. This wrapper could disable
+> > interrupts or grab a lock or something that would prevent a module from
+> > being unloaded as the hooks are being called. Perhaps even disabling
+> > preemption while calling the hooks will be enough (this is not something
+> > I want the normal function caller to do).
 > 
-> I was speaking generally, not specifically to Ira's architecture.  What
-> I mean is that vbus was designed to work without assuming that the
-> memory is pageable.  There are environments in which the host is not
-> capable of mapping hvas/*page, but the memctx->copy_to/copy_from
-> paradigm could still work (think rdma, for instance).
+> I think this is better solution.
+> Out of curiously, is disabling preemption so harmful?
 
-rdma interfaces are typically asynchronous, so blocking
-copy_from/copy_to can be made to work, but likely won't work
-that well. DMA might work better if it is asynchronous as well.
+Yes ;-)
 
-Assuming a synchronous copy is what we need - maybe the issue is that
-there aren't good APIs for x86/ppc communication? If so, sticking them in
-vhost might not be the best place.  Maybe the specific platform can
-redefine copy_to/from_user to do the right thing? Or, maybe add another
-API for that ...
+I don't want to disable preemption when I don't have to. The function
+tracer that is called can. But actually, it's ever more that that. If
+you only register a single function, it will call that function
+directly. Then there will always be a race window between when the
+function gets called and disabling preemption, even if the called
+function disables preemption as the first thing it does.
 
-> > 
-> >> As an aside: a bigger issue is that, iiuc, Ira wants more than a single
-> >> ethernet channel in his design (multiple ethernets, consoles, etc).  A
-> >> vhost solution in this environment is incomplete.
-> >>    
-> > 
-> > Why?  Instantiate as many vhost-nets as needed.
 > 
-> a) what about non-ethernets?
+> > And the current function
+> > tracer will optimize that if only one function is registered to mcount,
+> > then the mcount caller will call that function directly.
+> 
+> Would you mean that current mcount hook supports only one handler?
 
-vhost-net actually does not care.
-the packet is passed on to a socket, we are done.
+Yes, currently a branch can only got to a single function ;-)
 
-> b) what do you suppose this protocol to aggregate the connections would
-> look like? (hint: this is what a vbus-connector does).
+What ftrace does, is if you register a single function, the mcount
+location will call that function directly. But if you register an second
+function, it changes the mcount call site to call a wrapper that loops
+to through all the functions that are registered.
 
-You are talking about management protocol between ppc and x86, right?
-One wonders why does it have to be in kernel at all.
+Thus a module version would need to call that wrapper every time. Even
+if only one function is called. And this wrapper would have to disable
+preemption for the entire loop.
 
-> c) how do you manage the configuration, especially on a per-board basis?
 
-not sure what a board is, but configuration is done in userspace.
+> 
+> > 
+> > It will still need to up the mod ref count when a probe is added, but it
+> > can also remove it.
+> > 
+> > 
+> > The problem with the current method, is that a probe can be executing at
+> > anytime. Here's an example if we did it your way.
+> > 
+> > 1. module installed
+> > 2. module adds probe
+> > 3. function X in kernel calls probe but gets preempted.
+> > 4. module removes probe
+> > 5. module unistalled
+> > 6. function X in kernel continues to run probe but probe no longer
+> > exists --- Oops!
+> 
+> Agreed, if mcount doesn't disable preemption, this will happen.
 
--- 
-MST
+And it does not.
+
+-- Steve
+
+
