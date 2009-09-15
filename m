@@ -1,172 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754485AbZIOOfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754384AbZIOOi0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754485AbZIOOfa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbZIOOf0
+	id S1754384AbZIOOi0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:38:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754420AbZIOOiV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:35:26 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:36691 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754238AbZIOOfZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:35:25 -0400
-Date: Tue, 15 Sep 2009 16:35:26 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: =?windows-1252?Q?Ralf_R=F6sch?= <ralf.roesch@rw-gmbh.de>
-Cc: Atsushi Nemoto <anemo@mba.ocn.ne.jp>, ralf@linux-mips.org,
-       linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
-In-Reply-To: <4AAF9E5B.5040909@rw-gmbh.de>
-Message-ID: <Pine.LNX.4.64.0909151634030.8549@pc-004.diku.dk>
-References: <Pine.LNX.4.64.0909111820370.10552@pc-004.diku.dk>
- <20090913.232548.253168283.anemo@mba.ocn.ne.jp> <Pine.LNX.4.64.0909131708190.25903@ask.diku.dk>
- <20090914.003321.160496287.anemo@mba.ocn.ne.jp> <Pine.LNX.4.64.0909132113520.31000@ask.diku.dk>
- <4AAF9E5B.5040909@rw-gmbh.de>
+	Tue, 15 Sep 2009 10:38:21 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:46850 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754032AbZIOOiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 10:38:21 -0400
+Message-ID: <4AAFA6D0.9060604@linux.vnet.ibm.com>
+Date: Tue, 15 Sep 2009 09:38:08 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-511572895-1888724175-1253025326=:8549"
+To: Nathan Fontenot <nfont@austin.ibm.com>
+CC: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/5] move of_drconf_cell definition to prom.h
+References: <4AAABC55.4070207@austin.ibm.com> <4AAABD37.2050205@austin.ibm.com>
+In-Reply-To: <4AAABD37.2050205@austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----511572895-1888724175-1253025326=:8549
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
-
-On Tue, 15 Sep 2009, Ralf Rösch wrote:
-
-> The gpio_remove is missing:
->  arch/mips/txx9/generic/setup.c:838: error: implicit declaration of function
->  ?gpio_remove?
+Nathan Fontenot wrote:
+> Move the definition of the of_drconf_cell struct from numa.c to prom.h. 
+> This
+> is needed so that we can parse the ibm,dynamic-memory device-tree property
+> when DLPAR adding and removing memory.
 > 
-> Should it be gpiochip_remove() instead?
-
-Oops, sorry about that.  That is indeed the function I was looking at.
-
-I can submit a revised patch, but I sent another question asking about 
-whether something should be done about the fact that gpiochip_remove is 
-declared as follows:
-
-extern int __must_check gpiochip_remove(struct gpio_chip *chip);
-
-I don't think the call can fail at this point, but should something be 
-done to avoid a compiler warning?
-
-thanks,
-julia
-
-
-> --
-> Ralf Roesch
+> Signed-off-by: Nathan Fontenot <nfont@austin.ibm.com>
+> ---
 > 
+> Index: powerpc/arch/powerpc/include/asm/prom.h
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/include/asm/prom.h    2009-09-11
+> 12:43:39.000000000 -0500
+> +++ powerpc/arch/powerpc/include/asm/prom.h    2009-09-11
+> 12:52:11.000000000 -0500
+> @@ -349,6 +349,18 @@
+>  */
+> extern void __iomem *of_iomap(struct device_node *device, int index);
 > 
-> The Julia Lawall schrieb:
-> > From: Julia Lawall <julia@diku.dk>
-> >
-> > Error handling code following a kzalloc should free the allocated data.
-> > Error handling code following an ioremap should iounmap the allocated data.
-> >
-> > The semantic match that finds the first problem is as follows:
-> > (http://www.emn.fr/x-info/coccinelle/)
-> >
-> > // <smpl>
-> > @r exists@
-> > local idexpression x;
-> > statement S;
-> > expression E;
-> > identifier f,f1,l;
-> > position p1,p2;
-> > expression *ptr != NULL;
-> > @@
-> >
-> > x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> > ...
-> > if (x == NULL) S
-> > <... when != x
-> >      when != if (...) { <+...x...+> }
-> > (
-> > x->f1 = E
-> > |
-> >  (x->f1 == NULL || ...)
-> > |
-> >  f(...,x->f1,...)
-> > )
-> > ...>
-> > (
-> >  return \(0\|<+...x...+>\|ptr\);
-> > |
-> >  return@p2 ...;
-> > )
-> >
-> > @script:python@
-> > p1 << r.p1;
-> > p2 << r.p2;
-> > @@
-> >
-> > print "* file: %s kmalloc %s return %s" % (p1[0].file,p1[0].line,p2[0].line)
-> > // </smpl>
-> >
-> > Signed-off-by: Julia Lawall <julia@diku.dk>
-> > ---
-> >  arch/mips/txx9/generic/setup.c      |   17 +++++++++++++----
-> >  1 files changed, 13 insertions(+), 4 deletions(-)
-> >
-> > diff --git a/arch/mips/txx9/generic/setup.c b/arch/mips/txx9/generic/setup.c
-> > index a205e2b..c860810 100644
-> > --- a/arch/mips/txx9/generic/setup.c
-> > +++ b/arch/mips/txx9/generic/setup.c
-> > @@ -782,7 +782,7 @@ void __init txx9_iocled_init(unsigned long baseaddr,
-> >   	return;
-> >   iocled->mmioaddr = ioremap(baseaddr, 1);
-> >   if (!iocled->mmioaddr)
-> > -		return;
-> > +		goto out_free;
-> >   iocled->chip.get = txx9_iocled_get;
-> >   iocled->chip.set = txx9_iocled_set;
-> >   iocled->chip.direction_input = txx9_iocled_dir_in;
-> > @@ -791,13 +791,13 @@ void __init txx9_iocled_init(unsigned long baseaddr,
-> >   iocled->chip.base = basenum;
-> >   iocled->chip.ngpio = num;
-> >   if (gpiochip_add(&iocled->chip))
-> > -		return;
-> > +		goto out_unmap;
-> >   if (basenum < 0)
-> >    basenum = iocled->chip.base;
-> >  
-> >   pdev = platform_device_alloc("leds-gpio", basenum);
-> >   if (!pdev)
-> > -		return;
-> > +		goto out_gpio;
-> >   iocled->pdata.num_leds = num;
-> >   iocled->pdata.leds = iocled->leds;
-> >   for (i = 0; i < num; i++) {
-> > @@ -812,7 +812,16 @@ void __init txx9_iocled_init(unsigned long baseaddr,
-> >   }
-> >   pdev->dev.platform_data = &iocled->pdata;
-> >   if (platform_device_add(pdev))
-> > -		platform_device_put(pdev);
-> > +		goto out_pdev;
-> > +	return;
-> > +out_pdev:
-> > +	platform_device_put(pdev);
-> > +out_gpio:
-> > +	gpio_remove(&iocled->chip);
-> > +out_unmap:
-> > +	iounmap(iocled->mmioaddr);
-> > +out_free:
-> > +	kfree(iocled);
-> >  }
-> >  #else /* CONFIG_LEDS_GPIO */
-> >  void __init txx9_iocled_init(unsigned long baseaddr,
-> >
-> >   
+> +struct of_drconf_cell {
+> +    u64    base_addr;
+> +    u32    drc_index;
+> +    u32    reserved;
+> +    u32    aa_index;
+> +    u32    flags;
+> +};
+
+Might as well fix this up to use a tab instead of spaces for the indentation
+if you are moving it.
+
+> +
+> +#define DRCONF_MEM_ASSIGNED    0x00000008
+> +#define DRCONF_MEM_AI_INVALID    0x00000040
+> +#define DRCONF_MEM_RESERVED    0x00000080
+> +
+> /*
+>  * NB:  This is here while we transition from using asm/prom.h
+>  * to linux/of.h
+> Index: powerpc/arch/powerpc/mm/numa.c
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/mm/numa.c    2009-09-11 12:43:39.000000000
+> -0500
+> +++ powerpc/arch/powerpc/mm/numa.c    2009-09-11 12:52:11.000000000 -0500
+> @@ -296,18 +296,6 @@
+>     return result;
+> }
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
----511572895-1888724175-1253025326=:8549--
+> -struct of_drconf_cell {
+> -    u64    base_addr;
+> -    u32    drc_index;
+> -    u32    reserved;
+> -    u32    aa_index;
+> -    u32    flags;
+> -};
+> -
+> -#define DRCONF_MEM_ASSIGNED    0x00000008
+> -#define DRCONF_MEM_AI_INVALID    0x00000040
+> -#define DRCONF_MEM_RESERVED    0x00000080
+> -
+> /*
+>  * Read the next lmb list entry from the ibm,dynamic-memory property
+>  * and return the information in the provided of_drconf_cell structure.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+
+
+-- 
+Brian King
+Linux on Power Virtualization
+IBM Linux Technology Center
+
+
