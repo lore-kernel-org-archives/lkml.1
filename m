@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbZIOVmJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758706AbZIOVmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbZIOVmJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 17:42:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbZIOVmF
+	id S1758706AbZIOVmN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 17:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbZIOVmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 17:42:05 -0400
-Received: from dan.rpsys.net ([93.97.175.187]:50068 "EHLO dan.rpsys.net"
+	Tue, 15 Sep 2009 17:42:09 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:60990 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751033AbZIOVmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 17:42:04 -0400
-Subject: Re: [RFC][PATCH] LED driver for Intel NAS SS4200 series
-From: Richard Purdie <rpurdie@rpsys.net>
-To: Dave Hansen <dave@sr71.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>
-In-Reply-To: <1253047135.10449.11657.camel@nimitz>
-References: <1253047135.10449.11657.camel@nimitz>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 22:38:24 +0100
-Message-Id: <1253050704.30165.64.camel@dax.rpnet.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	id S1751213AbZIOVmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 17:42:06 -0400
+Date: Wed, 16 Sep 2009 00:38:54 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>, "Ira W. Snyder" <iws@ovro.caltech.edu>,
+       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
+       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+Message-ID: <20090915213854.GE27954@redhat.com>
+References: <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <20090915204036.GA27954@redhat.com> <4AAFFC8E.9010404@gmail.com> <20090915212545.GC27954@redhat.com> <4AB0098F.9030207@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AB0098F.9030207@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 13:38 -0700, Dave Hansen wrote:
-> This code is based on a driver that came in the "Open-source
-> and GPL components" download here:
->     
-> http://downloadcenter.intel.com/SearchResult.aspx?lang=eng&ProductFamily=Server+Products&ProductLine=Intel%C2%AE+Storage+Systems&ProductProduct=Intel%C2%AE+Entry+Storage+System+SS4200-E&OSVersion=OS+Independent
->     
-> It was in a file called nasgpio.c inside of a second zip file
-> called SS4200-E_Linux_SIO_Driver-v1.4.zip.
+On Tue, Sep 15, 2009 at 05:39:27PM -0400, Gregory Haskins wrote:
+> Michael S. Tsirkin wrote:
+> > On Tue, Sep 15, 2009 at 04:43:58PM -0400, Gregory Haskins wrote:
+> >> Michael S. Tsirkin wrote:
+> >>> On Tue, Sep 15, 2009 at 04:08:23PM -0400, Gregory Haskins wrote:
+> >>>> No, what I mean is how do you surface multiple ethernet and consoles to
+> >>>> the guests?  For Ira's case, I think he needs at minimum at least one of
+> >>>> each, and he mentioned possibly having two unique ethernets at one point.
+> >>>>
+> >>>> His slave boards surface themselves as PCI devices to the x86
+> >>>> host.  So how do you use that to make multiple vhost-based devices (say
+> >>>> two virtio-nets, and a virtio-console) communicate across the transport?
+> >>>>
+> >>>> There are multiple ways to do this, but what I am saying is that
+> >>>> whatever is conceived will start to look eerily like a vbus-connector,
+> >>>> since this is one of its primary purposes ;)
+> >>> Can't all this be in userspace?
+> >> Can you outline your proposal?
+> >>
+> >> -Greg
+> >>
+> > 
+> > Userspace in x86 maps a PCI region, uses it for communication with ppc?
+> > 
 > 
-> That code used an ioctl() call to operate the LEDs.  It also
-> created a new top-level /proc file just to let userspace locate
-> which dynamic major number had been allocated to the device.
-> I decided that the interface probably wasn't mergeable in that
-> form. :)
->     
-> I ripped out all of the hardware monitor support from nasgpio.c
-> as well as the smbus code that controls the LED brightness.  I
-> then converted the code to use the existing LED interfaces
-> rather than the ioctl().  I don't have any need for brightness
-> control, and its code is *completely* separate from the on/off
-> controls implemented here.  If anyone else wants it, I'd be
-> happy to look into adding it, but I don't care enough for now.
+> And what do you propose this communication to look like?
 
-At a quick review this looks good. One question: These LEDs appear to be
-attached to generic GPIOs on a southbridge that is probably in other
-devices? If so, how do we know they're connected to LEDs? Do we need to
-add some further check of what kind of device we're running on?
+Who cares? Implement vbus protocol there if you like.
 
-Cheers,
+> -Greg
+> 
 
-Richard
-
--- 
-Richard Purdie
-Intel Open Source Technology Centre
 
