@@ -1,96 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754903AbZIOP7O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754851AbZIOQCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754903AbZIOP7O (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:59:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754881AbZIOP7J
+	id S1754851AbZIOQCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 12:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZIOQCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:59:09 -0400
-Received: from poutre.nerim.net ([62.4.16.124]:61224 "EHLO poutre.nerim.net"
+	Tue, 15 Sep 2009 12:02:46 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:64587 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754854AbZIOP7B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:59:01 -0400
-Date: Tue, 15 Sep 2009 17:59:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LM Sensors <lm-sensors@lm-sensors.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] hwmon updates for 2.6.32, round 1
-Message-ID: <20090915175901.6c58c83e@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; i586-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1751502AbZIOQCp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 12:02:45 -0400
+Message-ID: <4AAFBA76.109@redhat.com>
+Date: Tue, 15 Sep 2009 12:01:58 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Minchan Kim <minchan.kim@gmail.com>
+CC: Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] mm: use-once mapped file pages
+References: <1252971975-15218-1-git-send-email-hannes@cmpxchg.org> <28c262360909150826s2a0f5f0dpd111640f92d0f5ff@mail.gmail.com>
+In-Reply-To: <28c262360909150826s2a0f5f0dpd111640f92d0f5ff@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Minchan Kim wrote:
 
-Please pull some hwmon subsystem updates for Linux 2.6.32 from:
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=fe23e022c442bb917815e206c4765cd9150faef5
+> 
+> At that time, Rik added following as.
+> ( I hate wordwrap, but my google webmail will do ;( )
+> 
+> +       /* File is mmap'd by somebody. */
+> +       if (!list_empty(&mapping->i_mmap) ||
+> !list_empty(&mapping->i_mmap_shared))
+> +               return 1;
+> 
+> It made your case worse as you noticed.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jdelvare/staging.git hwmon-for-linus
+Other things changed since that code was added.
 
-There's one new driver (tmp421 for Texas Instruments TMP421, TMP422 and
-TMP423 thermal sensor chips) and random cleanups and fixes.
+At the time, we set the page referenced bit at page fault
+time, while today we propagate the referenced bit from the
+page table to the struct page at MUNMAP time.
 
-I will probably have some more patches later for kernel 2.6.32, when I
-am done processing my backlog.
+The code above was put in place to make sure the kernel
+would cache often used (but very briefly mmaped) pages,
+like the ones containing exec(3) in glibc.
 
- Documentation/hwmon/pcf8591 |   28 ++--
- Documentation/hwmon/tmp421  |   36 +++++
- MAINTAINERS                 |    6 +
- drivers/hwmon/Kconfig       |  110 ++++++++------
- drivers/hwmon/Makefile      |    7 +-
- drivers/hwmon/abituguru.c   |    2 +-
- drivers/hwmon/abituguru3.c  |   79 +++++-----
- drivers/hwmon/applesmc.c    |    2 +-
- drivers/hwmon/dme1737.c     |    2 +-
- drivers/hwmon/f71805f.c     |    2 +-
- drivers/hwmon/hdaps.c       |    3 +-
- drivers/hwmon/hwmon-vid.c   |   10 +-
- drivers/hwmon/it87.c        |    2 +-
- drivers/hwmon/lm78.c        |    2 +-
- drivers/hwmon/lm85.c        |   32 ++++
- drivers/hwmon/pc87360.c     |    2 +-
- drivers/hwmon/pc87427.c     |    8 +-
- drivers/hwmon/sis5595.c     |    2 +-
- drivers/hwmon/smsc47b397.c  |    2 +-
- drivers/hwmon/smsc47m1.c    |    2 +-
- drivers/hwmon/tmp421.c      |  347 +++++++++++++++++++++++++++++++++++++++++++
- drivers/hwmon/via686a.c     |    2 +-
- drivers/hwmon/vt1211.c      |    8 +-
- drivers/hwmon/vt8231.c      |    2 +-
- drivers/hwmon/w83627ehf.c   |    2 +-
- drivers/hwmon/w83627hf.c    |    2 +-
- drivers/hwmon/w83781d.c     |    2 +-
- 27 files changed, 579 insertions(+), 125 deletions(-)
- create mode 100644 Documentation/hwmon/tmp421
- create mode 100644 drivers/hwmon/tmp421.c
+However, propagating the referenced bit at munmap time
+should have the same effect, allowing us to get rid of
+my old page_mapping_inuse() code.
 
----------------
+Frankly, I'm happy to see that code go :)
 
-Alistair John Strachan (1):
-      hwmon: (abituguru3) Support multiple DMI strings per chip ID
-
-Andre Prendel (2):
-      hwmon: Add driver for Texas Instruments TMP421/422/423 sensor chips
-      hwmon: (tmp421) Add documentation
-
-H Hartley Sweeten (1):
-      hwmon: Include <linux/io.h> instead of <asm/io.h>
-
-Jean Delvare (4):
-      hwmon-vid: Ignore 6th VID pin of AMD family 0Fh processors
-      hwmon: Clearly mark ACPI drivers as such
-      hwmon: (pcf8591) Documentation clean-ups
-      hwmon: (lm85) Don't bind to Winbond/Nuvoton WPCD377I
-
-Julia Lawall (1):
-      hwmon: Use resource_size
-
-Luca Tettamanti (1):
-      hwmon: (asus_atk0110) Add maintainer information
-
-Thanks,
 -- 
-Jean Delvare
+All rights reversed.
