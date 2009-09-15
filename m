@@ -1,93 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbZIOVMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758401AbZIOVPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758190AbZIOVMd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 17:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZIOVMa
+	id S1758401AbZIOVPz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 17:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZIOVPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 17:12:30 -0400
-Received: from www.tglx.de ([62.245.132.106]:39586 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753594AbZIOVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 17:12:29 -0400
-Date: Tue, 15 Sep 2009 23:11:33 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>,
-       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
-       Philippe Reynes <philippe.reynes@isismpp.fr>,
-       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
-       Will Schmidt <will_schmidt@vnet.ibm.com>,
-       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
-       Sven-Thorsten Dietrich <sdietrich@novell.com>,
-       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
-Subject: [ANNOUNCE] 2.6.31-rt10
-In-Reply-To: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
- <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
- <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
- <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Sep 2009 17:15:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56381
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751331AbZIOVPt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 17:15:49 -0400
+Date: Tue, 15 Sep 2009 14:16:06 -0700 (PDT)
+Message-Id: <20090915.141606.134994761.davem@davemloft.net>
+To: johannes@sipsolutions.net
+Cc: yi.zhu@intel.com, mel@csn.ul.ie, reinette.chatre@intel.com,
+       elendil@planet.nl, Larry.Finger@lwfinger.net, linville@tuxdriver.com,
+       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       assaf.krauss@intel.com, mohamed.abbas@intel.com, netdev@vger.kernel.org
+Subject: Re: alloc skb based on a given data buffer
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1253028631.23427.55.camel@johannes.local>
+References: <20090915.020903.93643290.davem@davemloft.net>
+	<1253006111.7549.61.camel@debian>
+	<1253028631.23427.55.camel@johannes.local>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We are pleased to announce the next update to our new preempt-rt
-series.
- 
-   - update to 2.6.31
- 
-   - timekeeping 32bit overflow fix
+From: Johannes Berg <johannes@sipsolutions.net>
+Date: Tue, 15 Sep 2009 08:30:31 -0700
 
-   - rt locking fix for rw_locks and rwsems. Solves a kvm crash
+> Hold, mac80211 can't cope with that at this point for sw crypto and
+> possibly other things.
 
-   - kvm might sleep warning fix
-
-   - remove empty cpumask warning in x86(32bit) IPI code
-
-   - tracer fixes - picked from mainline
-
-   - perf counter fix - picked from mainline
-
-Known issues:
-   - ARM highmem
-   - scheduler load balancing oddities. Peter is working on it.
-   - timer_interrupt hang check (fix queued for .31-rt11)
-
-Pending updates:
-   - I'm planning to add back MIPS support in the .31-rt11 release.
-
-Download locations:
- 
-    http://rt.et.redhat.com/download/
-    http://www.kernel.org/pub/linux/kernel/projects/rt/
-
-Git release branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
-  
-Git development branch:
-    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
-
-Gitweb:
-     http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
- 
-Information on the RT patch can be found at:
-
-    http://rt.wiki.kernel.org/index.php/Main_Page
-
-to build the 2.6.31-rt10 tree, the following patches should be
-applied:
-
-    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2
-    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rt10.bz2
-
-Enjoy !
-
-      tglx
-
+Then it should skb_linearize() at input, or similar.
