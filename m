@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZIOPwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754808AbZIOPyy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZIOPwi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZIOPwe
+	id S1754808AbZIOPyy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 11:54:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZIOPyv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:52:34 -0400
-Received: from bohort.kerlabs.com ([62.160.40.57]:43222 "EHLO
-	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750911AbZIOPwd (ORCPT
+	Tue, 15 Sep 2009 11:54:51 -0400
+Received: from smtp.zeugmasystems.com ([70.79.96.174]:20467 "EHLO
+	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752019AbZIOPyu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:52:33 -0400
-From: Louis Rilling <louis.rilling@kerlabs.com>
-To: Jason Wessel <jason.wessel@windriver.com>
-Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Louis Rilling <louis.rilling@kerlabs.com>
-Subject: [PATCH] Let gdb assume that kgdb supports extended mode
-Date: Tue, 15 Sep 2009 17:52:27 +0200
-Message-Id: <1253029947-670-1-git-send-email-louis.rilling@kerlabs.com>
-X-Mailer: git-send-email 1.5.6.5
+	Tue, 15 Sep 2009 11:54:50 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+x-cr-hashedpuzzle: Bbzt D1dJ GZlE HV+I I1fd KFV9 KJEU NFIM OHg/ OveQ VJku a9lK bF9L bP0M dH+Q e19a;3;bABpAG4AdQB4AC0AawBlAHIAbgBlAGwAQAB2AGcAZQByAC4AawBlAHIAbgBlAGwALgBvAHIAZwA7AHIAYQBuAGQAeQAuAGQAdQBuAGwAYQBwAEAAbwByAGEAYwBsAGUALgBjAG8AbQA7AHQAbwByAHYAYQBsAGQAcwBAAGwAaQBuAHUAeAAtAGYAbwB1AG4AZABhAHQAaQBvAG4ALgBvAHIAZwA=;Sosha1_v1;7;{119BBEAC-41E1-4585-8108-50B1B5EC2333};YQBzAGkAbgBoAGEAQAB6AGUAdQBnAG0AYQBzAHkAcwB0AGUAbQBzAC4AYwBvAG0A;Tue, 15 Sep 2009 15:54:09 GMT;UgBFADoAIABbAFAAQQBUAEMASABdACAAYwBsAGUAYQBuAHUAcAAgAGwAZQBnAGEAYwB5ACAAYwBvAG4AcwBvAGwAZQBfAHAAcgBpAG4AdAAgAGYAdQBuAGMAdABpAG8AbgA=
+Content-class: urn:content-classes:message
+Subject: RE: [PATCH] cleanup legacy console_print function
+x-cr-puzzleid: {119BBEAC-41E1-4585-8108-50B1B5EC2333}
+Date: Tue, 15 Sep 2009 08:54:09 -0700
+Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501F10081@exchange.ZeugmaSystems.local>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] cleanup legacy console_print function
+Thread-Index: Aco1aMQxdhFi13Z5ScWJ5alsGZFHxwAAAF6gACzyaoA=
+From: "Anirban Sinha" <ASinha@zeugmasystems.com>
+To: "Anirban Sinha" <ASinha@zeugmasystems.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+Cc: "Randy Dunlap" <randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+>
+>Here you go!
+>
 
-When looking for ways to reboot my target machine from gdb, I had to implement
-the patch below.
+Thanks Linus for committing the patch.
 
-Then, from gdb, one has to attach as extended-remote target, and the
-'run' command will reboot the target machine.
+    Ani
 
-The behavior is not perfect since gdb will complain afterwards, and the user
-has to interrupt it and detach to recover usage. But AFAICS, gdb's remote
-protocol only uses the 'RXX' remote command in extended mode, which makes the
-current implementation of the 'R0' command in kgdb unreachable from gdb.
-
-So, are there reasons not to include such a patch?
-
-Thanks,
-
-Louis
-
--------------------------------------------------->
-Subject: [PATCH] Let gdb assume that kgdb supports extended mode
-
-... and allow users to reboot the target machine from gdb.
-
-Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
----
- kernel/kgdb.c |    9 +++++++++
- 1 files changed, 9 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index 5f15d33..e39f886 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -829,6 +829,12 @@ static int kgdb_io_ready(int print_wait)
-  * where KGDB is communicating with an external debugger
-  */
- 
-+/* Handle the '!' extended mode request */
-+static void gdb_cmd_extended(struct kgdb_state *ks)
-+{
-+	strcpy(remcom_out_buffer, "OK");
-+}
-+
- /* Handle the '?' status packets */
- static void gdb_cmd_status(struct kgdb_state *ks)
- {
-@@ -1252,6 +1258,9 @@ static int gdb_serial_stub(struct kgdb_state *ks)
- 		get_packet(remcom_in_buffer);
- 
- 		switch (remcom_in_buffer[0]) {
-+		case '!': /* extended mode */
-+			gdb_cmd_extended(ks);
-+			break;
- 		case '?': /* gdbserial status */
- 			gdb_cmd_status(ks);
- 			break;
--- 
-1.5.6.5
 
