@@ -1,62 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753060AbZIOLTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753085AbZIOLUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753060AbZIOLTg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 07:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752892AbZIOLTc
+	id S1753085AbZIOLUB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 07:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZIOLUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 07:19:32 -0400
-Received: from mail-yw0-f174.google.com ([209.85.211.174]:50429 "EHLO
-	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752764AbZIOLTb convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 07:20:00 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:60196 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752970AbZIOLT7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 07:19:31 -0400
+	Tue, 15 Sep 2009 07:19:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=VXTAxxI9yxhblebnsN5qTCuvIQpGVH/bES44RYNWCxKUfrhgWr9ya2viUUH4u13A+5
-         FonOEW4o0ltP2087nYT0rrWzdlHiG+o9GTRVlPc0rgfVs2R5ckqdZRPzwpZKRx4LtCQL
-         PFuVgzBHYJPJPNA9YPihvxJREMA57H+u4rkec=
+        b=dYZMP/kmmk3riMxBuSmNHy87o4NWuVJSo85pOTJk2bZuv0qcMKT9E1qQSDVoSdWb/b
+         y+A9YB8bTVF1YCigEpqKNJefVH+o+yH9O4tonubFM9NP/P+a6m/bTYddtmLG0bIqhutv
+         mN83/alzERbdiDbVmgkcbAfVSuAP4MjizTyes=
 MIME-Version: 1.0
-In-Reply-To: <20090915062050.GB10232@core.coreip.homeip.net>
-References: <1252966719-27557-1-git-send-email-vapier@gentoo.org> 
-	<20090915062050.GB10232@core.coreip.homeip.net>
-From: Mike Frysinger <vapier.adi@gmail.com>
-Date: Tue, 15 Sep 2009 07:19:14 -0400
-Message-ID: <8bd0f97a0909150419p1048bfe9j243fa30a0581b198@mail.gmail.com>
-Subject: Re: [PATCH] input/keyboard: add ADP5588 QWERTY I2C Keyboard Input 
-	device driver
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Robin Getz <rgetz@blackfin.uclinux.org>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org,
-       uclinux-dist-devel@blackfin.uclinux.org,
-       Michael Hennerich <michael.hennerich@analog.com>,
-       Bryan Wu <cooloney@kernel.org>
+In-Reply-To: <20090915104919.GE19989@elf.ucw.cz>
+References: <20090913230008.GC30169@n2100.arm.linux.org.uk>
+	 <20090914081001.GB14519@n2100.arm.linux.org.uk>
+	 <94a0d4530909140558nd8d2c47lc9954563c80a574f@mail.gmail.com>
+	 <20090914140059.GC21580@n2100.arm.linux.org.uk>
+	 <94a0d4530909140738t7e4d646r134cfd884da21348@mail.gmail.com>
+	 <20090914144028.GG21580@n2100.arm.linux.org.uk>
+	 <94a0d4530909140814w36f7f5f0td2c25db07fbd4e57@mail.gmail.com>
+	 <20090915103739.GA19519@elf.ucw.cz>
+	 <94a0d4530909150347h642772bvc8175109393e905f@mail.gmail.com>
+	 <20090915104919.GE19989@elf.ucw.cz>
+Date: Tue, 15 Sep 2009 14:20:00 +0300
+Message-ID: <94a0d4530909150420g38fff8a5l60db68bc98002339@mail.gmail.com>
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Jamie Lokier <jamie@shareable.org>, Marek Vasut <marek.vasut@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 02:20, Dmitry Torokhov wrote:
-> On Mon, Sep 14, 2009 at 06:18:39PM -0400, Mike Frysinger wrote:
->> +static int __devexit adp5588_remove(struct i2c_client *client)
->> +{
->> +     struct adp5588_kpad *kpad = dev_get_drvdata(&client->dev);
->> +
->> +     adp5588_write(client, CFG, 0);
->> +     free_irq(client->irq, kpad);
+On Tue, Sep 15, 2009 at 1:49 PM, Pavel Machek <pavel@ucw.cz> wrote:
+> On Tue 2009-09-15 13:47:01, Felipe Contreras wrote:
+>> On Tue, Sep 15, 2009 at 1:37 PM, Pavel Machek <pavel@ucw.cz> wrote:
+>> >
+>> >> >> > Because then you get it whenever you configure for V4 as the lowest
+>> >> >> > denominator CPU, which leads to the buggy behaviour on better CPUs.
+>> >> >> > It's far better to leave it as is and just accept that the old CPUs
+>> >> >> > will have longer than necessary delays.  If people really really
+>> >> >> > care (and there's likely to only be a small minority of them now)
+>> >> >> > changing the '0' to a '1' is a very simple change for them to carry
+>> >> >> > in their local tree.  Unlike getting the right unrolling etc.
+>> >> >>
+>> >> >> Well, they can also 'git revert' this patch. If somebody really cares
+>> >> >> I think they should shout now and provide a better patch, otherwise
+>> >> >> this one should be merged.
+>> >> >
+>> >> > On the other hand, having the code there as it currently stands is not
+>> >> > harmful in any way, so leaving it there is just as easy.
+>> >>
+>> >> It makes the code less understandable. I'm not sure about linux's
+>> >> practices, but an #if 0 generally means somebody is being lazy.
+>> >
+>> > Not in this case, as you was explained to you. You may want to add
+>> > explaining comment above #if 0....
+>>
+>> Yes, but I've no idea in which situations somebody might want to
+>> enable that code. Old chips? Which old chips?
 >
-> cancel_work_sync() is missing. Could you try the updated version below?
+> If you udelay() produces too long delays, as was explained in the thread.
 
-i dont think i have any adp5588 hardware.  Robin: do we have any in
-Norwood ?  otherwise, it'll have to wait for Michael to get back to
-double check.
+Yeah, on "older CPUs", and what constitutes an "older CPU" has not been defined.
 
-> BTW, maybe you shoudl convert to threaded IRQs here?
-
-yes, after your suggestion for the previous driver, we've been looking
-at all our input drivers to convert to threaded IRQs.  do we need to
-convert all of them before acceptance, or can we merge now and post an
-updated patch after ?
--mike
+-- 
+Felipe Contreras
