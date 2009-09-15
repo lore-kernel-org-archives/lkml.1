@@ -1,54 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751179AbZIOEPH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751305AbZIOE2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751179AbZIOEPH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 00:15:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZIOEPF
+	id S1751305AbZIOE2Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 00:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751260AbZIOE2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 00:15:05 -0400
-Received: from casper.infradead.org ([85.118.1.10]:48618 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbZIOEPE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 00:15:04 -0400
-Date: Tue, 15 Sep 2009 06:18:44 +0200
-From: Arjan van de Ven <arjan@infradead.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, mingo@elte.hu, yanmin_zhang@linux.intel.com,
-       jens.axboe@oracle.com, Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO
- performance
-Message-ID: <20090915061844.3c92ee7a@infradead.org>
-In-Reply-To: <20090915061512.0209d956@infradead.org>
-References: <20090915054259.5282e5ba@infradead.org>
-	<20090914205408.578f7f60.akpm@linux-foundation.org>
-	<20090915061512.0209d956@infradead.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.2 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Tue, 15 Sep 2009 00:28:19 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:16794 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751254AbZIOE2S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 00:28:18 -0400
+Message-Id: <200909150428.n8F4SIGt023997@int-mx08.intmail.prod.int.phx2.redhat.com>
+Date: Tue, 15 Sep 2009 00:28:17 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+To: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: binfmt_misc takes precedence over binfmt_script in 2.6.30
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009 06:15:12 +0200
-Arjan van de Ven <arjan@infradead.org> wrote:
-> 
-> > The timing is awkward.  We could let it sit in Len's tree and
-> > linux-next for a couple of months or we could say what-the-hell and
-> > merge it.
-> 
-> If the performance impact wasn't this huge I'd say "let it sit".
-> As it is now, with a nearly 2x performance delta, I'd not be very
-> happy to expose linux users to this regression-like performance drop
-> for another 3 months. 
->
+Steps to Reproduce:
 
-btw I do not like to use the "regression" word lightly, but kernels
-prior to 2.6.22 or so did not have this performance drop (at least not
-nearly as much), and current ones do. 
+mount -t binfmt_misc none /proc/sys/fs/binfmt_misc
+echo ':xyzzy:E::xyzzy::/usr/bin/stat:' > /proc/sys/fs/binfmt_misc/register
+echo '#!/bin/cat' > /tmp/test.xyzzy
+chmod +x /tmp/test.xyzzy
+/tmp/test.xyzzy
 
- 
+Actual results:
+The test prints the output of /usr/bin/stat /tmp/test.xyzzy
+
+Expected results:
+The test prints "#!/bin/cat".
+
+This appears to have changed in the upstream git commit 74641f5 "alpha:
+binfmt_aout fix". The commit message for that commit says "Fixed by changing
+the registration order of the default binfmt handlers using list_add_tail() and
+introducing insert_binfmt() function which places new handler on the top of the
+binfmt list.  This might be generally useful for installing arch-specific
+frontends for default handlers or just for overriding them."
+
+It's not clear that the new behavior is worse or better, but it's a
+regression and should at the very least be documented.  
