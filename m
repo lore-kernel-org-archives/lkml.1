@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758379AbZIOTJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbZIOTKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758379AbZIOTJH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758505AbZIOTIz
+	id S1758418AbZIOTKt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 15:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbZIOTKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:08:55 -0400
-Received: from smtp.zeugmasystems.com ([70.79.96.174]:2780 "EHLO
-	zeugmasystems.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758495AbZIOTIi convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 15:10:45 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:44104 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758309AbZIOTKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:08:38 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Tue, 15 Sep 2009 15:10:44 -0400
+Date: Tue, 15 Sep 2009 20:10:36 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Andreas Mohr <andi@lisas.de>, Alan Stern <stern@rowland.harvard.edu>,
+       laurent.pinchart@skynet.be, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: usb autosuspend is history after S2R (also on 2.6.31; UVC?)
+Message-ID: <20090915191036.GA7713@srcf.ucam.org>
+References: <20090915185145.GA31490@rhlx01.hs-esslingen.de> <20090915190045.GA734@suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] cleanup legacy console_print function
-Date: Tue, 15 Sep 2009 12:08:14 -0700
-Message-ID: <DDFD17CC94A9BD49A82147DDF7D545C501F1012C@exchange.ZeugmaSystems.local>
-In-Reply-To: <12c511ca0909151139w400256d1t84dad5fa9e1ab3a2@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] cleanup legacy console_print function
-Thread-Index: Aco2M/EjFOYf2EJvQZi8d9CaDOTddAAAuqAQ
-References: <DDFD17CC94A9BD49A82147DDF7D545C501F0FF17@exchange.ZeugmaSystems.local> <200909151127.10697.bjorn.helgaas@hp.com> <DDFD17CC94A9BD49A82147DDF7D545C501F100E4@exchange.ZeugmaSystems.local> <12c511ca0909151100ne3841b7l7af5bffb977d6d9b@mail.gmail.com> <DDFD17CC94A9BD49A82147DDF7D545C501F100EB@exchange.ZeugmaSystems.local> <57C9024A16AD2D4C97DC78E552063EA3E05DBC6E@orsmsx505.amr.corp.intel.com> <DDFD17CC94A9BD49A82147DDF7D545C501F10104@exchange.ZeugmaSystems.local> <12c511ca0909151139w400256d1t84dad5fa9e1ab3a2@mail.gmail.com>
-From: "Anirban Sinha" <ASinha@zeugmasystems.com>
-To: "Tony Luck" <tony.luck@intel.com>
-Cc: "Bjorn Helgaas" <bjorn.helgaas@hp.com>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, <linux-ia64@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915190045.GA734@suse.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->
->The diffstat doesn't match the patch (doesn't include a change to
->process.c) ... but the patch itself is OK.
->
->Acked-by: Tony Luck <tony.luck@intel.com>
+On Tue, Sep 15, 2009 at 12:00:45PM -0700, Greg KH wrote:
 
-Yeah, my bad. I had a local change in that file which I also committed.
-Anyway, here it is again:
+> Could you try that?  A certian hardware manufacturer is insisting that
+> this patch solves problems, which I have not been able to validate, and
+> it would be good to get some independant tests.
 
+I'd be surprised if this actually fixed anything - it's equivalent to 
+just echoing "enable" into the autosuspend file at device bind time. 
+I've been waiting until we ship beta and get more user feedback before 
+pushing it.
 
-Subject: Fix ia64 build breakage. 
-
-On ia64 it is not necessary to provide any kind of "extern" declaration
-before using external symbols.
-
-Signed-off-by: Anirban Sinha <asinha@zeugmasystems.com>
-Acked-by: Tony Luck <tony.luck@intel.com>
----
-arch/ia64/kernel/head.S |    1 -
-arch/ia64/kernel/head.h |    1 -
-2 files changed, 0 insertions(+), 2 deletions(-)
-delete mode 100644 arch/ia64/kernel/head.h
-
-diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
-index e6c5c3d..23f846d 100644
---- a/arch/ia64/kernel/head.S
-+++ b/arch/ia64/kernel/head.S
-@@ -34,7 +34,6 @@
- #include <asm/mca_asm.h>
- #include <linux/init.h>
- #include <linux/linkage.h>
--#include "head.h"
-
- #ifdef CONFIG_HOTPLUG_CPU
- #define SAL_PSR_BITS_TO_SET                            \
-diff --git a/arch/ia64/kernel/head.h b/arch/ia64/kernel/head.h
-deleted file mode 100644
-index 2e2ac68..0000000
---- a/arch/ia64/kernel/head.h
-+++ /dev/null
-@@ -1 +0,0 @@
--extern void console_print(const char *s);
---
-1.6.4
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
