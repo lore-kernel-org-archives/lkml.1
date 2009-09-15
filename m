@@ -1,46 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753573AbZIONBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbZIONDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753573AbZIONBw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 09:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752858AbZIONBr
+	id S1753625AbZIONDi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 09:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZIONDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 09:01:47 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:55034 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbZIONBr (ORCPT
+	Tue, 15 Sep 2009 09:03:32 -0400
+Received: from mail-yw0-f174.google.com ([209.85.211.174]:64336 "EHLO
+	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753494AbZIONDb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 09:01:47 -0400
-Date: Tue, 15 Sep 2009 15:01:47 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] [1/5] kbuild: Fix ld-option Makefile macro to really
-	work
-Message-ID: <20090915130146.GA12351@basil.fritz.box>
-References: <200909141018.915641783@firstfloor.org> <20090914201806.EE6A0B1757@basil.firstfloor.org> <20090914214711.GB7990@merkur.ravnborg.org>
+	Tue, 15 Sep 2009 09:03:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=FoCY5APAaAOYbawGxf7WXQRsmQVjKwFWaAkHwSE5sdkCl9cl4yaIkFhXj+p+nVjT5t
+         E+FAvw4z9m4EdgSBuUyRP8rYvdGdaIAbh1+9tGpWYYBvJJxktAOFCUlGBAI2Gqsu3968
+         LCttORGLzor1UXeG/kk2Uj/0WAiBTYZke/xT8=
+Message-ID: <4AAF909F.9080306@gmail.com>
+Date: Tue, 15 Sep 2009 09:03:27 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090914214711.GB7990@merkur.ravnborg.org>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Avi Kivity <avi@redhat.com>
+CC: "Michael S. Tsirkin" <mst@redhat.com>,
+       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
+       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
+       akpm@linux-foundation.org, hpa@zytor.com,
+       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
+       alacrityvm-devel@lists.sourceforge.net
+Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
+References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com>
+In-Reply-To: <4AAF8A03.5020806@redhat.com>
+X-Enigmail-Version: 0.96.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig46A1F91EB19287765BBD0682"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> So now we pass the option direct to the linker rather than via gcc -wl.
-> I assume this breaks the other 8 uses of ld-option in the kernel?
-> 
-> Or does ld understand the -wl,... syntax?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig46A1F91EB19287765BBD0682
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-It does not. But -X is passed directly to the linker, not via gcc,
-so it needs to probe ld directly
+Avi Kivity wrote:
+> On 09/14/2009 10:14 PM, Gregory Haskins wrote:
+>> To reiterate, as long as the model is such that the ppc boards are
+>> considered the "owner" (direct access, no translation needed) I believ=
+e
+>> it will work.  If the pointers are expected to be owned by the host,
+>> then my model doesn't work well either.
+>>   =20
+>=20
+> In this case the x86 is the owner and the ppc boards use translated
+> access.  Just switch drivers and device and it falls into place.
+>=20
 
-The right fix is probably an new macro that works with ld (and
-ideally rename this one which is confusingly named) I'll
-send an updated patch.
+You could switch vbus roles as well, I suppose.  Another potential
+option is that he can stop mapping host memory on the guest so that it
+follows the more traditional model.  As a bus-master device, the ppc
+boards should have access to any host memory at least in the GFP_DMA
+range, which would include all relevant pointers here.
 
--Andi
+I digress:  I was primarily addressing the concern that Ira would need
+to manage the "host" side of the link using hvas mapped from userspace
+(even if host side is the ppc boards).  vbus abstracts that access so as
+to allow something other than userspace/hva mappings.  OTOH, having each
+ppc board run a userspace app to do the mapping on its behalf and feed
+it to vhost is probably not a huge deal either.  Where vhost might
+really fall apart is when any assumptions about pageable memory occur,
+if any.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+As an aside: a bigger issue is that, iiuc, Ira wants more than a single
+ethernet channel in his design (multiple ethernets, consoles, etc).  A
+vhost solution in this environment is incomplete.
+
+Note that Ira's architecture highlights that vbus's explicit management
+interface is more valuable here than it is in KVM, since KVM already has
+its own management interface via QEMU.
+
+Kind Regards,
+-Greg
+
+
+--------------enig46A1F91EB19287765BBD0682
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
+
+iEYEARECAAYFAkqvkJ8ACgkQP5K2CMvXmqGd0wCbB/8y7sxyTXx/3odUb27n3vc/
+W/AAn3rM1U3FG86WYLElMfmUO3tXTp6R
+=vpj/
+-----END PGP SIGNATURE-----
+
+--------------enig46A1F91EB19287765BBD0682--
