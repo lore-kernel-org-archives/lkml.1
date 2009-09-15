@@ -1,123 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbZIOVzs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758718AbZIOV57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758744AbZIOVzs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 17:55:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbZIOVzo
+	id S1758718AbZIOV57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 17:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751762AbZIOV5x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 17:55:44 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:18037 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751634AbZIOVzm (ORCPT
+	Tue, 15 Sep 2009 17:57:53 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:56881 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751327AbZIOV5v (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 17:55:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=jzlSukiD/nxO/Cq60G+oQauJkOt1cIfDezpxCGS5zmwdkRkw5crDsWiAgK04V7nPgd
-         iH4hR/jenl+21Ra3/6+KffGTJ4Th3D77enzksnWWWU4KLtgLvodK4Vx/myvpUoEAYoWV
-         RT/6juuk6W0OPGu6paD5O3JLDt/QUPlsHgrPs=
-Message-ID: <4AB00D5D.3080104@gmail.com>
-Date: Tue, 15 Sep 2009 17:55:41 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 15 Sep 2009 17:57:51 -0400
+Date: Tue, 15 Sep 2009 14:57:53 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Greg KH <greg@kroah.com>, James Bottomley <James.Bottomley@suse.de>,
+       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Giridhar Malavali <giridhar.malavali@qlogic.com>,
+       Ravi Anand <ravi.anand@qlogic.com>,
+       Lalit Chandivade <lalit.chandivade@qlogic.com>
+Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
+ CONFIG_MOUDLES=n.
+Message-ID: <20090915215753.GA50294@plap4-2.local>
+References: <20090912001752.GC12098@plap4-2.local>
+ <20090912003808.GD12098@plap4-2.local>
+ <20090912005446.GA11691@kroah.com>
+ <20090912025623.GA14824@plap4-2.local>
+ <20090912043333.GA12349@kroah.com>
+ <1252765807.4238.74.camel@mulgrave.site>
+ <20090915153312.GB22774@kroah.com>
+ <1253029631.29947.156.camel@mulgrave.site>
+ <20090915165708.GA18817@kroah.com>
+ <ac3eb2510909151022s5a0704c2xd4be73d5c63ab0f1@mail.gmail.com>
 MIME-Version: 1.0
-To: "Michael S. Tsirkin" <mst@redhat.com>
-CC: Avi Kivity <avi@redhat.com>, "Ira W. Snyder" <iws@ovro.caltech.edu>,
-       netdev@vger.kernel.org, virtualization@lists.linux-foundation.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       linux-mm@kvack.org, akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <4AAF8A03.5020806@redhat.com> <4AAF909F.9080306@gmail.com> <4AAF95D1.1080600@redhat.com> <4AAF9BAF.3030109@gmail.com> <4AAFACB5.9050808@redhat.com> <4AAFF437.7060100@gmail.com> <20090915204036.GA27954@redhat.com> <4AAFFC8E.9010404@gmail.com> <20090915212545.GC27954@redhat.com> <4AB0098F.9030207@gmail.com> <20090915213854.GE27954@redhat.com>
-In-Reply-To: <20090915213854.GE27954@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigD474E6449406F2891D34A579"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <ac3eb2510909151022s5a0704c2xd4be73d5c63ab0f1@mail.gmail.com>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-OriginalArrivalTime: 15 Sep 2009 21:57:22.0011 (UTC) FILETIME=[8086BAB0:01CA364F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigD474E6449406F2891D34A579
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 15 Sep 2009, Kay Sievers wrote:
+> On Tue, Sep 15, 2009 at 18:57, Greg KH <greg@kroah.com> wrote:
+> > On Tue, Sep 15, 2009 at 10:47:11AM -0500, James Bottomley wrote:
+> >> On Tue, 2009-09-15 at 08:33 -0700, Greg KH wrote:
+> >> > On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
+> >> > > On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
+> >> > > > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
+> >> > > > > On Fri, 11 Sep 2009, Greg KH wrote:
+> >> > > > >
+> >> > > > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
+> >> > > > > > > Randy Dunlap noted:
+> >> > > > > > >
+> >> > > > > > >   when CONFIG_MODULES=n:
+> >> > > > > > >
+> >> > > > > > >   drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
+> >> > > > > > >
+> >> > > > > > >   in
+> >> > > > > > >
+> >> > > > > > >   kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
+> >> > > > > > >           KOBJ_CHANGE, envp);
+> >> > > > > > >
+> >> > > > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
+> >> > > > > >
+> >> > > > > > Um, why?  What are you trying to do here?  kobject change should not be
+> >> > > > > > for a device, or a "normal" kobject.
+> >> > > > > >
+> >> > > > > > What do you expect userspace to do with this?  Where have you documented
+> >> > > > > > it?
+> >> > > > >
+> >> > > > > The purpose was described here:
+> >> > > > >
+> >> > > > >       http://article.gmane.org/gmane.linux.scsi/54155
+> >> > > > >
+> >> > > > > Basically we'd like to instruct user-space to retrieve a blob of data
+> >> > > > > automatically.
+> >> > > >
+> >> > > > Hm, like a firmware object perhaps?
+> >> > > >
+> >> > > > > Original implementation used the kboject hanging off
+> >> > > > > the module which does not exist when CONFIG_MODULES=n.  It was
+> >> > > > > suggested that perhaps an alternative would be to use 'struct device'
+> >> > > > > kobj.  Any tips on how to trigger such a driver-specific event,
+> >> > > > > perhaps a dedicated kobject exported by the driver itself???
+> >> > > >
+> >> > > > Why not use the firmware interface for it, that is what it is designed
+> >> > > > for, and you will not have to craft any new udev rules.
+> >> > >
+> >> > > The data is going the wrong way to use the current firmware interface,
+> >> > > which is designed to load data from userspace into the kernel.  For this
+> >> > > interface, we want the data to go the other way (i.e. the kernel has a
+> >> > > blob of dump data it would like userspace to save if it can).
+> >> >
+> >> > Ick.
+> >>
+> >> It's a natural debugging event ... the user can simply program the
+> >> system to discard the dump.
+> >>
+> >> > > I'd be amenable to updating the firmware interface to do this, but it
+> >> > > looks like adding a completely new codepath, which it's not clear even
+> >> > > belongs there.
+> >> >
+> >> > Well, I don't think it deserves a kobject change event, as that means
+> >> > something a bit different to userspace today, right?
+> >>
+> >> Well, the documentation (in include/linux/kobject.h) does say that
+> >> KOBJ_CHANGED is the dumping ground for events that don't match anything
+> >> else, which this one seems to qualify as.  What else do you suggest?
+> >
+> > Ok, I can't think of anything else at the moment, sorry.
+> 
+> Wouldn't kernel/kmod.c :: call_usermodehelper_pipe() somehow fit for
+> that interface?
 
-Michael S. Tsirkin wrote:
-> On Tue, Sep 15, 2009 at 05:39:27PM -0400, Gregory Haskins wrote:
->> Michael S. Tsirkin wrote:
->>> On Tue, Sep 15, 2009 at 04:43:58PM -0400, Gregory Haskins wrote:
->>>> Michael S. Tsirkin wrote:
->>>>> On Tue, Sep 15, 2009 at 04:08:23PM -0400, Gregory Haskins wrote:
->>>>>> No, what I mean is how do you surface multiple ethernet and consol=
-es to
->>>>>> the guests?  For Ira's case, I think he needs at minimum at least =
-one of
->>>>>> each, and he mentioned possibly having two unique ethernets at one=
- point.
->>>>>>
->>>>>> His slave boards surface themselves as PCI devices to the x86
->>>>>> host.  So how do you use that to make multiple vhost-based devices=
- (say
->>>>>> two virtio-nets, and a virtio-console) communicate across the tran=
-sport?
->>>>>>
->>>>>> There are multiple ways to do this, but what I am saying is that
->>>>>> whatever is conceived will start to look eerily like a vbus-connec=
-tor,
->>>>>> since this is one of its primary purposes ;)
->>>>> Can't all this be in userspace?
->>>> Can you outline your proposal?
->>>>
->>>> -Greg
->>>>
->>> Userspace in x86 maps a PCI region, uses it for communication with pp=
-c?
->>>
->> And what do you propose this communication to look like?
->=20
-> Who cares? Implement vbus protocol there if you like.
->=20
+The only current consumer of call_usermodehelper_pipe() is
+fs/exec.c::do_coredump() and it appears to manipulate the blob of data
+via file-level operations.  Would this be a 'notification'
+alternative?  Or, are you suggesting the whole process be redone (both
+notification and blob-transfer)?  Uevent notifications with a udev
+user-space front-end appears to be a much more simplified and flexible
+mechanism.
 
-Exactly.  My point is that you need something like a vbus protocol there.=
- ;)
-
-Here is the protocol I run over PCI in AlacrityVM:
-
-http://git.kernel.org/?p=3Dlinux/kernel/git/ghaskins/alacrityvm/linux-2.6=
-=2Egit;a=3Dblob;f=3Dinclude/linux/vbus_pci.h;h=3Dfe337590e644017392e4c9d9=
-236150adb2333729;hb=3Dded8ce2005a85c174ba93ee26f8d67049ef11025
-
-And I guess to your point, yes the protocol can technically be in
-userspace (outside of whatever you need for the in-kernel portion of the
-communication transport, if any.
-
-The vbus-connector design does not specify where the protocol needs to
-take place, per se.  Note, however, for performance reasons some parts
-of the protocol may want to be in the kernel (such as DEVCALL and
-SHMSIGNAL).  It is for this reason that I just run all of it there,
-because IMO its simpler than splitting it up.  The slow path stuff just
-rides on infrastructure that I need for fast-path anyway, so it doesn't
-really cost me anything additional.
-
-Kind Regards,
--Greg
-
-
---------------enigD474E6449406F2891D34A579
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqwDV0ACgkQP5K2CMvXmqGoHwCfe40zj1s7CnCazpTfdiG2mEd8
-2asAn3nUqfxZlOxIwgfzWBYERIeQDo1m
-=Rz8Z
------END PGP SIGNATURE-----
-
---------------enigD474E6449406F2891D34A579--
+-- av
