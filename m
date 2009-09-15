@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758537AbZIOTfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758554AbZIOTge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758537AbZIOTfw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZIOTfs
+	id S1758554AbZIOTge (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 15:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZIOTg3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:35:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:33430 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754518AbZIOTfr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:35:47 -0400
-Date: Tue, 15 Sep 2009 21:35:41 +0200
-From: "Hans J. Koch" <hjk@linutronix.de>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Daniel Mack <daniel@caiaq.de>,
-       "Hans J. Koch" <hjk@linutronix.de>
-Subject: Re: [PATCH 04/20] UIO: remove 'default n' from Kconfig
-Message-ID: <20090915193538.GA3630@local>
-References: <20090915181247.GA32167@kroah.com> <1253041976-1111-4-git-send-email-gregkh@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1253041976-1111-4-git-send-email-gregkh@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 15 Sep 2009 15:36:29 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42102 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750862AbZIOTg3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 15:36:29 -0400
+Date: Tue, 15 Sep 2009 22:36:31 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, mingo@elte.hu
+Subject: [GIT PULL] SLAB fix for 2.6.32-rc0
+Message-ID: <alpine.DEB.2.00.0909152235290.20957@melkki.cs.helsinki.fi>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 12:12:40PM -0700, Greg Kroah-Hartman wrote:
-> From: Daniel Mack <daniel@caiaq.de>
-> 
-> 'default n' is the default, there is no need for these lines.
+Hi Linus,
 
-That's quite true.
+Here's a build breakage fix from Ingo for !CONFIG_SLUB_DEBUG configs.
 
-I must have forgotten to sign-off this one, you can add my signed-off-by,
-if you like.
+ 			Pekka
 
-Thanks,
-Hans
+The following changes since commit 0cb583fd2862f19ea88b02eb307d11c09e51e2f8:
+   Linus Torvalds (1):
+         Merge git://git.kernel.org/.../davem/ide-next-2.6
 
-> 
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Hans J. Koch <hjk@linutronix.de>
-> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+are available in the git repository at:
 
-Signed-off-by: Hans J. Koch <hjk@linutronix.de>
+   ssh://master.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6 slab/urgent
 
-> ---
->  drivers/uio/Kconfig |    5 -----
->  1 files changed, 0 insertions(+), 5 deletions(-)
-> 
-> diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
-> index 7f86534..45200fd 100644
-> --- a/drivers/uio/Kconfig
-> +++ b/drivers/uio/Kconfig
-> @@ -1,7 +1,6 @@
->  menuconfig UIO
->  	tristate "Userspace I/O drivers"
->  	depends on !S390
-> -	default n
->  	help
->  	  Enable this to allow the userspace driver core code to be
->  	  built.  This code allows userspace programs easy access to
-> @@ -16,7 +15,6 @@ if UIO
->  config UIO_CIF
->  	tristate "generic Hilscher CIF Card driver"
->  	depends on PCI
-> -	default n
->  	help
->  	  Driver for Hilscher CIF DeviceNet and Profibus cards.  This
->  	  driver requires a userspace component that handles all of the
-> @@ -48,7 +46,6 @@ config UIO_PDRV_GENIRQ
->  
->  config UIO_SMX
->  	tristate "SMX cryptengine UIO interface"
-> -	default n
->  	help
->  	  Userspace IO interface to the Cryptography engine found on the
->  	  Nias Digital SMX boards.  These will be available from Q4 2008
-> @@ -61,7 +58,6 @@ config UIO_SMX
->  config UIO_AEC
->  	tristate "AEC video timestamp device"
->  	depends on PCI
-> -	default n
->  	help
->  
->  	  UIO driver for the Adrienne Electronics Corporation PCI time
-> @@ -78,7 +74,6 @@ config UIO_AEC
->  
->  config UIO_SERCOS3
->  	tristate "Automata Sercos III PCI card driver"
-> -	default n
->  	help
->  	  Userspace I/O interface for the Sercos III PCI card from
->  	  Automata GmbH. The userspace part of this driver will be
-> -- 
-> 1.6.4.2
+Ingo Molnar (1):
+       slub: Fix build error in kmem_cache_open() with !CONFIG_SLUB_DEBUG
+
+  mm/slub.c |    2 ++
+  1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/mm/slub.c b/mm/slub.c
+index a5789b9..0a216aa 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1071,6 +1071,8 @@ static inline unsigned long kmem_cache_flags(unsigned long objsize,
+  }
+  #define slub_debug 0
+
++#define disable_higher_order_debug 0
++
+  static inline unsigned long slabs_node(struct kmem_cache *s, int node)
+  							{ return 0; }
+  static inline unsigned long node_nr_slabs(struct kmem_cache_node *n)
