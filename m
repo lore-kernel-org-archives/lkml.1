@@ -1,114 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbZIOVH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758190AbZIOVMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758204AbZIOVH6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 17:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZIOVH5
+	id S1758190AbZIOVMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 17:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbZIOVMa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 17:07:57 -0400
-Received: from james.oetiker.ch ([213.144.138.195]:54029 "EHLO
-	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751389AbZIOVH4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 17:07:56 -0400
-Date: Tue, 15 Sep 2009 23:07:56 +0200 (CEST)
-From: Tobias Oetiker <tobi@oetiker.ch>
-To: Corrado Zoccolo <czoccolo@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: unfair io behaviour for high load interactive use still present
- in 2.6.31
-In-Reply-To: <4e5e476b0909150753k699a2f5awadc666a9b3afebfa@mail.gmail.com>
-Message-ID: <alpine.DEB.2.00.0909152305030.14727@sebohet.brgvxre.pu>
-References: <alpine.DEB.2.00.0909150844140.19305@sebohet.brgvxre.pu> <4e5e476b0909150753k699a2f5awadc666a9b3afebfa@mail.gmail.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 15 Sep 2009 17:12:30 -0400
+Received: from www.tglx.de ([62.245.132.106]:39586 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753594AbZIOVM3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 17:12:29 -0400
+Date: Tue, 15 Sep 2009 23:11:33 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>,
+       Jon Masters <jcm@redhat.com>, Mark Knecht <markknecht@gmail.com>
+Subject: [ANNOUNCE] 2.6.31-rt10
+In-Reply-To: <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0909152257590.8957@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain> <alpine.LFD.2.00.0905221459030.3570@localhost.localdomain> <alpine.LFD.2.00.0906101803210.3367@localhost.localdomain>
+ <alpine.LFD.2.00.0906121800590.3369@localhost.localdomain> <alpine.LFD.2.00.0906151117440.2800@localhost.localdomain> <alpine.LFD.2.00.0906170903370.2800@localhost.localdomain> <alpine.LFD.2.00.0906231418500.2767@localhost.localdomain>
+ <alpine.LFD.2.00.0907092020410.2768@localhost.localdomain> <alpine.LFD.2.00.0907300006250.2936@localhost.localdomain> <alpine.LFD.2.00.0908162207370.2782@localhost.localdomain> <alpine.LFD.2.00.0908182140340.3361@localhost.localdomain>
+ <alpine.LFD.2.00.0908192344500.3361@localhost.localdomain> <alpine.LFD.2.00.0908212319370.1769@localhost.localdomain> <alpine.LFD.2.00.0908261910460.2888@localhost.localdomain> <alpine.LFD.2.00.0908282326460.19335@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463760128-1144806491-1253048876=:14727"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+We are pleased to announce the next update to our new preempt-rt
+series.
+ 
+   - update to 2.6.31
+ 
+   - timekeeping 32bit overflow fix
 
----1463760128-1144806491-1253048876=:14727
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+   - rt locking fix for rw_locks and rwsems. Solves a kvm crash
 
-Today Corrado Zoccolo wrote:
+   - kvm might sleep warning fix
 
-> On Tue, Sep 15, 2009 at 9:30 AM, Tobias Oetiker <tobi@oetiker.ch> wrote:
-> > Below is an excerpt from iostat while the test is in full swing:
-> >
-> > * 2.6.31 (8 cpu x86_64, 24 GB Ram)
-> > * scheduler = cfq
-> > * iostat -m -x dm-5 5
-> > * running in parallel on 3 lvm logical volumes
-> >  on a single physical volume
-> >
-> > Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
-> > ---------------------------------------------------------------------------------------------------------
-> > dm-5             0.00     0.00   26.60 7036.60     0.10    27.49     8.00   669.04   91.58   0.09  66.96
-> > dm-5             0.00     0.00   63.80 2543.00     0.25     9.93     8.00  1383.63  539.28   0.36  94.64
-> > dm-5             0.00     0.00   78.00 5084.60     0.30    19.86     8.00  1007.41  195.12   0.15  77.36
-> > dm-5             0.00     0.00   44.00 5588.00     0.17    21.83     8.00   516.27   91.69   0.17  95.44
-> > dm-5             0.00     0.00    0.00 6014.20     0.00    23.49     8.00  1331.42   66.25   0.13  76.48
-> > dm-5             0.00     0.00   28.80 4491.40     0.11    17.54     8.00  1000.37  412.09   0.17  78.24
-> > dm-5             0.00     0.00   36.60 6486.40     0.14    25.34     8.00   765.12  128.07   0.11  72.16
-> > dm-5             0.00     0.00   33.40 5095.60     0.13    19.90     8.00   431.38   43.78   0.17  85.20
-> >
-> > for comparison these are the numbers for seen when running the test
-> > with just the writing enabled
-> >
-> > Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
-> > ---------------------------------------------------------------------------------------------------------
-> > dm-5             0.00     0.00    4.00 12047.40    0.02    47.06     8.00   989.81   79.55   0.07  79.20
-> > dm-5             0.00     0.00    3.40 12399.00    0.01    48.43     8.00   977.13   72.15   0.05  58.08
-> > dm-5             0.00     0.00    3.80 13130.00    0.01    51.29     8.00  1130.48   95.11   0.04  58.48
-> > dm-5             0.00     0.00    2.40 5109.20     0.01    19.96     8.00   427.75   47.41   0.16  79.92
-> > dm-5             0.00     0.00    3.20    0.00     0.01     0.00     8.00   290.33 148653.75 282.50  90.40
-> > dm-5             0.00     0.00    3.40 5103.00     0.01    19.93     8.00   168.75   33.06   0.13  67.84
-> >
->
-> From the numbers, it appears that your controller (or the disks) is
-> lying about writes. They get cached (service time around 0.1ms) and
-> reported as completed. When the cache is full, or a flush is issued,
-> you get >200ms delay.
-> Reads, instead, have a more reasonable service time of around 2ms.
->
-> Can you disable write cache, and see if the response times for writes
-> become reasonable?
+   - remove empty cpumask warning in x86(32bit) IPI code
 
-sure can ... the write-only results look like this. As you have predicted,
-the wMB has gone down to more realistic levels ... but also the await has gone way up.
+   - tracer fixes - picked from mainline
 
-Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
----------------------------------------------------------------------------------------------------------
-dm-18             0.00     0.00    0.00 2566.80     0.00    10.03     8.00  2224.74  737.62   0.39 100.00
-dm-18             0.00     0.00    9.60  679.00     0.04     2.65     8.00   400.41 1029.73   1.35  92.80
-dm-18             0.00     0.00    0.00 2080.80     0.00     8.13     8.00   906.58  456.45   0.48 100.00
-dm-18             0.00     0.00    0.00 2349.20     0.00     9.18     8.00  1351.17  491.44   0.43 100.00
-dm-18             0.00     0.00    3.80  665.60     0.01     2.60     8.00   906.72 1098.75   1.39  93.20
-dm-18             0.00     0.00    0.00 1811.20     0.00     7.07     8.00  1008.23  725.34   0.55 100.00
-dm-18             0.00     0.00    0.00 2632.60     0.00    10.28     8.00  1651.18  640.61   0.38 100.00
+   - perf counter fix - picked from mainline
 
+Known issues:
+   - ARM highmem
+   - scheduler load balancing oddities. Peter is working on it.
+   - timer_interrupt hang check (fix queued for .31-rt11)
 
-in the read/write test the write rate stais down, but the rMB/s is even worse and the await is also way up,
-so I guess the bad performance is not to blame on the the cache in the controller ...
+Pending updates:
+   - I'm planning to add back MIPS support in the .31-rt11 release.
 
-Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
----------------------------------------------------------------------------------------------------------
-dm-18             0.00     0.00    0.00 1225.80     0.00     4.79     8.00  1050.49  807.38   0.82 100.00
-dm-18             0.00     0.00    0.00 1721.80     0.00     6.73     8.00  1823.67  807.20   0.58 100.00
-dm-18             0.00     0.00    0.00 1128.00     0.00     4.41     8.00   617.94  832.52   0.89 100.00
-dm-18             0.00     0.00    0.00  838.80     0.00     3.28     8.00   873.04 1056.37   1.19 100.00
-dm-18             0.00     0.00   39.60  347.80     0.15     1.36     8.00   590.27 1880.05   2.57  99.68
-dm-18             0.00     0.00    0.00 1626.00     0.00     6.35     8.00   983.85  452.72   0.62 100.00
-dm-18             0.00     0.00    0.00 1117.00     0.00     4.36     8.00  1047.16 1117.78   0.90 100.00
-dm-18             0.00     0.00    0.00 1319.20     0.00     5.15     8.00   840.64  573.39   0.76 100.00
+Download locations:
+ 
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
 
-cheers
-tobi
+Git release branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/2.6.31
+  
+Git development branch:
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git rt/head
 
--- 
-Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
-http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
----1463760128-1144806491-1253048876=:14727--
+Gitweb:
+     http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=shortlog;h=rt/2.6.31
+ 
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.31-rt10 tree, the following patches should be
+applied:
+
+    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.31.tar.bz2
+    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.31-rt10.bz2
+
+Enjoy !
+
+      tglx
+
