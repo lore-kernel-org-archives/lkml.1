@@ -1,192 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbZIOR1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZIOR2s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbZIOR1P (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 13:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbZIOR1K
+	id S1758107AbZIOR2s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 13:28:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZIOR2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 13:27:10 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:15870 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753610AbZIOR1I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 13:27:08 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: "Anirban Sinha" <ASinha@zeugmasystems.com>
-Subject: Re: [PATCH] cleanup legacy console_print function
-Date: Tue, 15 Sep 2009 11:27:10 -0600
-User-Agent: KMail/1.9.10
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, "Randy Dunlap" <randy.dunlap@oracle.com>,
-       linux-ia64@vger.kernel.org, "Luck, Tony" <tony.luck@intel.com>
-References: <DDFD17CC94A9BD49A82147DDF7D545C501F0FF17@exchange.ZeugmaSystems.local>
-In-Reply-To: <DDFD17CC94A9BD49A82147DDF7D545C501F0FF17@exchange.ZeugmaSystems.local>
+	Tue, 15 Sep 2009 13:28:43 -0400
+Received: from mga11.intel.com ([192.55.52.93]:38863 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753616AbZIOR2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 13:28:43 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,390,1249282800"; 
+   d="scan'208";a="493698329"
+Message-ID: <4AAFCECE.9070302@intel.com>
+Date: Tue, 15 Sep 2009 10:28:46 -0700
+From: Dan Williams <dan.j.williams@intel.com>
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>
+Subject: Re: [PATCH 02/18] dmaengine, async_tx: add a "no channel switch"
+ allocator
+References: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com> <20090904064445.7141.18693.stgit@dwillia2-linux.ch.intel.com> <129600E5E5FB004392DDC3FB599660D7B5548785@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <129600E5E5FB004392DDC3FB599660D7B5548785@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200909151127.10697.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 September 2009 12:28:21 pm Anirban Sinha wrote:
-> From e096c1774450f8348a7af3b7e47800710a490212 Mon Sep 17 00:00:00 2001
-> From: Anirban Sinha <asinha@zeugmasystems.com>
-> Date: Mon, 14 Sep 2009 11:13:37 -0700
-> Subject: cleanup console_print()
+Sosnowski, Maciej wrote:
+> Williams, Dan J wrote:
+>> Channel switching is problematic for some dmaengine drivers as the
+>> architecture precludes separating the ->prep from ->submit.  In these
+>> cases the driver can select ASYNC_TX_DISABLE_CHANNEL_SWITCH to modify
+>> the async_tx allocator to only return channels that support all of the
+>> required asynchronous operations.
+>>
+>> For example MD_RAID456=y selects support for asynchronous xor, xor
+>> validate, pq, pq validate, and memcpy.  When
+>> ASYNC_TX_DISABLE_CHANNEL_SWITCH=y any channel with all these
+>> capabilities is marked DMA_ASYNC_TX allowing async_tx_find_channel() to
+>> quickly locate compatible channels with the guarantee that dependency
+>> chains will remain on one channel.  When
+>> ASYNC_TX_DISABLE_CHANNEL_SWITCH=n async_tx_find_channel() may select
+>> channels that lead to operation chains that need to cross channel
+>> boundaries using the async_tx channel switch capability.
+>>
+>> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+>> ---
 > 
-> console_print() is an old legacy interface mostly unused in the entire
-> kernel tree. It's best to clean up its existing use and let developers
-> use their own implementation of it as they feel fit.
-
-This broke the ia64 build, please fix:
-
-arch/ia64/kernel/head.h: Assembler messages:
-arch/ia64/kernel/head.h:1: Error: Unknown opcode `extern void console_print(const char*s)'
-make[1]: *** [arch/ia64/kernel/head.o] Error 1
-make[1]: *** Waiting for unfinished jobs....
-
-Bjorn
-
-
-> ---
->  arch/ia64/kernel/head.S    |    1 +
->  arch/ia64/kernel/head.h    |    1 +
->  arch/ia64/kernel/process.c |    7 +++++++
->  drivers/char/serial167.c   |    5 ++---
->  include/linux/dtlk.h       |   19 -------------------
->  include/linux/tty.h        |    4 ----
->  kernel/printk.c            |    6 ------
->  7 files changed, 11 insertions(+), 32 deletions(-)
->  create mode 100644 arch/ia64/kernel/head.h
+> Signed-off-by: Maciej Sosnowski <maciej.sosnowski@intel.com>
 > 
-> diff --git a/arch/ia64/kernel/head.S b/arch/ia64/kernel/head.S
-> index 23f846d..e6c5c3d 100644
-> --- a/arch/ia64/kernel/head.S
-> +++ b/arch/ia64/kernel/head.S
-> @@ -34,6 +34,7 @@
->  #include <asm/mca_asm.h>
->  #include <linux/init.h>
->  #include <linux/linkage.h>
-> +#include "head.h"
->  
->  #ifdef CONFIG_HOTPLUG_CPU
->  #define SAL_PSR_BITS_TO_SET				\
-> diff --git a/arch/ia64/kernel/head.h b/arch/ia64/kernel/head.h
-> new file mode 100644
-> index 0000000..2e2ac68
-> --- /dev/null
-> +++ b/arch/ia64/kernel/head.h
-> @@ -0,0 +1 @@
-> +extern void console_print(const char *s);
-> diff --git a/arch/ia64/kernel/process.c b/arch/ia64/kernel/process.c
-> index 89969e9..b34bef7 100644
-> --- a/arch/ia64/kernel/process.c
-> +++ b/arch/ia64/kernel/process.c
-> @@ -161,6 +161,13 @@ show_regs (struct pt_regs *regs)
->  		show_stack(NULL, NULL);
->  }
->  
-> +/* local support for deprecated console_print */
-> +void 
-> +console_print(const char *s)
-> +{
-> +	printk(KERN_EMERG "%s", s);
-> +}
-> +
->  void
->  do_notify_resume_user(sigset_t *unused, struct sigscratch *scr, long
-> in_syscall)
->  {
-> diff --git a/drivers/char/serial167.c b/drivers/char/serial167.c
-> index 51e7a46..5942a9d 100644
-> --- a/drivers/char/serial167.c
-> +++ b/drivers/char/serial167.c
-> @@ -171,7 +171,6 @@ static int startup(struct cyclades_port *);
->  static void cy_throttle(struct tty_struct *);
->  static void cy_unthrottle(struct tty_struct *);
->  static void config_setup(struct cyclades_port *);
-> -extern void console_print(const char *);
->  #ifdef CYCLOM_SHOW_STATUS
->  static void show_status(int);
->  #endif
-> @@ -245,7 +244,7 @@ void SP(char *data)
->  {
->  	unsigned long flags;
->  	local_irq_save(flags);
-> -	console_print(data);
-> +	printk(KERN_EMERG "%s", data);
->  	local_irq_restore(flags);
->  }
->  
-> @@ -255,7 +254,7 @@ void CP(char data)
->  	unsigned long flags;
->  	local_irq_save(flags);
->  	scrn[0] = data;
-> -	console_print(scrn);
-> +	printk(KERN_EMERG "%c", scrn);
->  	local_irq_restore(flags);
->  }				/* CP */
->  
-> diff --git a/include/linux/dtlk.h b/include/linux/dtlk.h
-> index 2896d90..22a7b9a 100644
-> --- a/include/linux/dtlk.h
-> +++ b/include/linux/dtlk.h
-> @@ -1,22 +1,3 @@
-> -#if 0
-> -
-> -#define TRACE_TXT(text) \
-> -	{ \
-> -	  if(dtlk_trace) \
-> -	  { \
-> -	    console_print(text); \
-> -	    console_print("\n"); \
-> -	  } \
-> -	}
-> -
-> -#define TRACE_CHR(chr) \
-> -	{ \
-> -	  if(dtlk_trace) \
-> -	    console_print(chr); \
-> -	} \
-> -
-> -#endif
-> -
->  #define DTLK_MINOR	0
->  #define DTLK_IO_EXTENT	0x02
->  
-> diff --git a/include/linux/tty.h b/include/linux/tty.h
-> index 0d3974f..a916a31 100644
-> --- a/include/linux/tty.h
-> +++ b/include/linux/tty.h
-> @@ -519,10 +519,6 @@ extern void serial_console_init(void);
->  
->  extern int pcxe_open(struct tty_struct *tty, struct file *filp);
->  
-> -/* printk.c */
-> -
-> -extern void console_print(const char *);
-> -
->  /* vt.c */
->  
->  extern int vt_ioctl(struct tty_struct *tty, struct file *file,
-> diff --git a/kernel/printk.c b/kernel/printk.c
-> index e10d193..602033a 100644
-> --- a/kernel/printk.c
-> +++ b/kernel/printk.c
-> @@ -1075,12 +1075,6 @@ void __sched console_conditional_schedule(void)
->  }
->  EXPORT_SYMBOL(console_conditional_schedule);
->  
-> -void console_print(const char *s)
-> -{
-> -	printk(KERN_EMERG "%s", s);
-> -}
-> -EXPORT_SYMBOL(console_print);
-> -
->  void console_unblank(void)
->  {
->  	struct console *c;
+> with one question:
+> 
+>> +	/* note: this only matters in the
+>> +	 * CONFIG_ASYNC_TX_DISABLE_CHANNEL_SWITCH=y case
+>> +	 */
+>> +	if (device_has_all_tx_types(device))
+>> +		dma_cap_set(DMA_ASYNC_TX, device->cap_mask);
+> 
+> Why not to put this part plus device_has_all_tx_types()
+> into #ifdef CONFIG_ASYNC_TX_DISABLE_CHANNEL_SWITCH then?
+> 
 
+Because device_has_all_tx_types() already has the necessary ifdefs per 
+operation type, and it does not rule out the possibility that code 
+outside of async_tx can make use of DMA_ASYNC_TX capability.  We don't 
+gain anything by eliminating this call... although we would save an 
+entry in the dmaengine channel table by turning off DMA_ASYNC_TX in enum 
+dma_transaction_type.  But we have already cleaned up 
+dma_transaction_type in this patchset so the net change from 2.6.31 to 
+2.6.32 is still positive in this area.
 
+--
+Dan
