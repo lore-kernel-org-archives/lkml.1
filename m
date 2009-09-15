@@ -1,189 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753723AbZIONJ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753534AbZIOM65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753723AbZIONJ5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 09:09:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753588AbZIONJv
+	id S1753534AbZIOM65 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 08:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZIOM6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 09:09:51 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:46465 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750862AbZIONJu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 09:09:50 -0400
-Date: Tue, 15 Sep 2009 18:28:36 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       bugzilla-daemon@bugzilla.kernel.org, bugme-daemon@bugzilla.kernel.org,
-       "Serge E. Hallyn" <serue@us.ibm.com>,
-       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       risrajak@linux.vnet.ibm.com, iranna.ankad@in.ibm.com,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Re: [Bugme-new] [Bug 14150] New: BUG: soft lockup - CPU#3 stuck
-	for 61s!, while running cpu controller latency testcase on two
-	containers parallaly
-Message-ID: <20090915125836.GA4087@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <bug-14150-10286@http.bugzilla.kernel.org/> <20090911142813.dc823bf1.akpm@linux-foundation.org>
+	Tue, 15 Sep 2009 08:58:54 -0400
+Received: from cantor.suse.de ([195.135.220.2]:40898 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753224AbZIOM6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 08:58:54 -0400
+Date: Tue, 15 Sep 2009 14:58:55 +0200
+From: Jan Kara <jack@suse.cz>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, tytso@mit.edu, akpm@linux-foundation.org,
+       trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
+	opportunistic writeback
+Message-ID: <20090915125855.GF12169@duck.suse.cz>
+References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-7-git-send-email-jens.axboe@oracle.com> <20090914133307.GJ24075@duck.suse.cz> <20090914134207.GA14830@infradead.org> <20090914192803.GL14984@kernel.dk> <20090914194242.GM14984@kernel.dk> <20090915090847.GA12169@duck.suse.cz> <20090915091402.GG23126@kernel.dk> <20090915114426.GJ23126@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090911142813.dc823bf1.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090915114426.GJ23126@kernel.dk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Sep 11, 2009 at 02:28:13PM -0700, Andrew Morton wrote:
+On Tue 15-09-09 13:44:26, Jens Axboe wrote:
+> On Tue, Sep 15 2009, Jens Axboe wrote:
+> > On Tue, Sep 15 2009, Jan Kara wrote:
+> > > On Mon 14-09-09 21:42:43, Jens Axboe wrote:
+> > > > On Mon, Sep 14 2009, Jens Axboe wrote:
+> > > > > On Mon, Sep 14 2009, Christoph Hellwig wrote:
+> > > > > > On Mon, Sep 14, 2009 at 03:33:07PM +0200, Jan Kara wrote:
+> > > > > > > On Mon 14-09-09 11:36:33, Jens Axboe wrote:
+> > > > > > > > bdi_start_writeback() is currently split into two paths, one for
+> > > > > > > > WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
+> > > > > > > > for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
+> > > > > > > > only WB_SYNC_NONE.
+> > > > > > >   What I don't like about this patch is that if somebody sets up
+> > > > > > > writeback_control with WB_SYNC_ALL mode set and then submits it to disk via
+> > > > > > > bdi_start_writeback() it will just silently convert his writeback to an
+> > > > > > > asynchronous one.
+> > > > > > >   So I'd maybe leave setting of sync_mode to the caller and just WARN_ON if
+> > > > > > > it does not match the purpose of the function...
+> > > > > > 
+> > > > > > Or initialize the wb entirely inside these functions.  For the sync case
+> > > > > > we really only need a superblock as argument, and for writeback it's
+> > > > > > bdi + nr_pages.  And also make sure they consistenly return void as
+> > > > > > no one cares about the return value.
+> > > > > 
+> > > > > Yes, I thought about doing that and like that better than the warning.
+> > > > > Just pass in the needed args and allocate+fill the wbc on stack. I'll
+> > > > > make that change.
+> > > > 
+> > > > That works out much better, imho:
+> > > > 
+> > > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=270c12655d7d11e234d335a8ab0540c02c034b66
+> > >   Yeah, the code looks better. BTW, how about converting also
+> > > bdi_writeback_all() to get superblock and nr_pages as an argument?
+> > > Currently it seems to be the only place "above" flusher thread which uses
+> > > wbc and it's just constructed in the callers of bdi_writeback_all() and
+> > > then disassembled inside the function...
+> > 
+> > Yes good point, I'll include that too. Thanks!
 > 
-> (switched to email.  Please respond via emailed reply-to-all, not via the
-> bugzilla web interface).
-> 
-> On Thu, 10 Sep 2009 09:32:30 GMT
-> bugzilla-daemon@bugzilla.kernel.org wrote:
-> 
-> > http://bugzilla.kernel.org/show_bug.cgi?id=14150
-> > 
-> >            Summary: BUG: soft lockup - CPU#3 stuck for 61s!, while running
-> >                     cpu controller latency testcase on two containers
-> >                     parallaly
-> >            Product: Process Management
-> >            Version: 2.5
-> >     Kernel Version: 2.6.31-rc7
-> >           Platform: All
-> >         OS/Version: Linux
-> >               Tree: Mainline
-> >             Status: NEW
-> >           Severity: high
-> >           Priority: P1
-> >          Component: Scheduler
-> >         AssignedTo: mingo@elte.hu
-> >         ReportedBy: risrajak@linux.vnet.ibm.com
-> >                 CC: serue@us.ibm.com, iranna.ankad@in.ibm.com,
-> >                     risrajak@in.ibm.com
-> >         Regression: No
-> > 
-> > 
-> > Created an attachment (id=23055)
-> >  --> (http://bugzilla.kernel.org/attachment.cgi?id=23055)
-> > Config-file-used
-> > 
-> > Hitting this soft lock issue while running this scenario on 2.6.31-rc7 kernel
-> > on SystemX 32 bit on multiple machines.
-> > 
-> > Scenario:
-> >     - While running cpu controller latency testcase from LTP same time on two
-> > containers.
-> > 
-> > Steps:
-> > 1. Compile ltp-full-20090731.tgz on host.
-> > 2. Create two container (Used lxc tool
-> > (http://sourceforge.net/projects/lxc/lxc-0.6.3.tar.gz) for creating container )
-> > e.g:
-> >     lxc-create -n foo1
-> >     lxc-create -n foo2
-> > On first shell:
-> >     lxc-execute -n foo1 -f /usr/etc/lxc/lxc-macvlan.conf /bin/bash
-> > on Second shell:
-> >     lxc-execute -n foo2 -f /usr/etc/lxc/lxc-macvlan.conf /bin/bash
-> > 
-> > 3. Either you run cpu_latency testcase alone or run "./runltp -f controllers"
-> > at same time on both the containers.
-> > 4. After testcase execution completes, you can see this message in dmesg.
-> > 
-> > Expected Result:
-> >     - Should not reproduce soft lock up issue.
-> > - This reproduces 3 times out of 5 tries.
-> > 
-> > hrtimer: interrupt too slow, forcing clock min delta to 5843235 ns
-> > hrtimer: interrupt too slow, forcing clock min delta to 5842476 ns
-> > Clocksource tsc unstable (delta = 18749057581 ns)
-> > BUG: soft lockup - CPU#3 stuck for 61s! [cpuctl_latency_:17174]
-> > Modules linked in: bridge stp llc bnep sco l2cap bluetooth sunrpc ipv6
-> > p4_clockmod dm_multipath uinput qla2xxx ata_generic pata_acpi usb_storage e1000
-> > scsi_transport_fc joydev scsi_tgt i2c_piix4 pata_serverworks pcspkr serio_raw
-> > mptspi mptscsih mptbase scsi_transport_spi radeon ttm drm i2c_algo_bit i2c_core
-> > [last unloaded: scsi_wait_scan]
-> > 
-> > Pid: 17174, comm: cpuctl_latency_ Tainted: G        W  (2.6.31-rc7 #1) IBM
-> > eServer BladeCenter HS40 -[883961X]-                    
-> > EIP: 0060:[<c058aded>] EFLAGS: 00000283 CPU: 3
-> > EIP is at find_next_bit+0x9/0x79
-> > EAX: c2c437a0 EBX: f3d433c0 ECX: 00000000 EDX: 00000020
-> > ESI: c2c436bc EDI: 00000000 EBP: f063be6c ESP: f063be64
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-> > CR0: 80050033 CR2: 008765a4 CR3: 314d7000 CR4: 000006d0
-> > DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> > DR6: ffff0ff0 DR7: 00000400
-> > Call Trace:
-> >  [<c0427b6e>] cpumask_next+0x17/0x19
-> >  [<c042c28d>] tg_shares_up+0x53/0x149
-> >  [<c0424082>] ? tg_nop+0x0/0xc
-> >  [<c0424082>] ? tg_nop+0x0/0xc
-> >  [<c042406e>] walk_tg_tree+0x63/0x77
-> >  [<c042c23a>] ? tg_shares_up+0x0/0x149
-> >  [<c042e836>] update_shares+0x5d/0x65
-> >  [<c0432af3>] rebalance_domains+0x114/0x460
-> >  [<c0403393>] ? restore_all_notrace+0x0/0x18
-> >  [<c0432e75>] run_rebalance_domains+0x36/0xa3
-> >  [<c043c324>] __do_softirq+0xbc/0x173
-> >  [<c043c416>] do_softirq+0x3b/0x5f
-> >  [<c043c52d>] irq_exit+0x3a/0x68
-> >  [<c0417846>] smp_apic_timer_interrupt+0x6d/0x7b
-> >  [<c0403c9b>] apic_timer_interrupt+0x2f/0x34
-> > BUG: soft lockup - CPU#2 stuck for 61s! [watchdog/2:11]
-> > Modules linked in: bridge stp llc bnep sco l2cap bluetooth sunrpc ipv6
-> > p4_clockmod dm_multipath uinput qla2xxx ata_generic pata_acpi usb_storage e1000
-> > scsi_transport_fc joydev scsi_tgt i2c_piix4 pata_serverworks pcspkr serio_raw
-> > mptspi mptscsih mptbase scsi_transport_spi radeon ttm drm i2c_algo_bit i2c_core
-> > [last unloaded: scsi_wait_scan]
-> > 
-> > Pid: 11, comm: watchdog/2 Tainted: G        W  (2.6.31-rc7 #1) IBM eServer
-> > BladeCenter HS40 -[883961X]-                    
-> > EIP: 0060:[<c042c313>] EFLAGS: 00000246 CPU: 2
-> > EIP is at tg_shares_up+0xd9/0x149
-> > EAX: 00000000 EBX: f09b3c00 ECX: f0baac00 EDX: 00000100
-> > ESI: 00000002 EDI: 00000400 EBP: f6cb7de0 ESP: f6cb7db8
-> >  DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-> > CR0: 8005003b CR2: 08070680 CR3: 009c8000 CR4: 000006d0
-> > DR0: 00000000 DR1: 00000000 DR2: 00000000 DR3: 00000000
-> > DR6: ffff0ff0 DR7: 00000400
-> > Call Trace:
-> >  [<c0424082>] ? tg_nop+0x0/0xc
-> >  [<c0424082>] ? tg_nop+0x0/0xc
-> >  [<c042406e>] walk_tg_tree+0x63/0x77
-> >  [<c042c23a>] ? tg_shares_up+0x0/0x149
-> >  [<c042e836>] update_shares+0x5d/0x65
-> >  [<c0432af3>] rebalance_domains+0x114/0x460
-> >  [<c0432e75>] run_rebalance_domains+0x36/0xa3
-> >  [<c043c324>] __do_softirq+0xbc/0x173
-> >  [<c043c416>] do_softirq+0x3b/0x5f
-> >  [<c043c52d>] irq_exit+0x3a/0x68
-> >  [<c0417846>] smp_apic_timer_interrupt+0x6d/0x7b
-> >  [<c0403c9b>] apic_timer_interrupt+0x2f/0x34
-> >  [<c0430d37>] ? finish_task_switch+0x5d/0xc4
-> >  [<c0744b11>] schedule+0x74c/0x7b2
-> >  [<c0590e28>] ? trace_hardirqs_on_thunk+0xc/0x10
-> >  [<c0403393>] ? restore_all_notrace+0x0/0x18
-> >  [<c0471e19>] ? watchdog+0x0/0x79
-> >  [<c0471e19>] ? watchdog+0x0/0x79
-> >  [<c0471e63>] watchdog+0x4a/0x79
-> >  [<c0449a53>] kthread+0x70/0x75
-> >  [<c04499e3>] ? kthread+0x0/0x75
-> >  [<c0403e93>] kernel_thread_helper+0x7/0x10
-> > [root@hs40 ltp-full-20090731]# uname -a
-> > Linux hs40.in.ibm.com 2.6.31-rc7 #1 SMP Thu Sep 3 10:14:41 IST 2009 i686 i686
-> > i386 GNU/Linux
-> > [root@hs40 ltp-full-20090731]#
-> > 
-> 
+> One small problem there, though... Currently all queued writeback is
+> range cyclic, however with this change then we drop that bit from
+> sync_inodes_sb() which isn't range_cyclic and instead just specifies the
+> whole range.
+  I'm not sure I understand your comment but I see a problem that even
+writeback queued from sync_inodes_sb() is processed by wb_writeback() which
+sets range_cyclic. That's a bug even in your old patchset.
+  Let's have a look at the flags in wbc:
+  nonblocking - Currently only set by direct callers of ->writepage() BUT
+                originally wb_kupdate() and background_writeout() also
+                set this flag. Since filesystems and write_cache_pages()
+		use the flag we should set it for equivalent writeouts as
+                well. This should be fixed...
+  encountered_congestion - Checked only by AFS, probably we can get rid of
+                it now.
+  for_kupdate - Used, we set it properly in wb_writeback() so that is fine.
+  for_reclaim - Used by direct callers of ->writepage(). OK.
+  for_writepages - Only set. Get rid of it.
+  range_cyclic - Used. Set also when a caller didn't want it - should be
+                 fixed.
 
-We have been unable to reproduce it on current -tip. Rishi, are you able
-to reproduce it on -tip?
-
-thanks,
+									Honza
 -- 
-regards,
-Dhaval
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
