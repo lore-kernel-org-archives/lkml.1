@@ -1,153 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbZIOHYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbZIOHkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbZIOHYg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 03:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758179AbZIOHYb
+	id S1753940AbZIOHkR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 03:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751238AbZIOHkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 03:24:31 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:34963 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758178AbZIOHYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 03:24:30 -0400
-Date: Tue, 15 Sep 2009 09:24:33 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Eric Paris <eparis@redhat.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       James Morris <jmorris@namei.org>, Thomas Liu <tliu@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [origin tree SLAB corruption #2] BUG kmalloc-64: Poison
-	overwritten, INFO: Allocated in bdi_alloc_work+0x2b/0x100 age=175
-	cpu=1 pid=3514
-Message-ID: <20090915072433.GS14984@kernel.dk>
-References: <a5388f3a349a38034ec677c64677afadd0541713.1252083485.git.zohar@linux.vnet.ibm.com> <alpine.LRH.2.00.0909071215530.3222@tundra.namei.org> <20090912072450.GA6767@elte.hu> <1252808939.13780.30.camel@dhcp231-106.rdu.redhat.com> <20090914071631.GA24801@elte.hu> <alpine.LFD.2.01.0909140725470.3654@localhost.localdomain> <20090914162902.GF6773@linux.vnet.ibm.com> <20090914171037.GG14984@kernel.dk> <20090915065707.GA3435@elte.hu> <20090915071158.GA31392@elte.hu>
+	Tue, 15 Sep 2009 03:40:13 -0400
+Received: from james.oetiker.ch ([213.144.138.195]:35685 "EHLO
+	james.oetiker.ch" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751050AbZIOHkL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 03:40:11 -0400
+X-Greylist: delayed 588 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Sep 2009 03:40:11 EDT
+Date: Tue, 15 Sep 2009 09:30:21 +0200 (CEST)
+From: Tobias Oetiker <tobi@oetiker.ch>
+To: linux-kernel@vger.kernel.org
+Subject: unfair io behaviour for high load interactive use still present in
+ 2.6.31
+Message-ID: <alpine.DEB.2.00.0909150844140.19305@sebohet.brgvxre.pu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090915071158.GA31392@elte.hu>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15 2009, Ingo Molnar wrote:
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > Hard to tell whether it's BDI, RCU or something else - sadly this is 
-> > the only incident i've managed to log so far. (We'd be all much 
-> > happier if boxes crashed left and right! ;)
-> > 
-> > -tip's been carrying the RCU changes for a long(er) time which would 
-> > reduce the chance of this being RCU related. [ It's still possible 
-> > though: if it's a bug with a probability of hitting this box on these 
-> > workloads with a chance of 1:20,000 or worse. ]
-> > 
-> > Plus it triggered shortly after i updated -tip to latest -git which 
-> > had the BDI bits - which would indicate the BDI stuff - or just about 
-> > anything else in -git for that matter - or something older in -tip. 
-> > Every day without having hit this crash once more broadens the range 
-> > of plausible possibilities.
-> > 
-> > In any case, i'll refrain from trying to fit a line on a single point 
-> > of measurement ;-)
-> 
-> Ha! I should have checked all logs of today before writing that, not 
-> just that box's logs.
-> 
-> Another testbox triggered the SLAB corruption yesternight:
-> 
-> [   13.598011] Freeing unused kernel memory: 2820k freed
-> [   13.602011] Write protecting the kernel read-only data: 13528k
-> [   13.649011] Not activating Mandatory Access Control now since /sbin/tomoyo-init doesn't exist.
-> [   14.391012] =============================================================================
-> [   14.391012] BUG kmalloc-96: Poison overwritten
-> [   14.391012] -----------------------------------------------------------------------------
-> [   14.391012] 
-> [   14.391012] INFO: 0xffff88003da4a950-0xffff88003da4a988. First byte 0x0 instead of 0x6b
-> [   14.391012] INFO: Allocated in bdi_alloc_work+0x20/0x83 age=6 cpu=0 pid=3191
-> [   14.391012] INFO: Freed in bdi_work_free+0x1b/0x2f age=4 cpu=0 pid=3193
-> [   14.391012] INFO: Slab 0xffffea000190ae10 objects=24 used=13 fp=0xffff88003da4a930 flags=0x200000000000c3
-> [   14.391012] INFO: Object 0xffff88003da4a930 @offset=2352 fp=0xffff88003da4a888
-> [   14.391012] 
-> [   14.391012] Bytes b4 0xffff88003da4a920:  52 a4 fb ff 00 00 00 00 5a 5a 5a 5a 5a 5a 5a 5a R¤ûÿ....ZZZZZZZZ
-> [   14.391012]   Object 0xffff88003da4a930:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [   14.391012]   Object 0xffff88003da4a940:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [   14.391012]   Object 0xffff88003da4a950:  00 0c 47 3d 00 88 ff ff be 22 11 81 ff ff ff ff ..G=..ÿÿ¾"..ÿÿÿÿ
-> [   14.391012]   Object 0xffff88003da4a960:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [   14.391012]   Object 0xffff88003da4a970:  6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b kkkkkkkkkkkkkkkk
-> [   14.391012]   Object 0xffff88003da4a980:  6b 6b 6b 6b 6b 6b 6b 6b 6a 6b 6b 6b 6b 6b 6b a5 kkkkkkkkjkkkkkk¥
-> [   14.391012]  Redzone 0xffff88003da4a990:  bb bb bb bb bb bb bb bb                         »»»»»»»»        
-> [   14.391012]  Padding 0xffff88003da4a9d0:  5a 5a 5a 5a 5a 5a 5a 5a                         ZZZZZZZZ        
-> [   14.391012] Pid: 3193, comm: mount Not tainted 2.6.31-tip-02377-g78907f0-dirty #88876
-> [   14.391012] Call Trace:
-> [   14.391012]  [<ffffffff810e6bef>] print_trailer+0x140/0x149
-> [   14.391012]  [<ffffffff810e70db>] check_bytes_and_report+0xb7/0xf7
-> [   14.391012]  [<ffffffff810e71ec>] check_object+0xd1/0x1b4
-> [   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
-> [   14.391012]  [<ffffffff810e7bee>] alloc_debug_processing+0x7b/0xf7
-> [   14.391012]  [<ffffffff810e9842>] __slab_alloc+0x23e/0x282
-> [   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
-> [   14.391012]  [<ffffffff81112078>] ? bdi_alloc_work+0x20/0x83
-> [   14.391012]  [<ffffffff810e9a8f>] kmem_cache_alloc+0xa1/0x13f
-> [   14.391012]  [<ffffffff81112078>] bdi_alloc_work+0x20/0x83
-> [   14.391012]  [<ffffffff81112ae2>] bdi_writeback_all+0x66/0x133
-> [   14.391012]  [<ffffffff810788b8>] ? mark_held_locks+0x4d/0x6b
-> [   14.391012]  [<ffffffff81872268>] ? __mutex_unlock_slowpath+0x12d/0x163
-> [   14.391012]  [<ffffffff81078b45>] ? trace_hardirqs_on_caller+0x11c/0x140
-> [   14.391012]  [<ffffffff815c35e5>] ? usbfs_fill_super+0x0/0xa8
-> [   14.391012]  [<ffffffff81112c87>] writeback_inodes_sb+0x75/0x83
-> [   14.391012]  [<ffffffff8111652d>] __sync_filesystem+0x30/0x6b
-> [   14.391012]  [<ffffffff81116705>] sync_filesystem+0x3a/0x51
-> [   14.391012]  [<ffffffff810f4b23>] do_remount_sb+0x5b/0x11f
-> [   14.391012]  [<ffffffff810f59a3>] get_sb_single+0x92/0xad
-> [   14.391012]  [<ffffffff815c2f01>] usb_get_sb+0x1b/0x1d
-> [   14.391012]  [<ffffffff810f5786>] vfs_kern_mount+0x9e/0x122
-> [   14.391012]  [<ffffffff810f5871>] do_kern_mount+0x4c/0xec
-> [   14.391012]  [<ffffffff8110dd15>] do_mount+0x1e9/0x236
-> [   14.391012]  [<ffffffff8110dde6>] sys_mount+0x84/0xc6
-> [   14.391012]  [<ffffffff8187333a>] ? trace_hardirqs_on_thunk+0x3a/0x3f
-> [   14.391012]  [<ffffffff8100b642>] system_call_fastpath+0x16/0x1b
-> [   14.391012] FIX kmalloc-96: Restoring 0xffff88003da4a950-0xffff88003da4a988=0x6b
-> [   14.391012] 
-> [   14.391012] FIX kmalloc-96: Marking all objects used
-> [   20.597016] usb usb2: uevent
-> [   20.606016] usb 2-0:1.0: uevent
-> [   20.615016] usb usb3: uevent
-> [   20.622016] usb 3-0:1.0: uevent
-> [   20.631016] usb usb4: uevent
-> 
-> Different hardware, different config, but still in bdi_alloc_work().
-> 
-> - Which excludes cosmic rays and freak hardware from the list of 
->   possibilities.
-> 
-> - I'd also say RCU is out too as this incident was 500 iterations after 
->   the BDI merge - preceded by a streak of 3000+ successful iterations on 
->   that same box with all of -tip (including the RCU changes).
-> 
-> - Random memory corruption is probably out as well - the chance of 
->   hitting a BDI data structure twice accidentally is low.
-> 
-> - It's also two completely different versions of distros - the 
->   user-space of the two testboxes affected is 2 years apart or so.
-> 
-> - It's a single CPU box - SMP races are out as well.
-> 
-> This points towards this being a BDI bug with about ~80% confidence 
-> statistically - or [with a lower probability] a SLAB bug. (both failing 
-> configs had CONFIG_SLUB=y. But SLUB is the best in detecting corrupted 
-> data structures so that alone does not tell much.)
+Experts,
 
-Hmmm, at least this reproduces more consistently. Can I talk you into
-trying to pull in:
+We run several busy NFS file servers with Areca HW Raid + LVM2 + ext3
 
-  git://git.kernel.dk/linux-2.6-block.git writeback
+We find that the read bandwidth falls dramatically as well as the
+response times going up to several seconds as soon as the system
+comes under heavy write strain.
 
-and see if it reproduces there? That path has been cleaned up
-considerably there.
+With the release of 2.6.31 and all the io fixes that went in there,
+I was hoping for a solution and set out to do some tests ...
+
+I have seen the io problem posted on LKML a few times, and normally
+it is simulated by running several concurrent dd processes one
+reading and one writing. It seems that cfq with a low slice_async
+can deal pretty well with competing dds.
+
+Unfortunately our use case is not users running dd but rather a lot
+of processes accessing many small to medium sized files for reading
+and writing.
+
+I have written a test program that unpacks Linux 2.6.30.5 a few
+times into a file system, flushes the cache and then tars it up
+again while unpacking some more tars in parallel. While this is
+running I use iostat to watch the activity on the block devices. As
+I am interested in interactive performance of the system, the await
+row as well as the rMB/s row are of special interest to me
+
+  iostat -m -x 5
+
+Even with a low 'resolution' of 5 seconds, the performance figures
+are jumping all over the place. This concurs with the user
+experience when working with the system interactively.
+
+I tried to optimize the configuration systematically turning all
+the knobs I know of (/proc/sys/vm, /sys/block/*/queue/scheduler,
+data=journal, data=ordered, external journal on a ssd device) one
+at a time. I found that cfq helps the read performance quite a lot
+as far as total run-time is concerned, but the jerky nature of the
+measurements does not change, and also the read performance keeps
+dropping dramatically as soon as it is in competition with writers.
+
+I would love to get some hints on how to make such a setup perform
+without these huge performance fluctuations.
+
+While testing, I saw that iostat reports huge wMB/s numbers and
+ridiculously low rMB/s numbers. Looking at the actual amount of
+data in the tar files as well as the run time of the tar processes
+the numbers MB/s numbers reported by iostat do seem strange. The
+read numbers are too low and the write numbers are too high.
+
+  12 * 1.3 GB reading in 270s = 14 MB/s sustained
+  12 * 0.3 GB writing in 180s = 1.8 MB/s sustained
+
+Since I am looking at relative performance figures this does not
+matter so much, but it is still a bit disconcerting.
+
+My tests script is available on http://tobi.oetiker.ch/fspunisher/
+
+Below is an excerpt from iostat while the test is in full swing:
+
+* 2.6.31 (8 cpu x86_64, 24 GB Ram)
+* scheduler = cfq
+* iostat -m -x dm-5 5
+* running in parallel on 3 lvm logical volumes
+  on a single physical volume
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+---------------------------------------------------------------------------------------------------------
+dm-5             0.00     0.00   26.60 7036.60     0.10    27.49     8.00   669.04   91.58   0.09  66.96
+dm-5             0.00     0.00   63.80 2543.00     0.25     9.93     8.00  1383.63  539.28   0.36  94.64
+dm-5             0.00     0.00   78.00 5084.60     0.30    19.86     8.00  1007.41  195.12   0.15  77.36
+dm-5             0.00     0.00   44.00 5588.00     0.17    21.83     8.00   516.27   91.69   0.17  95.44
+dm-5             0.00     0.00    0.00 6014.20     0.00    23.49     8.00  1331.42   66.25   0.13  76.48
+dm-5             0.00     0.00   28.80 4491.40     0.11    17.54     8.00  1000.37  412.09   0.17  78.24
+dm-5             0.00     0.00   36.60 6486.40     0.14    25.34     8.00   765.12  128.07   0.11  72.16
+dm-5             0.00     0.00   33.40 5095.60     0.13    19.90     8.00   431.38   43.78   0.17  85.20
+
+for comparison these are the numbers for seen when running the test
+with just the writing enabled
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+---------------------------------------------------------------------------------------------------------
+dm-5             0.00     0.00    4.00 12047.40    0.02    47.06     8.00   989.81   79.55   0.07  79.20
+dm-5             0.00     0.00    3.40 12399.00    0.01    48.43     8.00   977.13   72.15   0.05  58.08
+dm-5             0.00     0.00    3.80 13130.00    0.01    51.29     8.00  1130.48   95.11   0.04  58.48
+dm-5             0.00     0.00    2.40 5109.20     0.01    19.96     8.00   427.75   47.41   0.16  79.92
+dm-5             0.00     0.00    3.20    0.00     0.01     0.00     8.00   290.33 148653.75 282.50  90.40
+dm-5             0.00     0.00    3.40 5103.00     0.01    19.93     8.00   168.75   33.06   0.13  67.84
+
+And also with just the reading:
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+---------------------------------------------------------------------------------------------------------
+dm-5             0.00     0.00  463.80    0.00     1.81     0.00     8.00     3.90    8.41   2.16 100.00
+dm-5             0.00     0.00  434.20    0.00     1.70     0.00     8.00     3.89    8.95   2.30 100.00
+dm-5             0.00     0.00  540.80    0.00     2.11     0.00     8.00     3.88    7.18   1.85 100.00
+dm-5             0.00     0.00  591.60    0.00     2.31     0.00     8.00     3.84    6.50   1.68  99.68
+dm-5             0.00     0.00  793.20    0.00     3.10     0.00     8.00     3.81    4.80   1.26 100.00
+dm-5             0.00     0.00  592.80    0.00     2.32     0.00     8.00     3.84    6.47   1.68  99.60
+dm-5             0.00     0.00  578.80    0.00     2.26     0.00     8.00     3.85    6.66   1.73 100.00
+dm-5             0.00     0.00  771.00    0.00     3.01     0.00     8.00     3.81    4.93   1.30  99.92
+
+I also tested 2.6.31 for what happens when I run the same 'load' on a single lvm
+logical volume. Interestingly enough it is even worse than when doing it on three
+volumes:
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+---------------------------------------------------------------------------------------------------------
+dm-5             0.00     0.00   19.20 4566.80     0.07    17.84     8.00  2232.12  486.87   0.22  99.92
+dm-5             0.00     0.00    6.80 9410.40     0.03    36.76     8.00  1827.47  187.99   0.10  92.00
+dm-5             0.00     0.00    4.00    0.00     0.02     0.00     8.00   685.26 185618.40 249.60  99.84
+dm-5             0.00     0.00    4.20 4968.20     0.02    19.41     8.00  1426.45  286.86   0.20  99.84
+dm-5             0.00     0.00   10.60 9886.00     0.04    38.62     8.00   167.57    5.74   0.09  88.72
+dm-5             0.00     0.00    5.00    0.00     0.02     0.00     8.00  1103.98 242774.88 199.68  99.84
+dm-5             0.00     0.00   38.20 14794.60    0.15    57.79     8.00  1171.75   74.25   0.06  87.20
+
+I also tested 2.6.31 with io-controller v9 patches. It seems to help a
+bit with the read rate, but the figures still jumps all over the place
+
+* 2.6.31 with io-controller patches v9 (8 cpu x86_64, 24 GB Ram)
+* fairness set to 1 on all block devices
+* scheduler = cfq
+* iostat -m -x dm-5 5
+* running in parallel on 3 lvm logical volumes
+  on a single physical volume
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+---------------------------------------------------------------------------------------------------------
+dm-5              0.00     0.00  412.00 1640.60     1.61     6.41     8.00  1992.54 1032.27   0.49  99.84
+dm-5              0.00     0.00  362.40  576.40     1.42     2.25     8.00   456.13  612.67   1.07 100.00
+dm-5              0.00     0.00  211.80 1004.40     0.83     3.92     8.00  1186.20  995.00   0.82 100.00
+dm-5              0.00     0.00   44.20  719.60     0.17     2.81     8.00   788.56  574.81   1.31  99.76
+dm-5              0.00     0.00    0.00 1274.80     0.00     4.98     8.00  1584.07 1317.32   0.78 100.00
+dm-5              0.00     0.00    0.00  946.91     0.00     3.70     8.00   989.09  911.30   1.05  99.72
+dm-5              0.00     0.00    7.20 2526.00     0.03     9.87     8.00  2085.57  201.72   0.37  92.88
+
+
+For completeness sake I did the tests on 2.4.24 as well not much different.
+
+* 2.6.24 (8 cpu x86_64, 24 GB Ram)
+* scheduler = cfq
+* iostat -m -x dm-5 5
+* running in parallel on 3 lvm logical volumes
+  situated on a single physical volume
+
+Device:         rrqm/s   wrqm/s     r/s     w/s    rMB/s    wMB/s avgrq-sz avgqu-sz   await  svctm  %util
+---------------------------------------------------------------------------------------------------------
+dm-5              0.00     0.00  144.60 5498.00     0.56    21.48     8.00  1215.82  215.48   0.14  76.80
+dm-5              0.00     0.00   30.00 9831.40     0.12    38.40     8.00  1729.16  142.37   0.09  88.60
+dm-5              0.00     0.00   27.60 4126.40     0.11    16.12     8.00  2245.24  618.77   0.21  86.00
+dm-5              0.00     0.00    2.00 3981.20     0.01    15.55     8.00  1069.07  268.40   0.23  91.60
+dm-5              0.00     0.00   40.60   13.20     0.16     0.05     8.00     3.98   74.83  15.02  80.80
+dm-5              0.00     0.00    5.60 5085.20     0.02    19.86     8.00  2586.65  508.10   0.18  94.00
+dm-5              0.00     0.00   20.80 5344.60     0.08    20.88     8.00   985.51  148.96   0.17  92.60
+
+
+cheers
+tobi
 
 -- 
-Jens Axboe
-
+Tobi Oetiker, OETIKER+PARTNER AG, Aarweg 15 CH-4600 Olten, Switzerland
+http://it.oetiker.ch tobi@oetiker.ch ++41 62 775 9902 / sb: -9900
