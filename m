@@ -1,96 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750903AbZIOIxE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751238AbZIOIyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750903AbZIOIxE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:53:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750816AbZIOIxB
+	id S1751238AbZIOIyq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751116AbZIOIyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:53:01 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:52934
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750738AbZIOIxA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:53:00 -0400
-Date: Tue, 15 Sep 2009 01:53:17 -0700 (PDT)
-Message-Id: <20090915.015317.23043536.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: IDE
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 04:54:39 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:60484 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751109AbZIOIyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 04:54:38 -0400
+Date: Tue, 15 Sep 2009 10:54:41 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org
+Cc: jkosina@suse.cz
+Subject: BUG: sleeping function called from invalid context at
+	mm/slub.c:1717
+Message-ID: <20090915085441.GF23126@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-1) Minor IDE cleanups and enhancement to debug logging to make
-   problems easier to diagnose.  From Borislav Petkov
+This is new with todays -git:
 
-2) Various bug fixes from Bartlomiej Zolnierkiewicz including
-   a fix for races with user invoked SET XFER commands.
+BUG: sleeping function called from invalid context at mm/slub.c:1717
+in_atomic(): 1, irqs_disabled(): 1, pid: 0, name: swapper
+Pid: 0, comm: swapper Not tainted 2.6.31 #206
+Call Trace:
+ <IRQ>  [<ffffffff8103eb23>] __might_sleep+0xf3/0x110
+ [<ffffffff810e4d83>] kmem_cache_alloc+0x123/0x170
+ [<ffffffff813306c9>] hid_input_report+0x89/0x3a0
+ [<ffffffffa00cd5f4>] hid_ctrl+0xa4/0x1f0 [usbhid]
+ [<ffffffff8108a4c7>] ? handle_IRQ_event+0xa7/0x1e0
+ [<ffffffffa004da1f>] usb_hcd_giveback_urb+0x3f/0xa0 [usbcore]
+ [<ffffffffa0074ab4>] uhci_giveback_urb+0xb4/0x240 [uhci_hcd]
+ [<ffffffffa00750e7>] uhci_scan_schedule+0x357/0xab0 [uhci_hcd]
+ [<ffffffffa0077a01>] uhci_irq+0x91/0x190 [uhci_hcd]
+ [<ffffffffa004d44e>] usb_hcd_irq+0x2e/0x70 [usbcore]
+ [<ffffffff8108a4c7>] handle_IRQ_event+0xa7/0x1e0
+ [<ffffffff8108c58c>] handle_fasteoi_irq+0x7c/0xf0
+ [<ffffffff8100f176>] handle_irq+0x46/0xa0
+ [<ffffffff8100e49a>] do_IRQ+0x6a/0xf0
+ [<ffffffff8100c853>] ret_from_intr+0x0/0xa
 
-3) ->proc_fops conversion from Alexey Dobriyan.
+And I notice there's a HID merge from yesterday, Jiri CC'ed.
 
-4) Add quirk fixup for a Fujitsu disk, from Wu Zhangjin.
+-- 
+Jens Axboe
 
-Please pull, thanks a lot!
-
-The following changes since commit 90bc1a658a53f8832ee799685703977a450e5af9:
-  Linus Torvalds (1):
-        Merge branch 'upstream' of git://ftp.linux-mips.org/pub/scm/upstream-linus
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/ide-next-2.6.git master
-
-Alexey Dobriyan (1):
-      ide: convert to ->proc_fops
-
-Bartlomiej Zolnierkiewicz (2):
-      ide: allow ide_dev_read_id() to be called from the IRQ context
-      ide: fix races in handling of user-space SET XFER commands
-
-Borislav Petkov (2):
-      ide-tape: convert to ide_debug_log macro
-      ide-tape: fix handling of postponed rqs
-
-David S. Miller (1):
-      ide: Fix annoying warning in ide_pio_bytes().
-
-Jaswinder Singh Rajput (1):
-      ide: ide-taskfile.c fix style problems
-
-Jean Delvare (1):
-      IDE: Save a call to PageHighMem()
-
-Julia Lawall (1):
-      drivers/ide/ide-cd.c: Use DIV_ROUND_CLOSEST
-
-Kevin Hilman (1):
-      IDE: palm_bk3710: convert clock usage after clkdev conversion
-
-Mark de Wever (1):
-      ide-tape: fix debug call
-
-Sergey Matyukevich (1):
-      at91_ide: remove headers specific for at91sam9263
-
-Wu Zhangjin (1):
-      ide: fixup for fujitsu disk
-
- drivers/ide/at91_ide.c        |    2 -
- drivers/ide/ide-cd.c          |   32 +++--
- drivers/ide/ide-disk_proc.c   |  129 ++++++++++------
- drivers/ide/ide-floppy_proc.c |   30 +++-
- drivers/ide/ide-ioctls.c      |    8 +-
- drivers/ide/ide-iops.c        |   17 +--
- drivers/ide/ide-probe.c       |   31 +++--
- drivers/ide/ide-proc.c        |  340 ++++++++++++++++++++++++++---------------
- drivers/ide/ide-tape.c        |  160 ++++++++++----------
- drivers/ide/ide-taskfile.c    |  126 ++++++++--------
- drivers/ide/palm_bk3710.c     |    2 +-
- include/linux/ide.h           |   30 +---
- 12 files changed, 522 insertions(+), 385 deletions(-)
