@@ -1,46 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbZIOTKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758453AbZIOTNq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758418AbZIOTKt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbZIOTKp
+	id S1758453AbZIOTNq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 15:13:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758394AbZIOTNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:10:45 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:44104 "EHLO
-	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758309AbZIOTKo (ORCPT
+	Tue, 15 Sep 2009 15:13:41 -0400
+Received: from smtp2.ultrahosting.com ([74.213.174.253]:39400 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758384AbZIOTNl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:10:44 -0400
-Date: Tue, 15 Sep 2009 20:10:36 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Andreas Mohr <andi@lisas.de>, Alan Stern <stern@rowland.harvard.edu>,
-       laurent.pinchart@skynet.be, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: usb autosuspend is history after S2R (also on 2.6.31; UVC?)
-Message-ID: <20090915191036.GA7713@srcf.ucam.org>
-References: <20090915185145.GA31490@rhlx01.hs-esslingen.de> <20090915190045.GA734@suse.de>
+	Tue, 15 Sep 2009 15:13:41 -0400
+Date: Tue, 15 Sep 2009 15:11:19 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@V090114053VZO-1
+To: Tejun Heo <tj@kernel.org>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] percpu for v2.6.32
+In-Reply-To: <4AAF411C.2040501@kernel.org>
+Message-ID: <alpine.DEB.1.10.0909151510010.3340@V090114053VZO-1>
+References: <4AAF411C.2040501@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915190045.GA734@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
-X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15, 2009 at 12:00:45PM -0700, Greg KH wrote:
+On Tue, 15 Sep 2009, Tejun Heo wrote:
 
-> Could you try that?  A certian hardware manufacturer is insisting that
-> this patch solves problems, which I have not been able to validate, and
-> it would be good to get some independant tests.
+> * All arches except for ia64 have been converted to use the new
+>   allocator.
 
-I'd be surprised if this actually fixed anything - it's equivalent to 
-just echoing "enable" into the autosuspend file at device bind time. 
-I've been waiting until we ship beta and get more user feedback before 
-pushing it.
+Any plans for this? The percpu operations patchset
+requires the new allocator to work on all platforms and I am wondering
+when I should repost the set.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
