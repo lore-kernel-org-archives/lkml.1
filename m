@@ -1,75 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754955AbZIOSSj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758423AbZIOTHs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754955AbZIOSSj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 14:18:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758264AbZIOSSd
+	id S1758423AbZIOTHs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 15:07:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758389AbZIOTHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 14:18:33 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:59592 "EHLO kernel.dk"
+	Tue, 15 Sep 2009 15:07:42 -0400
+Received: from kroah.org ([198.145.64.141]:35821 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754979AbZIOSQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 14:16:54 -0400
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 11/11] writeback: add comments to bdi_work structure
-Date: Tue, 15 Sep 2009 20:16:57 +0200
-Message-Id: <1253038617-30204-12-git-send-email-jens.axboe@oracle.com>
-X-Mailer: git-send-email 1.6.4.1.207.g68ea
-In-Reply-To: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com>
-References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com>
+	id S1758337AbZIOTHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 15:07:25 -0400
+Date: Tue, 15 Sep 2009 11:21:49 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-pcmcia@lists.infradead.org
+Subject: [GIT PATCH] PCMCIA patches for 2.6.31-git
+Message-ID: <20090915182149.GA32264@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And document its retriever, get_next_work_item().
+Here is the PCMCIA patchset for the 2.6.31 merge window
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- fs/fs-writeback.c |   18 +++++++++++-------
- 1 files changed, 11 insertions(+), 7 deletions(-)
+Due to the current maintainer being busy, I got tagged to send these to
+you :)
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 3de93a9..6e199ef 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -49,15 +49,15 @@ struct wb_writeback_args {
-  * Work items for the bdi_writeback threads
-  */
- struct bdi_work {
--	struct list_head list;
--	struct rcu_head rcu_head;
-+	struct list_head list;		/* pending work list */
-+	struct rcu_head rcu_head;	/* for RCU free/clear of work */
- 
--	unsigned long seen;
--	atomic_t pending;
-+	unsigned long seen;		/* threads that have seen this work */
-+	atomic_t pending;		/* number of threads still to do work */
- 
--	struct wb_writeback_args args;
-+	struct wb_writeback_args args;	/* writeback arguments */
- 
--	unsigned long state;
-+	unsigned long state;		/* flag bits, see WS_* */
- };
- 
- enum {
-@@ -758,7 +758,11 @@ static long wb_writeback(struct bdi_writeback *wb,
- 
- /*
-  * Return the next bdi_work struct that hasn't been processed by this
-- * wb thread yet
-+ * wb thread yet. ->seen is initially set for each thread that exists
-+ * for this device, when a thread first notices a piece of work it
-+ * clears its bit. Depending on writeback type, the thread will notify
-+ * completion on either receiving the work (WB_SYNC_NONE) or after
-+ * it is done (WB_SYNC_ALL).
-  */
- static struct bdi_work *get_next_work_item(struct backing_dev_info *bdi,
- 					   struct bdi_writeback *wb)
--- 
-1.6.4.1.207.g68ea
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/pcmcia-2.6.git/
+
+The patches will be sent as a follow-on to this message to the
+linux-pcmcia for people to see.
+
+thanks,
+
+greg k-h
+
+------------
+
+ drivers/bluetooth/dtl1_cs.c      |    2 +-
+ drivers/pcmcia/au1000_pb1x00.c   |    1 -
+ drivers/pcmcia/au1000_xxs1500.c  |    1 -
+ drivers/pcmcia/ds.c              |    3 +--
+ drivers/pcmcia/o2micro.h         |    4 ++++
+ drivers/pcmcia/pcmcia_ioctl.c    |    2 +-
+ drivers/pcmcia/pcmcia_resource.c |    6 +++---
+ include/pcmcia/ss.h              |    4 ++--
+ 8 files changed, 12 insertions(+), 11 deletions(-)
+
+---------------
+
+Joe Perches (1):
+      pcmcia: drivers/pcmcia/pcmcia_resource.c: Remove unnecessary semicolons
+
+Philipp Zabel (1):
+      pcmcia: dtl1_cs: fix pcmcia_loop_config logic
+
+Roel Kluin (1):
+      pcmcia: drivers/pcmcia: Make static
+
+Steven A. Falco (1):
+      pcmcia: Use phys_addr_t for physical addresses
+
+Tomas Kovacik (1):
+      pcmcia: disable prefetch/burst for OZ6933
+
+Wolfram Sang (3):
+      pcmcia: fix incorrect argument order to list_add_tail()
+      pcmcia: drop non-existant includes
+      pcmcia: document return value of pcmcia_loop_config
 
