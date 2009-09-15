@@ -1,75 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753316AbZIOLoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753335AbZIOLpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753316AbZIOLoa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 07:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZIOLoY
+	id S1753335AbZIOLpW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 07:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752950AbZIOLpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 07:44:24 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49398 "EHLO kernel.dk"
+	Tue, 15 Sep 2009 07:45:19 -0400
+Received: from mail001.aei.ca ([206.123.6.130]:33323 "EHLO mail001.aei.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752805AbZIOLoX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 07:44:23 -0400
-Date: Tue, 15 Sep 2009 13:44:26 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jan Kara <jack@suse.cz>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, chris.mason@oracle.com, tytso@mit.edu,
-       akpm@linux-foundation.org, trond.myklebust@fys.uio.no
-Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
-	opportunistic writeback
-Message-ID: <20090915114426.GJ23126@kernel.dk>
-References: <1252920994-11141-1-git-send-email-jens.axboe@oracle.com> <1252920994-11141-7-git-send-email-jens.axboe@oracle.com> <20090914133307.GJ24075@duck.suse.cz> <20090914134207.GA14830@infradead.org> <20090914192803.GL14984@kernel.dk> <20090914194242.GM14984@kernel.dk> <20090915090847.GA12169@duck.suse.cz> <20090915091402.GG23126@kernel.dk>
+	id S1753185AbZIOLpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 07:45:17 -0400
+From: Ed Tomlinson <edt@aei.ca>
+To: Pekka Enberg <penberg@cs.helsinki.fi>, Nitin Gupta <ngupta@vflare.org>
+Subject: Re: [PATCH 2/4] virtual block device driver (ramzswap)
+Date: Tue, 15 Sep 2009 07:45:14 -0400
+User-Agent: KMail/1.11.4 (Linux/2.6.31-crc; KDE/4.2.4; x86_64; ; )
+References: <200909100215.36350.ngupta@vflare.org> <d760cf2d0909142339i30d74a9dic7ece86e7227c2e2@mail.gmail.com> <84144f020909150030h1f9d8062sc39057b55a7ba6c0@mail.gmail.com>
+In-Reply-To: <84144f020909150030h1f9d8062sc39057b55a7ba6c0@mail.gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Ed Tomlinson <edt@aei.ca>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       linux-mm-cc@laptop.org, Ingo Molnar <mingo@elte.hu>,
+       =?iso-8859-1?q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Greg KH <greg@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090915091402.GG23126@kernel.dk>
+Message-Id: <200909150745.16265.edt@aei.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Sep 15 2009, Jens Axboe wrote:
-> On Tue, Sep 15 2009, Jan Kara wrote:
-> > On Mon 14-09-09 21:42:43, Jens Axboe wrote:
-> > > On Mon, Sep 14 2009, Jens Axboe wrote:
-> > > > On Mon, Sep 14 2009, Christoph Hellwig wrote:
-> > > > > On Mon, Sep 14, 2009 at 03:33:07PM +0200, Jan Kara wrote:
-> > > > > > On Mon 14-09-09 11:36:33, Jens Axboe wrote:
-> > > > > > > bdi_start_writeback() is currently split into two paths, one for
-> > > > > > > WB_SYNC_NONE and one for WB_SYNC_ALL. Add bdi_sync_writeback()
-> > > > > > > for WB_SYNC_ALL writeback and let bdi_start_writeback() handle
-> > > > > > > only WB_SYNC_NONE.
-> > > > > >   What I don't like about this patch is that if somebody sets up
-> > > > > > writeback_control with WB_SYNC_ALL mode set and then submits it to disk via
-> > > > > > bdi_start_writeback() it will just silently convert his writeback to an
-> > > > > > asynchronous one.
-> > > > > >   So I'd maybe leave setting of sync_mode to the caller and just WARN_ON if
-> > > > > > it does not match the purpose of the function...
-> > > > > 
-> > > > > Or initialize the wb entirely inside these functions.  For the sync case
-> > > > > we really only need a superblock as argument, and for writeback it's
-> > > > > bdi + nr_pages.  And also make sure they consistenly return void as
-> > > > > no one cares about the return value.
-> > > > 
-> > > > Yes, I thought about doing that and like that better than the warning.
-> > > > Just pass in the needed args and allocate+fill the wbc on stack. I'll
-> > > > make that change.
-> > > 
-> > > That works out much better, imho:
-> > > 
-> > > http://git.kernel.dk/?p=linux-2.6-block.git;a=commit;h=270c12655d7d11e234d335a8ab0540c02c034b66
-> >   Yeah, the code looks better. BTW, how about converting also
-> > bdi_writeback_all() to get superblock and nr_pages as an argument?
-> > Currently it seems to be the only place "above" flusher thread which uses
-> > wbc and it's just constructed in the callers of bdi_writeback_all() and
-> > then disassembled inside the function...
+On Tuesday 15 September 2009 03:30:23 you wrote:
+> > So, its extremely difficult to wait for the proper fix.
 > 
-> Yes good point, I'll include that too. Thanks!
+> Then make ramzswap depend on !CONFIG_ARM. In any case, CONFIG_ARM bits
+> really don't belong into drivers/block.
 
-One small problem there, though... Currently all queued writeback is
-range cyclic, however with this change then we drop that bit from
-sync_inodes_sb() which isn't range_cyclic and instead just specifies the
-whole range.
+Problem is that ramzswap is usefull on boxes like the n800/n810...  So this is a bad
+suggestion from my POV.    How about a comment saying this code goes when the 
+fix arrives???
 
--- 
-Jens Axboe
-
+Ed Tomlinson
