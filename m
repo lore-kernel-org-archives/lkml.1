@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753532AbZIOXjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753721AbZIOXqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753532AbZIOXjm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 19:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZIOXjh
+	id S1753721AbZIOXqP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 19:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753299AbZIOXqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 19:39:37 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47629 "EHLO smtps.tip.net.au"
+	Tue, 15 Sep 2009 19:46:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52579 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753120AbZIOXjh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 19:39:37 -0400
-Date: Wed, 16 Sep 2009 09:39:35 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Borislav Petkov <borislav.petkov@amd.com>, x86@kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH] edac: need to export cpu_llc_id
-Message-Id: <20090916093935.6bc2c91f.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1752587AbZIOXqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 19:46:12 -0400
+Date: Tue, 15 Sep 2009 16:43:52 -0700
+From: Greg KH <gregkh@suse.de>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH 20/20] Driver Core: devtmpfs - kernel-maintained
+ tmpfs-based /dev
+Message-ID: <20090915234352.GA8911@suse.de>
+References: <20090915181247.GA32167@kroah.com>
+ <1253041976-1111-20-git-send-email-gregkh@suse.de>
+ <20090915232104.GC7636@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915232104.GC7636@infradead.org>
+User-Agent: Mutt/1.5.20 (2009-06-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Today's linux-next build (x86_64 allmodconfig) failed like this:
+On Tue, Sep 15, 2009 at 07:21:04PM -0400, Christoph Hellwig wrote:
+> NACK, this touches init code to mount stuff inside the namespace fro ma
+> filesystem driver which is a big no-go.
 
-ERROR: "per_cpu__cpu_llc_id" [drivers/edac/edac_core.ko] undefined!
+It does?  What code is that, the following line in prepare_namespace():
+	devtmpfs_mount("dev");
+?
 
-Caused by commit b69b29de65fe4078b125acc9dea34be82f7c362c ("EDAC, AMD:
-carve out MCi_STATUS decoding").
+What is the problem with that?
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/x86/kernel/smpboot.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> I also can't see any ACK or similar from VFS people for that crap
+> (obviously)
 
-diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-index a25eeec..04c74b4 100644
---- a/arch/x86/kernel/smpboot.c
-+++ b/arch/x86/kernel/smpboot.c
-@@ -100,6 +100,7 @@ EXPORT_SYMBOL(smp_num_siblings);
- 
- /* Last level cache ID of each logical CPU */
- DEFINE_PER_CPU(u16, cpu_llc_id) = BAD_APICID;
-+EXPORT_PER_CPU_SYMBOL(cpu_llc_id);
- 
- /* representing HT siblings of each logical CPU */
- DEFINE_PER_CPU(cpumask_var_t, cpu_sibling_map);
--- 
-1.6.3.3
+For that one line?  If this call is not the correct way to do this, or
+it should be done somewhere else, please let us know.
 
+The patch has been posted for review many times and has been in the
+-next and -mm releases for over 2 merge windows, which has gotten it a
+lot of exposure and testing and review.  This is the first time I recall
+this issue being raised.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+thanks,
+
+greg k-h
