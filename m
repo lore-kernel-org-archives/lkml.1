@@ -1,116 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbZIOJoC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZIOJxA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752227AbZIOJoC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:44:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751336AbZIOJn7
+	id S1752432AbZIOJxA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:53:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZIOJw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:43:59 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:41985 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750948AbZIOJn6 (ORCPT
+	Tue, 15 Sep 2009 05:52:56 -0400
+Received: from mk-filter-4-a-1.mail.uk.tiscali.com ([212.74.100.55]:30569 "EHLO
+	mk-filter-4-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752285AbZIOJwz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:43:58 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 2/8] drivers/media/video/uvc: introduce missing kfree
-Date: Tue, 15 Sep 2009 11:44:57 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.30.3; KDE/4.3.1; x86_64; ; )
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0909111821010.10552@pc-004.diku.dk> <200909132239.21806.laurent.pinchart@ideasonboard.com> <Pine.LNX.4.64.0909132254430.31000@ask.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0909132254430.31000@ask.diku.dk>
+	Tue, 15 Sep 2009 05:52:55 -0400
+X-Trace: 258171297/mk-filter-4.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.90.143/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.90.143
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AqIEAGMAr0pPRVqP/2dsb2JhbACBU9pEhBcFgVY
+X-IronPort-AV: E=Sophos;i="4.44,388,1249254000"; 
+   d="scan'208";a="258171297"
+Date: Tue, 15 Sep 2009 10:52:08 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: Wu Fengguang <fengguang.wu@intel.com>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "mtosatti@redhat.com" <mtosatti@redhat.com>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+       "avi@qumranet.com" <avi@qumranet.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Question: how to handle too big f_pos Re: [PATCH] devmem: handle
+ partial kmem write/read
+In-Reply-To: <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0909151031130.22062@sister.anvils>
+References: <20090914032901.GA16189@localhost> <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200909151144.57816.laurent.pinchart@ideasonboard.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Julia,
+On Tue, 15 Sep 2009, KAMEZAWA Hiroyuki wrote:
 
-On Sunday 13 September 2009 22:55:30 Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
+> I'm writing a patch against /dev/kmem...I found a problem.
 > 
-> Move the kzalloc and associated test after the stream/query test, to avoid
-> the need to free the allocated if the stream/query test fails.
+> /dev/kmem (and /proc/<pid>/mem) puts virtual addres to f->f_pos.
 > 
-> The semantic match that finds the problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
+> And, f->f_pos is loff_t .... signed value (not unsigned)
 > 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> statement S;
-> expression E;
-> identifier f,f1,l;
-> position p1,p2;
-> expression *ptr != NULL;
-> @@
+> Then, this check
+> rw_verify_area(READ, file, pos, count);
+> =>
+>         pos = *ppos;
+>         if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+>                 return retval;
+> 	
+> always returns -EINVAL when I read /dev/kmem's valid address.
 > 
-> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> ...
-> if (x == NULL) S
-> <... when != x
->      when != if (...) { <+...x...+> }
-> (
-> x->f1 = E
-> 
->  (x->f1 == NULL || ...)
-> 
->  f(...,x->f1,...)
-> )
-> ...>
-> (
->  return \(0\|<+...x...+>\|ptr\);
-> 
->  return@p2 ...;
-> )
-> 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
-> 
-> print "* file: %s kmalloc %s return %s" %
->  (p1[0].file,p1[0].line,p2[0].line) // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
-> ---
->  drivers/media/video/uvc/uvc_video.c |    7 ++++---
->  1 files changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/media/video/uvc/uvc_video.c
->  b/drivers/media/video/uvc/uvc_video.c index 5b757f3..f960e8e 100644
-> --- a/drivers/media/video/uvc/uvc_video.c
-> +++ b/drivers/media/video/uvc/uvc_video.c
-> @@ -124,13 +124,14 @@ static int uvc_get_video_ctrl(struct uvc_streaming
->  *stream, int ret;
-> 
->  	size = stream->dev->uvc_version >= 0x0110 ? 34 : 26;
-> +	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) &&
-> +			query == UVC_GET_DEF)
+> Then, how should I do for read /dev/kmem ? Any idea ?
+> (Added Al Viro to CC:)
 
-This fits in the 80 columns limit, no need to split the statement on multiple 
-lines.
+I believe what's supposed to happen is that special drivers like
+/dev/mem and /dev/kmem provide their own .llseek method (they do).
+But at some point along the way rw_verify_area() got "improved"
+and now prevents them working on many configurations.
 
-> +		return -EIO;
-> +
->  	data = kmalloc(size, GFP_KERNEL);
->  	if (data == NULL)
->  		return -ENOMEM;
-> 
-> -	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) && query == UVC_GET_DEF)
-> -		return -EIO;
-> -
->  	ret = __uvc_query_ctrl(stream->dev, query, 0, stream->intfnum,
->  		probe ? UVC_VS_PROBE_CONTROL : UVC_VS_COMMIT_CONTROL, data,
->  		size, UVC_CTRL_STREAMING_TIMEOUT);
+I noticed around 2.6.24-rc1, and have been building my debug kernels
+with the patch below ever since then, as I sometimes like to peek and
+poke into /dev/kmem to examine and try different things while running.
 
-Other than that,
+But whether it's the right patch is another matter.  Though this should
+be independent of that, I've also got a patch at the drivers/char/mem.c
+end (I'll post that shortly in the main thread, not appropriate here),
+and have never found time to consider whether these hacks amount to
+anything more than "works for me".
 
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+IIRC, this patch below only covers one aspect of the negative offset
+problem.  Where the problems lie does change from time to time - back
+in 2003 I used to use pread() and pwrite() to avoid llseek() issues;
+but when I came back to it in 2007, I think I found those no longer
+worked (on i386 or x86_64 or powerpc?), and lseek64() was the best bet.
 
--- 
-Laurent Pinchart
+Anyway, for what it's worth, ...
+
+--- 2.6.31/fs/read_write.c	2009-09-09 23:13:59.000000000 +0100
++++ 2.6.31d/fs/read_write.c	2009-09-10 09:38:30.000000000 +0100
+@@ -222,8 +222,13 @@ int rw_verify_area(int read_write, struc
+ 	if (unlikely((ssize_t) count < 0))
+ 		return retval;
+ 	pos = *ppos;
+-	if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
+-		return retval;
++	if (pos >= 0) {
++		if (unlikely((loff_t) (pos + count) < 0))
++			count = 1 + (size_t) LLONG_MAX - pos;
++	} else {
++		if (unlikely((loff_t) (pos + count) > 0))
++			count = - pos;
++	}
+ 
+ 	if (unlikely(inode->i_flock && mandatory_lock(inode))) {
+ 		retval = locks_mandatory_area(
