@@ -1,89 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753520AbZIOMi1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753485AbZIOMiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753520AbZIOMi1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 08:38:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbZIOMiY
+	id S1753485AbZIOMiO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 08:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZIOMiJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 08:38:24 -0400
-Received: from mx1.redhat.com ([209.132.183.28]:31724 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753224AbZIOMiX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 08:38:23 -0400
-Date: Tue, 15 Sep 2009 18:07:52 +0530
-From: Amit Shah <amit.shah@redhat.com>
-To: Alan Cox <alan@linux.intel.com>
-Cc: rusty@rustcorp.com.au, virtualization@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, greg@kroah.com,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
-	generic guest and host communication
-Message-ID: <20090915123752.GB5247@amit-x200.redhat.com>
-References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <1252678386-17404-2-git-send-email-amit.shah@redhat.com> <20090911170010.34c80f2d@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090911170010.34c80f2d@linux.intel.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Tue, 15 Sep 2009 08:38:09 -0400
+Received: from rtp-iport-1.cisco.com ([64.102.122.148]:26766 "EHLO
+	rtp-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752668AbZIOMiI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 08:38:08 -0400
+X-IronPort-AV: E=Sophos;i="4.44,390,1249257600"; 
+   d="scan'208";a="58174618"
+Cc: "Roland Dreier (rdreier)" <rdreier@cisco.com>,
+       "Jason Gunthorpe" <jgunthorpe@obsidianresearch.com>,
+       "Brice Goglin" <Brice.Goglin@inria.fr>, <linux-rdma@vger.kernel.org>,
+       <linux-kernel@vger.kernel.org>, <general@lists.openfabrics.org>,
+       <akpm@linux-foundation.org>, <torvalds@linux-foundation.org>
+Message-Id: <003720AA-6630-4718-B7F9-8392A8422220@cisco.com>
+From: Jeff Squyres <jsquyres@cisco.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <20090915155231.DB86.A69D9226@jp.fujitsu.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v936)
+Subject: Re: [ofa-general] Re: [GIT PULL] please pull ummunotify
+Date: Tue, 15 Sep 2009 08:38:08 -0400
+References: <20090911064019.GZ4973@obsidianresearch.com> <adaljklifkt.fsf@cisco.com> <20090915155231.DB86.A69D9226@jp.fujitsu.com>
+X-Mailer: Apple Mail (2.936)
+Authentication-Results: rtp-dkim-1; header.From=jsquyres@cisco.com; dkim=pass (
+	sig from cisco.com/rtpdkim1001 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding Greg to the CC list]
+On Sep 15, 2009, at 3:03 AM, KOSAKI Motohiro wrote:
 
-On (Fri) Sep 11 2009 [17:00:10], Alan Cox wrote:
-> > The interface presented to guest userspace is of a simple char
-> > device, so it can be used like this:
-> > 
-> >     fd = open("/dev/vcon2", O_RDWR);
-> >     ret = read(fd, buf, 100);
-> >     ret = write(fd, string, strlen(string));
-> > 
-> > Each port is to be assigned a unique function, for example, the
-> > first 4 ports may be reserved for libvirt usage, the next 4 for
-> > generic streaming data and so on. This port-function mapping
-> > isn't finalised yet.
-> 
-> Unless I am missing something this looks completely bonkers
-> 
-> Every time we have a table of numbers for functionality it ends in
-> tears. We have to keep tables up to date and managed, we have to
-> administer the magical number to name space.
-> 
-> Anyway - you don't seem to need a fixed number you can use dynamic
-> allocation and udev.
-> 
-> There are at least two better ways to do this
-> 
-> - Using sysfs nodes so you have a proper heirarchy of names/functions
-> - Using a simple file system which provides a heirarchy of nodes whose
->   enumeration and access is backed by calls to whatever happyvisor you
->   are using.
-> 
-> it then self enumerates, self populates, doesn't need anyone to keep
-> updating magic tables of guest code and expands cleanly - yes ?
+>  - I guess you have your MPI implementaion w/ ummunotify, right?
+>  - I guess you have test sevaral pattern, right?
+>    if so, can we see your test result?
+>
 
-Hey Greg,
 
-Can you tell me how this could work out -- each console port could have
-a "role" string associated with it (obtainable from the invoking qemu
-process in case of qemu/kvm). Something that I have in mind currently
-is:
+Roland's answers to the rest of these questions were spot-on, so I  
+thought I'd just throw in a quick reply to the above questions: yes,  
+we have a prototype Open MPI implementation with code that uses  
+ummunotify (http://bitbucket.org/jsquyres/ummunot/).  I just finished  
+fixing a high-priority (but unrelated) bug in Open MPI, so merging the  
+prototype ummunotify code into the upstream Open MPI repository is now  
+at the top of my priority list.
 
-$ qemu-kvm ... -virtioconsole role=org/qemu/clipboard
+We have done quite a bit of testing with ummunotify, but since the  
+code is not yet in the Open MPI mainline, most of the testing has been  
+manual (not through our automated testing system).  As far as we can  
+tell, everything is working properly with Open MPI + ummunotify.  We  
+also anticipate that other MPI implementations will be able to use  
+ummunotify, potentially using Open MPI as a reference ummunotify  
+implementation.
 
-and then the guest kernel sees the string, and puts the
-"org/qemu/clipboard" in some file in sysfs. Guest userspace should then
-be able to open and read/write to
+FWIW: we went through a bunch of design and implementation iterations  
+with Roland to get code that everyone was happy with:
 
-/dev/virtio_console/org/qemu/clipboard
+- Roland likes it (and anticipated that the kernel community would be  
+receptive to)
+- we like it
+- performs correctly
 
-I guess that's an acceptable scheme to all.
+Hope that helps.
 
-I also don't know how this would work -- which sysfs attributes to
-export and how would udev pick that up and create the device at the
-specified location.
+-- 
+Jeff Squyres
+jsquyres@cisco.com
 
-Any pointers appreciated.
-
-Thanks,
-		Amit
