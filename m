@@ -1,30 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755160AbZIOQJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755015AbZIOQJe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755160AbZIOQJU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 12:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbZIOQJO
+	id S1755015AbZIOQJe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 12:09:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbZIOQJW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 12:09:14 -0400
-Received: from mga11.intel.com ([192.55.52.93]:25840 "EHLO mga11.intel.com"
+	Tue, 15 Sep 2009 12:09:22 -0400
+Received: from mga01.intel.com ([192.55.52.88]:33578 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755066AbZIOQJJ convert rfc822-to-8bit (ORCPT
+	id S1755097AbZIOQJN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 12:09:09 -0400
+	Tue, 15 Sep 2009 12:09:13 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.44,390,1249282800"; 
-   d="scan'208";a="493668605"
+   d="scan'208";a="727157476"
 From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
 To: "Williams, Dan J" <dan.j.williams@intel.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>
-Date: Tue, 15 Sep 2009 17:08:26 +0100
-Subject: RE: [PATCH 09/18] ioat3: enable dca for completion writes
-Thread-Topic: [PATCH 09/18] ioat3: enable dca for completion writes
-Thread-Index: AcotK0gKAvUVUm8bSIqJNoJVd5FTzgI83NUQ
-Message-ID: <129600E5E5FB004392DDC3FB599660D7B5548795@irsmsx504.ger.corp.intel.com>
+Date: Tue, 15 Sep 2009 17:08:48 +0100
+Subject: RE: [PATCH 10/18] ioat3: xor support
+Thread-Topic: [PATCH 10/18] ioat3: xor support
+Thread-Index: AcotK0pohYxYpiLHR+2JtF33HA+bXwI83uaw
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B5548796@irsmsx504.ger.corp.intel.com>
 References: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
- <20090904064520.7141.62811.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20090904064520.7141.62811.stgit@dwillia2-linux.ch.intel.com>
+ <20090904064525.7141.34029.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20090904064525.7141.34029.stgit@dwillia2-linux.ch.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -38,8 +38,13 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Williams, Dan J wrote:
-> Tag completion writes for direct cache access to reduce the latency of
-> checking for descriptor completions.
+> ioat3.2 adds xor offload support for up to 8 sources.  It can also
+> perform an xor-zero-sum operation to validate whether all given sources
+> sum to zero, without writing to a destination.  Xor descriptors differ
+> from memcpy in that one operation may require multiple descriptors
+> depending on the number of sources.  When the number of sources exceeds
+> 5 an extended descriptor is needed.  These descriptors need to be
+> accounted for when updating the DMA_COUNT register.
 > 
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 > ---
