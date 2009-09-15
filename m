@@ -1,85 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755159AbZIOQbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZIOQcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755159AbZIOQbi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 12:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZIOQbe
+	id S1755416AbZIOQcj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 12:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZIOQce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 12:31:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53948 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753349AbZIOQbe (ORCPT
+	Tue, 15 Sep 2009 12:32:34 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62010 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753842AbZIOQcd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 12:31:34 -0400
-Date: Tue, 15 Sep 2009 09:30:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-In-Reply-To: <20090915040601.GE4507@mail.oracle.com>
-Message-ID: <alpine.LFD.2.01.0909150923180.4950@localhost.localdomain>
-References: <20090911200458.GA15416@mail.oracle.com> <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain> <20090914221434.GA4507@mail.oracle.com> <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain> <20090915000417.GC4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain> <20090915005417.GD4507@mail.oracle.com> <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain> <20090915040601.GE4507@mail.oracle.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Sep 2009 12:32:33 -0400
+Subject: [PATCH] [GIT PULL] tracing: optimize global_trace_clock cachelines
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 15 Sep 2009 12:32:34 -0400
+Message-Id: <1253032354.20020.119.camel@gandalf.stny.rr.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Ingo,
 
-On Mon, 14 Sep 2009, Joel Becker wrote:
-> > 
-> > If you're talking about falling back to manually just copying the data, 
-> > then nobody is interested in that. User space can do that better with a 
-> > simple read-write loop or with splice, or whatever. There's no reaason 
-> > what-so-ever to do that.
-> 
-> 	I'm talking about any facility for copying that isn't just a
-> userspace loop.  Like your discussion of network filesystems.
+Please pull the latest tip/tracing/core3 tree, which can be found at:
 
-HOW?
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/core3
 
-We need to have a per-filesystem interface to that. 
 
-Having a '->copyfile()' function would be great.
+Steven Rostedt (1):
+      tracing: optimize global_trace_clock cachelines
 
-But don't you see how _idiotic_ it is to then also having a '->reflink()' 
-function that does _conceptually_ the exact same thing, except it does it 
-by incrementing a usage count instead?
+----
+ kernel/trace/trace_clock.c |   24 ++++++++++++++----------
+ 1 files changed, 14 insertions(+), 10 deletions(-)
+---------------------------
+commit 6ca6cca31ddc7cc8b1dc38b12d7593d2667defe8
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Tue Sep 15 12:24:22 2009 -0400
 
-Do you see why I'm so unhappy to add a ->reflink() function? 
+    tracing: optimize global_trace_clock cachelines
+    
+    The prev_trace_clock_time is only read or written to when the
+    trace_clock_lock is taken. For better perfomance, they
+    should share the same cache line.
+    
+    Reported-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-> 	Hence I brought this to the filesystem summit and then fsdevel
-> rather than just implementing it in ocfs2.  I know NFS folks were in the
-> room in April, and they said the call definition was workable.  Can't
-> remember if CIFS folks were there, but I think so.
+diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
+index b588fd8..20c5f92 100644
+--- a/kernel/trace/trace_clock.c
++++ b/kernel/trace/trace_clock.c
+@@ -66,10 +66,14 @@ u64 notrace trace_clock(void)
+  * Used by plugins that need globally coherent timestamps.
+  */
+ 
+-static u64 prev_trace_clock_time;
+-
+-static raw_spinlock_t trace_clock_lock ____cacheline_aligned_in_smp =
+-	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
++/* keep prev_time and lock in the same cacheline. */
++static struct {
++	u64 prev_time;
++	raw_spinlock_t lock;
++} trace_clock_struct ____cacheline_aligned_in_smp =
++	{
++		.lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED,
++	};
+ 
+ u64 notrace trace_clock_global(void)
+ {
+@@ -88,19 +92,19 @@ u64 notrace trace_clock_global(void)
+ 	if (unlikely(in_nmi()))
+ 		goto out;
+ 
+-	__raw_spin_lock(&trace_clock_lock);
++	__raw_spin_lock(&trace_clock_struct.lock);
+ 
+ 	/*
+ 	 * TODO: if this happens often then maybe we should reset
+-	 * my_scd->clock to prev_trace_clock_time+1, to make sure
++	 * my_scd->clock to prev_time+1, to make sure
+ 	 * we start ticking with the local clock from now on?
+ 	 */
+-	if ((s64)(now - prev_trace_clock_time) < 0)
+-		now = prev_trace_clock_time + 1;
++	if ((s64)(now - trace_clock_struct.prev_time) < 0)
++		now = trace_clock_struct.prev_time + 1;
+ 
+-	prev_trace_clock_time = now;
++	trace_clock_struct.prev_time = now;
+ 
+-	__raw_spin_unlock(&trace_clock_lock);
++	__raw_spin_unlock(&trace_clock_struct.lock);
+ 
+  out:
+ 	raw_local_irq_restore(flags);
 
-It's not workable if you define the 'reflink()' function to not use any 
-disk space on the filesystem. Because SMB _will_ do a copy (and I presume 
-the NFS thing will too). So it would not in general be what you call 
-reflink, it will not be a "snapshot".
 
-So if you _define_ the semantics of "reflink" to be that it's atomic and 
-doesn't use any new diskspace (apart from the new inode/directory entry, 
-of course), then it will be almost totally useless to other filesystems.
-
-In fact, it's entirely possible to have filesystems that can avoid copying 
-the _data_ blocks, but would need to copy the indirect blocks - maybe the 
-data blocks are ref-counted, but the metadata needs to be per-file (I can 
-see many reasons to do it that way, even if it's organized as a tree - 
-it's how we do page table COW, for example, and it makes some things much 
-simpler).
-
-Would that be a 'reflink()' or not? I have no way of knowing, because you 
-have decided on reflink on a purely ocfs2-specific implementation basis. 
-But I do know that such a filesystem would be perfectly happy to have a 
-'copyfile' function.
-
-This is why I want the VFS pointers to be about _semantics_, not about 
-some random implementation detail.
-
-			Linus
