@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbZIOGtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZIOGxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105AbZIOGtP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 02:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZIOGtI
+	id S1758127AbZIOGxS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 02:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758112AbZIOGxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 02:49:08 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:39536 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751011AbZIOGtG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 02:49:06 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=jYIcfFiG/qEEm7G9/SwQLYVdXu3kb3sKpmcy/1mafydVj7d3lqsXYnEbb7pcP2MWG
-	KP+HPclM0Nn8In4cd/l7g==
-Date: Mon, 14 Sep 2009 23:49:00 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-cc: Suresh Jayaram <sureshjayaram@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mm-commits@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>,
-       Jin Dongming <jin.dongming@np.css.fujitsu.com>
-Subject: Re: mmotm 2009-09-09-22-56 uploaded
-In-Reply-To: <20090915063458.GC10232@core.coreip.homeip.net>
-Message-ID: <alpine.DEB.1.00.0909142348220.9122@chino.kir.corp.google.com>
-References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org> <38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com> <alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com> <20090915063458.GC10232@core.coreip.homeip.net>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Tue, 15 Sep 2009 02:53:14 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:52147 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758109AbZIOGxN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 02:53:13 -0400
+Date: Tue, 15 Sep 2009 16:53:09 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Philipp Reisner <philipp.reisner@linbit.com>, drbd-dev@linbit.com,
+       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Nikanth Karthikesan <knikanth@suse.de>
+Subject: Re: linux-next: drbd tree build failure
+Message-Id: <20090915165309.f07381ec.sfr@canb.auug.org.au>
+In-Reply-To: <20090915062306.GP14984@kernel.dk>
+References: <20090915160739.86e85ab3.sfr@canb.auug.org.au>
+	<20090915062306.GP14984@kernel.dk>
+X-Mailer: Sylpheed 2.7.1 (GTK+ 2.16.6; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 Sep 2009, Dmitry Torokhov wrote:
+--Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > The second is an issue with the i8042 driver's laptop table not being NULL 
-> > terminated.  This is fixed by Jin Dongming's patch at
-> > http://marc.info/?l=linux-kernel&m=125263897713267.
-> > 
-> 
-> Should be good in my tree/next/mainline now.
-> 
+Hi Jens,
 
-Ok thanks, but Suresh will still need to apply Jin's patch to test if 
-mmotm-2009-09-14-01-57 works on T60p until the next -mm is released.
+On Tue, 15 Sep 2009 08:23:06 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+>
+> Fix looks correct.
+
+Thanks for the confirmation.  So hopefully one of these trees will be
+merged by Linus soon an this can be fixed up in the other.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.10 (GNU/Linux)
+
+iEYEARECAAYFAkqvOdUACgkQjjKRsyhoI8ypQwCghZr31qeK003FazBbXcWbQvU9
+YrgAnAxRBQJR+IkKOnuXqoR30eNbE3da
+=S44f
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_Sep_2009_16_53_09_+1000_9zeGCNmYicgvW.+V--
