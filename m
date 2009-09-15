@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZIOKEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752603AbZIOKJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752575AbZIOKEa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 06:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZIOKEZ
+	id S1752603AbZIOKJf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 06:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752501AbZIOKJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 06:04:25 -0400
-Received: from mail-bw0-f219.google.com ([209.85.218.219]:58875 "EHLO
-	mail-bw0-f219.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752371AbZIOKEY convert rfc822-to-8bit (ORCPT
+	Tue, 15 Sep 2009 06:09:29 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:61804 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbZIOKJ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 06:04:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=OcwKJuvSObr7hs/8UHoLuQtjuxNqVv52L52mslly0B3AqA8JtOASI7HyEP7cuzmevk
-         lPmJpV3eVANTqXzKe9L1as64PjuxSe1DNQFcPw3bEpjt/fadXSUyz9WU+6X9XpJQWORD
-         tqdNS7rEYIaIEG7SQXH2MOvtgIIznysGI+vqY=
+	Tue, 15 Sep 2009 06:09:28 -0400
+Message-ID: <4AAF6724.9080201@bk.jp.nec.com>
+Date: Tue, 15 Sep 2009 19:06:28 +0900
+From: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 6.0; ja; rv:1.8.1.9) Gecko/20071031 Thunderbird/2.0.0.9 Mnenhy/0.7.5.0
 MIME-Version: 1.0
-In-Reply-To: <20090915090319.GA25990@elte.hu>
-References: <alpine.DEB.2.00.0909142025290.5303@melkki.cs.helsinki.fi>
-	 <20090915090319.GA25990@elte.hu>
-Date: Tue, 15 Sep 2009 13:04:26 +0300
-X-Google-Sender-Auth: 249d2dcf30b42d48
-Message-ID: <84144f020909150304x64bfa6e7m44090c50ddc59212@mail.gmail.com>
-Subject: Re: [origin tree build failure] [PATCH] slub: Fix build error in 
-	kmem_cache_open() with !CONFIG_SLUB_DEBUG
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       aaro.koskinen@nokia.com, amwang@redhat.com, dfeng@redhat.com,
-       eric.dumazet@gmail.com, fengguang.wu@intel.com,
-       Larry.Finger@lwfinger.net, rientjes@google.com,
-       yanmin_zhang@linux.intel.com, zdenek.kabelac@gmail.com
+To: linux-kernel@vger.kernel.org, rostedt@goodmis.org,
+       Ingo Molnar <mingo@elte.hu>, fweisbec@gmail.com,
+       "Frank Ch. Eigler" <fche@redhat.com>
+CC: Peter Zijlstra <peterz@infradead.org>, paulus@samba.org,
+       systemtap@sources.redhat.com
+Subject: [PATCH 0/2] tracing: Tracing integration - dynamic ftrace for SystemTap
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+Hi,
 
-On Tue, Sep 15, 2009 at 12:03 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> From 817eb1b8da641984334db46a486ad2f867daa803 Mon Sep 17 00:00:00 2001
-> From: Ingo Molnar <mingo@elte.hu>
-> Date: Tue, 15 Sep 2009 11:00:26 +0200
-> Subject: [PATCH] slub: Fix build error in kmem_cache_open() with !CONFIG_SLUB_DEBUG
->
-> This build bug:
->
->  mm/slub.c: In function 'kmem_cache_open':
->  mm/slub.c:2476: error: 'disable_higher_order_debug' undeclared (first use in this function)
->  mm/slub.c:2476: error: (Each undeclared identifier is reported only once
->  mm/slub.c:2476: error: for each function it appears in.)
->
-> Triggers because there's no !CONFIG_SLUB_DEBUG definition for
-> disable_higher_order_debug.
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  mm/slub.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
->
-> diff --git a/mm/slub.c b/mm/slub.c
-> index 417ed84..be6e1e0 100644
-> --- a/mm/slub.c
-> +++ b/mm/slub.c
-> @@ -1071,6 +1071,8 @@ static inline unsigned long kmem_cache_flags(unsigned long objsize,
->  }
->  #define slub_debug 0
->
-> +#define disable_higher_order_debug 0
-> +
->  static inline unsigned long slabs_node(struct kmem_cache *s, int node)
->                                                        { return 0; }
->  static inline unsigned long node_nr_slabs(struct kmem_cache_node *n)
+Currently, there are some tracers using in Linux. Each of them are
+developed for different users and situations.
 
-Oh, sorry about that. I'll merge the patch and send it to Linus later
-this evening. Thanks!
+Ftrace has own probe mechanism, dynamic ftrace, and various plugins,
+and it can be used without particular userland tools. It is suitable
+for kernel developer. The performance counters have own userland tool
+merged in the kernel tree and it's easy to trace kernel events by using
+this tool. It is suitable for people who don't have enough knowledge
+of internal kernel. SystemTap has own scripting language and users can
+gather kernel internal information suited to their needs by customizing
+the script. Since it also has features, the log rotation and the
+initscript, to keep collecting information continually, it is suitable
+for system administrator and enterprise users.
 
-                        Pekka
+I think we need to use those tracers as the situation demands, since
+no tracer exists to meet anyone's needs and to fit any situation.
+Then, we should consider the tracing mechanisms (kprobe, dynamic ftrace
+and etc. kernel tracing features) and tracers (user interface)
+separately, and all tracers should be able to use each tracing mechanisms.
+
+The mechanism of dynamic ftrace is useful for all tracers. However
+only ftrace can currently use it. I think it can be used for other
+tracers via register_ and unregister_ftrace_function_probe
+function. By using it, the overhead of instrumentation can be reduced
+and gathering information, which cannot be traced because of a large
+overhead, become available. Also it can enable the performance
+counters to count events for all kernel functions.
+
+First, I sent patches to integrate ftrace and SystemTap by just exporting
+ftrace API. Also I fixed minor bugs for __unregister_ftrace_function_probe.
+
+The patches doesn't contain the performance counters integration,
+since it is still in development. I think following implementations are
+needed:
+- add new type to perf_id (like PERF_TYPE_FTRACE)
+- add event ids to struct dyn_ftrace
+- add interfaces to reference event ids by user (via debugfs?)
+- add probe function to count ftrace events (call do_perf_swcounter_event)
+
+Those patches are for -tip tree.
+
+Thanks,
+Atsushi
+
+Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+---
+ kernel/trace/ftrace.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+
+
+
+
+
