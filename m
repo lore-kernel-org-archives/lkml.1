@@ -1,173 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZIOIhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756632AbZIOIiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbZIOIhn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZIOIhi
+	id S1756632AbZIOIiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751330AbZIOIiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:37:38 -0400
-Received: from mail.gmx.net ([213.165.64.20]:59536 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1751641AbZIOIhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:37:36 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX1/5Lgo2JNf55mHlf3Ezi+IcRh/GLRhntdWHS6M7nG
-	7W0o/jzYl76Mx2
-Subject: Re: Phoronix CFS vs BFS bencharks
-From: Mike Galbraith <efault@gmx.de>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Marcin Letyns <mletyns@gmail.com>, Nikos Chantziaras <realnc@arcor.de>,
-       Ingo Molnar <mingo@elte.hu>, Con Kolivas <kernel@kolivas.org>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090914204905.GA28315@1wt.eu>
-References: <20090906205952.GA6516@elte.hu> <4AAE10E6.2050403@arcor.de>
-	 <1252928133.22740.37.camel@marge.simson.net>
-	 <f42384a10909140727k463ff460q3859892dcb79bcc5@mail.gmail.com>
-	 <1252942335.12986.58.camel@marge.simson.net>
-	 <f42384a10909141214w1b3e7719j1a82363f7cb6fd3e@mail.gmail.com>
-	 <20090914204905.GA28315@1wt.eu>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 10:37:35 +0200
-Message-Id: <1253003855.6628.63.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+	Tue, 15 Sep 2009 04:38:18 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:53551 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750993AbZIOIiR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 04:38:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tUa1Uw+0gNMUpUO5A5gvZN6ulwPazWGrwlOtEYyVyBUrVt9wTnVTFDEB2o/YmmLZN9
+         kIn3vtrxSuVvZkkH3y5ukT1eEnd850ebkC7+k6TEfubPdBxjylU9b8j1wv16E8MUbOUv
+         w8dLQ3p6SUklEqLhEMGfdLxkRIyLDw4Mn2QpE=
+MIME-Version: 1.0
+In-Reply-To: <8bd0f97a0909140643x1f9c6478r51dcd762d6ba485@mail.gmail.com>
+References: <1252870707-4824-1-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-2-git-send-email-felipe.contreras@gmail.com>
+	 <1252870707-4824-3-git-send-email-felipe.contreras@gmail.com>
+	 <8bd0f97a0909131412v6ba29823ube9aab20302aaca0@mail.gmail.com>
+	 <94a0d4530909131442h43d0ed1cl9f395f7d38f2c43@mail.gmail.com>
+	 <8bd0f97a0909131458r8574620pa539876da969eb5f@mail.gmail.com>
+	 <94a0d4530909131504h1a9de951k3719000705a86bbc@mail.gmail.com>
+	 <20090914044657.GA4252@merkur.ravnborg.org>
+	 <94a0d4530909140125p73589cffy71a141d234508049@mail.gmail.com>
+	 <8bd0f97a0909140643x1f9c6478r51dcd762d6ba485@mail.gmail.com>
+Date: Tue, 15 Sep 2009 11:38:19 +0300
+Message-ID: <94a0d4530909150138y3fd09be4te62261bbde768893@mail.gmail.com>
+Subject: Re: [PATCH 2/5] kbuild: fix warning when domainname is not available
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-09-14 at 22:49 +0200, Willy Tarreau wrote:
-> On Mon, Sep 14, 2009 at 09:14:35PM +0200, Marcin Letyns wrote:
-> > 2009/9/14 Mike Galbraith <efault@gmx.de>
-> > >
-> > > On Mon, 2009-09-14 at 16:27 +0200, Marcin Letyns wrote:
-> > > > Hello,
-> > > >
-> > > > Disabling NEW_FAIR_SLEEPERS makes a lot of difference here in the
-> > > > Apache benchmark:
-> > > >
-> > > > 2.6.30.6-bfs: 7311.05
-> > > >
-> > > > 2.6.30.6-cfs-fair_sl_disabled: 8249.17
-> > > >
-> > > > 2.6.30.6-cfs-fair_sl_enabled: 4894.99
-> > >
-> > > Wow.
-> > >
-> > > Some loads like wakeup preemption (mysql+oltp), and some hate it.  This
-> > > load appears to REALLY hate it (as does volanomark, but that thing is
-> > > extremely overloaded).  How many threads does that benchmark run
-> > > concurrently?
-> > 
-> > >From the benchmark description:
-> > 
-> > This is a test of ab, which is the Apache Benchmark program. This test
-> > profile measures how many requests per second a given system can
-> > sustain when carrying out 500,000 requests with 100 requests being
-> > carried out concurrently.
-> 
-> Be careful not to run ab on the same machine as you run apache, otherwise
-> the numerous apache processes can limit ab's throughput. This is the same
-> reason as why I educate people so that they don't run a single-process
-> proxy in front of a multi-process/multi-thread web server. Apparently
-> it's not obvious to everyone.
+On Mon, Sep 14, 2009 at 4:43 PM, Mike Frysinger <vapier.adi@gmail.com> wrote:
+> On Mon, Sep 14, 2009 at 04:25, Felipe Contreras wrote:
+>> On Mon, Sep 14, 2009 at 7:46 AM, Sam Ravnborg wrote:
+>>> On Mon, Sep 14, 2009 at 01:04:11AM +0300, Felipe Contreras wrote:
+>>>> On Mon, Sep 14, 2009 at 12:58 AM, Mike Frysinger wrote:
+>>>> > On Sun, Sep 13, 2009 at 17:42, Felipe Contreras wrote:
+>>>> >> On Mon, Sep 14, 2009 at 12:12 AM, Mike Frysinger wrote:
+>>>> >>> On Sun, Sep 13, 2009 at 15:38, Felipe Contreras wrote:
+>>>> >>>> +  if $domain; then
+>>>> >>>
+>>>> >>> is this really correct ?  i think you meant to use:
+>>>> >>> [ -n "$domain" ]
+>>>> >>
+>>>> >> What is the difference?
+>>>> >>
+>>>> >> $domain unset
+>>>> >> test -n "" -> false
+>>>> >> test -> false
+>>>> >>
+>>>> >> $domain is a valid string
+>>>> >> test -n "string" -> true
+>>>> >> test "string" -> true
+>>>> >
+>>>> > except that you didnt invoke `test` anywhere.  you're executing the
+>>>> > contents of $domain.
+>>>>
+>>>> Ahh, I'll update it to:
+>>>> [ "$domain" ]
+>>>
+>>> Please use [ -n "$domain" ].
+>>> Be explicit about what you do.
+>>>
+>>> [Likewise in c we never omit "int" just because we can].
+>>
+>> In fact 'int' is implicit of 'signed int', and 'long' is a shorthand
+>> of 'signed long int' and so on. Also, AFAIK 'if (foo)' is preferred
+>> over 'if (foo == true)' or 'if (foo != NULL)' and sometimes even 'if
+>> (foo >= 0)'.
+>>
+>> What's the point of going for the explicit form? Make the code less readable?
+>
+> your argument here is the opposite of reality.  while some of us are
+> aware of implicit `test`behavior, not everyone is a shell scripting
+> master.  they look at [ "$foo" ] and dont immediately get the
+> intention.  or perhaps someone typoed and didnt actually want -n
+> semantics.  add the whole *3* characters and be done with it.
 
-I turned on apache, and played with ab a bit, and yup, ab is a hog, so
-any fairness hurts it a badly.  Ergo, running ab on the same box as
-apache suffers with CFS when NEW_FAIR_SLEEPERS are turned on.  Issuing
-ab bandwidth to match it's 1:N pig nature brings throughput right back.
+I consider myself an expert in bash (or at least was some time ago)
+and I still need to run 'man bash' in order to see what the hell -n
+means. On the other hand, what can [ "$foo" ] be confused with? To me
+that can be assumed as: $foo is valid.
 
-(In all the comparison testing I've done, BFS favors hogs, and with
-NEW_FAIR_SLEEPERS turned off, so does CFS, though not as much.)
+In any case, I don't see that idiom being used in the source tree
+(which I think is bad), and I see -n being used in some places, so
+I'll send a new patch using -n for consistency.
 
-Running apache on one core and ab on another (with shared cache tho),
-something went south with BFS. I would have expected it to be much
-closer (shrug).  
+Cheers.
 
-Some likely not very uninteresting numbers below.  I wasted a lot more
-of my time generating them than anyone will downloading them :)
-
-ab -n 500000 -c 100 http://localhost/openSUSE.org.html
-
-2.6.31-bfs221-smp
-Concurrency Level:      100
-Time taken for tests:   43.556 seconds
-Complete requests:      500000
-Failed requests:        0
-Write errors:           0
-Total transferred:      7158558404 bytes
-HTML transferred:       7027047358 bytes
-Requests per second:    11479.50 [#/sec] (mean)
-Time per request:       8.711 [ms] (mean)
-Time per request:       0.087 [ms] (mean, across all concurrent requests)
-Transfer rate:          160501.38 [Kbytes/sec] received
-
-2.6.32-tip-smp NO_NEW_FAIR_SLEEPERS
-Concurrency Level:      100
-Time taken for tests:   42.834 seconds
-Complete requests:      500000
-Failed requests:        0
-Write errors:           0
-Total transferred:      7158429480 bytes
-HTML transferred:       7026921590 bytes
-Requests per second:    11672.84 [#/sec] (mean)
-Time per request:       8.567 [ms] (mean)
-Time per request:       0.086 [ms] (mean, across all concurrent requests)
-Transfer rate:          163201.63 [Kbytes/sec] received
-
-2.6.32-tip-smp NEW_FAIR_SLEEPERS
-Concurrency Level:      100
-Time taken for tests:   68.221 seconds
-Complete requests:      500000
-Failed requests:        0
-Write errors:           0
-Total transferred:      7158357900 bytes
-HTML transferred:       7026851325 bytes
-Requests per second:    7329.12 [#/sec] (mean)
-Time per request:       13.644 [ms] (mean)
-Time per request:       0.136 [ms] (mean, across all concurrent requests)
-Transfer rate:          102469.65 [Kbytes/sec] received
-
-2.6.32-tip-smp NEW_FAIR_SLEEPERS + ab at nice -15
-Concurrency Level:      100
-Time taken for tests:   42.824 seconds
-Complete requests:      500000
-Failed requests:        0
-Write errors:           0
-Total transferred:      7158451988 bytes
-HTML transferred:       7026943572 bytes
-Requests per second:    11675.68 [#/sec] (mean)
-Time per request:       8.565 [ms] (mean)
-Time per request:       0.086 [ms] (mean, across all concurrent requests)
-Transfer rate:          163241.78 [Kbytes/sec] received
-
-taskset -c 2 /etc/init.d/apache2 restart
-taskset -c 3 ab -n 500000 -c 100 http://localhost/openSUSE.org.html
-
-2.6.31-bfs221-smp
-Concurrency Level:      100
-Time taken for tests:   86.590 seconds
-Complete requests:      500000
-Failed requests:        0
-Write errors:           0
-Total transferred:      7158000000 bytes
-HTML transferred:       7026500000 bytes
-Requests per second:    5774.37 [#/sec] (mean)
-Time per request:       17.318 [ms] (mean)
-Time per request:       0.173 [ms] (mean, across all concurrent requests)
-Transfer rate:          80728.41 [Kbytes/sec] received
-
-2.6.32-tip-smp
-Concurrency Level:      100
-Time taken for tests:   48.640 seconds
-Complete requests:      500000
-Failed requests:        0
-Write errors:           0
-Total transferred:      7158000000 bytes
-HTML transferred:       7026500000 bytes
-Requests per second:    10279.71 [#/sec] (mean)
-Time per request:       9.728 [ms] (mean)
-Time per request:       0.097 [ms] (mean, across all concurrent requests)
-Transfer rate:          143715.15 [Kbytes/sec] received
-
+-- 
+Felipe Contreras
