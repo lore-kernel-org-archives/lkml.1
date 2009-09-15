@@ -1,110 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZIOQcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbZIOQe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755416AbZIOQcj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 12:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbZIOQce
+	id S1755139AbZIOQe3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 12:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZIOQeZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 12:32:34 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62010 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753842AbZIOQcd (ORCPT
+	Tue, 15 Sep 2009 12:34:25 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:48805 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbZIOQeY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 12:32:33 -0400
-Subject: [PATCH] [GIT PULL] tracing: optimize global_trace_clock cachelines
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 15 Sep 2009 12:32:34 -0400
-Message-Id: <1253032354.20020.119.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 12:34:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=I/aSbE0YhGwPbplhzJ9zzy/pP6KC3jr4HgNoxFa/f/39xZLSxTrsaGBmLa9m6lyqLz
+         WL55i9UyoOGG4dqd3DCfGJkESOqspQCRWECRS1DuesJhLNnYDl9WHt3Z6uHzjLsjaYwJ
+         ymcaDI4yh5yd3+KtURdBH1qlAC4+Si72lPOZ0=
+MIME-Version: 1.0
+In-Reply-To: <4AAE84EA.8010109@cmu.edu>
+References: <20090904045231.GW4973@obsidianresearch.com>
+	 <adaab1bnvz3.fsf@cisco.com>
+	 <20090904140325.c592289a.akpm@linux-foundation.org>
+	 <20090904212316.GZ406@obsidianresearch.com>
+	 <17754_1252731784_n8C533ou010944_20090911162837.GC17677@kroah.com>
+	 <4AAE84EA.8010109@cmu.edu>
+Date: Tue, 15 Sep 2009 09:34:28 -0700
+Message-ID: <da7b3ce30909150934q4d84252exd8fa264ffd8e6420@mail.gmail.com>
+Subject: Re: [tpmdd-devel] [PATCH] TPM: Fixup pubek sysfs file
+From: Hal Finney <hal.finney@gmail.com>
+To: "Jonathan M. McCune" <jonmccune@cmu.edu>
+Cc: Greg KH <greg@kroah.com>, m.selhorst@sirrix.com,
+       linux-kernel@vger.kernel.org, jbeulich@novell.com, jmorris@namei.org,
+       Jason Gunthorpe <jgunthorpe@obsidianresearch.com>,
+       tpmdd-devel@lists.sourceforge.net,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland Dreier <rdreier@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+One file-based aspect of the TPM driver interface is the securityfs
+file system, typically mounted at /sys/kernel/security/tpm0. This
+includes the IMA and/or BIOS event measurements. Trousers does read
+these files optionally, however it has to be configured in tcsd.conf.
+But the file formats are shared between the kernel driver and the
+Trousers parsing code. This functionality is necessary for Trousers to
+report pre-boot and post-boot measurement events to user code, which
+in turn is necessary for meaningful Quote operations in some contexts.
 
-Ingo,
+Hal Finney
 
-Please pull the latest tip/tracing/core3 tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/core3
-
-
-Steven Rostedt (1):
-      tracing: optimize global_trace_clock cachelines
-
-----
- kernel/trace/trace_clock.c |   24 ++++++++++++++----------
- 1 files changed, 14 insertions(+), 10 deletions(-)
----------------------------
-commit 6ca6cca31ddc7cc8b1dc38b12d7593d2667defe8
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Tue Sep 15 12:24:22 2009 -0400
-
-    tracing: optimize global_trace_clock cachelines
-    
-    The prev_trace_clock_time is only read or written to when the
-    trace_clock_lock is taken. For better perfomance, they
-    should share the same cache line.
-    
-    Reported-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-
-diff --git a/kernel/trace/trace_clock.c b/kernel/trace/trace_clock.c
-index b588fd8..20c5f92 100644
---- a/kernel/trace/trace_clock.c
-+++ b/kernel/trace/trace_clock.c
-@@ -66,10 +66,14 @@ u64 notrace trace_clock(void)
-  * Used by plugins that need globally coherent timestamps.
-  */
- 
--static u64 prev_trace_clock_time;
--
--static raw_spinlock_t trace_clock_lock ____cacheline_aligned_in_smp =
--	(raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED;
-+/* keep prev_time and lock in the same cacheline. */
-+static struct {
-+	u64 prev_time;
-+	raw_spinlock_t lock;
-+} trace_clock_struct ____cacheline_aligned_in_smp =
-+	{
-+		.lock = (raw_spinlock_t)__RAW_SPIN_LOCK_UNLOCKED,
-+	};
- 
- u64 notrace trace_clock_global(void)
- {
-@@ -88,19 +92,19 @@ u64 notrace trace_clock_global(void)
- 	if (unlikely(in_nmi()))
- 		goto out;
- 
--	__raw_spin_lock(&trace_clock_lock);
-+	__raw_spin_lock(&trace_clock_struct.lock);
- 
- 	/*
- 	 * TODO: if this happens often then maybe we should reset
--	 * my_scd->clock to prev_trace_clock_time+1, to make sure
-+	 * my_scd->clock to prev_time+1, to make sure
- 	 * we start ticking with the local clock from now on?
- 	 */
--	if ((s64)(now - prev_trace_clock_time) < 0)
--		now = prev_trace_clock_time + 1;
-+	if ((s64)(now - trace_clock_struct.prev_time) < 0)
-+		now = trace_clock_struct.prev_time + 1;
- 
--	prev_trace_clock_time = now;
-+	trace_clock_struct.prev_time = now;
- 
--	__raw_spin_unlock(&trace_clock_lock);
-+	__raw_spin_unlock(&trace_clock_struct.lock);
- 
-  out:
- 	raw_local_irq_restore(flags);
-
-
+On Mon, Sep 14, 2009 at 11:01 AM, Jonathan M. McCune <jonmccune@cmu.edu> wrote:
+> Hello everybody,
+>
+> I have decided to chime in as a frequent (and I'm going to claim
+> "experienced") user of the linux kernel TPM driver.
+>
+> To the best of my knowledge there is very little code in the wild that
+> depends on the current structure of these sysfs entries.  Probably the
+> most used set of libraries and programs -- "TrouSerS" and "TPM Tools"
+> (trousers.sourceforge.net) -- interact directly with the TPM via
+> /dev/tpm*.  I'm fairly confident that "tboot" (tboot.sourceforge.net)
+> and "jTPM Tools" (trustedjava.sourceforge.net) don't use the sysfs
+> entries either.
+>
+> Thus, fixing the one-item-per-file issues seems reasonable to me. For
+> example, changing /sys/devices/platform/tpm_tis/pcrs from a single
+> multi-entry file to a directory containing files named 0-15 or 0-23 that
+> each then contain only the relevant 20-byte value seems quite
+> reasonable. (Today's TPMs contain either 16 or 24 PCRs but future ones
+> could contain many more.)
+>
+> I believe the pubek entry has gone broken for so long because once a TPM
+> has been "owned" (and "taking ownership" is almost certainly the first
+> thing one does when using the TPM for something), accessing the pubek
+> needs to be authorized and so the sysfs entry shouldn't return anything
+> anyways ("Authorization required."?). But it should definitely be fixed
+> or removed.
+>
+> Likewise "caps" could be made into a directory containing files for the
+> relevant data (Manufacturer, TCG version, Firmware version, ...).
+>
+> What I _disagree_ with is that these values should be moved debugfs.
+> They are characteristics of a particular hardware device's current state
+> and I believe fit the definition of what belongs in sysfs reasonably
+> well.  Their current implementation simply needs help.
+>
+> The changes I've mentioned are larger and don't seem appropriate for
+> 2.6.31, but perhaps a plan to have them implemented for an upcoming
+> version is reasonable?  Is anybody willing to help put together such a
+> patch?  Discuss whether it's reasonable / acceptable to do so?
+>
+> Thanks,
+> -Jon
