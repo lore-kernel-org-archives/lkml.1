@@ -1,113 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752493AbZIOJ5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752746AbZIOKcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752493AbZIOJ5b (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbZIOJ50
+	id S1752746AbZIOKcW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 06:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZIOKcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:57:26 -0400
-Received: from perceval.irobotique.be ([92.243.18.41]:33149 "EHLO
-	perceval.irobotique.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750711AbZIOJ5Z (ORCPT
+	Tue, 15 Sep 2009 06:32:18 -0400
+Received: from calipso.tuenti.com ([95.131.168.251]:41486 "EHLO
+	calipso.tuenti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750913AbZIOKcR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:57:25 -0400
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Julia Lawall <julia@diku.dk>
-Subject: Re: [PATCH 2/8] drivers/media/video/uvc: introduce missing kfree
-Date: Tue, 15 Sep 2009 11:58:25 +0200
-User-Agent: KMail/1.12.1 (Linux/2.6.30.3; KDE/4.3.1; x86_64; ; )
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-References: <Pine.LNX.4.64.0909111821010.10552@pc-004.diku.dk> <200909151144.57816.laurent.pinchart@ideasonboard.com> <Pine.LNX.4.64.0909151153570.8549@pc-004.diku.dk>
-In-Reply-To: <Pine.LNX.4.64.0909151153570.8549@pc-004.diku.dk>
+	Tue, 15 Sep 2009 06:32:17 -0400
+X-Greylist: delayed 1867 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 Sep 2009 06:32:17 EDT
+From: David =?iso-8859-1?q?Mart=EDnez_Moreno?= <ender@tuenti.com>
+Organization: Tuenti Technologies S.L.
+To: linux-ext4@vger.kernel.org, "Theodore Y. Ts'o" <tytso@mit.edu>,
+       linux-raid@vger.kernel.org
+Subject: ext3 crash with tune2fs and MD RAID10 device.
+Date: Tue, 15 Sep 2009 12:01:08 +0200
+User-Agent: KMail/1.12.1 (Linux/2.6.31-rc2-ender; KDE/4.3.1; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org,
+       David =?iso-8859-1?q?Mart=EDnez_Moreno?= <ender@tuenti.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="iso-8859-1"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200909151158.25152.laurent.pinchart@ideasonboard.com>
+Message-Id: <200909151201.08482.ender@tuenti.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 September 2009 11:54:36 Julia Lawall wrote:
-> From: Julia Lawall <julia@diku.dk>
-> 
-> Move the kzalloc and associated test after the stream/query test, to avoid
-> the need to free the allocated if the stream/query test fails.
-> 
-> The semantic match that finds the problem is as follows:
-> (http://www.emn.fr/x-info/coccinelle/)
-> 
-> // <smpl>
-> @r exists@
-> local idexpression x;
-> statement S;
-> expression E;
-> identifier f,f1,l;
-> position p1,p2;
-> expression *ptr != NULL;
-> @@
-> 
-> x@p1 = \(kmalloc\|kzalloc\|kcalloc\)(...);
-> ...
-> if (x == NULL) S
-> <... when != x
->      when != if (...) { <+...x...+> }
-> (
-> x->f1 = E
-> 
->  (x->f1 == NULL || ...)
-> 
->  f(...,x->f1,...)
-> )
-> ...>
-> (
->  return \(0\|<+...x...+>\|ptr\);
-> 
->  return@p2 ...;
-> )
-> 
-> @script:python@
-> p1 << r.p1;
-> p2 << r.p2;
-> @@
-> 
-> print "* file: %s kmalloc %s return %s" %
->  (p1[0].file,p1[0].line,p2[0].line) // </smpl>
-> 
-> Signed-off-by: Julia Lawall <julia@diku.dk>
+	Good morning.  During a maintainance, I've changed (20 hours ago) the reserved
+block count in my servers' data partition to 0.  In some hours, I've got a number
+of errors (5) in ext3 in different servers that are not possible by simple luck.
+The errors are:
 
-Acked-by: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
+=========================================================
+EXT3-fs error (device md3): ext3_new_block: Allocating block in system zone - blocks from 8192000, length 1
+Aborting journal on device md3.
+Remounting filesystem read-only
+EXT3-fs error (device md3): ext3_free_blocks: Freeing blocks in system zones - Block = 8192000, count = 1
+EXT3-fs error (device md3) in ext3_free_blocks_sb: Journal has aborted
+__journal_remove_journal_head: freeing b_committed_data
+__journal_remove_journal_head: freeing b_committed_data
+...
+=========================================================
 
-I'll apply and submit a pull request.
+or
 
-Thanks for the patch.
+=========================================================
+EXT3-fs error (device md3): ext3_free_blocks_sb: bit already cleared for block 22479363                                     
+Aborting journal on device md3.                                                                                             
+Remounting filesystem read-only                                                                                             
+EXT3-fs error (device md3): ext3_free_blocks_sb: bit already cleared for block 22479364                                     
+EXT3-fs error (device md3): ext3_free_blocks_sb: bit already cleared for block 22479365                                     
+EXT3-fs error (device md3): ext3_free_blocks_sb: bit already cleared for block 22479367                                     
+EXT3-fs error (device md3) in ext3_free_blocks_sb: Journal has aborted                                                      
+EXT3-fs error (device md3) in ext3_free_blocks_sb: Journal has aborted                                                      
+EXT3-fs error (device md3) in ext3_free_blocks_sb: Journal has aborted                                                      
+...
+=========================================================
 
-> ---
->  drivers/media/video/uvc/uvc_video.c |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/media/video/uvc/uvc_video.c
->  b/drivers/media/video/uvc/uvc_video.c index 5b757f3..2f2971a 100644
-> --- a/drivers/media/video/uvc/uvc_video.c
-> +++ b/drivers/media/video/uvc/uvc_video.c
-> @@ -124,13 +124,13 @@ static int uvc_get_video_ctrl(struct uvc_streaming
->  *stream, int ret;
-> 
->  	size = stream->dev->uvc_version >= 0x0110 ? 34 : 26;
-> +	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) && query == UVC_GET_DEF)
-> +		return -EIO;
-> +
->  	data = kmalloc(size, GFP_KERNEL);
->  	if (data == NULL)
->  		return -ENOMEM;
-> 
-> -	if ((stream->dev->quirks & UVC_QUIRK_PROBE_DEF) && query == UVC_GET_DEF)
-> -		return -EIO;
-> -
->  	ret = __uvc_query_ctrl(stream->dev, query, 0, stream->intfnum,
->  		probe ? UVC_VS_PROBE_CONTROL : UVC_VS_COMMIT_CONTROL, data,
->  		size, UVC_CTRL_STREAMING_TIMEOUT);
-> 
+	I have some servers with a single SAS disc and others with a software RAID10
+volume over 4 discs.  So far, only the RAID10 volumes are showing errors.
+Coincidence?
 
+	This is Debian etch, and 2.6.24.2.  The command line we've run was:
+
+tune2fs -r 0 partition
+
+while MySQL was running.  The e2fsprogs version is 1.39+1.40-WIP-2006.11.14+dfsg-2etch1.
+
+	Do you know of any problem with this setup?  I've reviewed the e2fsprogs
+changelog searching for something like this but it seems rather related to
+RAID10+ext3 interaction.
+
+	We have lots of servers waiting for crashing, I suspect.  While I was writing
+this mail another one crashed.  Probably I can provide superblock copies for
+analysis or any other information.
+
+	Best regards,
+
+
+		Ender.
 -- 
-Laurent Pinchart
+I once farted on the set of Blue Lagoon.
+		-- Brooke Shields (South Park).
+--
+Responsable de sistemas
+tuenti.com
