@@ -1,75 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754262AbZIOOIr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754079AbZIOOKA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754262AbZIOOIr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 10:08:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbZIOOIo
+	id S1754079AbZIOOKA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 10:10:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754300AbZIOOJx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 10:08:44 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:36589 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754229AbZIOOIn (ORCPT
+	Tue, 15 Sep 2009 10:09:53 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:19726 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754284AbZIOOJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 10:08:43 -0400
-Subject: Re: [PATCH 2/4] virtual block device driver (ramzswap)
-From: Steven Rostedt <rostedt@goodmis.org>
-Reply-To: rostedt@goodmis.org
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Nitin Gupta <ngupta@vflare.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-mm-cc@laptop.org, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <1253022207.4754.1.camel@penberg-laptop>
-References: <200909100215.36350.ngupta@vflare.org>
-	 <200909100249.26284.ngupta@vflare.org>
-	 <84144f020909141310y164b2d1ak44dd6945d35e6ec@mail.gmail.com>
-	 <d760cf2d0909142339i30d74a9dic7ece86e7227c2e2@mail.gmail.com>
-	 <84144f020909150030h1f9d8062sc39057b55a7ba6c0@mail.gmail.com>
-	 <1253020471.20020.76.camel@gandalf.stny.rr.com>
-	 <1253022207.4754.1.camel@penberg-laptop>
-Content-Type: text/plain
-Organization: Kihon Technologies Inc.
-Date: Tue, 15 Sep 2009 10:08:45 -0400
-Message-Id: <1253023725.20020.103.camel@gandalf.stny.rr.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 10:09:51 -0400
+Date: Tue, 15 Sep 2009 10:09:23 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Christoph Hellwig <hch@infradead.org>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       tytso@mit.edu, akpm@linux-foundation.org, trond.myklebust@fys.uio.no
+Subject: Re: [PATCH 6/7] writeback: separate starting of sync vs
+ opportunistic writeback
+Message-ID: <20090915140923.GB23965@think>
+Mail-Followup-To: Chris Mason <chris.mason@oracle.com>,
+	Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@infradead.org>,
+	Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, tytso@mit.edu,
+	akpm@linux-foundation.org, trond.myklebust@fys.uio.no
+References: <20090914134207.GA14830@infradead.org>
+ <20090914192803.GL14984@kernel.dk>
+ <20090914194242.GM14984@kernel.dk>
+ <20090915090847.GA12169@duck.suse.cz>
+ <20090915091402.GG23126@kernel.dk>
+ <20090915114426.GJ23126@kernel.dk>
+ <20090915125855.GF12169@duck.suse.cz>
+ <20090915130419.GL23126@kernel.dk>
+ <20090915130829.GA7507@infradead.org>
+ <20090915140145.GG12169@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915140145.GG12169@duck.suse.cz>
+User-Agent: Mutt/1.5.20 (2009-06-14)
+X-Source-IP: abhmt014.oracle.com [141.146.116.23]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.4AAFA016.009F:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-09-15 at 16:43 +0300, Pekka Enberg wrote:
-> Hi Steve,
-> 
-> On Tue, 2009-09-15 at 09:14 -0400, Steven Rostedt wrote:
-> > > >>> +
-> > > >>> +       trace_mark(ramzswap_lock_wait, "ramzswap_lock_wait");
-> > > >>> +       mutex_lock(&rzs->lock);
-> > > >>> +       trace_mark(ramzswap_lock_acquired, "ramzswap_lock_acquired");
-> > > >>
-> > > >> Hmm? What's this? I don't think you should be doing ad hoc
-> > > >> trace_mark() in driver code.
-> > > >
-> > > > This is not ad hoc. It is to see contention over this lock which I believe is a
-> > > > major bottleneck even on dual-cores. I need to keep this to measure improvements
-> > > > as I gradually make this locking more fine grained (using per-cpu buffer etc).
+On Tue, Sep 15, 2009 at 04:01:45PM +0200, Jan Kara wrote:
+> On Tue 15-09-09 09:08:29, Christoph Hellwig wrote:
+> > On Tue, Sep 15, 2009 at 03:04:19PM +0200, Jens Axboe wrote:
 > > > 
-> > > It is ad hoc. Talk to the ftrace folks how to do it properly. I'd keep
-> > > those bits out-of-tree until the issue is resolved, really.
+> > > >   Let's have a look at the flags in wbc:
+> > > >   nonblocking - Currently only set by direct callers of ->writepage() BUT
+> > > >                 originally wb_kupdate() and background_writeout() also
+> > > >                 set this flag. Since filesystems and write_cache_pages()
+> > > > 		use the flag we should set it for equivalent writeouts as
+> > > >                 well. This should be fixed...
+> > > 
+> > > Since this is all handled by the dedicated thread now, dropping the
+> > > nonblocking bit was on purpose. What would the point be, except for
+> > > stopping pdflush being blocked on request allocation?
 > > 
-> > Yes, trace_mark is deprecated. You want to use TRACE_EVENT. See how gfs2
-> > does it in:
+> > Note that this flag just caused utter mess traditionally.  btrfs decided
+> > to ignore it completely and ext4 partially.  Removing this check in
+> > XFS increases large bufferd write loads massively.
 > > 
-> >   fs/gfs2/gfs2_trace.h
-> > 
-> > and it is well documented in
-> > samples/trace_events/trace-events-samples.[ch]
-> 
-> Does it really make sense to add special-case tracing in driver code to
-> profile lock contention for a _single mutex_?
+> > Just half-removing it is a bad idea, though - if you don't set it
+> > anymore please kill it entirely.
+>   The nonblocking flag is still set for writeback done for memory reclaim.
+> OTOH the only real consumer of this flag now seems to be
+> __block_write_full_page() which does trylock_buffer() in case of
+> nonblocking writeback. I'm undecided whether it makes sence or not.
 
-No that's what LOCKSTAT is for ;-)
+Ugh, making sense is tricky to say.  If __block_write_full_page
+does a lock_buffer() instead of a trylock_buffer(), and ext3 is mounted in
+data=ordered mode then it is very possible that we'll end up with a
+dirty page with locked buffers.
 
--- Steve
+The buffers will have been locked by ext3 data=ordered writeback and
+they won't unlock until the IO is done.
+
+We probably don't want kswapd waiting on that writeback.
+
+-chris
+
 
 
