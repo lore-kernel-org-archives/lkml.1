@@ -1,155 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755881AbZIOILh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756984AbZIOIOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755881AbZIOILh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:11:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751499AbZIOILd
+	id S1756984AbZIOIOI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751763AbZIOIOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:11:33 -0400
-Received: from mga14.intel.com ([143.182.124.37]:30721 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751050AbZIOILb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:11:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
-   d="scan'208";a="187714440"
-Date: Tue, 15 Sep 2009 16:11:07 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "mtosatti@redhat.com" <mtosatti@redhat.com>,
-       "gregkh@suse.de" <gregkh@suse.de>,
-       "broonie@opensource.wolfsonmicro.com" 
-	<broonie@opensource.wolfsonmicro.com>,
-       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
-       "avi@qumranet.com" <avi@qumranet.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: Question: how to handle too big f_pos Re: [PATCH] devmem:
-	handle partial kmem write/read
-Message-ID: <20090915081107.GA3625@localhost>
-References: <20090914032901.GA16189@localhost> <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 15 Sep 2009 04:14:03 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:63568 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750962AbZIOIOB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 04:14:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=goOMf611NI1Wx+xdZpqu7l/VAogU68b43EjsLHEboqlMwFY/4Vk3zRu3FtH1+XS3o7
+         fbMjze7AeYEVTPUBc5vmi8GLBoij2XaYXPXgOWPcuMG+5dhdjG79Kxp6H+aoHn/RVKCz
+         /n6WiaHZpELv9o0KgjSXXEiwdSHgEoMHotbpY=
+Date: Tue, 15 Sep 2009 08:13:55 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Stephan von Krawczynski <skraw@ithnet.com>,
+       Eric Dumazet <eric.dumazet@gmail.com>, linux-kernel@vger.kernel.org,
+       davem@davemloft.net, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: ipv4 regression in 2.6.31 ?
+Message-ID: <20090915081354.GA10037@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090915165852.032d164f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090914093128.4d709ff6@nehalam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Good catch, Kame!
+On 14-09-2009 18:31, Stephen Hemminger wrote:
+> On Mon, 14 Sep 2009 17:55:05 +0200
+> Stephan von Krawczynski <skraw@ithnet.com> wrote:
+> 
+>> On Mon, 14 Sep 2009 15:57:03 +0200
+>> Eric Dumazet <eric.dumazet@gmail.com> wrote:
+>>
+>>> Stephan von Krawczynski a A~(c)crit :
+>>>> Hello all,
+...
+>>> rp_filter - INTEGER
+>>>         0 - No source validation.
+>>>         1 - Strict mode as defined in RFC3704 Strict Reverse Path
+>>>             Each incoming packet is tested against the FIB and if the interface
+>>>             is not the best reverse path the packet check will fail.
+>>>             By default failed packets are discarded.
+>>>         2 - Loose mode as defined in RFC3704 Loose Reverse Path
+>>>             Each incoming packet's source address is also tested against the FIB
+>>>             and if the source address is not reachable via any interface
+>>>             the packet check will fail.
+...
+> RP filter did not work correctly in 2.6.30. The code added to to the loose
+> mode caused a bug; the rp_filter value was being computed as:
+>   rp_filter = interface_value & all_value;
+> So in order to get reverse path filter both would have to be set.
+> 
+> In 2.6.31 this was change to:
+>    rp_filter = max(interface_value, all_value);
+> 
+> This was the intended behaviour, if user asks all interfaces to have rp
+> filtering turned on, then set /proc/sys/net/ipv4/conf/all/rp_filter = 1
+> or to turn on just one interface, set it for just that interface.
 
-FYI mmap is OK. I succeeded in reading this address via kmem:
+Alas this max() formula handles also cases where both values are set
+and it doesn't look very natural/"user friendly" to me. Especially
+with something like this: all_value = 2; interface_value = 1
+Why would anybody care to bother with interface_value in such a case?
 
-        ffffffff81723880 D modprobe_path
+"All" suggests "default" in this context, so I'd rather expect
+something like:
+    rp_filter = interface_value ? : all_value;
+which gives "the inteded behaviour" too, plus more...
 
-Thanks,
-Fengguang
+We'd only need to add e.g.:
+ 0 - Default ("all") validation. (No source validation if "all" is 0).
+ 3 - No source validation on this interface.
 
-On Tue, Sep 15, 2009 at 03:58:52PM +0800, KAMEZAWA Hiroyuki wrote:
-> I'm writing a patch against /dev/kmem...I found a problem.
-> 
-> /dev/kmem (and /proc/<pid>/mem) puts virtual addres to f->f_pos.
-> 
-> And, f->f_pos is loff_t .... signed value (not unsigned)
-> 
-> Then, this check
-> rw_verify_area(READ, file, pos, count);
-> =>
->         pos = *ppos;
->         if (unlikely((pos < 0) || (loff_t) (pos + count) < 0))
->                 return retval;
-> 	
-> always returns -EINVAL when I read /dev/kmem's valid address.
-> 
-> Then, how should I do for read /dev/kmem ? Any idea ?
-> (Added Al Viro to CC:)
-> 
-> What I'm really afraid of is /proc/<pid>/mem. IIUC, it's used by gdb to snoop
-> memory, (for example, at gcore).
-> I think gdb uses ptrace if it fails to read /proc/<pid>/mem but...it's deadly
-> slow.
-> 
-> Thanks,
-> -Kame
-> 
-> p.s. no problems in /proc/kcore..its offset is not bare addresss.
-> 
-> 
-> 
-> 
-> 
-> On Mon, 14 Sep 2009 11:29:01 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Current vwrite silently ignores vwrite() to vmap holes.
-> > Better behavior should be stop the write and return
-> > on such holes.
-> > 
-> > Also return on partial read, which may happen in future
-> > (eg. hit hwpoison pages).
-> > 
-> > CC: Andi Kleen <andi@firstfloor.org>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  drivers/char/mem.c |   30 ++++++++++++++++++------------
-> >  1 file changed, 18 insertions(+), 12 deletions(-)
-> > 
-> > --- linux-mm.orig/drivers/char/mem.c	2009-09-14 10:59:50.000000000 +0800
-> > +++ linux-mm/drivers/char/mem.c	2009-09-14 11:06:25.000000000 +0800
-> > @@ -444,18 +444,22 @@ static ssize_t read_kmem(struct file *fi
-> >  		if (!kbuf)
-> >  			return -ENOMEM;
-> >  		while (count > 0) {
-> > +			unsigned long n;
-> > +
-> >  			sz = size_inside_page(p, count);
-> > -			sz = vread(kbuf, (char *)p, sz);
-> > -			if (!sz)
-> > +			n = vread(kbuf, (char *)p, sz);
-> > +			if (!n)
-> >  				break;
-> > -			if (copy_to_user(buf, kbuf, sz)) {
-> > +			if (copy_to_user(buf, kbuf, n)) {
-> >  				free_page((unsigned long)kbuf);
-> >  				return -EFAULT;
-> >  			}
-> > -			count -= sz;
-> > -			buf += sz;
-> > -			read += sz;
-> > -			p += sz;
-> > +			count -= n;
-> > +			buf += n;
-> > +			read += n;
-> > +			p += n;
-> > +			if (n < sz)
-> > +				break;
-> >  		}
-> >  		free_page((unsigned long)kbuf);
-> >  	}
-> > @@ -551,11 +555,13 @@ static ssize_t write_kmem(struct file * 
-> >  				free_page((unsigned long)kbuf);
-> >  				return -EFAULT;
-> >  			}
-> > -			sz = vwrite(kbuf, (char *)p, sz);
-> > -			count -= sz;
-> > -			buf += sz;
-> > -			virtr += sz;
-> > -			p += sz;
-> > +			n = vwrite(kbuf, (char *)p, sz);
-> > +			count -= n;
-> > +			buf += n;
-> > +			virtr += n;
-> > +			p += n;
-> > +			if (n < sz)
-> > +				break;
-> >  		}
-> >  		free_page((unsigned long)kbuf);
-> >  	}
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
-> > 
+Jarek P.
