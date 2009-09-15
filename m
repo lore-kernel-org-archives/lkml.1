@@ -1,89 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755456AbZIOQV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755469AbZIOQYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755456AbZIOQV3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 12:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755158AbZIOQV0
+	id S1755469AbZIOQYN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 12:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZIOQYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 12:21:26 -0400
-Received: from mail.valinux.co.jp ([210.128.90.3]:40019 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754758AbZIOQVZ (ORCPT
+	Tue, 15 Sep 2009 12:24:10 -0400
+Received: from mail-fx0-f217.google.com ([209.85.220.217]:64774 "EHLO
+	mail-fx0-f217.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754988AbZIOQYC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 12:21:25 -0400
-Date: Wed, 16 Sep 2009 01:21:28 +0900 (JST)
-Message-Id: <20090916.012128.71105809.ryov@valinux.co.jp>
-To: balbir@linux.vnet.ibm.com
-Cc: dhaval@linux.vnet.ibm.com, vgoyal@redhat.com, riel@redhat.com,
-       linux-kernel@vger.kernel.org, dm-devel@redhat.com,
-       jens.axboe@oracle.com, agk@redhat.com, akpm@linux-foundation.org,
-       nauman@google.com, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com
-Subject: Re: Regarding dm-ioband tests
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090915151952.GH4846@balbir.in.ibm.com>
-References: <20090911095347.GD4474@linux.vnet.ibm.com>
-	<20090916.001237.226784704.ryov@valinux.co.jp>
-	<20090915151952.GH4846@balbir.in.ibm.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 15 Sep 2009 12:24:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=LjwZ1LH5/ofmRXTnqMM5y2W26VBzgsGApI5y2AiOg5m4p8qPrYVaNChnjxlhSS+5Sz
+         8DJ0Wwa71QeQUxez8CB/ybBL1/XvOrF1i8d229JhdaDVfNdHjravRa585+03875pAr7V
+         P41fDUqbvpE0O0ikNGBkyni6tZT8zNYJewLhw=
+Date: Tue, 15 Sep 2009 09:23:50 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Mike Frysinger <vapier.adi@gmail.com>
+Cc: Javier Herrero <jherrero@hvsistemas.es>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Bryan Wu <cooloney@kernel.org>
+Subject: Re: [PATCH v3] input/keyboard: new OpenCores Keyboard Controller
+	driver
+Message-ID: <20090915162349.GA29241@core.coreip.homeip.net>
+References: <1252911864-19233-1-git-send-email-vapier@gentoo.org> <1252950003-9451-1-git-send-email-vapier@gentoo.org> <200909141049.50705.dmitry.torokhov@gmail.com> <8bd0f97a0909141102l5fa309f4ua1bedd0f1ac99295@mail.gmail.com> <4AAE8908.1000104@hvsistemas.es> <20090915055224.GD1132@core.coreip.homeip.net> <8bd0f97a0909150416j444999e4sfcb6ad77146a97d7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <8bd0f97a0909150416j444999e4sfcb6ad77146a97d7@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Balbir,
-
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> * Ryo Tsuruta <ryov@valinux.co.jp> [2009-09-16 00:12:37]:
-> 
-> > Hi Dhaval,
-> > 
-> > Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > > > Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
-> > > > > > I know that cgroup is a very well defined functionality, that is why
-> > > > > > dm-ioband also supports throttling per cgroup. But how are we supposed
-> > > > > > to do throttling on the system which doesn't support cgroup?
-> > > > > > As I wrote in another mail to Vivek, I would like to make use of
-> > > > > > dm-ioband on RHEL 5.x. 
-> > > > > 
-> > > > > Hi Ryo,
-> > > > > 
-> > > > > I am not sure that upstream should really be worrying about RHEL 5.x.
-> > > > > cgroups is a relatively mature solution and is available in most (if not
-> > > > > all) community distros today. We really should not be looking at another
-> > > > > grouping solution if the sole reason is that then dm-ioband can be used
-> > > > > on RHEL 5.x. The correct solution would be to maintain a separate patch
-> > > > > for RHEL 5.x then and not to burden the upstream kernel.
-> > > > 
-> > > > RHEL 5.x is not the sole reason for that.
-> > > > 
-> > > 
-> > > Could you please enumerate the other reasons for pushing in another
-> > > grouping mechanism then? (Why can we not resolve them via cgroups?)
-> > 
-> > I'm sorry for late reply.
-> > 
-> > I'm not only pushing in the grouping mechanism by using the dmsetup
-> > command. Please understand that dm-ioband also provides cgroup
-> > interface and can be configured in the same manner like other cgroup
-> > subsystems.
-> > Why it is so bad to have multiple ways to configure? I think that it
-> > rather gains in flexibility of configurations.
+On Tue, Sep 15, 2009 at 07:16:25AM -0400, Mike Frysinger wrote:
+> On Tue, Sep 15, 2009 at 01:52, Dmitry Torokhov wrote:
+> > On Mon, Sep 14, 2009 at 08:18:48PM +0200, Javier Herrero wrote:
+> >> It has a bit long since last time I touched the driver, so I should also
+> >> try to refresh my memory about it :). I suppose that you're right in the
+> >> double allocation issue (I took another keyboard driver as a starting
+> >> point and probably the double allocation was already there...), so feel
+> >> free to introduce the change and I will test it as soon as I can.
+> >>
+> >> About the exact scancode - key mapping, the reason is that since the
+> >> FPGA opencores device already implements a translation table, I found
+> >> that another translation table sounded a bit redundant.
 > >
+> > OK, below is what I have now... One concern though - don't we need to do
+> > request_mem_region/ioremap for the addr_res?
 > 
-> The main issue I see is user confusion and distro issues. If a distro
-> compiles cgroups and dmsetup provides both methods, what method
-> do we recommend to end users? Also should system management tool
-> support two configuration mechanisms for the same functionality?
+> i think so ... these operations are nops on a Blackfin CPU which is
+> probably why it "just works".
+> 
 
-I think that it is up to users which mechanism they choose to use, and
-such kind of users who can use dmsetup or cgroup interface directly
-will not be confused in such a situation.
+Surely request_mem_region is not a nop? I think even if uoremap is a nop
+we need to convert the driver since it does not have to be on a
+Blackfin, does it?
 
-I also think that management tools are required for end users, and if
-a distro supports cgroups, I recommend the management tools configure
-dm-ioband by using cgroups, because dm-ioband is more usable when
-using with blkio-cgroup and memory cgroup.
+> > +struct opencores_kbd {
+> > +       struct input_dev *input;
+> > +       void __iomem *addr;
+> > +       int irq;
+> > +       struct resource *irq_res;
+> 
+> the irq_res member is no longer needed
+> 
+> +#define NUM_KEYS 128
+> > +       unsigned short keycodes[NUM_KEYS];
+> 
+> since this is the only usage of NUM_KEYS, could just inline it now ...
+> 
+> > +       error = request_irq(irq, &opencores_kbd_isr,
+> > +                           IRQF_TRIGGER_RISING, pdev->name, opencores_kbd);
+> > +       if (error) {
+> > +               dev_err(&pdev->dev, "unable to claim irq %d\n", irq);
+> > +               goto err_free_mem;
+> > +       }
+> > +
+> > +       error = input_register_device(input);
+> > +       if (error) {
+> > +               dev_err(&pdev->dev, "unable to register input device\n");
+> > +               goto err_free_irq;
+> > +       }
+> 
+> the input layer can handle input even if it's not registered ?
 
-Thanks,
-Ryo Tsuruta
+The device can survive input events as soon as it was allocated with
+input_allocate_device() but of course the event will not get anywhere.
+This is a property that I intend to keep since it is very convenient.
+
+-- 
+Dmitry
