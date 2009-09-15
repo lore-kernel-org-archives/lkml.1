@@ -1,68 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZIONnb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754053AbZIONnt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbZIONnb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 09:43:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753754AbZIONnZ
+	id S1754053AbZIONnt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 09:43:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754017AbZIONnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 09:43:25 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33079 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751718AbZIONnZ (ORCPT
+	Tue, 15 Sep 2009 09:43:43 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:42501 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751718AbZIONnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 09:43:25 -0400
-Subject: Re: [PATCH 2/4] virtual block device driver (ramzswap)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: rostedt@goodmis.org
-Cc: Nitin Gupta <ngupta@vflare.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Hugh Dickins <hugh.dickins@tiscali.co.uk>, Ed Tomlinson <edt@aei.ca>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       linux-mm-cc@laptop.org, Ingo Molnar <mingo@elte.hu>,
-       "=?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker" <fweisbec@gmail.com>
-In-Reply-To: <1253020471.20020.76.camel@gandalf.stny.rr.com>
-References: <200909100215.36350.ngupta@vflare.org>
-	 <200909100249.26284.ngupta@vflare.org>
-	 <84144f020909141310y164b2d1ak44dd6945d35e6ec@mail.gmail.com>
-	 <d760cf2d0909142339i30d74a9dic7ece86e7227c2e2@mail.gmail.com>
-	 <84144f020909150030h1f9d8062sc39057b55a7ba6c0@mail.gmail.com>
-	 <1253020471.20020.76.camel@gandalf.stny.rr.com>
-Date: Tue, 15 Sep 2009 16:43:27 +0300
-Message-Id: <1253022207.4754.1.camel@penberg-laptop>
+	Tue, 15 Sep 2009 09:43:42 -0400
+Subject: Re: [PATCH 2/2] tracing: Export ftrace API for kernel modules
+From: Steven Rostedt <rostedt@goodmis.org>
+Reply-To: rostedt@goodmis.org
+To: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       fweisbec@gmail.com, "Frank Ch. Eigler" <fche@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>, paulus@samba.org,
+       systemtap@sources.redhat.com
+In-Reply-To: <4AAF6728.6010807@bk.jp.nec.com>
+References: <4AAF6728.6010807@bk.jp.nec.com>
+Content-Type: text/plain
+Organization: Kihon Technologies Inc.
+Date: Tue, 15 Sep 2009 09:43:44 -0400
+Message-Id: <1253022224.20020.102.camel@gandalf.stny.rr.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+X-Mailer: Evolution 2.26.3 
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steve,
-
-On Tue, 2009-09-15 at 09:14 -0400, Steven Rostedt wrote:
-> > >>> +
-> > >>> +       trace_mark(ramzswap_lock_wait, "ramzswap_lock_wait");
-> > >>> +       mutex_lock(&rzs->lock);
-> > >>> +       trace_mark(ramzswap_lock_acquired, "ramzswap_lock_acquired");
-> > >>
-> > >> Hmm? What's this? I don't think you should be doing ad hoc
-> > >> trace_mark() in driver code.
-> > >
-> > > This is not ad hoc. It is to see contention over this lock which I believe is a
-> > > major bottleneck even on dual-cores. I need to keep this to measure improvements
-> > > as I gradually make this locking more fine grained (using per-cpu buffer etc).
-> > 
-> > It is ad hoc. Talk to the ftrace folks how to do it properly. I'd keep
-> > those bits out-of-tree until the issue is resolved, really.
+On Tue, 2009-09-15 at 19:06 +0900, Atsushi Tsuji wrote:
+> Export register_ and unresgister_ftrace_function_probe to modules. This can
+> be used by SystemTap.
 > 
-> Yes, trace_mark is deprecated. You want to use TRACE_EVENT. See how gfs2
-> does it in:
+> Signed-off-by: Atsushi Tsuji <a-tsuji@bk.jp.nec.com>
+> ---
+>  kernel/trace/ftrace.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
 > 
->   fs/gfs2/gfs2_trace.h
-> 
-> and it is well documented in
-> samples/trace_events/trace-events-samples.[ch]
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 5ef8f59..9c32291 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -2042,6 +2042,7 @@ register_ftrace_function_probe(char *glob, struct ftrace_probe_ops *ops,
+>  
+>  	return count;
+>  }
+> +EXPORT_SYMBOL_GPL(register_ftrace_function_probe);
+>  
+>  enum {
+>  	PROBE_TEST_FUNC		= 1,
+> @@ -2108,6 +2109,7 @@ unregister_ftrace_function_probe(char *glob, struct ftrace_probe_ops *ops,
+>  	__unregister_ftrace_function_probe(glob, ops, data,
+>  					  PROBE_TEST_FUNC | PROBE_TEST_DATA);
+>  }
+> +EXPORT_SYMBOL_GPL(unregister_ftrace_function_probe);
 
-Does it really make sense to add special-case tracing in driver code to
-profile lock contention for a _single mutex_?
+I have to NAK this as is. There's a reason I never exported these to
+modules, and that is because they are not module safe. There's nothing
+to stop a module from registering a probe and then being removed. Then
+the function probe will still be called causing a kernel panic.
 
-			Pekka
+
+Now I know of two ways to fix this.
+
+1) The simple way. Up the module ref count so once it registers a
+function it can never be disabled. Of course there's the "force module
+unload" but people should not do that anyway.
+
+2) Create a second hook handler for modules. That is the function caller
+for modules will go to a wrapper first. This wrapper could disable
+interrupts or grab a lock or something that would prevent a module from
+being unloaded as the hooks are being called. Perhaps even disabling
+preemption while calling the hooks will be enough (this is not something
+I want the normal function caller to do). And the current function
+tracer will optimize that if only one function is registered to mcount,
+then the mcount caller will call that function directly.
+
+It will still need to up the mod ref count when a probe is added, but it
+can also remove it.
+
+
+The problem with the current method, is that a probe can be executing at
+anytime. Here's an example if we did it your way.
+
+1. module installed
+2. module adds probe
+3. function X in kernel calls probe but gets preempted.
+4. module removes probe
+5. module unistalled
+6. function X in kernel continues to run probe but probe no longer
+exists --- Oops!
+
+-- Steve
+
 
