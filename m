@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758637AbZIOTXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbZIOT1d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758637AbZIOTXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 15:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755750AbZIOTXu
+	id S1758017AbZIOT1d (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 15:27:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753782AbZIOT1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 15:23:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35633 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755274AbZIOTXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 15:23:49 -0400
-Message-ID: <4AAFE9B2.1030006@kernel.org>
-Date: Wed, 16 Sep 2009 04:23:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.22 (X11/20090605)
+	Tue, 15 Sep 2009 15:27:31 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:54437 "EHLO
+	cavan.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752755AbZIOT1a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 15:27:30 -0400
+Date: Tue, 15 Sep 2009 20:27:30 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Richard Purdie <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] backlight: Provide two stage registration
+Message-ID: <20090915192730.GA8152@srcf.ucam.org>
+References: <1253031583-11286-1-git-send-email-mjg@redhat.com> <1253042322.30165.52.camel@dax.rpnet.com>
 MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] percpu for v2.6.32
-References: <4AAF411C.2040501@kernel.org> <alpine.DEB.1.10.0909151510010.3340@V090114053VZO-1>
-In-Reply-To: <alpine.DEB.1.10.0909151510010.3340@V090114053VZO-1>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 19:23:32 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1253042322.30165.52.camel@dax.rpnet.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@cavan.codon.org.uk
+X-SA-Exim-Scanned: No (on cavan.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Tue, 15 Sep 2009, Tejun Heo wrote:
-> 
->> * All arches except for ia64 have been converted to use the new
->>   allocator.
-> 
-> Any plans for this? The percpu operations patchset
-> requires the new allocator to work on all platforms and I am wondering
-> when I should repost the set.
+On Tue, Sep 15, 2009 at 08:18:42PM +0100, Richard Purdie wrote:
 
-I've been trying to get a cheap second hand itanium machine but itanic
-really seems to have sunk pretty well.  It's almost impossible to find
-one here.  I guess I'll have to bite the bullet and do it remotely.
-There gotta be one with serial console and power control hooked up
-somewhere in the company lab.  I'll try to locate one.
+> Could we not pass an optional pointer to a properties structure to
+> create the backlight with instead or find a better way to solve this?
 
-Thanks.
+That'd work, but it'd involve significant refactoring of all the 
+drivers - we really need to be setting max_brightness before 
+device_register() is called. I suspect it'd be an even larger delta 
+against mainline.
 
 -- 
-tejun
+Matthew Garrett | mjg59@srcf.ucam.org
