@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757121AbZIOUQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758261AbZIOURf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757121AbZIOUQX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 16:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757386AbZIOUQT
+	id S1758261AbZIOURf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 16:17:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754293AbZIOURb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 16:16:19 -0400
-Received: from tservice.ru ([195.178.208.66]:46945 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753552AbZIOUQS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 16:16:18 -0400
-Date: Wed, 16 Sep 2009 00:16:20 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Eric Paris <eparis@redhat.com>
-Cc: Jamie Lokier <jamie@shareable.org>, David Miller <davem@davemloft.net>,
-       linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, viro@zeniv.linux.org.uk, alan@linux.intel.com,
-       hch@infradead.org, torvalds@linux-foundation.org
-Subject: Re: fanotify as syscalls
-Message-ID: <20090915201620.GB32192@ioremap.net>
-References: <20090911.114620.260824240.davem@davemloft.net> <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com> <20090911204602.GA19371@shareable.org> <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com> <20090911212731.GA19901@shareable.org> <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com> <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org> <20090914140720.GA8564@ioremap.net> <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
+	Tue, 15 Sep 2009 16:17:31 -0400
+Received: from mk-filter-2-a-1.mail.uk.tiscali.com ([212.74.100.53]:51763 "EHLO
+	mk-filter-2-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753739AbZIOURa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 16:17:30 -0400
+X-Trace: 261978068/mk-filter-2.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.84.74/None/hugh.dickins@tiscali.co.uk
+X-SBRS: None
+X-RemoteIP: 79.69.84.74
+X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
+X-SMTP-AUTH: 
+X-MUA: 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AlgFAN+Sr0pPRVRK/2dsb2JhbACBU95/hBcF
+X-IronPort-AV: E=Sophos;i="4.44,391,1249254000"; 
+   d="scan'208";a="261978068"
+Date: Tue, 15 Sep 2009 21:16:47 +0100 (BST)
+From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+X-X-Sender: hugh@sister.anvils
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/8] mm: around get_user_pages flags
+In-Reply-To: <20090910093207.9CC6.A69D9226@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0909152115300.22199@sister.anvils>
+References: <Pine.LNX.4.64.0909072222070.15424@sister.anvils>
+ <20090908090009.0CC0.A69D9226@jp.fujitsu.com> <20090910093207.9CC6.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 03:08:15PM -0400, Eric Paris (eparis@redhat.com) wrote:
-> Just this week I got another request to look at syscalls.  So I did, I
-> haven't prototyped it, but I can do it with syscalls, they would look
-> like this:
+On Thu, 10 Sep 2009, KOSAKI Motohiro wrote:
+> > 
+> > Great!
+> > I'll start to test this patch series. Thanks Hugh!!
 > 
-> int fanotify_init(int flags, int f_flags, __u64 mask, unsigned int priority);
+> At least, My 24H stress workload test didn't find any problem.
+> I'll continue testing.
 
-...
+Thanks a lot for that: four more patches coming shortly,
+but they shouldn't affect what you've found so far.
 
-> Are there demands that I convert to syscalls?  Do I really gain anything
-> using 9 new inextensible syscalls over socket(), bind(), and 8
-> setsockopt() calls?
-
-In my personal opinion sockets are way much simpler and obvious than
-syscalls. Also one should not edit hundred of arch-dependant headers
-conflicting with other pity syscallers.
-
-But implementing af_fanotify opens a door for zillions of other
-af_something which can be implemented using existing infrastructure
-namely netlink will solve likely 99% of potential usage cases.
-
-And frankly I did not find it way too convincing that using netlink is
-impossible in your scenario if some things will be simplified, namely
-event merging. Moreover you can implement a pool of working threads and
-postpone all the work to them and appropriate event queues, which will
-allow to use rlimits for the listeners and open files 'kind of' on
-behalf of those processes.
-
-But it is quite diferent from the approach you selected and which is
-more obvious indeed. So if you ask a question whether fanotify should
-use sockets or syscalls, I would prefer sockets, but I still recommend
-to rethink your decision to move away from netlink to be 100% sure that
-it will not solve your needs.
-
--- 
-	Evgeniy Polyakov
+Hugh
