@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbZIOIad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752293AbZIOIdK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752068AbZIOIad (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 04:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751509AbZIOIaa
+	id S1752293AbZIOIdK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 04:33:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbZIOIdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 04:30:30 -0400
-Received: from mga02.intel.com ([134.134.136.20]:65417 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751278AbZIOIaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 04:30:21 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,388,1249282800"; 
-   d="scan'208";a="550665664"
-Subject: alloc skb based on a given data buffer
-From: Zhu Yi <yi.zhu@intel.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: "Chatre, Reinette" <reinette.chatre@intel.com>,
-       Frans Pop <elendil@planet.nl>, Larry Finger <Larry.Finger@lwfinger.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "ipw3945-devel@lists.sourceforge.net" 
-	<ipw3945-devel@lists.sourceforge.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "Krauss, Assaf" <assaf.krauss@intel.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "Abbas, Mohamed" <mohamed.abbas@intel.com>, netdev@vger.kernel.org
-In-Reply-To: <20090914130612.GA11778@csn.ul.ie>
-References: <200909060941.01810.elendil@planet.nl>
-	 <4AA67139.80301@lwfinger.net> <20090909150418.GI24614@csn.ul.ie>
-	 <200909091759.33655.elendil@planet.nl> <20090909165545.GK24614@csn.ul.ie>
-	 <1252526738.30150.91.camel@rc-desk> <20090910090206.GA22276@csn.ul.ie>
-	 <1252617290.30150.321.camel@rc-desk> <20090911084717.GB32497@csn.ul.ie>
-	 <1252897270.5650.169.camel@debian>  <20090914130612.GA11778@csn.ul.ie>
-Content-Type: text/plain
-Date: Tue, 15 Sep 2009 16:30:20 +0800
-Message-Id: <1253003420.7549.51.camel@debian>
+	Tue, 15 Sep 2009 04:33:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33592
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750891AbZIOIdE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 04:33:04 -0400
+Date: Tue, 15 Sep 2009 01:33:21 -0700 (PDT)
+Message-Id: <20090915.013321.07006714.davem@davemloft.net>
+To: yi.zhu@intel.com
+Cc: mel@csn.ul.ie, reinette.chatre@intel.com, elendil@planet.nl,
+       Larry.Finger@lwfinger.net, linville@tuxdriver.com,
+       penberg@cs.helsinki.fi, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
+       akpm@linux-foundation.org, cl@linux-foundation.org,
+       assaf.krauss@intel.com, johannes@sipsolutions.net,
+       mohamed.abbas@intel.com, netdev@vger.kernel.org
+Subject: Re: alloc skb based on a given data buffer
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1253003420.7549.51.camel@debian>
+References: <1252897270.5650.169.camel@debian>
+	<20090914130612.GA11778@csn.ul.ie>
+	<1253003420.7549.51.camel@debian>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[ Cc netdev and change the subject ]
+From: Zhu Yi <yi.zhu@intel.com>
+Date: Tue, 15 Sep 2009 16:30:20 +0800
 
-On Mon, 2009-09-14 at 21:06 +0800, Mel Gorman wrote:
-> > Essentially, the hardware only requires an order-1 allocation aligned on
-> > 256 bytes boundary. But as it is used as an SKB, a trailing struct
-> > skb_shared_info is added. This forces us to both increase the order and
-> > do alignment ourselves. I believe some improvement could be done here.
-> > But it should not be an easy one.
-> > 
-> 
-> Probably not. I can only assume that moving the location of
-> skb_shared_info such that it is sometimes located after the buffer and
-> sometimes allocated via a separate kmalloc() would be a significant
-> undertaking.
+> This way, device drivers can allocate the Rx buffers with their own size
+> and alignment requirement. i.e. do an order-1 page allocation directly
+> with free_pages() in the iwlagn driver for a 256 bytes aligned 8K Rx
+> buffer. After DMA is finished, drivers can use the above function to
+> assemble an skb based on the Rx buffer. It should resolve the problem
+> for requiring an order-2 allocation by alloc_skb() in the first place.
 
-Shall I propose below function as a variant to alloc_skb()?
-
-struct sk_buff *alloc_skb_attach_buff(void *data_buff,
-				      unsigned int real_size,
-				      unsigned int size, gfp_t mask);
-
-If real_size >= size + sizeof(struct skb_shared_info), we can still put
-the shinfo at the end of the buffer. Otherwise we can allocate from a
-new slab that put sk_buff and shinfo together. Of course, kfree_skbmem()
-needs to recognize it.
-
-This way, device drivers can allocate the Rx buffers with their own size
-and alignment requirement. i.e. do an order-1 page allocation directly
-with free_pages() in the iwlagn driver for a 256 bytes aligned 8K Rx
-buffer. After DMA is finished, drivers can use the above function to
-assemble an skb based on the Rx buffer. It should resolve the problem
-for requiring an order-2 allocation by alloc_skb() in the first place.
-
-Comments are welcome.
-
-Thanks,
--yi
-
+You can create paged RX skbs just like drivers such as niu.c
+and others already do, there is no need for special APIs for
+this.
