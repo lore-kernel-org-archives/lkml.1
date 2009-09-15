@@ -1,125 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbZIOS0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758036AbZIOS2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754460AbZIOS0Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 14:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754850AbZIOS0I
+	id S1758036AbZIOS2Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 14:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754540AbZIOS2I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 14:26:08 -0400
-Received: from avexch1.qlogic.com ([198.70.193.115]:44402 "EHLO
-	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754802AbZIOS0G (ORCPT
+	Tue, 15 Sep 2009 14:28:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:47205 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752403AbZIOS2H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 14:26:06 -0400
-Date: Tue, 15 Sep 2009 11:26:09 -0700
-From: Andrew Vasquez <andrew.vasquez@qlogic.com>
-To: Greg KH <greg@kroah.com>
-Cc: James Bottomley <James.Bottomley@suse.de>,
-       Linux SCSI Mailing List <linux-scsi@vger.kernel.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Giridhar Malavali <giridhar.malavali@qlogic.com>,
-       Ravi Anand <ravi.anand@qlogic.com>,
-       Lalit Chandivade <lalit.chandivade@qlogic.com>
-Subject: Re: [PATCHv2] qla2xxx: Correct compilation issues when
- CONFIG_MOUDLES=n.
-Message-ID: <20090915182608.GH46353@plap4-2.local>
-References: <20090912000742.GB12098@plap4-2.local>
- <20090912001752.GC12098@plap4-2.local>
- <20090912003808.GD12098@plap4-2.local>
- <20090912005446.GA11691@kroah.com>
- <20090912025623.GA14824@plap4-2.local>
- <20090912043333.GA12349@kroah.com>
- <1252765807.4238.74.camel@mulgrave.site>
- <20090915153312.GB22774@kroah.com>
- <1253029631.29947.156.camel@mulgrave.site>
- <20090915165708.GA18817@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090915165708.GA18817@kroah.com>
-Organization: QLogic Corporation
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-OriginalArrivalTime: 15 Sep 2009 18:25:36.0196 (UTC) FILETIME=[EB453840:01CA3631]
+	Tue, 15 Sep 2009 14:28:07 -0400
+Date: Tue, 15 Sep 2009 11:27:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Suresh Jayaram <sureshjayaram@gmail.com>
+Cc: David Rientjes <rientjes@google.com>, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jin Dongming <jin.dongming@np.css.fujitsu.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Greg KH <greg@kroah.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: mmotm 2009-09-09-22-56 uploaded
+Message-Id: <20090915112728.a08ad626.akpm@linux-foundation.org>
+In-Reply-To: <38c3c4860909150313k6ca79371y91b68db3294e08f6@mail.gmail.com>
+References: <200909100601.n8A61Eju002109@imap1.linux-foundation.org>
+	<38c3c4860909132302j3fd7afe1p984b91d74eb1d782@mail.gmail.com>
+	<alpine.DEB.1.00.0909142147220.30373@chino.kir.corp.google.com>
+	<38c3c4860909150313k6ca79371y91b68db3294e08f6@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009, Greg KH wrote:
+On Tue, 15 Sep 2009 15:43:35 +0530 Suresh Jayaram <sureshjayaram@gmail.com> wrote:
+>
 
-> On Tue, Sep 15, 2009 at 10:47:11AM -0500, James Bottomley wrote:
-> > On Tue, 2009-09-15 at 08:33 -0700, Greg KH wrote:
-> > > On Sat, Sep 12, 2009 at 09:30:07AM -0500, James Bottomley wrote:
-> > > > On Fri, 2009-09-11 at 21:33 -0700, Greg KH wrote:
-> > > > > On Fri, Sep 11, 2009 at 07:56:23PM -0700, Andrew Vasquez wrote:
-> > > > > > On Fri, 11 Sep 2009, Greg KH wrote:
-> > > > > > 
-> > > > > > > On Fri, Sep 11, 2009 at 05:38:08PM -0700, Andrew Vasquez wrote:
-> > > > > > > > Randy Dunlap noted:
-> > > > > > > > 
-> > > > > > > >   when CONFIG_MODULES=n:
-> > > > > > > > 
-> > > > > > > > 	drivers/scsi/qla2xxx/qla_os.c:2685: error: dereferencing pointer to incomplete type
-> > > > > > > > 
-> > > > > > > >   in
-> > > > > > > > 
-> > > > > > > > 	kobject_uevent_env(&(&vha->hw->pdev->driver->driver)->owner->mkobj.kobj,
-> > > > > > > > 		KOBJ_CHANGE, envp);
-> > > > > > > > 
-> > > > > > > > Trigger kobject event on the 'struct device' hanging off the pci_dev.
-> > > > > > > 
-> > > > > > > Um, why?  What are you trying to do here?  kobject change should not be
-> > > > > > > for a device, or a "normal" kobject.
-> > > > > > > 
-> > > > > > > What do you expect userspace to do with this?  Where have you documented
-> > > > > > > it?
-> > > > > > 
-> > > > > > The purpose was described here:
-> > > > > > 
-> > > > > > 	http://article.gmane.org/gmane.linux.scsi/54155
-> > > > > > 
-> > > > > > Basically we'd like to instruct user-space to retrieve a blob of data
-> > > > > > automatically.
-> > > > > 
-> > > > > Hm, like a firmware object perhaps?
-> > > > > 
-> > > > > > Original implementation used the kboject hanging off
-> > > > > > the module which does not exist when CONFIG_MODULES=n.  It was
-> > > > > > suggested that perhaps an alternative would be to use 'struct device'
-> > > > > > kobj.  Any tips on how to trigger such a driver-specific event,
-> > > > > > perhaps a dedicated kobject exported by the driver itself???
-> > > > > 
-> > > > > Why not use the firmware interface for it, that is what it is designed
-> > > > > for, and you will not have to craft any new udev rules.
-> > > > 
-> > > > The data is going the wrong way to use the current firmware interface,
-> > > > which is designed to load data from userspace into the kernel.  For this
-> > > > interface, we want the data to go the other way (i.e. the kernel has a
-> > > > blob of dump data it would like userspace to save if it can).
-> > > 
-> > > Ick.
-> > 
-> > It's a natural debugging event ... the user can simply program the
-> > system to discard the dump.
-> > 
-> > > > I'd be amenable to updating the firmware interface to do this, but it
-> > > > looks like adding a completely new codepath, which it's not clear even
-> > > > belongs there.
-> > > 
-> > > Well, I don't think it deserves a kobject change event, as that means
-> > > something a bit different to userspace today, right?
-> > 
-> > Well, the documentation (in include/linux/kobject.h) does say that
-> > KOBJ_CHANGED is the dumping ground for events that don't match anything
-> > else, which this one seems to qualify as.  What else do you suggest?
+Please don't wordwrap the emails - it makes a horrid mess of oops traces.
+
 > 
-> Ok, I can't think of anything else at the moment, sorry.
+> I applied both the fixes and it fixes the hardlock problem. However there is
+> still oopses left that I see during booting, nevertheless booting succeeds.
 > 
-> This is using a binary sysfs file, right?
+>
+> 
+> Sep 15 15:29:36 jay-t60p kernel: BUG: unable to handle kernel NULL pointer dereference at (null)
+> Sep 15 15:29:36 jay-t60p kernel: IP: [<ffffffff81178954>] bitmap_scnprintf+0x5a/0xae
+> Sep 15 15:29:36 jay-t60p kernel: PGD 0
+> Sep 15 15:29:36 jay-t60p kernel: Oops: 0000 [#1] SMP
+> Sep 15 15:29:36 jay-t60p kernel: last sysfs file: /sys/devices/pci0000:00/0000:00:01.0/local_cpus
+> Sep 15 15:29:36 jay-t60p kernel: CPU 1
+> Sep 15 15:29:36 jay-t60p kernel: Modules linked in: bnep sco nfsd exportfs rfcomm l2cap crc16 snd_pcm_oss snd_mixer_oss snd_seq binfmt_misc snd_seq_device nfs lockd nfs_acl auth_rpcgss sunrpc ipv6 cpufreq_conservative cpufreq_userspace cpufreq_powersave acpi_cpufreq ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 ip_tables x_tables bridge stp tun fuse loop dm_mod snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_hwdep rtc_cmos pcmcia btusb snd_pcm snd_timer snd ppdev thinkpad_acpi rtc_core i2c_i801 yenta_socket iTCO_wdt nsc_ircc usbhid ide_cd_mod video rsrc_nonstatic pl2303 bluetooth hid soundcore parport_pc led_class output rtc_lib ac battery button intel_agp i2c_core pcmcia_core pcspkr usbserial iTCO_vendor_support irda e1000e cdrom snd_page_alloc parport sg rfkill joydev uinput crc_ccitt uhci_hcd ehci_hcd sd_mod crc_t10dif usbcore edd ext3 mbcache jbd fan ide_pci_generic ata_generic ata_piix pata_acpi ahci libata scsi_mod piix ide_core!
+  thermal processor thermal_sys hwmon
+> Sep 15 15:29:36 jay-t60p kernel: Pid: 2478, comm: irqbalance Not tainted 2.6.31-rc9-mm1-0.1-default #7 20088JQ
+> Sep 15 15:29:36 jay-t60p kernel: RIP: 0010:[<ffffffff81178954>]__ [<ffffffff81178954>] bitmap_scnprintf+0x5a/0xae
+> Sep 15 15:29:36 jay-t60p kernel: RSP: 0018:ffff880037a81e38__ EFLAGS: 00010246
+> Sep 15 15:29:36 jay-t60p kernel: RAX: 0000000000000000 RBX: 0000000000000000 RCX: 0000000000000000
+> Sep 15 15:29:36 jay-t60p kernel: RDX: 0000000000000002 RSI: 0000000000000ffe RDI: 0000000000000000
+> Sep 15 15:29:36 jay-t60p kernel: RBP: ffff880037a81e68 R08: 0000000000000005 R09: 0000000000000001
+> Sep 15 15:29:36 jay-t60p kernel: R10: ffffffff813c1cd3 R11: 0000000000000001 R12: 0000000000000000
+> Sep 15 15:29:36 jay-t60p kernel: R13: 0000000000000000 R14: 0000000000000ffe R15: ffff88007bbe3000
+> Sep 15 15:29:36 jay-t60p kernel: FS:__ 00007f605bee46f0(0000) GS:ffff880005f00000(0000) knlGS:0000000000000000
+> Sep 15 15:29:36 jay-t60p kernel: CS:__ 0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> Sep 15 15:29:36 jay-t60p kernel: CR2: 0000000000000000 CR3: 000000007acf8000 CR4: 00000000000006e0
+> Sep 15 15:29:36 jay-t60p kernel: DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> Sep 15 15:29:36 jay-t60p kernel: DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Sep 15 15:29:36 jay-t60p kernel: Process irqbalance (pid: 2478, threadinfo ffff880037a80000, task ffff8800376d8280)
+> Sep 15 15:29:37 jay-t60p rpc.statd[2588]: statd running as root. chown /var/lib/nfs/sm to choose different user
+> Sep 15 15:29:37 jay-t60p sm-notify[2596]: Already notifying clients; Exiting!
+> Sep 15 15:29:36 jay-t60p modem-manager: Loaded plugin MBM
+> Sep 15 15:29:36 jay-t60p kernel: Stack:
+> Sep 15 15:29:37 jay-t60p kernel:__ ffffffff8152b7d0 ffff88007bbe3000 ffffffff8154a6a8 ffff88007c7aa2d8
+> Sep 15 15:29:37 jay-t60p kernel: <0> ffffffff81556620 ffff880037a81f48 ffff880037a81e88 ffffffff81186937
+> Sep 15 15:29:37 jay-t60p kernel: <0> ffff88007c7aa2d8 fffffffffffffffb ffff880037a81ea8 ffffffff811fbff6
+> Sep 15 15:29:37 jay-t60p kernel: Call Trace:
+> Sep 15 15:29:37 jay-t60p kernel:__ [<ffffffff81186937>] local_cpus_show+0x36/0x49
+> Sep 15 15:29:37 jay-t60p kernel:__ [<ffffffff811fbff6>] dev_attr_show+0x20/0x44
+> Sep 15 15:29:37 jay-t60p kernel:__ [<ffffffff81121741>] sysfs_read_file+0xb2/0x131
+> Sep 15 15:29:37 jay-t60p kernel:__ [<ffffffff810ce07c>] vfs_read+0xb1/0x187
+> Sep 15 15:29:37 jay-t60p kernel:__ [<ffffffff810ce216>] sys_read+0x47/0x70
+> Sep 15 15:29:37 jay-t60p modem-manager: Loaded plugin Sierra
+> Sep 15 15:29:37 jay-t60p kernel:__ [<ffffffff8100b9eb>] system_call_fastpath+0x16/0x1b
+> Sep 15 15:29:37 jay-t60p kernel: Code: c1 1f 31 db 83 e1 e0 44 8d 61 e0 eb 5e 44 89 e0 44 89 e1 41 b9 01 00 00 00 c1 f8 06 83 e1 3f 44 8d 42 03 48 98 48 63 fb 44 89 f6 <49> 8b 44 c5 00 49 8d 3c 3f 29 de 41 c1 f8 02 41 83 ec 20 48 d3
+> Sep 15 15:29:37 jay-t60p kernel: RIP__ [<ffffffff81178954>] bitmap_scnprintf+0x5a/0xae
+> Sep 15 15:29:37 jay-t60p kernel:__ RSP <ffff880037a81e38>
+> Sep 15 15:29:37 jay-t60p kernel: CR2: 0000000000000000
+> Sep 15 15:29:37 jay-t60p kernel: ---[ end trace 57e387226b9f2380 ]---
 
-Yes, the userspace tool retrieves the dump from a binary sysfs node:
 
-	/sys/class/scsi_host/hostX/device/fw_dump
+It oopsed in local_cpus_show()->bitmap_scnprintf().  I don't think
+anyone has mucked with that lately?
 
--- AV
