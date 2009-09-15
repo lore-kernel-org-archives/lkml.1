@@ -1,103 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753625AbZIONDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753662AbZIONFF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753625AbZIONDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 09:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752320AbZIONDc
+	id S1753662AbZIONFF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 09:05:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753624AbZIONFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 09:03:32 -0400
-Received: from mail-yw0-f174.google.com ([209.85.211.174]:64336 "EHLO
-	mail-yw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753494AbZIONDb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 09:03:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=FoCY5APAaAOYbawGxf7WXQRsmQVjKwFWaAkHwSE5sdkCl9cl4yaIkFhXj+p+nVjT5t
-         E+FAvw4z9m4EdgSBuUyRP8rYvdGdaIAbh1+9tGpWYYBvJJxktAOFCUlGBAI2Gqsu3968
-         LCttORGLzor1UXeG/kk2Uj/0WAiBTYZke/xT8=
-Message-ID: <4AAF909F.9080306@gmail.com>
-Date: Tue, 15 Sep 2009 09:03:27 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.23 (Macintosh/20090812)
+	Tue, 15 Sep 2009 09:05:03 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:17874 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753581AbZIONFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 09:05:02 -0400
+Date: Tue, 15 Sep 2009 18:33:57 +0530
+From: Amit Shah <amit.shah@redhat.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Alan Cox <alan@linux.intel.com>, rusty@rustcorp.com.au,
+       virtualization@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       greg@kroah.com
+Subject: Re: [PATCH] virtio_console: Add support for multiple ports for
+	generic guest and host communication
+Message-ID: <20090915130357.GC5247@amit-x200.redhat.com>
+References: <1252678386-17404-1-git-send-email-amit.shah@redhat.com> <1252678386-17404-2-git-send-email-amit.shah@redhat.com> <20090911170010.34c80f2d@linux.intel.com> <20090915123752.GB5247@amit-x200.redhat.com> <4AAF8F26.8030503@codemonkey.ws>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: "Michael S. Tsirkin" <mst@redhat.com>,
-       "Ira W. Snyder" <iws@ovro.caltech.edu>, netdev@vger.kernel.org,
-       virtualization@lists.linux-foundation.org, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, linux-mm@kvack.org,
-       akpm@linux-foundation.org, hpa@zytor.com,
-       Rusty Russell <rusty@rustcorp.com.au>, s.hetze@linux-ag.com,
-       alacrityvm-devel@lists.sourceforge.net
-Subject: Re: [PATCHv5 3/3] vhost_net: a kernel-level virtio server
-References: <cover.1251388414.git.mst@redhat.com> <20090827160750.GD23722@redhat.com> <20090903183945.GF28651@ovro.caltech.edu> <20090907101537.GH3031@redhat.com> <20090908172035.GB319@ovro.caltech.edu> <4AAA7415.5080204@gmail.com> <20090913120140.GA31218@redhat.com> <4AAE6A97.7090808@gmail.com> <20090914164750.GB3745@redhat.com> <4AAE961B.6020509@gmail.com> <4AAF8A03.5020806@redhat.com>
-In-Reply-To: <4AAF8A03.5020806@redhat.com>
-X-Enigmail-Version: 0.96.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig46A1F91EB19287765BBD0682"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4AAF8F26.8030503@codemonkey.ws>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig46A1F91EB19287765BBD0682
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On (Tue) Sep 15 2009 [07:57:10], Anthony Liguori wrote:
+> Amit Shah wrote:
+>> Hey Greg,
+>>
+>> Can you tell me how this could work out -- each console port could have
+>> a "role" string associated with it (obtainable from the invoking qemu
+>> process in case of qemu/kvm). Something that I have in mind currently
+>> is:
+>>
+>> $ qemu-kvm ... -virtioconsole role=org/qemu/clipboard
+>>
+>> and then the guest kernel sees the string, and puts the
+>> "org/qemu/clipboard" in some file in sysfs. Guest userspace should then
+>> be able to open and read/write to
+>>
+>> /dev/virtio_console/org/qemu/clipboard
+>>   
+>
+> That's probably not what we want.  I imagine what we want is:
+>
+> /dev/ttyV0
+> /dev/ttyV1
+> /dev/ttyVN
+>
+> And then we want:
+>
+> /sys/class/virtio-console/ttyV0/name -> "org.qemu.clipboard"
+>
+> Userspace can detect when new virtio-consoles appear via udev events.   
+> When it sees a new ttyVN, it can then look in sysfs to discover it's 
+> name.
 
-Avi Kivity wrote:
-> On 09/14/2009 10:14 PM, Gregory Haskins wrote:
->> To reiterate, as long as the model is such that the ppc boards are
->> considered the "owner" (direct access, no translation needed) I believ=
-e
->> it will work.  If the pointers are expected to be owned by the host,
->> then my model doesn't work well either.
->>   =20
->=20
-> In this case the x86 is the owner and the ppc boards use translated
-> access.  Just switch drivers and device and it falls into place.
->=20
+OK; but that's kind of roundabout isn't it? An application, instead of
+watching for the console port it's interested in, has to instead monitor
+all the ports.
 
-You could switch vbus roles as well, I suppose.  Another potential
-option is that he can stop mapping host memory on the guest so that it
-follows the more traditional model.  As a bus-master device, the ppc
-boards should have access to any host memory at least in the GFP_DMA
-range, which would include all relevant pointers here.
+So in effect there has to be one app monitoring for new ports and then
+that app exec'ing the corresponding app meant for that port.
 
-I digress:  I was primarily addressing the concern that Ira would need
-to manage the "host" side of the link using hvas mapped from userspace
-(even if host side is the ppc boards).  vbus abstracts that access so as
-to allow something other than userspace/hva mappings.  OTOH, having each
-ppc board run a userspace app to do the mapping on its behalf and feed
-it to vhost is probably not a huge deal either.  Where vhost might
-really fall apart is when any assumptions about pageable memory occur,
-if any.
-
-As an aside: a bigger issue is that, iiuc, Ira wants more than a single
-ethernet channel in his design (multiple ethernets, consoles, etc).  A
-vhost solution in this environment is incomplete.
-
-Note that Ira's architecture highlights that vbus's explicit management
-interface is more valuable here than it is in KVM, since KVM already has
-its own management interface via QEMU.
-
-Kind Regards,
--Greg
-
-
---------------enig46A1F91EB19287765BBD0682
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org/
-
-iEYEARECAAYFAkqvkJ8ACgkQP5K2CMvXmqGd0wCbB/8y7sxyTXx/3odUb27n3vc/
-W/AAn3rM1U3FG86WYLElMfmUO3tXTp6R
-=vpj/
------END PGP SIGNATURE-----
-
---------------enig46A1F91EB19287765BBD0682--
+		Amit
