@@ -1,150 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbZIOSRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZIOSQv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbZIOSRu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 14:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758106AbZIOSRX
+	id S1754844AbZIOSQv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 14:16:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754160AbZIOSQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 14:17:23 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:59540 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754850AbZIOSQw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 14:16:52 -0400
-From: Jens Axboe <jens.axboe@oracle.com>
-To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Cc: chris.mason@oracle.com, hch@infradead.org, tytso@mit.edu,
-       akpm@linux-foundation.org, jack@suse.cz, trond.myklebust@fys.uio.no,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 02/11] writeback: get rid of wbc->for_writepages
-Date: Tue, 15 Sep 2009 20:16:48 +0200
-Message-Id: <1253038617-30204-3-git-send-email-jens.axboe@oracle.com>
-X-Mailer: git-send-email 1.6.4.1.207.g68ea
-In-Reply-To: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com>
-References: <1253038617-30204-1-git-send-email-jens.axboe@oracle.com>
+	Tue, 15 Sep 2009 14:16:47 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:28881 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752019AbZIOSQq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 14:16:46 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEADh3r0qrR7PD/2dsb2JhbADIXYhMAZALBYIkgXM
+X-IronPort-AV: E=Sophos;i="4.44,391,1249257600"; 
+   d="scan'208";a="389273622"
+From: Roland Dreier <rdreier@cisco.com>
+To: adi hodos <thefatredguy@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Suggested addition to epoll interface - epoll_post_notification()
+References: <2517f1930909150559p505b583fpf3501a1c7dad6634@mail.gmail.com>
+X-Message-Flag: Warning: May contain useful information
+Date: Tue, 15 Sep 2009 11:16:49 -0700
+In-Reply-To: <2517f1930909150559p505b583fpf3501a1c7dad6634@mail.gmail.com>
+	(adi hodos's message of "Tue, 15 Sep 2009 15:59:00 +0300")
+Message-ID: <adak500f4z2.fsf@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 15 Sep 2009 18:16:49.0800 (UTC) FILETIME=[B1839080:01CA3630]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It's only set, it's never checked. Kill it.
 
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
----
- fs/afs/write.c              |    1 -
- fs/btrfs/ordered-data.c     |    1 -
- fs/jbd2/commit.c            |    1 -
- fs/nfs/write.c              |    1 -
- include/linux/writeback.h   |    1 -
- include/trace/events/ext4.h |    6 ++----
- mm/page-writeback.c         |    2 --
- 7 files changed, 2 insertions(+), 11 deletions(-)
+ > I have been playing with epoll lately and I would like to make a suggestion
+ > regarding the epoll interface.
+ > It would be nice to have a function to wake up a thread/process that is blocked
+ > on an epoll_wait() call and sent it some
+ > user defined data in the form of a struct epoll_event parameter ( something
+ > similar with PostQueuedCompletionStatus() from Windows ).
 
-diff --git a/fs/afs/write.c b/fs/afs/write.c
-index c2e7a7f..c63a3c8 100644
---- a/fs/afs/write.c
-+++ b/fs/afs/write.c
-@@ -712,7 +712,6 @@ int afs_writeback_all(struct afs_vnode *vnode)
- 		.bdi		= mapping->backing_dev_info,
- 		.sync_mode	= WB_SYNC_ALL,
- 		.nr_to_write	= LONG_MAX,
--		.for_writepages = 1,
- 		.range_cyclic	= 1,
- 	};
- 	int ret;
-diff --git a/fs/btrfs/ordered-data.c b/fs/btrfs/ordered-data.c
-index d6f0806..7b2f401 100644
---- a/fs/btrfs/ordered-data.c
-+++ b/fs/btrfs/ordered-data.c
-@@ -740,7 +740,6 @@ int btrfs_fdatawrite_range(struct address_space *mapping, loff_t start,
- 		.nr_to_write = mapping->nrpages * 2,
- 		.range_start = start,
- 		.range_end = end,
--		.for_writepages = 1,
- 	};
- 	return btrfs_writepages(mapping, &wbc);
- }
-diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
-index 7b4088b..0df600e 100644
---- a/fs/jbd2/commit.c
-+++ b/fs/jbd2/commit.c
-@@ -220,7 +220,6 @@ static int journal_submit_inode_data_buffers(struct address_space *mapping)
- 		.nr_to_write = mapping->nrpages * 2,
- 		.range_start = 0,
- 		.range_end = i_size_read(mapping->host),
--		.for_writepages = 1,
- 	};
- 
- 	ret = generic_writepages(mapping, &wbc);
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index 120acad..53eb26c 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -1490,7 +1490,6 @@ static int nfs_write_mapping(struct address_space *mapping, int how)
- 		.nr_to_write = LONG_MAX,
- 		.range_start = 0,
- 		.range_end = LLONG_MAX,
--		.for_writepages = 1,
- 	};
- 
- 	return __nfs_write_mapping(mapping, &wbc, how);
-diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-index d347632..48a054e 100644
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -50,7 +50,6 @@ struct writeback_control {
- 	unsigned encountered_congestion:1; /* An output: a queue is full */
- 	unsigned for_kupdate:1;		/* A kupdate writeback */
- 	unsigned for_reclaim:1;		/* Invoked from the page allocator */
--	unsigned for_writepages:1;	/* This is a writepages() call */
- 	unsigned range_cyclic:1;	/* range_start is cyclic */
- 	unsigned more_io:1;		/* more io to be dispatched */
- 	/*
-diff --git a/include/trace/events/ext4.h b/include/trace/events/ext4.h
-index 7d8b5bc..8d433c4 100644
---- a/include/trace/events/ext4.h
-+++ b/include/trace/events/ext4.h
-@@ -227,7 +227,6 @@ TRACE_EVENT(ext4_da_writepages,
- 		__field(	char,	nonblocking		)
- 		__field(	char,	for_kupdate		)
- 		__field(	char,	for_reclaim		)
--		__field(	char,	for_writepages		)
- 		__field(	char,	range_cyclic		)
- 	),
- 
-@@ -241,16 +240,15 @@ TRACE_EVENT(ext4_da_writepages,
- 		__entry->nonblocking	= wbc->nonblocking;
- 		__entry->for_kupdate	= wbc->for_kupdate;
- 		__entry->for_reclaim	= wbc->for_reclaim;
--		__entry->for_writepages	= wbc->for_writepages;
- 		__entry->range_cyclic	= wbc->range_cyclic;
- 	),
- 
--	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d for_writepages %d range_cyclic %d",
-+	TP_printk("dev %s ino %lu nr_t_write %ld pages_skipped %ld range_start %llu range_end %llu nonblocking %d for_kupdate %d for_reclaim %d range_cyclic %d",
- 		  jbd2_dev_to_name(__entry->dev), __entry->ino, __entry->nr_to_write,
- 		  __entry->pages_skipped, __entry->range_start,
- 		  __entry->range_end, __entry->nonblocking,
- 		  __entry->for_kupdate, __entry->for_reclaim,
--		  __entry->for_writepages, __entry->range_cyclic)
-+		  __entry->range_cyclic)
- );
- 
- TRACE_EVENT(ext4_da_writepages_result,
-diff --git a/mm/page-writeback.c b/mm/page-writeback.c
-index 25e7770..64c01d0 100644
---- a/mm/page-writeback.c
-+++ b/mm/page-writeback.c
-@@ -1019,12 +1019,10 @@ int do_writepages(struct address_space *mapping, struct writeback_control *wbc)
- 
- 	if (wbc->nr_to_write <= 0)
- 		return 0;
--	wbc->for_writepages = 1;
- 	if (mapping->a_ops->writepages)
- 		ret = mapping->a_ops->writepages(mapping, wbc);
- 	else
- 		ret = generic_writepages(mapping, wbc);
--	wbc->for_writepages = 0;
- 	return ret;
- }
- 
--- 
-1.6.4.1.207.g68ea
+You might have a look at eventfd() which creates an fd that can be used
+to signal from one thread to another (and which can be waited on with epoll).
 
+ - R.
