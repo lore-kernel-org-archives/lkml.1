@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758083AbZIODog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758091AbZIODzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758083AbZIODog (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 23:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbZIODob
+	id S1758091AbZIODzj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 23:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757059AbZIODzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 23:44:31 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56426 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1757314AbZIODob (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 23:44:31 -0400
-Message-ID: <4AAF0D54.2040506@cn.fujitsu.com>
-Date: Tue, 15 Sep 2009 11:43:16 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
+	Mon, 14 Sep 2009 23:55:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54783 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754734AbZIODzd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 23:55:33 -0400
+Date: Mon, 14 Sep 2009 20:54:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Arjan van de Ven <arjan@infradead.org>
-CC: linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       peterz@infradead.org
-Subject: Re: [PATCH 5/8] trace: Convert the power tracer into an event tracer
-References: <20090912130306.5d0086ea@infradead.org> <20090912130542.6d314860@infradead.org>
-In-Reply-To: <20090912130542.6d314860@infradead.org>
+Cc: linux-kernel@vger.kernel.org, lenb@kernel.org, mingo@elte.hu,
+       yanmin_zhang@linux.intel.com, jens.axboe@oracle.com,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Subject: Re: [PATCH v2] cpuidle: Fix the menu governor to boost IO
+ performance
+Message-Id: <20090914205408.578f7f60.akpm@linux-foundation.org>
+In-Reply-To: <20090915054259.5282e5ba@infradead.org>
+References: <20090915054259.5282e5ba@infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arjan van de Ven wrote:
->>From f591a0f126263733d606838a5d113b9807b12c84 Mon Sep 17 00:00:00 2001
-> From: Arjan van de Ven <arjan@linux.intel.com>
-> Date: Sat, 12 Sep 2009 07:53:03 +0200
-> Subject: [PATCH] trace: Convert the power tracer into an event tracer
-> 
-> This patch converts the existing power tracer into an event tracer,
-> so that power events (C states and frequency changes) can be tracked
-> via "perf".
-> 
-> This also removes the perl script that was used to demo the tracer;
-> its functionality is being replaced entirely with timechart.
-> 
+On Tue, 15 Sep 2009 05:42:59 +0200 Arjan van de Ven <arjan@infradead.org> wrote:
 
-And Documentation/power.txt needs update, or just remove it?
+> Rather than adding a new governor temporarily, this just puts the fixes
+> into the existing menu governor.
 
-> Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
+Oh, surprised.  I wasn't actually expecting that to happen.
 
-...
+<actually reads his email>
 
-> diff --git a/kernel/trace/power-traces.c b/kernel/trace/power-traces.c
-> new file mode 100644
-> index 0000000..cb4fc51
-> --- /dev/null
-> +++ b/kernel/trace/power-traces.c
+> I don't mind either way, will replace. 
 
-This file is not necessarily needed.
+OK.  I'm not particularly strongly opinionated either way.
 
-You can just add definition of CREATE_TRACE_POINTS in process.c.
+The timing is awkward.  We could let it sit in Len's tree and
+linux-next for a couple of months or we could say what-the-hell and
+merge it.
 
-> @@ -0,0 +1,18 @@
-> +/*
-> + * Power trace points
-> + *
-> + * Copyright (C) 2009 Arjan van de Ven <arjan@linux.intel.com>
-> + */
-> +
-> +#include <linux/string.h>
-> +#include <linux/types.h>
-> +#include <linux/workqueue.h>
-> +#include <linux/sched.h>
-> +#include <linux/module.h>
-> +#include <linux/slab.h>
-> +
-> +#define CREATE_TRACE_POINTS
-> +#include <trace/events/power.h>
-> +
-> +EXPORT_TRACEPOINT_SYMBOL_GPL(power_start);
-> +
-
-I think it's power_frequency that needs to be exported?
+If the latter, your original merge plan sound better ;) But we should
+arrange for the new code to default to "on" for test coverage reasons. 
+perhaps the original patch did that already?
 
