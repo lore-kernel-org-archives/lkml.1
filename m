@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753617AbZIOXpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754891AbZIOXub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753617AbZIOXpu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 19:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752839AbZIOXpp
+	id S1754891AbZIOXub (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 19:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbZIOXu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 19:45:45 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:5279 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751574AbZIOXpo (ORCPT
+	Tue, 15 Sep 2009 19:50:26 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57064 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753276AbZIOXuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 19:45:44 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=jsUzFHnCqeBealWqbvW+Izq0hkMIQSZVCWI+StuByYWi6Zq6py4lgkgiiBl/Mc7km
-	ahNsXm9eWTUbBbhHv64nA==
-Date: Tue, 15 Sep 2009 16:45:37 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Kurt Roeckx <kurt@roeckx.be>, Dave Jones <davej@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Kernel Testers <kernel-testers@vger.kernel.org>,
-       Mark Langsdorf <mark.langsdorf@amd.com>,
-       Naga Chumbalkar <nagananda.chumbalkar@hp.com>
-Subject: Re: [Bug #13780] NULL pointer dereference loading powernowk8
-In-Reply-To: <200909102259.15144.rjw@sisk.pl>
-Message-ID: <alpine.DEB.1.00.0909151642100.24059@chino.kir.corp.google.com>
-References: <aIL9jMAYJnG.A.WjH.M3BpKB@chimera> <200909080112.14997.rjw@sisk.pl> <20090908194653.GA3517@roeckx.be> <200909102259.15144.rjw@sisk.pl>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Tue, 15 Sep 2009 19:50:25 -0400
+Date: Tue, 15 Sep 2009 16:49:34 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Eric Paris <eparis@redhat.com>
+cc: Evgeniy Polyakov <zbr@ioremap.net>, Jamie Lokier <jamie@shareable.org>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       viro@zeniv.linux.org.uk, alan@linux.intel.com, hch@infradead.org
+Subject: Re: fanotify as syscalls
+In-Reply-To: <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+Message-ID: <alpine.LFD.2.01.0909151643540.4950@localhost.localdomain>
+References: <20090911.114620.260824240.davem@davemloft.net>  <1252697613.2305.38.camel@dhcp231-106.rdu.redhat.com>  <20090911204602.GA19371@shareable.org>  <1252703626.2305.50.camel@dhcp231-106.rdu.redhat.com>  <20090911212731.GA19901@shareable.org> 
+ <1252705902.2305.83.camel@dhcp231-106.rdu.redhat.com>  <20090912094110.GB24709@ioremap.net> <20090914001759.GB30621@shareable.org>  <20090914140720.GA8564@ioremap.net>  <1252955295.2246.35.camel@dhcp231-106.rdu.redhat.com>  <20090915201620.GB32192@ioremap.net>
+ <1253051699.5213.18.camel@dhcp231-106.rdu.redhat.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 Sep 2009, Rafael J. Wysocki wrote:
 
-> > So I did a biset, and this is the result:
-> > $ git bisect good
-> > 0e64a0c982c06a6b8f5e2a7f29eb108fdf257b2f is first bad commit
-> > commit 0e64a0c982c06a6b8f5e2a7f29eb108fdf257b2f
-> > Author: Dave Jones <davej@redhat.com>
-> > Date:   Wed Feb 4 14:37:50 2009 -0500
-> > 
-> >     [CPUFREQ] checkpatch cleanups for powernow-k8
-> > 
-> >     This driver has so many long function names, and deep nested if's
-> >     The remaining warnings will need some code restructuring to clean up.
-> > 
-> >     Signed-off-by: Dave Jones <davej@redhat.com>
-> > 
-> > :040000 040000 45d8e325663e62e0833cf4e1cb8b27fa4a9b3a56 affb6fab44cb22aca8a33ca0d767797831fc2bae M      arch
-> > 
-> > 2.6.29-rc5 is good, -rc7 is bad.
+
+On Tue, 15 Sep 2009, Eric Paris wrote:
 > 
-> Thanks for the update and for doing the bisection.
-> 
+> I don't see what's gained using netlink.
 
-0e64a0c has this cleanup, which isn't equivalent to the previous code:
+I'm personally not a big believer in netlink. What's the point, really? If 
+you are sending datagrams back-and-forth, go wild. But if it's more 
+structured than that, netlink has no actual upsides as far as I can tell.
 
-@@ -779,11 +834,12 @@ static int powernow_k8_cpu_init_acpi(struct powernow_k8_data *data)
- 		goto err_out;
- 	}
- 
--	if ((data->acpi_data.control_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
--		(data->acpi_data.status_register.space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
-+	space_id = data->acpi_data.control_register.space_id;
-+	if ((space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) ||
-+		(space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)) {
- 		dprintk("Invalid control/status registers (%x - %x)\n",
- 			data->acpi_data.control_register.space_id,
--			data->acpi_data.status_register.space_id);
-+			space_id);
- 		goto err_out;
- 	}
- 
-This got fixed in 2c701b1 in 2.6.31-rc8, so this is most likely the 
-problem that Kurt was encountering.
+Same goes for sockets in this case, actually. What's the upside?
 
-Kurt, could you try 2.6.31 and see if you still experience the issue?  If 
-not, this can be closed.
+I'll throw out a couple of upsides of actual system calls, people can feel 
+free to comment:
+
+ - things like 'strace' _work_ and the traces make sense, and you 
+   generally see what the app is trying to do from the traces (sure, it 
+   takes some time for strace to learn new system calls, but even when it 
+   only gives a system call number, it's never any worse than some 
+   "made-up packet interface".
+
+ - if you have a system call definition, it tends to be a much stricter 
+   interface than "let's send some packets around with a network 
+   interface".
+
+ - No unnecessary infrastructure.
+
+That said, maybe the netlink/socket people can argue for their 
+standpoints.
+
+(And btw, I still want to know what's so wonderful about fanotify that we 
+would actually want yet-another-filesystem-notification-interface. So I'm 
+not sayying that I'll take a system call interface. I just don't think 
+that hiding interfaces behind some random packet interface is at all any 
+better)
+
+		Linus
