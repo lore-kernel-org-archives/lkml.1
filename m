@@ -1,31 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755364AbZIOQLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755239AbZIOQKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755364AbZIOQLg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 12:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZIOQLb
+	id S1755239AbZIOQKu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 12:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754067AbZIOQKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 12:11:31 -0400
-Received: from mga11.intel.com ([192.55.52.93]:53649 "EHLO mga11.intel.com"
+	Tue, 15 Sep 2009 12:10:46 -0400
+Received: from mga02.intel.com ([134.134.136.20]:46562 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755178AbZIOQLY convert rfc822-to-8bit (ORCPT
+	id S1754062AbZIOQKp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 12:11:24 -0400
+	Tue, 15 Sep 2009 12:10:45 -0400
 X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.44,390,1249282800"; 
-   d="scan'208";a="493669470"
+X-IronPort-AV: E=Sophos;i="4.44,391,1249282800"; 
+   d="scan'208";a="550784426"
 From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
 To: "Williams, Dan J" <dan.j.williams@intel.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-       "Picard, Tom S" <tom.s.picard@intel.com>
-Date: Tue, 15 Sep 2009 17:10:32 +0100
-Subject: RE: [PATCH 15/18] ioat3: ioat3.2 pci ids for Jasper Forest
-Thread-Topic: [PATCH 15/18] ioat3: ioat3.2 pci ids for Jasper Forest
-Thread-Index: AcotK1joT1cvOQicR2iifQb8YUQZjAI8605w
-Message-ID: <129600E5E5FB004392DDC3FB599660D7B554879C@irsmsx504.ger.corp.intel.com>
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>
+Date: Tue, 15 Sep 2009 17:10:46 +0100
+Subject: RE: [PATCH 16/18] ioat3: segregate raid engines
+Thread-Topic: [PATCH 16/18] ioat3: segregate raid engines
+Thread-Index: AcotK1v7dpVDiDtrQyq0qKcGUO4XewI87Kgw
+Message-ID: <129600E5E5FB004392DDC3FB599660D7B554879D@irsmsx504.ger.corp.intel.com>
 References: <20090904064308.7141.30576.stgit@dwillia2-linux.ch.intel.com>
- <20090904064551.7141.2216.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20090904064551.7141.2216.stgit@dwillia2-linux.ch.intel.com>
+ <20090904064556.7141.76580.stgit@dwillia2-linux.ch.intel.com>
+In-Reply-To: <20090904064556.7141.76580.stgit@dwillia2-linux.ch.intel.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -39,14 +38,11 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Williams, Dan J wrote:
-> From: Tom Picard <tom.s.picard@intel.com>
+> The cleanup routine for the raid cases imposes extra checks for handling
+> raid descriptors and extended descriptors.  If the channel does not
+> support raid it can avoid this extra overhead by using the ioat2 cleanup
+> path.
 > 
-> Jasper Forest introduces raid offload support via ioat3.2 support.  When
-> raid offload is enabled two (out of 8 channels) will report raid5/raid6
-> offload capabilities.  The remaining channels will only report ioat3.0
-> capabilities (memcpy).
-> 
-> Signed-off-by: Tom Picard <tom.s.picard@intel.com>
 > Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 > ---
 
