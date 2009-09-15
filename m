@@ -1,111 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbZIOA4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756495AbZIOBAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757719AbZIOA4u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 20:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757707AbZIOA4s
+	id S1756495AbZIOBAY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 21:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbZIOBAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 20:56:48 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:40225 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757600AbZIOA4r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 20:56:47 -0400
-Date: Mon, 14 Sep 2009 17:54:17 -0700
-From: Joel Becker <Joel.Becker@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-Message-ID: <20090915005417.GD4507@mail.oracle.com>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Mark Fasheh <mfasheh@suse.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, ocfs2-devel@oss.oracle.com
-References: <20090911200458.GA15416@mail.oracle.com>
- <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain>
- <20090914221434.GA4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain>
- <20090915000417.GC4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
+	Mon, 14 Sep 2009 21:00:21 -0400
+Received: from mx1.redhat.com ([209.132.183.28]:1026 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756475AbZIOBAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 21:00:20 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH] SELinux: inline selinux_is_enabled in !CONFIG_SECURITY_SELINUX
+To: linux-kernel@vger.kernel.org, selinux@tycho.nsa.gov
+Cc: torvalds@linux-foundation.org, jmorris@namei.org, sds@tycho.nsa.gov
+Date: Mon, 14 Sep 2009 20:59:48 -0400
+Message-ID: <20090915005948.12692.40854.stgit@paris.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain>
-X-Burt-Line: Trees are cool.
-X-Red-Smith: Ninety feet between bases is perhaps as close as man has ever
- come to perfection.
-User-Agent: Mutt/1.5.20 (2009-06-14)
-X-Source-IP: acsmt356.oracle.com [141.146.40.156]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.4AAEE645.00CC:SCFMA4539814,ss=1,fgs=0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Sep 14, 2009 at 05:31:27PM -0700, Linus Torvalds wrote:
-> On Mon, 14 Sep 2009, Joel Becker wrote:
-> > 	reflink doesn't merely guarantee atomicity, it guarantees the
-> > shared data extents.
-> 
-> Why?
-> 
-> That just limits its usefulness. What's the reason for that sophistry, 
-> except to try to argue for a name that makes no sense?
+Without this patch building a kernel emits millions of warning like:
 
-	This originally came from the idea of creating file snapshots.
-That was our original goal, but the more generic reflink call allows
-more than snapshots to be built.  You can use it to implement copyfile
-or clone or a variety of things.  But the snapshot capability is what
-really motivates, and removing the shared data requirement means
-removing that capability.  Like any API we have, if it can degrade, you
-have to assume it degraded.  A reflink/copyfile that can just copy means
-you have assume it copied and didn't conserve space.  This makes it
-useless for snapshotting or cloning.
-	In the reflink discussion before, I proposed that a separate
-copyfile() syscall could be written that uses the same ->reflink() inode
-operation but allows degradation in the storage handling.  This would be
-a little more capable than a glibc copyfile() written around reflink
-because it would get the atomicity right.  The separate copyfile/reflink
-calls would handle the different requirements of storage handling.  I
-just concentrated on reflink and didn't worry about that alternate
-copyfile at the time being.
-	I'm open to another proposal on how to do it.  As a user, I need
-a way to ask for a reflink/copyfile that fails if it can't share the
-data.  Things like snapshots and cloning gold VM images can't be
-doubling the storage.  They become pointless.
-	 About the name, the reflink name came out of "you call it like
-link(2)" and "the storage is reference counted CoW".  It really works
-well as "ln -r".  Folks at the filesystem summit liked it, so I didn't
-change it.  It's not so much that it has to be "reflink", but I've
-avoided "copyfile" because copyfile intuitively sounds like you
-describe, including the plain-copy fallback.  Want me to call the
-requires-shared-data-because-its-a-snap version snapfileat(2)?
-Something better?
+include/linux/selinux.h:92: warning: ‘selinux_is_enabled’ defined but not used
 
-> > 	Well, obviously I started from the fact that we don't have
-> > flink().  But it doesn't really fit anyway.  reflink is a namespace
-> > operation - give me a new item in the namespace that shares the data
-> > extents of the old item.
-> 
-> That's not a namespace op, EXCEPT FOR THE NEW NAME.
-> 
-> The data you share from has no namespace component to it, except as a 
-> lookup. But a 'fd' is equally descriptive of the shared data.
+When it is build without CONFIG_SECURITY_SELINUX.  This is harmless, but
+the function should be inlined, so it gets compiled out.
 
-	Ok, I gather that you find freflink (and by extension, flink)
-compelling.  I can certainly implement it.
+Reported-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Eric Paris <eparis@redhat.com>
+---
 
-Joel
+ include/linux/selinux.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
--- 
+diff --git a/include/linux/selinux.h b/include/linux/selinux.h
+index 223d06a..82e0f26 100644
+--- a/include/linux/selinux.h
++++ b/include/linux/selinux.h
+@@ -89,7 +89,7 @@ static inline void selinux_secmark_refcount_dec(void)
+ 	return;
+ }
+ 
+-static bool selinux_is_enabled(void)
++static inline bool selinux_is_enabled(void)
+ {
+ 	return false;
+ }
 
-A good programming language should have features that make the
-kind of people who use the phrase "software engineering" shake
-their heads disapprovingly.
-	- Paul Graham
-
-Joel Becker
-Principal Software Developer
-Oracle
-E-mail: joel.becker@oracle.com
-Phone: (650) 506-8127
