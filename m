@@ -1,84 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934146AbZIOCBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934212AbZIOCC2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934146AbZIOCBR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 Sep 2009 22:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934133AbZIOCBO
+	id S934212AbZIOCC2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 Sep 2009 22:02:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934209AbZIOCCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 Sep 2009 22:01:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38142 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934018AbZIOCBM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 Sep 2009 22:01:12 -0400
-Date: Mon, 14 Sep 2009 19:01:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Joel Becker <Joel.Becker@oracle.com>
-cc: Mark Fasheh <mfasheh@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [GIT PULL] ocfs2 changes for 2.6.32
-In-Reply-To: <20090915005417.GD4507@mail.oracle.com>
-Message-ID: <alpine.LFD.2.01.0909141828070.4950@localhost.localdomain>
-References: <20090911200458.GA15416@mail.oracle.com> <alpine.LFD.2.01.0909141417180.4950@localhost.localdomain> <20090914221434.GA4507@mail.oracle.com> <alpine.LFD.2.01.0909141614350.4950@localhost.localdomain> <20090915000417.GC4507@mail.oracle.com>
- <alpine.LFD.2.01.0909141727150.4950@localhost.localdomain> <20090915005417.GD4507@mail.oracle.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 14 Sep 2009 22:02:23 -0400
+Received: from mga03.intel.com ([143.182.124.21]:38880 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934208AbZIOCCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 Sep 2009 22:02:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.44,386,1249282800"; 
+   d="scan'208";a="187616632"
+Date: Tue, 15 Sep 2009 10:02:08 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "mtosatti@redhat.com" <mtosatti@redhat.com>,
+       "gregkh@suse.de" <gregkh@suse.de>,
+       "broonie@opensource.wolfsonmicro.com" 
+	<broonie@opensource.wolfsonmicro.com>,
+       "johannes@sipsolutions.net" <johannes@sipsolutions.net>,
+       "avi@qumranet.com" <avi@qumranet.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Mike Smith <scgtrp@gmail.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] devmem: handle partial kmem write/read
+Message-ID: <20090915020208.GA15159@localhost>
+References: <20090914032901.GA16189@localhost> <20090914043444.GA18590@localhost> <20090915092448.d511df31.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090915092448.d511df31.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Sep 15, 2009 at 08:24:48AM +0800, KAMEZAWA Hiroyuki wrote:
+> On Mon, 14 Sep 2009 12:34:44 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > Hi Kame,
+> > 
+> > This patch needs more work. I first intent to fix a bug:
+> > 
+> >                         sz = vwrite(kbuf, (char *)p, sz);
+> >                         p += sz;
+> >                 }
+> > 
+> > So if the returned len is 0, the kbuf/p pointers will mismatch. 
+> > 
+> > Then I realize it changed the write behavior. The current vwrite()
+> > behavior is strange, it returns 0 if _whole range_ is hole, otherwise
+> > ignores the hole silently. So holes can be treated differently even in
+> > the original code.
+> > 
+> Ah, ok...
+> 
+> > I'm not really sure about the right behavior. KAME-san, do you have
+> > any suggestions?
+> > 
+> maybe following make sense.
+> =
+> written = vwrite(kbuf, (char *p), sz);
+> if (!written) // whole vmem was a hole
+> 	written = sz;
 
+Since the 0 return value won't be used at all, it would be simpler to
+tell vwrite() return the untouched buflen/sz, like this. It will ignore
+_all_ the holes silently. Need to update comments too.
 
-On Mon, 14 Sep 2009, Joel Becker wrote:
->
-> 	In the reflink discussion before, I proposed that a separate
-> copyfile() syscall could be written that uses the same ->reflink() inode
-> operation but allows degradation in the storage handling.
+--- linux-mm.orig/mm/vmalloc.c  2009-09-15 09:40:08.000000000 +0800                                                                  
++++ linux-mm/mm/vmalloc.c       2009-09-15 09:43:33.000000000 +0800                                                                  
+@@ -1834,7 +1834,6 @@ long vwrite(char *buf, char *addr, unsig                                                                       
+        struct vm_struct *tmp;                                                                                                       
+        char *vaddr;                                                                                                                 
+        unsigned long n, buflen;                                                                                                     
+-       int copied = 0;                                                                                                              
+                                                                                                                                     
+        /* Don't allow overflow */                                                                                                   
+        if ((unsigned long) addr + count < count)                                                                                    
+@@ -1858,7 +1857,6 @@ long vwrite(char *buf, char *addr, unsig                                                                       
+                        n = count;                                                                                                   
+                if (!(tmp->flags & VM_IOREMAP)) {                                                                                    
+                        aligned_vwrite(buf, addr, n);                                                                                
+-                       copied++;                                                                                                    
+                }                                                                                                                    
+                buf += n;                                                                                                            
+                addr += n;                                                                                                           
+@@ -1866,8 +1864,6 @@ long vwrite(char *buf, char *addr, unsig                                                                       
+        }                                                                                                                            
+ finished:                                                                                                                           
+        read_unlock(&vmlist_lock);                                                                                                   
+-       if (!copied)                                                                                                                 
+-               return 0;                                                                                                            
+        return buflen;                                                                                                               
+ }                                                                                                                                   
 
-.. exactly how?
+> ==
+> needs fix.
+> 
+> Anyway, I wonder kmem is broken. It's should be totally rewritten.
+> 
+> For example, this doesn't check anything.
+> ==
+>         if (p < (unsigned long) high_memory) {
+> 
+> ==
+> 
+> But....are there users ?
+> If necessary, I'll write some...
 
-If you're talking about falling back to manually just copying the data, 
-then nobody is interested in that. User space can do that better with a 
-simple read-write loop or with splice, or whatever. There's no reaason 
-what-so-ever to do that.
+I'm trying to stop possible mem/kmem users to access hwpoison pages.. 
+I'm not the user, but rather a tester ;)
 
-But the thing is, network filesystems may be able to do server-side 
-copies, and the point being that they can do so _without_ transferring the 
-data to the client (and back). And if we do 'copyfile' (under whatever 
-name) for one filesystem, then I think we should strive to make sure that 
-it's useful for other filesystems too.
+Thanks,
+Fengguang
 
-Just google for "NFS Server-side Copy". And SMB has had a COPY command 
-from the very beginning, I think.
-
-And as far as I can tell, neither NFS nor CIFS could use your definition 
-of 'reflink()'. They aren't reflinks. Or rather, _could_ be, on the 
-server, of course, but what some people want to do is to avoid moving data 
-over the network. So it's not about "don't use more diskspace" for that 
-kind of application.
-
-Do we really want to introduce a new filesystem operation that is likely 
-to be broken for something like that?
-
-Now, it's possible that nobody will ever care, and that NFS server-side 
-copy goes the way of a lot of other failed trials. But I really hope you 
-have at least _talked_ to some CIFS/NFS people about this.
-
-[ Btw, it's quite possible that CIFS/NFS people would want more than a 
-  single entrypoint. I think they might want partial copies and status 
-  updates etc, which would likely mean that a single ->copyfile() thing 
-  isn't sufficient.
-
-  Maybe it's not worth it, and the complexity of something like that gets 
-  to be too annoying. But I don't get the feeling that you've even _tried_ 
-  to see if this can be generalized to something that would be much more 
-  widely useful ]
-
-Now, I can see that you might want to say "fail rather than use double 
-the diskspace for data". But why not just do that as a flag? You already 
-have flags for 'copy extended attributes or not'. Why not have a flag that 
-says 'copy only if you can do it without any extra space'?
-
-			Linus
+> Thanks,
+> -Kame
+> 
+> 
+> > Thanks,
+> > Fengguang
+> > 
+> > On Mon, Sep 14, 2009 at 11:29:01AM +0800, Wu Fengguang wrote:
+> > > Current vwrite silently ignores vwrite() to vmap holes.
+> > > Better behavior should be stop the write and return
+> > > on such holes.
+> > > 
+> > > Also return on partial read, which may happen in future
+> > > (eg. hit hwpoison pages).
+> > > 
+> > > CC: Andi Kleen <andi@firstfloor.org>
+> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > ---
+> > >  drivers/char/mem.c |   30 ++++++++++++++++++------------
+> > >  1 file changed, 18 insertions(+), 12 deletions(-)
+> > > 
+> > > --- linux-mm.orig/drivers/char/mem.c	2009-09-14 10:59:50.000000000 +0800
+> > > +++ linux-mm/drivers/char/mem.c	2009-09-14 11:06:25.000000000 +0800
+> > > @@ -444,18 +444,22 @@ static ssize_t read_kmem(struct file *fi
+> > >  		if (!kbuf)
+> > >  			return -ENOMEM;
+> > >  		while (count > 0) {
+> > > +			unsigned long n;
+> > > +
+> > >  			sz = size_inside_page(p, count);
+> > > -			sz = vread(kbuf, (char *)p, sz);
+> > > -			if (!sz)
+> > > +			n = vread(kbuf, (char *)p, sz);
+> > > +			if (!n)
+> > >  				break;
+> > > -			if (copy_to_user(buf, kbuf, sz)) {
+> > > +			if (copy_to_user(buf, kbuf, n)) {
+> > >  				free_page((unsigned long)kbuf);
+> > >  				return -EFAULT;
+> > >  			}
+> > > -			count -= sz;
+> > > -			buf += sz;
+> > > -			read += sz;
+> > > -			p += sz;
+> > > +			count -= n;
+> > > +			buf += n;
+> > > +			read += n;
+> > > +			p += n;
+> > > +			if (n < sz)
+> > > +				break;
+> > >  		}
+> > >  		free_page((unsigned long)kbuf);
+> > >  	}
+> > > @@ -551,11 +555,13 @@ static ssize_t write_kmem(struct file * 
+> > >  				free_page((unsigned long)kbuf);
+> > >  				return -EFAULT;
+> > >  			}
+> > > -			sz = vwrite(kbuf, (char *)p, sz);
+> > > -			count -= sz;
+> > > -			buf += sz;
+> > > -			virtr += sz;
+> > > -			p += sz;
+> > > +			n = vwrite(kbuf, (char *)p, sz);
+> > > +			count -= n;
+> > > +			buf += n;
+> > > +			virtr += n;
+> > > +			p += n;
+> > > +			if (n < sz)
+> > > +				break;
+> > >  		}
+> > >  		free_page((unsigned long)kbuf);
+> > >  	}
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> > 
