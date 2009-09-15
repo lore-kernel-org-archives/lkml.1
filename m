@@ -1,56 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752428AbZIOJj1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751641AbZIOJl1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752428AbZIOJj1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:39:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbZIOJjX
+	id S1751641AbZIOJl1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:41:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750909AbZIOJlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:39:23 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43416
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750975AbZIOJjW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:39:22 -0400
-Date: Tue, 15 Sep 2009 02:39:39 -0700 (PDT)
-Message-Id: <20090915.023939.194852114.davem@davemloft.net>
-To: mingo@elte.hu
-Cc: eric.dumazet@gmail.com, penberg@cs.helsinki.fi, vegard.nossum@gmail.com,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: WARNING: kmemcheck: Caught 32-bit read from uninitialized
- memory (bf438284)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090915093440.GA7921@elte.hu>
-References: <20090915080953.GA24958@elte.hu>
-	<4AAF5757.30500@gmail.com>
-	<20090915093440.GA7921@elte.hu>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 15 Sep 2009 05:41:21 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57306 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750738AbZIOJlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:41:20 -0400
+Message-ID: <4AAF60F7.6040107@cn.fujitsu.com>
+Date: Tue, 15 Sep 2009 17:40:07 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b3pre) Gecko/20090513 Fedora/3.0-2.3.beta2.fc11 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: jolsa@redhat.com
+CC: mingo@elte.hu, rostedt@goodmis.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] tracing - support multiple pids in set_pid_ftrace file
+References: <1253005169-32709-1-git-send-email-jolsa@redhat.com>
+In-Reply-To: <1253005169-32709-1-git-send-email-jolsa@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ingo Molnar <mingo@elte.hu>
-Date: Tue, 15 Sep 2009 11:34:40 +0200
+jolsa@redhat.com wrote:
+> Adding the possibility to set more than 1 pid in the set_pid_ftrace file,
+> thus allowing to trace more than 1 independent processes.
+> 
+> Usage:
+> 
+> sh-4.0# echo 284 > ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> 284
+> sh-4.0# echo 1 >> ./set_ftrace_pid 
+> sh-4.0# echo 0 >> ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> swapper tasks
+> 1
+> 284
+> sh-4.0# echo 4 > ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> 4
+> sh-4.0# echo > ./set_ftrace_pid 
+> sh-4.0# cat ./set_ftrace_pid 
+> no pid
+> sh-4.0# 
+> 
+> 
+> wbr,
+> jirka
+> 
+> Signed-off-by: Jiri Olsa <jolsa@redhat.com>
+> ---
+>  kernel/trace/ftrace.c |  226 +++++++++++++++++++++++++++++++++++--------------
+>  kernel/trace/trace.h  |    4 +-
+>  2 files changed, 164 insertions(+), 66 deletions(-)
+>  
+...
+> +static void ftrace_pid_reset(void)
+> +{
+> +	struct ftrace_pid *fpid, *safe;
+> +
+> +	mutex_lock(&ftrace_lock);
+> +	list_for_each_entry_safe(fpid, safe, &ftrace_pids, list) {
+> +		struct pid *pid = fpid->pid;
+> +
+> +		clear_ftrace_pid_task(&pid);
 
-> 
-> * Eric Dumazet <eric.dumazet@gmail.com> wrote:
-> 
->> Either we add kmemcheck annotations, or we switch sock->type from short
->> to int to avoid the hole, and possibly to speedup things...
->> 
->> [PATCH] net: kmemcheck annotation in struct socket
->> 
->> struct socket has a 16 bit hole that triggers kmemcheck warnings.
->> 
->> As suggested by Ingo, use kmemcheck annotations
->> 
->> Signed-off-by: Eric Dumazet <eric.dumazet@gmail.com>
->> ---
->>  include/linux/net.h |    5 +++++
->>  net/socket.c        |    1 +
->>  2 files changed, 6 insertions(+)
-> 
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+Now we can change clear_ftrace_pid_task() to take struct pid *
+instead of struct pid**.
 
-Applied, thanks everyone.
+> +
+> +		if (pid != ftrace_swapper_pid)
+> +			put_pid(pid);
+> +
+
+clear_ftrace_pid_task() already called put_pid().
+
+> +		list_del(&fpid->list);
+> +		kfree(fpid);
+> +	}
+> +
+> +	ftrace_update_pid_func();
+> +	ftrace_startup_enable(0);
+> +
+> +	mutex_unlock(&ftrace_lock);
+> +}
+> +
+...
+>  static ssize_t
+>  ftrace_pid_write(struct file *filp, const char __user *ubuf,
+>  		   size_t cnt, loff_t *ppos)
+>  {
+> -	struct pid *pid;
+>  	char buf[64];
+>  	long val;
+>  	int ret;
+> @@ -2897,57 +3016,36 @@ ftrace_pid_write(struct file *filp, const char __user *ubuf,
+>  
+>  	buf[cnt] = 0;
+>  
+> +	/*
+> +	 * Allow the "echo > set_ftrace_pid" to clean
+> +	 * the pids quietly.
+> +	 */
+> +	if (!*ppos && *buf == '\n' && cnt == 1)
+> +		return 1;
+> +
+
+How about:
+	strstrip(buf);
+	if (strlen(buf) == 0)
+		return 1;
+
+So "echo -n '' > set_ftrace_pid" works too.
+
+>  	ret = strict_strtol(buf, 10, &val);
+>  	if (ret < 0)
+>  		return ret;
+>  
+
