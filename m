@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbZIOUyA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754062AbZIOVgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbZIOUyA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 16:54:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbZIOUx5
+	id S1754062AbZIOVgT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 17:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751487AbZIOVgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 16:53:57 -0400
-Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:48965 "EHLO
-	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758517AbZIOUx4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 16:53:56 -0400
-X-Trace: 259131786/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/79.69.84.74/None/hugh.dickins@tiscali.co.uk
-X-SBRS: None
-X-RemoteIP: 79.69.84.74
-X-IP-MAIL-FROM: hugh.dickins@tiscali.co.uk
-X-SMTP-AUTH: 
-X-MUA: 
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AlgFAFqbr0pPRVRK/2dsb2JhbACBU95khBcF
-X-IronPort-AV: E=Sophos;i="4.44,391,1249254000"; 
-   d="scan'208";a="259131786"
-Date: Tue, 15 Sep 2009 21:53:12 +0100 (BST)
-From: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-X-X-Sender: hugh@sister.anvils
-To: Eric B Munson <ebmunson@us.ibm.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-man@vger.kernel.org, mtk.manpages@gmail.com,
-       randy.dunlap@oracle.com, Arnd Bergman <arnd@arndb.de>
-Subject: Re: [PATCH] Fix for hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions.patch
- in -mm
-In-Reply-To: <1253011613-6429-1-git-send-email-ebmunson@us.ibm.com>
-Message-ID: <Pine.LNX.4.64.0909152146470.25625@sister.anvils>
-References: <1252487811-9205-1-git-send-email-ebmunson@us.ibm.com>
- <1253011613-6429-1-git-send-email-ebmunson@us.ibm.com>
+	Tue, 15 Sep 2009 17:36:13 -0400
+Received: from khc.piap.pl ([195.187.100.11]:45371 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751035AbZIOVgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 17:36:13 -0400
+From: Krzysztof Halasa <khc@pm.waw.pl>
+To: Steve Chen <schen@mvista.com>
+Cc: Felipe Contreras <felipe.contreras@gmail.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       Jamie Lokier <jamie@shareable.org>, linux-kernel@vger.kernel.org,
+       Marek Vasut <marek.vasut@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       linux-arm-kernel@lists.infradead.org
+Subject: Re: [PATCH] arm: remove unused code in delay.S
+References: <1252875960-21512-1-git-send-email-felipe.contreras@gmail.com>
+	<20090915103739.GA19519@elf.ucw.cz>
+	<1253017761.3273.117.camel@linux-1lbu>
+	<200909151541.08852.marek.vasut@gmail.com>
+	<1253032210.3273.128.camel@linux-1lbu>
+	<94a0d4530909151158y489a96e3x63ff932c713822b0@mail.gmail.com>
+	<1253043875.3273.131.camel@linux-1lbu>
+Date: Tue, 15 Sep 2009 23:04:37 +0200
+In-Reply-To: <1253043875.3273.131.camel@linux-1lbu> (Steve Chen's message of
+	"Tue, 15 Sep 2009 14:44:35 -0500")
+Message-ID: <m3k4zzdimy.fsf@intrepid.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 Sep 2009, Eric B Munson wrote:
-> Resending because this seems to have fallen between the cracks.
+Steve Chen <schen@mvista.com> writes:
 
-Yes, indeed.  I think it isn't quite what Arnd was suggesting, but I
-agree with you that we might as well go for 0x080000 (so that even Alpha
-can be just a cut-and-paste job from asm-generic), and right now it's
-more important to finalize the number than what file it appears in.
+> +config OLD_CPU_DELAY
+> +	depends on CPU_32v3 || CPU_32v4 || CPU_32v4T
+> +	bool "Accurate delays"
+> +	def_bool n
+> +	help
+> +	  Enable if observing longer than expected delays and need more
+> +	  accuracy.  This only applies to older CPUs.
+> +
 
-Acked-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
+If it's that simple then why not enable the extra delay code
+unconditionally when compiling for those CPUs?
 
-> 
-> The patch
-> hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions.patch
-> used the value 0x40 for MAP_HUGETLB which is the same value used for
-> various other flags on some architectures.  This collision causes
-> unexpected use of huge pages in the best case and mmap to fail with
-> ENOMEM or ENOSYS in the worst.  This patch changes the value for
-> MAP_HUGETLB to a value that is not currently used on any arch.
-> 
-> This patch should be considered a fix to
-> hugetlb-add-map_hugetlb-for-mmaping-pseudo-anonymous-huge-page-regions.patch.
-> 
-> Reported-by: Hugh Dickins <hugh.dickins@tiscali.co.uk>
-> Signed-off-by: Eric B Munson <ebmunson@us.ibm.com>
-> ---
->  include/asm-generic/mman-common.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/asm-generic/mman-common.h b/include/asm-generic/mman-common.h
-> index 12f5982..e6adb68 100644
-> --- a/include/asm-generic/mman-common.h
-> +++ b/include/asm-generic/mman-common.h
-> @@ -19,7 +19,7 @@
->  #define MAP_TYPE	0x0f		/* Mask for type of mapping */
->  #define MAP_FIXED	0x10		/* Interpret addr exactly */
->  #define MAP_ANONYMOUS	0x20		/* don't use a file */
-> -#define MAP_HUGETLB	0x40		/* create a huge page mapping */
-> +#define MAP_HUGETLB	0x080000	/* create a huge page mapping */
->  
->  #define MS_ASYNC	1		/* sync memory asynchronously */
->  #define MS_INVALIDATE	2		/* invalidate the caches */
-> -- 
-> 1.6.3.2
+We don't need "do something better" options.
+-- 
+Krzysztof Halasa
