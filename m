@@ -1,75 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751926AbZIOJWM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751733AbZIOJ2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751926AbZIOJWM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 05:22:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750975AbZIOJWJ
+	id S1751733AbZIOJ2i (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 05:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750838AbZIOJ2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 05:22:09 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46580 "EHLO hera.kernel.org"
+	Tue, 15 Sep 2009 05:28:34 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37150 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750785AbZIOJWI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 05:22:08 -0400
-Date: Tue, 15 Sep 2009 09:21:38 GMT
-From: tip-bot for Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, peterz@infradead.org, xiaoguangrong@cn.fujitsu.com,
-       stable@kernel.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, peterz@infradead.org,
-       xiaoguangrong@cn.fujitsu.com, stable@kernel.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4AAF37D4.5010706@cn.fujitsu.com>
-References: <4AAF37D4.5010706@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Subject: [tip:perfcounters/urgent] perf_counter: Fix buffer overflow in perf_copy_attr()
-Message-ID: <tip-b3e62e35058fc744ac794611f4e79bcd1c5a4b83@git.kernel.org>
-Git-Commit-ID: b3e62e35058fc744ac794611f4e79bcd1c5a4b83
-X-Mailer: tip-git-log-daemon
+	id S1750785AbZIOJ2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 05:28:33 -0400
+Date: Tue, 15 Sep 2009 11:28:22 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>,
+       Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [origin tree build failure] [PATCH] block: remove
+	blk_iopoll_enabled
+Message-ID: <20090915092822.GA15538@elte.hu>
+References: <20090913175902.GP14984@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 15 Sep 2009 09:21:39 +0000 (UTC)
+In-Reply-To: <20090913175902.GP14984@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b3e62e35058fc744ac794611f4e79bcd1c5a4b83
-Gitweb:     http://git.kernel.org/tip/b3e62e35058fc744ac794611f4e79bcd1c5a4b83
-Author:     Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-AuthorDate: Tue, 15 Sep 2009 14:44:36 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 15 Sep 2009 09:53:31 +0200
 
-perf_counter: Fix buffer overflow in perf_copy_attr()
+Note, upstream now breaks the build occasionally if CONFIG_BLOCK is 
+disabled:
 
-If we pass a big size data over perf_counter_open() syscall,
-the kernel will copy this data to a small buffer, it will
-cause kernel crash.
+ kernel/built-in.o:(.data+0x17b0): undefined reference to `blk_iopoll_enabled'
 
-This bug makes the kernel unsafe and non-root local user can
-trigger it.
+Kamalesh Babulal posted a fix for that two weeks ago, i suspect it 
+should be picked up - find it below.
 
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Acked-by: Paul Mackerras <paulus@samba.org>
-Cc: <stable@kernel.org>
-LKML-Reference: <4AAF37D4.5010706@cn.fujitsu.com>
+	Ingo
+
+-------------------->
+>From 3b049b5e648ebfa508d52e9184d1c6c2cd456a72 Mon Sep 17 00:00:00 2001
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Date: Fri, 21 Aug 2009 16:41:13 +0530
+Subject: [PATCH] block: remove blk_iopoll_enabled
+
+* Jens Axboe <jens.axboe@oracle.com> [2009-08-07 21:21:44]:
+
+> On Fri, Aug 07 2009, Randy Dunlap wrote:
+> > From: Randy Dunlap <randy.dunlap@oracle.com>
+> >
+> > New block-iopoll sysctl should be surrounded by CONFIG_BLOCK to
+> > prevent build error:
+> >
+> > kernel/built-in.o:(.data+0x2990): undefined reference to `blk_iopoll_enabled'
+>
+> Thanks, I'll just kill off this sysctl, it should be driver controller
+> anyway. Was just easier for testing :-)
+
+This build failure is still seen with next-20090820 kernel, removing
+the sysctl helps. Attaching the patch based on your recommendation.
+Please drop the patch if you already have in queue.
+
+Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: akpm <akpm@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+LKML-Reference: <20090821111113.GA5105@linux.vnet.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+--
+ kernel/sysctl.c |    8 --------
+ 1 file changed, 8 deletions(-)
 ---
- kernel/perf_counter.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ kernel/sysctl.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index d7cbc57..a67a1dc 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -4171,6 +4171,7 @@ static int perf_copy_attr(struct perf_counter_attr __user *uattr,
- 			if (val)
- 				goto err_size;
- 		}
-+		size = sizeof(*attr);
- 	}
- 
- 	ret = copy_from_user(attr, uattr, size);
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 6bb59f7..95a1805 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -998,14 +998,6 @@ static struct ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ #endif
+-	{
+-		.ctl_name	= CTL_UNNUMBERED,
+-		.procname	= "blk_iopoll",
+-		.data		= &blk_iopoll_enabled,
+-		.maxlen		= sizeof(int),
+-		.mode		= 0644,
+-		.proc_handler	= &proc_dointvec,
+-	},
+ /*
+  * NOTE: do not add new entries to this table unless you have read
+  * Documentation/sysctl/ctl_unnumbered.txt
