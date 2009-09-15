@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZIOPre@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZIOPwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbZIOPre (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 Sep 2009 11:47:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZIOPra
+	id S1753763AbZIOPwi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 Sep 2009 11:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751205AbZIOPwe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 Sep 2009 11:47:30 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:39377 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754820AbZIOPrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 Sep 2009 11:47:25 -0400
-Date: Tue, 15 Sep 2009 17:47:26 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-Cc: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH 1/8] arch/mips/txx9: introduce missing kfree, iounmap
-In-Reply-To: <20090916.004525.74746264.anemo@mba.ocn.ne.jp>
-Message-ID: <Pine.LNX.4.64.0909151747120.8549@pc-004.diku.dk>
-References: <20090914.003321.160496287.anemo@mba.ocn.ne.jp>
- <Pine.LNX.4.64.0909132113520.31000@ask.diku.dk> <Pine.LNX.4.64.0909150701170.11392@ask.diku.dk>
- <20090916.004525.74746264.anemo@mba.ocn.ne.jp>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 Sep 2009 11:52:34 -0400
+Received: from bohort.kerlabs.com ([62.160.40.57]:43222 "EHLO
+	bohort.kerlabs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbZIOPwd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 Sep 2009 11:52:33 -0400
+From: Louis Rilling <louis.rilling@kerlabs.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: kgdb-bugreport@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Louis Rilling <louis.rilling@kerlabs.com>
+Subject: [PATCH] Let gdb assume that kgdb supports extended mode
+Date: Tue, 15 Sep 2009 17:52:27 +0200
+Message-Id: <1253029947-670-1-git-send-email-louis.rilling@kerlabs.com>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 16 Sep 2009, Atsushi Nemoto wrote:
+Hi,
 
-> On Tue, 15 Sep 2009 07:03:42 +0200 (CEST), Julia Lawall <julia@diku.dk> wrote:
-> > > +out_pdev:
-> > > +	platform_device_put(pdev);
-> > > +out_gpio:
-> > > +	gpio_remove(&iocled->chip);
-> > 
-> > I just noticed that the prototype of gpio_remove has __must_check
-> > I don't think there is anything to check here; since the thing is not 
-> > fully initialized here, it is unlikely to be busy.  Should there be (void) 
-> > in front of it?
-> 
-> The void casting does not silence the warning.  How about this?
-> 
-> 	if (gpiochip_remove(&iocled->chip))
-> 		return;
-> 
-> In general, memory leak would be less serious than crash or data
-> corruption ;)
+When looking for ways to reboot my target machine from gdb, I had to implement
+the patch below.
 
-OK, I will send an updated patch shortly.
+Then, from gdb, one has to attach as extended-remote target, and the
+'run' command will reboot the target machine.
 
-julia
+The behavior is not perfect since gdb will complain afterwards, and the user
+has to interrupt it and detach to recover usage. But AFAICS, gdb's remote
+protocol only uses the 'RXX' remote command in extended mode, which makes the
+current implementation of the 'R0' command in kgdb unreachable from gdb.
+
+So, are there reasons not to include such a patch?
+
+Thanks,
+
+Louis
+
+-------------------------------------------------->
+Subject: [PATCH] Let gdb assume that kgdb supports extended mode
+
+... and allow users to reboot the target machine from gdb.
+
+Signed-off-by: Louis Rilling <louis.rilling@kerlabs.com>
+---
+ kernel/kgdb.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index 5f15d33..e39f886 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -829,6 +829,12 @@ static int kgdb_io_ready(int print_wait)
+  * where KGDB is communicating with an external debugger
+  */
+ 
++/* Handle the '!' extended mode request */
++static void gdb_cmd_extended(struct kgdb_state *ks)
++{
++	strcpy(remcom_out_buffer, "OK");
++}
++
+ /* Handle the '?' status packets */
+ static void gdb_cmd_status(struct kgdb_state *ks)
+ {
+@@ -1252,6 +1258,9 @@ static int gdb_serial_stub(struct kgdb_state *ks)
+ 		get_packet(remcom_in_buffer);
+ 
+ 		switch (remcom_in_buffer[0]) {
++		case '!': /* extended mode */
++			gdb_cmd_extended(ks);
++			break;
+ 		case '?': /* gdbserial status */
+ 			gdb_cmd_status(ks);
+ 			break;
+-- 
+1.5.6.5
+
